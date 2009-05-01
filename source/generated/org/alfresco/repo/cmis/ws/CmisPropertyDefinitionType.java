@@ -29,30 +29,31 @@ import org.w3c.dom.Element;
  *       &lt;sequence>
  *         &lt;element name="name" type="{http://www.w3.org/2001/XMLSchema}string"/>
  *         &lt;element name="id" type="{http://www.w3.org/2001/XMLSchema}string"/>
+ *         &lt;element name="package" type="{http://www.w3.org/2001/XMLSchema}string"/>
  *         &lt;element name="displayName" type="{http://www.w3.org/2001/XMLSchema}string"/>
  *         &lt;element name="description" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
- *         &lt;element name="propertyType" type="{http://www.cmis.org/2008/05}enumPropertyType"/>
- *         &lt;element name="cardinality" type="{http://www.cmis.org/2008/05}enumCardinality"/>
- *         &lt;element name="updateability" type="{http://www.cmis.org/2008/05}enumUpdateability"/>
+ *         &lt;element name="propertyType" type="{http://docs.oasis-open.org/ns/cmis/core/200901}enumPropertyType"/>
+ *         &lt;element name="cardinality" type="{http://docs.oasis-open.org/ns/cmis/core/200901}enumCardinality"/>
+ *         &lt;element name="updatability" type="{http://docs.oasis-open.org/ns/cmis/core/200901}enumUpdatability"/>
  *         &lt;element name="inherited" type="{http://www.w3.org/2001/XMLSchema}boolean" minOccurs="0"/>
  *         &lt;element name="required" type="{http://www.w3.org/2001/XMLSchema}boolean"/>
  *         &lt;element name="queryable" type="{http://www.w3.org/2001/XMLSchema}boolean"/>
  *         &lt;element name="orderable" type="{http://www.w3.org/2001/XMLSchema}boolean"/>
  *         &lt;choice maxOccurs="unbounded" minOccurs="0">
- *           &lt;element ref="{http://www.cmis.org/2008/05}choiceBoolean"/>
- *           &lt;element ref="{http://www.cmis.org/2008/05}choiceDateTime"/>
- *           &lt;element ref="{http://www.cmis.org/2008/05}choiceDecimal"/>
- *           &lt;element ref="{http://www.cmis.org/2008/05}choiceHtml"/>
- *           &lt;element ref="{http://www.cmis.org/2008/05}choiceId"/>
- *           &lt;element ref="{http://www.cmis.org/2008/05}choiceInteger"/>
- *           &lt;element ref="{http://www.cmis.org/2008/05}choiceString"/>
- *           &lt;element ref="{http://www.cmis.org/2008/05}choiceUri"/>
- *           &lt;element ref="{http://www.cmis.org/2008/05}choiceXml"/>
+ *           &lt;element ref="{http://docs.oasis-open.org/ns/cmis/core/200901}choiceBoolean"/>
+ *           &lt;element ref="{http://docs.oasis-open.org/ns/cmis/core/200901}choiceDateTime"/>
+ *           &lt;element ref="{http://docs.oasis-open.org/ns/cmis/core/200901}choiceDecimal"/>
+ *           &lt;element ref="{http://docs.oasis-open.org/ns/cmis/core/200901}choiceHtml"/>
+ *           &lt;element ref="{http://docs.oasis-open.org/ns/cmis/core/200901}choiceId"/>
+ *           &lt;element ref="{http://docs.oasis-open.org/ns/cmis/core/200901}choiceInteger"/>
+ *           &lt;element ref="{http://docs.oasis-open.org/ns/cmis/core/200901}choiceString"/>
+ *           &lt;element ref="{http://docs.oasis-open.org/ns/cmis/core/200901}choiceUri"/>
+ *           &lt;element ref="{http://docs.oasis-open.org/ns/cmis/core/200901}choiceXml"/>
  *         &lt;/choice>
  *         &lt;element name="openChoice" type="{http://www.w3.org/2001/XMLSchema}boolean" minOccurs="0"/>
  *         &lt;any/>
  *       &lt;/sequence>
- *       &lt;attGroup ref="{http://www.cmis.org/2008/05}cmisUndefinedAttribute"/>
+ *       &lt;attGroup ref="{http://docs.oasis-open.org/ns/cmis/core/200901}cmisUndefinedAttribute"/>
  *     &lt;/restriction>
  *   &lt;/complexContent>
  * &lt;/complexType>
@@ -61,14 +62,15 @@ import org.w3c.dom.Element;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "cmisPropertyDefinitionType", propOrder = {
+@XmlType(name = "cmisPropertyDefinitionType", namespace = "http://docs.oasis-open.org/ns/cmis/core/200901", propOrder = {
     "name",
     "id",
+    "_package",
     "displayName",
     "description",
     "propertyType",
     "cardinality",
-    "updateability",
+    "updatability",
     "inherited",
     "required",
     "queryable",
@@ -78,15 +80,15 @@ import org.w3c.dom.Element;
     "any"
 })
 @XmlSeeAlso({
-    CmisPropertyHtmlDefinitionType.class,
-    CmisPropertyIntegerDefinitionType.class,
-    CmisPropertyBooleanDefinitionType.class,
-    CmisPropertyIdDefinitionType.class,
-    CmisPropertyStringDefinitionType.class,
-    CmisPropertyDecimalDefinitionType.class,
-    CmisPropertyDateTimeDefinitionType.class,
     CmisPropertyUriDefinitionType.class,
-    CmisPropertyXmlDefinitionType.class
+    CmisPropertyHtmlDefinitionType.class,
+    CmisPropertyStringDefinitionType.class,
+    CmisPropertyIntegerDefinitionType.class,
+    CmisPropertyIdDefinitionType.class,
+    CmisPropertyXmlDefinitionType.class,
+    CmisPropertyBooleanDefinitionType.class,
+    CmisPropertyDecimalDefinitionType.class,
+    CmisPropertyDateTimeDefinitionType.class
 })
 public class CmisPropertyDefinitionType {
 
@@ -94,6 +96,8 @@ public class CmisPropertyDefinitionType {
     protected String name;
     @XmlElement(required = true)
     protected String id;
+    @XmlElement(name = "package", required = true)
+    protected String _package;
     @XmlElement(required = true)
     protected String displayName;
     protected String description;
@@ -102,21 +106,21 @@ public class CmisPropertyDefinitionType {
     @XmlElement(required = true)
     protected EnumCardinality cardinality;
     @XmlElement(required = true)
-    protected EnumUpdateability updateability;
+    protected EnumUpdatability updatability;
     protected Boolean inherited;
     protected boolean required;
     protected boolean queryable;
     protected boolean orderable;
     @XmlElements({
-        @XmlElement(name = "choiceUri", type = CmisChoiceUriType.class),
-        @XmlElement(name = "choiceXml", type = CmisChoiceXmlType.class),
         @XmlElement(name = "choiceDateTime", type = CmisChoiceDateTimeType.class),
-        @XmlElement(name = "choiceId", type = CmisChoiceIdType.class),
-        @XmlElement(name = "choiceHtml", type = CmisChoiceHtmlType.class),
-        @XmlElement(name = "choiceString", type = CmisChoiceStringType.class),
-        @XmlElement(name = "choiceDecimal", type = CmisChoiceDecimalType.class),
+        @XmlElement(name = "choiceBoolean", type = CmisChoiceBooleanType.class),
+        @XmlElement(name = "choiceUri", type = CmisChoiceUriType.class),
         @XmlElement(name = "choiceInteger", type = CmisChoiceIntegerType.class),
-        @XmlElement(name = "choiceBoolean", type = CmisChoiceBooleanType.class)
+        @XmlElement(name = "choiceDecimal", type = CmisChoiceDecimalType.class),
+        @XmlElement(name = "choiceHtml", type = CmisChoiceHtmlType.class),
+        @XmlElement(name = "choiceXml", type = CmisChoiceXmlType.class),
+        @XmlElement(name = "choiceId", type = CmisChoiceIdType.class),
+        @XmlElement(name = "choiceString", type = CmisChoiceStringType.class)
     })
     protected List<CmisChoiceType> choice;
     protected Boolean openChoice;
@@ -171,6 +175,30 @@ public class CmisPropertyDefinitionType {
      */
     public void setId(String value) {
         this.id = value;
+    }
+
+    /**
+     * Gets the value of the package property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getPackage() {
+        return _package;
+    }
+
+    /**
+     * Sets the value of the package property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setPackage(String value) {
+        this._package = value;
     }
 
     /**
@@ -270,27 +298,27 @@ public class CmisPropertyDefinitionType {
     }
 
     /**
-     * Gets the value of the updateability property.
+     * Gets the value of the updatability property.
      * 
      * @return
      *     possible object is
-     *     {@link EnumUpdateability }
+     *     {@link EnumUpdatability }
      *     
      */
-    public EnumUpdateability getUpdateability() {
-        return updateability;
+    public EnumUpdatability getUpdatability() {
+        return updatability;
     }
 
     /**
-     * Sets the value of the updateability property.
+     * Sets the value of the updatability property.
      * 
      * @param value
      *     allowed object is
-     *     {@link EnumUpdateability }
+     *     {@link EnumUpdatability }
      *     
      */
-    public void setUpdateability(EnumUpdateability value) {
-        this.updateability = value;
+    public void setUpdatability(EnumUpdatability value) {
+        this.updatability = value;
     }
 
     /**
@@ -383,15 +411,15 @@ public class CmisPropertyDefinitionType {
      * 
      * <p>
      * Objects of the following type(s) are allowed in the list
-     * {@link CmisChoiceUriType }
-     * {@link CmisChoiceXmlType }
      * {@link CmisChoiceDateTimeType }
-     * {@link CmisChoiceIdType }
-     * {@link CmisChoiceHtmlType }
-     * {@link CmisChoiceStringType }
-     * {@link CmisChoiceDecimalType }
-     * {@link CmisChoiceIntegerType }
      * {@link CmisChoiceBooleanType }
+     * {@link CmisChoiceUriType }
+     * {@link CmisChoiceIntegerType }
+     * {@link CmisChoiceDecimalType }
+     * {@link CmisChoiceHtmlType }
+     * {@link CmisChoiceXmlType }
+     * {@link CmisChoiceIdType }
+     * {@link CmisChoiceStringType }
      * 
      * 
      */
@@ -444,8 +472,8 @@ public class CmisPropertyDefinitionType {
      * 
      * <p>
      * Objects of the following type(s) are allowed in the list
-     * {@link Element }
      * {@link Object }
+     * {@link Element }
      * 
      * 
      */

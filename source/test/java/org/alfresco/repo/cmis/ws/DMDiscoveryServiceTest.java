@@ -34,7 +34,7 @@ public class DMDiscoveryServiceTest extends AbstractServiceTest
 {
 
     public final static String SERVICE_WSDL_LOCATION = CmisServiceTestHelper.ALFRESCO_URL + "/cmis/DiscoveryService?wsdl";
-    public final static QName SERVICE_NAME = new QName("http://www.cmis.org/ns/1.0", "DiscoveryService");
+    public final static QName SERVICE_NAME = new QName("http://docs.oasis-open.org/ns/cmis/ws/200901", "DiscoveryService");
     public final static String STATEMENT = "SELECT * FROM Document";
 
     public DMDiscoveryServiceTest()
@@ -46,7 +46,7 @@ public class DMDiscoveryServiceTest extends AbstractServiceTest
     {
         super(testCase, username, password);
     }
-    
+
     protected Object getServicePort()
     {
         URL serviceWsdlURL;
@@ -63,9 +63,10 @@ public class DMDiscoveryServiceTest extends AbstractServiceTest
         return service.getPort(DiscoveryServicePort.class);
     }
 
-     public void testQuery() throws Exception
+    public void testQuery() throws Exception
     {
         CmisQueryType request = new CmisQueryType();
+        request.setRepositoryId(repositoryId);
         request.setStatement(STATEMENT);
         QueryResponse response = ((DiscoveryServicePort) servicePort).query(request);
         assertNotNull(response);

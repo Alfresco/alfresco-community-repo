@@ -129,30 +129,36 @@ public class PropertyUtil
 
         if (cmisProperty instanceof CmisPropertyBoolean)
         {
-            value = ((CmisPropertyBoolean) cmisProperty).isValue();
+            value = ((CmisPropertyBoolean) cmisProperty).getValue() != null && ((CmisPropertyBoolean) cmisProperty).getValue().size() > 0 ? ((CmisPropertyBoolean) cmisProperty)
+                    .getValue().get(0) : null;
         }
         else if (cmisProperty instanceof CmisPropertyDateTime)
         {
-//            value = ((CmisPropertyDateTime) cmisProperty).getValue().;
+            value = ((CmisPropertyDateTime) cmisProperty).getValue() != null && ((CmisPropertyDateTime) cmisProperty).getValue().size() > 0 ? ((CmisPropertyDateTime) cmisProperty)
+                    .getValue().get(0).toXMLFormat() : null;
         }
         else if (cmisProperty instanceof CmisPropertyDecimal)
         {
-            value = ((CmisPropertyDecimal) cmisProperty).getValue().doubleValue();
+            value = ((CmisPropertyDecimal) cmisProperty).getValue() != null && ((CmisPropertyDecimal) cmisProperty).getValue().size() > 0 ? ((CmisPropertyDecimal) cmisProperty)
+                    .getValue().get(0) : null;
         }
         else if (cmisProperty instanceof CmisPropertyHtml)
         {
         }
         else if (cmisProperty instanceof CmisPropertyId)
         {
-            value = ((CmisPropertyId) cmisProperty).getValue();
+            value = ((CmisPropertyId) cmisProperty).getValue() != null && ((CmisPropertyId) cmisProperty).getValue().size() > 0 ? ((CmisPropertyId) cmisProperty).getValue().get(0)
+                    : null;
         }
         else if (cmisProperty instanceof CmisPropertyInteger)
         {
-            value = ((CmisPropertyInteger) cmisProperty).getValue();
+            value = ((CmisPropertyInteger) cmisProperty).getValue() != null && ((CmisPropertyInteger) cmisProperty).getValue().size() > 0 ? ((CmisPropertyInteger) cmisProperty)
+                    .getValue().get(0) : null;
         }
         else if (cmisProperty instanceof CmisPropertyString)
         {
-            value = ((CmisPropertyString) cmisProperty).getValue();
+            value = ((CmisPropertyString) cmisProperty).getValue() != null && ((CmisPropertyString) cmisProperty).getValue().size() > 0 ? ((CmisPropertyString) cmisProperty)
+                    .getValue().get(0) : null;
         }
         else if (cmisProperty instanceof CmisPropertyUri)
         {

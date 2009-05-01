@@ -24,21 +24,19 @@
  */
 package org.alfresco.repo.cmis.ws;
 
-import java.math.BigInteger;
 import java.net.MalformedURLException;
 import java.net.URL;
 
 import javax.xml.namespace.QName;
 import javax.xml.ws.Service;
 
-import org.alfresco.cmis.mapping.CMISMapping;
-
 public class DMRelationshipServiceTest extends AbstractServiceTest
 {
 
     public final static String SERVICE_WSDL_LOCATION = CmisServiceTestHelper.ALFRESCO_URL + "/cmis/RelationshipService?wsdl";
-    public final static QName SERVICE_NAME = new QName("http://www.cmis.org/ns/1.0", "RelationshipService");
+    public final static QName SERVICE_NAME = new QName("http://docs.oasis-open.org/ns/cmis/ws/200901", "RelationshipService");
 
+    @SuppressWarnings("unused")
     private String relationshipId;
     private String document2Id;
     

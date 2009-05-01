@@ -27,6 +27,8 @@ package org.alfresco.repo.cmis.ws;
 import java.math.BigInteger;
 import java.util.List;
 
+import javax.xml.ws.Holder;
+
 public class DMRepositoryServiceTest extends AbstractServiceTest
 {
     public final static String TYPE_ID = "D/wcm_avmlayeredcontent";
@@ -50,7 +52,7 @@ public class DMRepositoryServiceTest extends AbstractServiceTest
     {
         List<CmisRepositoryEntryType> repositories = ((RepositoryServicePort) servicePort).getRepositories();
         assertTrue(repositories.size() == 1);
-        assertFalse(repositories.get(0).getRepositoryID() == null);
+        assertFalse(repositories.get(0).getRepositoryId() == null);
         assertFalse(repositories.get(0).getRepositoryName() == null);
     }
 
@@ -58,10 +60,10 @@ public class DMRepositoryServiceTest extends AbstractServiceTest
     {
         List<CmisRepositoryEntryType> repositories = ((RepositoryServicePort) servicePort).getRepositories();
         GetRepositoryInfo parameters = new GetRepositoryInfo();
-        parameters.setRepositoryId(repositories.get(0).getRepositoryID());
-        CmisRepositoryInfoType cmisRepositoryInfoType = ((RepositoryServicePort) servicePort).getRepositoryInfo(parameters);
+        parameters.setRepositoryId(repositories.get(0).getRepositoryId());
+        CmisRepositoryInfoType cmisRepositoryInfoType = ((RepositoryServicePort) servicePort).getRepositoryInfo(repositoryId);
 
-        assertTrue(cmisRepositoryInfoType.getRepositoryId().equals(repositories.get(0).getRepositoryID()));
+        assertTrue(cmisRepositoryInfoType.getRepositoryId().equals(repositories.get(0).getRepositoryId()));
         assertTrue(cmisRepositoryInfoType.getRepositoryName().equals(repositories.get(0).getRepositoryName()));
         CmisRepositoryCapabilitiesType capabilities = cmisRepositoryInfoType.getCapabilities();
         assertTrue(capabilities.isCapabilityMultifiling() && capabilities.isCapabilityPWCUpdateable());
@@ -71,26 +73,22 @@ public class DMRepositoryServiceTest extends AbstractServiceTest
     public void testGetTypes() throws Exception
     {
         GetTypes request = new GetTypes();
-        request.setMaxItems(cmisObjectFactory.createGetTypesMaxItems(BigInteger.valueOf(0)));
-        request.setSkipCount(cmisObjectFactory.createGetTypesMaxItems(BigInteger.valueOf(0)));
+        BigInteger maxItems = BigInteger.valueOf(0);
+        BigInteger skipItems = BigInteger.valueOf(0);
         request.setRepositoryId(repositoryId);
-        request.setReturnPropertyDefinitions(cmisObjectFactory.createGetTypesReturnPropertyDefinitions(Boolean.FALSE));
-        GetTypesResponse response = ((RepositoryServicePort) servicePort).getTypes(request);
-        assertNotNull(response.getType());
-        assertFalse(response.getType().isEmpty());
-        CmisTypeDefinitionType element = response.getType().get(0).getValue();
+        request.setIncludePropertyDefinitions(cmisObjectFactory.createGetTypesIncludePropertyDefinitions(Boolean.FALSE));
+        Holder<List<CmisTypeDefinitionType>> typeHolder = new Holder<List<CmisTypeDefinitionType>>();
+        Holder<Boolean> hasMoreElementsHolder = new Holder<Boolean>();
+        ((RepositoryServicePort) servicePort).getTypes(repositoryId, "", Boolean.FALSE, maxItems, skipItems, typeHolder, hasMoreElementsHolder);
+        assertNotNull(typeHolder.value);
+        assertFalse(typeHolder.value.isEmpty());
+        CmisTypeDefinitionType element = typeHolder.value.get(0);
         assertNotNull(element);
     }
 
     public void testGetTypeDefinition() throws Exception
     {
-        GetTypeDefinition request = new GetTypeDefinition();
-        request.setRepositoryId(repositoryId);
-        request.setTypeId(TYPE_ID);
-        GetTypeDefinitionResponse response = ((RepositoryServicePort) servicePort).getTypeDefinition(request);
-        assertNotNull(response);
-        assertNotNull(response.getType());
-        CmisTypeDefinitionType element = response.getType().getValue();
-        assertNotNull(element);
+        CmisTypeDefinitionType type = ((RepositoryServicePort) servicePort).getTypeDefinition(repositoryId, TYPE_ID);
+        assertNotNull(type);
     }
 }

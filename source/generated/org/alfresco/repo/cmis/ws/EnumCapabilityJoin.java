@@ -14,7 +14,7 @@ import javax.xml.bind.annotation.XmlType;
  * <pre>
  * &lt;simpleType name="enumCapabilityJoin">
  *   &lt;restriction base="{http://www.w3.org/2001/XMLSchema}string">
- *     &lt;enumeration value="nojoin"/>
+ *     &lt;enumeration value="none"/>
  *     &lt;enumeration value="inneronly"/>
  *     &lt;enumeration value="innerandouter"/>
  *   &lt;/restriction>
@@ -22,12 +22,12 @@ import javax.xml.bind.annotation.XmlType;
  * </pre>
  * 
  */
-@XmlType(name = "enumCapabilityJoin")
+@XmlType(name = "enumCapabilityJoin", namespace = "http://docs.oasis-open.org/ns/cmis/core/200901")
 @XmlEnum
 public enum EnumCapabilityJoin {
 
-    @XmlEnumValue("nojoin")
-    NOJOIN("nojoin"),
+    @XmlEnumValue("none")
+    NONE("none"),
     @XmlEnumValue("inneronly")
     INNERONLY("inneronly"),
     @XmlEnumValue("innerandouter")

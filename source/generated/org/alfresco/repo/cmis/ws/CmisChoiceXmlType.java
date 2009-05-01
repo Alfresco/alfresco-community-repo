@@ -18,7 +18,7 @@ import org.w3c.dom.Element;
  * <pre>
  * &lt;complexType name="cmisChoiceXmlType">
  *   &lt;complexContent>
- *     &lt;extension base="{http://www.cmis.org/2008/05}cmisChoiceType">
+ *     &lt;extension base="{http://docs.oasis-open.org/ns/cmis/core/200901}cmisChoiceType">
  *       &lt;sequence>
  *         &lt;any/>
  *       &lt;/sequence>
@@ -30,7 +30,7 @@ import org.w3c.dom.Element;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "cmisChoiceXmlType", propOrder = {
+@XmlType(name = "cmisChoiceXmlType", namespace = "http://docs.oasis-open.org/ns/cmis/core/200901", propOrder = {
     "any"
 })
 public class CmisChoiceXmlType
@@ -58,8 +58,8 @@ public class CmisChoiceXmlType
      * 
      * <p>
      * Objects of the following type(s) are allowed in the list
-     * {@link Element }
      * {@link Object }
+     * {@link Element }
      * 
      * 
      */

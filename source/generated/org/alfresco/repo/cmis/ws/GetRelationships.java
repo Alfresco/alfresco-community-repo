@@ -23,12 +23,12 @@ import javax.xml.bind.annotation.XmlType;
  *       &lt;sequence>
  *         &lt;element name="repositoryId" type="{http://www.w3.org/2001/XMLSchema}string"/>
  *         &lt;element name="objectId" type="{http://www.w3.org/2001/XMLSchema}string"/>
- *         &lt;element name="direction" type="{http://www.cmis.org/2008/05}enumRelationshipDirection" minOccurs="0"/>
+ *         &lt;element name="direction" type="{http://docs.oasis-open.org/ns/cmis/core/200901}enumRelationshipDirection" minOccurs="0"/>
  *         &lt;element name="typeId" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
  *         &lt;element name="includeSubRelationshipTypes" type="{http://www.w3.org/2001/XMLSchema}boolean" minOccurs="0"/>
  *         &lt;element name="filter" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
  *         &lt;element name="includeAllowableActions" type="{http://www.w3.org/2001/XMLSchema}boolean" minOccurs="0"/>
- *         &lt;element name="includeRelationships" type="{http://www.w3.org/2001/XMLSchema}boolean" minOccurs="0"/>
+ *         &lt;element name="includeRelationships" type="{http://docs.oasis-open.org/ns/cmis/core/200901}enumIncludeRelationships" minOccurs="0"/>
  *         &lt;element name="maxItems" type="{http://www.w3.org/2001/XMLSchema}integer" minOccurs="0"/>
  *         &lt;element name="skipCount" type="{http://www.w3.org/2001/XMLSchema}integer" minOccurs="0"/>
  *       &lt;/sequence>
@@ -59,21 +59,21 @@ public class GetRelationships {
     protected String repositoryId;
     @XmlElement(required = true)
     protected String objectId;
-    @XmlElementRef(name = "direction", namespace = "http://www.cmis.org/2008/05", type = JAXBElement.class)
+    @XmlElementRef(name = "direction", namespace = "http://docs.oasis-open.org/ns/cmis/messaging/200901", type = JAXBElement.class)
     protected JAXBElement<EnumRelationshipDirection> direction;
-    @XmlElementRef(name = "typeId", namespace = "http://www.cmis.org/2008/05", type = JAXBElement.class)
+    @XmlElementRef(name = "typeId", namespace = "http://docs.oasis-open.org/ns/cmis/messaging/200901", type = JAXBElement.class)
     protected JAXBElement<String> typeId;
-    @XmlElementRef(name = "includeSubRelationshipTypes", namespace = "http://www.cmis.org/2008/05", type = JAXBElement.class)
+    @XmlElementRef(name = "includeSubRelationshipTypes", namespace = "http://docs.oasis-open.org/ns/cmis/messaging/200901", type = JAXBElement.class)
     protected JAXBElement<Boolean> includeSubRelationshipTypes;
-    @XmlElementRef(name = "filter", namespace = "http://www.cmis.org/2008/05", type = JAXBElement.class)
+    @XmlElementRef(name = "filter", namespace = "http://docs.oasis-open.org/ns/cmis/messaging/200901", type = JAXBElement.class)
     protected JAXBElement<String> filter;
-    @XmlElementRef(name = "includeAllowableActions", namespace = "http://www.cmis.org/2008/05", type = JAXBElement.class)
+    @XmlElementRef(name = "includeAllowableActions", namespace = "http://docs.oasis-open.org/ns/cmis/messaging/200901", type = JAXBElement.class)
     protected JAXBElement<Boolean> includeAllowableActions;
-    @XmlElementRef(name = "includeRelationships", namespace = "http://www.cmis.org/2008/05", type = JAXBElement.class)
-    protected JAXBElement<Boolean> includeRelationships;
-    @XmlElementRef(name = "maxItems", namespace = "http://www.cmis.org/2008/05", type = JAXBElement.class)
+    @XmlElementRef(name = "includeRelationships", namespace = "http://docs.oasis-open.org/ns/cmis/messaging/200901", type = JAXBElement.class)
+    protected JAXBElement<EnumIncludeRelationships> includeRelationships;
+    @XmlElementRef(name = "maxItems", namespace = "http://docs.oasis-open.org/ns/cmis/messaging/200901", type = JAXBElement.class)
     protected JAXBElement<BigInteger> maxItems;
-    @XmlElementRef(name = "skipCount", namespace = "http://www.cmis.org/2008/05", type = JAXBElement.class)
+    @XmlElementRef(name = "skipCount", namespace = "http://docs.oasis-open.org/ns/cmis/messaging/200901", type = JAXBElement.class)
     protected JAXBElement<BigInteger> skipCount;
 
     /**
@@ -249,10 +249,10 @@ public class GetRelationships {
      * 
      * @return
      *     possible object is
-     *     {@link JAXBElement }{@code <}{@link Boolean }{@code >}
+     *     {@link JAXBElement }{@code <}{@link EnumIncludeRelationships }{@code >}
      *     
      */
-    public JAXBElement<Boolean> getIncludeRelationships() {
+    public JAXBElement<EnumIncludeRelationships> getIncludeRelationships() {
         return includeRelationships;
     }
 
@@ -261,11 +261,11 @@ public class GetRelationships {
      * 
      * @param value
      *     allowed object is
-     *     {@link JAXBElement }{@code <}{@link Boolean }{@code >}
+     *     {@link JAXBElement }{@code <}{@link EnumIncludeRelationships }{@code >}
      *     
      */
-    public void setIncludeRelationships(JAXBElement<Boolean> value) {
-        this.includeRelationships = ((JAXBElement<Boolean> ) value);
+    public void setIncludeRelationships(JAXBElement<EnumIncludeRelationships> value) {
+        this.includeRelationships = ((JAXBElement<EnumIncludeRelationships> ) value);
     }
 
     /**

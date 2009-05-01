@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2008 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -67,7 +67,7 @@ import org.alfresco.service.descriptor.DescriptorService;
 
 /**
  * Base class for all CMIS web services
- *
+ * 
  * @author Michael Shavnev
  * @author Dmitry Lazurkin
  * @author Dmitry Velichkevich
@@ -76,6 +76,9 @@ public class DMAbstractServicePort
 {
     private static final String BASE_TYPE_PROPERTY_NAME = "BaseType";
     protected static final String INITIAL_VERSION_DESCRIPTION = "Initial version";
+
+    private static final String INVALID_REPOSITORY_ID_MESSAGE = "Invalid repository id";
+    private static final String INVALID_FOLDER_OBJECT_ID_MESSAGE = "OID for non-existent object or not folder object";
 
     private DatatypeFactory _datatypeFactory;
     private Paging paging = new Paging();
@@ -92,7 +95,6 @@ public class DMAbstractServicePort
     protected SearchService searchService;
     protected CmisObjectsUtils cmisObjectsUtils;
 
-    
     public void setCmisService(CMISServices cmisService)
     {
         this.cmisService = cmisService;
@@ -143,13 +145,13 @@ public class DMAbstractServicePort
     {
         this.searchService = searchService;
     }
-    
-    protected static PropertyFilter createPropertyFilter(String filter) throws FilterNotValidException
+
+    protected PropertyFilter createPropertyFilter(String filter) throws CmisException
     {
-        return (filter == null) ? (new PropertyFilter()) : (new PropertyFilter(filter));
+        return (filter == null) ? (new PropertyFilter()) : (new PropertyFilter(filter, cmisObjectsUtils));
     }
 
-    protected static PropertyFilter createPropertyFilter(JAXBElement<String> element) throws FilterNotValidException
+    protected PropertyFilter createPropertyFilter(JAXBElement<String> element) throws CmisException
     {
         String filter = null;
         if (element != null)
@@ -167,7 +169,7 @@ public class DMAbstractServicePort
 
     /**
      * Converts Date object to XMLGregorianCalendar object
-     *
+     * 
      * @param date Date object
      * @return XMLGregorianCalendar object
      */
@@ -200,10 +202,9 @@ public class DMAbstractServicePort
      * @param filter properties filter value for filtering objects returning properties
      * @param sourceList the list that contains all returning Node References
      * @param resultList the list of <b>CmisObjectType</b> values for end response result collecting
-     * @throws InvalidArgumentException
-     * @throws FilterNotValidException
+     * @throws CmisException
      */
-    protected void createCmisObjectList(PropertyFilter filter, List<NodeRef> sourceList, List<CmisObjectType> resultList) throws InvalidArgumentException, FilterNotValidException
+    protected void createCmisObjectList(PropertyFilter filter, List<NodeRef> sourceList, List<CmisObjectType> resultList) throws CmisException
     {
         for (NodeRef objectNodeRef : sourceList)
         {
@@ -227,15 +228,15 @@ public class DMAbstractServicePort
 
     /**
      * Asserts "Folder with folderNodeRef exists"
-     *
+     * 
      * @param folderNodeRef node reference
      * @throws FolderNotValidException folderNodeRef doesn't exist or folderNodeRef isn't for folder object
      */
-    protected void assertExistFolder(NodeRef folderNodeRef) throws FolderNotValidException
+    protected void assertExistFolder(NodeRef folderNodeRef) throws CmisException
     {
         if (!this.cmisObjectsUtils.isFolder(folderNodeRef))
         {
-            throw new FolderNotValidException("OID for non-existent object or not folder object");
+            throw new CmisException(INVALID_FOLDER_OBJECT_ID_MESSAGE, cmisObjectsUtils.createCmisException(INVALID_FOLDER_OBJECT_ID_MESSAGE, EnumServiceException.INVALID_ARGUMENT));
         }
     }
 
@@ -243,19 +244,19 @@ public class DMAbstractServicePort
      * Checks specified in CMIS request parameters repository Id.
      * 
      * @param repositoryId repository id
-     * @throws InvalidArgumentException repository diesn't exist
+     * @throws CmisException repository diesn't exist
      */
-    protected void checkRepositoryId(String repositoryId) throws InvalidArgumentException
+    protected void checkRepositoryId(String repositoryId) throws CmisException
     {
         if (!this.descriptorService.getCurrentRepositoryDescriptor().getId().equals(repositoryId))
         {
-            throw new InvalidArgumentException("Invalid repository id");
+            throw cmisObjectsUtils.createCmisException(INVALID_REPOSITORY_ID_MESSAGE, EnumServiceException.INVALID_ARGUMENT);
         }
     }
 
     /**
      * Get CMIS properties for object
-     *
+     * 
      * @param nodeRef node reference
      * @param filter property filter
      * @return properties
@@ -352,7 +353,8 @@ public class DMAbstractServicePort
         result.put(VersionModel.PROP_VERSION_TYPE, versionType);
         return result;
     }
-    
+
+    @SuppressWarnings("unchecked")
     protected void addBooleanProperty(CmisPropertiesType properties, PropertyFilter filter, String name, Map<String, Serializable> alfrescoProperties)
     {
         Serializable value = alfrescoProperties.get(name);
@@ -360,26 +362,25 @@ public class DMAbstractServicePort
         {
             if (value instanceof Collection)
             {
-                long index = 0;
-                for (Object multiValue : (Collection)value)
+                for (Object multiValue : (Collection) value)
                 {
-                    CmisPropertyBoolean propBoolean = new CmisPropertyBoolean ();
-                    propBoolean.setIndex(BigInteger.valueOf(index++));
+                    CmisPropertyBoolean propBoolean = new CmisPropertyBoolean();
                     propBoolean.setName(PropertyUtil.getCMISPropertyName(name));
-                    propBoolean.setValue((Boolean) multiValue);
+                    propBoolean.getValue().add((Boolean) multiValue);
                     properties.getProperty().add(propBoolean);
                 }
             }
             else
             {
-                CmisPropertyBoolean propBoolean = new CmisPropertyBoolean ();
+                CmisPropertyBoolean propBoolean = new CmisPropertyBoolean();
                 propBoolean.setName(PropertyUtil.getCMISPropertyName(name));
-                propBoolean.setValue((Boolean) value);
+                propBoolean.getValue().add((Boolean) value);
                 properties.getProperty().add(propBoolean);
             }
         }
     }
 
+    @SuppressWarnings("unchecked")
     protected void addDateTimeProperty(CmisPropertiesType properties, PropertyFilter filter, String name, Map<String, Serializable> alfrescoProperties)
     {
         Serializable value = alfrescoProperties.get(name);
@@ -387,13 +388,11 @@ public class DMAbstractServicePort
         {
             if (value instanceof Collection)
             {
-                long index = 0;
-                for (Object multiValue : (Collection)value)
+                for (Object multiValue : (Collection) value)
                 {
                     CmisPropertyDateTime propDateTime = new CmisPropertyDateTime();
-                    propDateTime.setIndex(BigInteger.valueOf(index++));
                     propDateTime.setName(PropertyUtil.getCMISPropertyName(name));
-                    propDateTime.setValue(convert((Date) multiValue));
+                    propDateTime.getValue().add(convert((Date) multiValue));
                     properties.getProperty().add(propDateTime);
                 }
             }
@@ -401,12 +400,13 @@ public class DMAbstractServicePort
             {
                 CmisPropertyDateTime propDateTime = new CmisPropertyDateTime();
                 propDateTime.setName(PropertyUtil.getCMISPropertyName(name));
-                propDateTime.setValue(convert((Date) value));
+                propDateTime.getValue().add(convert((Date) value));
                 properties.getProperty().add(propDateTime);
             }
         }
     }
 
+    @SuppressWarnings("unchecked")
     protected void addIDProperty(CmisPropertiesType properties, PropertyFilter filter, String name, Map<String, Serializable> alfrescoProperties)
     {
         Serializable value = alfrescoProperties.get(name);
@@ -414,13 +414,11 @@ public class DMAbstractServicePort
         {
             if (value instanceof Collection)
             {
-                long index = 0;
-                for (Object multiValue : (Collection)value)
+                for (Object multiValue : (Collection) value)
                 {
                     CmisPropertyId propID = new CmisPropertyId();
-                    propID.setIndex(BigInteger.valueOf(index++));
                     propID.setName(PropertyUtil.getCMISPropertyName(name));
-                    propID.setValue(multiValue.toString());
+                    propID.getValue().add(multiValue.toString());
                     properties.getProperty().add(propID);
                 }
             }
@@ -428,12 +426,13 @@ public class DMAbstractServicePort
             {
                 CmisPropertyId propID = new CmisPropertyId();
                 propID.setName(PropertyUtil.getCMISPropertyName(name));
-                propID.setValue(value.toString());
+                propID.getValue().add(value.toString());
                 properties.getProperty().add(propID);
             }
         }
     }
 
+    @SuppressWarnings("unchecked")
     protected void addIntegerProperty(CmisPropertiesType properties, PropertyFilter filter, String name, Map<String, Serializable> alfrescoProperties)
     {
         Serializable value = alfrescoProperties.get(name);
@@ -441,13 +440,11 @@ public class DMAbstractServicePort
         {
             if (value instanceof Collection)
             {
-                long index = 0;
-                for (Object multiValue : (Collection)value)
+                for (Object multiValue : (Collection) value)
                 {
                     CmisPropertyInteger propInteger = new CmisPropertyInteger();
-                    propInteger.setIndex(BigInteger.valueOf(index++));
                     propInteger.setName(PropertyUtil.getCMISPropertyName(name));
-                    propInteger.setValue(BigInteger.valueOf((Long) multiValue));
+                    propInteger.getValue().add(BigInteger.valueOf((Long) multiValue));
                     properties.getProperty().add(propInteger);
                 }
             }
@@ -455,12 +452,13 @@ public class DMAbstractServicePort
             {
                 CmisPropertyInteger propInteger = new CmisPropertyInteger();
                 propInteger.setName(PropertyUtil.getCMISPropertyName(name));
-                propInteger.setValue(BigInteger.valueOf((Long) value));
+                propInteger.getValue().add(BigInteger.valueOf((Long) value));
                 properties.getProperty().add(propInteger);
             }
         }
     }
 
+    @SuppressWarnings("unchecked")
     protected void addDecimalProperty(CmisPropertiesType properties, PropertyFilter filter, String name, Map<String, Serializable> alfrescoProperties)
     {
         Serializable value = alfrescoProperties.get(name);
@@ -468,13 +466,11 @@ public class DMAbstractServicePort
         {
             if (value instanceof Collection)
             {
-                long index = 0;
-                for (Object multiValue : (Collection)value)
+                for (Object multiValue : (Collection) value)
                 {
                     CmisPropertyDecimal propDecimal = new CmisPropertyDecimal();
-                    propDecimal.setIndex(BigInteger.valueOf(index++));
                     propDecimal.setName(PropertyUtil.getCMISPropertyName(name));
-                    propDecimal.setValue(BigDecimal.valueOf((Long) multiValue));
+                    propDecimal.getValue().add(BigDecimal.valueOf((Long) multiValue));
                     properties.getProperty().add(propDecimal);
                 }
             }
@@ -482,12 +478,13 @@ public class DMAbstractServicePort
             {
                 CmisPropertyDecimal propDecimal = new CmisPropertyDecimal();
                 propDecimal.setName(PropertyUtil.getCMISPropertyName(name));
-                propDecimal.setValue(BigDecimal.valueOf((Long) value));
+                propDecimal.getValue().add(BigDecimal.valueOf((Long) value));
                 properties.getProperty().add(propDecimal);
             }
         }
     }
 
+    @SuppressWarnings("unchecked")
     protected void addStringProperty(CmisPropertiesType properties, PropertyFilter filter, String name, Map<String, Serializable> alfrescoProperties)
     {
         Serializable value = alfrescoProperties.get(name);
@@ -495,13 +492,11 @@ public class DMAbstractServicePort
         {
             if (value instanceof Collection)
             {
-                long index = 0;
-                for (Object multiValue : (Collection)value)
+                for (Object multiValue : (Collection) value)
                 {
                     CmisPropertyString propString = new CmisPropertyString();
-                    propString.setIndex(BigInteger.valueOf(index++));
                     propString.setName(PropertyUtil.getCMISPropertyName(name));
-                    propString.setValue(multiValue.toString());
+                    propString.getValue().add(multiValue.toString());
                     properties.getProperty().add(propString);
                 }
             }
@@ -509,7 +504,7 @@ public class DMAbstractServicePort
             {
                 CmisPropertyString propString = new CmisPropertyString();
                 propString.setName(PropertyUtil.getCMISPropertyName(name));
-                propString.setValue(value.toString());
+                propString.getValue().add(value.toString());
                 properties.getProperty().add(propString);
             }
         }
@@ -521,11 +516,12 @@ public class DMAbstractServicePort
         {
             CmisPropertyString propString = new CmisPropertyString();
             propString.setName(name);
-            propString.setValue(value);
+            propString.getValue().add(value);
             properties.getProperty().add(propString);
         }
     }
 
+    @SuppressWarnings("unchecked")
     protected void addURIProperty(CmisPropertiesType properties, PropertyFilter filter, String name, Map<String, Serializable> alfrescoProperties)
     {
         Serializable value = alfrescoProperties.get(name);
@@ -533,13 +529,11 @@ public class DMAbstractServicePort
         {
             if (value instanceof Collection)
             {
-                long index = 0;
-                for (Object multiValue : (Collection)value)
+                for (Object multiValue : (Collection) value)
                 {
                     CmisPropertyUri propString = new CmisPropertyUri();
-                    propString.setIndex(BigInteger.valueOf(index++));
                     propString.setName(PropertyUtil.getCMISPropertyName(name));
-                    propString.setValue(multiValue.toString());
+                    propString.getValue().add(multiValue.toString());
                     properties.getProperty().add(propString);
                 }
             }
@@ -547,12 +541,12 @@ public class DMAbstractServicePort
             {
                 CmisPropertyUri propString = new CmisPropertyUri();
                 propString.setName(PropertyUtil.getCMISPropertyName(name));
-                propString.setValue(value.toString());
+                propString.getValue().add(value.toString());
                 properties.getProperty().add(propString);
             }
         }
     }
-    
+
     /**
      * Sets all <i>properties</i>' fields for specified node
      * 
@@ -572,7 +566,7 @@ public class DMAbstractServicePort
 
     /**
      * Returns latest minor or major version of document
-     *
+     * 
      * @param documentNodeRef document node reference
      * @param major need latest major version
      * @return latest version node reference
@@ -590,23 +584,29 @@ public class DMAbstractServicePort
             {
                 Version latestVersion = versionService.getCurrentVersion(latestVersionNodeRef);
 
-                if (latestVersion.getVersionType().equals(VersionType.MAJOR) == false)
+                if ((latestVersion != null) && (VersionType.MAJOR != latestVersion.getVersionType()))
                 {
                     VersionHistory versionHistory = versionService.getVersionHistory(currentVersion.getVersionedNodeRef());
 
-                    do
+                    if (versionHistory != null)
                     {
-                        latestVersion = versionHistory.getPredecessor(latestVersion);
-                    } while (latestVersion.getVersionType().equals(VersionType.MAJOR) == false);
+                        do
+                        {
+                            latestVersion = versionHistory.getPredecessor(latestVersion);
+                        } while (latestVersion != null && (VersionType.MAJOR != latestVersion.getVersionType()));
+                    }
 
-                    latestVersionNodeRef = latestVersion.getFrozenStateNodeRef();
+                    if (latestVersion != null)
+                    {
+                        latestVersionNodeRef = latestVersion.getFrozenStateNodeRef();
+                    }
                 }
             }
         }
 
         return latestVersionNodeRef;
     }
-    
+
     protected NodeRef checkoutNode(NodeRef documentNodeReference)
     {
         if (!this.nodeService.hasAspect(documentNodeReference, ContentModel.ASPECT_VERSIONABLE))
@@ -616,7 +616,7 @@ public class DMAbstractServicePort
         return checkOutCheckInService.checkout(documentNodeReference);
     }
 
-    protected CMISTypeDefinition getCmisTypeDefinition(String typeId) throws InvalidArgumentException
+    protected CMISTypeDefinition getCmisTypeDefinition(String typeId) throws CmisException
     {
         try
         {
@@ -624,7 +624,7 @@ public class DMAbstractServicePort
         }
         catch (Exception e)
         {
-            throw new InvalidArgumentException("Invalid typeId " + typeId);
+            throw new CmisException(("Invalid typeId " + typeId), cmisObjectsUtils.createCmisException(("Invalid typeId " + typeId), EnumServiceException.INVALID_ARGUMENT));
         }
     }
 

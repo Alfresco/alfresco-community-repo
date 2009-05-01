@@ -1,7 +1,6 @@
 
 package org.alfresco.repo.cmis.ws;
 
-import java.math.BigInteger;
 import java.util.HashMap;
 import java.util.Map;
 import javax.xml.bind.annotation.XmlAccessType;
@@ -22,9 +21,8 @@ import javax.xml.namespace.QName;
  * &lt;complexType name="cmisProperty">
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;attGroup ref="{http://www.cmis.org/2008/05}cmisUndefinedAttribute"/>
- *       &lt;attribute ref="{http://www.cmis.org/2008/05}name use="required""/>
- *       &lt;attribute ref="{http://www.cmis.org/2008/05}index"/>
+ *       &lt;attGroup ref="{http://docs.oasis-open.org/ns/cmis/core/200901}cmisUndefinedAttribute"/>
+ *       &lt;attribute ref="{http://docs.oasis-open.org/ns/cmis/core/200901}name use="required""/>
  *     &lt;/restriction>
  *   &lt;/complexContent>
  * &lt;/complexType>
@@ -33,24 +31,22 @@ import javax.xml.namespace.QName;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "cmisProperty")
+@XmlType(name = "cmisProperty", namespace = "http://docs.oasis-open.org/ns/cmis/core/200901")
 @XmlSeeAlso({
-    CmisPropertyId.class,
-    CmisPropertyUri.class,
-    CmisPropertyDecimal.class,
-    CmisPropertyXml.class,
-    CmisPropertyString.class,
-    CmisPropertyDateTime.class,
     CmisPropertyHtml.class,
-    CmisPropertyInteger.class,
-    CmisPropertyBoolean.class
+    CmisPropertyDecimal.class,
+    CmisPropertyId.class,
+    CmisPropertyDateTime.class,
+    CmisPropertyXml.class,
+    CmisPropertyBoolean.class,
+    CmisPropertyUri.class,
+    CmisPropertyString.class,
+    CmisPropertyInteger.class
 })
 public class CmisProperty {
 
-    @XmlAttribute(namespace = "http://www.cmis.org/2008/05", required = true)
+    @XmlAttribute(namespace = "http://docs.oasis-open.org/ns/cmis/core/200901", required = true)
     protected String name;
-    @XmlAttribute(namespace = "http://www.cmis.org/2008/05")
-    protected BigInteger index;
     @XmlAnyAttribute
     private Map<QName, String> otherAttributes = new HashMap<QName, String>();
 
@@ -76,30 +72,6 @@ public class CmisProperty {
      */
     public void setName(String value) {
         this.name = value;
-    }
-
-    /**
-     * Gets the value of the index property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link BigInteger }
-     *     
-     */
-    public BigInteger getIndex() {
-        return index;
-    }
-
-    /**
-     * Sets the value of the index property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link BigInteger }
-     *     
-     */
-    public void setIndex(BigInteger value) {
-        this.index = value;
     }
 
     /**

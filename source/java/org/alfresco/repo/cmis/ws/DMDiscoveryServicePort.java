@@ -25,7 +25,11 @@
 package org.alfresco.repo.cmis.ws;
 
 import java.io.Serializable;
+import java.math.BigInteger;
+import java.util.List;
 import java.util.Map;
+
+import javax.xml.ws.Holder;
 
 import org.alfresco.cmis.CMISDataTypeEnum;
 import org.alfresco.cmis.CMISQueryOptions;
@@ -40,7 +44,7 @@ import org.alfresco.repo.cmis.PropertyFilter;
  * 
  * @author Dmitry Lazurkin
  */
-@javax.jws.WebService(name = "DiscoveryServicePort", serviceName = "DiscoveryService", portName = "DiscoveryServicePort", targetNamespace = "http://www.cmis.org/ns/1.0", endpointInterface = "org.alfresco.repo.cmis.ws.DiscoveryServicePort")
+@javax.jws.WebService(name = "DiscoveryServicePort", serviceName = "DiscoveryService", portName = "DiscoveryServicePort", targetNamespace = "http://docs.oasis-open.org/ns/cmis/ws/200901", endpointInterface = "org.alfresco.repo.cmis.ws.DiscoveryServicePort")
 public class DMDiscoveryServicePort extends DMAbstractServicePort implements DiscoveryServicePort
 {
 
@@ -49,18 +53,13 @@ public class DMDiscoveryServicePort extends DMAbstractServicePort implements Dis
      * part of query
      * 
      * @param parameters query parameters
-     * @return collection of CmisObjectType and boolean hasMoreItems
-     * @throws PermissionDeniedException
-     * @throws UpdateConflictException
-     * @throws OperationNotSupportedException
-     * @throws InvalidArgumentException
-     * @throws RuntimeException
-     * @throws ConstraintViolationException
+     * @throws CmisException (with following {@link EnumServiceException} : INVALID_ARGUMENT, OBJECT_NOT_FOUND, NOT_SUPPORTED, PERMISSION_DENIED, RUNTIME)
      */
-    public QueryResponse query(CmisQueryType parameters) throws PermissionDeniedException, UpdateConflictException, OperationNotSupportedException, InvalidArgumentException,
-            RuntimeException, ConstraintViolationException
+    public QueryResponse query(CmisQueryType parameters) throws CmisException
     {
-        // TODO: searchAllVersions, returnAllowableActions, includeRelationships
+        checkRepositoryId(parameters.getRepositoryId());
+
+        // TODO: searchAllVersions, returnAllowableActions
         CMISQueryOptions options = new CMISQueryOptions(parameters.getStatement(), cmisService.getDefaultRootStoreRef());
 
         if (parameters.getSkipCount() != null)
@@ -78,7 +77,7 @@ public class DMDiscoveryServicePort extends DMAbstractServicePort implements Dis
         CMISResultSetMetaData metaData = resultSet.getMetaData();
         CMISResultSetColumn[] columns = metaData.getColumns();
         PropertyFilter filter = new PropertyFilter();
-        
+
         // build query response
         QueryResponse response = new QueryResponse();
 
@@ -87,7 +86,7 @@ public class DMDiscoveryServicePort extends DMAbstractServicePort implements Dis
         {
             CmisPropertiesType properties = new CmisPropertiesType();
             Map<String, Serializable> values = row.getValues();
-            
+
             // for each column...
             for (CMISResultSetColumn column : columns)
             {
@@ -123,22 +122,27 @@ public class DMDiscoveryServicePort extends DMAbstractServicePort implements Dis
                 else if (type == CMISDataTypeEnum.XML)
                 {
                     // TODO:
-                    throw new UnsupportedOperationException();
+                    throw cmisObjectsUtils.createCmisException("", EnumServiceException.NOT_SUPPORTED);
                 }
                 else if (type == CMISDataTypeEnum.HTML)
                 {
                     // TODO:
-                    throw new UnsupportedOperationException();
+                    throw cmisObjectsUtils.createCmisException("", EnumServiceException.NOT_SUPPORTED);
                 }
             }
-            
+
             CmisObjectType object = new CmisObjectType();
             object.setProperties(properties);
             response.getObject().add(object);
         }
-        
+
         response.setHasMoreItems(resultSet.hasMore());
         return response;
     }
 
+    public void getContentChanges(String repositoryId, Holder<String> changeToken, BigInteger maxItems, Boolean includeACL, Boolean includeProperties, String filter,
+            Holder<List<CmisObjectType>> changedObject) throws CmisException
+    {
+        // TODO
+    }
 }

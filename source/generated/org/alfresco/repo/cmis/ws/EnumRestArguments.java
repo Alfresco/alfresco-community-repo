@@ -16,15 +16,19 @@ import javax.xml.bind.annotation.XmlType;
  *   &lt;restriction base="{http://www.w3.org/2001/XMLSchema}string">
  *     &lt;enumeration value="childTypes"/>
  *     &lt;enumeration value="continueOnFailure"/>
+ *     &lt;enumeration value="checkin"/>
+ *     &lt;enumeration value="checkinComment"/>
  *     &lt;enumeration value="depth"/>
  *     &lt;enumeration value="direction"/>
  *     &lt;enumeration value="filter"/>
  *     &lt;enumeration value="folderByPath"/>
+ *     &lt;enumeration value="folderId"/>
  *     &lt;enumeration value="includeAllowableActions"/>
  *     &lt;enumeration value="includePropertyDefinitions"/>
  *     &lt;enumeration value="includeRelationships"/>
  *     &lt;enumeration value="includeSubrelationshipTypes"/>
  *     &lt;enumeration value="length"/>
+ *     &lt;enumeration value="major"/>
  *     &lt;enumeration value="majorVersion"/>
  *     &lt;enumeration value="maxItems"/>
  *     &lt;enumeration value="offset"/>
@@ -44,7 +48,7 @@ import javax.xml.bind.annotation.XmlType;
  * </pre>
  * 
  */
-@XmlType(name = "enumRestArguments")
+@XmlType(name = "enumRestArguments", namespace = "http://docs.oasis-open.org/ns/cmis/core/200901")
 @XmlEnum
 public enum EnumRestArguments {
 
@@ -52,6 +56,10 @@ public enum EnumRestArguments {
     CHILD_TYPES("childTypes"),
     @XmlEnumValue("continueOnFailure")
     CONTINUE_ON_FAILURE("continueOnFailure"),
+    @XmlEnumValue("checkin")
+    CHECKIN("checkin"),
+    @XmlEnumValue("checkinComment")
+    CHECKIN_COMMENT("checkinComment"),
     @XmlEnumValue("depth")
     DEPTH("depth"),
     @XmlEnumValue("direction")
@@ -60,6 +68,8 @@ public enum EnumRestArguments {
     FILTER("filter"),
     @XmlEnumValue("folderByPath")
     FOLDER_BY_PATH("folderByPath"),
+    @XmlEnumValue("folderId")
+    FOLDER_ID("folderId"),
     @XmlEnumValue("includeAllowableActions")
     INCLUDE_ALLOWABLE_ACTIONS("includeAllowableActions"),
     @XmlEnumValue("includePropertyDefinitions")
@@ -70,6 +80,8 @@ public enum EnumRestArguments {
     INCLUDE_SUBRELATIONSHIP_TYPES("includeSubrelationshipTypes"),
     @XmlEnumValue("length")
     LENGTH("length"),
+    @XmlEnumValue("major")
+    MAJOR("major"),
     @XmlEnumValue("majorVersion")
     MAJOR_VERSION("majorVersion"),
     @XmlEnumValue("maxItems")

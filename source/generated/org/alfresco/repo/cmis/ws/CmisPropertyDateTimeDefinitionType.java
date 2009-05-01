@@ -16,9 +16,9 @@ import javax.xml.bind.annotation.XmlType;
  * <pre>
  * &lt;complexType name="cmisPropertyDateTimeDefinitionType">
  *   &lt;complexContent>
- *     &lt;extension base="{http://www.cmis.org/2008/05}cmisPropertyDefinitionType">
+ *     &lt;extension base="{http://docs.oasis-open.org/ns/cmis/core/200901}cmisPropertyDefinitionType">
  *       &lt;sequence>
- *         &lt;element name="defaultValue" type="{http://www.cmis.org/2008/05}cmisChoiceDateTimeType" maxOccurs="unbounded" minOccurs="0"/>
+ *         &lt;element name="defaultValue" type="{http://docs.oasis-open.org/ns/cmis/core/200901}cmisChoiceDateTimeType" maxOccurs="unbounded" minOccurs="0"/>
  *       &lt;/sequence>
  *     &lt;/extension>
  *   &lt;/complexContent>
@@ -28,7 +28,7 @@ import javax.xml.bind.annotation.XmlType;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "cmisPropertyDateTimeDefinitionType", propOrder = {
+@XmlType(name = "cmisPropertyDateTimeDefinitionType", namespace = "http://docs.oasis-open.org/ns/cmis/core/200901", propOrder = {
     "defaultValue"
 })
 public class CmisPropertyDateTimeDefinitionType

@@ -39,15 +39,9 @@ import javax.xml.namespace.QName;
 import javax.xml.ws.Service;
 
 import org.alfresco.repo.cmis.ws.CmisObjectType;
-import org.alfresco.repo.cmis.ws.CmisQueryType;
-import org.alfresco.repo.cmis.ws.CmisRepositoryEntryType;
 import org.alfresco.repo.cmis.ws.EnumTypesOfFileableObjects;
 import org.alfresco.repo.cmis.ws.GetChildren;
 import org.alfresco.repo.cmis.ws.GetChildrenResponse;
-import org.alfresco.repo.cmis.ws.GetFolderParent;
-import org.alfresco.repo.cmis.ws.GetRepositories;
-import org.alfresco.repo.cmis.ws.GetRepositoryInfo;
-import org.alfresco.repo.cmis.ws.GetTypes;
 import org.alfresco.repo.cmis.ws.NavigationServicePort;
 import org.alfresco.repo.cmis.ws.ObjectFactory;
 import org.alfresco.repo.cmis.ws.RepositoryServicePort;
@@ -68,12 +62,13 @@ import org.apache.ws.security.handler.WSHandlerConstants;
  */
 public class ExecutableServicesHelper
 {
-    private static final QName NAVIGATION_SERVICE_NAME = new QName("http://www.cmis.org/ns/1.0", "NavigationService");
-    private static final QName REPOSITORY_SERVICE_NAME = new QName("http://www.cmis.org/ns/1.0", "RepositoryService");
+    private static final QName NAVIGATION_SERVICE_NAME = new QName("http://docs.oasis-open.org/ns/cmis/ws/200901", "NavigationService");
+    private static final QName REPOSITORY_SERVICE_NAME = new QName("http://docs.oasis-open.org/ns/cmis/ws/200901", "RepositoryService");
 
     private static final String NAVIGATION_SERVER_URL_POSTFIX = "/alfresco/cmis/NavigationService?wsdl";
     private static final String REPOSITORY_SERVER_URL_POSTFIX = "/alfresco/cmis/RepositoryService?wsdl";
 
+    @SuppressWarnings("unused")
     private static final Log LOGGER = LogFactory.getLog(ExecutableServicesHelper.class);
 
     private String username;
@@ -164,10 +159,7 @@ public class ExecutableServicesHelper
      */
     public String receiveCompanyHomeObjectId(RepositoryServicePort servicesPort) throws Exception
     {
-        GetRepositoryInfo parameteers = new GetRepositoryInfo();
-        parameteers.setRepositoryId(servicesPort.getRepositories().get(0).getRepositoryID());
-
-        return servicesPort.getRepositoryInfo(parameteers).getRootFolderId();
+        return servicesPort.getRepositoryInfo(servicesPort.getRepositories().get(0).getRepositoryId()).getRootFolderId();
     }
 
     /**
@@ -191,7 +183,7 @@ public class ExecutableServicesHelper
         RepositoryServicePort authorizedRepositoryServicePort = receiveAuthorizedRepositoryServicePort();
 
         GetChildren requestParameters = objectFactory.createGetChildren();
-        requestParameters.setRepositoryId(authorizedRepositoryServicePort.getRepositories().get(0).getRepositoryID());
+        requestParameters.setRepositoryId(authorizedRepositoryServicePort.getRepositories().get(0).getRepositoryId());
         requestParameters.setFilter(objectFactory.createGetChildrenFilter("*"));
         requestParameters.setMaxItems(objectFactory.createGetChildrenMaxItems(BigInteger.valueOf(Long.MAX_VALUE)));
         requestParameters.setFolderId(receiveCompanyHomeObjectId(authorizedRepositoryServicePort));
@@ -214,7 +206,7 @@ public class ExecutableServicesHelper
         Map<String, Object> outInterceptorProperties = new HashMap<String, Object>();
         outInterceptorProperties.put(WSHandlerConstants.ACTION, WSHandlerConstants.USERNAME_TOKEN + " " + WSHandlerConstants.TIMESTAMP);
         outInterceptorProperties.put(WSHandlerConstants.USER, username);
-        outInterceptorProperties.put(WSHandlerConstants.PASSWORD_TYPE, WSConstants.PW_DIGEST);
+        outInterceptorProperties.put(WSHandlerConstants.PASSWORD_TYPE, WSConstants.PW_TEXT);
 
         outInterceptorProperties.put(WSHandlerConstants.PW_CALLBACK_REF, new CallbackHandler()
         {

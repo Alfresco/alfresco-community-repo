@@ -3,10 +3,8 @@ package org.alfresco.repo.cmis.ws;
 
 import java.util.ArrayList;
 import java.util.List;
-import javax.xml.bind.JAXBElement;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlElementRef;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
@@ -21,7 +19,7 @@ import javax.xml.bind.annotation.XmlType;
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
- *         &lt;element ref="{http://www.cmis.org/2008/05}type" maxOccurs="unbounded" minOccurs="0"/>
+ *         &lt;element name="type" type="{http://docs.oasis-open.org/ns/cmis/core/200901}cmisTypeDefinitionType" maxOccurs="unbounded" minOccurs="0"/>
  *         &lt;element name="hasMoreItems" type="{http://www.w3.org/2001/XMLSchema}boolean"/>
  *       &lt;/sequence>
  *     &lt;/restriction>
@@ -39,8 +37,7 @@ import javax.xml.bind.annotation.XmlType;
 @XmlRootElement(name = "getTypesResponse")
 public class GetTypesResponse {
 
-    @XmlElementRef(name = "type", namespace = "http://www.cmis.org/2008/05", type = JAXBElement.class)
-    protected List<JAXBElement<? extends CmisTypeDefinitionType>> type;
+    protected List<CmisTypeDefinitionType> type;
     protected boolean hasMoreItems;
 
     /**
@@ -61,17 +58,13 @@ public class GetTypesResponse {
      * 
      * <p>
      * Objects of the following type(s) are allowed in the list
-     * {@link JAXBElement }{@code <}{@link CmisTypeFolderDefinitionType }{@code >}
-     * {@link JAXBElement }{@code <}{@link CmisTypePolicyDefinitionType }{@code >}
-     * {@link JAXBElement }{@code <}{@link CmisTypeDocumentDefinitionType }{@code >}
-     * {@link JAXBElement }{@code <}{@link CmisTypeRelationshipDefinitionType }{@code >}
-     * {@link JAXBElement }{@code <}{@link CmisTypeDefinitionType }{@code >}
+     * {@link CmisTypeDefinitionType }
      * 
      * 
      */
-    public List<JAXBElement<? extends CmisTypeDefinitionType>> getType() {
+    public List<CmisTypeDefinitionType> getType() {
         if (type == null) {
-            type = new ArrayList<JAXBElement<? extends CmisTypeDefinitionType>>();
+            type = new ArrayList<CmisTypeDefinitionType>();
         }
         return this.type;
     }

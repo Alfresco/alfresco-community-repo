@@ -23,7 +23,7 @@ import javax.xml.bind.annotation.XmlType;
  *         &lt;element name="repositoryId" type="{http://www.w3.org/2001/XMLSchema}string"/>
  *         &lt;element name="documentId" type="{http://www.w3.org/2001/XMLSchema}string"/>
  *         &lt;element name="overwriteFlag" type="{http://www.w3.org/2001/XMLSchema}boolean" minOccurs="0"/>
- *         &lt;element name="contentStream" type="{http://www.cmis.org/2008/05}cmisContentStreamType"/>
+ *         &lt;element name="contentStream" type="{http://docs.oasis-open.org/ns/cmis/core/200901}cmisContentStreamType"/>
  *       &lt;/sequence>
  *     &lt;/restriction>
  *   &lt;/complexContent>
@@ -46,7 +46,7 @@ public class SetContentStream {
     protected String repositoryId;
     @XmlElement(required = true)
     protected String documentId;
-    @XmlElementRef(name = "overwriteFlag", namespace = "http://www.cmis.org/2008/05", type = JAXBElement.class)
+    @XmlElementRef(name = "overwriteFlag", namespace = "http://docs.oasis-open.org/ns/cmis/messaging/200901", type = JAXBElement.class)
     protected JAXBElement<Boolean> overwriteFlag;
     @XmlElement(required = true)
     protected CmisContentStreamType contentStream;

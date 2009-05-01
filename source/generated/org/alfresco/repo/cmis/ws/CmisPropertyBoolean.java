@@ -1,9 +1,11 @@
 
 package org.alfresco.repo.cmis.ws;
 
+import java.util.ArrayList;
+import java.util.List;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 
 
@@ -15,11 +17,10 @@ import javax.xml.bind.annotation.XmlType;
  * <pre>
  * &lt;complexType name="cmisPropertyBoolean">
  *   &lt;complexContent>
- *     &lt;extension base="{http://www.cmis.org/2008/05}cmisProperty">
+ *     &lt;extension base="{http://docs.oasis-open.org/ns/cmis/core/200901}cmisProperty">
  *       &lt;sequence>
- *         &lt;element name="value" type="{http://www.w3.org/2001/XMLSchema}boolean" minOccurs="0"/>
+ *         &lt;element name="value" type="{http://www.w3.org/2001/XMLSchema}boolean" maxOccurs="unbounded" minOccurs="0"/>
  *       &lt;/sequence>
- *       &lt;attribute ref="{http://www.cmis.org/2008/05}propertyType default="boolean""/>
  *     &lt;/extension>
  *   &lt;/complexContent>
  * &lt;/complexType>
@@ -28,67 +29,43 @@ import javax.xml.bind.annotation.XmlType;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "cmisPropertyBoolean", propOrder = {
+@XmlType(name = "cmisPropertyBoolean", namespace = "http://docs.oasis-open.org/ns/cmis/core/200901", propOrder = {
     "value"
 })
 public class CmisPropertyBoolean
     extends CmisProperty
 {
 
-    protected Boolean value;
-    @XmlAttribute(namespace = "http://www.cmis.org/2008/05")
-    protected EnumPropertyType propertyType;
+    @XmlElement(type = Boolean.class)
+    protected List<Boolean> value;
 
     /**
      * Gets the value of the value property.
      * 
-     * @return
-     *     possible object is
-     *     {@link Boolean }
-     *     
-     */
-    public Boolean isValue() {
-        return value;
-    }
-
-    /**
-     * Sets the value of the value property.
+     * <p>
+     * This accessor method returns a reference to the live list,
+     * not a snapshot. Therefore any modification you make to the
+     * returned list will be present inside the JAXB object.
+     * This is why there is not a <CODE>set</CODE> method for the value property.
      * 
-     * @param value
-     *     allowed object is
-     *     {@link Boolean }
-     *     
-     */
-    public void setValue(Boolean value) {
-        this.value = value;
-    }
-
-    /**
-     * Gets the value of the propertyType property.
+     * <p>
+     * For example, to add a new item, do as follows:
+     * <pre>
+     *    getValue().add(newItem);
+     * </pre>
      * 
-     * @return
-     *     possible object is
-     *     {@link EnumPropertyType }
-     *     
+     * 
+     * <p>
+     * Objects of the following type(s) are allowed in the list
+     * {@link Boolean }
+     * 
+     * 
      */
-    public EnumPropertyType getPropertyType() {
-        if (propertyType == null) {
-            return EnumPropertyType.BOOLEAN;
-        } else {
-            return propertyType;
+    public List<Boolean> getValue() {
+        if (value == null) {
+            value = new ArrayList<Boolean>();
         }
-    }
-
-    /**
-     * Sets the value of the propertyType property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link EnumPropertyType }
-     *     
-     */
-    public void setPropertyType(EnumPropertyType value) {
-        this.propertyType = value;
+        return this.value;
     }
 
 }

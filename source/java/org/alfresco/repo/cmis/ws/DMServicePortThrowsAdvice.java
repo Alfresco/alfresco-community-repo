@@ -24,6 +24,7 @@
  */
 package org.alfresco.repo.cmis.ws;
 
+import org.alfresco.repo.cmis.ws.utils.CmisObjectsUtils;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -37,27 +38,49 @@ import org.springframework.aop.ThrowsAdvice;
  */
 public class DMServicePortThrowsAdvice implements ThrowsAdvice
 {
-    private static final Log log = LogFactory.getLog("org.alfresco.repo.cmis.ws");
+    private static final Log LOGGER = LogFactory.getLog("org.alfresco.repo.cmis.ws");
 
-    public void afterThrowing(AccessDeniedException e)
-        throws PermissionDeniedException
+    private CmisObjectsUtils cmisObjectsUtils;
+
+    public void setCmisObjectsUtils(CmisObjectsUtils cmisObjectsUtils)
     {
-        if (log.isInfoEnabled())
-        {
-            log.info(e);
-        }
-
-        throw new PermissionDeniedException("Access denied. Message: " + e.getMessage(), e);
+        this.cmisObjectsUtils = cmisObjectsUtils;
     }
 
-    public void afterThrowing(java.lang.RuntimeException e)
-        throws RuntimeException
+    public void afterThrowing(AccessDeniedException e) throws CmisException
     {
-        if (log.isErrorEnabled())
+        if (LOGGER.isInfoEnabled())
         {
-            log.error(e);
+            LOGGER.error(e.toString(), e);
         }
 
-        throw new RuntimeException("Runtime error. Message: " + e.getMessage(), e);
+        throw cmisObjectsUtils.createCmisException(("Access denied. Message: " + e.toString()), e);
+    }
+
+    public void afterThrowing(java.lang.RuntimeException e) throws CmisException
+    {
+        if (LOGGER.isErrorEnabled())
+        {
+            LOGGER.error(e.toString(), e);
+        }
+
+        throw cmisObjectsUtils.createCmisException(("Runtime error. Message: " + e.toString()), e);
+    }
+
+    public void afterThrowing(java.lang.Exception e) throws CmisException
+    {
+        if (LOGGER.isInfoEnabled())
+        {
+            LOGGER.error(e.toString(), e);
+        }
+
+        if (!(e instanceof CmisException))
+        {
+            throw cmisObjectsUtils.createCmisException(("Some error occured during last service invokation. Message: " + e.toString()), e);
+        }
+        else
+        {
+            throw (CmisException) e;
+        }
     }
 }

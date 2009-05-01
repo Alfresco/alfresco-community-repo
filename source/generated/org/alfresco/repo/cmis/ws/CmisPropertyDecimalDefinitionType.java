@@ -17,10 +17,10 @@ import javax.xml.bind.annotation.XmlType;
  * <pre>
  * &lt;complexType name="cmisPropertyDecimalDefinitionType">
  *   &lt;complexContent>
- *     &lt;extension base="{http://www.cmis.org/2008/05}cmisPropertyDefinitionType">
+ *     &lt;extension base="{http://docs.oasis-open.org/ns/cmis/core/200901}cmisPropertyDefinitionType">
  *       &lt;sequence>
- *         &lt;element name="defaultValue" type="{http://www.cmis.org/2008/05}cmisChoiceDecimalType" maxOccurs="unbounded" minOccurs="0"/>
- *         &lt;element name="precision" type="{http://www.cmis.org/2008/05}enumDecimalPrecision" minOccurs="0"/>
+ *         &lt;element name="defaultValue" type="{http://docs.oasis-open.org/ns/cmis/core/200901}cmisChoiceDecimalType" maxOccurs="unbounded" minOccurs="0"/>
+ *         &lt;element name="precision" type="{http://docs.oasis-open.org/ns/cmis/core/200901}enumDecimalPrecision" minOccurs="0"/>
  *       &lt;/sequence>
  *     &lt;/extension>
  *   &lt;/complexContent>
@@ -30,7 +30,7 @@ import javax.xml.bind.annotation.XmlType;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "cmisPropertyDecimalDefinitionType", propOrder = {
+@XmlType(name = "cmisPropertyDecimalDefinitionType", namespace = "http://docs.oasis-open.org/ns/cmis/core/200901", propOrder = {
     "defaultValue",
     "precision"
 })

@@ -23,7 +23,7 @@ import javax.xml.bind.annotation.XmlType;
  *       &lt;sequence>
  *         &lt;element name="repositoryId" type="{http://www.w3.org/2001/XMLSchema}string"/>
  *         &lt;element name="typeId" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
- *         &lt;element name="returnPropertyDefinitions" type="{http://www.w3.org/2001/XMLSchema}boolean" minOccurs="0"/>
+ *         &lt;element name="includePropertyDefinitions" type="{http://www.w3.org/2001/XMLSchema}boolean" minOccurs="0"/>
  *         &lt;element name="maxItems" type="{http://www.w3.org/2001/XMLSchema}integer" minOccurs="0"/>
  *         &lt;element name="skipCount" type="{http://www.w3.org/2001/XMLSchema}integer" minOccurs="0"/>
  *       &lt;/sequence>
@@ -38,7 +38,7 @@ import javax.xml.bind.annotation.XmlType;
 @XmlType(name = "", propOrder = {
     "repositoryId",
     "typeId",
-    "returnPropertyDefinitions",
+    "includePropertyDefinitions",
     "maxItems",
     "skipCount"
 })
@@ -47,13 +47,13 @@ public class GetTypes {
 
     @XmlElement(required = true)
     protected String repositoryId;
-    @XmlElementRef(name = "typeId", namespace = "http://www.cmis.org/2008/05", type = JAXBElement.class)
+    @XmlElementRef(name = "typeId", namespace = "http://docs.oasis-open.org/ns/cmis/messaging/200901", type = JAXBElement.class)
     protected JAXBElement<String> typeId;
-    @XmlElementRef(name = "returnPropertyDefinitions", namespace = "http://www.cmis.org/2008/05", type = JAXBElement.class)
-    protected JAXBElement<Boolean> returnPropertyDefinitions;
-    @XmlElementRef(name = "maxItems", namespace = "http://www.cmis.org/2008/05", type = JAXBElement.class)
+    @XmlElementRef(name = "includePropertyDefinitions", namespace = "http://docs.oasis-open.org/ns/cmis/messaging/200901", type = JAXBElement.class)
+    protected JAXBElement<Boolean> includePropertyDefinitions;
+    @XmlElementRef(name = "maxItems", namespace = "http://docs.oasis-open.org/ns/cmis/messaging/200901", type = JAXBElement.class)
     protected JAXBElement<BigInteger> maxItems;
-    @XmlElementRef(name = "skipCount", namespace = "http://www.cmis.org/2008/05", type = JAXBElement.class)
+    @XmlElementRef(name = "skipCount", namespace = "http://docs.oasis-open.org/ns/cmis/messaging/200901", type = JAXBElement.class)
     protected JAXBElement<BigInteger> skipCount;
 
     /**
@@ -105,27 +105,27 @@ public class GetTypes {
     }
 
     /**
-     * Gets the value of the returnPropertyDefinitions property.
+     * Gets the value of the includePropertyDefinitions property.
      * 
      * @return
      *     possible object is
      *     {@link JAXBElement }{@code <}{@link Boolean }{@code >}
      *     
      */
-    public JAXBElement<Boolean> getReturnPropertyDefinitions() {
-        return returnPropertyDefinitions;
+    public JAXBElement<Boolean> getIncludePropertyDefinitions() {
+        return includePropertyDefinitions;
     }
 
     /**
-     * Sets the value of the returnPropertyDefinitions property.
+     * Sets the value of the includePropertyDefinitions property.
      * 
      * @param value
      *     allowed object is
      *     {@link JAXBElement }{@code <}{@link Boolean }{@code >}
      *     
      */
-    public void setReturnPropertyDefinitions(JAXBElement<Boolean> value) {
-        this.returnPropertyDefinitions = ((JAXBElement<Boolean> ) value);
+    public void setIncludePropertyDefinitions(JAXBElement<Boolean> value) {
+        this.includePropertyDefinitions = ((JAXBElement<Boolean> ) value);
     }
 
     /**

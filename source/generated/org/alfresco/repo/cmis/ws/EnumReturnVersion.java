@@ -22,7 +22,7 @@ import javax.xml.bind.annotation.XmlType;
  * </pre>
  * 
  */
-@XmlType(name = "enumReturnVersion")
+@XmlType(name = "enumReturnVersion", namespace = "http://docs.oasis-open.org/ns/cmis/core/200901")
 @XmlEnum
 public enum EnumReturnVersion {
 

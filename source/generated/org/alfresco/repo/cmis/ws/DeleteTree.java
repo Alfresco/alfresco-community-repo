@@ -22,7 +22,7 @@ import javax.xml.bind.annotation.XmlType;
  *       &lt;sequence>
  *         &lt;element name="repositoryId" type="{http://www.w3.org/2001/XMLSchema}string"/>
  *         &lt;element name="folderId" type="{http://www.w3.org/2001/XMLSchema}string"/>
- *         &lt;element name="unfileNonfolderObjects" type="{http://www.cmis.org/2008/05}enumUnfileNonfolderObjects"/>
+ *         &lt;element name="unfileNonfolderObjects" type="{http://docs.oasis-open.org/ns/cmis/core/200901}enumUnfileNonfolderObjects"/>
  *         &lt;element name="continueOnFailure" type="{http://www.w3.org/2001/XMLSchema}boolean" minOccurs="0"/>
  *       &lt;/sequence>
  *     &lt;/restriction>
@@ -48,7 +48,7 @@ public class DeleteTree {
     protected String folderId;
     @XmlElement(required = true)
     protected EnumUnfileNonfolderObjects unfileNonfolderObjects;
-    @XmlElementRef(name = "continueOnFailure", namespace = "http://www.cmis.org/2008/05", type = JAXBElement.class)
+    @XmlElementRef(name = "continueOnFailure", namespace = "http://docs.oasis-open.org/ns/cmis/messaging/200901", type = JAXBElement.class)
     protected JAXBElement<Boolean> continueOnFailure;
 
     /**

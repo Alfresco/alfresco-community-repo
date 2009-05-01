@@ -1,7 +1,6 @@
 
 package org.alfresco.repo.cmis.ws;
 
-import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -27,11 +26,10 @@ import javax.xml.namespace.QName;
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
- *         &lt;element ref="{http://www.cmis.org/2008/05}choice" maxOccurs="unbounded" minOccurs="0"/>
+ *         &lt;element ref="{http://docs.oasis-open.org/ns/cmis/core/200901}choice" maxOccurs="unbounded" minOccurs="0"/>
  *       &lt;/sequence>
- *       &lt;attGroup ref="{http://www.cmis.org/2008/05}cmisUndefinedAttribute"/>
- *       &lt;attribute ref="{http://www.cmis.org/2008/05}index"/>
- *       &lt;attribute ref="{http://www.cmis.org/2008/05}key"/>
+ *       &lt;attGroup ref="{http://docs.oasis-open.org/ns/cmis/core/200901}cmisUndefinedAttribute"/>
+ *       &lt;attribute ref="{http://docs.oasis-open.org/ns/cmis/core/200901}key"/>
  *     &lt;/restriction>
  *   &lt;/complexContent>
  * &lt;/complexType>
@@ -40,27 +38,25 @@ import javax.xml.namespace.QName;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "cmisChoiceType", propOrder = {
+@XmlType(name = "cmisChoiceType", namespace = "http://docs.oasis-open.org/ns/cmis/core/200901", propOrder = {
     "choice"
 })
 @XmlSeeAlso({
-    CmisChoiceDecimalType.class,
-    CmisChoiceXmlType.class,
     CmisChoiceDateTimeType.class,
     CmisChoiceStringType.class,
+    CmisChoiceDecimalType.class,
     CmisChoiceUriType.class,
     CmisChoiceIntegerType.class,
-    CmisChoiceHtmlType.class,
+    CmisChoiceXmlType.class,
+    CmisChoiceBooleanType.class,
     CmisChoiceIdType.class,
-    CmisChoiceBooleanType.class
+    CmisChoiceHtmlType.class
 })
 public abstract class CmisChoiceType {
 
-    @XmlElementRef(name = "choice", namespace = "http://www.cmis.org/2008/05", type = JAXBElement.class)
+    @XmlElementRef(name = "choice", namespace = "http://docs.oasis-open.org/ns/cmis/core/200901", type = JAXBElement.class)
     protected List<JAXBElement<? extends CmisChoiceType>> choice;
-    @XmlAttribute(namespace = "http://www.cmis.org/2008/05")
-    protected BigInteger index;
-    @XmlAttribute(namespace = "http://www.cmis.org/2008/05")
+    @XmlAttribute(namespace = "http://docs.oasis-open.org/ns/cmis/core/200901")
     protected String key;
     @XmlAnyAttribute
     private Map<QName, String> otherAttributes = new HashMap<QName, String>();
@@ -83,15 +79,15 @@ public abstract class CmisChoiceType {
      * 
      * <p>
      * Objects of the following type(s) are allowed in the list
-     * {@link JAXBElement }{@code <}{@link CmisChoiceDecimalType }{@code >}
+     * {@link JAXBElement }{@code <}{@link CmisChoiceUriType }{@code >}
+     * {@link JAXBElement }{@code <}{@link CmisChoiceIntegerType }{@code >}
+     * {@link JAXBElement }{@code <}{@link CmisChoiceXmlType }{@code >}
      * {@link JAXBElement }{@code <}{@link CmisChoiceHtmlType }{@code >}
      * {@link JAXBElement }{@code <}{@link CmisChoiceStringType }{@code >}
-     * {@link JAXBElement }{@code <}{@link CmisChoiceBooleanType }{@code >}
-     * {@link JAXBElement }{@code <}{@link CmisChoiceXmlType }{@code >}
-     * {@link JAXBElement }{@code <}{@link CmisChoiceIntegerType }{@code >}
      * {@link JAXBElement }{@code <}{@link CmisChoiceDateTimeType }{@code >}
      * {@link JAXBElement }{@code <}{@link CmisChoiceIdType }{@code >}
-     * {@link JAXBElement }{@code <}{@link CmisChoiceUriType }{@code >}
+     * {@link JAXBElement }{@code <}{@link CmisChoiceBooleanType }{@code >}
+     * {@link JAXBElement }{@code <}{@link CmisChoiceDecimalType }{@code >}
      * {@link JAXBElement }{@code <}{@link CmisChoiceType }{@code >}
      * 
      * 
@@ -101,30 +97,6 @@ public abstract class CmisChoiceType {
             choice = new ArrayList<JAXBElement<? extends CmisChoiceType>>();
         }
         return this.choice;
-    }
-
-    /**
-     * Gets the value of the index property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link BigInteger }
-     *     
-     */
-    public BigInteger getIndex() {
-        return index;
-    }
-
-    /**
-     * Sets the value of the index property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link BigInteger }
-     *     
-     */
-    public void setIndex(BigInteger value) {
-        this.index = value;
     }
 
     /**

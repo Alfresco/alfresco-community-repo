@@ -33,12 +33,12 @@ import org.w3c.dom.Element;
  *         &lt;element name="productName" type="{http://www.w3.org/2001/XMLSchema}string"/>
  *         &lt;element name="productVersion" type="{http://www.w3.org/2001/XMLSchema}string"/>
  *         &lt;element name="rootFolderId" type="{http://www.w3.org/2001/XMLSchema}string"/>
- *         &lt;element name="capabilities" type="{http://www.cmis.org/2008/05}cmisRepositoryCapabilitiesType"/>
- *         &lt;element name="cmisVersionsSupported" type="{http://www.w3.org/2001/XMLSchema}string"/>
- *         &lt;element name="repositorySpecificInformation" type="{http://www.cmis.org/2008/05}cmisAnyXml" minOccurs="0"/>
+ *         &lt;element name="capabilities" type="{http://docs.oasis-open.org/ns/cmis/core/200901}cmisRepositoryCapabilitiesType"/>
+ *         &lt;element name="cmisVersionSupported" type="{http://www.w3.org/2001/XMLSchema}string"/>
+ *         &lt;element name="repositorySpecificInformation" type="{http://docs.oasis-open.org/ns/cmis/core/200901}cmisAnyXml" minOccurs="0"/>
  *         &lt;any/>
  *       &lt;/sequence>
- *       &lt;attGroup ref="{http://www.cmis.org/2008/05}cmisUndefinedAttribute"/>
+ *       &lt;attGroup ref="{http://docs.oasis-open.org/ns/cmis/core/200901}cmisUndefinedAttribute"/>
  *     &lt;/restriction>
  *   &lt;/complexContent>
  * &lt;/complexType>
@@ -47,7 +47,7 @@ import org.w3c.dom.Element;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "cmisRepositoryInfoType", propOrder = {
+@XmlType(name = "cmisRepositoryInfoType", namespace = "http://docs.oasis-open.org/ns/cmis/core/200901", propOrder = {
     "repositoryId",
     "repositoryName",
     "repositoryRelationship",
@@ -57,7 +57,7 @@ import org.w3c.dom.Element;
     "productVersion",
     "rootFolderId",
     "capabilities",
-    "cmisVersionsSupported",
+    "cmisVersionSupported",
     "repositorySpecificInformation",
     "any"
 })
@@ -82,7 +82,7 @@ public class CmisRepositoryInfoType {
     @XmlElement(required = true)
     protected CmisRepositoryCapabilitiesType capabilities;
     @XmlElement(required = true)
-    protected String cmisVersionsSupported;
+    protected String cmisVersionSupported;
     protected CmisAnyXml repositorySpecificInformation;
     @XmlAnyElement(lax = true)
     protected List<Object> any;
@@ -306,27 +306,27 @@ public class CmisRepositoryInfoType {
     }
 
     /**
-     * Gets the value of the cmisVersionsSupported property.
+     * Gets the value of the cmisVersionSupported property.
      * 
      * @return
      *     possible object is
      *     {@link String }
      *     
      */
-    public String getCmisVersionsSupported() {
-        return cmisVersionsSupported;
+    public String getCmisVersionSupported() {
+        return cmisVersionSupported;
     }
 
     /**
-     * Sets the value of the cmisVersionsSupported property.
+     * Sets the value of the cmisVersionSupported property.
      * 
      * @param value
      *     allowed object is
      *     {@link String }
      *     
      */
-    public void setCmisVersionsSupported(String value) {
-        this.cmisVersionsSupported = value;
+    public void setCmisVersionSupported(String value) {
+        this.cmisVersionSupported = value;
     }
 
     /**
@@ -371,8 +371,8 @@ public class CmisRepositoryInfoType {
      * 
      * <p>
      * Objects of the following type(s) are allowed in the list
-     * {@link Element }
      * {@link Object }
+     * {@link Element }
      * 
      * 
      */

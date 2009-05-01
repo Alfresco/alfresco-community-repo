@@ -23,7 +23,7 @@ import javax.xml.bind.annotation.XmlType;
  * </pre>
  * 
  */
-@XmlType(name = "enumIncludeRelationships")
+@XmlType(name = "enumIncludeRelationships", namespace = "http://docs.oasis-open.org/ns/cmis/core/200901")
 @XmlEnum
 public enum EnumIncludeRelationships {
 

@@ -16,7 +16,7 @@ import javax.xml.bind.annotation.XmlType;
  * <pre>
  * &lt;complexType name="cmisTypeRelationshipDefinitionType">
  *   &lt;complexContent>
- *     &lt;extension base="{http://www.cmis.org/2008/05}cmisTypeDefinitionType">
+ *     &lt;extension base="{http://docs.oasis-open.org/ns/cmis/core/200901}cmisTypeDefinitionType">
  *       &lt;sequence>
  *         &lt;element name="allowedSourceTypes" type="{http://www.w3.org/2001/XMLSchema}string" maxOccurs="unbounded" minOccurs="0"/>
  *         &lt;element name="allowedTargetTypes" type="{http://www.w3.org/2001/XMLSchema}string" maxOccurs="unbounded" minOccurs="0"/>
@@ -29,7 +29,7 @@ import javax.xml.bind.annotation.XmlType;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "cmisTypeRelationshipDefinitionType", propOrder = {
+@XmlType(name = "cmisTypeRelationshipDefinitionType", namespace = "http://docs.oasis-open.org/ns/cmis/core/200901", propOrder = {
     "allowedSourceTypes",
     "allowedTargetTypes"
 })

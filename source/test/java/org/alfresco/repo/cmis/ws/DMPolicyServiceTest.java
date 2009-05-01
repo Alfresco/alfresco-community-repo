@@ -34,7 +34,7 @@ public class DMPolicyServiceTest extends AbstractServiceTest
 {
 
     public final static String SERVICE_WSDL_LOCATION = CmisServiceTestHelper.ALFRESCO_URL + "/cmis/PolicyService?wsdl";
-    public final static QName SERVICE_NAME = new QName("http://www.cmis.org/ns/1.0", "PolicyServicePort");
+    public final static QName SERVICE_NAME = new QName("http://docs.oasis-open.org/ns/cmis/ws/200901", "PolicyServicePort");
 
     public DMPolicyServiceTest()
     {
@@ -66,44 +66,44 @@ public class DMPolicyServiceTest extends AbstractServiceTest
 
     public void testApplyPolicy() throws Exception
     {
-        String documentId = helper.createDocument("Test cmis document (" + System.currentTimeMillis() + ")", companyHomeId);
-        assertNotNull(documentId);
-        ((PolicyServicePort) servicePort).applyPolicy(repositoryId, "policyId", documentId); // TODO policyId
-        helper.deleteDocument(documentId);
+        try
+        {
+            ((PolicyServicePort) servicePort).applyPolicy(repositoryId, "policyId", documentId);
+        }
+        catch (CmisException e)
+        {
+            assertTrue(e.getFaultInfo().getType().equals(EnumServiceException.NOT_SUPPORTED));
+        }
     }
 
     public void testGetAppliedPolicies() throws Exception
     {
-        String documentId = helper.createDocument("Test cmis document (" + System.currentTimeMillis() + ")", companyHomeId);
-        assertNotNull(documentId);
+        try
+        {
 
-        GetAppliedPolicies request = new GetAppliedPolicies();
-        request.setRepositoryId(repositoryId);
-        request.setObjectId(documentId);
-        request.setFilter(cmisObjectFactory.createGetAppliedPoliciesFilter("")); // TODO
-        GetAppliedPoliciesResponse response = ((PolicyServicePort) servicePort).getAppliedPolicies(request);
+            GetAppliedPolicies request = new GetAppliedPolicies();
+            request.setRepositoryId(repositoryId);
+            request.setObjectId(documentId);
+            request.setFilter(cmisObjectFactory.createGetAppliedPoliciesFilter(""));
+            @SuppressWarnings("unused")
+            GetAppliedPoliciesResponse response = ((PolicyServicePort) servicePort).getAppliedPolicies(request);
 
-        // TODO: Uncomment
-        // assertNotNull(response);
-        // assertNotNull(response.getObject());
-        // if (!response.getObject().isEmpty())
-        // {
-        // for (CmisObjectType object : response.getObject())
-        // {
-        // assertNotNull(object.getProperties());
-        //            }
-        //        }
-
-        helper.deleteDocument(documentId);
+        }
+        catch (CmisException e)
+        {
+            assertTrue(e.getFaultInfo().getType().equals(EnumServiceException.NOT_SUPPORTED));
+        }
     }
 
     public void testRemovePolicy() throws Exception
     {
-        String documentId = helper.createDocument("Test cmis document (" + System.currentTimeMillis() + ")", companyHomeId);
-        assertNotNull(documentId);
-
-        ((PolicyServicePort) servicePort).removePolicy(repositoryId, "policyId", documentId); // TODO policyId
-
-        helper.deleteDocument(documentId);
+        try
+        {
+            ((PolicyServicePort) servicePort).removePolicy(repositoryId, "policyId", documentId); // TODO policyId
+        }
+        catch (CmisException e)
+        {
+            assertTrue(e.getFaultInfo().getType().equals(EnumServiceException.NOT_SUPPORTED));
+        }
     }
 }

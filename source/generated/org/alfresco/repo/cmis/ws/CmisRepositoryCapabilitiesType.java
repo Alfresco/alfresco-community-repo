@@ -31,12 +31,15 @@ import org.w3c.dom.Element;
  *         &lt;element name="capabilityPWCUpdateable" type="{http://www.w3.org/2001/XMLSchema}boolean"/>
  *         &lt;element name="capabilityPWCSearchable" type="{http://www.w3.org/2001/XMLSchema}boolean"/>
  *         &lt;element name="capabilityAllVersionsSearchable" type="{http://www.w3.org/2001/XMLSchema}boolean"/>
- *         &lt;element name="capabilityQuery" type="{http://www.cmis.org/2008/05}enumCapabilityQuery"/>
- *         &lt;element name="capabilityJoin" type="{http://www.cmis.org/2008/05}enumCapabilityJoin"/>
- *         &lt;element name="capabilityFullText" type="{http://www.cmis.org/2008/05}enumCapabilityFullText"/>
+ *         &lt;element name="capabilityQuery" type="{http://docs.oasis-open.org/ns/cmis/core/200901}enumCapabilityQuery"/>
+ *         &lt;element name="capabilityJoin" type="{http://docs.oasis-open.org/ns/cmis/core/200901}enumCapabilityJoin"/>
+ *         &lt;element name="capabilityChanges" type="{http://docs.oasis-open.org/ns/cmis/core/200901}enumCapabilityChanges" maxOccurs="unbounded"/>
+ *         &lt;element name="changesIncomplete" type="{http://www.w3.org/2001/XMLSchema}boolean" minOccurs="0"/>
+ *         &lt;element name="capabilityACL" type="{http://docs.oasis-open.org/ns/cmis/core/200901}enumCapabilityACL"/>
+ *         &lt;element name="permissionsSupported" type="{http://docs.oasis-open.org/ns/cmis/core/200901}cmisPermissionSetType" maxOccurs="unbounded" minOccurs="0"/>
  *         &lt;any/>
  *       &lt;/sequence>
- *       &lt;attGroup ref="{http://www.cmis.org/2008/05}cmisUndefinedAttribute"/>
+ *       &lt;attGroup ref="{http://docs.oasis-open.org/ns/cmis/core/200901}cmisUndefinedAttribute"/>
  *     &lt;/restriction>
  *   &lt;/complexContent>
  * &lt;/complexType>
@@ -45,7 +48,7 @@ import org.w3c.dom.Element;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "cmisRepositoryCapabilitiesType", propOrder = {
+@XmlType(name = "cmisRepositoryCapabilitiesType", namespace = "http://docs.oasis-open.org/ns/cmis/core/200901", propOrder = {
     "capabilityMultifiling",
     "capabilityUnfiling",
     "capabilityVersionSpecificFiling",
@@ -54,7 +57,10 @@ import org.w3c.dom.Element;
     "capabilityAllVersionsSearchable",
     "capabilityQuery",
     "capabilityJoin",
-    "capabilityFullText",
+    "capabilityChanges",
+    "changesIncomplete",
+    "capabilityACL",
+    "permissionsSupported",
     "any"
 })
 public class CmisRepositoryCapabilitiesType {
@@ -70,7 +76,11 @@ public class CmisRepositoryCapabilitiesType {
     @XmlElement(required = true)
     protected EnumCapabilityJoin capabilityJoin;
     @XmlElement(required = true)
-    protected EnumCapabilityFullText capabilityFullText;
+    protected List<EnumCapabilityChanges> capabilityChanges;
+    protected Boolean changesIncomplete;
+    @XmlElement(required = true)
+    protected EnumCapabilityACL capabilityACL;
+    protected List<CmisPermissionSetType> permissionsSupported;
     @XmlAnyElement
     protected List<Element> any;
     @XmlAnyAttribute
@@ -221,27 +231,109 @@ public class CmisRepositoryCapabilitiesType {
     }
 
     /**
-     * Gets the value of the capabilityFullText property.
+     * Gets the value of the capabilityChanges property.
      * 
-     * @return
-     *     possible object is
-     *     {@link EnumCapabilityFullText }
-     *     
+     * <p>
+     * This accessor method returns a reference to the live list,
+     * not a snapshot. Therefore any modification you make to the
+     * returned list will be present inside the JAXB object.
+     * This is why there is not a <CODE>set</CODE> method for the capabilityChanges property.
+     * 
+     * <p>
+     * For example, to add a new item, do as follows:
+     * <pre>
+     *    getCapabilityChanges().add(newItem);
+     * </pre>
+     * 
+     * 
+     * <p>
+     * Objects of the following type(s) are allowed in the list
+     * {@link EnumCapabilityChanges }
+     * 
+     * 
      */
-    public EnumCapabilityFullText getCapabilityFullText() {
-        return capabilityFullText;
+    public List<EnumCapabilityChanges> getCapabilityChanges() {
+        if (capabilityChanges == null) {
+            capabilityChanges = new ArrayList<EnumCapabilityChanges>();
+        }
+        return this.capabilityChanges;
     }
 
     /**
-     * Sets the value of the capabilityFullText property.
+     * Gets the value of the changesIncomplete property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link Boolean }
+     *     
+     */
+    public Boolean isChangesIncomplete() {
+        return changesIncomplete;
+    }
+
+    /**
+     * Sets the value of the changesIncomplete property.
      * 
      * @param value
      *     allowed object is
-     *     {@link EnumCapabilityFullText }
+     *     {@link Boolean }
      *     
      */
-    public void setCapabilityFullText(EnumCapabilityFullText value) {
-        this.capabilityFullText = value;
+    public void setChangesIncomplete(Boolean value) {
+        this.changesIncomplete = value;
+    }
+
+    /**
+     * Gets the value of the capabilityACL property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link EnumCapabilityACL }
+     *     
+     */
+    public EnumCapabilityACL getCapabilityACL() {
+        return capabilityACL;
+    }
+
+    /**
+     * Sets the value of the capabilityACL property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link EnumCapabilityACL }
+     *     
+     */
+    public void setCapabilityACL(EnumCapabilityACL value) {
+        this.capabilityACL = value;
+    }
+
+    /**
+     * Gets the value of the permissionsSupported property.
+     * 
+     * <p>
+     * This accessor method returns a reference to the live list,
+     * not a snapshot. Therefore any modification you make to the
+     * returned list will be present inside the JAXB object.
+     * This is why there is not a <CODE>set</CODE> method for the permissionsSupported property.
+     * 
+     * <p>
+     * For example, to add a new item, do as follows:
+     * <pre>
+     *    getPermissionsSupported().add(newItem);
+     * </pre>
+     * 
+     * 
+     * <p>
+     * Objects of the following type(s) are allowed in the list
+     * {@link CmisPermissionSetType }
+     * 
+     * 
+     */
+    public List<CmisPermissionSetType> getPermissionsSupported() {
+        if (permissionsSupported == null) {
+            permissionsSupported = new ArrayList<CmisPermissionSetType>();
+        }
+        return this.permissionsSupported;
     }
 
     /**

@@ -32,7 +32,7 @@ public class DMMultiFilingServiceTest extends AbstractServiceTest
 {
 
     public final static String SERVICE_WSDL_LOCATION = CmisServiceTestHelper.ALFRESCO_URL + "/cmis/MultiFilingService?wsdl";
-    public final static QName SERVICE_NAME = new QName("http://www.cmis.org/ns/1.0", "MultiFilingService");
+    public final static QName SERVICE_NAME = new QName("http://docs.oasis-open.org/ns/cmis/ws/200901", "MultiFilingService");
     private String anotherFolderId;
 
     public DMMultiFilingServiceTest()
@@ -58,8 +58,16 @@ public class DMMultiFilingServiceTest extends AbstractServiceTest
     protected void tearDown() throws Exception
     {
         super.tearDown();
-        deleteInitialContent();
-        helper.deleteFolder(anotherFolderId);
+        try
+        {
+            deleteInitialContent();
+            helper.deleteFolder(anotherFolderId);
+        }
+        catch (Exception e)
+        {
+
+        }
+
     }
 
     protected Object getServicePort()
@@ -92,9 +100,9 @@ public class DMMultiFilingServiceTest extends AbstractServiceTest
             ((MultiFilingServicePort) servicePort).removeObjectFromFolder(repositoryId, documentId, null);
             fail("Expects exception");
         }
-        catch (Exception e)
+        catch (CmisException e)
         {
-            assertTrue(e instanceof OperationNotSupportedException);
+            assertTrue(e.getFaultInfo().getType().equals(EnumServiceException.NOT_SUPPORTED));
         }
 
         helper.removeObjectFromFolder(documentId, anotherFolderId);
@@ -105,9 +113,9 @@ public class DMMultiFilingServiceTest extends AbstractServiceTest
             ((MultiFilingServicePort) servicePort).removeObjectFromFolder(repositoryId, documentId, folderId);
             fail("Expected exception");
         }
-        catch (Exception e)
+        catch (CmisException e)
         {
-            assertTrue(e instanceof NotInFolderException);
+            assertTrue(e.getFaultInfo().getType().equals(EnumServiceException.INVALID_ARGUMENT));
         }
 
         try
@@ -116,9 +124,9 @@ public class DMMultiFilingServiceTest extends AbstractServiceTest
             ((MultiFilingServicePort) servicePort).removeObjectFromFolder(repositoryId, documentId, companyHomeId);
             fail("Expected exception");
         }
-        catch (Exception e)
+        catch (CmisException e)
         {
-            assertTrue(e instanceof OperationNotSupportedException);
+            assertTrue(e.getFaultInfo().getType().equals(EnumServiceException.NOT_SUPPORTED));
         }
     }
 }

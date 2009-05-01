@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2008 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -29,12 +29,15 @@ import java.io.InputStream;
 import java.io.Serializable;
 import java.math.BigInteger;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.activation.DataHandler;
 import javax.xml.ws.Holder;
 
+import org.alfresco.cmis.CMISContentStreamAllowedEnum;
 import org.alfresco.cmis.CMISDictionaryModel;
+import org.alfresco.cmis.CMISPropertyDefinition;
 import org.alfresco.cmis.CMISScope;
 import org.alfresco.cmis.CMISTypeDefinition;
 import org.alfresco.model.ContentModel;
@@ -49,11 +52,13 @@ import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.lock.NodeLockedException;
 import org.alfresco.service.cmr.model.FileExistsException;
 import org.alfresco.service.cmr.repository.AssociationRef;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
+import org.alfresco.service.cmr.version.Version;
 import org.alfresco.service.cmr.version.VersionType;
 import org.alfresco.service.namespace.QName;
 
@@ -63,7 +68,7 @@ import org.alfresco.service.namespace.QName;
  * @author Dmitry Lazurkin
  * @author Dmitry Velichkevich
  */
-@javax.jws.WebService(name = "ObjectServicePort", serviceName = "ObjectService", portName = "ObjectServicePort", targetNamespace = "http://www.cmis.org/ns/1.0", endpointInterface = "org.alfresco.repo.cmis.ws.ObjectServicePort")
+@javax.jws.WebService(name = "ObjectServicePort", serviceName = "ObjectService", portName = "ObjectServicePort", targetNamespace = "http://docs.oasis-open.org/ns/cmis/ws/200901", endpointInterface = "org.alfresco.repo.cmis.ws.ObjectServicePort")
 public class DMObjectServicePort extends DMAbstractServicePort implements ObjectServicePort
 {
     private static final int SINGLE_PARENT_CONDITION = 1;
@@ -76,12 +81,11 @@ public class DMObjectServicePort extends DMAbstractServicePort implements Object
     {
         this.permissionService = permissionService;
     }
-    
+
     public void setDictionaryService(DictionaryService dictionaryService)
     {
         this.dictionaryService = dictionaryService;
     }
-
 
     /**
      * Creates a document object of the specified type, and optionally adds the document to a folder
@@ -93,37 +97,18 @@ public class DMObjectServicePort extends DMAbstractServicePort implements Object
      * @param contentStream content stream
      * @param versioningState versioning state (checkedout, minor, major)
      * @return Id of the created document object
-     * @throws PermissionDeniedException
-     * @throws UpdateConflictException
-     * @throws StorageException
-     * @throws StreamNotSupportedException
-     * @throws FolderNotValidException
-     * @throws OperationNotSupportedException
-     * @throws TypeNotFoundException
-     * @throws InvalidArgumentException
-     * @throws RuntimeException
-     * @throws ConstraintViolationException
+     * @throws CmisException (with following {@link EnumServiceException} : INVALID_ARGUMENT, OBJECT_NOT_FOUND, NOT_SUPPORTED, PERMISSION_DENIED, RUNTIME, CONSTRAINT, STORAGE,
+     *         STREAM_NOT_SUPPORTED)
      */
-    public String createDocument(String repositoryId, String typeId, CmisPropertiesType properties, String folderId, CmisContentStreamType contentStream, EnumVersioningState versioningState)
-        throws PermissionDeniedException, UpdateConflictException, StorageException, StreamNotSupportedException, FolderNotValidException,
-               OperationNotSupportedException, TypeNotFoundException, InvalidArgumentException, RuntimeException, ConstraintViolationException
+    public String createDocument(String repositoryId, String typeId, CmisPropertiesType properties, String folderId, CmisContentStreamType contentStream,
+            EnumVersioningState versioningState) throws CmisException
     {
         checkRepositoryId(repositoryId);
-
+        NodeRef parentNodeRef = safeGetFolderNodeRef(folderId);
         Map<String, Serializable> propertiesMap = getPropertiesMap(properties);
         CMISTypeDefinition typeDef = cmisDictionaryService.findType(typeId);
-        if (typeDef.getTypeId().getScope() != CMISScope.DOCUMENT)
-        {
-            throw new ConstraintViolationException("Invalid document type " + typeId);
-        }
 
-        NodeRef parentNodeRef = safeGetFolderNodeRef(folderId);
-
-        String documentName = (String) propertiesMap.get(CMISDictionaryModel.PROP_NAME);
-        if (documentName == null)
-        {
-            throw new InvalidArgumentException("Name property not found");
-        }
+        String documentName = checkConstraintsAndGetName(typeId, typeDef, parentNodeRef, contentStream, propertiesMap, versioningState);
 
         NodeRef newDocumentNodeRef = fileFolderService.create(parentNodeRef, documentName, typeDef.getTypeId().getQName()).getNodeRef();
         ContentWriter writer = fileFolderService.getWriter(newDocumentNodeRef);
@@ -132,6 +117,10 @@ public class DMObjectServicePort extends DMAbstractServicePort implements Object
         {
             writer.setMimetype(mimeType);
         }
+        else if (contentStream.getMimeType() != null)
+        {
+            writer.setMimetype(contentStream.getMimeType());
+        }
         InputStream inputstream = null;
         try
         {
@@ -139,7 +128,7 @@ public class DMObjectServicePort extends DMAbstractServicePort implements Object
         }
         catch (IOException e)
         {
-            throw new ConstraintViolationException("", e.getCause());
+            throw cmisObjectsUtils.createCmisException(e.toString(), EnumServiceException.CONSTRAINT);
         }
         writer.putContent(inputstream);
 
@@ -153,21 +142,70 @@ public class DMObjectServicePort extends DMAbstractServicePort implements Object
 
         switch (versioningState)
         {
-            case CHECKEDOUT:
-                newDocumentNodeRef = checkoutNode(newDocumentNodeRef);
-                break;
-            case MAJOR:
-                this.versionService.createVersion(newDocumentNodeRef, createVersionProperties(INITIAL_VERSION_DESCRIPTION, VersionType.MAJOR));
-                break;
-            case MINOR:
-                this.versionService.createVersion(newDocumentNodeRef, createVersionProperties(INITIAL_VERSION_DESCRIPTION, VersionType.MINOR));
-                break;
+        case CHECKEDOUT:
+            newDocumentNodeRef = checkoutNode(newDocumentNodeRef);
+            break;
+        case MAJOR:
+            this.versionService.createVersion(newDocumentNodeRef, createVersionProperties(INITIAL_VERSION_DESCRIPTION, VersionType.MAJOR));
+            break;
+        case MINOR:
+            this.versionService.createVersion(newDocumentNodeRef, createVersionProperties(INITIAL_VERSION_DESCRIPTION, VersionType.MINOR));
+            break;
         }
 
         String versionLabel = (String) cmisService.getProperty(newDocumentNodeRef, CMISDictionaryModel.PROP_VERSION_LABEL);
-        return versionLabel != null && versionLabel.contains(VERSION_DELIMETER) ? 
-                newDocumentNodeRef.toString() + CmisObjectsUtils.NODE_REFERENCE_ID_DELIMETER + versionLabel :
-                newDocumentNodeRef.toString();
+        return versionLabel != null && versionLabel.contains(VERSION_DELIMETER) ? newDocumentNodeRef.toString() + CmisObjectsUtils.NODE_REFERENCE_ID_DELIMETER + versionLabel
+                : newDocumentNodeRef.toString();
+    }
+
+    private String checkConstraintsAndGetName(String documentTypeId, CMISTypeDefinition typeDef, NodeRef parentNodeRef, CmisContentStreamType contentStream,
+            Map<String, Serializable> propertiesMap, EnumVersioningState versioningState) throws CmisException
+    {
+        if ((typeDef.getTypeId().getScope() != CMISScope.DOCUMENT) || !typeDef.isCreatable())
+        {
+            throw cmisObjectsUtils.createCmisException(("Invalid document type \"" + documentTypeId + "\". Specified type is not Document type or type is not Creatable"),
+                    EnumServiceException.CONSTRAINT);
+        }
+
+        if (CMISContentStreamAllowedEnum.NOT_ALLOWED == typeDef.getContentStreamAllowed())
+        {
+            throw cmisObjectsUtils.createCmisException(("Content stream not allowed for \"" + documentTypeId + "\" document object type"),
+                    EnumServiceException.STREAM_NOT_SUPPORTED);
+        }
+        else
+        {
+            if ((CMISContentStreamAllowedEnum.REQUIRED == typeDef.getContentStreamAllowed()) && (contentStream == null))
+            {
+                throw cmisObjectsUtils.createCmisException("Content stream for document object of " + documentTypeId + " type is required", EnumServiceException.CONSTRAINT);
+            }
+        }
+
+        if (typeDef.isVersionable() && (versioningState != null))
+        {
+            throw cmisObjectsUtils.createCmisException(("Verioning for \"" + documentTypeId + "\" document type is not allowed"), EnumServiceException.CONSTRAINT);
+        }
+
+        String folderTypeId = (String) cmisService.getProperty(parentNodeRef, CMISDictionaryModel.PROP_OBJECT_TYPE_ID);
+        CMISTypeDefinition folderTypeDefinition = cmisDictionaryService.findType(folderTypeId);
+        if ((folderTypeDefinition.getAllowedTargetTypes() != null) && !folderTypeDefinition.getAllowedTargetTypes().isEmpty()
+                && !folderTypeDefinition.getAllowedTargetTypes().contains(typeDef))
+        {
+            throw cmisObjectsUtils.createCmisException(("Children of \"" + documentTypeId + "\" type are not allowed for specified folder"), EnumServiceException.CONSTRAINT);
+        }
+
+        String result = (String) propertiesMap.get(CMISDictionaryModel.PROP_NAME);
+        if (result == null)
+        {
+            throw cmisObjectsUtils.createCmisException("Name property not found", EnumServiceException.INVALID_ARGUMENT);
+        }
+
+        CMISPropertyDefinition nameProperty = cmisDictionaryService.findProperty(CMISDictionaryModel.PROP_NAME, null);
+        if ((nameProperty.getMaximumLength() > 0) && (result.length() > nameProperty.getMaximumLength()))
+        {
+            throw cmisObjectsUtils.createCmisException("Name property length too big", EnumServiceException.CONSTRAINT);
+        }
+
+        return result;
     }
 
     /**
@@ -178,34 +216,31 @@ public class DMObjectServicePort extends DMAbstractServicePort implements Object
      * @param properties CMIS properties
      * @param folderId parent folder for this new folder
      * @return Id of the created folder object
-     * @throws PermissionDeniedException
-     * @throws UpdateConflictException
-     * @throws FolderNotValidException
-     * @throws OperationNotSupportedException
-     * @throws TypeNotFoundException
-     * @throws InvalidArgumentException
-     * @throws RuntimeException
-     * @throws ConstraintViolationException
+     * @throws CmisException (with following {@link EnumServiceException} : INVALID_ARGUMENT, OBJECT_NOT_FOUND, NOT_SUPPORTED, PERMISSION_DENIED, RUNTIME, CONSTRAINT, STORAGE)
      */
-    public String createFolder(String repositoryId, String typeId, CmisPropertiesType properties, String folderId)
-        throws PermissionDeniedException, UpdateConflictException, FolderNotValidException, OperationNotSupportedException, TypeNotFoundException, InvalidArgumentException, RuntimeException, ConstraintViolationException
+    public String createFolder(String repositoryId, String typeId, CmisPropertiesType properties, String folderId) throws CmisException
     {
         checkRepositoryId(repositoryId);
-        NodeRef folderNodeRef = cmisObjectsUtils.getIdentifierInstance(folderId, AlfrescoObjectType.FOLDER_OBJECT).getConvertedIdentifier();
+        NodeRef folderNodeRef = null;
+        try
+        {
+            folderNodeRef = cmisObjectsUtils.getIdentifierInstance(folderId, AlfrescoObjectType.FOLDER_OBJECT).getConvertedIdentifier();
+        }
+        catch (CmisException e)
+        {
+            e.getFaultInfo().setType(EnumServiceException.CONSTRAINT);
+            throw e;
+        }
 
         CMISTypeDefinition type = getCmisTypeDefinition(typeId);
         if (type == null || type.getTypeId().getScope() != CMISScope.FOLDER)
         {
-            throw new TypeNotFoundException(typeId);
+            throw cmisObjectsUtils.createCmisException("The typeID is not an Object-Type whose baseType is 'Folder': " + typeId, EnumServiceException.CONSTRAINT);
         }
 
         Map<String, Serializable> propertiesMap = getPropertiesMap(properties);
         String name = (String) propertiesMap.get(CMISDictionaryModel.PROP_NAME);
-        if (name == null)
-        {
-            throw new InvalidArgumentException("Name property not found");
-        }
-
+        checkPropertyName(type, name);
         assertExistFolder(folderNodeRef);
 
         try
@@ -217,7 +252,7 @@ public class DMObjectServicePort extends DMAbstractServicePort implements Object
         }
         catch (FileExistsException e)
         {
-            throw new UpdateConflictException("Folder already exists");
+            throw cmisObjectsUtils.createCmisException("Folder already exists", EnumServiceException.CONTENT_ALREADY_EXISTS);
         }
     }
 
@@ -229,20 +264,11 @@ public class DMObjectServicePort extends DMAbstractServicePort implements Object
      * @param properties CMIS properties
      * @param folderId parent folder for this new policy
      * @return Id of the created policy object
-     * @throws PermissionDeniedException
-     * @throws UpdateConflictException
-     * @throws FolderNotValidException
-     * @throws OperationNotSupportedException
-     * @throws TypeNotFoundException
-     * @throws InvalidArgumentException
-     * @throws RuntimeException
-     * @throws ConstraintViolationException
+     * @throws CmisException (with following {@link EnumServiceException} : INVALID_ARGUMENT, OBJECT_NOT_FOUND, NOT_SUPPORTED, PERMISSION_DENIED, RUNTIME, CONSTRAINT, STORAGE)
      */
-    public String createPolicy(String repositoryId, String typeId, CmisPropertiesType properties, String folderId)
-        throws PermissionDeniedException, UpdateConflictException, FolderNotValidException, OperationNotSupportedException, TypeNotFoundException, InvalidArgumentException, RuntimeException, ConstraintViolationException
+    public String createPolicy(String repositoryId, String typeId, CmisPropertiesType properties, String folderId) throws CmisException
     {
-        // TODO:
-        return null;
+        throw cmisObjectsUtils.createCmisException("Policy objects not supported", EnumServiceException.NOT_SUPPORTED);
     }
 
     /**
@@ -254,41 +280,34 @@ public class DMObjectServicePort extends DMAbstractServicePort implements Object
      * @param sourceObjectId source object Id
      * @param targetObjectId target object Id
      * @return Id of the created relationship object
-     * @throws PermissionDeniedException
-     * @throws UpdateConflictException
-     * @throws ObjectNotFoundException
-     * @throws OperationNotSupportedException
-     * @throws TypeNotFoundException
-     * @throws InvalidArgumentException
-     * @throws RuntimeException
-     * @throws ConstraintViolationException
+     * @throws CmisException (with following {@link EnumServiceException} : INVALID_ARGUMENT, OBJECT_NOT_FOUND, NOT_SUPPORTED, PERMISSION_DENIED, RUNTIME, CONSTRAINT, STORAGE)
      */
-    public String createRelationship(String repositoryId, String typeId, CmisPropertiesType properties, String sourceObjectId, String targetObjectId)
-        throws PermissionDeniedException, UpdateConflictException, ObjectNotFoundException, OperationNotSupportedException, TypeNotFoundException, InvalidArgumentException, RuntimeException, ConstraintViolationException
+    public String createRelationship(String repositoryId, String typeId, CmisPropertiesType properties, String sourceObjectId, String targetObjectId) throws CmisException
     {
         checkRepositoryId(repositoryId);
 
         NodeRef sourceNodeRef;
         NodeRef targetNodeRef;
 
-        try
-        {
-            sourceNodeRef = cmisObjectsUtils.getIdentifierInstance(sourceObjectId, AlfrescoObjectType.ANY_OBJECT).getConvertedIdentifier();
-            targetNodeRef = cmisObjectsUtils.getIdentifierInstance(targetObjectId, AlfrescoObjectType.ANY_OBJECT).getConvertedIdentifier();
-        }
-        catch (InvalidArgumentException e)
-        {
-            if (e.getCause() instanceof ObjectNotFoundException)
-            {
-                throw new ObjectNotFoundException(e.getMessage());
-            }
-            throw e;
-        }
+        sourceNodeRef = cmisObjectsUtils.getIdentifierInstance(sourceObjectId, AlfrescoObjectType.ANY_OBJECT).getConvertedIdentifier();
+        targetNodeRef = cmisObjectsUtils.getIdentifierInstance(targetObjectId, AlfrescoObjectType.ANY_OBJECT).getConvertedIdentifier();
 
         CMISTypeDefinition relationshipType = cmisDictionaryService.findType(typeId);
         if (relationshipType == null || relationshipType.getTypeId().getScope() != CMISScope.RELATIONSHIP)
         {
-            throw new TypeNotFoundException(typeId);
+            throw cmisObjectsUtils.createCmisException(typeId, EnumServiceException.INVALID_ARGUMENT);
+        }
+
+        CMISTypeDefinition sourceType = cmisDictionaryService.findType((String) cmisService.getProperty(sourceNodeRef, CMISDictionaryModel.PROP_OBJECT_TYPE_ID));
+        CMISTypeDefinition targetType = cmisDictionaryService.findType((String) cmisService.getProperty(targetNodeRef, CMISDictionaryModel.PROP_OBJECT_TYPE_ID));
+
+        if (!relationshipType.getAllowedSourceTypes().contains(sourceType))
+        {
+            cmisObjectsUtils.createCmisException(("Source object type is not allowed for \"" + typeId + "\" Relationship type"), EnumServiceException.CONSTRAINT);
+        }
+        if (!relationshipType.getAllowedTargetTypes().contains(targetType))
+        {
+            cmisObjectsUtils.createCmisException(("Target object type is not allowed for \"" + typeId + "\" Relationship type"), EnumServiceException.CONSTRAINT);
         }
 
         QName relationshipTypeQName = relationshipType.getTypeId().getQName();
@@ -297,19 +316,19 @@ public class DMObjectServicePort extends DMAbstractServicePort implements Object
         {
             if (!dictionaryService.isSubClass(nodeService.getType(sourceNodeRef), associationDef.getSourceClass().getName()))
             {
-                throw new ConstraintViolationException("Source object type isn't allowed as source type");
+                throw cmisObjectsUtils.createCmisException("Source object type isn't allowed as source type", EnumServiceException.CONSTRAINT);
             }
 
             if (!dictionaryService.isSubClass(nodeService.getType(targetNodeRef), associationDef.getTargetClass().getName()))
             {
-                throw new ConstraintViolationException("Target object type isn't allowed as target type");
+                throw cmisObjectsUtils.createCmisException("Target object type isn't allowed as target type", EnumServiceException.CONSTRAINT);
             }
 
             return nodeService.createAssociation(sourceNodeRef, targetNodeRef, relationshipTypeQName).toString();
         }
         else
         {
-            throw new TypeNotFoundException(relationshipType.getTypeId().getQName() + " Relationship type not found");
+            throw cmisObjectsUtils.createCmisException((relationshipType.getTypeId().getQName() + " Relationship type not found"), EnumServiceException.INVALID_ARGUMENT);
         }
     }
 
@@ -319,22 +338,25 @@ public class DMObjectServicePort extends DMAbstractServicePort implements Object
      * 
      * @param repositoryId repository Id
      * @param documentId document Id
-     * @throws PermissionDeniedException
-     * @throws UpdateConflictException
-     * @throws StorageException
-     * @throws StreamNotSupportedException
-     * @throws ObjectNotFoundException
-     * @throws OperationNotSupportedException
-     * @throws VersioningException
-     * @throws InvalidArgumentException
-     * @throws RuntimeException
-     * @throws ConstraintViolationException
+     * @throws CmisException (with following {@link EnumServiceException} : INVALID_ARGUMENT, OBJECT_NOT_FOUND, NOT_SUPPORTED, PERMISSION_DENIED, RUNTIME, CONSTRAINT, STORAGE,
+     *         UPDATE_CONFLICT, VERSIONING)
      */
-    public void deleteContentStream(String repositoryId, String documentId)
-        throws PermissionDeniedException, UpdateConflictException, StorageException, StreamNotSupportedException, ObjectNotFoundException, OperationNotSupportedException, VersioningException, InvalidArgumentException, RuntimeException, ConstraintViolationException
+    public void deleteContentStream(String repositoryId, String documentId) throws CmisException
     {
+        // TODO: Where is changeToken?
         checkRepositoryId(repositoryId);
-        safeDeleteContentStream((NodeRef) cmisObjectsUtils.getIdentifierInstance(documentId, AlfrescoObjectType.DOCUMENT_OBJECT).getConvertedIdentifier());
+        NodeRef currentNode = (NodeRef) cmisObjectsUtils.getIdentifierInstance(documentId, AlfrescoObjectType.DOCUMENT_OBJECT).getConvertedIdentifier();
+
+        CMISTypeDefinition typeDef = cmisDictionaryService.findType((String) cmisService.getProperty(currentNode, CMISDictionaryModel.PROP_OBJECT_TYPE_ID));
+        if (CMISContentStreamAllowedEnum.REQUIRED.equals(typeDef.getContentStreamAllowed()))
+        {
+            throw cmisObjectsUtils.createCmisException("The Object’s Object-Type definition 'contentStreamAllowed' attribute is set to 'required'.",
+                    EnumServiceException.CONSTRAINT);
+        }
+
+        checkVersion(currentNode);
+
+        safeDeleteContentStream(currentNode);
     }
 
     /**
@@ -342,16 +364,10 @@ public class DMObjectServicePort extends DMAbstractServicePort implements Object
      * 
      * @param repositoryId repository Id
      * @param objectId object Id
-     * @throws PermissionDeniedException
-     * @throws UpdateConflictException
-     * @throws ObjectNotFoundException
-     * @throws OperationNotSupportedException
-     * @throws InvalidArgumentException
-     * @throws RuntimeException
-     * @throws ConstraintViolationException
+     * @throws CmisException (with following {@link EnumServiceException} : INVALID_ARGUMENT, OBJECT_NOT_FOUND, NOT_SUPPORTED, PERMISSION_DENIED, RUNTIME, CONSTRAINT,
+     *         UPDATE_CONFLICT)
      */
-    public void deleteObject(String repositoryId, String objectId)
-        throws PermissionDeniedException, UpdateConflictException, ObjectNotFoundException, OperationNotSupportedException, InvalidArgumentException, RuntimeException, ConstraintViolationException
+    public void deleteObject(String repositoryId, String objectId) throws CmisException
     {
         checkRepositoryId(repositoryId);
 
@@ -360,7 +376,8 @@ public class DMObjectServicePort extends DMAbstractServicePort implements Object
         checkObjectTypeAndAppropriateStates(objectNodeReference, nodeService.getType(objectNodeReference));
         if (!cmisObjectsUtils.deleteObject(objectNodeReference))
         {
-            throw new PermissionDeniedException("Currently authenticated User has no appropriate Permissions to delete specified Object");
+            throw cmisObjectsUtils.createCmisException("Currently authenticated User has no appropriate Permissions to delete specified Object",
+                    EnumServiceException.PERMISSION_DENIED);
         }
     }
 
@@ -374,16 +391,9 @@ public class DMObjectServicePort extends DMAbstractServicePort implements Object
      *        objects in this tree (Default)
      * @param continueOnFailure flag
      * @return collection of object IDs that failed to delete (if continueOnFailure is FALSE, then single object ID)
-     * @throws PermissionDeniedException
-     * @throws UpdateConflictException
-     * @throws FolderNotValidException
-     * @throws OperationNotSupportedException
-     * @throws InvalidArgumentException
-     * @throws RuntimeException
-     * @throws ConstraintViolationException
+     * @throws CmisException (with following {@link EnumServiceException} : INVALID_ARGUMENT, OBJECT_NOT_FOUND, NOT_SUPPORTED, PERMISSION_DENIED, RUNTIME, UPDATE_CONFLICT)
      */
-    public FailedToDelete deleteTree(String repositoryId, String folderId, EnumUnfileNonfolderObjects unfileNonfolderObjects, Boolean continueOnFailure)
-        throws PermissionDeniedException, UpdateConflictException, FolderNotValidException, OperationNotSupportedException, InvalidArgumentException, RuntimeException, ConstraintViolationException
+    public FailedToDelete deleteTree(String repositoryId, String folderId, EnumUnfileNonfolderObjects unfileNonfolderObjects, Boolean continueOnFailure) throws CmisException
     {
         checkRepositoryId(repositoryId);
         checkUnfilingIsNotRequested(unfileNonfolderObjects);
@@ -403,15 +413,9 @@ public class DMObjectServicePort extends DMAbstractServicePort implements Object
      * @param repositoryId repository Id
      * @param objectId object Id
      * @return list of allowable actions
-     * @throws PermissionDeniedException
-     * @throws UpdateConflictException
-     * @throws ObjectNotFoundException
-     * @throws OperationNotSupportedException
-     * @throws InvalidArgumentException
-     * @throws RuntimeException
+     * @throws CmisException (with following {@link EnumServiceException} : INVALID_ARGUMENT, OBJECT_NOT_FOUND, NOT_SUPPORTED, PERMISSION_DENIED, RUNTIME)
      */
-    public CmisAllowableActionsType getAllowableActions(String repositoryId, String objectId)
-        throws PermissionDeniedException, UpdateConflictException, ObjectNotFoundException, OperationNotSupportedException, InvalidArgumentException, RuntimeException
+    public CmisAllowableActionsType getAllowableActions(String repositoryId, String objectId) throws CmisException
     {
         checkRepositoryId(repositoryId);
         return determineObjectAllowableActions(cmisObjectsUtils.getIdentifierInstance(objectId, AlfrescoObjectType.ANY_OBJECT));
@@ -423,20 +427,26 @@ public class DMObjectServicePort extends DMAbstractServicePort implements Object
      * @param repositoryId repository Id
      * @param documentId document to return the content-stream
      * @return content stream
-     * @throws PermissionDeniedException
-     * @throws UpdateConflictException
-     * @throws StorageException
-     * @throws StreamNotSupportedException
-     * @throws ObjectNotFoundException
-     * @throws OperationNotSupportedException
-     * @throws InvalidArgumentException
-     * @throws RuntimeException
-     * @throws OffsetException
+     * @throws CmisException (with following {@link EnumServiceException} : INVALID_ARGUMENT, OBJECT_NOT_FOUND, NOT_SUPPORTED, PERMISSION_DENIED, RUNTIME, STREAM_NOT_SUPPORTED)
      */
-    public CmisContentStreamType getContentStream(String repositoryId, String documentId)
-        throws PermissionDeniedException, UpdateConflictException, StorageException, StreamNotSupportedException, ObjectNotFoundException, OperationNotSupportedException, InvalidArgumentException, RuntimeException, OffsetException
+    public CmisContentStreamType getContentStream(String repositoryId, String documentId) throws CmisException
     {
+        // TODO:
+        // Specification says:
+        // Each CMIS protocol binding SHALL provide a way for fetching a sub-range within
+        // a content stream, in a manner appropriate to that protocol.
+        // 
+        // Implementation of sub-range fetching is suspended.
+        // See http://tools.oasis-open.org/issues/browse/CMIS-134
+
+        checkRepositoryId(repositoryId);
         NodeRef nodeRef = cmisObjectsUtils.getIdentifierInstance(documentId, AlfrescoObjectType.DOCUMENT_OBJECT).getConvertedIdentifier();
+
+        CMISTypeDefinition typeDefinition = cmisDictionaryService.findType((String) cmisService.getProperty(nodeRef, CMISDictionaryModel.PROP_OBJECT_TYPE_ID));
+        if (CMISContentStreamAllowedEnum.NOT_ALLOWED == typeDefinition.getContentStreamAllowed())
+        {
+            cmisObjectsUtils.createCmisException("Content stream not allowed", EnumServiceException.STREAM_NOT_SUPPORTED);
+        }
 
         CmisContentStreamType response = new CmisContentStreamType();
         ContentReader reader = safeGetContentReader(nodeRef);
@@ -457,31 +467,53 @@ public class DMObjectServicePort extends DMAbstractServicePort implements Object
      * @param objectId object Id
      * @param targetFolderId the target folder to be moved into
      * @param sourceFolderId the source folder to be moved out of
-     * @throws PermissionDeniedException
-     * @throws UpdateConflictException
-     * @throws ObjectNotFoundException
-     * @throws FolderNotValidException
-     * @throws OperationNotSupportedException
-     * @throws NotInFolderException
-     * @throws InvalidArgumentException
-     * @throws RuntimeException
-     * @throws ConstraintViolationException
+     * @throws CmisException (with following {@link EnumServiceException} : INVALID_ARGUMENT, OBJECT_NOT_FOUND, NOT_SUPPORTED, PERMISSION_DENIED, RUNTIME, CONSTRAINT, STORAGE,
+     *         UPDATE_CONFLICT, VERSIONING)
      */
-    public void moveObject(String repositoryId, String objectId, String targetFolderId, String sourceFolderId)
-        throws PermissionDeniedException, UpdateConflictException, ObjectNotFoundException, FolderNotValidException, OperationNotSupportedException, NotInFolderException, InvalidArgumentException, RuntimeException, ConstraintViolationException
+    public void moveObject(String repositoryId, String objectId, String targetFolderId, String sourceFolderId) throws CmisException
     {
         checkRepositoryId(repositoryId);
 
-        NodeRef objectNodeRef = cmisObjectsUtils.getIdentifierInstance(objectId, AlfrescoObjectType.DOCUMENT_OR_FOLDER_OBJECT).getConvertedIdentifier();
-        NodeRef targetFolderNodeRef = cmisObjectsUtils.getIdentifierInstance(targetFolderId, AlfrescoObjectType.FOLDER_OBJECT).getConvertedIdentifier();
-        NodeRef sourceFolderNodeRef = cmisObjectsUtils.getIdentifierInstance(sourceFolderId, AlfrescoObjectType.FOLDER_OBJECT).getConvertedIdentifier();
-        
-        // TODO: Allowed_Child_Object_Types
+        NodeRef objectNodeRef = null;
 
-        if (nodeService.getParentAssocs(objectNodeRef).size() == SINGLE_PARENT_CONDITION || !changeObjectParentAssociation(objectNodeRef, targetFolderNodeRef, sourceFolderNodeRef))
+        try
         {
-            safeMove(objectNodeRef, targetFolderNodeRef);
+            objectNodeRef = cmisObjectsUtils.getIdentifierInstance(objectId, AlfrescoObjectType.DOCUMENT_OR_FOLDER_OBJECT).getConvertedIdentifier();
         }
+        catch (CmisException e)
+        {
+            e.getFaultInfo().setType(EnumServiceException.CONSTRAINT);
+            throw e;
+        }
+
+        checkVersion(objectNodeRef);
+
+        NodeRef targetFolderNodeRef = cmisObjectsUtils.getIdentifierInstance(targetFolderId, AlfrescoObjectType.FOLDER_OBJECT).getConvertedIdentifier();
+        List<ChildAssociationRef> parentsAssociations = nodeService.getParentAssocs(objectNodeRef);
+        NodeRef sourceFolderNodeRef = null;
+        if ((parentsAssociations != null) && (SINGLE_PARENT_CONDITION != nodeService.getParentAssocs(objectNodeRef).size()))
+        {
+            try
+            {
+                sourceFolderNodeRef = cmisObjectsUtils.getIdentifierInstance(sourceFolderId, AlfrescoObjectType.FOLDER_OBJECT).getConvertedIdentifier();
+
+                if (!cmisObjectsUtils.isPrimaryObjectParent(sourceFolderNodeRef, objectNodeRef))
+                {
+                    changeObjectParentAssociation(objectNodeRef, targetFolderNodeRef, sourceFolderNodeRef);
+                    return;
+                }
+            }
+            catch (CmisException e)
+            {
+                e.getFaultInfo().setMessage(
+                        "Invalid source forlder for multifiled document was specified. Multifiled document must be moved from concrete folder. Exception message: "
+                                + e.getFaultInfo().getMessage());
+                throw e;
+            }
+        }
+
+        safeMove(objectNodeRef, targetFolderNodeRef);
+        // TODO: Allowed_Child_Object_Types
     }
 
     /**
@@ -491,32 +523,30 @@ public class DMObjectServicePort extends DMAbstractServicePort implements Object
      * @param documentId document Id
      * @param overwriteFlag flag
      * @param contentStream content stream
-     * @throws PermissionDeniedException
-     * @throws UpdateConflictException
-     * @throws StorageException
-     * @throws StreamNotSupportedException
-     * @throws ObjectNotFoundException
-     * @throws OperationNotSupportedException
-     * @throws ContentAlreadyExistsException
-     * @throws InvalidArgumentException
-     * @throws RuntimeException
-     * @throws ConstraintViolationException
+     * @throws CmisException (with following {@link EnumServiceException} : INVALID_ARGUMENT, OBJECT_NOT_FOUND, NOT_SUPPORTED, PERMISSION_DENIED, RUNTIME, CONSTRAINT,
+     *         CONTENT_ALREADY_EXISTS, STORAGE, STREAM_NOT_SUPPORTED, UPDATE_CONFLICT, VERSIONING)
      */
-    public void setContentStream(String repositoryId, Holder<String> documentId, Boolean overwriteFlag, CmisContentStreamType contentStream)
-        throws PermissionDeniedException, UpdateConflictException, StorageException, StreamNotSupportedException, ObjectNotFoundException, OperationNotSupportedException, ContentAlreadyExistsException, InvalidArgumentException, RuntimeException, ConstraintViolationException
+    public void setContentStream(String repositoryId, Holder<String> documentId, Boolean overwriteFlag, CmisContentStreamType contentStream) throws CmisException
     {
         checkRepositoryId(repositoryId);
 
         NodeRef nodeRef = cmisObjectsUtils.getIdentifierInstance(documentId.value, AlfrescoObjectType.DOCUMENT_OBJECT).getConvertedIdentifier();
 
+        CMISTypeDefinition typeDef = cmisDictionaryService.findType((String) cmisService.getProperty(nodeRef, CMISDictionaryModel.PROP_OBJECT_TYPE_ID));
+        if (CMISContentStreamAllowedEnum.NOT_ALLOWED.equals(typeDef.getContentStreamAllowed()))
+        {
+            throw cmisObjectsUtils.createCmisException("The Object’s Object-Type definition 'contentStreamAllowed' attribute is set to 'notAllowed'.",
+                    EnumServiceException.CONSTRAINT);
+        }
+
         if (contentStream.getStream() == null)
         {
-            throw new InvalidArgumentException("New Content Stream was not provided");
+            throw cmisObjectsUtils.createCmisException("New Content Stream was not provided", EnumServiceException.CONSTRAINT);
         }
 
         if ((nodeService.getProperty(nodeRef, ContentModel.PROP_CONTENT) != null) && !overwriteFlag)
         {
-            throw new ContentAlreadyExistsException();
+            throw cmisObjectsUtils.createCmisException("Content already exists", EnumServiceException.CONTENT_ALREADY_EXISTS);
         }
 
         ContentWriter writer = fileFolderService.getWriter(nodeRef);
@@ -527,7 +557,7 @@ public class DMObjectServicePort extends DMAbstractServicePort implements Object
         }
         catch (IOException e)
         {
-            throw new ConstraintViolationException("", e.getCause());
+            throw cmisObjectsUtils.createCmisException(e.getMessage(), EnumServiceException.CONSTRAINT);
         }
 
         writer.setMimetype(contentStream.getMimeType());
@@ -541,20 +571,17 @@ public class DMObjectServicePort extends DMAbstractServicePort implements Object
      * @param objectId object Id
      * @param changeToken change token
      * @param properties list of properties to update
-     * @throws PermissionDeniedException
-     * @throws UpdateConflictException
-     * @throws ObjectNotFoundException
-     * @throws InvalidArgumentException
-     * @throws RuntimeException
-     * @throws ConstraintViolationException
+     * @throws CmisException (with following {@link EnumServiceException} : INVALID_ARGUMENT, OBJECT_NOT_FOUND, NOT_SUPPORTED, PERMISSION_DENIED, RUNTIME, CONSTRAINT,
+     *         UPDATE_CONFLICT, VERSIONING)
      */
-    public void updateProperties(String repositoryId, Holder<String> objectId, String changeToken, CmisPropertiesType properties)
-        throws PermissionDeniedException, UpdateConflictException, ObjectNotFoundException, OperationNotSupportedException, InvalidArgumentException, RuntimeException, ConstraintViolationException
+    public void updateProperties(String repositoryId, Holder<String> objectId, String changeToken, CmisPropertiesType properties) throws CmisException
     {
         checkRepositoryId(repositoryId);
         checkForReadOnlyProperties(properties);
 
         NodeRef objectNodeRef = cmisObjectsUtils.getIdentifierInstance(objectId.value, AlfrescoObjectType.DOCUMENT_OR_FOLDER_OBJECT).getConvertedIdentifier();
+        String name = (String) PropertyUtil.getProperty(properties, CMISDictionaryModel.PROP_NAME);
+        checkPropertyName(objectNodeRef, name);
         setProperties(objectNodeRef, properties);
 
         // TODO: change token
@@ -568,27 +595,21 @@ public class DMObjectServicePort extends DMAbstractServicePort implements Object
      * 
      * @param parameters
      * @return collection collection of CmisObjectType
-     * @throws PermissionDeniedException
-     * @throws UpdateConflictException
-     * @throws FilterNotValidException
-     * @throws ObjectNotFoundException
-     * @throws OperationNotSupportedException
-     * @throws InvalidArgumentException
-     * @throws RuntimeException
+     * @throws CmisException (with following {@link EnumServiceException} : INVALID_ARGUMENT, OBJECT_NOT_FOUND, NOT_SUPPORTED, PERMISSION_DENIED, RUNTIME, FOLDER_NOT_VALID)
      */
-    public GetPropertiesResponse getProperties(GetProperties parameters)
-        throws PermissionDeniedException, UpdateConflictException, FilterNotValidException, ObjectNotFoundException, OperationNotSupportedException, InvalidArgumentException, RuntimeException
+    public GetPropertiesResponse getProperties(GetProperties parameters) throws CmisException
     {
         checkRepositoryId(parameters.getRepositoryId());
 
         PropertyFilter propertyFilter = createPropertyFilter(parameters.getFilter());
 
         String identifier = ((NodeRef) cmisObjectsUtils.getIdentifierInstance(parameters.getObjectId(), AlfrescoObjectType.ANY_OBJECT).getConvertedIdentifier()).toString();
-        EnumReturnVersion returnVersion = (parameters.getReturnVersion() != null && parameters.getReturnVersion().getValue() != null) ? parameters.getReturnVersion().getValue() : null;
-        
-        if ((cmisObjectsUtils.determineObjectType(identifier) == EnumObjectType.DOCUMENT) && returnVersion != null)
+        EnumReturnVersion returnVersion = (parameters.getReturnVersion() != null && parameters.getReturnVersion().getValue() != null) ? parameters.getReturnVersion().getValue()
+                : null;
+
+        if ((returnVersion != null) && (cmisObjectsUtils.determineObjectType(identifier) == EnumObjectType.DOCUMENT))
         {
-            identifier = getLatestNode(new NodeRef(identifier), returnVersion != EnumReturnVersion.LATEST).toString();
+            identifier = getLatestNode(new NodeRef(identifier), (EnumReturnVersion.LATEST != returnVersion)).toString();
         }
 
         GetPropertiesResponse response = new GetPropertiesResponse();
@@ -609,8 +630,7 @@ public class DMObjectServicePort extends DMAbstractServicePort implements Object
         return response;
     }
 
-    
-    private Map<String, Serializable> getPropertiesMap(CmisPropertiesType cmisProperties) throws InvalidArgumentException
+    private Map<String, Serializable> getPropertiesMap(CmisPropertiesType cmisProperties) throws CmisException
     {
         Map<String, Serializable> properties = new HashMap<String, Serializable>();
 
@@ -619,7 +639,7 @@ public class DMObjectServicePort extends DMAbstractServicePort implements Object
             String name = PropertyUtil.getRepositoryPropertyName(cmisProperty.getName());
             if (name == null)
             {
-                throw new InvalidArgumentException("Unknown property with name " + name);
+                throw cmisObjectsUtils.createCmisException(("Unknown property with name " + name), EnumServiceException.INVALID_ARGUMENT);
             }
 
             properties.put(name, PropertyUtil.getValue(cmisProperty));
@@ -628,24 +648,15 @@ public class DMObjectServicePort extends DMAbstractServicePort implements Object
         return properties;
     }
 
-    private boolean changeObjectParentAssociation(NodeRef objectNodeRef, NodeRef targetFolderNodeRef, NodeRef sourceFolderNodeReference)
-        throws UpdateConflictException, PermissionDeniedException
+    private void changeObjectParentAssociation(NodeRef objectNodeRef, NodeRef targetFolderNodeRef, NodeRef sourceFolderNodeReference) throws CmisException
     {
-        if (cmisObjectsUtils.isPrimaryObjectParent(sourceFolderNodeReference, objectNodeRef))
-        {
-            return false;
-        }
-    
-        if (!cmisObjectsUtils.removeObject(objectNodeRef, sourceFolderNodeReference) && cmisObjectsUtils.addObjectToFolder(objectNodeRef, targetFolderNodeRef))
+        if (!cmisObjectsUtils.removeObject(objectNodeRef, sourceFolderNodeReference) || !cmisObjectsUtils.addObjectToFolder(objectNodeRef, targetFolderNodeRef))
         {
             determineException(cmisObjectsUtils.getLastOperationException());
         }
-    
-        return true;
     }
 
-    private void safeMove(NodeRef objectNodeRef, NodeRef targetFolderNodeRef)
-        throws PermissionDeniedException, UpdateConflictException
+    private void safeMove(NodeRef objectNodeRef, NodeRef targetFolderNodeRef) throws CmisException
     {
         try
         {
@@ -657,7 +668,7 @@ public class DMObjectServicePort extends DMAbstractServicePort implements Object
         }
     }
 
-    private void safeDeleteContentStream(NodeRef documentNodeReference) throws ConstraintViolationException
+    private void safeDeleteContentStream(NodeRef documentNodeReference) throws CmisException
     {
         try
         {
@@ -665,73 +676,109 @@ public class DMObjectServicePort extends DMAbstractServicePort implements Object
         }
         catch (NodeLockedException e)
         {
-            throw new ConstraintViolationException("Content Stream Deletion is not allowed for specified Document", e);
+            throw cmisObjectsUtils.createCmisException("Content Stream Deletion is not allowed for specified Document", EnumServiceException.UPDATE_CONFLICT);
         }
     }
 
-    private ContentReader safeGetContentReader(NodeRef objectNodeReference) throws StorageException
+    private ContentReader safeGetContentReader(NodeRef objectNodeReference) throws CmisException
     {
         ContentReader reader = fileFolderService.getReader(objectNodeReference);
         if (reader == null)
         {
-            throw new StorageException("The specified Document has no Content Stream");
+            throw cmisObjectsUtils.createCmisException("The specified Document has no Content Stream", EnumServiceException.INVALID_ARGUMENT);
         }
         return reader;
     }
 
-    private NodeRef safeGetFolderNodeRef(String folderId) throws FolderNotValidException
+    private NodeRef safeGetFolderNodeRef(String folderId) throws CmisException
     {
         try
         {
             return this.cmisObjectsUtils.getIdentifierInstance(folderId, AlfrescoObjectType.FOLDER_OBJECT).getConvertedIdentifier();
         }
-        catch (InvalidArgumentException e)
+        catch (CmisException e)
         {
-            throw new FolderNotValidException("Unfiling is not suppoerted. Each Document must have existent parent Folder");
+            throw cmisObjectsUtils.createCmisException("Unfiling is not suppoerted. Each Document must have existent parent Folder", EnumServiceException.OBJECT_NOT_FOUND, e);
         }
     }
-    
-    private void checkObjectTypeAndAppropriateStates(NodeRef objectNodeReference, QName objectType) throws InvalidArgumentException, ConstraintViolationException
+
+    private void checkObjectTypeAndAppropriateStates(NodeRef objectNodeReference, QName objectType) throws CmisException
     {
         if (objectType == null)
         {
-            throw new InvalidArgumentException("Specified Object has invalid Object Type");
+            throw cmisObjectsUtils.createCmisException("Specified Object has invalid Object Type", EnumServiceException.INVALID_ARGUMENT);
         }
 
         if (objectType.equals(ContentModel.TYPE_FOLDER) && (nodeService.getChildAssocs(objectNodeReference).size() > 0))
         {
-            throw new ConstraintViolationException("Could not delete folder with at least one Child");
+            throw cmisObjectsUtils.createCmisException("Could not delete folder with at least one Child", EnumServiceException.CONSTRAINT);
         }
     }
 
-    private void checkUnfilingIsNotRequested(EnumUnfileNonfolderObjects unfileNonfolderObjects) throws OperationNotSupportedException
+    private void checkUnfilingIsNotRequested(EnumUnfileNonfolderObjects unfileNonfolderObjects) throws CmisException
     {
         if (unfileNonfolderObjects == EnumUnfileNonfolderObjects.UNFILE)
         {
-            throw new OperationNotSupportedException("Unfiling is not supported");
+            throw cmisObjectsUtils.createCmisException("Unfiling is not supported", EnumServiceException.NOT_SUPPORTED);
         }
     }
 
-    private void checkForRootObject(String repositoryId, String objectId) throws OperationNotSupportedException
+    private void checkForRootObject(String repositoryId, String objectId) throws CmisException
     {
         if (this.cmisService.getDefaultRootNodeRef().toString().equals(objectId) || repositoryId.equals(objectId))
         {
-            throw new OperationNotSupportedException("Could not delete Repository object or Root Folder object - operation is not allowed or not supported");
+            throw cmisObjectsUtils.createCmisException("Could not delete Repository object or Root Folder object - operation is not allowed or not supported",
+                    EnumServiceException.NOT_SUPPORTED);
         }
     }
 
-    private void checkForReadOnlyProperties(CmisPropertiesType properties) throws ConstraintViolationException
+    private void checkForReadOnlyProperties(CmisPropertiesType properties) throws CmisException
     {
         for (CmisProperty property : properties.getProperty())
         {
             if (PropertyUtil.isReadOnlyRepositoryProperty(property.getName()))
             {
-                throw new ConstraintViolationException("The property " + property.getName() + " is Read Only and couldn't be updated");
+                throw cmisObjectsUtils.createCmisException(("The property " + property.getName() + " is Read Only and couldn't be updated"), EnumServiceException.CONSTRAINT);
             }
         }
     }
 
-    private CmisAllowableActionsType determineObjectAllowableActions(IdentifierConversionResults objectIdentifierContainer) throws OperationNotSupportedException
+    private void checkVersion(NodeRef currentNode) throws CmisException
+    {
+        if (!cmisObjectsUtils.isFolder(currentNode))
+        {
+            NodeRef latestNode = getLatestNode(currentNode, true);
+            Version currentVersion = versionService.getCurrentVersion(currentNode);
+            Version latestVersion = versionService.getCurrentVersion(latestNode);
+            if ((currentVersion != null && latestVersion != null) && (!currentVersion.getVersionLabel().equals(latestVersion.getVersionLabel())))
+            {
+                throw cmisObjectsUtils.createCmisException("Document is a non-current Document Version", EnumServiceException.VERSIONING);
+            }
+        }
+    }
+
+    private void checkPropertyName(CMISTypeDefinition type, String name) throws CmisException
+    {
+        CMISPropertyDefinition propertyDefinition = cmisDictionaryService.findProperty(CMISDictionaryModel.PROP_NAME, type);
+
+        if (propertyDefinition.isRequired() && (name == null || name.length() < 1))
+        {
+            throw cmisObjectsUtils.createCmisException("Name property required", EnumServiceException.CONSTRAINT);
+        }
+
+        if (name != null && (propertyDefinition.getMaximumLength() > 0) && (name.length() > propertyDefinition.getMaximumLength()))
+        {
+            throw cmisObjectsUtils.createCmisException("Name is too long", EnumServiceException.CONSTRAINT);
+        }
+    }
+
+    private void checkPropertyName(NodeRef node, String name) throws CmisException
+    {
+        CMISTypeDefinition type = cmisDictionaryService.findType((String) cmisService.getProperty(node, CMISDictionaryModel.PROP_OBJECT_TYPE_ID));
+        checkPropertyName(type, name);
+    }
+
+    private CmisAllowableActionsType determineObjectAllowableActions(IdentifierConversionResults objectIdentifierContainer) throws CmisException
     {
         Object objectNodeReference = objectIdentifierContainer.getConvertedIdentifier();
 
@@ -742,18 +789,18 @@ public class DMObjectServicePort extends DMAbstractServicePort implements Object
 
         switch (cmisObjectsUtils.determineObjectType(objectNodeReference.toString()))
         {
-            case DOCUMENT:
-            {
-                return determineDocumentAllowableActions((NodeRef) objectNodeReference);
-            }
-            case FOLDER:
-            {
-                return determineFolderAllowableActions((NodeRef) objectNodeReference);
-            }
+        case DOCUMENT:
+        {
+            return determineDocumentAllowableActions((NodeRef) objectNodeReference);
+        }
+        case FOLDER:
+        {
+            return determineFolderAllowableActions((NodeRef) objectNodeReference);
+        }
         }
 
         // TODO: determinePolicyAllowableActions() when Policy functionality is ready
-        throw new OperationNotSupportedException("It is impossible to get Allowable actions for the specified Object");
+        throw cmisObjectsUtils.createCmisException("It is impossible to get Allowable actions for the specified Object", EnumServiceException.NOT_SUPPORTED);
     }
 
     private CmisAllowableActionsType determineBaseAllowableActions(NodeRef objectNodeReference)
@@ -816,14 +863,14 @@ public class DMObjectServicePort extends DMAbstractServicePort implements Object
         return result;
     }
 
-    private void determineException(Throwable lastException) throws PermissionDeniedException, UpdateConflictException
+    private void determineException(Throwable lastException) throws CmisException
     {
         if (lastException instanceof AccessDeniedException)
         {
-            throw new PermissionDeniedException(lastException.getMessage());
+            throw cmisObjectsUtils.createCmisException(lastException.toString(), EnumServiceException.PERMISSION_DENIED);
         }
 
-        throw new UpdateConflictException("Couldn't to relocate multi-filed Object");
+        throw cmisObjectsUtils.createCmisException("Couldn't to relocate multi-filed Object", EnumServiceException.UPDATE_CONFLICT);
     }
-    
+
 }

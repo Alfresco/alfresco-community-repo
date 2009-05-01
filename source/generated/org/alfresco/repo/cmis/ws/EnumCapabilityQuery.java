@@ -17,13 +17,14 @@ import javax.xml.bind.annotation.XmlType;
  *     &lt;enumeration value="none"/>
  *     &lt;enumeration value="metadataonly"/>
  *     &lt;enumeration value="fulltextonly"/>
- *     &lt;enumeration value="both"/>
+ *     &lt;enumeration value="bothseparate"/>
+ *     &lt;enumeration value="bothcombined"/>
  *   &lt;/restriction>
  * &lt;/simpleType>
  * </pre>
  * 
  */
-@XmlType(name = "enumCapabilityQuery")
+@XmlType(name = "enumCapabilityQuery", namespace = "http://docs.oasis-open.org/ns/cmis/core/200901")
 @XmlEnum
 public enum EnumCapabilityQuery {
 
@@ -33,8 +34,10 @@ public enum EnumCapabilityQuery {
     METADATAONLY("metadataonly"),
     @XmlEnumValue("fulltextonly")
     FULLTEXTONLY("fulltextonly"),
-    @XmlEnumValue("both")
-    BOTH("both");
+    @XmlEnumValue("bothseparate")
+    BOTHSEPARATE("bothseparate"),
+    @XmlEnumValue("bothcombined")
+    BOTHCOMBINED("bothcombined");
     private final String value;
 
     EnumCapabilityQuery(String v) {

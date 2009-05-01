@@ -20,7 +20,7 @@ import javax.xml.bind.annotation.XmlType;
  * </pre>
  * 
  */
-@XmlType(name = "enumRestOutputHeaders")
+@XmlType(name = "enumRestOutputHeaders", namespace = "http://docs.oasis-open.org/ns/cmis/core/200901")
 @XmlEnum
 public enum EnumRestOutputHeaders {
 

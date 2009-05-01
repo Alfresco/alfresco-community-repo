@@ -48,7 +48,7 @@ public class MoveObject {
     protected String objectId;
     @XmlElement(required = true)
     protected String targetFolderId;
-    @XmlElementRef(name = "sourceFolderId", namespace = "http://www.cmis.org/2008/05", type = JAXBElement.class)
+    @XmlElementRef(name = "sourceFolderId", namespace = "http://docs.oasis-open.org/ns/cmis/messaging/200901", type = JAXBElement.class)
     protected JAXBElement<String> sourceFolderId;
 
     /**

@@ -22,10 +22,11 @@ import javax.xml.bind.annotation.XmlType;
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
  *         &lt;element name="repositoryId" type="{http://www.w3.org/2001/XMLSchema}string"/>
- *         &lt;element name="folderID" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
+ *         &lt;element name="folderId" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
  *         &lt;element name="filter" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
+ *         &lt;element name="orderBy" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
  *         &lt;element name="includeAllowableActions" type="{http://www.w3.org/2001/XMLSchema}boolean" minOccurs="0"/>
- *         &lt;element name="includeRelationships" type="{http://www.w3.org/2001/XMLSchema}boolean" minOccurs="0"/>
+ *         &lt;element name="includeRelationships" type="{http://docs.oasis-open.org/ns/cmis/core/200901}enumIncludeRelationships" minOccurs="0"/>
  *         &lt;element name="maxItems" type="{http://www.w3.org/2001/XMLSchema}integer" minOccurs="0"/>
  *         &lt;element name="skipCount" type="{http://www.w3.org/2001/XMLSchema}integer" minOccurs="0"/>
  *       &lt;/sequence>
@@ -39,8 +40,9 @@ import javax.xml.bind.annotation.XmlType;
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "", propOrder = {
     "repositoryId",
-    "folderID",
+    "folderId",
     "filter",
+    "orderBy",
     "includeAllowableActions",
     "includeRelationships",
     "maxItems",
@@ -51,17 +53,19 @@ public class GetCheckedoutDocs {
 
     @XmlElement(required = true)
     protected String repositoryId;
-    @XmlElementRef(name = "folderID", namespace = "http://www.cmis.org/2008/05", type = JAXBElement.class)
-    protected JAXBElement<String> folderID;
-    @XmlElementRef(name = "filter", namespace = "http://www.cmis.org/2008/05", type = JAXBElement.class)
+    @XmlElementRef(name = "folderId", namespace = "http://docs.oasis-open.org/ns/cmis/messaging/200901", type = JAXBElement.class)
+    protected JAXBElement<String> folderId;
+    @XmlElementRef(name = "filter", namespace = "http://docs.oasis-open.org/ns/cmis/messaging/200901", type = JAXBElement.class)
     protected JAXBElement<String> filter;
-    @XmlElementRef(name = "includeAllowableActions", namespace = "http://www.cmis.org/2008/05", type = JAXBElement.class)
+    @XmlElementRef(name = "orderBy", namespace = "http://docs.oasis-open.org/ns/cmis/messaging/200901", type = JAXBElement.class)
+    protected JAXBElement<String> orderBy;
+    @XmlElementRef(name = "includeAllowableActions", namespace = "http://docs.oasis-open.org/ns/cmis/messaging/200901", type = JAXBElement.class)
     protected JAXBElement<Boolean> includeAllowableActions;
-    @XmlElementRef(name = "includeRelationships", namespace = "http://www.cmis.org/2008/05", type = JAXBElement.class)
-    protected JAXBElement<Boolean> includeRelationships;
-    @XmlElementRef(name = "maxItems", namespace = "http://www.cmis.org/2008/05", type = JAXBElement.class)
+    @XmlElementRef(name = "includeRelationships", namespace = "http://docs.oasis-open.org/ns/cmis/messaging/200901", type = JAXBElement.class)
+    protected JAXBElement<EnumIncludeRelationships> includeRelationships;
+    @XmlElementRef(name = "maxItems", namespace = "http://docs.oasis-open.org/ns/cmis/messaging/200901", type = JAXBElement.class)
     protected JAXBElement<BigInteger> maxItems;
-    @XmlElementRef(name = "skipCount", namespace = "http://www.cmis.org/2008/05", type = JAXBElement.class)
+    @XmlElementRef(name = "skipCount", namespace = "http://docs.oasis-open.org/ns/cmis/messaging/200901", type = JAXBElement.class)
     protected JAXBElement<BigInteger> skipCount;
 
     /**
@@ -89,27 +93,27 @@ public class GetCheckedoutDocs {
     }
 
     /**
-     * Gets the value of the folderID property.
+     * Gets the value of the folderId property.
      * 
      * @return
      *     possible object is
      *     {@link JAXBElement }{@code <}{@link String }{@code >}
      *     
      */
-    public JAXBElement<String> getFolderID() {
-        return folderID;
+    public JAXBElement<String> getFolderId() {
+        return folderId;
     }
 
     /**
-     * Sets the value of the folderID property.
+     * Sets the value of the folderId property.
      * 
      * @param value
      *     allowed object is
      *     {@link JAXBElement }{@code <}{@link String }{@code >}
      *     
      */
-    public void setFolderID(JAXBElement<String> value) {
-        this.folderID = ((JAXBElement<String> ) value);
+    public void setFolderId(JAXBElement<String> value) {
+        this.folderId = ((JAXBElement<String> ) value);
     }
 
     /**
@@ -134,6 +138,30 @@ public class GetCheckedoutDocs {
      */
     public void setFilter(JAXBElement<String> value) {
         this.filter = ((JAXBElement<String> ) value);
+    }
+
+    /**
+     * Gets the value of the orderBy property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link JAXBElement }{@code <}{@link String }{@code >}
+     *     
+     */
+    public JAXBElement<String> getOrderBy() {
+        return orderBy;
+    }
+
+    /**
+     * Sets the value of the orderBy property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link JAXBElement }{@code <}{@link String }{@code >}
+     *     
+     */
+    public void setOrderBy(JAXBElement<String> value) {
+        this.orderBy = ((JAXBElement<String> ) value);
     }
 
     /**
@@ -165,10 +193,10 @@ public class GetCheckedoutDocs {
      * 
      * @return
      *     possible object is
-     *     {@link JAXBElement }{@code <}{@link Boolean }{@code >}
+     *     {@link JAXBElement }{@code <}{@link EnumIncludeRelationships }{@code >}
      *     
      */
-    public JAXBElement<Boolean> getIncludeRelationships() {
+    public JAXBElement<EnumIncludeRelationships> getIncludeRelationships() {
         return includeRelationships;
     }
 
@@ -177,11 +205,11 @@ public class GetCheckedoutDocs {
      * 
      * @param value
      *     allowed object is
-     *     {@link JAXBElement }{@code <}{@link Boolean }{@code >}
+     *     {@link JAXBElement }{@code <}{@link EnumIncludeRelationships }{@code >}
      *     
      */
-    public void setIncludeRelationships(JAXBElement<Boolean> value) {
-        this.includeRelationships = ((JAXBElement<Boolean> ) value);
+    public void setIncludeRelationships(JAXBElement<EnumIncludeRelationships> value) {
+        this.includeRelationships = ((JAXBElement<EnumIncludeRelationships> ) value);
     }
 
     /**

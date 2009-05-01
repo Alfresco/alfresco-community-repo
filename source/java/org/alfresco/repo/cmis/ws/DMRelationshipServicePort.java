@@ -30,7 +30,6 @@ import java.util.List;
 
 import org.alfresco.cmis.CMISScope;
 import org.alfresco.cmis.CMISTypeDefinition;
-import org.alfresco.cmis.CMISTypeId;
 import org.alfresco.repo.cmis.PropertyFilter;
 import org.alfresco.repo.cmis.ws.utils.AlfrescoObjectType;
 import org.alfresco.repo.web.util.paging.Cursor;
@@ -45,7 +44,7 @@ import org.alfresco.service.namespace.QNamePattern;
  * 
  * @author Dmitry Velichkevich
  */
-@javax.jws.WebService(name = "RelationshipServicePort", serviceName = "RelationshipService", portName = "RelationshipServicePort", targetNamespace = "http://www.cmis.org/ns/1.0", endpointInterface = "org.alfresco.repo.cmis.ws.RelationshipServicePort")
+@javax.jws.WebService(name = "RelationshipServicePort", serviceName = "RelationshipService", portName = "RelationshipServicePort", targetNamespace = "http://docs.oasis-open.org/ns/cmis/ws/200901", endpointInterface = "org.alfresco.repo.cmis.ws.RelationshipServicePort")
 public class DMRelationshipServicePort extends DMAbstractServicePort implements RelationshipServicePort
 {
     private DictionaryService dictionaryService;
@@ -55,7 +54,6 @@ public class DMRelationshipServicePort extends DMAbstractServicePort implements 
         this.dictionaryService = dictionaryService;
     }
 
-    
     /**
      * Gets a list of relationships associated with the object, optionally of a specified relationship type, and optionally in a specified direction.
      * 
@@ -63,34 +61,39 @@ public class DMRelationshipServicePort extends DMAbstractServicePort implements 
      *        Relationship Type; includeSubRelationshipTypes: false (Default); filter: property filter; includeAllowableActions: false (default); maxItems: 0 = Unlimited;
      *        skipCount: 0 = start at beginning
      * @return collection of CmisObjectType and boolean hasMoreItems
-     * @throws PermissionDeniedException
-     * @throws UpdateConflictException
-     * @throws FilterNotValidException
-     * @throws ObjectNotFoundException
-     * @throws OperationNotSupportedException
-     * @throws TypeNotFoundException
-     * @throws InvalidArgumentException
-     * @throws RuntimeException
-     * @throws ConstraintViolationException
+     * @throws CmisException (with following {@link EnumServiceException} : INVALID_ARGUMENT, OBJECT_NOT_FOUND, NOT_SUPPORTED, PERMISSION_DENIED, RUNTIME, FILTER_NOT_VALID)
      */
-    public GetRelationshipsResponse getRelationships(GetRelationships parameters) throws PermissionDeniedException, UpdateConflictException, FilterNotValidException,
-            ObjectNotFoundException, OperationNotSupportedException, TypeNotFoundException, InvalidArgumentException, RuntimeException, ConstraintViolationException
+    public GetRelationshipsResponse getRelationships(GetRelationships parameters) throws CmisException
     {
         checkRepositoryId(parameters.getRepositoryId());
 
-        EnumRelationshipDirection direction = ((parameters.getDirection() != null) && (parameters.getDirection().getValue() != null)) ? parameters.getDirection().getValue() : EnumRelationshipDirection.SOURCE;
-        Boolean includingSubtypes = ((parameters.getIncludeSubRelationshipTypes() != null) && (parameters.getIncludeSubRelationshipTypes().getValue() != null)) ? parameters.getIncludeSubRelationshipTypes().getValue() : false;
+        EnumRelationshipDirection direction = ((parameters.getDirection() != null) && (parameters.getDirection().getValue() != null)) ? parameters.getDirection().getValue()
+                : EnumRelationshipDirection.SOURCE;
+        Boolean includingSubtypes = ((parameters.getIncludeSubRelationshipTypes() != null) && (parameters.getIncludeSubRelationshipTypes().getValue() != null)) ? parameters
+                .getIncludeSubRelationshipTypes().getValue() : false;
         String typeId = ((parameters.getTypeId() != null) && (parameters.getTypeId().getValue() != null)) ? parameters.getTypeId().getValue() : null;
         BigInteger skipCount = ((parameters.getSkipCount() != null) && (parameters.getSkipCount().getValue() != null)) ? parameters.getSkipCount().getValue() : BigInteger.ZERO;
         BigInteger maxItems = ((parameters.getMaxItems() != null) && (parameters.getMaxItems().getValue() != null)) ? parameters.getMaxItems().getValue() : BigInteger.ZERO;
 
-        CMISTypeDefinition cmisTypeDef = cmisDictionaryService.findType(typeId);
-        QName associationType = cmisTypeDef.getTypeId().getQName();
+        QName associationType = null;
+        if ((parameters.getTypeId() != null) && (parameters.getTypeId().getValue() != null) && !parameters.getTypeId().getValue().equals(""))
+        {
+            CMISTypeDefinition cmisTypeDef = cmisDictionaryService.findType(typeId);
+            associationType = cmisTypeDef.getTypeId().getQName();
+        }
 
+        // TODO: process 'includeAllowableActions' param, see DMObjectServicePort->determineObjectAllowableActions
         PropertyFilter propertyFilter = createPropertyFilter(parameters.getFilter());
         NodeRef objectNodeRef = (NodeRef) cmisObjectsUtils.getIdentifierInstance(parameters.getObjectId(), AlfrescoObjectType.DOCUMENT_OR_FOLDER_OBJECT).getConvertedIdentifier();
-        List<AssociationRef> assocs = receiveAssociations(objectNodeRef, associationType, direction, includingSubtypes);
-        
+        List<AssociationRef> assocs = null;
+        try
+        {
+            assocs = receiveAssociations(objectNodeRef, associationType, direction, includingSubtypes);
+        }
+        catch (Exception e)
+        {
+            throw cmisObjectsUtils.createCmisException("Can't receive associations", e);
+        }
         return formatResponse(propertyFilter, assocs.toArray(), new GetRelationshipsResponse(), skipCount, maxItems);
     }
 
@@ -99,21 +102,20 @@ public class DMRelationshipServicePort extends DMAbstractServicePort implements 
         List<AssociationRef> result = new LinkedList<AssociationRef>();
         QNamePattern matcher = new RelationshipTypeFilter(relationshipType, includeSubtypes);
 
-        if ((direction == EnumRelationshipDirection.BOTH) || (direction == EnumRelationshipDirection.TARGET))
+        if ((direction == EnumRelationshipDirection.EITHER) || (direction == EnumRelationshipDirection.TARGET))
         {
             result.addAll(nodeService.getSourceAssocs(objectNodeReference, matcher));
         }
 
-        if ((direction == EnumRelationshipDirection.BOTH) || (direction == EnumRelationshipDirection.SOURCE))
+        if ((direction == EnumRelationshipDirection.EITHER) || (direction == EnumRelationshipDirection.SOURCE))
         {
             result.addAll(nodeService.getTargetAssocs(objectNodeReference, matcher));
         }
 
         return result;
     }
-    
+
     private GetRelationshipsResponse formatResponse(PropertyFilter filter, Object[] sourceArray, GetRelationshipsResponse result, BigInteger skipCount, BigInteger maxItems)
-        throws InvalidArgumentException, FilterNotValidException
     {
         Cursor cursor = createCursor(sourceArray.length, skipCount, maxItems);
         for (int i = cursor.getStartRow(); i < cursor.getEndRow(); i++)
@@ -122,7 +124,6 @@ public class DMRelationshipServicePort extends DMAbstractServicePort implements 
         }
         return result;
     }
-
 
     private class RelationshipTypeFilter implements QNamePattern
     {
@@ -152,4 +153,5 @@ public class DMRelationshipServicePort extends DMAbstractServicePort implements 
             }
         }
     }
+
 }

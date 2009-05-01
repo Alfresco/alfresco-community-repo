@@ -17,17 +17,19 @@ import javax.xml.bind.annotation.XmlType;
  *     &lt;enumeration value="ObjectId"/>
  *     &lt;enumeration value="Uri"/>
  *     &lt;enumeration value="ObjectTypeId"/>
+ *     &lt;enumeration value="BaseTypeId"/>
  *     &lt;enumeration value="CreatedBy"/>
  *     &lt;enumeration value="CreationDate"/>
  *     &lt;enumeration value="LastModifiedBy"/>
  *     &lt;enumeration value="LastModificationDate"/>
  *     &lt;enumeration value="ChangeToken"/>
+ *     &lt;enumeration value="Name"/>
  *   &lt;/restriction>
  * &lt;/simpleType>
  * </pre>
  * 
  */
-@XmlType(name = "enumPropertiesBase")
+@XmlType(name = "enumPropertiesBase", namespace = "http://docs.oasis-open.org/ns/cmis/core/200901")
 @XmlEnum
 public enum EnumPropertiesBase {
 
@@ -37,6 +39,8 @@ public enum EnumPropertiesBase {
     URI("Uri"),
     @XmlEnumValue("ObjectTypeId")
     OBJECT_TYPE_ID("ObjectTypeId"),
+    @XmlEnumValue("BaseTypeId")
+    BASE_TYPE_ID("BaseTypeId"),
     @XmlEnumValue("CreatedBy")
     CREATED_BY("CreatedBy"),
     @XmlEnumValue("CreationDate")
@@ -46,7 +50,9 @@ public enum EnumPropertiesBase {
     @XmlEnumValue("LastModificationDate")
     LAST_MODIFICATION_DATE("LastModificationDate"),
     @XmlEnumValue("ChangeToken")
-    CHANGE_TOKEN("ChangeToken");
+    CHANGE_TOKEN("ChangeToken"),
+    @XmlEnumValue("Name")
+    NAME("Name");
     private final String value;
 
     EnumPropertiesBase(String v) {

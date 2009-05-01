@@ -122,8 +122,10 @@ public class DMNavigationServiceTest extends AbstractServiceTest
         }
 
         String folderName1 = "Test Cmis Folder (" + System.currentTimeMillis() + ")";
+        @SuppressWarnings("unused")
         String folderId1 = helper.createFolder(folderName1, folderId);
         String documentName1 = "Test cmis document (" + System.currentTimeMillis() + ")";
+        @SuppressWarnings("unused")
         String documentId1 = helper.createDocument(documentName1, folderId, CMISDictionaryModel.DOCUMENT_TYPE_ID, EnumVersioningState.MAJOR);
 
         response = getChildren(folderId, EnumTypesOfFileableObjects.ANY, 0);
@@ -180,6 +182,7 @@ public class DMNavigationServiceTest extends AbstractServiceTest
         folderName = "Test Cmis Folder (" + System.currentTimeMillis() + ")";
         String folderId1 = helper.createFolder(folderName, folderId);
         documentName = "Test cmis document (" + System.currentTimeMillis() + ")";
+        @SuppressWarnings("unused")
         String documentId1 = helper.createDocument(documentName, folderId1, CMISDictionaryModel.DOCUMENT_TYPE_ID, EnumVersioningState.MAJOR);
 
         response = getDescendants(folderId, EnumTypesOfFileableObjects.FOLDERS, 1);
@@ -299,7 +302,7 @@ public class DMNavigationServiceTest extends AbstractServiceTest
         request.setDepth(cmisObjectFactory.createGetDescendantsDepth(BigInteger.valueOf(depth)));
         request.setFilter(cmisObjectFactory.createGetPropertiesFilter("*"));
         request.setIncludeAllowableActions(cmisObjectFactory.createGetDescendantsIncludeAllowableActions(true));
-        request.setIncludeRelationships(cmisObjectFactory.createGetDescendantsIncludeRelationships(true));
+        request.setIncludeRelationships(cmisObjectFactory.createGetDescendantsIncludeRelationships(EnumIncludeRelationships.BOTH));
 
         GetDescendantsResponse response = ((NavigationServicePort) servicePort).getDescendants(request);
         return response;
@@ -359,7 +362,7 @@ public class DMNavigationServiceTest extends AbstractServiceTest
         request.setReturnToRoot(cmisObjectFactory.createGetFolderParentReturnToRoot(setReturnToRoot));
 
         request.setIncludeAllowableActions(cmisObjectFactory.createGetFolderParentIncludeAllowableActions(true));
-        request.setIncludeRelationships(cmisObjectFactory.createGetFolderParentIncludeRelationships(true));
+        request.setIncludeRelationships(cmisObjectFactory.createGetFolderParentIncludeRelationships(EnumIncludeRelationships.BOTH));
 
         GetFolderParentResponse response = ((NavigationServicePort) servicePort).getFolderParent(request);
         return response;
@@ -376,14 +379,14 @@ public class DMNavigationServiceTest extends AbstractServiceTest
         request.setFilter(filter);
 
         request.setIncludeAllowableActions(cmisObjectFactory.createGetFolderParentIncludeAllowableActions(true));
-        request.setIncludeRelationships(cmisObjectFactory.createGetFolderParentIncludeRelationships(true));
+        request.setIncludeRelationships(cmisObjectFactory.createGetFolderParentIncludeRelationships(EnumIncludeRelationships.BOTH));
 
         GetFolderParentResponse response = null;
         try
         {
             response = ((NavigationServicePort) servicePort).getFolderParent(request);
         }
-        catch (FilterNotValidException e)
+        catch (Exception e)
         {
             fail(e.getMessage());
         }
@@ -408,13 +411,13 @@ public class DMNavigationServiceTest extends AbstractServiceTest
 
         request.setRepositoryId(repositoryId);
 
-        request.setFolderID(cmisObjectFactory.createGetCheckedoutDocsFolderID(folderId));
+        request.setFolderId(cmisObjectFactory.createGetCheckedoutDocsFolderId(folderId));
         request.setFilter(cmisObjectFactory.createGetCheckedoutDocsFilter("*"));
         request.setMaxItems(cmisObjectFactory.createGetCheckedoutDocsMaxItems(BigInteger.valueOf(maxItems)));
         request.setSkipCount(cmisObjectFactory.createGetCheckedoutDocsSkipCount(BigInteger.valueOf(skipCount)));
 
         request.setIncludeAllowableActions(cmisObjectFactory.createGetCheckedoutDocsIncludeAllowableActions(true));
-        request.setIncludeRelationships(cmisObjectFactory.createGetCheckedoutDocsIncludeRelationships(true));
+        request.setIncludeRelationships(cmisObjectFactory.createGetCheckedoutDocsIncludeRelationships(EnumIncludeRelationships.BOTH));
 
         GetCheckedoutDocsResponse response = ((NavigationServicePort) servicePort).getCheckedoutDocs(request);
 

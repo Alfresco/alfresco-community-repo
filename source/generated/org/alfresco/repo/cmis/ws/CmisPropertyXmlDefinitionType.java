@@ -17,11 +17,10 @@ import javax.xml.bind.annotation.XmlType;
  * <pre>
  * &lt;complexType name="cmisPropertyXmlDefinitionType">
  *   &lt;complexContent>
- *     &lt;extension base="{http://www.cmis.org/2008/05}cmisPropertyDefinitionType">
+ *     &lt;extension base="{http://docs.oasis-open.org/ns/cmis/core/200901}cmisPropertyDefinitionType">
  *       &lt;sequence>
- *         &lt;element name="defaultValue" type="{http://www.cmis.org/2008/05}cmisChoiceXmlType" maxOccurs="unbounded" minOccurs="0"/>
+ *         &lt;element name="defaultValue" type="{http://docs.oasis-open.org/ns/cmis/core/200901}cmisChoiceXmlType" maxOccurs="unbounded" minOccurs="0"/>
  *         &lt;element name="schemaURI" type="{http://www.w3.org/2001/XMLSchema}anyURI" minOccurs="0"/>
- *         &lt;element name="encoding" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
  *       &lt;/sequence>
  *     &lt;/extension>
  *   &lt;/complexContent>
@@ -31,10 +30,9 @@ import javax.xml.bind.annotation.XmlType;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "cmisPropertyXmlDefinitionType", propOrder = {
+@XmlType(name = "cmisPropertyXmlDefinitionType", namespace = "http://docs.oasis-open.org/ns/cmis/core/200901", propOrder = {
     "defaultValue",
-    "schemaURI",
-    "encoding"
+    "schemaURI"
 })
 public class CmisPropertyXmlDefinitionType
     extends CmisPropertyDefinitionType
@@ -43,7 +41,6 @@ public class CmisPropertyXmlDefinitionType
     protected List<CmisChoiceXmlType> defaultValue;
     @XmlSchemaType(name = "anyURI")
     protected String schemaURI;
-    protected String encoding;
 
     /**
      * Gets the value of the defaultValue property.
@@ -96,30 +93,6 @@ public class CmisPropertyXmlDefinitionType
      */
     public void setSchemaURI(String value) {
         this.schemaURI = value;
-    }
-
-    /**
-     * Gets the value of the encoding property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getEncoding() {
-        return encoding;
-    }
-
-    /**
-     * Sets the value of the encoding property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setEncoding(String value) {
-        this.encoding = value;
     }
 
 }

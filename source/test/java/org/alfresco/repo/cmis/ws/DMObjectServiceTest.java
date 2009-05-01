@@ -24,14 +24,12 @@
  */
 package org.alfresco.repo.cmis.ws;
 
-import java.math.BigInteger;
 import java.util.List;
 
 import javax.activation.DataHandler;
 import javax.xml.ws.Holder;
 
 import org.alfresco.cmis.CMISDictionaryModel;
-import org.alfresco.cmis.mapping.CMISMapping;
 import org.alfresco.repo.content.MimetypeMap;
 
 /**
@@ -83,7 +81,7 @@ public class DMObjectServiceTest extends AbstractServiceTest
         List<CmisProperty> propertiesList = properties.getProperty();
         CmisPropertyString cmisProperty = new CmisPropertyString();
         cmisProperty.setName(CMISDictionaryModel.PROP_NAME);
-        cmisProperty.setValue(documentName);
+        cmisProperty.getValue().add(documentName);
         propertiesList.add(cmisProperty);
 
         CmisContentStreamType cmisStream = new CmisContentStreamType();
@@ -137,14 +135,14 @@ public class DMObjectServiceTest extends AbstractServiceTest
 
     public void testCreateDocument_Exceptions() throws Exception
     {
-        // • If unfiling is not supported and a Folder is not specified, throw FolderNotValidException.
+        // If unfiling is not supported and a Folder is not specified, throw FolderNotValidException.
         try
         {
             documentName = "Test cmis document (" + System.currentTimeMillis() + ")";
             documentId = helper.createDocument(documentName, null, CMISDictionaryModel.DOCUMENT_TYPE_ID, EnumVersioningState.MAJOR);
             fail();
         }
-        catch (FolderNotValidException e)
+        catch (CmisException e)
         {
 
         }
@@ -178,7 +176,7 @@ public class DMObjectServiceTest extends AbstractServiceTest
         assertNotNull(getPropertyValue(propertiesResponse, CMISDictionaryModel.PROP_CONTENT_STREAM_MIME_TYPE));
         assertTrue(getPropertyBooleanValue(propertiesResponse, CMISDictionaryModel.PROP_IS_LATEST_VERSION));
 
-        // A property filter is a string that contains either ‘*’ (to return all properties) or a comma-separated list of property names (to return selected properties). An
+        // A property filter is a string that contains either (to return all properties) or a comma-separated list of property names (to return selected properties). An
         // arbitrary number of spaces are allowed before or after each comma.
 
         // filter = "*Stream*";
@@ -222,19 +220,22 @@ public class DMObjectServiceTest extends AbstractServiceTest
 
         assertEquals(3, responseVersions.getObject().size());
         assertTrue("Initial version was not returned", isExistItemWithProperty(responseVersions.getObject(), CMISDictionaryModel.PROP_VERSION_LABEL, "1.0"));
-        assertTrue("Invalid response ordering: First object is not latest version", (Boolean) PropertyUtil.getProperty(responseVersions.getObject().get(0).getProperties(), CMISDictionaryModel.PROP_IS_LATEST_VERSION));
-        assertTrue("Invalid response ordering: Second object is not head version", (Boolean) PropertyUtil.getProperty(responseVersions.getObject().get(1).getProperties(), CMISDictionaryModel.PROP_IS_LATEST_VERSION));
+        assertTrue("Invalid response ordering: First object is not latest version", (Boolean) PropertyUtil.getProperty(responseVersions.getObject().get(0).getProperties(),
+                CMISDictionaryModel.PROP_IS_LATEST_VERSION));
+        assertTrue("Invalid response ordering: Second object is not head version", (Boolean) PropertyUtil.getProperty(responseVersions.getObject().get(1).getProperties(),
+                CMISDictionaryModel.PROP_IS_LATEST_VERSION));
     }
 
     // This test don't asserts until CMIS setProperty()/setProperties() logic is unimplemented
     public void testGetDocumentProperties_Other() throws Exception
     {
-        // • If “includeAllowableActions” is TRUE, the repository will return the allowable actions for the current user for the object as part of the output.
-        // • "IncludeRelationships" indicates whether relationships are also returned for the object. If it is set to "source" or "target", relationships for which the returned
+        // If includeAllowableActions� is TRUE, the repository will return the allowable actions for the current user for the object as part of the output.
+        // "IncludeRelationships" indicates whether relationships are also returned for the object. If it is set to "source" or "target", relationships for which the returned
         // object is a source, or respectively a target, will also be returned. If it is set to "both", relationships for which the returned object is either a source or a target
         // will be returned. If it is set to "none", relationships are not returned.
 
         GetPropertiesResponse response = helper.getObjectProperties(documentId);
+        @SuppressWarnings("unused")
         CmisObjectType object = response.getObject();
         // TODO: not implemented
         // assertNotNull(object.getAllowableActions());
@@ -250,12 +251,10 @@ public class DMObjectServiceTest extends AbstractServiceTest
         {
             ((ObjectServicePort) servicePort).getProperties(request);
         }
-        catch (InvalidArgumentException e)
+        catch (CmisException e)
         {
-            return;
+            assertTrue(e.getFaultInfo().getType().equals(EnumServiceException.INVALID_ARGUMENT));
         }
-
-        fail("Expects exception");
     }
 
     public void testGetContentStream() throws Exception
@@ -275,9 +274,6 @@ public class DMObjectServiceTest extends AbstractServiceTest
             {
                 result = ((ObjectServicePort) servicePort).getContentStream(repositoryId, documentId);
             }
-        }
-        catch (InvalidArgumentException e)
-        {
         }
         catch (Throwable e)
         {
@@ -300,34 +296,6 @@ public class DMObjectServiceTest extends AbstractServiceTest
 
         helper.checkIn(documentIdHolder, checkinComment, true);
 
-    }
-
-    // this method is not implemented yet
-    public void testCreatePolicy() throws Exception
-    {
-        CreatePolicy request = cmisObjectFactory.createCreatePolicy();
-
-        request.setRepositoryId(repositoryId);
-        request.setFolderId(cmisObjectFactory.createCreatePolicyFolderId(companyHomeId));
-        // there is no CMISMapping.POLICY_TYPE_ID
-        request.setTypeId("policy");
-
-        CmisPropertiesType properties = new CmisPropertiesType();
-        List<CmisProperty> propertiesList = properties.getProperty();
-
-        CmisPropertyString cmisProperty = new CmisPropertyString();
-        cmisProperty.setName(CMISDictionaryModel.PROP_NAME);
-        cmisProperty.setPropertyType(EnumPropertyType.STRING);
-        cmisProperty.setIndex(BigInteger.valueOf(1));
-        cmisProperty.setValue("Cmis Test Policy");
-        propertiesList.add(cmisProperty);
-        request.setProperties(properties);
-
-        // TODO: not implemented
-        // String createPolicy(String repositoryId, String typeId, CmisPropertiesType properties, String folderId)
-        String response = ((ObjectServicePort) servicePort).createPolicy(repositoryId, request.getTypeId(), request.getProperties(), companyHomeId);
-
-        // assertNotNull(response);
     }
 
     public void testCreateRelationship() throws Exception
@@ -360,15 +328,13 @@ public class DMObjectServiceTest extends AbstractServiceTest
 
         try
         {
+            @SuppressWarnings("unused")
             CmisContentStreamType result = ((ObjectServicePort) servicePort).getContentStream(repositoryId, documentId);
-        }
-        catch (StorageException e)
-        {
+            fail("Content stream was not deleted");
         }
         catch (Exception e)
         {
-            e.printStackTrace(); // org.alfresco.repo.cmis.ws.StorageException: The specified Document has no Content Stream
-            fail(e.getMessage());
+
         }
 
         // on content update and on content delete new version should be created
@@ -390,36 +356,29 @@ public class DMObjectServiceTest extends AbstractServiceTest
         // • If the object is the Root Folder, throw OperationNotSupportedException.
 
         documentName = "Test cmis document (" + System.currentTimeMillis() + ")";
+        @SuppressWarnings("unused")
         String documentId = helper.createDocument(documentName, folderId);
 
-        // Try to delere folder with child
+        // Try to delete folder with child
         try
         {
             ((ObjectServicePort) servicePort).deleteObject(repositoryId, folderId);
             fail("Try to delere folder with child");
         }
-        catch (ConstraintViolationException e)
+        catch (CmisException e)
         {
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace();
-            fail(e.getClass().getName() + ": " + e.getMessage());
+            assertTrue(e.getFaultInfo().getType().equals(EnumServiceException.CONSTRAINT));
         }
 
-        // Try to delere root folder
+        // Try to delete root folder
         try
         {
             ((ObjectServicePort) servicePort).deleteObject(repositoryId, helper.getCompanyHomeId(repositoryId));
             fail("Try to delere root folder");
         }
-        catch (OperationNotSupportedException e)
+        catch (CmisException e)
         {
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace();// org.alfresco.repo.cmis.ws.ConstraintViolationException: Could not delete folder with at least one Child
-            fail(e.getClass().getName() + ": " + e.getMessage());
+            assertTrue(e.getFaultInfo().getType().equals(EnumServiceException.NOT_SUPPORTED));
         }
 
     }
@@ -467,57 +426,34 @@ public class DMObjectServiceTest extends AbstractServiceTest
 
         helper.deleteFolder(folderId1);
 
-        /*        
-        // on DELETESINGLEFILED deletes only relationships and folder. Primary parent folder and contend should not be deleted
-        folderName = "Test Cmis Folder (" + System.currentTimeMillis() + ")";
-        folderId1 = helper.createFolder(folderName, folderId);
-
-        folderName = "Test Cmis Folder (" + System.currentTimeMillis() + ")";
-        folderId2 = helper.createFolder(folderName, companyHomeId);
-
-        documentName = "Test cmis document (" + System.currentTimeMillis() + ")";
-        documentId2 = helper.createDocument(documentName, folderId2);
-
-        String relationshipId = createRelationship("test relashionship", folderId1, documentId2);
-
-        response = ((ObjectServicePort) servicePort).deleteTree(repositoryId, folderId1, EnumUnfileNonfolderObjects.DELETESINGLEFILED, true);
-        assertNotNull("DELETESINGLEFILED", response);
-
-        assertNull("DELETESINGLEFILED", helper.getObjectProperties(folderId1));
-        assertNull("DELETESINGLEFILED", helper.getObjectProperties(relationshipId));
-
-        assertNotNull("DELETESINGLEFILED", helper.getObjectProperties(folderId2));
-        assertNotNull("DELETESINGLEFILED", helper.getObjectProperties(documentId2));
-
-        deleteFolder(folderId2);
-
-        // response = ((ObjectServicePort) servicePort).deleteTree(repositoryId, folderId, EnumUnfileNonfolderObjects.UNFILE, true);
-        // assertNotNull("UNFILE", response);
-        //
-        // assertNull(getObjectProperties(folderId));
-
-        // deleteFolder(folderId);
-         * 
-        */
+        /*
+         * // on DELETESINGLEFILED deletes only relationships and folder. Primary parent folder and contend should not be deleted folderName = "Test Cmis Folder (" +
+         * System.currentTimeMillis() + ")"; folderId1 = helper.createFolder(folderName, folderId); folderName = "Test Cmis Folder (" + System.currentTimeMillis() + ")"; folderId2 =
+         * helper.createFolder(folderName, companyHomeId); documentName = "Test cmis document (" + System.currentTimeMillis() + ")"; documentId2 =
+         * helper.createDocument(documentName, folderId2); String relationshipId = createRelationship("test relashionship", folderId1, documentId2); response = ((ObjectServicePort)
+         * servicePort).deleteTree(repositoryId, folderId1, EnumUnfileNonfolderObjects.DELETESINGLEFILED, true); assertNotNull("DELETESINGLEFILED", response);
+         * assertNull("DELETESINGLEFILED", helper.getObjectProperties(folderId1)); assertNull("DELETESINGLEFILED", helper.getObjectProperties(relationshipId));
+         * assertNotNull("DELETESINGLEFILED", helper.getObjectProperties(folderId2)); assertNotNull("DELETESINGLEFILED", helper.getObjectProperties(documentId2));
+         * deleteFolder(folderId2); // response = ((ObjectServicePort) servicePort).deleteTree(repositoryId, folderId, EnumUnfileNonfolderObjects.UNFILE, true); //
+         * assertNotNull("UNFILE", response); // // assertNull(getObjectProperties(folderId)); // deleteFolder(folderId);
+         */
     }
 
     public void testDeleteTree_Exceptions() throws Exception
     {
-        // Try to delere root folder
+        // Try to delete root folder
         try
         {
+            @SuppressWarnings("unused")
             DeleteTreeResponse.FailedToDelete response = ((ObjectServicePort) servicePort).deleteTree(repositoryId, helper.getCompanyHomeId(repositoryId),
                     EnumUnfileNonfolderObjects.DELETE, true);
             fail("Try to delere root folder");
         }
-        catch (OperationNotSupportedException e)
+        catch (CmisException e)
         {
+            assertTrue(e.getFaultInfo().getType().equals(EnumServiceException.NOT_SUPPORTED));
         }
-        catch (Exception e)
-        {
-            e.printStackTrace();
-            fail(e.getMessage());
-        }
+
     }
 
     public void testGetAllowableActions() throws Exception
@@ -567,15 +503,11 @@ public class DMObjectServiceTest extends AbstractServiceTest
             ((ObjectServicePort) servicePort).moveObject(repositoryId, documentId, folderId, null);
             fail("sourceFolderId is not specified - should throw InvalidArgumentException");
         }
-        catch (InvalidArgumentException e)
+        catch (CmisException e)
         {
+            assertTrue(e.getFaultInfo().getType().equals(EnumServiceException.INVALID_ARGUMENT));
+        }
 
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace();
-            fail(e.getClass().getName() + ": " + e.getMessage());
-        }
     }
 
     public void testSetContentStream() throws Exception
@@ -633,14 +565,9 @@ public class DMObjectServiceTest extends AbstractServiceTest
             ((ObjectServicePort) servicePort).setContentStream(repositoryId, new Holder<String>(documentId), false, contentStream);
             fail("ContentAlreadyExists should be thrown");
         }
-        catch (ContentAlreadyExistsException e)
+        catch (CmisException e)
         {
-
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace();
-            fail(e.getMessage());
+            assertTrue(e.getFaultInfo().getType().equals(EnumServiceException.CONTENT_ALREADY_EXISTS));
         }
 
         // now we can not set any property (beside name) when we create new document - so this case not working
@@ -654,15 +581,11 @@ public class DMObjectServiceTest extends AbstractServiceTest
                 ((ObjectServicePort) servicePort).setContentStream(repositoryId, new Holder<String>(documentId), true, contentStream);
                 fail("ConstraintViolationException should be thrown");
             }
-            catch (ConstraintViolationException e)
+            catch (CmisException e)
             {
+                assertTrue(e.getFaultInfo().getType().equals(EnumServiceException.CONSTRAINT));
+            }
 
-            }
-            catch (Exception e)
-            {
-                e.printStackTrace();
-                fail(e.getMessage());
-            }
         }
 
     }
@@ -677,7 +600,7 @@ public class DMObjectServiceTest extends AbstractServiceTest
         List<CmisProperty> propertiesList = properties.getProperty();
         CmisPropertyString cmisProperty = new CmisPropertyString();
         cmisProperty.setName(CMISDictionaryModel.PROP_NAME);
-        cmisProperty.setValue(newName);
+        cmisProperty.getValue().add(newName);
         propertiesList.add(cmisProperty);
 
         // public void updateProperties(String repositoryId, Holder<String> objectId, String changeToken, CmisPropertiesType properties)
@@ -697,7 +620,7 @@ public class DMObjectServiceTest extends AbstractServiceTest
         List<CmisProperty> propertiesList = properties.getProperty();
         CmisPropertyString cmisProperty = new CmisPropertyString();
         cmisProperty.setName(CMISDictionaryModel.PROP_OBJECT_ID);
-        cmisProperty.setValue("new id value");
+        cmisProperty.getValue().add("new id value");
         propertiesList.add(cmisProperty);
 
         try
@@ -706,14 +629,9 @@ public class DMObjectServiceTest extends AbstractServiceTest
             ((ObjectServicePort) servicePort).updateProperties(repositoryId, new Holder<String>(documentId), new String(""), properties);
             fail("should not update read only propery");
         }
-        catch (ConstraintViolationException e)
+        catch (CmisException e)
         {
-
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace();
-            fail(e.getMessage());
+            assertTrue(e.getFaultInfo().getType().equals(EnumServiceException.CONSTRAINT));
         }
     }
 }

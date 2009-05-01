@@ -24,9 +24,11 @@
  */
 package org.alfresco.repo.cmis.ws;
 
-@javax.jws.WebService(name = "PolicyServicePort", serviceName = "PolicyServicePort", portName = "PolicyServicePort", targetNamespace = "http://www.cmis.org/ns/1.0", endpointInterface = "org.alfresco.repo.cmis.ws.PolicyServicePort")
+
+@javax.jws.WebService(name = "PolicyServicePort", serviceName = "PolicyServicePort", portName = "PolicyServicePort", targetNamespace = "http://docs.oasis-open.org/ns/cmis/ws/200901", endpointInterface = "org.alfresco.repo.cmis.ws.PolicyServicePort")
 public class DMPolicyServicePort extends DMAbstractServicePort implements PolicyServicePort
 {
+    private static final String POLICY_NOT_SUPPORTED_MESSAGE = "PolicyService not supported";
 
     /**
      * Applies a policy object to a target object.
@@ -34,38 +36,22 @@ public class DMPolicyServicePort extends DMAbstractServicePort implements Policy
      * @param repositoryId repository Id
      * @param policyId policy Id
      * @param objectId target object Id
-     * @throws PermissionDeniedException
-     * @throws UpdateConflictException
-     * @throws ObjectNotFoundException
-     * @throws OperationNotSupportedException
-     * @throws InvalidArgumentException
-     * @throws RuntimeException
-     * @throws ConstraintViolationException
+     * @throws CmisException (with following {@link EnumServiceException} : INVALID_ARGUMENT, OBJECT_NOT_FOUND, NOT_SUPPORTED, PERMISSION_DENIED, RUNTIME, CONSTRAINT)
      */
-    public void applyPolicy(String repositoryId, String policyId, String objectId) throws PermissionDeniedException, UpdateConflictException, ObjectNotFoundException,
-            OperationNotSupportedException, InvalidArgumentException, RuntimeException, ConstraintViolationException
+    public void applyPolicy(String repositoryId, String policyId, String objectId) throws CmisException
     {
-        // TODO Auto-generated method stub
+        throw cmisObjectsUtils.createCmisException(POLICY_NOT_SUPPORTED_MESSAGE, EnumServiceException.NOT_SUPPORTED);
     }
 
     /**
      * Gets the list of policy objects currently applied to a target object.
      * 
      * @param parameters repositoryId: repository Id; objectId: target object Id; filter: filter specifying which properties to return
-     * @throws PermissionDeniedException
-     * @throws UpdateConflictException
-     * @throws FilterNotValidException
-     * @throws ObjectNotFoundException
-     * @throws OperationNotSupportedException
-     * @throws InvalidArgumentException
-     * @throws RuntimeException
-     * @throws ConstraintViolationException
+     * @throws CmisException (with following {@link EnumServiceException} : INVALID_ARGUMENT, OBJECT_NOT_FOUND, NOT_SUPPORTED, PERMISSION_DENIED, RUNTIME, FILTER_NOT_VALID)
      */
-    public GetAppliedPoliciesResponse getAppliedPolicies(GetAppliedPolicies parameters) throws PermissionDeniedException, UpdateConflictException, FilterNotValidException,
-            ObjectNotFoundException, OperationNotSupportedException, InvalidArgumentException, RuntimeException, ConstraintViolationException
+    public GetAppliedPoliciesResponse getAppliedPolicies(GetAppliedPolicies parameters) throws CmisException
     {
-        // TODO Auto-generated method stub
-        return null;
+        throw cmisObjectsUtils.createCmisException(POLICY_NOT_SUPPORTED_MESSAGE, EnumServiceException.NOT_SUPPORTED);
     }
 
     /**
@@ -74,18 +60,10 @@ public class DMPolicyServicePort extends DMAbstractServicePort implements Policy
      * @param repositoryId repository Id
      * @param policyId policy Id
      * @param objectId target object Id.
-     * @throws PermissionDeniedException
-     * @throws UpdateConflictException
-     * @throws ObjectNotFoundException
-     * @throws OperationNotSupportedException
-     * @throws InvalidArgumentException
-     * @throws RuntimeException
-     * @throws ConstraintViolationException
+     * @throws CmisException (with following {@link EnumServiceException} : INVALID_ARGUMENT, OBJECT_NOT_FOUND, NOT_SUPPORTED, PERMISSION_DENIED, RUNTIME, CONSTRAINT)
      */
-    public void removePolicy(String repositoryId, String policyId, String objectId) throws PermissionDeniedException, UpdateConflictException, ObjectNotFoundException,
-            OperationNotSupportedException, InvalidArgumentException, RuntimeException, ConstraintViolationException
+    public void removePolicy(String repositoryId, String policyId, String objectId) throws CmisException
     {
-        // TODO Auto-generated method stub
+        throw cmisObjectsUtils.createCmisException(POLICY_NOT_SUPPORTED_MESSAGE, EnumServiceException.NOT_SUPPORTED);
     }
-
 }

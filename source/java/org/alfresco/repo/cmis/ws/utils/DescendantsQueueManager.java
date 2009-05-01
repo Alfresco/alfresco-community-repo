@@ -45,7 +45,7 @@ public class DescendantsQueueManager
     protected DescendantsQueueManager()
     {
     }
-    
+
     public boolean isEmpty()
     {
         return this.queue.isEmpty();
@@ -62,7 +62,7 @@ public class DescendantsQueueManager
         queue.remove(result);
         return result;
     }
-    
+
     public void addFirst(DescendantElement parent, List<ChildAssociationRef> children)
     {
         for (ChildAssociationRef child : children)
@@ -70,7 +70,7 @@ public class DescendantsQueueManager
             queue.addFirst(createElement(parent, child));
         }
     }
-    
+
     private DescendantElement createElement(DescendantElement parent, ChildAssociationRef child)
     {
         return new DescendantElement(parent, child);
@@ -80,7 +80,7 @@ public class DescendantsQueueManager
     {
         queue.addLast(element);
     }
-    
+
     public void removeParents(DescendantElement element, List<String> undeletedNodes)
     {
 
@@ -134,5 +134,5 @@ public class DescendantsQueueManager
             return (childAssoc != null) ? (childAssoc.equals(currentElement.getChildAssoc())) : (currentElement.getChildAssoc() == null);
         }
     }
-    
+
 }

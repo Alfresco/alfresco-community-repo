@@ -22,7 +22,7 @@ import javax.xml.bind.annotation.XmlType;
  *       &lt;sequence>
  *         &lt;element name="repositoryId" type="{http://www.w3.org/2001/XMLSchema}string"/>
  *         &lt;element name="typeId" type="{http://www.w3.org/2001/XMLSchema}string"/>
- *         &lt;element name="properties" type="{http://www.cmis.org/2008/05}cmisPropertiesType"/>
+ *         &lt;element name="properties" type="{http://docs.oasis-open.org/ns/cmis/core/200901}cmisPropertiesType"/>
  *         &lt;element name="folderId" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
  *       &lt;/sequence>
  *     &lt;/restriction>
@@ -48,7 +48,7 @@ public class CreatePolicy {
     protected String typeId;
     @XmlElement(required = true)
     protected CmisPropertiesType properties;
-    @XmlElementRef(name = "folderId", namespace = "http://www.cmis.org/2008/05", type = JAXBElement.class)
+    @XmlElementRef(name = "folderId", namespace = "http://docs.oasis-open.org/ns/cmis/messaging/200901", type = JAXBElement.class)
     protected JAXBElement<String> folderId;
 
     /**

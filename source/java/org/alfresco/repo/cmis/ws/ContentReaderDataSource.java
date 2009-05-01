@@ -48,7 +48,9 @@ public class ContentReaderDataSource implements DataSource
         this.name = name;
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see javax.activation.DataSource#getContentType()
      */
     public String getContentType()
@@ -56,7 +58,9 @@ public class ContentReaderDataSource implements DataSource
         return contentReader.getMimetype();
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see javax.activation.DataSource#getInputStream()
      */
     public InputStream getInputStream() throws IOException
@@ -64,7 +68,9 @@ public class ContentReaderDataSource implements DataSource
         return contentReader.getContentInputStream();
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see javax.activation.DataSource#getName()
      */
     public String getName()
@@ -72,7 +78,9 @@ public class ContentReaderDataSource implements DataSource
         return name;
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see javax.activation.DataSource#getOutputStream()
      */
     public OutputStream getOutputStream() throws IOException

@@ -24,13 +24,14 @@ import org.w3c.dom.Element;
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
- *         &lt;element name="properties" type="{http://www.cmis.org/2008/05}cmisPropertiesType" minOccurs="0"/>
- *         &lt;element ref="{http://www.cmis.org/2008/05}allowableActions" minOccurs="0"/>
- *         &lt;element name="relationship" type="{http://www.cmis.org/2008/05}cmisObjectType" maxOccurs="unbounded" minOccurs="0"/>
- *         &lt;element name="child" type="{http://www.cmis.org/2008/05}cmisObjectType" maxOccurs="unbounded" minOccurs="0"/>
+ *         &lt;element name="properties" type="{http://docs.oasis-open.org/ns/cmis/core/200901}cmisPropertiesType" minOccurs="0"/>
+ *         &lt;element ref="{http://docs.oasis-open.org/ns/cmis/core/200901}allowableActions" minOccurs="0"/>
+ *         &lt;element name="relationship" type="{http://docs.oasis-open.org/ns/cmis/core/200901}cmisObjectType" maxOccurs="unbounded" minOccurs="0"/>
+ *         &lt;element name="changeObject" type="{http://docs.oasis-open.org/ns/cmis/core/200901}cmisChangedObjectType" minOccurs="0"/>
+ *         &lt;element name="child" type="{http://docs.oasis-open.org/ns/cmis/core/200901}cmisObjectType" maxOccurs="unbounded" minOccurs="0"/>
  *         &lt;any/>
  *       &lt;/sequence>
- *       &lt;attGroup ref="{http://www.cmis.org/2008/05}cmisUndefinedAttribute"/>
+ *       &lt;attGroup ref="{http://docs.oasis-open.org/ns/cmis/core/200901}cmisUndefinedAttribute"/>
  *     &lt;/restriction>
  *   &lt;/complexContent>
  * &lt;/complexType>
@@ -39,10 +40,11 @@ import org.w3c.dom.Element;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "cmisObjectType", propOrder = {
+@XmlType(name = "cmisObjectType", namespace = "http://docs.oasis-open.org/ns/cmis/core/200901", propOrder = {
     "properties",
     "allowableActions",
     "relationship",
+    "changeObject",
     "child",
     "any"
 })
@@ -51,6 +53,7 @@ public class CmisObjectType {
     protected CmisPropertiesType properties;
     protected CmisAllowableActionsType allowableActions;
     protected List<CmisObjectType> relationship;
+    protected CmisChangedObjectType changeObject;
     protected List<CmisObjectType> child;
     @XmlAnyElement(lax = true)
     protected List<Object> any;
@@ -135,6 +138,30 @@ public class CmisObjectType {
     }
 
     /**
+     * Gets the value of the changeObject property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link CmisChangedObjectType }
+     *     
+     */
+    public CmisChangedObjectType getChangeObject() {
+        return changeObject;
+    }
+
+    /**
+     * Sets the value of the changeObject property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link CmisChangedObjectType }
+     *     
+     */
+    public void setChangeObject(CmisChangedObjectType value) {
+        this.changeObject = value;
+    }
+
+    /**
      * Gets the value of the child property.
      * 
      * <p>
@@ -181,8 +208,8 @@ public class CmisObjectType {
      * 
      * <p>
      * Objects of the following type(s) are allowed in the list
-     * {@link Element }
      * {@link Object }
+     * {@link Element }
      * 
      * 
      */

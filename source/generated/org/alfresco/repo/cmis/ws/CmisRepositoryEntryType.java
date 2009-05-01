@@ -26,12 +26,12 @@ import org.w3c.dom.Element;
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
- *         &lt;element name="repositoryID" type="{http://www.w3.org/2001/XMLSchema}string"/>
+ *         &lt;element name="repositoryId" type="{http://www.w3.org/2001/XMLSchema}string"/>
  *         &lt;element name="repositoryName" type="{http://www.w3.org/2001/XMLSchema}string"/>
  *         &lt;element name="repositoryURI" type="{http://www.w3.org/2001/XMLSchema}anyURI"/>
  *         &lt;any/>
  *       &lt;/sequence>
- *       &lt;attGroup ref="{http://www.cmis.org/2008/05}cmisUndefinedAttribute"/>
+ *       &lt;attGroup ref="{http://docs.oasis-open.org/ns/cmis/core/200901}cmisUndefinedAttribute"/>
  *     &lt;/restriction>
  *   &lt;/complexContent>
  * &lt;/complexType>
@@ -40,8 +40,8 @@ import org.w3c.dom.Element;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "cmisRepositoryEntryType", propOrder = {
-    "repositoryID",
+@XmlType(name = "cmisRepositoryEntryType", namespace = "http://docs.oasis-open.org/ns/cmis/core/200901", propOrder = {
+    "repositoryId",
     "repositoryName",
     "repositoryURI",
     "any"
@@ -49,7 +49,7 @@ import org.w3c.dom.Element;
 public class CmisRepositoryEntryType {
 
     @XmlElement(required = true)
-    protected String repositoryID;
+    protected String repositoryId;
     @XmlElement(required = true)
     protected String repositoryName;
     @XmlElement(required = true)
@@ -61,27 +61,27 @@ public class CmisRepositoryEntryType {
     private Map<QName, String> otherAttributes = new HashMap<QName, String>();
 
     /**
-     * Gets the value of the repositoryID property.
+     * Gets the value of the repositoryId property.
      * 
      * @return
      *     possible object is
      *     {@link String }
      *     
      */
-    public String getRepositoryID() {
-        return repositoryID;
+    public String getRepositoryId() {
+        return repositoryId;
     }
 
     /**
-     * Sets the value of the repositoryID property.
+     * Sets the value of the repositoryId property.
      * 
      * @param value
      *     allowed object is
      *     {@link String }
      *     
      */
-    public void setRepositoryID(String value) {
-        this.repositoryID = value;
+    public void setRepositoryId(String value) {
+        this.repositoryId = value;
     }
 
     /**
@@ -150,8 +150,8 @@ public class CmisRepositoryEntryType {
      * 
      * <p>
      * Objects of the following type(s) are allowed in the list
-     * {@link Element }
      * {@link Object }
+     * {@link Element }
      * 
      * 
      */

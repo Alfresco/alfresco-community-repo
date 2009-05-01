@@ -47,7 +47,7 @@ public class GetPropertiesOfLatestVersion {
     @XmlElement(required = true)
     protected String versionSeriesId;
     protected boolean majorVersion;
-    @XmlElementRef(name = "filter", namespace = "http://www.cmis.org/2008/05", type = JAXBElement.class)
+    @XmlElementRef(name = "filter", namespace = "http://docs.oasis-open.org/ns/cmis/messaging/200901", type = JAXBElement.class)
     protected JAXBElement<String> filter;
 
     /**

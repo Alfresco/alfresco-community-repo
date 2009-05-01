@@ -14,9 +14,11 @@ import javax.xml.bind.annotation.XmlType;
  * <pre>
  * &lt;simpleType name="enumPropertiesRelationship">
  *   &lt;restriction base="{http://www.w3.org/2001/XMLSchema}string">
+ *     &lt;enumeration value="Name"/>
  *     &lt;enumeration value="ObjectId"/>
  *     &lt;enumeration value="Uri"/>
  *     &lt;enumeration value="ObjectTypeId"/>
+ *     &lt;enumeration value="BaseTypeId"/>
  *     &lt;enumeration value="CreatedBy"/>
  *     &lt;enumeration value="CreationDate"/>
  *     &lt;enumeration value="LastModifiedBy"/>
@@ -29,16 +31,20 @@ import javax.xml.bind.annotation.XmlType;
  * </pre>
  * 
  */
-@XmlType(name = "enumPropertiesRelationship")
+@XmlType(name = "enumPropertiesRelationship", namespace = "http://docs.oasis-open.org/ns/cmis/core/200901")
 @XmlEnum
 public enum EnumPropertiesRelationship {
 
+    @XmlEnumValue("Name")
+    NAME("Name"),
     @XmlEnumValue("ObjectId")
     OBJECT_ID("ObjectId"),
     @XmlEnumValue("Uri")
     URI("Uri"),
     @XmlEnumValue("ObjectTypeId")
     OBJECT_TYPE_ID("ObjectTypeId"),
+    @XmlEnumValue("BaseTypeId")
+    BASE_TYPE_ID("BaseTypeId"),
     @XmlEnumValue("CreatedBy")
     CREATED_BY("CreatedBy"),
     @XmlEnumValue("CreationDate")

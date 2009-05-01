@@ -24,20 +24,23 @@
  */
 package org.alfresco.repo.cmis.ws.utils;
 
+import java.math.BigInteger;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import org.alfresco.cmis.CMISDictionaryService;
 import org.alfresco.cmis.CMISScope;
 import org.alfresco.cmis.CMISTypeDefinition;
-import org.alfresco.cmis.CMISTypeId;
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.cmis.ws.CmisException;
+import org.alfresco.repo.cmis.ws.CmisFaultType;
 import org.alfresco.repo.cmis.ws.EnumObjectType;
-import org.alfresco.repo.cmis.ws.InvalidArgumentException;
-import org.alfresco.repo.cmis.ws.ObjectNotFoundException;
-import org.alfresco.repo.cmis.ws.OperationNotSupportedException;
+import org.alfresco.repo.cmis.ws.EnumServiceException;
 import org.alfresco.repo.cmis.ws.utils.DescendantsQueueManager.DescendantElement;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.service.cmr.coci.CheckOutCheckInService;
 import org.alfresco.service.cmr.lock.LockService;
 import org.alfresco.service.cmr.lock.LockStatus;
@@ -67,6 +70,15 @@ public class CmisObjectsUtils
         DOCUMENT_AND_FOLDER_TYPES.add(ContentModel.TYPE_FOLDER);
     }
 
+    private static final Map<String, EnumServiceException> CLASS_TO_ENUM_EXCEPTION_MAPPING;
+    static
+    {
+        CLASS_TO_ENUM_EXCEPTION_MAPPING = new HashMap<String, EnumServiceException>();
+        CLASS_TO_ENUM_EXCEPTION_MAPPING.put(AccessDeniedException.class.getName(), EnumServiceException.PERMISSION_DENIED);
+        CLASS_TO_ENUM_EXCEPTION_MAPPING.put(java.lang.RuntimeException.class.getName(), EnumServiceException.RUNTIME);
+        // TODO: insert CLASS_TO_ENUM_EXCEPTION_MAPPING.put(<Concreate_Exception_Type>.class.getName(), EnumServiceException.<Appropriate_Enum_value>);
+    }
+
     private CheckOutCheckInService checkOutCheckInService;
     private CMISDictionaryService cmisDictionaryService;
     private FileFolderService fileFolderService;
@@ -76,7 +88,6 @@ public class CmisObjectsUtils
 
     private Throwable lastOperationException;
 
-    
     public void setCmisDictionaryService(CMISDictionaryService cmisDictionaryService)
     {
         this.cmisDictionaryService = cmisDictionaryService;
@@ -106,13 +117,46 @@ public class CmisObjectsUtils
     {
         this.authorityService = authorityService;
     }
-    
-    
-    public IdentifierConversionResults getIdentifierInstance(String identifier, AlfrescoObjectType expectedType) throws InvalidArgumentException
+
+    public CmisException createCmisException(String message, EnumServiceException exceptionType)
+    {
+        return createCmisException(message, exceptionType, null, 0);
+    }
+
+    public CmisException createCmisException(String message, Throwable cause)
+    {
+        EnumServiceException exceptionType = null;
+
+        if (CLASS_TO_ENUM_EXCEPTION_MAPPING.containsKey(cause.getClass().getName()))
+        {
+            exceptionType = CLASS_TO_ENUM_EXCEPTION_MAPPING.get(cause.getClass().getName());
+        }
+
+        exceptionType = (exceptionType == null) ? (EnumServiceException.RUNTIME) : (exceptionType);
+
+        return createCmisException(message, exceptionType, cause, 0);
+    }
+
+    public CmisException createCmisException(String message, EnumServiceException exceptionType, Throwable cause)
+    {
+        return createCmisException(message, exceptionType, cause, 0);
+    }
+
+    public CmisException createCmisException(String message, EnumServiceException exceptionType, Throwable cause, int errorCode)
+    {
+        CmisFaultType fault = new CmisFaultType();
+        fault.setMessage(message);
+        fault.setType(exceptionType);
+        fault.setCode(BigInteger.valueOf(errorCode));
+
+        return new CmisException(message, fault, cause);
+    }
+
+    public IdentifierConversionResults getIdentifierInstance(String identifier, AlfrescoObjectType expectedType) throws CmisException
     {
         if (!(identifier instanceof String))
         {
-            throw new InvalidArgumentException("Invalid Object Identifier was specified");
+            throw createCmisException("Invalid Object Identifier was specified", EnumServiceException.INVALID_ARGUMENT);
         }
 
         IdentifierConversionResults result;
@@ -135,11 +179,10 @@ public class CmisObjectsUtils
             return result;
         }
 
-        throw new InvalidArgumentException("Unexpected object type of the specified Object Identifier " + identifier);
+        throw createCmisException(("Unexpected object type of the specified Object Identifier " + identifier), EnumServiceException.INVALID_ARGUMENT);
     }
 
-    public void deleteFolder(NodeRef folderNodeReference, boolean continueOnFailure, boolean totalDeletion, List<String> resultList)
-        throws OperationNotSupportedException
+    public void deleteFolder(NodeRef folderNodeReference, boolean continueOnFailure, boolean totalDeletion, List<String> resultList) throws CmisException
     {
         DescendantsQueueManager queueManager = new DescendantsQueueManager(new ChildAssociationRef(ContentModel.ASSOC_CONTAINS, null, null, folderNodeReference));
 
@@ -159,7 +202,8 @@ public class CmisObjectsUtils
         } while (!queueManager.isEmpty() && (continueOnFailure || resultList.isEmpty()));
     }
 
-    private void processUnlinkStatus(DescendantElement currentElement, UnlinkOperationStatus unlinkStatus, DescendantsQueueManager queueManager, List<String> resultList, boolean addAllFailedToDelete)
+    private void processUnlinkStatus(DescendantElement currentElement, UnlinkOperationStatus unlinkStatus, DescendantsQueueManager queueManager, List<String> resultList,
+            boolean addAllFailedToDelete)
     {
         if (!unlinkStatus.getChildren().isEmpty())
         {
@@ -174,7 +218,7 @@ public class CmisObjectsUtils
             queueManager.removeParents(currentElement, resultList);
         }
     }
-    
+
     public boolean deleteObject(NodeRef objectNodeReference)
     {
         return canLock(objectNodeReference) && performNodeDeletion(objectNodeReference);
@@ -202,7 +246,8 @@ public class CmisObjectsUtils
     {
         try
         {
-            QName name = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, QName.createValidLocalName((String)nodeService.getProperty(objectNodeRef, ContentModel.PROP_NAME)));            
+            QName name = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, QName.createValidLocalName((String) nodeService.getProperty(objectNodeRef,
+                    ContentModel.PROP_NAME)));
             nodeService.addChild(parentFolderNodeRef, objectNodeRef, ContentModel.ASSOC_CONTAINS, name);
             return true;
         }
@@ -277,7 +322,7 @@ public class CmisObjectsUtils
 
     public boolean isChildOfThisFolder(NodeRef objectNodeReference, NodeRef folderNodeReference)
     {
-        NodeRef searchedObjectNodeReference = fileFolderService.searchSimple(folderNodeReference, (String)nodeService.getProperty(objectNodeReference, ContentModel.PROP_NAME));
+        NodeRef searchedObjectNodeReference = fileFolderService.searchSimple(folderNodeReference, (String) nodeService.getProperty(objectNodeReference, ContentModel.PROP_NAME));
         return (searchedObjectNodeReference != null) && searchedObjectNodeReference.equals(objectNodeReference);
     }
 
@@ -333,12 +378,12 @@ public class CmisObjectsUtils
         }
         else
         {
-            objectUnlinked = !isPrimaryObjectParent(parentFolderNodeReference, objectNodeReference) && removeObject(objectNodeReference, parentFolderNodeReference);            
+            objectUnlinked = !isPrimaryObjectParent(parentFolderNodeReference, objectNodeReference) && removeObject(objectNodeReference, parentFolderNodeReference);
         }
         return new UnlinkOperationStatus(objectUnlinked, new LinkedList<ChildAssociationRef>());
     }
 
-    private NodeRef safeGetNodeRef(String nodeIdentifier) throws InvalidArgumentException
+    private NodeRef safeGetNodeRef(String nodeIdentifier) throws CmisException
     {
         if (NodeRef.isNodeRef(nodeIdentifier))
         {
@@ -349,7 +394,8 @@ public class CmisObjectsUtils
             }
         }
 
-        throw new InvalidArgumentException("Invalid Object Identifier was specified: Identifier is incorrect or Object with the specified Identifier does not exist", new ObjectNotFoundException());
+        throw createCmisException("Invalid Object Identifier was specified: Identifier is incorrect or Object with the specified Identifier does not exist",
+                EnumServiceException.OBJECT_NOT_FOUND);
     }
 
     private String cutNodeVersionIfNecessary(String identifier, String[] splitNodeIdentifier, int startIndex)
@@ -357,7 +403,8 @@ public class CmisObjectsUtils
         String withoutVersionSuffix = identifier;
         if (splitNodeIdentifier.length == NODE_REFERENCE_WITH_SUFFIX_DELIMETERS_COUNT)
         {
-            withoutVersionSuffix = splitNodeIdentifier[startIndex++ - 1] + DOUBLE_NODE_REFERENCE_ID_DELIMETER + splitNodeIdentifier[startIndex++] + NODE_REFERENCE_ID_DELIMETER + splitNodeIdentifier[startIndex];
+            withoutVersionSuffix = splitNodeIdentifier[startIndex++ - 1] + DOUBLE_NODE_REFERENCE_ID_DELIMETER + splitNodeIdentifier[startIndex++] + NODE_REFERENCE_ID_DELIMETER
+                    + splitNodeIdentifier[startIndex];
         }
         return withoutVersionSuffix;
     }
@@ -382,6 +429,7 @@ public class CmisObjectsUtils
     {
         return new IdentifierConversionResults()
         {
+            @SuppressWarnings("unchecked")
             public AssociationRef getConvertedIdentifier()
             {
                 return new AssociationRef(identifier);
@@ -393,6 +441,7 @@ public class CmisObjectsUtils
     {
         return new IdentifierConversionResults()
         {
+            @SuppressWarnings("unchecked")
             public NodeRef getConvertedIdentifier()
             {
                 return identifier;
@@ -430,10 +479,10 @@ public class CmisObjectsUtils
             return this.children;
         }
     }
-    
+
     public Throwable getLastOperationException()
     {
         return lastOperationException;
     }
-    
+
 }

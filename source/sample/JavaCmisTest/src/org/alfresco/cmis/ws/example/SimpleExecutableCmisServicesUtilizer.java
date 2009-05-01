@@ -102,7 +102,7 @@ public class SimpleExecutableCmisServicesUtilizer
         for (CmisObjectType item : response)
         {
             boolean thisIsFolder = ((CmisPropertyString) getCmisProperty(item.getProperties(), "BaseType")).getValue().contains("folder");
-            String itemName = ((CmisPropertyString) getCmisProperty(item.getProperties(), "Name")).getValue();
+            String itemName = ((CmisPropertyString) getCmisProperty(item.getProperties(), "Name")).getValue().get(0);
 
             System.out.println(((thisIsFolder) ? ("[") : ("")) + itemName + ((thisIsFolder) ? ("]") : ("")));
         }

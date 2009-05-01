@@ -24,7 +24,7 @@ import javax.xml.bind.annotation.XmlType;
  *         &lt;element name="folderId" type="{http://www.w3.org/2001/XMLSchema}string"/>
  *         &lt;element name="filter" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
  *         &lt;element name="includeAllowableActions" type="{http://www.w3.org/2001/XMLSchema}boolean" minOccurs="0"/>
- *         &lt;element name="includeRelationships" type="{http://www.w3.org/2001/XMLSchema}boolean" minOccurs="0"/>
+ *         &lt;element name="includeRelationships" type="{http://docs.oasis-open.org/ns/cmis/core/200901}enumIncludeRelationships" minOccurs="0"/>
  *         &lt;element name="returnToRoot" type="{http://www.w3.org/2001/XMLSchema}boolean" minOccurs="0"/>
  *       &lt;/sequence>
  *     &lt;/restriction>
@@ -51,11 +51,11 @@ public class GetFolderParent {
     @XmlElement(required = true)
     protected String folderId;
     protected String filter;
-    @XmlElementRef(name = "includeAllowableActions", namespace = "http://www.cmis.org/2008/05", type = JAXBElement.class)
+    @XmlElementRef(name = "includeAllowableActions", namespace = "http://docs.oasis-open.org/ns/cmis/messaging/200901", type = JAXBElement.class)
     protected JAXBElement<Boolean> includeAllowableActions;
-    @XmlElementRef(name = "includeRelationships", namespace = "http://www.cmis.org/2008/05", type = JAXBElement.class)
-    protected JAXBElement<Boolean> includeRelationships;
-    @XmlElementRef(name = "returnToRoot", namespace = "http://www.cmis.org/2008/05", type = JAXBElement.class)
+    @XmlElementRef(name = "includeRelationships", namespace = "http://docs.oasis-open.org/ns/cmis/messaging/200901", type = JAXBElement.class)
+    protected JAXBElement<EnumIncludeRelationships> includeRelationships;
+    @XmlElementRef(name = "returnToRoot", namespace = "http://docs.oasis-open.org/ns/cmis/messaging/200901", type = JAXBElement.class)
     protected JAXBElement<Boolean> returnToRoot;
 
     /**
@@ -159,10 +159,10 @@ public class GetFolderParent {
      * 
      * @return
      *     possible object is
-     *     {@link JAXBElement }{@code <}{@link Boolean }{@code >}
+     *     {@link JAXBElement }{@code <}{@link EnumIncludeRelationships }{@code >}
      *     
      */
-    public JAXBElement<Boolean> getIncludeRelationships() {
+    public JAXBElement<EnumIncludeRelationships> getIncludeRelationships() {
         return includeRelationships;
     }
 
@@ -171,11 +171,11 @@ public class GetFolderParent {
      * 
      * @param value
      *     allowed object is
-     *     {@link JAXBElement }{@code <}{@link Boolean }{@code >}
+     *     {@link JAXBElement }{@code <}{@link EnumIncludeRelationships }{@code >}
      *     
      */
-    public void setIncludeRelationships(JAXBElement<Boolean> value) {
-        this.includeRelationships = ((JAXBElement<Boolean> ) value);
+    public void setIncludeRelationships(JAXBElement<EnumIncludeRelationships> value) {
+        this.includeRelationships = ((JAXBElement<EnumIncludeRelationships> ) value);
     }
 
     /**

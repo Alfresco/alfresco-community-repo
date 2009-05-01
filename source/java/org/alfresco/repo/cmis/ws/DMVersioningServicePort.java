@@ -24,6 +24,7 @@
  */
 package org.alfresco.repo.cmis.ws;
 
+import java.io.Serializable;
 import java.util.List;
 
 import javax.xml.ws.Holder;
@@ -46,7 +47,7 @@ import org.alfresco.service.cmr.version.VersionType;
  * @author Dmitry Lazurkin
  * @author Dmitry Velichkevich
  */
-@javax.jws.WebService(name = "VersioningServicePort", serviceName = "VersioningService", portName = "VersioningServicePort", targetNamespace = "http://www.cmis.org/ns/1.0", endpointInterface = "org.alfresco.repo.cmis.ws.VersioningServicePort")
+@javax.jws.WebService(name = "VersioningServicePort", serviceName = "VersioningService", portName = "VersioningServicePort", targetNamespace = "http://docs.oasis-open.org/ns/cmis/ws/200901", endpointInterface = "org.alfresco.repo.cmis.ws.VersioningServicePort")
 public class DMVersioningServicePort extends DMAbstractServicePort implements VersioningServicePort
 {
     private LockService lockService;
@@ -56,22 +57,16 @@ public class DMVersioningServicePort extends DMAbstractServicePort implements Ve
         this.lockService = lockService;
     }
 
-
     /**
      * Reverses the effect of a check-out. Removes the private working copy of the checked-out document object, allowing other documents in the version series to be checked out
      * again.
      * 
      * @param repositoryId repository Id
      * @param documentId document Id
-     * @throws PermissionDeniedException
-     * @throws UpdateConflictException
-     * @throws ObjectNotFoundException
-     * @throws OperationNotSupportedException
-     * @throws InvalidArgumentException
-     * @throws RuntimeException
+     * @throws CmisException (with following {@link EnumServiceException} : INVALID_ARGUMENT, OBJECT_NOT_FOUND, NOT_SUPPORTED, PERMISSION_DENIED, RUNTIME, CONSTRAINT,
+     *         UPDATE_CONFLICT, VERSIONING)
      */
-    public void cancelCheckOut(String repositoryId, String documentId)
-        throws PermissionDeniedException, UpdateConflictException, ObjectNotFoundException, OperationNotSupportedException, InvalidArgumentException, RuntimeException
+    public void cancelCheckOut(String repositoryId, String documentId) throws CmisException
     {
         checkRepositoryId(repositoryId);
         NodeRef workingCopyNodeRef = cmisObjectsUtils.getIdentifierInstance(documentId, AlfrescoObjectType.DOCUMENT_OBJECT).getConvertedIdentifier();
@@ -88,18 +83,11 @@ public class DMVersioningServicePort extends DMAbstractServicePort implements Ve
      * @param properties CMIS properties
      * @param contentStream content stream
      * @param checkinComment check in comment
-     * @throws PermissionDeniedException
-     * @throws UpdateConflictException
-     * @throws StorageException
-     * @throws StreamNotSupportedException
-     * @throws ObjectNotFoundException
-     * @throws OperationNotSupportedException
-     * @throws InvalidArgumentException
-     * @throws RuntimeException
-     * @throws ConstraintViolationException
+     * @throws CmisException (with following {@link EnumServiceException} : INVALID_ARGUMENT, OBJECT_NOT_FOUND, NOT_SUPPORTED, PERMISSION_DENIED, RUNTIME, CONSTRAINT, STORAGE,
+     *         STREAM_NOT_SUPPORTED, UPDATE_CONFLICT, VERSIONING)
      */
     public void checkIn(String repositoryId, Holder<String> documentId, Boolean major, CmisPropertiesType properties, CmisContentStreamType contentStream, String checkinComment)
-        throws PermissionDeniedException, UpdateConflictException, StorageException, StreamNotSupportedException, ObjectNotFoundException, OperationNotSupportedException, InvalidArgumentException, RuntimeException, ConstraintViolationException
+            throws CmisException
     {
         checkRepositoryId(repositoryId);
         NodeRef workingCopyNodeRef = cmisObjectsUtils.getIdentifierInstance(documentId.value, AlfrescoObjectType.DOCUMENT_OBJECT).getConvertedIdentifier();
@@ -115,16 +103,17 @@ public class DMVersioningServicePort extends DMAbstractServicePort implements Ve
             }
             catch (Exception e)
             {
-                throw new RuntimeException("Exception while updating content stream");
+                throw cmisObjectsUtils.createCmisException("Exception while updating content stream", EnumServiceException.RUNTIME, e);
             }
         }
 
+        NodeRef nodeRef = checkOutCheckInService.checkin(workingCopyNodeRef,
+                createVersionProperties(checkinComment, major != null && major ? VersionType.MAJOR : VersionType.MINOR));
+
         if (properties != null)
         {
-            setProperties(workingCopyNodeRef, properties);
+            setProperties(nodeRef, properties);
         }
-
-        NodeRef nodeRef = checkOutCheckInService.checkin(workingCopyNodeRef, createVersionProperties(checkinComment, major != null && major ? VersionType.MAJOR : VersionType.MINOR));
         documentId.value = (String) cmisService.getProperty(nodeRef, CMISDictionaryModel.PROP_OBJECT_ID);
     }
 
@@ -135,16 +124,10 @@ public class DMVersioningServicePort extends DMAbstractServicePort implements Ve
      * @param documentId ObjectID of document version to checkout
      * @param contentCopied
      * @return ObjectID of private working copy as documentId; True if succeed, False otherwise as contentCopied
-     * @throws PermissionDeniedException
-     * @throws UpdateConflictException
-     * @throws ObjectNotFoundException
-     * @throws OperationNotSupportedException
-     * @throws InvalidArgumentException
-     * @throws RuntimeException
-     * @throws ConstraintViolationException
+     * @throws CmisException (with following {@link EnumServiceException} : INVALID_ARGUMENT, OBJECT_NOT_FOUND, NOT_SUPPORTED, PERMISSION_DENIED, RUNTIME, CONSTRAINT, STORAGE,
+     *         UPDATE_CONFLICT, VERSIONING)
      */
-    public void checkOut(String repositoryId, Holder<String> documentId, Holder<Boolean> contentCopied)
-        throws PermissionDeniedException, UpdateConflictException, ObjectNotFoundException, OperationNotSupportedException, InvalidArgumentException, RuntimeException, ConstraintViolationException
+    public void checkOut(String repositoryId, Holder<String> documentId, Holder<Boolean> contentCopied) throws CmisException
     {
         checkRepositoryId(repositoryId);
 
@@ -153,7 +136,7 @@ public class DMVersioningServicePort extends DMAbstractServicePort implements Ve
 
         if (lockStatus.equals(LockStatus.LOCKED) || lockStatus.equals(LockStatus.LOCK_OWNER) || nodeService.hasAspect(documentNodeRef, ContentModel.ASPECT_WORKING_COPY))
         {
-            throw new OperationNotSupportedException("Object is already checked out");
+            throw cmisObjectsUtils.createCmisException("Object is already checked out", EnumServiceException.NOT_SUPPORTED);
         }
 
         NodeRef pwcNodeRef = checkoutNode(documentNodeRef);
@@ -166,16 +149,9 @@ public class DMVersioningServicePort extends DMAbstractServicePort implements Ve
      * 
      * @param repositoryId repository Id
      * @param versionSeriesId version series Id
-     * @throws PermissionDeniedException
-     * @throws UpdateConflictException
-     * @throws ObjectNotFoundException
-     * @throws OperationNotSupportedException
-     * @throws InvalidArgumentException
-     * @throws RuntimeException
-     * @throws ConstraintViolationException
+     * @throws CmisException (with following {@link EnumServiceException} : INVALID_ARGUMENT, OBJECT_NOT_FOUND, NOT_SUPPORTED, PERMISSION_DENIED, RUNTIME)
      */
-    public void deleteAllVersions(String repositoryId, String versionSeriesId)
-        throws PermissionDeniedException, UpdateConflictException, ObjectNotFoundException, OperationNotSupportedException, InvalidArgumentException, RuntimeException, ConstraintViolationException
+    public void deleteAllVersions(String repositoryId, String versionSeriesId) throws CmisException
     {
         checkRepositoryId(repositoryId);
         NodeRef documentNodeRef = cmisObjectsUtils.getIdentifierInstance(versionSeriesId, AlfrescoObjectType.DOCUMENT_OBJECT).getConvertedIdentifier();
@@ -187,17 +163,9 @@ public class DMVersioningServicePort extends DMAbstractServicePort implements Ve
      * 
      * @param parameters repositoryId: repository Id; versionSeriesId: version series Id; filter: property filter; includeAllowableActions; includeRelationships;
      * @return list of CmisObjectType
-     * @throws PermissionDeniedException
-     * @throws UpdateConflictException
-     * @throws FilterNotValidException
-     * @throws ObjectNotFoundException
-     * @throws OperationNotSupportedException
-     * @throws InvalidArgumentException
-     * @throws RuntimeException
-     * @throws ConstraintViolationException
+     * @throws CmisException (with following {@link EnumServiceException} : INVALID_ARGUMENT, OBJECT_NOT_FOUND, NOT_SUPPORTED, PERMISSION_DENIED, RUNTIME, FILTER_NOT_VALID)
      */
-    public GetAllVersionsResponse getAllVersions(GetAllVersions parameters)
-        throws PermissionDeniedException, UpdateConflictException, FilterNotValidException, ObjectNotFoundException, OperationNotSupportedException, InvalidArgumentException, RuntimeException, ConstraintViolationException
+    public GetAllVersionsResponse getAllVersions(GetAllVersions parameters) throws CmisException
     {
         checkRepositoryId(parameters.getRepositoryId());
 
@@ -234,9 +202,9 @@ public class DMVersioningServicePort extends DMAbstractServicePort implements Ve
      * @param parameters repositoryId: repository Id; versionSeriesId: version series Id; majorVersion: whether or not to return the latest major version. Default=FALSE; filter:
      *        property filter
      * @return CmisObjectType with properties
+     * @throws CmisException (with following {@link EnumServiceException} : INVALID_ARGUMENT, OBJECT_NOT_FOUND, NOT_SUPPORTED, PERMISSION_DENIED, RUNTIME, FILTER_NOT_VALID)
      */
-    public GetPropertiesOfLatestVersionResponse getPropertiesOfLatestVersion(GetPropertiesOfLatestVersion parameters)
-        throws PermissionDeniedException, UpdateConflictException, FilterNotValidException, ObjectNotFoundException, OperationNotSupportedException, InvalidArgumentException, RuntimeException
+    public GetPropertiesOfLatestVersionResponse getPropertiesOfLatestVersion(GetPropertiesOfLatestVersion parameters) throws CmisException
     {
         checkRepositoryId(parameters.getRepositoryId());
         PropertyFilter propertyFilter = createPropertyFilter(parameters.getFilter());
@@ -244,10 +212,15 @@ public class DMVersioningServicePort extends DMAbstractServicePort implements Ve
         NodeRef documentNodeRef = cmisObjectsUtils.getIdentifierInstance(parameters.getVersionSeriesId(), AlfrescoObjectType.DOCUMENT_OBJECT).getConvertedIdentifier();
         NodeRef latestVersionNodeRef = getLatestNode(documentNodeRef, parameters.isMajorVersion());
 
+        Serializable property = cmisService.getProperty(latestVersionNodeRef, CMISDictionaryModel.PROP_IS_MAJOR_VERSION);
+        if (parameters.isMajorVersion() && ((property == null) || !((Boolean)property)))
+        {
+            throw cmisObjectsUtils.createCmisException("Object that was specified has no latest major version", EnumServiceException.OBJECT_NOT_FOUND);
+        }
+
         GetPropertiesOfLatestVersionResponse response = new GetPropertiesOfLatestVersionResponse();
         response.setObject(new CmisObjectType());
-        CmisObjectType object = response.getObject();
-        object.setProperties(getPropertiesType(latestVersionNodeRef.toString(), propertyFilter));
+        response.getObject().setProperties(getPropertiesType(latestVersionNodeRef.toString(), propertyFilter));
 
         return response;
     }
@@ -261,11 +234,11 @@ public class DMVersioningServicePort extends DMAbstractServicePort implements Ve
         }
     }
 
-    private void assertWorkingCopy(NodeRef nodeRef) throws OperationNotSupportedException
+    private void assertWorkingCopy(NodeRef nodeRef) throws CmisException
     {
         if (!cmisObjectsUtils.isWorkingCopy(nodeRef))
         {
-            throw new OperationNotSupportedException("Object isn't checked out");
+            throw cmisObjectsUtils.createCmisException("Object isn't checked out", EnumServiceException.NOT_SUPPORTED);
         }
     }
 }

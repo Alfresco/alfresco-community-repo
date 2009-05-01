@@ -30,9 +30,9 @@ import org.w3c.dom.Element;
  *         &lt;element name="typeId" type="{http://www.w3.org/2001/XMLSchema}string"/>
  *         &lt;element name="queryName" type="{http://www.w3.org/2001/XMLSchema}string"/>
  *         &lt;element name="displayName" type="{http://www.w3.org/2001/XMLSchema}string"/>
- *         &lt;element name="baseType" type="{http://www.cmis.org/2008/05}enumObjectType"/>
+ *         &lt;element name="baseType" type="{http://docs.oasis-open.org/ns/cmis/core/200901}enumBaseObjectType"/>
  *         &lt;element name="baseTypeQueryName" type="{http://www.w3.org/2001/XMLSchema}string"/>
- *         &lt;element name="parentId" type="{http://www.w3.org/2001/XMLSchema}anyType" minOccurs="0"/>
+ *         &lt;element name="parentId" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
  *         &lt;element name="description" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
  *         &lt;element name="creatable" type="{http://www.w3.org/2001/XMLSchema}boolean"/>
  *         &lt;element name="fileable" type="{http://www.w3.org/2001/XMLSchema}boolean"/>
@@ -40,19 +40,19 @@ import org.w3c.dom.Element;
  *         &lt;element name="controllable" type="{http://www.w3.org/2001/XMLSchema}boolean"/>
  *         &lt;element name="includedInSupertypeQuery" type="{http://www.w3.org/2001/XMLSchema}boolean"/>
  *         &lt;choice maxOccurs="unbounded" minOccurs="0">
- *           &lt;element ref="{http://www.cmis.org/2008/05}propertyBooleanDefinition"/>
- *           &lt;element ref="{http://www.cmis.org/2008/05}propertyDateTimeDefinition"/>
- *           &lt;element ref="{http://www.cmis.org/2008/05}propertyDecimalDefinition"/>
- *           &lt;element ref="{http://www.cmis.org/2008/05}propertyHtmlDefinition"/>
- *           &lt;element ref="{http://www.cmis.org/2008/05}propertyIdDefinition"/>
- *           &lt;element ref="{http://www.cmis.org/2008/05}propertyIntegerDefinition"/>
- *           &lt;element ref="{http://www.cmis.org/2008/05}propertyStringDefinition"/>
- *           &lt;element ref="{http://www.cmis.org/2008/05}propertyUriDefinition"/>
- *           &lt;element ref="{http://www.cmis.org/2008/05}propertyXmlDefinition"/>
+ *           &lt;element ref="{http://docs.oasis-open.org/ns/cmis/core/200901}propertyBooleanDefinition"/>
+ *           &lt;element ref="{http://docs.oasis-open.org/ns/cmis/core/200901}propertyDateTimeDefinition"/>
+ *           &lt;element ref="{http://docs.oasis-open.org/ns/cmis/core/200901}propertyDecimalDefinition"/>
+ *           &lt;element ref="{http://docs.oasis-open.org/ns/cmis/core/200901}propertyHtmlDefinition"/>
+ *           &lt;element ref="{http://docs.oasis-open.org/ns/cmis/core/200901}propertyIdDefinition"/>
+ *           &lt;element ref="{http://docs.oasis-open.org/ns/cmis/core/200901}propertyIntegerDefinition"/>
+ *           &lt;element ref="{http://docs.oasis-open.org/ns/cmis/core/200901}propertyStringDefinition"/>
+ *           &lt;element ref="{http://docs.oasis-open.org/ns/cmis/core/200901}propertyUriDefinition"/>
+ *           &lt;element ref="{http://docs.oasis-open.org/ns/cmis/core/200901}propertyXmlDefinition"/>
  *         &lt;/choice>
  *         &lt;any/>
  *       &lt;/sequence>
- *       &lt;attGroup ref="{http://www.cmis.org/2008/05}cmisUndefinedAttribute"/>
+ *       &lt;attGroup ref="{http://docs.oasis-open.org/ns/cmis/core/200901}cmisUndefinedAttribute"/>
  *     &lt;/restriction>
  *   &lt;/complexContent>
  * &lt;/complexType>
@@ -61,7 +61,7 @@ import org.w3c.dom.Element;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "cmisTypeDefinitionType", propOrder = {
+@XmlType(name = "cmisTypeDefinitionType", namespace = "http://docs.oasis-open.org/ns/cmis/core/200901", propOrder = {
     "typeId",
     "queryName",
     "displayName",
@@ -78,9 +78,9 @@ import org.w3c.dom.Element;
     "any"
 })
 @XmlSeeAlso({
-    CmisTypeFolderDefinitionType.class,
-    CmisTypeRelationshipDefinitionType.class,
     CmisTypeDocumentDefinitionType.class,
+    CmisTypeRelationshipDefinitionType.class,
+    CmisTypeFolderDefinitionType.class,
     CmisTypePolicyDefinitionType.class
 })
 public class CmisTypeDefinitionType {
@@ -92,10 +92,10 @@ public class CmisTypeDefinitionType {
     @XmlElement(required = true)
     protected String displayName;
     @XmlElement(required = true)
-    protected EnumObjectType baseType;
+    protected EnumBaseObjectType baseType;
     @XmlElement(required = true)
     protected String baseTypeQueryName;
-    protected Object parentId;
+    protected String parentId;
     protected String description;
     protected boolean creatable;
     protected boolean fileable;
@@ -104,15 +104,15 @@ public class CmisTypeDefinitionType {
     @XmlElement(defaultValue = "true")
     protected boolean includedInSupertypeQuery;
     @XmlElements({
-        @XmlElement(name = "propertyHtmlDefinition", type = CmisPropertyHtmlDefinitionType.class),
-        @XmlElement(name = "propertyIdDefinition", type = CmisPropertyIdDefinitionType.class),
-        @XmlElement(name = "propertyIntegerDefinition", type = CmisPropertyIntegerDefinitionType.class),
-        @XmlElement(name = "propertyDateTimeDefinition", type = CmisPropertyDateTimeDefinitionType.class),
-        @XmlElement(name = "propertyDecimalDefinition", type = CmisPropertyDecimalDefinitionType.class),
-        @XmlElement(name = "propertyUriDefinition", type = CmisPropertyUriDefinitionType.class),
-        @XmlElement(name = "propertyStringDefinition", type = CmisPropertyStringDefinitionType.class),
         @XmlElement(name = "propertyXmlDefinition", type = CmisPropertyXmlDefinitionType.class),
-        @XmlElement(name = "propertyBooleanDefinition", type = CmisPropertyBooleanDefinitionType.class)
+        @XmlElement(name = "propertyStringDefinition", type = CmisPropertyStringDefinitionType.class),
+        @XmlElement(name = "propertyIdDefinition", type = CmisPropertyIdDefinitionType.class),
+        @XmlElement(name = "propertyBooleanDefinition", type = CmisPropertyBooleanDefinitionType.class),
+        @XmlElement(name = "propertyDecimalDefinition", type = CmisPropertyDecimalDefinitionType.class),
+        @XmlElement(name = "propertyIntegerDefinition", type = CmisPropertyIntegerDefinitionType.class),
+        @XmlElement(name = "propertyHtmlDefinition", type = CmisPropertyHtmlDefinitionType.class),
+        @XmlElement(name = "propertyDateTimeDefinition", type = CmisPropertyDateTimeDefinitionType.class),
+        @XmlElement(name = "propertyUriDefinition", type = CmisPropertyUriDefinitionType.class)
     })
     protected List<CmisPropertyDefinitionType> propertyDefinition;
     @XmlAnyElement(lax = true)
@@ -197,10 +197,10 @@ public class CmisTypeDefinitionType {
      * 
      * @return
      *     possible object is
-     *     {@link EnumObjectType }
+     *     {@link EnumBaseObjectType }
      *     
      */
-    public EnumObjectType getBaseType() {
+    public EnumBaseObjectType getBaseType() {
         return baseType;
     }
 
@@ -209,10 +209,10 @@ public class CmisTypeDefinitionType {
      * 
      * @param value
      *     allowed object is
-     *     {@link EnumObjectType }
+     *     {@link EnumBaseObjectType }
      *     
      */
-    public void setBaseType(EnumObjectType value) {
+    public void setBaseType(EnumBaseObjectType value) {
         this.baseType = value;
     }
 
@@ -245,10 +245,10 @@ public class CmisTypeDefinitionType {
      * 
      * @return
      *     possible object is
-     *     {@link Object }
+     *     {@link String }
      *     
      */
-    public Object getParentId() {
+    public String getParentId() {
         return parentId;
     }
 
@@ -257,10 +257,10 @@ public class CmisTypeDefinitionType {
      * 
      * @param value
      *     allowed object is
-     *     {@link Object }
+     *     {@link String }
      *     
      */
-    public void setParentId(Object value) {
+    public void setParentId(String value) {
         this.parentId = value;
     }
 
@@ -386,15 +386,15 @@ public class CmisTypeDefinitionType {
      * 
      * <p>
      * Objects of the following type(s) are allowed in the list
-     * {@link CmisPropertyHtmlDefinitionType }
-     * {@link CmisPropertyIdDefinitionType }
-     * {@link CmisPropertyIntegerDefinitionType }
-     * {@link CmisPropertyDateTimeDefinitionType }
-     * {@link CmisPropertyDecimalDefinitionType }
-     * {@link CmisPropertyUriDefinitionType }
-     * {@link CmisPropertyStringDefinitionType }
      * {@link CmisPropertyXmlDefinitionType }
+     * {@link CmisPropertyStringDefinitionType }
+     * {@link CmisPropertyIdDefinitionType }
      * {@link CmisPropertyBooleanDefinitionType }
+     * {@link CmisPropertyDecimalDefinitionType }
+     * {@link CmisPropertyIntegerDefinitionType }
+     * {@link CmisPropertyHtmlDefinitionType }
+     * {@link CmisPropertyDateTimeDefinitionType }
+     * {@link CmisPropertyUriDefinitionType }
      * 
      * 
      */
@@ -423,8 +423,8 @@ public class CmisTypeDefinitionType {
      * 
      * <p>
      * Objects of the following type(s) are allowed in the list
-     * {@link Element }
      * {@link Object }
+     * {@link Element }
      * 
      * 
      */

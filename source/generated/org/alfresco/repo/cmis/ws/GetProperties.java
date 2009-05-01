@@ -22,10 +22,10 @@ import javax.xml.bind.annotation.XmlType;
  *       &lt;sequence>
  *         &lt;element name="repositoryId" type="{http://www.w3.org/2001/XMLSchema}string"/>
  *         &lt;element name="objectId" type="{http://www.w3.org/2001/XMLSchema}string"/>
- *         &lt;element name="returnVersion" type="{http://www.cmis.org/2008/05}enumReturnVersion" minOccurs="0"/>
+ *         &lt;element name="returnVersion" type="{http://docs.oasis-open.org/ns/cmis/core/200901}enumReturnVersion" minOccurs="0"/>
  *         &lt;element name="filter" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
  *         &lt;element name="includeAllowableActions" type="{http://www.w3.org/2001/XMLSchema}boolean" minOccurs="0"/>
- *         &lt;element name="includeRelationships" type="{http://www.w3.org/2001/XMLSchema}boolean" minOccurs="0"/>
+ *         &lt;element name="includeRelationships" type="{http://docs.oasis-open.org/ns/cmis/core/200901}enumIncludeRelationships" minOccurs="0"/>
  *       &lt;/sequence>
  *     &lt;/restriction>
  *   &lt;/complexContent>
@@ -50,14 +50,14 @@ public class GetProperties {
     protected String repositoryId;
     @XmlElement(required = true)
     protected String objectId;
-    @XmlElementRef(name = "returnVersion", namespace = "http://www.cmis.org/2008/05", type = JAXBElement.class)
+    @XmlElementRef(name = "returnVersion", namespace = "http://docs.oasis-open.org/ns/cmis/messaging/200901", type = JAXBElement.class)
     protected JAXBElement<EnumReturnVersion> returnVersion;
-    @XmlElementRef(name = "filter", namespace = "http://www.cmis.org/2008/05", type = JAXBElement.class)
+    @XmlElementRef(name = "filter", namespace = "http://docs.oasis-open.org/ns/cmis/messaging/200901", type = JAXBElement.class)
     protected JAXBElement<String> filter;
-    @XmlElementRef(name = "includeAllowableActions", namespace = "http://www.cmis.org/2008/05", type = JAXBElement.class)
+    @XmlElementRef(name = "includeAllowableActions", namespace = "http://docs.oasis-open.org/ns/cmis/messaging/200901", type = JAXBElement.class)
     protected JAXBElement<Boolean> includeAllowableActions;
-    @XmlElementRef(name = "includeRelationships", namespace = "http://www.cmis.org/2008/05", type = JAXBElement.class)
-    protected JAXBElement<Boolean> includeRelationships;
+    @XmlElementRef(name = "includeRelationships", namespace = "http://docs.oasis-open.org/ns/cmis/messaging/200901", type = JAXBElement.class)
+    protected JAXBElement<EnumIncludeRelationships> includeRelationships;
 
     /**
      * Gets the value of the repositoryId property.
@@ -184,10 +184,10 @@ public class GetProperties {
      * 
      * @return
      *     possible object is
-     *     {@link JAXBElement }{@code <}{@link Boolean }{@code >}
+     *     {@link JAXBElement }{@code <}{@link EnumIncludeRelationships }{@code >}
      *     
      */
-    public JAXBElement<Boolean> getIncludeRelationships() {
+    public JAXBElement<EnumIncludeRelationships> getIncludeRelationships() {
         return includeRelationships;
     }
 
@@ -196,11 +196,11 @@ public class GetProperties {
      * 
      * @param value
      *     allowed object is
-     *     {@link JAXBElement }{@code <}{@link Boolean }{@code >}
+     *     {@link JAXBElement }{@code <}{@link EnumIncludeRelationships }{@code >}
      *     
      */
-    public void setIncludeRelationships(JAXBElement<Boolean> value) {
-        this.includeRelationships = ((JAXBElement<Boolean> ) value);
+    public void setIncludeRelationships(JAXBElement<EnumIncludeRelationships> value) {
+        this.includeRelationships = ((JAXBElement<EnumIncludeRelationships> ) value);
     }
 
 }

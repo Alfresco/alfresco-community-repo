@@ -7,34 +7,34 @@ import javax.xml.bind.annotation.XmlType;
 
 
 /**
- * <p>Java class for enumCapabilityFullText.
+ * <p>Java class for enumCapabilityACL.
  * 
  * <p>The following schema fragment specifies the expected content contained within this class.
  * <p>
  * <pre>
- * &lt;simpleType name="enumCapabilityFullText">
+ * &lt;simpleType name="enumCapabilityACL">
  *   &lt;restriction base="{http://www.w3.org/2001/XMLSchema}string">
  *     &lt;enumeration value="none"/>
- *     &lt;enumeration value="fulltextonly"/>
- *     &lt;enumeration value="fulltextandstructured"/>
+ *     &lt;enumeration value="read"/>
+ *     &lt;enumeration value="set"/>
  *   &lt;/restriction>
  * &lt;/simpleType>
  * </pre>
  * 
  */
-@XmlType(name = "enumCapabilityFullText")
+@XmlType(name = "enumCapabilityACL", namespace = "http://docs.oasis-open.org/ns/cmis/core/200901")
 @XmlEnum
-public enum EnumCapabilityFullText {
+public enum EnumCapabilityACL {
 
     @XmlEnumValue("none")
     NONE("none"),
-    @XmlEnumValue("fulltextonly")
-    FULLTEXTONLY("fulltextonly"),
-    @XmlEnumValue("fulltextandstructured")
-    FULLTEXTANDSTRUCTURED("fulltextandstructured");
+    @XmlEnumValue("read")
+    READ("read"),
+    @XmlEnumValue("set")
+    SET("set");
     private final String value;
 
-    EnumCapabilityFullText(String v) {
+    EnumCapabilityACL(String v) {
         value = v;
     }
 
@@ -42,8 +42,8 @@ public enum EnumCapabilityFullText {
         return value;
     }
 
-    public static EnumCapabilityFullText fromValue(String v) {
-        for (EnumCapabilityFullText c: EnumCapabilityFullText.values()) {
+    public static EnumCapabilityACL fromValue(String v) {
+        for (EnumCapabilityACL c: EnumCapabilityACL.values()) {
             if (c.value.equals(v)) {
                 return c;
             }

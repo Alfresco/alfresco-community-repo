@@ -22,10 +22,10 @@ import javax.xml.bind.annotation.XmlType;
  *       &lt;sequence>
  *         &lt;element name="repositoryId" type="{http://www.w3.org/2001/XMLSchema}string"/>
  *         &lt;element name="typeId" type="{http://www.w3.org/2001/XMLSchema}string"/>
- *         &lt;element name="properties" type="{http://www.cmis.org/2008/05}cmisPropertiesType"/>
+ *         &lt;element name="properties" type="{http://docs.oasis-open.org/ns/cmis/core/200901}cmisPropertiesType"/>
  *         &lt;element name="folderId" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
- *         &lt;element name="contentStream" type="{http://www.cmis.org/2008/05}cmisContentStreamType" minOccurs="0"/>
- *         &lt;element name="versioningState" type="{http://www.cmis.org/2008/05}enumVersioningState" minOccurs="0"/>
+ *         &lt;element name="contentStream" type="{http://docs.oasis-open.org/ns/cmis/core/200901}cmisContentStreamType" minOccurs="0"/>
+ *         &lt;element name="versioningState" type="{http://docs.oasis-open.org/ns/cmis/core/200901}enumVersioningState" minOccurs="0"/>
  *       &lt;/sequence>
  *     &lt;/restriction>
  *   &lt;/complexContent>
@@ -53,9 +53,9 @@ public class CreateDocument {
     @XmlElement(required = true)
     protected CmisPropertiesType properties;
     protected String folderId;
-    @XmlElementRef(name = "contentStream", namespace = "http://www.cmis.org/2008/05", type = JAXBElement.class)
+    @XmlElementRef(name = "contentStream", namespace = "http://docs.oasis-open.org/ns/cmis/messaging/200901", type = JAXBElement.class)
     protected JAXBElement<CmisContentStreamType> contentStream;
-    @XmlElementRef(name = "versioningState", namespace = "http://www.cmis.org/2008/05", type = JAXBElement.class)
+    @XmlElementRef(name = "versioningState", namespace = "http://docs.oasis-open.org/ns/cmis/messaging/200901", type = JAXBElement.class)
     protected JAXBElement<EnumVersioningState> versioningState;
 
     /**

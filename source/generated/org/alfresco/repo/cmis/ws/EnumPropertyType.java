@@ -28,7 +28,7 @@ import javax.xml.bind.annotation.XmlType;
  * </pre>
  * 
  */
-@XmlType(name = "enumPropertyType")
+@XmlType(name = "enumPropertyType", namespace = "http://docs.oasis-open.org/ns/cmis/core/200901")
 @XmlEnum
 public enum EnumPropertyType {
 

@@ -23,7 +23,7 @@ import javax.xml.bind.annotation.XmlType;
  * </pre>
  * 
  */
-@XmlType(name = "enumTypesOfFileableObjects")
+@XmlType(name = "enumTypesOfFileableObjects", namespace = "http://docs.oasis-open.org/ns/cmis/core/200901")
 @XmlEnum
 public enum EnumTypesOfFileableObjects {
 

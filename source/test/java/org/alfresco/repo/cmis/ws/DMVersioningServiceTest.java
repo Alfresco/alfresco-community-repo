@@ -126,9 +126,9 @@ public class DMVersioningServiceTest extends AbstractServiceTest
             fail("Expects exception");
 
         }
-        catch (Throwable e)
+        catch (CmisException e)
         {
-            assertTrue(e instanceof OperationNotSupportedException);
+            assertTrue(e.getFaultInfo().getType().equals(EnumServiceException.NOT_SUPPORTED));
         }
     }
 
@@ -141,9 +141,9 @@ public class DMVersioningServiceTest extends AbstractServiceTest
             fail("Expects exception");
 
         }
-        catch (Throwable e)
+        catch (CmisException e)
         {
-            assertTrue(e instanceof OperationNotSupportedException);
+            assertTrue(e.getFaultInfo().getType().equals(EnumServiceException.NOT_SUPPORTED));
         }
     }
 
@@ -210,7 +210,7 @@ public class DMVersioningServiceTest extends AbstractServiceTest
         request.setVersionSeriesId(documentId);
         request.setFilter(cmisObjectFactory.createGetAllVersionsFilter("*"));
         request.setIncludeAllowableActions(cmisObjectFactory.createGetAllVersionsIncludeAllowableActions(Boolean.FALSE));
-        request.setIncludeRelationships(cmisObjectFactory.createGetAllVersionsIncludeRelationships(Boolean.FALSE));
+        request.setIncludeRelationships(cmisObjectFactory.createGetAllVersionsIncludeRelationships(EnumIncludeRelationships.NONE));
 
         GetAllVersionsResponse response = ((VersioningServicePort) servicePort).getAllVersions(request);
         assertNotNull(response);
@@ -226,7 +226,7 @@ public class DMVersioningServiceTest extends AbstractServiceTest
         request.setVersionSeriesId(documentId);
         request.setFilter(cmisObjectFactory.createGetAllVersionsFilter("*"));
         request.setIncludeAllowableActions(cmisObjectFactory.createGetAllVersionsIncludeAllowableActions(Boolean.FALSE));
-        request.setIncludeRelationships(cmisObjectFactory.createGetAllVersionsIncludeRelationships(Boolean.FALSE));
+        request.setIncludeRelationships(cmisObjectFactory.createGetAllVersionsIncludeRelationships(EnumIncludeRelationships.NONE));
 
         GetAllVersionsResponse response = ((VersioningServicePort) servicePort).getAllVersions(request);
         assertNotNull(response);
@@ -247,7 +247,7 @@ public class DMVersioningServiceTest extends AbstractServiceTest
             request.setVersionSeriesId(documentId);
             request.setFilter(cmisObjectFactory.createGetAllVersionsFilter("*"));
             request.setIncludeAllowableActions(cmisObjectFactory.createGetAllVersionsIncludeAllowableActions(Boolean.FALSE));
-            request.setIncludeRelationships(cmisObjectFactory.createGetAllVersionsIncludeRelationships(Boolean.FALSE));
+            request.setIncludeRelationships(cmisObjectFactory.createGetAllVersionsIncludeRelationships(EnumIncludeRelationships.NONE));
 
             GetAllVersionsResponse response = ((VersioningServicePort) servicePort).getAllVersions(request);
             assertNotNull(response);

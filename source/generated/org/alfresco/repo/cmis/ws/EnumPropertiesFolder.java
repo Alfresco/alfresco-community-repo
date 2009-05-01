@@ -14,7 +14,9 @@ import javax.xml.bind.annotation.XmlType;
  * <pre>
  * &lt;simpleType name="enumPropertiesFolder">
  *   &lt;restriction base="{http://www.w3.org/2001/XMLSchema}string">
+ *     &lt;enumeration value="Name"/>
  *     &lt;enumeration value="ObjectId"/>
+ *     &lt;enumeration value="BaseTypeId"/>
  *     &lt;enumeration value="Uri"/>
  *     &lt;enumeration value="ObjectTypeId"/>
  *     &lt;enumeration value="CreatedBy"/>
@@ -29,12 +31,16 @@ import javax.xml.bind.annotation.XmlType;
  * </pre>
  * 
  */
-@XmlType(name = "enumPropertiesFolder")
+@XmlType(name = "enumPropertiesFolder", namespace = "http://docs.oasis-open.org/ns/cmis/core/200901")
 @XmlEnum
 public enum EnumPropertiesFolder {
 
+    @XmlEnumValue("Name")
+    NAME("Name"),
     @XmlEnumValue("ObjectId")
     OBJECT_ID("ObjectId"),
+    @XmlEnumValue("BaseTypeId")
+    BASE_TYPE_ID("BaseTypeId"),
     @XmlEnumValue("Uri")
     URI("Uri"),
     @XmlEnumValue("ObjectTypeId")

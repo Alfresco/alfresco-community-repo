@@ -24,15 +24,15 @@
  */
 package org.alfresco.repo.cmis;
 
-import org.alfresco.repo.cmis.PropertyFilter;
-import org.alfresco.repo.cmis.ws.FilterNotValidException;
-
-import junit.framework.TestCase;
+import org.alfresco.repo.cmis.ws.CmisException;
+import org.alfresco.repo.cmis.ws.EnumServiceException;
+import org.alfresco.repo.cmis.ws.utils.CmisObjectsUtils;
+import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
 
 /**
  * @author Dmitry Velichkevich
  */
-public class PropertyFilterTest extends TestCase
+public class PropertyFilterTest extends AbstractDependencyInjectionSpringContextTests
 {
     private static final String NAME_TOKEN = "name";
 
@@ -58,22 +58,28 @@ public class PropertyFilterTest extends TestCase
     private static final String INVALID_FILTER_WITH_DENIED_SYMBOL = "ObjectId; name";
     private static final String INVALID_FILTER_WITH_LAST_INVALID_SYMBOL = "ObjectId, name*";
 
-    
+    private CmisObjectsUtils cmisObjectsUtils;
+
+    public void setCmisObjectsUtils(CmisObjectsUtils cmisObjectsUtils)
+    {
+        this.cmisObjectsUtils = cmisObjectsUtils;
+    }
+
     public void testValidFilters() throws Exception
     {
         try
         {
             allTokensValidAssertion(new PropertyFilter());
-            allTokensValidAssertion(new PropertyFilter(VALID_MATCHE_ALL_EMPTY_FILTER));
-            allTokensValidAssertion(new PropertyFilter(VALID_MATCHE_ALL_FILTER));
+            allTokensValidAssertion(new PropertyFilter(VALID_MATCHE_ALL_EMPTY_FILTER, cmisObjectsUtils));
+            allTokensValidAssertion(new PropertyFilter(VALID_MATCHE_ALL_FILTER, cmisObjectsUtils));
 
-            onlyNameTokensAssertionValid(new PropertyFilter(VALID_FILTER_WITH_NAME));
+            onlyNameTokensAssertionValid(new PropertyFilter(VALID_FILTER_WITH_NAME, cmisObjectsUtils));
 
-            nameAndObjectIdTokensAssertionValid(new PropertyFilter(VALID_FILTER_WITH_SEVERAL_TOKENS));
-            nameAndObjectIdTokensAssertionValid(new PropertyFilter(LONG_VALID_FILTER_WITH_SEVERAL_TOKENS));
-            nameAndObjectIdTokensAssertionValid(new PropertyFilter(VALID_FILTER_WITH_SEVERAL_TOKENS_WITHOUT_BREAKS));
-            nameAndObjectIdTokensAssertionValid(new PropertyFilter(VALID_FILTER_WITH_SEVERAL_TOKENS_AND_WITH_BREAKS_IN_SOME_PLACES));
-            nameAndObjectIdTokensAssertionValid(new PropertyFilter(VALID_FILTER_WITH_SEVERAL_TOKENS_AND_WITH_SEVERAL_BREAKS_IN_SOME_PLACES));
+            nameAndObjectIdTokensAssertionValid(new PropertyFilter(VALID_FILTER_WITH_SEVERAL_TOKENS, cmisObjectsUtils));
+            nameAndObjectIdTokensAssertionValid(new PropertyFilter(LONG_VALID_FILTER_WITH_SEVERAL_TOKENS, cmisObjectsUtils));
+            nameAndObjectIdTokensAssertionValid(new PropertyFilter(VALID_FILTER_WITH_SEVERAL_TOKENS_WITHOUT_BREAKS, cmisObjectsUtils));
+            nameAndObjectIdTokensAssertionValid(new PropertyFilter(VALID_FILTER_WITH_SEVERAL_TOKENS_AND_WITH_BREAKS_IN_SOME_PLACES, cmisObjectsUtils));
+            nameAndObjectIdTokensAssertionValid(new PropertyFilter(VALID_FILTER_WITH_SEVERAL_TOKENS_AND_WITH_SEVERAL_BREAKS_IN_SOME_PLACES, cmisObjectsUtils));
         }
         catch (Throwable e)
         {
@@ -142,14 +148,22 @@ public class PropertyFilterTest extends TestCase
     {
         try
         {
-            new PropertyFilter(filterValue);
+            new PropertyFilter(filterValue, cmisObjectsUtils);
 
             fail("Invalid filter \"" + filterValue + "\" was interpreted as valid");
         }
-        catch (Throwable e)
+        catch (CmisException e)
         {
-            assertTrue(("Unexpected exception type was thrown: " + e.getClass().getName()), e instanceof FilterNotValidException);
+            assertEquals(("Unexpected exception type was thrown: " + e.getClass().getName()), EnumServiceException.FILTER_NOT_VALID, e.getFaultInfo().getType());
         }
     }
-    
+
+    @Override
+    protected String[] getConfigLocations()
+    {
+        setAutowireMode(AUTOWIRE_BY_NAME);
+        setDependencyCheck(false);
+
+        return new String[] { "classpath:alfresco/cmis-ws-context.xml" };
+    }
 }

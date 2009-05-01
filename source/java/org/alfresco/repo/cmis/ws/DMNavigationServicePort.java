@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2008 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -28,15 +28,19 @@ import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.regex.Pattern;
 
+import org.alfresco.cmis.CMISDictionaryModel;
 import org.alfresco.cmis.CMISTypesFilterEnum;
 import org.alfresco.repo.cmis.PropertyFilter;
 import org.alfresco.repo.cmis.ws.utils.AlfrescoObjectType;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.web.util.paging.Cursor;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
-import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.util.Pair;
+
+import com.sun.star.auth.InvalidArgumentException;
 
 /**
  * Port for navigation service
@@ -44,42 +48,45 @@ import org.alfresco.service.cmr.repository.NodeRef;
  * @author Dmitry Lazurkin
  * @author Dmitry Velichkevich
  */
-@javax.jws.WebService(name = "NavigationServicePort", serviceName = "NavigationService", portName = "NavigationServicePort", targetNamespace = "http://www.cmis.org/ns/1.0", endpointInterface = "org.alfresco.repo.cmis.ws.NavigationServicePort")
+@javax.jws.WebService(name = "NavigationServicePort", serviceName = "NavigationService", portName = "NavigationServicePort", targetNamespace = "http://docs.oasis-open.org/ns/cmis/ws/200901", endpointInterface = "org.alfresco.repo.cmis.ws.NavigationServicePort")
 public class DMNavigationServicePort extends DMAbstractServicePort implements NavigationServicePort
 {
-    private static final String POLICIES_LISTING_UNSUPPORTED_EXCEPTION_MESSAGE = "Policies listing isn't supported";
     private static final int EQUALS_CONDITION_VALUE = 0;
     private static final BigInteger FULL_DESCENDANTS_HIERARCHY_CONDITION = BigInteger.valueOf(-1l);
+
+    private static final String FILTER_TOKENS_DELIMETER = ", ";
+    private static final String POLICIES_LISTING_UNSUPPORTED_EXCEPTION_MESSAGE = "Policies listing isn't supported";
+
+    private static final Pattern ORDER_BY_CLAUSE_MASK = Pattern.compile("^( )*([\\p{Alnum}_]+(( )+((ASC)|(DESC)))?){1}((,){1}( )*[\\p{Alnum}_]+(( )+((ASC)|(DESC)))?)*( )*$",
+            Pattern.CASE_INSENSITIVE);
 
     /**
      * Gets the private working copies of checked-out objects that the user is allowed to update.
      * 
      * @param parameters repositoryId: repository Id; folderID: folder Id; filter: property filter; includeAllowableActions; includeRelationships; maxItems: 0 = Unlimited;
      *        skipCount: 0 = start at beginning
-     * @return collection of CmisObjectType and boolean hasMoreItems
-     * @throws RuntimeException
-     * @throws InvalidArgumentException
-     * @throws ObjectNotFoundException
-     * @throws ConstraintViolationException
-     * @throws FilterNotValidException
-     * @throws OperationNotSupportedException
-     * @throws UpdateConflictException
-     * @throws FolderNotValidException
-     * @throws PermissionDeniedException
+     * @throws CmisException (with following {@link EnumServiceException} : INVALID_ARGUMENT, OBJECT_NOT_FOUND, NOT_SUPPORTED, PERMISSION_DENIED, RUNTIME, FILTER_NOT_VALID)
      */
-    public GetCheckedoutDocsResponse getCheckedoutDocs(GetCheckedoutDocs parameters) throws RuntimeException, InvalidArgumentException, ObjectNotFoundException,
-            ConstraintViolationException, FilterNotValidException, OperationNotSupportedException, UpdateConflictException, FolderNotValidException, PermissionDeniedException
+    public GetCheckedoutDocsResponse getCheckedoutDocs(GetCheckedoutDocs parameters) throws CmisException
     {
         checkRepositoryId(parameters.getRepositoryId());
         PropertyFilter propertyFilter = createPropertyFilter(parameters.getFilter());
 
         NodeRef folderId = null;
-        String folderIdParam = parameters.getFolderID() == null ? null : parameters.getFolderID().getValue();
-        if (folderIdParam != null)
+        String folderIdParam = parameters.getFolderId() == null ? null : parameters.getFolderId().getValue();
+        if ((folderIdParam != null) && !folderIdParam.equals(""))
         {
             folderId = cmisObjectsUtils.getIdentifierInstance(folderIdParam, AlfrescoObjectType.FOLDER_OBJECT).getConvertedIdentifier();
         }
-        
+
+        @SuppressWarnings("unused")
+        List<Pair<String, Boolean>> orderingFields = null;
+        if ((parameters.getOrderBy() != null) && (parameters.getOrderBy().getValue() != null) && !parameters.getOrderBy().getValue().equals(""))
+        {
+            orderingFields = checkAndParseOrderByClause(parameters.getOrderBy().getValue());
+        }
+
+        // TODO: Ordering functionality SHOULD be moved to getChildren service method
         NodeRef[] nodeRefs = cmisService.getCheckedOut(AuthenticationUtil.getFullyAuthenticatedUser(), folderId, (folderId == null));
         Cursor cursor = createCursor(nodeRefs.length, parameters.getSkipCount() != null ? parameters.getSkipCount().getValue() : null,
                 parameters.getMaxItems() != null ? parameters.getMaxItems().getValue() : null);
@@ -106,29 +113,29 @@ public class DMNavigationServicePort extends DMAbstractServicePort implements Na
      * @param parameters repositoryId: repository Id; folderId: folder Id; type: DOCUMENTS, FOLDERS, POLICIES, ANY; filter: property filter; includeAllowableActions;
      *        includeRelationships; maxItems: 0 = Unlimited; skipCount: 0 = start at beginning
      * @return collection of CmisObjectType and boolean hasMoreItems
-     * @throws RuntimeException
-     * @throws InvalidArgumentException
-     * @throws ObjectNotFoundException
-     * @throws ConstraintViolationException
-     * @throws FilterNotValidException
-     * @throws OperationNotSupportedException
-     * @throws UpdateConflictException
-     * @throws FolderNotValidException
-     * @throws PermissionDeniedException
+     * @throws CmisException (with following {@link EnumServiceException} : INVALID_ARGUMENT, OBJECT_NOT_FOUND, NOT_SUPPORTED, PERMISSION_DENIED, RUNTIME, FILTER_NOT_VALID)
      */
-    public GetChildrenResponse getChildren(GetChildren parameters) throws RuntimeException, InvalidArgumentException, ObjectNotFoundException, ConstraintViolationException,
-            FilterNotValidException, OperationNotSupportedException, UpdateConflictException, FolderNotValidException, PermissionDeniedException
+    public GetChildrenResponse getChildren(GetChildren parameters) throws CmisException
     {
+        checkRepositoryId(parameters.getRepositoryId());
         PropertyFilter propertyFilter = createPropertyFilter(parameters.getFilter());
 
         NodeRef folderNodeRef = cmisObjectsUtils.getIdentifierInstance(parameters.getFolderId(), AlfrescoObjectType.FOLDER_OBJECT).getConvertedIdentifier();
 
         EnumTypesOfFileableObjects types = EnumTypesOfFileableObjects.ANY;
-        if (parameters.getType() != null)
+        if ((parameters.getType() != null) && ((parameters.getType().getValue() != null)))
         {
             types = parameters.getType().getValue();
         }
 
+        @SuppressWarnings("unused")
+        List<Pair<String, Boolean>> orderingFields = null;
+        if ((parameters.getOrderBy() != null) && !parameters.getOrderBy().equals(""))
+        {
+            orderingFields = checkAndParseOrderByClause(parameters.getOrderBy());
+        }
+
+        // TODO: Ordering functionality SHOULD be moved to getChildren service method
         NodeRef[] listing = null;
         switch (types)
         {
@@ -139,7 +146,8 @@ public class DMNavigationServicePort extends DMAbstractServicePort implements Na
             listing = cmisService.getChildren(folderNodeRef, CMISTypesFilterEnum.FOLDERS);
             break;
         case POLICIES:
-            throw new OperationNotSupportedException(POLICIES_LISTING_UNSUPPORTED_EXCEPTION_MESSAGE);
+            throw new CmisException(POLICIES_LISTING_UNSUPPORTED_EXCEPTION_MESSAGE, cmisObjectsUtils.createCmisException(POLICIES_LISTING_UNSUPPORTED_EXCEPTION_MESSAGE,
+                    EnumServiceException.NOT_SUPPORTED));
         case ANY:
             listing = cmisService.getChildren(folderNodeRef, CMISTypesFilterEnum.ANY);
             break;
@@ -156,9 +164,34 @@ public class DMNavigationServicePort extends DMAbstractServicePort implements Na
             resultListing.add(createCmisObject(listing[index].toString(), propertyFilter));
         }
 
+        // TODO: includeAllowableActions, includeRelationships
+
         response.setHasMoreItems(cursor.getEndRow() < (listing.length - 1));
 
         return response;
+    }
+
+    // TODO: This method will create appropriate Ordering fields
+    private List<Pair<String, Boolean>> checkAndParseOrderByClause(String orderByClause) throws CmisException
+    {
+        List<Pair<String, Boolean>> result = new LinkedList<Pair<String, Boolean>>();
+
+        if (!ORDER_BY_CLAUSE_MASK.matcher(orderByClause).matches())
+        {
+            throw cmisObjectsUtils.createCmisException(("\"" + orderByClause + "\" Order By Clause is invalid!"), EnumServiceException.INVALID_ARGUMENT);
+        }
+
+        for (String token : orderByClause.split(","))
+        {
+            token = token.trim();
+
+            String[] direction = token.split(" ");
+            String fieldName = direction[0];
+
+            result.add(new Pair<String, Boolean>(fieldName, ((direction.length == 1) ? (true) : (direction[direction.length - 1].toLowerCase().equals("asc")))));
+        }
+
+        return result;
     }
 
     /**
@@ -168,18 +201,9 @@ public class DMNavigationServicePort extends DMAbstractServicePort implements Na
      * @param parameters repositoryId: repository Id; folderId: folder Id; depth: 1 this folder only (Default), N folders deep, -1 for all levels; filter: property filter;
      *        includeAllowableActions; includeRelationships;
      * @return collection of CmisObjectType
-     * @throws RuntimeException
-     * @throws InvalidArgumentException
-     * @throws ObjectNotFoundException
-     * @throws ConstraintViolationException
-     * @throws FilterNotValidException
-     * @throws OperationNotSupportedException
-     * @throws UpdateConflictException
-     * @throws FolderNotValidException
-     * @throws PermissionDeniedException
+     * @throws CmisException (with following {@link EnumServiceException} : INVALID_ARGUMENT, OBJECT_NOT_FOUND, NOT_SUPPORTED, PERMISSION_DENIED, RUNTIME, FILTER_NOT_VALID)
      */
-    public GetDescendantsResponse getDescendants(GetDescendants parameters) throws RuntimeException, InvalidArgumentException, ObjectNotFoundException,
-            ConstraintViolationException, FilterNotValidException, OperationNotSupportedException, UpdateConflictException, FolderNotValidException, PermissionDeniedException
+    public GetDescendantsResponse getDescendants(GetDescendants parameters) throws CmisException
     {
         checkRepositoryId(parameters.getRepositoryId());
         PropertyFilter propertyFilter = createPropertyFilter(parameters.getFilter());
@@ -188,18 +212,27 @@ public class DMNavigationServicePort extends DMAbstractServicePort implements Na
 
         GetDescendantsResponse response = new GetDescendantsResponse();
         HierarchyReceiverStrategy receiver = createHierarchyReceiver(parameters.getType() != null ? parameters.getType() : EnumTypesOfFileableObjects.ANY, depth);
-        createCmisObjectList(propertyFilter, receiver.receiveHierarchy(parameters.getFolderId()), response.getObject());
+
+        List<Pair<String, Boolean>> orderingFields = null;
+        if ((parameters.getOrderBy() != null) && !parameters.getOrderBy().equals(""))
+        {
+            orderingFields = checkAndParseOrderByClause(parameters.getOrderBy());
+        }
+
+        // TODO: Ordering functionality SHOULD be moved to getChildren service method
+        createCmisObjectList(propertyFilter, receiver.receiveHierarchy(parameters.getFolderId(), orderingFields), response.getObject());
 
         // TODO: includeAllowableActions, includeRelationships
 
         return response;
     }
 
-    private void checkDepthParameter(BigInteger depth) throws InvalidArgumentException
+    private void checkDepthParameter(BigInteger depth) throws CmisException
     {
         if (depth.equals(BigInteger.ZERO) || (depth.compareTo(FULL_DESCENDANTS_HIERARCHY_CONDITION) < EQUALS_CONDITION_VALUE))
         {
-            throw new InvalidArgumentException("The specified descendants depth is not valid. Valid depth values are: -1 (full hierarchy), N > 0");
+            throw cmisObjectsUtils.createCmisException("The specified descendants depth is not valid. Valid depth values are: -1 (full hierarchy), N > 0",
+                    EnumServiceException.INVALID_ARGUMENT);
         }
     }
 
@@ -209,20 +242,26 @@ public class DMNavigationServicePort extends DMAbstractServicePort implements Na
      * @param parameters repositoryId: repository Id; folderId: folder Id; filter: property filter; includeAllowableActions; includeRelationships; returnToRoot: If false, return
      *        only the immediate parent of the folder. If true, return an ordered list of all ancestor folders from the specified folder to the root folder
      * @return collection of CmisObjectType
-     * @throws RuntimeException
-     * @throws InvalidArgumentException
-     * @throws ObjectNotFoundException
-     * @throws ConstraintViolationException
-     * @throws FilterNotValidException
-     * @throws OperationNotSupportedException
-     * @throws UpdateConflictException
-     * @throws FolderNotValidException
-     * @throws PermissionDeniedException
+     * @throws CmisException (with following {@link EnumServiceException} : INVALID_ARGUMENT, OBJECT_NOT_FOUND, NOT_SUPPORTED, PERMISSION_DENIED, RUNTIME, FILTER_NOT_VALID)
      */
-    public GetFolderParentResponse getFolderParent(GetFolderParent parameters)
-        throws RuntimeException, InvalidArgumentException, ObjectNotFoundException, ConstraintViolationException, FilterNotValidException, OperationNotSupportedException, UpdateConflictException, FolderNotValidException, PermissionDeniedException
+    public GetFolderParentResponse getFolderParent(GetFolderParent parameters) throws CmisException
     {
         checkRepositoryId(parameters.getRepositoryId());
+
+        String filter = parameters.getFilter();
+        if (filter != null)
+        {
+            if (!filter.contains(CMISDictionaryModel.PROP_PARENT_ID))
+            {
+                filter = CMISDictionaryModel.PROP_PARENT_ID + FILTER_TOKENS_DELIMETER + filter;
+            }
+
+            if (!filter.contains(CMISDictionaryModel.PROP_OBJECT_ID))
+            {
+                filter = CMISDictionaryModel.PROP_OBJECT_ID + FILTER_TOKENS_DELIMETER + filter;
+            }
+        }
+
         PropertyFilter propertyFilter = createPropertyFilter(parameters.getFilter());
         GetFolderParentResponse response = new GetFolderParentResponse();
 
@@ -240,18 +279,10 @@ public class DMNavigationServicePort extends DMAbstractServicePort implements Na
      * 
      * @param parameters repositoryId: repository Id; objectId: object Id; filter: property filter; includeAllowableActions; includeRelationships;
      * @return collection of CmisObjectType
-     * @throws RuntimeException
-     * @throws InvalidArgumentException
-     * @throws ObjectNotFoundException
-     * @throws ConstraintViolationException
-     * @throws FilterNotValidException
-     * @throws OperationNotSupportedException
-     * @throws UpdateConflictException
-     * @throws FolderNotValidException
-     * @throws PermissionDeniedException
+     * @throws CmisException (with following {@link EnumServiceException} : INVALID_ARGUMENT, OBJECT_NOT_FOUND, NOT_SUPPORTED, PERMISSION_DENIED, RUNTIME, CONSTRAINT,
+     *         FILTER_NOT_VALID)
      */
-    public GetObjectParentsResponse getObjectParents(GetObjectParents parameters)
-        throws RuntimeException, InvalidArgumentException, ObjectNotFoundException, ConstraintViolationException, FilterNotValidException, OperationNotSupportedException, UpdateConflictException, FolderNotValidException, PermissionDeniedException
+    public GetObjectParentsResponse getObjectParents(GetObjectParents parameters) throws CmisException
     {
         // TODO: Policy
 
@@ -259,7 +290,8 @@ public class DMNavigationServicePort extends DMAbstractServicePort implements Na
         PropertyFilter propertyFilter = createPropertyFilter(parameters.getFilter());
         GetObjectParentsResponse response = new GetObjectParentsResponse();
 
-        List<NodeRef> parents = receiveObjectParents((NodeRef) cmisObjectsUtils.getIdentifierInstance(parameters.getObjectId(), AlfrescoObjectType.DOCUMENT_OBJECT).getConvertedIdentifier());
+        List<NodeRef> parents = receiveObjectParents((NodeRef) cmisObjectsUtils.getIdentifierInstance(parameters.getObjectId(), AlfrescoObjectType.DOCUMENT_OBJECT)
+                .getConvertedIdentifier());
         createCmisObjectList(propertyFilter, parents, response.getObject());
 
         // TODO: includeAllowableActions, includeRelationships
@@ -267,19 +299,19 @@ public class DMNavigationServicePort extends DMAbstractServicePort implements Na
         return response;
     }
 
-    private List<NodeRef> receiveParentList(String targetChildIdentifier, boolean fullParentsHierarchy)
-        throws InvalidNodeRefException, InvalidArgumentException, ObjectNotFoundException
+    private List<NodeRef> receiveParentList(String targetChildIdentifier, boolean fullParentsHierarchy) throws CmisException
     {
         List<NodeRef> result = new LinkedList<NodeRef>();
         if (targetChildIdentifier.equals(cmisService.getDefaultRootNodeRef().toString()))
         {
             return result;
         }
-        
-        NodeRef currentParent = receiveNextParentNodeReference((NodeRef) cmisObjectsUtils.getIdentifierInstance(targetChildIdentifier, AlfrescoObjectType.FOLDER_OBJECT).getConvertedIdentifier(), result);
+
+        NodeRef currentParent = receiveNextParentNodeReference((NodeRef) cmisObjectsUtils.getIdentifierInstance(targetChildIdentifier, AlfrescoObjectType.FOLDER_OBJECT)
+                .getConvertedIdentifier(), result);
         return (fullParentsHierarchy) ? (receiveFullAncestorsHierachy(currentParent, result)) : (result);
     }
-    
+
     private List<NodeRef> receiveFullAncestorsHierachy(NodeRef currentParent, List<NodeRef> parents)
     {
         String lastAncestorIdentifier = cmisService.getDefaultRootNodeRef().toString();
@@ -289,18 +321,18 @@ public class DMNavigationServicePort extends DMAbstractServicePort implements Na
         }
         return parents;
     }
-    
+
     private NodeRef receiveNextParentNodeReference(NodeRef currentParent, List<NodeRef> parents)
     {
-        currentParent = nodeService.getPrimaryParent(currentParent).getParentRef();    
+        currentParent = nodeService.getPrimaryParent(currentParent).getParentRef();
         if (currentParent != null)
         {
             parents.add(currentParent);
         }
         return currentParent;
     }
-    
-    private List<NodeRef> receiveObjectParents(NodeRef objectId) throws InvalidArgumentException
+
+    private List<NodeRef> receiveObjectParents(NodeRef objectId) throws CmisException
     {
         List<NodeRef> parents = new LinkedList<NodeRef>();
         for (ChildAssociationRef childParentAssociation : nodeService.getParentAssocs(objectId))
@@ -310,7 +342,6 @@ public class DMNavigationServicePort extends DMAbstractServicePort implements Na
         return parents;
     }
 
-    
     private HierarchyReceiverStrategy createHierarchyReceiver(EnumTypesOfFileableObjects returnObjectsType, BigInteger finalDepth)
     {
         if (finalDepth.equals(FULL_DESCENDANTS_HIERARCHY_CONDITION))
@@ -323,14 +354,15 @@ public class DMNavigationServicePort extends DMAbstractServicePort implements Na
         }
     }
 
-    private void separateDescendantsObjects(EnumTypesOfFileableObjects returnObjectsType, List<NodeRef> descendantsFolders, List<NodeRef> currentLayerFolders, List<NodeRef> currentLayerDocuments)
+    private void separateDescendantsObjects(EnumTypesOfFileableObjects returnObjectsType, List<NodeRef> descendantsFolders, List<NodeRef> currentLayerFolders,
+            List<NodeRef> currentLayerDocuments, List<Pair<String, Boolean>> orderingFields)
     {
         for (NodeRef element : descendantsFolders)
         {
-            // TODO: OrderBy functionality processing. Instead Arrays.asList() it is necessary to add ordering processing method to store each new element where it should go
+            // TODO: Ordering functionality SHOULD be moved to getChildren service method
             currentLayerFolders.addAll(Arrays.asList(cmisService.getChildren(element, CMISTypesFilterEnum.FOLDERS)));
 
-            // TODO: OrderBy functionality processing. Instead Arrays.asList() it is necessary to add ordering processing method to store each new element where it should go
+            // TODO: Ordering functionality SHOULD be moved to getChildren service method
             if ((returnObjectsType == EnumTypesOfFileableObjects.ANY) || (returnObjectsType == EnumTypesOfFileableObjects.DOCUMENTS))
             {
                 currentLayerDocuments.addAll(Arrays.asList(cmisService.getChildren(element, CMISTypesFilterEnum.DOCUMENTS)));
@@ -339,9 +371,9 @@ public class DMNavigationServicePort extends DMAbstractServicePort implements Na
     }
 
     private List<NodeRef> performDescendantsResultObjectsStoring(EnumTypesOfFileableObjects returnObjectsType, List<NodeRef> resultList, List<NodeRef> descendantsFolders,
-            List<NodeRef> currentLayerFolders, List<NodeRef> currentLayerDocuments)
+            List<NodeRef> currentLayerFolders, List<NodeRef> currentLayerDocuments, List<Pair<String, Boolean>> orderingFields)
     {
-        separateDescendantsObjects(returnObjectsType, descendantsFolders, currentLayerFolders, currentLayerDocuments);
+        separateDescendantsObjects(returnObjectsType, descendantsFolders, currentLayerFolders, currentLayerDocuments, orderingFields);
 
         if ((returnObjectsType == EnumTypesOfFileableObjects.ANY) || (returnObjectsType == EnumTypesOfFileableObjects.FOLDERS))
         {
@@ -363,7 +395,7 @@ public class DMNavigationServicePort extends DMAbstractServicePort implements Na
          * @return <b>List</b> that contains all appropriates layers of Alfresco objects
          * @throws InvalidArgumentException
          */
-        public List<NodeRef> receiveHierarchy(String rootFolderIdentifier) throws InvalidArgumentException;
+        public List<NodeRef> receiveHierarchy(String rootFolderIdentifier, List<Pair<String, Boolean>> orderFields) throws CmisException;
     }
 
     /**
@@ -386,12 +418,13 @@ public class DMNavigationServicePort extends DMAbstractServicePort implements Na
         /**
          * Traverse Alfresco objects hierarchy until there is some Folder-objects can be found
          */
-        public List<NodeRef> receiveHierarchy(String rootFolderIdentifier) throws InvalidArgumentException
+        public List<NodeRef> receiveHierarchy(String rootFolderIdentifier, List<Pair<String, Boolean>> orderingFields) throws CmisException
         {
             descendantsFolders.add((NodeRef) cmisObjectsUtils.getIdentifierInstance(rootFolderIdentifier, AlfrescoObjectType.FOLDER_OBJECT).getConvertedIdentifier());
             while (!descendantsFolders.isEmpty())
             {
-                descendantsFolders = performDescendantsResultObjectsStoring(returnObjectsType, resultList, descendantsFolders, new LinkedList<NodeRef>(), new LinkedList<NodeRef>());
+                descendantsFolders = performDescendantsResultObjectsStoring(returnObjectsType, resultList, descendantsFolders, new LinkedList<NodeRef>(),
+                        new LinkedList<NodeRef>(), orderingFields);
             }
 
             return resultList;
@@ -422,13 +455,14 @@ public class DMNavigationServicePort extends DMAbstractServicePort implements Na
         /**
          * This method of this class receives Alfresco objects hierarchy until specified layer number
          */
-        public List<NodeRef> receiveHierarchy(String rootFolderIdentifier) throws InvalidArgumentException
+        public List<NodeRef> receiveHierarchy(String rootFolderIdentifier, List<Pair<String, Boolean>> orderingFields) throws CmisException
         {
             descendantsFolders.add((NodeRef) cmisObjectsUtils.getIdentifierInstance(rootFolderIdentifier, AlfrescoObjectType.FOLDER_OBJECT).getConvertedIdentifier());
 
             do
             {
-                descendantsFolders = performDescendantsResultObjectsStoring(this.returnObjectsType, this.resultList, this.descendantsFolders, new LinkedList<NodeRef>(), new LinkedList<NodeRef>());
+                descendantsFolders = performDescendantsResultObjectsStoring(this.returnObjectsType, this.resultList, this.descendantsFolders, new LinkedList<NodeRef>(),
+                        new LinkedList<NodeRef>(), orderingFields);
                 currentDepth = currentDepth.add(BigInteger.ONE);
             } while (!descendantsFolders.isEmpty() && (currentDepth.compareTo(this.finalDepth) < EQUALS_CONDITION_VALUE));
 

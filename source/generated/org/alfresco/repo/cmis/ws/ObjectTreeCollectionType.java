@@ -22,9 +22,9 @@ import javax.xml.namespace.QName;
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
- *         &lt;element name="object" type="{http://www.cmis.org/2008/05}cmisObjectType" maxOccurs="unbounded" minOccurs="0"/>
+ *         &lt;element name="object" type="{http://docs.oasis-open.org/ns/cmis/core/200901}cmisObjectType" maxOccurs="unbounded" minOccurs="0"/>
  *       &lt;/sequence>
- *       &lt;attGroup ref="{http://www.cmis.org/2008/05}cmisUndefinedAttribute"/>
+ *       &lt;attGroup ref="{http://docs.oasis-open.org/ns/cmis/core/200901}cmisUndefinedAttribute"/>
  *     &lt;/restriction>
  *   &lt;/complexContent>
  * &lt;/complexType>
@@ -33,7 +33,7 @@ import javax.xml.namespace.QName;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "objectTreeCollectionType", propOrder = {
+@XmlType(name = "objectTreeCollectionType", namespace = "http://docs.oasis-open.org/ns/cmis/core/200901", propOrder = {
     "object"
 })
 public class ObjectTreeCollectionType {

@@ -16,13 +16,13 @@ import javax.xml.bind.annotation.XmlType;
  *   &lt;restriction base="{http://www.w3.org/2001/XMLSchema}string">
  *     &lt;enumeration value="source"/>
  *     &lt;enumeration value="target"/>
- *     &lt;enumeration value="both"/>
+ *     &lt;enumeration value="either"/>
  *   &lt;/restriction>
  * &lt;/simpleType>
  * </pre>
  * 
  */
-@XmlType(name = "enumRelationshipDirection")
+@XmlType(name = "enumRelationshipDirection", namespace = "http://docs.oasis-open.org/ns/cmis/core/200901")
 @XmlEnum
 public enum EnumRelationshipDirection {
 
@@ -30,8 +30,8 @@ public enum EnumRelationshipDirection {
     SOURCE("source"),
     @XmlEnumValue("target")
     TARGET("target"),
-    @XmlEnumValue("both")
-    BOTH("both");
+    @XmlEnumValue("either")
+    EITHER("either");
     private final String value;
 
     EnumRelationshipDirection(String v) {

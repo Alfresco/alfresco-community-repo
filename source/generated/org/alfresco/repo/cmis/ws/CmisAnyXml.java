@@ -26,7 +26,7 @@ import org.w3c.dom.Element;
  *       &lt;sequence>
  *         &lt;any/>
  *       &lt;/sequence>
- *       &lt;attGroup ref="{http://www.cmis.org/2008/05}cmisUndefinedAttribute"/>
+ *       &lt;attGroup ref="{http://docs.oasis-open.org/ns/cmis/core/200901}cmisUndefinedAttribute"/>
  *     &lt;/restriction>
  *   &lt;/complexContent>
  * &lt;/complexType>
@@ -35,7 +35,7 @@ import org.w3c.dom.Element;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "cmisAnyXml", propOrder = {
+@XmlType(name = "cmisAnyXml", namespace = "http://docs.oasis-open.org/ns/cmis/core/200901", propOrder = {
     "any"
 })
 public class CmisAnyXml {
@@ -63,8 +63,8 @@ public class CmisAnyXml {
      * 
      * <p>
      * Objects of the following type(s) are allowed in the list
-     * {@link Element }
      * {@link Object }
+     * {@link Element }
      * 
      * 
      */

@@ -1,8 +1,11 @@
 
 package org.alfresco.repo.cmis.ws;
 
+import java.util.ArrayList;
+import java.util.List;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 
 
@@ -14,9 +17,9 @@ import javax.xml.bind.annotation.XmlType;
  * <pre>
  * &lt;complexType name="cmisChoiceBooleanType">
  *   &lt;complexContent>
- *     &lt;extension base="{http://www.cmis.org/2008/05}cmisChoiceType">
+ *     &lt;extension base="{http://docs.oasis-open.org/ns/cmis/core/200901}cmisChoiceType">
  *       &lt;sequence>
- *         &lt;element name="value" type="{http://www.w3.org/2001/XMLSchema}boolean" minOccurs="0"/>
+ *         &lt;element name="value" type="{http://www.w3.org/2001/XMLSchema}boolean" maxOccurs="unbounded" minOccurs="0"/>
  *       &lt;/sequence>
  *     &lt;/extension>
  *   &lt;/complexContent>
@@ -26,37 +29,43 @@ import javax.xml.bind.annotation.XmlType;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "cmisChoiceBooleanType", propOrder = {
+@XmlType(name = "cmisChoiceBooleanType", namespace = "http://docs.oasis-open.org/ns/cmis/core/200901", propOrder = {
     "value"
 })
 public class CmisChoiceBooleanType
     extends CmisChoiceType
 {
 
-    protected Boolean value;
+    @XmlElement(type = Boolean.class)
+    protected List<Boolean> value;
 
     /**
      * Gets the value of the value property.
      * 
-     * @return
-     *     possible object is
-     *     {@link Boolean }
-     *     
-     */
-    public Boolean isValue() {
-        return value;
-    }
-
-    /**
-     * Sets the value of the value property.
+     * <p>
+     * This accessor method returns a reference to the live list,
+     * not a snapshot. Therefore any modification you make to the
+     * returned list will be present inside the JAXB object.
+     * This is why there is not a <CODE>set</CODE> method for the value property.
      * 
-     * @param value
-     *     allowed object is
-     *     {@link Boolean }
-     *     
+     * <p>
+     * For example, to add a new item, do as follows:
+     * <pre>
+     *    getValue().add(newItem);
+     * </pre>
+     * 
+     * 
+     * <p>
+     * Objects of the following type(s) are allowed in the list
+     * {@link Boolean }
+     * 
+     * 
      */
-    public void setValue(Boolean value) {
-        this.value = value;
+    public List<Boolean> getValue() {
+        if (value == null) {
+            value = new ArrayList<Boolean>();
+        }
+        return this.value;
     }
 
 }

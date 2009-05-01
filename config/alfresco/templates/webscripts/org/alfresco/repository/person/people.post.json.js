@@ -59,6 +59,21 @@ function main()
    var quota = (json.has("quota") ? json.get("quota") : -1);
    people.setQuota(person, quota.toString());
    
+   // apply groups if supplied - note that only Admin can successfully do this
+   if (json.has("groups"))
+   {
+      var groups = json.get("groups");
+      for (var index=0; index<groups.length(); index++)
+      {
+         var groupId = groups.getString(index);
+         var group = people.getGroup(groupId);
+         if (group != null)
+         {
+            people.addAuthority(group, person);
+         }
+      }
+   }
+   
    // Put the created person into the model
    model.person = person;
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2008 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -25,7 +25,6 @@
 package org.alfresco.repo.activities.feed.local;
 
 import java.util.Collection;
-import java.util.Date;
 
 import org.alfresco.repo.activities.feed.AbstractFeedGenerator;
 import org.alfresco.repo.activities.feed.FeedGridJob;
@@ -73,17 +72,17 @@ public class LocalFeedGenerator extends AbstractFeedGenerator
             {
                 logger.debug(">>> Execute job cycle: " + gridName + " (maxSeq: " + maxSequence + ")");
             }
-   
-            long startTime = new Date().getTime();
+            
+            long startTime = System.currentTimeMillis();
             
             // TODO ... or push this upto to job scheduler ... ?
             AuthenticationUtil.runAs(new RunAsWork<Object>()
             {
                 public Object doWork()
-                {            
+                {
                     getWebScriptsCtx().setTicket(getAuthenticationService().getCurrentTicket());
                     return null;
-                }                               
+                }
             }, AuthenticationUtil.getSystemUserName()); // need web scripts to support System-level authentication ... see RepositoryContainer !
             
             JobSettings js = new JobSettings();
@@ -102,11 +101,9 @@ public class LocalFeedGenerator extends AbstractFeedGenerator
                 job.execute();
             }
             
-            long endTime = new Date().getTime();
-            
             if (logger.isDebugEnabled())
             {
-                logger.debug(">>> Finish job cycle: " + gridName + " (time taken (secs) = " + ((endTime - startTime) / 1000) + ")");
+                logger.debug(">>> Finish job cycle: " + gridName + " (in " + (System.currentTimeMillis() - startTime) + " msecs)");
             }
             return true;
         }

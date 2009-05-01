@@ -24,27 +24,56 @@
  */
 package org.alfresco.repo.activities.feed.local;
 
+import java.io.IOException;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.alfresco.repo.activities.feed.FeedTaskProcessor;
+import org.alfresco.repo.activities.feed.RepoCtx;
 import org.alfresco.repo.domain.activities.ActivityFeedDAO;
 import org.alfresco.repo.domain.activities.ActivityFeedEntity;
 import org.alfresco.repo.domain.activities.ActivityPostDAO;
 import org.alfresco.repo.domain.activities.ActivityPostEntity;
 import org.alfresco.repo.domain.activities.FeedControlDAO;
 import org.alfresco.repo.domain.activities.FeedControlEntity;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.template.ClassPathRepoTemplateLoader;
+import org.alfresco.service.cmr.repository.ContentService;
+import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.site.SiteService;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
+import org.springframework.core.io.support.ResourcePatternResolver;
 
 import com.ibatis.sqlmap.client.SqlMapClient;
+
+import freemarker.template.Configuration;
+import freemarker.template.DefaultObjectWrapper;
 
 /**
  * The local (ie. not grid) feed task processor is responsible for processing the individual feed job
  */
 public class LocalFeedTaskProcessor extends FeedTaskProcessor
 {
+    private static final Log logger = LogFactory.getLog(LocalFeedTaskProcessor.class);
+    
     private ActivityPostDAO postDAO;
     private ActivityFeedDAO feedDAO;
     private FeedControlDAO feedControlDAO;
+    
+    // can call locally (instead of remote repo callback)
+    private SiteService siteService;
+    private NodeService nodeService;
+    private ContentService contentService;
+    private String defaultEncoding;
+    private List<String> templateSearchPaths;
+    private boolean useRemoteCallbacks;
     
     // used to start/end/commit transaction
     // note: currently assumes that all dao services are configured with this mapper / data source
@@ -63,6 +92,36 @@ public class LocalFeedTaskProcessor extends FeedTaskProcessor
     public void setFeedControlDAO(FeedControlDAO feedControlDAO)
     {
         this.feedControlDAO = feedControlDAO;
+    }
+    
+    public void setSiteService(SiteService siteService)
+    {
+        this.siteService = siteService;
+    }
+    
+    public void setNodeService(NodeService nodeService)
+    {
+        this.nodeService = nodeService;
+    }
+    
+    public void setContentService(ContentService contentService)
+    {
+        this.contentService = contentService;
+    }
+    
+    public void setDefaultEncoding(String defaultEncoding)
+    {
+        this.defaultEncoding = defaultEncoding;
+    }
+    
+    public void setTemplateSearchPaths(List<String> templateSearchPaths)
+    {
+        this.templateSearchPaths = templateSearchPaths;
+    }
+    
+    public void setUseRemoteCallbacks(boolean useRemoteCallbacks)
+    {
+        this.useRemoteCallbacks = useRemoteCallbacks;
     }
     
     public void setSqlMapClient(SqlMapClient sqlMapper)
@@ -103,5 +162,170 @@ public class LocalFeedTaskProcessor extends FeedTaskProcessor
     public List<FeedControlEntity> selectUserFeedControls(String userId) throws SQLException
     {
        return feedControlDAO.selectFeedControls(userId);
+    }
+    
+    @Override
+    protected Set<String> getSiteMembers(final RepoCtx ctx, final String siteId) throws Exception
+    {
+        if (useRemoteCallbacks)
+        {
+            // as per 3.0, 3.1
+            return super.getSiteMembers(ctx, siteId);
+        }
+        else
+        {
+            // optimise for non-remote implementation - override remote repo callback (to "List Site Memberships" web script) with embedded call
+            return AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Set<String>>()
+            {
+                public Set<String> doWork() throws Exception
+                {
+                    Set<String> members = new HashSet<String>();
+                    if ((siteId != null) && (siteId.length() != 0))
+                    {
+                        Map<String, String> mapResult = siteService.listMembers(siteId, null, null, 0, true);
+                        
+                        if ((mapResult != null) && (mapResult.size() != 0))
+                        {
+                            for (String userName : mapResult.keySet())
+                            {
+                                if (! ctx.isUserNamesAreCaseSensitive())
+                                {
+                                    userName = userName.toLowerCase();
+                                }
+                                members.add(userName);
+                            }
+                        }
+                    }
+                    
+                    return members;
+                }
+            }, AuthenticationUtil.getSystemUserName());
+        }
+    }
+    
+    @Override
+    protected Map<String, List<String>> getActivityTypeTemplates(String repoEndPoint, String ticket, String subPath) throws Exception
+    {
+        if (useRemoteCallbacks)
+        {
+            // as per 3.0, 3.1
+            return super.getActivityTypeTemplates(repoEndPoint, ticket, subPath);
+        }
+        else
+        {
+            // optimisation - override remote repo callback (to "Activities Templates" web script) with local/embedded call
+            
+            String path = "/";
+            String templatePattern = "*.ftl";
+            
+            if ((subPath != null) && (subPath.length() > 0))
+            {
+                subPath = subPath + "*";
+                
+                int idx = subPath.lastIndexOf("/");
+                if (idx != -1)
+                {
+                    path = subPath.substring(0, idx);
+                    templatePattern = subPath.substring(idx+1) + ".ftl";
+                }
+            }
+            
+            List<String> allTemplateNames = getDocumentPaths(path, false, templatePattern);
+            
+            return getActivityTemplates(allTemplateNames);
+        }
+    }
+    
+    @Override
+    protected Configuration getFreemarkerConfiguration(RepoCtx ctx)
+    {
+        if (useRemoteCallbacks)
+        {
+            // as per 3.0, 3.1
+            return super.getFreemarkerConfiguration(ctx);
+        }
+        else
+        {
+            Configuration cfg = new Configuration();
+            cfg.setObjectWrapper(new DefaultObjectWrapper());
+            
+            cfg.setTemplateLoader(new ClassPathRepoTemplateLoader(nodeService, contentService, defaultEncoding));
+            
+            // TODO review i18n
+            cfg.setLocalizedLookup(false);
+            
+            return cfg;
+        }
+    }
+    
+    // Helper to get template document paths
+    private List<String> getDocumentPaths(String path, boolean includeSubPaths, String documentPattern)
+    {
+        if ((path == null) || (path.length() == 0))
+        {
+            path = "/";
+        }
+        
+        if (! path.startsWith("/"))
+        {
+            path = "/" + path;
+        }
+        
+        if (! path.endsWith("/"))
+        {
+            path = path + "/";
+        }
+        
+        if ((documentPattern == null) || (documentPattern.length() == 0))
+        {
+            documentPattern = "*";
+        }
+        
+        List<String> documentPaths = new ArrayList<String>(0);
+        
+        for (String classPath : templateSearchPaths)
+        {
+            final StringBuilder pattern = new StringBuilder(128);
+            pattern.append("classpath*:").append(classPath)
+                   .append(path)
+                   .append((includeSubPaths ? "**/" : ""))
+                   .append(documentPattern);
+            
+            try
+            {
+                documentPaths.addAll(getPaths(pattern.toString(), classPath));
+            }
+            catch (IOException e)
+            {
+                // Note: Ignore: no documents found
+            }
+        }
+        
+        return documentPaths;
+    }
+    
+    // Helper to return a list of resource document paths based on a search pattern.
+    private List<String> getPaths(String pattern, String classPath) throws IOException
+    {
+        ResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
+        Resource[] resources = resolver.getResources(pattern);
+        List<String> documentPaths = new ArrayList<String>(resources.length);
+        for (Resource resource : resources)
+        {
+            String resourcePath = resource.getURL().toExternalForm();
+            
+            int idx = resourcePath.lastIndexOf(classPath);
+            if (idx != -1)
+            {
+                String documentPath = resourcePath.substring(idx);
+                documentPath = documentPath.replace('\\', '/');
+                if (logger.isTraceEnabled())
+                {
+                    logger.trace("Item resource path: " + resourcePath + " , item path: " + documentPath);
+                }
+                documentPaths.add(documentPath);
+            }
+        }
+        return documentPaths;
     }
 }

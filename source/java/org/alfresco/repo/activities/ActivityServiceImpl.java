@@ -38,11 +38,14 @@ import org.alfresco.repo.domain.activities.ActivityPostEntity;
 import org.alfresco.repo.domain.activities.FeedControlDAO;
 import org.alfresco.repo.domain.activities.FeedControlEntity;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.activities.ActivityService;
 import org.alfresco.service.cmr.activities.FeedControl;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AuthorityService;
+import org.alfresco.service.cmr.site.SiteInfo;
+import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ParameterCheck;
 import org.apache.commons.logging.Log;
@@ -69,6 +72,7 @@ public class ActivityServiceImpl implements ActivityService
     private FeedControlDAO feedControlDAO;
     private AuthorityService authorityService;
     private FeedGenerator feedGenerator;
+    private SiteService siteService;
     
     private TenantService tenantService;
     
@@ -114,6 +118,11 @@ public class ActivityServiceImpl implements ActivityService
     public void setTenantService(TenantService tenantService)
     {
         this.tenantService = tenantService;
+    }
+    
+    public void setSiteService(SiteService siteService)
+    {
+        this.siteService = siteService;
     }
     
     
@@ -309,7 +318,16 @@ public class ActivityServiceImpl implements ActivityService
         {
             feedUserId = feedUserId.toLowerCase();
         }
-
+        
+        String currentUser = AuthenticationUtil.getFullyAuthenticatedUser();
+        if (! ((currentUser == null) || 
+               (currentUser.equals(AuthenticationUtil.getSystemUserName())) ||
+               (authorityService.isAdminAuthority(currentUser)) ||
+               (currentUser.equals(feedUserId))))
+        {
+            throw new AccessDeniedException("Unable to get user feed entries for '" + feedUserId + "' - currently logged in as '" + currentUser +"'");
+        }
+        
         try
         {
             List<ActivityFeedEntity> activityFeeds = null;
@@ -358,9 +376,18 @@ public class ActivityServiceImpl implements ActivityService
         ParameterCheck.mandatoryString("format", format);
         
         List<String> activityFeedEntries = new ArrayList<String>();
-
+        
         try
-        { 
+        {
+            if (siteService != null)
+            {
+                SiteInfo siteInfo = siteService.getSite(siteId);
+                if (siteInfo == null)
+                {
+                    throw new AccessDeniedException("No such site: " + siteId);
+                }
+            }
+            
             siteId = tenantService.getName(siteId);
             
             List<ActivityFeedEntity> activityFeeds = feedDAO.selectSiteFeedEntries(siteId, format);

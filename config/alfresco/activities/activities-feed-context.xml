@@ -9,6 +9,7 @@
       <property name="feedControlDAO" ref="feedControlDAO"/>
       <property name="authorityService" ref="AuthorityService"/>
       <property name="tenantService" ref="tenantService"/>
+      <property name="siteService" ref="siteService"/>
       <property name="userNamesAreCaseSensitive" value="${user.name.caseSensitive}"/>
       <property name="feedGenerator" ref="feedGenerator"/>
       <property name="maxFeedItems" value="${activities.feed.max.size}"/>
@@ -64,6 +65,21 @@
       <property name="postDAO" ref="postDAO"/>
       <property name="feedDAO" ref="feedDAO"/>
       <property name="feedControlDAO" ref="feedControlDAO"/>
+      
+      <property name="useRemoteCallbacks">
+          <value>false</value>
+      </property>
+      
+      <property name="siteService" ref="SiteService"/>
+      <property name="nodeService" ref="NodeService"/>
+      <property name="contentService" ref="ContentService"/>
+      <property name="templateSearchPaths">
+          <list>
+              <value>alfresco/extension/templates/activities</value>
+              <value>alfresco/templates/activities</value>
+          </list>
+      </property>
+      
    </bean>
    
 </beans>

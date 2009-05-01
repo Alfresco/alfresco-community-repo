@@ -82,6 +82,8 @@ public abstract class FeedTaskProcessor
   
     public void process(int jobTaskNode, long minSeq, long maxSeq, RepoCtx ctx) throws Exception
     {
+        long startTime = System.currentTimeMillis();
+        
         if (logger.isDebugEnabled())
         {
             logger.debug(">>> Process: jobTaskNode '" + jobTaskNode + "' from seq '" + minSeq + "' to seq '" + maxSeq + "' on this node from grid job.");
@@ -168,6 +170,14 @@ public abstract class FeedTaskProcessor
                     }
                     
                     activityTemplates.put(baseActivityType, fmTemplates);
+                    
+                    if (logger.isTraceEnabled())
+                    {
+                        for (String fmTemplate : fmTemplates)
+                        {
+                            logger.trace("For activityType '"+activityType+"' found activity type template: "+fmTemplate);
+                        }
+                    }
                 }
                                    
                 if (fmTemplates.size() == 0)
@@ -232,9 +242,9 @@ public abstract class FeedTaskProcessor
                 { 
                     startTransaction();
                     
-                    if (logger.isDebugEnabled())
+                    if (logger.isTraceEnabled())
                     {
-                        logger.debug(">>> Process: " + connectedUsers.size() + " candidate connections for activity post " + activityPost.getId());
+                        logger.trace(">>> Process: " + connectedUsers.size() + " candidate connections for activity post " + activityPost.getId());
                     }
                     
                     int excludedConnections = 0;
@@ -335,7 +345,7 @@ public abstract class FeedTaskProcessor
         }
         finally
         {
-            logger.info(">>> Generated " + totalGenerated + " activity feed entries for " + (activityPosts == null ? 0 : activityPosts.size()) + " activity posts");
+            logger.info(">>> Generated " + totalGenerated + " activity feed entries for " + (activityPosts == null ? 0 : activityPosts.size()) + " activity posts (in " + (System.currentTimeMillis() - startTime) + " msecs)");
         }
     }
     
@@ -413,7 +423,7 @@ public abstract class FeedTaskProcessor
             StringBuffer sbUrl = new StringBuffer();
             sbUrl.append(ctx.getRepoEndPoint()).
                   append(URL_SERVICE_SITES).append("/").append(siteId).append(URL_MEMBERSHIPS);
-        
+            
             String jsonArrayResult = callWebScript(sbUrl.toString(), ctx.getTicket());
             if ((jsonArrayResult != null) && (jsonArrayResult.length() != 0))
             {
@@ -428,7 +438,7 @@ public abstract class FeedTaskProcessor
                     {
                         userName = userName.toLowerCase();
                     }
-                    members.add(person.getString("userName"));
+                    members.add(userName);
                 }
             }
         }
@@ -459,42 +469,47 @@ public abstract class FeedTaskProcessor
             for (int i = 0; i < ja.length(); i++)
             {
                 String name = ja.getString(i);
-                if (! name.contains(" (Working Copy)."))
-                {
-                    allTemplateNames.add(name);
-                }
+                allTemplateNames.add(name);
             }
         }
         
+        return getActivityTemplates(allTemplateNames);
+    }
+    
+    protected Map<String, List<String>> getActivityTemplates(List<String> allTemplateNames)
+    {
         Map<String, List<String>> activityTemplates = new HashMap<String, List<String>>(10);
         
         for (String template : allTemplateNames)
         {
-            // assume template path = <path>/<base-activityType>.<format>.ftl
-            // and base-activityType can contain "."
-            
-            String baseActivityType = template;
-            int idx1 = baseActivityType.lastIndexOf("/");
-            if (idx1 != -1)
+            if (! template.contains(" (Working Copy)."))
             {
-                baseActivityType = baseActivityType.substring(idx1+1);
-            }
-            
-            int idx2 = baseActivityType.lastIndexOf(".");
-            if (idx2 != -1)
-            {
-                int idx3 = baseActivityType.substring(0, idx2).lastIndexOf(".");
-                if (idx3 != -1)
+                // assume template path = <path>/<base-activityType>.<format>.ftl
+                // and base-activityType can contain "."
+                
+                String baseActivityType = template;
+                int idx1 = baseActivityType.lastIndexOf("/");
+                if (idx1 != -1)
                 {
-                    baseActivityType = baseActivityType.substring(0, idx3);
-                    
-                    List<String> activityTypeTemplateList = activityTemplates.get(baseActivityType);
-                    if (activityTypeTemplateList == null)
+                    baseActivityType = baseActivityType.substring(idx1+1);
+                }
+                
+                int idx2 = baseActivityType.lastIndexOf(".");
+                if (idx2 != -1)
+                {
+                    int idx3 = baseActivityType.substring(0, idx2).lastIndexOf(".");
+                    if (idx3 != -1)
                     {
-                        activityTypeTemplateList = new ArrayList<String>(1);
-                        activityTemplates.put(baseActivityType, activityTypeTemplateList);
+                        baseActivityType = baseActivityType.substring(0, idx3);
+                        
+                        List<String> activityTypeTemplateList = activityTemplates.get(baseActivityType);
+                        if (activityTypeTemplateList == null)
+                        {
+                            activityTypeTemplateList = new ArrayList<String>(1);
+                            activityTemplates.put(baseActivityType, activityTypeTemplateList);
+                        }
+                        activityTypeTemplateList.add(template);
                     }
-                    activityTypeTemplateList.add(template);
                 }
             }
         }
@@ -506,14 +521,14 @@ public abstract class FeedTaskProcessor
     {	
     	Configuration cfg = new Configuration();
         cfg.setObjectWrapper(new DefaultObjectWrapper());
-
+        
         // custom template loader
-	    cfg.setTemplateLoader(new TemplateWebScriptLoader(ctx.getRepoEndPoint(), ctx.getTicket()));
-
-	    // TODO review i18n
-	    cfg.setLocalizedLookup(false);
-	    
-        return cfg;   
+        cfg.setTemplateLoader(new TemplateWebScriptLoader(ctx.getRepoEndPoint(), ctx.getTicket()));
+        
+        // TODO review i18n
+        cfg.setLocalizedLookup(false);
+        
+        return cfg;
     }
     
     protected String processFreemarker(Map<String, Template> templateCache, String fmTemplate, Configuration cfg, Map<String, Object> model) throws IOException, TemplateException, Exception
@@ -574,7 +589,7 @@ public abstract class FeedTaskProcessor
                 }
             }
         }
-
+        
         return true;
     }
     
@@ -626,36 +641,36 @@ public abstract class FeedTaskProcessor
     
     protected class TemplateWebScriptLoader extends URLTemplateLoader
     {
-    	private String repoEndPoint;
-    	private String ticketId;
-    	
-    	public TemplateWebScriptLoader(String repoEndPoint, String ticketId)
-    	{
-    		this.repoEndPoint = repoEndPoint;
-    		this.ticketId = ticketId;
-    	}
-    	
-    	public URL getURL(String templatePath)
-    	{
-    		try
-    		{
-    			StringBuffer sb = new StringBuffer();
-    			sb.append(this.repoEndPoint).
-    			   append(URL_SERVICE_TEMPLATE).append("/").append(templatePath).
-    			   append("?format=text").
-    		       append("&alf_ticket=").append(ticketId);
-    			
-    			if (logger.isDebugEnabled())
+        private String repoEndPoint;
+        private String ticketId;
+        
+        public TemplateWebScriptLoader(String repoEndPoint, String ticketId)
+        {
+            this.repoEndPoint = repoEndPoint;
+            this.ticketId = ticketId;
+            }
+        
+        public URL getURL(String templatePath)
+        {
+            try
+            {
+                StringBuffer sb = new StringBuffer();
+                sb.append(this.repoEndPoint).
+                   append(URL_SERVICE_TEMPLATE).append("/").append(templatePath).
+                   append("?format=text").
+                   append("&alf_ticket=").append(ticketId);
+                
+                if (logger.isDebugEnabled())
                 {
                     logger.debug(">>> getURL: " + sb.toString());
                 }
-    			
-    			return new URL(sb.toString());
-    		} 
-    		catch (Exception e)
-    		{
-    			throw new RuntimeException(e);
-    		}
-    	}
+                
+                return new URL(sb.toString());
+            } 
+            catch (Exception e)
+            {
+                throw new RuntimeException(e);
+             }
+         }
     }
 }

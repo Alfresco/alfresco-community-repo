@@ -27,6 +27,7 @@ package org.alfresco.repo.search.impl.querymodel.impl.lucene.functions;
 import java.util.Map;
 import java.util.Set;
 
+import org.alfresco.repo.search.impl.lucene.AnalysisMode;
 import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
 import org.alfresco.repo.search.impl.querymodel.Argument;
 import org.alfresco.repo.search.impl.querymodel.FunctionEvaluationContext;
@@ -65,16 +66,23 @@ public class LuceneFTSPhrase extends FTSPhrase implements LuceneQueryBuilderComp
         Argument argument = functionArgs.get(ARG_PHRASE);
         String term = (String) argument.getValue(functionContext);
 
+        Integer slop = Integer.valueOf(lqp.getPhraseSlop());
+        argument = functionArgs.get(ARG_SLOP);
+        if(argument != null)
+        { 
+           slop = (Integer) argument.getValue(functionContext);
+        }
+        
         PropertyArgument propArg = (PropertyArgument) functionArgs.get(ARG_PROPERTY);
         Query query;
         if (propArg != null)
         {
             String prop = propArg.getPropertyName();
-            query = lqp.getFieldQuery(functionContext.getLuceneFieldName(prop), term, true);
+            query = lqp.getFieldQuery(functionContext.getLuceneFieldName(prop), term, AnalysisMode.TOKENISE, slop);
         }
         else
         {
-            query = lqp.getFieldQuery("TEXT", term, true);
+            query = lqp.getFieldQuery("TEXT", term, AnalysisMode.TOKENISE, slop);
             
         }
         return query;

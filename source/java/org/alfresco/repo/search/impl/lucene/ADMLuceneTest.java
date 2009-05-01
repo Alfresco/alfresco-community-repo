@@ -541,7 +541,7 @@ public class ADMLuceneTest extends TestCase
         // testQuery(searcher, runner, "@"+LuceneQueryParser.escape(propQName.toString())+":\"lemon\"");
 
     }
-    
+
     private void testQuery(ADMLuceneSearcherImpl searcher, Thread runner, String query)
     {
         for (int i = 0; i < 1; i++)
@@ -643,7 +643,7 @@ public class ADMLuceneTest extends TestCase
     {
         luceneFTS.pause();
         buildBaseIndex();
-        
+
         ADMLuceneSearcherImpl searcher = ADMLuceneSearcherImpl.getSearcher(rootNodeRef.getStoreRef(), indexerAndSearcher);
         searcher.setNodeService(nodeService);
         searcher.setDictionaryService(dictionaryService);
@@ -651,7 +651,7 @@ public class ADMLuceneTest extends TestCase
         searcher.setNamespacePrefixResolver(getNamespacePrefixReolsver("namespace"));
         searcher.setQueryRegister(queryRegisterComponent);
         searcher.setQueryEngine(queryEngine);
-        
+
         ftsQueryWithCount(searcher, "\"lazy\"", 1);
         ftsQueryWithCount(searcher, "lazy and dog", 1);
         ftsQueryWithCount(searcher, "-lazy and -dog", 14);
@@ -718,7 +718,7 @@ public class ADMLuceneTest extends TestCase
         ftsQueryWithCount(searcher, "{http://www.alfresco.org/model/content/1.0}content:(\"lazy\")", 1);
         ftsQueryWithCount(searcher, "TEXT:(=lazy)", 1);
         ftsQueryWithCount(searcher, "@cm:content:(big) OR @cm:content:(lazy)", 1);
-        ftsQueryWithCount(searcher, "@cm:content:(big) AND @cm:content:(lazy)", 0);       
+        ftsQueryWithCount(searcher, "@cm:content:(big) AND @cm:content:(lazy)", 0);
         ftsQueryWithCount(searcher, "@{http://www.alfresco.org/model/content/1.0}content:(\"lazy\")", 1);
         ftsQueryWithCount(searcher, "@cm:content:(~big OR ~lazy)", 1);
         ftsQueryWithCount(searcher, "TEXT:(brown * quick)", 0);
@@ -731,102 +731,138 @@ public class ADMLuceneTest extends TestCase
         ftsQueryWithCount(searcher, "TEXT:(brown *(4) dog)", 1); // "the" does not count
         ftsQueryWithCount(searcher, "TEXT:(brown *(5) dog)", 1);
         ftsQueryWithCount(searcher, "TEXT:(brown *(6) dog)", 1);
-        
-        //ftsQueryWithCount(searcher, "brown..dog", 1); // is this allowed??
-        ftsQueryWithCount(searcher, "cm:content:brown..dog", 1); 
-        
+
+        // ftsQueryWithCount(searcher, "brown..dog", 1); // is this allowed??
+        ftsQueryWithCount(searcher, "cm:content:brown..dog", 1);
+
         QName qname = QName.createQName(TEST_NAMESPACE, "float\\-ista");
-        ftsQueryWithCount(searcher, qname+":3.40", 1);
-        ftsQueryWithCount(searcher, qname+":3..4", 1);
-        ftsQueryWithCount(searcher, qname+":3..3.39", 0);
-        ftsQueryWithCount(searcher, qname+":3..3.40", 1);
-        ftsQueryWithCount(searcher, qname+":3.41..3.9", 0);
-        ftsQueryWithCount(searcher, qname+":3.40..3.9", 1);
-        
-        ftsQueryWithCount(searcher, qname+":[3 TO 4]", 1);
-        ftsQueryWithCount(searcher, qname+":[3 TO 3.39]", 0);
-        ftsQueryWithCount(searcher, qname+":[3 TO 3.4]", 1);
-        ftsQueryWithCount(searcher, qname+":[3.41 TO 4]", 0);
-        ftsQueryWithCount(searcher, qname+":[3.4 TO 4]", 1);
-        ftsQueryWithCount(searcher, qname+":[3 TO 3.4>", 0);
-        ftsQueryWithCount(searcher, qname+":<3.4 TO 4]", 0);
-        ftsQueryWithCount(searcher, qname+":<3.4 TO 3.4>", 0);
-        
-        ftsQueryWithCount(searcher, qname+":(3.40)", 1);
-        ftsQueryWithCount(searcher, qname+":(3..4)", 1);
-        ftsQueryWithCount(searcher, qname+":(3..3.39)", 0);
-        ftsQueryWithCount(searcher, qname+":(3..3.40)", 1);
-        ftsQueryWithCount(searcher, qname+":(3.41..3.9)", 0);
-        ftsQueryWithCount(searcher, qname+":(3.40..3.9)", 1);
-        
-        ftsQueryWithCount(searcher, qname+":([3 TO 4])", 1);
-        ftsQueryWithCount(searcher, qname+":([3 TO 3.39])", 0);
-        ftsQueryWithCount(searcher, qname+":([3 TO 3.4])", 1);
-        ftsQueryWithCount(searcher, qname+":([3.41 TO 4])", 0);
-        ftsQueryWithCount(searcher, qname+":([3.4 TO 4])", 1);
-        ftsQueryWithCount(searcher, qname+":([3 TO 3.4>)", 0);
-        ftsQueryWithCount(searcher, qname+":(<3.4 TO 4])", 0);
-        ftsQueryWithCount(searcher, qname+":(<3.4 TO 3.4>)", 0);
-        
-        
+        ftsQueryWithCount(searcher, qname + ":3.40", 1);
+        ftsQueryWithCount(searcher, qname + ":3..4", 1);
+        ftsQueryWithCount(searcher, qname + ":3..3.39", 0);
+        ftsQueryWithCount(searcher, qname + ":3..3.40", 1);
+        ftsQueryWithCount(searcher, qname + ":3.41..3.9", 0);
+        ftsQueryWithCount(searcher, qname + ":3.40..3.9", 1);
+
+        ftsQueryWithCount(searcher, qname + ":[3 TO 4]", 1);
+        ftsQueryWithCount(searcher, qname + ":[3 TO 3.39]", 0);
+        ftsQueryWithCount(searcher, qname + ":[3 TO 3.4]", 1);
+        ftsQueryWithCount(searcher, qname + ":[3.41 TO 4]", 0);
+        ftsQueryWithCount(searcher, qname + ":[3.4 TO 4]", 1);
+        ftsQueryWithCount(searcher, qname + ":[3 TO 3.4>", 0);
+        ftsQueryWithCount(searcher, qname + ":<3.4 TO 4]", 0);
+        ftsQueryWithCount(searcher, qname + ":<3.4 TO 3.4>", 0);
+
+        ftsQueryWithCount(searcher, qname + ":(3.40)", 1);
+        ftsQueryWithCount(searcher, qname + ":(3..4)", 1);
+        ftsQueryWithCount(searcher, qname + ":(3..3.39)", 0);
+        ftsQueryWithCount(searcher, qname + ":(3..3.40)", 1);
+        ftsQueryWithCount(searcher, qname + ":(3.41..3.9)", 0);
+        ftsQueryWithCount(searcher, qname + ":(3.40..3.9)", 1);
+
+        ftsQueryWithCount(searcher, qname + ":([3 TO 4])", 1);
+        ftsQueryWithCount(searcher, qname + ":([3 TO 3.39])", 0);
+        ftsQueryWithCount(searcher, qname + ":([3 TO 3.4])", 1);
+        ftsQueryWithCount(searcher, qname + ":([3.41 TO 4])", 0);
+        ftsQueryWithCount(searcher, qname + ":([3.4 TO 4])", 1);
+        ftsQueryWithCount(searcher, qname + ":([3 TO 3.4>)", 0);
+        ftsQueryWithCount(searcher, qname + ":(<3.4 TO 4])", 0);
+        ftsQueryWithCount(searcher, qname + ":(<3.4 TO 3.4>)", 0);
+
         ftsQueryWithCount(searcher, "test:float_x002D_ista:3.40", 1);
-        
+
         ftsQueryWithCount(searcher, "lazy", 1);
         ftsQueryWithCount(searcher, "laz*", 1);
         ftsQueryWithCount(searcher, "l*y", 1);
         ftsQueryWithCount(searcher, "l??y", 1);
         ftsQueryWithCount(searcher, "?az?", 1);
         ftsQueryWithCount(searcher, "*zy", 1);
-        
+
         ftsQueryWithCount(searcher, "\"lazy\"", 1);
         ftsQueryWithCount(searcher, "\"laz*\"", 1);
         ftsQueryWithCount(searcher, "\"l*y\"", 1);
         ftsQueryWithCount(searcher, "\"l??y\"", 1);
         ftsQueryWithCount(searcher, "\"?az?\"", 1);
         ftsQueryWithCount(searcher, "\"*zy\"", 1);
-        
+
         ftsQueryWithCount(searcher, "cm:content:lazy", 1);
         ftsQueryWithCount(searcher, "cm:content:laz*", 1);
         ftsQueryWithCount(searcher, "cm:content:l*y", 1);
         ftsQueryWithCount(searcher, "cm:content:l??y", 1);
         ftsQueryWithCount(searcher, "cm:content:?az?", 1);
         ftsQueryWithCount(searcher, "cm:content:*zy", 1);
-        
+
         ftsQueryWithCount(searcher, "cm:content:\"lazy\"", 1);
         ftsQueryWithCount(searcher, "cm:content:\"laz*\"", 1);
         ftsQueryWithCount(searcher, "cm:content:\"l*y\"", 1);
         ftsQueryWithCount(searcher, "cm:content:\"l??y\"", 1);
         ftsQueryWithCount(searcher, "cm:content:\"?az?\"", 1);
         ftsQueryWithCount(searcher, "cm:content:\"*zy\"", 1);
-        
+
         ftsQueryWithCount(searcher, "cm:content:(lazy)", 1);
         ftsQueryWithCount(searcher, "cm:content:(laz*)", 1);
         ftsQueryWithCount(searcher, "cm:content:(l*y)", 1);
         ftsQueryWithCount(searcher, "cm:content:(l??y)", 1);
         ftsQueryWithCount(searcher, "cm:content:(?az?)", 1);
         ftsQueryWithCount(searcher, "cm:content:(*zy)", 1);
-        
+
         ftsQueryWithCount(searcher, "cm:content:(\"lazy\")", 1);
         ftsQueryWithCount(searcher, "cm:content:(\"laz*\")", 1);
         ftsQueryWithCount(searcher, "cm:content:(\"l*y\")", 1);
         ftsQueryWithCount(searcher, "cm:content:(\"l??y\")", 1);
         ftsQueryWithCount(searcher, "cm:content:(\"?az?\")", 1);
         ftsQueryWithCount(searcher, "cm:content:(\"*zy\")", 1);
-        
+
         ftsQueryWithCount(searcher, "lazy^2 dog^4.2", 1);
-        
+
         ftsQueryWithCount(searcher, "lazy~0.7", 1);
         ftsQueryWithCount(searcher, "cm:content:laxy~0.7", 1);
         ftsQueryWithCount(searcher, "laxy~0.7", 1);
+        ftsQueryWithCount(searcher, "=laxy~0.7", 1);
+        ftsQueryWithCount(searcher, "~laxy~0.7", 1);
+
+        ftsQueryWithCount(searcher, "\"quick fox\"~0", 0);
+        ftsQueryWithCount(searcher, "\"quick fox\"~1", 1);
+        ftsQueryWithCount(searcher, "\"quick fox\"~2", 1);
+        ftsQueryWithCount(searcher, "\"quick fox\"~3", 1);
+
+        ftsQueryWithCount(searcher, "\"fox quick\"~0", 0);
+        ftsQueryWithCount(searcher, "\"fox quick\"~1", 0);
+        ftsQueryWithCount(searcher, "\"fox quick\"~2", 0);
+        ftsQueryWithCount(searcher, "\"fox quick\"~3", 1);
+
+        ftsQueryWithCount(searcher, "lazy", 1);
+        ftsQueryWithCount(searcher, "-lazy", 14);
+        ftsQueryWithCount(searcher, "lazy -lazy", 15, null, n14);
+        ftsQueryWithCount(searcher, "lazy^20 -lazy", 15, n14, null);
+        ftsQueryWithCount(searcher, "lazy^20 -lazy^20", 15, null, n14);
     }
-    
+
     public void ftsQueryWithCount(ADMLuceneSearcherImpl searcher, String query, int count)
     {
         ResultSet results = searcher.query(rootNodeRef.getStoreRef(), SearchService.LANGUAGE_FTS_ALFRESCO, query, null, null);
         assertEquals(count, results.length());
         results.close();
     }
-    
+
+    public void ftsQueryWithCount(ADMLuceneSearcherImpl searcher, String query, int count, NodeRef first, NodeRef last)
+    {
+        ResultSet results = searcher.query(rootNodeRef.getStoreRef(), SearchService.LANGUAGE_FTS_ALFRESCO, query, null, null);
+        for(ResultSetRow row : results)
+        {
+            System.out.println(""+ row.getScore() + nodeService.getProperty(row.getNodeRef(), ContentModel.PROP_NAME));
+        }
+        assertEquals(count, results.length());
+        if (first != null)
+        {
+            assertEquals(first, results.getNodeRef(0));
+        }
+        if(last != null)
+        {
+            assertEquals(last, results.getNodeRef(results.length()-1));
+        }
+        results.close();
+    }
+
     public void testOverWritetoZeroSize() throws Exception
     {
         testTX.commit();
@@ -3950,14 +3986,12 @@ public class ADMLuceneTest extends TestCase
         results = searcher.query(sp);
         assertEquals(0, results.length());
         results.close();
-    
 
         sp.addTextAttribute("@" + ContentModel.PROP_CONTENT.toString());
         results = searcher.query(sp);
         assertEquals(1, results.length());
         results.close();
 
-        
         sp = new SearchParameters();
         sp.addStore(rootNodeRef.getStoreRef());
         sp.setLanguage("lucene");
@@ -3966,9 +4000,7 @@ public class ADMLuceneTest extends TestCase
         results = searcher.query(sp);
         assertEquals(12, results.length());
         results.close();
-        
-        
-        
+
         sp = new SearchParameters();
         sp.addStore(rootNodeRef.getStoreRef());
         sp.setLanguage("lucene");
@@ -3977,7 +4009,7 @@ public class ADMLuceneTest extends TestCase
         results = searcher.query(sp);
         assertEquals(12, results.length());
         results.close();
-        
+
         sp = new SearchParameters();
         sp.addStore(rootNodeRef.getStoreRef());
         sp.setLanguage("lucene");
@@ -3986,7 +4018,7 @@ public class ADMLuceneTest extends TestCase
         results = searcher.query(sp);
         assertEquals(12, results.length());
         results.close();
-        
+
         sp = new SearchParameters();
         sp.addStore(rootNodeRef.getStoreRef());
         sp.setLanguage("lucene");
@@ -3995,9 +4027,9 @@ public class ADMLuceneTest extends TestCase
         results = searcher.query(sp);
         assertEquals(12, results.length());
         results.close();
-        
+
         // term
-        
+
         sp = new SearchParameters();
         sp.addStore(rootNodeRef.getStoreRef());
         sp.setLanguage("lucene");
@@ -4006,7 +4038,7 @@ public class ADMLuceneTest extends TestCase
         results = searcher.query(sp);
         assertEquals(12, results.length());
         results.close();
-        
+
         sp = new SearchParameters();
         sp.addStore(rootNodeRef.getStoreRef());
         sp.setLanguage("lucene");
@@ -4015,7 +4047,7 @@ public class ADMLuceneTest extends TestCase
         results = searcher.query(sp);
         assertEquals(12, results.length());
         results.close();
-        
+
         sp = new SearchParameters();
         sp.addStore(rootNodeRef.getStoreRef());
         sp.setLanguage("lucene");
@@ -4024,7 +4056,7 @@ public class ADMLuceneTest extends TestCase
         results = searcher.query(sp);
         assertEquals(12, results.length());
         results.close();
-        
+
         sp = new SearchParameters();
         sp.addStore(rootNodeRef.getStoreRef());
         sp.setLanguage("lucene");
@@ -4033,7 +4065,7 @@ public class ADMLuceneTest extends TestCase
         results = searcher.query(sp);
         assertEquals(12, results.length());
         results.close();
-        
+
         sp = new SearchParameters();
         sp.addStore(rootNodeRef.getStoreRef());
         sp.setLanguage("lucene");
@@ -4042,7 +4074,7 @@ public class ADMLuceneTest extends TestCase
         results = searcher.query(sp);
         assertEquals(12, results.length());
         results.close();
-        
+
         // Wild cards in TEXT phrase
 
         sp = new SearchParameters();

@@ -65,6 +65,9 @@ public class LuceneConjunction extends BaseConjunction implements LuceneQueryBui
             throws ParseException
     {
         BooleanQuery query = new BooleanQuery();
+        boolean must = false;
+        boolean should = false;
+        boolean must_not = false;
         for (Constraint constraint : getConstraints())
         {
             if (constraint instanceof LuceneQueryBuilderComponent)
@@ -72,9 +75,7 @@ public class LuceneConjunction extends BaseConjunction implements LuceneQueryBui
                 LuceneQueryBuilderComponent luceneQueryBuilderComponent = (LuceneQueryBuilderComponent) constraint;
                 Query constraintQuery = luceneQueryBuilderComponent.addComponent(selectors, functionArgs, luceneContext, functionContext);
                 constraintQuery.setBoost(constraint.getBoost());
-                boolean must = false;
-                boolean should = false;
-                boolean must_not = false;
+                
                 if (constraintQuery != null)
                 {
                     switch (constraint.getOccur())
@@ -93,10 +94,7 @@ public class LuceneConjunction extends BaseConjunction implements LuceneQueryBui
                         must_not = true;
                         break;
                     }
-                    if(!must && must_not)
-                    {
-                        query.add(new TermQuery(new Term("ISNODE", "T")),  BooleanClause.Occur.MUST);
-                    }
+                    
                 }
                 else
                 {
@@ -106,6 +104,10 @@ public class LuceneConjunction extends BaseConjunction implements LuceneQueryBui
             else
             {
                 throw new UnsupportedOperationException();
+            }
+            if(!must &&  must_not)
+            {
+                query.add(new TermQuery(new Term("ISNODE", "T")),  BooleanClause.Occur.MUST);
             }
         }
         return query;

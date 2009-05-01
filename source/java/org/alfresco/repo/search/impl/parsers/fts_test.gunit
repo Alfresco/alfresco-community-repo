@@ -96,7 +96,7 @@ ftsTest:
 "zebra~2" -> "(TERM zebra (FUZZY 2))"
 "cm:name:zebra~2.4" -> "(TERM zebra (FIELD_REF name (PREFIX cm)) (FUZZY 2.4))"
 "\"zebra\"~2" -> "(PHRASE \"zebra\" (FUZZY 2))"
-"{http://www.alfresco.org/model/content/1.0}name:\"zebra\"~2.4" -> "(PHRASE \"zebra\" (FIELD_REF name (NAME_SPACE {http://www.alfresco.org/model/content/1.0})) (FUZZY 2.4))"
+"{http://www.alfresco.org/model/content/1.0}name:\"zebra\"~3" -> "(PHRASE \"zebra\" (FIELD_REF name (NAME_SPACE {http://www.alfresco.org/model/content/1.0})) (FUZZY 3))"
 "=zebra~2" -> "(EXACT_TERM zebra (FUZZY 2))"
 "=cm_name:zebra~2.4" -> "(EXACT_TERM zebra (FIELD_REF cm_name) (FUZZY 2.4))"
 "~zebra~2" -> "(SYNONYM zebra (FUZZY 2))"

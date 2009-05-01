@@ -84,8 +84,11 @@ public class LuceneDisjunction extends BaseDisjunction implements LuceneQueryBui
                         break;
                     case EXCLUDE:
                         BooleanQuery subQuery = new BooleanQuery();
-                        subQuery.add(new TermQuery(new Term("ISNODE", "T")),  BooleanClause.Occur.MUST);
+                        TermQuery termQuery = new TermQuery(new Term("ISNODE", "T"));
+                        termQuery.setBoost(constraintQuery.getBoost());
+                        subQuery.add(termQuery,  BooleanClause.Occur.MUST);
                         subQuery.add(constraintQuery, BooleanClause.Occur.MUST_NOT);
+                        subQuery.setBoost(constraintQuery.getBoost());
                         query.add(subQuery, BooleanClause.Occur.SHOULD);
                         break;
                     }

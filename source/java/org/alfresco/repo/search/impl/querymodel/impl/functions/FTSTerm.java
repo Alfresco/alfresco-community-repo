@@ -41,12 +41,14 @@ import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
  *
  */
 public class FTSTerm extends BaseFunction
-{
+{   
     public final static String NAME = "FTSTerm";
 
     public final static String ARG_TERM = "Term";
     
     public final static String ARG_PROPERTY = "Property";
+    
+    public final static String ARG_TOKENISATION_MODE = "TokenisationMode";
 
     public static LinkedHashMap<String, ArgumentDefinition> args;
 
@@ -55,6 +57,7 @@ public class FTSTerm extends BaseFunction
         args = new LinkedHashMap<String, ArgumentDefinition>();
         args.put(ARG_TERM, new BaseArgumentDefinition(Multiplicity.SINGLE_VALUED, ARG_TERM, DataTypeDefinition.ANY, true));
         args.put(ARG_PROPERTY, new BaseArgumentDefinition(Multiplicity.SINGLE_VALUED, ARG_PROPERTY, DataTypeDefinition.ANY, false));
+        args.put(ARG_TOKENISATION_MODE, new BaseArgumentDefinition(Multiplicity.SINGLE_VALUED, ARG_TOKENISATION_MODE, DataTypeDefinition.ANY, false));
     }
 
     /**

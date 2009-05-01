@@ -264,8 +264,8 @@ ftsTest
 		-> ^(TERM ftsTerm fuzzy?)
 	|	ftsExactTerm ((fuzzy) => fuzzy)?
 		-> ^(EXACT_TERM ftsExactTerm fuzzy?)
-    	|   	ftsPhrase ((fuzzy) => fuzzy)?
-       		-> ^(PHRASE ftsPhrase fuzzy?)
+    	|   	ftsPhrase ((slop) => slop)?
+       		-> ^(PHRASE ftsPhrase slop?)
     	|   	ftsSynonym ((fuzzy) => fuzzy)? 
         	-> ^(SYNONYM ftsSynonym fuzzy?)
     	|	ftsFieldGroupProximity 
@@ -282,6 +282,11 @@ ftsTest
 fuzzy
 	: 	TILDA number
 		-> ^(FUZZY number)
+	;
+	
+slop
+	: 	TILDA DECIMAL_INTEGER_LITERAL
+		-> ^(FUZZY DECIMAL_INTEGER_LITERAL)
 	;
 
 boost
@@ -356,8 +361,8 @@ ftsFieldGroupTest
 		-> ^(FG_TERM ftsFieldGroupTerm fuzzy?)
 	|	ftsFieldGroupExactTerm ((fuzzy) => fuzzy)?
 		-> ^(FG_EXACT_TERM ftsFieldGroupExactTerm fuzzy?)
-	|	ftsFieldGroupPhrase ((fuzzy) => fuzzy)? 
-		-> ^(FG_PHRASE ftsFieldGroupPhrase fuzzy? )
+	|	ftsFieldGroupPhrase ((slop) => slop)? 
+		-> ^(FG_PHRASE ftsFieldGroupPhrase slop? )
 	|	ftsFieldGroupSynonym ((fuzzy) => fuzzy)?
 		-> ^(FG_SYNONYM ftsFieldGroupSynonym fuzzy?)
 	|  	ftsFieldGroupProximity

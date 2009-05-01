@@ -52,8 +52,6 @@ import org.alfresco.repo.search.impl.querymodel.impl.functions.Child;
 import org.alfresco.repo.search.impl.querymodel.impl.functions.Descendant;
 import org.alfresco.repo.search.impl.querymodel.impl.functions.Equals;
 import org.alfresco.repo.search.impl.querymodel.impl.functions.Exists;
-import org.alfresco.repo.search.impl.querymodel.impl.functions.FTSExactTerm;
-import org.alfresco.repo.search.impl.querymodel.impl.functions.FTSExpandTerm;
 import org.alfresco.repo.search.impl.querymodel.impl.functions.FTSFuzzyTerm;
 import org.alfresco.repo.search.impl.querymodel.impl.functions.FTSPhrase;
 import org.alfresco.repo.search.impl.querymodel.impl.functions.FTSPrefixTerm;
@@ -76,8 +74,6 @@ import org.alfresco.repo.search.impl.querymodel.impl.lucene.functions.LuceneChil
 import org.alfresco.repo.search.impl.querymodel.impl.lucene.functions.LuceneDescendant;
 import org.alfresco.repo.search.impl.querymodel.impl.lucene.functions.LuceneEquals;
 import org.alfresco.repo.search.impl.querymodel.impl.lucene.functions.LuceneExists;
-import org.alfresco.repo.search.impl.querymodel.impl.lucene.functions.LuceneFTSExactTerm;
-import org.alfresco.repo.search.impl.querymodel.impl.lucene.functions.LuceneFTSExpandTerm;
 import org.alfresco.repo.search.impl.querymodel.impl.lucene.functions.LuceneFTSFuzzyTerm;
 import org.alfresco.repo.search.impl.querymodel.impl.lucene.functions.LuceneFTSPhrase;
 import org.alfresco.repo.search.impl.querymodel.impl.lucene.functions.LuceneFTSPrefixTerm;
@@ -127,9 +123,7 @@ public class LuceneQueryModelFactory implements QueryModelFactory
         functions.put(Descendant.NAME, new LuceneDescendant());
 
         functions.put(FTSTerm.NAME, new LuceneFTSTerm());
-        functions.put(FTSExactTerm.NAME, new LuceneFTSExactTerm());
         functions.put(FTSPhrase.NAME, new LuceneFTSPhrase());
-        functions.put(FTSExpandTerm.NAME, new LuceneFTSExpandTerm());
         functions.put(FTSProximity.NAME, new LuceneFTSProximity());
         functions.put(FTSRange.NAME, new LuceneFTSRange());
         functions.put(FTSPrefixTerm.NAME, new LuceneFTSPrefixTerm());

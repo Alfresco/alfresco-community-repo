@@ -38,11 +38,14 @@ import org.alfresco.repo.search.impl.querymodel.Source;
 import org.alfresco.repo.search.impl.querymodel.impl.BaseQuery;
 import org.alfresco.repo.search.impl.querymodel.impl.functions.PropertyAccessor;
 import org.alfresco.repo.search.impl.querymodel.impl.functions.Score;
+import org.apache.lucene.index.Term;
 import org.apache.lucene.queryParser.ParseException;
+import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.Sort;
 import org.apache.lucene.search.SortField;
+import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.BooleanClause.Occur;
 
 /**
@@ -72,6 +75,10 @@ public class LuceneQuery extends BaseQuery implements LuceneQueryBuilder
 
         BooleanQuery luceneQuery = new BooleanQuery();
 
+        boolean must = false;
+        boolean should = false;
+        boolean must_not = false;
+        
         if (selectors != null)
         {
             for (String selector : selectors)
@@ -84,6 +91,7 @@ public class LuceneQuery extends BaseQuery implements LuceneQueryBuilder
                     if (selectorQuery != null)
                     {
                         luceneQuery.add(selectorQuery, Occur.MUST);
+                        must = true;
                     }
                 }
                 else
@@ -107,12 +115,15 @@ public class LuceneQuery extends BaseQuery implements LuceneQueryBuilder
                     case DEFAULT:
                     case MANDATORY:
                         luceneQuery.add(constraintQuery, Occur.MUST);
+                        must = true;
                         break;
                     case OPTIONAL:
                         luceneQuery.add(constraintQuery, Occur.SHOULD);
+                        should = true;
                         break;
                     case EXCLUDE:
                         luceneQuery.add(constraintQuery, Occur.MUST_NOT);
+                        must_not = true;
                         break;
                     }
                 }
@@ -125,6 +136,11 @@ public class LuceneQuery extends BaseQuery implements LuceneQueryBuilder
             {
                 throw new UnsupportedOperationException();
             }
+        }
+        
+        if(!must &&  must_not)
+        {
+            luceneQuery.add(new TermQuery(new Term("ISNODE", "T")),  BooleanClause.Occur.MUST);
         }
 
         return luceneQuery;

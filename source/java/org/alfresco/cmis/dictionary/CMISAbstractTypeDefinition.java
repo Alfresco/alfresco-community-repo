@@ -172,7 +172,7 @@ public class CMISAbstractTypeDefinition implements CMISTypeDefinition, Serializa
             logger.debug("Type " + objectTypeId + ": parent=" + (parentType == null ? "<none>" : parentType.getTypeId()) +
                     ", internal parent=" + (internalParentType == null ? "<none>" : internalParentType.getTypeId()));
         
-        CMISTypeId rootTypeId = objectTypeId.getRootTypeId();
+        CMISTypeId rootTypeId = objectTypeId.getBaseTypeId();
         if (rootTypeId != null)
         {
             rootType = registry.objectDefsByTypeId.get(rootTypeId);
@@ -288,7 +288,7 @@ public class CMISAbstractTypeDefinition implements CMISTypeDefinition, Serializa
      * (non-Javadoc)
      * @see org.alfresco.cmis.dictionary.CMISTypeDefinition#getRootType()
      */
-    public CMISTypeDefinition getRootType()
+    public CMISTypeDefinition getBaseType()
     {
         return rootType;
     }

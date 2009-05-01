@@ -77,27 +77,6 @@ public interface CMISPropertyDefinition
     public CMISCardinalityEnum getCardinality();
 
     /**
-     * For variable length properties, get the maximum length allowed. Unsupported.
-     * 
-     * @return
-     */
-    public int getMaximumLength();
-
-    /**
-     * For properties of type CMISPropertyType.XML the schema to which the property must conform. Unsupported
-     * 
-     * @return - the schema URI
-     */
-    public String getSchemaURI();
-
-    /**
-     * For properties of type CMISPropertyType.XML the encoding used for the property value
-     * 
-     * @return the encoding
-     */
-    public String getEncoding();
-
-    /**
      * Get the choices available as values for this property TODO: not implemented yet
      * 
      * @return
@@ -145,7 +124,28 @@ public interface CMISPropertyDefinition
      * @return
      */
     public boolean isOrderable();
+    
+    /**
+     * For variable length properties, get the maximum length allowed. Unsupported.
+     * 
+     * @return
+     */
+    public int getMaximumLength();
 
+    /**
+     * For properties of type CMISPropertyType.XML the schema to which the property must conform. Unsupported
+     * 
+     * @return - the schema URI
+     */
+    public String getSchemaURI();
+
+    /**
+     * For properties of type CMISPropertyType.XML the encoding used for the property value
+     * 
+     * @return the encoding
+     */
+    public String getEncoding();
+    
     /**
      * Gets the property accessor (for reading / writing values)
      * 

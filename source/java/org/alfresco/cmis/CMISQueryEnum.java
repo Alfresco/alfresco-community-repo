@@ -34,9 +34,9 @@ public enum CMISQueryEnum implements EnumLabel
     NONE("none"),
     METADATA_ONLY("metadataonly"),
     FULLTEXT_ONLY("fulltextonly"),
-    BOTH("both");
-    
-    
+    BOTH_SEPERATE("bothseperate"),
+    BOTH_COMBINED("bothcombined");
+
     private String label;
     
     /**

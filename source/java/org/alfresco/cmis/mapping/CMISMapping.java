@@ -38,7 +38,6 @@ import org.alfresco.cmis.CMISDictionaryModel;
 import org.alfresco.cmis.CMISPropertyId;
 import org.alfresco.cmis.CMISScope;
 import org.alfresco.cmis.CMISTypeId;
-import org.alfresco.cmis.dictionary.CMISAbstractDictionaryService;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.service.ServiceRegistry;
@@ -67,7 +66,7 @@ public class CMISMapping implements InitializingBean
     /**
      * The Alfresco CMIS model URI.
      */
-    public static String CMIS_MODEL_URI = "http://www.alfresco.org/model/cmis/0.5";
+    public static String CMIS_MODEL_URI = "http://www.alfresco.org/model/cmis/0.6";
 
     /**
      * The Alfresco CMIS Model name.
@@ -80,8 +79,8 @@ public class CMISMapping implements InitializingBean
     public static QName CMIS_MODEL_QNAME = QName.createQName(CMIS_MODEL_URI, CMIS_MODEL_NAME);
 
     // CMIS Internal Types
-    public static String OBJECT_OBJECT_TYPE = "Object";
-    public static String FILESYSTEM_OBJECT_TYPE ="FileSystemObject";
+    public static String OBJECT_OBJECT_TYPE = "object";
+    public static String FILESYSTEM_OBJECT_TYPE ="filesystemobject";
     
     // CMIS Data Types
     public static QName CMIS_DATATYPE_ID = QName.createQName(CMIS_MODEL_URI, "id");

@@ -61,11 +61,6 @@ public interface CMISQueryService
     public CMISJoinEnum getJoinSupport();
     
     /**
-     * Get the full text search support level in queries.
-     */
-    public CMISFullTextSearchEnum getFullTextSearchSupport();
-
-    /**
      * Can you query Private Working Copies of a document.
      * 
      * @return

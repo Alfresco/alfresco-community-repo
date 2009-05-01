@@ -86,10 +86,10 @@ public class CMISTypeId implements Serializable
     }
     
     /**
-     * Get the root type id
+     * Get the base type id
      * @return
      */
-    public CMISTypeId getRootTypeId()
+    public CMISTypeId getBaseTypeId()
     {
         switch (scope)
         {

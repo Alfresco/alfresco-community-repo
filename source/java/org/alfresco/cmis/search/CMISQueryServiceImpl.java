@@ -29,7 +29,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.cmis.CMISDictionaryService;
-import org.alfresco.cmis.CMISFullTextSearchEnum;
 import org.alfresco.cmis.CMISJoinEnum;
 import org.alfresco.cmis.CMISQueryEnum;
 import org.alfresco.cmis.CMISQueryOptions;
@@ -164,17 +163,7 @@ public class CMISQueryServiceImpl implements CMISQueryService
      */
     public CMISQueryEnum getQuerySupport()
     {
-        return CMISQueryEnum.BOTH;
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.alfresco.cmis.search.CMISQueryService#getFullTextSearchSupport()
-     */
-    public CMISFullTextSearchEnum getFullTextSearchSupport()
-    {
-        return CMISFullTextSearchEnum.FULL_TEXT_AND_STRUCTURED;
+        return CMISQueryEnum.BOTH_COMBINED;
     }
 
     /*

@@ -37,22 +37,22 @@ public interface CMISDictionaryModel
     /**
      * Type id for CMIS documents, from the spec.
      */
-    public static String DOCUMENT_OBJECT_TYPE = "Document";
+    public static String DOCUMENT_OBJECT_TYPE = "document";
 
     /**
      * Type is for CMIS folders, from the spec.
      */
-    public static String FOLDER_OBJECT_TYPE = "Folder";
+    public static String FOLDER_OBJECT_TYPE = "folder";
 
     /**
      * Type Id for CMIS Relationships, from the spec.
      */
-    public static String RELATIONSHIP_OBJECT_TYPE = "Relationship";
+    public static String RELATIONSHIP_OBJECT_TYPE = "relationship";
 
     /**
      * Type Id for CMIS Policies, from the spec.
      */
-    public static String POLICY_OBJECT_TYPE = "Policy";
+    public static String POLICY_OBJECT_TYPE = "policy";
 
     // TODO: spec issue - objectTypeEnum is lower cased - object type ids are repository specific in spec
     public static CMISTypeId DOCUMENT_TYPE_ID = new CMISTypeId(CMISScope.DOCUMENT, DOCUMENT_OBJECT_TYPE.toLowerCase(), ContentModel.TYPE_CONTENT);

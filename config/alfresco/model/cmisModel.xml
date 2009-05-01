@@ -9,7 +9,7 @@
   </imports>
 
   <namespaces>
-    <namespace uri="http://www.alfresco.org/model/cmis/0.5" prefix="cmis" />
+    <namespace uri="http://www.alfresco.org/model/cmis/0.6" prefix="cmis" />
   </namespaces>
 
   <data-types>
@@ -56,7 +56,7 @@
 
   <types>
 
-    <type name="cmis:Object">
+    <type name="cmis:object">
       <properties>
         <property name="cmis:ObjectId">
           <title>Object Id</title>
@@ -146,8 +146,8 @@
     </type>
 
     <!--  TODO: mark as abstract -->
-    <type name="cmis:FileSystemObject">
-      <parent>cmis:Object</parent>
+    <type name="cmis:filesystemobject">
+      <parent>cmis:object</parent>
       <properties>
         <property name="cmis:Name">
           <title>Name</title>
@@ -163,10 +163,10 @@
       </properties>
     </type>
 
-    <type name="cmis:Document">
+    <type name="cmis:document">
       <title>Document</title>
       <description>Document Type</description>
-      <parent>cmis:FileSystemObject</parent>
+      <parent>cmis:filesystemobject</parent>
       <properties>
         <property name="cmis:IsImmutable">
           <title>Is Immutable</title>
@@ -319,10 +319,10 @@
       </properties>
     </type>
 
-    <type name="cmis:Folder">
+    <type name="cmis:folder">
       <title>Folder</title>
       <description>Folder Type</description>
-      <parent>cmis:FileSystemObject</parent>
+      <parent>cmis:filesystemobject</parent>
       <properties>
         <property name="cmis:ParentId">
           <title>Parent Id</title>
@@ -347,10 +347,10 @@
       </properties>
     </type>
 
-    <type name="cmis:Relationship">
+    <type name="cmis:relationship">
       <title>Relationship</title>
       <description>Relationship Type</description>
-      <parent>cmis:Object</parent>
+      <parent>cmis:object</parent>
       <properties>
         <property name="cmis:SourceId">
           <title>Source Id</title>
@@ -373,10 +373,10 @@
       </properties>
     </type>
 
-    <type name="cmis:Policy">
+    <type name="cmis:policy">
       <title>Policy</title>
       <description>Policy Type</description>
-      <parent>cmis:Object</parent>
+      <parent>cmis:object</parent>
       <properties>
         <property name="cmis:PolicyName">
           <title>Policy Name</title>

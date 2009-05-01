@@ -79,11 +79,11 @@ public interface CMISTypeDefinition
     public Collection<CMISTypeDefinition> getSubTypes(boolean descendants);
     
     /**
-     * Get the root type
+     * Get the base type
      * 
      * @return
      */
-    public CMISTypeDefinition getRootType();
+    public CMISTypeDefinition getBaseType();
     
     /**
      * Get the description for the type

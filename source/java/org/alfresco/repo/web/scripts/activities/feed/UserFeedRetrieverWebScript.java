@@ -31,6 +31,7 @@ import java.util.Map;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.service.cmr.activities.ActivityService;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.util.JSONtoFmModel;
@@ -110,23 +111,12 @@ public class UserFeedRetrieverWebScript extends DeclarativeWebScript
         {
             exclOtherUsers = true;
         }
-
+        
         if ((feedUserId == null) || (feedUserId.length() == 0))
         {
            feedUserId = AuthenticationUtil.getFullyAuthenticatedUser();
         }
         
-        String currentUser = AuthenticationUtil.getFullyAuthenticatedUser();
-        if (! ((currentUser == null) || 
-               (currentUser.equals(AuthenticationUtil.getSystemUserName())) ||
-               (authorityService.isAdminAuthority(currentUser)) ||
-               (currentUser.equals(feedUserId))))
-        {
-            status.setCode(Status.STATUS_UNAUTHORIZED);
-            logger.warn("Unable to get user feed entries for '" + feedUserId + "' - currently logged in as '" + currentUser +"'");
-            return null;
-        }
-
         // map feed collection format to feed entry format (if not the same), eg.
         //     atomfeed -> atomentry
         //     atom     -> atomentry
@@ -136,32 +126,41 @@ public class UserFeedRetrieverWebScript extends DeclarativeWebScript
         }
         
         Map<String, Object> model = new HashMap<String, Object>();
-
-        List<String> feedEntries = activityService.getUserFeedEntries(feedUserId, format, siteId, exclThisUser, exclOtherUsers);
         
-        if (format.equals("json"))
-        { 
-            model.put("feedEntries", feedEntries);
-            model.put("siteId", siteId);
-        }
-        else
+        try
         {
-            List<Map<String, Object>> activityFeedModels = new ArrayList<Map<String, Object>>();
-            try
-            { 
-                for (String feedEntry : feedEntries)
-                {
-                    activityFeedModels.add(JSONtoFmModel.convertJSONObjectToMap(feedEntry));
-                }
-            }
-            catch (JSONException je)
-            {    
-                throw new AlfrescoRuntimeException("Unable to get user feed entries: " + je.getMessage());
-            }
+            List<String> feedEntries = activityService.getUserFeedEntries(feedUserId, format, siteId, exclThisUser, exclOtherUsers);
             
-            model.put("feedEntries", activityFeedModels);
-            model.put("feedUserId", feedUserId);
-        }   
+            if (format.equals("json"))
+            { 
+                model.put("feedEntries", feedEntries);
+                model.put("siteId", siteId);
+            }
+            else
+            {
+                List<Map<String, Object>> activityFeedModels = new ArrayList<Map<String, Object>>();
+                try
+                { 
+                    for (String feedEntry : feedEntries)
+                    {
+                        activityFeedModels.add(JSONtoFmModel.convertJSONObjectToMap(feedEntry));
+                    }
+                }
+                catch (JSONException je)
+                {    
+                    throw new AlfrescoRuntimeException("Unable to get user feed entries: " + je.getMessage());
+                }
+                
+                model.put("feedEntries", activityFeedModels);
+                model.put("feedUserId", feedUserId);
+            }
+        }
+        catch (AccessDeniedException ade)
+        {
+            status.setCode(Status.STATUS_UNAUTHORIZED);
+            logger.warn("Unable to get user feed entries for '" + feedUserId + "' - currently logged in as '" + AuthenticationUtil.getFullyAuthenticatedUser() +"'");
+            return null;
+        }
         
         return model;
     }

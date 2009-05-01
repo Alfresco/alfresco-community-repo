@@ -97,12 +97,14 @@ public class SiteActivitySystemTest extends TestCase
     // AppToolId for site membership activities
     private static String appToolId = "siteService"; // refer to SiteService
     
+    private static int DELAY_MSECS = 120000; // 2 mins
+    
     private static boolean setup = false;
     private static boolean sitesCreated = false;
     private static boolean membersAddedUpdated = false;
     private static boolean membersRemoved = false;
     private static boolean controlsCreated = false;
-
+    
     
     public SiteActivitySystemTest()
     {
@@ -142,6 +144,12 @@ public class SiteActivitySystemTest extends TestCase
     protected void tearDown() throws Exception
     {
         super.tearDown();
+    }
+    
+    public void testLogin() throws Exception
+    {
+        String ticket = callLoginWebScript(WEBSCRIPT_ENDPOINT, ADMIN_USER, ADMIN_PW);
+        assertNotNull(ticket);
     }
     
     public void testCreateSites() throws Exception
@@ -334,7 +342,7 @@ public class SiteActivitySystemTest extends TestCase
            append(excludeThisUser ? UserFeedRetrieverWebScript.PARAM_EXCLUDE_THIS_USER + "=true&" : "").     // optional
            append(excludeOtherUsers ? UserFeedRetrieverWebScript.PARAM_EXCLUDE_OTHER_USERS + "=true&" : ""). // optional
            append("format=json");
-
+        
         String url = sb.toString();
         String jsonArrayResult = callGetWebScript(url, ticket);
         
@@ -372,7 +380,7 @@ public class SiteActivitySystemTest extends TestCase
             // user 3 opts out of site membership activities for site 1 only
             ticket = callLoginWebScript(WEBSCRIPT_ENDPOINT, user3, USER_PW);
             addFeedControl(user3, site1, appToolId, ticket);
-                 
+            
             // TODO add more here, once we have more appToolIds
             
             controlsCreated = true;
@@ -392,7 +400,7 @@ public class SiteActivitySystemTest extends TestCase
             addAndUpdateMemberships(site3, ticket, false); // private site, do not include user 4
             
             // add pause - otherwise, activity service will not generate feed entries (since they will have already left the site)
-            Thread.sleep(90000); // 1 min
+            Thread.sleep(DELAY_MSECS);
             
             membersAddedUpdated = true;
         }
@@ -433,13 +441,13 @@ public class SiteActivitySystemTest extends TestCase
             testAddAndUpdateMembershipsWithPause();
             
             String ticket = callLoginWebScript(WEBSCRIPT_ENDPOINT, ADMIN_USER, ADMIN_PW);
-
+            
             removeMemberships(site1, ticket, true);
             removeMemberships(site2, ticket, true);
             removeMemberships(site3, ticket, false);
             
             // add pause
-            Thread.sleep(60000); // 1 min
+            Thread.sleep(DELAY_MSECS);
             
             membersRemoved = true;
         }
@@ -522,12 +530,18 @@ public class SiteActivitySystemTest extends TestCase
         
         String ticket = callLoginWebScript(WEBSCRIPT_ENDPOINT, ADMIN_USER, ADMIN_PW);
         
-        // 2 sites, with 4 users, each with 1 join and 1 role change = 8x2
-        // 1 site,  with 3 users, each with 1 join and 1 role change = 6x1
+        // site 1, with 4 users, each with 1 join, 1 role change = 4x2 = 8
+        // site 2, with 4 users, each with 1 join, 1 role change = 4x2 = 8
+        // site 3, with 3 users, each with 1 join, 1 role change = 3x2 = 6
         
-        getUserFeed(user1, ticket, true, 14);  // 8 = due to feed control - exclude site 1
+        // user 1 belongs to 3 sites = (2x8)+(1x6) = 22
+        // user 2 belongs to 3 sites = (2x8)+(1x6) = 22
+        // user 3 belongs to 3 sites = (2x8)+(1x6) = 22
+        // user 4 belongs to 2 sites = (2x8) = 16
+        
+        getUserFeed(user1, ticket, true, 14);  // 14 = (22 - 8) due to feed control - exclude site 1
         getUserFeed(user2, ticket, true, 0);   // 0 = due to feed control - exclude site membership activities (across all sites)
-        getUserFeed(user3, ticket, true, 14);  // 8 = due to feed control - exclude site membership activities for site 1
+        getUserFeed(user3, ticket, true, 14);  // 14 = (22 - 8) due to feed control - exclude site membership activities for site 1
         getUserFeed(user4, ticket, true, 16);  // 16 = no feed control
         
         // as user1
@@ -563,7 +577,7 @@ public class SiteActivitySystemTest extends TestCase
         getUserFeed(null, null, ticket, false, true, false, 14);  // exclude any from user1
         getUserFeed(null, null, ticket, false, false, true, 0);   // exclude all except user1
         getUserFeed(null, null, ticket, false, true, true, 0);    // exclude all (NOOP)
-
+        
         // TODO - add more (eg. other non-admin user activities)
     }
     
@@ -641,7 +655,7 @@ public class SiteActivitySystemTest extends TestCase
             logger.debug(response);
         }
     }
-
+    
     protected String callGetWebScript(String urlString, String ticket) throws MalformedURLException, URISyntaxException, IOException
     {
         return callOutWebScript(urlString, "GET", ticket);
@@ -668,7 +682,7 @@ public class SiteActivitySystemTest extends TestCase
         
         HttpURLConnection conn = (HttpURLConnection)url.openConnection();
         conn.setRequestMethod(method);
-
+        
         if (ticket != null)
         {
             // add Base64 encoded authorization header
@@ -684,7 +698,7 @@ public class SiteActivitySystemTest extends TestCase
         {
             is = conn.getInputStream();
             br = new BufferedReader(new InputStreamReader(is));
-    
+            
             String line = null;
             StringBuffer sb = new StringBuffer();
             while(((line = br.readLine()) !=null))  {
@@ -698,7 +712,7 @@ public class SiteActivitySystemTest extends TestCase
             if (br != null) { br.close(); };
             if (is != null) { is.close(); };
         }
-
+        
         return result;
     }
     
@@ -724,7 +738,7 @@ public class SiteActivitySystemTest extends TestCase
         {
             conn.setRequestProperty("SOAPAction", soapAction);
         }
-
+        
         if (ticket != null)
         {
             // add Base64 encoded authorization header
@@ -755,7 +769,7 @@ public class SiteActivitySystemTest extends TestCase
         {
             is = conn.getInputStream();
             br = new BufferedReader(new InputStreamReader(is));
-    
+            
             String line = null;
             StringBuffer sb = new StringBuffer();
             while(((line = br.readLine()) !=null)) 

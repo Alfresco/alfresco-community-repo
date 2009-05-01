@@ -312,7 +312,6 @@
    <!-- Activity Site Feed - to get activities feed for given site, if private site then need to be a member or admin -->
    <bean id="webscript.org.alfresco.repository.activities.feed.sitefeed.get" class="org.alfresco.repo.web.scripts.activities.feed.SiteFeedRetrieverWebScript" parent="webscript">
       <property name="activityService" ref="activityService"/>
-      <property name="siteService" ref="siteService"/>
    </bean>
    
    <!--                            -->

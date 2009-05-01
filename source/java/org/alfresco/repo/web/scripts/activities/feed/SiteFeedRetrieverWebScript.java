@@ -33,8 +33,6 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.service.cmr.activities.ActivityService;
-import org.alfresco.service.cmr.site.SiteInfo;
-import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.util.JSONtoFmModel;
 import org.alfresco.web.scripts.DeclarativeWebScript;
 import org.alfresco.web.scripts.Status;
@@ -51,19 +49,12 @@ public class SiteFeedRetrieverWebScript extends DeclarativeWebScript
     private static final Log logger = LogFactory.getLog(SiteFeedRetrieverWebScript.class);
     
     private ActivityService activityService;
-    private SiteService siteService;
    
     public void setActivityService(ActivityService activityService)
     {
         this.activityService = activityService;
     }
-   
-    public void setSiteService(SiteService siteService)
-    {
-        this.siteService = siteService;
-    }
     
-   
     /* (non-Javadoc)
      * @see org.alfresco.web.scripts.DeclarativeWebScript#executeImpl(org.alfresco.web.scripts.WebScriptRequest, org.alfresco.web.scripts.WebScriptResponse)
      */
@@ -100,30 +91,10 @@ public class SiteFeedRetrieverWebScript extends DeclarativeWebScript
         
         Map<String, Object> model = new HashMap<String, Object>();
         
-        // if site is null then either does not exist or is private (and current user is not admin or a member) - hence return 401 (unauthorised)
-        
-        SiteInfo siteInfo = null;
         try
         {
-            siteInfo = siteService.getSite(siteId);
-        }
-        catch (AccessDeniedException ade)
-        {
-            // ignore - fall through
-        }
-        
-        if (siteInfo == null)
-        {   
-            String currentUser = AuthenticationUtil.getFullyAuthenticatedUser();
-            status.setCode(Status.STATUS_UNAUTHORIZED);
-            logger.warn("Unable to get site feed entries for '" + siteId + "' (site does not exist or is private) - currently logged in as '" + currentUser +"'");
-            
-            model.put("feedEntries", null);
-            model.put("siteId", "");
-        }
-        else
-        {      
             List<String> feedEntries = activityService.getSiteFeedEntries(siteId, format);
+            
             
             if (format.equals("json"))
             { 
@@ -148,6 +119,16 @@ public class SiteFeedRetrieverWebScript extends DeclarativeWebScript
                 model.put("feedEntries", activityFeedModels);
                 model.put("siteId", siteId);
             }
+        }
+        catch (AccessDeniedException ade)
+        {
+            // implies that site either does not exist or is private (and current user is not admin or a member) - hence return 401 (unauthorised)
+            String currentUser = AuthenticationUtil.getFullyAuthenticatedUser();
+            status.setCode(Status.STATUS_UNAUTHORIZED);
+            logger.warn("Unable to get site feed entries for '" + siteId + "' (site does not exist or is private) - currently logged in as '" + currentUser +"'");
+            
+            model.put("feedEntries", null);
+            model.put("siteId", "");
         }
         
         return model;

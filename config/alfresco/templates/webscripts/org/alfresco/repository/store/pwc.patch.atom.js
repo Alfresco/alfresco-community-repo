@@ -27,7 +27,7 @@ script:
     if (entry !== null)
     {
         // update properties
-        var updated = updateNode(model.node, entry, null, function(propDef) {return putValidator(propDef, true);});
+        var updated = updateNode(model.node, entry, null, function(propDef) {return patchValidator(propDef, true);});
         if (updated === null)
         {
             break script;

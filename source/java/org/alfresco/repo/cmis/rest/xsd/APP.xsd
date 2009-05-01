@@ -7,7 +7,7 @@
 	elementFormDefault="qualified" targetNamespace="http://www.w3.org/2007/app"
 	xmlns:atom="http://www.w3.org/2005/Atom" xmlns:app="http://www.w3.org/2007/app"
 	xmlns:cmis="http://docs.oasis-open.org/ns/cmis/core/200901"
-	version="0.52">
+	version="0.61">
 	<xs:import namespace="http://www.w3.org/2005/Atom"
 		schemaLocation="ATOM.xsd" />
 	<xs:import namespace="http://docs.oasis-open.org/ns/cmis/core/200901"
@@ -30,7 +30,7 @@
 			<xs:element ref="app:collection" minOccurs="0" maxOccurs="unbounded"></xs:element>
 		</xs:sequence>
 		<xs:attribute ref="cmis:id"></xs:attribute>
-		<xs:attribute ref="cmis:repositoryRelationship"></xs:attribute>
+		<xs:attribute ref="cmis:repositoryRelationship" use="optional"></xs:attribute>
 	</xs:complexType>
 	<xs:element name="collection" type="app:appCollectionType"></xs:element>
 	<xs:complexType name="appCollectionType">

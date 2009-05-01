@@ -5,31 +5,31 @@
         <ns3:uri>http://www.ibm.com/</ns3:uri>
         <ns3:email>albertcbrown@us.ibm.com</ns3:email>
     </ns3:author>
-    <ns3:content src="http://cmisexample.oasis-open.org/rep1/28a6be27-74e6-4742-845f-d07ea48e724c"/>
-    <ns3:id>urn:uuid:28a6be27-74e6-4742-845f-d07ea48e724c</ns3:id>
-    <ns3:link rel="self" href="http://cmisexample.oasis-open.org/rep1/28a6be27-74e6-4742-845f-d07ea48e724c"/>
-    <ns3:link rel="edit" href="http://cmisexample.oasis-open.org/rep1/28a6be27-74e6-4742-845f-d07ea48e724c"/>
-    <ns3:link type="application/cmis+xml;type=allowableActions" rel="allowableactions" href="http://cmisexample.oasis-open.org/rep1/28a6be27-74e6-4742-845f-d07ea48e724c/allowableactions"/>
-    <ns3:link type="application/atom+xml;type=entry" rel="type" href="http://cmisexample.oasis-open.org/rep1/28a6be27-74e6-4742-845f-d07ea48e724c/type"/>
-    <ns3:link type="application/atom+xml;type=feed" rel="parents" href="http://cmisexample.oasis-open.org/rep1/28a6be27-74e6-4742-845f-d07ea48e724c/parents"/>
-    <ns3:link type="application/atom+xml;type=feed" rel="relationships" href="http://cmisexample.oasis-open.org/rep1/28a6be27-74e6-4742-845f-d07ea48e724c/relationships"/>
-    <ns3:published>2009-04-03T13:49:48.250-07:00</ns3:published>
-    <ns3:summary type="html">HTML summary of Entry  28a6be27-74e6-4742-845f-d07ea48e724c</ns3:summary>
+    <ns3:content src="http://cmisexample.oasis-open.org/rep1/4b2467fe-26a9-4413-83e5-71b7ed6bc237"/>
+    <ns3:id>urn:uuid:4b2467fe-26a9-4413-83e5-71b7ed6bc237</ns3:id>
+    <ns3:link rel="self" href="http://cmisexample.oasis-open.org/rep1/4b2467fe-26a9-4413-83e5-71b7ed6bc237"/>
+    <ns3:link rel="edit" href="http://cmisexample.oasis-open.org/rep1/4b2467fe-26a9-4413-83e5-71b7ed6bc237"/>
+    <ns3:link type="application/cmis+xml;type=allowableActions" rel="allowableactions" href="http://cmisexample.oasis-open.org/rep1/4b2467fe-26a9-4413-83e5-71b7ed6bc237/allowableactions"/>
+    <ns3:link type="application/atom+xml;type=entry" rel="type" href="http://cmisexample.oasis-open.org/rep1/4b2467fe-26a9-4413-83e5-71b7ed6bc237/type"/>
+    <ns3:link type="application/atom+xml;type=feed" rel="parents" href="http://cmisexample.oasis-open.org/rep1/4b2467fe-26a9-4413-83e5-71b7ed6bc237/parents"/>
+    <ns3:link type="application/atom+xml;type=feed" rel="relationships" href="http://cmisexample.oasis-open.org/rep1/4b2467fe-26a9-4413-83e5-71b7ed6bc237/relationships"/>
+    <ns3:published>2009-04-17T13:51:01.593-07:00</ns3:published>
+    <ns3:summary type="html">HTML summary of Entry  4b2467fe-26a9-4413-83e5-71b7ed6bc237</ns3:summary>
     <ns3:title type="text">CMIS Example Policy</ns3:title>
-    <ns3:updated>2009-04-03T13:49:48.250-07:00</ns3:updated>
+    <ns3:updated>2009-04-17T13:51:01.593-07:00</ns3:updated>
     <ns1:object>
         <ns1:properties>
             <ns1:propertyBoolean ns1:name="IsImmutable">
                 <ns1:value>false</ns1:value>
             </ns1:propertyBoolean>
             <ns1:propertyDateTime ns1:name="CreationDate">
-                <ns1:value>2009-04-03T13:49:48.265-07:00</ns1:value>
+                <ns1:value>2009-04-17T13:51:01.593-07:00</ns1:value>
             </ns1:propertyDateTime>
             <ns1:propertyDateTime ns1:name="LastModificationDate">
-                <ns1:value>2009-04-03T13:49:48.265-07:00</ns1:value>
+                <ns1:value>2009-04-17T13:51:01.593-07:00</ns1:value>
             </ns1:propertyDateTime>
             <ns1:propertyId ns1:name="ObjectId">
-                <ns1:value>28a6be27-74e6-4742-845f-d07ea48e724c</ns1:value>
+                <ns1:value>4b2467fe-26a9-4413-83e5-71b7ed6bc237</ns1:value>
             </ns1:propertyId>
             <ns1:propertyId ns1:name="ObjectTypeId">
                 <ns1:value>policy</ns1:value>

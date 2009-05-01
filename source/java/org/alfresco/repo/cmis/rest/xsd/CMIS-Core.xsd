@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 	<!--
-		Common CMIS XSD for version 0.52
+		Common CMIS XSD
 	-->
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
 	elementFormDefault="qualified" targetNamespace="http://docs.oasis-open.org/ns/cmis/core/200901"
 	xmlns:atom="http://www.w3.org/2005/Atom" xmlns:xhtml="http://www.w3.org/1999/xhtml"
 	xmlns:jaxb="http://java.sun.com/xml/ns/jaxb" xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc"
 	jaxb:extensionBindingPrefixes="xjc" jaxb:version="2.1"
-	xmlns:cmis="http://docs.oasis-open.org/ns/cmis/core/200901" version="0.52">
+	xmlns:cmis="http://docs.oasis-open.org/ns/cmis/core/200901" version="0.61c">
 	<xs:import namespace="http://www.w3.org/XML/1998/namespace"
 		schemaLocation="xml.xsd" />
 
@@ -31,7 +31,7 @@
 			<xs:enumeration value="multi" />
 		</xs:restriction>
 	</xs:simpleType>
-	<xs:simpleType name="enumUpdateability">
+	<xs:simpleType name="enumUpdatability">
 		<xs:restriction base="xs:string">
 			<xs:enumeration value="readonly" />
 			<xs:enumeration value="readwrite" />
@@ -63,7 +63,7 @@
 			<xs:enumeration value="changes" />
 		</xs:restriction>
 	</xs:simpleType>
-	<xs:simpleType name="enumObjectType">
+	<xs:simpleType name="enumBaseObjectType">
 		<xs:restriction base="xs:string">
 			<xs:enumeration value="document" />
 			<xs:enumeration value="folder" />
@@ -82,7 +82,7 @@
 	</xs:simpleType>
 	<xs:simpleType name="enumCapabilityJoin">
 		<xs:restriction base="xs:string">
-			<xs:enumeration value="nojoin" />
+			<xs:enumeration value="none" />
 			<xs:enumeration value="inneronly" />
 			<xs:enumeration value="innerandouter" />
 		</xs:restriction>
@@ -130,7 +130,7 @@
 		<xs:restriction base="xs:string">
 			<xs:enumeration value="source" />
 			<xs:enumeration value="target" />
-			<xs:enumeration value="both" />
+			<xs:enumeration value="either" />
 		</xs:restriction>
 	</xs:simpleType>
 	<xs:simpleType name="enumIncludeRelationships">
@@ -252,6 +252,7 @@
 			<xs:enumeration value="includeRelationships" />
 			<xs:enumeration value="includeSubrelationshipTypes" />
 			<xs:enumeration value="length" />
+			<xs:enumeration value="major" />
 			<xs:enumeration value="majorVersion" />
 			<xs:enumeration value="maxItems" />
 			<xs:enumeration value="offset" />
@@ -285,7 +286,7 @@
 	<!--getRepositories Operation-->
 	<xs:complexType name="cmisRepositoryEntryType">
 		<xs:sequence>
-			<xs:element name="repositoryID" type="xs:string"
+			<xs:element name="repositoryId" type="xs:string"
 				minOccurs="1" maxOccurs="1" />
 			<xs:element name="repositoryName" type="xs:string"
 				minOccurs="1" maxOccurs="1" />
@@ -300,7 +301,9 @@
 	<!--  Atom & APP -->
 	<xs:attribute name="id" type="xs:string" />
 	<xs:attribute name="href" type="xs:anyURI" />
-	<xs:attribute name="repositoryRelationship" type="cmis:enumRepositoryRelationship" />
+	
+	<!-- should be a member of enumRepositoryRelationship.  However, it can be extended, so not constrained.  -->
+	<xs:attribute name="repositoryRelationship" type="xs:string" />
 	<xs:attribute name="collectionType" type="cmis:enumCollectionType" />
 	<xs:element name="hasMoreItems" type="xs:boolean" />
 	<xs:element name="repositoryInfo" type="cmis:cmisRepositoryInfoType" />
@@ -643,7 +646,6 @@
 		<xs:sequence>
 			<xs:element ref="cmis:choice" minOccurs="0" maxOccurs="unbounded" />
 		</xs:sequence>
-		<xs:attribute ref="cmis:index" use="optional" />
 		<xs:attribute ref="cmis:key" use="optional" />
 		<xs:attributeGroup ref="cmis:cmisUndefinedAttribute" />
 	</xs:complexType>
@@ -783,7 +785,7 @@
 				minOccurs="1" maxOccurs="1" />
 			<xs:element name="cardinality" type="cmis:enumCardinality"
 				minOccurs="1" maxOccurs="1" />
-			<xs:element name="updateability" type="cmis:enumUpdateability"
+			<xs:element name="updatability" type="cmis:enumUpdatability"
 				minOccurs="1" maxOccurs="1" />
 
 			<!-- flags -->
@@ -920,8 +922,6 @@
 						type="cmis:cmisChoiceXmlType" />
 					<xs:element name="schemaURI" type="xs:anyURI" minOccurs="0"
 						maxOccurs="1" />
-					<xs:element name="encoding" type="xs:string" minOccurs="0"
-						maxOccurs="1" />
 				</xs:sequence>
 			</xs:extension>
 		</xs:complexContent>
@@ -938,7 +938,7 @@
 				maxOccurs="1" />
 
 			<!--  base type -->
-			<xs:element name="baseType" type="cmis:enumObjectType"
+			<xs:element name="baseType" type="cmis:enumBaseObjectType"
 				minOccurs="1" maxOccurs="1" />
 			<xs:element name="baseTypeQueryName" type="xs:string"
 				minOccurs="1" maxOccurs="1" />
@@ -1087,6 +1087,7 @@
 		</xs:sequence>
 		<xs:attributeGroup ref="cmis:cmisUndefinedAttribute" />
 	</xs:complexType>
+
 	<xs:complexType name="cmisRepositoryCapabilitiesType">
 		<xs:sequence>
 			<xs:element name="capabilityMultifiling" type="xs:boolean"
@@ -1109,6 +1110,10 @@
 				minOccurs="1" maxOccurs="unbounded" />
 			<xs:element name="changesIncomplete" type="xs:boolean"
 				maxOccurs="1" minOccurs="0" />
+				
+			<xs:element name="capabilityACL" type="cmis:enumCapabilityACL" />
+			<xs:element name="permissionsSupported" type="cmis:cmisPermissionSetType" minOccurs="0" maxOccurs="unbounded"/>
+			
 			<xs:any namespace="##other" processContents="skip" minOccurs="0"
 				maxOccurs="unbounded" />
 		</xs:sequence>
@@ -1146,8 +1151,67 @@
 		<xs:sequence>
 			<xs:element name="changeType" type="cmis:enumTypeOfChanges" />
 			<xs:element name="changeTime" type="xs:dateTime" />
+			<xs:any namespace="##other" />
 		</xs:sequence>
 	</xs:complexType>
 
+	<!-- ACL -->
+	<xs:simpleType name="enumBasicPrivileges">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="CMIS.BasicPermission.Read" />
+			<xs:enumeration value="CMIS.BasicPermission.Write" />
+			<xs:enumeration value="CMIS.BasicPermission.All" />
+		</xs:restriction>
+	</xs:simpleType>
+	
+	<xs:simpleType name="enumCapabilityACL">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="none" />
+			<xs:enumeration value="read" />
+			<xs:enumeration value="set" />
+		</xs:restriction>
+	</xs:simpleType>
+
+	<xs:complexType name="cmisAccessControlPrincipalType">
+		<xs:sequence>
+			<xs:element name="principalId" type="xs:string" />
+			<xs:any namespace="##other" />
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:complexType name="cmisAccessControlEntryType">
+		<xs:sequence>
+			<xs:element name="principal" type="cmis:cmisAccessControlPrincipalType" />
+			<xs:element name="permission" type="xs:string" />
+			<xs:element name="direct" type="xs:boolean" />
+			<xs:any namespace="##other" />
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:complexType name="cmisAccessControlListType">
+		<xs:sequence>
+			<xs:element name="permission" type="cmis:cmisAccessControlEntryType" />
+			<xs:any namespace="##other" />
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:complexType name="cmisPermissionSetType">
+		<xs:sequence>
+			<xs:element name="permission" type="cmis:cmisPermissionDefinitionType"
+				minOccurs="1" maxOccurs="unbounded" />
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:complexType name="cmisPermissionDefinitionType">
+		<xs:sequence>
+			<xs:element name="description" type="xs:language"
+				minOccurs="0" maxOccurs="unbounded" />
+			<xs:element name="aggregating" type="cmis:cmisPermissionDefinitionType"
+				minOccurs="0" maxOccurs="unbounded" />
+		</xs:sequence>
+		<xs:attribute name="name" type="xs:string" />
+		<xs:attribute name="aggregated" type="xs:boolean" />
+		<xs:attribute name="abstract" type="xs:boolean" />
+	</xs:complexType>
 </xs:schema>
 	<!-- EOF -->

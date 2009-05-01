@@ -27,6 +27,9 @@
         <cmis:capabilityChanges>none</cmis:capabilityChanges>
         <cmis:changesIncomplete>false</cmis:changesIncomplete>
         [#-- TODO: --] 
+        [#-- TODO: wait for ACL proposal before implementing --] 
+        <cmis:capabilityACL>none</cmis:capabilityACL>
+        [#-- TODO: --] 
       </cmis:capabilities> 
       <cmis:cmisVersionSupported>${cmisVersion}</cmis:cmisVersionSupported>
       <cmis:repositorySpecificInformation></cmis:repositorySpecificInformation>

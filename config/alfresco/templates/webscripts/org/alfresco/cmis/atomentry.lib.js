@@ -58,7 +58,7 @@ function createNode(parent, entry, slug)
     
     // update node properties (excluding object type & name)
     var exclude = [ "ObjectTypeId", "Name" ];
-    var updated = updateNode(node, entry, exclude, true);
+    var updated = updateNode(node, entry, exclude, function(propDef) {return patchValidator(propDef, true);});
 
     // only return node if updated successfully
     return (updated == null) ? null : node;
@@ -71,10 +71,10 @@ function createNode(parent, entry, slug)
 // @param node  Alfresco node to update
 // @param entry  Atom entry to update from
 // @param exclude  property names to exclude
-// @param pwc  true => node represents private working copy
+// @param validator  function callback for validating property update
 // @return  true => node has been updated (or null, in case of error)
 //
-function updateNode(node, entry, exclude, pwc)
+function updateNode(node, entry, exclude, validator)
 {
     // check update is allowed
     if (!node.hasPermission("WriteProperties") || !node.hasPermission("WriteContent"))
@@ -83,16 +83,13 @@ function updateNode(node, entry, exclude, pwc)
         status.message = "Permission to update is denied";
         status.redirect = true;
         return null;
-    }    
+    }
     
     var updated = false;
     var object = entry.getExtension(atom.names.cmis_object);
     var props = (object == null) ? null : object.properties;
     var vals = new Object();
 
-    // apply defaults
-    if (pwc == null) pwc = false;
-    
     // calculate list of properties to update
     // TODO: consider array form of properties.names
     var updateProps = (props == null) ? new Array() : props.names.toArray().filter(function(element, index, array) {return true;});
@@ -118,31 +115,16 @@ function updateNode(node, entry, exclude, pwc)
                 return null;
             }
 
-// TODO: disabled for now to allow for PUT semantics - CMIS will move to POST for update
-            // is the property write-able?
-            if (propDef.updatability === Packages.org.alfresco.cmis.CMISUpdatabilityEnum.READ_ONLY)
+            // validate property update
+            var valid = validator(propDef);
+            if (valid == null)
             {
-//                status.code = 500;
-//                status.message = "Property " + propName + " cannot be updated. It is read only."
-//                status.redirect = true;
-//                return null;
-                continue;
+                // error, abort update
+                return null;
             }
-            if (!pwc && propDef.updatability === Packages.org.alfresco.cmis.CMISUpdatabilityEnum.READ_AND_WRITE_WHEN_CHECKED_OUT)
+            if (valid == false)
             {
-//                status.code = 500;
-//                status.message = "Property " + propName + " can only be updated on a private working copy.";
-//                status.redirect = true;
-//               return null;
-                continue;
-            }
-            var mappedProperty = propDef.propertyAccessor.mappedProperty;
-            if (mappedProperty == null)
-            {
-//                status.code = 500;
-//                status.message = "Internal error: Property " + propName + " does not map to a write-able Alfresco property";
-//                status.redirect = true;
-//                return null;
+                // ignore property
                 continue;
             }
 
@@ -174,7 +156,7 @@ function updateNode(node, entry, exclude, pwc)
                 val = entry.title;
             }
             
-            vals[mappedProperty.toString()] = val;
+            vals[propDef.propertyAccessor.mappedProperty.toString()] = val;
         }
     }
 
@@ -216,6 +198,61 @@ function updateNode(node, entry, exclude, pwc)
     return updated;
 }
 
+
+// callback for validating property update for patch
+// return null => update not allowed, abort update
+//        true => update allowed
+//        false => update not allowed, ignore property
+function patchValidator(propDef, pwc)
+{
+    // is the property write-able?
+    if (propDef.updatability === Packages.org.alfresco.cmis.CMISUpdatabilityEnum.READ_ONLY)
+    {
+        status.code = 500;
+        status.message = "Property " + propName + " cannot be updated. It is read only."
+        status.redirect = true;
+        return null;
+    }
+    if (!pwc && propDef.updatability === Packages.org.alfresco.cmis.CMISUpdatabilityEnum.READ_AND_WRITE_WHEN_CHECKED_OUT)
+    {
+        status.code = 500;
+        status.message = "Property " + propName + " can only be updated on a private working copy.";
+        status.redirect = true;
+        return null;
+    }
+    var mappedProperty = propDef.propertyAccessor.mappedProperty;
+    if (mappedProperty == null)
+    {
+        status.code = 500;
+        status.message = "Internal error: Property " + propName + " does not map to a write-able Alfresco property";
+        status.redirect = true;
+        return null;
+    }
+    return true;
+}
+
+//callback for validating property update for put
+//return null => update not allowed, abort update
+//     true => update allowed
+//     false => update not allowed, ignore property
+function putValidator(propDef, pwc)
+{
+    // is the property write-able?
+    if (propDef.updatability === Packages.org.alfresco.cmis.CMISUpdatabilityEnum.READ_ONLY)
+    {
+        return false;
+    }
+    if (!pwc && propDef.updatability === Packages.org.alfresco.cmis.CMISUpdatabilityEnum.READ_AND_WRITE_WHEN_CHECKED_OUT)
+    {
+        return false;
+    }
+    var mappedProperty = propDef.propertyAccessor.mappedProperty;
+    if (mappedProperty == null)
+    {
+        return false;
+    }
+    return true;
+}
 
 // callback function for determining if property name should be excluded
 // note: this refers to array of property names to exclude

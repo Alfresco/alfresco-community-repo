@@ -159,7 +159,7 @@
 <link rel="allowableactions" href="${absurl(url.serviceContext)}/api/node/${node.nodeRef.storeRef.protocol}/${node.nodeRef.storeRef.identifier}/${node.nodeRef.id}/permissions"/>
 <link rel="relationships" href="${absurl(url.serviceContext)}/api/node/${node.nodeRef.storeRef.protocol}/${node.nodeRef.storeRef.identifier}/${node.nodeRef.id}/associations"/>
 [#if cmisproperty(node, "ParentId")?is_string]
-<link rel="parent" href="${absurl(url.serviceContext)}/api/node/${node.nodeRef.storeRef.protocol}/${node.nodeRef.storeRef.identifier}/${node.nodeRef.id}/parent"/>
+<link rel="parents" href="${absurl(url.serviceContext)}/api/node/${node.nodeRef.storeRef.protocol}/${node.nodeRef.storeRef.identifier}/${node.nodeRef.id}/parent"/>
 [/#if]
 <link rel="children" href="${absurl(url.serviceContext)}/api/node/${node.nodeRef.storeRef.protocol}/${node.nodeRef.storeRef.identifier}/${node.nodeRef.id}/children"/>
 <link rel="descendants" href="${absurl(url.serviceContext)}/api/node/${node.nodeRef.storeRef.protocol}/${node.nodeRef.storeRef.identifier}/${node.nodeRef.id}/descendants"/>
@@ -342,9 +342,9 @@
 [/#macro]
 
 [#macro typedefCMISLinks typedef]
-<link rel="type" href="${absurl(url.serviceContext)}/api/type/${typedef.typeId.id}"/>
+<link rel="type" href="${absurl(url.serviceContext)}/api/type/${typedef.baseType.typeId.id}"/>
 [#if typedef.parentType??]
-<link rel="parent" href="${absurl(url.serviceContext)}/api/type/${typedef.parentType.typeId.id}"/>
+<link rel="parents" href="${absurl(url.serviceContext)}/api/type/${typedef.parentType.typeId.id}"/>
 [/#if]
 <link rel="children" href="${absurl(url.serviceContext)}/api/type/${typedef.typeId.id}/children"/>
 <link rel="descendants" href="${absurl(url.serviceContext)}/api/type/${typedef.typeId.id}/descendants"/>
@@ -508,7 +508,7 @@
 [/#if]
   <cmis:propertyType>${propdef.dataType.label}</cmis:propertyType>
   <cmis:cardinality>${propdef.cardinality.label}</cmis:cardinality>
-  <cmis:updateability>${propdef.updatability.label}</cmis:updateability>
+  <cmis:updatability>${propdef.updatability.label}</cmis:updatability>
   <cmis:inherited>${inherited?string}</cmis:inherited>
   <cmis:required>${propdef.required?string}</cmis:required>
   <cmis:queryable>${propdef.queryable?string}</cmis:queryable>
@@ -525,37 +525,37 @@
 [#if choices?exists]
 [#list choices as choice]
 [#if type == "STRING"]
-<cmis:choiceString cmis:index="${choice.index}" cmis:key="${choice.name}">
+<cmis:choiceString cmis:key="${choice.name}">
 [@cmisChoices choice.children type/]
 [@stringvalue choice.value/]
 </cmis:choiceString>
 [#elseif type == "INTEGER"]
-<cmis:choiceInteger cmis:index="${choice.index}" cmis:key="${choice.name}">
+<cmis:choiceInteger cmis:key="${choice.name}">
 [@cmisChoices choice.children type/]
 [@stringvalue choice.value/]
 </cmis:choiceInteger>
 [#elseif type == "DECIMAL"]
-<cmis:choiceDecimal cmis:index="${choice.index}" cmis:key="${choice.name}">
+<cmis:choiceDecimal cmis:key="${choice.name}">
 [@cmisChoices choice.children type/]
 [@stringvalue choice.value/]
 </cmis:choiceDecimal>
 [#elseif type == "BOOLEAN"]
-<cmis:choiceBoolean cmis:index="${choice.index}" cmis:key="${choice.name}">
+<cmis:choiceBoolean cmis:key="${choice.name}">
 [@cmisChoices choice.children type/]
 [@stringvalue choice.value/]
 </cmis:choiceBoolean>
 [#elseif type == "DATETIME"]
-<cmis:choiceDateTime cmis:index="${choice.index}" cmis:key="${choice.name}">
+<cmis:choiceDateTime cmis:key="${choice.name}">
 [@cmisChoices choice.children type/]
 [@stringvalue choice.value/]
 </cmis:choiceDateTime>
 [#elseif type == "URI"]
-<cmis:choiceUri cmis:index="${choice.index}" cmis:key="${choice.name}">
+<cmis:choiceUri cmis:key="${choice.name}">
 [@cmisChoices choice.children type/]
 [@stringvalue choice.value/]
 </cmis:choiceUri>
 [#elseif type == "ID"]
-<cmis:choiceId cmis:index="${choice.index}" cmis:key="${choice.name}">
+<cmis:choiceId cmis:key="${choice.name}">
 [@cmisChoices choice.children type/]
 [@stringvalue choice.value/]
 </cmis:choiceId>

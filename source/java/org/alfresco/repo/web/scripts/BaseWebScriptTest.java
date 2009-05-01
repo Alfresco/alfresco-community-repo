@@ -48,6 +48,7 @@ import org.apache.commons.httpclient.UsernamePasswordCredentials;
 import org.apache.commons.httpclient.auth.AuthScope;
 import org.apache.commons.httpclient.methods.ByteArrayRequestEntity;
 import org.apache.commons.httpclient.methods.DeleteMethod;
+import org.apache.commons.httpclient.methods.EntityEnclosingMethod;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.methods.PutMethod;
@@ -392,6 +393,12 @@ public abstract class BaseWebScriptTest extends TestCase
             post.setRequestEntity(new ByteArrayRequestEntity(req.getBody(), req.getType()));
             httpMethod = post;
         }
+        else if (method.equalsIgnoreCase("PATCH"))
+        {
+            PatchMethod post = new PatchMethod(req.getFullUri());
+            post.setRequestEntity(new ByteArrayRequestEntity(req.getBody(), req.getType()));
+            httpMethod = post;
+        }
         else if (method.equalsIgnoreCase("PUT"))
         {
             PutMethod put = new PutMethod(req.getFullUri());
@@ -418,6 +425,23 @@ public abstract class BaseWebScriptTest extends TestCase
         // execute method
         httpClient.executeMethod(httpMethod);
         return new HttpMethodResponse(httpMethod);
+    }
+    
+    /**
+     * PATCH method
+     */
+    public static class PatchMethod extends EntityEnclosingMethod
+    {
+        public PatchMethod(String uri)
+        {
+            super(uri);
+        }
+
+        @Override
+        public String getName()
+        {
+            return "PATCH";
+        }
     }
     
     

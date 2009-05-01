@@ -5,36 +5,36 @@
         <ns3:uri>http://www.ibm.com/</ns3:uri>
         <ns3:email>albertcbrown@us.ibm.com</ns3:email>
     </ns3:author>
-    <ns3:content src="http://cmisexample.oasis-open.org/rep1/e3d5f10e-f456-4cac-b44f-864049bc0643"/>
-    <ns3:id>urn:uuid:e3d5f10e-f456-4cac-b44f-864049bc0643</ns3:id>
-    <ns3:link rel="self" href="http://cmisexample.oasis-open.org/rep1/e3d5f10e-f456-4cac-b44f-864049bc0643"/>
-    <ns3:link rel="edit" href="http://cmisexample.oasis-open.org/rep1/e3d5f10e-f456-4cac-b44f-864049bc0643"/>
-    <ns3:link type="application/cmis+xml;type=allowableActions" rel="allowableactions" href="http://cmisexample.oasis-open.org/rep1/e3d5f10e-f456-4cac-b44f-864049bc0643/allowableactions"/>
-    <ns3:link type="application/atom+xml;type=entry" rel="type" href="http://cmisexample.oasis-open.org/rep1/e3d5f10e-f456-4cac-b44f-864049bc0643/type"/>
-    <ns3:link rel="edit-media" href="http://cmisexample.oasis-open.org/rep1/e3d5f10e-f456-4cac-b44f-864049bc0643/edit-media"/>
-    <ns3:link rel="alternate" href="http://cmisexample.oasis-open.org/rep1/e3d5f10e-f456-4cac-b44f-864049bc0643/alternate"/>
-    <ns3:link type="application/atom+xml;type=feed" rel="parents" href="http://cmisexample.oasis-open.org/rep1/e3d5f10e-f456-4cac-b44f-864049bc0643/parents"/>
-    <ns3:link type="application/atom+xml;type=feed" rel="allversions" href="http://cmisexample.oasis-open.org/rep1/e3d5f10e-f456-4cac-b44f-864049bc0643/allversions"/>
-    <ns3:link type="application/atom+xml;type=entry" rel="latestversion" href="http://cmisexample.oasis-open.org/rep1/e3d5f10e-f456-4cac-b44f-864049bc0643/latestversions"/>
-    <ns3:link length="4123" type="text/plain" rel="stream" href="http://cmisexample.oasis-open.org/rep1/e3d5f10e-f456-4cac-b44f-864049bc0643media"/>
-    <ns3:link type="application/atom+xml;type=feed" rel="relationships" href="http://cmisexample.oasis-open.org/rep1/e3d5f10e-f456-4cac-b44f-864049bc0643/relationships"/>
-    <ns3:published>2009-04-03T13:49:45.453-07:00</ns3:published>
-    <ns3:summary type="html">HTML summary of Entry  e3d5f10e-f456-4cac-b44f-864049bc0643</ns3:summary>
+    <ns3:content src="http://cmisexample.oasis-open.org/rep1/70cfe57f-5d59-4293-9cbc-842107117d65"/>
+    <ns3:id>urn:uuid:70cfe57f-5d59-4293-9cbc-842107117d65</ns3:id>
+    <ns3:link rel="self" href="http://cmisexample.oasis-open.org/rep1/70cfe57f-5d59-4293-9cbc-842107117d65"/>
+    <ns3:link rel="edit" href="http://cmisexample.oasis-open.org/rep1/70cfe57f-5d59-4293-9cbc-842107117d65"/>
+    <ns3:link type="application/cmis+xml;type=allowableActions" rel="allowableactions" href="http://cmisexample.oasis-open.org/rep1/70cfe57f-5d59-4293-9cbc-842107117d65/allowableactions"/>
+    <ns3:link type="application/atom+xml;type=entry" rel="type" href="http://cmisexample.oasis-open.org/rep1/70cfe57f-5d59-4293-9cbc-842107117d65/type"/>
+    <ns3:link rel="edit-media" href="http://cmisexample.oasis-open.org/rep1/70cfe57f-5d59-4293-9cbc-842107117d65/edit-media"/>
+    <ns3:link rel="alternate" href="http://cmisexample.oasis-open.org/rep1/70cfe57f-5d59-4293-9cbc-842107117d65/alternate"/>
+    <ns3:link type="application/atom+xml;type=feed" rel="parents" href="http://cmisexample.oasis-open.org/rep1/70cfe57f-5d59-4293-9cbc-842107117d65/parents"/>
+    <ns3:link type="application/atom+xml;type=feed" rel="allversions" href="http://cmisexample.oasis-open.org/rep1/70cfe57f-5d59-4293-9cbc-842107117d65/allversions"/>
+    <ns3:link type="application/atom+xml;type=entry" rel="latestversion" href="http://cmisexample.oasis-open.org/rep1/70cfe57f-5d59-4293-9cbc-842107117d65/latestversions"/>
+    <ns3:link length="4123" type="text/plain" rel="stream" href="http://cmisexample.oasis-open.org/rep1/70cfe57f-5d59-4293-9cbc-842107117d65media"/>
+    <ns3:link type="application/atom+xml;type=feed" rel="relationships" href="http://cmisexample.oasis-open.org/rep1/70cfe57f-5d59-4293-9cbc-842107117d65/relationships"/>
+    <ns3:published>2009-04-17T13:50:58.656-07:00</ns3:published>
+    <ns3:summary type="html">HTML summary of Entry  70cfe57f-5d59-4293-9cbc-842107117d65</ns3:summary>
     <ns3:title type="text">CMIS Example Document</ns3:title>
-    <ns3:updated>2009-04-03T13:49:45.468-07:00</ns3:updated>
+    <ns3:updated>2009-04-17T13:50:58.656-07:00</ns3:updated>
     <ns1:object>
         <ns1:properties>
             <ns1:propertyBoolean ns1:name="IsImmutable">
                 <ns1:value>false</ns1:value>
             </ns1:propertyBoolean>
             <ns1:propertyDateTime ns1:name="CreationDate">
-                <ns1:value>2009-04-03T13:49:45.484-07:00</ns1:value>
+                <ns1:value>2009-04-17T13:50:58.671-07:00</ns1:value>
             </ns1:propertyDateTime>
             <ns1:propertyDateTime ns1:name="LastModificationDate">
-                <ns1:value>2009-04-03T13:49:45.484-07:00</ns1:value>
+                <ns1:value>2009-04-17T13:50:58.671-07:00</ns1:value>
             </ns1:propertyDateTime>
             <ns1:propertyId ns1:name="ObjectId">
-                <ns1:value>e3d5f10e-f456-4cac-b44f-864049bc0643</ns1:value>
+                <ns1:value>70cfe57f-5d59-4293-9cbc-842107117d65</ns1:value>
             </ns1:propertyId>
             <ns1:propertyId ns1:name="ObjectTypeId">
                 <ns1:value>invoice</ns1:value>

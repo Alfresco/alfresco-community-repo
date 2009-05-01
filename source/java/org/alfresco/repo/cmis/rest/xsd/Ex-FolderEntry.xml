@@ -5,31 +5,31 @@
         <ns3:uri>http://www.ibm.com/</ns3:uri>
         <ns3:email>albertcbrown@us.ibm.com</ns3:email>
     </ns3:author>
-    <ns3:content src="http://cmisexample.oasis-open.org/rep1/9a00d022-5a20-47f0-b41f-6f82957d151d"/>
-    <ns3:id>urn:uuid:9a00d022-5a20-47f0-b41f-6f82957d151d</ns3:id>
-    <ns3:link rel="self" href="http://cmisexample.oasis-open.org/rep1/9a00d022-5a20-47f0-b41f-6f82957d151d"/>
-    <ns3:link rel="edit" href="http://cmisexample.oasis-open.org/rep1/9a00d022-5a20-47f0-b41f-6f82957d151d"/>
-    <ns3:link type="application/cmis+xml;type=allowableActions" rel="allowableactions" href="http://cmisexample.oasis-open.org/rep1/9a00d022-5a20-47f0-b41f-6f82957d151d/allowableactions"/>
-    <ns3:link type="application/atom+xml;type=entry" rel="type" href="http://cmisexample.oasis-open.org/rep1/9a00d022-5a20-47f0-b41f-6f82957d151d/type"/>
-    <ns3:link type="application/atom+xml;type=feed" rel="relationships" href="http://cmisexample.oasis-open.org/rep1/9a00d022-5a20-47f0-b41f-6f82957d151d/relationships"/>
-    <ns3:link type="application/atom+xml;type=entry" rel="parent" href="http://cmisexample.oasis-open.org/rep1/9a00d022-5a20-47f0-b41f-6f82957d151d/parent"/>
-    <ns3:published>2009-04-03T13:49:47.437-07:00</ns3:published>
-    <ns3:summary type="html">HTML summary of Entry  9a00d022-5a20-47f0-b41f-6f82957d151d</ns3:summary>
+    <ns3:content src="http://cmisexample.oasis-open.org/rep1/20e3f385-7641-4a42-87f8-7cd7e2f01881"/>
+    <ns3:id>urn:uuid:20e3f385-7641-4a42-87f8-7cd7e2f01881</ns3:id>
+    <ns3:link rel="self" href="http://cmisexample.oasis-open.org/rep1/20e3f385-7641-4a42-87f8-7cd7e2f01881"/>
+    <ns3:link rel="edit" href="http://cmisexample.oasis-open.org/rep1/20e3f385-7641-4a42-87f8-7cd7e2f01881"/>
+    <ns3:link type="application/cmis+xml;type=allowableActions" rel="allowableactions" href="http://cmisexample.oasis-open.org/rep1/20e3f385-7641-4a42-87f8-7cd7e2f01881/allowableactions"/>
+    <ns3:link type="application/atom+xml;type=entry" rel="type" href="http://cmisexample.oasis-open.org/rep1/20e3f385-7641-4a42-87f8-7cd7e2f01881/type"/>
+    <ns3:link type="application/atom+xml;type=feed" rel="relationships" href="http://cmisexample.oasis-open.org/rep1/20e3f385-7641-4a42-87f8-7cd7e2f01881/relationships"/>
+    <ns3:link type="application/atom+xml;type=entry" rel="parent" href="http://cmisexample.oasis-open.org/rep1/20e3f385-7641-4a42-87f8-7cd7e2f01881/parent"/>
+    <ns3:published>2009-04-17T13:51:00.765-07:00</ns3:published>
+    <ns3:summary type="html">HTML summary of Entry  20e3f385-7641-4a42-87f8-7cd7e2f01881</ns3:summary>
     <ns3:title type="text">CMIS Example Folder as Customer type</ns3:title>
-    <ns3:updated>2009-04-03T13:49:47.437-07:00</ns3:updated>
+    <ns3:updated>2009-04-17T13:51:00.765-07:00</ns3:updated>
     <ns1:object>
         <ns1:properties>
             <ns1:propertyBoolean ns1:name="IsImmutable">
                 <ns1:value>false</ns1:value>
             </ns1:propertyBoolean>
             <ns1:propertyDateTime ns1:name="CreationDate">
-                <ns1:value>2009-04-03T13:49:47.437-07:00</ns1:value>
+                <ns1:value>2009-04-17T13:51:00.765-07:00</ns1:value>
             </ns1:propertyDateTime>
             <ns1:propertyDateTime ns1:name="LastModificationDate">
-                <ns1:value>2009-04-03T13:49:47.437-07:00</ns1:value>
+                <ns1:value>2009-04-17T13:51:00.765-07:00</ns1:value>
             </ns1:propertyDateTime>
             <ns1:propertyId ns1:name="ObjectId">
-                <ns1:value>9a00d022-5a20-47f0-b41f-6f82957d151d</ns1:value>
+                <ns1:value>20e3f385-7641-4a42-87f8-7cd7e2f01881</ns1:value>
             </ns1:propertyId>
             <ns1:propertyId ns1:name="ObjectTypeId">
                 <ns1:value>customer</ns1:value>
@@ -44,7 +44,7 @@
                 <ns1:value>Al Brown</ns1:value>
             </ns1:propertyString>
             <ns1:propertyId ns1:name="ParentId">
-                <ns1:value>9a00d022-5a20-47f0-b41f-6f82957d151dparent</ns1:value>
+                <ns1:value>20e3f385-7641-4a42-87f8-7cd7e2f01881parent</ns1:value>
             </ns1:propertyId>
         </ns1:properties>
         <ns1:allowableActions>

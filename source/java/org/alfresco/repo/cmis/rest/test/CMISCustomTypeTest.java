@@ -31,6 +31,7 @@ import org.alfresco.util.GUID;
 import org.alfresco.web.scripts.Format;
 import org.alfresco.web.scripts.TestWebScriptServer.DeleteRequest;
 import org.alfresco.web.scripts.TestWebScriptServer.GetRequest;
+import org.alfresco.web.scripts.TestWebScriptServer.PatchRequest;
 import org.alfresco.web.scripts.TestWebScriptServer.PostRequest;
 import org.alfresco.web.scripts.TestWebScriptServer.PutRequest;
 import org.alfresco.web.scripts.TestWebScriptServer.Response;
@@ -123,15 +124,52 @@ public class CMISCustomTypeTest extends BaseCMISWebScriptTest
         assertEquals(false, multiValues.get(1));
     }
 
-    public void testUpdate()
+    public void testUpdatePatch()
         throws Exception
     {
         // retrieve test folder for update
-        Entry testFolder = createTestFolder("testUpdateCustomDocument");
+        Entry testFolder = createTestFolder("testUpdatePatchCustomDocument");
         Link childrenLink = testFolder.getLink(CMISConstants.REL_CHILDREN);
         
         // create document for update
-        Entry document = createDocument(childrenLink.getHref(), "testUpdateCustomDocument", "/org/alfresco/repo/cmis/rest/test/createcustomdocument.atomentry.xml");
+        Entry document = createDocument(childrenLink.getHref(), "testUpdatePatchCustomDocument", "/org/alfresco/repo/cmis/rest/test/createcustomdocument.atomentry.xml");
+        assertNotNull(document);
+        
+        // update
+        String updateFile = loadString("/org/alfresco/repo/cmis/rest/test/updatecustomdocument.atomentry.xml");
+        String guid = GUID.generate();
+        updateFile = updateFile.replace("${NAME}", guid);
+        Response res = sendRequest(new PatchRequest(document.getSelfLink().getHref().toString(), updateFile, Format.ATOMENTRY.mimetype()), 200, getAtomValidator());
+        assertNotNull(res);
+        Entry updated = getAbdera().parseEntry(new StringReader(res.getContentAsString()), null);
+        
+        // ensure update occurred
+        assertEquals(document.getId(), updated.getId());
+        assertEquals(document.getPublished(), updated.getPublished());
+        assertEquals("Updated Title " + guid, updated.getTitle());
+        CMISObject object = updated.getExtension(CMISConstants.OBJECT);
+        assertEquals("D/cmiscustom_document", object.getObjectTypeId().getStringValue());
+        CMISProperty customProp = object.getProperties().find("cmiscustom_docprop_string");
+        assertNotNull(customProp);
+        assertEquals("custom " + guid, customProp.getStringValue());
+        CMISProperty multiProp = object.getProperties().find("cmiscustom_docprop_boolean_multi");
+        assertNotNull(multiProp);
+        List<Object> multiValues = multiProp.getNativeValues();
+        assertNotNull(multiValues);
+        assertEquals(2, multiValues.size());
+        assertEquals(false, multiValues.get(0));
+        assertEquals(true, multiValues.get(1));
+    }
+    
+    public void testUpdatePut()
+        throws Exception
+    {
+        // retrieve test folder for update
+        Entry testFolder = createTestFolder("testUpdatePutCustomDocument");
+        Link childrenLink = testFolder.getLink(CMISConstants.REL_CHILDREN);
+        
+        // create document for update
+        Entry document = createDocument(childrenLink.getHref(), "testUpdatePutCustomDocument", "/org/alfresco/repo/cmis/rest/test/createcustomdocument.atomentry.xml");
         assertNotNull(document);
         
         // update

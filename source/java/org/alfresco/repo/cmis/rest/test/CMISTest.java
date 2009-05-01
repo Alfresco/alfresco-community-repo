@@ -36,6 +36,7 @@ import org.alfresco.util.GUID;
 import org.alfresco.web.scripts.Format;
 import org.alfresco.web.scripts.TestWebScriptServer.DeleteRequest;
 import org.alfresco.web.scripts.TestWebScriptServer.GetRequest;
+import org.alfresco.web.scripts.TestWebScriptServer.PatchRequest;
 import org.alfresco.web.scripts.TestWebScriptServer.PostRequest;
 import org.alfresco.web.scripts.TestWebScriptServer.PutRequest;
 import org.alfresco.web.scripts.TestWebScriptServer.Response;
@@ -407,7 +408,7 @@ public class CMISTest extends BaseCMISWebScriptTest
         assertNotNull(childrenLink);
         Entry childFolder = createFolder(childrenLink.getHref(), "testParentChild");
         assertNotNull(childFolder);
-        Link parentLink = childFolder.getLink(CMISConstants.REL_PARENT);
+        Link parentLink = childFolder.getLink(CMISConstants.REL_PARENTS);
         assertNotNull(parentLink);
 
         // ensure there is parent 'testParent'
@@ -425,15 +426,15 @@ public class CMISTest extends BaseCMISWebScriptTest
         assertNotNull(parentsToRoot);
         assertEquals(4, parentsToRoot.getEntries().size());
         assertEquals(testFolder.getId(), parentsToRoot.getEntries().get(0).getId());
-        assertNotNull(parentsToRoot.getEntries().get(0).getLink(CMISConstants.REL_PARENT));
+        assertNotNull(parentsToRoot.getEntries().get(0).getLink(CMISConstants.REL_PARENTS));
         assertEquals(getTestRunFolder().getId(), parentsToRoot.getEntries().get(1).getId());
-        assertNotNull(parentsToRoot.getEntries().get(1).getLink(CMISConstants.REL_PARENT));
+        assertNotNull(parentsToRoot.getEntries().get(1).getLink(CMISConstants.REL_PARENTS));
         assertEquals(getTestRootFolder().getId(), parentsToRoot.getEntries().get(2).getId());
-        assertNotNull(parentsToRoot.getEntries().get(2).getLink(CMISConstants.REL_PARENT));
+        assertNotNull(parentsToRoot.getEntries().get(2).getLink(CMISConstants.REL_PARENTS));
         Feed root = getFeed(getRootChildrenCollection(getWorkspace(getRepository())));
         Entry rootEntry = getEntry(root.getLink(CMISConstants.REL_SOURCE).getHref());
         assertEquals(rootEntry.getId(), parentsToRoot.getEntries().get(3).getId());
-        assertNull(parentsToRoot.getEntries().get(3).getLink(CMISConstants.REL_PARENT));
+        assertNull(parentsToRoot.getEntries().get(3).getLink(CMISConstants.REL_PARENTS));
     }
 
     public void testGetParents()
@@ -468,7 +469,7 @@ public class CMISTest extends BaseCMISWebScriptTest
         Feed root = getFeed(getRootChildrenCollection(getWorkspace(getRepository())));
         Entry rootEntry = getEntry(root.getLink(CMISConstants.REL_SOURCE).getHref());
         assertEquals(rootEntry.getId(), parentsToRoot.getEntries().get(3).getId());
-        assertNull(parentsToRoot.getEntries().get(3).getLink(CMISConstants.REL_PARENT));
+        assertNull(parentsToRoot.getEntries().get(3).getLink(CMISConstants.REL_PARENTS));
     }
     
     public void testDelete()
@@ -502,15 +503,52 @@ public class CMISTest extends BaseCMISWebScriptTest
         assertEquals(entriesBefore, entriesAfterDelete);
     }
 
-    public void testUpdate()
+    public void testUpdatePatch()
         throws Exception
     {
         // retrieve test folder for update
-        Entry testFolder = createTestFolder("testUpdate");
+        Entry testFolder = createTestFolder("testUpdatePatch");
         Link childrenLink = testFolder.getLink(CMISConstants.REL_CHILDREN);
         
         // create document for update
-        Entry document = createDocument(childrenLink.getHref(), "testUpdate");
+        Entry document = createDocument(childrenLink.getHref(), "testUpdatePatch");
+        assertNotNull(document);
+        String mimetype = (document.getContentMimeType() != null) ? document.getContentMimeType().toString() : null;
+        if (mimetype != null)
+        {
+            assertEquals("text/html", mimetype);
+        }
+    
+        // TODO: check for content update allowable action
+        //       if update allowed, perform update, else update and check for appropriate error
+        
+        // update
+        String updateFile = loadString("/org/alfresco/repo/cmis/rest/test/updatedocument.atomentry.xml");
+        String guid = GUID.generate();
+        updateFile = updateFile.replace("${NAME}", guid);
+        Response res = sendRequest(new PatchRequest(document.getSelfLink().getHref().toString(), updateFile, Format.ATOMENTRY.mimetype()), 200, getAtomValidator());
+        assertNotNull(res);
+        Entry updated = getAbdera().parseEntry(new StringReader(res.getContentAsString()), null);
+        
+        // ensure update occurred
+        assertEquals(document.getId(), updated.getId());
+        assertEquals(document.getPublished(), updated.getPublished());
+        assertEquals("Updated Title " + guid, updated.getTitle());
+        // TODO: why is this testing for text/plain? it should be test/html
+        assertEquals("text/plain", updated.getContentMimeType().toString());
+        Response contentRes = sendRequest(new GetRequest(updated.getContentSrc().toString()), 200);
+        assertEquals("updated content " + guid, contentRes.getContentAsString());
+    }
+    
+    public void testUpdatePut()
+        throws Exception
+    {
+        // retrieve test folder for update
+        Entry testFolder = createTestFolder("testUpdatePut");
+        Link childrenLink = testFolder.getLink(CMISConstants.REL_CHILDREN);
+        
+        // create document for update
+        Entry document = createDocument(childrenLink.getHref(), "testUpdatePut");
         assertNotNull(document);
         String mimetype = (document.getContentMimeType() != null) ? document.getContentMimeType().toString() : null;
         if (mimetype != null)
@@ -539,15 +577,15 @@ public class CMISTest extends BaseCMISWebScriptTest
         assertEquals("updated content " + guid, contentRes.getContentAsString());
     }
 
-    public void testUpdateAtomEntry()
+    public void testUpdatePutAtomEntry()
         throws Exception
     {
         // retrieve test folder for update
-        Entry testFolder = createTestFolder("testUpdateAtomEntry");
+        Entry testFolder = createTestFolder("testUpdatePutAtomEntry");
         Link childrenLink = testFolder.getLink(CMISConstants.REL_CHILDREN);
         
         // create document for update
-        Entry document = createDocument(childrenLink.getHref(), "testUpdateAtomEntry");
+        Entry document = createDocument(childrenLink.getHref(), "testUpdatePutAtomEntry");
         assertNotNull(document);
     
         // update
@@ -846,7 +884,7 @@ public class CMISTest extends BaseCMISWebScriptTest
         String updateFile = loadString("/org/alfresco/repo/cmis/rest/test/updatedocument.atomentry.xml");
         String guid = GUID.generate();
         updateFile = updateFile.replace("${NAME}", guid);
-        Response pwcUpdatedres = sendRequest(new PutRequest(pwc.getEditLink().getHref().toString(), updateFile, Format.ATOMENTRY.mimetype()), 200, getAtomValidator());
+        Response pwcUpdatedres = sendRequest(new PatchRequest(pwc.getEditLink().getHref().toString(), updateFile, Format.ATOMENTRY.mimetype()), 200, getAtomValidator());
         assertNotNull(pwcUpdatedres);
         Entry updated = getAbdera().parseEntry(new StringReader(pwcUpdatedres.getContentAsString()), null);
         // ensure update occurred
@@ -863,7 +901,7 @@ public class CMISTest extends BaseCMISWebScriptTest
         Map<String, String> args2 = new HashMap<String, String>();
         args2.put("checkinComment", guid);
         args2.put("checkin", "true");
-        Response checkinRes = sendRequest(new PutRequest(checkinUrl, checkinFile, Format.ATOMENTRY.mimetype()).setArgs(args2), 200, getAtomValidator());
+        Response checkinRes = sendRequest(new PatchRequest(checkinUrl, checkinFile, Format.ATOMENTRY.mimetype()).setArgs(args2), 200, getAtomValidator());
         assertNotNull(checkinRes);
         String checkinResXML = checkinRes.getContentAsString();
     
@@ -933,7 +971,7 @@ public class CMISTest extends BaseCMISWebScriptTest
         Map<String, String> args2 = new HashMap<String, String>();
         args2.put("checkinComment", guid);
         args2.put("checkin", "true");
-        Response checkinRes = sendRequest(new PutRequest(checkinUrl, checkinFile, Format.ATOMENTRY.mimetype()).setArgs(args2), 200, getAtomValidator());
+        Response checkinRes = sendRequest(new PatchRequest(checkinUrl, checkinFile, Format.ATOMENTRY.mimetype()).setArgs(args2), 200, getAtomValidator());
         assertNotNull(checkinRes);
         String checkinResXML = checkinRes.getContentAsString();
     

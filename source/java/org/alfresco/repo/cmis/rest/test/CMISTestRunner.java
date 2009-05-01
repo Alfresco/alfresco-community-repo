@@ -177,6 +177,7 @@ public class CMISTestRunner
             CMISTest test = (CMISTest)allSuite.testAt(i);
             if (match == null || match.equals("*") || test.getName().matches(match.replace("*", "[A-Za-z0-9]*")))
             {
+                test.setValidateResponse(validateResponse);
                 if (listener != null)
                 {
                     test.setListener(listener);

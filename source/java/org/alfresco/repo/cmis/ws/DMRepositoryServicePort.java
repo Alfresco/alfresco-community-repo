@@ -352,7 +352,10 @@ public class DMRepositoryServicePort extends DMAbstractServicePort implements Re
         cmisTypeDefinition.setQueryName(typeDefinition.getQueryName());
         cmisTypeDefinition.setDisplayName(typeDefinition.getDisplayName());
         cmisTypeDefinition.setBaseType(EnumBaseObjectType.fromValue(typeDefinition.getBaseType().getTypeId().getId()));
-        cmisTypeDefinition.setParentId(typeDefinition.getParentType().getTypeId().getId());
+        if (typeDefinition.getParentType() != null)
+        {
+            cmisTypeDefinition.setParentId(typeDefinition.getParentType().getTypeId().getId());
+        }
         cmisTypeDefinition.setBaseTypeQueryName(typeDefinition.getBaseType().getQueryName());
         cmisTypeDefinition.setDescription(typeDefinition.getDescription());
         cmisTypeDefinition.setCreatable(typeDefinition.isCreatable());
@@ -381,11 +384,6 @@ public class DMRepositoryServicePort extends DMAbstractServicePort implements Re
      */
     private CmisTypeDefinitionType getCmisTypeDefinition(CMISTypeDefinition typeDef, boolean includeProperties) throws CmisException
     {
-        if (typeDef.getParentType() == null)
-        {
-            return null;
-        }
-
         if (typeDef == null)
         {
             throw cmisObjectsUtils.createCmisException("Type not found", EnumServiceException.OBJECT_NOT_FOUND);

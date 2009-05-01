@@ -64,15 +64,11 @@ public class CMISTestRunnerWebScript extends AbstractWebScript
             runner.setUserPass(userpass);
         }
         String validate = req.getParameter("validate");
-        if (validate != null && validate.length() > 0)
-        {
-            runner.setValidateResponse(Boolean.valueOf(validate));
-        }
+        runner.setValidateResponse(Boolean.valueOf(validate));
+            
         String trace = req.getParameter("trace");
-        if (trace != null && trace.length() > 0)
-        {
-            runner.setTraceReqRes(Boolean.valueOf(trace));
-        }
+        runner.setTraceReqRes(Boolean.valueOf(trace));
+
         String match = req.getParameter("tests");
         if (match != null && match.length() > 0)
         {

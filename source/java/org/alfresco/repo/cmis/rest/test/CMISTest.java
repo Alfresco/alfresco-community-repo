@@ -70,6 +70,7 @@ public class CMISTest extends BaseCMISWebScriptTest
 //        server.username = "admin";
 //        server.password = "admin";
 //        setRemoteServer(server);
+//        setServiceUrl("http://localhost:8080/alfresco/service/api/cmis");
 //        setValidateResponse(false);
 //        setListener(new CMISTestListener(System.out));
 //        setTraceReqRes(true);

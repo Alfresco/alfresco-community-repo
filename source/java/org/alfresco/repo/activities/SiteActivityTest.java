@@ -160,7 +160,11 @@ public class SiteActivityTest extends TestCase
         deleteUser(user3);
         deleteUser(user4);
         
-        membersAddedUpdated = false;
+        deleteSite(site1); 
+        deleteSite(site2);
+        deleteSite(site3);
+        
+        membersAddedUpdated  = false;
         membersRemoved = false;
         controlsCreated = false;
         
@@ -175,6 +179,12 @@ public class SiteActivityTest extends TestCase
         {
             logger.debug("createdSite: " + siteId);
         }
+    }
+    
+    protected void deleteSite(String siteId) throws Exception
+    {
+        // delete site (and site's associated groups)
+        siteService.deleteSite(siteId);
     }
     
     public void testGetSiteFeedsBefore() throws Exception

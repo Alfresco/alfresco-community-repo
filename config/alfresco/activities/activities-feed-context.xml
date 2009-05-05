@@ -2,19 +2,26 @@
 <!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
 
 <beans>
-
-   <bean id="activityService" class="org.alfresco.repo.activities.ActivityServiceImpl">
+   
+   <!--  Note: ActivityService / FeedGenerator -> SiteService -> ActivityPostService -->
+   
+   <bean id="activityPostService" class="org.alfresco.repo.activities.ActivityPostServiceImpl">
       <property name="postDAO" ref="postDAO"/>
+      <property name="tenantService" ref="tenantService"/>
+      <property name="userNamesAreCaseSensitive" value="${user.name.caseSensitive}"/>
+   </bean>
+   
+   <bean id="activityService" class="org.alfresco.repo.activities.ActivityServiceImpl">
       <property name="feedDAO" ref="feedDAO"/>
       <property name="feedControlDAO" ref="feedControlDAO"/>
       <property name="authorityService" ref="AuthorityService"/>
       <property name="tenantService" ref="tenantService"/>
       <property name="siteService" ref="siteService"/>
+      <property name="activityPostService" ref="activityPostService"/>
       <property name="userNamesAreCaseSensitive" value="${user.name.caseSensitive}"/>
-      <property name="feedGenerator" ref="feedGenerator"/>
       <property name="maxFeedItems" value="${activities.feed.max.size}"/>
    </bean>
-
+   
    <!-- cleans out-of-date feed entries -->
    <bean id="feedCleaner" class="org.alfresco.repo.activities.feed.cleanup.FeedCleaner">
       <property name="feedDAO" ref="feedDAO"/>
@@ -50,6 +57,7 @@
       <property name="repoEndPoint" value="${repo.remote.endpoint.url}"/>
       <property name="userNamesAreCaseSensitive" value="${user.name.caseSensitive}"/>
       <property name="maxItemsPerCycle" value="100"/>
+      <property name="activityPostServiceImpl" ref="activityPostService"/>
    </bean>
    
    

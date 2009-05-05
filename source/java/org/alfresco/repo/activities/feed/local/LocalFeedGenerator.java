@@ -49,6 +49,7 @@ public class LocalFeedGenerator extends AbstractFeedGenerator
         this.feedTaskProcessor = feedTaskProcessor;
     }
     
+    @Override
     public int getEstimatedGridSize()
     {
         return 1;

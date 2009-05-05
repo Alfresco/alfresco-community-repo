@@ -24,8 +24,9 @@
  */
 package org.alfresco.repo.activities.feed.cleanup;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.Date;
-import java.util.concurrent.CountDownLatch;
 
 import junit.framework.TestCase;
 
@@ -33,6 +34,8 @@ import org.alfresco.repo.domain.activities.ActivityFeedDAO;
 import org.alfresco.repo.domain.activities.ActivityFeedEntity;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.activities.ActivityService;
+import org.alfresco.service.cmr.site.SiteService;
+import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.util.ApplicationContextHelper;
 import org.springframework.context.ConfigurableApplicationContext;
 
@@ -48,16 +51,23 @@ public class FeedCleanerTest extends TestCase
     private ActivityFeedDAO feedDAO;
     private FeedCleaner cleaner;
     private ActivityService activityService;
+    private SiteService siteService;
     
     @Override
     public void setUp() throws Exception
     {
+        activityService = (ActivityService) ctx.getBean("activityService");
+        siteService = (SiteService) ctx.getBean("SiteService");
+        feedDAO = (ActivityFeedDAO) ctx.getBean("feedDAO");
+        
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
+        for (int i = 1; i <= 7; i++)
+        {
+            siteService.createSite("myPreset", "testSite"+i, null, null, SiteVisibility.PUBLIC);
+        }
+        
         AuthenticationUtil.setRunAsUserSystem();
         
-        activityService = (ActivityService) ctx.getBean("activityService");
-        
-        feedDAO = (ActivityFeedDAO) ctx.getBean("feedDAO");
-                
         // construct the test cleaner
         cleaner = new FeedCleaner();
         cleaner.setFeedDAO(feedDAO);
@@ -66,7 +76,12 @@ public class FeedCleanerTest extends TestCase
     public void tearDown() throws Exception
     {
         // clean out any remaining feed entries (allows test to be re-runnable)
-        feedDAO.deleteFeedEntries(new Date(System.currentTimeMillis()+(120*1000L))); 
+        feedDAO.deleteFeedEntries(new Date(System.currentTimeMillis()+(120*1000L)));
+        
+        for (int i = 1; i <= 7; i++)
+        {
+            siteService.deleteSite("testSite"+i);
+        }
         
         AuthenticationUtil.clearCurrentSecurityContext();
     }
@@ -244,72 +259,107 @@ public class FeedCleanerTest extends TestCase
         cleaner.setMaxAgeMins(1);
         cleaner.setMaxFeedSize(1);
         
-        final int typeCount = 3;
-        int threadCount = typeCount * 10;
+        int typeCount = 3;
+        int n = typeCount * 10;
         
-        final CountDownLatch endLatch = new CountDownLatch(threadCount);
-        // Kick off the threads
-        for (int i = 0; i < threadCount; i++)
+        Thread[] threads = new Thread[n];
+        Tester[] testers = new Tester[n];
+        
+        for (int i = 0; i < n; i++)
         {
-            Thread thread = new Thread(""+i)
-            {
-                @Override
-                public void run()
-                {
-                    try
-                    {
-                        int type = new Integer(this.getName()) % typeCount;
-                        
-                        if (type == 0)
-                        {
-                            int insertCount = 10;
-                            
-                            // insert some entries
-                            for (int i = 0; i < insertCount; i++)
-                            {
-                                ActivityFeedEntity feedEntry = new ActivityFeedEntity();
-                                
-                                feedEntry.setPostDate(new Date(System.currentTimeMillis()-(i*60*1000L)));
-                                feedEntry.setActivitySummaryFormat("json");
-                                feedEntry.setSiteNetwork("testSite4");
-                                feedEntry.setActivityType("testActivityType");
-                                feedEntry.setPostUserId("testUserC");
-                                feedEntry.setFeedUserId("");
-                                feedEntry.setFeedDate(new Date());
-                                
-                                feedDAO.insertFeedEntry(feedEntry);
-                            }
-                            
-                            System.out.println("["+this.getName()+"] Inserted "+insertCount+" entries");
-                        }
-                       
-                        if (type == 1)
-                        {
-                            // query some entries
-                            int selectCount = activityService.getSiteFeedEntries("testSite4", "json").size();
-                        
-                            System.out.println("["+this.getName()+"] Selected "+selectCount+" entries");
-                        }
-                        
-                        if (type == 2)
-                        {
-                            // clean some entries
-                            int deleteCount = cleaner.execute();
-                            
-                            System.out.println("["+this.getName()+"] Deleted "+deleteCount+" entries");
-                        }
-                    }
-                    catch (Exception e)
-                    {
-                        fail(e.getMessage());
-                    }
-                    // Notify of completion
-                    endLatch.countDown();
-                }
-            };
-            thread.start();
+            Tester tester = new Tester(i, typeCount);
+            testers[i] = tester;
+            
+            threads[i] = new Thread(tester);
+            threads[i].start();
         }
-        // Wait for them all to be done
-        endLatch.await();
+        for (int i = 0; i < n; i++)
+        {
+            threads[i].join();
+            
+            if (testers[i].getErrorStackTrace() != null)
+            {
+                fail(testers[i].getErrorStackTrace());
+            }
+        }
+    }
+    
+    private class Tester implements Runnable
+    {
+        private int i;
+        private int typeCount;
+        private String errorStackTrace = null;
+        
+        public Tester(int i, int typeCount)
+        {
+            this.i = i;
+            this.typeCount = typeCount;
+        }
+        
+        public String getErrorStackTrace()
+        {
+            return errorStackTrace;
+        }
+        
+        public void run()
+        {
+            try
+            {
+                int type = i % typeCount;
+                
+                if (type == 0)
+                {
+                    AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
+                    
+                    int insertCount = 10;
+                    
+                    // insert some entries
+                    for (int i = 0; i < insertCount; i++)
+                    {
+                        ActivityFeedEntity feedEntry = new ActivityFeedEntity();
+                        
+                        feedEntry.setPostDate(new Date(System.currentTimeMillis()-(i*60*1000L)));
+                        feedEntry.setActivitySummaryFormat("json");
+                        feedEntry.setSiteNetwork("testSite4");
+                        feedEntry.setActivityType("testActivityType");
+                        feedEntry.setPostUserId("testUserC");
+                        feedEntry.setFeedUserId("");
+                        feedEntry.setFeedDate(new Date());
+                        
+                        feedDAO.insertFeedEntry(feedEntry);
+                    }
+                    
+                    System.out.println("["+i+"] Inserted "+insertCount+" entries");
+                }
+                
+                if (type == 1)
+                {
+                    AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
+                    
+                    // query some entries
+                    int selectCount = activityService.getSiteFeedEntries("testSite4", "json").size();
+                    
+                    System.out.println("["+i+"] Selected "+selectCount+" entries");
+                }
+                
+                if (type == 2)
+                {
+                    AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getSystemUserName());
+                    
+                    // clean some entries
+                    int deleteCount = cleaner.execute();
+                    
+                    System.out.println("["+i+"] Deleted "+deleteCount+" entries");
+                }
+            }
+            catch (Throwable t)
+            {
+                StringWriter sw = new StringWriter();
+                t.printStackTrace(new PrintWriter(sw));
+                errorStackTrace = sw.toString();
+                
+                fail(t.getMessage());
+            }
+        }
     }
 }

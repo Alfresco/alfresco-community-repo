@@ -26,20 +26,17 @@ package org.alfresco.repo.activities;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.repo.activities.feed.FeedGenerator;
 import org.alfresco.repo.domain.activities.ActivityFeedDAO;
 import org.alfresco.repo.domain.activities.ActivityFeedEntity;
-import org.alfresco.repo.domain.activities.ActivityPostDAO;
-import org.alfresco.repo.domain.activities.ActivityPostEntity;
 import org.alfresco.repo.domain.activities.FeedControlDAO;
 import org.alfresco.repo.domain.activities.FeedControlEntity;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.repo.tenant.TenantService;
+import org.alfresco.service.cmr.activities.ActivityPostService;
 import org.alfresco.service.cmr.activities.ActivityService;
 import org.alfresco.service.cmr.activities.FeedControl;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -61,20 +58,12 @@ public class ActivityServiceImpl implements ActivityService
 {
     private static final Log logger = LogFactory.getLog(ActivityServiceImpl.class);
     
-    private static final int MAX_LEN_USER_ID = 255;         // needs to match schema: feed_user_id, post_user_id
-    private static final int MAX_LEN_SITE_ID = 255;         // needs to match schema: site_network
-    private static final int MAX_LEN_ACTIVITY_TYPE = 255;   // needs to match schema: activity_type
-    private static final int MAX_LEN_ACTIVITY_DATA = 4000;  // needs to match schema: activity_data
-    private static final int MAX_LEN_APP_TOOL_ID = 36;      // needs to match schema: app_tool
-    
-    private ActivityPostDAO postDAO;
     private ActivityFeedDAO feedDAO;
     private FeedControlDAO feedControlDAO;
     private AuthorityService authorityService;
-    private FeedGenerator feedGenerator;
-    private SiteService siteService;
-    
     private TenantService tenantService;
+    private SiteService siteService;
+    private ActivityPostService activityPostService;
     
     private int maxFeedItems = 100;
     
@@ -88,11 +77,6 @@ public class ActivityServiceImpl implements ActivityService
     public void setUserNamesAreCaseSensitive(boolean userNamesAreCaseSensitive)
     {
         this.userNamesAreCaseSensitive = userNamesAreCaseSensitive;
-    }
-    
-    public void setPostDAO(ActivityPostDAO postDAO)
-    {
-        this.postDAO = postDAO;
     }
     
     public void setFeedDAO(ActivityFeedDAO feedDAO)
@@ -110,11 +94,6 @@ public class ActivityServiceImpl implements ActivityService
         this.authorityService = authorityService;
     }
     
-    public void setFeedGenerator(FeedGenerator feedGenerator)
-    {
-        this.feedGenerator = feedGenerator;
-    }
-    
     public void setTenantService(TenantService tenantService)
     {
         this.tenantService = tenantService;
@@ -125,13 +104,19 @@ public class ActivityServiceImpl implements ActivityService
         this.siteService = siteService;
     }
     
+    public void setActivityPostService(ActivityPostService activityPostService)
+    {
+        this.activityPostService = activityPostService;
+    }
+    
     
     /* (non-Javadoc)
      * @see org.alfresco.service.cmr.activities.ActivityService#postActivity(java.lang.String, java.lang.String, java.lang.String, java.lang.String)
      */
     public void postActivity(String activityType, String siteId, String appTool, String activityData)
     {
-        postActivity(activityType, siteId, appTool, activityData, ActivityPostEntity.STATUS.PENDING);
+        // delegate
+        activityPostService.postActivity(activityType, siteId, appTool, activityData);
     }
     
     /* (non-Javadoc)
@@ -139,12 +124,8 @@ public class ActivityServiceImpl implements ActivityService
      */
     public void postActivity(String activityType, String siteId, String appTool, NodeRef nodeRef)
     {
-        ParameterCheck.mandatory("nodeRef", nodeRef);
-        
-        StringBuffer sb = new StringBuffer();
-        sb.append("{").append("\"nodeRef\":\"").append(nodeRef.toString()).append("\"").append("}");
-        
-        postActivity(activityType, siteId, appTool, sb.toString(), ActivityPostEntity.STATUS.PENDING);
+        // delegate
+        activityPostService.postActivity(activityType, siteId, appTool, nodeRef);
     }
     
     /* (non-Javadoc)
@@ -152,14 +133,8 @@ public class ActivityServiceImpl implements ActivityService
      */
     public void postActivity(String activityType, String siteId, String appTool, NodeRef nodeRef, String name)
     {
-        ParameterCheck.mandatory("nodeRef", nodeRef);
-        
-        StringBuffer sb = new StringBuffer();
-        sb.append("{").append("\"nodeRef\":\"").append(nodeRef.toString()).append("\"").append(",")
-                      .append("\"name\":\"").append(name).append("\"")
-                      .append("}");
-        
-        postActivity(activityType, siteId, appTool, sb.toString(), ActivityPostEntity.STATUS.PENDING);
+        // delegate
+        activityPostService.postActivity(activityType, siteId, appTool, nodeRef, name);
     }
 
     /* (non-Javadoc)
@@ -167,132 +142,8 @@ public class ActivityServiceImpl implements ActivityService
      */
     public void postActivity(String activityType, String siteId, String appTool, NodeRef nodeRef, String name, QName typeQName, NodeRef parentNodeRef)
     {
-        // primarily for delete node activities - eg. delete document, delete folder
-        
-        ParameterCheck.mandatory("nodeRef", nodeRef);
-        ParameterCheck.mandatory("typeQName", typeQName);
-        ParameterCheck.mandatory("parentNodeRef", parentNodeRef);
-          
-        StringBuffer sb = new StringBuffer();
-        sb.append("{").append("\"nodeRef\":\"").append(nodeRef.toString()).append("\"").append(",")
-                      .append("\"name\":\"").append(name).append("\"").append(",")
-                      .append("\"typeQName\":\"").append(typeQName.toPrefixString()).append("\"").append(",") // TODO toPrefixString does not return prefix ??!!
-                      .append("\"parentNodeRef\":\"").append(parentNodeRef.toString()).append("\"")
-                      .append("}");
-        
-        postActivity(activityType, siteId, appTool, sb.toString(), ActivityPostEntity.STATUS.PENDING);
-    }
-    
-    private void postActivity(String activityType, String siteId, String appTool, String activityData, ActivityPostEntity.STATUS status)
-    {
-        String currentUser = AuthenticationUtil.getFullyAuthenticatedUser();
-        
-        try
-        {
-            // optional - default to empty string
-            if (siteId == null)
-            {
-                siteId = "";
-            }
-            else if (siteId.length() > MAX_LEN_SITE_ID)
-            {
-                throw new AlfrescoRuntimeException("Invalid siteId - exceeds " + MAX_LEN_SITE_ID + " chars: " + siteId);
-            }
-            
-            // optional - default to empty string
-            if (appTool == null)
-            {
-                appTool = "";
-            }
-            else if (appTool.length() > MAX_LEN_APP_TOOL_ID)
-            {
-                throw new AlfrescoRuntimeException("Invalid app tool - exceeds " + MAX_LEN_APP_TOOL_ID + " chars: " + appTool);
-            }
-            
-            // required
-            ParameterCheck.mandatoryString("activityType", activityType);
-            
-            if (activityType.length() > MAX_LEN_ACTIVITY_TYPE)
-            {
-                throw new AlfrescoRuntimeException("Invalid activity type - exceeds " + MAX_LEN_ACTIVITY_TYPE + " chars: " + activityType);
-            }
-            
-            // optional - default to empty string
-            if (activityData == null)
-            {
-                activityData = "";
-            }
-            else if (activityType.length() > MAX_LEN_ACTIVITY_DATA)
-            {
-                throw new AlfrescoRuntimeException("Invalid activity data - exceeds " + MAX_LEN_ACTIVITY_DATA + " chars: " + activityData);
-            }
-            
-            // required
-            ParameterCheck.mandatoryString("currentUser", currentUser);
-            
-            if (currentUser.length() > MAX_LEN_USER_ID)
-            {
-                throw new AlfrescoRuntimeException("Invalid user - exceeds " + MAX_LEN_USER_ID + " chars: " + currentUser);
-            }
-            else if ((! currentUser.equals(AuthenticationUtil.SYSTEM_USER_NAME)) && (! userNamesAreCaseSensitive))
-            {
-                // user names are not case-sensitive
-                currentUser = currentUser.toLowerCase();
-            }
-        } 
-        catch (AlfrescoRuntimeException e)
-        {
-            // log error and throw exception
-            logger.error(e);
-            throw e;
-        }
-        
-        try
-        {
-            Date postDate = new Date();
-            ActivityPostEntity activityPost = new ActivityPostEntity();
-            activityPost.setUserId(currentUser);
-            
-            activityPost.setSiteNetwork(tenantService.getName(siteId));
-            
-            activityPost.setAppTool(appTool);
-            activityPost.setActivityData(activityData);
-            activityPost.setActivityType(activityType);
-            activityPost.setPostDate(postDate);
-            activityPost.setStatus(status.toString());
-            activityPost.setLastModified(postDate);
-            
-            // hash the userid to generate a job task node
-            int nodeCount = feedGenerator.getEstimatedGridSize();
-            int userHashCode = currentUser.hashCode();
-            int nodeHash = (userHashCode % nodeCount) + 1;
-            
-            activityPost.setJobTaskNode(nodeHash);
-            
-            try
-            {
-                long postId = postDAO.insertPost(activityPost);
-                
-                if (logger.isDebugEnabled()) 
-                { 
-                    activityPost.setId(postId);
-                    logger.debug("Posted: " + activityPost); 
-                }
-            }
-            catch (SQLException e) 
-            {
-                throw new AlfrescoRuntimeException("Failed to post activity: " + e, e);
-            }
-            catch (Throwable t) 
-            {
-                throw new AlfrescoRuntimeException("Failed to post activity: " + t, t);
-            }
-        } 
-        catch (AlfrescoRuntimeException e)
-        {
-            // log error, subsume exception (for post activity)
-            logger.error(e);
-        }
+        // delegate
+        activityPostService.postActivity(activityType, siteId, appTool, nodeRef, name, typeQName, parentNodeRef);
     }
     
     /* (non-Javadoc)

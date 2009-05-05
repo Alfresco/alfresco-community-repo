@@ -26,67 +26,8 @@ package org.alfresco.service.cmr.activities;
 
 import java.util.List;
 
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.namespace.QName;
-
-public interface ActivityService
-{    
-    
-    /*
-     * Post Activity
-     */
-    
-    /**
-     * Post a custom activity type
-     *
-     * @param activityType - required
-     * @param siteId - optional, if null will be stored as empty string
-     * @param appTool - optional, if null will be stored as empty string
-     * @param jsonActivityData - required
-     */
-    public void postActivity(String activityType, String siteId, String appTool, String jsonActivityData);
-    
-    /**
-     * Post a pre-defined activity type - certain activity data will be looked-up asynchronously, including:
-     *
-     *   name (of nodeRef)
-     *   displayPath
-     *   typeQName
-     *   firstName (of posting user)
-     *   lastName  (of posting user)
-     * 
-     * @param activityType - required
-     * @param siteId - optional, if null will be stored as empty string
-     * @param appTool - optional, if null will be stored as empty string
-     * @param nodeRef - required - do not use for deleted (or about to be deleted) nodeRef
-     */
-    public void postActivity(String activityType, String siteId, String appTool, NodeRef nodeRef);
-    
-    /**
-     * Post a pre-defined activity type - eg. for checked-out nodeRef or renamed nodeRef
-     * 
-     * @param activityType - required
-     * @param siteId - optional, if null will be stored as empty string
-     * @param appTool - optional, if null will be stored as empty string
-     * @param nodeRef - required - do not use deleted (or about to be deleted) nodeRef
-     * @param beforeName - optional - name of node (eg. prior to name change)
-     */
-    public void postActivity(String activityType, String siteId, String appTool, NodeRef nodeRef, String beforeName);
-    
-    /**
-     * Post a pre-defined activity type - eg. for deleted nodeRef
-     *
-     * @param activityType - required
-     * @param siteId - optional, if null will be stored as empty string
-     * @param appTool - optional, if null will be stored as empty string
-     * @param nodeRef - required - can be a deleted (or about to be deleted) nodeRef
-     * @param name - optional - name of name
-     * @param typeQName - optional - type of node
-     * @param parentNodeRef - required - used to lookup path/displayPath
-     */
-    public void postActivity(String activityType, String siteId, String appTool,  NodeRef nodeRef, String name, QName typeQName, NodeRef parentNodeRef);
-
-    
+public interface ActivityService extends ActivityPostService
+{
     /*
      * Retrieve Feed Entries
      */

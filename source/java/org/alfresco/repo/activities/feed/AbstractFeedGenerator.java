@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2008 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -24,6 +24,7 @@
  */
 package org.alfresco.repo.activities.feed;
 
+import org.alfresco.repo.activities.ActivityPostServiceImpl;
 import org.alfresco.repo.domain.activities.ActivityPostDAO;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.util.PropertyCheck;
@@ -44,6 +45,7 @@ public abstract class AbstractFeedGenerator implements FeedGenerator
     private int maxItemsPerCycle = 100;
     
     private ActivityPostDAO postDAO;
+    private ActivityPostServiceImpl activityPostServiceImpl;
     private AuthenticationService authenticationService;
     
     private String repoEndPoint; // http://hostname:port/webapp (eg. http://localhost:8080/alfresco)
@@ -53,6 +55,11 @@ public abstract class AbstractFeedGenerator implements FeedGenerator
     private RepoCtx ctx = null;
     
     private volatile boolean busy;
+    
+    public void setActivityPostServiceImpl(ActivityPostServiceImpl activityPostServiceImpl)
+    {
+        this.activityPostServiceImpl = activityPostServiceImpl;
+    }
     
     public void setPostDAO(ActivityPostDAO postDAO)
     {
@@ -112,9 +119,12 @@ public abstract class AbstractFeedGenerator implements FeedGenerator
      */
     private void checkProperties()
     {
-        PropertyCheck.mandatory(this, "postDAO", postDAO); 
+        PropertyCheck.mandatory(this, "postDAO", postDAO);
+        
+        activityPostServiceImpl.setEstimatedGridSize(getEstimatedGridSize());
     }
      
+    abstract public int getEstimatedGridSize();
     
     public void execute() throws JobExecutionException
     {

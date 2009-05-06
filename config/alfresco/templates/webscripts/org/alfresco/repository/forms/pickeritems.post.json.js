@@ -10,17 +10,22 @@ function main()
        status.setCode(status.STATUS_BAD_REQUEST, "items parameter is not present");
        return;
    }
+   
    // convert the JSONArray object into a native JavaScript array
    var jsonItems = json.get("items"),
       numItems = jsonItems.length(),
-      item, itemKind, result;
+      item, result;
    
    for (count = 0; count < numItems; count++)
    {
-      result = search.findNode(jsonItems.get(count));
-      if (result != null)
+      item = jsonItems.get(count);
+      if (item != "")
       {
-         results.push(result);
+         result = search.findNode(item);
+         if (result != null)
+         {
+            results.push(result);
+         }
       }
    }
 

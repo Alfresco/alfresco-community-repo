@@ -1,9 +1,0 @@
-<webscript>
-  <shortname>PickerQuery</shortname>
-  <description>Service to return items to display in the object finder</description>
-  <url>/api/forms/picker/query</url>
-  <format default="json"/>
-  <authentication>user</authentication>
-  <transaction>required</transaction>
-  <lifecycle>internal</lifecycle>
-</webscript>

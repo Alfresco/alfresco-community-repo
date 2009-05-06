@@ -210,7 +210,7 @@ public class UISidebar extends SelfRenderingComponent
                 "<tr><td style='height: 12px; width: 5px;'><img src='");
       out.write(cxPath);
       out.write("/images/parts/sidebar_bottom_grey_begin.gif' width='5' height='12' alt=''/></td>" + 
-                "<td style='_width: 100%; background-image: url(");
+                "<td style='width: 100%; background-image: url(");
       out.write(cxPath);
       out.write("/images/parts/sidebar_bottom_grey_bg.gif)'>" +
                 "<img src='");

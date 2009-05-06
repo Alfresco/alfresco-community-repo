@@ -24,15 +24,16 @@
  */
 package org.alfresco.repo.cmis;
 
+import junit.framework.TestCase;
+
 import org.alfresco.repo.cmis.ws.CmisException;
 import org.alfresco.repo.cmis.ws.EnumServiceException;
 import org.alfresco.repo.cmis.ws.utils.CmisObjectsUtils;
-import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
 
 /**
  * @author Dmitry Velichkevich
  */
-public class PropertyFilterTest extends AbstractDependencyInjectionSpringContextTests
+public class PropertyFilterTest extends TestCase
 {
     private static final String NAME_TOKEN = "name";
 
@@ -58,12 +59,8 @@ public class PropertyFilterTest extends AbstractDependencyInjectionSpringContext
     private static final String INVALID_FILTER_WITH_DENIED_SYMBOL = "ObjectId; name";
     private static final String INVALID_FILTER_WITH_LAST_INVALID_SYMBOL = "ObjectId, name*";
 
-    private CmisObjectsUtils cmisObjectsUtils;
+    private CmisObjectsUtils cmisObjectsUtils = new CmisObjectsUtils();
 
-    public void setCmisObjectsUtils(CmisObjectsUtils cmisObjectsUtils)
-    {
-        this.cmisObjectsUtils = cmisObjectsUtils;
-    }
 
     public void testValidFilters() throws Exception
     {
@@ -158,12 +155,4 @@ public class PropertyFilterTest extends AbstractDependencyInjectionSpringContext
         }
     }
 
-    @Override
-    protected String[] getConfigLocations()
-    {
-        setAutowireMode(AUTOWIRE_BY_NAME);
-        setDependencyCheck(false);
-
-        return new String[] { "classpath:alfresco/cmis-ws-context.xml" };
-    }
 }

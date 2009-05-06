@@ -60,7 +60,7 @@ import org.apache.commons.logging.LogFactory;
  * node ID AND the qualified name of the property.
  * <p>
  * This servlet only accesses content available to the guest user. If the guest user does not
- * have access to the requested a 401 Forbidden response is returned to the caller.
+ * have access to the requested a 403 Forbidden response is returned to the caller.
  * <p>
  * This servlet does not effect the current session, therefore if guest access is required to a 
  * resource this servlet can be used without logging out the current user.

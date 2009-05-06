@@ -32,6 +32,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.alfresco.abdera.ext.cmis.CMISAllowableAction;
+import org.alfresco.abdera.ext.cmis.CMISAllowableActions;
+import org.alfresco.abdera.ext.cmis.CMISConstants;
+import org.alfresco.abdera.ext.cmis.CMISObject;
 import org.alfresco.util.GUID;
 import org.alfresco.web.scripts.Format;
 import org.alfresco.web.scripts.TestWebScriptServer.DeleteRequest;
@@ -40,10 +44,6 @@ import org.alfresco.web.scripts.TestWebScriptServer.PatchRequest;
 import org.alfresco.web.scripts.TestWebScriptServer.PostRequest;
 import org.alfresco.web.scripts.TestWebScriptServer.PutRequest;
 import org.alfresco.web.scripts.TestWebScriptServer.Response;
-import org.apache.abdera.ext.cmis.CMISAllowableAction;
-import org.apache.abdera.ext.cmis.CMISAllowableActions;
-import org.apache.abdera.ext.cmis.CMISConstants;
-import org.apache.abdera.ext.cmis.CMISObject;
 import org.apache.abdera.i18n.iri.IRI;
 import org.apache.abdera.model.Element;
 import org.apache.abdera.model.Entry;
@@ -1160,7 +1160,7 @@ public class CMISTest extends BaseCMISWebScriptTest
         // retrieve query request document
         String queryDoc = loadString("/org/alfresco/repo/cmis/rest/test/query.cmisquery.xml");
 
-        if (queryCapability.equals("metadataonly") || queryCapability.equals("bothseperate"))
+        if (queryCapability.equals("metadataonly") || queryCapability.equals("bothseperate") || queryCapability.equals("bothcombined"))
         {
             {
                 // meta data only query against folder
@@ -1204,7 +1204,7 @@ public class CMISTest extends BaseCMISWebScriptTest
             }
         }
         
-        if (queryCapability.equals("fulltextonly") || queryCapability.equals("bothseperate"))
+        if (queryCapability.equals("fulltextonly") || queryCapability.equals("bothseperate") || queryCapability.equals("bothcombined"))
         {
             // full text only query
             String query = "SELECT ObjectId, ObjectTypeId, Name FROM Document " +

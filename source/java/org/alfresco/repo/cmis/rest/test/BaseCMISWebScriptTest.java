@@ -40,6 +40,11 @@ import javax.xml.validation.Validator;
 
 import junit.framework.Test;
 
+import org.alfresco.abdera.ext.cmis.CMISCapabilities;
+import org.alfresco.abdera.ext.cmis.CMISConstants;
+import org.alfresco.abdera.ext.cmis.CMISExtensionFactory;
+import org.alfresco.abdera.ext.cmis.CMISObject;
+import org.alfresco.abdera.ext.cmis.CMISRepositoryInfo;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.cmis.rest.xsd.CMISValidator;
 import org.alfresco.repo.web.scripts.BaseWebScriptTest;
@@ -52,11 +57,6 @@ import org.alfresco.web.scripts.TestWebScriptServer.Request;
 import org.alfresco.web.scripts.TestWebScriptServer.Response;
 import org.alfresco.web.scripts.atom.AbderaService;
 import org.alfresco.web.scripts.atom.AbderaServiceImpl;
-import org.apache.abdera.ext.cmis.CMISCapabilities;
-import org.apache.abdera.ext.cmis.CMISConstants;
-import org.apache.abdera.ext.cmis.CMISExtensionFactory;
-import org.apache.abdera.ext.cmis.CMISObject;
-import org.apache.abdera.ext.cmis.CMISRepositoryInfo;
 import org.apache.abdera.i18n.iri.IRI;
 import org.apache.abdera.model.Collection;
 import org.apache.abdera.model.Entry;
@@ -383,7 +383,7 @@ public class BaseCMISWebScriptTest extends BaseWebScriptTest
             assertNotNull(repoInfo);
             CMISCapabilities capabilities = repoInfo.getCapabilities();
             assertNotNull(repoInfo);
-            queryCapability = capabilities.getJoin();
+            queryCapability = capabilities.getQuery();
             assertNotNull(queryCapability);
         }
         return queryCapability;

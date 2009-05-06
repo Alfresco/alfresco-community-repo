@@ -597,6 +597,9 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
         for (QName propertyName : properties.keySet())
         {
             Serializable value = properties.get(propertyName);
+            
+            value = convertForMT(propertyName, value);
+            
             if (indexAllProperties)
             {
                 indexProperty(nodeRef, propertyName, value, xdoc, false);
@@ -616,7 +619,7 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
             Pair<Path, QName> pair = it.next();
             // Lucene flags in order are: Stored, indexed, tokenised
 
-            qNameRef = getLastRefOrNull(pair.getFirst());
+            qNameRef = tenantService.getName(getLastRefOrNull(pair.getFirst()));
 
             String pathString = pair.getFirst().toString();
             if ((pathString.length() > 0) && (pathString.charAt(0) == '/'))
@@ -648,7 +651,7 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
                             qNameBuffer.append(";/");
                         }
                         qNameBuffer.append(ISO9075.getXPathName(qNameRef.getQName()));
-                        xdoc.add(new Field("PARENT", tenantService.getName(qNameRef.getParentRef()).toString(), Field.Store.YES, Field.Index.NO_NORMS, Field.TermVector.NO));
+                        xdoc.add(new Field("PARENT", qNameRef.getParentRef().toString(), Field.Store.YES, Field.Index.NO_NORMS, Field.TermVector.NO));
                         xdoc.add(new Field("ASSOCTYPEQNAME", ISO9075.getXPathName(qNameRef.getTypeQName()), Field.Store.YES, Field.Index.NO, Field.TermVector.NO));
                         xdoc.add(new Field("LINKASPECT", (pair.getSecond() == null) ? "" : ISO9075.getXPathName(pair.getSecond()), Field.Store.YES, Field.Index.NO_NORMS,
                                 Field.TermVector.NO));
@@ -745,7 +748,37 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
 
         return docs;
     }
-
+    
+    private Serializable convertForMT(QName propertyName, Serializable inboundValue)
+    {
+        if (! tenantService.isEnabled())
+        {
+            // no conversion
+            return inboundValue;
+        }
+        
+        PropertyDefinition propertyDef = getDictionaryService().getProperty(propertyName);
+        if ((propertyDef != null) && ((propertyDef.getDataType().getName().equals(DataTypeDefinition.NODE_REF)) || (propertyDef.getDataType().getName().equals(DataTypeDefinition.CATEGORY))))
+        {
+            if (inboundValue instanceof Collection)
+            {
+                Collection<NodeRef> in = (Collection<NodeRef>)inboundValue;
+                ArrayList<NodeRef> out = new ArrayList<NodeRef>(in.size());
+                for (NodeRef o : in)
+                {
+                    out.add(tenantService.getName(o));
+                }
+                return out;
+            }
+            else
+            {
+                return tenantService.getName((NodeRef)inboundValue);
+            }
+        }
+        
+        return inboundValue;
+    }
+    
     /**
      * @param indexAtomicPropertiesOnly
      *            true to ignore all properties that must be indexed non-atomically
@@ -979,6 +1012,11 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
                         for (Locale locale : mlText.getLocales())
                         {
                             String localeString = mlText.getValue(locale);
+                            if (localeString == null)
+                            {
+                                // No text for that locale
+                                continue;
+                            }
                             StringBuilder builder;
                             MLAnalysisMode analysisMode;
                             VerbatimAnalyser vba;

@@ -300,6 +300,9 @@
         <property name="tenantAdminService">
             <ref bean="tenantAdminService" />
         </property>
+        <property name="tenantService">
+            <ref bean="tenantService" />
+        </property>
         <property name="clearBatchSize">
             <value>50</value>
         </property>

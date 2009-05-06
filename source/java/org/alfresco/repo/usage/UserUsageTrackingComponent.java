@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2008 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -39,6 +39,7 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.tenant.Tenant;
 import org.alfresco.repo.tenant.TenantAdminService;
+import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.repo.transaction.TransactionServiceImpl;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.repository.ContentData;
@@ -68,6 +69,7 @@ public class UserUsageTrackingComponent
     private NodeDaoService nodeDaoService;
     private UsageService usageService;
     private TenantAdminService tenantAdminService;
+    private TenantService tenantService;
     
     private StoreRef personStoreRef;
     
@@ -101,7 +103,7 @@ public class UserUsageTrackingComponent
     {
         this.nodeDaoService = nodeDaoService;
     }
-
+    
     public void setUsageService(UsageService usageService)
     {
         this.usageService = usageService;
@@ -110,6 +112,11 @@ public class UserUsageTrackingComponent
     public void setTenantAdminService(TenantAdminService tenantAdminService)
     {
         this.tenantAdminService = tenantAdminService;
+    }
+    
+    public void setTenantService(TenantService tenantService)
+    {
+        this.tenantService = tenantService;
     }
     
     public void setClearBatchSize(int clearBatchSize)
@@ -126,7 +133,7 @@ public class UserUsageTrackingComponent
     {
         this.enabled = enabled;
     }
-      
+    
     public void execute()
     {
         if (enabled == false || transactionService.isReadOnly())
@@ -137,7 +144,7 @@ public class UserUsageTrackingComponent
         boolean locked = writeLock.tryLock();
         if (locked)
         {
-    		// collapse usages - note: for MT environment, will collapse for all tenants
+            // collapse usages - note: for MT environment, will collapse for all tenants
             try
             {
                 collapseUsages();
@@ -146,30 +153,30 @@ public class UserUsageTrackingComponent
             {
                 writeLock.unlock();
             }
-    	}
-	}
+        }
+    }
     
     // called once on startup
     public void bootstrap()
     {
-    	// default domain
-    	bootstrapInternal(); 
-		
-		if (tenantAdminService.isEnabled())
-		{
-			List<Tenant> tenants = tenantAdminService.getAllTenants();	                            	
+        // default domain
+        bootstrapInternal();
+        
+        if (tenantAdminService.isEnabled())
+        {
+            List<Tenant> tenants = tenantAdminService.getAllTenants();
             for (Tenant tenant : tenants)
-            {          
-            	AuthenticationUtil.runAs(new RunAsWork<Object>()
+            {
+                AuthenticationUtil.runAs(new RunAsWork<Object>()
                 {
-            		public Object doWork() throws Exception
+                    public Object doWork() throws Exception
                     {
-            			bootstrapInternal();
-            			return null;
+                        bootstrapInternal();
+                        return null;
                     }
                 }, tenantAdminService.getDomainUser(AuthenticationUtil.getSystemUserName(), tenant.getTenantDomain()));
             }
-		}
+       }
     }
     
     public void bootstrapInternal()
@@ -178,7 +185,7 @@ public class UserUsageTrackingComponent
         {
             return;
         }
-
+        
         boolean locked = writeLock.tryLock();
         if (locked)
         {
@@ -235,7 +242,7 @@ public class UserUsageTrackingComponent
                     }
                 };
                 nodeDaoService.getUsersWithUsage(personStoreRef, userHandler);
-                        
+                
                 return null;
             }
         };
@@ -268,7 +275,7 @@ public class UserUsageTrackingComponent
                 batchCount = 0;
             }
         }
-
+        
         if (logger.isInfoEnabled()) 
         {
             logger.info("... cleared non-missing usages for " + clearCount + " users");
@@ -332,7 +339,8 @@ public class UserUsageTrackingComponent
                         return true; // continue to next node (more required)
                     }
                 };
-                nodeDaoService.getUsersWithoutUsage(personStoreRef, userHandler);
+                
+                nodeDaoService.getUsersWithoutUsage(tenantService.getName(personStoreRef), userHandler);
                         
                 return null;
             }
@@ -351,13 +359,13 @@ public class UserUsageTrackingComponent
         {
             updateCount = recalculateUsages(users);
         }
-
+        
         if (logger.isInfoEnabled()) 
         {
             logger.info("... calculated missing usages for " + updateCount + " users");
         }
     }
-
+    
     /*
      * Recalculate content usage for given users. Required if upgrading an existing Alfresco, for users that
      * have not had their initial usage calculated. In a future release, could also be called explicitly by
@@ -375,7 +383,7 @@ public class UserUsageTrackingComponent
                  
                 for (String store : stores)
                 {
-                    final StoreRef storeRef = new StoreRef(store);
+                    final StoreRef storeRef = tenantService.getName(new StoreRef(store));
                     
                     if (logger.isTraceEnabled())
                     {
@@ -413,7 +421,7 @@ public class UserUsageTrackingComponent
                     };
                     nodeDaoService.getContentUrlsForStore(storeRef, nodeContentUrlHandler);
                 }
-                		
+                
                 return null;
             }
         };
@@ -459,7 +467,7 @@ public class UserUsageTrackingComponent
         
         return totalCount;
     }
-        
+    
     private int updateUsages(final List<Pair<NodeRef, Long>> userUsages)
     {
         RetryingTransactionCallback<Integer> updateCurrentUsages = new RetryingTransactionCallback<Integer>()
@@ -508,8 +516,8 @@ public class UserUsageTrackingComponent
         
         // execute in READ-ONLY txn
         Set<NodeRef> usageNodeRefs = transactionService.getRetryingTransactionHelper().doInTransaction(getUsageNodeRefs, true);
-    	
-    	int collapseCount = 0;     
+        
+        int collapseCount = 0;
         for (final NodeRef usageNodeRef : usageNodeRefs)
         {
             Boolean collapsed = AuthenticationUtil.runAs(new RunAsWork<Boolean>()
@@ -554,7 +562,7 @@ public class UserUsageTrackingComponent
                     if (currentUsage != -1)
                     {
                         // collapse the usage deltas
-                        currentUsage = contentUsageImpl.getUserUsage(userName);                                 
+                        currentUsage = contentUsageImpl.getUserUsage(userName);
                         usageService.deleteDeltas(personNodeRef);
                         contentUsageImpl.setUserStoredUsage(personNodeRef, currentUsage);
                         

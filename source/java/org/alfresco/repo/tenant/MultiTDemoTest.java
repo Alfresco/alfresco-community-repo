@@ -29,7 +29,7 @@ import java.io.PrintWriter;
 import java.io.Serializable;
 import java.io.StringWriter;
 import java.util.ArrayList;
-import java.util.Date;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -63,6 +63,7 @@ import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.OwnableService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
+import org.alfresco.service.cmr.usage.UsageService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ApplicationContextHelper;
@@ -74,7 +75,7 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 public class MultiTDemoTest extends TestCase
 {
     private static Log logger = LogFactory.getLog(MultiTDemoTest.class);
-
+    
     private static ApplicationContext ctx =new ClassPathXmlApplicationContext(
             new String[] {ApplicationContextHelper.CONFIG_LOCATIONS[0], "classpath:tenant/mt-*context.xml"}
             );
@@ -93,10 +94,12 @@ public class MultiTDemoTest extends TestCase
     private CheckOutCheckInService cociService;
     private RepoAdminService repoAdminService;
     private DictionaryService dictionaryService;
+    private UsageService usageService;
     
     public static int NUM_TENANTS = 2;
     
-    public static final String TEST_TENANT_DOMAIN = "my.test";
+    public static final String TEST_RUN = System.currentTimeMillis()+"";
+    public static final String TEST_TENANT_DOMAIN = TEST_RUN+".my.test";
     public static final String TEST_TENANT_DOMAIN2 = TEST_TENANT_DOMAIN+"2";
     
     public static List<String> tenants;
@@ -111,7 +114,7 @@ public class MultiTDemoTest extends TestCase
     }
     
     public static final String ROOT_DIR = "./tenantstores";
-
+    
     public static final String DEFAULT_ADMIN_PW = "admin";
     
     public static final String DEFAULT_GUEST_UN = "guest";
@@ -125,13 +128,13 @@ public class MultiTDemoTest extends TestCase
     private static final int DEFAULT_STORE_COUNT = 7; // including siteStore
     
     public static StoreRef SPACES_STORE = new StoreRef(StoreRef.PROTOCOL_WORKSPACE, "SpacesStore");
-
+    
     
     public MultiTDemoTest()
     {
     }
-
-
+    
+    
     @Override
     protected void setUp() throws Exception
     {
@@ -151,14 +154,49 @@ public class MultiTDemoTest extends TestCase
         cociService = (CheckOutCheckInService) ctx.getBean("CheckoutCheckinService");
         repoAdminService = (RepoAdminService) ctx.getBean("RepoAdminService");
         dictionaryService = (DictionaryService) ctx.getBean("DictionaryService");
+        usageService = (UsageService) ctx.getBean("usageService");
     }
-
+    
     @Override
     protected void tearDown() throws Exception
     {
         super.tearDown();
     }
-
+    
+    
+    public void test_ETHREEOH_2015()
+    {
+        final String tenantDomain1 = TEST_RUN+".one.ethreeoh2015";
+        final String tenantDomain2 = TEST_RUN+".two.ethreeoh2015";
+        
+        clearUsage(AuthenticationUtil.getAdminUserName());
+        
+        createTenant(tenantDomain1);
+        
+        String tenantAdminName = tenantService.getDomainUser(AuthenticationUtil.getAdminUserName(), tenantDomain1);
+        AuthenticationUtil.runAs(new RunAsWork<Object>()
+        {
+            public Object doWork() throws Exception
+            {
+                createUser(TEST_USER1, tenantDomain1, TEST_USER1+" "+tenantDomain1);
+                
+                return null;
+            }
+        }, tenantAdminName);
+        
+        createTenant(tenantDomain2);
+    }
+    
+    private void clearUsage(String userName)
+    {
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName()); // authenticate as super-admin
+        
+        // find person
+        NodeRef personNodeRef = personService.getPerson(userName);
+        // clear user usage
+        nodeService.setProperty(personNodeRef, ContentModel.PROP_SIZE_CURRENT, null);
+        usageService.deleteDeltas(personNodeRef);
+    }
     
     public void testCreateTenants() throws Throwable
     {   
@@ -172,7 +210,7 @@ public class MultiTDemoTest extends TestCase
         {
             String userName = (String)nodeService.getProperty(personRef, ContentModel.PROP_USERNAME);
             for (final String tenantDomain : tenants)
-            {    
+            {
                 assertFalse("Unexpected (tenant) user: "+userName, userName.endsWith(tenantDomain));
             }
         }
@@ -180,23 +218,8 @@ public class MultiTDemoTest extends TestCase
         try 
         {   
             for (final String tenantDomain : tenants)
-            {        
-                // create tenants (if not already created)
-                AuthenticationUtil.runAs(new RunAsWork<Object>()
-                {
-                    public Object doWork() throws Exception
-                    {
-                        if (! tenantAdminService.existsTenant(tenantDomain))
-                        {
-                            //tenantAdminService.createTenant(tenantDomain, DEFAULT_ADMIN_PW.toCharArray(), ROOT_DIR + "/" + tenantDomain);
-                            tenantAdminService.createTenant(tenantDomain, (DEFAULT_ADMIN_PW+" "+tenantDomain).toCharArray(), null); // use default root dir
-                            
-                            logger.info("Created tenant " + tenantDomain);
-                        }
-                        
-                        return null;
-                    }
-                }, AuthenticationUtil.getSystemUserName());
+            {
+                createTenant(tenantDomain);
             }
         }   
         catch (Throwable t)
@@ -205,7 +228,27 @@ public class MultiTDemoTest extends TestCase
             t.printStackTrace(new PrintWriter(stackTrace));
             System.err.println(stackTrace.toString());
             throw t;
-        }        
+        }
+    }
+    
+    private void createTenant(final String tenantDomain)
+    {
+        // create tenants (if not already created)
+        AuthenticationUtil.runAs(new RunAsWork<Object>()
+        {
+            public Object doWork() throws Exception
+            {
+                if (! tenantAdminService.existsTenant(tenantDomain))
+                {
+                    //tenantAdminService.createTenant(tenantDomain, DEFAULT_ADMIN_PW.toCharArray(), ROOT_DIR + "/" + tenantDomain);
+                    tenantAdminService.createTenant(tenantDomain, (DEFAULT_ADMIN_PW+" "+tenantDomain).toCharArray(), null); // use default root dir
+                    
+                    logger.info("Created tenant " + tenantDomain);
+                }
+                
+                return null;
+            }
+        }, AuthenticationUtil.getSystemUserName());
     }
     
     public void testCreateUsers() throws Throwable
@@ -218,7 +261,7 @@ public class MultiTDemoTest extends TestCase
         {
             String userName = (String)nodeService.getProperty(personRef, ContentModel.PROP_USERNAME);
             for (final String tenantDomain : tenants)
-            {    
+            {
                 assertFalse("Unexpected (tenant) user: "+userName, userName.endsWith(tenantDomain));
             }
         }
@@ -226,7 +269,7 @@ public class MultiTDemoTest extends TestCase
         try
         {
             for (final String tenantDomain : tenants)
-            {        
+            {
                 String tenantAdminName = tenantService.getDomainUser(AuthenticationUtil.getAdminUserName(), tenantDomain);
                 
                 AuthenticationUtil.runAs(new RunAsWork<Object>()
@@ -241,13 +284,13 @@ public class MultiTDemoTest extends TestCase
                             createUser(TEST_USER3, tenantDomain, TEST_USER3+" "+tenantDomain);
                         }
                         
-                        return null;                      
+                        return null;
                     }
                 }, tenantAdminName);
             }
             
             for (final String tenantDomain : tenants)
-            {        
+            {
                 String tenantAdminName = tenantService.getDomainUser(AuthenticationUtil.getAdminUserName(), tenantDomain);
                 
                 AuthenticationUtil.runAs(new RunAsWork<Object>()
@@ -276,9 +319,7 @@ public class MultiTDemoTest extends TestCase
                             assertEquals(4, personRefs.size()); // admin@tenant, guest@tenant, alice@tenant, bob@tenant
                         }
                         
-                        
-                        
-                        return null;                      
+                        return null;
                     }
                 }, tenantAdminName);
             }
@@ -368,9 +409,9 @@ public class MultiTDemoTest extends TestCase
     public void testCreateGroups()
     {
         logger.info("Create demo groups");
-
+        
         for (final String tenantDomain : tenants)
-        {        
+        {
             String tenantAdminName = tenantService.getDomainUser(AuthenticationUtil.getAdminUserName(), tenantDomain);
             
             AuthenticationUtil.runAs(new RunAsWork<Object>()
@@ -389,9 +430,9 @@ public class MultiTDemoTest extends TestCase
                                 createGroup("SubGrpC-"+tenantDomain, "GrpC-"+tenantDomain);
                             }
                             
-                            return null;                      
+                            return null;
                         }
-                    }, tenantAdminName);  
+                    }, tenantAdminName);
             
         }
     }
@@ -400,31 +441,107 @@ public class MultiTDemoTest extends TestCase
     {
         logger.info("Create demo categories");
         
+        // super admin
+        AuthenticationUtil.runAs(new RunAsWork<Object>()
+        {
+            public Object doWork() throws Exception
+            {
+                logger.info("Create demo categories - super tenant");
+                createCategoriesImpl("");
+                
+                return null;
+            }
+        }, AuthenticationUtil.getAdminUserName());
+        
         for (final String tenantDomain : tenants)
-        {        
+        {
             String tenantAdminName = tenantService.getDomainUser(AuthenticationUtil.getAdminUserName(), tenantDomain);
             
             AuthenticationUtil.runAs(new RunAsWork<Object>()
-                    {
-                        public Object doWork() throws Exception
-                        {
-                            NodeRef catRef = createCategory(SPACES_STORE, null, "CatA", "CatA-"+tenantDomain);
-                            createCategory(SPACES_STORE, catRef, "SubCatA", "SubCatA-"+tenantDomain); // ignore return
-                            
-                            catRef = createCategory(SPACES_STORE, null, "CatB", "CatB-"+tenantDomain);
-                            createCategory(SPACES_STORE, catRef, "SubCatB", "SubCatB-"+tenantDomain); // ignore return
-
-                            if (tenantDomain.equals(TEST_TENANT_DOMAIN2))
-                            {
-                                catRef = createCategory(SPACES_STORE, null, "CatC", "CatC-"+tenantDomain);
-                                createCategory(SPACES_STORE, catRef, "SubCatC", "SubCatC-"+tenantDomain); // ignore return
-                            }
-                            
-                            return null;                      
-                        }
-                    }, tenantAdminName);  
+            {
+                public Object doWork() throws Exception
+                {
+                    logger.info("Create demo categories - "+tenantDomain);
+                    
+                    createCategoriesImpl(tenantDomain);
+                    
+                    return null;
+                }
+            }, tenantAdminName);
             
         }
+    }
+    
+    @SuppressWarnings("unchecked")
+    private void createCategoriesImpl(String tenantDomain)
+    {
+        if (tenantDomain.equals(TenantService.DEFAULT_DOMAIN))
+        {
+            Collection<ChildAssociationRef> childAssocs = categoryService.getRootCategories(SPACES_STORE, ContentModel.ASPECT_GEN_CLASSIFIABLE);
+            
+            for (ChildAssociationRef childAssoc : childAssocs)
+            {
+                if (nodeService.getProperty(childAssoc.getChildRef(), ContentModel.PROP_NAME).equals("CatA"))
+                {
+                    return; // re-runnable, else we need to delete the created categories
+                }
+            }
+        }
+        
+        // Find all root categories
+        String query = "PATH:\"/cm:generalclassifiable/*\"";
+        ResultSet resultSet = searchService.query(SPACES_STORE, SearchService.LANGUAGE_LUCENE, query);
+        int cnt = resultSet.length();
+        
+        NodeRef catA = createCategory(SPACES_STORE, null, "CatA", "CatA-"+tenantDomain);
+        createCategory(SPACES_STORE, catA, "SubCatA", "SubCatA-"+tenantDomain); // ignore return
+        
+        NodeRef catB = createCategory(SPACES_STORE, null, "CatB", "CatB-"+tenantDomain);
+        createCategory(SPACES_STORE, catB, "SubCatB", "SubCatB-"+tenantDomain); // ignore return
+        
+        cnt = cnt + 2;
+        
+        if (tenantDomain.equals(TEST_TENANT_DOMAIN2))
+        {
+            NodeRef catC = createCategory(SPACES_STORE, null, "CatC", "CatC-"+tenantDomain);
+            createCategory(SPACES_STORE, catC, "SubCatC", "SubCatC-"+tenantDomain); // ignore return
+            
+            cnt = cnt + 1;
+        }
+        
+        // Find all root categories
+        resultSet = searchService.query(SPACES_STORE, SearchService.LANGUAGE_LUCENE, query);
+        assertEquals(cnt, resultSet.length());
+        
+        String queryMembers = "PATH:\"/cm:generalclassifiable//cm:catA/member\"";
+        resultSet = searchService.query(SPACES_STORE, SearchService.LANGUAGE_LUCENE, queryMembers);
+        assertEquals(0, resultSet.length());
+        
+        NodeRef homeSpaceRef = getHomeSpaceFolderNode(AuthenticationUtil.getRunAsUser());
+        NodeRef contentRef = addContent(homeSpaceRef, "tqbfjotld.txt", "The quick brown fox jumps over the lazy dog (tenant " + tenantDomain + ")", MimetypeMap.MIMETYPE_TEXT_PLAIN);
+        
+        assertFalse(nodeService.hasAspect(contentRef, ContentModel.ASPECT_GEN_CLASSIFIABLE));
+        
+        List<NodeRef> categories = (List<NodeRef>)nodeService.getProperty(contentRef, ContentModel.PROP_CATEGORIES);
+        assertNull(categories);
+        
+        // Classify the node (ie. assign node to a particular category in a classification)
+        categories = new ArrayList<NodeRef>(1);
+        categories.add(catA);
+        
+        HashMap<QName, Serializable> catProps = new HashMap<QName, Serializable>();
+        catProps.put(ContentModel.PROP_CATEGORIES, (Serializable)categories);
+        nodeService.addAspect(contentRef, ContentModel.ASPECT_GEN_CLASSIFIABLE, catProps);
+        
+        assertTrue(nodeService.hasAspect(contentRef, ContentModel.ASPECT_GEN_CLASSIFIABLE));
+        
+        categories = (List<NodeRef>)nodeService.getProperty(contentRef, ContentModel.PROP_CATEGORIES);
+        assertEquals(1, categories.size());
+        
+        // test ETHREEOH-210
+        queryMembers = "PATH:\"/cm:generalclassifiable//cm:CatA/member\"";
+        resultSet = searchService.query(SPACES_STORE, SearchService.LANGUAGE_LUCENE, queryMembers);
+        assertEquals(1, resultSet.length());
     }
     
     public void testCreateFolders()
@@ -437,7 +554,7 @@ public class MultiTDemoTest extends TestCase
         users.add(TEST_USER3);
         
         for (final String tenantDomain : tenants)
-        {    
+        {
             for (String baseUserName : users)
             {
                 if ((! baseUserName.equals(TEST_USER3)) || (tenantDomain.equals(TEST_TENANT_DOMAIN2)))
@@ -450,7 +567,7 @@ public class MultiTDemoTest extends TestCase
                         {
                             NodeRef homeSpaceRef = getHomeSpaceFolderNode(tenantUserName);
                             
-                            NodeRef folderRef = createFolderNode(homeSpaceRef, "myfolder1");                                
+                            NodeRef folderRef = createFolderNode(homeSpaceRef, "myfolder1");
                             createFolderNode(folderRef, "mysubfolder1"); // ignore return
                             
                             folderRef = createFolderNode(homeSpaceRef, "myfolder2"); 
@@ -462,9 +579,9 @@ public class MultiTDemoTest extends TestCase
                                 createFolderNode(folderRef, "mysubfolder3"); // ignore return
                             }
                             
-                            return null;                      
+                            return null;
                         }
-                    }, tenantUserName);  
+                    }, tenantUserName);
                 }
             }
         }
@@ -480,7 +597,7 @@ public class MultiTDemoTest extends TestCase
         users.add(TEST_USER3);
         
         for (final String tenantDomain : tenants)
-        {    
+        {
             for (String baseUserName : users)
             {
                 if ((! baseUserName.equals(TEST_USER3)) || (tenantDomain.equals(TEST_TENANT_DOMAIN2)))
@@ -499,18 +616,17 @@ public class MultiTDemoTest extends TestCase
                             if (tenantDomain.equals(TEST_TENANT_DOMAIN2))
                             {
                                 contentRef = addContent(homeSpaceRef, tenantUserName+" quick brown fox ANO.txt", "The quick brown fox jumps over the lazy dog ANO (tenant " + tenantDomain + ")", MimetypeMap.MIMETYPE_TEXT_PLAIN);
-                                
                                 nodeService.addAspect(contentRef, ContentModel.ASPECT_VERSIONABLE, null);
                             }
                             
-                            return null;                      
+                            return null;
                         }
-                    }, tenantUserName);  
+                    }, tenantUserName);
                 }
             }
         }
     }
-
+    
     public void testGetStores()
     {
         logger.info("Get tenant stores");
@@ -526,7 +642,7 @@ public class MultiTDemoTest extends TestCase
                 }
                 
                 assertTrue("System: "+nodeService.getStores().size()+", "+(tenants.size()+1), (nodeService.getStores().size() >= (DEFAULT_STORE_COUNT * (tenants.size()+1))));
-                return null;                      
+                return null;
             }
         }, AuthenticationUtil.getSystemUserName());
         
@@ -536,12 +652,12 @@ public class MultiTDemoTest extends TestCase
             public Object doWork() throws Exception
             {
                 assertTrue("Super admin: "+nodeService.getStores().size(), (nodeService.getStores().size() >= DEFAULT_STORE_COUNT));
-                return null;                      
+                return null;
             }
         }, AuthenticationUtil.getAdminUserName());
         
         for (final String tenantDomain : tenants)
-        {        
+        {
             String tenantAdminName = tenantService.getDomainUser(AuthenticationUtil.getAdminUserName(), tenantDomain);
             
             AuthenticationUtil.runAs(new RunAsWork<Object>()
@@ -550,7 +666,7 @@ public class MultiTDemoTest extends TestCase
                 {
                     assertEquals("Tenant: "+tenantDomain, DEFAULT_STORE_COUNT, nodeService.getStores().size());
                     
-                    return null;                      
+                    return null;
                 }
             }, tenantAdminName);
         }
@@ -583,7 +699,7 @@ public class MultiTDemoTest extends TestCase
                     
                     assertFalse(props.get(ContentModel.PROP_STORE_IDENTIFIER).toString().contains(tenantDomain));
                     
-                    return null;                      
+                    return null;
                 }
             }, tenantAdminName);
         }
@@ -614,7 +730,7 @@ public class MultiTDemoTest extends TestCase
                     NodeRef workingCopyNodeRef = cociService.checkout(nodeRef);
                     
                     ContentWriter writer = contentService.getWriter(workingCopyNodeRef, ContentModel.PROP_CONTENT, true);
-
+                    
                     writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
                     writer.setEncoding("UTF-8");
                     
@@ -631,7 +747,7 @@ public class MultiTDemoTest extends TestCase
                     resultSet = searchService.query(SPACES_STORE, SearchService.LANGUAGE_LUCENE, query);
                     assertEquals(1, resultSet.length());
                     
-                    return null;                      
+                    return null;
                 }
             }, tenantAdminName);
         }
@@ -642,7 +758,7 @@ public class MultiTDemoTest extends TestCase
         logger.info("test delete/archive & restore content");
         
         for (final String tenantDomain : tenants)
-        {    
+        {
             final String tenantUserName = tenantService.getDomainUser(TEST_USER1, tenantDomain);
             
             AuthenticationUtil.runAs(new RunAsWork<Object>()
@@ -662,7 +778,7 @@ public class MultiTDemoTest extends TestCase
                     
                     nodeService.restoreNode(archivedContentRef, null, null, null);
                     
-                    return null;                      
+                    return null;
                 }
             }, tenantUserName);
         }
@@ -673,9 +789,9 @@ public class MultiTDemoTest extends TestCase
         logger.info("test custom models");
         
         final int defaultModelCnt = dictionaryService.getAllModels().size();
-            
+        
         for (final String tenantDomain : tenants)
-        {    
+        {
             final String tenantAdminName = tenantService.getDomainUser(AuthenticationUtil.getAdminUserName(), tenantDomain);
             
             AuthenticationUtil.runAs(new RunAsWork<Object>()
@@ -763,17 +879,17 @@ public class MultiTDemoTest extends TestCase
                    logger.warn("Parent group does not exist: " + parentShortName);
                    return;
                }
-           }           
+           }
            
            this.authorityService.createAuthority(AuthorityType.GROUP, parentGroupName, shortName);
-
+           
         }
         else
         {
             logger.warn("Group already exists: " + shortName);
         }
     }
-
+    
     
     private NodeRef createUser(String baseUserName, String tenantDomain, String password)
     {
@@ -784,7 +900,7 @@ public class MultiTDemoTest extends TestCase
         if (! this.authenticationService.authenticationExists(userName))
         {
             NodeRef baseHomeFolder = getUserHomesNodeRef(SPACES_STORE);
-
+            
             // Create the users home folder
             NodeRef homeFolder = createHomeSpaceFolderNode(
                                                 baseHomeFolder,
@@ -931,7 +1047,7 @@ public class MultiTDemoTest extends TestCase
             this.nodeService.addAspect(nodeRef, ApplicationModel.ASPECT_UIFACETS, uiFacetsProps);
             
             setupHomeSpacePermissions(nodeRef, userName);
-
+            
             return nodeRef;
         }
         
@@ -943,7 +1059,7 @@ public class MultiTDemoTest extends TestCase
        // Admin Authority has full permissions by default (automatic - set in the permission config)
        // give full permissions to the new user
        this.permissionService.setPermission(homeSpaceRef, userName, permissionService.getAllPermission(), true);
-
+       
        // by default other users will only have GUEST access to the space contents
        String permission = "Consumer";
        
@@ -951,11 +1067,11 @@ public class MultiTDemoTest extends TestCase
        {
           this.permissionService.setPermission(homeSpaceRef, permissionService.getAllAuthorities(), permission, true);
        }
-
+       
        // the new user is the OWNER of their own space and always has full permissions
        this.ownableService.setOwner(homeSpaceRef, userName);
        this.permissionService.setPermission(homeSpaceRef, permissionService.getOwnerAuthority(), permissionService.getAllPermission(), true);
-
+       
        // now detach (if we did this first we could not set any permissions!)
        this.permissionService.setInheritParentPermissions(homeSpaceRef, false);
     }
@@ -969,26 +1085,26 @@ public class MultiTDemoTest extends TestCase
     {
         Map<QName, Serializable> contentProps = new HashMap<QName, Serializable>();
         contentProps.put(ContentModel.PROP_NAME, name);
-
+        
         ChildAssociationRef association = nodeService.createNode(spaceRef,
-                ContentModel.ASSOC_CONTAINS, 
-                QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, name), 
+                ContentModel.ASSOC_CONTAINS,
+                QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, name),
                 ContentModel.TYPE_CONTENT,
                 contentProps);
-
+        
         NodeRef content = association.getChildRef();
-
+        
         // add titled aspect (for Web Client display)
         Map<QName, Serializable> titledProps = new HashMap<QName, Serializable>();
         titledProps.put(ContentModel.PROP_TITLE, name);
         titledProps.put(ContentModel.PROP_DESCRIPTION, name);
         this.nodeService.addAspect(content, ContentModel.ASPECT_TITLED, titledProps);
-
+        
         ContentWriter writer = contentService.getWriter(content, ContentModel.PROP_CONTENT, true);
-
+        
         writer.setMimetype(mimeType);
         writer.setEncoding("UTF-8");
-
+        
         writer.putContent(textData);
         
         return content;
@@ -998,38 +1114,37 @@ public class MultiTDemoTest extends TestCase
     {
         Map<QName, Serializable> contentProps = new HashMap<QName, Serializable>();
         contentProps.put(ContentModel.PROP_NAME, name);
-
+        
         ChildAssociationRef association = nodeService.createNode(spaceRef,
                 ContentModel.ASSOC_CONTAINS, 
                 QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, name), 
                 ContentModel.TYPE_CONTENT,
                 contentProps);
-
+        
         NodeRef content = association.getChildRef();
-
+        
         // add titled aspect (for Web Client display)
         Map<QName, Serializable> titledProps = new HashMap<QName, Serializable>();
         titledProps.put(ContentModel.PROP_TITLE, name);
         titledProps.put(ContentModel.PROP_DESCRIPTION, name);
         this.nodeService.addAspect(content, ContentModel.ASPECT_TITLED, titledProps);
-
+        
         ContentWriter writer = contentService.getWriter(content, ContentModel.PROP_CONTENT, true);
-
+        
         writer.setMimetype(mimeType);
         writer.setEncoding("UTF-8");
-
+        
         writer.putContent(is);
         
         return content;
     }
     
-
-    // comment-in to run from command line
+    /*
     public static void main(String args[]) 
     {
         System.out.println(new Date());
         junit.textui.TestRunner.run(MultiTDemoTest.class);
         System.out.println(new Date());
     }
-     
+    */
 }

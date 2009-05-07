@@ -105,7 +105,7 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
     private static String LABEL_REFERENCES = "References";
     private static String LABEL_CONTAINS = "Contains";
     
-    private static final String USER_ONE = "UserOne_SiteServiceImplTest";
+    private static final String USER_ONE = "UserOne_FormServiceImplTest";
     private static final String NODE_FORM_ITEM_KIND = "node";
     
     /**

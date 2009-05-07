@@ -348,7 +348,7 @@ public abstract class BaseWebScriptTest extends TestCase
         asUser = (asUser == null) ? defaultRunAs : asUser;
         if (asUser == null)
         {
-            return BaseWebScriptTest.getServer().submitRequest(req.getMethod(), req.getFullUri(), req.getHeaders(), req.getBody(), req.getType());
+            return BaseWebScriptTest.getServer().submitRequest(req.getMethod(), req.getFullUri(), req.getHeaders(), req.getBody(), req.getEncoding(), req.getType());
         }
         else
         {
@@ -358,7 +358,7 @@ public abstract class BaseWebScriptTest extends TestCase
                 @SuppressWarnings("synthetic-access")
                 public Response doWork() throws Exception
                 {
-                    return BaseWebScriptTest.getServer().submitRequest(req.getMethod(), req.getFullUri(), req.getHeaders(), req.getBody(), req.getType());
+                    return BaseWebScriptTest.getServer().submitRequest(req.getMethod(), req.getFullUri(), req.getHeaders(), req.getBody(), req.getEncoding(), req.getType());
                 }
             }, asUser);
         }

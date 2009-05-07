@@ -106,7 +106,7 @@ public class CMISTest extends BaseCMISWebScriptTest
         assertNotNull(entry);
     }
 
-    public void xtestCreateAtomEntry()
+    public void testCreateAtomEntry()
         throws Exception
     {
         Entry testFolder = createTestFolder("testCreateAtomEntry");
@@ -578,7 +578,7 @@ public class CMISTest extends BaseCMISWebScriptTest
         assertEquals("updated content " + guid, contentRes.getContentAsString());
     }
 
-    public void xtestUpdatePutAtomEntry()
+    public void testUpdatePutAtomEntry()
         throws Exception
     {
         // retrieve test folder for update

@@ -1,8 +1,14 @@
 <webscript>
-  <shortname>Site</shortname>
-  <description>Get the details of a site.</description>
+  <shortname>Get Web Site</shortname>
+  <description>
+  <![CDATA[
+  Get the details of a web site.
+
+  Returns 200, STATUS_OK on success.
+  ]]></description>
   <url>/api/sites/{shortname}</url>
   <format default="json">argument</format>
   <authentication>user</authentication>
   <transaction>required</transaction>
+  <lifecycle>draft_public_api</lifecycle>
 </webscript>

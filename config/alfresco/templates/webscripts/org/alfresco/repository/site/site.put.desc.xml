@@ -1,8 +1,20 @@
 <webscript>
-  <shortname>Site</shortname>
-  <description>Update the details of a site.</description>
+  <shortname>Update Web Site</shortname>
+  <description>  <![CDATA[
+  Update the details of a site.
+  
+  The following properties may be updated.
+  
+  <dl>
+  <dt>title</dt><dd>the title of the web site</dd>
+  <dt>description</dt><dd>the description for the web site</dd>
+  <dt>visibility</dt><dd>the site visibility, one of (PUBLIC,MODERATED,PRIVATE)</dd>
+  </dl>
+  
+  ]]></description>
   <url>/api/sites/{shortname}</url>
   <format default="json">argument</format>
   <authentication>user</authentication>
   <transaction>required</transaction>
+  <lifecycle>draft_public_api</lifecycle>
 </webscript>

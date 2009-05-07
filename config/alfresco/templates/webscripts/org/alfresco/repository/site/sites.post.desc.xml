@@ -1,8 +1,22 @@
 <webscript>
-  <shortname>Sites</shortname>
-  <description>Creates a new site based on the site preset and details provided.</description>
+  <shortname>Create Web Site</shortname>
+  <description>  <![CDATA[
+  Creates a new site based on the site preset and details provided.
+  
+  <br />
+  The following properties may be set.
+  
+  <dl>
+  <dt>shortName</dt><dd>the shortName of the web site, mandatory, must be unique</dd>
+  <dt>sitePreset</dt><dd>the sitePreset</dd>
+  <dt>title</dt><dd>the title of the web site</dd>
+  <dt>description</dt><dd>the description for the web site</dd>
+  <dt>visibility</dt><dd>the site visibility, one of (PUBLIC,MODERATED,PRIVATE), defaults to PUBLIC</dd>
+  </dl>
+  ]]></description>
   <url>/api/sites</url>
   <format default="json">argument</format>
   <authentication>user</authentication>
   <transaction>required</transaction>
+  <lifecycle>draft_public_api</lifecycle>
 </webscript>

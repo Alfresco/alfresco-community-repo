@@ -667,7 +667,7 @@ public class ScriptNode implements Serializable, Scopeable, NamespacePrefixResol
         
         return isLinkToDocument.booleanValue();
     }
-
+    
     /**
      * @return true if the Node is a Category
      */
@@ -706,12 +706,25 @@ public class ScriptNode implements Serializable, Scopeable, NamespacePrefixResol
     }
     
     /**
-     * @param aspect  The aspect name to test for (full qualified or short-name form)
+     * @param aspect  The aspect name to test for (fully qualified or short-name form)
      * @return true if the node has the aspect false otherwise
      */
     public boolean hasAspect(String aspect)
     {
         return getAspectsSet().contains(createQName(aspect));
+    }
+    
+    /**
+     * @param type  The qname type to test this object against (fully qualified or short-name form)
+     * @return true if this Node is a sub-type of the specified class (or itself of that class)
+     */
+    public boolean isSubType(String type)
+    {
+        ParameterCheck.mandatoryString("Type", type);
+        
+        QName qnameType = createQName(type);
+        
+        return this.services.getDictionaryService().isSubClass(getQNameType(), qnameType);
     }
     
     /**

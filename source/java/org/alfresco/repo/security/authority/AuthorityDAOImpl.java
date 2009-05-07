@@ -72,7 +72,7 @@ public class AuthorityDAOImpl implements AuthorityDAO
 
     private DictionaryService dictionaryService;
 
-    private SimpleCache<String, HashSet<String>> userToAuthorityCache;
+    private SimpleCache<CacheKey, HashSet<String>> authorityLookupCache;
 
     public AuthorityDAOImpl()
     {
@@ -101,9 +101,9 @@ public class AuthorityDAOImpl implements AuthorityDAO
         this.searchService = searchService;
     }
 
-    public void setUserToAuthorityCache(SimpleCache<String, HashSet<String>> userToAuthorityCache)
+    public void setUserToAuthorityCache(SimpleCache<CacheKey, HashSet<String>> userToAuthorityCache)
     {
-        this.userToAuthorityCache = userToAuthorityCache;
+        this.authorityLookupCache = userToAuthorityCache;
     }
 
     public boolean authorityExists(String name)
@@ -126,7 +126,8 @@ public class AuthorityDAOImpl implements AuthorityDAO
             members.addAll(memberCollection);
             members.add(childName);
             nodeService.setProperty(parentRef, ContentModel.PROP_MEMBERS, members);
-            userToAuthorityCache.remove(childName);
+            // userToAuthorityCache.remove(childName);
+            authorityLookupCache.clear();
         }
         else if (AuthorityType.getAuthorityType(childName).equals(AuthorityType.GROUP))
         {
@@ -136,7 +137,7 @@ public class AuthorityDAOImpl implements AuthorityDAO
                 throw new UnknownAuthorityException("An authority was not found for " + childName);
             }
             nodeService.addChild(parentRef, childRef, ContentModel.ASSOC_MEMBER, QName.createQName("usr", childName, namespacePrefixResolver));
-            userToAuthorityCache.clear();
+            authorityLookupCache.clear();
         }
         else
         {
@@ -164,6 +165,7 @@ public class AuthorityDAOImpl implements AuthorityDAO
             nodeService.createNode(authorityContainerRef, ContentModel.ASSOC_CHILDREN, QName.createQName("usr", name, namespacePrefixResolver),
                     ContentModel.TYPE_AUTHORITY_CONTAINER, props);
         }
+        authorityLookupCache.clear();
     }
 
     public void deleteAuthority(String name)
@@ -174,7 +176,7 @@ public class AuthorityDAOImpl implements AuthorityDAO
             throw new UnknownAuthorityException("An authority was not found for " + name);
         }
         nodeService.deleteNode(nodeRef);
-        userToAuthorityCache.clear();
+        authorityLookupCache.clear();
     }
 
     public Set<String> getAllRootAuthorities(AuthorityType type)
@@ -224,8 +226,8 @@ public class AuthorityDAOImpl implements AuthorityDAO
         sp.setLanguage("lucene");
         sp.setQuery("+TYPE:\""
                 + ContentModel.TYPE_AUTHORITY_CONTAINER + "\"" + " +@"
-                + LuceneQueryParser.escape("{" + ContentModel.PROP_AUTHORITY_NAME.getNamespaceURI() + "}" + ISO9075.encode(ContentModel.PROP_AUTHORITY_NAME.getLocalName())) + ":\""
-                + namePattern + "\"");
+                + LuceneQueryParser.escape("{" + ContentModel.PROP_AUTHORITY_NAME.getNamespaceURI() + "}" + ISO9075.encode(ContentModel.PROP_AUTHORITY_NAME.getLocalName()))
+                + ":\"" + namePattern + "\"");
         ResultSet rs = null;
         try
         {
@@ -235,7 +237,7 @@ public class AuthorityDAOImpl implements AuthorityDAO
             {
                 String test = DefaultTypeConverter.INSTANCE.convert(String.class, nodeService.getProperty(row.getNodeRef(), ContentModel.PROP_AUTHORITY_NAME));
                 Matcher m = pattern.matcher(test);
-                if(m.matches())
+                if (m.matches())
                 {
                     authorities.add(test);
                 }
@@ -265,8 +267,16 @@ public class AuthorityDAOImpl implements AuthorityDAO
             {
                 throw new UnknownAuthorityException("An authority was not found for " + name);
             }
-            HashSet<String> authorities = new HashSet<String>();
-            findAuthorities(type, null, nodeRef, authorities, false, !immediate, false);
+           
+            CacheKey key = new CacheKey(type, name, false, !immediate);
+
+            HashSet<String> authorities = authorityLookupCache.get(key);
+            if (authorities == null || true)
+            {
+                authorities = new HashSet<String>();
+                findAuthorities(type, null, nodeRef, authorities, false, !immediate, false);
+                authorityLookupCache.put(key, authorities);
+            }
             return authorities;
         }
     }
@@ -285,7 +295,8 @@ public class AuthorityDAOImpl implements AuthorityDAO
             members.addAll(memberCollection);
             members.remove(childName);
             nodeService.setProperty(parentRef, ContentModel.PROP_MEMBERS, members);
-            userToAuthorityCache.remove(childName);
+            // userToAuthorityCache.remove(childName);
+            authorityLookupCache.clear();
         }
         else
         {
@@ -295,30 +306,23 @@ public class AuthorityDAOImpl implements AuthorityDAO
                 throw new UnknownAuthorityException("An authority was not found for " + childName);
             }
             nodeService.removeChild(parentRef, childRef);
-            userToAuthorityCache.clear();
+            authorityLookupCache.clear();
         }
     }
 
     public Set<String> getContainingAuthorities(AuthorityType type, String name, boolean immediate)
     {
-        if (AuthorityType.getAuthorityType(name).equals(AuthorityType.USER) && !immediate && (type == null))
+        CacheKey key = new CacheKey(type, name, true, !immediate);
+
+        HashSet<String> authorities = authorityLookupCache.get(key);
+        if (authorities == null || true)
         {
-            // Cache user to authority look ups
-            HashSet<String> authorities = userToAuthorityCache.get(name);
-            if (authorities == null)
-            {
-                authorities = new HashSet<String>();
-                findAuthorities(type, name, authorities, true, !immediate);
-                userToAuthorityCache.put(name, authorities);
-            }
-            return authorities;
-        }
-        else
-        {
-            HashSet<String> authorities = new HashSet<String>();
+            authorities = new HashSet<String>();
             findAuthorities(type, name, authorities, true, !immediate);
-            return authorities;
+            authorityLookupCache.put(key, authorities);
         }
+        return authorities;
+
     }
 
     private void findAuthorities(AuthorityType type, String name, Set<String> authorities, boolean parents, boolean recursive)
@@ -384,7 +388,8 @@ public class AuthorityDAOImpl implements AuthorityDAO
         sp.setLanguage("lucene");
         sp.setQuery("+TYPE:\""
                 + ContentModel.TYPE_AUTHORITY_CONTAINER + "\"" + " +@"
-                + LuceneQueryParser.escape("{" + ContentModel.PROP_MEMBERS.getNamespaceURI() + "}" + ISO9075.encode(ContentModel.PROP_MEMBERS.getLocalName())) + ":\"" + name + "\"");
+                + LuceneQueryParser.escape("{" + ContentModel.PROP_MEMBERS.getNamespaceURI() + "}" + ISO9075.encode(ContentModel.PROP_MEMBERS.getLocalName())) + ":\"" + name
+                + "\"");
         ResultSet rs = null;
         try
         {
@@ -562,8 +567,8 @@ public class AuthorityDAOImpl implements AuthorityDAO
         sp.setLanguage("lucene");
         sp.setQuery("+TYPE:\""
                 + ContentModel.TYPE_AUTHORITY_CONTAINER + "\"" + " +@"
-                + LuceneQueryParser.escape("{" + ContentModel.PROP_AUTHORITY_NAME.getNamespaceURI() + "}" + ISO9075.encode(ContentModel.PROP_AUTHORITY_NAME.getLocalName())) + ":\""
-                + name + "\"");
+                + LuceneQueryParser.escape("{" + ContentModel.PROP_AUTHORITY_NAME.getNamespaceURI() + "}" + ISO9075.encode(ContentModel.PROP_AUTHORITY_NAME.getLocalName()))
+                + ":\"" + name + "\"");
         ResultSet rs = null;
         try
         {
@@ -673,4 +678,73 @@ public class AuthorityDAOImpl implements AuthorityDAO
 
     }
 
+    private static class CacheKey implements Serializable
+    {
+        /**
+         * 
+         */
+        private static final long serialVersionUID = -4784784204722074066L;
+
+        AuthorityType type;
+
+        String name;
+
+        boolean parents;
+        
+        boolean recursive;
+
+        CacheKey(AuthorityType type, String name, boolean parents, boolean recursive)
+        {
+            this.type = type;
+            this.name = name;
+            this.parents = parents;
+            this.recursive = recursive;
+        }
+
+        @Override
+        public int hashCode()
+        {
+            final int prime = 31;
+            int result = 1;
+            result = prime * result + ((name == null) ? 0 : name.hashCode());
+            result = prime * result + (parents ? 1231 : 1237);
+            result = prime * result + (recursive ? 1231 : 1237);
+            result = prime * result + ((type == null) ? 0 : type.hashCode());
+            return result;
+        }
+
+        @Override
+        public boolean equals(Object obj)
+        {
+            if (this == obj)
+                return true;
+            if (obj == null)
+                return false;
+            if (getClass() != obj.getClass())
+                return false;
+            final CacheKey other = (CacheKey) obj;
+            if (name == null)
+            {
+                if (other.name != null)
+                    return false;
+            }
+            else if (!name.equals(other.name))
+                return false;
+            if (parents != other.parents)
+                return false;
+            if (recursive != other.recursive)
+                return false;
+            if (type == null)
+            {
+                if (other.type != null)
+                    return false;
+            }
+            else if (!type.equals(other.type))
+                return false;
+            return true;
+        }
+
+      
+        
+    }
 }

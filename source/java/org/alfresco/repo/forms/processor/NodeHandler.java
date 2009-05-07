@@ -27,7 +27,6 @@ package org.alfresco.repo.forms.processor;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
@@ -78,11 +77,13 @@ public class NodeHandler extends AbstractHandler
 {
     private static final Log logger = LogFactory.getLog(NodeHandler.class);
 
-    protected static final String PROP_PREFIX = "prop_";
-    protected static final String ASSOC_PREFIX = "assoc_";
-    protected static final String ASSOC_ADD_SUFFIX = "_added";
-    protected static final String ASSOC_REMOVE_SUFFIX = "_removed";
+    protected static final String PROP = "prop";
+    protected static final String ASSOC = "assoc";
     protected static final String DATA_KEY_SEPARATOR = "_";
+    protected static final String PROP_DATA_PREFIX = PROP + DATA_KEY_SEPARATOR;
+    protected static final String ASSOC_DATA_PREFIX = ASSOC + DATA_KEY_SEPARATOR;
+    protected static final String ASSOC_DATA_ADDED_SUFFIX = DATA_KEY_SEPARATOR + "added";
+    protected static final String ASSOC_DATA_REMOVED_SUFFIX = DATA_KEY_SEPARATOR + "removed";
     
     protected static final String TRANSIENT_MIMETYPE = "mimetype";
     protected static final String TRANSIENT_SIZE = "size";
@@ -103,24 +104,24 @@ public class NodeHandler extends AbstractHandler
 
     /**
      * A regular expression which can be used to match property names.
-     * These names will look like <code>"prop:cm:name"</code>.
+     * These names will look like <code>"prop_cm_name"</code>.
      * The pattern can also be used to extract the "cm" and the "name" parts.
      */
-    protected Pattern propertyNamePattern = Pattern.compile(PROP_PREFIX + "(.*){1}?_(.*){1}?");
+    protected Pattern propertyNamePattern = Pattern.compile(PROP_DATA_PREFIX + "(.*){1}?_(.*){1}?");
     
     /**
      * A regular expression which can be used to match tranisent property names.
-     * These names will look like <code>"prop:name"</code>.
+     * These names will look like <code>"prop_name"</code>.
      * The pattern can also be used to extract the "name" part.
      */
-    protected Pattern transientPropertyPattern = Pattern.compile(PROP_PREFIX + "(.*){1}?");
+    protected Pattern transientPropertyPattern = Pattern.compile(PROP_DATA_PREFIX + "(.*){1}?");
     
     /**
      * A regular expression which can be used to match association names.
-     * These names will look like <code>"assoc:cm:references_added"</code>.
+     * These names will look like <code>"assoc_cm_references_added"</code>.
      * The pattern can also be used to extract the "cm", the "name" and the suffix parts.
      */
-    protected Pattern associationNamePattern = Pattern.compile(ASSOC_PREFIX + "(.*){1}?_(.*){1}?(_[a-zA-Z]+)");
+    protected Pattern associationNamePattern = Pattern.compile(ASSOC_DATA_PREFIX + "(.*){1}?_(.*){1}?(_[a-zA-Z]+)");
     
     /**
      * Sets the node service 
@@ -210,7 +211,6 @@ public class NodeHandler extends AbstractHandler
             // setup field definitions and data
             generateAllPropertyFields(nodeRef, form);
             generateAllAssociationFields(nodeRef, form);
-            generateAllChildAssociationFields(nodeRef, form);
             generateTransientFields(nodeRef, form);
         }
     }
@@ -238,61 +238,95 @@ public class NodeHandler extends AbstractHandler
                     this.nodeService.getAspects(nodeRef));
         Map<QName, PropertyDefinition> propDefs = typeDef.getProperties();
         Map<QName, AssociationDefinition> assocDefs = typeDef.getAssociations();
-        Map<QName, ChildAssociationDefinition> childAssocDefs = typeDef.getChildAssociations();
         Map<QName, Serializable> propValues = this.nodeService.getProperties(nodeRef);
         
         for (String fieldName : fields)
         {
             // try and split the field name
             String[] parts = fieldName.split(":");
-            if (parts.length == 2)
+            if (parts.length == 2 || parts.length == 3)
             {
-                // create qname of field name
-                String qNamePrefix = parts[0];
-                String localName = parts[1];
-                QName fullQName = QName.createQName(qNamePrefix, localName, namespaceService);
-            
-                // lookup property def on node
-                PropertyDefinition propDef = propDefs.get(fullQName);
-                if (propDef != null)
+                boolean foundField = false;
+                boolean tryProperty = true;
+                boolean tryAssociation = true;
+                String qNamePrefix = null;
+                String localName = null;
+                
+                if (parts.length == 2)
                 {
-                    // generate the property field
-                    generatePropertyField(propDef, propValues.get(propDef.getName()), form);
+                    qNamePrefix = parts[0];
+                    localName = parts[1];
                 }
                 else
                 {
-                    // look for association defined for the type
-                    ChildAssociationDefinition childAssocDef = childAssocDefs.get(fullQName);
-                    if (childAssocDef != null)
+                    // if there are 3 parts to the field name the first one represents
+                    // whether the field is a property or association i.e. prop:prefix:local
+                    // or assoc:prefix:local, determine the prefix and ensure it's valid
+                    if (PROP.equals(parts[0]))
                     {
-                        // generate the association field
-                        // TODO: see if we can get just the specific child assoc data
-                        generateAssociationField(childAssocDef, 
-                                    this.nodeService.getChildAssocs(nodeRef), form);
+                        tryAssociation = false;
+                    }
+                    else if (ASSOC.equals(parts[0]))
+                    {
+                        tryProperty = false;
                     }
                     else
                     {
-                        AssociationDefinition assocDef = assocDefs.get(fullQName);
-                        if (assocDef != null)
-                        {
-                            // generate the association field
-                            generateAssociationField(assocDef, 
-                                        this.nodeService.getTargetAssocs(nodeRef, fullQName), form);
-                        }
-                        else
-                        {
-                            // still not found the field, is it a force'd field?
-                            if (forcedFields != null && forcedFields.size() > 0 && 
-                                forcedFields.contains(fieldName))
-                            {
-                                generateForcedField(fullQName, form);
-                            }
-                            else if (logger.isDebugEnabled())
-                            {
-                                logger.debug("Ignoring field \"" + fieldName + 
-                                            "\" as it is not defined for the current node and it does not appear in the 'force' list");
-                            }
-                        }
+                        if (logger.isWarnEnabled())
+                            logger.warn("\"" + parts[0] + "\" is an invalid prefix for requesting a property or association");
+
+                        continue;
+                    }
+                    
+                    qNamePrefix = parts[1];
+                    localName = parts[2];
+                }
+                
+                // create qname of field name
+                QName fullQName = QName.createQName(qNamePrefix, localName, namespaceService);
+            
+                // try the field as a property
+                if (tryProperty)
+                {
+                    // lookup property def on node
+                    PropertyDefinition propDef = propDefs.get(fullQName);
+                    if (propDef != null)
+                    {
+                        // generate the property field
+                        generatePropertyField(propDef, propValues.get(fullQName), form);
+                        
+                        // no need to try and find an association
+                        tryAssociation = false;
+                        foundField = true;
+                    }
+                }
+                
+                // try the field as an association
+                if (tryAssociation)
+                {
+                    AssociationDefinition assocDef = assocDefs.get(fullQName);
+                    if (assocDef != null)
+                    {
+                        // generate the association field
+                        generateAssociationField(assocDef, 
+                                    retrieveAssociationValues(nodeRef, assocDef), form);
+                        
+                        foundField = true;
+                    }
+                }
+                
+                // still not found the field, is it a force'd field?
+                if (!foundField)
+                {
+                    if (forcedFields != null && forcedFields.size() > 0 && 
+                        forcedFields.contains(fieldName))
+                    {
+                        generateForcedField(fieldName, form);
+                    }
+                    else if (logger.isDebugEnabled())
+                    {
+                        logger.debug("Ignoring field \"" + fieldName + 
+                                    "\" as it is not defined for the current node and it does not appear in the 'force' list");
                     }
                 }
             }
@@ -333,38 +367,95 @@ public class NodeHandler extends AbstractHandler
     
     /**
      * Generates a field definition for the given field that is being forced
-     * to show
+     * to show.
      * 
-     * @param fieldName QName of the field to force
+     * @param fieldName Name of the field to force
      * @param form The Form instance to populated
      */
-    protected void generateForcedField(QName fieldName, Form form)
+    protected void generateForcedField(String fieldName, Form form)
     {
         if (logger.isDebugEnabled())
-            logger.debug("Attempting to force the inclusion of field \"" + 
-                        fieldName.toPrefixString(this.namespaceService) + "\"");
+            logger.debug("Attempting to force the inclusion of field \"" + fieldName + "\"");
         
-        // lookup the field as a property in the model
-        PropertyDefinition propDef = this.dictionaryService.getProperty(fieldName);
-        if (propDef != null)
+        String[] parts = fieldName.split(":");
+        if (parts.length == 2 || parts.length == 3)
         {
-            // generate the property field
-            generatePropertyField(propDef, null, form);
-        }
-        else
-        {
-            // lookup the field as an association in the model
-            AssociationDefinition assocDef = this.dictionaryService.getAssociation(fieldName);
-            if (assocDef != null)
+            boolean foundField = false;
+            boolean tryProperty = true;
+            boolean tryAssociation = true;
+            String qNamePrefix = null;
+            String localName = null;
+            
+            if (parts.length == 2)
             {
-                // generate the association field
-                generateAssociationField(assocDef, null, form);
+                qNamePrefix = parts[0];
+                localName = parts[1];
             }
-            else if (logger.isDebugEnabled())
+            else
             {
-                logger.debug("Ignoring field \"" + fieldName.toPrefixString(this.namespaceService) + 
+                // if there are 3 parts to the field name the first one represents
+                // whether the field is a property or association i.e. prop:prefix:local
+                // or assoc:prefix:local, determine the prefix and ensure it's valid
+                if (PROP.equals(parts[0]))
+                {
+                    tryAssociation = false;
+                }
+                else if (ASSOC.equals(parts[0]))
+                {
+                    tryProperty = false;
+                }
+                else
+                {
+                    if (logger.isWarnEnabled())
+                        logger.warn("\"" + parts[0] + "\" is an invalid prefix for requesting a property or association");
+
+                    return;
+                }
+                
+                qNamePrefix = parts[1];
+                localName = parts[2];
+            }
+            
+            // create qname of field name
+            QName fullQName = QName.createQName(qNamePrefix, localName, namespaceService);
+            
+            if (tryProperty)
+            {
+                // lookup the field as a property in the whole model
+                PropertyDefinition propDef = this.dictionaryService.getProperty(fullQName);
+                if (propDef != null)
+                {
+                    // generate the property field
+                    generatePropertyField(propDef, null, form);
+                    
+                    // no need to try and find an association
+                    tryAssociation = false;
+                    foundField = true;
+                }
+            }
+            
+            if (tryAssociation)
+            {
+                // lookup the field as an association in the whole model
+                AssociationDefinition assocDef = this.dictionaryService.getAssociation(fullQName);
+                if (assocDef != null)
+                {
+                    // generate the association field
+                    generateAssociationField(assocDef, null, form);
+                    
+                    foundField = true;
+                }
+            }
+            
+            if (!foundField && logger.isDebugEnabled())
+            {
+                logger.debug("Ignoring field \"" + fieldName + 
                             "\" as it is not defined for the current node and can not be found in any model");
             }
+        }
+        else if (logger.isWarnEnabled())
+        {
+            logger.warn("Ignoring unrecognised field \"" + fieldName + "\"");
         }
     }
     
@@ -420,7 +511,7 @@ public class NodeHandler extends AbstractHandler
         fieldDef.setRepeating(propDef.isMultiValued());
         
         // define the data key name and set
-        String dataKeyName = PROP_PREFIX + nameParts[0] + DATA_KEY_SEPARATOR + nameParts[1];
+        String dataKeyName = PROP_DATA_PREFIX + nameParts[0] + DATA_KEY_SEPARATOR + nameParts[1];
         fieldDef.setDataKeyName(dataKeyName);
         
         // setup constraints for the property
@@ -513,7 +604,7 @@ public class NodeHandler extends AbstractHandler
      */
     protected void generateMimetypePropertyField(ContentData content, Form form)
     {
-        String dataKeyName = PROP_PREFIX + TRANSIENT_MIMETYPE;
+        String dataKeyName = PROP_DATA_PREFIX + TRANSIENT_MIMETYPE;
         PropertyFieldDefinition mimetypeField = new PropertyFieldDefinition(
                     TRANSIENT_MIMETYPE, DataTypeDefinition.TEXT.toPrefixString(
                     this.namespaceService));
@@ -532,7 +623,7 @@ public class NodeHandler extends AbstractHandler
      */
     protected void generateEncodingPropertyField(ContentData content, Form form)
     {
-        String dataKeyName = PROP_PREFIX + TRANSIENT_ENCODING;
+        String dataKeyName = PROP_DATA_PREFIX + TRANSIENT_ENCODING;
         PropertyFieldDefinition encodingField = new PropertyFieldDefinition(
                     TRANSIENT_ENCODING, DataTypeDefinition.TEXT.toPrefixString(
                     this.namespaceService));
@@ -551,7 +642,7 @@ public class NodeHandler extends AbstractHandler
      */
     protected void generateSizePropertyField(ContentData content, Form form)
     {
-        String dataKeyName = PROP_PREFIX + TRANSIENT_SIZE;
+        String dataKeyName = PROP_DATA_PREFIX + TRANSIENT_SIZE;
         PropertyFieldDefinition sizeField = new PropertyFieldDefinition(
                     TRANSIENT_SIZE, DataTypeDefinition.LONG.toPrefixString(
                     this.namespaceService));
@@ -569,183 +660,19 @@ public class NodeHandler extends AbstractHandler
      * @param nodeRef The NodeRef of the node being setup
      * @param form The Form instance to populate
      */
-    @SuppressWarnings("unchecked")
     protected void generateAllAssociationFields(NodeRef nodeRef, Form form)
     {
-        // ********************************************************
-        //  re-factor this to gen. all assocs defs and not values
-        // ********************************************************
+        // get data dictionary definition for the node
+        QName type = this.nodeService.getType(nodeRef);
+        TypeDefinition typeDef = this.dictionaryService.getAnonymousType(type,
+                    this.nodeService.getAspects(nodeRef));
         
-        // add target association data
-        List<AssociationRef> associations = this.nodeService.getTargetAssocs(nodeRef, 
-                    RegexQNamePattern.MATCH_ALL);
-
-        if (associations.size() > 0)
+        // iterate round the association defintions and setup field definition
+        Map<QName, AssociationDefinition> assocDefs = typeDef.getAssociations();
+        for (AssociationDefinition assocDef : assocDefs.values())
         {
-            // create internal cache of association definitions created
-            Map<String, AssociationFieldDefinition> assocFieldDefs = 
-                new HashMap<String, AssociationFieldDefinition>(associations.size());
-
-            for (AssociationRef assoc : associations)
-            {
-                // get the name of the association
-                QName assocType = assoc.getTypeQName();
-                String assocName = assocType.toPrefixString(this.namespaceService);
-                String assocValue = assoc.getTargetRef().toString();
-                String dataKeyName = ASSOC_PREFIX + assocName.replace(":", DATA_KEY_SEPARATOR);
-                
-                // setup the field definition for the association if it hasn't before
-                AssociationFieldDefinition fieldDef = assocFieldDefs.get(assocName);
-                if (fieldDef == null)
-                {
-                    AssociationDefinition assocDef = this.dictionaryService.getAssociation(assocType);
-                    if (assocDef == null)
-                    {
-                        throw new FormException("Failed to find association definition for association: " + assocType);
-                    }
-                    
-                    fieldDef = new AssociationFieldDefinition(assocName, 
-                                assocDef.getTargetClass().getName().toPrefixString(
-                                this.namespaceService), Direction.TARGET);
-                    String title = assocDef.getTitle();
-                    if (title == null)
-                    {
-                        title = assocName;
-                    }
-                    fieldDef.setLabel(title);
-                    fieldDef.setDescription(assocDef.getDescription());
-                    fieldDef.setProtectedField(assocDef.isProtected());
-                    fieldDef.setEndpointMandatory(assocDef.isTargetMandatory());
-                    fieldDef.setEndpointMany(assocDef.isTargetMany());
-                    fieldDef.setDataKeyName(dataKeyName);
-                    
-                    // add definition to Form and to internal cache
-                    form.addFieldDefinition(fieldDef);
-                    assocFieldDefs.put(assocName, fieldDef);
-                }
-                
-                if (fieldDef.isEndpointMany())
-                {
-                    List<String> targets = null;
-                    
-                    // add the value as a List (or add to the list if the form data
-                    // is already present)
-                    FieldData fieldData = form.getFormData().getData().get(dataKeyName);
-                    if (fieldData == null)
-                    {
-                        targets = new ArrayList<String>(4);
-                        form.addData(dataKeyName, targets);
-                    }
-                    else
-                    {
-                        targets = (List<String>)fieldData.getValue();
-                    }
-                    
-                    // add the assoc value to the list
-                    targets.add(assocValue);
-                }
-                else
-                {
-                    // there should only be one value
-                    form.addData(dataKeyName, assocValue);
-                }
-            }
-        }
-    }
-    
-    /**
-     * Sets up the field definitions for the node's child associations.
-     * 
-     * @param nodeRef The NodeRef of the node being setup
-     * @param form The Form instance to populate
-     */
-    protected void generateAllChildAssociationFields(NodeRef nodeRef, Form form)
-    {
-        List<ChildAssociationRef> childAssocs = this.nodeService.getChildAssocs(nodeRef);
-        if (childAssocs.isEmpty())
-        {
-            return;
-        }
-        // create internal cache of association definitions created
-        Map<String, AssociationFieldDefinition> childAssocFieldDefs = 
-            new HashMap<String, AssociationFieldDefinition>(childAssocs.size());
-        
-        // All child associations are from the same parent node.
-        // However, the type of the child associations may not all be the same.
-        // This Map will have assocNames (e.g. sys:children) as a key and will
-        // have a List of child noderefs as values.
-        // So there will be one list for each of the child association *types*.
-        Map<String, List<ChildAssociationRef>> childrenNodes = new HashMap<String, List<ChildAssociationRef>>();
-        
-        for (ChildAssociationRef childAssoc : childAssocs)
-        {
-            // get the name of the association
-            QName assocTypeName = childAssoc.getTypeQName();
-            String assocName = assocTypeName.toPrefixString(this.namespaceService);
-            String dataKeyName = ASSOC_PREFIX + assocName.replace(":", DATA_KEY_SEPARATOR);
-            
-            // setup the field definition for the association if it hasn't before
-            AssociationFieldDefinition fieldDef = childAssocFieldDefs.get(assocName);
-            if (fieldDef == null)
-            {
-                AssociationDefinition assocDef = this.dictionaryService.getAssociation(assocTypeName);
-                if (assocDef == null || assocDef instanceof ChildAssociationDefinition == false)
-                {
-                    throw new FormException("Failed to find association definition for child association: "
-                            + assocTypeName);
-                }
-                
-                fieldDef = new AssociationFieldDefinition(assocName, 
-                            assocDef.getTargetClass().getName().toPrefixString(
-                            this.namespaceService), Direction.TARGET);
-                String title = assocDef.getTitle();
-                if (title == null)
-                {
-                    title = assocName.toString();
-                }
-                fieldDef.setLabel(title);
-                fieldDef.setDescription(assocDef.getDescription());
-                fieldDef.setProtectedField(assocDef.isProtected());
-                fieldDef.setEndpointMandatory(assocDef.isTargetMandatory());
-                fieldDef.setEndpointMany(assocDef.isTargetMany());
-                fieldDef.setDataKeyName(dataKeyName);
-                
-                // add definition to Form and to internal cache
-                form.addFieldDefinition(fieldDef);
-                childAssocFieldDefs.put(assocName, fieldDef);
-            }
-
-            if (childrenNodes.containsKey(assocName) == false)
-            {
-                childrenNodes.put(assocName, new ArrayList<ChildAssociationRef>());
-            }
-            childrenNodes.get(assocName).add(childAssoc);
-        }
-        for (String associationName : childrenNodes.keySet())
-        {
-            List<ChildAssociationRef> values = childrenNodes.get(associationName);
-            
-            // We don't want the whitespace or enclosing square brackets that come
-            // with java.util.List.toString(), hence the custom String construction.
-            /*StringBuilder assocValue = new StringBuilder();
-            for (Iterator<ChildAssociationRef> iter = values.iterator(); iter.hasNext(); )
-            {
-                ChildAssociationRef nextChild = iter.next();
-                assocValue.append(nextChild.getChildRef().toString());
-                if (iter.hasNext())
-                {
-                    assocValue.append(",");
-                }
-            }
-            form.addData(ASSOC_PREFIX + associationName, assocValue.toString());*/
-            
-            List<String> nodeRefs = new ArrayList<String>(4);
-            for (Iterator<ChildAssociationRef> iter = values.iterator(); iter.hasNext(); )
-            {
-                ChildAssociationRef nextChild = iter.next();
-                nodeRefs.add(nextChild.getChildRef().toString());
-            }
-            form.addData(ASSOC_PREFIX + associationName.replace(":", DATA_KEY_SEPARATOR), nodeRefs);
+            this.generateAssociationField(assocDef, 
+                        retrieveAssociationValues(nodeRef, assocDef), form);
         }
     }
     
@@ -777,36 +704,66 @@ public class NodeHandler extends AbstractHandler
         fieldDef.setEndpointMany(assocDef.isTargetMany());
         
         // define the data key name and set
-        String dataKeyName = ASSOC_PREFIX + nameParts[0] + DATA_KEY_SEPARATOR + nameParts[1];
+        String dataKeyName = ASSOC_DATA_PREFIX + nameParts[0] + DATA_KEY_SEPARATOR + nameParts[1];
         fieldDef.setDataKeyName(dataKeyName);
         
         // add definition to the form
         form.addFieldDefinition(fieldDef);
         
-        // add the association value to the form
-        // determine the type of association values data and extract accordingly
-        List<String> values = new ArrayList<String>(4);
-        for (Object value : assocValues)
+        if (assocValues != null)
         {
-            if (value instanceof ChildAssociationRef)
+            // add the association value to the form
+            // determine the type of association values data and extract accordingly
+            List<String> values = new ArrayList<String>(4);
+            for (Object value : assocValues)
             {
-                values.add(((ChildAssociationRef)value).getChildRef().toString());
+                if (value instanceof ChildAssociationRef)
+                {
+                    values.add(((ChildAssociationRef)value).getChildRef().toString());
+                }
+                else if (value instanceof AssociationRef)
+                {
+                    values.add(((AssociationRef)value).getTargetRef().toString());
+                }
+                else
+                {
+                    values.add(value.toString());
+                }
             }
-            else if (value instanceof AssociationRef)
-            {
-                values.add(((AssociationRef)value).getTargetRef().toString());
-            }
-            else
-            {
-                values.add(value.toString());
-            }
+            
+            // Add the list as the value for the association.
+            // TODO: Do we also return a well known named list of association names
+            //       for each noderef so that clients do not have extra work to do
+            //       to display the current values to the user
+            form.addData(dataKeyName, values);
+        }
+    }
+    
+    /**
+     * Retrieves the values of the given association definition on the given node.
+     * 
+     * @param nodeRef The node to get the association values for
+     * @param assocDef The association definition to look for values for
+     * @return List of values for association or null of the association does
+     *         not exist for the given node.
+     */
+    @SuppressWarnings("unchecked")
+    protected List retrieveAssociationValues(NodeRef nodeRef, AssociationDefinition assocDef)
+    {
+        List assocValues = null;
+        
+        // get the list of values (if any) for the association
+        if (assocDef instanceof ChildAssociationDefinition)
+        {
+            assocValues = this.nodeService.getChildAssocs(nodeRef, assocDef.getName(), 
+                        RegexQNamePattern.MATCH_ALL);
+        }
+        else
+        {
+            assocValues = this.nodeService.getTargetAssocs(nodeRef, assocDef.getName());
         }
         
-        // Add the list as the value for the association.
-        // TODO: Do we also return a well known named list of association names
-        //       for each noderef so that clients do not have extra work to do
-        //       to display the current values to the user
-        form.addData(dataKeyName, values);
+        return assocValues;
     }
     
     /*
@@ -851,11 +808,11 @@ public class NodeHandler extends AbstractHandler
             {
                 String fieldName = fieldData.getName();
                 
-                if (fieldName.startsWith(PROP_PREFIX))
+                if (fieldName.startsWith(PROP_DATA_PREFIX))
                 {
                     processPropertyPersist(nodeRef, propDefs, fieldData, propsToPersist);
                 }
-                else if (fieldName.startsWith(ASSOC_PREFIX))
+                else if (fieldName.startsWith(ASSOC_DATA_PREFIX))
                 {
                     processAssociationPersist(nodeRef, assocDefs, childAssocDefs, fieldData, assocsToPersist);
                 }
@@ -1048,7 +1005,7 @@ public class NodeHandler extends AbstractHandler
             {
                 if (NodeRef.isNodeRef(nextTargetNode))
                 {
-                    if (assocSuffix.equals(ASSOC_ADD_SUFFIX))
+                    if (assocSuffix.equals(ASSOC_DATA_ADDED_SUFFIX))
                     {
                         if (assocDef.isChild())
                         {
@@ -1061,7 +1018,7 @@ public class NodeHandler extends AbstractHandler
                                     fullQNameFromJSON));
                         }
                     }
-                    else if (assocSuffix.equals(ASSOC_REMOVE_SUFFIX))
+                    else if (assocSuffix.equals(ASSOC_DATA_REMOVED_SUFFIX))
                     {
                         if (assocDef.isChild())
                         {
@@ -1082,9 +1039,9 @@ public class NodeHandler extends AbstractHandler
                             msg.append("fieldName ")
                                 .append(fieldName)
                                 .append(" does not have one of the expected suffixes [")
-                                .append(ASSOC_ADD_SUFFIX)
+                                .append(ASSOC_DATA_ADDED_SUFFIX)
                                 .append(", ")
-                                .append(ASSOC_REMOVE_SUFFIX)
+                                .append(ASSOC_DATA_REMOVED_SUFFIX)
                                 .append("] and has been ignored.");
                             logger.warn(msg.toString());
                         }

@@ -30,10 +30,12 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.dictionary.DictionaryBootstrap;
 import org.alfresco.repo.dictionary.DictionaryDAO;
 import org.alfresco.repo.dictionary.M2Model;
 import org.alfresco.repo.node.archive.NodeArchiveService;
@@ -204,16 +206,21 @@ public abstract class BaseVersionStoreTest extends BaseSpringTest
         
         TestWithUserUtils.authenticateUser(AuthenticationUtil.getAdminUserName(), PWD, this.rootNodeRef, this.authenticationService);
     }
-	
-	/**
-	 * Creates the test model used by the tests
-	 */
-	private void createTestModel()
-	{
-        InputStream is = getClass().getClassLoader().getResourceAsStream("org/alfresco/repo/version/VersionStoreBaseTest_model.xml");
-        M2Model model = M2Model.createModel(is);
-        dictionaryDAO.putModel(model);
-	}
+    
+    /**
+     * Creates the test model used by the tests
+     */
+    private void createTestModel()
+    {
+        // register the test model
+        List<String> bootstrapModels = new ArrayList<String>();
+        bootstrapModels.add("org/alfresco/repo/version/VersionStoreBaseTest_model.xml");
+        
+        DictionaryBootstrap bootstrap = new DictionaryBootstrap();
+        bootstrap.setModels(bootstrapModels);
+        bootstrap.setDictionaryDAO(dictionaryDAO);
+        bootstrap.bootstrap();
+    }
     
     /**
      * Creates a new versionable node

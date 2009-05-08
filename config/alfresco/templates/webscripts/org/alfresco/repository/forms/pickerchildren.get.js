@@ -1,10 +1,20 @@
 function main()
 {
    var argsFilterType = args['filterType'],
+      argsSelectableType = args['selectableType']
       parent = null,
       rootNode = companyhome,
-      results = [];
-
+      results = [],
+      categoryResults = null,
+      resultObj = null;
+   
+   if (logger.isLoggingEnabled())
+   {
+      logger.log("children type = " + url.templateArgs.type);
+      logger.log("argsSelectableType = " + argsSelectableType);
+      logger.log("argsFilterType = " + argsFilterType);
+   }
+         
    try
    {
       if (url.templateArgs.type == "node")
@@ -39,6 +49,9 @@ function main()
             query += " +TYPE:\"" + argsFilterType + "\"";
          }
          
+         if (logger.isLoggingEnabled())
+            logger.log("query = " + query);
+         
          var searchResults = search.luceneSearch(query, "@{http://www.alfresco.org/model/content/1.0}name", true);
 
          // Ensure folders and folderlinks appear at the top of the list
@@ -48,11 +61,21 @@ function main()
          {
             if (result.isContainer || result.type == "{http://www.alfresco.org/model/application/1.0}folderlink")
             {
-               containerResults.push(result);
+               // wrap result and determine if it is selectable in the UI
+               resultObj = {};
+               resultObj.item = result;
+               resultObj.selectable = isItemSelectable(result, argsSelectableType);
+               
+               containerResults.push(resultObj);
             }
             else
             {
-               contentResults.push(result);
+               // wrap result and determine if it is selectable in the UI
+               resultObj = {};
+               resultObj.item = result;
+               resultObj.selectable = isItemSelectable(result, argsSelectableType);
+               
+               contentResults.push(resultObj);
             }
          }
          results = containerResults.concat(contentResults);
@@ -66,14 +89,27 @@ function main()
          if (nodeRef == "alfresco://category/root")
          {
             parent = rootNode;
-            results = classification.getRootCategories(catAspect);
+            categoryResults = classification.getRootCategories(catAspect);
          }
          else
          {
             parent = search.findNode(nodeRef);
-            results = parent.children;
+            categoryResults = parent.children;
+         }
+         
+         // make each result an object and indicate it is selectable in the UI
+         for each(var result in categoryResults)
+         {
+            resultObj = {};
+            resultObj.item = result;
+            resultObj.selectable = true;
+            
+            results.push(resultObj);
          }
       }
+      
+      if (logger.isLoggingEnabled())
+         logger.log("Found " + results.length + " results");
    }
    catch (e)
    {
@@ -90,6 +126,18 @@ function main()
    model.parent = parent;
    model.rootNode = rootNode;
    model.results = results;
+}
+
+function isItemSelectable(node, selectableType)
+{
+   var selectable = true;
+   
+   if (selectableType !== null && selectableType !== "")
+   {
+      selectable = node.isSubType(selectableType);
+   }
+   
+   return selectable;
 }
 
 main();

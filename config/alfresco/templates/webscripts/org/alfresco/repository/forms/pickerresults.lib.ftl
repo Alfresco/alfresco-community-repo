@@ -25,13 +25,14 @@
       [
       <#list results as row>
          {
-            "type": "${row.typeShort}",
-            "hasChildren": ${(row.children?size > 0)?string},
-            "name": "${row.properties.name!""}",
-            "description": "${row.properties.description!""}",
-            "displayPath": "${row.displayPath!""}",
-            "hasChildren": ${(row.children?size > 0)?string},
-            "nodeRef": "${row.nodeRef}"
+            "type": "${row.item.typeShort}",
+            "hasChildren": ${(row.item.children?size > 0)?string},
+            "name": "${row.item.properties.name!""}",
+            "description": "${row.item.properties.description!""}",
+            "displayPath": "${row.item.displayPath!""}",
+            "hasChildren": ${(row.item.children?size > 0)?string},
+            "nodeRef": "${row.item.nodeRef}"<#if row.selectable?exists>,
+            "selectable" : ${row.selectable?string}</#if>
          }<#if row_has_next>,</#if>
       </#list>
       ]

@@ -14,7 +14,7 @@ function main()
    // convert the JSONArray object into a native JavaScript array
    var jsonItems = json.get("items"),
       numItems = jsonItems.length(),
-      item, result;
+      item, result, resultObj;
    
    for (count = 0; count < numItems; count++)
    {
@@ -24,7 +24,9 @@ function main()
          result = search.findNode(item);
          if (result != null)
          {
-            results.push(result);
+            resultObj = {};
+            resultObj.item = result;
+            results.push(resultObj);
          }
       }
    }

@@ -81,20 +81,20 @@ input.button {
    padding: 4px 10px 0px 4px;
    list-style: none;
 }
-.tabBar li {
+.tabBar ul li {
    display: inline;
    margin: 0px;
    padding: 0px;
    height: 18px;
 }
-.tabBar a {
+.tabBar ul a {
    background: url("../images/office/tab_left.gif") no-repeat left top;
    float:left;
    margin: 0px;
    padding: 0px 0px 0px 4px;
    text-decoration: none;
 }
-.tabBar a span {
+.tabBar ul span {
    background: url("../images/office/tab_right.gif") no-repeat right top;
    color: #666;
    display: block;
@@ -102,21 +102,27 @@ input.button {
    padding: 5px 15px 4px 6px;
 }
 
-.tabBar a:hover span {
+.tabBar ul a:hover span {
    color: #FFF;
 }
-.tabBar a:hover {
+.tabBar ul a:hover {
    background-position: 0% -42px;
 }
-.tabBar a:hover span {
+.tabBar ul a:hover span {
    background-position: 100% -42px;
 }
 
-.tabBar #current a {
+.tabBar ul #current a {
    background-position: 0% -42px;
 }
-.tabBar #current a span {
+.tabBar ul #current a span {
    background-position: 100% -42px;
+}
+
+.tabBar .help {
+   left: 20px;
+   position: relative;
+   top: 4px;
 }
 
 .tabBarInline {

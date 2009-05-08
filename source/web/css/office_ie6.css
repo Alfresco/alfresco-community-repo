@@ -4,6 +4,10 @@
    height: 16px;
 }
 
+.tabBar .help {
+   left: 14px;
+}
+
 .toggle {
    margin-top: 0px;
    position: relative;

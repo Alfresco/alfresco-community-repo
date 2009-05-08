@@ -68,8 +68,11 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
     private static final String USER_ONE = "UserOne_SiteServiceImplTest";
     private static final String USER_TWO = "UserTwo_SiteServiceImplTest";
     private static final String USER_THREE = "UserThree_SiteServiceImplTest";
+    private static final String USER_FOUR = "UserFour_SiteServiceImplTest";
     private static final String GROUP_ONE = "GrpOne_SiteServiceImplTest";
     private static final String GROUP_TWO = "GrpTwo_SiteServiceImplTest";
+    private static final String GROUP_THREE = "GrpThree_SiteServiceImplTest";
+    private static final String GROUP_FOUR = "GrpFour_SiteServiceImplTest";
     
     private SiteService siteService;    
     private ScriptService scriptService;
@@ -82,6 +85,8 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
 
     private String groupOne;
     private String groupTwo;
+    private String groupThree;
+    private String groupFour;
     
     /**
      * Called during the transaction setup
@@ -104,14 +109,24 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
         createUser(USER_ONE);
         createUser(USER_TWO);
         createUser(USER_THREE);
+        createUser(USER_FOUR);
      
         // Create the test groups
         this.groupOne = this.authorityService.createAuthority(AuthorityType.GROUP, null, GROUP_ONE);
         this.authorityService.addAuthority(this.groupOne, USER_TWO);
+        
         this.groupTwo = this.authorityService.createAuthority(AuthorityType.GROUP, null, GROUP_TWO);
         this.authorityService.addAuthority(this.groupTwo, USER_TWO);
         this.authorityService.addAuthority(this.groupTwo, USER_THREE);
+        
+        this.groupThree = this.authorityService.createAuthority(AuthorityType.GROUP, null, GROUP_THREE);
+        this.authorityService.addAuthority(this.groupThree, USER_TWO);
+        this.authorityService.addAuthority(this.groupThree, USER_THREE);
+        
+        this.groupFour = this.authorityService.createAuthority(AuthorityType.GROUP, this.groupThree, GROUP_FOUR);
+        this.authorityService.addAuthority(this.groupFour, USER_FOUR);
 
+        
         // Set the current authentication
         this.authenticationComponent.setCurrentUser(USER_ONE);
     }
@@ -683,106 +698,141 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
         assertEquals("information", siteInfo.getCustomProperties().get(additionalInformationQName));
         
     }
+   
+    public void testGroupMembership()
+    {
+        // USER_ONE - SiteAdmin
+        // GROUP_ONE - USER_TWO
+        // GROUP_TWO - USER_TWO, USER_THREE
+        
+        // Create a site as user one
+        this.siteService.createSite(TEST_SITE_PRESET, "testMembership", TEST_TITLE, TEST_DESCRIPTION, SiteVisibility.PRIVATE);
 
-// TODO MER Temp remove this test - failing.    
-//    public void testGroupMembership()
-//    {
-//        // USER_ONE - SiteAdmin
-//        // GROUP_ONE - USER_TWO
-//        // GROUP_TWO - USER_TWO, USER_THREE
-//        
-//        // Create a site as user one
-//        this.siteService.createSite(TEST_SITE_PRESET, "testMembership", TEST_TITLE, TEST_DESCRIPTION, SiteVisibility.PRIVATE);
-//
-//        // Get the members of the site and check that user one is a manager
-//        Map<String, String> members = this.siteService.listMembers("testMembership", null, null, 0);
-//        assertNotNull(members);
-//        assertEquals(1, members.size());
-//        assertTrue(members.containsKey(USER_ONE));
-//        assertEquals(SiteModel.SITE_MANAGER, members.get(USER_ONE));
-//
-//        // Add a group
-//        this.siteService.setMembership("testMembership", this.groupTwo, SiteModel.SITE_CONSUMER);        
-//        //   - is the group in the list of all members?
-//        members = this.siteService.listMembers("testMembership", null, null, 0);
-//        assertNotNull(members);
-//        assertEquals(2, members.size());
-//        assertTrue(members.containsKey(USER_ONE));
-//        assertEquals(SiteModel.SITE_MANAGER, members.get(USER_ONE));
-//        assertTrue(members.containsKey(this.groupTwo));
-//        assertEquals(SiteModel.SITE_CONSUMER, members.get(this.groupTwo));        
-//        //   - is the user in the expanded list?      
-//        members = this.siteService.listMembers("testMembership", null, null, 0, true);
-//        assertNotNull(members);
-//        assertEquals(3, members.size());
-//        assertTrue(members.containsKey(USER_ONE));
-//        assertEquals(SiteModel.SITE_MANAGER, members.get(USER_ONE));
-//        assertTrue(members.containsKey(USER_TWO));
-//        assertEquals(SiteModel.SITE_CONSUMER, members.get(USER_TWO));
-//        assertTrue(members.containsKey(USER_THREE));
-//        assertEquals(SiteModel.SITE_CONSUMER, members.get(USER_THREE));
-//        //   - is the user a member?
-//        assertTrue(this.siteService.isMember("testMembership", USER_ONE));
-//        assertTrue(this.siteService.isMember("testMembership", USER_TWO));
-//        assertTrue(this.siteService.isMember("testMembership", USER_THREE));
-//        //   - is the group a member?
-//        assertTrue(this.siteService.isMember("testMembership", this.groupTwo));
-//        //   - can we get the roles for the various members directly
-//        assertEquals(SiteModel.SITE_MANAGER, this.siteService.getMembersRole("testMembership", USER_ONE));
-//        assertEquals(SiteModel.SITE_CONSUMER, this.siteService.getMembersRole("testMembership", USER_TWO));
-//        assertEquals(SiteModel.SITE_CONSUMER, this.siteService.getMembersRole("testMembership", USER_THREE));
-//        assertEquals(SiteModel.SITE_CONSUMER, this.siteService.getMembersRole("testMembership", this.groupTwo));
-//        
-//        // Add a group member as an explicit member
-//        this.siteService.setMembership("testMembership", USER_THREE, SiteModel.SITE_COLLABORATOR);
-//        //   - check the explicit members list
-//        members = this.siteService.listMembers("testMembership", null, null, 0);
-//        assertNotNull(members);
-//        assertEquals(3, members.size());
-//        assertTrue(members.containsKey(USER_ONE));
-//        assertEquals(SiteModel.SITE_MANAGER, members.get(USER_ONE));
-//        assertTrue(members.containsKey(USER_THREE));
-//        assertEquals(SiteModel.SITE_COLLABORATOR, members.get(USER_THREE));
-//        assertTrue(members.containsKey(this.groupTwo));
-//        assertEquals(SiteModel.SITE_CONSUMER, members.get(this.groupTwo));        
-//        //   - check the expanded members list      
-//        members = this.siteService.listMembers("testMembership", null, null, 0, true);
-//        assertNotNull(members);
-//        assertEquals(3, members.size());
-//        assertTrue(members.containsKey(USER_ONE));
-//        assertEquals(SiteModel.SITE_MANAGER, members.get(USER_ONE));
-//        assertTrue(members.containsKey(USER_TWO));
-//        assertEquals(SiteModel.SITE_CONSUMER, members.get(USER_TWO));
-//        assertTrue(members.containsKey(USER_THREE));
-//        assertEquals(SiteModel.SITE_COLLABORATOR, members.get(USER_THREE));
-//        //   - check is member
-//        assertTrue(this.siteService.isMember("testMembership", USER_ONE));
-//        assertTrue(this.siteService.isMember("testMembership", USER_TWO));
-//        assertTrue(this.siteService.isMember("testMembership", USER_THREE));
-//        //   - is the group a member?
-//        assertTrue(this.siteService.isMember("testMembership", this.groupTwo));
-//        //   - check get role directly
-//        assertEquals(SiteModel.SITE_MANAGER, this.siteService.getMembersRole("testMembership", USER_ONE));
-//        assertEquals(SiteModel.SITE_CONSUMER, this.siteService.getMembersRole("testMembership", USER_TWO));
-//        assertEquals(SiteModel.SITE_COLLABORATOR, this.siteService.getMembersRole("testMembership", USER_THREE));
-//        assertEquals(SiteModel.SITE_CONSUMER, this.siteService.getMembersRole("testMembership", this.groupTwo));
-//                
-//        // Check permissions of added group
-//        
-//        // Update the permissions of the group
-//
-//        // Add other group with higher role
-//        //  - is group in list?
-//        //  - is new user a member?
-//        //  - does redefined user have highest role?
-//
-//        // Add group user as a specific user with higher role
-//        //  - check that the user's role is higher that the group?
-//
-//        // Add a group with a sub-group
-//
-//        // Remove groups
-//    }
+        // Get the members of the site and check that user one is a manager
+        Map<String, String> members = this.siteService.listMembers("testMembership", null, null, 0);
+        assertNotNull(members);
+        assertEquals(1, members.size());
+        assertTrue(members.containsKey(USER_ONE));
+        assertEquals(SiteModel.SITE_MANAGER, members.get(USER_ONE));
+        
+        /**
+         * Test of isMember - ONE is member, TWO and THREE are not
+         */
+        assertTrue(this.siteService.isMember("testMembership", USER_ONE));
+        assertTrue(!this.siteService.isMember("testMembership", USER_TWO));
+        assertTrue(!this.siteService.isMember("testMembership", USER_THREE));
+
+        /**
+         *  Add a group (GROUP_TWO) with role consumer
+         */
+        this.siteService.setMembership("testMembership", this.groupTwo, SiteModel.SITE_CONSUMER);        
+        //   - is the group in the list of all members?
+        members = this.siteService.listMembers("testMembership", null, null, 0);
+        
+        assertNotNull(members);
+        assertEquals(2, members.size());
+        assertTrue(members.containsKey(USER_ONE));
+        assertEquals(SiteModel.SITE_MANAGER, members.get(USER_ONE));
+        assertTrue(members.containsKey(this.groupTwo));
+        assertEquals(SiteModel.SITE_CONSUMER, members.get(this.groupTwo));
+        
+        //   - is the user in the expanded list?      
+        members = this.siteService.listMembers("testMembership", null, null, 0, true);
+        assertNotNull(members);
+        assertEquals(3, members.size());
+        assertTrue(members.containsKey(USER_ONE));
+        assertEquals(SiteModel.SITE_MANAGER, members.get(USER_ONE));
+        assertTrue(members.containsKey(USER_TWO));
+        assertEquals(SiteModel.SITE_CONSUMER, members.get(USER_TWO));
+        assertTrue(members.containsKey(USER_THREE));
+        assertEquals(SiteModel.SITE_CONSUMER, members.get(USER_THREE));
+        
+        //   - is the user a member?
+        assertTrue(this.siteService.isMember("testMembership", USER_ONE));
+        assertTrue(this.siteService.isMember("testMembership", USER_TWO));
+        assertTrue(this.siteService.isMember("testMembership", USER_THREE));
+        
+        //   - is the group a member?
+        assertTrue(this.siteService.isMember("testMembership", this.groupTwo));
+        
+        //   - can we get the roles for the various members directly
+        assertEquals(SiteModel.SITE_MANAGER, this.siteService.getMembersRole("testMembership", USER_ONE));
+        assertEquals(SiteModel.SITE_CONSUMER, this.siteService.getMembersRole("testMembership", USER_TWO));
+        assertEquals(SiteModel.SITE_CONSUMER, this.siteService.getMembersRole("testMembership", USER_THREE));
+        assertEquals(SiteModel.SITE_CONSUMER, this.siteService.getMembersRole("testMembership", this.groupTwo));
+        
+        /**
+         *  Add a group member (USER_THREE) as an explicit member
+         */
+        this.siteService.setMembership("testMembership", USER_THREE, SiteModel.SITE_COLLABORATOR);
+        //   - check the explicit members list
+        members = this.siteService.listMembers("testMembership", null, null, 0);
+        assertNotNull(members);
+        assertEquals(3, members.size());
+        assertTrue(members.containsKey(USER_ONE));
+        assertEquals(SiteModel.SITE_MANAGER, members.get(USER_ONE));
+        assertTrue(members.containsKey(USER_THREE));
+        assertEquals(SiteModel.SITE_COLLABORATOR, members.get(USER_THREE));
+        assertTrue(members.containsKey(this.groupTwo));
+        assertEquals(SiteModel.SITE_CONSUMER, members.get(this.groupTwo));        
+        //   - check the expanded members list      
+        members = this.siteService.listMembers("testMembership", null, null, 0, true);
+        assertNotNull(members);
+        assertEquals(3, members.size());
+        assertTrue(members.containsKey(USER_ONE));
+        assertEquals(SiteModel.SITE_MANAGER, members.get(USER_ONE));
+        assertTrue(members.containsKey(USER_TWO));
+        assertEquals(SiteModel.SITE_CONSUMER, members.get(USER_TWO));
+        assertTrue(members.containsKey(USER_THREE));
+        assertEquals(SiteModel.SITE_COLLABORATOR, members.get(USER_THREE));
+        
+        //   - check is member
+        assertTrue(this.siteService.isMember("testMembership", USER_ONE));
+        assertTrue(this.siteService.isMember("testMembership", USER_TWO));
+        assertTrue(this.siteService.isMember("testMembership", USER_THREE));
+        assertTrue(!this.siteService.isMember("testMembership", USER_FOUR));
+        
+        //   - is the group a member?
+        assertTrue(this.siteService.isMember("testMembership", this.groupTwo));
+        //   - check get role directly
+        assertEquals(SiteModel.SITE_MANAGER, this.siteService.getMembersRole("testMembership", USER_ONE));
+        assertEquals(SiteModel.SITE_CONSUMER, this.siteService.getMembersRole("testMembership", USER_TWO));
+        assertEquals(SiteModel.SITE_COLLABORATOR, this.siteService.getMembersRole("testMembership", USER_THREE));
+        assertEquals(SiteModel.SITE_CONSUMER, this.siteService.getMembersRole("testMembership", this.groupTwo));
+                
+        // Check permissions of added group
+        
+        // Update the permissions of the group
+        this.siteService.setMembership("testMembership", USER_THREE, SiteModel.SITE_CONTRIBUTOR);
+
+        /**
+         *  Add other group (GROUP_3) with higher (MANAGER) role
+         *
+         *  - is group in list?
+         *  - is new user a member?
+         *  - does redefined user have highest role?
+         *  USER_TWO should be Manager from group 3 having higher priority than group 2
+         *  USER_THREE should still be Contributor from explicit membership.
+         *  USER_FOUR should be Manager - from group 4 sub-group
+         */
+        this.siteService.setMembership("testMembership", this.groupThree, SiteModel.SITE_MANAGER);
+        
+        assertTrue(this.siteService.isMember("testMembership", USER_ONE));
+        assertTrue(this.siteService.isMember("testMembership", USER_TWO));
+        assertTrue(this.siteService.isMember("testMembership", USER_THREE));
+        assertTrue(this.siteService.isMember("testMembership", USER_FOUR));
+        
+        assertEquals(SiteModel.SITE_MANAGER, this.siteService.getMembersRole("testMembership", USER_ONE));
+        assertEquals(SiteModel.SITE_MANAGER, this.siteService.getMembersRole("testMembership", USER_TWO));
+        assertEquals(SiteModel.SITE_CONTRIBUTOR, this.siteService.getMembersRole("testMembership", USER_THREE));
+        assertEquals(SiteModel.SITE_MANAGER, this.siteService.getMembersRole("testMembership", this.groupThree));
+                
+        // From sub group four
+        assertEquals(SiteModel.SITE_MANAGER, this.siteService.getMembersRole("testMembership", USER_FOUR));
+
+
+        // Remove groups
+    }
     
     /**
      * Tests the visibility of a site

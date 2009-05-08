@@ -59,6 +59,18 @@
        </property>
     </bean>
     
+    <!--  Site role precedence - higher number - more important role -->    
+    <bean id="siteRoleComparator" class="org.alfresco.repo.site.RoleComparatorImpl" init-method="init">
+       <property name="rolePrecedence">
+       		<map>
+       			<entry key="SiteManager" value="4" />
+       			<entry key="SiteCollaborator" value="3" />
+       			<entry key="SiteContributor" value="2" />
+       			<entry key="SiteConsumer" value="1" />
+       		</map>
+       </property>
+    </bean>
+    
     <bean id="siteService" class="org.alfresco.repo.site.SiteServiceImpl" init-method="init">
        <property name="nodeService" ref="NodeService"/>
        <property name="fileFolderService" ref="FileFolderService"/>
@@ -77,6 +89,9 @@
            <value>./${spaces.company_home.childname}/st:sites</value>
        </property>
        <property name="tenantService" ref="tenantService"/>
+       <property name="roleComparator" ref="siteRoleComparator" />
+
+       
     </bean>
     
     <bean id="siteServiceScript" parent="baseJavaScriptExtension" class="org.alfresco.repo.site.script.ScriptSiteService">

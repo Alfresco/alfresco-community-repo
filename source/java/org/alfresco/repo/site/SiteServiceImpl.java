@@ -26,12 +26,15 @@ package org.alfresco.repo.site;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedSet;
 import java.util.StringTokenizer;
+import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.alfresco.model.ContentModel;
@@ -133,6 +136,7 @@ public class SiteServiceImpl implements SiteService, SiteModel
     private TenantService tenantService;
     private TenantAdminService tenantAdminService;
     private RetryingTransactionHelper retryingTransactionHelper;
+    private Comparator<String> roleComparator ;
 
 
     /**
@@ -1026,6 +1030,11 @@ public class SiteServiceImpl implements SiteService, SiteModel
                                 members.put(group, permission);
                             }
                         }
+                        else
+                        {
+                        	// No name filter add this group
+                        	members.put(group, permission);
+                        }
                     }
                     else
                     {
@@ -1102,11 +1111,26 @@ public class SiteServiceImpl implements SiteService, SiteModel
         List<String> roles = getMembersRoles(shortName, authorityName);
         if (roles.isEmpty() == false)
         {
-            result = roles.get(0);
+        	if(roleComparator != null)
+        	{
+        		// Need to sort the roles into the most important first.
+        		SortedSet<String> sortedRoles = new TreeSet<String>(roleComparator);
+        		for (String role : roles)
+        		{
+        			sortedRoles.add(role);
+        		}
+        		result = sortedRoles.first();
+        	}
+        	else
+        	{
+        		// don't search on precedence
+        		result = roles.get(0);
+        	}
+        	
         }
         return result;
     }
-    
+        
     public List<String> getMembersRoles(String shortName, String authorityName)
     {
         List<String> result = new ArrayList<String>(5);
@@ -1126,6 +1150,8 @@ public class SiteServiceImpl implements SiteService, SiteModel
      * Helper method to get the permission groups for a given authority on a site.
      * Returns empty List if the user does not have a explicit membership to the site.
      * 
+     * A user permission will take precedence over a permission obtained via a group.
+     * 
      * @param siteShortName     site short name
      * @param authorityName     authority name
      * @return List<String>     Permission groups, empty list if no explicit membership set
@@ -1134,6 +1160,24 @@ public class SiteServiceImpl implements SiteService, SiteModel
     {
         List<String> result = new ArrayList<String>(5);
         Set<String> roles = this.permissionService.getSettablePermissions(SiteModel.TYPE_SITE);  
+        
+        for (String role : roles)
+        {
+            String roleGroup = getSiteRoleGroup(siteShortName, role, true);
+            Set<String> authorities = this.authorityService.getContainedAuthorities(AuthorityType.USER, roleGroup, true);
+            if (authorities.contains(authorityName) == true)
+            {
+                result.add(roleGroup);
+            }
+        }
+        
+        // If there are user permissions then they take priority
+        if(result.size() > 0)
+        {
+        	return result;
+        }
+        
+        // Now do a deep search through all users and groups
         for (String role : roles)
         {
             String roleGroup = getSiteRoleGroup(siteShortName, role, true);
@@ -1549,4 +1593,13 @@ public class SiteServiceImpl implements SiteService, SiteModel
             return "";
         }
     }
+    
+    public void setRoleComparator(Comparator<String> roleComparator) {
+		this.roleComparator = roleComparator;
+	}
+
+	public Comparator<String> getRoleComparator() {
+		return roleComparator;
+	}
+
 }

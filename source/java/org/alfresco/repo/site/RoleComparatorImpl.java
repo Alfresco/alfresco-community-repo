@@ -40,7 +40,6 @@ import java.util.Map;
     		this.setRolePrecedence(rolePrecedence);
     }
 
-	@Override
 	public int compare(String first, String second) 
 	{	
 		int firstRank = getRolePrecedence().get(first);

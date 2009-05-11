@@ -2204,7 +2204,7 @@ public class JBPMEngine extends BPMEngine
                     if (key.equals(WorkflowModel.ASSOC_POOLED_ACTORS))
                     {
                         String[] pooledActors = null;
-                        if (value instanceof JBPMNodeList[])
+                        if (value instanceof JBPMNodeList)
                         {
                             JBPMNodeList actors = (JBPMNodeList)value;
                             pooledActors = new String[actors.size()];

@@ -418,17 +418,6 @@
    <!--                         -->
    
    <!--                                                                                                       -->
-   <!-- person.put Web Script - updates a person with the given person properties                             -->
-   <!--                                                                                                       -->
-   
-   <bean id="webscript.org.alfresco.repository.person.person.put"
-         class="org.alfresco.repo.web.scripts.person.PersonPut"
-         parent="webscript">
-      <property name="serviceRegistry" ref="ServiceRegistry"/>
-      <property name="authenticationComponent" ref="AuthenticationComponent"/>
-   </bean>
-   
-   <!--                                                                                                       -->
    <!-- changepassword.post Web Script - updates a user password                                              -->
    <!--                                                                                                       -->
    

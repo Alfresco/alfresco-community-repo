@@ -24,9 +24,10 @@ function main()
          result = search.findNode(item);
          if (result != null)
          {
-            resultObj = {};
-            resultObj.item = result;
-            results.push(resultObj);
+            results.push(
+            {
+               item: result
+            });
          }
       }
    }

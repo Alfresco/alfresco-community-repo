@@ -62,8 +62,10 @@ function main()
             if (result.isContainer || result.type == "{http://www.alfresco.org/model/application/1.0}folderlink")
             {
                // wrap result and determine if it is selectable in the UI
-               resultObj = {};
-               resultObj.item = result;
+               resultObj = 
+               { 
+                  item: result
+               };
                resultObj.selectable = isItemSelectable(result, argsSelectableType);
                
                containerResults.push(resultObj);
@@ -71,8 +73,10 @@ function main()
             else
             {
                // wrap result and determine if it is selectable in the UI
-               resultObj = {};
-               resultObj.item = result;
+               resultObj = 
+               { 
+                  item: result
+               };
                resultObj.selectable = isItemSelectable(result, argsSelectableType);
                
                contentResults.push(resultObj);
@@ -100,11 +104,11 @@ function main()
          // make each result an object and indicate it is selectable in the UI
          for each(var result in categoryResults)
          {
-            resultObj = {};
-            resultObj.item = result;
-            resultObj.selectable = true;
-            
-            results.push(resultObj);
+            results.push(
+            { 
+               item: result, 
+               selectable: true 
+            });
          }
       }
       

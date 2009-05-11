@@ -22,7 +22,7 @@ function getTreenode(siteId, path)
       // Look for folders in the parentNode
       for each(item in parsedArgs.parentNode.children)
       {
-         if (item.type == "{http://www.alfresco.org/model/content/1.0}folder")
+         if (item.isSubType("cm:folder"))
          {
             items.push(item);
          }

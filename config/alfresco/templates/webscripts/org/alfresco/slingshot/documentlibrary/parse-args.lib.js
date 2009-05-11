@@ -1,150 +1,4 @@
 /**
- * Get and parse arguments
- *
- * @method getParsedArgs
- * @return {array|null} Array containing the validated input parameters
- */
-function getParsedArgs()
-{
-   var rootNode = null;
-   var parentNode = null;
-
-   if (url.templateArgs.store_type !== null)
-   {
-      // nodeRef input
-      var storeType = url.templateArgs.store_type;
-      var storeId = url.templateArgs.store_id;
-      var id = url.templateArgs.id;
-      var nodeRef = storeType + "://" + storeId + "/" + id;
-      
-      if (nodeRef == "alfresco://company/home")
-      {
-         rootNode = companyhome;
-      }
-      else if (nodeRef == "alfresco://user/home")
-      {
-         rootNode = userhome;
-      }
-      else if (nodeRef == "alfresco://sites/home")
-      {
-         rootNode = companyhome.childrenByXPath("st:sites")[0];
-      }
-      else
-      {
-         rootNode = search.findNode(nodeRef);
-         if (rootNode === null)
-         {
-            status.setCode(status.STATUS_NOT_FOUND, "Not a valid nodeRef: '" + nodeRef + "'");
-            return null;
-         }
-      }
-   }
-   else
-   {
-      // site, component container, path input
-      var siteId = url.templateArgs.site;
-      var containerId = url.templateArgs.container;
-
-      var siteNode = siteService.getSite(siteId);
-      if (siteNode === null)
-      {
-         status.setCode(status.STATUS_NOT_FOUND, "Site not found: '" + siteId + "'");
-         return null;
-      }
-
-      rootNode = siteNode.getContainer(containerId);
-      if (rootNode === null)
-      {
-          rootNode = siteNode.createContainer(containerId);
-          if (rootNode === null)
-          {
-            status.setCode(status.STATUS_NOT_FOUND, "Document Library container '" + containerId + "' not found in '" + siteId + "'. (No permission?)");
-            return null;
-         }
-
-         /**
-          * MOB-593: Add email alias on documentLibrary container creation
-          *
-         rootNode.addAspect("emailserver:aliasable");
-         var emailAlias = siteId;
-         if (containerId != "documentLibrary")
-         {
-            emailAlias += "-" + containerId;
-         }
-         rootNode.properties["emailserver:alias"] = emailAlias;
-         rootNode.save();
-         */
-      }
-   }
-
-   // path input
-   var path = url.templateArgs.path;
-   if ((path !== null) && (path != ""))
-   {
-      parentNode = rootNode.childByNamePath(path);
-   }
-   else
-   {
-      parentNode = rootNode;
-      path = "";
-   }
-   if (parentNode === null)
-   {
-      parentNode = rootNode;
-   }
-
-   // Resolve site, container and path for parentNode
-   var location =
-   {
-      site: null,
-      container: null,
-      path: "/" + path
-   };
-
-   var siteId, siteNode, containerId,
-      qnamePaths = search.ISO9075Decode(parentNode.qnamePath).split("/");
-      displayPaths = parentNode.displayPath.split("/");
-   
-   if (parentNode.isContainer)
-   {
-      displayPaths = displayPaths.concat([parentNode.name]);
-   }
-      
-   if ((qnamePaths.length > 4) && (qnamePaths[2] == "st:sites"))
-   {
-      siteId = displayPaths[3];
-      siteNode = siteService.getSite(siteId);
-      containerId = qnamePaths[4].substr(3);
-      
-      location = 
-      {
-         site: siteId,
-         siteNode: siteNode,
-         container: containerId,
-         containerNode: siteNode.getContainer(containerId),
-         path: "/" + displayPaths.slice(5, displayPaths.length).join("/")
-      }
-   }
-
-   var objRet =
-   {
-      rootNode: rootNode,
-      parentNode: parentNode,
-      path: path,
-      location: location
-   }
-
-   // Multiple input files in the JSON body?
-   var files = getMultipleInputValues("nodeRefs");
-   if (typeof files != "string")
-   {
-      objRet.files = files;
-   }
-
-   return objRet;
-}
-
-/**
  * Get multiple input files
  *
  * @method getMultipleInputValues
@@ -179,4 +33,157 @@ function getMultipleInputValues(param)
    
    // Return the values array, or the error string if it was set
    return (error !== null ? error : values);
+}
+
+/**
+ * Get and parse arguments
+ *
+ * @method getParsedArgs
+ * @return {array|null} Array containing the validated input parameters
+ */
+function getParsedArgs(containerType)
+{
+   var rootNode = null,
+      parentNode = null,
+      siteId, siteNode, containerId;
+
+   if (url.templateArgs.store_type !== null)
+   {
+      // nodeRef input
+      var storeType = url.templateArgs.store_type,
+         storeId = url.templateArgs.store_id,
+         id = url.templateArgs.id,
+         nodeRef = storeType + "://" + storeId + "/" + id;
+      
+      if (nodeRef == "alfresco://company/home")
+      {
+         rootNode = companyhome;
+      }
+      else if (nodeRef == "alfresco://user/home")
+      {
+         rootNode = userhome;
+      }
+      else if (nodeRef == "alfresco://sites/home")
+      {
+         rootNode = companyhome.childrenByXPath("st:sites")[0];
+      }
+      else
+      {
+         rootNode = search.findNode(nodeRef);
+         if (rootNode === null)
+         {
+            status.setCode(status.STATUS_NOT_FOUND, "Not a valid nodeRef: '" + nodeRef + "'");
+            return null;
+         }
+      }
+   }
+   else
+   {
+      // site, component container input
+      siteId = url.templateArgs.site;
+      containerId = url.templateArgs.container;
+
+      siteNode = siteService.getSite(siteId);
+      if (siteNode === null)
+      {
+         status.setCode(status.STATUS_NOT_FOUND, "Site not found: '" + siteId + "'");
+         return null;
+      }
+
+      rootNode = siteNode.getContainer(containerId);
+      if (rootNode === null)
+      {
+         if (containerType !== undefined)
+         {
+            rootNode = siteNode.createContainer(containerId, containerType);
+         }
+         else
+         {
+            rootNode = siteNode.createContainer(containerId);
+         }
+         if (rootNode === null)
+         {
+            status.setCode(status.STATUS_NOT_FOUND, "Document Library container '" + containerId + "' not found in '" + siteId + "'. (No permission?)");
+            return null;
+         }
+
+         /**
+          * MOB-593: Add email alias on documentLibrary container creation
+          *
+         rootNode.addAspect("emailserver:aliasable");
+         var emailAlias = siteId;
+         if (containerId != "documentLibrary")
+         {
+            emailAlias += "-" + containerId;
+         }
+         rootNode.properties["emailserver:alias"] = emailAlias;
+         rootNode.save();
+         */
+      }
+   }
+
+   // path input
+   var path = url.templateArgs.path;
+   if ((path !== null) && (path !== ""))
+   {
+      parentNode = rootNode.childByNamePath(path);
+   }
+   else
+   {
+      parentNode = rootNode;
+      path = "";
+   }
+   if (parentNode === null)
+   {
+      parentNode = rootNode;
+   }
+
+   // Resolve site, container and path for parentNode
+   var location =
+   {
+      site: null,
+      container: null,
+      path: "/" + path
+   };
+
+   var qnamePaths = search.ISO9075Decode(parentNode.qnamePath).split("/"),
+      displayPaths = parentNode.displayPath.split("/");
+   
+   if (parentNode.isContainer)
+   {
+      displayPaths = displayPaths.concat([parentNode.name]);
+   }
+      
+   if ((qnamePaths.length > 4) && (qnamePaths[2] == "st:sites"))
+   {
+      siteId = displayPaths[3];
+      siteNode = siteService.getSite(siteId);
+      containerId = qnamePaths[4].substr(3);
+      
+      location = 
+      {
+         site: siteId,
+         siteNode: siteNode,
+         container: containerId,
+         containerNode: siteNode.getContainer(containerId),
+         path: "/" + displayPaths.slice(5, displayPaths.length).join("/")
+      };
+   }
+
+   var objRet =
+   {
+      rootNode: rootNode,
+      parentNode: parentNode,
+      path: path,
+      location: location
+   };
+
+   // Multiple input files in the JSON body?
+   var files = getMultipleInputValues("nodeRefs");
+   if (typeof files != "string")
+   {
+      objRet.files = files;
+   }
+
+   return objRet;
 }

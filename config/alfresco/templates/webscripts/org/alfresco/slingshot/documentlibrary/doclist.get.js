@@ -1,7 +1,6 @@
 <import resource="classpath:/alfresco/templates/webscripts/org/alfresco/slingshot/documentlibrary/action-sets.lib.js">
 <import resource="classpath:/alfresco/templates/webscripts/org/alfresco/slingshot/documentlibrary/filters.lib.js">
 <import resource="classpath:/alfresco/templates/webscripts/org/alfresco/slingshot/documentlibrary/parse-args.lib.js">
-// This line #: 27 (action-sets) + 111 (filters) + 111 (parse-args) = 249
 var THUMBNAIL_NAME = "doclib";
 
 /**

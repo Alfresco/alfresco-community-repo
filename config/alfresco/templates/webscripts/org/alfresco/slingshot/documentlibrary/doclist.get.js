@@ -58,13 +58,20 @@ function getDocList(filter)
    documentAssets = new Array();
    for each(asset in allAssets)
    {
-      if (asset.isContainer || asset.type == "{http://www.alfresco.org/model/application/1.0}folderlink")
+      try
       {
-         folderAssets.push(asset);
+         if (asset.isContainer || asset.type == "{http://www.alfresco.org/model/application/1.0}folderlink")
+         {
+            folderAssets.push(asset);
+         }
+         else
+         {
+            documentAssets.push(asset);
+         }
       }
-      else
+      catch (e)
       {
-         documentAssets.push(asset);
+         // Possibly an old indexed node - ignore it
       }
    }
    assets = folderAssets.concat(documentAssets);

@@ -54,7 +54,7 @@ function runAction(p_params)
    }
    for (i = 0, j = assignees.length; i < j; i++)
    {
-      assignees[i] = [people.getPerson(assignees[i])];
+      assignees[i] = people.getPerson(assignees[i]);
    }
 
    // Date supplied?

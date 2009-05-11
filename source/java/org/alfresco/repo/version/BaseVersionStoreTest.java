@@ -219,7 +219,8 @@ public abstract class BaseVersionStoreTest extends BaseSpringTest
         DictionaryBootstrap bootstrap = new DictionaryBootstrap();
         bootstrap.setModels(bootstrapModels);
         bootstrap.setDictionaryDAO(dictionaryDAO);
-        bootstrap.bootstrap();
+        
+        bootstrap.register();
     }
     
     /**

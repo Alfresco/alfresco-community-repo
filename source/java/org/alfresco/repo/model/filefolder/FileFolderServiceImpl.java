@@ -103,6 +103,7 @@ public class FileFolderServiceImpl implements FileFolderService
     private SearchService searchService;
     private ContentService contentService;
     private MimetypeService mimetypeService;
+    private Set<String> systemNamespaces;
     
     // TODO: Replace this with a more formal means of identifying "system" folders (i.e. aspect or UUID)
     private List<String> systemPaths;
@@ -112,6 +113,7 @@ public class FileFolderServiceImpl implements FileFolderService
      */
     public FileFolderServiceImpl()
     {
+        systemNamespaces = new HashSet<String>(5);
     }
 
     public void setNamespaceService(NamespaceService namespaceService)
@@ -147,6 +149,22 @@ public class FileFolderServiceImpl implements FileFolderService
     public void setMimetypeService(MimetypeService mimetypeService)
     {
         this.mimetypeService = mimetypeService;
+    }
+
+    /**
+     * Set the namespaces that should be treated as 'system' namespaces.
+     * <p>
+     * When files or folders are renamed, the association path (QName) is normally
+     * modified to follow the name of the node.  If, however, the namespace of the
+     * patch QName is in this list, the association path is left alone.  This allows
+     * parts of the application to use well-known paths even if the end-user is
+     * able to modify the objects <b>cm:name</b> value.
+     * 
+     * @param systemNamespaces          a list of system namespaces
+     */
+    public void setSystemNamespaces(List<String> systemNamespaces)
+    {
+        this.systemNamespaces.addAll(systemNamespaces);
     }
 
     // TODO: Replace this with a more formal means of identifying "system" folders (i.e. aspect or UUID)
@@ -572,8 +590,9 @@ public class FileFolderServiceImpl implements FileFolderService
             }
         }
         
+        QName existingQName = assocRef.getQName();
         QName qname;
-        if (nameChanged)
+        if (nameChanged && !systemNamespaces.contains(existingQName.getNamespaceURI()))
         {
             // Change the localname to match the new name
             qname = QName.createQName(
@@ -583,9 +602,7 @@ public class FileFolderServiceImpl implements FileFolderService
         else
         {
             // Keep the localname
-            qname = QName.createQName(
-                    assocRef.getQName().getNamespaceURI(),
-                    assocRef.getQName().getLocalName());
+            qname = existingQName;
         }
         
         QName targetParentType = nodeService.getType(targetParentRef);
@@ -715,6 +732,16 @@ public class FileFolderServiceImpl implements FileFolderService
     
     public FileInfo create(NodeRef parentNodeRef, String name, QName typeQName) throws FileExistsException
     {
+        return createImpl(parentNodeRef, name, typeQName, null);
+    }
+    
+    public FileInfo create(NodeRef parentNodeRef, String name, QName typeQName, QName assocQName) throws FileExistsException
+    {
+        return createImpl(parentNodeRef, name, typeQName, assocQName);
+    }
+    
+    private FileInfo createImpl(NodeRef parentNodeRef, String name, QName typeQName, QName assocQName) throws FileExistsException
+    {
         // file or folder
         boolean isFolder = false;
         try
@@ -738,16 +765,19 @@ public class FileFolderServiceImpl implements FileFolderService
         }
         
         // create the node
-        QName qname = QName.createQName(
-                NamespaceService.CONTENT_MODEL_1_0_URI,
-                QName.createValidLocalName(name));
+        if (assocQName == null)
+        {
+            assocQName = QName.createQName(
+                    NamespaceService.CONTENT_MODEL_1_0_URI,
+                    QName.createValidLocalName(name));
+        }
         ChildAssociationRef assocRef = null;
         try
         {
             assocRef = nodeService.createNode(
                     parentNodeRef,
                     ContentModel.ASSOC_CONTAINS,
-                    qname,
+                    assocQName,
                     typeQName,
                     properties);
         }

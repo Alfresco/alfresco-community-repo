@@ -14,6 +14,12 @@
       <property name="contentService"><ref bean="contentService" /></property>
       <property name="mimetypeService"><ref bean="mimetypeService" /></property>
 
+      <property name="systemNamespaces">
+         <list>
+            <value>http://www.alfresco.org/model/application/1.0</value>
+            <value>http://www.alfresco.org/model/site/1.0</value>
+         </list>
+      </property>
       <property name="systemPaths">
          <list>
             <value>/${spaces.company_home.childname}</value>

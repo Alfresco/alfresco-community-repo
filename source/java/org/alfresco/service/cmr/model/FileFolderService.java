@@ -169,17 +169,36 @@ public interface FileFolderService
             throws FileExistsException, FileNotFoundException;
 
     /**
-     * Create a file or folder; or any valid node of type derived from file or folder
+     * Create a file or folder; or any valid node of type derived from file or folder.
+     * <p>
+     * The association QName for the patch defaults to <b>cm:filename</b> i.e. the
+     * <b>Content Model</b> namespace with the filename as the local name.
      * 
      * @param parentNodeRef the parent node.  The parent must be a valid
-     *      {@link org.alfresco.model.ContentModel#TYPE_CONTAINER container}.
+     *      {@link org.alfresco.model.ContentModel#TYPE_FOLDER folder}.
      * @param name the name of the node
      * @param typeQName the type to create
      * @return Returns the new node's file information
      * @throws FileExistsException
+     * 
+     * @see {@link #create(NodeRef, String, QName, QName)}
      */
     @Auditable(key = Auditable.Key.ARG_0, parameters = {"parentNodeRef", "name", "typeQName"})
     public FileInfo create(NodeRef parentNodeRef, String name, QName typeQName) throws FileExistsException;
+    
+    /**
+     * Create a file or folder; or any valid node of type derived from file or folder
+     * 
+     * @param parentNodeRef the parent node.  The parent must be a valid
+     *      {@link org.alfresco.model.ContentModel#TYPE_FOLDER folder}.
+     * @param name the name of the node
+     * @param typeQName the type to create
+     * @param assocQName the association QName to set for the path (may be <tt>null</tt>).
+     * @return Returns the new node's file information
+     * @throws FileExistsException
+     */
+    @Auditable(key = Auditable.Key.ARG_0, parameters = {"parentNodeRef", "name", "typeQName"})
+    public FileInfo create(NodeRef parentNodeRef, String name, QName typeQName, QName assocQName) throws FileExistsException;
     
     /**
      * Delete a file or folder

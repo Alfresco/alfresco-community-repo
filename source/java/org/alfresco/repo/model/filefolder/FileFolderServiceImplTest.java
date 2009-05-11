@@ -299,6 +299,35 @@ public class FileFolderServiceImplTest extends TestCase
         assertNotNull("Folder info for new name is not present", checkInfo);
     }
     
+    public void testRenameWithoutAssocQNameChange() throws Exception
+    {
+        FileInfo folderInfo = getByName(NAME_L0_FOLDER_A, true);
+        assertNotNull(folderInfo);
+        NodeRef folderNodeRef = folderInfo.getNodeRef();
+        // Create a child file
+        QName assocQName = QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "abc");
+        NodeRef newFileNodeRef = fileFolderService.create(
+                folderNodeRef,
+                "AnotherFile.txt",
+                ContentModel.TYPE_CONTENT,
+                assocQName).getNodeRef();
+        // Make sure that the correct association QName was used
+        QName checkQName = nodeService.getPrimaryParent(newFileNodeRef).getQName();
+        assertEquals(
+                "The given assoc QName was not used for the path",
+                assocQName,
+                checkQName);
+        // Rename
+        String newName = "AnotherFile-new.txt";
+        folderInfo = fileFolderService.rename(newFileNodeRef, newName);
+        // Make sure that the association QName did not change
+        checkQName = nodeService.getPrimaryParent(newFileNodeRef).getQName();
+        assertEquals(
+                "The given assoc QName was not used for the path after a rename",
+                assocQName,
+                nodeService.getPrimaryParent(newFileNodeRef).getQName());
+    }
+    
     public void testRenameDuplicate() throws Exception
     {
         FileInfo folderInfo = getByName(NAME_L0_FOLDER_A, true);

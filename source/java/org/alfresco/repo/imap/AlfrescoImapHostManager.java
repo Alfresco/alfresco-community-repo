@@ -24,7 +24,6 @@
  */
 package org.alfresco.repo.imap;
 
-import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedList;
@@ -37,7 +36,6 @@ import org.alfresco.model.ImapModel;
 import org.alfresco.repo.imap.config.ImapConfigElement.ImapConfig;
 import org.alfresco.repo.imap.exception.AlfrescoImapFolderException;
 import org.alfresco.repo.model.filefolder.FileFolderServiceImpl;
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.model.FileExistsException;
 import org.alfresco.service.cmr.model.FileFolderService;
@@ -47,7 +45,6 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
-import org.alfresco.service.namespace.QName;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -94,6 +91,7 @@ public class AlfrescoImapHostManager implements ImapHostManager
     public Collection<MailFolder> listMailboxes(GreenMailUser user, String mailboxPattern) throws FolderException
     {
         mailboxPattern = GreenMailUtil.convertFromUtf7(mailboxPattern);
+        
         if (logger.isDebugEnabled())
         {
             logger.debug("Listing mailboxes: mailboxPattern=" + mailboxPattern);
@@ -103,146 +101,7 @@ public class AlfrescoImapHostManager implements ImapHostManager
         {
             logger.debug("Listing mailboxes: mailboxPattern in alfresco=" + mailboxPattern);
         }
-
-        Collection<MailFolder> result = new LinkedList<MailFolder>();
-
-        Map<String, NodeRef> mountPoints = imapHelper.getMountPoints();
-        Map<String, ImapConfig> imapConfigs = imapHelper.getImapConfigs();
-
-        NodeRef mountPoint;
-        for (String mountPointName : mountPoints.keySet())
-        {
-
-            mountPoint = mountPoints.get(mountPointName);
-            FileInfo mountPointFileInfo = imapHelper.getFileFolderService().getFileInfo(mountPoint);
-
-            NodeRef mountParent = imapHelper.getNodeService().getParentAssocs(mountPoint).get(0).getParentRef();
-            String mode = imapConfigs.get(mountPointName).getMode();
-
-            if (!mailboxPattern.equals("*"))
-            {
-                mountPoint = mountParent;
-            }
-
-            boolean isVirtualView = imapConfigs.get(mountPointName).getMode().equals(AlfrescoImapConst.MODE_VIRTUAL);
-            Collection<FileInfo> folders = listFolder(mountPoint, user, mailboxPattern, isVirtualView);
-            if (folders != null)
-            {
-                for (FileInfo folder : folders)
-                {
-                    result.add(new AlfrescoImapMailFolder(user.getQualifiedMailboxName(), folder, folder.getName(), mode, mountParent, mountPointName, imapHelper));
-                }
-            }
-            if (mailboxPattern.equals("*"))
-            {
-                result.add(new AlfrescoImapMailFolder(user.getQualifiedMailboxName(), mountPointFileInfo, mountPointName, mode, mountParent, mountPointName, imapHelper));
-            }
-        }
-        mountPoint = imapHelper.getUserImapHomeRef(user.getLogin());
-        Collection<FileInfo> imapFolders = listFolder(mountPoint, user, mailboxPattern, false);
-        if (imapFolders != null)
-        {
-            for (FileInfo imapFolder : imapFolders)
-            {
-                result.add(new AlfrescoImapMailFolder(user.getQualifiedMailboxName(), imapFolder, imapFolder.getName(), AlfrescoImapConst.MODE_ARCHIVE, mountPoint, null,
-                        imapHelper));
-            }
-        }
-
-        return result;
-    }
-
-    private Collection<FileInfo> listFolder(NodeRef root, GreenMailUser user, String mailboxPattern, boolean isVirtualView) throws FolderException
-    {
-        if (logger.isDebugEnabled())
-        {
-            logger.debug("Listing mailboxes: mailboxPattern=" + mailboxPattern);
-        }
-
-        Collection<FileInfo> result = new LinkedList<FileInfo>();
-
-        int index = mailboxPattern.indexOf(AlfrescoImapConst.HIERARCHY_DELIMITER);
-
-        String name = null;
-        String remainName = null;
-
-        if (index < 0)
-        {
-            name = mailboxPattern;
-        }
-        else
-        {
-            name = mailboxPattern.substring(0, index);
-            remainName = mailboxPattern.substring(index + 1);
-        }
-
-        if (logger.isDebugEnabled())
-        {
-            logger.debug("Listing mailboxes: name=" + name);
-        }
-            
-        if (index < 0)
-        {
-            if ("*".equals(name))
-            {
-                List<FileInfo> list = imapHelper.searchFolders(root, name, true, isVirtualView);
-                if (list.size() > 0)
-                {
-                    return list;
-                }
-                return null;
-            }
-            else if (name.endsWith("*"))
-            {
-                List<FileInfo> list = imapHelper.searchFolders(root, name.replace('%', '*'), false, isVirtualView);
-                if (list.size() > 0)
-                {
-                    result.addAll(list);
-                    for (FileInfo fileInfo : list)
-                    {
-                        List<FileInfo> childList = imapHelper.searchFolders(fileInfo.getNodeRef(), "*", true, isVirtualView);
-                        result.addAll(childList);
-                    }
-                    return result;
-                }
-                return null;
-            }
-            else if (name.contains("%") || name.contains("*"))
-            {
-                List<FileInfo> list = imapHelper.searchFolders(root, name.replace('%', '*'), false, isVirtualView);
-                if (list.size() > 0)
-                {
-                    return list;
-                }
-                return null;
-            }
-            else
-            {
-                List<FileInfo> list = imapHelper.searchFolders(root, name, false, isVirtualView);
-                if (list.size() > 0)
-                {
-                    return list;
-                }
-                return null;
-            }
-        }
-
-        List<FileInfo> list = imapHelper.searchFolders(root, name.replace('%', '*'), false, isVirtualView);
-        for (FileInfo folder : list)
-        {
-            Collection<FileInfo> childFolders = listFolder(folder.getNodeRef(), user, remainName, isVirtualView);
-            if (childFolders != null)
-            {
-                result.addAll(childFolders);
-            }
-        }
-
-        if (result.isEmpty())
-        {
-            return null;
-        }
-
-        return result;
+        return listMailboxes(user, mailboxPattern, false);
     }
 
     /**
@@ -257,6 +116,8 @@ public class AlfrescoImapHostManager implements ImapHostManager
      */
     public Collection<MailFolder> listSubscribedMailboxes(GreenMailUser user, String mailboxPattern) throws FolderException
     {
+        mailboxPattern = GreenMailUtil.convertFromUtf7(mailboxPattern);
+        
         if (logger.isDebugEnabled())
         {
             logger.debug("Listing subscribed mailboxes: mailboxPattern=" + mailboxPattern);
@@ -267,6 +128,14 @@ public class AlfrescoImapHostManager implements ImapHostManager
             logger.debug("Listing subscribed mailboxes: mailboxPattern in alfresco=" + mailboxPattern);
         }
 
+        return listMailboxes(user, mailboxPattern, true);
+    }
+
+    /**
+     * Depend on listSubscribed param, list Mailboxes or list subscribed Mailboxes
+     */
+    private Collection<MailFolder> listMailboxes(GreenMailUser user, String mailboxPattern, boolean listSubscribed) throws FolderException
+    {
         Collection<MailFolder> result = new LinkedList<MailFolder>();
 
         Map<String, NodeRef> mountPoints = imapHelper.getMountPoints();
@@ -274,6 +143,7 @@ public class AlfrescoImapHostManager implements ImapHostManager
 
         NodeRef mountPoint;
 
+        // List mailboxes that are in mount points
         for (String mountPointName : mountPoints.keySet())
         {
 
@@ -288,7 +158,7 @@ public class AlfrescoImapHostManager implements ImapHostManager
             }
 
             boolean isVirtualView = imapConfigs.get(mountPointName).getMode().equals(AlfrescoImapConst.MODE_VIRTUAL);
-            Collection<MailFolder> folders = listSubscribedFolder(mountPoint, mountPoint, user, mailboxPattern, isVirtualView);
+            Collection<MailFolder> folders = listFolder(mountPoint, mountPoint, user, mailboxPattern, listSubscribed, isVirtualView);
             if (folders != null)
             {
                 for (MailFolder mailFolder : folders)
@@ -301,14 +171,15 @@ public class AlfrescoImapHostManager implements ImapHostManager
                 result.addAll(folders);
             }
 
+            // Add mount point to the result list
             if (mailboxPattern.equals("*"))
             {
-                if (isSubscribed(mountPointFileInfo, user.getLogin()))
+                if ((listSubscribed && isSubscribed(mountPointFileInfo, user.getLogin())) || (!listSubscribed))
                 {
                     result.add(new AlfrescoImapMailFolder(user.getQualifiedMailboxName(), mountPointFileInfo, mountPointName, viewMode, mountParent, mountPointName, imapHelper));
                 }
                 // \NoSelect
-                else if (hasSubscribedChild(mountPointFileInfo, user.getLogin(), isVirtualView))
+                else if (listSubscribed && hasSubscribedChild(mountPointFileInfo, user.getLogin(), isVirtualView))
                 {
                     result.add(new AlfrescoImapMailFolder(user.getQualifiedMailboxName(), mountPointFileInfo, mountPointName, viewMode, mountParent, mountPointName, imapHelper,
                             false));
@@ -317,20 +188,27 @@ public class AlfrescoImapHostManager implements ImapHostManager
 
         }
 
-        NodeRef root = imapHelper.getSpacesStoreNodeRef();
-
-        root = imapHelper.getUserImapHomeRef(user.getLogin());
-        Collection<MailFolder> imapFolders = listSubscribedFolder(root, root, user, mailboxPattern, false);
+        // List mailboxes that are in user IMAP Home
+        NodeRef root = imapHelper.getUserImapHomeRef(user.getLogin());
+        Collection<MailFolder> imapFolders = listFolder(root, root, user, mailboxPattern, listSubscribed, false);
 
         if (imapFolders != null)
         {
+            for (MailFolder mailFolder : imapFolders)
+            {
+                AlfrescoImapMailFolder folder = (AlfrescoImapMailFolder) mailFolder;
+                folder.setViewMode(AlfrescoImapConst.MODE_ARCHIVE);
+                folder.setMountParent(root);
+            }
             result.addAll(imapFolders);
         }
 
         return result;
+
     }
 
-    private Collection<MailFolder> listSubscribedFolder(NodeRef mailboxRoot, NodeRef root, GreenMailUser user, String mailboxPattern, boolean isVirtualView) throws FolderException
+    private Collection<MailFolder> listFolder(NodeRef mailboxRoot, NodeRef root, GreenMailUser user, String mailboxPattern, boolean listSubscribed, boolean isVirtualView)
+            throws FolderException
     {
         if (logger.isDebugEnabled())
         {
@@ -361,12 +239,15 @@ public class AlfrescoImapHostManager implements ImapHostManager
         {
             if ("*".equals(name))
             {
-                List<FileInfo> list = imapHelper.searchFolders(root, name, true, isVirtualView);
-                Collection<FileInfo> subscribedList = getSubscribed(list, user.getLogin());
-
-                if (subscribedList.size() > 0)
+                Collection<FileInfo> list = imapHelper.searchFolders(root, name, true, isVirtualView);
+                if (listSubscribed)
                 {
-                    return createMailFolderList(user, subscribedList, mailboxRoot);
+                    list = getSubscribed(list, user.getLogin());
+                }
+
+                if (list.size() > 0)
+                {
+                    return createMailFolderList(user, list, mailboxRoot);
                 }
                 return null;
             }
@@ -374,7 +255,11 @@ public class AlfrescoImapHostManager implements ImapHostManager
             {
                 List<FileInfo> fullList = new LinkedList<FileInfo>();
                 List<FileInfo> list = imapHelper.searchFolders(root, name.replace('%', '*'), false, isVirtualView);
-                Collection<FileInfo> subscribedList = getSubscribed(list, user.getLogin());
+                Collection<FileInfo> subscribedList = list;
+                if (listSubscribed)
+                {
+                    subscribedList = getSubscribed(list, user.getLogin());
+                }
 
                 if (list.size() > 0)
                 {
@@ -382,7 +267,14 @@ public class AlfrescoImapHostManager implements ImapHostManager
                     for (FileInfo fileInfo : list)
                     {
                         List<FileInfo> childList = imapHelper.searchFolders(fileInfo.getNodeRef(), "*", true, isVirtualView);
+                        if (listSubscribed)
+                        {
                         fullList.addAll(getSubscribed(childList, user.getLogin()));
+                    }
+                        else
+                        {
+                            fullList.addAll(childList);
+                        }
                     }
                     return createMailFolderList(user, fullList, mailboxRoot);
                 }
@@ -393,19 +285,26 @@ public class AlfrescoImapHostManager implements ImapHostManager
                 List<FileInfo> list = imapHelper.searchFolders(root, "*", false, isVirtualView);
                 LinkedList<MailFolder> subscribedList = new LinkedList<MailFolder>();
 
+                if (listSubscribed)
+                {
                 for (FileInfo fileInfo : list)
                 {
                     if (isSubscribed(fileInfo, user.getLogin()))
                     {
-                        // folderName, viewMode, mountPointName will be setted in listSubscribedMailboxes() method
+                            // folderName, viewMode, mountPointName will be setted in listMailboxes() method
                         subscribedList.add(new AlfrescoImapMailFolder(user.getQualifiedMailboxName(), fileInfo, null, null, mailboxRoot, null, imapHelper));
                     }
                     // \NoSelect
                     else if (hasSubscribedChild(fileInfo, user.getLogin(), isVirtualView))
                     {
-                        // folderName, viewMode, mountPointName will be setted in listSubscribedMailboxes() method
+                            // folderName, viewMode, mountPointName will be setted in listMailboxes() method
                         subscribedList.add(new AlfrescoImapMailFolder(user.getQualifiedMailboxName(), fileInfo, null, null, mailboxRoot, null, imapHelper, false));
                     }
+                }
+                }
+                else
+                {
+                    return createMailFolderList(user, list, mailboxRoot);
                 }
 
                 return subscribedList;
@@ -413,7 +312,11 @@ public class AlfrescoImapHostManager implements ImapHostManager
             else if (name.contains("%") || name.contains("*"))
             {
                 List<FileInfo> list = imapHelper.searchFolders(root, name.replace('%', '*'), false, isVirtualView);
-                Collection<FileInfo> subscribedList = getSubscribed(list, user.getLogin());
+                Collection<FileInfo> subscribedList = list;
+                if (listSubscribed)
+                {
+                    subscribedList = getSubscribed(list, user.getLogin());
+                }
 
                 if (subscribedList.size() > 0)
                 {
@@ -424,7 +327,11 @@ public class AlfrescoImapHostManager implements ImapHostManager
             else
             {
                 List<FileInfo> list = imapHelper.searchFolders(root, name, false, isVirtualView);
-                Collection<FileInfo> subscribedList = getSubscribed(list, user.getLogin());
+                Collection<FileInfo> subscribedList = list;
+                if (listSubscribed)
+                {
+                    subscribedList = getSubscribed(list, user.getLogin());
+                }
 
                 if (subscribedList.size() > 0)
                 {
@@ -440,7 +347,7 @@ public class AlfrescoImapHostManager implements ImapHostManager
         List<FileInfo> list = imapHelper.searchFolders(root, name.replace('%', '*'), false, isVirtualView);
         for (FileInfo folder : list)
         {
-            Collection<MailFolder> childFolders = listSubscribedFolder(mailboxRoot, folder.getNodeRef(), user, remainName, isVirtualView);
+            Collection<MailFolder> childFolders = listFolder(mailboxRoot, folder.getNodeRef(), user, remainName, listSubscribed, isVirtualView);
 
             if (childFolders != null)
             {
@@ -610,7 +517,6 @@ public class AlfrescoImapHostManager implements ImapHostManager
                     logger.debug("Create mailBox: " + mailboxName);
                 }
                 FileInfo mailFolder = FileFolderServiceImpl.makeFolders(fileFolderService, parentNodeRef, Arrays.asList(folderName), ContentModel.TYPE_FOLDER);
-
 
                 return new AlfrescoImapMailFolder(user.getQualifiedMailboxName(), mailFolder, folderName, imapHelper.getViewMode(mailboxName), root, mountPointName, imapHelper);
 
@@ -884,7 +790,7 @@ public class AlfrescoImapHostManager implements ImapHostManager
 
     }
 
-    private Collection<FileInfo> getSubscribed(List<FileInfo> list, String userName)
+    private Collection<FileInfo> getSubscribed(Collection<FileInfo> list, String userName)
     {
         Collection<FileInfo> result = new LinkedList<FileInfo>();
 

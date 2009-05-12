@@ -77,7 +77,7 @@ import org.springframework.context.ApplicationEvent;
  * 
  * @author Dmitry Vaserin
  */
-public class ImapHelper extends AbstractLifecycleBean
+/*package*/class ImapHelper extends AbstractLifecycleBean
 {
     private static Log logger = LogFactory.getLog(ImapHelper.class);
     
@@ -385,11 +385,27 @@ public class ImapHelper extends AbstractLifecycleBean
 
     /**
      * @param userName user name
-     * @return user IMAP home reference
+     * @return user IMAP home reference and create it if it doesn't exist.
      */
-    public NodeRef getUserImapHomeRef(String userName)
+    public NodeRef getUserImapHomeRef(final String userName)
     {
-        return fileFolderService.searchSimple(imapRootNodeRef, userName);
+        NodeRef userHome = fileFolderService.searchSimple(imapRootNodeRef, userName);
+        if (userHome == null)
+        {
+            // create user home
+            userHome = AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<NodeRef>()
+            {
+                public NodeRef doWork() throws Exception
+                {
+                    NodeRef result = fileFolderService.create(imapRootNodeRef, userName, ContentModel.TYPE_FOLDER).getNodeRef();
+                    nodeService.setProperty(result, ContentModel.PROP_DESCRIPTION, userName);
+                    // create inbox
+                    fileFolderService.create(result, AlfrescoImapConst.INBOX_NAME, ContentModel.TYPE_FOLDER);
+                    return result;
+                }
+            }, AuthenticationUtil.getSystemUserName());
+        }
+        return userHome;
     }
 
     public String getCurrentUser()

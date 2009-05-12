@@ -43,8 +43,6 @@ import javax.transaction.UserTransaction;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.imap.AlfrescoImapConst;
-import org.alfresco.repo.imap.ImapHelper;
 import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -122,9 +120,6 @@ public class NewUserWizard extends AbstractWizardBean
 
    /** action context */
    private Node person = null;
-
-    /** ImapHelper bean reference */
-    transient private ImapHelper imapHelper;
 
    /** ref to the default home location */
    private NodeRef defaultHomeSpaceRef;
@@ -313,21 +308,6 @@ public class NewUserWizard extends AbstractWizardBean
          return Application.getMessage(FacesContext.getCurrentInstance(), WIZARD_TITLE_NEW_ID);
       }
    }
-
-    public ImapHelper getImapHelper()
-    {
-        if (imapHelper == null)
-        {
-            imapHelper = (ImapHelper) ApplicationContextHelper.getApplicationContext().getBean("imapHelper");
-        }
-
-        return imapHelper;
-    }
-
-    public void setImapHelper(ImapHelper imapHelper)
-    {
-        this.imapHelper = imapHelper;
-    }
 
     /**
      * @see org.alfresco.web.bean.wizard.AbstractWizardBean#getStepTitle()
@@ -624,11 +604,6 @@ public class NewUserWizard extends AbstractWizardBean
                
                // create the ACEGI Authentication instance for the new user
                this.getAuthenticationService().createAuthentication(this.userName, this.password.toCharArray());
-               // create IMAP home for this user
-               if (imapHelper.isPatchApplied())
-               {
-                   createImapHome();
-               }
                
                if (logger.isDebugEnabled()) logger.debug("Created User Authentication instance for username: " + this.userName);
             }
@@ -1111,32 +1086,6 @@ public class NewUserWizard extends AbstractWizardBean
       ClientConfigElement config = Application.getClientConfig(FacesContext.getCurrentInstance());
       return config.getHomeSpacePermission();
    }
-
-    private void createImapHome()
-    {
-        NodeRef imapRoot = imapHelper.getImapRootNodeRef();
-        NodeRef imapUserHome = null;
-        NodeRef inbox = null;
-
-        // search IMAP user home
-        imapUserHome = this.getFileFolderService().searchSimple(imapRoot, userName);
-        if (imapUserHome == null)
-        {
-            // create IMAP user home
-            imapUserHome = this.getFileFolderService().create(imapRoot, userName, ContentModel.TYPE_FOLDER).getNodeRef();
-        }
-
-        // search INBOX
-        inbox = this.getFileFolderService().searchSimple(imapUserHome, AlfrescoImapConst.INBOX_NAME);
-        if (inbox == null)
-        {
-            // create IMAP user home
-            inbox = this.getFileFolderService().create(imapUserHome, AlfrescoImapConst.INBOX_NAME, ContentModel.TYPE_FOLDER).getNodeRef();
-        }
-        setupHomeSpacePermissions(imapUserHome);
-
-    }
-
 
    private void invalidateUserList()
    {

@@ -1193,10 +1193,6 @@
          <property-name>tenantService</property-name>
          <value>#{tenantService}</value>
       </managed-property> 
-      <managed-property>
-         <property-name>imapHelper</property-name>
-         <value>#{imapHelper}</value>
-      </managed-property>
    </managed-bean>
 
    <managed-bean>
@@ -4963,10 +4959,6 @@
       <managed-property>
          <property-name>contentUsageService</property-name>
          <value>#{ContentUsageService}</value>
-      </managed-property>
-      <managed-property>
-         <property-name>imapHelper</property-name>
-         <value>#{imapHelper}</value>
       </managed-property>
    </managed-bean>
 

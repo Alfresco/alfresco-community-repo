@@ -928,6 +928,7 @@
                 <value>alfresco/model/bpmModel.xml</value>
                 <value>alfresco/model/wcmModel.xml</value>
                 <value>alfresco/model/forumModel.xml</value>
+                <value>alfresco/model/imapModel.xml</value>
 
                 <!-- Content models -->
                 <value>alfresco/model/applicationModel.xml</value>

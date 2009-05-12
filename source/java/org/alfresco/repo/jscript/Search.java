@@ -48,6 +48,8 @@ import org.dom4j.io.SAXReader;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.Scriptable;
 
+import com.werken.saxpath.XPathReader;
+
 /**
  * Search component for use by the ScriptService.
  * <p>
@@ -213,6 +215,26 @@ public final class Search extends BaseScopableProcessorExtension
         {
             return Context.getCurrentContext().newArray(getScope(), 0);
         }
+    }
+
+    /**
+     * Validation Xpath query
+     * 
+     * @param query xpath query
+     * @return true if xpath query valid
+     */
+    public boolean isValidXpathQuery(String query)
+    {
+        try
+        {
+            XPathReader reader = new XPathReader();
+            reader.parse(query);
+        }
+        catch (Exception e)
+        {
+            return false;
+        }
+        return true;
     }
 
     /**

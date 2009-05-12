@@ -58,7 +58,8 @@ public class ScriptActionExecuter extends ActionExecuterAbstractBase
     private String companyHomePath;
     private StoreRef storeRef;
     private ScriptLocation scriptLocation;
-    
+    private String webApplicationContextUrl;
+
     /**
      * @param serviceRegistry       The serviceRegistry to set.
      */
@@ -94,7 +95,17 @@ public class ScriptActionExecuter extends ActionExecuterAbstractBase
     {
         this.scriptLocation = scriptLocation;
     }
-    
+
+    /**
+     * Set the web application context url
+     * 
+     * @param webApplicationContextUrl web application context url
+     */
+    public void setWebApplicationContextUrl(String webApplicationContextUrl)
+    {
+        this.webApplicationContextUrl = webApplicationContextUrl;
+    }
+
     /**
      * Allow adhoc properties to be passed to this action
      * 
@@ -149,7 +160,9 @@ public class ScriptActionExecuter extends ActionExecuterAbstractBase
                 // Add the action to the default model
                 ScriptAction scriptAction = new ScriptAction(this.serviceRegistry, action, this.actionDefinition);
                 model.put("action", scriptAction);
-                
+
+                model.put("webApplicationContextUrl", webApplicationContextUrl);
+
                 Object result = null;
                 if (this.scriptLocation == null)
                 {

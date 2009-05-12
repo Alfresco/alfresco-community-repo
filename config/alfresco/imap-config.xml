@@ -1,0 +1,14 @@
+<alfresco-config>
+   <config>
+      <imapConfig>
+         <imap name="Repository_virtual" mode="virtual">
+              <store>workspace://SpacesStore</store>
+              <rootPath>/app:company_home</rootPath>
+         </imap>
+         <imap name="Repository_archive" mode="archive">
+              <store>workspace://SpacesStore</store>
+              <rootPath>/app:company_home</rootPath>
+         </imap>
+      </imapConfig>
+   </config>
+</alfresco-config> 

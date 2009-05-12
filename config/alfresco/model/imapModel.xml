@@ -1,0 +1,100 @@
+<model name="imap:imapmodel" xmlns="http://www.alfresco.org/model/dictionary/1.0">
+
+   <description>IMAP Content Model</description>
+   <author>Alfresco</author>
+   <published>2009-01-20</published>
+   <version>1.0</version>
+
+   <imports>
+      <import uri="http://www.alfresco.org/model/content/1.0" prefix="cm" />
+      <import uri="http://www.alfresco.org/model/dictionary/1.0" prefix="d" />
+   </imports>
+
+   <namespaces>
+      <namespace uri="http://www.alfresco.org/model/imap/1.0"   prefix="imap" />
+   </namespaces>
+
+   <types>
+      <type name="imap:imapFolder">
+         <title>IMAP Folder</title>
+         <parent>cm:folder</parent>
+         <properties>
+            <property name="imap:subscribed">
+               <type>d:boolean</type>
+            </property>
+            <property name="imap:selectable">
+               <type>d:boolean</type>
+               <mandatory>true</mandatory>
+               <default>true</default>
+            </property>
+         </properties>
+      </type>
+
+      <type name="imap:imapContent">
+         <title>IMAP File</title>
+         <parent>cm:folder</parent>
+         <properties>
+            <!-- Message -->
+            <property name="imap:messageFrom">
+               <type>d:text</type>
+            </property>
+            <property name="imap:messageTo">
+               <type>d:text</type>
+            </property>
+            <property name="imap:messageCc">
+               <type>d:text</type>
+            </property>
+            <property name="imap:messageSubject">
+               <type>d:text</type>
+            </property>
+         </properties>
+         <mandatory-aspects>
+               <aspect>imap:flaggable</aspect>
+         </mandatory-aspects>
+      </type>
+
+      <type name="imap:imapAttach">
+         <title>Attachment to the IMAP message</title>
+         <parent>cm:content</parent>
+         <properties>
+            <property name="imap:attachID">
+               <type>d:text</type>
+            </property>
+         </properties>
+      </type>
+
+      <type name="imap:imapBody">
+         <title>Body of the IMAP message</title>
+         <parent>cm:content</parent>
+      </type>
+   </types>
+   
+    <aspects>
+       <aspect name="imap:flaggable">
+          <properties>
+            <property name="imap:flagAnswered">
+               <type>d:boolean</type>
+            </property>
+            <property name="imap:flagDeleted">
+               <type>d:boolean</type>
+            </property>
+            <property name="imap:flagDraft">
+               <type>d:boolean</type>
+            </property>
+            <property name="imap:flagSeen">
+               <type>d:boolean</type>
+            </property>
+            <property name="imap:flagRecent">
+               <type>d:boolean</type>
+            </property>
+            <property name="imap:flagFlagged">
+               <type>d:boolean</type>
+            </property>          
+          
+          </properties>
+       </aspect>
+       <aspect name="imap:subscribed"/>
+       <aspect name="imap:nonselectable"/>
+    </aspects>
+
+</model>

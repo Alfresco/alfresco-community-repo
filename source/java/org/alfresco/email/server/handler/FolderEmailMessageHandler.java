@@ -40,6 +40,8 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.service.cmr.email.EmailMessage;
 import org.alfresco.service.cmr.email.EmailMessageException;
+import org.alfresco.service.cmr.repository.ContentService;
+import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
@@ -120,22 +122,52 @@ public class FolderEmailMessageHandler extends AbstractEmailMessageHandler
         // Write the message content
         if (message.getBody() != null)
         {
-            InputStream contentIs = message.getBody().getContent();
-            // The message body is plain text, unless an extension has been provided
-            MimetypeService mimetypeService = getMimetypeService();
-            String mimetype = mimetypeService.guessMimetype(messageSubject);
-            if (mimetype.equals(MimetypeMap.MIMETYPE_BINARY))
+            if (message.getBody().getSize() == -1)
             {
-                mimetype= MimetypeMap.MIMETYPE_TEXT_PLAIN;
+                // If message body is empty we write space as a content
+                // to make possible rule processing
+                // (Rules don't work on empty documents)
+                writeSpace(contentNodeRef);
             }
-            // Use the default encoding.  It will get overridden if the body is text.
-            String encoding = message.getBody().getEncoding();
-            
-            writeContent(contentNodeRef, contentIs, mimetype, encoding);
+            else
+            {
+                InputStream contentIs = message.getBody().getContent();
+                // The message body is plain text, unless an extension has been provided
+                MimetypeService mimetypeService = getMimetypeService();
+                String mimetype = mimetypeService.guessMimetype(messageSubject);
+                if (mimetype.equals(MimetypeMap.MIMETYPE_BINARY))
+                {
+                    mimetype = MimetypeMap.MIMETYPE_TEXT_PLAIN;
+                }
+                // Use the default encoding. It will get overridden if the body is text.
+                String encoding = message.getBody().getEncoding();
+
+                writeContent(contentNodeRef, contentIs, mimetype, encoding);
+            }
         }
 
         // Add attachments
         addAttachments(spaceNodeRef, contentNodeRef, message);
+    }
+
+    /**
+     * This method writes space as a content. We need this space because rules doesn't proceed documents with empty content. We need rule processing for command email messages with
+     * empty body.
+     * 
+     * @param nodeRef Reference to the parent node
+     */
+    private void writeSpace(NodeRef nodeRef)
+    {
+        if (log.isDebugEnabled())
+        {
+            log.debug("Write space string");
+        }
+
+        ContentService contentService = getContentService();
+        ContentWriter writer = contentService.getWriter(nodeRef, ContentModel.PROP_CONTENT, true);
+        writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
+        writer.setEncoding("UTF-8");
+        writer.putContent(" ");
     }
 
     /**

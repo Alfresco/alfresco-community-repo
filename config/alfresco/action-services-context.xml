@@ -473,6 +473,9 @@
         <property name="companyHomePath">
             <value>/${spaces.company_home.childname}</value>
         </property>
+        <property name="webApplicationContextUrl">
+            <value>${web.application.context.url}</value>
+        </property>
     </bean>
     
     <bean id="counter" class="org.alfresco.repo.action.executer.CounterIncrementActionExecuter" parent="action-executer">

@@ -49,7 +49,7 @@
                         <cm:userName>${alfresco_user_store.adminusername}</cm:userName>
                         <cm:firstName>Administrator</cm:firstName>
                         <cm:lastName></cm:lastName>
-                        <cm:email></cm:email>
+                        <cm:email>admin@alfresco.com</cm:email>
                         <cm:organizationId></cm:organizationId>
                         <cm:homeFolder>/${spaces.company_home.childname}</cm:homeFolder>
                         <cm:homeFolderProvider>bootstrapHomeFolderProvider</cm:homeFolderProvider>

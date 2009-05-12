@@ -326,6 +326,9 @@
                 <prop key="spaces.user_homes.childname">${spaces.user_homes.childname}</prop>
                 <prop key="spaces.sites.childname">${spaces.sites.childname}</prop>
                 <prop key="spaces.templates.email.invite.childname">${spaces.templates.email.invite.childname}</prop>
+                <prop key="spaces.imap_home.childname">${spaces.imap_home.childname}</prop>
+                <prop key="spaces.imapConfig.childname">${spaces.imapConfig.childname}</prop>
+                <prop key="spaces.imap_templates.childname">${spaces.imap_templates.childname}</prop>
             </props>
         </property>
     </bean>
@@ -516,6 +519,7 @@
                     <prop key="location">alfresco/bootstrap/sitesSpace.xml</prop>
                     <prop key="messages">alfresco/messages/bootstrap-spaces</prop>
                 </props>
+
             </list>
         </property>
     </bean>

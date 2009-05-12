@@ -273,6 +273,40 @@ public final class People extends BaseScopableProcessorExtension
     {
         return this.mutableAuthenticationDao.getEnabled(userName);
     }
+    
+    /**
+     * Change the password for the currently logged in user.
+     * Old password must be supplied.
+     *  
+     * @param oldPassword       Old user password
+     * @param newPassword       New user password
+     */
+    public void changePassword(String oldPassword, String newPassword)
+    {
+        ParameterCheck.mandatoryString("oldPassword", oldPassword);
+        ParameterCheck.mandatoryString("newPassword", newPassword);
+        
+        this.services.getAuthenticationService().updateAuthentication(
+                AuthenticationUtil.getFullyAuthenticatedUser(), oldPassword.toCharArray(), newPassword.toCharArray());
+    }
+    
+    /**
+     * Set a password for the given user. Note that only an administrator
+     * can perform this action, otherwise it will be ignored.
+     * 
+     * @param userName          Username to change password for
+     * @param password          Password to set
+     */
+    public void setPassword(String userName, String password)
+    {
+        ParameterCheck.mandatoryString("userName", userName);
+        ParameterCheck.mandatoryString("password", password);
+        
+        if (this.authorityService.hasAdminAuthority())
+        {
+            this.services.getAuthenticationService().setAuthentication(userName, password.toCharArray());
+        }
+    }
 
     /**
      * Create a Person with the given user name

@@ -624,4 +624,11 @@
       <property name="dictionaryService" ref="DictionaryService"/>
     </bean>
     
+    <!-- GET IMAP SERVER STATUS-->    
+    <bean id="webscript.org.alfresco.imap.imap-enabled.get" class="org.alfresco.repo.imap.scripts.ServerStatusWebScript" parent="webscript">
+    <property name="imapServerEnabled">
+             <value>${imap.server.enabled}</value>
+        </property>
+    </bean>
+    
 </beans>

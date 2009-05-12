@@ -578,6 +578,7 @@
       <res-ref-name>jdbc/dataSource</res-ref-name>
       <res-type>javax.sql.DataSource</res-type>
       <res-auth>Container</res-auth>
+      <res-sharing-scope>Unshareable</res-sharing-scope>
    </resource-ref>
 
    <env-entry>
@@ -621,7 +622,7 @@
          generators. By default, tries to determine the driver capabilities using connection metadata. </description>
       <env-entry-name>properties/hibernate.jdbc.use_get_generated_keys</env-entry-name>
       <env-entry-value/> <!-- Empty value included for JBoss compatibility -->
-      <env-entry-type>java.lang.Boolean</env-entry-type>
+      <env-entry-type>java.lang.String</env-entry-type>
    </env-entry>
 
    <env-entry>

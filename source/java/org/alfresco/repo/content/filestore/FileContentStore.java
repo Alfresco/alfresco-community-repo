@@ -44,6 +44,9 @@ import org.alfresco.util.GUID;
 import org.alfresco.util.Pair;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.BeansException;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.ConfigurableApplicationContext;
@@ -58,7 +61,7 @@ import org.springframework.context.event.ContextRefreshedEvent;
  * 
  * @author Derek Hulley
  */
-public class FileContentStore extends AbstractContentStore implements ApplicationListener
+public class FileContentStore extends AbstractContentStore implements ApplicationContextAware, ApplicationListener
 {
     /**
      * <b>store</b> is the new prefix for file content URLs
@@ -72,6 +75,7 @@ public class FileContentStore extends AbstractContentStore implements Applicatio
     private String rootAbsolutePath;
     private boolean allowRandomAccess;
     private boolean readOnly;
+    private ApplicationContext applicationContext;
 
     /**
      * Private: for Spring-constructed instances only.
@@ -118,6 +122,7 @@ public class FileContentStore extends AbstractContentStore implements Applicatio
     public FileContentStore(ConfigurableApplicationContext context, String rootDirectoryStr)
     {
         this(rootDirectoryStr);
+        setApplicationContext(context);
         publishEvent(context);
     }
 
@@ -132,6 +137,7 @@ public class FileContentStore extends AbstractContentStore implements Applicatio
     public FileContentStore(ConfigurableApplicationContext context, File rootDirectory)
     {
         this(rootDirectory);        
+        setApplicationContext(context);
         publishEvent(context);
     }
     
@@ -145,6 +151,15 @@ public class FileContentStore extends AbstractContentStore implements Applicatio
           .append(", readOnly=").append(readOnly)
           .append("]");
         return sb.toString();
+    }
+
+    
+    /* (non-Javadoc)
+     * @see org.springframework.context.ApplicationContextAware#setApplicationContext(org.springframework.context.ApplicationContext)
+     */
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException
+    {
+        this.applicationContext = applicationContext;
     }
 
     /**
@@ -645,7 +660,7 @@ public class FileContentStore extends AbstractContentStore implements Applicatio
     {
         // Once the context has been refreshed, we tell other interested beans about the existence of this content store
         // (e.g. for monitoring purposes)
-        if (event instanceof ContextRefreshedEvent)
+        if (event instanceof ContextRefreshedEvent && event.getSource() == this.applicationContext)
         {
             ((ContextRefreshedEvent) event).getApplicationContext().publishEvent(
                     new ContentStoreCreatedEvent(this));

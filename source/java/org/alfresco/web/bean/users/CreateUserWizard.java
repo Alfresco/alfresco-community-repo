@@ -40,6 +40,8 @@ import javax.faces.validator.ValidatorException;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.imap.AlfrescoImapConst;
+import org.alfresco.repo.imap.ImapHelper;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -50,6 +52,7 @@ import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.usage.ContentUsageService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.Pair;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.context.UIContextService;
@@ -114,7 +117,9 @@ public class CreateUserWizard extends BaseWizardBean
 
     /** OwnableService bean reference */
     transient private OwnableService ownableService;
-    
+
+    transient private ImapHelper imapHelper;
+
     /** ContentUsageService bean reference */
     transient private ContentUsageService contentUsageService;
     
@@ -163,6 +168,21 @@ public class CreateUserWizard extends BaseWizardBean
            personService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getPersonService(); 
         }
         return personService;
+    }
+
+    public ImapHelper getImapHelper()
+    {
+        if (imapHelper == null)
+        {
+            imapHelper = (ImapHelper) ApplicationContextHelper.getApplicationContext().getBean("imapHelper");
+        }
+
+        return imapHelper;
+    }
+
+    public void setImapHelper(ImapHelper imapHelper)
+    {
+        this.imapHelper = imapHelper;
     }
 
     /**
@@ -772,6 +792,29 @@ public class CreateUserWizard extends BaseWizardBean
         getPermissionService().setInheritParentPermissions(homeSpaceRef, false);
     }
 
+    private void createImapHome()
+    {
+        NodeRef imapRoot = imapHelper.getImapRootNodeRef();
+        NodeRef imapUserHome = null;
+
+        // search IMAP user home
+        imapUserHome = this.getFileFolderService().searchSimple(imapRoot, userName);
+        if (imapUserHome == null)
+        {
+            // create IMAP user home
+            imapUserHome = this.getFileFolderService().create(imapRoot, userName, ContentModel.TYPE_FOLDER).getNodeRef();
+        }
+
+        // search INBOX
+        NodeRef inbox = this.getFileFolderService().searchSimple(imapUserHome, AlfrescoImapConst.INBOX_NAME);
+        if (inbox == null)
+        {
+            // create IMAP user home
+            inbox = this.getFileFolderService().create(imapUserHome, AlfrescoImapConst.INBOX_NAME, ContentModel.TYPE_FOLDER).getNodeRef();
+        }
+        setupHomeSpacePermissions(imapUserHome);
+    }
+
     /**
      * @return default permission string to set for other users for a new Home Space
      */
@@ -831,6 +874,12 @@ public class CreateUserWizard extends BaseWizardBean
                     // default to Company Home
                     homeSpaceNodeRef = getCompanyHomeSpace();
                 }
+                // Create IMAP user Home
+                if (imapHelper.isPatchApplied())
+                {
+                    createImapHome();
+                }
+
                 props.put(ContentModel.PROP_HOMEFOLDER, homeSpaceNodeRef);
                 props.put(ContentModel.PROP_EMAIL, this.email);
                 props.put(ContentModel.PROP_ORGID, this.companyId);

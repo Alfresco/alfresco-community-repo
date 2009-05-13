@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -29,11 +29,13 @@ import java.util.StringTokenizer;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
+import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.MutableAuthenticationDao;
 import org.alfresco.repo.security.authentication.PasswordGenerator;
 import org.alfresco.repo.security.authentication.UserNameGenerator;
 import org.alfresco.repo.security.authority.AuthorityDAO;
+import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -48,6 +50,8 @@ import org.alfresco.service.cmr.usage.ContentUsageService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.util.ParameterCheck;
 import org.alfresco.util.PropertyMap;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.Scriptable;
 
@@ -59,6 +63,8 @@ import org.mozilla.javascript.Scriptable;
  */
 public final class People extends BaseScopableProcessorExtension
 {
+    private static Log logger = LogFactory.getLog(People.class);
+    
     /** Repository Service Registry */
     private ServiceRegistry services;
     private AuthorityDAO authorityDAO;
@@ -66,6 +72,7 @@ public final class People extends BaseScopableProcessorExtension
     private PersonService personService;
     private MutableAuthenticationDao mutableAuthenticationDao;
     private ContentUsageService contentUsageService;
+    private TenantService tenantService;
     private UserNameGenerator usernameGenerator;
     private PasswordGenerator passwordGenerator;
     private StoreRef storeRef;
@@ -144,7 +151,15 @@ public final class People extends BaseScopableProcessorExtension
     {
         this.contentUsageService = contentUsageService;
     }
-
+    
+    /**
+     * @param tenantService   the tenantService to set
+     */
+    public void setTenantService(TenantService tenantService)
+    {
+        this.tenantService = tenantService;
+    }
+    
     /**
      * Set the user name generator service
      * 
@@ -215,9 +230,34 @@ public final class People extends BaseScopableProcessorExtension
             	}
             }
         }
-		
+        
         if (userName != null)
         {
+            if (tenantService.isEnabled())
+            {
+                String currentDomain = tenantService.getCurrentUserDomain();
+                if (! currentDomain.equals(TenantService.DEFAULT_DOMAIN))
+                {
+                    if (! tenantService.isTenantUser(userName))
+                    {
+                        // force domain onto the end of the username
+                        userName = tenantService.getDomainUser(userName, currentDomain);
+                        logger.warn("Added domain to username: " + userName);
+                    }
+                    else
+                    {
+                        try
+                        {
+                            tenantService.checkDomainUser(userName);
+                        }
+                        catch (RuntimeException re)
+                        {
+                            throw new AuthenticationException("User must belong to same domain as admin: " + currentDomain);
+                        }
+                    }
+                }
+            }
+            
             person = createPerson(userName, firstName, lastName, emailAddress);
     		
     		if (createUserAccount)

@@ -123,6 +123,9 @@
         <property name="contentUsageService">
             <ref bean="ContentUsageService"/>
         </property>
+        <property name="tenantService">
+            <ref bean="tenantService"/>
+        </property>
         <property name="userNameGenerator">
             <ref bean="userNameGenerator"/>
         </property>

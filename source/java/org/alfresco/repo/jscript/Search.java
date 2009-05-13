@@ -24,9 +24,12 @@
  */
 package org.alfresco.repo.jscript;
 
+import java.io.Serializable;
 import java.io.StringReader;
+import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
@@ -36,6 +39,7 @@ import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.search.LimitBy;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.ResultSetRow;
 import org.alfresco.service.cmr.search.SearchParameters;
@@ -124,7 +128,7 @@ public final class Search extends BaseScopableProcessorExtension
     {
         ParameterCheck.mandatory("ref", ref);
         String query = "ID:" + LuceneQueryParser.escape(ref.toString());
-        Object[] result = query(ref.getStoreRef().toString(), query, SearchService.LANGUAGE_LUCENE);
+        Object[] result = query(ref.getStoreRef().toString(), query, null, SearchService.LANGUAGE_LUCENE);
         if (result.length != 0)
         {
             return (ScriptNode)result[0];
@@ -208,7 +212,7 @@ public final class Search extends BaseScopableProcessorExtension
     {
         if (search != null && search.length() != 0)
         {
-            Object[] results = query(store, search, SearchService.LANGUAGE_XPATH);
+            Object[] results = query(store, search, null, SearchService.LANGUAGE_XPATH);
             return Context.getCurrentContext().newArray(getScope(), results);
         }
         else
@@ -261,7 +265,7 @@ public final class Search extends BaseScopableProcessorExtension
     {
         if (search != null && search.length() != 0)
         {
-            Object[] results = query(store, search, SearchService.LANGUAGE_LUCENE);
+            Object[] results = query(store, search, null, SearchService.LANGUAGE_LUCENE);
             return Context.getCurrentContext().newArray(getScope(), results);
         }
         else
@@ -351,7 +355,7 @@ public final class Search extends BaseScopableProcessorExtension
         
         if (search != null)
         {
-            Object[] results = query(null, search, SearchService.LANGUAGE_LUCENE);
+            Object[] results = query(null, search, null, SearchService.LANGUAGE_LUCENE);
             return Context.getCurrentContext().newArray(getScope(), results);
         }
         else
@@ -410,6 +414,110 @@ public final class Search extends BaseScopableProcessorExtension
     }
     
     /**
+     * Execute a query based on the supplied search definition object.
+     * 
+     * Search object is defined in JavaScript thus:
+     * <pre>
+     * search
+     * {
+     *    query: string,          mandatory, in appropriate format and encoded for the given language
+     *    store: string,          optional, defaults to 'workspace://SpacesStore'
+     *    language: string,       optional, one of: lucene, xpath, jcr-xpath, fts-alfresco - defaults to 'lucene'
+     *    sort: [],               optional, Array of sort column objects (see below)
+     *    page: object            optional, paging information object (see below) - if supported by the language
+     * }
+     * 
+     * sort
+     * {
+     *    column: string,         mandatory, sort column in appropriate format for the language
+     *    ascending: boolean      optional, defaults to false
+     * }
+     * 
+     * page
+     * {
+     *    maxItems: int,          optional, max number of items to return in result set
+     *    skipCount: int          optional, number of items to skip over before returning results
+     * }
+     * </pre>
+     * 
+     * @param search    Search definition object as above
+     * 
+     * @return Array of ScriptNode results
+     */
+    public Scriptable query(Object search)
+    {
+        Object[] results = null;
+        
+        if (search instanceof Serializable)
+        {
+            Serializable obj = new ValueConverter().convertValueForRepo((Serializable)search);
+            if (obj instanceof Map)
+            {
+                Map<Serializable, Serializable> def = (Map<Serializable, Serializable>)obj;
+                
+                // test for mandatory values
+                String query = (String)def.get("query");
+                if (query == null || query.length() == 0)
+                {
+                    throw new AlfrescoRuntimeException("Failed to search: Missing mandatory 'query' value.");
+                }
+                
+                // collect optional values
+                String store = (String)def.get("store");
+                String language = (String)def.get("language");
+                List<Map<Serializable, Serializable>> sort = (List<Map<Serializable, Serializable>>)def.get("sort");
+                Map<Serializable, Serializable> page = (Map<Serializable, Serializable>)def.get("page");
+                
+                // extract supplied values
+                
+                // sorting columns
+                SortColumn[] sortColumns = null;
+                if (sort != null)
+                {
+                    sortColumns = new SortColumn[sort.size()];
+                    int index = 0;
+                    for (Map<Serializable, Serializable> column : sort)
+                    {
+                        String strCol = (String)column.get("column");
+                        if (strCol == null || strCol.length() == 0)
+                        {
+                            throw new AlfrescoRuntimeException("Failed to search: Missing mandatory 'sort: column' value.");
+                        }
+                        Boolean boolAsc = (Boolean)column.get("ascending");
+                        boolean ascending = (boolAsc != null ? boolAsc.booleanValue() : false);
+                        sortColumns[index++] = new SortColumn(strCol, ascending);
+                    }
+                }
+                
+                // paging settings
+                int maxResults = -1;
+                int skipResults = 0;
+                if (page != null)
+                {
+                    if (page.get("maxItems") != null)
+                    {
+                        maxResults = ((Number)page.get("maxItems")).intValue();
+                    }
+                    if (page.get("skipCount") != null)
+                    {
+                        skipResults = ((Number)page.get("skipCount")).intValue();
+                    }
+                }
+                
+                // execute search based on search definition
+                results = query(store, query, sortColumns, language, maxResults, skipResults);
+            }
+        }
+        
+        if (results == null)
+        {
+            results = new ScriptNode[0];
+        }
+        
+        return Context.getCurrentContext().newArray(getScope(), results);
+    }
+    
+    /**
      * Encode a string to ISO9075 - used to build valid paths for Lucene queries etc.
      * 
      * @param s     Value to encode
@@ -439,66 +547,36 @@ public final class Search extends BaseScopableProcessorExtension
      * Removes any duplicates that may be present (ID search can cause duplicates -
      * it is better to remove them here)
      * 
-     * @param store     StoreRef to search against - null for default configured store
-     * @param search    Lucene search to execute
-     * @param language  Search language to use e.g. SearchService.LANGUAGE_LUCENE
+     * @param store         StoreRef to search against - null for default configured store
+     * @param search        Lucene search to execute
+     * @param sort          Columns to sort by
+     * @param language      Search language to use e.g. SearchService.LANGUAGE_LUCENE
      * 
      * @return Array of Node objects
      */
-    private Object[] query(String store, String search, String language)
-    {   
-        LinkedHashSet<ScriptNode> set = null;
-        
-        // perform the search against the repo
-        ResultSet results = null;
-        try
-        {
-            results = this.services.getSearchService().query(
-                    store != null ? new StoreRef(store) : this.storeRef,
-                    language,
-                    search);
-            
-            if (results.length() != 0)
-            {
-                set = new LinkedHashSet<ScriptNode>(results.length(), 1.0f);
-                for (ResultSetRow row: results)
-                {
-                    NodeRef nodeRef = row.getNodeRef();
-                    set.add(new ScriptNode(nodeRef, this.services, getScope()));
-                }
-            }
-        }
-        catch (Throwable err)
-        {
-            throw new AlfrescoRuntimeException("Failed to execute search: " + search, err);
-        }
-        finally
-        {
-            if (results != null)
-            {
-                results.close();
-            }
-        }
-        
-        return set != null ? set.toArray(new Object[(set.size())]) : new Object[0];
+    private Object[] query(String store, String search, SortColumn[] sort, String language)
+    {
+        return query(store, search, sort, language, -1, 0);
     }
-
+    
     /**
      * Execute the query
      * 
      * Removes any duplicates that may be present (ID search can cause duplicates -
      * it is better to remove them here)
      * 
-     * @param store     StoreRef to search against - null for default configured store
-     * @param search    Lucene search to execute
-     * @param sort      Columns to sort by
-     * @param language  Search language to use e.g. SearchService.LANGUAGE_LUCENE
+     * @param store         StoreRef to search against - null for default configured store
+     * @param search        Lucene search to execute
+     * @param sort          Columns to sort by
+     * @param language      Search language to use e.g. SearchService.LANGUAGE_LUCENE
+     * @param maxResults    Maximum results to return, -1 for all
+     * @param skipResults   Results to skip in the result set
      * 
      * @return Array of Node objects
      */
-    private Object[] query(String store, String search, SortColumn[] sort, String language)
+    private Object[] query(String store, String search, SortColumn[] sort, String language, int maxResults, int skipResults)
     {   
-        LinkedHashSet<ScriptNode> set = null;
+        Collection<ScriptNode> set = null;
         
         // perform the search against the repo
         ResultSet results = null;
@@ -506,8 +584,13 @@ public final class Search extends BaseScopableProcessorExtension
         {
             SearchParameters sp = new SearchParameters();
             sp.addStore(store != null ? new StoreRef(store) : this.storeRef);
-            sp.setLanguage(language);
+            sp.setLanguage(language != null ? language : SearchService.LANGUAGE_LUCENE);
             sp.setQuery(search);
+            if (maxResults != -1)
+            {
+                sp.setLimit(maxResults);
+                sp.setLimitBy(LimitBy.FINAL_SIZE);
+            }
             if (sort != null)
             {
                 for (SortColumn sd : sort)

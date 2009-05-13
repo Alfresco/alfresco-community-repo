@@ -271,7 +271,7 @@ public class AuthorityDAOImpl implements AuthorityDAO
             CacheKey key = new CacheKey(type, name, false, !immediate);
 
             HashSet<String> authorities = authorityLookupCache.get(key);
-            if (authorities == null || true)
+            if (authorities == null)
             {
                 authorities = new HashSet<String>();
                 findAuthorities(type, null, nodeRef, authorities, false, !immediate, false);
@@ -315,7 +315,7 @@ public class AuthorityDAOImpl implements AuthorityDAO
         CacheKey key = new CacheKey(type, name, true, !immediate);
 
         HashSet<String> authorities = authorityLookupCache.get(key);
-        if (authorities == null || true)
+        if (authorities == null)
         {
             authorities = new HashSet<String>();
             findAuthorities(type, name, authorities, true, !immediate);

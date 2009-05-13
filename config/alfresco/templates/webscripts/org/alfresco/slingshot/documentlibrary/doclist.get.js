@@ -14,7 +14,7 @@ function getDocList(filter)
    var items = new Array();
    var assets;
    
-   // Is our thumbnail tpe registered?
+   // Is our thumbnail type registered?
    var haveThumbnails = thumbnailService.isThumbnailNameRegistered(THUMBNAIL_NAME);
 
    // Use helper function to get the arguments
@@ -73,7 +73,18 @@ function getDocList(filter)
          // Possibly an old indexed node - ignore it
       }
    }
-   assets = folderAssets.concat(documentAssets);
+   
+   var folderAssetsCount = folderAssets.length,
+      documentAssetsCount = documentAssets.length;
+   
+   if (url.templateArgs.type === "documents")
+   {
+      assets = documentAssets;
+   }
+   else
+   {
+      assets = folderAssets.concat(documentAssets);
+   }
    
    // Make a note of totalRecords before trimming the assets array
    var totalRecords = assets.length;
@@ -261,6 +272,11 @@ function getDocList(filter)
    {
       luceneQuery: query,
       onlineEditing: utils.moduleInstalled("org.alfresco.module.vti"),
+      itemCount:
+      {
+         folders: folderAssetsCount,
+         documents: documentAssetsCount
+      },
       paging:
       {
          startIndex: startIndex,

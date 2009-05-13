@@ -5,6 +5,7 @@
       <@renderParent node.parent indent+"   " />
    </#if>
       ${indent}"type": "${node.typeShort}",
+      ${indent}"isContainer": ${node.isContainer?string},
       ${indent}"hasChildren": ${(node.children?size > 0)?string},
       ${indent}"name": "${node.properties.name!""}",
       ${indent}"description": "${node.properties.description!""}",
@@ -26,11 +27,11 @@
       <#list results as row>
          {
             "type": "${row.item.typeShort}",
+            "isContainer": ${row.item.isContainer?string},
             "hasChildren": ${(row.item.children?size > 0)?string},
             "name": "${row.item.properties.name!""}",
             "description": "${row.item.properties.description!""}",
             "displayPath": "${row.item.displayPath!""}",
-            "hasChildren": ${(row.item.children?size > 0)?string},
             "nodeRef": "${row.item.nodeRef}"<#if row.selectable?exists>,
             "selectable" : ${row.selectable?string}</#if>
          }<#if row_has_next>,</#if>

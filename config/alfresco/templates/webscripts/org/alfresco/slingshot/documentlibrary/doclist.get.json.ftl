@@ -2,6 +2,7 @@
 <#assign workingCopyLabel = " " + message("coci_service.working_copy_label")>
 <#assign paging = doclist.paging>
 <#assign user = doclist.user>
+<#assign itemCount = doclist.itemCount>
 <#escape x as jsonUtils.encodeJSONString(x)>
 {
    "totalRecords": ${paging.totalRecords?c},
@@ -18,7 +19,12 @@
             "delete" : ${user.permissions.delete?string}
          }
       },
-      "onlineEditing": ${doclist.onlineEditing?string}
+      "onlineEditing": ${doclist.onlineEditing?string},
+      "itemCounts":
+      {
+         "folders": ${(itemCount.folders!0)?string},
+         "documents": ${(itemCount.documents!0)?string}
+      }
    },
    "items":
    [

@@ -108,6 +108,9 @@ function getFilterParams(filter, parsedArgs)
          var filterQuery = "+PATH:\"" + parsedArgs.parentNode.qnamePath + "/*\"";
          filterQuery += " -ASPECT:\"{http://www.alfresco.org/model/content/1.0}workingcopy\"";
          filterQuery += " -TYPE:\"{http://www.alfresco.org/model/forum/1.0}forums\"";
+         filterQuery += " -TYPE:\"{http://www.alfresco.org/model/forum/1.0}forum\"";
+         filterQuery += " -TYPE:\"{http://www.alfresco.org/model/forum/1.0}topic\"";
+         filterQuery += " -TYPE:\"{http://www.alfresco.org/model/forum/1.0}post\"";
          
          filterParams.query = filterQuery;
          break;
@@ -118,7 +121,7 @@ function getFilterParams(filter, parsedArgs)
 
 const TYPE_MAP =
 {
-   "documents": '+(TYPE:"{http://www.alfresco.org/model/content/1.0}content" OR TYPE:"{http://www.alfresco.org/model/application/1.0}filelink")',
+   "documents": '+(TYPE:"{http://www.alfresco.org/model/content/1.0}content" OR TYPE:"{http://www.alfresco.org/model/application/1.0}filelink" OR TYPE:"{http://www.alfresco.org/model/content/1.0}folder")',
    "folders": '+TYPE:"{http://www.alfresco.org/model/content/1.0}folder"',
    "images": "-TYPE:\"{http://www.alfresco.org/model/content/1.0}thumbnail\" +@cm\\:content.mimetype:image/*"
 };

@@ -10,7 +10,14 @@ function getTreenode(siteId, path)
 {
    try
    {
-      var items = new Array();
+      var items = new Array(),
+         ignoredTypes =
+         {
+            "{http://www.alfresco.org/model/forum/1.0}forums": true,
+            "{http://www.alfresco.org/model/forum/1.0}forum": true,
+            "{http://www.alfresco.org/model/forum/1.0}topic": true,
+            "{http://www.alfresco.org/model/forum/1.0}post": true
+         };
    
       // Use helper function to get the arguments
       var parsedArgs = getParsedArgs();
@@ -22,7 +29,7 @@ function getTreenode(siteId, path)
       // Look for folders in the parentNode
       for each(item in parsedArgs.parentNode.children)
       {
-         if (item.isSubType("cm:folder"))
+         if (item.isSubType("cm:folder") && !(item.type in ignoredTypes))
          {
             items.push(item);
          }

@@ -77,6 +77,7 @@ public class NodeHandler extends AbstractHandler
 {
     private static final Log logger = LogFactory.getLog(NodeHandler.class);
 
+    protected static final String ON = "on";
     protected static final String PROP = "prop";
     protected static final String ASSOC = "assoc";
     protected static final String DATA_KEY_SEPARATOR = "_";
@@ -912,6 +913,14 @@ public class NodeHandler extends AbstractHandler
                         // persist the List
                         value = list;
                     }
+                    else if (propDef.getDataType().getName().equals(DataTypeDefinition.BOOLEAN))
+                    {
+                        // check for browser representation of true, that being "on"
+                        if (value instanceof String && ON.equals(value))
+                        {
+                            value = Boolean.TRUE;
+                        }
+                    }
                     else if (propDef.getDataType().getName().equals(DataTypeDefinition.LOCALE))
                     {
                         value = I18NUtil.parseLocale((String)value);
@@ -1003,32 +1012,50 @@ public class NodeHandler extends AbstractHandler
             // with the current node.
             for (String nextTargetNode : nodeRefs)
             {
-                if (NodeRef.isNodeRef(nextTargetNode))
+                if (nextTargetNode.length() > 0)
                 {
-                    if (assocSuffix.equals(ASSOC_DATA_ADDED_SUFFIX))
+                    if (NodeRef.isNodeRef(nextTargetNode))
                     {
-                        if (assocDef.isChild())
+                        if (assocSuffix.equals(ASSOC_DATA_ADDED_SUFFIX))
                         {
-                            assocCommands.add(new AddChildAssocCommand(nodeRef, new NodeRef(nextTargetNode),
-                                    fullQNameFromJSON));
+                            if (assocDef.isChild())
+                            {
+                                assocCommands.add(new AddChildAssocCommand(nodeRef, new NodeRef(nextTargetNode),
+                                        fullQNameFromJSON));
+                            }
+                            else
+                            {
+                                assocCommands.add(new AddAssocCommand(nodeRef, new NodeRef(nextTargetNode),
+                                        fullQNameFromJSON));
+                            }
+                        }
+                        else if (assocSuffix.equals(ASSOC_DATA_REMOVED_SUFFIX))
+                        {
+                            if (assocDef.isChild())
+                            {
+                                assocCommands.add(new RemoveChildAssocCommand(nodeRef, new NodeRef(nextTargetNode),
+                                        fullQNameFromJSON));
+                            }
+                            else
+                            {
+                                assocCommands.add(new RemoveAssocCommand(nodeRef, new NodeRef(nextTargetNode),
+                                        fullQNameFromJSON));
+                            }
                         }
                         else
                         {
-                            assocCommands.add(new AddAssocCommand(nodeRef, new NodeRef(nextTargetNode),
-                                    fullQNameFromJSON));
-                        }
-                    }
-                    else if (assocSuffix.equals(ASSOC_DATA_REMOVED_SUFFIX))
-                    {
-                        if (assocDef.isChild())
-                        {
-                            assocCommands.add(new RemoveChildAssocCommand(nodeRef, new NodeRef(nextTargetNode),
-                                    fullQNameFromJSON));
-                        }
-                        else
-                        {
-                            assocCommands.add(new RemoveAssocCommand(nodeRef, new NodeRef(nextTargetNode),
-                                    fullQNameFromJSON));
+                            if (logger.isWarnEnabled())
+                            {
+                                StringBuilder msg = new StringBuilder();
+                                msg.append("fieldName ")
+                                    .append(fieldName)
+                                    .append(" does not have one of the expected suffixes [")
+                                    .append(ASSOC_DATA_ADDED_SUFFIX)
+                                    .append(", ")
+                                    .append(ASSOC_DATA_REMOVED_SUFFIX)
+                                    .append("] and has been ignored.");
+                                logger.warn(msg.toString());
+                            }
                         }
                     }
                     else
@@ -1036,26 +1063,11 @@ public class NodeHandler extends AbstractHandler
                         if (logger.isWarnEnabled())
                         {
                             StringBuilder msg = new StringBuilder();
-                            msg.append("fieldName ")
-                                .append(fieldName)
-                                .append(" does not have one of the expected suffixes [")
-                                .append(ASSOC_DATA_ADDED_SUFFIX)
-                                .append(", ")
-                                .append(ASSOC_DATA_REMOVED_SUFFIX)
-                                .append("] and has been ignored.");
+                            msg.append("targetNode ")
+                                .append(nextTargetNode)
+                                .append(" is not a valid NodeRef and has been ignored.");
                             logger.warn(msg.toString());
                         }
-                    }
-                }
-                else
-                {
-                    if (logger.isWarnEnabled())
-                    {
-                        StringBuilder msg = new StringBuilder();
-                        msg.append("targetNode ")
-                            .append(nextTargetNode)
-                            .append(" is not a valid NodeRef and has been ignored.");
-                        logger.warn(msg.toString());
                     }
                 }
             }

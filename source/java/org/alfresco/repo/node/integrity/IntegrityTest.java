@@ -236,6 +236,8 @@ public class IntegrityTest extends TestCase
     {
         NodeRef nodeRef = createNode("abc", TEST_TYPE_WITH_PROPERTIES, allProperties);
         
+        // Remove the automatically-added aspect
+        nodeService.removeAspect(nodeRef, TEST_ASPECT_WITH_PROPERTIES);
         // remove all the properties
         PropertyMap properties = new PropertyMap();
         nodeService.setProperties(nodeRef, properties);

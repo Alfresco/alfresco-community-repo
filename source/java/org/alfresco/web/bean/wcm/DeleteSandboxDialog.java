@@ -25,6 +25,7 @@
 package org.alfresco.web.bean.wcm;
 
 import java.text.MessageFormat;
+import java.util.List;
 
 import javax.faces.context.FacesContext;
 
@@ -96,8 +97,8 @@ public class DeleteSandboxDialog extends BaseDialogBean
          String mainStore = AVMUtil.buildUserMainStoreName(wpStoreId, username);
           
          // if the sandbox is allocated to a test server release it
-         NodeRef testServer = DeploymentUtil.findAllocatedTestServer(mainStore);
-         if (testServer != null)
+         List<NodeRef> testServers = DeploymentUtil.findAllocatedTestServers(mainStore);
+         for(NodeRef testServer : testServers)
          {
             getNodeService().setProperty(testServer, WCMAppModel.PROP_DEPLOYSERVERALLOCATEDTO, null);
              

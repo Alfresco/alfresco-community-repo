@@ -162,8 +162,8 @@ public class ManageReviewTaskDialog extends ManageTaskDialog
       
       // if a test server has already been allocated inform the dialog
       // that an update is needed
-      NodeRef testServer = DeploymentUtil.findAllocatedTestServer(this.store);
-      if (testServer != null)
+      List<NodeRef> testServers = DeploymentUtil.findAllocatedTestServers(this.store);
+      if (!testServers.isEmpty())
       {
          params.put("updateTestServer", "true");
       }

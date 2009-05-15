@@ -24,6 +24,7 @@
  */
 package org.alfresco.web.bean.wcm;
 
+import java.util.List;
 import java.util.Map;
 
 import javax.faces.context.FacesContext;
@@ -70,8 +71,8 @@ public class ReleaseTestServerDialog extends BaseDialogBean
    protected String finishImpl(FacesContext context, String outcome)
          throws Exception
    {
-      NodeRef testServer = DeploymentUtil.findAllocatedTestServer(this.store);
-      if (testServer != null)
+      List<NodeRef> testServers = DeploymentUtil.findAllocatedTestServers(this.store);
+      for(NodeRef testServer : testServers)
       {
          getNodeService().setProperty(testServer, 
                   WCMAppModel.PROP_DEPLOYSERVERALLOCATEDTO, null);

@@ -416,8 +416,8 @@ public class UIUserSandboxes extends SelfRenderingComponent implements Serializa
                      logger.debug("Building sandbox view for user store: " + mainStore);
                   
                   // determine if the sandbox has an allocated test server for deployment
-                  NodeRef testServer = DeploymentUtil.findAllocatedTestServer(mainStore);
-                  boolean hasAllocatedTestServer = (testServer != null);
+                  List<NodeRef> testServers = DeploymentUtil.findAllocatedTestServers(mainStore);
+                  boolean hasAllocatedTestServer = (!testServers.isEmpty());
                   
                   // determine if there are any previous deployment attempts
                   List<NodeRef> deployAttempts = DeploymentUtil.findDeploymentAttempts(mainStore);

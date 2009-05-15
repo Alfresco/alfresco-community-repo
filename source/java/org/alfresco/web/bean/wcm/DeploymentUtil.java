@@ -230,13 +230,15 @@ public final class DeploymentUtil
    }
    
    /**
-    * Returns the test server allocated to the given store.
+    * Returns the test servers allocated to the given store.
     * 
     * @param store The store to get the test server for
-    * @return The allocated server or null if there isn't one
+    * @return The allocated server(s), an empty list if there isn't one
     */
-   public static NodeRef findAllocatedTestServer(String store)
+   public static List<NodeRef> findAllocatedTestServers(String store)
    {
+	  List<NodeRef>serverList = new ArrayList<NodeRef>();
+	  
       FacesContext fc = FacesContext.getCurrentInstance();
       SearchService searchService = Repository.getServiceRegistry(fc).getSearchService();
       
@@ -257,18 +259,12 @@ public final class DeploymentUtil
          results = searchService.query(Repository.getStoreRef(), 
                SearchService.LANGUAGE_LUCENE, query.toString());
          
-         if (results.length() == 1)
+         if (results.length() > 0)
          {
-            testServer = results.getNodeRef(0);
-         }
-         else if (results.length() > 1)
-         {
-            // get the first one and warn that we found many!
-            testServer = results.getNodeRef(0);
-            
-            if (logger.isWarnEnabled())
-               logger.warn("More than one allocated test server for store '" +
-                     store + "' was found, should only be one, first one found returned!");
+        	 for(int i = 0; i < results.length(); i++)
+        	 {
+        		 serverList.add(results.getNodeRef(i));
+        	 }
          }
       }
       finally
@@ -279,7 +275,7 @@ public final class DeploymentUtil
          }
       }
       
-      return testServer;
+      return serverList;
    }
    
    /**

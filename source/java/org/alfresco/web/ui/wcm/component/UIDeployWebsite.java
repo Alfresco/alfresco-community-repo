@@ -244,40 +244,63 @@ public class UIDeployWebsite extends UIInput
                // been removed then show a list of available test servers to choose
                // from.
                
-               NodeRef allocatedServer = DeploymentUtil.findAllocatedTestServer(getStore());
-               if (allocatedServer != null)
+               List<NodeRef> allocatedServers = DeploymentUtil.findAllocatedTestServers(getStore());
+               if (!allocatedServers.isEmpty())
                {
-            	  // there is an allocated server
-                  renderAllocatedTestServer(context, out, nodeService, allocatedServer);
+            	  // there is at least one allocated server
+            	  for(NodeRef allocatedServer : allocatedServers)
+            	  {
+            		  renderAllocatedTestServer(context, out, nodeService, allocatedServer);
+            	  }
                }
                else
                {
-            	  // a test server needs to be selected - display the list of test servers
+            	  // a test server(s) needs to be selected - display the list of test servers
                   List<NodeRef> refs = DeploymentUtil.findTestServers(webProject, true);
                   
                   // Resolve the unsorted list of NodeRef to a sorted list of DeploymentServerConfig.
                   List<DeploymentServerConfig> servers = toSortedDeploymentServerConfig(nodeService, refs);
                   
-                  
                   if (servers.size() > 0)
                   {
-                     boolean first = true;
-                     String currentDisplayGroup = "";
+                     ParentChildCheckboxHelper helper = new ParentChildCheckboxHelper(this.getClientId(context));
+                     //boolean first = true;
+                     //String currentDisplayGroup = "";
+                     boolean selected = false;
                      
                      for (DeploymentServerConfig server: servers)
-                     {
-                        // Write the display group title if it is a new title
-                        String displayGroup = (String)server.getProperties().get(DeploymentServerConfig.PROP_GROUP);
-                        if(!currentDisplayGroup.equalsIgnoreCase(displayGroup)) 
-                        {
-                          // yes title has changed - write out the new displayGroup	
-                          out.write("<p class='mainSubTitle'>");
-                          out.write(displayGroup);
-                          out.write("</p>");
-                          currentDisplayGroup = displayGroup;
-                    	}
-                        renderTestServer(context, out, nodeService, server.getServerRef(), first);
-                        first = false;
+                     {                    	 
+                    	    // Get the display group
+                         String displayGroup = (String)server.getProperties().get(DeploymentServerConfig.PROP_GROUP);
+                         
+                         helper.setCurrentDisplayGroup(displayGroup);
+                         if(helper.newGroup) 
+                         {       		
+                           out.write("<p class='mainSubTitle'>");
+                           out.write("<input type='checkbox' id='");
+                           out.write(helper.groupParentId);
+                           out.write("' value='");
+                           out.write(displayGroup);
+                           out.write("'");
+                           out.write(" ");
+                           out.write("onClick=\"select_all(\'");
+                      	   out.write(helper.groupChildName);
+                   	       out.write("\', this.checked);\" "); 
+                           out.write(" /> ");
+                           out.write(displayGroup);
+                           out.write("</p>");
+                     	 }
+
+                         if(helper.groupParentId.length() > 0) 
+                         {
+                       	  // render the test server with a child checkbox
+                             renderCheckableServer(context, out, nodeService, server.getServerRef(), selected, helper.groupChildName, helper.groupParentId);
+                         }
+                         else
+                         {
+                       	  // render the test server without a parent checkbox
+                       	  renderCheckableServer(context, out, nodeService, server.getServerRef(), selected, this.getClientId(context));
+                         }                    	 
                      }
                   }
                   else
@@ -341,12 +364,12 @@ public class UIDeployWebsite extends UIInput
                   if(helper.groupParentId.length() > 0) 
                   {
                 	  // render the live server with a child checkbox
-                      renderLiveServer(context, out, nodeService, server.getServerRef(), selected, helper.groupChildName, helper.groupParentId);
+                      renderCheckableServer(context, out, nodeService, server.getServerRef(), selected, helper.groupChildName, helper.groupParentId);
                   }
                   else
                   {
                 	  // render the live server without a parent checkbox
-                	  renderLiveServer(context, out, nodeService, server.getServerRef(), selected, this.getClientId(context));
+                	  renderCheckableServer(context, out, nodeService, server.getServerRef(), selected, this.getClientId(context));
                   }
                }
             }
@@ -552,13 +575,13 @@ public class UIDeployWebsite extends UIInput
       out.write("</script>\n");
    }
    
-   private void renderLiveServer(FacesContext context, ResponseWriter out, NodeService nodeService,
+   private void renderCheckableServer(FacesContext context, ResponseWriter out, NodeService nodeService,
            NodeRef server, boolean selected, String checkBoxName) throws IOException
    {
-	   renderLiveServer(context, out, nodeService, server, selected, checkBoxName, "");
+	   renderCheckableServer(context, out, nodeService, server, selected, checkBoxName, "");
    }
 
-   private void renderLiveServer(FacesContext context, ResponseWriter out, NodeService nodeService,
+   private void renderCheckableServer(FacesContext context, ResponseWriter out, NodeService nodeService,
             NodeRef server, boolean selected, String checkBoxName, String parentId) throws IOException
    {
       String contextPath = context.getExternalContext().getRequestContextPath();
@@ -596,38 +619,15 @@ public class UIDeployWebsite extends UIInput
       
       renderPanelMiddle(out, contextPath, nodeService, server, true);
       
-      if (selected == false)
-      {
-         out.write("<div class='deployPanelServerStatus'><img src='");
-         out.write(contextPath);
-         out.write("/images/icons/info_icon.gif' style='vertical-align: -5px;' />&nbsp;");
-         out.write(Application.getMessage(context, "deploy_server_not_selected"));
-         out.write("</div>");
-      }
+//      if (selected == false)
+//      {
+//         out.write("<div class='deployPanelServerStatus'><img src='");
+//         out.write(contextPath);
+//         out.write("/images/icons/info_icon.gif' style='vertical-align: -5px;' />&nbsp;");
+//         out.write(Application.getMessage(context, "deploy_server_not_selected"));
+//         out.write("</div>");
+//      }
       
-      renderPanelEnd(out, contextPath);
-   }
-   
-   private void renderTestServer(FacesContext context, ResponseWriter out, NodeService nodeService,
-            NodeRef server, boolean selected) throws IOException
-   {
-      String contextPath = context.getExternalContext().getRequestContextPath();
-      
-      renderPanelStart(out, contextPath);
-      
-      out.write("<div class='deployPanelControl'>");
-      out.write("<input type='radio' name='");
-      out.write(this.getClientId(context));
-      out.write("' value='");
-      out.write(server.toString());
-      out.write("'");
-      if (selected)
-      {
-         out.write(" checked='checked'");
-      }
-      out.write(" /></div>");
-      
-      renderPanelMiddle(out, contextPath, nodeService, server, true);
       renderPanelEnd(out, contextPath);
    }
    

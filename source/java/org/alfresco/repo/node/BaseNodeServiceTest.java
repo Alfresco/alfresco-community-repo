@@ -131,6 +131,7 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
     public static final QName PROP_QNAME_NULL_VALUE = QName.createQName(NAMESPACE, "nullValue");
     public static final QName PROP_QNAME_MULTI_VALUE = QName.createQName(NAMESPACE, "multiValue");    
     public static final QName PROP_QNAME_MULTI_ML_VALUE = QName.createQName(NAMESPACE, "multiMLValue");    
+    public static final QName PROP_QNAME_MARKER_PROP = QName.createQName(NAMESPACE, "markerProp");
     public static final QName PROP_QNAME_PROP1 = QName.createQName(NAMESPACE, "prop1");
     public static final QName PROP_QNAME_PROP2 = QName.createQName(NAMESPACE, "prop2");
     public static final QName ASSOC_TYPE_QNAME_TEST_CHILDREN = ContentModel.ASSOC_CHILDREN;
@@ -667,6 +668,73 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         assertEquals("Aspect properties not removed",
                 propertiesBefore.size(),
                 propertiesAfter.size());
+    }
+    
+    public void testAspectsAddedAutomatically() throws Exception
+    {
+        // Add the test:titled properties
+        Map<QName, Serializable> properties = new HashMap<QName, Serializable>(20);
+        fillProperties(BaseNodeServiceTest.ASPECT_QNAME_TEST_TITLED, properties);
+        // Create a regular base node
+        NodeRef nodeRef = nodeService.createNode(
+                rootNodeRef,
+                ASSOC_TYPE_QNAME_TEST_CHILDREN,
+                QName.createQName(BaseNodeServiceTest.NAMESPACE, "test-container"),
+                ContentModel.TYPE_CONTAINER,
+                properties).getChildRef();
+        // Ensure that the aspect was automatically added
+        assertTrue("Aspect not automatically added during 'createNode'",
+                nodeService.hasAspect(nodeRef, BaseNodeServiceTest.ASPECT_QNAME_TEST_TITLED));
+        
+        // Remove the aspect and test using setProperties
+        nodeService.removeAspect(nodeRef, BaseNodeServiceTest.ASPECT_QNAME_TEST_TITLED);
+        properties = nodeService.getProperties(nodeRef);
+        assertFalse("test:titled properties not removed",
+                properties.containsKey(BaseNodeServiceTest.PROP_QNAME_TEST_TITLE));
+        assertFalse("test:titled properties not removed",
+                properties.containsKey(BaseNodeServiceTest.PROP_QNAME_TEST_DESCRIPTION));
+        properties.put(BaseNodeServiceTest.PROP_QNAME_TEST_DESCRIPTION, "A description");
+        nodeService.setProperties(nodeRef, properties);
+        assertTrue("Aspect not automatically added during 'setProperties'",
+                nodeService.hasAspect(nodeRef, BaseNodeServiceTest.ASPECT_QNAME_TEST_TITLED));
+        
+        // Remove the aspect and test using addProperties
+        nodeService.removeAspect(nodeRef, BaseNodeServiceTest.ASPECT_QNAME_TEST_TITLED);
+        properties = new HashMap<QName, Serializable>(5);
+        properties.put(BaseNodeServiceTest.PROP_QNAME_TEST_DESCRIPTION, "A description");
+        nodeService.addProperties(nodeRef, properties);
+        assertTrue("Aspect not automatically added during 'addProperties'",
+                nodeService.hasAspect(nodeRef, BaseNodeServiceTest.ASPECT_QNAME_TEST_TITLED));
+        
+        // Remove the aspect and test using setProperty
+        nodeService.removeAspect(nodeRef, BaseNodeServiceTest.ASPECT_QNAME_TEST_TITLED);
+        nodeService.setProperty(nodeRef, BaseNodeServiceTest.PROP_QNAME_TEST_DESCRIPTION, "A description");
+        assertTrue("Aspect not automatically added during 'setProperty'",
+                nodeService.hasAspect(nodeRef, BaseNodeServiceTest.ASPECT_QNAME_TEST_TITLED));
+        
+        // Check that aspects with further mandatory aspects are added properly
+        nodeService.setProperty(nodeRef, BaseNodeServiceTest.PROP_QNAME_MARKER_PROP, "Marker value");
+        assertTrue("Aspect not automatically added during 'setProperty'",
+                nodeService.hasAspect(nodeRef, BaseNodeServiceTest.ASPECT_QNAME_TEST_MARKER));
+        assertTrue("Aspect not automatically added during 'setProperty' (second-level)",
+                nodeService.hasAspect(nodeRef, BaseNodeServiceTest.ASPECT_QNAME_TEST_MARKER2));
+        
+        // Check that child association creation adds the aspect to the parent
+        NodeRef childNodeRef = nodeService.createNode(
+                nodeRef,
+                BaseNodeServiceTest.ASSOC_ASPECT_CHILD_ASSOC,
+                BaseNodeServiceTest.ASSOC_ASPECT_CHILD_ASSOC,
+                ContentModel.TYPE_CMOBJECT).getChildRef();
+        assertTrue("Aspect not automatically added by child association during 'createNode'",
+                nodeService.hasAspect(nodeRef, BaseNodeServiceTest.ASPECT_WITH_ASSOCIATIONS));
+        
+        nodeService.removeAspect(nodeRef, BaseNodeServiceTest.ASPECT_WITH_ASSOCIATIONS);
+        assertFalse("Child node should have been deleted", nodeService.exists(childNodeRef));
+        
+        // Check that normal association creation adds the aspect to the source
+        nodeService.createAssociation(nodeRef, rootNodeRef, BaseNodeServiceTest.ASSOC_ASPECT_NORMAL_ASSOC);
+        assertTrue("Aspect not automatically added by child association during 'createAssociation'",
+                nodeService.hasAspect(nodeRef, BaseNodeServiceTest.ASPECT_WITH_ASSOCIATIONS));
     }
     
     public void testAspectRemoval() throws Exception
@@ -1237,7 +1305,7 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         }
     }
     
-    public void setAddProperties() throws Exception
+    public void testAddProperties() throws Exception
     {
         Map<QName, Serializable> properties = nodeService.getProperties(rootNodeRef);
         // Add an aspect with a default value

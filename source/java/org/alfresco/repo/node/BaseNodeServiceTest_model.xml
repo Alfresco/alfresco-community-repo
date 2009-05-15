@@ -324,6 +324,11 @@
       
       <aspect name="test:marker">
          <title>Marker Aspect</title>     
+         <properties>
+            <property name="test:markerProp">
+               <type>d:text</type>
+            </property>
+         </properties>
          <mandatory-aspects>
             <aspect>test:marker2</aspect>
          </mandatory-aspects>

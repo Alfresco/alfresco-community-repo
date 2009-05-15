@@ -25,7 +25,9 @@
 package org.alfresco.util;
 
 import java.io.Serializable;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.Map;
 
 import org.alfresco.service.namespace.QName;
 
@@ -40,6 +42,11 @@ import org.alfresco.service.namespace.QName;
 public class PropertyMap extends HashMap<QName, Serializable>
 {
     private static final long serialVersionUID = 8052326301073209645L;
+    
+    /**
+     * A static empty map to us when having to deal with nulls
+     */
+    public static final Map<QName, Serializable> EMPTY_MAP = Collections.<QName, Serializable>emptyMap();
     
     /**
      * @see HashMap#HashMap(int, float)

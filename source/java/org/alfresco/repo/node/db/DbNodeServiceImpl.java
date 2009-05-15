@@ -77,6 +77,7 @@ import org.alfresco.util.EqualsHelper;
 import org.alfresco.util.GUID;
 import org.alfresco.util.Pair;
 import org.alfresco.util.ParameterCheck;
+import org.alfresco.util.PropertyMap;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.util.Assert;
@@ -329,10 +330,15 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         invokeOnCreateNode(childAssocRef);
         invokeOnCreateChildAssociation(childAssocRef, true);
         addIntrinsicProperties(childNodePair, propertiesAfter);
+        Map<QName, Serializable> propertiesBefore = PropertyMap.EMPTY_MAP;
         invokeOnUpdateProperties(
                 childAssocRef.getChildRef(),
-                Collections.<QName, Serializable>emptyMap(),
+                propertiesBefore,
                 propertiesAfter);
+        
+        // Add missing aspects
+        addMissingAspects(childNodePair, propertiesBefore, propertiesAfter);
+        addMissingAspects(parentNodePair, assocTypeQName);
         
         // Index
         nodeIndexer.indexCreateNode(childAssocRef);
@@ -853,6 +859,9 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
 
         // Invoke policy behaviours
         invokeOnCreateChildAssociation(childAssocRef, false);
+        
+        // Add missing aspects
+        addMissingAspects(parentNodePair, assocTypeQName);
 
         // Index
         nodeIndexer.indexCreateChildAssociation(childAssocRef);
@@ -1081,6 +1090,96 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         // done
         return nodeProperties;
     }
+
+    /**
+     * Find any aspects that are missing for the node, given the properties before and after an update.
+     */
+    private void addMissingAspects(
+            Pair<Long, NodeRef> nodePair,
+            Map<QName, Serializable> propertiesBefore,
+            Map<QName, Serializable> propertiesAfter)
+    {
+        Long nodeId = nodePair.getFirst();
+        NodeRef nodeRef = nodePair.getSecond();
+        Set<QName> aspectQNamesToAdd = new HashSet<QName>(5);
+        Set<QName> newProperties = new HashSet<QName>(propertiesAfter.keySet());
+        newProperties.removeAll(propertiesBefore.entrySet());
+        Set<QName> existingAspectsQNames = nodeDaoService.getNodeAspects(nodeId);
+        for (QName newPropertyQName : newProperties)
+        {
+            PropertyDefinition propDef = dictionaryService.getProperty(newPropertyQName);
+            if (propDef == null)
+            {
+                continue;               // Ignore undefined properties
+            }
+            if (!propDef.getContainerClass().isAspect())
+            {
+                continue;
+            }
+            QName containerClassQName = propDef.getContainerClass().getName();
+            // Remove this aspect - it is there
+            if (existingAspectsQNames.contains(containerClassQName))
+            {
+                // Already there
+                continue;
+            }
+            aspectQNamesToAdd.add(containerClassQName);
+        }
+        // Add the aspects and any missing, default properties
+        if (aspectQNamesToAdd.size() > 0)
+        {
+            for (QName aspectQNameToAdd : aspectQNamesToAdd)
+            {
+                invokeBeforeAddAspect(nodeRef, aspectQNameToAdd);
+            }
+            nodeDaoService.addNodeAspects(nodeId, aspectQNamesToAdd);
+            // Add the aspects and then their appropriate default values.
+            for (QName aspectQNameToAdd : aspectQNamesToAdd)
+            {
+                addDefaultProperties(nodePair, propertiesAfter, aspectQNameToAdd);
+                addDefaultAspects(nodePair, aspectQNameToAdd);
+            }
+            for (QName aspectQNameToAdd : aspectQNamesToAdd)
+            {
+                invokeOnAddAspect(nodeRef, aspectQNameToAdd);
+            }
+        }
+    }
+    
+    /**
+     * Find any aspects that are missing for the node, given the association type.
+     */
+    private void addMissingAspects(
+            Pair<Long, NodeRef> nodePair,
+            QName assocTypeQName)
+    {
+        Long nodeId = nodePair.getFirst();
+        NodeRef nodeRef = nodePair.getSecond();
+        Set<QName> existingAspectsQNames = nodeDaoService.getNodeAspects(nodeId);
+        AssociationDefinition assocDef = dictionaryService.getAssociation(assocTypeQName);
+        if (assocDef == null)
+        {
+            return;               // Ignore undefined properties
+        }
+        if (!assocDef.getSourceClass().isAspect())
+        {
+            return;
+        }
+        QName aspectQNameToAdd = assocDef.getSourceClass().getName();
+        // Remove this aspect - it is there
+        if (existingAspectsQNames.contains(aspectQNameToAdd))
+        {
+            // Already there
+            return;
+        }
+        // Add the aspects and any missing, default properties
+        invokeBeforeAddAspect(nodeRef, aspectQNameToAdd);
+        nodeDaoService.addNodeAspects(nodeId, Collections.singleton(aspectQNameToAdd));
+        // Add the aspects and then their appropriate default values.
+        addDefaultProperties(nodePair, aspectQNameToAdd);
+        addDefaultAspects(nodePair, aspectQNameToAdd);
+        invokeOnAddAspect(nodeRef, aspectQNameToAdd);
+    }
     
     /**
      * Gets the properties map, sets the value (null is allowed) and checks that the new set
@@ -1117,6 +1216,9 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         Map<QName, Serializable> propertiesAfter = getPropertiesImpl(nodePair);
         invokeOnUpdateNode(nodeRef);
         invokeOnUpdateProperties(nodeRef, propertiesBefore, propertiesAfter);
+        
+        // Add any missing aspects
+        addMissingAspects(nodePair, propertiesBefore, propertiesAfter);
         
         // Index
         nodeIndexer.indexUpdateNode(nodeRef);
@@ -1180,6 +1282,9 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         invokeOnUpdateNode(nodeRef);
         invokeOnUpdateProperties(nodeRef, propertiesBefore, propertiesAfter);
         
+        // Add any missing aspects
+        addMissingAspects(nodePair, propertiesBefore, propertiesAfter);
+        
         // Index
         nodeIndexer.indexUpdateNode(nodeRef);
     }
@@ -1207,6 +1312,9 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         Map<QName, Serializable> propertiesAfter = getPropertiesImpl(nodePair);
         invokeOnUpdateNode(nodeRef);
         invokeOnUpdateProperties(nodeRef, propertiesBefore, propertiesAfter);
+        
+        // Add any missing aspects
+        addMissingAspects(nodePair, propertiesBefore, propertiesAfter);
         
         // Index
         nodeIndexer.indexUpdateNode(nodeRef);
@@ -1263,42 +1371,6 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         nodeIndexer.indexUpdateNode(nodeRef);
     }
 
-//    private Map<QName, PropertyValue> convertProperties(Map<QName, Serializable> properties) throws InvalidNodeRefException
-//    {
-//        Map<QName, PropertyValue> convertedProperties = new HashMap<QName, PropertyValue>(17);
-//        
-//        // check the property type and copy the values across
-//        for (QName propertyQName : properties.keySet())
-//        {
-//            PropertyDefinition propertyDef = dictionaryService.getProperty(propertyQName);
-//            Serializable value = properties.get(propertyQName);
-//            // get a persistable value
-//            PropertyValue propertyValue = makePropertyValue(propertyDef, value);
-//            convertedProperties.put(propertyQName, propertyValue);
-//        }
-//        
-//        // Return the converted properties
-//        return convertedProperties;
-//    }
-//    
-//    private Map<QName, Serializable> convertPropertyValues(Map<QName, PropertyValue> propertyValues) throws InvalidNodeRefException
-//    {
-//        Map<QName, Serializable> convertedProperties = new HashMap<QName, Serializable>(17);
-//        
-//        // check the property type and copy the values across
-//        for (Map.Entry<QName, PropertyValue> entry : propertyValues.entrySet())
-//        {
-//            QName propertyQName = entry.getKey();
-//            PropertyValue propertyValue = entry.getValue();
-//            PropertyDefinition propertyDef = dictionaryService.getProperty(propertyQName);
-//            Serializable property = makeSerializableValue(propertyDef, propertyValue);
-//            convertedProperties.put(propertyQName, property);
-//        }
-//        
-//        // Return the converted properties
-//        return convertedProperties;
-//    }
-//    
     public Collection<NodeRef> getParents(NodeRef nodeRef) throws InvalidNodeRefException
     {
         // Get the node
@@ -1554,6 +1626,9 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         // Invoke policy behaviours
         invokeOnCreateAssociation(assocRef);
         
+        // Add missing aspects
+        addMissingAspects(sourceNodePair, assocTypeQName);
+
         return assocRef;
     }
 

@@ -25,6 +25,7 @@
 package org.alfresco.web.bean.spaces;
 
 import java.io.Serializable;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -97,14 +98,8 @@ public class EditSpaceDialog extends CreateSpaceDialog
          this.getFileFolderService().rename(nodeRef, name);
       }
 
-      // get the current set of properties from the repository
-      Map<QName, Serializable> repoProps = this.getNodeService().getProperties(nodeRef);
-
-      // add the "uifacets" aspect if required, properties will get set below
-      if (this.getNodeService().hasAspect(nodeRef, ApplicationModel.ASPECT_UIFACETS) == false)
-      {
-         this.getNodeService().addAspect(nodeRef, ApplicationModel.ASPECT_UIFACETS, null);
-      }
+      // build the properties to add to the repository
+      Map<QName, Serializable> repoProps = new HashMap<QName, Serializable>(7);
 
       // overwrite the current properties with the edited ones
       Iterator<String> iterProps = editedProps.keySet().iterator();
@@ -136,8 +131,8 @@ public class EditSpaceDialog extends CreateSpaceDialog
          repoProps.put(qname, propValue);
       }
 
-      // send the properties back to the repository
-      this.getNodeService().setProperties(nodeRef, repoProps);
+      // add the new properties back to the repository
+      this.getNodeService().addProperties(nodeRef, repoProps);
 
       // we also need to persist any association changes that may have been made
 

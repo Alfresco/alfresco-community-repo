@@ -59,8 +59,8 @@ public class ListOfValuesConstraint extends AbstractConstraint
         caseSensitive = true;
     }
     
-    /*
-     * @see org.alfresco.service.cmr.dictionary.Constraint#getType()
+    /**
+     * {@inheritDoc}
      */
     @Override
     public String getType()
@@ -135,9 +135,22 @@ public class ListOfValuesConstraint extends AbstractConstraint
         this.caseSensitive = caseSensitive;
     }
 
+    @Override
     public void initialize()
     {
+        super.initialize();
         checkPropertyNotNull("allowedValues", allowedValues);
+    }
+    
+    @Override
+    public Map<String, Object> getParameters()
+    {
+        Map<String, Object> params = new HashMap<String, Object>(2);
+        
+        params.put("caseSensitive", this.caseSensitive);
+        params.put("allowedValues", this.allowedValues);
+        
+        return params;
     }
 
     protected void evaluateSingleValue(Object value)
@@ -167,18 +180,5 @@ public class ListOfValuesConstraint extends AbstractConstraint
                 throw new ConstraintException(ERR_INVALID_VALUE, value);
             }
         }
-    }
-    
-    /*
-     * @see org.alfresco.service.cmr.dictionary.Constraint#getParameters()
-     */
-    public Map<String, Object> getParameters()
-    {
-        Map<String, Object> params = new HashMap<String, Object>(2);
-        
-        params.put("caseSensitive", this.caseSensitive);
-        params.put("allowedValues", this.allowedValues);
-        
-        return params;
     }
 }

@@ -53,9 +53,6 @@ public class NumericRangeConstraint extends AbstractConstraint
     private double minValue = Double.MIN_VALUE;
     private double maxValue = Double.MAX_VALUE;
 
-    /*
-     * @see org.alfresco.service.cmr.dictionary.Constraint#getType()
-     */
     @Override
     public String getType()
     {
@@ -118,17 +115,18 @@ public class NumericRangeConstraint extends AbstractConstraint
         }
         this.maxValue = maxValue;
     }
-    
-    /*
-     * @see org.alfresco.service.cmr.dictionary.Constraint#initialize()
-     */
-    public void initialize()
-    {
-    }
 
-    /*
-     * @see org.alfresco.repo.dictionary.constraint.AbstractConstraint#evaluateSingleValue(java.lang.Object)
-     */
+    @Override
+    public Map<String, Object> getParameters()
+    {
+        Map<String, Object> params = new HashMap<String, Object>(2);
+        
+        params.put("minValue", this.minValue);
+        params.put("maxValue", this.maxValue);
+        
+        return params;
+    }
+    
     protected void evaluateSingleValue(Object value)
     {
         // ensure that the value can be converted to a double
@@ -153,18 +151,5 @@ public class NumericRangeConstraint extends AbstractConstraint
         {
             throw new ConstraintException(ERR_OUT_OF_RANGE, checkValue, minValue, maxValue);
         }
-    }
-    
-    /*
-     * @see org.alfresco.service.cmr.dictionary.Constraint#getParameters()
-     */
-    public Map<String, Object> getParameters()
-    {
-        Map<String, Object> params = new HashMap<String, Object>(2);
-        
-        params.put("minValue", this.minValue);
-        params.put("maxValue", this.maxValue);
-        
-        return params;
     }
 }

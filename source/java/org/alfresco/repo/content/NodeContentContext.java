@@ -62,6 +62,19 @@ public class NodeContentContext extends ContentContext
         this.propertyQName = propertyQName;
     }
 
+    @Override
+    public String toString()
+    {
+        StringBuilder sb = new StringBuilder(128);
+        sb.append("NodeContentContext")
+          .append("[ contentUrl=").append(getContentUrl())
+          .append(", existing=").append((getExistingContentReader() == null ? false : true))
+          .append(", nodeRef=").append(nodeRef)
+          .append(", propertyQName=").append(propertyQName)
+          .append("]");
+        return sb.toString();
+    }
+
     /**
      * @return  Returns the node holding the content metadata
      */

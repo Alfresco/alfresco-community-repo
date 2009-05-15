@@ -24,8 +24,6 @@
  */
 package org.alfresco.repo.dictionary.constraint;
 
-import java.util.Map;
-
 import org.alfresco.service.cmr.dictionary.ConstraintException;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.repository.datatype.TypeConversionException;
@@ -61,21 +59,5 @@ public class UserNameConstraint extends AbstractConstraint
         {
             throw new ConstraintException(ERR_INVALID_USERNAME, value, type);
         }
-    }
-
-    /*
-     * @see org.alfresco.service.cmr.dictionary.Constraint#initialize()
-     */
-    public void initialize()
-    {
-
-    }
-
-    /*
-     * @see org.alfresco.service.cmr.dictionary.Constraint#getParameters()
-     */
-    public Map<String, Object> getParameters()
-    {
-        return null;
     }
 }

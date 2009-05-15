@@ -29,6 +29,7 @@ import java.util.List;
 import org.alfresco.repo.dictionary.constraint.ListOfValuesConstraint;
 import org.alfresco.repo.dictionary.constraint.NumericRangeConstraint;
 import org.alfresco.repo.dictionary.constraint.RegexConstraint;
+import org.alfresco.repo.dictionary.constraint.RegisteredConstraint;
 import org.alfresco.repo.dictionary.constraint.StringLengthConstraint;
 import org.alfresco.service.cmr.dictionary.Constraint;
 import org.alfresco.service.cmr.dictionary.ConstraintDefinition;
@@ -48,36 +49,26 @@ import org.springframework.beans.PropertyAccessException;
  */
 /* package */class M2ConstraintDefinition implements ConstraintDefinition
 {
+    private static final String PROP_SHORT_NAME = "shortName";
+    
     public static final String ERR_CYCLIC_REF = "d_dictionary.constraint.err.cyclic_ref";
-
     public static final String ERR_TYPE_AND_REF = "d_dictionary.constraint.err.type_and_ref";
-
     public static final String ERR_TYPE_OR_REF = "d_dictionary.constraint.err.type_or_ref";
-
     public static final String ERR_REF_NOT_FOUND = "d_dictionary.constraint.err.ref_not_found";
-
     public static final String ERR_ANON_NEEDS_PROPERTY = "d_dictionary.constraint.err.anon_needs_property";
-
     public static final String ERR_INVALID_TYPE = "d_dictionary.constraint.err.invalid_type";
-
     public static final String ERR_SIMPLE_AND_LIST = "d_dictionary.constraint.err.property_simple_and_list";
-
     public static final String ERR_CONSTRUCT_FAILURE = "d_dictionary.constraint.err.construct_failure";
-
     public static final String ERR_PROPERTY_MISMATCH = "d_dictionary.constraint.err.property_mismatch";
+    public static final String ERR_RESERVED_PROPERTY = "d_dictionary.constraint.err.reserved_property";
 
     private static int anonPropCount = 0;
 
     private ModelDefinition model;
-
     private NamespacePrefixResolver prefixResolver;
-
     private M2Constraint m2Constraint;
-
     private QName name;
-
     private Constraint constraint;
-
     private boolean resolving;
 
     /* package */M2ConstraintDefinition(M2PropertyDefinition m2PropertyDef, M2Constraint m2Constraint,
@@ -176,6 +167,7 @@ import org.springframework.beans.PropertyAccessException;
                 // try to establish it as a class
                 try
                 {
+                    @SuppressWarnings("unchecked")
                     Class clazz = Class.forName(type);
                     constraint = (Constraint) clazz.newInstance();
                 }
@@ -200,6 +192,13 @@ import org.springframework.beans.PropertyAccessException;
             {
                 for (M2NamedValue namedValue : constraintNamedValues)
                 {
+                    String namedValueName = namedValue.getName();
+                    // Check for reserved properties
+                    if (namedValueName.equals(PROP_SHORT_NAME))
+                    {
+                        throw new DictionaryException(ERR_RESERVED_PROPERTY, PROP_SHORT_NAME, namedValueName);
+                    }
+                    
                     Object value = null;
                     if (namedValue.getSimpleValue() != null && namedValue.getListValue() != null)
                     {
@@ -215,24 +214,24 @@ import org.springframework.beans.PropertyAccessException;
                     }
                     try
                     {
-                        beanWrapper.setPropertyValue(namedValue.getName(), value);
+                        beanWrapper.setPropertyValue(namedValueName, value);
                     }
                     catch (PropertyAccessException e)
                     {
-                        throw new DictionaryException(ERR_PROPERTY_MISMATCH, e, namedValue.getName(), shortName);
+                        throw new DictionaryException(ERR_PROPERTY_MISMATCH, e, namedValueName, shortName);
                     }
                     catch (InvalidPropertyException e)
                     {
-                        throw new DictionaryException(ERR_PROPERTY_MISMATCH, e, namedValue.getName(), shortName);
+                        throw new DictionaryException(ERR_PROPERTY_MISMATCH, e, namedValueName, shortName);
                     }
                 }
                 
-                // Pass in the name as a special property, if it is available
-                if (beanWrapper.isWritableProperty("_shortName"))
+                // Pass in the short name as a special property, if it is available
+                if (beanWrapper.isWritableProperty(PROP_SHORT_NAME))
                 {
                     try
                     {
-                        beanWrapper.setPropertyValue("_shortName", shortName);
+                        beanWrapper.setPropertyValue(PROP_SHORT_NAME, shortName);
                     }
                     catch (PropertyAccessException e)
                     {
@@ -279,6 +278,14 @@ import org.springframework.beans.PropertyAccessException;
      */
     public static enum ConstraintType
     {
+        REGISTERED
+        {
+            @Override
+            protected Constraint newInstance()
+            {
+                return new RegisteredConstraint();
+            }
+        },
         REGEX
         {
             @Override

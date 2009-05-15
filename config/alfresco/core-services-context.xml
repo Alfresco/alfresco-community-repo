@@ -859,6 +859,9 @@
     <!-- Data Dictionary -->
     <!--                 -->
 
+    <!-- Constraint Registry -->
+    <bean id="cm:constraintRegistry" class="org.alfresco.repo.dictionary.constraint.ConstraintRegistry" />
+
     <bean id="namespaceDAO" class="org.alfresco.repo.dictionary.NamespaceDAOImpl">
         <property name="tenantService">
             <ref bean="tenantService"/>

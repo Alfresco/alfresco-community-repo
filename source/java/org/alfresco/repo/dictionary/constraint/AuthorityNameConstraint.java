@@ -24,8 +24,6 @@
  */
 package org.alfresco.repo.dictionary.constraint;
 
-import java.util.Map;
-
 import org.alfresco.service.cmr.dictionary.ConstraintException;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.repository.datatype.TypeConversionException;
@@ -33,7 +31,6 @@ import org.alfresco.service.cmr.security.AuthorityType;
 
 public class AuthorityNameConstraint extends AbstractConstraint
 {
-
     private static final String ERR_INVALID_AUTHORITY_NAME = "d_dictionary.constraint.authority_name.invalid_authority_name";
     private static final String ERR_NON_STRING = "d_dictionary.constraint.authority_name.non_string";
 
@@ -56,21 +53,5 @@ public class AuthorityNameConstraint extends AbstractConstraint
         {
             throw new ConstraintException(ERR_INVALID_AUTHORITY_NAME, value, type);
         }
-    }
-
-    /*
-     * @see org.alfresco.service.cmr.dictionary.Constraint#initialize()
-     */
-    public void initialize()
-    {
-
-    }
-
-    /*
-     * @see org.alfresco.service.cmr.dictionary.Constraint#getParameters()
-     */
-    public Map<String, Object> getParameters()
-    {
-        return null;
     }
 }

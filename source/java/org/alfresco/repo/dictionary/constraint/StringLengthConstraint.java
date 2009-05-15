@@ -50,8 +50,8 @@ public class StringLengthConstraint extends AbstractConstraint
     private int minLength = 0;
     private int maxLength = Integer.MAX_VALUE;
     
-    /*
-     * @see org.alfresco.service.cmr.dictionary.Constraint#getType()
+    /**
+     * {@inheritDoc}
      */
     @Override
     public String getType()
@@ -116,8 +116,15 @@ public class StringLengthConstraint extends AbstractConstraint
         this.maxLength = maxLength;
     }
 
-    public void initialize()
+    @Override
+    public Map<String, Object> getParameters()
     {
+        Map<String, Object> params = new HashMap<String, Object>(2);
+        
+        params.put("minLength", this.minLength);
+        params.put("maxLength", this.maxLength);
+        
+        return params;
     }
 
     protected void evaluateSingleValue(Object value)
@@ -143,18 +150,5 @@ public class StringLengthConstraint extends AbstractConstraint
             }
             throw new ConstraintException(ERR_INVALID_LENGTH, checkValue, minLength, maxLength);
         }
-    }
-
-    /*
-     * @see org.alfresco.service.cmr.dictionary.Constraint#getParameters()
-     */
-    public Map<String, Object> getParameters()
-    {
-        Map<String, Object> params = new HashMap<String, Object>(2);
-        
-        params.put("minLength", this.minLength);
-        params.put("maxLength", this.maxLength);
-        
-        return params;
     }
 }

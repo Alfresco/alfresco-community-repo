@@ -422,4 +422,13 @@
         overflowToDisk="false"
         />
 
+    <!-- Routing Content Store -->
+    
+    <cache 
+        name="org.alfresco.cache.routingContentStoreSharedCache"
+        maxElementsInMemory="10000"
+        eternal="true"
+        overflowToDisk="false"
+        />
+
 </ehcache>

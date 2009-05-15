@@ -319,9 +319,7 @@ public class ConstraintsTest extends TestCase
     {
         private List<Object> tested;
 
-        /*
-         * @see org.alfresco.service.cmr.dictionary.Constraint#initialize()
-         */
+        @Override
         public void initialize()
         {
             tested = new ArrayList<Object>(4);
@@ -347,14 +345,6 @@ public class ConstraintsTest extends TestCase
             {
                 throw new ConstraintException("Non-String value");
             }
-        }
-        
-        /*
-         * @see org.alfresco.service.cmr.dictionary.Constraint#getParameters()
-         */
-        public Map<String, Object> getParameters()
-        {
-            return null;
         }
     }
 }

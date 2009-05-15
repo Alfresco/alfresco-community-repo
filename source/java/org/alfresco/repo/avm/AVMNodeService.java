@@ -1302,10 +1302,15 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
         // TODO Not sure this try block is necessary.
         try
         {
-            // Invoke policy behaviors.
-//            invokeBeforeUpdateNode(nodeRef);
-//            Map<QName, Serializable> oldProps = getProperties(nodeRef);
+            // Prepare fr policy invocation.
+            Map<QName, Serializable> propsBefore = null;
+            if (fInvokePolicies)
+            {
+                propsBefore = getProperties(nodeRef);
+            }
+            // Remove all properties
             fAVMService.deleteNodeProperties(avmVersionPath.getSecond());
+            // Rebuild node properties
             Map<QName, PropertyValue> values = new HashMap<QName, PropertyValue>();
             for (Map.Entry<QName, Serializable> entry : properties.entrySet())
             {
@@ -1332,7 +1337,14 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
                 PropertyValue propertyValue = makePropertyValue(propertyDef, value);
                 values.put(propertyQName, propertyValue);
             }
+            // Finally set node properties
             fAVMService.setNodeProperties(avmVersionPath.getSecond(), values);
+            // Invoke policies
+            if (fInvokePolicies)
+            {
+                Map<QName, Serializable> propsAfter = properties;
+                invokeOnUpdateProperties(nodeRef, propsBefore, propsAfter);
+            }
             // Invoke policy behaviors.
 //            invokeOnUpdateNode(nodeRef);
 //            invokeOnUpdateProperties(nodeRef, oldProps, properties);
@@ -1413,13 +1425,6 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
                 try
                 {
                     fAVMService.setContentData(avmVersionPath.getSecond(), (ContentData)value);
-                    if (fInvokePolicies)
-                    {
-                        Map<QName, Serializable> propsBefore = new HashMap<QName, Serializable>();
-                        Map<QName, Serializable> propsAfter = new HashMap<QName, Serializable>();
-                        propsAfter.put(ContentModel.PROP_CONTENT, value);
-                        invokeOnUpdateProperties(nodeRef, propsBefore, propsAfter);
-                    }
                 }
                 catch (ClassCastException e)
                 {
@@ -1430,10 +1435,20 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
         }
         try
         {
-            // Map<QName, Serializable> propsBefore = getProperties(nodeRef);
+            Map<QName, Serializable> propsBefore = null;
+            if (fInvokePolicies)
+            {
+                propsBefore = getProperties(nodeRef);
+            }
             PropertyDefinition propertyDef = dictionaryService.getProperty(qname);
             PropertyValue propertyValue = makePropertyValue(propertyDef, value);
             fAVMService.setNodeProperty(avmVersionPath.getSecond(), qname, propertyValue);
+            if (fInvokePolicies)
+            {
+                Map<QName, Serializable> propsAfter = new HashMap<QName, Serializable>(propsBefore);
+                propsAfter.put(qname, value);
+                invokeOnUpdateProperties(nodeRef, propsBefore, propsAfter);
+            }
             // Map<QName, Serializable> propsAfter = getProperties(nodeRef);
             // Invoke policy behaviors.
             // invokeOnUpdateNode(nodeRef);

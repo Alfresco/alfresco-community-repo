@@ -20,6 +20,9 @@
          <parameter name="requiresMatch"><value>false</value></parameter>
       </constraint>
       <constraint name="cm:userNameConstraint" type="org.alfresco.repo.dictionary.constraint.UserNameConstraint" />
+      <constraint name="cm:storeSelectorConstraint" type="REGISTERED">
+         <parameter name="registeredName"><value>defaultStoreSelector</value></parameter>
+      </constraint>
    </constraints>
    
    <types>
@@ -956,7 +959,21 @@
              </child-association>
          </associations>
       </aspect>
-      
+
+      <aspect name="cm:storeSelector">
+         <title>ContentStore Selector</title>
+         <properties>
+            <property name="cm:storeName">
+               <title>Store Name</title>
+               <type>d:text</type>
+               <mandatory enforced="false">true</mandatory>
+               <constraints>
+                  <constraint ref="cm:storeSelectorConstraint" />
+               </constraints>
+            </property>
+         </properties>
+      </aspect>
+             
       <aspect name="cm:preferences">
 	     	<title>Preferences</title>
 	     	<properties>

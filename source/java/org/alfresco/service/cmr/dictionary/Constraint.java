@@ -56,7 +56,7 @@ public interface Constraint
     /**
      * Returns the parameters passed to the instance of the constraint.
      * 
-     * @return Map of parameters, null if there are no parameters
+     * @return Map of parameters or an empty <tt>Map</tt> if none exist
      */
     public Map<String, Object> getParameters();
     

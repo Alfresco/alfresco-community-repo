@@ -37,6 +37,7 @@ import org.alfresco.repo.content.metadata.OpenOfficeMetadataExtracterTest;
 import org.alfresco.repo.content.metadata.PdfBoxMetadataExtracterTest;
 import org.alfresco.repo.content.replication.ContentStoreReplicatorTest;
 import org.alfresco.repo.content.replication.ReplicatingContentStoreTest;
+import org.alfresco.repo.content.routing.StoreSelectorAspectContentStoreTest;
 import org.alfresco.repo.content.transform.BinaryPassThroughContentTransformerTest;
 import org.alfresco.repo.content.transform.ComplexContentTransformerTest;
 import org.alfresco.repo.content.transform.ContentTransformerRegistryTest;
@@ -96,6 +97,7 @@ public class ContentTestSuite extends TestSuite
         suite.addTestSuite(MimetypeMapTest.class);
         suite.addTestSuite(RoutingContentServiceTest.class);
         suite.addTestSuite(RoutingContentStoreTest.class);
+        suite.addTestSuite(StoreSelectorAspectContentStoreTest.class);
                 
         return suite;
     }

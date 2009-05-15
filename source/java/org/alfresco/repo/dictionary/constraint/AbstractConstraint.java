@@ -25,6 +25,8 @@
 package org.alfresco.repo.dictionary.constraint;
 
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.alfresco.service.cmr.dictionary.Constraint;
 import org.alfresco.service.cmr.dictionary.ConstraintException;
@@ -44,20 +46,31 @@ public abstract class AbstractConstraint implements Constraint
     
     /** The constraint name. May be useful in error messages */
     private String shortName;
-    
+    private ConstraintRegistry registry;
+
     /**
      * Sets the constraint name. Automatically called after construction. Please excuse the strange method name as we
      * want the property name to begin with an underscore to avoid property name clashes.
      * 
      * @param shortName
+     * @deprecated
      */
     public void set_shortName(String shortName)
     {
-        this.shortName = shortName;
+        setShortName(shortName);
     }
-    
+
     /**
-     * Gets the constraint name. May be useful in error messages.
+     * Sets the constraint name
+     * @param name
+     */
+    public void setShortName(String name)
+    {
+        this.shortName = name;
+    }
+
+    /**
+     * Gets the constraint name.
      * 
      * @return the constraint name.
      */
@@ -66,14 +79,41 @@ public abstract class AbstractConstraint implements Constraint
         return this.shortName;
     }
 
-    /*
-     * @see org.alfresco.service.cmr.dictionary.Constraint#getType()
+    /**
+     * Optionally specify the registry that will be used to register the constraint.
+     * This is used when instantiating constraints outside the dictionary.
+     * 
+     * @param registry          the constraint registry
      */
+    public void setRegistry(ConstraintRegistry registry)
+    {
+        this.registry = registry;
+    }
+    
     public String getType()
     {
         return this.getClass().getName();
     }
-    
+
+    public Map<String, Object> getParameters()
+    {
+        return new HashMap<String, Object>(3);
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Registers the constraint with the registry, if present.  Call this method if
+     * you want the constraint to be auto-registered.
+     */
+    public void initialize()
+    {
+        if (registry != null)
+        {
+            registry.register(shortName, this);
+        }
+    }
+
     /**
      * Check that the given value is not <tt>null</tt>.
      * 
@@ -86,7 +126,7 @@ public abstract class AbstractConstraint implements Constraint
     {
         if (value == null)
         {
-            throw new DictionaryException(AbstractConstraint.ERR_PROP_NOT_SET, value);
+            throw new DictionaryException(AbstractConstraint.ERR_PROP_NOT_SET, name, getShortName());
         }
     }
 

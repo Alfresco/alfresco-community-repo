@@ -57,9 +57,9 @@ public class RegexConstraint extends AbstractConstraint
     private String expression;
     private Pattern patternMatcher;
     private boolean requiresMatch = true;
-    
-    /*
-     * @see org.alfresco.service.cmr.dictionary.Constraint#getType()
+
+    /**
+     * {@inheritDoc}
      */
     public String getType()
     {
@@ -113,7 +113,19 @@ public class RegexConstraint extends AbstractConstraint
     {
         this.requiresMatch = requiresMatch;
     }
+
+    @Override
+    public Map<String, Object> getParameters()
+    {
+        Map<String, Object> params = new HashMap<String, Object>(2);
+        
+        params.put("expression", this.expression);
+        params.put("requiresMatch", this.requiresMatch);
+        
+        return params;
+    }
     
+    @Override
     public void initialize()
     {
         checkPropertyNotNull("expression", expression);
@@ -145,15 +157,5 @@ public class RegexConstraint extends AbstractConstraint
                 throw new ConstraintException(RegexConstraint.CONSTRAINT_REGEX_MATCH, value, expression);
             }
         }
-    }
-    
-    public Map<String, Object> getParameters()
-    {
-        Map<String, Object> params = new HashMap<String, Object>(2);
-        
-        params.put("expression", this.expression);
-        params.put("requiresMatch", this.requiresMatch);
-        
-        return params;
     }
 }

@@ -267,6 +267,10 @@ public interface ContentModel
     static final QName ASPECT_THUMBNAILED = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "thumbnailed");
     static final QName ASSOC_THUMBNAILS = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "thumbnails");
     
+    // StoreSelector Aspect
+    static final QName ASPECT_STORE_SELECTOR = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "storeSelector");
+    static final QName PROP_STORE_NAME = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "storeName");
+    
     // Preference Aspect
     static final QName ASPECT_PREFERENCES = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "preferences");
     static final QName PROP_PREFERENCE_VALUES = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "preferenceValues");

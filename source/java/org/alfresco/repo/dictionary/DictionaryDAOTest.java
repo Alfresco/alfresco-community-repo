@@ -41,8 +41,12 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.cache.EhCacheAdapter;
 import org.alfresco.repo.dictionary.DictionaryDAOImpl.DictionaryRegistry;
 import org.alfresco.repo.dictionary.NamespaceDAOImpl.NamespaceRegistry;
+import org.alfresco.repo.dictionary.constraint.AbstractConstraint;
+import org.alfresco.repo.dictionary.constraint.ConstraintRegistry;
 import org.alfresco.repo.dictionary.constraint.RegexConstraint;
+import org.alfresco.repo.dictionary.constraint.RegisteredConstraint;
 import org.alfresco.repo.dictionary.constraint.StringLengthConstraint;
+import org.alfresco.repo.dictionary.constraint.UserNameConstraint;
 import org.alfresco.repo.tenant.SingleTServiceImpl;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.dictionary.AssociationDefinition;
@@ -73,6 +77,17 @@ public class DictionaryDAOTest extends TestCase
     @Override
     public void setUp()
     {
+        // Registered the required constraints
+        ConstraintRegistry constraintRegistry = ConstraintRegistry.getInstance();
+        AbstractConstraint constraintReg1 = new UserNameConstraint();
+        constraintReg1.setShortName("cm:reg1");
+        constraintReg1.setRegistry(constraintRegistry);
+        constraintReg1.initialize();
+        AbstractConstraint constraintReg2 = new UserNameConstraint();
+        constraintReg2.setShortName("cm:reg2");
+        constraintReg2.setRegistry(constraintRegistry);
+        constraintReg2.initialize();
+        
         // register resource bundles for messages
         I18NUtil.registerResourceBundle(TEST_RESOURCE_MESSAGES);
         
@@ -185,6 +200,10 @@ public class DictionaryDAOTest extends TestCase
     
     public void testConstraints()
     {
+        // Check that the registered constraints are correct
+        assertNotNull("Constraint reg1 not registered", ConstraintRegistry.getInstance().getConstraint("cm:reg1"));
+        assertNotNull("Constraint reg2 not registered", ConstraintRegistry.getInstance().getConstraint("cm:reg2"));
+
         // get the constraints for a property without constraints
         QName propNoConstraintsQName = QName.createQName(TEST_URL, "fileprop");
         PropertyDefinition propNoConstraintsDef = service.getProperty(propNoConstraintsQName);
@@ -195,7 +214,10 @@ public class DictionaryDAOTest extends TestCase
         PropertyDefinition propDef = service.getProperty(prop1QName);
         List<ConstraintDefinition> constraints = propDef.getConstraints();
         assertNotNull("Null constraints list", constraints);
-        assertEquals("Incorrect number of constraints", 2, constraints.size());
+        assertEquals("Incorrect number of constraints", 3, constraints.size());
+        assertTrue("Constraint instance incorrect", constraints.get(0).getConstraint() instanceof RegexConstraint);
+        assertTrue("Constraint instance incorrect", constraints.get(1).getConstraint() instanceof StringLengthConstraint);
+        assertTrue("Constraint instance incorrect", constraints.get(2).getConstraint() instanceof RegisteredConstraint);
         
         // check the individual constraints
         ConstraintDefinition constraintDef = constraints.get(0);
@@ -203,9 +225,6 @@ public class DictionaryDAOTest extends TestCase
         // check that the constraint implementation is valid (it used a reference)
         Constraint constraint = constraintDef.getConstraint();
         assertNotNull("Reference constraint has no implementation", constraint);
-        
-        // make sure it is the correct type of constraint
-        assertTrue("Expected type REGEX constraint", constraint instanceof RegexConstraint);
     }
     
     public void testConstraintsOverrideInheritance()
@@ -219,25 +238,28 @@ public class DictionaryDAOTest extends TestCase
         PropertyDefinition prop1Def = service.getProperty(baseQName, prop1QName);
         assertNotNull(prop1Def);
         List<ConstraintDefinition> prop1Constraints = prop1Def.getConstraints();
-        assertEquals("Incorrect number of constraints", 2, prop1Constraints.size());
+        assertEquals("Incorrect number of constraints", 3, prop1Constraints.size());
         assertTrue("Constraint instance incorrect", prop1Constraints.get(0).getConstraint() instanceof RegexConstraint);
         assertTrue("Constraint instance incorrect", prop1Constraints.get(1).getConstraint() instanceof StringLengthConstraint);
+        assertTrue("Constraint instance incorrect", prop1Constraints.get(2).getConstraint() instanceof RegisteredConstraint);
 
         // check the inherited property on folder (must be same as above)
         prop1Def = service.getProperty(folderQName, prop1QName);
         assertNotNull(prop1Def);
         prop1Constraints = prop1Def.getConstraints();
-        assertEquals("Incorrect number of constraints", 2, prop1Constraints.size());
+        assertEquals("Incorrect number of constraints", 3, prop1Constraints.size());
         assertTrue("Constraint instance incorrect", prop1Constraints.get(0).getConstraint() instanceof RegexConstraint);
         assertTrue("Constraint instance incorrect", prop1Constraints.get(1).getConstraint() instanceof StringLengthConstraint);
+        assertTrue("Constraint instance incorrect", prop1Constraints.get(2).getConstraint() instanceof RegisteredConstraint);
 
         // check the overridden property on file (must be reverse of above)
         prop1Def = service.getProperty(fileQName, prop1QName);
         assertNotNull(prop1Def);
         prop1Constraints = prop1Def.getConstraints();
-        assertEquals("Incorrect number of constraints", 2, prop1Constraints.size());
+        assertEquals("Incorrect number of constraints", 3, prop1Constraints.size());
         assertTrue("Constraint instance incorrect", prop1Constraints.get(0).getConstraint() instanceof StringLengthConstraint);
         assertTrue("Constraint instance incorrect", prop1Constraints.get(1).getConstraint() instanceof RegexConstraint);
+        assertTrue("Constraint instance incorrect", prop1Constraints.get(2).getConstraint() instanceof RegisteredConstraint);
     }
 
     public void testArchive()

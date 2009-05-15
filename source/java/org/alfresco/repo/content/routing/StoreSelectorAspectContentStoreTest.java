@@ -237,4 +237,17 @@ public class StoreSelectorAspectContentStoreTest extends TestCase
             assertTrue("Content not in store " + storeName, store.exists(contentUrl));
         }
     }
+    
+    public void testPropertyChange() throws Exception
+    {
+        setStoreNameProperty(STORE_ONE);
+        String contentUrl = writeToFile();
+        assertTrue("Store1 should have content", storesByName.get(STORE_ONE).exists(contentUrl));
+        assertFalse("Store2 should NOT have content", storesByName.get(STORE_TWO).exists(contentUrl));
+        // Change the property
+        setStoreNameProperty(STORE_TWO);
+        // It should have moved
+        assertFalse("Store1 should NOT have content", storesByName.get(STORE_ONE).exists(contentUrl));
+        assertTrue("Store2 should have content", storesByName.get(STORE_TWO).exists(contentUrl));
+    }
 }

@@ -24,7 +24,9 @@
  */
 package org.alfresco.repo.content.routing;
 
+import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -35,8 +37,21 @@ import org.alfresco.repo.content.ContentContext;
 import org.alfresco.repo.content.ContentStore;
 import org.alfresco.repo.content.NodeContentContext;
 import org.alfresco.repo.dictionary.constraint.ListOfValuesConstraint;
+import org.alfresco.repo.node.NodeServicePolicies;
+import org.alfresco.repo.policy.JavaBehaviour;
+import org.alfresco.repo.policy.PolicyComponent;
+import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
+import org.alfresco.service.cmr.dictionary.DictionaryService;
+import org.alfresco.service.cmr.dictionary.PropertyDefinition;
+import org.alfresco.service.cmr.repository.ContentData;
+import org.alfresco.service.cmr.repository.ContentReader;
+import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
+import org.alfresco.service.namespace.NamespaceService;
+import org.alfresco.service.namespace.QName;
+import org.alfresco.util.EqualsHelper;
 import org.alfresco.util.PropertyCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -49,13 +64,17 @@ import org.springframework.beans.factory.InitializingBean;
  * @author Derek Hulley
  * @since 3.2
  */
-public class StoreSelectorAspectContentStore extends AbstractRoutingContentStore implements InitializingBean
+public class StoreSelectorAspectContentStore
+            extends AbstractRoutingContentStore
+            implements InitializingBean, NodeServicePolicies.OnUpdatePropertiesPolicy
 {
     private static final String ERR_INVALID_DEFAULT_STORE = "content.routing.err.invalid_default_store";
     
     private static Log logger = LogFactory.getLog(StoreSelectorAspectContentStore.class);
 
     private NodeService nodeService;
+    private PolicyComponent policyComponent;
+    private DictionaryService dictionaryService;
     private Map<String, ContentStore> storesByName;
     private List<ContentStore> stores;
     private String defaultStoreName;
@@ -70,6 +89,22 @@ public class StoreSelectorAspectContentStore extends AbstractRoutingContentStore
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
+    }
+
+    /**
+     * @param policyComponent       register to receive updates to the <b>cm:storeSelector</b> aspect
+     */
+    public void setPolicyComponent(PolicyComponent policyComponent)
+    {
+        this.policyComponent = policyComponent;
+    }
+
+    /**
+     * @param dictionaryService     used to check for content property types
+     */
+    public void setDictionaryService(DictionaryService dictionaryService)
+    {
+        this.dictionaryService = dictionaryService;
     }
 
     /**
@@ -116,6 +151,11 @@ public class StoreSelectorAspectContentStore extends AbstractRoutingContentStore
         {
             AlfrescoRuntimeException.create(ERR_INVALID_DEFAULT_STORE, defaultStoreName, storesByName.keySet());
         }
+        // Register to receive property change updates
+        policyComponent.bindClassBehaviour(
+                QName.createQName(NamespaceService.ALFRESCO_URI, "onUpdateProperties"),
+                ContentModel.ASPECT_STORE_SELECTOR,
+                new JavaBehaviour(this, "onUpdateProperties"));   
     }
 
     @Override
@@ -166,6 +206,126 @@ public class StoreSelectorAspectContentStore extends AbstractRoutingContentStore
         return store;
     }
     
+    /**
+     * Helper method to select a store, taking into account <tt>null</tt> and invalid values.
+     */
+    private ContentStore selectStore(String storeName)
+    {
+        if (storeName == null || !storesByName.containsKey(storeName))
+        {
+            storeName = defaultStoreName;
+        }
+        return storesByName.get(storeName);
+    }
+    
+    /**
+     * Move content from the old store to the new store
+     */
+    private void moveContent(ContentStore oldStore, ContentStore newStore, String contentUrl)
+    {
+        ContentReader reader = oldStore.getReader(contentUrl);
+        if (!reader.exists())
+        {
+            // Nothing to copy
+            return;
+        }
+        ContentContext ctx = new ContentContext(null, contentUrl);
+        ContentWriter writer = newStore.getWriter(ctx);
+        // Copy it
+        writer.putContent(reader);
+        // Remove the old content
+        oldStore.delete(contentUrl);
+        // Done
+        if (logger.isDebugEnabled())
+        {
+            logger.debug(
+                    "Store selector moved content: \n" +
+                    "   Old store: " + oldStore + "\n" +
+                    "   New Store: " + newStore + "\n" +
+                    "   Content:   " + contentUrl);
+        }
+    }
+    
+    /**
+     * Keeps the content in the correct store based on changes to the <b>cm:storeName</b> property
+     */
+    public void onUpdateProperties(
+            NodeRef nodeRef,
+            Map<QName, Serializable> before,
+            Map<QName, Serializable> after)
+    {
+        String storeNameBefore = (String) before.get(ContentModel.PROP_STORE_NAME);
+        String storeNameAfter = (String) after.get(ContentModel.PROP_STORE_NAME);
+        if (EqualsHelper.nullSafeEquals(storeNameBefore, storeNameAfter))
+        {
+            // We're not interested in the change
+            return;
+        }
+        // Find out which store to move the content to
+        ContentStore oldStore = selectStore(storeNameBefore);
+        ContentStore newStore = selectStore(storeNameAfter);
+        // Don't do anything if the store did not change
+        if (oldStore == newStore)
+        {
+            return;
+        }
+        // Find all content properties and move the content
+        List<String> contentUrls = new ArrayList<String>(1);
+        for (QName propertyQName : after.keySet())
+        {
+            PropertyDefinition propDef = dictionaryService.getProperty(propertyQName);
+            if (propDef == null)
+            {
+                // Ignore
+                continue;
+            }
+            if (!propDef.getDataType().getName().equals(DataTypeDefinition.CONTENT))
+            {
+                // It is not content
+                continue;
+            }
+            // The property value
+            Serializable propertyValue = after.get(propertyQName);
+            if (propertyValue == null)
+            {
+                // Ignore missing values
+            }
+            // Get the content URLs, being sensitive to collections
+            if (propDef.isMultiValued())
+            {
+                Collection<ContentData> contentValues =
+                        DefaultTypeConverter.INSTANCE.getCollection(ContentData.class, propertyValue);
+                if (contentValues.size() == 0)
+                {
+                    // No content
+                    continue;
+                }
+                for (ContentData contentValue : contentValues)
+                {
+                    String contentUrl = contentValue.getContentUrl();
+                    if (contentUrl != null)
+                    {
+                        contentUrls.add(contentUrl);
+                    }
+                }
+            }
+            else
+            {
+                ContentData contentValue = DefaultTypeConverter.INSTANCE.convert(ContentData.class, propertyValue);
+                String contentUrl = contentValue.getContentUrl();
+                if (contentUrl != null)
+                {
+                    contentUrls.add(contentUrl);
+                }
+            }
+        }
+        // Move content from the old store to the new store
+        for (String contentUrl : contentUrls)
+        {
+            moveContent(oldStore, newStore, contentUrl);
+        }
+    }
+
     /**
      * A constraint that acts as a list of values, where the values are the store names
      * injected into the {@link StoreSelectorAspectContentStore}.

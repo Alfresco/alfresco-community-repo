@@ -113,6 +113,12 @@
        <property name="nodeService">
            <ref bean="nodeService"/>
        </property>
+       <property name="policyComponent">
+           <ref bean="policyComponent" />
+       </property>
+       <property name="dictionaryService">
+           <ref bean="dictionaryService" />
+       </property>
        <property name="storesCache">
            <ref bean="routingContentStoreCache"/>
        </property>

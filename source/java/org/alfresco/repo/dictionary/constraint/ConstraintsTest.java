@@ -68,7 +68,8 @@ public class ConstraintsTest extends TestCase
         assertEquals("DummyConstraint type should be 'org.alfresco.repo.dictionary.constraint.ConstraintsTest$DummyConstraint'", 
                     "org.alfresco.repo.dictionary.constraint.ConstraintsTest$DummyConstraint", 
                     constraint.getType());
-        assertNull("DummyConstraint should not have parameters", constraint.getParameters());
+        assertNotNull("DummyConstraint should not have empty parameters", constraint.getParameters());
+        assertEquals("DummyConstraint should not have empty parameters", 0, constraint.getParameters().size());
         
         List<Object> dummyObjects = new ArrayList<Object>(3);
         dummyObjects.add("ABC");   // correct

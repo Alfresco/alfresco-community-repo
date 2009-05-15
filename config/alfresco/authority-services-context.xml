@@ -17,7 +17,7 @@
             <ref bean="personService" />
         </property>
         <property name="nodeService">
-            <ref bean="nodeService" />
+            <ref bean="mlAwareNodeService" />
         </property>
         <property name="tenantService">
             <ref bean="tenantService"/>
@@ -48,7 +48,7 @@
     <!--                                                                          -->
     <bean id="authorityDAO" class="org.alfresco.repo.security.authority.AuthorityDAOImpl">
         <property name="nodeService">
-            <ref bean="nodeService" />
+            <ref bean="mlAwareNodeService" />
         </property>
         <property name="namespacePrefixResolver">
             <ref bean="namespaceService" />

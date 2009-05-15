@@ -183,17 +183,18 @@ public class DeploymentServiceImpl implements DeploymentService
                 	 */
                     fgLogger.debug("creating snapshot of local version");
                     final String storeName = srcPath.substring(0, srcPath.indexOf(":"));
+                    version = snapshotLocal(storeName);
    
-                    RetryingTransactionCallback<Integer> localSnapshot = new RetryingTransactionCallback<Integer>()
-                    {
-                        public  Integer execute() throws Throwable
-                        {
-                            int newVersion = fAVMService.createSnapshot(storeName, null, null).get(storeName);
-                            return new Integer(newVersion);
-                        }
-                    };
-                    version = trn.doInTransaction(localSnapshot, false, true).intValue();  
-                    fgLogger.debug("snapshot local created " + storeName + ", " + version);
+//                    RetryingTransactionCallback<Integer> localSnapshot = new RetryingTransactionCallback<Integer>()
+//                    {
+//                        public  Integer execute() throws Throwable
+//                        {
+//                            int newVersion = fAVMService.createSnapshot(storeName, null, null).get(storeName);
+//                            return new Integer(newVersion);
+//                        }
+//                    };
+//                    version = trn.doInTransaction(localSnapshot, false, true).intValue();  
+//                    fgLogger.debug("snapshot local created " + storeName + ", " + version);
                 }
 
                 {
@@ -854,6 +855,34 @@ public class DeploymentServiceImpl implements DeploymentService
             prevPath = currPath;
         }
     }
+    
+    /**
+     * Create a new local snapshot
+     * @param storeName
+     * @return the version
+     */
+	private int snapshotLocal(final String storeName)
+	{
+		 RetryingTransactionHelper trn = trxService.getRetryingTransactionHelper();
+		 
+    	/**
+    	 * If version is -1, Create a local snapshot to deploy
+    	 */
+        fgLogger.debug("creating snapshot of local version");
+
+        RetryingTransactionCallback<Integer> localSnapshot = new RetryingTransactionCallback<Integer>()
+        {
+            public  Integer execute() throws Throwable
+            {
+                int newVersion = fAVMService.createSnapshot(storeName, null, null).get(storeName);
+                return new Integer(newVersion);
+            }
+        };
+        int version = trn.doInTransaction(localSnapshot, false, true).intValue();  
+        fgLogger.debug("snapshot local created " + storeName + ", " + version);
+        
+        return version;
+	}
 
     /**
      * Deploy differences to a File System Receiver, FSR
@@ -916,7 +945,8 @@ public class DeploymentServiceImpl implements DeploymentService
                 	if (version < 0)
                 	{
                 		String storeName = srcPath.substring(0, srcPath.indexOf(':'));
-                		version = fAVMService.createSnapshot(storeName, null, null).get(storeName);
+                		version = snapshotLocal(storeName);
+                		//version = fAVMService.createSnapshot(storeName, null, null).get(storeName);
                 	}
 
                 	transformers = getTransformers(adapterName);

@@ -372,13 +372,13 @@ public class AVMDeployWebsiteAction extends ActionExecuterAbstractBase
          logger.debug("Starting deployment of " + actionedUponNodeRef.toString() +
                   " to " + serverUri + " at " + startDate);
 
-      if (delayDeploymentLogger.isDebugEnabled() && delay > 0)
-      {
-         delayDeploymentLogger.debug("Delaying deployment by " + delay + "s...");
-
-         // add a delay for testing purposes if the delay logger level is debug
-         try { Thread.sleep(1000*delay); } catch (Throwable e) {}
-      }
+//      if (delayDeploymentLogger.isDebugEnabled() && delay > 0)
+//      {
+//         delayDeploymentLogger.debug("Delaying deployment by " + delay + "s...");
+//
+//         // add a delay for testing purposes if the delay logger level is debug
+//         try { Thread.sleep(1000*delay); } catch (Throwable e) {}
+//      }
 
       // make the deploy call passing in the DeploymentCallback, if present
       Throwable deployError = null;
@@ -441,7 +441,8 @@ public class AVMDeployWebsiteAction extends ActionExecuterAbstractBase
 
       // create the deployment report node
       createDeploymentReportNode(report, attemptRef, serverProps, version,
-               websiteRef, startDate, deployError);
+         websiteRef, startDate, deployError);
+
    }
 
    /**
@@ -497,6 +498,7 @@ public class AVMDeployWebsiteAction extends ActionExecuterAbstractBase
          
          reportProps.put(WCMAppModel.PROP_DEPLOYFAILEDREASON, errorMsg);
       }
+      
       reportRef = this.nodeService.createNode(attempt,
                WCMAppModel.ASSOC_DEPLOYMENTREPORTS, WCMAppModel.ASSOC_DEPLOYMENTREPORTS,
                WCMAppModel.TYPE_DEPLOYMENTREPORT, reportProps).getChildRef();
@@ -540,6 +542,4 @@ public class AVMDeployWebsiteAction extends ActionExecuterAbstractBase
 
       return reportRef;
    }
-   
-
 }

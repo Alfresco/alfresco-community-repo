@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2008 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -33,7 +33,7 @@ import javax.transaction.UserTransaction;
 
 import org.alfresco.linkvalidation.LinkValidationReport;
 import org.alfresco.repo.domain.PropertyValue;
-import org.alfresco.sandbox.SandboxConstants;
+import org.alfresco.wcm.sandbox.SandboxConstants;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.wcm.util.WCMUtil;
 import org.alfresco.web.app.Application;

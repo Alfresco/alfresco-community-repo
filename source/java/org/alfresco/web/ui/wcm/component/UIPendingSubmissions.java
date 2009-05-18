@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -43,7 +43,6 @@ import org.alfresco.model.WCMWorkflowModel;
 import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.repo.workflow.WorkflowModel;
-import org.alfresco.sandbox.SandboxConstants;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.workflow.WorkflowTask;
@@ -52,10 +51,10 @@ import org.alfresco.service.cmr.workflow.WorkflowTaskState;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
+import org.alfresco.wcm.sandbox.SandboxConstants;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.bean.wcm.AVMUtil;
-import org.alfresco.web.bean.wcm.AVMWorkflowUtil;
 import org.alfresco.web.ui.common.ComponentConstants;
 import org.alfresco.web.ui.common.ConstantMethodBinding;
 import org.alfresco.web.ui.common.Utils;

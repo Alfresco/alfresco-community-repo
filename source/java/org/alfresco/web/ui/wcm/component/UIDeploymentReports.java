@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -43,7 +43,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.model.WCMAppModel;
 import org.alfresco.repo.avm.actions.AVMDeployWebsiteAction;
 import org.alfresco.repo.domain.PropertyValue;
-import org.alfresco.sandbox.SandboxConstants;
+import org.alfresco.wcm.sandbox.SandboxConstants;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentReader;

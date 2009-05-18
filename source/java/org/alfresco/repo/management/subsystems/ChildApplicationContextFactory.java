@@ -342,10 +342,6 @@ public class ChildApplicationContextFactory extends AbstractPropertyBackedBean i
         {
             updateCompositeProperty(name, value, type);
         }
-        else if (value == null)
-        {
-            this.properties.remove(name);
-        }
         else
         {
             this.properties.setProperty(name, value);
@@ -370,39 +366,32 @@ public class ChildApplicationContextFactory extends AbstractPropertyBackedBean i
         Map<String, CompositeDataBean> propertyValues = this.compositeProperties.get(name);
         if (propertyValues == null)
         {
-            if (value == null)
-            {
-                return;
-            }
             propertyValues = Collections.emptyMap();
         }
 
         try
         {
             Map<String, CompositeDataBean> newPropertyValues = new LinkedHashMap<String, CompositeDataBean>(11);
-            if (value != null)
+            StringTokenizer tkn = new StringTokenizer(value, ", \t\n\r\f");
+            while (tkn.hasMoreTokens())
             {
-                StringTokenizer tkn = new StringTokenizer(value, ", \t\n\r\f");
-                while (tkn.hasMoreTokens())
+                String id = tkn.nextToken();
+
+                // Generate a unique ID within the category
+                List<String> childId = new ArrayList<String>(3);
+                childId.addAll(getId());
+                childId.add(name);
+                childId.add(id);
+
+                // Look out for new or updated children
+                CompositeDataBean child = propertyValues.get(id);
+
+                if (child == null)
                 {
-                    String id = tkn.nextToken();
-
-                    // Generate a unique ID within the category
-                    List<String> childId = new ArrayList<String>(3);
-                    childId.addAll(getId());
-                    childId.add(name);
-                    childId.add(id);
-
-                    // Look out for new or updated children
-                    CompositeDataBean child = propertyValues.get(id);
-
-                    if (child == null)
-                    {
-                        child = new CompositeDataBean(getParent(), this, getRegistry(), getPropertyDefaults(),
-                                getCategory(), type, childId);
-                    }
-                    newPropertyValues.put(id, child);
+                    child = new CompositeDataBean(getParent(), this, getRegistry(), getPropertyDefaults(),
+                            getCategory(), type, childId);
                 }
+                newPropertyValues.put(id, child);
             }
 
             // Destroy any children that have been removed

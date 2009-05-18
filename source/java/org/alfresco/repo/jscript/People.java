@@ -198,17 +198,14 @@ public final class People extends BaseScopableProcessorExtension
      * @param firstName firstName
      * @param lastName lastName
      * @param emailAddress emailAddress
-     * 
-     * @param createUserAccount
-     *            set to 'true' to create a user account for the person with the
-     *            generated user name and a generated password
+     * @param password if not null creates a new authenticator with the given password.
      * @param setAccountEnabled
      *            set to 'true' to create enabled user account, or 'false' to
      *            create disabled user account for created person.
      * @return the person node (type cm:person) created or null if the person
      *         could not be created
      */
-    public ScriptNode createPerson(String userName, String firstName, String lastName, String emailAddress, boolean createUserAccount, boolean setAccountEnabled)
+    public ScriptNode createPerson(String userName, String firstName, String lastName, String emailAddress, String password, boolean setAccountEnabled)
     {
     	ParameterCheck.mandatory("firstName", firstName);
     	ParameterCheck.mandatory("lastName", lastName);
@@ -260,13 +257,10 @@ public final class People extends BaseScopableProcessorExtension
             
             person = createPerson(userName, firstName, lastName, emailAddress);
     		
-    		if (createUserAccount)
-    		{
-    			// generate password
-    			char[] password = passwordGenerator.generatePassword().toCharArray();
-    			
+    		if (password != null)
+    		{   			
     			// create account for person with the userName and password
-    			mutableAuthenticationDao.createUser(userName, password);
+    			mutableAuthenticationDao.createUser(userName, password.toCharArray());
     			mutableAuthenticationDao.setEnabled(userName, setAccountEnabled);
     			
     			person.save();

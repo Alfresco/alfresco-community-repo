@@ -44,7 +44,7 @@ public class ScriptFormService extends BaseScopableProcessorExtension
 {
     private static Log logger = LogFactory.getLog(ScriptFormService.class);
     
-    /** The site service */
+    /** The form service */
     private FormService formService;
 
     /**

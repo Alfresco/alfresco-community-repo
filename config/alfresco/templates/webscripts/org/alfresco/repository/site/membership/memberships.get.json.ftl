@@ -1,8 +1,10 @@
+<#-- List memberships Implementation-->
 <#import "membership.lib.ftl" as membershipLib />
-<#assign userNames = memberships?keys />
+
+<#assign userNames = roles?keys />
 [
 <#list userNames as userName>		 	   
-	<@membershipLib.membershipJSON site=site role=memberships[userName] person=peoplelist[userName] />
+	<@membershipLib.membershipJSON site=site role=roles[userName] authority=authorities[userName] />
 	<#if userName_has_next>,</#if>
 </#list>
 ]

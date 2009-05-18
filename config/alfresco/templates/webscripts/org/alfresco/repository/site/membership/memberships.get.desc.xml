@@ -1,8 +1,21 @@
 <webscript>
-  <shortname>Memberships</shortname>
-  <description>Get a colleciton of a sites memberships.</description>
-  <url>/api/sites/{shortname}/memberships?nf={namefilter?}&amp;rf={rolefilter?}&amp;size={pagesize?}&amp;pos={position?}</url>
+  <shortname>List Web Site Memberships</shortname>
+  <description> <![CDATA[
+  Get a colleciton of a Web Site memberships.
+   <br />
+  'shortname' is the shortname of the web site
+  <br />
+  Parameters:
+  <ul>
+  <li>nf, Optional, namefilter</li>
+  <li>rf, Optional, rolefilter</li>
+  <li>size, Optional,  page size</li>
+  <li>authorityType, Optional, returns either GROUP or USER authorities.  If not specified returns all authorities.</li> 
+  </ul>
+  ]]></description>
+  <url>/api/sites/{shortname}/memberships?nf={namefilter?}&amp;rf={rolefilter?}&amp;size={pagesize?}&amp;pos={position?}&amp;authorityType={authorityType?}</url>
   <format default="json">argument</format>
   <authentication>user</authentication>
   <transaction>required</transaction>
+  <lifecycle>draft_public_api</lifecycle>
 </webscript>

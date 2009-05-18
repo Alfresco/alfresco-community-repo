@@ -1,8 +1,13 @@
 <webscript>
-  <shortname>Membership</shortname>
-  <description>Get the membership details for a user</description>
-  <url>/api/sites/{shortname}/memberships/{username}</url>
+  <shortname>Delete Web Site Membership</shortname>
+  <description> <![CDATA[
+  Delete membership from a web site.
+  <br />
+  'shortname' is the shortname of the web site,  'authorityname' is the full authority name for the membership.
+  ]]></description>
+  <url>/api/sites/{shortname}/memberships/{authorityname}</url>
   <format default="json">argument</format>
   <authentication>user</authentication>
   <transaction>required</transaction>
+  <lifecycle>draft_public_api</lifecycle>
 </webscript>

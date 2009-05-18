@@ -40,6 +40,8 @@ import org.alfresco.repo.web.scripts.BaseWebScriptTest;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.AuthenticationService;
+import org.alfresco.service.cmr.security.AuthorityService;
+import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
@@ -68,6 +70,7 @@ public class SiteServiceTest extends BaseWebScriptTest
     private PersonService personService;
     private SiteService siteService;
     private NodeService nodeService;
+    private AuthorityService authorityService;
     
     private static final String USER_ONE = "SiteTestOne";
     private static final String USER_TWO = "SiteTestTwo";
@@ -89,6 +92,7 @@ public class SiteServiceTest extends BaseWebScriptTest
         this.personService = (PersonService)getServer().getApplicationContext().getBean("PersonService");
         this.siteService = (SiteService)getServer().getApplicationContext().getBean("SiteService");
         this.nodeService = (NodeService)getServer().getApplicationContext().getBean("NodeService");
+        this.authorityService = (AuthorityService)getServer().getApplicationContext().getBean("AuthorityService");
         
         this.authenticationComponent.setSystemUserAsCurrentUser();
         
@@ -309,7 +313,7 @@ public class SiteServiceTest extends BaseWebScriptTest
         response = sendRequest(new GetRequest(URL_SITES + "/" + shortName), 404);
     }
     
-    public void testGetMemeberships() throws Exception
+    public void testGetMemberships() throws Exception
     {
         // Create a site
         String shortName  = GUID.generate();
@@ -322,7 +326,7 @@ public class SiteServiceTest extends BaseWebScriptTest
         assertEquals(1, result.length());
         JSONObject membership = result.getJSONObject(0);
         assertEquals(SiteModel.SITE_MANAGER, membership.get("role"));
-        assertEquals(USER_ONE, membership.getJSONObject("person").get("userName"));        
+        assertEquals(USER_ONE, membership.getJSONObject("authority").get("userName"));        
     }
     
     public void testPostMemberships() throws Exception
@@ -369,7 +373,7 @@ public class SiteServiceTest extends BaseWebScriptTest
         
         // Check the result
         assertEquals(SiteModel.SITE_MANAGER, result.get("role"));
-        assertEquals(USER_ONE, result.getJSONObject("person").get("userName")); 
+        assertEquals(USER_ONE, result.getJSONObject("authority").get("userName")); 
     }
     
     public void testPutMembership() throws Exception
@@ -377,10 +381,7 @@ public class SiteServiceTest extends BaseWebScriptTest
         // Create a site
         String shortName  = GUID.generate();
         createSite("myPreset", shortName, "myTitle", "myDescription", SiteVisibility.PUBLIC, 200);
-        
-        // Test error conditions
-        // TODO
-        
+                
         // Build the JSON membership object
         JSONObject membership = new JSONObject();
         membership.put("role", SiteModel.SITE_CONSUMER);
@@ -392,20 +393,104 @@ public class SiteServiceTest extends BaseWebScriptTest
         Response response = sendRequest(new PostRequest(URL_SITES + "/" + shortName + URL_MEMBERSHIPS, membership.toString(), "application/json"), 200);
         JSONObject newMember = new JSONObject(response.getContentAsString());
         
-        // Update the role
+        // Update the role by returning the data.
         newMember.put("role", SiteModel.SITE_COLLABORATOR);
         response = sendRequest(new PutRequest(URL_SITES + "/" + shortName + URL_MEMBERSHIPS + "/" + USER_TWO, newMember.toString(), "application/json"), 200);
         JSONObject result = new JSONObject(response.getContentAsString());
         
         // Check the result
         assertEquals(SiteModel.SITE_COLLABORATOR, result.get("role"));
-        assertEquals(USER_TWO, result.getJSONObject("person").get("userName"));
+        assertEquals(USER_TWO, result.getJSONObject("authority").get("userName"));
         
         // Double check and get the membership for user two
         response = sendRequest(new GetRequest(URL_SITES + "/" + shortName + URL_MEMBERSHIPS + "/" + USER_TWO), 200);
         result = new JSONObject(response.getContentAsString());
         assertEquals(SiteModel.SITE_COLLABORATOR, result.get("role"));
-        assertEquals(USER_TWO, result.getJSONObject("person").get("userName"));
+        assertEquals(USER_TWO, result.getJSONObject("authority").get("userName"));
+        
+    }
+    
+    public void testGroupMembership() throws Exception
+    {
+    	String testGroup = "SiteServiceTestGroupA";
+    	String testGroupName = "GROUP_" + testGroup;
+    	
+        if(!authorityService.authorityExists(testGroup))
+        {
+            this.authenticationComponent.setSystemUserAsCurrentUser();
+        	 
+        	testGroupName = authorityService.createAuthority(AuthorityType.GROUP, null, testGroup, testGroup);
+        }     	
+         
+        this.authenticationComponent.setCurrentUser(USER_ONE);
+
+    	// CRUD a membership group for a web site
+        // Create a site
+        String shortName  = GUID.generate();
+        createSite("myPreset", shortName, "myTitle", "myDescription", SiteVisibility.PUBLIC, 200);
+                
+        // Build the JSON membership object
+        JSONObject membership = new JSONObject();
+        membership.put("role", SiteModel.SITE_CONSUMER);
+        JSONObject group = new JSONObject();
+        group.put("fullName", testGroupName);
+        membership.put("group", group);
+        
+        // Create a new group membership
+        {
+        	Response response = sendRequest(new PostRequest(URL_SITES + "/" + shortName + URL_MEMBERSHIPS, membership.toString(), "application/json"), 200);
+        	JSONObject newMember = new JSONObject(response.getContentAsString());
+        
+        	// Validate the return value
+        	assertEquals("role not correct", SiteModel.SITE_CONSUMER, newMember.getString("role"));
+        	JSONObject newGroup = newMember.getJSONObject("authority");
+        	assertNotNull("newGroup");
+        	assertEquals("full name not correct", testGroupName, newGroup.getString("fullName"));
+         	assertEquals("authorityType not correct", "GROUP", newGroup.getString("authorityType"));
+        	
+
+        	// Now send the returned value back with a new role (COLLABORATOR)
+        	newMember.put("role", SiteModel.SITE_COLLABORATOR);
+        	response = sendRequest(new PutRequest(URL_SITES + "/" + shortName + URL_MEMBERSHIPS + "/" + USER_TWO, newMember.toString(), "application/json"), 200);
+        	JSONObject updateResult = new JSONObject(response.getContentAsString());
+        	assertEquals("role not correct", SiteModel.SITE_COLLABORATOR, updateResult.getString("role"));
+        	
+        }
+        
+        // Now List membership to show the group from above.
+        {
+        	Response response = sendRequest(new GetRequest(URL_SITES + "/" + shortName + URL_MEMBERSHIPS), 200);   
+        	JSONArray listResult = new JSONArray(response.getContentAsString());
+        	
+        	/**
+        	 * The result should have at least 2 elements, 1 for the user who created and 1 for the group added above
+        	 */
+        	assertTrue("result too small", listResult.length() >= 2);
+        	for(int i = 0; i < listResult.length(); i++)
+        	{
+        		JSONObject obj = listResult.getJSONObject(i);
+        		JSONObject authority = obj.getJSONObject("authority");
+        		if(authority.getString("authorityType").equals("GROUP"))
+        		{
+        			assertEquals("full name not correct", testGroupName, authority.getString("fullName"));
+        			
+        		}
+        		if(authority.getString("authorityType").equals("USER"))
+        		{
+        			assertEquals("full name not correct", USER_ONE, authority.getString("fullName"));
+        		}
+        	}
+        }
+        
+        // Now get the group membership from above
+        // Now List membership to show the group from above.
+        {
+        	Response response = sendRequest(new GetRequest(URL_SITES + "/" + shortName + URL_MEMBERSHIPS + '/' + testGroupName), 200);   
+        	JSONObject getResult = new JSONObject(response.getContentAsString());
+        	System.out.println(response.getContentAsString());
+        	JSONObject grp = getResult.getJSONObject("authority");
+        	assertEquals("full name not correct", testGroupName, grp.getString("fullName"));
+        }
     }
     
     public void testDeleteMembership() throws Exception

@@ -14,14 +14,28 @@ function main()
       return;
    }
    
-   var person = people.getPerson(userName);
-   if (person == null)
-   {
-      // Person cannot be found
-      status.setCode(status.STATUS_NOT_FOUND, "The person with user name " + userName + " does not exist.");
-      return;
-   }
-   
+	var authority	
+	if(userName.match("^GROUP_"))
+	{	 
+		authority = groups.getGroupForFullAuthorityName(userName);
+		if (authority == null)
+		{
+		   // Person cannot be found
+		   status.setCode(status.STATUS_NOT_FOUND, "The group with full  name " + userName + " does not exist.");
+		   return;
+		}
+	}
+	else
+	{
+		authority = people.getPerson(userName);
+		if (authority == null)
+		{
+		   // Person cannot be found
+		   status.setCode(status.STATUS_NOT_FOUND, "The person with user name " + userName + " does not exist.");
+		   return;
+		}
+	}
+
    // Get the role of the user
    var role = site.getMembersRole(userName);
    if (role == null)
@@ -33,7 +47,7 @@ function main()
    
    // Pass the values to the template
    model.site = site;
-   model.person = person;
+   model.authority = authority;
    model.role = role;
 }
 

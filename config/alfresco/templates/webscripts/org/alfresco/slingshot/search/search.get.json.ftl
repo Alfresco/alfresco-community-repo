@@ -5,7 +5,6 @@
 	[
 		<#list data.items as item>
 		{
-			"index": ${item_index},
 			"nodeRef": "${item.nodeRef}",
 			"type": "${item.type}",
 			"name": "${item.name!''}",

@@ -1,6 +1,18 @@
 <webscript>
    <shortname>Add Person</shortname>
-   <description>Adds a new person based on the details provided.</description>
+   <description><![CDATA[
+   Adds a new person based on the details provided.
+   
+   <br />
+   <dl>
+   <dt>userName </dt><dd>mandatory - the user name for the new user</dd>
+   <dt>firstName</dt> <dd>mandatory - the given Name</dd>
+   <dt>lastName</dt> <dd>mandatory - the family name</dd>
+   <dt>email</dt> <dd>mandatory - the email address  </dd>
+   <dt>password</dt> <dd>optional - the new user's password.  If not specified then a value of "password" is used which should be changed as soon as possible.</dd> 
+   </dl>
+   
+   ]]></description>
    <url>/api/people</url>
    <format default="json">argument</format>
    <authentication>admin</authentication>

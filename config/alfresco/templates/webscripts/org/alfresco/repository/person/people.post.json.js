@@ -28,10 +28,16 @@ function main()
       return;
    }
    
+   var password = "password";
+   if(json.has("password"))
+   {
+	   password = json.get("password");
+   }
+   
    // Create the person with the supplied user name
    var userName = json.get("userName");
    var enableAccount = ((json.has("disableAccount") && json.get("disableAccount")) == false);
-   var person = people.createPerson(userName, json.get("firstName"), json.get("lastName"), json.get("email"), true, enableAccount);
+   var person = people.createPerson(userName, json.get("firstName"), json.get("lastName"), json.get("email"), password, enableAccount);
    
    // return error message if a person with that user name could not be created
    if (person === null)

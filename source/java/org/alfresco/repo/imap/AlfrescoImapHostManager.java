@@ -33,7 +33,7 @@ import java.util.StringTokenizer;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.ImapModel;
-import org.alfresco.repo.imap.config.ImapConfigElement.ImapConfig;
+import org.alfresco.repo.imap.config.ImapConfigBean;
 import org.alfresco.repo.imap.exception.AlfrescoImapFolderException;
 import org.alfresco.repo.model.filefolder.FileFolderServiceImpl;
 import org.alfresco.service.ServiceRegistry;
@@ -139,7 +139,7 @@ public class AlfrescoImapHostManager implements ImapHostManager
         Collection<MailFolder> result = new LinkedList<MailFolder>();
 
         Map<String, NodeRef> mountPoints = imapHelper.getMountPoints();
-        Map<String, ImapConfig> imapConfigs = imapHelper.getImapConfigs();
+        Map<String, ImapConfigBean> imapConfigs = imapHelper.getImapConfig();
 
         NodeRef mountPoint;
 

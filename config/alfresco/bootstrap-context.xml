@@ -382,6 +382,39 @@
         <property name="autoStart">
             <value>true</value>
         </property>
+        <property name="compositePropertyTypes">
+            <map>
+                <entry key="nfs.user.mappings">
+                    <value>org.alfresco.filesys.auth.nfs.UserMapping</value>
+                </entry>
+                <entry key="filesystem.acl.global.domainAccessControls">
+                    <value>org.alfresco.filesys.config.acl.DomainAccessControlBean</value>
+                </entry>
+                <entry key="filesystem.acl.global.protocolAccessControls">
+                    <value>org.alfresco.filesys.config.acl.ProtocolAccessControlBean</value>
+                </entry>
+                <entry key="filesystem.acl.global.userAccessControls">
+                    <value>org.alfresco.filesys.config.acl.UserAccessControlBean</value>
+                </entry>
+                <entry key="filesystem.domainMappings">
+                    <value>org.alfresco.filesys.config.DomainMappingConfigBean</value>
+                </entry>
+            </map>
+        </property>
+    </bean>
+
+    <!-- IMAP Subsystem -->
+    <bean id="imap" class="org.alfresco.repo.management.subsystems.ChildApplicationContextFactory" parent="abstractPropertyBackedBean">
+        <property name="autoStart">
+            <value>true</value>
+        </property>
+        <property name="compositePropertyTypes">
+            <map>
+                <entry key="imap.server.mountPoints">
+                    <value>org.alfresco.repo.imap.config.ImapConfigBean</value>
+                </entry>
+            </map>
+        </property>
     </bean>
 
    <bean id="fileServerConfiguration" class="org.alfresco.repo.management.subsystems.SubsystemProxyFactory">
@@ -413,13 +446,20 @@
         </property>
     </bean>
 
-    <!-- Optional LDAP synchronization chain -->
-    <bean id="Synchronization" class="org.alfresco.repo.management.subsystems.DefaultChildApplicationContextManager"
-        parent="abstractPropertyBackedBean">
-        <property name="autoStart">
-            <value>true</value>
-        </property>
-    </bean>
+   <!-- Optional LDAP synchronization chain -->
+   <bean id="Synchronization" class="org.alfresco.repo.management.subsystems.DefaultChildApplicationContextManager"
+      parent="abstractPropertyBackedBean">
+      <property name="autoStart">
+         <value>true</value>
+      </property>
+      <property name="defaultChain">
+         <value>${synchronization.chain}</value>
+      </property>
+      <!-- LDAP is the default (and only) instance type -->
+      <property name="defaultTypeName">
+         <value>ldap</value>
+      </property>
+   </bean>
 
     <!-- Workflow Scheduler -->
     <bean id="workflowScheduler" class="org.alfresco.repo.workflow.jbpm.JBPMScheduler">

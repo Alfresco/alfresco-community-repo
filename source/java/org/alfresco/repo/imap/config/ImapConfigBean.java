@@ -22,45 +22,40 @@
  * the FLOSS exception, and it is also available here: 
  * http://www.alfresco.com/legal/licensing"
  */
-package org.alfresco.filesys.config;
+package org.alfresco.repo.imap.config;
 
 import org.springframework.beans.factory.BeanNameAware;
 
-// TODO: Auto-generated Javadoc
 /**
- * The Class DomainMappingConfigBean.
- * 
- * @author dward
+ * Provides the parameters for an IMAP mount point (a mapping from an Alfresco node path to an IMAP folder name).
  */
-public class DomainMappingConfigBean implements BeanNameAware
+public class ImapConfigBean implements BeanNameAware
 {
 
-    /** The name. */
+    /** The IMAP folder name. */
     private String name;
 
-    /** The subnet. */
-    private String subnet;
+    /** The mode (virtual or archive). */
+    private String mode;
 
-    /** The mask. */
-    private String mask;
+    /** The Alfresco store name. */
+    private String store;
 
-    /** The range from. */
-    private String rangeFrom;
-
-    /** The range to. */
-    private String rangeTo;
+    /** The path within the store to the root node. */
+    private String rootPath;
 
     /**
-     * Gets the name.
+     * Gets the IMAP folder name.
      * 
-     * @return the name
+     * @return the IMAP folder name
      */
     public String getName()
     {
-        return name;
+        return this.name;
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
      * @see org.springframework.beans.factory.BeanNameAware#setBeanName(java.lang.String)
      */
     public void setBeanName(String name)
@@ -69,86 +64,66 @@ public class DomainMappingConfigBean implements BeanNameAware
     }
 
     /**
-     * Gets the subnet.
+     * Gets the mode.
      * 
-     * @return the subnet
+     * @return the mode (virtual or archive)
      */
-    public String getSubnet()
+    public String getMode()
     {
-        return subnet;
+        return this.mode;
     }
 
     /**
-     * Sets the subnet.
+     * Sets the mode.
      * 
-     * @param subnet
-     *            the new subnet
+     * @param mode
+     *            the new mode (virtual or archive)
      */
-    public void setSubnet(String subnet)
+    public void setMode(String mode)
     {
-        this.subnet = subnet;
+        this.mode = mode;
     }
 
     /**
-     * Gets the mask.
+     * Gets the Alfresco store name.
      * 
-     * @return the mask
+     * @return the Alfresco store name
      */
-    public String getMask()
+    public String getStore()
     {
-        return mask;
+        return this.store;
     }
 
     /**
-     * Sets the mask.
+     * Sets the Alfresco store name.
      * 
-     * @param mask
-     *            the new mask
+     * @param store
+     *            the Alfresco store name
      */
-    public void setMask(String mask)
+    public void setStore(String store)
     {
-        this.mask = mask;
+        this.store = store;
     }
 
     /**
-     * Gets the range from.
+     * Gets the path within the store to the root node.
      * 
-     * @return the range from
+     * @return the path within the store to the root node
      */
-    public String getRangeFrom()
+    public String getRootPath()
     {
-        return rangeFrom;
+        return this.rootPath;
     }
 
     /**
-     * Sets the range from.
+     * Sets the path within the store to the root node.
      * 
-     * @param rangeFrom
-     *            the new range from
+     * @param rootPath
+     *            the path within the store to the root node
      */
-    public void setRangeFrom(String rangeFrom)
+    public void setRootPath(String rootPath)
     {
-        this.rangeFrom = rangeFrom;
+        this.rootPath = rootPath;
     }
 
-    /**
-     * Gets the range to.
-     * 
-     * @return the range to
-     */
-    public String getRangeTo()
-    {
-        return rangeTo;
-    }
-
-    /**
-     * Sets the range to.
-     * 
-     * @param rangeTo
-     *            the new range to
-     */
-    public void setRangeTo(String rangeTo)
-    {
-        this.rangeTo = rangeTo;
-    }
 }

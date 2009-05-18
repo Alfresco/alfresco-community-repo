@@ -24,13 +24,11 @@
  */
 package org.alfresco.filesys.repo;
 
-import java.util.List;
-
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.filesys.alfresco.AlfrescoContext;
 import org.alfresco.filesys.alfresco.AlfrescoDiskDriver;
 import org.alfresco.filesys.alfresco.IOControlHandler;
-import org.alfresco.jlan.server.auth.acl.AccessControl;
+import org.alfresco.filesys.config.acl.AccessControlListBean;
 import org.alfresco.jlan.server.core.DeviceContextException;
 import org.alfresco.jlan.server.filesys.DiskInterface;
 import org.alfresco.jlan.server.filesys.DiskSharedDevice;
@@ -61,10 +59,9 @@ public class ContentContext extends AlfrescoContext
     private boolean m_offlineFiles;
     
     private boolean m_disableNodeMonitor;
+    
+    private AccessControlListBean m_accessControlList;
         
-    private String m_defaultAccessLevel;
-
-    private List<AccessControl> m_accessControl;
     
     // Node monitor
     
@@ -129,14 +126,9 @@ public class ContentContext extends AlfrescoContext
         m_disableNodeMonitor = disableNodeMonitor;
     }        
 
-    public void setDefaultAccessLevel(String defaultAccessLevel)
+    public void setAccessControlList(AccessControlListBean accessControlList)
     {
-        m_defaultAccessLevel = defaultAccessLevel;
-    }
-
-    public void setAccessControl(List<AccessControl> accessControl)
-    {
-        m_accessControl = accessControl;
+        m_accessControlList = accessControlList;
     }
 
     public void setRootNodeRef(NodeRef nodeRef)
@@ -224,23 +216,13 @@ public class ContentContext extends AlfrescoContext
     }
 
     /**
-     * Return the default access level
+     * Gets the access control list.
      * 
-     * @return String
+     * @return the access control list
      */
-    public String getDefaultAccessLevel()
+    public AccessControlListBean getAccessControlList()
     {
-        return m_defaultAccessLevel;
-    }
-
-    /**
-     * Return the access control list
-     * 
-     * @return List<AccessControl>
-     */
-    public List<AccessControl> getAccessControl()
-    {
-        return m_accessControl;
+        return m_accessControlList;
     }
 
     /**

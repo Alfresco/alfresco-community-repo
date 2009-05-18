@@ -26,7 +26,7 @@ package org.alfresco.filesys.config;
 
 import java.util.List;
 
-import org.alfresco.jlan.server.auth.acl.AccessControl;
+import org.alfresco.filesys.config.acl.AccessControlListBean;
 import org.alfresco.jlan.server.core.ShareMapper;
 
 // TODO: Auto-generated Javadoc
@@ -37,12 +37,8 @@ import org.alfresco.jlan.server.core.ShareMapper;
  */
 public class SecurityConfigBean
 {
-
-    /** The global default access level. */
-    private String globalDefaultAccessLevel;
-
     /** The global access control. */
-    private List<AccessControl> globalAccessControl;
+    private AccessControlListBean globalAccessControl;
 
     /** The jce provider. */
     private String jceProvider;
@@ -54,32 +50,11 @@ public class SecurityConfigBean
     private List<DomainMappingConfigBean> domainMappings;
 
     /**
-     * Gets the global default access level.
-     * 
-     * @return the global default access level
-     */
-    public String getGlobalDefaultAccessLevel()
-    {
-        return globalDefaultAccessLevel;
-    }
-
-    /**
-     * Sets the global default access level.
-     * 
-     * @param globalDefaultAccessLevel
-     *            the new global default access level
-     */
-    public void setGlobalDefaultAccessLevel(String globalDefaultAccessLevel)
-    {
-        this.globalDefaultAccessLevel = globalDefaultAccessLevel;
-    }
-
-    /**
      * Gets the global access control.
      * 
      * @return the global access control
      */
-    public List<AccessControl> getGlobalAccessControl()
+    public AccessControlListBean getGlobalAccessControl()
     {
         return globalAccessControl;
     }
@@ -90,7 +65,7 @@ public class SecurityConfigBean
      * @param globalAccessControl
      *            the new global access control
      */
-    public void setGlobalAccessControl(List<AccessControl> globalAccessControl)
+    public void setGlobalAccessControl(AccessControlListBean globalAccessControl)
     {
         this.globalAccessControl = globalAccessControl;
     }

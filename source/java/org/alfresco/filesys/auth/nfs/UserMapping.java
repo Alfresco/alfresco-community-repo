@@ -24,12 +24,13 @@
  */
 package org.alfresco.filesys.auth.nfs;
 
+import org.springframework.beans.factory.BeanNameAware;
+
 /**
  * Represents a user mapping for the {@link AlfrescoRpcAuthenticator}.
  */
-public class UserMapping
+public class UserMapping implements BeanNameAware
 {
-
     /** The name. */
     private String name;
 
@@ -71,16 +72,14 @@ public class UserMapping
      */
     public String getName()
     {
-        return name;
+        return this.name;
     }
 
-    /**
-     * Sets the name.
-     * 
-     * @param name
-     *            the new name
+    /*
+     * (non-Javadoc)
+     * @see org.springframework.beans.factory.BeanNameAware#setBeanName(java.lang.String)
      */
-    public void setName(String name)
+    public void setBeanName(String name)
     {
         this.name = name;
     }
@@ -92,7 +91,7 @@ public class UserMapping
      */
     public int getUid()
     {
-        return uid;
+        return this.uid;
     }
 
     /**
@@ -113,7 +112,7 @@ public class UserMapping
      */
     public int getGid()
     {
-        return gid;
+        return this.gid;
     }
 
     /**

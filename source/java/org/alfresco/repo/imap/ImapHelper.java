@@ -29,8 +29,10 @@ import static org.alfresco.repo.imap.AlfrescoImapConst.CLASSPATH_TEXT_PLAIN_TEMP
 import static org.alfresco.repo.imap.AlfrescoImapConst.DICTIONARY_TEMPLATE_PREFIX;
 
 import java.io.Serializable;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -38,18 +40,13 @@ import java.util.Map;
 import javax.mail.Flags;
 import javax.mail.Flags.Flag;
 
-import org.alfresco.config.Config;
-import org.alfresco.config.ConfigService;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.ImapModel;
 import org.alfresco.repo.admin.patch.PatchInfo;
 import org.alfresco.repo.admin.patch.PatchService;
-import org.alfresco.repo.imap.config.ImapConfigElement;
-import org.alfresco.repo.imap.config.ImapConfigElement.ImapConfig;
+import org.alfresco.repo.imap.config.ImapConfigBean;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.service.cmr.site.SiteInfo;
-import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.repo.template.TemplateNode;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -64,6 +61,8 @@ import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
+import org.alfresco.service.cmr.site.SiteInfo;
+import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.AbstractLifecycleBean;
@@ -72,8 +71,9 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.context.ApplicationEvent;
 
 /**
- * Helper class to access repository services by IMAP components. Also contains a common helper methods to search and manage IMAP content and other usefull methods. Configured as
- * {@code <bean id="imapHelper" class="org.alfresco.repo.imap.ImapHelper">} in the {@code imap-server-context.xml} file.
+ * Helper class to access repository services by IMAP components. Also contains a common helper methods to search and
+ * manage IMAP content and other usefull methods. Configured as {@code <bean id="imapHelper"
+ * class="org.alfresco.repo.imap.ImapHelper">} in the {@code imap-server-context.xml} file.
  * 
  * @author Dmitry Vaserin
  */
@@ -89,7 +89,6 @@ import org.springframework.context.ApplicationEvent;
     private TemplateService templateService;
     private NamespaceService namespaceService;
     private PermissionService permissionService;
-    private ConfigService configService;
     private DictionaryService dictionaryService;
     private PreferenceService preferenceService;
     private SiteService siteService;
@@ -110,6 +109,8 @@ import org.springframework.context.ApplicationEvent;
 
     private final static Map<QName, Flags.Flag> qNameToFlag;
     private final static Map<Flags.Flag, QName> flagToQname;
+
+    private Map<String, ImapConfigBean> imapConfigBeans = Collections.emptyMap();
 
     static
     {
@@ -370,7 +371,7 @@ import org.springframework.context.ApplicationEvent;
             rootFolder = mailboxName;
         }
 
-        Map<String, ImapConfig> imapConfigs = getImapConfigs();
+        Map<String, ImapConfigBean> imapConfigs = getImapConfig();
         if (imapConfigs.keySet().contains(rootFolder))
         {
             Map<String, NodeRef> mountPoints = getMountPoints();
@@ -620,10 +621,10 @@ import org.springframework.context.ApplicationEvent;
      */
     public Map<String, NodeRef> getMountPoints()
     {
-        Map<String, ImapConfig> imapConfigs = getImapConfigs();
+        Map<String, ImapConfigBean> imapConfigs = getImapConfig();
         Map<String, NodeRef> mountPoints = new HashMap<String, NodeRef>();
 
-        for (ImapConfig config : imapConfigs.values())
+        for (ImapConfigBean config : imapConfigs.values())
         {
             // Get node reference
             StoreRef store = new StoreRef(config.getStore());
@@ -642,16 +643,23 @@ import org.springframework.context.ApplicationEvent;
         return mountPoints;
     }
 
+    public void setImapConfigBeans(ImapConfigBean[] imapConfigBeans)
+    {
+        this.imapConfigBeans = new LinkedHashMap<String, ImapConfigBean>(imapConfigBeans.length * 2);
+        for (ImapConfigBean bean : imapConfigBeans)
+        {
+            this.imapConfigBeans.put(bean.getName(), bean);
+        }
+    }
+
     /**
      * Return map of imap configs. Name of config == key in the map
      * 
      * @return map of imap configs.
      */
-    public Map<String, ImapConfig> getImapConfigs()
+    public Map<String, ImapConfigBean> getImapConfig()
     {
-        Config imapConfig = configService.getConfig("imapConfig");
-        ImapConfigElement imapConfigElement = (ImapConfigElement) imapConfig.getConfigElement(ImapConfigElement.CONFIG_ELEMENT_ID);
-        return imapConfigElement.getImapConfigs();
+        return this.imapConfigBeans;
     }
 
     /**
@@ -672,7 +680,7 @@ import org.springframework.context.ApplicationEvent;
         {
             rootFolder = mailboxName;
         }
-        Map<String, ImapConfig> imapConfigs = getImapConfigs();
+        Map<String, ImapConfigBean> imapConfigs = getImapConfig();
         if (imapConfigs.keySet().contains(rootFolder))
         {
             return imapConfigs.get(rootFolder).getMode();
@@ -701,7 +709,7 @@ import org.springframework.context.ApplicationEvent;
         {
             rootFolder = mailboxName;
         }
-        Map<String, ImapConfig> imapConfigs = getImapConfigs();
+        Map<String, ImapConfigBean> imapConfigs = getImapConfig();
         if (imapConfigs.keySet().contains(rootFolder))
         {
             return rootFolder;
@@ -734,7 +742,7 @@ import org.springframework.context.ApplicationEvent;
         {
             rootFolder = mailPath;
         }
-        Map<String, ImapConfig> imapConfigs = getImapConfigs();
+        Map<String, ImapConfigBean> imapConfigs = getImapConfig();
         if (imapConfigs.keySet().contains(rootFolder))
         {
             Map<String, NodeRef> mountPoints = getMountPoints();
@@ -931,16 +939,6 @@ import org.springframework.context.ApplicationEvent;
     public void setPermissionService(PermissionService permissionService)
     {
         this.permissionService = permissionService;
-    }
-
-    public ConfigService getConfigService()
-    {
-        return configService;
-    }
-
-    public void setConfigService(ConfigService configService)
-    {
-        this.configService = configService;
     }
 
     public DictionaryService getDictionaryService()

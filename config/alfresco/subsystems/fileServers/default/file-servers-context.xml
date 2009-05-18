@@ -215,6 +215,25 @@
 
    </bean>
 
+   <!--The configurable RPC user mappings - actually a post-processed composite property! -->
+   <bean id="nfs.user.mappings" class="org.springframework.beans.factory.config.ListFactoryBean">
+      <property name="sourceList">
+         <list>
+            <bean class="org.alfresco.filesys.auth.nfs.UserMapping">
+               <property name="beanName">
+                  <value>${alfresco_user_store.adminusername}</value>
+               </property>
+               <property name="uid">
+                  <value>0</value>
+               </property>
+               <property name="gid">
+                  <value>0</value>
+               </property>
+            </bean>
+         </list>
+      </property>
+   </bean>
+
    <bean id="nfsServerConfig" class="org.alfresco.filesys.config.NFSConfigBean">
       <property name="serverEnabled">
          <value>${nfs.enabled}</value>
@@ -224,19 +243,7 @@
       <property name="rpcAuthenticator">
          <bean class="org.alfresco.filesys.auth.nfs.AlfrescoRpcAuthenticator">
             <property name="userMappings">
-               <list>
-                  <bean class="org.alfresco.filesys.auth.nfs.UserMapping">
-                     <property name="name">
-                        <value>${alfresco_user_store.adminusername}</value>
-                     </property>
-                     <property name="uid">
-                        <value>0</value>
-                     </property>
-                     <property name="gid">
-                        <value>0</value>
-                     </property>
-                  </bean>
-               </list>
+               <ref bean="nfs.user.mappings" />
             </property>
          </bean>
       </property>
@@ -335,12 +342,8 @@
                <!-- Additional access control of the filesystem -->
                <!-- Access type of 'none' will stop the filesystem from showing up for that user/address/protocol -->
                <!--
-                  <property name="defaultAccessLevel"> <value>Write</value> </property> <property name="accessControl">
-                  <list> <bean class="org.alfresco.jlan.server.auth.acl.UserAccessControl"> <property name="name">
-                  <value>admin</value> </property> <property name="access"> <value>Write</value> </property> </bean>
-                  <bean class="org.alfresco.jlan.server.auth.acl.IpAddressAccessControl"> <property name="subNet">
-                  <value>192.168.1.0</value> </property> <property name="netMask"> <value>255.255.255.0</value>
-                  </property> <property name="access"> <value>Write</value> </property> </bean> </list> </property>
+                  <property name="accessControl"> <bean class="org.alfresco.filesys.config.acl.AccessControlListBean">
+                  <property name="defaultAccessLevel"> <value>Write</value> </property> </bean> </property>
                -->
             </bean>
             <!-- AVM virtualization view of all stores/versions for WCM -->
@@ -360,14 +363,21 @@
       </property>
    </bean>
 
+   <!--Configurable global ACLS - actually post-processed composite properties -->
+   <bean id="filesystem.acl.global.domainAccessControls" class="org.springframework.beans.factory.config.ListFactoryBean" />
+
+   <bean id="filesystem.acl.global.protocolAccessControls" class="org.springframework.beans.factory.config.ListFactoryBean" />
+
+   <bean id="filesystem.acl.global.userAccessControls" class="org.springframework.beans.factory.config.ListFactoryBean" />
+
+   <!-- Domain mappings used for passthru authentication routing -->
+   <!-- Used when the client does not provide a domain name in the NTLM logon -->
+   <bean id="filesystem.domainMappings" class="org.springframework.beans.factory.config.ListFactoryBean" />
+
    <bean id="fileSecurityConfig" class="org.alfresco.filesys.config.SecurityConfigBean">
-      <!-- Domain mappings used for passthru authentication routing -->
-      <!-- Used when the client does not provide a domain name in the NTLM logon -->
-      <!--
-         <property name="domainMappings"> <list> <bean class="org.alfresco.filesys.config.DomainMappingConfigBean">
-         <property name="name"> <value>ALFRESCO</value> </property> <property name="subnet"> <value>192.168.1.0</value>
-         </property> <property name="mask"> <value>192.168.1.255</value> </property> </bean> </list> </property>
-      -->
+      <property name="domainMappings">
+         <ref bean="filesystem.domainMappings" />
+      </property>
 
       <!-- Custom share mapper when multi-tenancy is enabled -->
       <!--
@@ -378,15 +388,23 @@
 
       <!-- Global access control list                                                                    -->
       <!-- Applied to all filesystems that do not have an accessControl property                         -->
-      <!-- Access type of 'none' will stop the filesystem from showing up for that user/address/protocol -->
-      <!--
-         <property name="globalDefaultAccessLevel"> <value>None</value> </property> <property
-         name="globalAccessControl"> <list> <bean class="org.alfresco.jlan.server.auth.acl.UserAccessControl"> <property
-         name="name"> <value>admin</value> </property> <property name="access"> <value>Write</value> </property> </bean>
-         <bean class="org.alfresco.jlan.server.auth.acl.IpAddressAccessControl"> <property name="subNet">
-         <value>192.168.1.2</value> </property> <property name="netMask"> <value>255.255.255.0</value> </property>
-         <property name="access"> <value>Write</value> </property> </bean> </list> </property>
-      -->
+      <property name="globalAccessControl">
+         <bean class="org.alfresco.filesys.config.acl.AccessControlListBean">
+            <!-- Access type of 'none' will stop the filesystem from showing up for that user/address/protocol -->
+            <property name="defaultAccessLevel">
+               <value>${filesystem.acl.global.defaultAccessLevel}</value>
+            </property>
+            <property name="domainAccessControls">
+               <ref bean="filesystem.acl.global.domainAccessControls" />
+            </property>
+            <property name="protocolAccessControls">
+               <ref bean="filesystem.acl.global.protocolAccessControls" />
+            </property>
+            <property name="userAccessControls">
+               <ref bean="filesystem.acl.global.userAccessControls" />
+            </property>
+         </bean>
+      </property>
    </bean>
 
 </beans>

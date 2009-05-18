@@ -45,6 +45,7 @@ import org.alfresco.filesys.AbstractServerConfigurationBean;
 import org.alfresco.filesys.alfresco.ExtendedDiskInterface;
 import org.alfresco.filesys.avm.AVMContext;
 import org.alfresco.filesys.avm.AVMDiskDriver;
+import org.alfresco.filesys.config.acl.AccessControlListBean;
 import org.alfresco.filesys.repo.ContentContext;
 import org.alfresco.jlan.ftp.FTPAuthenticator;
 import org.alfresco.jlan.ftp.FTPConfigSection;
@@ -56,11 +57,7 @@ import org.alfresco.jlan.netbios.win32.Win32NetBIOS;
 import org.alfresco.jlan.oncrpc.RpcAuthenticator;
 import org.alfresco.jlan.oncrpc.nfs.NFSConfigSection;
 import org.alfresco.jlan.server.auth.ICifsAuthenticator;
-import org.alfresco.jlan.server.auth.acl.ACLParseException;
-import org.alfresco.jlan.server.auth.acl.AccessControl;
 import org.alfresco.jlan.server.auth.acl.AccessControlList;
-import org.alfresco.jlan.server.auth.acl.AccessControlParser;
-import org.alfresco.jlan.server.auth.acl.InvalidACLTypeException;
 import org.alfresco.jlan.server.auth.passthru.DomainMapping;
 import org.alfresco.jlan.server.auth.passthru.RangeDomainMapping;
 import org.alfresco.jlan.server.auth.passthru.SubnetDomainMapping;
@@ -1537,21 +1534,16 @@ public class ServerConfigurationBean extends AbstractServerConfigurationBean
                         // Check if an access control list has been specified
 
                         AccessControlList acls = null;
-                        String defaultAccessLevel = filesysContext.getDefaultAccessLevel();
-                        List<AccessControl> accessControls = filesysContext.getAccessControl();
-
-                        if ((defaultAccessLevel != null && defaultAccessLevel.length() > 0) ||
-                                (accessControls != null && !accessControls.isEmpty()))
+                        AccessControlListBean accessControls = filesysContext.getAccessControlList();
+                        if (accessControls != null)
                         {
                             // Parse the access control list
-
-                            acls = processAccessControlList(secConfig, defaultAccessLevel, accessControls);
+                            acls = accessControls.toAccessControlList(secConfig);
                         }
                         else if (secConfig.hasGlobalAccessControls())
                         {
 
                             // Use the global access control list for this disk share
-
                             acls = secConfig.getGlobalAccessControls();
                         }
 
@@ -1575,6 +1567,10 @@ public class ServerConfigurationBean extends AbstractServerConfigurationBean
                 catch (DeviceContextException ex)
                 {
                     throw new AlfrescoRuntimeException("Error creating filesystem " + filesystem.getDeviceName(), ex);
+                }
+                catch (InvalidConfigurationException ex)
+                {
+                    throw new AlfrescoRuntimeException(ex.getMessage(), ex);
                 }
             }
         }
@@ -1642,22 +1638,19 @@ public class ServerConfigurationBean extends AbstractServerConfigurationBean
         {
             // Check if global access controls have been specified
 
-            String defaultAccessLevel = securityConfigBean.getGlobalDefaultAccessLevel();
-            List<AccessControl> accessControls = securityConfigBean.getGlobalAccessControl();
-            
-            if ((defaultAccessLevel != null && defaultAccessLevel.length() > 0) ||
-                    (accessControls != null && !accessControls.isEmpty()))
+            AccessControlListBean accessControls = securityConfigBean.getGlobalAccessControl();
+
+            if (accessControls != null)
             {
                 // Parse the access control list
-
-                AccessControlList acls = processAccessControlList(secConfig, defaultAccessLevel, accessControls);
+                AccessControlList acls = accessControls.toAccessControlList(secConfig);
                 if (acls != null)
                     secConfig.setGlobalAccessControls(acls);
             }
            
 
             // Check if a JCE provider class has been specified
-
+            
             String jceProvider = securityConfigBean.getJCEProvider();
             if (jceProvider != null && jceProvider.length() > 0)
             {
@@ -1949,78 +1942,4 @@ public class ServerConfigurationBean extends AbstractServerConfigurationBean
             coreConfig.setMemoryPool(DefaultMemoryPoolBufSizes, DefaultMemoryPoolInitAlloc, DefaultMemoryPoolMaxAlloc);
         }
     }
-
-    /**
-     * Process an access control sub-section and return the access control list
-     * 
-     * @param secConfig
-     *            SecurityConfigSection
-     * @param aclsElem
-     *            ConfigElement
-     */
-    protected AccessControlList processAccessControlList(SecurityConfigSection secConfig, String defaultAccessLevel,
-            List<AccessControl> accessControls)
-    {
-
-        // Check if there is an access control manager configured
-
-        if (secConfig.getAccessControlManager() == null)
-            throw new AlfrescoRuntimeException("No access control manager configured");
-
-        // Create the access control list
-
-        AccessControlList acls = new AccessControlList();
-
-        // Check if there is a default access level for the ACL group
-
-        if (defaultAccessLevel != null && defaultAccessLevel.length() > 0)
-        {
-
-            // Get the access level and validate
-
-            try
-            {
-
-                // Parse the access level name
-
-                int access = AccessControlParser.parseAccessTypeString(defaultAccessLevel);
-
-                // Set the default access level for the access control list
-
-                acls.setDefaultAccessLevel(access);
-            }
-            catch (InvalidACLTypeException ex)
-            {
-                throw new AlfrescoRuntimeException("Default access level error", ex);
-            }
-            catch (ACLParseException ex)
-            {
-                throw new AlfrescoRuntimeException("Default access level error", ex);
-            }
-        }
-
-        // Parse each access control element
-        if (accessControls != null && accessControls.size() > 0)
-        {
-
-            // Create the access controls
-
-            for (AccessControl accessControl : accessControls)
-            {
-
-                acls.addControl(accessControl);
-            }
-        }
-
-        // Check if there are no access control rules but the default access level is set to 'None',
-        // this is not allowed as the share would not be accessible or visible.
-
-        if (acls.getDefaultAccessLevel() == AccessControl.NoAccess && acls.numberOfControls() == 0)
-            throw new AlfrescoRuntimeException("Empty access control list and default access 'None' not allowed");
-
-        // Return the access control list
-
-        return acls;
-    }
-
 }

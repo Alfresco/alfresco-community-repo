@@ -1428,7 +1428,7 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
                 }
                 catch (ClassCastException e)
                 {
-                    throw new AVMException("Invalid ContentData.");
+                    throw new AVMException("Invalid ContentData.", e);
                 }
             }
             return;

@@ -14,7 +14,7 @@ import org.alfresco.repo.admin.patch.AbstractPatch;
 import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.repo.importer.ImporterBootstrap;
 import org.alfresco.repo.search.IndexerAndSearcher;
-import org.alfresco.sandbox.SandboxConstants;
+import org.alfresco.wcm.sandbox.SandboxConstants;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;

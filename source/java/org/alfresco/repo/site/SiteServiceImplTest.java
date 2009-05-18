@@ -830,8 +830,6 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
         // From sub group four
         assertEquals(SiteModel.SITE_MANAGER, this.siteService.getMembersRole("testMembership", USER_FOUR));
 
-
-        // Remove groups
     }
     
     /**

@@ -88,7 +88,7 @@ public class ScriptAuthorityService extends BaseScopableProcessorExtension
     
 	/**
 	 * Get a group given its short name
-	 * @param shortName
+	 * @param shortName, the shortName of the group
 	 * @return the authority or null if it can't be found
 	 */
 	public ScriptGroup getGroup(String shortName)
@@ -105,9 +105,26 @@ public class ScriptAuthorityService extends BaseScopableProcessorExtension
 		return null;
 	}
 	
+	
+	/**
+	 * Get a group given it full authority name (Which must begin with 'GROUP_'
+	 * @param fullAuthorityName, the shortName of the group
+	 * @return the authority or null if it can't be found
+	 */
+	public ScriptGroup getGroupForFullAuthorityName(String fullAuthorityName)
+	{
+		if (authorityService.authorityExists(fullAuthorityName))
+		{
+		    ScriptGroup group = new ScriptGroup(fullAuthorityName, authorityService);
+		    return group;		
+		}
+		// group not found.
+		return null;
+	}
+	
 	/**
 	 * Create a new root group
-	 * @return
+	 * @return the new root group.
 	 */
 	public ScriptGroup createRootGroup(String shortName, String displayName)
 	{

@@ -124,7 +124,7 @@ public interface SiteService
      * Gets the role of the specified user.
      * 
      * @param shortName     site short name
-     * @param authorityName authority name
+     * @param authorityName full authority name (so if it's a group then its prefixed with 'GROUP_')
      * @return String       site role, null if none
      */
     String getMembersRole(String shortName, String authorityName);
@@ -133,7 +133,7 @@ public interface SiteService
      * Indicates whether an authority is a member of a site or not
      * 
      * @param shortName     site short name
-     * @param authorityName authority name
+     * @param authorityName authority name (so if it's a group then its prefixed with 'GROUP_')
      * @return boolean      true if the authority is a member of the site, false otherwise
      */
     boolean isMember(String shortName, String authorityName);
@@ -142,7 +142,7 @@ public interface SiteService
      * Sets the role of an authority within a site
      * 
      * @param shortName     site short name
-     * @param authorityName authority name
+     * @param authorityName authority name (so if it's a group then its prefixed with 'GROUP_')
      * @param role          site role
      */
     void setMembership(String shortName, String authorityName, String role);
@@ -151,7 +151,7 @@ public interface SiteService
      * Clears an authorities role within a site
      * 
      * @param shortName     site short name
-     * @param authorityName authority name
+     * @param authorityName authority name (so if it's a group then its prefixed with 'GROUP_')
      */
     void removeMembership(String shortName, String authorityName);
     

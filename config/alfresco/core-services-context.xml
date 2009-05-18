@@ -12,23 +12,55 @@
     <!-- Note:  This bean relies on PropertyPlaceholderConfigurer        -->
     <bean id="runtimeProperties"  class="org.alfresco.util.RuntimeSystemPropertiesSetter"/>
 
-
-    <!-- load common properties -->
-    <bean id="repository-properties"
-          class="org.alfresco.config.JndiPropertyPlaceholderConfigurer">
-        <property name="ignoreUnresolvablePlaceholders">
-            <value>true</value>
-        </property>
+    <!-- Ensure backward compatibility with installations that control custom properties through repository-properties -->
+    <bean id="legacyConfigPostProcessor" class="org.alfresco.repo.management.subsystems.LegacyConfigPostProcessor"/>
+    
+    <!-- Global properties used in property expansion throughout the container, overridable via JNDI or System properties -->
+    <bean id="global-properties" class="org.alfresco.config.JndiPropertiesFactoryBean">
         <property name="locations">
             <list>
                 <value>classpath:alfresco/repository.properties</value>
-                <value>classpath:alfresco/version.properties</value>
                 <value>classpath:alfresco/domain/transaction.properties</value>
                 <!-- <value>classpath:alfresco/jndi.properties</value> -->
+                <!--  Installer or user-provided defaults -->
+                <value>classpath*:alfresco-global.properties</value>
             </list>
         </property>
         <property name="systemPropertiesModeName">
             <value>SYSTEM_PROPERTIES_MODE_OVERRIDE</value>
+        </property>
+        <!-- Extra properties that have no defaults that we allow to be defined through JNDI or System properties -->
+        <property name="systemProperties">
+            <list>
+                <value>hibernate.dialect</value>
+                <value>hibernate.query.substitutions</value>
+                <value>hibernate.jdbc.use_get_generated_keys</value>
+                <value>hibernate.default_schema</value>
+            </list>
+        </property>
+    </bean>
+
+    <!-- Expand global properties and version information in bean definitions -->
+    <bean id="repository-properties"
+          class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+        <property name="locations">
+            <list>
+                <!--  Non-overridable version information -->
+                <value>classpath:alfresco/version.properties</value>
+            </list>
+        </property>
+        <property name="ignoreUnresolvablePlaceholders">
+            <value>true</value>
+        </property>
+        <property name="properties">
+            <ref bean="global-properties"/>
+        </property>
+        <!--  Do not allow version information to be overriden -->
+        <property name="localOverride">
+            <value>false</value>
+        </property>
+        <property name="systemPropertiesModeName">
+            <value>SYSTEM_PROPERTIES_MODE_NEVER</value>
         </property>
     </bean>
 
@@ -107,8 +139,15 @@
 
     <bean id="propertyBackedBeanRegistry" class="org.alfresco.repo.management.subsystems.DefaultPropertyBackedBeanRegistry"/>
 
-    <bean id="abstractPropertyBackedBean" class="org.alfresco.repo.management.subsystems.AbstractPropertyBackedBean" abstract="true">
-        <property name="registry"><ref local="propertyBackedBeanRegistry"/></property>
+    <bean id="abstractPropertyBackedBean" class="org.alfresco.repo.management.subsystems.AbstractPropertyBackedBean"
+        abstract="true">
+        <property name="registry">
+            <ref local="propertyBackedBeanRegistry" />
+        </property>
+        <!-- Ensure that child application contexts propagate global default values -->
+        <property name="propertyDefaults">
+            <ref local="global-properties" />
+        </property>
     </bean>
 
     <bean id="exporter" class="org.springframework.jmx.export.MBeanExporter">

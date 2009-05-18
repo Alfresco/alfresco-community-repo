@@ -4,21 +4,22 @@
 <beans>
 
     <!-- load hibernate configuration properties -->
-    <bean id="hibernateConfigProperties" class="org.alfresco.config.JndiPropertiesFactoryBean">
-        <property name="systemProperties">
-            <list>
-                <value>hibernate.dialect</value>
-                <value>hibernate.query.substitutions</value>
-                <value>hibernate.jdbc.use_get_generated_keys</value>
-                <value>hibernate.default_schema</value>
-            </list>
-        </property>
+    <bean id="hibernateConfigProperties" class="org.springframework.beans.factory.config.PropertiesFactoryBean">
+        <!--  Load in hibernate defaults -->
         <property name="locations">
             <list>
                 <value>classpath:alfresco/domain/hibernate-cfg.properties</value>
             </list>
         </property>
+        <!-- Allow global properties to override default settings -->
+        <property name="properties">
+            <ref bean="global-properties"/>
+        </property>
+        <property name="localOverride">
+            <value>true</value>
+        </property>
     </bean>
+
     <!-- load hibernate entity cache strategies -->
     <bean id="cacheStrategiesPlaceholderConfigurer" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
         <property name="ignoreUnresolvablePlaceholders">

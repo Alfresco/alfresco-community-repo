@@ -12,7 +12,7 @@
             <property name="commandMap">
                <map>
                   <entry key=".*">
-                     <value>${thirdparty.swf.exe} -V</value>
+                     <value>${swf.exe} -V</value>
                   </entry>
                </map>
             </property>
@@ -26,7 +26,7 @@
             <property name="commandMap">
                <map>
                   <entry key=".*">
-                     <value>${thirdparty.swf.exe} -T ${flashVersion} ${source} -o ${target}</value>
+                     <value>${swf.exe} -T ${flashVersion} ${source} -o ${target}</value>
                   </entry>
                </map>
             </property>

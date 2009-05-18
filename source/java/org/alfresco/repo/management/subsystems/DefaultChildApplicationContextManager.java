@@ -34,12 +34,7 @@ import java.util.StringTokenizer;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
-import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
-import org.springframework.context.ApplicationEvent;
-import org.springframework.context.ApplicationListener;
-import org.springframework.context.event.ContextRefreshedEvent;
 
 /**
  * A default {@link ChildApplicationContextManager} implementation that manages a 'chain' of
@@ -54,19 +49,16 @@ import org.springframework.context.event.ContextRefreshedEvent;
  * this property is editable at runtime via JMX. If a new &lt;id> is included in the list then a new
  * {@link ChildApplicationContextFactory} will be brought into existence. Similarly, if one is removed from the list,
  * then the corresponding instance will be destroyed. For Alfresco community edition, the chain is best configured
- * through the {@link #setDefaultChain(String)} method via Spring configuration.
+ * through the {@link #setChain(String)} method via Spring configuration.
  * 
  * @author dward
  */
 public class DefaultChildApplicationContextManager extends AbstractPropertyBackedBean implements
-        ApplicationContextAware, ApplicationListener, ChildApplicationContextManager
+        ChildApplicationContextManager
 {
 
     /** The name of the special property that holds the ordering of child instance names. */
     private static final String ORDER_PROPERTY = "chain";
-
-    /** The parent. */
-    private ApplicationContext parent;
 
     /** The default type name. */
     private String defaultTypeName;
@@ -80,25 +72,12 @@ public class DefaultChildApplicationContextManager extends AbstractPropertyBacke
     /** The child application contexts. */
     private Map<String, ChildApplicationContextFactory> childApplicationContexts = new TreeMap<String, ChildApplicationContextFactory>();
 
-    /** The auto start. */
-    private boolean autoStart;
-
     /**
      * Instantiates a new default child application context manager.
      */
     public DefaultChildApplicationContextManager()
     {
-        setId("manager");
-    }
-
-    /*
-     * (non-Javadoc)
-     * @see org.springframework.context.ApplicationContextAware#setApplicationContext(org.springframework.context.
-     * ApplicationContext)
-     */
-    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException
-    {
-        this.parent = applicationContext;
+        setId(Collections.singletonList("manager"));
     }
 
     /**
@@ -127,18 +106,6 @@ public class DefaultChildApplicationContextManager extends AbstractPropertyBacke
         this.defaultChain = defaultChain;
     }
 
-    /**
-     * Indicates whether all child application contexts should be started on startup of the parent application context.
-     * 
-     * @param autoStart
-     *            <code>true</code> if all child application contexts should be started on startup of the parent
-     *            application context
-     */
-    public void setAutoStart(boolean autoStart)
-    {
-        this.autoStart = autoStart;
-    }
-
     /*
      * (non-Javadoc)
      * @see org.alfresco.repo.management.subsystems.AbstractPropertyBackedBean#afterPropertiesSet()
@@ -151,7 +118,7 @@ public class DefaultChildApplicationContextManager extends AbstractPropertyBacke
             // Use the first type as the default, unless one is specified explicitly
             if (this.defaultTypeName == null)
             {
-                updateOrder(this.defaultChain, AbstractPropertyBackedBean.DEFAULT_ID);
+                updateOrder(this.defaultChain, AbstractPropertyBackedBean.DEFAULT_ID_ROOT);
                 this.defaultTypeName = this.childApplicationContexts.get(this.instanceIds.get(0)).getTypeName();
             }
             else
@@ -161,7 +128,7 @@ public class DefaultChildApplicationContextManager extends AbstractPropertyBacke
         }
         else if (this.defaultTypeName == null)
         {
-            setDefaultTypeName(AbstractPropertyBackedBean.DEFAULT_ID);
+            setDefaultTypeName(AbstractPropertyBackedBean.DEFAULT_ID_ROOT);
         }
 
         super.afterPropertiesSet();
@@ -173,7 +140,10 @@ public class DefaultChildApplicationContextManager extends AbstractPropertyBacke
      */
     public void start()
     {
-        // Nothing to do
+        for (String instance : getInstanceIds())
+        {
+            getApplicationContext(instance);
+        }
     }
 
     /*
@@ -226,6 +196,16 @@ public class DefaultChildApplicationContextManager extends AbstractPropertyBacke
 
     /*
      * (non-Javadoc)
+     * @see org.alfresco.repo.management.subsystems.AbstractPropertyBackedBean#getDescription(java.lang.String)
+     */
+    @Override
+    public String getDescription(String name)
+    {
+        return "Comma separated list of name:type pairs";
+    }
+
+    /*
+     * (non-Javadoc)
      * @see org.alfresco.repo.management.subsystems.PropertyBackedBean#setProperty(java.lang.String, java.lang.String)
      */
     public synchronized void setProperty(String name, String value)
@@ -254,22 +234,6 @@ public class DefaultChildApplicationContextManager extends AbstractPropertyBacke
     {
         ChildApplicationContextFactory child = this.childApplicationContexts.get(id);
         return child == null ? null : child.getApplicationContext();
-    }
-
-    /*
-     * (non-Javadoc)
-     * @see
-     * org.springframework.context.ApplicationListener#onApplicationEvent(org.springframework.context.ApplicationEvent)
-     */
-    public void onApplicationEvent(ApplicationEvent event)
-    {
-        if (this.autoStart && event instanceof ContextRefreshedEvent && event.getSource() == this.parent)
-        {
-            for (String instance : getInstanceIds())
-            {
-                getApplicationContext(instance);
-            }
-        }
     }
 
     /**
@@ -325,8 +289,12 @@ public class DefaultChildApplicationContextManager extends AbstractPropertyBacke
                 }
                 if (factory == null)
                 {
-                    this.childApplicationContexts.put(id, new ChildApplicationContextFactory(this.parent,
-                            getRegistry(), getCategory(), typeName, "managed$" + id));
+                    // Generate a unique ID within the category
+                    List<String> childId = new ArrayList<String>(2);
+                    childId.add("managed");
+                    childId.add(id);
+                    this.childApplicationContexts.put(id, new ChildApplicationContextFactory(getParent(),
+                            getRegistry(), getPropertyDefaults(), getCategory(), typeName, childId));
                 }
             }
 

@@ -24,6 +24,7 @@
  */
 package org.alfresco.repo.management.subsystems;
 
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -38,6 +39,7 @@ import java.util.Set;
  */
 public interface PropertyBackedBean
 {
+
     /**
      * Gets a human readable categorization of this bean, explaining its purpose. This category may be used e.g. in
      * administration UIs and JMX object names.
@@ -47,11 +49,12 @@ public interface PropertyBackedBean
     public String getCategory();
 
     /**
-     * Gets an identifier for the bean. Must be unique within the category.
+     * Gets an identifier for the bean. Must be unique within the category. The ID is a List to encourage hierarchical
+     * structuring of IDs, e.g. to aid construction of JMX Object names and presentation in JConsole.
      * 
      * @return the id
      */
-    public String getId();
+    public List<String> getId();
 
     /**
      * Gets the names of all properties.
@@ -88,6 +91,15 @@ public interface PropertyBackedBean
      * @return <code>true</code> if the property is updateable
      */
     public boolean isUpdateable(String name);
+
+    /**
+     * Gets a Human readable description of the property, e.g. to provide via JMX.
+     * 
+     * @param name
+     *            the name
+     * @return the description
+     */
+    public String getDescription(String name);
 
     /**
      * Starts up the component, using its new property values.

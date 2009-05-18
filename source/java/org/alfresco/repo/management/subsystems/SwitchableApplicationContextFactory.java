@@ -25,28 +25,22 @@
 package org.alfresco.repo.management.subsystems;
 
 import java.util.Collections;
-import java.util.Map;
 import java.util.Set;
 
-import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
 
 /**
  * A configurable proxy for a set of {@link ApplicationContextFactory} beans that allows dynamic selection of one or
  * more alternative subsystems via a <code>sourceBeanName</code> property. As with other {@link PropertyBackedBean}s,
  * can be stopped, reconfigured, started and tested.
  */
-public class SwitchableApplicationContextFactory extends AbstractPropertyBackedBean implements ApplicationContextAware,
+public class SwitchableApplicationContextFactory extends AbstractPropertyBackedBean implements
         ApplicationContextFactory
 {
     /**
      * 
      */
     private static final String SOURCE_BEAN_PROPERTY = "sourceBeanName";
-
-    /** The parent application context. */
-    private ApplicationContext parent;
 
     /** The bean name of the source {@link ApplicationContextFactory}. */
     private String sourceBeanName;
@@ -78,21 +72,15 @@ public class SwitchableApplicationContextFactory extends AbstractPropertyBackedB
 
     /*
      * (non-Javadoc)
-     * @see org.springframework.context.ApplicationContextAware#setApplicationContext(org.springframework.context.
-     * ApplicationContext)
-     */
-    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException
-    {
-        this.parent = applicationContext;
-    }
-
-    /*
-     * (non-Javadoc)
      * @see org.alfresco.enterprise.repo.management.ConfigurableBean#onStart()
      */
     public synchronized void start()
     {
-        this.sourceApplicationContextFactory = (ApplicationContextFactory) this.parent.getBean(this.sourceBeanName);
+        if (this.sourceApplicationContextFactory == null)
+        {
+            this.sourceApplicationContextFactory = (ApplicationContextFactory) getParent().getBean(this.sourceBeanName);
+            this.sourceApplicationContextFactory.start();
+        }
     }
 
     /*
@@ -128,7 +116,8 @@ public class SwitchableApplicationContextFactory extends AbstractPropertyBackedB
         return this.sourceApplicationContextFactory.getApplicationContext();
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
      * @see org.alfresco.repo.management.subsystems.PropertyBackedBean#getProperty(java.lang.String)
      */
     public synchronized String getProperty(String name)
@@ -140,7 +129,8 @@ public class SwitchableApplicationContextFactory extends AbstractPropertyBackedB
         return this.sourceBeanName;
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
      * @see org.alfresco.repo.management.subsystems.PropertyBackedBean#getPropertyNames()
      */
     public Set<String> getPropertyNames()
@@ -148,7 +138,8 @@ public class SwitchableApplicationContextFactory extends AbstractPropertyBackedB
         return Collections.singleton(SOURCE_BEAN_PROPERTY);
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
      * @see org.alfresco.repo.management.subsystems.PropertyBackedBean#setProperty(java.lang.String, java.lang.String)
      */
     public synchronized void setProperty(String name, String value)
@@ -157,9 +148,9 @@ public class SwitchableApplicationContextFactory extends AbstractPropertyBackedB
         {
             throw new IllegalStateException("Illegal attempt to write to property \"" + name + "\"");
         }
-        if (!parent.containsBean(value))
+        if (!getParent().containsBean(value))
         {
-            throw new IllegalStateException("\"" + value + "\" is not a valid bean name");            
+            throw new IllegalStateException("\"" + value + "\" is not a valid bean name");
         }
         setSourceBeanName(value);
     }

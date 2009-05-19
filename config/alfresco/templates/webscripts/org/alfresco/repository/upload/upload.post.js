@@ -233,18 +233,13 @@ function main()
       }
       
       // Extract metadata - via repo action for now
-      try
+      // This should use the MetadataExtracter API to fetch properties, allowing
+      // for possible failures.
+      var emAction = actions.create("extract-metadata");
+      if (emAction != null)
       {
-         var emAction = actions.create("extract-metadata");
-         if (emAction != null)
-         {
-            // Call using readOnly = false, newTransaction = true
-            emAction.execute(newFile, false, true);
-         }
-      }
-      catch (ex)
-      {
-         // Ignore for now
+         // Call using readOnly = false, newTransaction = false
+         emAction.execute(newFile, false, false);
       }
       
       // Set the title if none set during meta-data extract

@@ -43,6 +43,8 @@ import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * Extract metadata from any added content.
@@ -56,6 +58,8 @@ import org.alfresco.service.namespace.QName;
  */
 public class ContentMetadataExtracter extends ActionExecuterAbstractBase
 {
+    private static Log logger = LogFactory.getLog(ContentMetadataExtracter.class);
+    
     private NodeService nodeService;
     private ContentService contentService;
     private DictionaryService dictionaryService;
@@ -143,10 +147,39 @@ public class ContentMetadataExtracter extends ActionExecuterAbstractBase
         // TODO: The override policy should be a parameter here.  Instead, we'll use the default policy
         //       set on the extracter.
         // Give the node's properties to the extracter to be modified
-        Map<QName, Serializable> modifiedProperties = extracter.extract(
-                reader,
-                /*OverwritePolicy.PRAGMATIC,*/
-                nodeProperties);
+        Map<QName, Serializable> modifiedProperties = null;
+        try
+        {
+            modifiedProperties = extracter.extract(
+                    reader,
+                    /*OverwritePolicy.PRAGMATIC,*/
+                    nodeProperties);
+        }
+        catch (Throwable e)
+        {
+            // Extracters should attempt to handle all error conditions and extract
+            // as much as they can.  If, however, one should fail, we don't want the
+            // action itself to fail.  We absorb and report the exception here to
+            // solve ETHREEOH-1936 and ALFCOM-2889.
+            if (logger.isDebugEnabled())
+            {
+                logger.debug(
+                        "Raw metadata extraction failed: \n" +
+                        "   Extracter: " + this + "\n" +
+                        "   Node:      " + actionedUponNodeRef + "\n" +
+                        "   Content:   " + reader,
+                        e);
+            }
+            else
+            {
+                logger.warn(
+                        "Raw metadata extraction failed (turn on DEBUG for full error): \n" +
+                        "   Extracter: " + this + "\n" +
+                        "   Node:      " + actionedUponNodeRef + "\n" +
+                        "   Content:   " + reader + "\n" +
+                        "   Failure:   " + e.getMessage());
+            }
+        }
 
         // If none of the properties where changed, then there is nothing more to do
         if (modifiedProperties.size() == 0)

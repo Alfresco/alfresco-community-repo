@@ -57,7 +57,6 @@
          "type": "${item.type}",
          "isLink": ${item.isLink?string},
          "mimetype": "${d.mimetype!""}",
-         "icon32": "${d.icon32}",
          "fileName": "<#if item.isLink>${item.linkAsset.name}<#else>${d.name}</#if>",
          "displayName": "${d.name?replace(workingCopyLabel, "")}",
          "status": "<#list item.status as s>${s}<#if s_has_next>,</#if></#list>",

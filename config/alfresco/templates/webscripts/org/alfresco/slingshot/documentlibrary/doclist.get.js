@@ -154,7 +154,7 @@ function getDocList(filter)
       createdBy = people.getPerson(asset.properties["cm:creator"]);
       modifiedBy = people.getPerson(asset.properties["cm:modifier"]);
       
-       // Asset type
+      // Asset type
       if (asset.isContainer)
       {
          assetType = "folder";

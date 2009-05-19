@@ -29,20 +29,24 @@ import java.util.Map;
 
 import org.alfresco.repo.search.AbstractResultSetRow;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
-import org.alfresco.service.cmr.repository.Path;
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 
+/**
+ * Row in child assoc ref result set.
+ * @author andyh
+ *
+ */
 public class ChildAssocRefResultSetRow extends AbstractResultSetRow
 {
+    /**
+     * Row in child assoc ref result set
+     * @param resultSet
+     * @param index
+     */
     public ChildAssocRefResultSetRow(ChildAssocRefResultSet resultSet, int index)
     {
         super(resultSet, index);
-    }
-
-    public Serializable getValue(Path path)
-    {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException();
     }
 
     public QName getQName()
@@ -59,6 +63,26 @@ public class ChildAssocRefResultSetRow extends AbstractResultSetRow
     public ChildAssociationRef getChildAssocRef()
     {
         return ((ChildAssocRefResultSet)getResultSet()).getChildAssocRef(getIndex());
+    }
+
+    public NodeRef getNodeRef(String selectorName)
+    {
+        throw new UnsupportedOperationException();
+    }
+
+    public Map<String, NodeRef> getNodeRefs()
+    {
+        throw new UnsupportedOperationException();
+    }
+
+    public float getScore(String selectorName)
+    {
+        throw new UnsupportedOperationException();
+    }
+
+    public Map<String, Float> getScores()
+    {
+        throw new UnsupportedOperationException();
     }
 
 }

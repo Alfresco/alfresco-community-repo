@@ -58,16 +58,6 @@ public class SearcherComponent extends AbstractSearcherComponent
         this.indexerAndSearcherFactory = indexerAndSearcherFactory;
     }
 
-    public ResultSet query(StoreRef store,
-            String language,
-            String query,
-            Path[] queryOptions,
-            QueryParameterDefinition[] queryParameterDefinitions)
-    {
-        SearchService searcher = indexerAndSearcherFactory.getSearcher(store, true);
-        return searcher.query(store, language, query, queryOptions, queryParameterDefinitions);
-    }
-
     public ResultSet query(StoreRef store, QName queryId, QueryParameter[] queryParameters)
     {
         // TODO Auto-generated method stub

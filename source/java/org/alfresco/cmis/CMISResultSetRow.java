@@ -39,7 +39,7 @@ public interface CMISResultSetRow
 {
     /**
      * Get all the column data.
-     * @return - a map of serializable column values with teh column name as the key
+     * @return - a map of serializable column values with the column name as the key
      */
     public Map<String, Serializable> getValues();
     
@@ -53,12 +53,12 @@ public interface CMISResultSetRow
     /**
      * Get the overall score.
      * 
-     * @return
+     * @return the overall score
      */
     public float getScore();
     
     /**
-     * Get the scores .
+     * Get the scores.
      * @return a map of selector name to score.
      */
     public Map<String, Float> getScores();
@@ -85,8 +85,8 @@ public interface CMISResultSetRow
     
     /**
      * Get the index of this result set in the result set 
-     * If you want the overall position in paged reults you have to add the skipCount fo the result set. 
-     * @return
+     * If you want the overall position in paged results you have to add the skipCount fo the result set. 
+     * @return the index of the row.
      */
     public int getIndex();
     

@@ -382,7 +382,7 @@ public class CMISQueryParser
                     throw new CMISQueryException("A selector must be specified when there are two or more selectors");
                 }
             }
-            return ftsQueryParser.buildFTS(ftsExpression.substring(1, ftsExpression.length() - 1), factory, functionEvaluationContext, selector, columns, Connective.OR, Connective.OR);
+            return ftsQueryParser.buildFTS(ftsExpression.substring(1, ftsExpression.length() - 1), factory, functionEvaluationContext, selector, columns, Connective.OR, Connective.OR, null);
         case CMISParser.PRED_IN:
             functionName = In.NAME;
             function = factory.getFunction(functionName);

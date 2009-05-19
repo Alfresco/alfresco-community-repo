@@ -30,13 +30,12 @@ package org.alfresco.cmis;
  * A CMIS result set
  * 
  * @author andyh
- *
  */
 public interface CMISResultSet extends Iterable<CMISResultSetRow>
 {
     /**
      * Get the result set meta-data.
-     * @return
+     * @return the metadata
      */
     public CMISResultSetMetaData getMetaData();
     
@@ -44,7 +43,7 @@ public interface CMISResultSet extends Iterable<CMISResultSetRow>
      * Get the start point for this results set in the overall
      * set of rows that match the query - this will be equal to the skip count 
      * set when executing the query.
-     * @return
+     * @return the start position
      */
     public int getStart();
     
@@ -57,7 +56,7 @@ public interface CMISResultSet extends Iterable<CMISResultSetRow>
      * If a skip count is given, the length represents the number of results
      * after the skip count and does not include the items skipped.
      * 
-     * @return
+     * @return the length
      */
     public int getLength();
     
@@ -70,7 +69,7 @@ public interface CMISResultSet extends Iterable<CMISResultSetRow>
     
     /**
      * Was this result set curtailed - are there more pages to the result set?
-     * @return
+     * @return true if there are more results
      */
     public boolean hasMore();
     
@@ -78,7 +77,7 @@ public interface CMISResultSet extends Iterable<CMISResultSetRow>
     /**
      * Get the given row
      * @param i -the position in this result set - start + i gives the position in the overall result set
-     * @return
+     * @return the row
      */
     public CMISResultSetRow getRow(int i);
   

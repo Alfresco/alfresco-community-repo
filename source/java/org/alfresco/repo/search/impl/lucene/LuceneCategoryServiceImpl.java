@@ -192,7 +192,7 @@ public class LuceneCategoryServiceImpl implements CategoryService
                 break;
             }
 
-            resultSet = indexerAndSearcher.getSearcher(categoryRef.getStoreRef(), false).query(categoryRef.getStoreRef(), "lucene", luceneQuery.toString(), null, null);
+            resultSet = indexerAndSearcher.getSearcher(categoryRef.getStoreRef(), false).query(categoryRef.getStoreRef(), "lucene", luceneQuery.toString(), null);
 
             return resultSetToChildAssocCollection(resultSet);
         }
@@ -287,7 +287,7 @@ public class LuceneCategoryServiceImpl implements CategoryService
         try
         {
             resultSet = indexerAndSearcher.getSearcher(storeRef, false).query(storeRef, "lucene",
-                    "PATH:\"/" + getPrefix(qname.getNamespaceURI()) + ISO9075.encode(qname.getLocalName()) + "\"", null, null);
+                    "PATH:\"/" + getPrefix(qname.getNamespaceURI()) + ISO9075.encode(qname.getLocalName()) + "\"", null);
 
             Set<NodeRef> nodeRefs = new HashSet<NodeRef>(resultSet.length());
             for (ResultSetRow row : resultSet)
@@ -313,7 +313,7 @@ public class LuceneCategoryServiceImpl implements CategoryService
         ResultSet resultSet = null;
         try
         {
-            resultSet = indexerAndSearcher.getSearcher(storeRef, false).query(storeRef, "lucene", "PATH:\"//cm:categoryRoot/*\"", null, null);
+            resultSet = indexerAndSearcher.getSearcher(storeRef, false).query(storeRef, "lucene", "PATH:\"//cm:categoryRoot/*\"", null);
             return resultSetToChildAssocCollection(resultSet);
         }
         finally

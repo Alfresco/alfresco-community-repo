@@ -24,6 +24,7 @@
  */
 package org.alfresco.service.cmr.search;
 
+
 /**
  * Meta Data associated with a result set.
  * 
@@ -56,5 +57,52 @@ public interface ResultSetMetaData
      * @return
      */
     public SearchParameters getSearchParameters();
+    
+    /**
+     * Get the result set type
+     * @return
+     */
+    public ResultSetType getResultSetType();
+    
+    /**
+     * The selector meta-data.
+     * @return - the selector meta-data.
+     */
+    public ResultSetSelector getSelectors();
+    
+    
+    /**
+     * The column meta-data.
+     * @return - the column meta-data.
+     */
+    public ResultSetColumn getColumns();
+    
+    /**
+     * Get the names of the selectors.
+     * @return - the selector names.
+     */
+    public String[] getSelectorNames();
+    
+    /**
+     * Get the column names.
+     * @return - the names of the columns.
+     */
+    public String[] getColumnNames();
+    
+    /**
+     * Get the selector meta-data by name.
+     * @param name
+     * @return - the selector meta-data.
+     */
+    public ResultSetSelector getSelector(String name);
+    
+    /**
+     * Get the column meta-data by column name.
+     * @param name
+     * @return - the column meta-data.
+     */
+    public ResultSetColumn getColumn(String name);
+    
+    
     
 }

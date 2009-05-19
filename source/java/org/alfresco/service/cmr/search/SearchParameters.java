@@ -26,13 +26,16 @@ package org.alfresco.service.cmr.search;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.repo.domain.hibernate.BulkLoader;
 import org.alfresco.repo.search.MLAnalysisMode;
+import org.alfresco.repo.search.impl.querymodel.QueryOptions.Connective;
 import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.repository.StoreRef;
 
@@ -43,29 +46,25 @@ import org.alfresco.service.cmr.repository.StoreRef;
  * 
  * @author Andy Hind
  */
-public class SearchParameters extends SearchStatement
+public class SearchParameters
 {
     /*
      * The default limit if someone asks for a limited result set but does not say how to limit....
      */
     private static int DEFAULT_LIMIT = 500;
-    
+
     private static int DEFAULT_BULK_FETCH_SIZE = 1000;
 
     /*
      * Standard sort definitions for sorting in document and score order.
      */
-    public static final SortDefinition SORT_IN_DOCUMENT_ORDER_ASCENDING = new SortDefinition(
-            SortDefinition.SortType.DOCUMENT, null, true);
+    public static final SortDefinition SORT_IN_DOCUMENT_ORDER_ASCENDING = new SortDefinition(SortDefinition.SortType.DOCUMENT, null, true);
 
-    public static final SortDefinition SORT_IN_DOCUMENT_ORDER_DESCENDING = new SortDefinition(
-            SortDefinition.SortType.DOCUMENT, null, false);
+    public static final SortDefinition SORT_IN_DOCUMENT_ORDER_DESCENDING = new SortDefinition(SortDefinition.SortType.DOCUMENT, null, false);
 
-    public static final SortDefinition SORT_IN_SCORE_ORDER_ASCENDING = new SortDefinition(
-            SortDefinition.SortType.SCORE, null, false);
+    public static final SortDefinition SORT_IN_SCORE_ORDER_ASCENDING = new SortDefinition(SortDefinition.SortType.SCORE, null, false);
 
-    public static final SortDefinition SORT_IN_SCORE_ORDER_DESCENDING = new SortDefinition(
-            SortDefinition.SortType.SCORE, null, true);
+    public static final SortDefinition SORT_IN_SCORE_ORDER_DESCENDING = new SortDefinition(SortDefinition.SortType.SCORE, null, true);
 
     /**
      * An emum defining if the default action is to "and" or "or" unspecified components in the query register. Not all
@@ -86,17 +85,17 @@ public class SearchParameters extends SearchStatement
     /*
      * The parameters that can be set
      */
-    private ArrayList<StoreRef> stores = new ArrayList<StoreRef>(1);
+    private String language;
 
-    private ArrayList<Path> attributePaths = new ArrayList<Path>(1);
+    private String query;
+
+    private ArrayList<StoreRef> stores = new ArrayList<StoreRef>(1);
 
     private ArrayList<QueryParameterDefinition> queryParameterDefinitions = new ArrayList<QueryParameterDefinition>(1);
 
     private boolean excludeDataInTheCurrentTransaction = false;
 
     private ArrayList<SortDefinition> sortDefinitions = new ArrayList<SortDefinition>(1);
-
-    private Operator defaultOperator = Operator.OR;
 
     private ArrayList<Locale> locales = new ArrayList<Locale>();
 
@@ -107,14 +106,26 @@ public class SearchParameters extends SearchStatement
     private PermissionEvaluationMode permissionEvaluation = PermissionEvaluationMode.EAGER;
 
     private int limit = DEFAULT_LIMIT;
-    
+
     private HashSet<String> allAttributes = new HashSet<String>();
-    
+
     private HashSet<String> textAttributes = new HashSet<String>();
 
     private boolean bulkFetch = true;
 
     private int bulkFetchSize = DEFAULT_BULK_FETCH_SIZE;
+
+    private int maxItems = -1;
+
+    private int skipCount = 0;
+
+    private Operator defaultFTSOperator = Operator.OR;
+
+    private Operator defaultFTSFieldOperator = Operator.OR;
+
+    private Map<String, String> queryTemplates = new HashMap<String, String>();
+
+    private String namespace;
 
     /**
      * Default constructor
@@ -122,6 +133,43 @@ public class SearchParameters extends SearchStatement
     public SearchParameters()
     {
         super();
+    }
+
+    public String getLanguage()
+    {
+        return language;
+    }
+
+    /**
+     * Get the query.
+     * 
+     * @return
+     */
+    public String getQuery()
+    {
+        return query;
+    }
+
+    /**
+     * Set the query language.
+     * 
+     * @param language -
+     *            the query language.
+     */
+    public void setLanguage(String language)
+    {
+        this.language = language;
+    }
+
+    /**
+     * Set the query string.
+     * 
+     * @param query -
+     *            the query string.
+     */
+    public void setQuery(String query)
+    {
+        this.query = query;
     }
 
     /**
@@ -139,16 +187,6 @@ public class SearchParameters extends SearchStatement
         stores.add(store);
     }
 
-    /**
-     * Add paths for attributes in the result set. Generally this only makes sense for disconnected results sets. These
-     * atttributes/paths state what must be present in the result set, akin to the selection of columns is sql.
-     * 
-     * @param attributePath
-     */
-    public void addAttrbutePath(Path attributePath)
-    {
-        attributePaths.add(attributePath);
-    }
 
     /**
      * Add parameter definitions for the query - used to parameterise the query string
@@ -201,16 +239,6 @@ public class SearchParameters extends SearchStatement
     }
 
     /**
-     * Get the list of attribute paths that are guarenteed to be in the result set.
-     * 
-     * @return
-     */
-    public ArrayList<Path> getAttributePaths()
-    {
-        return attributePaths;
-    }
-
-    /**
      * Is data in the current transaction excluded from the search.
      * 
      * @return
@@ -257,7 +285,8 @@ public class SearchParameters extends SearchStatement
      */
     public void setDefaultOperator(Operator defaultOperator)
     {
-        this.defaultOperator = defaultOperator;
+        this.defaultFTSOperator = defaultOperator;
+        this.defaultFTSFieldOperator = defaultOperator;
     }
 
     /**
@@ -267,7 +296,7 @@ public class SearchParameters extends SearchStatement
      */
     public Operator getDefaultOperator()
     {
-        return defaultOperator;
+        return getDefaultFTSOperator();
     }
 
     /**
@@ -331,8 +360,8 @@ public class SearchParameters extends SearchStatement
     }
 
     /**
-     * The way in which multilingual fields are treated durig a search.
-     * By default, only the specified locale is used and it must be an exact match.
+     * The way in which multilingual fields are treated durig a search. By default, only the specified locale is used
+     * and it must be an exact match.
      * 
      * @return
      */
@@ -342,8 +371,8 @@ public class SearchParameters extends SearchStatement
     }
 
     /**
-     * Set the way in which multilingual fields are treated durig a search.
-     * This controls in which locales an multilingual fields will match.
+     * Set the way in which multilingual fields are treated durig a search. This controls in which locales an
+     * multilingual fields will match.
      * 
      * @param mlAnalaysisMode
      */
@@ -353,9 +382,8 @@ public class SearchParameters extends SearchStatement
     }
 
     /**
-     * Add a locale to include for multi-lingual text searches.
-     * If non are set, the default is to use the user's locale.
-     *  
+     * Add a locale to include for multi-lingual text searches. If non are set, the default is to use the user's locale.
+     * 
      * @param locale
      */
     public void addLocale(Locale locale)
@@ -372,14 +400,10 @@ public class SearchParameters extends SearchStatement
     {
         return Collections.unmodifiableList(locales);
     }
-    
-    
-    
 
     /**
-     * Add a locale to include for multi-lingual text searches.
-     * If non are set, the default is to use the user's locale.
-     *  
+     * Add a locale to include for multi-lingual text searches. If non are set, the default is to use the user's locale.
+     * 
      * @param locale
      */
     public void addTextAttribute(String attribute)
@@ -396,11 +420,10 @@ public class SearchParameters extends SearchStatement
     {
         return Collections.unmodifiableSet(textAttributes);
     }
-    
+
     /**
-     * Add a locale to include for multi-lingual text searches.
-     * If non are set, the default is to use the user's locale.
-     *  
+     * Add a locale to include for multi-lingual text searches. If non are set, the default is to use the user's locale.
+     * 
      * @param locale
      */
     public void addAllAttribute(String attribute)
@@ -417,9 +440,10 @@ public class SearchParameters extends SearchStatement
     {
         return Collections.unmodifiableSet(allAttributes);
     }
-    
+
     /**
      * Bulk fetch results in the cache
+     * 
      * @param bulkFetch
      * @return
      */
@@ -427,9 +451,10 @@ public class SearchParameters extends SearchStatement
     {
         this.bulkFetch = bulkFetch;
     }
-    
+
     /**
      * Do we bulk fect
+     * 
      * @return
      */
     public boolean getBulkFetch()
@@ -439,24 +464,126 @@ public class SearchParameters extends SearchStatement
 
     /**
      * Set the bulk fect size
+     * 
      * @param bulkFecthSize
      */
     public void setBulkFetchSize(int bulkFetchSize)
     {
         this.bulkFetchSize = bulkFetchSize;
     }
-    
-    
+
     /**
      * Get the bulk fetch size.
+     * 
      * @return
      */
     public int getBulkFecthSize()
     {
         return bulkFetchSize;
     }
-    
-    
+
+    /**
+     * Get the max number of rows for the result set 0 or less is unlimited
+     * 
+     * @return the maxItems
+     */
+    public int getMaxItems()
+    {
+        return maxItems;
+    }
+
+    /**
+     * Set the max number of rows for the result set 0 or less is unlimited
+     * 
+     * @param maxItems
+     *            the maxItems to set
+     */
+    public void setMaxItems(int maxItems)
+    {
+        this.maxItems = maxItems;
+    }
+
+    /**
+     * Get the skip count - the number of rows to skip at the start of the query.
+     * 
+     * @return the skipCount
+     */
+    public int getSkipCount()
+    {
+        return skipCount;
+    }
+
+    /**
+     * Set the skip count - the number of rows to skip at the start of the query.
+     * 
+     * @param skipCount
+     *            the skipCount to set
+     */
+    public void setSkipCount(int skipCount)
+    {
+        this.skipCount = skipCount;
+    }
+
+    /**
+     * Get the default connective used when OR and AND are not specified for the FTS contains() function.
+     * 
+     * @return the defaultFTSConnective
+     */
+    public Operator getDefaultFTSOperator()
+    {
+        return defaultFTSOperator;
+    }
+
+    /**
+     * Set the default connective used when OR and AND are not specified for the FTS contains() function.
+     * 
+     * @param defaultFTSConnective
+     *            the defaultFTSConnective to set
+     */
+    public void setDefaultFTSOperator(Operator defaultFTSOperator)
+    {
+        this.defaultFTSOperator = defaultFTSOperator;
+    }
+
+    /**
+     * As getDefaultFTSConnective() but for field groups
+     * 
+     * @return the defaultFTSFieldConnective
+     */
+    public Operator getDefaultFTSFieldOperator()
+    {
+        return defaultFTSFieldOperator;
+    }
+
+    /**
+     * As setDefaultFTSConnective() but for field groups
+     * 
+     * @param defaultFTSFieldConnective
+     *            the defaultFTSFieldConnective to set
+     */
+    public void setDefaultFTSFieldConnective(Operator defaultFTSFieldOperator)
+    {
+        this.defaultFTSFieldOperator = defaultFTSFieldOperator;
+    }
+
+    /**
+     * Get the default namespace.
+     * @return the default namspace uri or prefix.
+     */
+    public String getNamespace()
+    {
+        return namespace;
+    }
+
+    /**
+     * Set the default namespace
+     * @param namespace - the uri or prefix for the default namespace.
+     */
+    public void setNamespace(String namespace)
+    {
+        this.namespace = namespace;
+    }
+
     /**
      * A helper class for sort definition. Encapsulated using the lucene sortType, field name and a flag for
      * ascending/descending.
@@ -500,4 +627,5 @@ public class SearchParameters extends SearchStatement
         }
 
     }
+
 }

@@ -63,27 +63,6 @@ public interface SearchService
     //public static final String LANGUAGE_SQL_ALFTRESCO = "sql-alfresco";
 
     /**
-     * Search against a store.
-     * 
-     * @param store -
-     *            the store against which to search
-     * @param language -
-     *            the query language
-     * @param query -
-     *            the query string - which may include parameters
-     * @param attributePaths -
-     *            explicit list of attributes/properties to extract for the
-     *            selected nodes in xpath style syntax
-     * @param queryParameterDefinition -
-     *            query parameter definitions - the default value is used for
-     *            the value.
-     * @return Returns the query results
-     */
-    @Auditable(key = Auditable.Key.ARG_0, parameters = {"store", "language", "query", "attributePaths", "queryParameterDefinitions"})
-    public ResultSet query(StoreRef store, String language, String query, Path[] attributePaths,
-            QueryParameterDefinition[] queryParameterDefinitions);
-
-    /**
      * Search against a store. Pulls back all attributes on each node. Does not
      * allow parameterisation.
      * 
@@ -116,23 +95,7 @@ public interface SearchService
     public ResultSet query(StoreRef store, String language, String query,
             QueryParameterDefinition[] queryParameterDefintions);
 
-    /**
-     * Search against a store.
-     * 
-     * @param store -
-     *            the store against which to search
-     * @param language -
-     *            the query language
-     * @param query -
-     *            the query string - which may include parameters
-     * @param attributePaths -
-     *            explicit list of attributes/properties to extract for the
-     *            selected nodes in xpath style syntax
-     * @return Returns the query results
-     */
-    @Auditable(key = Auditable.Key.ARG_0, parameters = {"store", "language", "query", "attributePaths"})
-    public ResultSet query(StoreRef store, String language, String query, Path[] attributePaths);
-
+    
     /**
      * Execute a canned query
      * 

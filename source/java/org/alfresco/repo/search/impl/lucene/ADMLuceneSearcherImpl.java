@@ -207,7 +207,7 @@ public class ADMLuceneSearcherImpl extends AbstractLuceneBase implements LuceneS
         this.queryRegister = queryRegister;
     }
 
-    public ResultSet query(StoreRef store, String language, String queryString, Path[] queryOptions, QueryParameterDefinition[] queryParameterDefinitions) throws SearcherException
+    public ResultSet query(StoreRef store, String language, String queryString, QueryParameterDefinition[] queryParameterDefinitions) throws SearcherException
     {
         store = tenantService.getName(store);
 
@@ -215,13 +215,6 @@ public class ADMLuceneSearcherImpl extends AbstractLuceneBase implements LuceneS
         sp.addStore(store);
         sp.setLanguage(language);
         sp.setQuery(queryString);
-        if (queryOptions != null)
-        {
-            for (Path path : queryOptions)
-            {
-                sp.addAttrbutePath(path);
-            }
-        }
         if (queryParameterDefinitions != null)
         {
             for (QueryParameterDefinition qpd : queryParameterDefinitions)
@@ -414,8 +407,8 @@ public class ADMLuceneSearcherImpl extends AbstractLuceneBase implements LuceneS
                     hits = searcher.search(query);
                 }
 
-                Path[] paths = searchParameters.getAttributePaths().toArray(new Path[0]);
-                ResultSet rs = new LuceneResultSet(hits, searcher, nodeService, tenantService, paths, searchParameters, getLuceneConfig());
+                
+                ResultSet rs = new LuceneResultSet(hits, searcher, nodeService, tenantService, searchParameters, getLuceneConfig());
                 if (getLuceneConfig().getPostSortDateTime() && requiresPostSort)
                 {
                     ResultSet sorted = new SortedResultSet(rs, nodeService, searchParameters, namespacePrefixResolver);
@@ -457,7 +450,7 @@ public class ADMLuceneSearcherImpl extends AbstractLuceneBase implements LuceneS
                     return new EmptyResultSet();
                 }
                 Hits hits = searcher.search(query);
-                return new LuceneResultSet(hits, searcher, nodeService, tenantService, searchParameters.getAttributePaths().toArray(new Path[0]), searchParameters,
+                return new LuceneResultSet(hits, searcher, nodeService, tenantService, searchParameters,
                         getLuceneConfig());
             }
             catch (SAXPathException e)
@@ -538,17 +531,7 @@ public class ADMLuceneSearcherImpl extends AbstractLuceneBase implements LuceneS
 
     public ResultSet query(StoreRef store, String language, String query)
     {
-        return query(store, language, query, null, null);
-    }
-
-    public ResultSet query(StoreRef store, String language, String query, QueryParameterDefinition[] queryParameterDefintions)
-    {
-        return query(store, language, query, null, queryParameterDefintions);
-    }
-
-    public ResultSet query(StoreRef store, String language, String query, Path[] attributePaths)
-    {
-        return query(store, language, query, attributePaths, null);
+        return query(store, language, query, null);
     }
 
     public ResultSet query(StoreRef store, QName queryId, QueryParameter[] queryParameters)
@@ -569,7 +552,7 @@ public class ADMLuceneSearcherImpl extends AbstractLuceneBase implements LuceneS
 
         String queryString = parameterise(definition.getQuery(), definition.getQueryParameterMap(), queryParameters, definition.getNamespacePrefixResolver());
 
-        return query(store, definition.getLanguage(), queryString, null, null);
+        return query(store, definition.getLanguage(), queryString, null);
     }
 
     /**

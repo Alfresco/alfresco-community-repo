@@ -79,10 +79,10 @@ public class LuceneResultSet extends AbstractResultSet
      * @param storeRef
      * @param hits
      */
-    public LuceneResultSet(Hits hits, Searcher searcher, NodeService nodeService, TenantService tenantService, Path[] propertyPaths, SearchParameters searchParameters,
+    public LuceneResultSet(Hits hits, Searcher searcher, NodeService nodeService, TenantService tenantService, SearchParameters searchParameters,
             LuceneConfig config)
     {
-        super(propertyPaths);
+        super();
         this.hits = hits;
         this.searcher = searcher;
         this.nodeService = nodeService;
@@ -245,5 +245,15 @@ public class LuceneResultSet extends AbstractResultSet
     public ResultSetMetaData getResultSetMetaData()
     {
         return new SimpleResultSetMetaData(LimitBy.UNLIMITED, PermissionEvaluationMode.EAGER, searchParameters);
+    }
+
+    public int getStart()
+    {
+        throw new UnsupportedOperationException();
+    }
+
+    public boolean hasMore()
+    {
+        throw new UnsupportedOperationException();
     }
 }

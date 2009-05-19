@@ -40,28 +40,43 @@ import org.alfresco.repo.search.SimpleResultSetMetaData;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.search.LimitBy;
 import org.alfresco.service.cmr.search.PermissionEvaluationMode;
 import org.alfresco.service.cmr.search.ResultSetMetaData;
 import org.alfresco.service.cmr.search.ResultSetRow;
 import org.alfresco.service.cmr.search.SearchParameters;
 
+/**
+ * Child assoc result set
+ * @author andyh
+ *
+ */
 public class ChildAssocRefResultSet extends AbstractResultSet
 {
     private List<ChildAssociationRef> cars;
     NodeService nodeService;
     
-    public ChildAssocRefResultSet(NodeService nodeService, List<ChildAssociationRef> cars, Path[] propertyPaths)
+    /**
+     * Normal constructor
+     * @param nodeService
+     * @param cars
+     */
+    public ChildAssocRefResultSet(NodeService nodeService, List<ChildAssociationRef> cars)
     {
-        super(propertyPaths);
+        super();
         this.nodeService = nodeService;
         this.cars = cars;
     }
     
-    public ChildAssocRefResultSet(NodeService nodeService, List<NodeRef> nodeRefs, Path[] propertyPaths, boolean resolveAllParents)
+    /**
+     * Constructor that may expand all child assoc parents provided
+     * @param nodeService
+     * @param nodeRefs
+     * @param resolveAllParents
+     */
+    public ChildAssocRefResultSet(NodeService nodeService, List<NodeRef> nodeRefs, boolean resolveAllParents)
     {
-        super(propertyPaths);
+        super();
         this.nodeService = nodeService;
         List<ChildAssociationRef> cars = new ArrayList<ChildAssociationRef>(nodeRefs.size());
         for(NodeRef nodeRef : nodeRefs)
@@ -103,7 +118,8 @@ public class ChildAssocRefResultSet extends AbstractResultSet
         return new ChildAssocRefResultSetRowIterator(this);
     }
     
-    public NodeService getNodeService()
+    
+    /* package */ NodeService getNodeService()
     {
         return nodeService;
     }
@@ -111,5 +127,15 @@ public class ChildAssocRefResultSet extends AbstractResultSet
     public ResultSetMetaData getResultSetMetaData()
     {
         return new SimpleResultSetMetaData(LimitBy.UNLIMITED, PermissionEvaluationMode.EAGER, new SearchParameters());
+    }
+
+    public int getStart()
+    {
+       throw new UnsupportedOperationException();
+    }
+
+    public boolean hasMore()
+    {
+        throw new UnsupportedOperationException();
     }
 }

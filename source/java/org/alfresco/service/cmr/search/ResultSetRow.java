@@ -49,15 +49,14 @@ public interface ResultSetRow
      * 
      * @return Returns all the available node properties
      */
-    public Map<Path, Serializable> getValues();
+    public Map<String, Serializable> getValues();
 
     /**
-     * Get a node property by path
-     * 
-     * @param path the path to the value required
-     * @return Returns the value of the property at the given path
+     * Get the data for a single column
+     * @param columnName
+     * @return the value
      */
-    public Serializable getValue(Path path);
+    public Serializable getValue(String columnName);
 
     /**
      * Get a node property value by name
@@ -74,6 +73,21 @@ public interface ResultSetRow
      */
     public NodeRef getNodeRef();
 
+    
+    /**
+     * Gets the node refs
+     * @return a map of selector name to node ref
+     */
+    public Map<String, NodeRef> getNodeRefs();
+    
+
+    /**
+     * Gets the node ref related to the named selector
+     * @param selectorName
+     * @return the node ref
+     */
+    public NodeRef getNodeRef(String selectorName);
+    
     /**
      * Get the score for this row in the result set
      * 
@@ -82,6 +96,20 @@ public interface ResultSetRow
     public float getScore(); // Score is score + rank + potentially other
                                 // stuff
 
+    /**
+     * Get the scores .
+     * @return a map of selector name to score.
+     */
+    public Map<String, Float> getScores();
+    
+    /**
+     * Get the score related to the named selector.
+     * @param selectorName
+     * @return - the score.
+     */
+    public float getScore(String selectorName);
+    
+    
     /**
      * Get the containing result set
      * 
@@ -96,9 +124,9 @@ public interface ResultSetRow
     public QName getQName();
 
     /**
-     * Get the position of this row in the containing set.
-     * 
-     * @return Returns the position of this row in the containing resultset
+     * Get the index of this result set in the result set 
+     * If you want the overall position in paged reults you have to add the skipCount fo the result set. 
+     * @return
      */
     public int getIndex();
     

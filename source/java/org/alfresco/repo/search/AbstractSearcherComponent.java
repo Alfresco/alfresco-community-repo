@@ -56,19 +56,15 @@ public abstract class AbstractSearcherComponent implements SearchService
 
     public ResultSet query(StoreRef store, String language, String query)
     {
-        return query(store, language, query, null, null);
+        return query(store, language, query, null);
     }
 
     public ResultSet query(StoreRef store, String language, String query,
             QueryParameterDefinition[] queryParameterDefintions)
     {
-        return query(store, language, query, null, queryParameterDefintions);
+        return query(store, language, query, queryParameterDefintions);
     }
 
-    public ResultSet query(StoreRef store, String language, String query, Path[] attributePaths)
-    {
-        return query(store, language, query, attributePaths, null);
-    }
 
     public List<NodeRef> selectNodes(NodeRef contextNodeRef, String xpath, QueryParameterDefinition[] parameters,
             NamespacePrefixResolver namespacePrefixResolver, boolean followAllParentLinks)

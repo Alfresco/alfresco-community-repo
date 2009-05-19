@@ -28,6 +28,7 @@ import java.io.Serializable;
 import java.util.Collection;
 
 import org.alfresco.cmis.CMISDictionaryModel;
+import org.alfresco.repo.search.impl.lucene.AnalysisMode;
 import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
 import org.alfresco.repo.search.impl.querymodel.PredicateMode;
 import org.alfresco.service.ServiceRegistry;
@@ -103,7 +104,7 @@ public class ParentProperty extends AbstractProperty
     {
         String field = getLuceneFieldName();
         String stringValue = getValueAsString(value);
-        return lqp.getFieldQuery(field, stringValue);
+        return lqp.getFieldQuery(field, stringValue, AnalysisMode.IDENTIFIER);
     }
 
     /*
@@ -152,11 +153,11 @@ public class ParentProperty extends AbstractProperty
             String value = asStrings.iterator().next();
             if (not)
             {
-                return lqp.getDoesNotMatchFieldQuery(field, value);
+                return lqp.getDoesNotMatchFieldQuery(field, value, AnalysisMode.IDENTIFIER);
             }
             else
             {
-                return lqp.getFieldQuery(field, value);
+                return lqp.getFieldQuery(field, value, AnalysisMode.IDENTIFIER);
             }
         }
         else
@@ -168,7 +169,7 @@ public class ParentProperty extends AbstractProperty
             }
             for (String value : asStrings)
             {
-                Query any = lqp.getFieldQuery(field, value);
+                Query any = lqp.getFieldQuery(field, value, AnalysisMode.IDENTIFIER);
                 if (not)
                 {
                     booleanQuery.add(any, Occur.MUST_NOT);
@@ -190,7 +191,7 @@ public class ParentProperty extends AbstractProperty
     {
         String field = getLuceneFieldName();
         String stringValue = getValueAsString(value);
-        return lqp.getDoesNotMatchFieldQuery(field, stringValue);
+        return lqp.getDoesNotMatchFieldQuery(field, stringValue, AnalysisMode.IDENTIFIER);
     }
 
 
@@ -207,12 +208,12 @@ public class ParentProperty extends AbstractProperty
         {
             BooleanQuery booleanQuery = new BooleanQuery();
             booleanQuery.add(new MatchAllDocsQuery(), Occur.MUST);
-            booleanQuery.add(lqp.getLikeQuery(field, stringValue), Occur.MUST_NOT);
+            booleanQuery.add(lqp.getLikeQuery(field, stringValue, AnalysisMode.IDENTIFIER), Occur.MUST_NOT);
             return booleanQuery;
         }
         else
         {
-            return lqp.getLikeQuery(field, stringValue);
+            return lqp.getLikeQuery(field, stringValue, AnalysisMode.IDENTIFIER);
         }
     }
 

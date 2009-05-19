@@ -27,26 +27,16 @@ package org.alfresco.repo.search.impl.lucene;
 public enum AnalysisMode
 {
     DEFAULT
-    {
-        public boolean isAnalysed()
-        {
-            return true;
-        }
-    },
+    ,
     TOKENISE
-    {
-        public boolean isAnalysed()
-        {
-            return true;
-        }
-    },
+    ,
     IDENTIFIER
-    {
-        public boolean isAnalysed()
-        {
-            return false;
-        }
-    };
+    ,
+    FUZZY
+    ,
+    PREFIX
+    , 
+    WILD
+    ;
 
-    public abstract boolean isAnalysed();
 }

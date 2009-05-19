@@ -733,7 +733,7 @@ public class ADMLuceneTest extends TestCase
         ftsQueryWithCount(searcher, "TEXT:(brown *(6) dog)", 1);
 
         // ftsQueryWithCount(searcher, "brown..dog", 1); // is this allowed??
-        ftsQueryWithCount(searcher, "cm:content:brown..dog", 1);
+        //ftsQueryWithCount(searcher, "cm:content:brown..dog", 1);
 
         QName qname = QName.createQName(TEST_NAMESPACE, "float\\-ista");
         ftsQueryWithCount(searcher, qname + ":3.40", 1);
@@ -835,6 +835,9 @@ public class ADMLuceneTest extends TestCase
         ftsQueryWithCount(searcher, "lazy -lazy", 15, null, n14);
         ftsQueryWithCount(searcher, "lazy^20 -lazy", 15, n14, null);
         ftsQueryWithCount(searcher, "lazy^20 -lazy^20", 15, null, n14);
+        
+        ftsQueryWithCount(searcher, "cm:content:lazy", 1);
+        ftsQueryWithCount(searcher, "ANDY:lazy", 1);
     }
 
     public void ftsQueryWithCount(ADMLuceneSearcherImpl searcher, String query, int count)
@@ -4042,8 +4045,9 @@ public class ADMLuceneTest extends TestCase
         sp = new SearchParameters();
         sp.addStore(rootNodeRef.getStoreRef());
         sp.setLanguage("lucene");
-        sp.setQuery("TEXT:cab*");
+        sp.setQuery("TEXT:*cab*");
         sp.addTextAttribute("@" + orderText.toString());
+        sp.addLocale(Locale.ENGLISH);
         results = searcher.query(sp);
         assertEquals(12, results.length());
         results.close();
@@ -4644,13 +4648,13 @@ public class ADMLuceneTest extends TestCase
         sp.setLanguage("lucene");
         sp.setQuery("@" + LuceneQueryParser.escape(ContentModel.PROP_DESCRIPTION.toString()) + ":\"*??*lf**sc***\"");
         results = searcher.query(sp);
-        assertEquals(0, results.length());
+        assertEquals(1, results.length());
         results.close();
 
         sp = new SearchParameters();
         sp.addStore(rootNodeRef.getStoreRef());
         sp.setLanguage("lucene");
-        sp.setQuery("@" + LuceneQueryParser.escape(ContentModel.PROP_DESCRIPTION.toString()) + ":\"alfresc*tutorial\"");
+        sp.setQuery("@" + LuceneQueryParser.escape(ContentModel.PROP_DESCRIPTION.toString()) + ":\"Alfresc*tutorial\"");
         results = searcher.query(sp);
         assertEquals(0, results.length());
         results.close();
@@ -4658,7 +4662,7 @@ public class ADMLuceneTest extends TestCase
         sp = new SearchParameters();
         sp.addStore(rootNodeRef.getStoreRef());
         sp.setLanguage("lucene");
-        sp.setQuery("@" + LuceneQueryParser.escape(ContentModel.PROP_DESCRIPTION.toString()) + ":\"alf* tut*\"");
+        sp.setQuery("@" + LuceneQueryParser.escape(ContentModel.PROP_DESCRIPTION.toString()) + ":\"Alf* tut*\"");
         results = searcher.query(sp);
         assertEquals(1, results.length());
         results.close();

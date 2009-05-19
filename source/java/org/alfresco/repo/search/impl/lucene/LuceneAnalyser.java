@@ -47,15 +47,16 @@ import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.WhitespaceAnalyzer;
 
 /**
- * Analyse properties according to the property definition. The default is to use the standard tokeniser. The tokeniser should not have been called when indexing properties that
- * require no tokenisation. (tokenise should be set to false when adding the field to the document)
+ * Analyse properties according to the property definition. The default is to use the standard tokeniser. The tokeniser
+ * should not have been called when indexing properties that require no tokenisation. (tokenise should be set to false
+ * when adding the field to the document)
  * 
  * @author andyh
  */
 
 public class LuceneAnalyser extends Analyzer
 {
-    private static Log    s_logger = LogFactory.getLog(LuceneAnalyser.class);
+    private static Log s_logger = LogFactory.getLog(LuceneAnalyser.class);
 
     // Dictinary service to look up analyser classes by data type and locale.
     private DictionaryService dictionaryService;
@@ -92,7 +93,7 @@ public class LuceneAnalyser extends Analyzer
         this.defaultAnalyser = defaultAnalyser;
     }
 
-    public TokenStream tokenStream(String fieldName, Reader reader)
+    public TokenStream tokenStream(String fieldName, Reader reader, AnalysisMode analysisMode)
     {
         // Treat multilingual as a special case.
         // If multilingual then we need to find the correct tokeniser.
@@ -114,9 +115,14 @@ public class LuceneAnalyser extends Analyzer
         Analyzer analyser = (Analyzer) analysers.get(fieldName);
         if (analyser == null)
         {
-            analyser = findAnalyser(fieldName);
+            analyser = findAnalyser(fieldName, analysisMode);
         }
         return analyser.tokenStream(fieldName, reader);
+    }
+
+    public TokenStream tokenStream(String fieldName, Reader reader)
+    {
+        return tokenStream(fieldName, reader, AnalysisMode.DEFAULT);
     }
 
     /**
@@ -125,7 +131,7 @@ public class LuceneAnalyser extends Analyzer
      * @param fieldName
      * @return
      */
-    private Analyzer findAnalyser(String fieldName)
+    private Analyzer findAnalyser(String fieldName, AnalysisMode analysisMode)
     {
         Analyzer analyser;
         if (fieldName.equals("PATH"))
@@ -168,8 +174,7 @@ public class LuceneAnalyser extends Analyzer
                 // Temporary fix for person and user uids
 
                 if (propertyQName.equals(ContentModel.PROP_USER_USERNAME)
-                        || propertyQName.equals(ContentModel.PROP_USERNAME)
-                        || propertyQName.equals(ContentModel.PROP_AUTHORITY_NAME)
+                        || propertyQName.equals(ContentModel.PROP_USERNAME) || propertyQName.equals(ContentModel.PROP_AUTHORITY_NAME)
                         || propertyQName.equals(ContentModel.PROP_MEMBERS))
                 {
                     analyser = new VerbatimAnalyser(true);
@@ -177,11 +182,18 @@ public class LuceneAnalyser extends Analyzer
                 else
                 {
                     PropertyDefinition propertyDef = dictionaryService.getProperty(propertyQName);
+                    IndexTokenisationMode tokenise = IndexTokenisationMode.TRUE;
                     if (propertyDef != null)
                     {
-                        if ((propertyDef.getIndexTokenisationMode() == IndexTokenisationMode.BOTH) || (propertyDef.getIndexTokenisationMode() == IndexTokenisationMode.TRUE))
+                        DataTypeDefinition dataType = propertyDef.getDataType();
+                        tokenise = propertyDef.getIndexTokenisationMode();
+                        if (tokenise == null)
                         {
-                            DataTypeDefinition dataType = propertyDef.getDataType();
+                            tokenise = IndexTokenisationMode.TRUE;
+                        }
+                        switch (tokenise)
+                        {
+                        case TRUE:
                             if (dataType.getName().equals(DataTypeDefinition.CONTENT))
                             {
                                 analyser = new MLAnalayser(dictionaryService, MLAnalysisMode.ALL_ONLY);
@@ -194,16 +206,56 @@ public class LuceneAnalyser extends Analyzer
                             {
                                 analyser = loadAnalyzer(dataType);
                             }
-                        }
-                        else
-                        {
+                            break;
+                        case BOTH:
+                            switch (analysisMode)
+                            {
+                            case DEFAULT:
+                            case TOKENISE:
+                                if (dataType.getName().equals(DataTypeDefinition.CONTENT))
+                                {
+                                    analyser = new MLAnalayser(dictionaryService, MLAnalysisMode.ALL_ONLY);
+                                }
+                                else if (dataType.getName().equals(DataTypeDefinition.TEXT))
+                                {
+                                    analyser = new MLAnalayser(dictionaryService, MLAnalysisMode.ALL_ONLY);
+                                }
+                                else
+                                {
+                                    analyser = loadAnalyzer(dataType);
+                                }
+                                break;
+                            case IDENTIFIER:
+                                analyser = new VerbatimAnalyser();
+                                break;
+                            default:
+                                throw new UnsupportedOperationException("TYPE must not be tokenised");
+                            }
+
+                            break;
+                        case FALSE:
                             analyser = new VerbatimAnalyser();
+                            break;
+                        default:
+                            throw new UnsupportedOperationException("TYPE must not be tokenised");
                         }
                     }
                     else
                     {
-                        DataTypeDefinition dataType = dictionaryService.getDataType(DataTypeDefinition.TEXT);
-                        analyser = loadAnalyzer(dataType);
+                        switch (analysisMode)
+                        {
+                        case IDENTIFIER:
+                            analyser = new VerbatimAnalyser();
+                            break;
+                        case DEFAULT:
+                        case TOKENISE:
+                            DataTypeDefinition dataType = dictionaryService.getDataType(DataTypeDefinition.TEXT);
+                            analyser = loadAnalyzer(dataType);
+                            break;
+                        default:
+                            throw new UnsupportedOperationException();
+                        }
+
                     }
                 }
             }
@@ -224,7 +276,7 @@ public class LuceneAnalyser extends Analyzer
      */
     private Analyzer loadAnalyzer(DataTypeDefinition dataType)
     {
-        String analyserClassName = dataType.getAnalyserClassName();
+        String analyserClassName = dataType.getAnalyserClassName().trim();
         try
         {
             Class<?> clazz = Class.forName(analyserClassName);
@@ -237,23 +289,21 @@ public class LuceneAnalyser extends Analyzer
         }
         catch (ClassNotFoundException e)
         {
-            throw new RuntimeException("Unable to load analyser for property of type "
-                    + dataType.getName() + " using " + analyserClassName);
+            throw new RuntimeException("Unable to load analyser for property of type " + dataType.getName() + " using " + analyserClassName);
         }
         catch (InstantiationException e)
         {
-            throw new RuntimeException("Unable to load analyser for property of type "
-                    + dataType.getName() + " using " + analyserClassName);
+            throw new RuntimeException("Unable to load analyser for property of type " + dataType.getName() + " using " + analyserClassName);
         }
         catch (IllegalAccessException e)
         {
-            throw new RuntimeException("Unable to load analyser for property of type "
-                    + dataType.getName() + " using " + analyserClassName);
+            throw new RuntimeException("Unable to load analyser for property of type " + dataType.getName() + " using " + analyserClassName);
         }
     }
 
     /**
-     * For multilingual fields we separate the tokens for each instance to break phrase queries spanning different languages etc.
+     * For multilingual fields we separate the tokens for each instance to break phrase queries spanning different
+     * languages etc.
      */
     @Override
     public int getPositionIncrementGap(String fieldName)

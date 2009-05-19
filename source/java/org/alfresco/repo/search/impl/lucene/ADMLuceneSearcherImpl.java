@@ -38,6 +38,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.i18n.I18NUtil;
+import org.alfresco.model.ContentModel;
 import org.alfresco.repo.search.CannedQueryDef;
 import org.alfresco.repo.search.EmptyResultSet;
 import org.alfresco.repo.search.MLAnalysisMode;
@@ -159,16 +160,17 @@ public class ADMLuceneSearcherImpl extends AbstractLuceneBase implements LuceneS
     {
         return getSearcher(storeRef, null, config);
     }
-    
+
     /**
      * Get a select-node-based searcher
+     * 
      * @return
      */
     public static ADMLuceneSearcherImpl getNodeSearcher()
     {
         return new ADMLuceneSearcherImpl();
     }
-    
+
     public void setNamespacePrefixResolver(NamespacePrefixResolver namespacePrefixResolver)
     {
         this.namespacePrefixResolver = namespacePrefixResolver;
@@ -194,7 +196,7 @@ public class ADMLuceneSearcherImpl extends AbstractLuceneBase implements LuceneS
     {
         this.queryEngine = queryEngine;
     }
-    
+
     /**
      * Set the query register
      * 
@@ -473,13 +475,13 @@ public class ADMLuceneSearcherImpl extends AbstractLuceneBase implements LuceneS
             FTSQueryParser ftsQueryParser = new FTSQueryParser();
             QueryModelFactory factory = queryEngine.getQueryModelFactory();
             AlfrescoFunctionEvaluationContext context = new AlfrescoFunctionEvaluationContext(namespacePrefixResolver, getDictionaryService());
-            
+
             QueryOptions options = new QueryOptions(searchParameters.getQuery(), null);
             options.setFetchSize(searchParameters.getBulkFecthSize());
             options.setIncludeInTransactionData(!searchParameters.excludeDataInTheCurrentTransaction());
             options.setDefaultFTSConnective(searchParameters.getDefaultOperator() == SearchParameters.Operator.OR ? Connective.OR : Connective.AND);
             options.setDefaultFTSFieldConnective(searchParameters.getDefaultOperator() == SearchParameters.Operator.OR ? Connective.OR : Connective.AND);
-            if(searchParameters.getLimitBy() == LimitBy.FINAL_SIZE)
+            if (searchParameters.getLimitBy() == LimitBy.FINAL_SIZE)
             {
                 options.setMaxItems(searchParameters.getLimit());
             }
@@ -490,10 +492,12 @@ public class ADMLuceneSearcherImpl extends AbstractLuceneBase implements LuceneS
             options.setMlAnalaysisMode(searchParameters.getMlAnalaysisMode());
             options.setLocales(searchParameters.getLocales());
             options.setStores(searchParameters.getStores());
-            
-            Constraint constraint = ftsQueryParser.buildFTS(ftsExpression, factory, context, null, null, options.getDefaultFTSConnective(), options.getDefaultFTSFieldConnective());
+
+            HashMap<String, String> templates = new HashMap<String, String>();
+            templates.put("ANDY", "%(cm:content, cm:title)");
+            Constraint constraint = ftsQueryParser.buildFTS(ftsExpression, factory, context, null, null, options.getDefaultFTSConnective(), options.getDefaultFTSFieldConnective(), templates);
             org.alfresco.repo.search.impl.querymodel.Query query = factory.createQuery(null, null, constraint, null);
-           
+
             QueryEngineResults results = queryEngine.executeQuery(query, options, context);
             return results.getResults().values().iterator().next();
         }

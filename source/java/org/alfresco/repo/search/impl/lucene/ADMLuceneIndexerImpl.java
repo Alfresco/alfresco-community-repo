@@ -1184,17 +1184,27 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
                                 while ((t = duplicator.next()) != null)
                                 {
                                     String localeText = "";
+                                    String withoutLocale = "";
                                     if (t.termText().indexOf('{') == 0)
                                     {
                                         int end = t.termText().indexOf('}', 1);
                                         if (end != -1)
                                         {
                                             localeText = t.termText().substring(1, end);
+                                            withoutLocale = t.termText().substring(end+1);
                                         }
+                                        else
+                                        {
+                                            
+                                        }
+                                    }
+                                    else
+                                    {
+                                        withoutLocale = t.termText();
                                     }
                                     if (localeText.length() > 0)
                                     {
-                                        doc.add(new Field(attributeName + "." + localeText + ".sort", t.termText(), Field.Store.NO, Field.Index.NO_NORMS, Field.TermVector.NO));
+                                        doc.add(new Field(attributeName + "." + localeText + ".sort", withoutLocale, Field.Store.NO, Field.Index.NO_NORMS, Field.TermVector.NO));
                                     }
                                 }
                             }

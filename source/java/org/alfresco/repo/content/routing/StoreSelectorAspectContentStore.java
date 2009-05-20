@@ -27,6 +27,7 @@ package org.alfresco.repo.content.routing;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -40,6 +41,9 @@ import org.alfresco.repo.dictionary.constraint.ListOfValuesConstraint;
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
+import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
+import org.alfresco.repo.transaction.TransactionListenerAdapter;
+import org.alfresco.repo.transaction.TransactionalResourceHelper;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
@@ -66,12 +70,16 @@ import org.springframework.beans.factory.InitializingBean;
  */
 public class StoreSelectorAspectContentStore
             extends AbstractRoutingContentStore
-            implements InitializingBean, NodeServicePolicies.OnUpdatePropertiesPolicy
+            implements InitializingBean,
+                        NodeServicePolicies.OnUpdatePropertiesPolicy,
+                        NodeServicePolicies.OnAddAspectPolicy
 {
     private static final String ERR_INVALID_DEFAULT_STORE = "content.routing.err.invalid_default_store";
+    private static final String KEY_CONTENT_MOVE_DETAILS = "StoreSelectorAspectContentStore.ContentMoveDetails";
     
     private static Log logger = LogFactory.getLog(StoreSelectorAspectContentStore.class);
 
+    private ContentMoveTransactionListener transactionListener;
     private NodeService nodeService;
     private PolicyComponent policyComponent;
     private DictionaryService dictionaryService;
@@ -151,11 +159,19 @@ public class StoreSelectorAspectContentStore
         {
             AlfrescoRuntimeException.create(ERR_INVALID_DEFAULT_STORE, defaultStoreName, storesByName.keySet());
         }
+        // Register to receive change updates relevant to the aspect
         // Register to receive property change updates
+        policyComponent.bindClassBehaviour(
+                QName.createQName(NamespaceService.ALFRESCO_URI, "onAddAspect"),
+                ContentModel.ASPECT_STORE_SELECTOR,
+                new JavaBehaviour(this, "onAddAspect"));
         policyComponent.bindClassBehaviour(
                 QName.createQName(NamespaceService.ALFRESCO_URI, "onUpdateProperties"),
                 ContentModel.ASPECT_STORE_SELECTOR,
-                new JavaBehaviour(this, "onUpdateProperties"));   
+                new JavaBehaviour(this, "onUpdateProperties"));
+        
+        // Construct the transaction listener that will be bound in
+        transactionListener = new ContentMoveTransactionListener();
     }
 
     @Override
@@ -219,8 +235,52 @@ public class StoreSelectorAspectContentStore
     }
     
     /**
+     * Class to carry info into the post-transaction phase
+     */
+    private static class ContentMoveDetail
+    {
+        private final ContentStore oldStore;
+        private final ContentStore newStore;
+        private final String contentUrl;
+        private ContentMoveDetail(ContentStore oldStore, ContentStore newStore, String contentUrl)
+        {
+            this.oldStore = oldStore;
+            this.newStore = newStore;
+            this.contentUrl = contentUrl;
+        }
+    }
+    /**
+     * Ensures that the content is copied between stores only if the transaction is successful.
+     * 
+     * @author Derek Hulley
+     * @since 3.2
+     */
+    private class ContentMoveTransactionListener extends TransactionListenerAdapter
+    {
+        @Override
+        public void afterCommit()
+        {
+            List<ContentMoveDetail> contentMoveDetails = TransactionalResourceHelper.getList(KEY_CONTENT_MOVE_DETAILS);
+            for (ContentMoveDetail contentMoveDetail : contentMoveDetails)
+            {
+                moveContent(contentMoveDetail.oldStore, contentMoveDetail.newStore, contentMoveDetail.contentUrl);
+            }
+        }
+    }
+
+    /**
      * Move content from the old store to the new store
      */
+    private void scheduleContentMove(ContentStore oldStore, ContentStore newStore, String contentUrl)
+    {
+        // Add the details of the copy to the transaction
+        List<ContentMoveDetail> contentMoveDetails = TransactionalResourceHelper.getList(KEY_CONTENT_MOVE_DETAILS);
+        ContentMoveDetail detail = new ContentMoveDetail(oldStore, newStore, contentUrl);
+        contentMoveDetails.add(detail);
+        // Bind the listener to the transaction
+        AlfrescoTransactionSupport.bindListener(transactionListener);
+    }
+    
     private void moveContent(ContentStore oldStore, ContentStore newStore, String contentUrl)
     {
         ContentReader reader = oldStore.getReader(contentUrl);
@@ -246,6 +306,21 @@ public class StoreSelectorAspectContentStore
         }
     }
     
+    /**
+     * Ensures that all content is moved to the correct store.
+     * <p>
+     * Spoofs a call to {@link #onUpdateProperties(NodeRef, Map, Map)}.
+     */
+    public void onAddAspect(NodeRef nodeRef, QName aspectTypeQName)
+    {
+        Map<QName, Serializable> after = nodeService.getProperties(nodeRef);
+        // Pass the call through.  It is only interested in a single property.
+        onUpdateProperties(
+                nodeRef,
+                Collections.<QName, Serializable>emptyMap(),
+                after);
+    }
+
     /**
      * Keeps the content in the correct store based on changes to the <b>cm:storeName</b> property
      */
@@ -322,7 +397,7 @@ public class StoreSelectorAspectContentStore
         // Move content from the old store to the new store
         for (String contentUrl : contentUrls)
         {
-            moveContent(oldStore, newStore, contentUrl);
+            scheduleContentMove(oldStore, newStore, contentUrl);
         }
     }
 

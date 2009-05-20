@@ -250,4 +250,38 @@ public class StoreSelectorAspectContentStoreTest extends TestCase
         assertFalse("Store1 should NOT have content", storesByName.get(STORE_ONE).exists(contentUrl));
         assertTrue("Store2 should have content", storesByName.get(STORE_TWO).exists(contentUrl));
     }
+
+    /**
+     * Ensure that the store move does not occur if an invalid <b>cm:storeName</b> property us used.
+     */
+    public void testPropertyChangeWithIntegrityError() throws Exception
+    {
+//        setStoreNameProperty(STORE_ONE);
+        String contentUrl = writeToFile();
+        assertTrue("Store1 should have content", storesByName.get(STORE_ONE).exists(contentUrl));
+        assertFalse("Store2 should NOT have content", storesByName.get(STORE_TWO).exists(contentUrl));
+        // Change the property
+        setStoreNameProperty(STORE_TWO);
+        // It should have moved
+        assertFalse("Store1 should NOT have content", storesByName.get(STORE_ONE).exists(contentUrl));
+        assertTrue("Store2 should have content", storesByName.get(STORE_TWO).exists(contentUrl));
+        RetryingTransactionCallback<Object> setInvalidStoreNameCallback = new RetryingTransactionCallback<Object>()
+        {
+            public Object execute() throws Throwable
+            {
+                setStoreNameProperty("bogus");
+                return null;
+            }
+        };
+        try
+        {
+            transactionService.getRetryingTransactionHelper().doInTransaction(setInvalidStoreNameCallback, false, true);
+            fail("Expected integrity error for bogus store name");
+        }
+        catch (IntegrityException e)
+        {
+            // Expected
+        }
+        assertTrue("Store2 should have content", storesByName.get(STORE_TWO).exists(contentUrl));
+    }
 }

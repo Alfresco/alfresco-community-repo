@@ -110,7 +110,7 @@ function main()
     var supportedBaseFieldNames = ['name', 'label', 'description', 'binding',
                                    'defaultValue', 'dataKeyName', 'group', 'protectedField'];
     var supportedPropertyFieldNames = ['dataType', 'mandatory',
-                                       'repeats', 'constraints'];
+                                       'repeating', 'constraints'];
     var supportedAssociationFieldNames = ['endpointType', 'endpointDirection',
                                           'endpointMandatory', 'endpointMany'];
 

@@ -2454,8 +2454,8 @@ public class IndexInfo implements IndexMonitor
         ConfigurableApplicationContext ac = ApplicationContextHelper.getApplicationContext();
         XPathReader reader = new XPathReader();
         LuceneXPathHandler handler = new LuceneXPathHandler();
-        handler.setNamespacePrefixResolver((NamespaceService) ac.getBean("namespaceService"));
-        handler.setDictionaryService((DictionaryService) ac.getBean("dictionaryService"));
+        handler.setNamespacePrefixResolver((NamespaceService)ac.getBean("namespaceService"));
+        handler.setDictionaryService((DictionaryService)ac.getBean("dictionaryService"));
         reader.setXPathHandler(handler);
         reader.parse(path);
         PathQuery pathQuery = handler.getQuery();
@@ -2486,249 +2486,215 @@ public class IndexInfo implements IndexMonitor
         }
         IndexReader reader = ii.getMainIndexReferenceCountingReadOnlyIndexReader();
         System.out.println(reader.getFieldNames(FieldOption.ALL));
-
-        TermEnum te = reader.terms();
-        while (te.next())
-        {
-            if (te.term().field().contains("FTS"))
-            {
-                System.out.println(te.term());
-            }
-        }
-        // @{http://www.alfresco.org/model/content/1.0}name:product363_ocmwbeersel
-
         IndexSearcher searcher = new IndexSearcher(reader);
-        Query query = new TermQuery(new Term("@{http://www.alfresco.org/model/content/1.0}name", "product363_ocmwbeersel"));
+        Query query = new TermQuery(new Term("@{http://www.travelmuse.com/wcm}DestinationName", "bambino"));
         start = System.nanoTime();
         Hits hits = searcher.search(query);
         end = System.nanoTime();
-        System.out.println("@{http://www.alfresco.org/model/content/1.0}name:product363_ocmwbeersel = " + hits.length() + " in " + ((end - start) / 1e9));
+        System.out.println("@{http://www.travelmuse.com/wcm}DestinationName:bambino = " + hits.length() + " in " + ((end - start) / 1e9));
         searcher.close();
 
         searcher = new IndexSearcher(reader);
-        query = new WildcardQuery(new Term("@{http://www.alfresco.org/model/content/1.0}name", "b*"));
+        query = new TermQuery(new Term("@{http://www.travelmuse.com/wcm}DestinationName", "bambino"));
         start = System.nanoTime();
         hits = searcher.search(query);
         end = System.nanoTime();
-        System.out.println("@{http://www.alfresco.org/model/content/1.0}name:b* = " + hits.length() + " in " + ((end - start) / 1e9));
+        System.out.println("@{http://www.travelmuse.com/wcm}DestinationName:bambino = " + hits.length() + " in " + ((end - start) / 1e9));
         searcher.close();
 
         searcher = new IndexSearcher(reader);
-        query = new TermQuery(new Term("@{http://www.alfresco.org/model/content/1.0}name", "be"));
+        query = new WildcardQuery(new Term("@{http://www.travelmuse.com/wcm}DestinationPhoto", "*"));
         start = System.nanoTime();
         hits = searcher.search(query);
         end = System.nanoTime();
-        System.out.println("@{http://www.alfresco.org/model/content/1.0}name:be = " + hits.length() + " in " + ((end - start) / 1e9));
+        System.out.println("@{http://www.travelmuse.com/wcm}DestinationPhoto:* = " + hits.length() + " in " + ((end - start) / 1e9));
         searcher.close();
-        //
-        // searcher = new IndexSearcher(reader);
-        // query = new WildcardQuery(new Term("@{http://www.travelmuse.com/wcm}DestinationPhoto", "*"));
-        // start = System.nanoTime();
-        // hits = searcher.search(query);
-        // end = System.nanoTime();
-        // System.out.println("@{http://www.travelmuse.com/wcm}DestinationPhoto:* = " + hits.length() + " in " + ((end -
-        // start) / 1e9));
-        // searcher.close();
-        //
-        // searcher = new IndexSearcher(reader);
-        // query = new WildcardQuery(new Term("@{http://www.travelmuse.com/wcm}DestinationPhoto", "*"));
-        // start = System.nanoTime();
-        // hits = searcher.search(query);
-        // end = System.nanoTime();
-        // System.out.println("@{http://www.travelmuse.com/wcm}DestinationPhoto:* = " + hits.length() + " in " + ((end -
-        // start) / 1e9));
-        // searcher.close();
-        //
-        // searcher = new IndexSearcher(reader);
-        // query = new TermQuery(new Term("@{http://www.travelmuse.com/wcm}ThemeName", "bambino"));
-        // start = System.nanoTime();
-        // hits = searcher.search(query);
-        // end = System.nanoTime();
-        // System.out.println("@{http://www.travelmuse.com/wcm}ThemeName:bambino = " + hits.length() + " in " + ((end -
-        // start) / 1e9));
-        // searcher.close();
-        //
-        // searcher = new IndexSearcher(reader);
-        // query = new TermQuery(new Term("@{http://www.travelmuse.com/wcm}ThemeName", "bambino"));
-        // start = System.nanoTime();
-        // hits = searcher.search(query);
-        // end = System.nanoTime();
-        // System.out.println("@{http://www.travelmuse.com/wcm}ThemeName:bambino = " + hits.length() + " in " + ((end -
-        // start) / 1e9));
-        // searcher.close();
-        //
-        // searcher = new IndexSearcher(reader);
-        // query = new TermQuery(new Term("@{http://www.travelmuse.com/wcm}ActivityName", "bambino"));
-        // start = System.nanoTime();
-        // hits = searcher.search(query);
-        // end = System.nanoTime();
-        // System.out.println("@{http://www.travelmuse.com/wcm}ActivityName:bambino = " + hits.length() + " in " + ((end
-        // - start) / 1e9));
-        // searcher.close();
-        //
-        // searcher = new IndexSearcher(reader);
-        // query = new TermQuery(new Term("@{http://www.travelmuse.com/wcm}ActivityName", "bambino"));
-        // start = System.nanoTime();
-        // hits = searcher.search(query);
-        // end = System.nanoTime();
-        // System.out.println("@{http://www.travelmuse.com/wcm}ActivityName:bambino = " + hits.length() + " in " + ((end
-        // - start) / 1e9));
-        // searcher.close();
-        //
-        // searcher = new IndexSearcher(reader);
-        // query = new TermQuery(new Term("@{http://www.travelmuse.com/wcm}EditorialItemTitle", "bambino"));
-        // start = System.nanoTime();
-        // hits = searcher.search(query);
-        // end = System.nanoTime();
-        // System.out.println("@{http://www.travelmuse.com/wcm}EditorialItemTitle:bambino = " + hits.length() + " in " +
-        // ((end - start) / 1e9));
-        // searcher.close();
-        //
-        // searcher = new IndexSearcher(reader);
-        // query = new TermQuery(new Term("@{http://www.travelmuse.com/wcm}EditorialItemTitle", "bambino"));
-        // start = System.nanoTime();
-        // hits = searcher.search(query);
-        // end = System.nanoTime();
-        // System.out.println("@{http://www.travelmuse.com/wcm}EditorialItemTitle:bambino = " + hits.length() + " in " +
-        // ((end - start) / 1e9));
-        // searcher.close();
-        //
-        // searcher = new IndexSearcher(reader);
-        // query = new TermQuery(new Term("@{http://www.travelmuse.com/wcm}PoiName", "bambino"));
-        // start = System.nanoTime();
-        // hits = searcher.search(query);
-        // end = System.nanoTime();
-        // System.out.println("@{http://www.travelmuse.com/wcm}PoiName:bambino = " + hits.length() + " in " + ((end -
-        // start) / 1e9));
-        // searcher.close();
-        //
-        // searcher = new IndexSearcher(reader);
-        // query = new TermQuery(new Term("@{http://www.travelmuse.com/wcm}PoiName", "bambino"));
-        // start = System.nanoTime();
-        // hits = searcher.search(query);
-        // end = System.nanoTime();
-        // System.out.println("@{http://www.travelmuse.com/wcm}PoiName:bambino = " + hits.length() + " in " + ((end -
-        // start) / 1e9));
-        // searcher.close();
-        //
-        // searcher = new IndexSearcher(reader);
-        // query = new TermQuery(new Term("@{http://www.travelmuse.com/wcm}PropertyName", "bambino"));
-        // start = System.nanoTime();
-        // hits = searcher.search(query);
-        // end = System.nanoTime();
-        // System.out.println("@{http://www.travelmuse.com/wcm}PropertyName:bambino = " + hits.length() + " in " + ((end
-        // - start) / 1e9));
-        // searcher.close();
-        //
-        // searcher = new IndexSearcher(reader);
-        // query = new TermQuery(new Term("@{http://www.travelmuse.com/wcm}PropertyName", "bambino"));
-        // start = System.nanoTime();
-        // hits = searcher.search(query);
-        // end = System.nanoTime();
-        // System.out.println("@{http://www.travelmuse.com/wcm}PropertyName:bambino = " + hits.length() + " in " + ((end
-        // - start) / 1e9));
-        // searcher.close();
-        //
-        // searcher = new IndexSearcher(reader);
-        // query = new TermQuery(new Term("@{http://www.alfresco.org/model/content/1.0}content", "bambino"));
-        // start = System.nanoTime();
-        // hits = searcher.search(query);
-        // end = System.nanoTime();
-        // System.out.println("@{http://www.alfresco.org/model/content/1.0}content:bambino = " + hits.length() + " in "
-        // + ((end - start) / 1e9));
-        // searcher.close();
-        //
-        // searcher = new IndexSearcher(reader);
-        // query = new TermQuery(new Term("@{http://www.alfresco.org/model/content/1.0}content", "bambino"));
-        // start = System.nanoTime();
-        // hits = searcher.search(query);
-        // end = System.nanoTime();
-        // System.out.println("@{http://www.alfresco.org/model/content/1.0}content:bambino = " + hits.length() + " in "
-        // + ((end - start) / 1e9));
-        // searcher.close();
-        //        
-        // searcher = new IndexSearcher(reader);
-        // query = getPathQuery("/www/avm_webapps/ROOT/editorial//*");
-        // start = System.nanoTime();
-        // hits = searcher.search(query);
-        // end = System.nanoTime();
-        // System.out.println("/www/avm_webapps/ROOT/editorial//* = " + hits.length() + " in " + ((end - start) / 1e9));
-        // searcher.close();
-        //        
-        // searcher = new IndexSearcher(reader);
-        // query = getPathQuery("/www/avm_webapps/ROOT/editorial//*");
-        // start = System.nanoTime();
-        // hits = searcher.search(query);
-        // end = System.nanoTime();
-        // System.out.println("/www/avm_webapps/ROOT/editorial//* = " + hits.length() + " in " + ((end - start) / 1e9));
-        // searcher.close();
-        //
-        //        
-        // searcher = new IndexSearcher(reader);
-        // query = getPathQuery("/www/avm_webapps/ROOT/tag//*");
-        // start = System.nanoTime();
-        // hits = searcher.search(query);
-        // end = System.nanoTime();
-        // System.out.println("/www/avm_webapps/ROOT/tag//* = " + hits.length() + " in " + ((end - start) / 1e9));
-        // searcher.close();
-        //        
-        // searcher = new IndexSearcher(reader);
-        // query = getPathQuery("/www/avm_webapps/ROOT/tag//*");
-        // start = System.nanoTime();
-        // hits = searcher.search(query);
-        // end = System.nanoTime();
-        // System.out.println("/www/avm_webapps/ROOT/tag//* = " + hits.length() + " in " + ((end - start) / 1e9));
-        // searcher.close();
-        //        
-        // searcher = new IndexSearcher(reader);
-        // query = getPathQuery("/www/avm_webapps/ROOT/poi//*");
-        // start = System.nanoTime();
-        // hits = searcher.search(query);
-        // end = System.nanoTime();
-        // System.out.println("/www/avm_webapps/ROOT/poi//* = " + hits.length() + " in " + ((end - start) / 1e9));
-        // searcher.close();
-        //        
-        // searcher = new IndexSearcher(reader);
-        // query = getPathQuery("/www/avm_webapps/ROOT/poi//*");
-        // start = System.nanoTime();
-        // hits = searcher.search(query);
-        // end = System.nanoTime();
-        // System.out.println("/www/avm_webapps/ROOT/poi//* = " + hits.length() + " in " + ((end - start) / 1e9));
-        // searcher.close();
-        //        
-        // searcher = new IndexSearcher(reader);
-        // query = getPathQuery("/www/avm_webapps/ROOT/property//*");
-        // start = System.nanoTime();
-        // hits = searcher.search(query);
-        // end = System.nanoTime();
-        // System.out.println("/www/avm_webapps/ROOT/property//* = " + hits.length() + " in " + ((end - start) / 1e9));
-        // searcher.close();
-        //        
-        // searcher = new IndexSearcher(reader);
-        // query = getPathQuery("/www/avm_webapps/ROOT/property//*");
-        // start = System.nanoTime();
-        // hits = searcher.search(query);
-        // end = System.nanoTime();
-        // System.out.println("/www/avm_webapps/ROOT/property//* = " + hits.length() + " in " + ((end - start) / 1e9));
-        // searcher.close();
-        //        
-        // searcher = new IndexSearcher(reader);
-        // query = getPathQuery("/www/avm_webapps/ROOT/web-reviews//*");
-        // start = System.nanoTime();
-        // hits = searcher.search(query);
-        // end = System.nanoTime();
-        // System.out.println("/www/avm_webapps/ROOT/web-reviews//* = " + hits.length() + " in " + ((end - start) /
-        // 1e9));
-        // searcher.close();
-        //        
-        // searcher = new IndexSearcher(reader);
-        // query = getPathQuery("/www/avm_webapps/ROOT/web-reviews//*");
-        // start = System.nanoTime();
-        // hits = searcher.search(query);
-        // end = System.nanoTime();
-        // System.out.println("/www/avm_webapps/ROOT/web-reviews//* = " + hits.length() + " in " + ((end - start) /
-        // 1e9));
-        // searcher.close();
+
+        searcher = new IndexSearcher(reader);
+        query = new WildcardQuery(new Term("@{http://www.travelmuse.com/wcm}DestinationPhoto", "*"));
+        start = System.nanoTime();
+        hits = searcher.search(query);
+        end = System.nanoTime();
+        System.out.println("@{http://www.travelmuse.com/wcm}DestinationPhoto:* = " + hits.length() + " in " + ((end - start) / 1e9));
+        searcher.close();
+
+        searcher = new IndexSearcher(reader);
+        query = new TermQuery(new Term("@{http://www.travelmuse.com/wcm}ThemeName", "bambino"));
+        start = System.nanoTime();
+        hits = searcher.search(query);
+        end = System.nanoTime();
+        System.out.println("@{http://www.travelmuse.com/wcm}ThemeName:bambino = " + hits.length() + " in " + ((end - start) / 1e9));
+        searcher.close();
+
+        searcher = new IndexSearcher(reader);
+        query = new TermQuery(new Term("@{http://www.travelmuse.com/wcm}ThemeName", "bambino"));
+        start = System.nanoTime();
+        hits = searcher.search(query);
+        end = System.nanoTime();
+        System.out.println("@{http://www.travelmuse.com/wcm}ThemeName:bambino = " + hits.length() + " in " + ((end - start) / 1e9));
+        searcher.close();
+
+        searcher = new IndexSearcher(reader);
+        query = new TermQuery(new Term("@{http://www.travelmuse.com/wcm}ActivityName", "bambino"));
+        start = System.nanoTime();
+        hits = searcher.search(query);
+        end = System.nanoTime();
+        System.out.println("@{http://www.travelmuse.com/wcm}ActivityName:bambino = " + hits.length() + " in " + ((end - start) / 1e9));
+        searcher.close();
+
+        searcher = new IndexSearcher(reader);
+        query = new TermQuery(new Term("@{http://www.travelmuse.com/wcm}ActivityName", "bambino"));
+        start = System.nanoTime();
+        hits = searcher.search(query);
+        end = System.nanoTime();
+        System.out.println("@{http://www.travelmuse.com/wcm}ActivityName:bambino = " + hits.length() + " in " + ((end - start) / 1e9));
+        searcher.close();
+
+        searcher = new IndexSearcher(reader);
+        query = new TermQuery(new Term("@{http://www.travelmuse.com/wcm}EditorialItemTitle", "bambino"));
+        start = System.nanoTime();
+        hits = searcher.search(query);
+        end = System.nanoTime();
+        System.out.println("@{http://www.travelmuse.com/wcm}EditorialItemTitle:bambino = " + hits.length() + " in " + ((end - start) / 1e9));
+        searcher.close();
+
+        searcher = new IndexSearcher(reader);
+        query = new TermQuery(new Term("@{http://www.travelmuse.com/wcm}EditorialItemTitle", "bambino"));
+        start = System.nanoTime();
+        hits = searcher.search(query);
+        end = System.nanoTime();
+        System.out.println("@{http://www.travelmuse.com/wcm}EditorialItemTitle:bambino = " + hits.length() + " in " + ((end - start) / 1e9));
+        searcher.close();
+
+        searcher = new IndexSearcher(reader);
+        query = new TermQuery(new Term("@{http://www.travelmuse.com/wcm}PoiName", "bambino"));
+        start = System.nanoTime();
+        hits = searcher.search(query);
+        end = System.nanoTime();
+        System.out.println("@{http://www.travelmuse.com/wcm}PoiName:bambino = " + hits.length() + " in " + ((end - start) / 1e9));
+        searcher.close();
+
+        searcher = new IndexSearcher(reader);
+        query = new TermQuery(new Term("@{http://www.travelmuse.com/wcm}PoiName", "bambino"));
+        start = System.nanoTime();
+        hits = searcher.search(query);
+        end = System.nanoTime();
+        System.out.println("@{http://www.travelmuse.com/wcm}PoiName:bambino = " + hits.length() + " in " + ((end - start) / 1e9));
+        searcher.close();
+
+        searcher = new IndexSearcher(reader);
+        query = new TermQuery(new Term("@{http://www.travelmuse.com/wcm}PropertyName", "bambino"));
+        start = System.nanoTime();
+        hits = searcher.search(query);
+        end = System.nanoTime();
+        System.out.println("@{http://www.travelmuse.com/wcm}PropertyName:bambino = " + hits.length() + " in " + ((end - start) / 1e9));
+        searcher.close();
+
+        searcher = new IndexSearcher(reader);
+        query = new TermQuery(new Term("@{http://www.travelmuse.com/wcm}PropertyName", "bambino"));
+        start = System.nanoTime();
+        hits = searcher.search(query);
+        end = System.nanoTime();
+        System.out.println("@{http://www.travelmuse.com/wcm}PropertyName:bambino = " + hits.length() + " in " + ((end - start) / 1e9));
+        searcher.close();
+
+        searcher = new IndexSearcher(reader);
+        query = new TermQuery(new Term("@{http://www.alfresco.org/model/content/1.0}content", "bambino"));
+        start = System.nanoTime();
+        hits = searcher.search(query);
+        end = System.nanoTime();
+        System.out.println("@{http://www.alfresco.org/model/content/1.0}content:bambino = " + hits.length() + " in " + ((end - start) / 1e9));
+        searcher.close();
+
+        searcher = new IndexSearcher(reader);
+        query = new TermQuery(new Term("@{http://www.alfresco.org/model/content/1.0}content", "bambino"));
+        start = System.nanoTime();
+        hits = searcher.search(query);
+        end = System.nanoTime();
+        System.out.println("@{http://www.alfresco.org/model/content/1.0}content:bambino = " + hits.length() + " in " + ((end - start) / 1e9));
+        searcher.close();
+        
+        searcher = new IndexSearcher(reader);
+        query = getPathQuery("/www/avm_webapps/ROOT/editorial//*");
+        start = System.nanoTime();
+        hits = searcher.search(query);
+        end = System.nanoTime();
+        System.out.println("/www/avm_webapps/ROOT/editorial//* = " + hits.length() + " in " + ((end - start) / 1e9));
+        searcher.close();
+        
+        searcher = new IndexSearcher(reader);
+        query = getPathQuery("/www/avm_webapps/ROOT/editorial//*");
+        start = System.nanoTime();
+        hits = searcher.search(query);
+        end = System.nanoTime();
+        System.out.println("/www/avm_webapps/ROOT/editorial//* = " + hits.length() + " in " + ((end - start) / 1e9));
+        searcher.close();
+
+        
+        searcher = new IndexSearcher(reader);
+        query = getPathQuery("/www/avm_webapps/ROOT/tag//*");
+        start = System.nanoTime();
+        hits = searcher.search(query);
+        end = System.nanoTime();
+        System.out.println("/www/avm_webapps/ROOT/tag//* = " + hits.length() + " in " + ((end - start) / 1e9));
+        searcher.close();
+        
+        searcher = new IndexSearcher(reader);
+        query = getPathQuery("/www/avm_webapps/ROOT/tag//*");
+        start = System.nanoTime();
+        hits = searcher.search(query);
+        end = System.nanoTime();
+        System.out.println("/www/avm_webapps/ROOT/tag//* = " + hits.length() + " in " + ((end - start) / 1e9));
+        searcher.close();
+        
+        searcher = new IndexSearcher(reader);
+        query = getPathQuery("/www/avm_webapps/ROOT/poi//*");
+        start = System.nanoTime();
+        hits = searcher.search(query);
+        end = System.nanoTime();
+        System.out.println("/www/avm_webapps/ROOT/poi//* = " + hits.length() + " in " + ((end - start) / 1e9));
+        searcher.close();
+        
+        searcher = new IndexSearcher(reader);
+        query = getPathQuery("/www/avm_webapps/ROOT/poi//*");
+        start = System.nanoTime();
+        hits = searcher.search(query);
+        end = System.nanoTime();
+        System.out.println("/www/avm_webapps/ROOT/poi//* = " + hits.length() + " in " + ((end - start) / 1e9));
+        searcher.close();
+        
+        searcher = new IndexSearcher(reader);
+        query = getPathQuery("/www/avm_webapps/ROOT/property//*");
+        start = System.nanoTime();
+        hits = searcher.search(query);
+        end = System.nanoTime();
+        System.out.println("/www/avm_webapps/ROOT/property//* = " + hits.length() + " in " + ((end - start) / 1e9));
+        searcher.close();
+        
+        searcher = new IndexSearcher(reader);
+        query = getPathQuery("/www/avm_webapps/ROOT/property//*");
+        start = System.nanoTime();
+        hits = searcher.search(query);
+        end = System.nanoTime();
+        System.out.println("/www/avm_webapps/ROOT/property//* = " + hits.length() + " in " + ((end - start) / 1e9));
+        searcher.close();
+        
+        searcher = new IndexSearcher(reader);
+        query = getPathQuery("/www/avm_webapps/ROOT/web-reviews//*");
+        start = System.nanoTime();
+        hits = searcher.search(query);
+        end = System.nanoTime();
+        System.out.println("/www/avm_webapps/ROOT/web-reviews//* = " + hits.length() + " in " + ((end - start) / 1e9));
+        searcher.close();
+        
+        searcher = new IndexSearcher(reader);
+        query = getPathQuery("/www/avm_webapps/ROOT/web-reviews//*");
+        start = System.nanoTime();
+        hits = searcher.search(query);
+        end = System.nanoTime();
+        System.out.println("/www/avm_webapps/ROOT/web-reviews//* = " + hits.length() + " in " + ((end - start) / 1e9));
+        searcher.close();
+
 
         // TermEnum terms = reader.terms(new Term("@{http://www.alfresco.org/model/user/1.0}members", ""));
         // while (terms.next() && terms.term().field().equals("@{http://www.alfresco.org/model/user/1.0}members"))

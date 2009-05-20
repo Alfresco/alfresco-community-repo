@@ -32,9 +32,14 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.alfresco.repo.search.SearcherException;
+import org.alfresco.repo.search.impl.lucene.LuceneResultSetRow;
+import org.alfresco.repo.search.impl.lucene.analysis.DateTimeAnalyser;
+import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
+import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.ResultSetMetaData;
 import org.alfresco.service.cmr.search.ResultSetRow;
@@ -43,12 +48,8 @@ import org.alfresco.service.cmr.search.SearchParameters.SortDefinition;
 import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.apache.lucene.search.SortField;
 
-/**
- * Sorted results
- * @author andyh
- *
- */
 public class SortedResultSet implements ResultSet
 {
     ArrayList<NodeRefAndScore> nodeRefsAndScores;
@@ -59,13 +60,6 @@ public class SortedResultSet implements ResultSet
 
     ResultSet resultSet;
 
-    /**
-     * Source and resources required to sort
-     * @param resultSet
-     * @param nodeService
-     * @param searchParameters
-     * @param namespacePrefixResolver
-     */
     public SortedResultSet(ResultSet resultSet, NodeService nodeService, SearchParameters searchParameters, NamespacePrefixResolver namespacePrefixResolver)
     {
         this.nodeService = nodeService;
@@ -136,6 +130,11 @@ public class SortedResultSet implements ResultSet
     public NodeRef getNodeRef(int n)
     {
         return nodeRefsAndScores.get(n).nodeRef;
+    }
+
+    public Path[] getPropertyPaths()
+    {
+        return resultSet.getPropertyPaths();
     }
 
     public ResultSetMetaData getResultSetMetaData()
@@ -280,16 +279,6 @@ public class SortedResultSet implements ResultSet
             this.score = score;
         }
 
-    }
-
-    public int getStart()
-    {
-        throw new UnsupportedOperationException();
-    }
-
-    public boolean hasMore()
-    {
-        throw new UnsupportedOperationException();
     }
 
 }

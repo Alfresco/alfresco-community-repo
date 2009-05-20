@@ -418,7 +418,7 @@ public class ACLEntryAfterInvocationTest extends AbstractPermissionTest
 
         Set<ChildAssociationRef> carSet = new HashSet<ChildAssociationRef>();
        
-        ChildAssocRefResultSet rsIn = new ChildAssocRefResultSet(nodeService, nodeRefList, false);
+        ChildAssocRefResultSet rsIn = new ChildAssocRefResultSet(nodeService, nodeRefList, null, false);
 
         assertEquals(0, rsIn.length());
         ResultSet answerResultSet = (ResultSet) methodResultSet.invoke(proxy, new Object[] { rsIn });
@@ -488,7 +488,7 @@ public class ACLEntryAfterInvocationTest extends AbstractPermissionTest
         Set<ChildAssociationRef> carSet = new HashSet<ChildAssociationRef>();
         carSet.addAll(carList);
 
-        ChildAssocRefResultSet rsIn = new ChildAssocRefResultSet(nodeService, nodeRefList, false);
+        ChildAssocRefResultSet rsIn = new ChildAssocRefResultSet(nodeService, nodeRefList, null, false);
 
         assertEquals(4, rsIn.length());
         ResultSet answerResultSet = (ResultSet) methodResultSet.invoke(proxy, new Object[] { rsIn });
@@ -549,7 +549,7 @@ public class ACLEntryAfterInvocationTest extends AbstractPermissionTest
         Set<ChildAssociationRef> carSet = new HashSet<ChildAssociationRef>();
         carSet.addAll(carList);
 
-        ChildAssocRefResultSet rsIn = new ChildAssocRefResultSet(nodeService, nodeRefList, false);
+        ChildAssocRefResultSet rsIn = new ChildAssocRefResultSet(nodeService, nodeRefList, null, false);
 
 
         assertEquals(4, rsIn.length());
@@ -622,7 +622,7 @@ public class ACLEntryAfterInvocationTest extends AbstractPermissionTest
         Set<ChildAssociationRef> carSet = new HashSet<ChildAssociationRef>();
         carSet.addAll(carList);
 
-        ChildAssocRefResultSet rsIn = new ChildAssocRefResultSet(nodeService, nodeRefList, false);
+        ChildAssocRefResultSet rsIn = new ChildAssocRefResultSet(nodeService, nodeRefList, null, false);
 
         permissionService.setPermission(new SimplePermissionEntry(rootNodeRef, getPermission(PermissionService.READ), "andy", AccessStatus.ALLOWED));
 
@@ -746,7 +746,7 @@ public class ACLEntryAfterInvocationTest extends AbstractPermissionTest
         Set<ChildAssociationRef> carSet = new HashSet<ChildAssociationRef>();
         carSet.addAll(carList);
 
-        ChildAssocRefResultSet rsIn = new ChildAssocRefResultSet(nodeService, nodeRefList, false);
+        ChildAssocRefResultSet rsIn = new ChildAssocRefResultSet(nodeService, nodeRefList, null, false);
 
         permissionService.setPermission(new SimplePermissionEntry(rootNodeRef, getPermission(PermissionService.READ), "andy", AccessStatus.ALLOWED));
 

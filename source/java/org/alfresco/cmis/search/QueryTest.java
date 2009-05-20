@@ -149,7 +149,6 @@ public class QueryTest extends BaseCMISTest
         properties1.put(ContentModel.PROP_CONTENT, new ContentData(null, "text/plain", 0L, "UTF-8", Locale.UK));
         properties1.put(ContentModel.PROP_DESCRIPTION, desc1);
         properties1.put(ContentModel.PROP_TITLE, desc1);
-        properties1.put(ContentModel.PROP_NAME, "AA");
         properties1.put(ContentModel.PROP_CREATED, new Date());
         NodeRef c1 = nodeService.createNode(f1, ContentModel.ASSOC_CHILDREN, QName.createQName("cm", "One", namespaceService), ContentModel.TYPE_CONTENT, properties1)
                 .getChildRef();
@@ -166,7 +165,6 @@ public class QueryTest extends BaseCMISTest
         properties2.put(ContentModel.PROP_CONTENT, new ContentData(null, "text/plain", 0L, "UTF-8", Locale.UK));
         properties2.put(ContentModel.PROP_DESCRIPTION, desc2);
         properties2.put(ContentModel.PROP_TITLE, desc2);
-        properties2.put(ContentModel.PROP_NAME, "BB");
         properties2.put(ContentModel.PROP_CREATED, new Date());
         NodeRef c2 = nodeService.createNode(f2, ContentModel.ASSOC_CHILDREN, QName.createQName("cm", "Two", namespaceService), ContentModel.TYPE_CONTENT, properties2)
                 .getChildRef();
@@ -183,7 +181,6 @@ public class QueryTest extends BaseCMISTest
         properties3.put(ContentModel.PROP_CONTENT, new ContentData(null, "text/plain", 0L, "UTF-8", Locale.UK));
         properties3.put(ContentModel.PROP_DESCRIPTION, desc3);
         properties3.put(ContentModel.PROP_TITLE, desc3);
-        properties3.put(ContentModel.PROP_NAME, "CC");
         properties3.put(ContentModel.PROP_CREATED, new Date());
         NodeRef c3 = nodeService.createNode(f3, ContentModel.ASSOC_CHILDREN, QName.createQName("cm", "Three", namespaceService), ContentModel.TYPE_CONTENT, properties3)
                 .getChildRef();
@@ -200,7 +197,6 @@ public class QueryTest extends BaseCMISTest
         properties4.put(ContentModel.PROP_CONTENT, new ContentData(null, "text/plain", 0L, "UTF-8", Locale.UK));
         properties4.put(ContentModel.PROP_DESCRIPTION, desc4);
         properties4.put(ContentModel.PROP_TITLE, desc4);
-        properties4.put(ContentModel.PROP_NAME, "DD");
         properties4.put(ContentModel.PROP_CREATED, new Date());
         NodeRef c4 = nodeService.createNode(f4, ContentModel.ASSOC_CHILDREN, QName.createQName("cm", "Four", namespaceService), ContentModel.TYPE_CONTENT, properties4)
                 .getChildRef();
@@ -217,7 +213,6 @@ public class QueryTest extends BaseCMISTest
         properties5.put(ContentModel.PROP_CONTENT, new ContentData(null, "text/plain", 0L, "UTF-8", Locale.UK));
         properties5.put(ContentModel.PROP_DESCRIPTION, desc5);
         properties5.put(ContentModel.PROP_TITLE, desc5);
-        properties5.put(ContentModel.PROP_NAME, "EE");
         properties5.put(ContentModel.PROP_CREATED, new Date());
         NodeRef c5 = nodeService.createNode(f5, ContentModel.ASSOC_CHILDREN, QName.createQName("cm", "Five", namespaceService), ContentModel.TYPE_CONTENT, properties5)
                 .getChildRef();
@@ -234,7 +229,6 @@ public class QueryTest extends BaseCMISTest
         properties6.put(ContentModel.PROP_CONTENT, new ContentData(null, "text/plain", 0L, "UTF-8", Locale.UK));
         properties6.put(ContentModel.PROP_DESCRIPTION, desc6);
         properties6.put(ContentModel.PROP_TITLE, desc6);
-        properties6.put(ContentModel.PROP_NAME, "FF");
         properties6.put(ContentModel.PROP_CREATED, new Date());
         NodeRef c6 = nodeService.createNode(f6, ContentModel.ASSOC_CHILDREN, QName.createQName("cm", "Six", namespaceService), ContentModel.TYPE_CONTENT, properties6)
                 .getChildRef();
@@ -251,7 +245,6 @@ public class QueryTest extends BaseCMISTest
         properties7.put(ContentModel.PROP_CONTENT, new ContentData(null, "text/plain", 0L, "UTF-8", Locale.UK));
         properties7.put(ContentModel.PROP_DESCRIPTION, desc7);
         properties7.put(ContentModel.PROP_TITLE, desc7);
-        properties7.put(ContentModel.PROP_NAME, "GG");
         properties7.put(ContentModel.PROP_CREATED, new Date());
         NodeRef c7 = nodeService.createNode(f7, ContentModel.ASSOC_CHILDREN, QName.createQName("cm", "Seven", namespaceService), ContentModel.TYPE_CONTENT, properties7)
                 .getChildRef();
@@ -268,7 +261,6 @@ public class QueryTest extends BaseCMISTest
         properties8.put(ContentModel.PROP_CONTENT, new ContentData(null, "text/plain", 0L, "UTF-8", Locale.UK));
         properties8.put(ContentModel.PROP_DESCRIPTION, desc8);
         properties8.put(ContentModel.PROP_TITLE, desc8);
-        properties8.put(ContentModel.PROP_NAME, "HH");
         properties8.put(ContentModel.PROP_CREATED, new Date());
         NodeRef c8 = nodeService.createNode(f8, ContentModel.ASSOC_CHILDREN, QName.createQName("cm", "Eight", namespaceService), ContentModel.TYPE_CONTENT, properties8)
                 .getChildRef();
@@ -285,7 +277,6 @@ public class QueryTest extends BaseCMISTest
         properties9.put(ContentModel.PROP_CONTENT, new ContentData(null, "text/plain", 0L, "UTF-8", Locale.UK));
         properties9.put(ContentModel.PROP_DESCRIPTION, desc9);
         properties9.put(ContentModel.PROP_TITLE, desc9);
-        properties9.put(ContentModel.PROP_NAME, "aa");
         properties9.put(ContentModel.PROP_CREATED, new Date());
         NodeRef c9 = nodeService.createNode(f9, ContentModel.ASSOC_CHILDREN, QName.createQName("cm", "Nine", namespaceService), ContentModel.TYPE_CONTENT, properties9)
                 .getChildRef();
@@ -479,44 +470,31 @@ public class QueryTest extends BaseCMISTest
 
     public void test_CONTENT_STREAM_FILENAME()
     {
-        testQuery("SELECT ContentStreamFilename FROM Document WHERE ContentStreamFilename =  'Alfresco Tutorial'", 1, false, "ContentStreamFilename", new String(), false);
-        testQuery("SELECT ContentStreamFilename FROM Document WHERE ContentStreamFilename =  'AA'", 1, false, "ContentStreamFilename", new String(), false);
-        testQuery("SELECT ContentStreamFilename FROM Document WHERE ContentStreamFilename =  'BB'", 1, false, "ContentStreamFilename", new String(), false);
-        testQuery("SELECT ContentStreamFilename FROM Document WHERE ContentStreamFilename =  'CC'", 1, false, "ContentStreamFilename", new String(), false);
-        testQuery("SELECT ContentStreamFilename FROM Document WHERE ContentStreamFilename =  'DD'", 1, false, "ContentStreamFilename", new String(), false);
-        testQuery("SELECT ContentStreamFilename FROM Document WHERE ContentStreamFilename =  'EE'", 1, false, "ContentStreamFilename", new String(), false);
-        testQuery("SELECT ContentStreamFilename FROM Document WHERE ContentStreamFilename =  'FF'", 1, false, "ContentStreamFilename", new String(), false);
-        testQuery("SELECT ContentStreamFilename FROM Document WHERE ContentStreamFilename =  'GG'", 1, false, "ContentStreamFilename", new String(), false);
-        testQuery("SELECT ContentStreamFilename FROM Document WHERE ContentStreamFilename =  'HH'", 1, false, "ContentStreamFilename", new String(), false);
-        testQuery("SELECT ContentStreamFilename FROM Document WHERE ContentStreamFilename =  'aa'", 1, false, "ContentStreamFilename", new String(), false);
-        
-        
-        
-        testQuery("SELECT ContentStreamFilename FROM Document WHERE ContentStreamFilename =  'Alfresco Tutorial'", 1, false, "ContentStreamFilename", new String(), false);
-        testQuery("SELECT ContentStreamFilename FROM Document WHERE ContentStreamFilename <> 'Alfresco Tutorial'", 9, false, "ContentStreamFilename", new String(), false);
-        testQuery("SELECT ContentStreamFilename FROM Document WHERE ContentStreamFilename <  'Alfresco Tutorial'", 1, false, "ContentStreamFilename", new String(), false);
-        testQuery("SELECT ContentStreamFilename FROM Document WHERE ContentStreamFilename <= 'Alfresco Tutorial'", 2, false, "ContentStreamFilename", new String(), false);
-        testQuery("SELECT ContentStreamFilename FROM Document WHERE ContentStreamFilename >  'Alfresco Tutorial'", 8, true, "ContentStreamFilename", new String(), false);
-        testQuery("SELECT ContentStreamFilename FROM Document WHERE ContentStreamFilename >= 'Alfresco Tutorial'", 9, false, "ContentStreamFilename", new String(), false);
+        testQuery("SELECT ContentStreamFilename FROM Document WHERE ContentStreamFilename =  'tutorial'", 1, false, "ContentStreamFilename", new String(), false);
+        testQuery("SELECT ContentStreamFilename FROM Document WHERE ContentStreamFilename <> 'tutorial'", 9, false, "ContentStreamFilename", new String(), false);
+        testQuery("SELECT ContentStreamFilename FROM Document WHERE ContentStreamFilename <  'tutorial'", 10, false, "ContentStreamFilename", new String(), false);
+        testQuery("SELECT ContentStreamFilename FROM Document WHERE ContentStreamFilename <= 'tutorial'", 10, false, "ContentStreamFilename", new String(), false);
+        testQuery("SELECT ContentStreamFilename FROM Document WHERE ContentStreamFilename >  'tutorial'", 0, true, "ContentStreamFilename", new String(), false);
+        testQuery("SELECT ContentStreamFilename FROM Document WHERE ContentStreamFilename >= 'tutorial'", 1, false, "ContentStreamFilename", new String(), false);
 
-        testQuery("SELECT ContentStreamFilename FROM Document WHERE ContentStreamFilename IN     ('Alfresco Tutorial')", 1, false, "ContentStreamFilename", new String(), false);
-        testQuery("SELECT ContentStreamFilename FROM Document WHERE ContentStreamFilename NOT IN ('Alfresco Tutorial')", 9, false, "ContentStreamFilename", new String(), false);
+        testQuery("SELECT ContentStreamFilename FROM Document WHERE ContentStreamFilename IN     ('tutorial')", 1, false, "ContentStreamFilename", new String(), false);
+        testQuery("SELECT ContentStreamFilename FROM Document WHERE ContentStreamFilename NOT IN ('tutorial')", 9, false, "ContentStreamFilename", new String(), false);
 
-        testQuery("SELECT ContentStreamFilename FROM Document WHERE ContentStreamFilename     LIKE 'Alfresco Tutorial'", 1, false, "ContentStreamFilename", new String(), false);
-        testQuery("SELECT ContentStreamFilename FROM Document WHERE ContentStreamFilename NOT LIKE 'Alfresco Tutorial'", 9, false, "ContentStreamFilename", new String(), false);
+        testQuery("SELECT ContentStreamFilename FROM Document WHERE ContentStreamFilename     LIKE 'tutorial'", 1, false, "ContentStreamFilename", new String(), false);
+        testQuery("SELECT ContentStreamFilename FROM Document WHERE ContentStreamFilename NOT LIKE 'tutorial'", 9, false, "ContentStreamFilename", new String(), false);
 
         testQuery("SELECT ContentStreamFilename FROM Document WHERE ContentStreamFilename IS NOT NULL", 10, false, "ContentStreamFilename", new String(), false);
         testQuery("SELECT ContentStreamFilename FROM Document WHERE ContentStreamFilename IS     NULL", 0, false, "ContentStreamFilename", new String(), false);
 
-        testQuery("SELECT ContentStreamFilename FROM Document WHERE 'Alfresco Tutorial' =  ANY ContentStreamFilename", 1, false, "ContentStreamFilename", new String(), false);
-        testQuery("SELECT ContentStreamFilename FROM Document WHERE 'Alfresco Tutorial' <> ANY ContentStreamFilename", 9, false, "ContentStreamFilename", new String(), false);
-        testQuery("SELECT ContentStreamFilename FROM Document WHERE 'Alfresco Tutorial' <  ANY ContentStreamFilename", 1, false, "ContentStreamFilename", new String(), false);
-        testQuery("SELECT ContentStreamFilename FROM Document WHERE 'Alfresco Tutorial' <= ANY ContentStreamFilename", 2, false, "ContentStreamFilename", new String(), false);
-        testQuery("SELECT ContentStreamFilename FROM Document WHERE 'Alfresco Tutorial' >  ANY ContentStreamFilename", 8, false, "ContentStreamFilename", new String(), false);
-        testQuery("SELECT ContentStreamFilename FROM Document WHERE 'Alfresco Tutorial' >= ANY ContentStreamFilename", 9, false, "ContentStreamFilename", new String(), false);
+        testQuery("SELECT ContentStreamFilename FROM Document WHERE 'tutorial' =  ANY ContentStreamFilename", 1, false, "ContentStreamFilename", new String(), false);
+        testQuery("SELECT ContentStreamFilename FROM Document WHERE 'tutorial' <> ANY ContentStreamFilename", 9, false, "ContentStreamFilename", new String(), false);
+        testQuery("SELECT ContentStreamFilename FROM Document WHERE 'tutorial' <  ANY ContentStreamFilename", 10, false, "ContentStreamFilename", new String(), false);
+        testQuery("SELECT ContentStreamFilename FROM Document WHERE 'tutorial' <= ANY ContentStreamFilename", 10, false, "ContentStreamFilename", new String(), false);
+        testQuery("SELECT ContentStreamFilename FROM Document WHERE 'tutorial' >  ANY ContentStreamFilename", 0, false, "ContentStreamFilename", new String(), false);
+        testQuery("SELECT ContentStreamFilename FROM Document WHERE 'tutorial' >= ANY ContentStreamFilename", 1, false, "ContentStreamFilename", new String(), false);
 
-        testQuery("SELECT ContentStreamFilename FROM Document WHERE ANY ContentStreamFilename IN     ('Alfresco Tutorial')", 1, false, "ContentStreamFilename", new String(), false);
-        testQuery("SELECT ContentStreamFilename FROM Document WHERE ANY ContentStreamFilename NOT IN ('Alfresco Tutorial')", 9, false, "ContentStreamFilename", new String(), false);
+        testQuery("SELECT ContentStreamFilename FROM Document WHERE ANY ContentStreamFilename IN     ('tutorial')", 1, false, "ContentStreamFilename", new String(), false);
+        testQuery("SELECT ContentStreamFilename FROM Document WHERE ANY ContentStreamFilename NOT IN ('tutorial')", 9, false, "ContentStreamFilename", new String(), false);
     }
 
     public void test_CONTENT_STREAM_MIME_TYPE()
@@ -900,10 +878,10 @@ public class QueryTest extends BaseCMISTest
     {
         testQuery("SELECT Name FROM Folder WHERE Name =  'Folder 1'", 1, false, "ObjectId", new String(), false);
         testQuery("SELECT Name FROM Folder WHERE Name <> 'Folder 1'", 9, false, "ObjectId", new String(), false);
-        testQuery("SELECT Name FROM Folder WHERE Name <  'Folder 1'", 1, false, "ObjectId", new String(), false);
-        testQuery("SELECT Name FROM Folder WHERE Name <= 'Folder 1'", 2, false, "ObjectId", new String(), false);
-        testQuery("SELECT Name FROM Folder WHERE Name >  'Folder 1'", 8, false, "ObjectId", new String(), false);
-        testQuery("SELECT Name FROM Folder WHERE Name >= 'Folder 1'", 9, false, "ObjectId", new String(), false);
+        testQuery("SELECT Name FROM Folder WHERE Name <  'Folder 1'", 10, false, "ObjectId", new String(), false);
+        testQuery("SELECT Name FROM Folder WHERE Name <= 'Folder 1'", 10, false, "ObjectId", new String(), false);
+        testQuery("SELECT Name FROM Folder WHERE Name >  'Folder 1'", 0, false, "ObjectId", new String(), false);
+        testQuery("SELECT Name FROM Folder WHERE Name >= 'Folder 1'", 0, false, "ObjectId", new String(), false);
 
         testQuery("SELECT Name FROM Folder WHERE Name IN     ('Folder 1')", 1, false, "ObjectId", new String(), false);
         testQuery("SELECT Name FROM Folder WHERE Name NOT IN ('Folder 1')", 9, false, "ObjectId", new String(), false);
@@ -916,10 +894,10 @@ public class QueryTest extends BaseCMISTest
 
         testQuery("SELECT Name FROM Folder WHERE 'Folder 1' =  ANY Name", 1, false, "ObjectId", new String(), false);
         testQuery("SELECT Name FROM Folder WHERE 'Folder 1' <> ANY Name", 9, false, "ObjectId", new String(), false);
-        testQuery("SELECT Name FROM Folder WHERE 'Folder 1' <  ANY Name", 1, false, "ObjectId", new String(), false);
-        testQuery("SELECT Name FROM Folder WHERE 'Folder 1' <= ANY Name", 2, false, "ObjectId", new String(), false);
-        testQuery("SELECT Name FROM Folder WHERE 'Folder 1' >  ANY Name", 8, false, "ObjectId", new String(), false);
-        testQuery("SELECT Name FROM Folder WHERE 'Folder 1' >= ANY Name", 9, false, "ObjectId", new String(), false);
+        testQuery("SELECT Name FROM Folder WHERE 'Folder 1' <  ANY Name", 10, false, "ObjectId", new String(), false);
+        testQuery("SELECT Name FROM Folder WHERE 'Folder 1' <= ANY Name", 10, false, "ObjectId", new String(), false);
+        testQuery("SELECT Name FROM Folder WHERE 'Folder 1' >  ANY Name", 0, false, "ObjectId", new String(), false);
+        testQuery("SELECT Name FROM Folder WHERE 'Folder 1' >= ANY Name", 0, false, "ObjectId", new String(), false);
 
         testQuery("SELECT Name FROM Folder WHERE ANY Name IN     ('Folder 1')", 1, false, "ObjectId", new String(), false);
         testQuery("SELECT Name FROM Folder WHERE ANY Name NOT IN ('Folder 1')", 9, false, "ObjectId", new String(), false);
@@ -927,31 +905,31 @@ public class QueryTest extends BaseCMISTest
 
     public void test_document_Name()
     {
-        testQuery("SELECT Name FROM Document WHERE Name =  'Alfresco Tutorial'", 1, false, "Name", new String(), false);
-        testQuery("SELECT Name FROM Document WHERE Name <> 'Alfresco Tutorial'", 9, false, "Name", new String(), false);
-        testQuery("SELECT Name FROM Document WHERE Name <  'Alfresco Tutorial'", 1, false, "Name", new String(), false);
-        testQuery("SELECT Name FROM Document WHERE Name <= 'Alfresco Tutorial'", 2, false, "Name", new String(), false);
-        testQuery("SELECT Name FROM Document WHERE Name >  'Alfresco Tutorial'", 8, true, "Name", new String(), false);
-        testQuery("SELECT Name FROM Document WHERE Name >= 'Alfresco Tutorial'", 9, false, "Name", new String(), false);
+        testQuery("SELECT Name FROM Document WHERE Name =  'tutorial'", 1, false, "Name", new String(), false);
+        testQuery("SELECT Name FROM Document WHERE Name <> 'tutorial'", 9, false, "Name", new String(), false);
+        testQuery("SELECT Name FROM Document WHERE Name <  'tutorial'", 10, false, "Name", new String(), false);
+        testQuery("SELECT Name FROM Document WHERE Name <= 'tutorial'", 10, false, "Name", new String(), false);
+        testQuery("SELECT Name FROM Document WHERE Name >  'tutorial'", 0, true, "Name", new String(), false);
+        testQuery("SELECT Name FROM Document WHERE Name >= 'tutorial'", 1, false, "Name", new String(), false);
 
-        testQuery("SELECT Name FROM Document WHERE Name IN     ('Alfresco Tutorial')", 1, false, "Name", new String(), false);
-        testQuery("SELECT Name FROM Document WHERE Name NOT IN ('Alfresco Tutorial')", 9, false, "Name", new String(), false);
+        testQuery("SELECT Name FROM Document WHERE Name IN     ('tutorial')", 1, false, "Name", new String(), false);
+        testQuery("SELECT Name FROM Document WHERE Name NOT IN ('tutorial')", 9, false, "Name", new String(), false);
 
-        testQuery("SELECT Name FROM Document WHERE Name     LIKE 'Alfresco Tutorial'", 1, false, "Name", new String(), false);
-        testQuery("SELECT Name FROM Document WHERE Name NOT LIKE 'Alfresco Tutorial'", 9, false, "Name", new String(), false);
+        testQuery("SELECT Name FROM Document WHERE Name     LIKE 'tutorial'", 1, false, "Name", new String(), false);
+        testQuery("SELECT Name FROM Document WHERE Name NOT LIKE 'tutorial'", 9, false, "Name", new String(), false);
 
         testQuery("SELECT Name FROM Document WHERE Name IS NOT NULL", 10, false, "Name", new String(), false);
         testQuery("SELECT Name FROM Document WHERE Name IS     NULL", 0, false, "Name", new String(), false);
 
-        testQuery("SELECT Name FROM Document WHERE 'Alfresco Tutorial' =  ANY Name", 1, false, "Name", new String(), false);
-        testQuery("SELECT Name FROM Document WHERE 'Alfresco Tutorial' <> ANY Name", 9, false, "Name", new String(), false);
-        testQuery("SELECT Name FROM Document WHERE 'Alfresco Tutorial' <  ANY Name", 1, false, "Name", new String(), false);
-        testQuery("SELECT Name FROM Document WHERE 'Alfresco Tutorial' <= ANY Name", 2, false, "Name", new String(), false);
-        testQuery("SELECT Name FROM Document WHERE 'Alfresco Tutorial' >  ANY Name", 8, false, "Name", new String(), false);
-        testQuery("SELECT Name FROM Document WHERE 'Alfresco Tutorial' >= ANY Name", 9, false, "Name", new String(), false);
+        testQuery("SELECT Name FROM Document WHERE 'tutorial' =  ANY Name", 1, false, "Name", new String(), false);
+        testQuery("SELECT Name FROM Document WHERE 'tutorial' <> ANY Name", 9, false, "Name", new String(), false);
+        testQuery("SELECT Name FROM Document WHERE 'tutorial' <  ANY Name", 10, false, "Name", new String(), false);
+        testQuery("SELECT Name FROM Document WHERE 'tutorial' <= ANY Name", 10, false, "Name", new String(), false);
+        testQuery("SELECT Name FROM Document WHERE 'tutorial' >  ANY Name", 0, false, "Name", new String(), false);
+        testQuery("SELECT Name FROM Document WHERE 'tutorial' >= ANY Name", 1, false, "Name", new String(), false);
 
-        testQuery("SELECT Name FROM Document WHERE ANY Name IN     ('Alfresco Tutorial')", 1, false, "Name", new String(), false);
-        testQuery("SELECT Name FROM Document WHERE ANY Name NOT IN ('Alfresco Tutorial')", 9, false, "Name", new String(), false);
+        testQuery("SELECT Name FROM Document WHERE ANY Name IN     ('tutorial')", 1, false, "Name", new String(), false);
+        testQuery("SELECT Name FROM Document WHERE ANY Name NOT IN ('tutorial')", 9, false, "Name", new String(), false);
     }
 
     public void test_CHANGE_TOKEN()
@@ -1383,7 +1361,7 @@ public class QueryTest extends BaseCMISTest
 
     public void test_ObjectId()
     {
-        String companyHomeId = testQuery("SELECT ObjectId FROM Folder WHERE Name = 'Folder 0'", 1, false, "ObjectId", new String(), false);
+        String companyHomeId = testQuery("SELECT ObjectId FROM Folder WHERE Name = '\"Folder 0\"'", 1, false, "ObjectId", new String(), false);
 
         Serializable ser = cmisService.getProperty(f0, CMISDictionaryModel.PROP_OBJECT_ID);
         String id = DefaultTypeConverter.INSTANCE.convert(String.class, ser);
@@ -1481,29 +1459,25 @@ public class QueryTest extends BaseCMISTest
         testQuery("SELECT * FROM Folder WHERE Name IS NOT NULL AND 'Folder 1' = ANY Name", 1, false, "ObjectId", new String(), false);
         testQuery("SELECT * FROM Folder WHERE Name IS NOT NULL AND NOT Name <> 'Folder 1'", 1, false, "ObjectId", new String(), false);
         testQuery("SELECT * FROM Folder WHERE Name IS NOT NULL AND Name <> 'Folder 1'", 9, false, "ObjectId", new String(), false);
-        testQuery("SELECT * FROM Folder WHERE Name IS NOT NULL AND Name < 'Folder 1'", 1, false, "ObjectId", new String(), false);
-        testQuery("SELECT * FROM Folder WHERE Name IS NOT NULL AND Name <= 'Folder 1'", 2, false, "ObjectId", new String(), false);
-        testQuery("SELECT * FROM Folder WHERE Name IS NOT NULL AND Name > 'Folder 1'", 8, false, "ObjectId", new String(), false);
-        testQuery("SELECT * FROM Folder WHERE Name IS NOT NULL AND Name >= 'Folder 1'", 9, false, "ObjectId", new String(), false);
-        testQuery("SELECT * FROM Folder WHERE Name IS NOT NULL AND Name IN ('Folder 1', '1')", 1, false, "ObjectId", new String(), false);
-        testQuery("SELECT * FROM Folder WHERE Name IS NOT NULL AND Name NOT IN ('Folder 1', 'Folder 9')", 8, false, "ObjectId", new String(), false);
-        testQuery("SELECT * FROM Folder WHERE Name IS NOT NULL AND ANY Name IN ('Folder 1', 'Folder 9')", 2, false, "ObjectId", new String(), false);
-        testQuery("SELECT * FROM Folder WHERE Name IS NOT NULL AND ANY Name NOT IN ('2', '3')", 10, false, "ObjectId", new String(), false);
+        testQuery("SELECT * FROM Folder WHERE Name IS NOT NULL AND Name < 'Folder 1'", 10, false, "ObjectId", new String(), false);
+        testQuery("SELECT * FROM Folder WHERE Name IS NOT NULL AND Name <= 'Folder 1'", 10, false, "ObjectId", new String(), false);
+        testQuery("SELECT * FROM Folder WHERE Name IS NOT NULL AND Name > 'Folder 1'", 0, false, "ObjectId", new String(), false);
+        testQuery("SELECT * FROM Folder WHERE Name IS NOT NULL AND Name >= 'Folder 1'", 0, false, "ObjectId", new String(), false);
+        testQuery("SELECT * FROM Folder WHERE Name IS NOT NULL AND Name IN ('Folder', '1')", 10, false, "ObjectId", new String(), false);
+        testQuery("SELECT * FROM Folder WHERE Name IS NOT NULL AND Name NOT IN ('Folder', '1')", 0, false, "ObjectId", new String(), false);
+        testQuery("SELECT * FROM Folder WHERE Name IS NOT NULL AND ANY Name IN ('Folder', '1')", 10, false, "ObjectId", new String(), false);
+        testQuery("SELECT * FROM Folder WHERE Name IS NOT NULL AND ANY Name NOT IN ('2', '3')", 8, false, "ObjectId", new String(), false);
         testQuery("SELECT * FROM Folder WHERE Name IS NOT NULL AND Name LIKE 'Folder 1'", 1, false, "ObjectId", new String(), false);
         testQuery("SELECT * FROM Folder WHERE Name IS NOT NULL AND Name LIKE 'Fol%'", 10, false, "ObjectId", new String(), false);
-        testQuery("SELECT * FROM Folder WHERE Name IS NOT NULL AND Name LIKE 'F_l_e_ 1'", 1, false, "ObjectId", new String(), false);
-        testQuery("SELECT * FROM Folder WHERE Name IS NOT NULL AND Name NOT LIKE 'F_l_e_ 1'", 9, false, "ObjectId", new String(), false);
-        testQuery("SELECT * FROM Folder WHERE Name IS NOT NULL AND Name LIKE 'F_l_e_ %'", 10, false, "ObjectId", new String(), false);
-        testQuery("SELECT * FROM Folder WHERE Name IS NOT NULL AND Name NOT LIKE 'F_l_e_ %'", 0, false, "ObjectId", new String(), false);
-        // TODO: Fix below which fail??
-        //testQuery("SELECT * FROM Folder WHERE Name IS NOT NULL AND Name LIKE 'F_l_e_ _'", 10, false, "ObjectId", new String(), false);
-        //testQuery("SELECT * FROM Folder WHERE Name IS NOT NULL AND Name NOT LIKE 'F_l_e_ _'", 0, false, "ObjectId", new String(), false);
+        testQuery("SELECT * FROM Folder WHERE Name IS NOT NULL AND Name LIKE 'F_l_e_'", 10, false, "ObjectId", new String(), false);
+        testQuery("SELECT * FROM Folder WHERE Name IS NOT NULL AND Name NOT LIKE 'F_l_e_'", 0, false, "ObjectId", new String(), false);
     }
 
     public void testSimpleConjunction()
     {
         testQuery("SELECT * FROM Folder WHERE Name IS NOT NULL AND Name = 'Folder 1'", 1, false, "ObjectId", new String(), false);
-        testQuery("SELECT * FROM Folder WHERE Name IS NOT NULL AND Name = 'Folder'", 0, false, "ObjectId", new String(), false);
+        testQuery("SELECT * FROM Folder WHERE Name IS NOT NULL AND Name = 'Folder'", 10, false, "ObjectId", new String(), false);
+        testQuery("SELECT * FROM Folder WHERE Name IS NOT NULL AND Name = 'Folder' AND Name = '1'", 1, false, "ObjectId", new String(), false);
     }
 
     public void testSimpleDisjunction()

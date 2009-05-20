@@ -364,7 +364,7 @@ public class ADMLuceneTest extends TestCase
 
         ArrayList<Object> testList = new ArrayList<Object>();
         testList.add(null);
-        testProperties.put(QName.createQName(TEST_NAMESPACE, "nullist"), testList);
+        testProperties.put(QName.createQName(TEST_NAMESPACE, "nullList"), testList);
         ArrayList<Object> testList2 = new ArrayList<Object>();
         testList2.add("woof");
         testList2.add(null);
@@ -733,7 +733,7 @@ public class ADMLuceneTest extends TestCase
         ftsQueryWithCount(searcher, "TEXT:(brown *(6) dog)", 1);
 
         // ftsQueryWithCount(searcher, "brown..dog", 1); // is this allowed??
-        //ftsQueryWithCount(searcher, "cm:content:brown..dog", 1);
+        ftsQueryWithCount(searcher, "cm:content:brown..dog", 1);
 
         QName qname = QName.createQName(TEST_NAMESPACE, "float\\-ista");
         ftsQueryWithCount(searcher, qname + ":3.40", 1);
@@ -835,21 +835,18 @@ public class ADMLuceneTest extends TestCase
         ftsQueryWithCount(searcher, "lazy -lazy", 15, null, n14);
         ftsQueryWithCount(searcher, "lazy^20 -lazy", 15, n14, null);
         ftsQueryWithCount(searcher, "lazy^20 -lazy^20", 15, null, n14);
-        
-        ftsQueryWithCount(searcher, "cm:content:lazy", 1);
-        ftsQueryWithCount(searcher, "ANDY:lazy", 1);
     }
 
     public void ftsQueryWithCount(ADMLuceneSearcherImpl searcher, String query, int count)
     {
-        ResultSet results = searcher.query(rootNodeRef.getStoreRef(), SearchService.LANGUAGE_FTS_ALFRESCO, query, null);
+        ResultSet results = searcher.query(rootNodeRef.getStoreRef(), SearchService.LANGUAGE_FTS_ALFRESCO, query, null, null);
         assertEquals(count, results.length());
         results.close();
     }
 
     public void ftsQueryWithCount(ADMLuceneSearcherImpl searcher, String query, int count, NodeRef first, NodeRef last)
     {
-        ResultSet results = searcher.query(rootNodeRef.getStoreRef(), SearchService.LANGUAGE_FTS_ALFRESCO, query, null);
+        ResultSet results = searcher.query(rootNodeRef.getStoreRef(), SearchService.LANGUAGE_FTS_ALFRESCO, query, null, null);
         for(ResultSetRow row : results)
         {
             System.out.println(""+ row.getScore() + nodeService.getProperty(row.getNodeRef(), ContentModel.PROP_NAME));
@@ -1273,7 +1270,7 @@ public class ADMLuceneTest extends TestCase
         searcher.setDictionaryService(dictionaryService);
         searcher.setTenantService(tenantService);
         searcher.setNamespacePrefixResolver(getNamespacePrefixReolsver("namespace"));
-        ResultSet results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "ID:\"" + n14 + "\"", null);
+        ResultSet results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "ID:\"" + n14 + "\"", null, null);
         assertEquals(1, results.length()); // one node
         results.close();
 
@@ -1288,7 +1285,7 @@ public class ADMLuceneTest extends TestCase
         searcher.setDictionaryService(dictionaryService);
         searcher.setTenantService(tenantService);
         searcher.setNamespacePrefixResolver(getNamespacePrefixReolsver("namespace"));
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "ID:\"" + n14 + "\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "ID:\"" + n14 + "\"", null, null);
         assertEquals(10, results.length()); // one node + 9 aux paths to n14
         results.close();
     }
@@ -1335,196 +1332,196 @@ public class ADMLuceneTest extends TestCase
         searcher.setDictionaryService(dictionaryService);
         searcher.setTenantService(tenantService);
         searcher.setNamespacePrefixResolver(getNamespacePrefixReolsver("namespace"));
-        ResultSet results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one\"", null);
+        ResultSet results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one\"", null, null);
         assertEquals(1, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:two\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:two\"", null, null);
         assertEquals(1, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:three\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:three\"", null, null);
         assertEquals(1, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:four\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:four\"", null, null);
         assertEquals(1, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:eight-0\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:eight-0\"", null, null);
         assertEquals(1, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:five\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:five\"", null, null);
         assertEquals(0, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:one\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:one\"", null, null);
         assertEquals(0, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:two\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:two\"", null, null);
         assertEquals(0, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:two/namespace:one\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:two/namespace:one\"", null, null);
         assertEquals(0, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:two/namespace:two\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:two/namespace:two\"", null, null);
         assertEquals(0, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:five\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:five\"", null, null);
         assertEquals(1, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:six\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:six\"", null, null);
         assertEquals(1, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:two/namespace:seven\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:two/namespace:seven\"", null, null);
         assertEquals(1, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:eight-1\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:eight-1\"", null, null);
         assertEquals(1, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:two/namespace:eight-2\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:two/namespace:eight-2\"", null, null);
         assertEquals(1, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:eight-2\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:eight-2\"", null, null);
         assertEquals(0, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:two/namespace:eight-1\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:two/namespace:eight-1\"", null, null);
         assertEquals(0, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:two/namespace:eight-0\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:two/namespace:eight-0\"", null, null);
         assertEquals(0, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:eight-0\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:eight-0\"", null, null);
         assertEquals(0, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:five/namespace:nine\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:five/namespace:nine\"", null, null);
         assertEquals(1, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:five/namespace:ten\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:five/namespace:ten\"", null, null);
         assertEquals(1, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:five/namespace:eleven\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:five/namespace:eleven\"", null, null);
         assertEquals(1, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:five/namespace:twelve\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:five/namespace:twelve\"", null, null);
         assertEquals(1, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:five/namespace:twelve/namespace:thirteen\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:five/namespace:twelve/namespace:thirteen\"", null, null);
         assertEquals(1, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:five/namespace:twelve/namespace:thirteen/namespace:fourteen\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:five/namespace:twelve/namespace:thirteen/namespace:fourteen\"", null, null);
         assertEquals(1, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:five/namespace:twelve/namespace:thirteen/namespace:common\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:five/namespace:twelve/namespace:thirteen/namespace:common\"", null, null);
         assertEquals(1, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:two/namespace:link\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:two/namespace:link\"", null, null);
         assertEquals(0, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:five/namespace:twelve/namespace:common\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:five/namespace:twelve/namespace:common\"", null, null);
         assertEquals(1, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:*\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:*\"", null, null);
         assertEquals(5, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:*/namespace:*\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:*/namespace:*\"", null, null);
         assertEquals(5, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"/namespace:*/namespace:*\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"/namespace:*/namespace:*\"", null, null);
         assertEquals(7, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:*/namespace:five\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:*/namespace:five\"", null, null);
         assertEquals(1, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:*/namespace:*/namespace:*\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:*/namespace:*/namespace:*\"", null, null);
         assertEquals(5, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"/namespace:*/namespace:*/namespace:*\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"/namespace:*/namespace:*/namespace:*\"", null, null);
         assertEquals(6, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:*\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:*\"", null, null);
         assertEquals(4, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:*/namespace:five/namespace:*\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:*/namespace:five/namespace:*\"", null, null);
         assertEquals(5, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:*/namespace:nine\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:*/namespace:nine\"", null, null);
         assertEquals(1, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/*\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/*\"", null, null);
         assertEquals(5, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/*/*\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/*/*\"", null, null);
         assertEquals(5, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"/*/*\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"/*/*\"", null, null);
         assertEquals(7, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/*/namespace:five\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/*/namespace:five\"", null, null);
         assertEquals(1, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/*/*/*\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/*/*/*\"", null, null);
         assertEquals(5, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/*\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/*\"", null, null);
         assertEquals(4, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/*/namespace:five/*\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/*/namespace:five/*\"", null, null);
         assertEquals(5, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/*/namespace:nine\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/*/namespace:nine\"", null, null);
         assertEquals(1, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//.\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//.\"", null, null);
         assertEquals(15, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"//.\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"//.\"", null, null);
         assertEquals(23, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//*\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//*\"", null, null);
         assertEquals(14, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"//*\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"//*\"", null, null);
         assertEquals(22, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//*/.\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//*/.\"", null, null);
         assertEquals(14, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"//*/.\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"//*/.\"", null, null);
         assertEquals(22, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//*/./.\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//*/./.\"", null, null);
         assertEquals(14, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"//*/./.\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"//*/./.\"", null, null);
         assertEquals(22, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//./*\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//./*\"", null, null);
         assertEquals(14, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"//./*\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"//./*\"", null, null);
         assertEquals(22, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//././*/././.\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//././*/././.\"", null, null);
         assertEquals(14, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"//././*/././.\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"//././*/././.\"", null, null);
         assertEquals(22, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//common\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//common\"", null, null);
         assertEquals(1, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/one//common\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/one//common\"", null, null);
         assertEquals(1, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/one/five//*\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/one/five//*\"", null, null);
         assertEquals(6, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"/one/five//*\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"/one/five//*\"", null, null);
         assertEquals(9, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/one/five//.\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/one/five//.\"", null, null);
         assertEquals(7, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/one//five/nine\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/one//five/nine\"", null, null);
         assertEquals(1, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/one//thirteen/fourteen\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/one//thirteen/fourteen\"", null, null);
         assertEquals(1, results.length());
         results.close();
         luceneFTS.resume();
@@ -1553,190 +1550,190 @@ public class ADMLuceneTest extends TestCase
         searcher.setDictionaryService(dictionaryService);
         searcher.setTenantService(tenantService);
         searcher.setNamespacePrefixResolver(getNamespacePrefixReolsver("namespace"));
-        ResultSet results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one\"", null);
+        ResultSet results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one\"", null, null);
         assertEquals(1, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:two\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:two\"", null, null);
         assertEquals(1, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:three\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:three\"", null, null);
         assertEquals(1, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:four\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:four\"", null, null);
         assertEquals(1, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:eight-0\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:eight-0\"", null, null);
         assertEquals(1, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:five\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:five\"", null, null);
         assertEquals(0, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:one\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:one\"", null, null);
         assertEquals(0, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:two\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:two\"", null, null);
         assertEquals(0, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:two/namespace:one\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:two/namespace:one\"", null, null);
         assertEquals(0, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:two/namespace:two\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:two/namespace:two\"", null, null);
         assertEquals(0, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:five\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:five\"", null, null);
         assertEquals(1, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:six\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:six\"", null, null);
         assertEquals(1, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:two/namespace:seven\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:two/namespace:seven\"", null, null);
         assertEquals(1, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:eight-1\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:eight-1\"", null, null);
         assertEquals(1, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:two/namespace:eight-2\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:two/namespace:eight-2\"", null, null);
         assertEquals(1, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:eight-2\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:eight-2\"", null, null);
         assertEquals(0, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:two/namespace:eight-1\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:two/namespace:eight-1\"", null, null);
         assertEquals(0, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:two/namespace:eight-0\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:two/namespace:eight-0\"", null, null);
         assertEquals(0, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:eight-0\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:eight-0\"", null, null);
         assertEquals(0, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:five/namespace:nine\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:five/namespace:nine\"", null, null);
         assertEquals(1, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:five/namespace:ten\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:five/namespace:ten\"", null, null);
         assertEquals(1, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:five/namespace:eleven\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:five/namespace:eleven\"", null, null);
         assertEquals(1, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:five/namespace:twelve\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:five/namespace:twelve\"", null, null);
         assertEquals(1, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:five/namespace:twelve/namespace:thirteen\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:five/namespace:twelve/namespace:thirteen\"", null, null);
         assertEquals(1, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:five/namespace:twelve/namespace:thirteen/namespace:fourteen\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:five/namespace:twelve/namespace:thirteen/namespace:fourteen\"", null, null);
         assertEquals(1, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:five/namespace:twelve/namespace:thirteen/namespace:common\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:five/namespace:twelve/namespace:thirteen/namespace:common\"", null, null);
         assertEquals(1, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:five/namespace:twelve/namespace:common\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:five/namespace:twelve/namespace:common\"", null, null);
         assertEquals(0, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:*\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:*\"", null, null);
         assertEquals(5, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:*/namespace:*\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:*/namespace:*\"", null, null);
         assertEquals(6, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"/namespace:*/namespace:*\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"/namespace:*/namespace:*\"", null, null);
         assertEquals(8, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:*/namespace:five\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:*/namespace:five\"", null, null);
         assertEquals(1, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:*/namespace:*/namespace:*\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:*/namespace:*/namespace:*\"", null, null);
         assertEquals(5, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:*\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:*\"", null, null);
         assertEquals(4, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:*/namespace:five/namespace:*\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:*/namespace:five/namespace:*\"", null, null);
         assertEquals(5, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:*/namespace:nine\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:*/namespace:nine\"", null, null);
         assertEquals(1, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/*\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/*\"", null, null);
         assertEquals(5, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/*/*\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/*/*\"", null, null);
         assertEquals(6, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"/*/*\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"/*/*\"", null, null);
         assertEquals(8, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/*/namespace:five\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/*/namespace:five\"", null, null);
         assertEquals(1, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/*/*/*\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/*/*/*\"", null, null);
         assertEquals(5, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/*\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/*\"", null, null);
         assertEquals(4, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/*/namespace:five/*\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/*/namespace:five/*\"", null, null);
         assertEquals(5, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/*/namespace:nine\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/*/namespace:nine\"", null, null);
         assertEquals(1, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//.\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//.\"", null, null);
         assertEquals(15, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"//.\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"//.\"", null, null);
         assertEquals(25, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//*\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//*\"", null, null);
         assertEquals(14, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"//*\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"//*\"", null, null);
         assertEquals(24, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//*/.\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//*/.\"", null, null);
         assertEquals(14, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"//*/.\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"//*/.\"", null, null);
         assertEquals(24, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//*/./.\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//*/./.\"", null, null);
         assertEquals(14, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"//*/./.\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"//*/./.\"", null, null);
         assertEquals(24, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//./*\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//./*\"", null, null);
         assertEquals(14, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"//./*\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"//./*\"", null, null);
         assertEquals(24, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//././*/././.\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//././*/././.\"", null, null);
         assertEquals(14, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"//././*/././.\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"//././*/././.\"", null, null);
         assertEquals(24, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//common\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//common\"", null, null);
         assertEquals(1, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/one//common\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/one//common\"", null, null);
         assertEquals(1, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/one/five//*\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/one/five//*\"", null, null);
         assertEquals(6, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"/one/five//*\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"/one/five//*\"", null, null);
         assertEquals(8, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/one/five//.\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/one/five//.\"", null, null);
         assertEquals(7, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/one//five/nine\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/one//five/nine\"", null, null);
         assertEquals(1, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/one//thirteen/fourteen\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/one//thirteen/fourteen\"", null, null);
         assertEquals(1, results.length());
         results.close();
         luceneFTS.resume();
@@ -2650,7 +2647,7 @@ public class ADMLuceneTest extends TestCase
         searcher.setDictionaryService(dictionaryService);
         searcher.setTenantService(tenantService);
 
-        ResultSet results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@\\{namespace\\}property\\-2:\"valuetwo\"", null);
+        ResultSet results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@\\{namespace\\}property\\-2:\"valuetwo\"", null, null);
         results.close();
         luceneFTS.resume();
     }
@@ -2735,36 +2732,36 @@ public class ADMLuceneTest extends TestCase
         searcher.setTenantService(tenantService);
         searcher.setNamespacePrefixResolver(getNamespacePrefixReolsver("namespace"));
 
-        ResultSet results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@\\{namespace\\}property\\-2:\"valuetwo\"", null);
+        ResultSet results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@\\{namespace\\}property\\-2:\"valuetwo\"", null, null);
         simpleResultSetTest(results);
 
-        ChildAssocRefResultSet r2 = new ChildAssocRefResultSet(nodeService, results.getNodeRefs(), false);
+        ChildAssocRefResultSet r2 = new ChildAssocRefResultSet(nodeService, results.getNodeRefs(), null, false);
         simpleResultSetTest(r2);
 
-        ChildAssocRefResultSet r3 = new ChildAssocRefResultSet(nodeService, results.getNodeRefs(), true);
+        ChildAssocRefResultSet r3 = new ChildAssocRefResultSet(nodeService, results.getNodeRefs(), null, true);
         simpleResultSetTest(r3);
 
-        ChildAssocRefResultSet r4 = new ChildAssocRefResultSet(nodeService, results.getChildAssocRefs());
+        ChildAssocRefResultSet r4 = new ChildAssocRefResultSet(nodeService, results.getChildAssocRefs(), null);
         simpleResultSetTest(r4);
 
-        DetachedResultSet r5 = new DetachedResultSet(results);
+        DetachedResultSet r5 = new DetachedResultSet(results, null);
         simpleResultSetTest(r5);
 
-        DetachedResultSet r6 = new DetachedResultSet(r2);
+        DetachedResultSet r6 = new DetachedResultSet(r2, null);
         simpleResultSetTest(r6);
 
-        DetachedResultSet r7 = new DetachedResultSet(r3);
+        DetachedResultSet r7 = new DetachedResultSet(r3, null);
         simpleResultSetTest(r7);
 
-        DetachedResultSet r8 = new DetachedResultSet(r4);
+        DetachedResultSet r8 = new DetachedResultSet(r4, null);
         simpleResultSetTest(r8);
 
-        DetachedResultSet r9 = new DetachedResultSet(r5);
+        DetachedResultSet r9 = new DetachedResultSet(r5, null);
         simpleResultSetTest(r9);
 
         results.close();
 
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@\\{namespace\\}property\\-1:\"valueone\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@\\{namespace\\}property\\-1:\"valueone\"", null, null);
         assertEquals(2, results.length());
         assertEquals(n2.getId(), results.getNodeRef(0).getId());
         assertEquals(n1.getId(), results.getNodeRef(1).getId());
@@ -2772,7 +2769,7 @@ public class ADMLuceneTest extends TestCase
         assertEquals(1.0f, results.getScore(1));
         results.close();
 
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@namespace\\:property\\-1:\"valueone\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@namespace\\:property\\-1:\"valueone\"", null, null);
         assertEquals(2, results.length());
         assertEquals(n2.getId(), results.getNodeRef(0).getId());
         assertEquals(n1.getId(), results.getNodeRef(1).getId());
@@ -2780,7 +2777,7 @@ public class ADMLuceneTest extends TestCase
         assertEquals(1.0f, results.getScore(1));
         results.close();
 
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@property\\-1:\"valueone\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@property\\-1:\"valueone\"", null, null);
         assertEquals(2, results.length());
         assertEquals(n2.getId(), results.getNodeRef(0).getId());
         assertEquals(n1.getId(), results.getNodeRef(1).getId());
@@ -2788,7 +2785,7 @@ public class ADMLuceneTest extends TestCase
         assertEquals(1.0f, results.getScore(1));
         results.close();
 
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@property\\-1:\"Valueone\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@property\\-1:\"Valueone\"", null, null);
         assertEquals(2, results.length());
         assertEquals(n2.getId(), results.getNodeRef(0).getId());
         assertEquals(n1.getId(), results.getNodeRef(1).getId());
@@ -2796,7 +2793,7 @@ public class ADMLuceneTest extends TestCase
         assertEquals(1.0f, results.getScore(1));
         results.close();
 
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@property\\-1:ValueOne", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@property\\-1:ValueOne", null, null);
         assertEquals(2, results.length());
         assertEquals(n2.getId(), results.getNodeRef(0).getId());
         assertEquals(n1.getId(), results.getNodeRef(1).getId());
@@ -2804,7 +2801,7 @@ public class ADMLuceneTest extends TestCase
         assertEquals(1.0f, results.getScore(1));
         results.close();
 
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@property\\-1:valueone", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@property\\-1:valueone", null, null);
         assertEquals(2, results.length());
         assertEquals(n2.getId(), results.getNodeRef(0).getId());
         assertEquals(n1.getId(), results.getNodeRef(1).getId());
@@ -2814,7 +2811,7 @@ public class ADMLuceneTest extends TestCase
 
         QName qname = QName.createQName("", "property-1");
 
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "ID:\"" + n1.toString() + "\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "ID:\"" + n1.toString() + "\"", null, null);
 
         assertEquals(2, results.length());
 
@@ -2855,7 +2852,7 @@ public class ADMLuceneTest extends TestCase
         searcher.setDictionaryService(dictionaryService);
         searcher.setTenantService(tenantService);
 
-        ResultSet results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "@\\{namespace\\}property-1:valueone", null);
+        ResultSet results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "@\\{namespace\\}property-1:valueone", null, null);
         try
         {
             assertEquals(2, results.length());
@@ -2872,7 +2869,7 @@ public class ADMLuceneTest extends TestCase
             results.close();
         }
 
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "+ID:\"" + n1.toString() + "\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "+ID:\"" + n1.toString() + "\"", null, null);
         try
         {
             assertEquals(2, results.length());
@@ -2882,7 +2879,7 @@ public class ADMLuceneTest extends TestCase
             results.close();
         }
 
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "ID:\"" + rootNodeRef.toString() + "\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "ID:\"" + rootNodeRef.toString() + "\"", null, null);
         try
         {
             assertEquals(1, results.length());
@@ -2949,517 +2946,517 @@ public class ADMLuceneTest extends TestCase
         searcher.setNamespacePrefixResolver(getNamespacePrefixReolsver("namespace"));
         searcher.setQueryRegister(queryRegisterComponent);
         ResultSet results;
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/\"", null, null);
         assertEquals(1, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/.\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/.\"", null, null);
         assertEquals(1, results.length());
         results.close();
 
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one\"", null, null);
         assertEquals(1, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:two\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:two\"", null, null);
         assertEquals(1, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:three\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:three\"", null, null);
         assertEquals(1, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:four\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:four\"", null, null);
         assertEquals(1, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:eight-0\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:eight-0\"", null, null);
         assertEquals(1, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:five\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:five\"", null, null);
         assertEquals(0, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:one\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:one\"", null, null);
         assertEquals(0, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:two\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:two\"", null, null);
         assertEquals(0, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:two/namespace:one\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:two/namespace:one\"", null, null);
         assertEquals(0, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:two/namespace:two\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:two/namespace:two\"", null, null);
         assertEquals(0, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:five\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:five\"", null, null);
         assertEquals(1, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:six\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:six\"", null, null);
         assertEquals(1, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:two/namespace:seven\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:two/namespace:seven\"", null, null);
         assertEquals(1, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:eight-1\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:eight-1\"", null, null);
         assertEquals(1, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:two/namespace:eight-2\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:two/namespace:eight-2\"", null, null);
         assertEquals(1, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:eight-2\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:eight-2\"", null, null);
         assertEquals(0, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:two/namespace:eight-1\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:two/namespace:eight-1\"", null, null);
         assertEquals(0, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:two/namespace:eight-0\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:two/namespace:eight-0\"", null, null);
         assertEquals(0, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:eight-0\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:eight-0\"", null, null);
         assertEquals(0, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:five/namespace:nine\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:five/namespace:nine\"", null, null);
         assertEquals(1, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:five/namespace:ten\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:five/namespace:ten\"", null, null);
         assertEquals(1, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:five/namespace:eleven\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:five/namespace:eleven\"", null, null);
         assertEquals(1, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:five/namespace:twelve\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:five/namespace:twelve\"", null, null);
         assertEquals(1, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:five/namespace:twelve/namespace:thirteen\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:five/namespace:twelve/namespace:thirteen\"", null, null);
         assertEquals(1, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:five/namespace:twelve/namespace:thirteen/namespace:fourteen\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:five/namespace:twelve/namespace:thirteen/namespace:fourteen\"", null, null);
         assertEquals(1, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:five/namespace:twelve/namespace:thirteen/namespace:common\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:five/namespace:twelve/namespace:thirteen/namespace:common\"", null, null);
         assertEquals(1, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:five/namespace:twelve/namespace:common\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:five/namespace:twelve/namespace:common\"", null, null);
         assertEquals(1, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:*\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:*\"", null, null);
         assertEquals(5, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"/namespace:*/namespace:*\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"/namespace:*/namespace:*\"", null, null);
         assertEquals(8, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:*/namespace:*\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:*/namespace:*\"", null, null);
         assertEquals(6, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:*/namespace:five\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:*/namespace:five\"", null, null);
         assertEquals(1, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"/namespace:*/namespace:*/namespace:*\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"/namespace:*/namespace:*/namespace:*\"", null, null);
         assertEquals(8, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:*/namespace:*/namespace:*\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:*/namespace:*/namespace:*\"", null, null);
         assertEquals(5, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:*\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:*\"", null, null);
         assertEquals(4, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:*/namespace:five/namespace:*\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:*/namespace:five/namespace:*\"", null, null);
         assertEquals(5, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:*/namespace:nine\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:*/namespace:nine\"", null, null);
         assertEquals(1, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/*\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/*\"", null, null);
         assertEquals(5, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"/*/*\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"/*/*\"", null, null);
         assertEquals(8, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/*/*\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/*/*\"", null, null);
         assertEquals(6, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/*/namespace:five\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/*/namespace:five\"", null, null);
         assertEquals(1, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"/*/*/*\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"/*/*/*\"", null, null);
         assertEquals(8, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/*/*/*\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/*/*/*\"", null, null);
         assertEquals(5, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/*\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/*\"", null, null);
         assertEquals(4, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/*/namespace:five/*\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/*/namespace:five/*\"", null, null);
         assertEquals(5, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/*/namespace:nine\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/*/namespace:nine\"", null, null);
         assertEquals(1, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"//.\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"//.\"", null, null);
         assertEquals(26, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//.\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//.\"", null, null);
         assertEquals(15, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//*\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//*\"", null, null);
         assertEquals(14, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"//*\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"//*\"", null, null);
         assertEquals(25, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//*/.\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//*/.\"", null, null);
         assertEquals(14, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"//*/.\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"//*/.\"", null, null);
         assertEquals(25, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//*/./.\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//*/./.\"", null, null);
         assertEquals(14, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"//*/./.\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"//*/./.\"", null, null);
         assertEquals(25, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"//./*\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"//./*\"", null, null);
         assertEquals(25, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//./*\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//./*\"", null, null);
         assertEquals(14, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//././*/././.\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//././*/././.\"", null, null);
         assertEquals(14, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"//././*/././.\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"//././*/././.\"", null, null);
         assertEquals(25, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//common\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//common\"", null, null);
         assertEquals(1, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"//common\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"//common\"", null, null);
         assertEquals(7, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/one//common\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/one//common\"", null, null);
         assertEquals(1, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"/one//common\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"/one//common\"", null, null);
         assertEquals(5, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/one/five//*\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/one/five//*\"", null, null);
         assertEquals(6, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"/one/five//*\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"/one/five//*\"", null, null);
         assertEquals(9, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/one/five//.\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/one/five//.\"", null, null);
         assertEquals(7, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"/one/five//.\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"/one/five//.\"", null, null);
         assertEquals(10, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/one//five/nine\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/one//five/nine\"", null, null);
         assertEquals(1, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/one//thirteen/fourteen\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/one//thirteen/fourteen\"", null, null);
         assertEquals(1, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/one//thirteen/fourteen//.\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/one//thirteen/fourteen//.\"", null, null);
         assertEquals(1, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/one//thirteen/fourteen//.//.\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/one//thirteen/fourteen//.//.\"", null, null);
         assertEquals(1, results.length());
         results.close();
 
         // Type search tests
 
         QName qname = QName.createQName(TEST_NAMESPACE, "int-ista");
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(qname) + ":\"1\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(qname) + ":\"1\"", null, null);
         assertEquals(1, results.length());
         assertNotNull(results.getRow(0).getValue(qname));
         results.close();
 
         qname = QName.createQName(TEST_NAMESPACE, "int-ista");
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(qname) + ":1", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(qname) + ":1", null, null);
         assertEquals(1, results.length());
         assertNotNull(results.getRow(0).getValue(qname));
         results.close();
 
         qname = QName.createQName(TEST_NAMESPACE, "int-ista");
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(qname) + ":\"01\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(qname) + ":\"01\"", null, null);
         assertEquals(1, results.length());
         assertNotNull(results.getRow(0).getValue(qname));
         results.close();
 
         qname = QName.createQName(TEST_NAMESPACE, "int-ista");
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(qname) + ":01", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(qname) + ":01", null, null);
         assertEquals(1, results.length());
         assertNotNull(results.getRow(0).getValue(qname));
         results.close();
 
         qname = QName.createQName(TEST_NAMESPACE, "int-ista");
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "@" + escapeQName(qname) + ":\"001\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "@" + escapeQName(qname) + ":\"001\"", null, null);
         assertEquals(1, results.length());
         assertNotNull(results.getRow(0).getValue(qname));
         results.close();
 
         qname = QName.createQName(TEST_NAMESPACE, "int-ista");
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@test\\:int\\-ista:\"0001\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@test\\:int\\-ista:\"0001\"", null, null);
         assertEquals(1, results.length());
         assertNotNull(results.getRow(0).getValue(qname));
         results.close();
 
         qname = QName.createQName(TEST_NAMESPACE, "int-ista");
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(qname) + ":[A TO 2]", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(qname) + ":[A TO 2]", null, null);
         assertEquals(1, results.length());
         assertNotNull(results.getRow(0).getValue(qname));
         results.close();
 
         qname = QName.createQName(TEST_NAMESPACE, "int-ista");
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(qname) + ":[0 TO 2]", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(qname) + ":[0 TO 2]", null, null);
         assertEquals(1, results.length());
         assertNotNull(results.getRow(0).getValue(qname));
         results.close();
 
         qname = QName.createQName(TEST_NAMESPACE, "int-ista");
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(qname) + ":[0 TO A]", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(qname) + ":[0 TO A]", null, null);
         assertEquals(1, results.length());
         assertNotNull(results.getRow(0).getValue(qname));
         results.close();
 
         qname = QName.createQName(TEST_NAMESPACE, "int-ista");
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(qname) + ":{A TO 1}", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(qname) + ":{A TO 1}", null, null);
         assertEquals(0, results.length());
         results.close();
 
         qname = QName.createQName(TEST_NAMESPACE, "int-ista");
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(qname) + ":{0 TO 1}", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(qname) + ":{0 TO 1}", null, null);
         assertEquals(0, results.length());
         results.close();
 
         qname = QName.createQName(TEST_NAMESPACE, "int-ista");
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(qname) + ":{0 TO A}", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(qname) + ":{0 TO A}", null, null);
         assertEquals(1, results.length());
         results.close();
 
         qname = QName.createQName(TEST_NAMESPACE, "int-ista");
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(qname) + ":{A TO 2}", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(qname) + ":{A TO 2}", null, null);
         assertEquals(1, results.length());
         results.close();
 
         qname = QName.createQName(TEST_NAMESPACE, "int-ista");
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(qname) + ":{1 TO 2}", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(qname) + ":{1 TO 2}", null, null);
         assertEquals(0, results.length());
         results.close();
 
         qname = QName.createQName(TEST_NAMESPACE, "int-ista");
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(qname) + ":{1 TO A}", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(qname) + ":{1 TO A}", null, null);
         assertEquals(0, results.length());
         results.close();
 
         qname = QName.createQName(TEST_NAMESPACE, "long-ista");
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(qname) + ":\"2\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(qname) + ":\"2\"", null, null);
         assertEquals(1, results.length());
         assertNotNull(results.getRow(0).getValue(qname));
         results.close();
 
         qname = QName.createQName(TEST_NAMESPACE, "long-ista");
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(qname) + ":\"02\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(qname) + ":\"02\"", null, null);
         assertEquals(1, results.length());
         assertNotNull(results.getRow(0).getValue(qname));
         results.close();
 
         qname = QName.createQName(TEST_NAMESPACE, "long-ista");
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(qname) + ":\"002\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(qname) + ":\"002\"", null, null);
         assertEquals(1, results.length());
         assertNotNull(results.getRow(0).getValue(qname));
         results.close();
 
         qname = QName.createQName(TEST_NAMESPACE, "long-ista");
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(qname) + ":\"0002\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(qname) + ":\"0002\"", null, null);
         assertEquals(1, results.length());
         assertNotNull(results.getRow(0).getValue(qname));
         results.close();
 
         qname = QName.createQName(TEST_NAMESPACE, "long-ista");
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(qname) + ":[A TO 2]", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(qname) + ":[A TO 2]", null, null);
         assertEquals(1, results.length());
         assertNotNull(results.getRow(0).getValue(qname));
         results.close();
 
         qname = QName.createQName(TEST_NAMESPACE, "long-ista");
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(qname) + ":[0 TO 2]", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(qname) + ":[0 TO 2]", null, null);
         assertEquals(1, results.length());
         assertNotNull(results.getRow(0).getValue(qname));
         results.close();
 
         qname = QName.createQName(TEST_NAMESPACE, "long-ista");
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(qname) + ":[0 TO A]", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(qname) + ":[0 TO A]", null, null);
         assertEquals(1, results.length());
         assertNotNull(results.getRow(0).getValue(qname));
         results.close();
 
         qname = QName.createQName(TEST_NAMESPACE, "long-ista");
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(qname) + ":{A TO 2}", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(qname) + ":{A TO 2}", null, null);
         assertEquals(0, results.length());
         results.close();
 
         qname = QName.createQName(TEST_NAMESPACE, "long-ista");
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(qname) + ":{0 TO 2}", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(qname) + ":{0 TO 2}", null, null);
         assertEquals(0, results.length());
         results.close();
 
         qname = QName.createQName(TEST_NAMESPACE, "long-ista");
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(qname) + ":{0 TO A}", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(qname) + ":{0 TO A}", null, null);
         assertEquals(1, results.length());
         results.close();
 
         qname = QName.createQName(TEST_NAMESPACE, "long-ista");
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(qname) + ":{A TO 3}", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(qname) + ":{A TO 3}", null, null);
         assertEquals(1, results.length());
         results.close();
 
         qname = QName.createQName(TEST_NAMESPACE, "long-ista");
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(qname) + ":{2 TO 3}", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(qname) + ":{2 TO 3}", null, null);
         assertEquals(0, results.length());
         results.close();
 
         qname = QName.createQName(TEST_NAMESPACE, "long-ista");
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(qname) + ":{2 TO A}", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(qname) + ":{2 TO A}", null, null);
         assertEquals(0, results.length());
         results.close();
 
         qname = QName.createQName(TEST_NAMESPACE, "float-ista");
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(qname) + ":\"3.4\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(qname) + ":\"3.4\"", null, null);
         assertEquals(1, results.length());
         assertNotNull(results.getRow(0).getValue(qname));
         results.close();
 
         qname = QName.createQName(TEST_NAMESPACE, "float-ista");
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(qname) + ":[A TO 4]", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(qname) + ":[A TO 4]", null, null);
         assertEquals(1, results.length());
         assertNotNull(results.getRow(0).getValue(qname));
         results.close();
 
         qname = QName.createQName(TEST_NAMESPACE, "float-ista");
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(qname) + ":[3 TO 4]", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(qname) + ":[3 TO 4]", null, null);
         assertEquals(1, results.length());
         assertNotNull(results.getRow(0).getValue(qname));
         results.close();
 
         qname = QName.createQName(TEST_NAMESPACE, "float-ista");
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(qname) + ":[3 TO A]", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(qname) + ":[3 TO A]", null, null);
         assertEquals(1, results.length());
         assertNotNull(results.getRow(0).getValue(qname));
         results.close();
 
         qname = QName.createQName(TEST_NAMESPACE, "float-ista");
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(qname) + ":[A TO 3.4]", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(qname) + ":[A TO 3.4]", null, null);
         assertEquals(1, results.length());
         assertNotNull(results.getRow(0).getValue(qname));
         results.close();
 
         qname = QName.createQName(TEST_NAMESPACE, "float-ista");
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(qname) + ":[3.3 TO 3.4]", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(qname) + ":[3.3 TO 3.4]", null, null);
         assertEquals(1, results.length());
         assertNotNull(results.getRow(0).getValue(qname));
         results.close();
 
         qname = QName.createQName(TEST_NAMESPACE, "float-ista");
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(qname) + ":[3.3 TO A]", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(qname) + ":[3.3 TO A]", null, null);
         assertEquals(1, results.length());
         assertNotNull(results.getRow(0).getValue(qname));
         results.close();
 
         qname = QName.createQName(TEST_NAMESPACE, "float-ista");
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(qname) + ":{A TO 3.4}", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(qname) + ":{A TO 3.4}", null, null);
         assertEquals(0, results.length());
         results.close();
 
         qname = QName.createQName(TEST_NAMESPACE, "float-ista");
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(qname) + ":[3.3 TO 3.4]", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(qname) + ":[3.3 TO 3.4]", null, null);
         assertEquals(1, results.length());
         assertNotNull(results.getRow(0).getValue(qname));
         results.close();
 
         qname = QName.createQName(TEST_NAMESPACE, "float-ista");
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(qname) + ":[3.3 TO A]", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(qname) + ":[3.3 TO A]", null, null);
         assertEquals(1, results.length());
         assertNotNull(results.getRow(0).getValue(qname));
         results.close();
 
         qname = QName.createQName(TEST_NAMESPACE, "float-ista");
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(qname) + ":\"3.40\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(qname) + ":\"3.40\"", null, null);
         assertEquals(1, results.length());
         assertNotNull(results.getRow(0).getValue(qname));
         results.close();
 
         qname = QName.createQName(TEST_NAMESPACE, "float-ista");
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(qname) + ":\"03.4\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(qname) + ":\"03.4\"", null, null);
         assertEquals(1, results.length());
         assertNotNull(results.getRow(0).getValue(qname));
         results.close();
 
         qname = QName.createQName(TEST_NAMESPACE, "float-ista");
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(qname) + ":\"03.40\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(qname) + ":\"03.40\"", null, null);
         assertEquals(1, results.length());
         assertNotNull(results.getRow(0).getValue(qname));
         results.close();
 
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(QName.createQName(TEST_NAMESPACE, "double-ista")) + ":\"5.6\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(QName.createQName(TEST_NAMESPACE, "double-ista")) + ":\"5.6\"", null, null);
         assertEquals(1, results.length());
         results.close();
 
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(QName.createQName(TEST_NAMESPACE, "double-ista")) + ":\"05.6\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(QName.createQName(TEST_NAMESPACE, "double-ista")) + ":\"05.6\"", null, null);
         assertEquals(1, results.length());
         results.close();
 
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(QName.createQName(TEST_NAMESPACE, "double-ista")) + ":\"5.60\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(QName.createQName(TEST_NAMESPACE, "double-ista")) + ":\"5.60\"", null, null);
         assertEquals(1, results.length());
         results.close();
 
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(QName.createQName(TEST_NAMESPACE, "double-ista")) + ":\"05.60\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(QName.createQName(TEST_NAMESPACE, "double-ista")) + ":\"05.60\"", null, null);
         assertEquals(1, results.length());
         results.close();
 
         qname = QName.createQName(TEST_NAMESPACE, "double-ista");
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(qname) + ":[A TO 5.7]", null);
-        assertEquals(1, results.length());
-        assertNotNull(results.getRow(0).getValue(qname));
-        results.close();
-
-        qname = QName.createQName(TEST_NAMESPACE, "double-ista");
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(qname) + ":[5.5 TO 5.7]", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(qname) + ":[A TO 5.7]", null, null);
         assertEquals(1, results.length());
         assertNotNull(results.getRow(0).getValue(qname));
         results.close();
 
         qname = QName.createQName(TEST_NAMESPACE, "double-ista");
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(qname) + ":[5.5 TO A]", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(qname) + ":[5.5 TO 5.7]", null, null);
         assertEquals(1, results.length());
         assertNotNull(results.getRow(0).getValue(qname));
         results.close();
 
         qname = QName.createQName(TEST_NAMESPACE, "double-ista");
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(qname) + ":{A TO 5.6}", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(qname) + ":[5.5 TO A]", null, null);
+        assertEquals(1, results.length());
+        assertNotNull(results.getRow(0).getValue(qname));
+        results.close();
+
+        qname = QName.createQName(TEST_NAMESPACE, "double-ista");
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(qname) + ":{A TO 5.6}", null, null);
         assertEquals(0, results.length());
         results.close();
 
         qname = QName.createQName(TEST_NAMESPACE, "double-ista");
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(qname) + ":{5.5 TO 5.6}", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(qname) + ":{5.5 TO 5.6}", null, null);
         assertEquals(0, results.length());
         results.close();
 
         qname = QName.createQName(TEST_NAMESPACE, "double-ista");
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(qname) + ":{5.5 TO A}", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(qname) + ":{5.5 TO A}", null, null);
         assertEquals(1, results.length());
         results.close();
 
         qname = QName.createQName(TEST_NAMESPACE, "double-ista");
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(qname) + ":{A TO 5.7}", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(qname) + ":{A TO 5.7}", null, null);
         assertEquals(1, results.length());
         results.close();
 
         qname = QName.createQName(TEST_NAMESPACE, "double-ista");
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(qname) + ":{5.6 TO 5.7}", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(qname) + ":{5.6 TO 5.7}", null, null);
         assertEquals(0, results.length());
         results.close();
 
         qname = QName.createQName(TEST_NAMESPACE, "double-ista");
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(qname) + ":{5.6 TO A}", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(qname) + ":{5.6 TO A}", null, null);
         assertEquals(0, results.length());
         results.close();
 
@@ -3473,33 +3470,33 @@ public class ADMLuceneTest extends TestCase
         Date date = new Date();
         SimpleDateFormat df = CachingDateFormat.getDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS", true);
         String sDate = df.format(date);
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(QName.createQName(TEST_NAMESPACE, "date-ista")) + ":\"" + sDate + "\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(QName.createQName(TEST_NAMESPACE, "date-ista")) + ":\"" + sDate + "\"", null, null);
         assertEquals(1, results.length());
         results.close();
 
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(QName.createQName(TEST_NAMESPACE, "datetime-ista")) + ":\"" + sDate + "\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(QName.createQName(TEST_NAMESPACE, "datetime-ista")) + ":\"" + sDate + "\"", null, null);
         assertEquals(usesDateTimeAnalyser ? 0 : 1, results.length());
         results.close();
 
         sDate = df.format(testDate);
 
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(QName.createQName(TEST_NAMESPACE, "date-ista")) + ":\"" + sDate + "\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(QName.createQName(TEST_NAMESPACE, "date-ista")) + ":\"" + sDate + "\"", null, null);
         assertEquals(1, results.length());
         results.close();
 
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(QName.createQName(TEST_NAMESPACE, "datetime-ista")) + ":\"" + sDate + "\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(QName.createQName(TEST_NAMESPACE, "datetime-ista")) + ":\"" + sDate + "\"", null, null);
         assertEquals(1, results.length());
         results.close();
 
         // short and long field ranges
 
         sDate = df.format(date);
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@cm\\:created:[MIN TO " + sDate + "]", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@cm\\:created:[MIN TO " + sDate + "]", null, null);
         assertEquals(1, results.length());
         results.close();
 
         sDate = df.format(date);
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(ContentModel.PROP_CREATED) + ":[MIN TO " + sDate + "]", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(ContentModel.PROP_CREATED) + ":[MIN TO " + sDate + "]", null, null);
         assertEquals(1, results.length());
         results.close();
 
@@ -3508,34 +3505,34 @@ public class ADMLuceneTest extends TestCase
 
         sDate = df.format(date);
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(QName.createQName(TEST_NAMESPACE, "date-ista")) + ":[" + sDate + " TO " + sDate + "]",
-                null);
+                null, null);
         assertEquals(1, results.length());
         results.close();
 
         sDate = df.format(date);
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(QName.createQName(TEST_NAMESPACE, "date-ista")) + ":[MIN  TO " + sDate + "]", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(QName.createQName(TEST_NAMESPACE, "date-ista")) + ":[MIN  TO " + sDate + "]", null, null);
         assertEquals(1, results.length());
         results.close();
 
         sDate = df.format(date);
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(QName.createQName(TEST_NAMESPACE, "date-ista")) + ":[" + sDate + " TO MAX]", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(QName.createQName(TEST_NAMESPACE, "date-ista")) + ":[" + sDate + " TO MAX]", null, null);
         assertEquals(1, results.length());
         results.close();
 
         sDate = CachingDateFormat.getDateFormat().format(date);
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene",
-                "\\@" + escapeQName(QName.createQName(TEST_NAMESPACE, "datetime-ista")) + ":[" + sDate + " TO " + sDate + "]", null);
+                "\\@" + escapeQName(QName.createQName(TEST_NAMESPACE, "datetime-ista")) + ":[" + sDate + " TO " + sDate + "]", null, null);
         assertEquals(usesDateTimeAnalyser ? 0 : 1, results.length());
         results.close();
 
         sDate = CachingDateFormat.getDateFormat().format(date);
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(QName.createQName(TEST_NAMESPACE, "datetime-ista")) + ":[MIN TO " + sDate + "]",
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(QName.createQName(TEST_NAMESPACE, "datetime-ista")) + ":[MIN TO " + sDate + "]", null,
                 null);
         assertEquals(1, results.length());
         results.close();
 
         sDate = CachingDateFormat.getDateFormat().format(date);
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(QName.createQName(TEST_NAMESPACE, "datetime-ista")) + ":[" + sDate + " TO MAX]",
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(QName.createQName(TEST_NAMESPACE, "datetime-ista")) + ":[" + sDate + " TO MAX]", null,
                 null);
         assertEquals(usesDateTimeAnalyser ? 0 : 1, results.length());
         results.close();
@@ -3554,123 +3551,123 @@ public class ADMLuceneTest extends TestCase
                 // System.out.println("\tEnd = " + endDate);
 
                 results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@"
-                        + escapeQName(QName.createQName(TEST_NAMESPACE, "datetime-ista")) + ":[" + startDate + " TO " + endDate + "]", null);
+                        + escapeQName(QName.createQName(TEST_NAMESPACE, "datetime-ista")) + ":[" + startDate + " TO " + endDate + "]", null, null);
                 assertEquals(1, results.length());
                 results.close();
 
                 results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@"
-                        + escapeQName(QName.createQName(TEST_NAMESPACE, "datetime-ista")) + ":[" + sDate + " TO " + endDate + "]", null);
+                        + escapeQName(QName.createQName(TEST_NAMESPACE, "datetime-ista")) + ":[" + sDate + " TO " + endDate + "]", null, null);
                 assertEquals(1, results.length());
                 results.close();
 
                 results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@"
-                        + escapeQName(QName.createQName(TEST_NAMESPACE, "datetime-ista")) + ":[" + startDate + " TO " + sDate + "]", null);
+                        + escapeQName(QName.createQName(TEST_NAMESPACE, "datetime-ista")) + ":[" + startDate + " TO " + sDate + "]", null, null);
                 assertEquals(1, results.length());
                 results.close();
 
                 results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@"
-                        + escapeQName(QName.createQName(TEST_NAMESPACE, "datetime-ista")) + ":{" + sDate + " TO " + endDate + "}", null);
+                        + escapeQName(QName.createQName(TEST_NAMESPACE, "datetime-ista")) + ":{" + sDate + " TO " + endDate + "}", null, null);
                 assertEquals(0, results.length());
                 results.close();
 
                 results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@"
-                        + escapeQName(QName.createQName(TEST_NAMESPACE, "datetime-ista")) + ":{" + startDate + " TO " + sDate + "}", null);
+                        + escapeQName(QName.createQName(TEST_NAMESPACE, "datetime-ista")) + ":{" + startDate + " TO " + sDate + "}", null, null);
                 assertEquals(0, results.length());
                 results.close();
             }
         }
 
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(QName.createQName(TEST_NAMESPACE, "boolean-ista")) + ":\"true\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(QName.createQName(TEST_NAMESPACE, "boolean-ista")) + ":\"true\"", null, null);
         assertEquals(1, results.length());
         results.close();
 
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(QName.createQName(TEST_NAMESPACE, "qname-ista")) + ":\"{wibble}wobble\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(QName.createQName(TEST_NAMESPACE, "qname-ista")) + ":\"{wibble}wobble\"", null, null);
         assertEquals(1, results.length());
         results.close();
 
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@"
                 + escapeQName(QName.createQName(TEST_NAMESPACE, "category-ista")) + ":\""
-                + DefaultTypeConverter.INSTANCE.convert(String.class, new NodeRef(rootNodeRef.getStoreRef(), "CategoryId")) + "\"", null);
+                + DefaultTypeConverter.INSTANCE.convert(String.class, new NodeRef(rootNodeRef.getStoreRef(), "CategoryId")) + "\"", null, null);
         assertEquals(1, results.length());
         results.close();
 
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(QName.createQName(TEST_NAMESPACE, "noderef-ista")) + ":\"" + n1 + "\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(QName.createQName(TEST_NAMESPACE, "noderef-ista")) + ":\"" + n1 + "\"", null, null);
         assertEquals(1, results.length());
         results.close();
 
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(QName.createQName(TEST_NAMESPACE, "path-ista")) + ":\"" + nodeService.getPath(n3) + "\"",
-                null);
+                null, null);
         assertEquals(1, results.length());
         assertNotNull(results.getRow(0).getValue(QName.createQName(TEST_NAMESPACE, "path-ista")));
         results.close();
 
         // d:any
 
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(QName.createQName(TEST_NAMESPACE, "any-many-ista")) + ":\"100\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(QName.createQName(TEST_NAMESPACE, "any-many-ista")) + ":\"100\"", null, null);
         assertEquals(1, results.length());
         assertNotNull(results.getRow(0).getValue(QName.createQName(TEST_NAMESPACE, "any-many-ista")));
         results.close();
 
         results = searcher
-                .query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(QName.createQName(TEST_NAMESPACE, "any-many-ista")) + ":\"anyValueAsString\"", null);
+                .query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(QName.createQName(TEST_NAMESPACE, "any-many-ista")) + ":\"anyValueAsString\"", null, null);
         assertEquals(1, results.length());
         assertNotNull(results.getRow(0).getValue(QName.createQName(TEST_NAMESPACE, "any-many-ista")));
         results.close();
 
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(QName.createQName(TEST_NAMESPACE, "any-many-ista")) + ":\"nintc\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(QName.createQName(TEST_NAMESPACE, "any-many-ista")) + ":\"nintc\"", null, null);
         assertEquals(1, results.length());
         assertNotNull(results.getRow(0).getValue(QName.createQName(TEST_NAMESPACE, "any-many-ista")));
         results.close();
 
         // proximity searches
 
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "TEXT:\"Tutorial Alfresco\"~0", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "TEXT:\"Tutorial Alfresco\"~0", null, null);
         assertEquals(0, results.length());
         results.close();
 
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "TEXT:\"Tutorial Alfresco\"~1", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "TEXT:\"Tutorial Alfresco\"~1", null, null);
         assertEquals(0, results.length());
         results.close();
 
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "TEXT:\"Tutorial Alfresco\"~2", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "TEXT:\"Tutorial Alfresco\"~2", null, null);
         assertEquals(1, results.length());
         results.close();
 
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "TEXT:\"Tutorial Alfresco\"~3", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "TEXT:\"Tutorial Alfresco\"~3", null, null);
         assertEquals(1, results.length());
         results.close();
 
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "@" + LuceneQueryParser.escape(ContentModel.PROP_DESCRIPTION.toString()) + ":\"Alfresco Tutorial\"", 
-                null);
-
-        assertEquals(1, results.length());
-        results.close();
-
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "@" + LuceneQueryParser.escape(ContentModel.PROP_DESCRIPTION.toString()) + ":\"Tutorial Alfresco\"", 
-                null);
-
-        assertEquals(0, results.length());
-        results.close();
-
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "@" + LuceneQueryParser.escape(ContentModel.PROP_DESCRIPTION.toString()) + ":\"Tutorial Alfresco\"~0", 
-                null);
-
-        assertEquals(0, results.length());
-        results.close();
-
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "@" + LuceneQueryParser.escape(ContentModel.PROP_DESCRIPTION.toString()) + ":\"Tutorial Alfresco\"~1", 
-                null);
-
-        assertEquals(0, results.length());
-        results.close();
-
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "@" + LuceneQueryParser.escape(ContentModel.PROP_DESCRIPTION.toString()) + ":\"Tutorial Alfresco\"~2", 
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "@" + LuceneQueryParser.escape(ContentModel.PROP_DESCRIPTION.toString()) + ":\"Alfresco Tutorial\"", null,
                 null);
 
         assertEquals(1, results.length());
         results.close();
 
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "@" + LuceneQueryParser.escape(ContentModel.PROP_DESCRIPTION.toString()) + ":\"Tutorial Alfresco\"~3", 
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "@" + LuceneQueryParser.escape(ContentModel.PROP_DESCRIPTION.toString()) + ":\"Tutorial Alfresco\"", null,
+                null);
+
+        assertEquals(0, results.length());
+        results.close();
+
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "@" + LuceneQueryParser.escape(ContentModel.PROP_DESCRIPTION.toString()) + ":\"Tutorial Alfresco\"~0", null,
+                null);
+
+        assertEquals(0, results.length());
+        results.close();
+
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "@" + LuceneQueryParser.escape(ContentModel.PROP_DESCRIPTION.toString()) + ":\"Tutorial Alfresco\"~1", null,
+                null);
+
+        assertEquals(0, results.length());
+        results.close();
+
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "@" + LuceneQueryParser.escape(ContentModel.PROP_DESCRIPTION.toString()) + ":\"Tutorial Alfresco\"~2", null,
+                null);
+
+        assertEquals(1, results.length());
+        results.close();
+
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "@" + LuceneQueryParser.escape(ContentModel.PROP_DESCRIPTION.toString()) + ":\"Tutorial Alfresco\"~3", null,
                 null);
 
         assertEquals(1, results.length());
@@ -3784,177 +3781,177 @@ public class ADMLuceneTest extends TestCase
 
         // locale
 
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(QName.createQName(TEST_NAMESPACE, "locale-ista")) + ":\"en_GB_\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(QName.createQName(TEST_NAMESPACE, "locale-ista")) + ":\"en_GB_\"", null, null);
         assertEquals(1, results.length());
         assertNotNull(results.getRow(0).getValue(QName.createQName(TEST_NAMESPACE, "path-ista")));
         results.close();
 
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(QName.createQName(TEST_NAMESPACE, "locale-ista")) + ":en_GB_", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(QName.createQName(TEST_NAMESPACE, "locale-ista")) + ":en_GB_", null, null);
         assertEquals(1, results.length());
         assertNotNull(results.getRow(0).getValue(QName.createQName(TEST_NAMESPACE, "path-ista")));
         results.close();
 
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(QName.createQName(TEST_NAMESPACE, "locale-ista")) + ":en_*", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(QName.createQName(TEST_NAMESPACE, "locale-ista")) + ":en_*", null, null);
         assertEquals(1, results.length());
         assertNotNull(results.getRow(0).getValue(QName.createQName(TEST_NAMESPACE, "path-ista")));
         results.close();
 
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(QName.createQName(TEST_NAMESPACE, "locale-ista")) + ":*_GB_*", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(QName.createQName(TEST_NAMESPACE, "locale-ista")) + ":*_GB_*", null, null);
         assertEquals(1, results.length());
         assertNotNull(results.getRow(0).getValue(QName.createQName(TEST_NAMESPACE, "path-ista")));
         results.close();
 
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(QName.createQName(TEST_NAMESPACE, "locale-ista")) + ":*_gb_*", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(QName.createQName(TEST_NAMESPACE, "locale-ista")) + ":*_gb_*", null, null);
         assertEquals(1, results.length());
         assertNotNull(results.getRow(0).getValue(QName.createQName(TEST_NAMESPACE, "path-ista")));
         results.close();
 
         // Type
 
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "TYPE:\"" + testType.toString() + "\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "TYPE:\"" + testType.toString() + "\"", null, null);
         assertEquals(1, results.length());
         results.close();
 
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "TYPE:\"" + testType.toPrefixString(namespacePrefixResolver) + "\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "TYPE:\"" + testType.toPrefixString(namespacePrefixResolver) + "\"", null, null);
         assertEquals(1, results.length());
         results.close();
 
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "EXACTTYPE:\"" + testType.toString() + "\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "EXACTTYPE:\"" + testType.toString() + "\"", null, null);
         assertEquals(1, results.length());
         results.close();
 
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "EXACTTYPE:\"" + testType.toPrefixString(namespacePrefixResolver) + "\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "EXACTTYPE:\"" + testType.toPrefixString(namespacePrefixResolver) + "\"", null, null);
         assertEquals(1, results.length());
         results.close();
 
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "TYPE:\"" + testSuperType.toString() + "\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "TYPE:\"" + testSuperType.toString() + "\"", null, null);
         assertEquals(13, results.length());
         results.close();
 
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "TYPE:\"" + testSuperType.toPrefixString(namespacePrefixResolver) + "\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "TYPE:\"" + testSuperType.toPrefixString(namespacePrefixResolver) + "\"", null, null);
         assertEquals(13, results.length());
         results.close();
 
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "EXACTTYPE:\"" + testSuperType.toString() + "\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "EXACTTYPE:\"" + testSuperType.toString() + "\"", null, null);
         assertEquals(12, results.length());
         results.close();
 
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "EXACTTYPE:\"" + testSuperType.toPrefixString(namespacePrefixResolver) + "\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "EXACTTYPE:\"" + testSuperType.toPrefixString(namespacePrefixResolver) + "\"", null, null);
         assertEquals(12, results.length());
         results.close();
 
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "ASPECT:\"" + testAspect.toString() + "\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "ASPECT:\"" + testAspect.toString() + "\"", null, null);
         assertEquals(1, results.length());
         results.close();
 
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "ASPECT:\"" + testAspect.toPrefixString(namespacePrefixResolver) + "\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "ASPECT:\"" + testAspect.toPrefixString(namespacePrefixResolver) + "\"", null, null);
         assertEquals(1, results.length());
         results.close();
 
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "ASPECT:\"" + testAspect.toString() + "\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "ASPECT:\"" + testAspect.toString() + "\"", null, null);
         assertEquals(1, results.length());
         results.close();
 
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "ASPECT:\"" + testAspect.toPrefixString(namespacePrefixResolver) + "\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "ASPECT:\"" + testAspect.toPrefixString(namespacePrefixResolver) + "\"", null, null);
         assertEquals(1, results.length());
         results.close();
 
         // Test for AR-384
 
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "TEXT:fox AND TYPE:\"" + ContentModel.PROP_CONTENT.toString() + "\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "TEXT:fox AND TYPE:\"" + ContentModel.PROP_CONTENT.toString() + "\"", null, null);
         assertEquals(1, results.length());
         results.close();
 
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "TEXT:fox cm\\:name:fox", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "TEXT:fox cm\\:name:fox", null, null);
         assertEquals(1, results.length());
         results.close();
 
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "TEXT:fo AND TYPE:\"" + ContentModel.PROP_CONTENT.toString() + "\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "TEXT:fo AND TYPE:\"" + ContentModel.PROP_CONTENT.toString() + "\"", null, null);
         assertEquals(0, results.length());
         results.close();
 
         // Test stop words are equivalent
 
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "TEXT:\"the\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "TEXT:\"the\"", null, null);
         assertEquals(0, results.length());
         results.close();
 
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "TEXT:\"and\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "TEXT:\"and\"", null, null);
         assertEquals(0, results.length());
         results.close();
 
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "TEXT:\"over the lazy\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "TEXT:\"over the lazy\"", null, null);
         assertEquals(1, results.length());
         results.close();
 
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "TEXT:\"over a lazy\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "TEXT:\"over a lazy\"", null, null);
         assertEquals(1, results.length());
         results.close();
 
         // Test wildcards in text
 
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "TEXT:laz*", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "TEXT:laz*", null, null);
         assertEquals(1, results.length());
         results.close();
 
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "TEXT:laz~", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "TEXT:laz~", null, null);
         assertEquals(1, results.length());
         results.close();
 
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "TEXT:la?y", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "TEXT:la?y", null, null);
         assertEquals(1, results.length());
         results.close();
 
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "TEXT:?a?y", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "TEXT:?a?y", null, null);
         assertEquals(1, results.length());
         results.close();
 
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "TEXT:*azy", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "TEXT:*azy", null, null);
         assertEquals(1, results.length());
         results.close();
 
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "TEXT:*az*", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "TEXT:*az*", null, null);
         assertEquals(1, results.length());
         results.close();
 
         // Accents
 
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "TEXT:\"\u00E0\u00EA\u00EE\u00F0\u00F1\u00F6\u00FB\u00FF\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "TEXT:\"\u00E0\u00EA\u00EE\u00F0\u00F1\u00F6\u00FB\u00FF\"", null, null);
         assertEquals(1, results.length());
         results.close();
 
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "TEXT:\"aeidnouy\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "TEXT:\"aeidnouy\"", null, null);
         assertEquals(1, results.length());
         results.close();
 
         // FTS test
 
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "TEXT:\"fox\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "TEXT:\"fox\"", null, null);
         assertEquals(1, results.length());
         results.close();
 
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "@" + LuceneQueryParser.escape(ContentModel.PROP_CONTENT.toString()) + ":\"fox\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "@" + LuceneQueryParser.escape(ContentModel.PROP_CONTENT.toString()) + ":\"fox\"", null, null);
         assertEquals(1, results.length());
         results.close();
 
         results = searcher
-                .query(rootNodeRef.getStoreRef(), "lucene", "@" + LuceneQueryParser.escape(ContentModel.PROP_CONTENT.toString()) + ".mimetype:\"text/plain\"", null);
+                .query(rootNodeRef.getStoreRef(), "lucene", "@" + LuceneQueryParser.escape(ContentModel.PROP_CONTENT.toString()) + ".mimetype:\"text/plain\"", null, null);
         assertEquals(1, results.length());
         results.close();
 
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "@" + LuceneQueryParser.escape(ContentModel.PROP_CONTENT.toString()) + ".locale:\"en_GB\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "@" + LuceneQueryParser.escape(ContentModel.PROP_CONTENT.toString()) + ".locale:\"en_GB\"", null, null);
         assertEquals(1, results.length());
         results.close();
 
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "@" + LuceneQueryParser.escape(ContentModel.PROP_CONTENT.toString()) + ".locale:en_*", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "@" + LuceneQueryParser.escape(ContentModel.PROP_CONTENT.toString()) + ".locale:en_*", null, null);
         assertEquals(1, results.length());
         results.close();
 
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "@" + LuceneQueryParser.escape(ContentModel.PROP_CONTENT.toString()) + ".locale:e*_GB", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "@" + LuceneQueryParser.escape(ContentModel.PROP_CONTENT.toString()) + ".locale:e*_GB", null, null);
         assertEquals(1, results.length());
         results.close();
 
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "@" + LuceneQueryParser.escape(ContentModel.PROP_CONTENT.toString()) + ".size:\"298\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "@" + LuceneQueryParser.escape(ContentModel.PROP_CONTENT.toString()) + ".size:\"298\"", null, null);
         assertEquals(1, results.length());
         results.close();
 
@@ -4045,9 +4042,8 @@ public class ADMLuceneTest extends TestCase
         sp = new SearchParameters();
         sp.addStore(rootNodeRef.getStoreRef());
         sp.setLanguage("lucene");
-        sp.setQuery("TEXT:*cab*");
+        sp.setQuery("TEXT:cab*");
         sp.addTextAttribute("@" + orderText.toString());
-        sp.addLocale(Locale.ENGLISH);
         results = searcher.query(sp);
         assertEquals(12, results.length());
         results.close();
@@ -4648,13 +4644,13 @@ public class ADMLuceneTest extends TestCase
         sp.setLanguage("lucene");
         sp.setQuery("@" + LuceneQueryParser.escape(ContentModel.PROP_DESCRIPTION.toString()) + ":\"*??*lf**sc***\"");
         results = searcher.query(sp);
-        assertEquals(1, results.length());
+        assertEquals(0, results.length());
         results.close();
 
         sp = new SearchParameters();
         sp.addStore(rootNodeRef.getStoreRef());
         sp.setLanguage("lucene");
-        sp.setQuery("@" + LuceneQueryParser.escape(ContentModel.PROP_DESCRIPTION.toString()) + ":\"Alfresc*tutorial\"");
+        sp.setQuery("@" + LuceneQueryParser.escape(ContentModel.PROP_DESCRIPTION.toString()) + ":\"alfresc*tutorial\"");
         results = searcher.query(sp);
         assertEquals(0, results.length());
         results.close();
@@ -4662,7 +4658,7 @@ public class ADMLuceneTest extends TestCase
         sp = new SearchParameters();
         sp.addStore(rootNodeRef.getStoreRef());
         sp.setLanguage("lucene");
-        sp.setQuery("@" + LuceneQueryParser.escape(ContentModel.PROP_DESCRIPTION.toString()) + ":\"Alf* tut*\"");
+        sp.setQuery("@" + LuceneQueryParser.escape(ContentModel.PROP_DESCRIPTION.toString()) + ":\"alf* tut*\"");
         results = searcher.query(sp);
         assertEquals(1, results.length());
         results.close();
@@ -4978,55 +4974,55 @@ public class ADMLuceneTest extends TestCase
 
         // Test non field queries
 
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "TEXT:fox", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "TEXT:fox", null, null);
         assertEquals(1, results.length());
         results.close();
 
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "TEXT:fo*", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "TEXT:fo*", null, null);
         assertEquals(1, results.length());
         results.close();
 
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "TEXT:f*x", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "TEXT:f*x", null, null);
         assertEquals(1, results.length());
         results.close();
 
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "TEXT:*ox", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "TEXT:*ox", null, null);
         assertEquals(1, results.length());
         results.close();
 
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "@" + LuceneQueryParser.escape(ContentModel.PROP_CONTENT.toString()) + ":fox", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "@" + LuceneQueryParser.escape(ContentModel.PROP_CONTENT.toString()) + ":fox", null, null);
         assertEquals(1, results.length());
         results.close();
 
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "@" + LuceneQueryParser.escape(ContentModel.PROP_CONTENT.toString()) + ":fo*", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "@" + LuceneQueryParser.escape(ContentModel.PROP_CONTENT.toString()) + ":fo*", null, null);
         assertEquals(1, results.length());
         results.close();
 
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "@" + LuceneQueryParser.escape(ContentModel.PROP_CONTENT.toString()) + ":f*x", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "@" + LuceneQueryParser.escape(ContentModel.PROP_CONTENT.toString()) + ":f*x", null, null);
         assertEquals(1, results.length());
         results.close();
 
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "@" + LuceneQueryParser.escape(ContentModel.PROP_CONTENT.toString()) + ":*ox", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "@" + LuceneQueryParser.escape(ContentModel.PROP_CONTENT.toString()) + ":*ox", null, null);
         assertEquals(1, results.length());
         results.close();
 
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "@" + LuceneQueryParser.escape(ContentModel.PROP_CONTENT.toPrefixString(namespacePrefixResolver)) + ":fox",
-                null);
+                null, null);
         assertEquals(1, results.length());
         results.close();
 
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "@" + LuceneQueryParser.escape(ContentModel.PROP_CONTENT.toPrefixString(namespacePrefixResolver)) + ":fo*",
-                null);
+                null, null);
         assertEquals(1, results.length());
         results.close();
 
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "@" + LuceneQueryParser.escape(ContentModel.PROP_CONTENT.toPrefixString(namespacePrefixResolver)) + ":f*x",
-                null);
+                null, null);
         assertEquals(1, results.length());
         results.close();
 
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "@" + LuceneQueryParser.escape(ContentModel.PROP_CONTENT.toPrefixString(namespacePrefixResolver)) + ":*ox",
-                null);
+                null, null);
         assertEquals(1, results.length());
         results.close();
 
@@ -5051,13 +5047,13 @@ public class ADMLuceneTest extends TestCase
 
         // TODO: should not have a null property type definition
         QueryParameterDefImpl paramDef = new QueryParameterDefImpl(QName.createQName("alf:lemur", namespacePrefixResolver), (DataTypeDefinition) null, true, "fox");
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "TEXT:\"${alf:lemur}\"",  new QueryParameterDefinition[] { paramDef });
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "TEXT:\"${alf:lemur}\"", null, new QueryParameterDefinition[] { paramDef });
         assertEquals(1, results.length());
         results.close();
 
         paramDef = new QueryParameterDefImpl(QName.createQName("alf:intvalue", namespacePrefixResolver), (DataTypeDefinition) null, true, "1");
         qname = QName.createQName(TEST_NAMESPACE, "int-ista");
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(qname) + ":\"${alf:intvalue}\"", new QueryParameterDefinition[] { paramDef });
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(qname) + ":\"${alf:intvalue}\"", null, new QueryParameterDefinition[] { paramDef });
         assertEquals(1, results.length());
         assertNotNull(results.getRow(0).getValue(qname));
         results.close();
@@ -5065,17 +5061,17 @@ public class ADMLuceneTest extends TestCase
         // Open ended ranges
 
         qname = QName.createQName("{namespace}property-1");
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(qname) + ":[v TO w]", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(qname) + ":[v TO w]", null, null);
         assertEquals(2, results.length());
         results.close();
 
         qname = QName.createQName("{namespace}property-1");
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(qname) + ":[v TO \uFFFF]", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(qname) + ":[v TO \uFFFF]", null, null);
         assertEquals(2, results.length());
         results.close();
 
         qname = QName.createQName("{namespace}property-1");
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(qname) + ":[\u0000 TO w]", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(qname) + ":[\u0000 TO w]", null, null);
         assertEquals(2, results.length());
         results.close();
     }
@@ -5098,39 +5094,39 @@ public class ADMLuceneTest extends TestCase
 
         ResultSet
 
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//common\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//common\"", null, null);
         assertEquals(1, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"//common\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"//common\"", null, null);
         assertEquals(7, results.length());
         results.close();
 
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/one//common\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/one//common\"", null, null);
         assertEquals(1, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"/one//common\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"/one//common\"", null, null);
         assertEquals(5, results.length());
         results.close();
 
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/one/five//*\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/one/five//*\"", null, null);
         assertEquals(6, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"/one/five//*\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"/one/five//*\"", null, null);
         assertEquals(9, results.length());
         results.close();
 
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/one/five//.\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/one/five//.\"", null, null);
         assertEquals(7, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"/one/five//.\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"/one/five//.\"", null, null);
         assertEquals(10, results.length());
         results.close();
 
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/one//five/nine\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/one//five/nine\"", null, null);
         assertEquals(1, results.length());
         results.close();
 
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/one//thirteen/fourteen\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/one//thirteen/fourteen\"", null, null);
         assertEquals(1, results.length());
         results.close();
         luceneFTS.resume();
@@ -5154,13 +5150,13 @@ public class ADMLuceneTest extends TestCase
 
         ResultSet
 
-        results = searcher.query(rootNodeRef.getStoreRef(), "xpath", "//./*", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "xpath", "//./*", null, null);
         assertEquals(14, results.length());
         results.close();
         luceneFTS.resume();
 
         QueryParameterDefinition paramDef = new QueryParameterDefImpl(QName.createQName("alf:query", namespacePrefixResolver), (DataTypeDefinition) null, true, "//./*");
-        results = searcher.query(rootNodeRef.getStoreRef(), "xpath", "${alf:query}", new QueryParameterDefinition[] { paramDef });
+        results = searcher.query(rootNodeRef.getStoreRef(), "xpath", "${alf:query}", null, new QueryParameterDefinition[] { paramDef });
         assertEquals(14, results.length());
         results.close();
     }
@@ -5182,7 +5178,7 @@ public class ADMLuceneTest extends TestCase
 
         ResultSet
 
-        results = searcher.query(storeRef, "xpath", "//./*", null);
+        results = searcher.query(storeRef, "xpath", "//./*", null, null);
         assertEquals(0, results.length());
         luceneFTS.resume();
     }
@@ -5260,184 +5256,184 @@ public class ADMLuceneTest extends TestCase
         searcher.setDictionaryService(dictionaryService);
         searcher.setTenantService(tenantService);
         searcher.setNamespacePrefixResolver(getNamespacePrefixReolsver("namespace"));
-        ResultSet results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one\"", null);
+        ResultSet results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one\"", null, null);
         assertEquals(1, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:two\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:two\"", null, null);
         assertEquals(1, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:three\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:three\"", null, null);
         assertEquals(1, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:four\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:four\"", null, null);
         assertEquals(1, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:eight-0\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:eight-0\"", null, null);
         assertEquals(1, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:five\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:five\"", null, null);
         assertEquals(0, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:one\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:one\"", null, null);
         assertEquals(0, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:two\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:two\"", null, null);
         assertEquals(0, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:two/namespace:one\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:two/namespace:one\"", null, null);
         assertEquals(0, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:two/namespace:two\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:two/namespace:two\"", null, null);
         assertEquals(0, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:five\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:five\"", null, null);
         assertEquals(1, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:six\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:six\"", null, null);
         assertEquals(1, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:two/namespace:seven\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:two/namespace:seven\"", null, null);
         assertEquals(1, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:eight-1\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:eight-1\"", null, null);
         assertEquals(1, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:two/namespace:eight-2\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:two/namespace:eight-2\"", null, null);
         assertEquals(1, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:eight-2\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:eight-2\"", null, null);
         assertEquals(0, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:two/namespace:eight-1\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:two/namespace:eight-1\"", null, null);
         assertEquals(0, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:two/namespace:eight-0\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:two/namespace:eight-0\"", null, null);
         assertEquals(0, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:eight-0\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:eight-0\"", null, null);
         assertEquals(0, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:five/namespace:nine\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:five/namespace:nine\"", null, null);
         assertEquals(1, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:five/namespace:ten\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:five/namespace:ten\"", null, null);
         assertEquals(1, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:five/namespace:eleven\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:five/namespace:eleven\"", null, null);
         assertEquals(1, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:five/namespace:twelve\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:five/namespace:twelve\"", null, null);
         assertEquals(1, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:five/namespace:twelve/namespace:thirteen\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:five/namespace:twelve/namespace:thirteen\"", null, null);
         assertEquals(1, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:five/namespace:twelve/namespace:thirteen/namespace:fourteen\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:five/namespace:twelve/namespace:thirteen/namespace:fourteen\"", null, null);
         assertEquals(0, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:*\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:*\"", null, null);
         assertEquals(5, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:*/namespace:*\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:*/namespace:*\"", null, null);
         assertEquals(5, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"/namespace:*/namespace:*\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"/namespace:*/namespace:*\"", null, null);
         assertEquals(6, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:*/namespace:five\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:*/namespace:five\"", null, null);
         assertEquals(1, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:*/namespace:*/namespace:*\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:*/namespace:*/namespace:*\"", null, null);
         assertEquals(4, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:*\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:*\"", null, null);
         assertEquals(3, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:*/namespace:five/namespace:*\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:*/namespace:five/namespace:*\"", null, null);
         assertEquals(4, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:*/namespace:nine\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:*/namespace:nine\"", null, null);
         assertEquals(1, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/*\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/*\"", null, null);
         assertEquals(5, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/*/*\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/*/*\"", null, null);
         assertEquals(5, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"/*/*\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"/*/*\"", null, null);
         assertEquals(6, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/*/namespace:five\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/*/namespace:five\"", null, null);
         assertEquals(1, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/*/*/*\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/*/*/*\"", null, null);
         assertEquals(4, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/*\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/*\"", null, null);
         assertEquals(3, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/*/namespace:five/*\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/*/namespace:five/*\"", null, null);
         assertEquals(4, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/*/namespace:nine\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/*/namespace:nine\"", null, null);
         assertEquals(1, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//.\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//.\"", null, null);
         assertEquals(14, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"//.\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"//.\"", null, null);
         assertEquals(17, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//*\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//*\"", null, null);
         assertEquals(13, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"//*\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"//*\"", null, null);
         assertEquals(16, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//*/.\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//*/.\"", null, null);
         assertEquals(13, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"//*/.\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"//*/.\"", null, null);
         assertEquals(16, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//*/./.\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//*/./.\"", null, null);
         assertEquals(13, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"//*/./.\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"//*/./.\"", null, null);
         assertEquals(16, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//./*\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//./*\"", null, null);
         assertEquals(13, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"//./*\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"//./*\"", null, null);
         assertEquals(16, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//././*/././.\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//././*/././.\"", null, null);
         assertEquals(13, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"//././*/././.\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"//././*/././.\"", null, null);
         assertEquals(16, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//common\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//common\"", null, null);
         assertEquals(0, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/one//common\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/one//common\"", null, null);
         assertEquals(0, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/one/five//*\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/one/five//*\"", null, null);
         assertEquals(5, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"/one/five//*\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"/one/five//*\"", null, null);
         assertEquals(5, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/one/five//.\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/one/five//.\"", null, null);
         assertEquals(6, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/one//five/nine\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/one//five/nine\"", null, null);
         assertEquals(1, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/one//thirteen/fourteen\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/one//thirteen/fourteen\"", null, null);
         assertEquals(0, results.length());
         results.close();
         luceneFTS.resume();
@@ -5473,7 +5469,7 @@ public class ADMLuceneTest extends TestCase
         searcher.setDictionaryService(dictionaryService);
         searcher.setTenantService(tenantService);
         searcher.setNamespacePrefixResolver(getNamespacePrefixReolsver("namespace"));
-        ResultSet results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:" + ISO9075.encode(COMPLEX_LOCAL_NAME) + "\"", null);
+        ResultSet results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:" + ISO9075.encode(COMPLEX_LOCAL_NAME) + "\"", null, null);
         assertEquals(1, results.length());
         results.close();
     }
@@ -5508,7 +5504,7 @@ public class ADMLuceneTest extends TestCase
         searcher.setDictionaryService(dictionaryService);
         searcher.setTenantService(tenantService);
         searcher.setNamespacePrefixResolver(getNamespacePrefixReolsver("namespace"));
-        ResultSet results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:" + ISO9075.encode(COMPLEX_LOCAL_NAME) + "\"", null);
+        ResultSet results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:" + ISO9075.encode(COMPLEX_LOCAL_NAME) + "\"", null, null);
         assertEquals(1, results.length());
         results.close();
     }
@@ -5551,187 +5547,187 @@ public class ADMLuceneTest extends TestCase
         searcher.setDictionaryService(dictionaryService);
         searcher.setTenantService(tenantService);
         searcher.setNamespacePrefixResolver(getNamespacePrefixReolsver("namespace"));
-        ResultSet results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one\"", null);
+        ResultSet results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one\"", null, null);
         assertEquals(1, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:two\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:two\"", null, null);
         assertEquals(1, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:three\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:three\"", null, null);
         assertEquals(1, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:four\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:four\"", null, null);
         assertEquals(1, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:eight-0\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:eight-0\"", null, null);
         assertEquals(1, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:five\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:five\"", null, null);
         assertEquals(0, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:one\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:one\"", null, null);
         assertEquals(0, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:two\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:two\"", null, null);
         assertEquals(0, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:two/namespace:one\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:two/namespace:one\"", null, null);
         assertEquals(0, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:two/namespace:two\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:two/namespace:two\"", null, null);
         assertEquals(0, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:five\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:five\"", null, null);
         assertEquals(1, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:six\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:six\"", null, null);
         assertEquals(1, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:two/namespace:seven\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:two/namespace:seven\"", null, null);
         assertEquals(1, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:eight-1\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:eight-1\"", null, null);
         assertEquals(1, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:two/namespace:eight-2\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:two/namespace:eight-2\"", null, null);
         assertEquals(1, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:eight-2\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:eight-2\"", null, null);
         assertEquals(0, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:two/namespace:eight-1\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:two/namespace:eight-1\"", null, null);
         assertEquals(0, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:two/namespace:eight-0\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:two/namespace:eight-0\"", null, null);
         assertEquals(0, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:eight-0\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:eight-0\"", null, null);
         assertEquals(0, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:five/namespace:nine\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:five/namespace:nine\"", null, null);
         assertEquals(1, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:five/namespace:ten\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:five/namespace:ten\"", null, null);
         assertEquals(1, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:five/namespace:eleven\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:five/namespace:eleven\"", null, null);
         assertEquals(1, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:five/namespace:twelve\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:five/namespace:twelve\"", null, null);
         assertEquals(1, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:five/namespace:twelve/namespace:thirteen\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:five/namespace:twelve/namespace:thirteen\"", null, null);
         assertEquals(0, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:five/namespace:twelve/namespace:thirteen/namespace:fourteen\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:five/namespace:twelve/namespace:thirteen/namespace:fourteen\"", null, null);
         assertEquals(0, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:*\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:*\"", null, null);
         assertEquals(5, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"/namespace:*\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"/namespace:*\"", null, null);
         assertEquals(5, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:*/namespace:*\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:*/namespace:*\"", null, null);
         assertEquals(4, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"/namespace:*/namespace:*\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"/namespace:*/namespace:*\"", null, null);
         assertEquals(5, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:*/namespace:five\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:*/namespace:five\"", null, null);
         assertEquals(1, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:*/namespace:*/namespace:*\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:*/namespace:*/namespace:*\"", null, null);
         assertEquals(4, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:*\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:*\"", null, null);
         assertEquals(3, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:*/namespace:five/namespace:*\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:*/namespace:five/namespace:*\"", null, null);
         assertEquals(4, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:*/namespace:nine\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:*/namespace:nine\"", null, null);
         assertEquals(1, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/*\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/*\"", null, null);
         assertEquals(5, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/*/*\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/*/*\"", null, null);
         assertEquals(4, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"/*/*\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"/*/*\"", null, null);
         assertEquals(5, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/*/namespace:five\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/*/namespace:five\"", null, null);
         assertEquals(1, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/*/*/*\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/*/*/*\"", null, null);
         assertEquals(4, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"/*/*/*\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"/*/*/*\"", null, null);
         assertEquals(4, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/*\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/*\"", null, null);
         assertEquals(3, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/*/namespace:five/*\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/*/namespace:five/*\"", null, null);
         assertEquals(4, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/*/namespace:nine\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/*/namespace:nine\"", null, null);
         assertEquals(1, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//.\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//.\"", null, null);
         assertEquals(13, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"//.\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"//.\"", null, null);
         assertEquals(15, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//*\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//*\"", null, null);
         assertEquals(12, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"//*\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"//*\"", null, null);
         assertEquals(14, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//*/.\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//*/.\"", null, null);
         assertEquals(12, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"//*/.\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"//*/.\"", null, null);
         assertEquals(14, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//*/./.\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//*/./.\"", null, null);
         assertEquals(12, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"//*/./.\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"//*/./.\"", null, null);
         assertEquals(14, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//./*\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//./*\"", null, null);
         assertEquals(12, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"//./*\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"//./*\"", null, null);
         assertEquals(14, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//././*/././.\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//././*/././.\"", null, null);
         assertEquals(12, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"//././*/././.\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"//././*/././.\"", null, null);
         assertEquals(14, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//common\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//common\"", null, null);
         assertEquals(0, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/one//common\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/one//common\"", null, null);
         assertEquals(0, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/one/five//*\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/one/five//*\"", null, null);
         assertEquals(4, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/one/five//.\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/one/five//.\"", null, null);
         assertEquals(5, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/one//five/nine\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/one//five/nine\"", null, null);
         assertEquals(1, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/one//thirteen/fourteen\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/one//thirteen/fourteen\"", null, null);
         assertEquals(0, results.length());
         results.close();
         luceneFTS.resume();
@@ -5765,199 +5761,199 @@ public class ADMLuceneTest extends TestCase
         searcher.setNodeService(nodeService);
         searcher.setDictionaryService(dictionaryService);
         searcher.setTenantService(tenantService);
-        ResultSet results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one\"", null);
+        ResultSet results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one\"", null, null);
         assertEquals(1, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:two\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:two\"", null, null);
         assertEquals(1, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:three\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:three\"", null, null);
         assertEquals(1, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:four\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:four\"", null, null);
         assertEquals(1, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:eight-0\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:eight-0\"", null, null);
         assertEquals(1, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:five\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:five\"", null, null);
         assertEquals(0, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:one\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:one\"", null, null);
         assertEquals(0, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:two\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:two\"", null, null);
         assertEquals(0, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:two/namespace:one\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:two/namespace:one\"", null, null);
         assertEquals(0, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:two/namespace:two\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:two/namespace:two\"", null, null);
         assertEquals(0, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:five\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:five\"", null, null);
         assertEquals(1, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:six\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:six\"", null, null);
         assertEquals(1, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:two/namespace:seven\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:two/namespace:seven\"", null, null);
         assertEquals(1, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:eight-1\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:eight-1\"", null, null);
         assertEquals(1, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:two/namespace:eight-2\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:two/namespace:eight-2\"", null, null);
         assertEquals(1, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:eight-2\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:eight-2\"", null, null);
         assertEquals(0, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:two/namespace:eight-1\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:two/namespace:eight-1\"", null, null);
         assertEquals(0, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:two/namespace:eight-0\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:two/namespace:eight-0\"", null, null);
         assertEquals(0, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:eight-0\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:eight-0\"", null, null);
         assertEquals(0, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:five/namespace:nine\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:five/namespace:nine\"", null, null);
         assertEquals(1, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:five/namespace:ten\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:five/namespace:ten\"", null, null);
         assertEquals(1, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:five/namespace:eleven\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:five/namespace:eleven\"", null, null);
         assertEquals(1, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:five/namespace:twelve\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:five/namespace:twelve\"", null, null);
         assertEquals(1, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:five/namespace:twelve/namespace:thirteen\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:five/namespace:twelve/namespace:thirteen\"", null, null);
         assertEquals(1, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:five/namespace:twelve/namespace:thirteen/namespace:fourteen\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:five/namespace:twelve/namespace:thirteen/namespace:fourteen\"", null, null);
         assertEquals(1, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:*\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:*\"", null, null);
         assertEquals(5, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:*/namespace:*\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:*/namespace:*\"", null, null);
         assertEquals(5, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"/namespace:*/namespace:*\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"/namespace:*/namespace:*\"", null, null);
         assertEquals(7, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:*/namespace:five\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:*/namespace:five\"", null, null);
         assertEquals(1, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:*/namespace:*/namespace:*\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:*/namespace:*/namespace:*\"", null, null);
         assertEquals(5, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"/namespace:*/namespace:*/namespace:*\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"/namespace:*/namespace:*/namespace:*\"", null, null);
         assertEquals(6, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:*\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:*\"", null, null);
         assertEquals(4, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:*/namespace:five/namespace:*\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:*/namespace:five/namespace:*\"", null, null);
         assertEquals(5, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:*/namespace:nine\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:*/namespace:nine\"", null, null);
         assertEquals(1, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/*\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/*\"", null, null);
         assertEquals(5, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/*/*\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/*/*\"", null, null);
         assertEquals(5, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"/*/*\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"/*/*\"", null, null);
         assertEquals(7, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/*/namespace:five\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/*/namespace:five\"", null, null);
         assertEquals(1, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/*/*/*\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/*/*/*\"", null, null);
         assertEquals(5, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"/*/*/*\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"/*/*/*\"", null, null);
         assertEquals(6, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/*\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/*\"", null, null);
         assertEquals(4, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/*/namespace:five/*\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/*/namespace:five/*\"", null, null);
         assertEquals(5, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/*/namespace:nine\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/*/namespace:nine\"", null, null);
         assertEquals(1, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//.\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//.\"", null, null);
         assertEquals(15, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"//.\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"//.\"", null, null);
         assertEquals(23, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//*\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//*\"", null, null);
         assertEquals(14, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"//*\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"//*\"", null, null);
         assertEquals(22, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//*/.\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//*/.\"", null, null);
         assertEquals(14, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"//*/.\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"//*/.\"", null, null);
         assertEquals(22, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//*/./.\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//*/./.\"", null, null);
         assertEquals(14, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"//*/./.\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"//*/./.\"", null, null);
         assertEquals(22, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//./*\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//./*\"", null, null);
         assertEquals(14, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"//./*\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"//./*\"", null, null);
         assertEquals(22, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//././*/././.\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//././*/././.\"", null, null);
         assertEquals(14, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"//././*/././.\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"//././*/././.\"", null, null);
         assertEquals(22, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//common\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//common\"", null, null);
         assertEquals(1, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"//common\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"//common\"", null, null);
         assertEquals(6, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/one//common\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/one//common\"", null, null);
         assertEquals(1, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"/one//common\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"/one//common\"", null, null);
         assertEquals(5, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/one/five//*\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/one/five//*\"", null, null);
         assertEquals(6, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"/one/five//*\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"/one/five//*\"", null, null);
         assertEquals(9, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/one/five//.\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/one/five//.\"", null, null);
         assertEquals(7, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"/one/five//.\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"/one/five//.\"", null, null);
         assertEquals(10, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/one//five/nine\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/one//five/nine\"", null, null);
         assertEquals(1, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/one//thirteen/fourteen\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/one//thirteen/fourteen\"", null, null);
         assertEquals(1, results.length());
         results.close();
 
@@ -5994,15 +5990,15 @@ public class ADMLuceneTest extends TestCase
         searcher.setTenantService(tenantService);
         searcher.setNamespacePrefixResolver(getNamespacePrefixReolsver("namespace"));
 
-        ResultSet results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//namespace:link//.\"", null);
+        ResultSet results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//namespace:link//.\"", null, null);
         assertEquals(2, results.length());
         results.close();
 
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"//namespace:link//.\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"//namespace:link//.\"", null, null);
         assertEquals(3, results.length());
         results.close();
 
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//namespace:renamed_link//.\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//namespace:renamed_link//.\"", null, null);
         assertEquals(0, results.length());
         results.close();
 
@@ -6030,14 +6026,14 @@ public class ADMLuceneTest extends TestCase
         searcher.setDictionaryService(dictionaryService);
         searcher.setTenantService(tenantService);
 
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//namespace:link//.\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//namespace:link//.\"", null, null);
         assertEquals(0, results.length());
         results.close();
 
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//namespace:renamed_link//.\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//namespace:renamed_link//.\"", null, null);
         assertEquals(2, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"//namespace:renamed_link//.\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"//namespace:renamed_link//.\"", null, null);
         assertEquals(3, results.length());
         results.close();
         luceneFTS.resume();
@@ -6059,17 +6055,17 @@ public class ADMLuceneTest extends TestCase
         searcher.setTenantService(tenantService);
 
         ResultSet results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@"
-                + escapeQName(QName.createQName(TEST_NAMESPACE, "text-indexed-stored-tokenised-atomic")) + ":\"KEYONE\"", null);
+                + escapeQName(QName.createQName(TEST_NAMESPACE, "text-indexed-stored-tokenised-atomic")) + ":\"KEYONE\"", null, null);
         assertEquals(1, results.length());
         results.close();
 
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@"
-                + escapeQName(QName.createQName(TEST_NAMESPACE, "text-indexed-unstored-tokenised-atomic")) + ":\"KEYUNSTORED\"", null);
+                + escapeQName(QName.createQName(TEST_NAMESPACE, "text-indexed-unstored-tokenised-atomic")) + ":\"KEYUNSTORED\"", null, null);
         assertEquals(1, results.length());
         results.close();
 
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@"
-                + escapeQName(QName.createQName(TEST_NAMESPACE, "text-indexed-stored-tokenised-nonatomic")) + ":\"KEYTWO\"", null);
+                + escapeQName(QName.createQName(TEST_NAMESPACE, "text-indexed-stored-tokenised-nonatomic")) + ":\"KEYTWO\"", null, null);
         assertEquals(0, results.length());
         results.close();
 
@@ -6094,17 +6090,17 @@ public class ADMLuceneTest extends TestCase
         searcher.setTenantService(tenantService);
 
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@"
-                + escapeQName(QName.createQName(TEST_NAMESPACE, "text-indexed-stored-tokenised-atomic")) + ":\"keyone\"", null);
+                + escapeQName(QName.createQName(TEST_NAMESPACE, "text-indexed-stored-tokenised-atomic")) + ":\"keyone\"", null, null);
         assertEquals(1, results.length());
         results.close();
 
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@"
-                + escapeQName(QName.createQName(TEST_NAMESPACE, "text-indexed-stored-tokenised-nonatomic")) + ":\"keytwo\"", null);
+                + escapeQName(QName.createQName(TEST_NAMESPACE, "text-indexed-stored-tokenised-nonatomic")) + ":\"keytwo\"", null, null);
         assertEquals(1, results.length());
         results.close();
 
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@"
-                + escapeQName(QName.createQName(TEST_NAMESPACE, "text-indexed-unstored-tokenised-atomic")) + ":\"keyunstored\"", null);
+                + escapeQName(QName.createQName(TEST_NAMESPACE, "text-indexed-unstored-tokenised-atomic")) + ":\"keyunstored\"", null, null);
         assertEquals(1, results.length());
         results.close();
 
@@ -6128,17 +6124,17 @@ public class ADMLuceneTest extends TestCase
         searcher.setNamespacePrefixResolver(getNamespacePrefixReolsver("namespace"));
 
         ResultSet results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@"
-                + escapeQName(QName.createQName(TEST_NAMESPACE, "text-indexed-stored-tokenised-atomic")) + ":\"KEYONE\"", null);
+                + escapeQName(QName.createQName(TEST_NAMESPACE, "text-indexed-stored-tokenised-atomic")) + ":\"KEYONE\"", null, null);
         assertEquals(1, results.length());
         results.close();
 
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@"
-                + escapeQName(QName.createQName(TEST_NAMESPACE, "text-indexed-unstored-tokenised-atomic")) + ":\"KEYUNSTORED\"", null);
+                + escapeQName(QName.createQName(TEST_NAMESPACE, "text-indexed-unstored-tokenised-atomic")) + ":\"KEYUNSTORED\"", null, null);
         assertEquals(1, results.length());
         results.close();
 
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@"
-                + escapeQName(QName.createQName(TEST_NAMESPACE, "text-indexed-stored-tokenised-nonatomic")) + ":\"KEYTWO\"", null);
+                + escapeQName(QName.createQName(TEST_NAMESPACE, "text-indexed-stored-tokenised-nonatomic")) + ":\"KEYTWO\"", null, null);
         assertEquals(0, results.length());
         results.close();
 
@@ -6151,7 +6147,7 @@ public class ADMLuceneTest extends TestCase
         searcher.setNamespacePrefixResolver(getNamespacePrefixReolsver("namespace"));
 
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@"
-                + escapeQName(QName.createQName(TEST_NAMESPACE, "text-indexed-stored-tokenised-atomic")) + ":\"keyone\"", null);
+                + escapeQName(QName.createQName(TEST_NAMESPACE, "text-indexed-stored-tokenised-atomic")) + ":\"keyone\"", null, null);
         assertEquals(1, results.length());
         results.close();
 
@@ -6177,12 +6173,12 @@ public class ADMLuceneTest extends TestCase
         Thread.sleep(35000);
 
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@"
-                + escapeQName(QName.createQName(TEST_NAMESPACE, "text-indexed-stored-tokenised-nonatomic")) + ":\"keytwo\"", null);
+                + escapeQName(QName.createQName(TEST_NAMESPACE, "text-indexed-stored-tokenised-nonatomic")) + ":\"keytwo\"", null, null);
         assertEquals(1, results.length());
         results.close();
 
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@"
-                + escapeQName(QName.createQName(TEST_NAMESPACE, "text-indexed-unstored-tokenised-atomic")) + ":\"KEYUNSTORED\"", null);
+                + escapeQName(QName.createQName(TEST_NAMESPACE, "text-indexed-unstored-tokenised-atomic")) + ":\"KEYUNSTORED\"", null, null);
         assertEquals(1, results.length());
         results.close();
 
@@ -6209,17 +6205,17 @@ public class ADMLuceneTest extends TestCase
         searcher.setDictionaryService(dictionaryService);
         searcher.setTenantService(tenantService);
 
-        ResultSet results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PARENT:\"" + rootNodeRef.toString() + "\"", null);
+        ResultSet results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PARENT:\"" + rootNodeRef.toString() + "\"", null, null);
         assertEquals(5, results.length());
         results.close();
 
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "+PARENT:\"" + rootNodeRef.toString() + "\" +QNAME:\"one\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "+PARENT:\"" + rootNodeRef.toString() + "\" +QNAME:\"one\"", null, null);
         assertEquals(1, results.length());
         results.close();
 
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene",
                 "( +TYPE:\"{http://www.alfresco.org/model/content/1.0}content\" +@\\{http\\://www.alfresco.org/model/content/1.0\\}name:\"content woof\") OR  TEXT:\"content\"",
-                null);
+                null, null);
 
         luceneFTS.resume();
     }

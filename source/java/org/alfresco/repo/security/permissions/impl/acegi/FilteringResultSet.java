@@ -31,15 +31,11 @@ import java.util.ListIterator;
 import org.alfresco.repo.search.ResultSetRowIterator;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.ResultSetMetaData;
 import org.alfresco.service.cmr.search.ResultSetRow;
 
-/**
- * Filtering result set to support permission checks
- * @author andyh
- *
- */
 public class FilteringResultSet extends ACLEntryAfterInvocationProvider implements ResultSet
 {
     private ResultSet unfiltered;
@@ -68,6 +64,11 @@ public class FilteringResultSet extends ACLEntryAfterInvocationProvider implemen
     /* package */boolean getIncluded(int i)
     {
         return inclusionMask.get(i);
+    }
+
+    public Path[] getPropertyPaths()
+    {
+        return unfiltered.getPropertyPaths();
     }
 
     public int length()
@@ -252,16 +253,6 @@ public class FilteringResultSet extends ACLEntryAfterInvocationProvider implemen
             throw new UnsupportedOperationException();
         }
 
-        public boolean allowsReverse()
-        {
-            return true;
-        }
-
-        public ResultSet getResultSet()
-        {
-           return FilteringResultSet.this;
-        }
-
     }
 
     public ResultSetMetaData getResultSetMetaData()
@@ -272,16 +263,6 @@ public class FilteringResultSet extends ACLEntryAfterInvocationProvider implemen
     public void setResultSetMetaData(ResultSetMetaData resultSetMetaData)
     {
         this.resultSetMetaData = resultSetMetaData;
-    }
-
-    public int getStart()
-    {
-        throw new UnsupportedOperationException();
-    }
-
-    public boolean hasMore()
-    {
-        throw new UnsupportedOperationException();
     }
 
     

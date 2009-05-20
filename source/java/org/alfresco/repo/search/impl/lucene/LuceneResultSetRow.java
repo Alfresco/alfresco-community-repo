@@ -140,24 +140,4 @@ public class LuceneResultSetRow extends AbstractResultSetRow
         return new ChildAssociationRef(getPrimaryAssocTypeQName(), parentNodeRef, getQName(), childNodeRef);
     }
 
-    public NodeRef getNodeRef(String selectorName)
-    {
-        throw new UnsupportedOperationException();
-    }
-
-    public Map<String, NodeRef> getNodeRefs()
-    {
-        throw new UnsupportedOperationException();
-    }
-
-    public float getScore(String selectorName)
-    {
-        throw new UnsupportedOperationException();
-    }
-
-    public Map<String, Float> getScores()
-    {
-        throw new UnsupportedOperationException();
-    }
-
 }

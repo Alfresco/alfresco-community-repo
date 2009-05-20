@@ -31,15 +31,11 @@ import java.util.Map;
 
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.ResultSetRow;
 import org.alfresco.service.namespace.QName;
 
-/**
- * Common support for a row in a result set
- * 
- * @author andyh
- */
 public abstract class AbstractResultSetRow implements ResultSetRow
 {
 
@@ -54,17 +50,12 @@ public abstract class AbstractResultSetRow implements ResultSetRow
     private int index;
 
     /**
-     * The direct properties of the current node Used by those implementations that can cache the whole set.
+     * The direct properties of the current node
+     * Used by those implementations that can cache the whole set.
      */
 
-    protected Map<String, Serializable> properties;
+    private Map<Path, Serializable> properties;
 
-    /**
-     * The row needs the result set and the index for lookup.
-     * 
-     * @param resultSet
-     * @param index
-     */
     public AbstractResultSetRow(ResultSet resultSet, int index)
     {
         super();
@@ -91,49 +82,55 @@ public abstract class AbstractResultSetRow implements ResultSetRow
     {
         return getResultSet().getChildAssocRef(getIndex()).getQName();
     }
-
+    
     public ChildAssociationRef getChildAssocRef()
     {
         return getResultSet().getChildAssocRef(getIndex());
     }
-
+    
     public float getScore()
     {
         return getResultSet().getScore(getIndex());
     }
 
-    public Map<String, Serializable> getValues()
+    public Map<Path, Serializable> getValues()
     {
         if (properties == null)
         {
-            properties = new HashMap<String, Serializable>();
+            properties = new HashMap<Path, Serializable>();
             setProperties(getDirectProperties());
         }
         return Collections.unmodifiableMap(properties);
     }
 
-    public Serializable getValue(String columnName)
+    public Serializable getValue(Path path)
     {
-        return properties.get(columnName);
+        return properties.get(path);
     }
-
+    
     protected Map<QName, Serializable> getDirectProperties()
     {
-        return Collections.<QName, Serializable> emptyMap();
+        return Collections.<QName, Serializable>emptyMap();
     }
-
+    
     protected void setProperties(Map<QName, Serializable> byQname)
     {
         for (QName qname : byQname.keySet())
         {
             Serializable value = byQname.get(qname);
-            properties.put(qname.toString(), value);
+            Path path = new Path();
+            path.append(new Path.SelfElement());
+            path.append(new Path.AttributeElement(qname));
+            properties.put(path, value);
         }
     }
-
+    
     public Serializable getValue(QName qname)
     {
-        return getValues().get(qname.toString());
+        Path path = new Path();
+        path.append(new Path.SelfElement());
+        path.append(new Path.AttributeElement(qname));
+        return getValues().get(path);
     }
-
+    
 }

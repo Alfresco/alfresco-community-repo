@@ -34,7 +34,7 @@ grammar FTS;
 options
 {
 	output=AST;
-	backtrack=false;
+	backtrack=false; // Only set to true for grammar debug
 }
 
 /*
@@ -57,7 +57,7 @@ tokens
 	MANDATORY;
 	OPTIONAL;
 	EXCLUDE;
-	 
+	
 	FIELD_DISJUNCTION;
 	FIELD_CONJUNCTION;
 	FIELD_NEGATION;
@@ -84,8 +84,6 @@ tokens
 	
 	BOOST;
 	FUZZY;
-	
-	TEMPLATE;
 }
 
 
@@ -278,18 +276,8 @@ ftsTest
     		-> ftsFieldGroup 
 	|	LPAREN ftsImplicitConjunctionOrDisjunction RPAREN
 		-> ftsImplicitConjunctionOrDisjunction
-	|	template
-	  	-> template
 	;
-
-template
-	:	PERCENT tempReference
-		-> ^(TEMPLATE tempReference)
-	|	PERCENT LPAREN (tempReference COMMA?)+ RPAREN
-		-> ^(TEMPLATE tempReference+)
-	;	
 	
-
 
 fuzzy
 	: 	TILDA number
@@ -440,11 +428,6 @@ fieldReference
     		-> ^(FIELD_REF identifier prefix? uri?)
 	;
 	
-tempReference
-	: 	AT? (prefix|uri)? identifier
-    		-> ^(FIELD_REF identifier prefix? uri?)
-	;
-	
 prefix
 	: 	identifier COLON
 		-> ^(PREFIX identifier)
@@ -578,7 +561,6 @@ DOLLAR 	:  	'$';
 GT 	: 	'>';
 LT 	: 	'<';
 AT	: 	'@';
-PERCENT :       '%';
 
 /**
  * ID

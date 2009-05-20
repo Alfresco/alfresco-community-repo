@@ -22,43 +22,74 @@
  * the FLOSS exception, and it is also available here: 
  * http://www.alfresco.com/legal/licensing"
  */
-package org.alfresco.repo.search.results;
+package org.alfresco.service.cmr.search;
 
-import java.io.Serializable;
-import java.util.Map;
-
-import org.alfresco.repo.search.AbstractResultSetRow;
-import org.alfresco.service.cmr.repository.ChildAssociationRef;
-import org.alfresco.service.cmr.repository.Path;
-import org.alfresco.service.namespace.QName;
-
-public class ChildAssocRefResultSetRow extends AbstractResultSetRow
+/**
+ * A search string and language.
+ * 
+ * @author Andy Hind
+ */
+public class SearchStatement
 {
-    public ChildAssocRefResultSetRow(ChildAssocRefResultSet resultSet, int index)
+
+    private String language;
+    private String query;
+
+    SearchStatement()
     {
-        super(resultSet, index);
+        super();
+    }
+    
+    /**
+     * A constructor that takes both arguments.
+     * 
+     * @param language
+     * @param query
+     */
+    SearchStatement(String language, String query)
+    {
+        this.language = language;
+        this.query = query;
     }
 
-    public Serializable getValue(Path path)
+    /**
+     * Get the query language. 
+     * 
+     * @return
+     */
+    public String getLanguage()
     {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException();
+        return language;
     }
 
-    public QName getQName()
+    /**
+     * Get the query.
+     * 
+     * @return
+     */
+    public String getQuery()
     {
-        return ((ChildAssocRefResultSet)getResultSet()).getChildAssocRef(getIndex()).getQName();
+        return query;
     }
 
-    @Override
-    protected Map<QName, Serializable> getDirectProperties()
+    /**
+     * Set the query language.
+     * 
+     * @param language - the query language.
+     */
+    public void setLanguage(String language)
     {
-        return ((ChildAssocRefResultSet)getResultSet()).getNodeService().getProperties(getNodeRef());
+        this.language = language;
     }
 
-    public ChildAssociationRef getChildAssocRef()
+    /**
+     * Set the query string.
+     * 
+     * @param query - the query string.
+     */
+    public void setQuery(String query)
     {
-        return ((ChildAssocRefResultSet)getResultSet()).getChildAssocRef(getIndex());
+        this.query = query;
     }
-
+    
 }

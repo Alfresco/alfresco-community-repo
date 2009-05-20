@@ -31,6 +31,7 @@ import java.util.List;
 
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.search.LimitBy;
 import org.alfresco.service.cmr.search.PermissionEvaluationMode;
 import org.alfresco.service.cmr.search.ResultSet;
@@ -38,20 +39,17 @@ import org.alfresco.service.cmr.search.ResultSetMetaData;
 import org.alfresco.service.cmr.search.ResultSetRow;
 import org.alfresco.service.cmr.search.SearchParameters;
 
-/**
- * An empty result set
- * @author andyh
- *
- */
 public class EmptyResultSet implements ResultSet
 {
 
-    /**
-     * Default constructor
-     */
     public EmptyResultSet()
     {
         super();
+    }
+
+    public Path[] getPropertyPaths()
+    {
+       return new Path[]{};
     }
 
     public int length()
@@ -82,6 +80,7 @@ public class EmptyResultSet implements ResultSet
 
     public ResultSetRow getRow(int i)
     {
+        // TODO Auto-generated method stub
         throw new UnsupportedOperationException();
     }
 
@@ -97,21 +96,12 @@ public class EmptyResultSet implements ResultSet
 
     public ChildAssociationRef getChildAssocRef(int n)
     {
+        // TODO Auto-generated method stub
         throw new UnsupportedOperationException();
     }
 
     public ResultSetMetaData getResultSetMetaData()
     {
         return new SimpleResultSetMetaData(LimitBy.UNLIMITED, PermissionEvaluationMode.EAGER, new SearchParameters());
-    }
-
-    public int getStart()
-    {
-        return 0;
-    }
-
-    public boolean hasMore()
-    {
-        return false;
     }
 }

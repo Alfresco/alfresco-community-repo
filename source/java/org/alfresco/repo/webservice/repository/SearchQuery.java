@@ -141,11 +141,24 @@ public class SearchQuery extends AbstractQuery<ResultSet>
             }
             ResultSetRowNode rowNode = createResultSetRowNode(nodeRef, nodeService);
 
-            
-            NamedValue[] columns = new NamedValue[1];
-            
+            // get the data for the row and build up the columns structure
+            Map<Path, Serializable> values = searchRow.getValues();
+            NamedValue[] columns = new NamedValue[values.size() + 1];
+            int col = 0;
+            for (Path path : values.keySet())
+            {
+                // Get the attribute QName from the result path
+                String attributeName = path.last().toString();
+                if (attributeName.startsWith("@") == true)
+                {
+                    attributeName = attributeName.substring(1);
+                }
+                columns[col] = Utils.createNamedValue(dictionaryService, QName.createQName(attributeName), values.get(path));
+                col++;
+            }
+
             // add one extra column for the node's path
-            columns[0] = Utils.createNamedValue(dictionaryService, QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "path"), nodeService.getPath(nodeRef).toString());
+            columns[col] = Utils.createNamedValue(dictionaryService, QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "path"), nodeService.getPath(nodeRef).toString());
 
             ResultSetRow row = new org.alfresco.repo.webservice.types.ResultSetRow();
             row.setColumns(columns);

@@ -214,10 +214,6 @@ public class CopyServiceImpl implements CopyService
                 QName.createQName(NamespaceService.ALFRESCO_URI, "getCopyCallback"),
                 ContentModel.ASPECT_OWNABLE,
                 new JavaBehaviour(this, "getCallbackForOwnableAspect"));
-        this.policyComponent.bindClassBehaviour(
-                QName.createQName(NamespaceService.ALFRESCO_URI, "getCopyCallback"),
-                ContentModel.ASPECT_AUTHOR,
-                new JavaBehaviour(this, "getCallbackForAuthorAspect"));    
     }
     
     public NodeRef copy(
@@ -1187,16 +1183,6 @@ public class CopyServiceImpl implements CopyService
      * @return              Returns {@link DoNothingCopyBehaviourCallback} always
      */
     public CopyBehaviourCallback getCallbackForOwnableAspect(QName classRef, CopyDetails copyDetails)
-    {
-        return DoNothingCopyBehaviourCallback.getInstance();
-    }    
-
-    /**
-     * Callback behaviour retrieval for the 'author' aspect.
-     * 
-     * @return              Returns {@link DoNothingCopyBehaviourCallback} always
-     */
-    public CopyBehaviourCallback getCallbackForAuthorAspect(QName classRef, CopyDetails copyDetails)
     {
         return DoNothingCopyBehaviourCallback.getInstance();
     }    

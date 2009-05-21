@@ -1,9 +1,9 @@
 function getActionSet(asset, obj)
 {
    var actionSet = "empty",
-      assetType = obj.assetType.toString(),
+      assetType = obj.assetType,
       isLink = obj.isLink,
-      itemStatus = obj.itemStatus.toString(),
+      itemStatus = obj.itemStatus,
       isItemOwner = (obj.itemOwner && obj.itemOwner.properties.userName == person.properties.userName);
    
    if (isLink)

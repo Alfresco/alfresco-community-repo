@@ -10,12 +10,12 @@
 
    <bean id="localDriveContentStore" class="org.alfresco.repo.content.filestore.FileContentStore">
       <constructor-arg>
-         <value>/var/alfresco/content-store</value>
+         <value>/var/alfresco/contentstore</value>
       </constructor-arg>
    </bean>
    <bean id="networkContentStore" class="org.alfresco.repo.content.filestore.FileContentStore">
       <constructor-arg>
-         <value>/share/alfresco/content-store</value>
+         <value>/share/alfresco/contentstore</value>
       </constructor-arg>
    </bean>
    <bean id="fileContentStore" class="org.alfresco.repo.content.replication.ReplicatingContentStore" >

@@ -31,6 +31,7 @@ import java.util.Collection;
 import org.alfresco.cmis.CMISDictionaryModel;
 import org.alfresco.cmis.CMISQueryException;
 import org.alfresco.cmis.CMISTypeDefinition;
+import org.alfresco.repo.search.impl.lucene.AnalysisMode;
 import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
 import org.alfresco.repo.search.impl.querymodel.PredicateMode;
 import org.alfresco.service.ServiceRegistry;
@@ -96,7 +97,7 @@ public class ObjectTypeIdProperty extends AbstractProperty
         String field = getLuceneFieldName();
         String stringValue = getValueAsString(value);
         CMISTypeDefinition type = getServiceRegistry().getCMISDictionaryService().findType(stringValue);
-        return lqp.getFieldQuery(field, type.getTypeId().getQName().toString());
+        return lqp.getFieldQuery(field, type.getTypeId().getQName().toString(), AnalysisMode.IDENTIFIER);
     }
 
     /*
@@ -165,11 +166,11 @@ public class ObjectTypeIdProperty extends AbstractProperty
             String value = asStrings.iterator().next();
             if (not)
             {
-                return lqp.getDoesNotMatchFieldQuery(field, value);
+                return lqp.getDoesNotMatchFieldQuery(field, value, AnalysisMode.IDENTIFIER);
             }
             else
             {
-                return lqp.getFieldQuery(field, value);
+                return lqp.getFieldQuery(field, value, AnalysisMode.IDENTIFIER);
             }
         }
         else
@@ -181,7 +182,7 @@ public class ObjectTypeIdProperty extends AbstractProperty
             }
             for (String value : asStrings)
             {
-                Query any = lqp.getFieldQuery(field, value);
+                Query any = lqp.getFieldQuery(field, value, AnalysisMode.IDENTIFIER);
                 if (not)
                 {
                     booleanQuery.add(any, Occur.MUST_NOT);
@@ -204,7 +205,7 @@ public class ObjectTypeIdProperty extends AbstractProperty
         String field = getLuceneFieldName();
         String stringValue = getValueAsString(value);
         CMISTypeDefinition type = getServiceRegistry().getCMISDictionaryService().findType(stringValue);
-        return lqp.getDoesNotMatchFieldQuery(field, type.getTypeId().getQName().toString());
+        return lqp.getDoesNotMatchFieldQuery(field, type.getTypeId().getQName().toString(), AnalysisMode.IDENTIFIER);
     }
 
     /*
@@ -240,12 +241,12 @@ public class ObjectTypeIdProperty extends AbstractProperty
         {
             BooleanQuery booleanQuery = new BooleanQuery();
             booleanQuery.add(new MatchAllDocsQuery(), Occur.MUST);
-            booleanQuery.add(lqp.getLikeQuery(field, typeQName), Occur.MUST_NOT);
+            booleanQuery.add(lqp.getLikeQuery(field, typeQName, AnalysisMode.IDENTIFIER), Occur.MUST_NOT);
             return booleanQuery;
         }
         else
         {
-            return lqp.getLikeQuery(field, typeQName);
+            return lqp.getLikeQuery(field, typeQName, AnalysisMode.IDENTIFIER);
         }
     }
 

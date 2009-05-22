@@ -95,6 +95,7 @@ public class MLTokenDuplicator extends Tokenizer
     @Override
     public Token next() throws IOException
     {
+        Token t = null;
         if (it == null)
         {
             it = buildIterator();
@@ -105,12 +106,14 @@ public class MLTokenDuplicator extends Tokenizer
         }
         if (it.hasNext())
         {
-            return it.next();
+            t = it.next();
+            return t;
         }
         else
         {
             it = null;
-            return this.next();
+            t = this.next();
+            return t;
         }
     }
 

@@ -183,7 +183,7 @@ public class LuceneQueryEngine implements QueryEngine
                         hits = searcher.search(luceneQuery, sort);
                     }
 
-                    LuceneResultSet result = new LuceneResultSet(hits, searcher, nodeService, tenantService, null, searchParameters, indexAndSearcher);
+                    LuceneResultSet result = new LuceneResultSet(hits, searcher, nodeService, tenantService, searchParameters, indexAndSearcher);
                     Map<Set<String>, ResultSet> map = new HashMap<Set<String>, ResultSet>(1);
                     map.put(selectorGroup, result);
                     return new QueryEngineResults(map);

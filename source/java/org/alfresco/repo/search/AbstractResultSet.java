@@ -29,27 +29,27 @@ import java.util.List;
 
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.ResultSetRow;
+import org.apache.lucene.search.HitCollector;
 
+/**
+ * Common result set implementation.
+ * 
+ * @author andyh
+ */
 public abstract class AbstractResultSet implements ResultSet
 {
 
-    private Path[] propertyPaths;
-    
-    public AbstractResultSet(Path[] propertyPaths)
+    /**
+     * Default constructor
+     */
+    public AbstractResultSet()
     {
         super();
-        this.propertyPaths = propertyPaths;
+
     }
 
-    public Path[] getPropertyPaths()
-    {
-        return propertyPaths;
-    }
-
-  
     public float getScore(int n)
     {
         // All have equal weight by default
@@ -64,7 +64,7 @@ public abstract class AbstractResultSet implements ResultSet
     public List<NodeRef> getNodeRefs()
     {
         ArrayList<NodeRef> nodeRefs = new ArrayList<NodeRef>(length());
-        for(ResultSetRow row: this)
+        for (ResultSetRow row : this)
         {
             nodeRefs.add(row.getNodeRef());
         }
@@ -74,13 +74,11 @@ public abstract class AbstractResultSet implements ResultSet
     public List<ChildAssociationRef> getChildAssocRefs()
     {
         ArrayList<ChildAssociationRef> cars = new ArrayList<ChildAssociationRef>(length());
-        for(ResultSetRow row: this)
+        for (ResultSetRow row : this)
         {
             cars.add(row.getChildAssocRef());
         }
         return cars;
     }
-
-  
 
 }

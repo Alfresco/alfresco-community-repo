@@ -22,21 +22,21 @@
  * the FLOSS exception, and it is also available here: 
  * http://www.alfresco.com/legal/licensing"
  */
-package org.alfresco.repo.search.impl.lucene;
+package org.alfresco.service.cmr.search;
 
-public enum AnalysisMode
+/**
+ * The two types of result set - column based and Node Ref based.
+ * @author andyh
+ *
+ */
+public enum ResultSetType
 {
-    DEFAULT
-    ,
-    TOKENISE
-    ,
-    IDENTIFIER
-    ,
-    FUZZY
-    ,
-    PREFIX
-    , 
-    WILD
-    ;
-
+    /**
+     * Just the node ref is available for each row in the results.
+     */
+    NODE_REF,
+    /**
+     * The node ref is available and a specified list of columns.
+     */
+    COLUMN_AND_NODE_REF
 }

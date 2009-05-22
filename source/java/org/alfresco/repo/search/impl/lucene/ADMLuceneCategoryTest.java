@@ -398,7 +398,7 @@ public class ADMLuceneCategoryTest extends TestCase
         searcher.setNamespacePrefixResolver(getNamespacePrefixReolsver(""));
         ResultSet results;
         
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//*\" AND (PATH:\"/test:assetClass/test:Equity/member\" PATH:\"/test:marketingRegion/member\")", null, null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//*\" AND (PATH:\"/test:assetClass/test:Equity/member\" PATH:\"/test:marketingRegion/member\")", null);
         //printPaths(results);
         assertEquals(9, results.length());
         results.close();
@@ -425,95 +425,95 @@ public class ADMLuceneCategoryTest extends TestCase
         searcher.setNamespacePrefixResolver(getNamespacePrefixReolsver(""));
         ResultSet results;
         
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/test:marketingRegion\"", null, null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/test:marketingRegion\"", null);
         //printPaths(results);
         assertEquals(1, results.length());
         results.close();
         
         
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/test:marketingRegion//member\"", null, null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/test:marketingRegion//member\"", null);
         //printPaths(results);
         assertEquals(6, results.length());
         results.close();
         
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/cm:categoryContainer\"", null, null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/cm:categoryContainer\"", null);
         assertEquals(1, results.length());
         results.close();
         
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/cm:categoryContainer/cm:categoryRoot\"", null, null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/cm:categoryContainer/cm:categoryRoot\"", null);
         assertEquals(1, results.length());
         results.close();
         
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/cm:categoryContainer/cm:categoryRoot\"", null, null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/cm:categoryContainer/cm:categoryRoot\"", null);
         assertEquals(1, results.length());
         results.close();
         
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/cm:categoryContainer/cm:categoryRoot/test:assetClass\"", null, null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/cm:categoryContainer/cm:categoryRoot/test:assetClass\"", null);
         assertEquals(1, results.length());
         results.close();
         
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/cm:categoryContainer/cm:categoryRoot/test:assetClass/member\" ", null, null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/cm:categoryContainer/cm:categoryRoot/test:assetClass/member\" ", null);
         assertEquals(1, results.length());
         results.close();
         
         
         
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/cm:categoryContainer/cm:categoryRoot/test:assetClass/test:Fixed\"", null, null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/cm:categoryContainer/cm:categoryRoot/test:assetClass/test:Fixed\"", null);
         assertEquals(1, results.length());
         results.close();
         
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/cm:categoryContainer/cm:categoryRoot/test:assetClass/test:Equity\"", null, null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/cm:categoryContainer/cm:categoryRoot/test:assetClass/test:Equity\"", null);
         assertEquals(1, results.length());
         results.close();
         
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/test:assetClass\"", null, null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/test:assetClass\"", null);
         assertEquals(1, results.length());
         results.close();
         
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/test:assetClass/test:Fixed\"", null, null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/test:assetClass/test:Fixed\"", null);
         assertEquals(1, results.length());
         results.close();
         
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/test:assetClass/test:Equity\"", null, null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/test:assetClass/test:Equity\"", null);
         assertEquals(1, results.length());
         results.close();
         
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/test:assetClass/test:*\"", null, null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/test:assetClass/test:*\"", null);
         assertEquals(2, results.length());
         results.close();
         
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/test:assetClass//test:*\"", null, null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/test:assetClass//test:*\"", null);
         assertEquals(3, results.length());
         results.close();
         
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/test:assetClass/test:Fixed/member\"", null, null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/test:assetClass/test:Fixed/member\"", null);
         //printPaths(results);
         assertEquals(8, results.length());
         results.close();
         
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/test:assetClass/test:Equity/member\"", null, null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/test:assetClass/test:Equity/member\"", null);
         //printPaths(results);
         assertEquals(8, results.length());
         results.close();
         
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/test:assetClass/test:Equity/test:SpecialEquity/member//.\"", null, null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/test:assetClass/test:Equity/test:SpecialEquity/member//.\"", null);
         assertEquals(1, results.length());
         results.close();
         
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/test:assetClass/test:Equity/test:SpecialEquity/member//*\"", null, null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/test:assetClass/test:Equity/test:SpecialEquity/member//*\"", null);
         assertEquals(0, results.length());
         results.close();
         
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/test:assetClass/test:Equity/test:SpecialEquity/member\"", null, null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/test:assetClass/test:Equity/test:SpecialEquity/member\"", null);
         assertEquals(1, results.length());
         results.close();
         
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "+PATH:\"/test:assetClass/test:Equity/member\" AND +PATH:\"/test:assetClass/test:Fixed/member\"", null, null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "+PATH:\"/test:assetClass/test:Equity/member\" AND +PATH:\"/test:assetClass/test:Fixed/member\"", null);
         //printPaths(results);
         assertEquals(3, results.length());
         results.close();
         
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/test:assetClass/test:Equity/member\" PATH:\"/test:assetClass/test:Fixed/member\"", null, null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/test:assetClass/test:Equity/member\" PATH:\"/test:assetClass/test:Fixed/member\"", null);
         //printPaths(results);
         assertEquals(13, results.length());
         results.close();
@@ -522,52 +522,52 @@ public class ADMLuceneCategoryTest extends TestCase
         
         assertEquals(4, nodeService.getChildAssocs(catRoot).size());
         
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/test:region\"", null, null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/test:region\"", null);
         //printPaths(results);
         assertEquals(1, results.length());
         results.close();
         
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/test:region/member\"", null, null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/test:region/member\"", null);
         //printPaths(results);
         assertEquals(1, results.length());
         results.close();
         
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/test:region/test:Europe/member\"", null, null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/test:region/test:Europe/member\"", null);
         //printPaths(results);
         assertEquals(2, results.length());
         results.close();
         
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/test:region/test:RestOfWorld/member\"", null, null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/test:region/test:RestOfWorld/member\"", null);
         //printPaths(results);
         assertEquals(2, results.length());
         results.close();
         
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/test:region//member\"", null, null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/test:region//member\"", null);
         //printPaths(results);
         assertEquals(5, results.length());
         results.close();
         
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/test:investmentRegion//member\"", null, null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/test:investmentRegion//member\"", null);
         //printPaths(results);
         assertEquals(5, results.length());
         results.close();
         
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/test:marketingRegion//member\"", null, null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/test:marketingRegion//member\"", null);
         //printPaths(results);
         assertEquals(6, results.length());
         results.close();
         
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "+PATH:\"/test:assetClass/test:Fixed/member\" AND +PATH:\"/test:region/test:Europe/member\"", null, null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "+PATH:\"/test:assetClass/test:Fixed/member\" AND +PATH:\"/test:region/test:Europe/member\"", null);
         //printPaths(results);
         assertEquals(2, results.length());
         results.close();
         
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "+PATH:\"/cm:categoryContainer/cm:categoryRoot/test:assetClass/test:Fixed/member\" AND +PATH:\"/cm:categoryContainer/cm:categoryRoot/test:region/test:Europe/member\"", null, null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "+PATH:\"/cm:categoryContainer/cm:categoryRoot/test:assetClass/test:Fixed/member\" AND +PATH:\"/cm:categoryContainer/cm:categoryRoot/test:region/test:Europe/member\"", null);
         //printPaths(results);
         assertEquals(2, results.length());
         results.close();
         
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/test:assetClass/test:Equity/member\" PATH:\"/test:marketingRegion/member\"", null, null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/test:assetClass/test:Equity/member\" PATH:\"/test:marketingRegion/member\"", null);
         //printPaths(results);
         assertEquals(9, results.length());
         results.close();
@@ -595,11 +595,11 @@ public class ADMLuceneCategoryTest extends TestCase
         
         ResultSet 
         
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/cm:categoryContainer/cm:categoryRoot/test:assetClass/*\" ", null, null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/cm:categoryContainer/cm:categoryRoot/test:assetClass/*\" ", null);
         assertEquals(3, results.length());
         results.close();
         
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/cm:categoryContainer/cm:categoryRoot/test:assetClass/member\" ", null, null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/cm:categoryContainer/cm:categoryRoot/test:assetClass/member\" ", null);
         assertEquals(1, results.length());
         results.close();
         

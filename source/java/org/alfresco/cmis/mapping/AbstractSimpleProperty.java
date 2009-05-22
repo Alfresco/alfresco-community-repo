@@ -27,6 +27,7 @@ package org.alfresco.cmis.mapping;
 import java.io.Serializable;
 import java.util.Collection;
 
+import org.alfresco.repo.search.impl.lucene.AnalysisMode;
 import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
 import org.alfresco.repo.search.impl.querymodel.PredicateMode;
 import org.alfresco.service.ServiceRegistry;
@@ -77,7 +78,7 @@ public abstract class AbstractSimpleProperty extends AbstractProperty
      */
     public Query buildLuceneEquality(LuceneQueryParser lqp, Serializable value, PredicateMode mode) throws ParseException
     {
-        return lqp.getFieldQuery(getLuceneFieldName(), getValueAsString(value));
+        return lqp.getFieldQuery(getLuceneFieldName(), getValueAsString(value), AnalysisMode.IDENTIFIER);
     }
     
     /*
@@ -88,11 +89,11 @@ public abstract class AbstractSimpleProperty extends AbstractProperty
     {
         if (not)
         {
-            return lqp.getFieldQuery("ISNULL", getQNameForExists().toString());
+            return lqp.getFieldQuery("ISNULL", getQNameForExists().toString(), AnalysisMode.DEFAULT);
         }
         else
         {
-            return lqp.getFieldQuery("ISNOTNULL", getQNameForExists().toString());
+            return lqp.getFieldQuery("ISNOTNULL", getQNameForExists().toString(), AnalysisMode.DEFAULT);
         }
     }
 
@@ -104,7 +105,7 @@ public abstract class AbstractSimpleProperty extends AbstractProperty
     {
         String field = getLuceneFieldName();
         String stringValue = getValueAsString(value);
-        return lqp.getRangeQuery(field, stringValue, getRangeMax(), false, true);
+        return lqp.getRangeQuery(field, stringValue, getRangeMax(), false, true, AnalysisMode.IDENTIFIER);
     }
 
     /*
@@ -115,7 +116,7 @@ public abstract class AbstractSimpleProperty extends AbstractProperty
     {
         String field = getLuceneFieldName();
         String stringValue = getValueAsString(value);
-        return lqp.getRangeQuery(field, stringValue, getRangeMax(), true, true);
+        return lqp.getRangeQuery(field, stringValue, getRangeMax(), true, true, AnalysisMode.IDENTIFIER);
     }
 
     /*
@@ -148,11 +149,11 @@ public abstract class AbstractSimpleProperty extends AbstractProperty
             String value = asStrings.iterator().next();
             if (not)
             {
-                return lqp.getDoesNotMatchFieldQuery(field, value);
+                return lqp.getDoesNotMatchFieldQuery(field, value, AnalysisMode.IDENTIFIER);
             }
             else
             {
-                return lqp.getFieldQuery(field, value);
+                return lqp.getFieldQuery(field, value, AnalysisMode.IDENTIFIER);
             }
         }
         else
@@ -164,7 +165,7 @@ public abstract class AbstractSimpleProperty extends AbstractProperty
             }
             for (String value : asStrings)
             {
-                Query any = lqp.getFieldQuery(field, value);
+                Query any = lqp.getFieldQuery(field, value, AnalysisMode.IDENTIFIER);
                 if (not)
                 {
                     booleanQuery.add(any, Occur.MUST_NOT);
@@ -186,7 +187,7 @@ public abstract class AbstractSimpleProperty extends AbstractProperty
     {
         String field = getLuceneFieldName();
         String stringValue = getValueAsString(value);
-        return lqp.getDoesNotMatchFieldQuery(field, stringValue);
+        return lqp.getDoesNotMatchFieldQuery(field, stringValue, AnalysisMode.IDENTIFIER);
     }
 
     /*
@@ -197,7 +198,7 @@ public abstract class AbstractSimpleProperty extends AbstractProperty
     {
         String field = getLuceneFieldName();
         String stringValue = getValueAsString(value);
-        return lqp.getRangeQuery(field, getRangeMin(), stringValue, true, false);
+        return lqp.getRangeQuery(field, getRangeMin(), stringValue, true, false, AnalysisMode.IDENTIFIER);
     }
 
     /*
@@ -208,7 +209,7 @@ public abstract class AbstractSimpleProperty extends AbstractProperty
     {
         String field = getLuceneFieldName();
         String stringValue = getValueAsString(value);
-        return lqp.getRangeQuery(field, getRangeMin(), stringValue, true, true);
+        return lqp.getRangeQuery(field, getRangeMin(), stringValue, true, true, AnalysisMode.IDENTIFIER);
     }
 
     /*
@@ -224,12 +225,12 @@ public abstract class AbstractSimpleProperty extends AbstractProperty
         {
             BooleanQuery booleanQuery = new BooleanQuery();
             booleanQuery.add(new MatchAllDocsQuery(), Occur.MUST);
-            booleanQuery.add(lqp.getLikeQuery(field, stringValue), Occur.MUST_NOT);
+            booleanQuery.add(lqp.getLikeQuery(field, stringValue, AnalysisMode.IDENTIFIER), Occur.MUST_NOT);
             return booleanQuery;
         }
         else
         {
-            return lqp.getLikeQuery(field, stringValue);
+            return lqp.getLikeQuery(field, stringValue, AnalysisMode.IDENTIFIER);
         }
     }
 

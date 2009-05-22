@@ -10,6 +10,9 @@ ftsQuery:
 "\"zebra\"" -> "(CONJUNCTION (DISJUNCTION (CONJUNCTION (DEFAULT (PHRASE \"zebra\")))))"
 "one and cm:name:two and cm_name:three and {http://www.alfresco.org/model/content/1.0}name:\"four\" seven * eight \"nine * ten\"" -> "(CONJUNCTION (DISJUNCTION (CONJUNCTION (DEFAULT (TERM one)) (DEFAULT (TERM two (FIELD_REF name (PREFIX cm)))) (DEFAULT (TERM three (FIELD_REF cm_name))) (DEFAULT (PHRASE \"four\" (FIELD_REF name (NAME_SPACE {http://www.alfresco.org/model/content/1.0})))))) (DISJUNCTION (CONJUNCTION (DEFAULT (PROXIMITY seven PROXIMITY eight)))) (DISJUNCTION (CONJUNCTION (DEFAULT (PHRASE \"nine * ten\")))))"
 "1..2" -> "(CONJUNCTION (DISJUNCTION (CONJUNCTION (DEFAULT (RANGE INCLUSIVE 1 2 INCLUSIVE)))))"
+"test:flag:true AND %test:field" -> "(CONJUNCTION (DISJUNCTION (CONJUNCTION (DEFAULT (TERM true (FIELD_REF flag (PREFIX test)))) (DEFAULT (TEMPLATE (FIELD_REF field (PREFIX test)))))))"
+"test:flag:true AND %NEST" -> "(CONJUNCTION (DISJUNCTION (CONJUNCTION (DEFAULT (TERM true (FIELD_REF flag (PREFIX test)))) (DEFAULT (TEMPLATE (FIELD_REF NEST))))))"
+"test:flag:true AND %(NEST,test:field, test_field1, {http://www.alfresco.org/model/content/1.0}name)" -> "(CONJUNCTION (DISJUNCTION (CONJUNCTION (DEFAULT (TERM true (FIELD_REF flag (PREFIX test)))) (DEFAULT (TEMPLATE (FIELD_REF NEST) (FIELD_REF field (PREFIX test)) (FIELD_REF test_field1) (FIELD_REF name (NAME_SPACE {http://www.alfresco.org/model/content/1.0})))))))" 
 
 ftsImplicitConjunctionOrDisjunction:
 "red" -> (CONJUNCTION (DISJUNCTION (CONJUNCTION (DEFAULT (TERM red)))))

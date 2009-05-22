@@ -1191,7 +1191,12 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
                                         {
                                             localeText = t.termText().substring(1, end);
                                         }
+                                        else
+                                        {
+                                            
+                                        }
                                     }
+                                   
                                     if (localeText.length() > 0)
                                     {
                                         doc.add(new Field(attributeName + "." + localeText + ".sort", t.termText(), Field.Store.NO, Field.Index.NO_NORMS, Field.TermVector.NO));

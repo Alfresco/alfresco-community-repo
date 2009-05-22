@@ -77,7 +77,7 @@ public class FilteringResultSetTest extends TestCase
         cars.add(car4);
         cars.add(car5);
         
-        ResultSet in = new ChildAssocRefResultSet(null, cars, null);
+        ResultSet in = new ChildAssocRefResultSet(null, cars);
         
         FilteringResultSet filtering = new FilteringResultSet(in);
         

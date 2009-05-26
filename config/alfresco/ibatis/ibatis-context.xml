@@ -7,12 +7,16 @@
 <beans>
 
     <!-- Hierarchical Resource Loader -->
-	<bean id="dialectResourceLoader" class="org.alfresco.util.resource.HierarchicalResourceLoader">
+    <bean id="dialectResourceLoader" class="org.alfresco.util.resource.HierarchicalResourceLoader">
         <property name="dialectBaseClass">
             <value>org.hibernate.dialect.Dialect</value>
         </property>
+        <!--  Resolve the (perhaps auto detected) dialect class -->
         <property name="dialectClass">
-            <value>${hibernate.dialect}</value>
+            <bean class="org.springframework.beans.factory.config.PropertyPathFactoryBean">
+                <property name="targetBeanName" value="dialect" />
+                <property name="propertyPath" value="class.name" />
+            </bean>
         </property>
     </bean>
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -18,7 +18,7 @@
  * As a special exception to the terms and conditions of version 2.0 of 
  * the GPL, you may redistribute this Program in connection with Free/Libre 
  * and Open Source Software ("FLOSS") applications as described in Alfresco's 
- * FLOSS exception.  You should have recieved a copy of the text describing 
+ * FLOSS exception.  You should have received a copy of the text describing 
  * the FLOSS exception, and it is also available here: 
  * http://www.alfresco.com/legal/licensing"
  */
@@ -132,6 +132,7 @@ public class SchemaBootstrap extends AbstractLifecycleBean
     
     public static final int DEFAULT_MAX_STRING_LENGTH = 1024;
     private static volatile int maxStringLength = DEFAULT_MAX_STRING_LENGTH;
+    private Dialect dialect;
         
     private ResourcePatternResolver rpr = new PathMatchingResourcePatternResolver(this.getClass().getClassLoader());
       
@@ -156,6 +157,17 @@ public class SchemaBootstrap extends AbstractLifecycleBean
         return SchemaBootstrap.maxStringLength;
     }
     
+    /**
+     * Sets the previously auto-detected Hibernate dialect.
+     * 
+     * @param dialect
+     *            the dialect
+     */
+    public void setDialect(Dialect dialect)
+    {
+        this.dialect = dialect;
+    }
+
     private static Log logger = LogFactory.getLog(SchemaBootstrap.class);
     
     private LocalSessionFactoryBean localSessionFactory;
@@ -1021,43 +1033,6 @@ public class SchemaBootstrap extends AbstractLifecycleBean
     }
     
     /**
-     * Substitute the dialect with an alternative, if possible.
-     */
-    private void changeDialect(Configuration cfg)
-    {
-        String dialectName = cfg.getProperty(Environment.DIALECT);
-        if (dialectName == null || dialectName.length() == 0)
-        {
-            // Look for it on the system properties
-            dialectName = System.getProperty("hibernate.dialect");
-            if (dialectName != null)
-            {
-                cfg.setProperty(Environment.DIALECT, dialectName);
-            }
-            return;
-        }
-// TODO: https://issues.alfresco.com/jira/browse/ETHREEOH-679
-//        else if (dialectName.equals(Oracle9Dialect.class.getName()))
-//        {
-//            String subst = AlfrescoOracle9Dialect.class.getName();
-//            LogUtil.warn(logger, WARN_DIALECT_SUBSTITUTING, dialectName, subst);
-//            cfg.setProperty(Environment.DIALECT, subst);
-//        }
-//        else if (dialectName.equals(MySQLDialect.class.getName()))
-//        {
-//            String subst = MySQLInnoDBDialect.class.getName();
-//            LogUtil.warn(logger, WARN_DIALECT_SUBSTITUTING, dialectName, subst);
-//            cfg.setProperty(Environment.DIALECT, subst);
-//        }
-//        else if (dialectName.equals(MySQL5Dialect.class.getName()))
-//        {
-//            String subst = MySQLInnoDBDialect.class.getName();
-//            LogUtil.warn(logger, WARN_DIALECT_SUBSTITUTING, dialectName, subst);
-//            cfg.setProperty(Environment.DIALECT, subst);
-//        }
-    }
-    
-    /**
      * Performs dialect-specific checking.  This includes checking for InnoDB, dumping the dialect being used
      * as well as setting any runtime, dialect-specific properties.
      */
@@ -1159,12 +1134,8 @@ public class SchemaBootstrap extends AbstractLifecycleBean
             
             Configuration cfg = localSessionFactory.getConfiguration();
             
-            // Fix the dialect
-            changeDialect(cfg);
-            
             // Check and dump the dialect being used
-            Dialect dialect = Dialect.getDialect(cfg.getProperties());
-            checkDialect(dialect);
+            checkDialect(this.dialect);
             
             // Ensure that our static connection provider is used
             String defaultConnectionProviderFactoryClass = cfg.getProperty(Environment.CONNECTION_PROVIDER);
@@ -1177,9 +1148,9 @@ public class SchemaBootstrap extends AbstractLifecycleBean
                 // Dump the normalized, pre-upgrade Alfresco schema.  We keep the file for later reporting.
                 File xmlPreSchemaOutputFile = dumpSchema(
                         connection,
-                        dialect,
+                        this.dialect,
                         TempFileProvider.createTempFile(
-                                "AlfrescoSchema-" + dialect.getClass().getSimpleName() + "-",
+                                "AlfrescoSchema-" + this.dialect.getClass().getSimpleName() + "-",
                                 "-Startup.xml").getPath(),
                         "Failed to dump normalized, pre-upgrade schema to file.");
                 
@@ -1219,7 +1190,7 @@ public class SchemaBootstrap extends AbstractLifecycleBean
                 else
                 {
                     schemaOutputFile = TempFileProvider.createTempFile(
-                            "AlfrescoSchema-" + dialect.getClass().getSimpleName() + "-All_Statements-",
+                            "AlfrescoSchema-" + this.dialect.getClass().getSimpleName() + "-All_Statements-",
                             ".sql");
                 }
                 
@@ -1254,9 +1225,9 @@ public class SchemaBootstrap extends AbstractLifecycleBean
                 // Dump the normalized, post-upgrade Alfresco schema.
                 File xmlPostSchemaOutputFile = dumpSchema(
                         connection,
-                        dialect,
+                        this.dialect,
                         TempFileProvider.createTempFile(
-                                "AlfrescoSchema-" + dialect.getClass().getSimpleName() + "-",
+                                "AlfrescoSchema-" + this.dialect.getClass().getSimpleName() + "-",
                                 ".xml").getPath(),
                         "Failed to dump normalized, post-upgrade schema to file.");
                 
@@ -1293,9 +1264,9 @@ public class SchemaBootstrap extends AbstractLifecycleBean
                 // escape further startup procedures
                 File xmlStopSchemaOutputFile = dumpSchema(
                         connection,
-                        dialect,
+                        this.dialect,
                         TempFileProvider.createTempFile(
-                                "AlfrescoSchema-" + dialect.getClass().getSimpleName() + "-",
+                                "AlfrescoSchema-" + this.dialect.getClass().getSimpleName() + "-",
                                 "-ForcedExit.xml").getPath(),
                         "Failed to dump normalized, post-upgrade, forced-exit schema to file.");
                 if (xmlStopSchemaOutputFile != null)
@@ -1378,10 +1349,8 @@ public class SchemaBootstrap extends AbstractLifecycleBean
     @Override
     protected void onShutdown(ApplicationEvent event)
     {
-		Configuration cfg = localSessionFactory.getConfiguration();
 		// Shut down DB, if required
-		Dialect dialect = Dialect.getDialect(cfg.getProperties());
-		Class dialectClazz = dialect.getClass();
+		Class<?> dialectClazz = this.dialect.getClass();
 		if (dialectClazz.equals(DerbyDialect.class))
 		{
 			try

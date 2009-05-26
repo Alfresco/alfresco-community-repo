@@ -42,7 +42,14 @@
             <ref bean="dataSource" />
         </property>
     </bean>
-    
+
+    <!-- Hibernate dialect detector -->
+    <bean id="dialect" class="org.alfresco.hibernate.DialectFactoryBean">
+        <property name="localSessionFactory">
+            <ref bean="&amp;sessionFactory"></ref>  <!-- inject the actual factory, not a session -->
+        </property>
+    </bean>
+
     <bean id="sessionFactoryBase" abstract="true">
         <property name="schemaUpdate">
            <value>false</value>

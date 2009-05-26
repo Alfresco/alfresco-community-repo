@@ -224,6 +224,13 @@ public class Main
         while (tables.next())
         {
             final String tableName = tables.getString("TABLE_NAME");
+
+            // Oracle hack: ignore tables in the recycle bin
+            if (tableName.startsWith("BIN$"))
+            {
+                continue;
+            }
+
             final NamedElement tableEl = schemaCol.addNamedElement(tableName);
             final NamedElementCollection columnsCol = tableEl.addCollection("columns", "column");
             final ResultSet columns = dbmd.getColumns(null, tables.getString("TABLE_SCHEM"), tableName, "%");

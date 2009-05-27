@@ -29,6 +29,7 @@ import java.io.Serializable;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
+import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.namespace.QName;
@@ -75,6 +76,15 @@ public class DirectProperty extends AbstractSimpleProperty
         return getServiceRegistry().getNodeService().getProperty(nodeRef, alfrescoName);
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.alfresco.cmis.mapping.AbstractProperty#getValue(org.alfresco.service.cmr.repository.AssociationRef)
+     */
+    public Serializable getValue(AssociationRef assocRef)
+    {
+        return null;
+    }
+    
     public String getLuceneFieldName()
     {
         StringBuilder field = new StringBuilder(64);

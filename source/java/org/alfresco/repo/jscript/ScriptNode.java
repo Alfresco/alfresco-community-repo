@@ -1361,13 +1361,14 @@ public class ScriptNode implements Serializable, Scopeable, NamespacePrefixResol
      * @param target        Destination node for the association
      * @param assocType     Association type qname (short form or fully qualified)
      */
-    public void createAssociation(ScriptNode target, String assocType)
+    public Association createAssociation(ScriptNode target, String assocType)
     {
         ParameterCheck.mandatory("Target", target);
         ParameterCheck.mandatoryString("Association Type Name", assocType);
         
-        this.nodeService.createAssociation(this.nodeRef, target.nodeRef, createQName(assocType));
+        AssociationRef assocRef = this.nodeService.createAssociation(this.nodeRef, target.nodeRef, createQName(assocType));
         reset();
+        return new Association(this.services, assocRef);
     }
     
     /**

@@ -27,6 +27,7 @@ package org.alfresco.cmis;
 import java.io.Serializable;
 import java.util.Map;
 
+import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 
@@ -86,7 +87,28 @@ public interface CMISServices
     public NodeRef[] getCheckedOut(String username, NodeRef folder, boolean includeDescendants);
 
     /**
-     * Get a single property
+     * Query for relationship
+     * 
+     * @param relDef
+     * @param source
+     * @param target
+     * @return  relationship
+     */
+    public AssociationRef getRelationship(CMISTypeDefinition relDef, NodeRef source, NodeRef target);
+    
+    /**
+     * Query for relationships
+     * 
+     * @param item  node to query relationships for
+     * @param relDef  type of relationship to query (or null, for all relationships)
+     * @param includeSubTypes  
+     * @param direction  limit direction of relationships to query (or null, for both directions)
+     * @return  relationships
+     */
+    public AssociationRef[] getRelationships(NodeRef node, CMISTypeDefinition relDef, boolean includeSubTypes, CMISRelationshipDirectionEnum direction);
+    
+    /**
+     * Get a single property for a node
      * 
      * @param nodeRef
      * @param propertyName
@@ -94,6 +116,15 @@ public interface CMISServices
      */
     public Serializable getProperty(NodeRef nodeRef, String propertyName);
 
+    /**
+     * Get a single property for an association
+     * 
+     * @param assocRef
+     * @param propertyName
+     * @return value
+     */
+    public Serializable getProperty(AssociationRef assocRef, String propertyName);
+    
     /**
      * Get all properties
      * 

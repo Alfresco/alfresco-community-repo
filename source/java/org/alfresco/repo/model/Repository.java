@@ -204,11 +204,11 @@ public class Repository implements ApplicationContextAware, ApplicationListener,
     {
         tenantAdminService.register(this);
         
-    	if (companyHomeRefs == null)
-    	{
-    		companyHomeRefs = new ConcurrentHashMap<String, NodeRef>(4);
-    	}
-    	
+        if (companyHomeRefs == null)
+        {
+        	companyHomeRefs = new ConcurrentHashMap<String, NodeRef>(4);
+        }
+        
         getCompanyHome();
     }
     
@@ -237,26 +237,26 @@ public class Repository implements ApplicationContextAware, ApplicationListener,
         String tenantDomain = tenantAdminService.getCurrentUserDomain();
         NodeRef companyHomeRef = companyHomeRefs.get(tenantDomain);
         if (companyHomeRef == null)
-        {		
+        {
         	companyHomeRef = AuthenticationUtil.runAs(new RunAsWork<NodeRef>()
 	        {
-		        public NodeRef doWork() throws Exception
-		        {
-    	            return retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<NodeRef>()
-    	    	    {
-    	                public NodeRef execute() throws Exception
-    	    		    {		        	
-		                    List<NodeRef> refs = searchService.selectNodes(nodeService.getRootNode(companyHomeStore), companyHomePath, null, namespaceService, false);
-		                    if (refs.size() != 1)
-		                    {
-		                        throw new IllegalStateException("Invalid company home path: " + companyHomePath + " - found: " + refs.size());
-		                    }
-		                    return refs.get(0);
-		                }
-		            });
-		        }
-	        }, AuthenticationUtil.getSystemUserName());
-	        
+                public NodeRef doWork() throws Exception
+                {
+                    return retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<NodeRef>()
+                    {
+                        public NodeRef execute() throws Exception
+                        {
+                            List<NodeRef> refs = searchService.selectNodes(nodeService.getRootNode(companyHomeStore), companyHomePath, null, namespaceService, false);
+                            if (refs.size() != 1)
+                            {
+                                throw new IllegalStateException("Invalid company home path: " + companyHomePath + " - found: " + refs.size());
+                                }
+                                return refs.get(0);
+                            }
+                        });
+                    }
+                }, AuthenticationUtil.getSystemUserName());
+                
         	companyHomeRefs.put(tenantDomain, companyHomeRef);
         }
         return companyHomeRef;
@@ -336,51 +336,51 @@ public class Repository implements ApplicationContextAware, ApplicationListener,
         }
         else
         {
-	        // construct store reference
-	        if (reference.length < 3)
-	        {
-	            throw new AlfrescoRuntimeException("Reference " + Arrays.toString(reference) + " is not properly formed");
-	        }
-	        StoreRef storeRef = new StoreRef(reference[0], reference[1]);
-	        if (nodeService.exists(storeRef))
-	        {
-	            if (referenceType.equals("node"))
-	            {
-	                // find the node the rest of the path is relative to
-	                NodeRef relRef = new NodeRef(storeRef, reference[2]);
-	                if (nodeService.exists(relRef))
-	                {
-	                    // are there any relative path elements to process?
-	                    if (reference.length == 3 || reference.length == 4)
-	                    {
-	                        // just the NodeRef can be specified
-	                        nodeRef = relRef;
-	                    }
-	                    else
-	                    {
-	                        // process optional path elements
-	                        List<String> paths = new ArrayList<String>(reference.length - 3);
-	                        for (int i=3; i<reference.length; i++)
-	                        {
-	                            paths.add(reference[i]);
-	                        }
-
-	                        try
-	                        {
-	                            NodeRef parentRef = nodeService.getPrimaryParent(relRef).getParentRef();
-	                            FileInfo fileInfo = fileFolderService.resolveNamePath(parentRef, paths);
-	                            nodeRef = fileInfo.getNodeRef();
-	                        }
-	                        catch (FileNotFoundException e)
-	                        {
-	                            // NOTE: return null node ref
-	                        }
-	                    }
-	                }
-	            }
+            // construct store reference
+            if (reference.length < 3)
+            {
+                throw new AlfrescoRuntimeException("Reference " + Arrays.toString(reference) + " is not properly formed");
+            }
+            StoreRef storeRef = new StoreRef(reference[0], reference[1]);
+            if (nodeService.exists(storeRef))
+            {
+                if (referenceType.equals("node"))
+                {
+                    // find the node the rest of the path is relative to
+                    NodeRef relRef = new NodeRef(storeRef, reference[2]);
+                    if (nodeService.exists(relRef))
+                    {
+                        // are there any relative path elements to process?
+                        if (reference.length == 3 || reference.length == 4)
+                        {
+                            // just the NodeRef can be specified
+                            nodeRef = relRef;
+                        }
+                        else
+                        {
+                            // process optional path elements
+                            List<String> paths = new ArrayList<String>(reference.length - 3);
+                            for (int i=3; i<reference.length; i++)
+                            {
+                                paths.add(reference[i]);
+                            }
+    
+                            try
+                            {
+                                NodeRef parentRef = nodeService.getPrimaryParent(relRef).getParentRef();
+                                FileInfo fileInfo = fileFolderService.resolveNamePath(parentRef, paths);
+                                nodeRef = fileInfo.getNodeRef();
+                            }
+                            catch (FileNotFoundException e)
+                            {
+                                // NOTE: return null node ref
+                            }
+                        }
+                    }
+                }
                 
-	            else if (referenceType.equals("path"))
-	            {
+                else if (referenceType.equals("path"))
+                {
                     // NOTE: special case for avm based path
                     if (reference[0].equals(StoreRef.PROTOCOL_AVM))
                     {
@@ -398,37 +398,37 @@ public class Repository implements ApplicationContextAware, ApplicationListener,
                     }
                     else
                     {
-		                // TODO: Allow a root path to be specified - for now, hard-code to Company Home
-	                    //NodeRef rootNodeRef = nodeService.getRootNode(storeRef);
-		                NodeRef rootNodeRef = getCompanyHome();
-		                if (reference.length == 3)
-		                {
-		                    nodeRef = rootNodeRef;
-		                }
-		                else
-		                {
-		                    String[] path = new String[reference.length - /*2*/3];
-		                    System.arraycopy(reference, /*2*/3, path, 0, path.length);
-		                    
-		                    try
-		                    {
-		                        FileInfo fileInfo = fileFolderService.resolveNamePath(rootNodeRef, Arrays.asList(path));
-		                        nodeRef = fileInfo.getNodeRef();
-		                    }
-		                    catch (FileNotFoundException e)
-		                    {
-		                        // NOTE: return null node ref
-		                    }
-		                }
+                        // TODO: Allow a root path to be specified - for now, hard-code to Company Home
+                        //NodeRef rootNodeRef = nodeService.getRootNode(storeRef);
+                        NodeRef rootNodeRef = getCompanyHome();
+                        if (reference.length == 3)
+                        {
+                            nodeRef = rootNodeRef;
+                        }
+                        else
+                        {
+                            String[] path = new String[reference.length - /*2*/3];
+                            System.arraycopy(reference, /*2*/3, path, 0, path.length);
+                            
+                            try
+                            {
+                                FileInfo fileInfo = fileFolderService.resolveNamePath(rootNodeRef, Arrays.asList(path));
+                                nodeRef = fileInfo.getNodeRef();
+                            }
+                            catch (FileNotFoundException e)
+                            {
+                                // NOTE: return null node ref
+                            }
+                        }
                     }
-	            }
-	            
-	            else
-	            {
-	                // TODO: Implement 'qname' style
-	                throw new AlfrescoRuntimeException("Web Script Node URL specified an invalid reference style of '" + referenceType + "'");
-	            }
-	        }
+                }
+                
+                else
+                {
+                    // TODO: Implement 'qname' style
+                    throw new AlfrescoRuntimeException("Web Script Node URL specified an invalid reference style of '" + referenceType + "'");
+                }
+            }
         }
         
         return nodeRef;

@@ -197,6 +197,8 @@ public class CMISMapping implements InitializingBean
         registerPropertyAccessor(new ContentStreamUriProperty(serviceRegistry));
         registerPropertyAccessor(new ParentProperty(serviceRegistry));
         registerPropertyAccessor(new FixedValueProperty(serviceRegistry, CMISDictionaryModel.PROP_ALLOWED_CHILD_OBJECT_TYPE_IDS, null));
+        registerPropertyAccessor(new SourceIdProperty(serviceRegistry));
+        registerPropertyAccessor(new TargetIdProperty(serviceRegistry));
         
         //
         // Action Evaluator Mappings

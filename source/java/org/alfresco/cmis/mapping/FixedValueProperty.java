@@ -32,6 +32,7 @@ import java.util.regex.Pattern;
 import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
 import org.alfresco.repo.search.impl.querymodel.PredicateMode;
 import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.util.EqualsHelper;
@@ -69,6 +70,15 @@ public class FixedValueProperty extends AbstractProperty
      * @see org.alfresco.cmis.property.PropertyAccessor#getValue(org.alfresco.service.cmr.repository.NodeRef)
      */
     public Serializable getValue(NodeRef nodeRef)
+    {
+        return value;
+    }
+    
+    /*
+     * (non-Javadoc)
+     * @see org.alfresco.cmis.mapping.AbstractProperty#getValue(org.alfresco.service.cmr.repository.AssociationRef)
+     */
+    public Serializable getValue(AssociationRef assocRef)
     {
         return value;
     }

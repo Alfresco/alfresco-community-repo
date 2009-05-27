@@ -450,4 +450,30 @@ public class CMISAbstractTypeDefinition implements CMISTypeDefinition, Serializa
         return Collections.emptyList();
     }
 
+    @Override
+    public int hashCode()
+    {
+        return objectTypeId.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj)
+    {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        final CMISTypeDefinition other = (CMISTypeDefinition) obj;
+        if (objectTypeId == null)
+        {
+            if (other.getTypeId() != null)
+                return false;
+        }
+        else if (!objectTypeId.equals(other.getTypeId()))
+            return false;
+        return true;
+    }
+    
 }

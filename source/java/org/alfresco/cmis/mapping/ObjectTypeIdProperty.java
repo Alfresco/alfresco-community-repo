@@ -30,11 +30,13 @@ import java.util.Collection;
 
 import org.alfresco.cmis.CMISDictionaryModel;
 import org.alfresco.cmis.CMISQueryException;
+import org.alfresco.cmis.CMISScope;
 import org.alfresco.cmis.CMISTypeDefinition;
 import org.alfresco.repo.search.impl.lucene.AnalysisMode;
 import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
 import org.alfresco.repo.search.impl.querymodel.PredicateMode;
 import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.namespace.QName;
@@ -65,7 +67,7 @@ public class ObjectTypeIdProperty extends AbstractProperty
 
     /*
      * (non-Javadoc)
-     * @see org.alfresco.cmis.property.PropertyAccessor#getValue(org.alfresco.service.cmr.repository.NodeRef)
+     * @see org.alfresco.cmis.mapping.AbstractProperty#getValue(org.alfresco.service.cmr.repository.NodeRef)
      */
     public Serializable getValue(NodeRef nodeRef)
     {
@@ -73,6 +75,15 @@ public class ObjectTypeIdProperty extends AbstractProperty
         return getServiceRegistry().getCMISDictionaryService().findTypeForClass(type).getTypeId().getId();
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.alfresco.cmis.mapping.AbstractProperty#getValue(org.alfresco.service.cmr.repository.AssociationRef)
+     */
+    public Serializable getValue(AssociationRef assocRef)
+    {
+        QName type = assocRef.getTypeQName();
+        return getServiceRegistry().getCMISDictionaryService().findTypeForClass(type, CMISScope.RELATIONSHIP).getTypeId().getId();
+    }
 
     public String getLuceneFieldName()
     {

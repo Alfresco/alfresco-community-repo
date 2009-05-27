@@ -25,14 +25,20 @@
 package org.alfresco.cmis.mapping;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.alfresco.cmis.CMISDictionaryModel;
 import org.alfresco.cmis.CMISDictionaryService;
 import org.alfresco.cmis.CMISPropertyDefinition;
+import org.alfresco.cmis.CMISRelationshipDirectionEnum;
+import org.alfresco.cmis.CMISScope;
 import org.alfresco.cmis.CMISServices;
 import org.alfresco.cmis.CMISTypeDefinition;
+import org.alfresco.cmis.CMISTypeId;
 import org.alfresco.cmis.CMISTypesFilterEnum;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
@@ -46,6 +52,7 @@ import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
+import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -55,6 +62,8 @@ import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.service.namespace.QNamePattern;
+import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.AbstractLifecycleBean;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
@@ -452,6 +461,82 @@ public class CMISServicesImpl implements CMISServices, ApplicationContextAware, 
 
     /*
      * (non-Javadoc)
+     * @see org.alfresco.cmis.CMISServices#getRelationship(org.alfresco.cmis.CMISTypeDefinition, org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.repository.NodeRef)
+     */
+    public AssociationRef getRelationship(CMISTypeDefinition relDef, NodeRef source, NodeRef target)
+    {
+        if (relDef == null)
+        {
+            relDef = cmisDictionaryService.findType(CMISDictionaryModel.RELATIONSHIP_TYPE_ID);
+        }
+        if (!relDef.getBaseType().getTypeId().equals(CMISDictionaryModel.RELATIONSHIP_TYPE_ID))
+        {
+            throw new AlfrescoRuntimeException("Type Id " + relDef.getTypeId() + " is not a relationship type");
+        }
+
+        QName relDefQName = relDef.getTypeId().getQName();
+        List<AssociationRef> assocs = nodeService.getTargetAssocs(source, new RegexQNamePattern(relDefQName.getNamespaceURI(), relDefQName.getLocalName()));
+        for (AssociationRef assoc : assocs)
+        {
+            if (assoc.getTargetRef().equals(target))
+            {
+                return assoc;
+            }
+        }
+        return null;
+    }
+
+    /*
+     * (non-Javadoc)
+     * @see org.alfresco.cmis.CMISServices#getRelationships(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.cmis.CMISTypeId, boolean, org.alfresco.cmis.CMISRelationshipDirectionEnum)
+     */
+    public AssociationRef[] getRelationships(NodeRef node, CMISTypeDefinition relDef, boolean includeSubTypes, CMISRelationshipDirectionEnum direction)
+    {
+        // establish relationship type to filter on
+        if (relDef == null)
+        {
+            relDef = cmisDictionaryService.findType(CMISDictionaryModel.RELATIONSHIP_TYPE_ID);
+        }
+        if (!relDef.getBaseType().getTypeId().equals(CMISDictionaryModel.RELATIONSHIP_TYPE_ID))
+        {
+            throw new AlfrescoRuntimeException("Type Id " + relDef.getTypeId() + " is not a relationship type");
+        }
+
+        // retrieve associations
+        List<AssociationRef> assocs = new ArrayList<AssociationRef>();
+        if (direction == CMISRelationshipDirectionEnum.SOURCE || direction == CMISRelationshipDirectionEnum.BOTH)
+        {
+            assocs.addAll(nodeService.getTargetAssocs(node, RegexQNamePattern.MATCH_ALL));
+        }
+        if (direction == CMISRelationshipDirectionEnum.TARGET || direction == CMISRelationshipDirectionEnum.BOTH)
+        {
+            assocs.addAll(nodeService.getSourceAssocs(node, RegexQNamePattern.MATCH_ALL));
+        }
+
+        // filter association by type
+        Collection<CMISTypeDefinition> subRelDefs = (includeSubTypes ? relDef.getSubTypes(true) : null);
+        List<AssociationRef> filteredAssocs = new ArrayList<AssociationRef>(assocs.size());
+        for (AssociationRef assoc : assocs)
+        {
+            CMISTypeDefinition assocTypeDef = cmisDictionaryService.findTypeForClass(assoc.getTypeQName(), CMISScope.RELATIONSHIP);
+            if (assocTypeDef == null)
+            {
+                throw new AlfrescoRuntimeException("Association Type QName " + assoc.getTypeQName() + " does not map to a CMIS Relationship Type");
+            }
+            
+            if (assocTypeDef.equals(relDef) || (subRelDefs != null && subRelDefs.contains(assocTypeDef)))
+            {
+                filteredAssocs.add(assoc);
+            }
+        }
+
+        AssociationRef[] assocArray = new AssociationRef[filteredAssocs.size()];
+        filteredAssocs.toArray(assocArray);
+        return assocArray;
+    }
+
+    /*
+     * (non-Javadoc)
      * @see org.alfresco.cmis.CMISServices#getProperty(org.alfresco.service.cmr.repository.NodeRef, java.lang.String)
      */
     public Serializable getProperty(NodeRef nodeRef, String propertyName)
@@ -470,6 +555,26 @@ public class CMISServicesImpl implements CMISServices, ApplicationContextAware, 
         return propDef.getPropertyAccessor().getValue(nodeRef);
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.alfresco.cmis.CMISServices#getProperty(org.alfresco.service.cmr.repository.AssociationRef, java.lang.String)
+     */
+    public Serializable getProperty(AssociationRef assocRef, String propertyName)
+    {
+        QName typeQName = assocRef.getTypeQName();
+        CMISTypeDefinition typeDef = cmisDictionaryService.findTypeForClass(typeQName);
+        if (typeDef == null)
+        {
+            throw new AlfrescoRuntimeException("Relationship Type " + typeQName + " not found in CMIS Dictionary");
+        }
+        CMISPropertyDefinition propDef = cmisDictionaryService.findProperty(propertyName, typeDef);
+        if (propDef == null)
+        {
+            throw new AlfrescoRuntimeException("Property " + propertyName + " not found for relationship type " + typeDef.getTypeId() + " in CMIS Dictionary");
+        }
+        return propDef.getPropertyAccessor().getValue(assocRef);
+    }
+    
     /*
      * (non-Javadoc)
      * @see org.alfresco.cmis.CMISServices#getProperties(org.alfresco.service.cmr.repository.NodeRef)

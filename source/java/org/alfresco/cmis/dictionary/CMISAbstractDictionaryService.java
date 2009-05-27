@@ -276,6 +276,10 @@ public abstract class CMISAbstractDictionaryService extends AbstractLifecycleBea
         else
         {
             typeDef = getRegistry().typeDefsByQName.get(clazz);
+            if (typeDef == null)
+            {
+                typeDef = getRegistry().assocDefsByQName.get(clazz);
+            }
         }
 
         // ensure matches one of provided matching scopes

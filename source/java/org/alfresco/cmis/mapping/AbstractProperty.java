@@ -32,6 +32,7 @@ import org.alfresco.cmis.CMISPropertyLuceneBuilder;
 import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
 import org.alfresco.repo.search.impl.querymodel.PredicateMode;
 import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 import org.apache.lucene.queryParser.ParseException;
@@ -146,11 +147,14 @@ public abstract class AbstractProperty implements CMISPropertyAccessor, CMISProp
     {
         throw new UnsupportedOperationException();
     }
-
+    
     public void setValue(NodeRef nodeRef, Serializable value)
     {
         throw new UnsupportedOperationException();
     }
     
-    
+    public Serializable getValue(AssociationRef assocRef)
+    {
+        throw new UnsupportedOperationException();
+    }
 }

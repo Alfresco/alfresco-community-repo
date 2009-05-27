@@ -77,13 +77,13 @@ public class CMISRelationshipTypeDefinition extends CMISAbstractTypeDefinition
         
         actionEvaluators = cmisMapping.getActionEvaluators(objectTypeId.getScope());
         
-        creatable = false;
         queryable = false;
         controllable = false;
         
         if (assocDef == null)
         {
             // TODO: Add CMIS Association mapping??
+            creatable = false;
             displayName = (cmisClassDef.getTitle() != null) ? cmisClassDef.getTitle() : typeId.getId();
             objectTypeQueryName = typeId.getId();
             QName parentQName = cmisMapping.getCmisType(cmisClassDef.getParentName());
@@ -95,6 +95,7 @@ public class CMISRelationshipTypeDefinition extends CMISAbstractTypeDefinition
         }
         else
         {
+            creatable = true;
             displayName = (assocDef.getTitle() != null) ? assocDef.getTitle() : typeId.getId();
             objectTypeQueryName = cmisMapping.buildPrefixEncodedString(typeId.getQName(), false);
             parentTypeId = CMISDictionaryModel.RELATIONSHIP_TYPE_ID;

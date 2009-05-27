@@ -35,6 +35,7 @@ import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
 import org.alfresco.repo.search.impl.querymodel.PredicateMode;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
+import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.apache.lucene.index.Term;
@@ -64,7 +65,7 @@ public class ObjectIdProperty extends AbstractProperty
 
     /*
      * (non-Javadoc)
-     * @see org.alfresco.cmis.property.PropertyAccessor#getValue(org.alfresco.service.cmr.repository.NodeRef)
+     * @see org.alfresco.cmis.mapping.AbstractProperty#getValue(org.alfresco.service.cmr.repository.NodeRef)
      */
     public Serializable getValue(NodeRef nodeRef)
     {
@@ -83,6 +84,16 @@ public class ObjectIdProperty extends AbstractProperty
         }
 
         return nodeRef.toString();
+    }
+    
+    /*
+     * (non-Javadoc)
+     * @see org.alfresco.cmis.mapping.AbstractProperty#getValue(org.alfresco.service.cmr.repository.AssociationRef)
+     */
+    public Serializable getValue(AssociationRef assocRef)
+    {
+        // TODO: determine appropriate id for associations
+        return assocRef.getSourceRef().toString();
     }
 
     public String getLuceneFieldName()

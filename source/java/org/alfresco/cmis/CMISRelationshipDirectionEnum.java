@@ -29,12 +29,11 @@ package org.alfresco.cmis;
  *  
  * @author davidc
  */
-public enum CMISTypesFilterEnum implements EnumLabel
+public enum CMISRelationshipDirectionEnum implements EnumLabel
 {
-    DOCUMENTS("documents"),
-    FOLDERS("folders"),
-    POLICIES("policies"),
-    ANY("any");
+    SOURCE("source"),
+    TARGET("target"),
+    BOTH("both");
     
     
     private String label;
@@ -44,7 +43,7 @@ public enum CMISTypesFilterEnum implements EnumLabel
      * 
      * @param label
      */
-    CMISTypesFilterEnum(String label)
+    CMISRelationshipDirectionEnum(String label)
     {
         this.label = label;
     }
@@ -57,5 +56,5 @@ public enum CMISTypesFilterEnum implements EnumLabel
         return label;
     }
 
-    public static EnumFactory<CMISTypesFilterEnum> FACTORY = new EnumFactory<CMISTypesFilterEnum>(CMISTypesFilterEnum.class, ANY); 
+    public static EnumFactory<CMISRelationshipDirectionEnum> FACTORY = new EnumFactory<CMISRelationshipDirectionEnum>(CMISRelationshipDirectionEnum.class, BOTH); 
 }

@@ -25,7 +25,6 @@
 package org.alfresco.repo.template;
 
 import java.io.IOException;
-import java.io.Serializable;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -34,6 +33,7 @@ import java.util.Map;
 
 import org.alfresco.processor.ProcessorExtension;
 import org.alfresco.repo.processor.BaseProcessor;
+import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.TemplateException;
 import org.alfresco.service.cmr.repository.TemplateImageResolver;
@@ -331,7 +331,12 @@ public class FreeMarkerProcessor extends BaseProcessor implements TemplateProces
         {
             return new TemplateNode((NodeRef)value, this.services, imageResolver);
         }
-        
+
+        else if (value instanceof AssociationRef)
+        {
+            return new TemplateAssociation((AssociationRef)value, this.services, imageResolver);
+        }
+
         else if (value instanceof Map)
         {
             Map<Object, Object> map = (Map<Object, Object>)value;

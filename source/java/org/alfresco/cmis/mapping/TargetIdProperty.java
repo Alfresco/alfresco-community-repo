@@ -22,40 +22,37 @@
  * the FLOSS exception, and it is also available here: 
  * http://www.alfresco.com/legal/licensing"
  */
-package org.alfresco.cmis;
+package org.alfresco.cmis.mapping;
+
+import java.io.Serializable;
+
+import org.alfresco.cmis.CMISDictionaryModel;
+import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.cmr.repository.AssociationRef;
 
 /**
- * CMIS Types Filter Enum
- *  
+ * Accessor for the Target Id (relationship)
+ * 
  * @author davidc
  */
-public enum CMISTypesFilterEnum implements EnumLabel
+public class TargetIdProperty extends AbstractProperty
 {
-    DOCUMENTS("documents"),
-    FOLDERS("folders"),
-    POLICIES("policies"),
-    ANY("any");
-    
-    
-    private String label;
-    
     /**
      * Construct
      * 
-     * @param label
+     * @param serviceRegistry
      */
-    CMISTypesFilterEnum(String label)
+    public TargetIdProperty(ServiceRegistry serviceRegistry)
     {
-        this.label = label;
+        super(serviceRegistry, CMISDictionaryModel.PROP_TARGET_ID);
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.cmis.EnumLabel#label()
+    /*
+     * (non-Javadoc)
+     * @see org.alfresco.cmis.mapping.AbstractProperty#getValue(org.alfresco.service.cmr.repository.AssociationRef)
      */
-    public String getLabel()
+    public Serializable getValue(AssociationRef assocRef)
     {
-        return label;
+        return assocRef.getTargetRef().toString();
     }
-
-    public static EnumFactory<CMISTypesFilterEnum> FACTORY = new EnumFactory<CMISTypesFilterEnum>(CMISTypesFilterEnum.class, ANY); 
 }

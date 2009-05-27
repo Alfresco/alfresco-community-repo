@@ -28,6 +28,7 @@ import java.io.Serializable;
 
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.AssociationRef;
+import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ParameterCheck;
 import org.mozilla.javascript.Scriptable;
 
@@ -83,6 +84,11 @@ public class Association implements Scopeable, Serializable
 	public String getType()
 	{
 		return assocRef.getTypeQName().toString();
+	}
+	
+	public QName getTypeQName()
+	{
+	    return assocRef.getTypeQName();
 	}
 	
 	public ScriptNode getSource()

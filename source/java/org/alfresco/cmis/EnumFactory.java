@@ -88,7 +88,7 @@ public class EnumFactory<E extends Enum<E>>
      * 
      * @return  default enum (or null, if no default specified)
      */
-    public Enum<E> defaultEnum()
+    public Enum<E> getDefaultEnum()
     {
         return defaultEnum;
     }
@@ -98,7 +98,7 @@ public class EnumFactory<E extends Enum<E>>
      * 
      * @return  label of default enum (or null, if no default specified)
      */
-    public String defaultLabel()
+    public String getDefaultLabel()
     {
         return label(defaultEnum);
     }
@@ -150,7 +150,7 @@ public class EnumFactory<E extends Enum<E>>
      */
     public Enum<E> toEnum(String label)
     {
-        Enum<E> e = fromLabel(label);
+        Enum<E> e = (label == null) ? null : fromLabel(label);
         if (e == null)
         {
             e = defaultEnum;

@@ -1,0 +1,10 @@
+<webscript>
+  <shortname>Create relationship (createRelationship)</shortname>
+  <description>
+  </description>
+  <url>/api/node/{store_type}/{store_id}/{id}/rels</url>
+  <url>/api/path/{store_type}/{store_id}/{id}/rels</url>
+  <authentication>guest</authentication>
+  <format default="atomentry">argument</format>
+  <family>CMIS</family>
+</webscript>

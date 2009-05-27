@@ -27,6 +27,7 @@ package org.alfresco.repo.cmis.rest;
 import java.util.List;
 
 import org.alfresco.cmis.CMISServices;
+import org.alfresco.repo.template.TemplateAssociation;
 import org.alfresco.repo.template.TemplateNode;
 
 import freemarker.ext.beans.BeanModel;
@@ -76,14 +77,6 @@ public final class CMISPropertyValueMethod implements TemplateMethodModelEx
             Object arg0 = args.get(0);
             if (arg0 instanceof BeanModel)
             {
-                // extract node
-                TemplateNode node = null;
-                Object wrapped = ((BeanModel)arg0).getWrappedObject();
-                if (wrapped != null && wrapped instanceof TemplateNode)
-                {
-                    node = (TemplateNode)wrapped;
-                }
-                
                 // extract property name
                 String propertyName = null;
                 Object arg1 = args.get(1);
@@ -92,8 +85,18 @@ public final class CMISPropertyValueMethod implements TemplateMethodModelEx
                      propertyName = ((TemplateScalarModel)arg1).getAsString();
                 }
 
-                // retrieve property value
-                result = cmisService.getProperty(node.getNodeRef(), propertyName);
+                // extract node
+                Object wrapped = ((BeanModel)arg0).getWrappedObject();
+                if (wrapped != null && wrapped instanceof TemplateNode)
+                {
+                    // retrieve property value from node
+                    result = cmisService.getProperty(((TemplateNode)wrapped).getNodeRef(), propertyName);
+                }
+                else if (wrapped != null && wrapped instanceof TemplateAssociation)
+                {
+                    // retrieve property value from node
+                    result = cmisService.getProperty(((TemplateAssociation)wrapped).getAssociationRef(), propertyName);
+                }
             }
         }
         

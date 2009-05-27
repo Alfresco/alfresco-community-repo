@@ -27,7 +27,10 @@ package org.alfresco.repo.cmis.rest;
 import java.util.List;
 
 import org.alfresco.cmis.CMISDictionaryService;
+import org.alfresco.cmis.CMISScope;
 import org.alfresco.cmis.CMISTypeDefinition;
+import org.alfresco.cmis.mapping.CMISMapping;
+import org.alfresco.repo.template.TemplateAssociation;
 import org.alfresco.repo.template.TemplateNode;
 import org.alfresco.service.namespace.QName;
 
@@ -47,7 +50,9 @@ import freemarker.template.TemplateModelException;
  */
 public class CMISTypeDefinitionMethod implements TemplateMethodModelEx
 {
+    private static CMISScope[] EMPTY_SCOPES = new CMISScope[] {};
     private CMISDictionaryService dictionaryService;
+    
     
     /**
      * Construct
@@ -71,6 +76,7 @@ public class CMISTypeDefinitionMethod implements TemplateMethodModelEx
             if (arg0 instanceof BeanModel)
             {
                 // extract node type qname
+                CMISScope[] matchingScopes = EMPTY_SCOPES;
                 QName nodeType = null;
                 Object wrapped = ((BeanModel)arg0).getWrappedObject();
                 if (wrapped != null)
@@ -78,6 +84,11 @@ public class CMISTypeDefinitionMethod implements TemplateMethodModelEx
                     if (wrapped instanceof TemplateNode)
                     {
                         nodeType = ((TemplateNode)wrapped).getType();
+                    }
+                    else if (wrapped instanceof TemplateAssociation)
+                    {
+                        nodeType = ((TemplateAssociation)wrapped).getTypeQName();
+                        matchingScopes = new CMISScope[] { CMISScope.RELATIONSHIP };
                     }
                     else if (wrapped instanceof QName)
                     {
@@ -88,7 +99,7 @@ public class CMISTypeDefinitionMethod implements TemplateMethodModelEx
                 // convert to CMIS type
                 if (nodeType != null)
                 {
-                    result = dictionaryService.findTypeForClass(nodeType);
+                    result = dictionaryService.findTypeForClass(nodeType, matchingScopes);
                 }
             }
         }

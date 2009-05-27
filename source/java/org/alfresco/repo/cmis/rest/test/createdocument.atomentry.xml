@@ -4,8 +4,8 @@
     <summary>${NAME} (summary)</summary>
     <content type="text/html">${CONTENT}</content>
     <cmis:object>    
-	    <cmis:properties>
-	       <cmis:propertyString cmis:name="ObjectTypeId"><cmis:value>document</cmis:value></cmis:propertyString>
-	    </cmis:properties>
+      <cmis:properties>
+         <cmis:propertyString cmis:name="ObjectTypeId"><cmis:value>document</cmis:value></cmis:propertyString>
+      </cmis:properties>
     </cmis:object>
 </entry>

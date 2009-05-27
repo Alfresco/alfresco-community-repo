@@ -10,6 +10,19 @@
 </entry>
 [/#macro]
 
+[#macro objectCMISProps object propfilter]
+<cmis:properties>
+  [#assign typedef = cmistype(object)]
+  
+  [#-- TODO: Spec issue: BaseType not a property --]
+  [@filter propfilter "BaseType"][@propvalue "BaseType" typedef.typeId.baseTypeId.id "STRING"/][/@filter]
+
+  [#list typedef.propertyDefinitions?values as propdef]
+    [@filter propfilter propdef.propertyId.name][@prop propdef.propertyId.name object propdef.dataType/][/@filter]
+  [/#list]
+</cmis:properties>
+[/#macro]
+
 
 [#--                         --]
 [#-- ATOM Entry for Document --]
@@ -30,7 +43,7 @@
 <title>${node.name}</title>
 <updated>${xmldate(node.properties.modified)}</updated>
 <cmis:object>
-[@documentCMISProps node propfilter/]
+[@objectCMISProps node propfilter/]
 [#if includeallowableactions][@allowableactions node/][/#if]
 </cmis:object>
 <cmis:terminator/>
@@ -41,24 +54,12 @@
 
 [#macro documentCMISLinks node]
 <link rel="allowableactions" href="${absurl(url.serviceContext)}/api/node/${node.nodeRef.storeRef.protocol}/${node.nodeRef.storeRef.identifier}/${node.nodeRef.id}/permissions"/>
-<link rel="relationships" href="${absurl(url.serviceContext)}/api/node/${node.nodeRef.storeRef.protocol}/${node.nodeRef.storeRef.identifier}/${node.nodeRef.id}/associations"/>
+<link rel="relationships" href="${absurl(url.serviceContext)}/api/node/${node.nodeRef.storeRef.protocol}/${node.nodeRef.storeRef.identifier}/${node.nodeRef.id}/rels"/>
 <link rel="parents" href="${absurl(url.serviceContext)}/api/node/${node.nodeRef.storeRef.protocol}/${node.nodeRef.storeRef.identifier}/${node.nodeRef.id}/parents"/>
 <link rel="allversions" href="${absurl(url.serviceContext)}/api/node/${node.nodeRef.storeRef.protocol}/${node.nodeRef.storeRef.identifier}/${node.nodeRef.id}/versions"/>
 [@linkstream node "stream"/]
 <link rel="type" href="${absurl(url.serviceContext)}/api/type/${cmistype(node).typeId.id!"unknown"}"/>
 <link rel="repository" href="[@serviceuri/]"/>
-[/#macro]
-
-[#macro documentCMISProps node propfilter]
-<cmis:properties>
-  [#-- TODO: Spec issue: BaseType not a property --]
-  [@filter propfilter "BaseType"][@propvalue "BaseType" "document" "STRING"/][/@filter]
-
-  [#assign typedef = cmistype(node)]
-  [#list typedef.propertyDefinitions?values as propdef]
-    [@filter propfilter propdef.propertyId.name][@prop propdef.propertyId.name node propdef.dataType/][/@filter]
-  [/#list]
-</cmis:properties>
 [/#macro]
 
 
@@ -79,7 +80,7 @@
 <title>${node.name}</title>
 <updated>${xmldate(node.properties.modified)}</updated>
 <cmis:object>
-[@documentCMISProps node propfilter/]
+[@objectCMISProps node propfilter/]
 </cmis:object>
 <cmis:terminator/>
 <app:edited>${xmldate(node.properties.modified)}</app:edited>
@@ -107,7 +108,7 @@
 <title>${node.name}</title>
 <updated>${xmldate(node.properties.modified)}</updated>
 <cmis:object>
-[@documentCMISProps node propfilter/]
+[@objectCMISProps node propfilter/]
 [#if includeallowableactions][@allowableactions node/][/#if]
 </cmis:object>
 <cmis:terminator/>
@@ -136,7 +137,7 @@
 <updated>${xmldate(node.properties.modified)}</updated>
 <cmis:object>
 [#-- recurse for depth greater than 1 --]
-[@folderCMISProps node propfilter/]
+[@objectCMISProps node propfilter/]
 [#if includeallowableactions][@allowableactions node/][/#if]
 </cmis:object>
 [#if depth < maxdepth || depth == -1]
@@ -157,7 +158,7 @@
 
 [#macro folderCMISLinks node]
 <link rel="allowableactions" href="${absurl(url.serviceContext)}/api/node/${node.nodeRef.storeRef.protocol}/${node.nodeRef.storeRef.identifier}/${node.nodeRef.id}/permissions"/>
-<link rel="relationships" href="${absurl(url.serviceContext)}/api/node/${node.nodeRef.storeRef.protocol}/${node.nodeRef.storeRef.identifier}/${node.nodeRef.id}/associations"/>
+<link rel="relationships" href="${absurl(url.serviceContext)}/api/node/${node.nodeRef.storeRef.protocol}/${node.nodeRef.storeRef.identifier}/${node.nodeRef.id}/rels"/>
 [#if cmisproperty(node, "ParentId")?is_string]
 <link rel="parents" href="${absurl(url.serviceContext)}/api/node/${node.nodeRef.storeRef.protocol}/${node.nodeRef.storeRef.identifier}/${node.nodeRef.id}/parent"/>
 [/#if]
@@ -167,16 +168,38 @@
 <link rel="repository" href="[@serviceuri/]"/>
 [/#macro]
 
-[#macro folderCMISProps node propfilter]
-<cmis:properties>
-  [#-- TODO: Spec issue: BaseType not a property --]
-  [@filter propfilter "BaseType"][@propvalue "BaseType" "folder" "STRING"/][/@filter]
 
-  [#assign typedef = cmistype(node)]
-  [#list typedef.propertyDefinitions?values as propdef]
-    [@filter propfilter propdef.propertyId.name][@prop propdef.propertyId.name node propdef.dataType/][/@filter]
-  [/#list]
-</cmis:properties>
+[#--                             --]
+[#-- ATOM Entry for Relationship --]
+[#--                             --]
+
+[#macro assoc assoc propfilter="*" includeallowableactions=false ns=""]
+[@entry ns]
+<author><name>${xmldate(date)}</name></author>  [#-- TODO: [@namedvalue "CreatedBy" assoc "STRING"/] --]
+<content>[@namedvalue "ObjectId" assoc "ID"/]</content>  [#-- TODO: spec id, how to map? --]
+<id>[@namedvalue "ObjectId" assoc "ID"/]</id>   [#-- TODO: id compliant --]
+<link rel="self" href="${absurl(url.serviceContext)}[@assocuri assoc/]"/>
+<link rel="edit" href="${absurl(url.serviceContext)}[@assocuri assoc/]"/>
+[@assocCMISLinks assoc=assoc/]
+<published>${xmldate(date)}</published>  [#-- TODO: [@namedvalue "CreationDate" assoc "DATETIME"/] --]
+<summary>[@namedvalue "ObjectId" assoc "ID"/]</summary>  [#-- TODO: spec id, how to map? --]
+<title>[@namedvalue "ObjectId" assoc "ID"/]</title>  [#-- TODO: spec id, how to map? --]
+<updated>${xmldate(date)}</updated>  [#-- TODO: [@namedvalue "LastModificationDate" assoc "DATETIME"/] --]
+<cmis:object>
+[@objectCMISProps assoc propfilter/]
+[#-- TODO: [#if includeallowableactions][@allowableactions node/][/#if] --]
+</cmis:object>
+<cmis:terminator/>
+<app:edited>${xmldate(date)}</app:edited>  [#-- TODO: [@namedvalue "LastModificationDate" assoc "DATETIME"/] --]
+[/@entry]
+[/#macro]
+
+[#macro assocCMISLinks assoc]
+[#-- TODO: <link rel="allowableactions" href="${absurl(url.serviceContext)}/api/node/${node.nodeRef.storeRef.protocol}/${node.nodeRef.storeRef.identifier}/${node.nodeRef.id}/permissions"/> --]
+<link rel="type" href="${absurl(url.serviceContext)}/api/type/${cmistype(assoc).typeId.id!"unknown"}"/>
+<link rel="source" href="${absurl(url.serviceContext)}[@nodeuri assoc.source/]"/>
+<link rel="target" href="${absurl(url.serviceContext)}[@nodeuri assoc.target/]"/>
+<link rel="repository" href="[@serviceuri/]"/>
 [/#macro]
 
 
@@ -239,8 +262,8 @@
 [#if filter == "*" || filter?index_of(value) != -1 || filter?matches(value,'i')][#nested][/#if]
 [/#macro]
 
-[#macro prop name node type]
-[#assign value=cmisproperty(node, name)/]
+[#macro prop name object type]
+[#assign value=cmisproperty(object, name)/]
 [#if value?is_string || value?is_number || value?is_boolean || value?is_date || value?is_enumerable]
 [@propvalue name value type/]
 [#elseif value.class.canonicalName?ends_with("NULL")]
@@ -250,20 +273,20 @@
 
 [#macro propvalue name value type]
 [#if type == "STRING"]
-<cmis:propertyString cmis:name="${name}">[@values value;v][@stringvalue v/][/@values]</cmis:propertyString>
+<cmis:propertyString cmis:name="${name}">[@values value;v]<cmis:value>[@stringvalue v/]</cmis:value>[/@values]</cmis:propertyString>
 [#elseif type == "INTEGER"]
-<cmis:propertyInteger cmis:name="${name}">[@values value;v][@integervalue v/][/@values]</cmis:propertyInteger>
+<cmis:propertyInteger cmis:name="${name}">[@values value;v]<cmis:value>[@integervalue v/]</cmis:value>[/@values]</cmis:propertyInteger>
 [#elseif type == "DECIMAL"]
-<cmis:propertyDecimal cmis:name="${name}">[@values value;v][@decimalvalue v/][/@values]</cmis:propertyDecimal>
+<cmis:propertyDecimal cmis:name="${name}">[@values value;v]<cmis:value>[@decimalvalue v/]</cmis:value>[/@values]</cmis:propertyDecimal>
 [#elseif type == "BOOLEAN"]
-<cmis:propertyBoolean cmis:name="${name}">[@values value;v][@booleanvalue v/][/@values]</cmis:propertyBoolean>
+<cmis:propertyBoolean cmis:name="${name}">[@values value;v]<cmis:value>[@booleanvalue v/]</cmis:value>[/@values]</cmis:propertyBoolean>
 [#elseif type == "DATETIME"]
-<cmis:propertyDateTime cmis:name="${name}">[@values value;v][@datetimevalue v/][/@values]</cmis:propertyDateTime>
+<cmis:propertyDateTime cmis:name="${name}">[@values value;v]<cmis:value>[@datetimevalue v/]</cmis:value>[/@values]</cmis:propertyDateTime>
 [#elseif type == "URI"]
 [#-- TODO: check validity of abs url prefix --]
-<cmis:propertyUri cmis:name="${name}">[@values value;v][@urivalue absurl(url.serviceContext) + v/][/@values]</cmis:propertyUri>
+<cmis:propertyUri cmis:name="${name}">[@values value;v]<cmis:value>[@urivalue absurl(url.serviceContext) + v/]</cmis:value>[/@values]</cmis:propertyUri>
 [#elseif type == "ID"]
-<cmis:propertyId cmis:name="${name}">[@values value;v][@idvalue v/][/@values]</cmis:propertyId>
+<cmis:propertyId cmis:name="${name}">[@values value;v]<cmis:value>[@idvalue v/]</cmis:value>[/@values]</cmis:propertyId>
 [#-- TODO: remaining property types --]
 [/#if]
 [/#macro]
@@ -292,15 +315,40 @@
 [#-- CMIS Values --]
 [#--             --]
 
+[#macro namedvalue name object type]
+[#assign value=cmisproperty(object, name)/]
+[#if value?is_string || value?is_number || value?is_boolean || value?is_date || value?is_enumerable][@typedvalue value type/][#elseif value.class.canonicalName?ends_with("NULL")][/#if]
+[/#macro]
+
+[#macro typedvalue value type]
+[#if type == "STRING"]
+[@values value;v][@stringvalue v/][/@values]
+[#elseif type == "INTEGER"]
+[@values value;v][@integervalue v/][/@values]
+[#elseif type == "DECIMAL"]
+[@values value;v][@decimalvalue v/][/@values]
+[#elseif type == "BOOLEAN"]
+[@values value;v][@booleanvalue v/][/@values]
+[#elseif type == "DATETIME"]
+[@values value;v][@datetimevalue v/][/@values]
+[#elseif type == "URI"]
+[#-- TODO: check validity of abs url prefix --]
+[@values value;v][@urivalue absurl(url.serviceContext) + v/][/@values]
+[#elseif type == "ID"]
+[@values value;v][@idvalue v/][/@values]
+[#-- TODO: remaining property types --]
+[/#if]
+[/#macro]
+
 [#macro values vals][#if vals?is_enumerable][#list vals as val][#nested val][/#list][#else][#nested vals][/#if][/#macro]
 
-[#macro stringvalue value]<cmis:value>${value}</cmis:value>[/#macro]
-[#macro integervalue value]<cmis:value>${value?c}</cmis:value>[/#macro]
-[#macro decimalvalue value]<cmis:value>${value?c}</cmis:value>[/#macro]
-[#macro booleanvalue value]<cmis:value>${value?string}</cmis:value>[/#macro]
-[#macro datetimevalue value]<cmis:value>${xmldate(value)}</cmis:value>[/#macro]
-[#macro urivalue value]<cmis:value>${value}</cmis:value>[/#macro]
-[#macro idvalue value]<cmis:value>${value}</cmis:value>[/#macro]
+[#macro stringvalue value]${value}[/#macro]
+[#macro integervalue value]${value?c}[/#macro]
+[#macro decimalvalue value]${value?c}[/#macro]
+[#macro booleanvalue value]${value?string}[/#macro]
+[#macro datetimevalue value]${xmldate(value)}[/#macro]
+[#macro urivalue value]${value}[/#macro]
+[#macro idvalue value]${value}[/#macro]
 
 
 [#--                        --]
@@ -527,37 +575,37 @@
 [#if type == "STRING"]
 <cmis:choiceString cmis:key="${choice.name}">
 [@cmisChoices choice.children type/]
-[@stringvalue choice.value/]
+<cmis:value>[@stringvalue choice.value/]</cmis:value>
 </cmis:choiceString>
 [#elseif type == "INTEGER"]
 <cmis:choiceInteger cmis:key="${choice.name}">
 [@cmisChoices choice.children type/]
-[@stringvalue choice.value/]
+<cmis:value>[@stringvalue choice.value/]</cmis:value>
 </cmis:choiceInteger>
 [#elseif type == "DECIMAL"]
 <cmis:choiceDecimal cmis:key="${choice.name}">
 [@cmisChoices choice.children type/]
-[@stringvalue choice.value/]
+<cmis:value>[@stringvalue choice.value/]</cmis:value>
 </cmis:choiceDecimal>
 [#elseif type == "BOOLEAN"]
 <cmis:choiceBoolean cmis:key="${choice.name}">
 [@cmisChoices choice.children type/]
-[@stringvalue choice.value/]
+<cmis:value>[@stringvalue choice.value/]</cmis:value>
 </cmis:choiceBoolean>
 [#elseif type == "DATETIME"]
 <cmis:choiceDateTime cmis:key="${choice.name}">
 [@cmisChoices choice.children type/]
-[@stringvalue choice.value/]
+<cmis:value>[@stringvalue choice.value/]</cmis:value>
 </cmis:choiceDateTime>
 [#elseif type == "URI"]
 <cmis:choiceUri cmis:key="${choice.name}">
 [@cmisChoices choice.children type/]
-[@stringvalue choice.value/]
+<cmis:value>[@stringvalue choice.value/]</cmis:value>
 </cmis:choiceUri>
 [#elseif type == "ID"]
 <cmis:choiceId cmis:key="${choice.name}">
 [@cmisChoices choice.children type/]
-[@stringvalue choice.value/]
+<cmis:value>[@stringvalue choice.value/]</cmis:value>
 </cmis:choiceId>
 [#-- TODO: remaining property types --]
 [/#if]
@@ -582,3 +630,12 @@
 
 [#-- Helper to render Alfresco service document uri --]
 [#macro serviceuri]${absurl(url.serviceContext)}/api/repository[/#macro]
+
+[#-- Helper to render Node Ref --]
+[#macro noderef node]${node.nodeRef.storeRef.protocol}/${node.nodeRef.storeRef.identifier}/${node.nodeRef.id}[/#macro]
+
+[#-- Helper to render Alfresco Node uri --]
+[#macro nodeuri node]/api/node/[@noderef node/][/#macro]
+
+[#-- Helper to render Alfresco Assoc uri --]
+[#macro assocuri assoc]/api/rel/[@noderef assoc.source/]/type/${cmistype(assoc).typeId.id!"undefined"}/target/[@noderef assoc.target/][/#macro]

@@ -25,12 +25,15 @@
 package org.alfresco.repo.cmis.rest.test;
 
 import java.io.StringReader;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.alfresco.abdera.ext.cmis.CMISConstants;
 import org.alfresco.abdera.ext.cmis.CMISObject;
 import org.alfresco.abdera.ext.cmis.CMISProperties;
 import org.alfresco.abdera.ext.cmis.CMISProperty;
+import org.alfresco.repo.cmis.rest.CMISScript;
 import org.alfresco.util.GUID;
 import org.alfresco.web.scripts.Format;
 import org.alfresco.web.scripts.TestWebScriptServer.DeleteRequest;
@@ -105,11 +108,11 @@ public class CMISCustomTypeTest extends BaseCMISWebScriptTest
         Feed children = getFeed(childrenLink.getHref());
         assertNotNull(children);
         int entriesBefore = children.getEntries().size();
-        Entry folder = createDocument(children.getSelfLink().getHref(), "testCreateCustomDocument", "/org/alfresco/repo/cmis/rest/test/createcustomdocument.atomentry.xml");
+        Entry document = createDocument(children.getSelfLink().getHref(), "testCreateCustomDocument", "/org/alfresco/repo/cmis/rest/test/createcustomdocument.atomentry.xml");
         Feed feedFolderAfter = getFeed(childrenLink.getHref());
         int entriesAfter = feedFolderAfter.getEntries().size();
         assertEquals(entriesBefore +1, entriesAfter);
-        Entry entry = feedFolderAfter.getEntry(folder.getId().toString());
+        Entry entry = feedFolderAfter.getEntry(document.getId().toString());
         CMISObject object = entry.getExtension(CMISConstants.OBJECT);
         assertEquals("D/cmiscustom_document", object.getObjectTypeId().getStringValue());
         CMISProperty customProp = object.getProperties().find("cmiscustom_docprop_string");
@@ -314,6 +317,92 @@ public class CMISCustomTypeTest extends BaseCMISWebScriptTest
             assertEquals(true, result2multiValues.get(0));
             assertEquals(false, result2multiValues.get(1));
         }
+    }
+
+    public void testCreateRelationship()
+        throws Exception
+    {
+        Entry testFolder = createTestFolder("testCreateCustomRelationship");
+        Link childrenLink = testFolder.getLink(CMISConstants.REL_CHILDREN);
+        assertNotNull(childrenLink);
+        Feed children = getFeed(childrenLink.getHref());
+        assertNotNull(children);
+        Entry source = createDocument(children.getSelfLink().getHref(), "testSource", "/org/alfresco/repo/cmis/rest/test/createcustomdocument.atomentry.xml");
+        assertNotNull(source);
+        Entry target = createDocument(children.getSelfLink().getHref(), "testTarget", "/org/alfresco/repo/cmis/rest/test/createcustomdocument.atomentry.xml");
+        assertNotNull(target);
+
+        // retrieve relationships feed on source
+        Link relsLink = source.getLink(CMISConstants.REL_RELATIONSHIPS);
+        assertNotNull(relsLink);
+        Feed relsBefore = getFeed(relsLink.getHref());
+        assertNotNull(relsBefore);
+        assertEquals(0, relsBefore.getEntries().size());
+        
+        // create relationship between source and target documents
+        CMISObject targetObject = target.getExtension(CMISConstants.OBJECT);
+        assertNotNull(targetObject);
+        String targetId = targetObject.getObjectId().getStringValue();
+        assertNotNull(targetId);
+        Entry rel = createRelationship(relsLink.getHref(), "R/cmiscustom_assoc", targetId);
+        assertNotNull(rel);
+
+        // check created relationship
+        CMISObject sourceObject = source.getExtension(CMISConstants.OBJECT);
+        assertNotNull(sourceObject);
+        String sourceId = sourceObject.getObjectId().getStringValue();
+        assertNotNull(sourceId);
+        CMISObject relObject = rel.getExtension(CMISConstants.OBJECT);
+        assertNotNull(relObject);
+        assertEquals("R/cmiscustom_assoc", relObject.getObjectTypeId().getStringValue());
+        assertEquals(sourceId, relObject.getSourceId().getStringValue());
+        assertEquals(targetId, relObject.getTargetId().getStringValue());
+        assertEquals(source.getSelfLink().getHref(), rel.getLink(CMISConstants.REL_SOURCE).getHref());
+        assertEquals(target.getSelfLink().getHref(), rel.getLink(CMISConstants.REL_TARGET).getHref());
+
+        // check relationships for created item
+        Map<String, String> args = new HashMap<String, String>();
+        args.put(CMISScript.ARG_INCLUDE_SUB_RELATIONSHIP_TYPES, "true");
+        Feed relsAfter = getFeed(relsLink.getHref(), args);
+        assertNotNull(relsAfter);
+        assertEquals(1, relsAfter.getEntries().size());
+    }
+
+    public void testGetRelationship()
+        throws Exception
+    {
+        Entry testFolder = createTestFolder("testGetCustomRelationship");
+        Link childrenLink = testFolder.getLink(CMISConstants.REL_CHILDREN);
+        assertNotNull(childrenLink);
+        Feed children = getFeed(childrenLink.getHref());
+        assertNotNull(children);
+        Entry source = createDocument(children.getSelfLink().getHref(), "testSource", "/org/alfresco/repo/cmis/rest/test/createcustomdocument.atomentry.xml");
+        assertNotNull(source);
+        Entry target = createDocument(children.getSelfLink().getHref(), "testTarget", "/org/alfresco/repo/cmis/rest/test/createcustomdocument.atomentry.xml");
+        assertNotNull(target);
+    
+        // retrieve relationships feed on source
+        Link relsLink = source.getLink(CMISConstants.REL_RELATIONSHIPS);
+        assertNotNull(relsLink);
+        
+        // create relationship between source and target documents
+        CMISObject targetObject = target.getExtension(CMISConstants.OBJECT);
+        assertNotNull(targetObject);
+        String targetId = targetObject.getObjectId().getStringValue();
+        assertNotNull(targetId);
+        Entry rel = createRelationship(relsLink.getHref(), "R/cmiscustom_assoc", targetId);
+        assertNotNull(rel);
+    
+        // get created relationship
+        Entry relEntry = getEntry(rel.getSelfLink().getHref());
+        CMISObject relEntryObject = rel.getExtension(CMISConstants.OBJECT);
+        CMISObject relObject = rel.getExtension(CMISConstants.OBJECT);
+        assertNotNull(relObject);
+        assertEquals(relObject.getObjectTypeId().getStringValue(), relEntryObject.getObjectTypeId().getStringValue());
+        assertEquals(relObject.getSourceId().getStringValue(), relEntryObject.getSourceId().getStringValue());
+        assertEquals(relObject.getTargetId().getStringValue(), relEntryObject.getTargetId().getStringValue());
+        assertEquals(source.getSelfLink().getHref(), relEntry.getLink(CMISConstants.REL_SOURCE).getHref());
+        assertEquals(target.getSelfLink().getHref(), relEntry.getLink(CMISConstants.REL_TARGET).getHref());
     }
     
 }

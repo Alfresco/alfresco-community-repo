@@ -17,13 +17,13 @@ script:
     {
         // query a specific type and its descendants
         var typedef = cmis.queryType(typeId);
-	    if (typedef === null)
-	    {
-	        status.code = 404;
-	        status.message = "Type " + typeId + " not found";
-	        status.redirect = true;
-	        break script;   
-	    }
+        if (typedef === null)
+        {
+            status.code = 404;
+            status.message = "Type " + typeId + " not found";
+            status.redirect = true;
+            break script;   
+        }
         var paged = cmis.queryTypeHierarchy(typedef, true, page);
         model.results = paged.results;
         model.cursor = paged.cursor;

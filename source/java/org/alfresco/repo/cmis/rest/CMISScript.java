@@ -33,11 +33,13 @@ import org.alfresco.cmis.CMISPropertyDefinition;
 import org.alfresco.cmis.CMISQueryEnum;
 import org.alfresco.cmis.CMISQueryOptions;
 import org.alfresco.cmis.CMISQueryService;
+import org.alfresco.cmis.CMISRelationshipDirectionEnum;
 import org.alfresco.cmis.CMISResultSet;
 import org.alfresco.cmis.CMISServices;
 import org.alfresco.cmis.CMISTypeDefinition;
 import org.alfresco.cmis.CMISTypesFilterEnum;
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.repo.jscript.Association;
 import org.alfresco.repo.jscript.BaseScopableProcessorExtension;
 import org.alfresco.repo.jscript.ScriptNode;
 import org.alfresco.repo.model.Repository;
@@ -46,6 +48,7 @@ import org.alfresco.repo.web.util.paging.Page;
 import org.alfresco.repo.web.util.paging.PagedResults;
 import org.alfresco.repo.web.util.paging.Paging;
 import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 
@@ -73,7 +76,7 @@ public class CMISScript extends BaseScopableProcessorExtension
     public static final String ARG_INCLUDE_ALLOWABLE_ACTIONS = "includeAllowableActions";
     public static final String ARG_INCLUDE_PROPERTY_DEFINITIONS = "includePropertyDefinitions";
     public static final String ARG_INCLUDE_RELATIONSHIPS = "includeRelationships";
-    public static final String ARG_INCLUDE_SUB_RELATIONSHIP_TYPES = "includeSubrelationshipTypes";
+    public static final String ARG_INCLUDE_SUB_RELATIONSHIP_TYPES = "includeSubRelationshipTypes";
     public static final String ARG_LENGTH = "length";
     public static final String ARG_MAJOR = "major";
     public static final String ARG_MAJOR_VERSION = "majorVersion";
@@ -197,7 +200,7 @@ public class CMISScript extends BaseScopableProcessorExtension
      */
     public String getDefaultTypesFilter()
     {
-        return CMISTypesFilterEnum.FACTORY.defaultLabel();
+        return CMISTypesFilterEnum.FACTORY.getDefaultLabel();
     }
 
     /**
@@ -242,6 +245,25 @@ public class CMISScript extends BaseScopableProcessorExtension
         }
         return node;
     }
+
+    /**
+     * Finds an Association
+     * 
+     * @param sourceType
+     * @param source
+     * @param relDef
+     * @param targetType
+     * @param target
+     * 
+     * @return
+     */
+    public Association findRelationship(CMISTypeDefinition relDef, String[] sourceRef, String[] targetRef)
+    {
+        NodeRef source = new NodeRef(sourceRef[0], sourceRef[1], sourceRef[2]);
+        NodeRef target = new NodeRef(targetRef[0], targetRef[1], targetRef[2]);
+        AssociationRef assocRef = cmisService.getRelationship(relDef, source, target);
+        return (assocRef == null) ? null : new Association(services, assocRef);
+    }
     
     /**
      * Query for node children
@@ -267,6 +289,31 @@ public class CMISScript extends BaseScopableProcessorExtension
         return results;
     }
 
+    /**
+     * Query for node relationships
+     * 
+     * @param node
+     * @param relDef
+     * @param includeSubTypes
+     * @param direction
+     * @param page
+     * @return
+     */
+    public PagedResults queryRelationships(ScriptNode node, CMISTypeDefinition relDef, boolean includeSubTypes, CMISRelationshipDirectionEnum direction, Page page)
+    {
+        AssociationRef[] relationships = cmisService.getRelationships(node.getNodeRef(), relDef, includeSubTypes, direction);
+        
+        Cursor cursor = paging.createCursor(relationships.length, page);
+        Association[] assocs = new Association[cursor.getRowCount()];
+        for (int i = cursor.getStartRow(); i <= cursor.getEndRow(); i++)
+        {
+            assocs[i - cursor.getStartRow()] = new Association(services, relationships[i], getScope());
+        }
+        
+        PagedResults results = paging.createPagedResults(assocs, cursor);
+        return results;
+    }
+    
     /**
      * Query for items checked-out to user
      * 

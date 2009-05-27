@@ -208,6 +208,13 @@ public class CMISSchemaTest extends TestCase
         assertValidXML(xml, cmisValidator.getCMISAtomValidator());
     }
 
+    public void testAtomEntry()
+        throws Exception
+    {
+        String xml = getXML("example_atomentry.xml");
+        assertValidXML(xml, cmisValidator.getCMISAtomValidator());
+    }
+
     //
     //  Missing from v0.61
     //

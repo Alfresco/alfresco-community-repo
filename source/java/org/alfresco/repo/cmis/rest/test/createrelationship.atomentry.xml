@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<entry xmlns="http://www.w3.org/2005/Atom" xmlns:cmis="http://docs.oasis-open.org/ns/cmis/core/200901">
+    <cmis:object>
+      <cmis:properties>
+         <cmis:propertyString cmis:name="ObjectTypeId"><cmis:value>${RELTYPE}</cmis:value></cmis:propertyString>
+         <cmis:propertyId cmis:name="TargetId"><cmis:value>${TARGETID}</cmis:value></cmis:propertyId>
+      </cmis:properties>
+    </cmis:object>
+</entry>

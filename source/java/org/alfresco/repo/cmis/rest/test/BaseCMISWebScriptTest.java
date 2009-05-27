@@ -501,6 +501,31 @@ public class BaseCMISWebScriptTest extends BaseWebScriptTest
         return entry;
     }
 
+    protected Entry createRelationship(IRI parent, String type, String targetId)
+        throws Exception
+    {
+        return createRelationship(parent, type, targetId, "/org/alfresco/repo/cmis/rest/test/createrelationship.atomentry.xml");
+    }
+
+    protected Entry createRelationship(IRI parent, String type, String targetId, String atomEntryFile)
+        throws Exception
+    {
+        String createFile = loadString(atomEntryFile);
+        createFile = createFile.replace("${RELTYPE}", type);
+        createFile = createFile.replace("${TARGETID}", targetId);
+        Response res = sendRequest(new PostRequest(parent.toString(), createFile, Format.ATOMENTRY.mimetype()), 201, getAtomValidator());
+        assertNotNull(res);
+        String xml = res.getContentAsString();
+        Entry entry = abdera.parseEntry(new StringReader(xml), null);
+        assertNotNull(entry);
+        CMISObject object = entry.getExtension(CMISConstants.OBJECT);
+        assertEquals("relationship", object.getBaseType().getStringValue());
+        assertEquals(targetId, object.getTargetId().getStringValue());
+        String testFileHREF = (String)res.getHeader("Location");
+        assertNotNull(testFileHREF);
+        return entry;
+    }
+    
     //
     // General Test Helpers
     //

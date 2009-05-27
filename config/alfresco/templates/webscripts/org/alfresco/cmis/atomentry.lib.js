@@ -1,4 +1,3 @@
-
 //
 // Create Alfresco Node from Atom Entry
 //
@@ -196,6 +195,57 @@ function updateNode(node, entry, exclude, validator)
     }
     
     return updated;
+}
+
+
+//
+// Create Alfresco Association from Atom Entry
+//
+// @param source  source node
+// @param entry  atom entry
+// @return  created association (or null, in case of error)
+//
+function createAssociation(source, entry)
+{
+    var object = entry.getExtension(atom.names.cmis_object);
+    var typeId = (object !== null) ? object.objectTypeId.nativeValue : null;
+
+    // locate relationship type definition
+    // TODO: check this against spec - default to Relationship, if not specified
+    var type = cmis.queryType(typeId === null ? "relationship" : typeId);
+    if (type === null)
+    {
+        status.setCode(400, "CMIS object type " + typeId + " not understood");
+        return null;
+    }
+    if (type.typeId.baseTypeId.id != "relationship")
+    {
+        status.setCode(400, "CMIS object type " + typeId + " is not a relationship type");
+        return null;
+    }
+    if (!type.creatable)
+    {
+        status.setCode(400, "Relationship type " + typeId + " is not creatable");
+        return null;
+    }
+
+    // locate target
+    var targetId = (object !== null) ? object.targetId.nativeValue : null;
+    if (targetId === null)
+    {
+        status.setCode(400, "Target Id has not been specified");
+        return null;
+    }
+    var target = search.findNode(targetId);
+    if (target === null)
+    {
+        status.setCode(400, "Target Id " + targetId + " does not refer to known item");
+        return null;
+    }
+    
+    // create association
+    var assoc = source.createAssociation(target, type.typeId.QName.toString());
+    return assoc;
 }
 
 

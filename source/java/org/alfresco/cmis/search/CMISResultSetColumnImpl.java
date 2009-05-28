@@ -25,8 +25,10 @@
 package org.alfresco.cmis.search;
 
 import org.alfresco.cmis.CMISDataTypeEnum;
+import org.alfresco.cmis.CMISDictionaryService;
 import org.alfresco.cmis.CMISPropertyDefinition;
 import org.alfresco.cmis.CMISResultSetColumn;
+import org.alfresco.service.namespace.QName;
 
 /**
  * @author andyh
@@ -39,13 +41,19 @@ public class CMISResultSetColumnImpl implements CMISResultSetColumn
     
     private CMISPropertyDefinition propertyDefinition;
     
-    private CMISDataTypeEnum propertyType;
+    private CMISDataTypeEnum dataType;
     
-    CMISResultSetColumnImpl(String name, CMISPropertyDefinition propertyDefinition, CMISDataTypeEnum propertyType)
+    private QName alfrescoPropertyQName;
+    
+    private QName alfrescoDataTypeQName;
+    
+    CMISResultSetColumnImpl(String name, CMISPropertyDefinition propertyDefinition, CMISDataTypeEnum dataType, QName alfrescoPropertyQName, QName alfrescoDataTypeQName)
     {
         this.name = name;
         this.propertyDefinition = propertyDefinition;
-        this.propertyType = propertyType;
+        this.dataType = dataType;
+        this.alfrescoPropertyQName = alfrescoPropertyQName;
+        this.alfrescoDataTypeQName = alfrescoDataTypeQName;
     }
     
     
@@ -60,7 +68,7 @@ public class CMISResultSetColumnImpl implements CMISResultSetColumn
     /* (non-Javadoc)
      * @see org.alfresco.cmis.search.CMISResultSetColumn#getPropertyDefinition()
      */
-    public CMISPropertyDefinition getPropertyDefinition()
+    public CMISPropertyDefinition getCMISPropertyDefinition()
     {
         return propertyDefinition;
     }
@@ -68,9 +76,21 @@ public class CMISResultSetColumnImpl implements CMISResultSetColumn
     /* (non-Javadoc)
      * @see org.alfresco.cmis.search.CMISResultSetColumn#getPropertyType()
      */
-    public CMISDataTypeEnum getPropertyType()
+    public CMISDataTypeEnum getCMISDataType()
     {
-       return propertyType;
+       return dataType;
+    }
+
+
+    public QName getDataType()
+    {
+        return alfrescoDataTypeQName;
+    }
+
+
+    public QName getPropertyType()
+    {
+        return alfrescoPropertyQName;
     }
 
 }

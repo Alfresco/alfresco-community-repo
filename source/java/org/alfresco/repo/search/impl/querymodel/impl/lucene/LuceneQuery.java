@@ -76,6 +76,7 @@ public class LuceneQuery extends BaseQuery implements LuceneQueryBuilder
         BooleanQuery luceneQuery = new BooleanQuery();
 
         boolean must = false;
+        @SuppressWarnings("unused")
         boolean should = false;
         boolean must_not = false;
         

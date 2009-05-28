@@ -639,6 +639,56 @@ public class ADMLuceneTest extends TestCase
 
     }
 
+    public void testAlfrescoSql() throws InterruptedException
+    {
+        luceneFTS.pause();
+        buildBaseIndex();
+
+        ADMLuceneSearcherImpl searcher = ADMLuceneSearcherImpl.getSearcher(rootNodeRef.getStoreRef(), indexerAndSearcher);
+        searcher.setNodeService(nodeService);
+        searcher.setDictionaryService(dictionaryService);
+        searcher.setTenantService(tenantService);
+        searcher.setNamespacePrefixResolver(getNamespacePrefixReolsver("namespace"));
+        searcher.setQueryRegister(queryRegisterComponent);
+        searcher.setQueryLanguages(((AbstractLuceneIndexerAndSearcherFactory) indexerAndSearcher).queryLanguages);
+
+        alfrescoSqlQueryWithCount(searcher, "SELECT * FROM DOCUMENT", 1);
+        alfrescoSqlQueryWithCount(searcher, "SELECT * FROM DOCUMENT D JOIN CM_OWNABLE O ON (D.OBJECTID = O.OBJECTID)", 0);
+    }
+    
+    public void alfrescoSqlQueryWithCount(ADMLuceneSearcherImpl searcher, String query, int count)
+    {
+        ResultSet results = searcher.query(rootNodeRef.getStoreRef(), SearchService.LANGUAGE_SQL_ALFTRESCO, query, null);
+        assertEquals(count, results.length());
+        results.getResultSetMetaData();
+        results.close();
+    }
+    
+    public void testCmisSql() throws InterruptedException
+    {
+        luceneFTS.pause();
+        buildBaseIndex();
+
+        ADMLuceneSearcherImpl searcher = ADMLuceneSearcherImpl.getSearcher(rootNodeRef.getStoreRef(), indexerAndSearcher);
+        searcher.setNodeService(nodeService);
+        searcher.setDictionaryService(dictionaryService);
+        searcher.setTenantService(tenantService);
+        searcher.setNamespacePrefixResolver(getNamespacePrefixReolsver("namespace"));
+        searcher.setQueryRegister(queryRegisterComponent);
+        searcher.setQueryLanguages(((AbstractLuceneIndexerAndSearcherFactory) indexerAndSearcher).queryLanguages);
+
+        sqlQueryWithCount(searcher, "SELECT * FROM DOCUMENT", 1);
+        sqlQueryWithCount(searcher, "SELECT * FROM DOCUMENT D WHERE CONTAINS(D,'lazy')", 1);
+    }
+    
+    public void sqlQueryWithCount(ADMLuceneSearcherImpl searcher, String query, int count)
+    {
+        ResultSet results = searcher.query(rootNodeRef.getStoreRef(), SearchService.LANGUAGE_SQL_CMIS_STRICT, query, null);
+        assertEquals(count, results.length());
+        results.getResultSetMetaData();
+        results.close();
+    }
+    
     public void testFTS() throws InterruptedException
     {
         luceneFTS.pause();
@@ -650,7 +700,7 @@ public class ADMLuceneTest extends TestCase
         searcher.setTenantService(tenantService);
         searcher.setNamespacePrefixResolver(getNamespacePrefixReolsver("namespace"));
         searcher.setQueryRegister(queryRegisterComponent);
-        searcher.setQueryEngine(queryEngine);
+        searcher.setQueryLanguages(((AbstractLuceneIndexerAndSearcherFactory) indexerAndSearcher).queryLanguages);
 
         ftsQueryWithCount(searcher, "\"lazy\"", 1);
         ftsQueryWithCount(searcher, "lazy and dog", 1);
@@ -837,12 +887,30 @@ public class ADMLuceneTest extends TestCase
         ftsQueryWithCount(searcher, "lazy^20 -lazy^20", 15, null, n14);
         
         ftsQueryWithCount(searcher, "cm:content:lazy", 1);
+        // Simple template
         ftsQueryWithCount(searcher, "ANDY:lazy", 1);
+        // default namesapce cm
+        ftsQueryWithCount(searcher, "content:lazy", 1);
+        
+        
+        ftsQueryWithCount(searcher, "PATH:\"//.\"", 15);
+        
+        ftsQueryWithCount(searcher, "+PATH:\"/app:company_home/st:sites/cm:rmtestnew1/cm:documentLibrary//*\"", 0);
+        ftsQueryWithCount(searcher, "+PATH:\"/app:company_home/st:sites/cm:rmtestnew1/cm:documentLibrary//*\" -TYPE:\"{http://www.alfresco.org/model/content/1.0}thumbnail\"", 15);
+        ftsQueryWithCount(searcher, "+PATH:\"/app:company_home/st:sites/cm:rmtestnew1/cm:documentLibrary//*\" AND -TYPE:\"{http://www.alfresco.org/model/content/1.0}thumbnail\"", 0);
+
     }
 
     public void ftsQueryWithCount(ADMLuceneSearcherImpl searcher, String query, int count)
     {
-        ResultSet results = searcher.query(rootNodeRef.getStoreRef(), SearchService.LANGUAGE_FTS_ALFRESCO, query, null);
+        SearchParameters sp = new SearchParameters();
+        sp.setLanguage( SearchService.LANGUAGE_FTS_ALFRESCO);
+        sp.addStore(rootNodeRef.getStoreRef());
+        sp.setQuery(query);
+        sp.addQueryTemplate("ANDY", "%cm:content");
+        sp.setNamespace(NamespaceService.CONTENT_MODEL_1_0_URI);
+        sp.excludeDataInTheCurrentTransaction(true);
+        ResultSet results = searcher.query(sp);
         assertEquals(count, results.length());
         results.close();
     }

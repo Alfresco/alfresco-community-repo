@@ -94,6 +94,8 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory implements LuceneI
     private int queryMaxClauses;
 
     private int indexerBatchSize;
+    
+    protected Map<String, LuceneQueryLanguageSPI> queryLanguages = new HashMap<String, LuceneQueryLanguageSPI>();
 
     /**
      * A map of active global transactions . It contains all the indexers a transaction has used, with at most one
@@ -1782,6 +1784,18 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory implements LuceneI
        this.postSortDateTime = postSortDateTime;
     }
 
+    
+    public void registerQueryLanguage(LuceneQueryLanguageSPI queryLanguage)
+    {
+        this.queryLanguages.put(queryLanguage.getName().toLowerCase(), queryLanguage);
+    }
+    
+    protected LuceneQueryLanguageSPI getQueryLanguage(String name)
+    {
+        return this.queryLanguages.get(name);
+    }
+    
+    
     protected abstract List<StoreRef> getAllStores();
 
     public <R> R doWithAllWriteLocks(WithAllWriteLocksWork<R> lockWork)

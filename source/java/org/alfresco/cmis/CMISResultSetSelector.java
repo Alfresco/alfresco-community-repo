@@ -24,6 +24,8 @@
  */
 package org.alfresco.cmis;
 
+import org.alfresco.service.cmr.search.ResultSetSelector;
+
 
 /**
  * The meta-data for a result set selector.
@@ -31,14 +33,8 @@ package org.alfresco.cmis;
  * @author andyh
  *
  */
-public interface CMISResultSetSelector
-{
-    /**
-     * The name of the selector 
-     * @return - the selector name
-     */
-    public String getName();
-    
+public interface CMISResultSetSelector extends ResultSetSelector
+{   
     /**
      * Get the type definition for the selector.
      * @return - the CMIS type definition.

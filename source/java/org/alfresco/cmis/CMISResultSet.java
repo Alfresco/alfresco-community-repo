@@ -24,6 +24,8 @@
  */
 package org.alfresco.cmis;
 
+import org.alfresco.service.cmr.search.ResultSetSPI;
+
 
 
 /**
@@ -31,7 +33,7 @@ package org.alfresco.cmis;
  * 
  * @author andyh
  */
-public interface CMISResultSet extends Iterable<CMISResultSetRow>
+public interface CMISResultSet extends ResultSetSPI<CMISResultSetRow, CMISResultSetMetaData>
 {
     /**
      * Get the result set meta-data.
@@ -39,13 +41,6 @@ public interface CMISResultSet extends Iterable<CMISResultSetRow>
      */
     public CMISResultSetMetaData getMetaData();
     
-    /**
-     * Get the start point for this results set in the overall
-     * set of rows that match the query - this will be equal to the skip count 
-     * set when executing the query.
-     * @return the start position
-     */
-    public int getStart();
     
     /**
      * Get the number of rows in this result set.
@@ -60,25 +55,5 @@ public interface CMISResultSet extends Iterable<CMISResultSetRow>
      */
     public int getLength();
     
-    /**
-     * Close the result set and release any resources held/
-     * The result set is also bound to the transaction and will auto close at
-     * the end of the transaction.
-     */
-    public void close();
-    
-    /**
-     * Was this result set curtailed - are there more pages to the result set?
-     * @return true if there are more results
-     */
-    public boolean hasMore();
-    
-    
-    /**
-     * Get the given row
-     * @param i -the position in this result set - start + i gives the position in the overall result set
-     * @return the row
-     */
-    public CMISResultSetRow getRow(int i);
   
 }

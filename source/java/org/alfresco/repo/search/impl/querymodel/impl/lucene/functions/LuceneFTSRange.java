@@ -38,6 +38,11 @@ import org.alfresco.repo.search.impl.querymodel.impl.lucene.LuceneQueryBuilderCo
 import org.apache.lucene.queryParser.ParseException;
 import org.apache.lucene.search.Query;
 
+/**
+ * Range
+ * @author andyh
+ *
+ */
 public class LuceneFTSRange extends FTSRange implements LuceneQueryBuilderComponent
 {
     /**

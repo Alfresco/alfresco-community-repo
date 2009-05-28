@@ -31,7 +31,6 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.search.AbstractResultSetRow;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.namespace.QName;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
@@ -82,13 +81,6 @@ public class LuceneResultSetRow extends AbstractResultSetRow
     {
         LuceneResultSet lrs = (LuceneResultSet) getResultSet();
         return lrs.getNodeService().getProperties(lrs.getNodeRef(getIndex()));
-    }
-
-    public Serializable getValue(Path path)
-    {
-        // TODO: implement path base look up against the document or via the
-        // node service
-        throw new UnsupportedOperationException();
     }
 
     public QName getQName()

@@ -27,6 +27,7 @@ package org.alfresco.repo.search.impl.lucene;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.alfresco.cmis.CMISQueryService;
 import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.content.ContentStore;
 import org.alfresco.repo.search.SearcherException;
@@ -69,8 +70,6 @@ public class AVMLuceneIndexerAndSearcherFactory extends AbstractLuceneIndexerAnd
 
     private FullTextSearchIndexer fullTextSearchIndexer;
     
-    private QueryEngine queryEngine;
-
     public AVMLuceneIndexerAndSearcherFactory()
     {
         //s_logger.error("Creating AVMLuceneIndexerAndSearcherFactory");
@@ -140,12 +139,6 @@ public class AVMLuceneIndexerAndSearcherFactory extends AbstractLuceneIndexerAnd
     {
         this.contentStore = contentStore;
     }
-
-    
-    public void setQueryEngine(QueryEngine queryEngine)
-    {
-        this.queryEngine = queryEngine;
-    }
     
     @Override
     protected LuceneIndexer createIndexer(StoreRef storeRef, String deltaId)
@@ -185,8 +178,8 @@ public class AVMLuceneIndexerAndSearcherFactory extends AbstractLuceneIndexerAnd
         searcher.setTenantService(tenantService);
         searcher.setDictionaryService(dictionaryService);
         searcher.setQueryRegister(getQueryRegister());
-        searcher.setQueryEngine(queryEngine);
         searcher.setDictionaryService(dictionaryService);
+        searcher.setQueryLanguages(queryLanguages);
         return searcher;
     }
     

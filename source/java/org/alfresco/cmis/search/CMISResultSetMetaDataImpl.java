@@ -40,6 +40,12 @@ import org.alfresco.repo.search.impl.querymodel.PropertyArgument;
 import org.alfresco.repo.search.impl.querymodel.Query;
 import org.alfresco.repo.search.impl.querymodel.Selector;
 import org.alfresco.repo.search.impl.querymodel.impl.functions.PropertyAccessor;
+import org.alfresco.service.cmr.dictionary.DictionaryService;
+import org.alfresco.service.cmr.dictionary.PropertyDefinition;
+import org.alfresco.service.cmr.search.LimitBy;
+import org.alfresco.service.cmr.search.PermissionEvaluationMode;
+import org.alfresco.service.cmr.search.ResultSetType;
+import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.namespace.QName;
 
 /**
@@ -53,7 +59,7 @@ public class CMISResultSetMetaDataImpl implements CMISResultSetMetaData
 
     private Map<String, CMISResultSetSelector> selectorMetaData;
 
-    public CMISResultSetMetaDataImpl(CMISQueryOptions options, Query query, CMISDictionaryService cmisDictionaryService)
+    public CMISResultSetMetaDataImpl(CMISQueryOptions options, Query query, CMISDictionaryService cmisDictionaryService, DictionaryService alfrescoDictionaryService)
     {
         this.options = options;
 
@@ -71,10 +77,22 @@ public class CMISResultSetMetaDataImpl implements CMISResultSetMetaData
         {
             CMISPropertyDefinition propertyDefinition = null;
             CMISDataTypeEnum type = null;
+            QName alfrescoPropertyQName = null;
+            QName alfrescoDataTypeQName = null;
             if (column.getFunction().getName().equals(PropertyAccessor.NAME))
             {
                 PropertyArgument arg = (PropertyArgument) column.getFunctionArguments().get(PropertyAccessor.ARG_PROPERTY);
                 String propertyName = arg.getPropertyName();
+                alfrescoPropertyQName = QName.createQName(propertyName);
+                PropertyDefinition alfPropDef = alfrescoDictionaryService.getProperty(alfrescoPropertyQName);
+                if(alfPropDef == null)
+                {
+                    alfrescoPropertyQName = null;
+                }
+                else
+                {
+                    alfrescoDataTypeQName = alfPropDef.getDataType().getName();
+                }
                 propertyDefinition = cmisDictionaryService.findProperty(propertyName, null);
                 type = propertyDefinition.getDataType();
             }
@@ -82,7 +100,11 @@ public class CMISResultSetMetaDataImpl implements CMISResultSetMetaData
             {
                 type = cmisDictionaryService.findDataType(column.getFunction().getReturnType());
             }
-            CMISResultSetColumn cmd = new CMISResultSetColumnImpl(column.getAlias(), propertyDefinition, type);
+            if(alfrescoDataTypeQName == null)
+            {
+                alfrescoDataTypeQName = type.getDefaultDataType();
+            }
+            CMISResultSetColumn cmd = new CMISResultSetColumnImpl(column.getAlias(), propertyDefinition, type, alfrescoPropertyQName, alfrescoDataTypeQName);
             columnMetaData.put(cmd.getName(), cmd);
         }
     }
@@ -155,6 +177,26 @@ public class CMISResultSetMetaDataImpl implements CMISResultSetMetaData
     public CMISResultSetSelector[] getSelectors()
     {
         return selectorMetaData.values().toArray(new CMISResultSetSelector[0]);
+    }
+
+    public LimitBy getLimitedBy()
+    {
+        throw new UnsupportedOperationException();
+    }
+
+    public PermissionEvaluationMode getPermissionEvaluationMode()
+    {
+        throw new UnsupportedOperationException();
+    }
+
+    public ResultSetType getResultSetType()
+    {
+        return ResultSetType.COLUMN_AND_NODE_REF;
+    }
+
+    public SearchParameters getSearchParameters()
+    {
+        throw new UnsupportedOperationException();
     }
 
 }

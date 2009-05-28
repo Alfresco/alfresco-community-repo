@@ -68,14 +68,14 @@ public interface ResultSetMetaData
      * The selector meta-data.
      * @return - the selector meta-data.
      */
-    public ResultSetSelector getSelectors();
+    public ResultSetSelector[] getSelectors();
     
     
     /**
      * The column meta-data.
      * @return - the column meta-data.
      */
-    public ResultSetColumn getColumns();
+    public ResultSetColumn[] getColumns();
     
     /**
      * Get the names of the selectors.

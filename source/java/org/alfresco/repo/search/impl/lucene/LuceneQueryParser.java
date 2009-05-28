@@ -771,6 +771,11 @@ public class LuceneQueryParser extends QueryParser
                 }
                 return query;
             }
+            else if (field.equals("FTSSTATUS"))
+            {
+                TermQuery termQuery = new TermQuery(new Term(field, queryText));
+                return termQuery;
+            }
             else
             {
                 return getFieldQueryImpl(field, queryText, analysisMode);

@@ -25,7 +25,6 @@
 package org.alfresco.repo.search.impl.querymodel.impl.lucene;
 
 import org.alfresco.repo.search.impl.querymodel.impl.BasePropertyArgument;
-import org.alfresco.service.namespace.QName;
 
 /**
  * @author andyh
@@ -36,6 +35,9 @@ public class LucenePropertyArgument extends BasePropertyArgument
 
     /**
      * @param name
+     * @param queryable 
+     * @param orderable 
+     * @param selector 
      * @param propertyName
      */
     public LucenePropertyArgument(String name, boolean queryable, boolean orderable, String selector, String propertyName)

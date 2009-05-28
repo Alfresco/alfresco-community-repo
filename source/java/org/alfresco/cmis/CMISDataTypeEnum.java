@@ -24,6 +24,9 @@
  */
 package org.alfresco.cmis;
 
+import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
+import org.alfresco.service.namespace.QName;
+
 /**
  * CMIS Property Types Enum
  * 
@@ -31,19 +34,74 @@ package org.alfresco.cmis;
  */
 public enum CMISDataTypeEnum implements EnumLabel
 {
-    STRING("string"), 
-    DECIMAL("decimal"), 
-    INTEGER("integer"), 
-    BOOLEAN("boolean"), 
-    DATETIME("datetime"), 
-    URI("uri"), 
-    ID("id"),
-    XML("xml"), 
-    HTML("html"); 
-    
-    
+    STRING("string")
+    {
+        public QName getDefaultDataType()
+        {
+            return DataTypeDefinition.TEXT;
+        }
+    },
+    DECIMAL("decimal")
+    {
+        public QName getDefaultDataType()
+        {
+            return DataTypeDefinition.DOUBLE;
+        }
+    },
+    INTEGER("integer")
+    {
+        public QName getDefaultDataType()
+        {
+            return DataTypeDefinition.LONG;
+        }
+    },
+    BOOLEAN("boolean")
+    {
+        public QName getDefaultDataType()
+        {
+            return DataTypeDefinition.BOOLEAN;
+        }
+    },
+    DATETIME("datetime")
+    {
+        public QName getDefaultDataType()
+        {
+            return DataTypeDefinition.DATETIME;
+        }
+    },
+    URI("uri")
+    {
+        public QName getDefaultDataType()
+        {
+            return DataTypeDefinition.TEXT;
+        }
+    },
+    ID("id")
+    {
+        public QName getDefaultDataType()
+        {
+            return DataTypeDefinition.TEXT;
+        }
+    },
+    XML("xml")
+    {
+        public QName getDefaultDataType()
+        {
+            return DataTypeDefinition.TEXT;
+        }
+    },
+    HTML("html")
+    {
+        public QName getDefaultDataType()
+        {
+            return DataTypeDefinition.TEXT;
+        }
+    };
+
+    public abstract QName getDefaultDataType();
+
     private String label;
-    
+
     /**
      * Construct
      * 
@@ -54,7 +112,9 @@ public enum CMISDataTypeEnum implements EnumLabel
         this.label = label;
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.alfresco.cmis.EnumLabel#label()
      */
     public String getLabel()
@@ -62,5 +122,5 @@ public enum CMISDataTypeEnum implements EnumLabel
         return label;
     }
 
-    public static EnumFactory<CMISDataTypeEnum> FACTORY = new EnumFactory<CMISDataTypeEnum>(CMISDataTypeEnum.class, null, true);     
+    public static EnumFactory<CMISDataTypeEnum> FACTORY = new EnumFactory<CMISDataTypeEnum>(CMISDataTypeEnum.class, null, true);
 }

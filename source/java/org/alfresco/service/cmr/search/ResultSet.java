@@ -24,10 +24,6 @@
  */
 package org.alfresco.service.cmr.search;
 
-import java.util.List;
-
-import org.alfresco.service.cmr.repository.ChildAssociationRef;
-import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
  * This is the common interface for both row (Alfresco node) and column (CMIS style property or function) based results.
@@ -40,97 +36,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
  * 
  * @author andyh
  */
-public interface ResultSet extends Iterable<ResultSetRow> // Specific iterator over ResultSetRows
+public interface ResultSet extends ResultSetSPI<ResultSetRow, ResultSetMetaData> // Specific iterator over ResultSetRows
 {
-    /**
-     * Get the number of rows in this result set. This will be less than or equal to the maximum number of rows
-     * requested or the full length of the results set if no restriction on length are specified. If a skip count is
-     * given, the length represents the number of results after the skip count and does not include the items skipped.
-     * 
-     * @return the number of results. -1 means unknown and can be returned for lazy evaluations of permissions when the
-     *         actual size is not known and evaluated upon request.
-     */
-    public int length();
 
-    /**
-     * Get the id of the node at the given index (if there is only one selector or no selector)
-     * 
-     * @param n
-     *            zero-based index
-     * @return return the the node ref for the row if there is only one selector
-     * @throws AmbiguousSelectorException
-     */
-    public NodeRef getNodeRef(int n);
-
-    /**
-     * Get the score for the node at the given position (if there is only one selector or no selector)
-     * 
-     * @param n
-     *            zero-based index
-     * @return return the score for the row if there is only one selector
-     * @throws AmbiguousSelectorException
-     */
-    public float getScore(int n);
-
-    /**
-     * Close the result set and release any resources held/ The result set is bound to the transaction and will auto
-     * close at the end of the transaction.
-     */
-    public void close();
-
-    /**
-     * Get a row from the result set by row index, starting at 0.
-     * 
-     * @param i
-     *            zero-based index
-     * @return return the row
-     */
-    public ResultSetRow getRow(int i);
-
-    /**
-     * Get a list of all the node refs in the result set (if there is only one selector or no selector)
-     * 
-     * @return the node refs if there is only one selector or no selector *
-     * @throws AmbiguousSelectorException
-     */
-    public List<NodeRef> getNodeRefs();
-
-    /**
-     * Get a list of all the child associations in the results set. (if there is only one selectoror no selector)
-     * 
-     * @return the child assoc refs if there is only one selector or no selector *
-     * @throws AmbiguousSelectorException
-     */
-    public List<ChildAssociationRef> getChildAssocRefs();
-
-    /**
-     * Get the child assoc ref for a particular row. (if there is only one selectoror no selector)
-     * 
-     * @param n
-     *            zero-based index
-     * @return the child assoc ref for the row if there is only one selector or no selector
-     */
-    public ChildAssociationRef getChildAssocRef(int n);
-
-    /**
-     * Get the meta data for the results set.
-     * 
-     * @return the metadata
-     */
-    public ResultSetMetaData getResultSetMetaData();
-
-    /**
-     * Get the start point for this results set in the overall set of rows that match the query - this will be equal to
-     * the skip count set when executing the query, and zero if this is not set.
-     * 
-     * @return the position of the first result in the overall result set
-     */
-    public int getStart();
-
-    /**
-     * Was this result set curtailed - are there more pages to the result set?
-     * 
-     * @return true if there are more pages in the result set
-     */
-    public boolean hasMore();
 }

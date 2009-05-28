@@ -37,6 +37,10 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
+import org.alfresco.cmis.CMISQueryOptions;
+import org.alfresco.cmis.CMISQueryService;
+import org.alfresco.cmis.CMISResultSetMetaData;
+import org.alfresco.cmis.CMISResultSetRow;
 import org.alfresco.i18n.I18NUtil;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.search.CannedQueryDef;
@@ -54,6 +58,7 @@ import org.alfresco.repo.search.impl.querymodel.QueryEngineResults;
 import org.alfresco.repo.search.impl.querymodel.QueryModelFactory;
 import org.alfresco.repo.search.impl.querymodel.QueryOptions;
 import org.alfresco.repo.search.impl.querymodel.QueryOptions.Connective;
+import org.alfresco.repo.search.results.ResultSetSPIWrapper;
 import org.alfresco.repo.search.results.SortedResultSet;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
@@ -118,7 +123,7 @@ public class ADMLuceneSearcherImpl extends AbstractLuceneBase implements LuceneS
 
     private LuceneIndexer indexer;
 
-    private QueryEngine queryEngine;
+    private Map<String, LuceneQueryLanguageSPI> queryLanguages;
 
     /*
      * Searcher implementation
@@ -176,6 +181,26 @@ public class ADMLuceneSearcherImpl extends AbstractLuceneBase implements LuceneS
         this.namespacePrefixResolver = namespacePrefixResolver;
     }
 
+    public NamespacePrefixResolver getNamespacePrefixResolver()
+    {
+        return namespacePrefixResolver;
+    }
+
+    public NodeService getNodeService()
+    {
+        return nodeService;
+    }
+
+    public TenantService getTenantService()
+    {
+        return tenantService;
+    }
+
+    public QueryRegisterComponent getQueryRegister()
+    {
+        return queryRegister;
+    }
+
     public boolean indexExists()
     {
         // return mainIndexExists();
@@ -192,11 +217,6 @@ public class ADMLuceneSearcherImpl extends AbstractLuceneBase implements LuceneS
         this.tenantService = tenantService;
     }
 
-    public void setQueryEngine(QueryEngine queryEngine)
-    {
-        this.queryEngine = queryEngine;
-    }
-
     /**
      * Set the query register
      * 
@@ -205,6 +225,11 @@ public class ADMLuceneSearcherImpl extends AbstractLuceneBase implements LuceneS
     public void setQueryRegister(QueryRegisterComponent queryRegister)
     {
         this.queryRegister = queryRegister;
+    }
+
+    public void setQueryLanguages(Map<String, LuceneQueryLanguageSPI> queryLanguages)
+    {
+        this.queryLanguages = queryLanguages;
     }
 
     public ResultSet query(StoreRef store, String language, String queryString, QueryParameterDefinition[] queryParameterDefinitions) throws SearcherException
@@ -460,42 +485,17 @@ public class ADMLuceneSearcherImpl extends AbstractLuceneBase implements LuceneS
                 throw new SearcherException("IO exception during search", e);
             }
         }
-        else if (searchParameters.getLanguage().equalsIgnoreCase(SearchService.LANGUAGE_FTS_ALFRESCO))
+        else
         {
-            String ftsExpression = searchParameters.getQuery();
-            FTSQueryParser ftsQueryParser = new FTSQueryParser();
-            QueryModelFactory factory = queryEngine.getQueryModelFactory();
-            AlfrescoFunctionEvaluationContext context = new AlfrescoFunctionEvaluationContext(namespacePrefixResolver, getDictionaryService());
-
-            QueryOptions options = new QueryOptions(searchParameters.getQuery(), null);
-            options.setFetchSize(searchParameters.getBulkFecthSize());
-            options.setIncludeInTransactionData(!searchParameters.excludeDataInTheCurrentTransaction());
-            options.setDefaultFTSConnective(searchParameters.getDefaultOperator() == SearchParameters.Operator.OR ? Connective.OR : Connective.AND);
-            options.setDefaultFTSFieldConnective(searchParameters.getDefaultOperator() == SearchParameters.Operator.OR ? Connective.OR : Connective.AND);
-            if (searchParameters.getLimitBy() == LimitBy.FINAL_SIZE)
+            LuceneQueryLanguageSPI language = queryLanguages.get(searchParameters.getLanguage().toLowerCase());
+            if (language != null)
             {
-                options.setMaxItems(searchParameters.getLimit());
+                return language.executQuery(searchParameters, this);
             }
             else
             {
-                options.setMaxItems(-1);
+                throw new SearcherException("Unknown query language: " + searchParameters.getLanguage());
             }
-            options.setMlAnalaysisMode(searchParameters.getMlAnalaysisMode());
-            options.setLocales(searchParameters.getLocales());
-            options.setStores(searchParameters.getStores());
-
-            HashMap<String, String> templates = new HashMap<String, String>();
-            templates.put("ANDY", "%(cm:content, cm:title)");
-            Constraint constraint = ftsQueryParser.buildFTS(ftsExpression, factory, context, null, null, options.getDefaultFTSConnective(), options.getDefaultFTSFieldConnective(),
-                    templates);
-            org.alfresco.repo.search.impl.querymodel.Query query = factory.createQuery(null, null, constraint, null);
-
-            QueryEngineResults results = queryEngine.executeQuery(query, options, context);
-            return results.getResults().values().iterator().next();
-        }
-        else
-        {
-            throw new SearcherException("Unknown query language: " + searchParameters.getLanguage());
         }
     }
 

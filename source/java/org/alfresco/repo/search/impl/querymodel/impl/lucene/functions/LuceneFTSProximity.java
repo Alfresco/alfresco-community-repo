@@ -37,6 +37,11 @@ import org.alfresco.repo.search.impl.querymodel.impl.lucene.LuceneQueryBuilderCo
 import org.apache.lucene.queryParser.ParseException;
 import org.apache.lucene.search.Query;
 
+/**
+ * Proximity
+ * @author andyh
+ *
+ */
 public class LuceneFTSProximity extends FTSProximity implements LuceneQueryBuilderComponent
 {
     

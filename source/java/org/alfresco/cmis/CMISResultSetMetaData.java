@@ -24,6 +24,8 @@
  */
 package org.alfresco.cmis;
 
+import org.alfresco.service.cmr.search.ResultSetMetaData;
+
 
 /**
  * The meta data associated with a result set
@@ -31,7 +33,7 @@ package org.alfresco.cmis;
  * @author andyh
  *
  */
-public interface CMISResultSetMetaData
+public interface CMISResultSetMetaData extends ResultSetMetaData
 {
     /**
      * The selector meta-data.

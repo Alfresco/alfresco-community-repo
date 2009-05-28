@@ -86,7 +86,7 @@ public class SimpleResultSetMetaData implements ResultSetMetaData
         throw new UnsupportedOperationException();
     }
 
-    public ResultSetColumn getColumns()
+    public ResultSetColumn[] getColumns()
     {
         throw new UnsupportedOperationException();
     }
@@ -106,7 +106,7 @@ public class SimpleResultSetMetaData implements ResultSetMetaData
         throw new UnsupportedOperationException();
     }
 
-    public ResultSetSelector getSelectors()
+    public ResultSetSelector[] getSelectors()
     {
         throw new UnsupportedOperationException();
     }

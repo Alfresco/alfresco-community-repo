@@ -33,11 +33,9 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
-import org.alfresco.repo.domain.hibernate.BulkLoader;
 import org.alfresco.repo.search.MLAnalysisMode;
-import org.alfresco.repo.search.impl.querymodel.QueryOptions.Connective;
-import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.namespace.NamespaceService;
 
 /**
  * This class provides parameters to define a search. TODO - paging of results page number and page size - paging
@@ -58,12 +56,24 @@ public class SearchParameters
     /*
      * Standard sort definitions for sorting in document and score order.
      */
+    /**
+     * Sort in the order docs were added to the index - oldest docs first
+     */
     public static final SortDefinition SORT_IN_DOCUMENT_ORDER_ASCENDING = new SortDefinition(SortDefinition.SortType.DOCUMENT, null, true);
 
+    /**
+     * Sort in the reverse order docs were added to the index - new/updateed docs first
+     */
     public static final SortDefinition SORT_IN_DOCUMENT_ORDER_DESCENDING = new SortDefinition(SortDefinition.SortType.DOCUMENT, null, false);
 
+    /**
+     * Sort in ascending score
+     */
     public static final SortDefinition SORT_IN_SCORE_ORDER_ASCENDING = new SortDefinition(SortDefinition.SortType.SCORE, null, false);
 
+    /**
+     * Sort in descending score order
+     */
     public static final SortDefinition SORT_IN_SCORE_ORDER_DESCENDING = new SortDefinition(SortDefinition.SortType.SCORE, null, true);
 
     /**
@@ -72,14 +82,27 @@ public class SearchParameters
      */
     public enum Operator
     {
-        OR, AND
+        /**
+         * OR
+         */
+        OR, 
+        /**
+         * AND
+         */
+        AND
     }
 
     /*
      * Expose as constants
      */
+    /**
+     * OR
+     */
     public static final Operator OR = Operator.OR;
 
+    /** 
+     * AND
+     */
     public static final Operator AND = Operator.AND;
 
     /*
@@ -125,7 +148,7 @@ public class SearchParameters
 
     private Map<String, String> queryTemplates = new HashMap<String, String>();
 
-    private String namespace;
+    private String namespace = NamespaceService.CONTENT_MODEL_1_0_URI;
 
     /**
      * Default constructor
@@ -135,6 +158,10 @@ public class SearchParameters
         super();
     }
 
+    /**
+     * Get the search language
+     * @return - string id of search language 
+     */
     public String getLanguage()
     {
         return language;
@@ -143,7 +170,7 @@ public class SearchParameters
     /**
      * Get the query.
      * 
-     * @return
+     * @return - the query string
      */
     public String getQuery()
     {
@@ -217,7 +244,7 @@ public class SearchParameters
      * treated as primary, the second as secondary etc. A helper method to create SortDefinitions.
      * 
      * @param field -
-     *            this is intially a direct attribute on a node not an attribute on the parent etc TODO: It could be a
+     *            this is initially a direct attribute on a node not an attribute on the parent etc TODO: It could be a
      *            relative path at some time.
      * @param ascending -
      *            true to sort ascending, false for descending.
@@ -241,7 +268,7 @@ public class SearchParameters
     /**
      * Is data in the current transaction excluded from the search.
      * 
-     * @return
+     * @return - true if data in the current transaction is ignored
      */
     public boolean excludeDataInTheCurrentTransaction()
     {
@@ -251,7 +278,7 @@ public class SearchParameters
     /**
      * Get the query parameters that apply to this query.
      * 
-     * @return
+     * @return - the parameter
      */
     public ArrayList<QueryParameterDefinition> getQueryParameterDefinitions()
     {
@@ -261,7 +288,7 @@ public class SearchParameters
     /**
      * Get the sort definitions that apply to this query.
      * 
-     * @return
+     * @return - the sort definitions
      */
     public ArrayList<SortDefinition> getSortDefinitions()
     {
@@ -271,7 +298,7 @@ public class SearchParameters
     /**
      * Get the stores in which this query should find results.
      * 
-     * @return
+     * @return - the list of stores
      */
     public ArrayList<StoreRef> getStores()
     {
@@ -292,7 +319,7 @@ public class SearchParameters
     /**
      * Get the default operator for query elements when they are not explicit in the query.
      * 
-     * @return
+     * @return the default operator 
      */
     public Operator getDefaultOperator()
     {
@@ -302,7 +329,7 @@ public class SearchParameters
     /**
      * Get how the result set should be limited
      * 
-     * @return
+     * @return how the result set will be limited
      */
     public LimitBy getLimitBy()
     {
@@ -322,7 +349,7 @@ public class SearchParameters
     /**
      * Get when permissions are evaluated.
      * 
-     * @return
+     * @return - how permissions are evaluated
      */
     public PermissionEvaluationMode getPermissionEvaluation()
     {
@@ -342,7 +369,7 @@ public class SearchParameters
     /**
      * If limiting the result set in some way, get the limiting value used.
      * 
-     * @return
+     * @return the limit
      */
     public int getLimit()
     {
@@ -363,7 +390,7 @@ public class SearchParameters
      * The way in which multilingual fields are treated durig a search. By default, only the specified locale is used
      * and it must be an exact match.
      * 
-     * @return
+     * @return - how locale related text is tokenised
      */
     public MLAnalysisMode getMlAnalaysisMode()
     {
@@ -394,7 +421,7 @@ public class SearchParameters
     /**
      * Get the locales used for multi-lingual text searches.
      * 
-     * @return
+     * @return - the locales
      */
     public List<Locale> getLocales()
     {
@@ -402,9 +429,9 @@ public class SearchParameters
     }
 
     /**
-     * Add a locale to include for multi-lingual text searches. If non are set, the default is to use the user's locale.
+     * Add a field for TEXT expansion
      * 
-     * @param locale
+     * @param attribute - field/attribute in the index
      */
     public void addTextAttribute(String attribute)
     {
@@ -412,9 +439,9 @@ public class SearchParameters
     }
 
     /**
-     * Get the locales used for multi-lingual text searches.
+     * Get the text attributes used for text expansion.
      * 
-     * @return
+     * @return the text attributes used for text expansion
      */
     public Set<String> getTextAttributes()
     {
@@ -422,9 +449,9 @@ public class SearchParameters
     }
 
     /**
-     * Add a locale to include for multi-lingual text searches. If non are set, the default is to use the user's locale.
+     * Add a field for ALL expansion
      * 
-     * @param locale
+     * @param attribute - field/attribute in the index
      */
     public void addAllAttribute(String attribute)
     {
@@ -432,9 +459,9 @@ public class SearchParameters
     }
 
     /**
-     * Get the locales used for multi-lingual text searches.
+     * Get the text attributes used for ALL expansion.
      * 
-     * @return
+     * @return the text attributes used for ALL expansion
      */
     public Set<String> getAllAttributes()
     {
@@ -445,7 +472,6 @@ public class SearchParameters
      * Bulk fetch results in the cache
      * 
      * @param bulkFetch
-     * @return
      */
     public void setBulkFetch(boolean bulkFetch)
     {
@@ -453,9 +479,9 @@ public class SearchParameters
     }
 
     /**
-     * Do we bulk fect
+     * Do we bulk fetch
      * 
-     * @return
+     * @return - true if we do
      */
     public boolean getBulkFetch()
     {
@@ -463,9 +489,9 @@ public class SearchParameters
     }
 
     /**
-     * Set the bulk fect size
+     * Set the bulk fetch size
      * 
-     * @param bulkFecthSize
+     * @param bulkFetchSize
      */
     public void setBulkFetchSize(int bulkFetchSize)
     {
@@ -475,7 +501,7 @@ public class SearchParameters
     /**
      * Get the bulk fetch size.
      * 
-     * @return
+     * @return the fetch size
      */
     public int getBulkFecthSize()
     {
@@ -537,8 +563,8 @@ public class SearchParameters
     /**
      * Set the default connective used when OR and AND are not specified for the FTS contains() function.
      * 
-     * @param defaultFTSConnective
-     *            the defaultFTSConnective to set
+     * @param defaultFTSOperator
+     *            the defaultFTSOperator to set
      */
     public void setDefaultFTSOperator(Operator defaultFTSOperator)
     {
@@ -558,8 +584,8 @@ public class SearchParameters
     /**
      * As setDefaultFTSConnective() but for field groups
      * 
-     * @param defaultFTSFieldConnective
-     *            the defaultFTSFieldConnective to set
+     * @param defaultFTSFieldOperator
+     *            the defaultFTSFieldOperator to set
      */
     public void setDefaultFTSFieldConnective(Operator defaultFTSFieldOperator)
     {
@@ -584,6 +610,28 @@ public class SearchParameters
         this.namespace = namespace;
     }
 
+
+    /**
+     * Get the query templates
+     * @return - the query templates
+     */
+    public Map<String, String> getQueryTemplates()
+    {
+        return queryTemplates;
+    }
+
+    /**
+     * Add/replace a query template
+     * Not all languages support query templates
+     * @param name 
+     * @param template 
+     * @return any removed template or null
+     */
+    public String addQueryTemplate(String name, String template)
+    {
+        return queryTemplates.put(name, template);
+    }
+    
     /**
      * A helper class for sort definition. Encapsulated using the lucene sortType, field name and a flag for
      * ascending/descending.
@@ -593,9 +641,25 @@ public class SearchParameters
     public static class SortDefinition
     {
 
+        /**
+         * What is used for the sort
+         * @author andyh
+         *
+         */
         public enum SortType
         {
-            FIELD, DOCUMENT, SCORE
+            /**
+             * A Field
+             */
+            FIELD, 
+            /**
+             * Doc number
+             */
+            DOCUMENT, 
+            /**
+             * Score
+             */
+            SCORE
         };
 
         SortType sortType;
@@ -611,21 +675,35 @@ public class SearchParameters
             this.ascending = ascending;
         }
 
+        /**
+         * Is ascending
+         * @return true if ascending
+         */
         public boolean isAscending()
         {
             return ascending;
         }
 
+        /**
+         * Field
+         * @return - the field
+         */
         public String getField()
         {
             return field;
         }
 
+        /**
+         * What is used for the sort
+         * @return sort type
+         */
         public SortType getSortType()
         {
             return sortType;
         }
 
     }
+
+
 
 }

@@ -1,4 +1,4 @@
-// $ANTLR !Unknown version! W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g 2009-05-20 17:49:30
+// $ANTLR !Unknown version! W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g 2009-05-26 10:05:01
 package org.alfresco.repo.search.impl.parsers;
 
 import org.antlr.runtime.*;
@@ -814,7 +814,7 @@ public class FTSParser extends Parser {
 
 
                     // AST REWRITE
-                    // elements: ftsTest, boost
+                    // elements: boost, ftsTest
                     // token labels: 
                     // rule labels: retval
                     // token list labels: 
@@ -955,7 +955,7 @@ public class FTSParser extends Parser {
 
 
                     // AST REWRITE
-                    // elements: ftsTest, boost
+                    // elements: boost, ftsTest
                     // token labels: 
                     // rule labels: retval
                     // token list labels: 
@@ -1099,7 +1099,7 @@ public class FTSParser extends Parser {
 
 
                     // AST REWRITE
-                    // elements: ftsTest, boost
+                    // elements: boost, ftsTest
                     // token labels: 
                     // rule labels: retval
                     // token list labels: 
@@ -3333,7 +3333,7 @@ public class FTSParser extends Parser {
 
 
                     // AST REWRITE
-                    // elements: ftsFieldGroupTest, boost
+                    // elements: boost, ftsFieldGroupTest
                     // token labels: 
                     // rule labels: retval
                     // token list labels: 
@@ -3474,7 +3474,7 @@ public class FTSParser extends Parser {
 
 
                     // AST REWRITE
-                    // elements: ftsFieldGroupTest, boost
+                    // elements: boost, ftsFieldGroupTest
                     // token labels: 
                     // rule labels: retval
                     // token list labels: 
@@ -3772,7 +3772,7 @@ public class FTSParser extends Parser {
 
 
                     // AST REWRITE
-                    // elements: ftsFieldGroupTerm, fuzzy
+                    // elements: fuzzy, ftsFieldGroupTerm
                     // token labels: 
                     // rule labels: retval
                     // token list labels: 
@@ -3849,7 +3849,7 @@ public class FTSParser extends Parser {
 
 
                     // AST REWRITE
-                    // elements: fuzzy, ftsFieldGroupExactTerm
+                    // elements: ftsFieldGroupExactTerm, fuzzy
                     // token labels: 
                     // rule labels: retval
                     // token list labels: 
@@ -3926,7 +3926,7 @@ public class FTSParser extends Parser {
 
 
                     // AST REWRITE
-                    // elements: ftsFieldGroupPhrase, slop
+                    // elements: slop, ftsFieldGroupPhrase
                     // token labels: 
                     // rule labels: retval
                     // token list labels: 
@@ -4504,7 +4504,7 @@ public class FTSParser extends Parser {
 
 
             // AST REWRITE
-            // elements: ftsFieldGroupTerm, ftsFieldGroupTerm, proximityGroup
+            // elements: ftsFieldGroupTerm, proximityGroup, ftsFieldGroupTerm
             // token labels: 
             // rule labels: retval
             // token list labels: 
@@ -4518,16 +4518,16 @@ public class FTSParser extends Parser {
             // 408:3: -> ftsFieldGroupTerm ( proximityGroup ftsFieldGroupTerm )+
             {
                 adaptor.addChild(root_0, stream_ftsFieldGroupTerm.nextTree());
-                if ( !(stream_ftsFieldGroupTerm.hasNext()||stream_proximityGroup.hasNext()) ) {
+                if ( !(stream_proximityGroup.hasNext()||stream_ftsFieldGroupTerm.hasNext()) ) {
                     throw new RewriteEarlyExitException();
                 }
-                while ( stream_ftsFieldGroupTerm.hasNext()||stream_proximityGroup.hasNext() ) {
+                while ( stream_proximityGroup.hasNext()||stream_ftsFieldGroupTerm.hasNext() ) {
                     adaptor.addChild(root_0, stream_proximityGroup.nextTree());
                     adaptor.addChild(root_0, stream_ftsFieldGroupTerm.nextTree());
 
                 }
-                stream_ftsFieldGroupTerm.reset();
                 stream_proximityGroup.reset();
+                stream_ftsFieldGroupTerm.reset();
 
             }
 
@@ -4816,7 +4816,7 @@ public class FTSParser extends Parser {
 
 
                     // AST REWRITE
-                    // elements: range_right, ftsRangeWord, range_left, ftsRangeWord
+                    // elements: ftsRangeWord, ftsRangeWord, range_right, range_left
                     // token labels: 
                     // rule labels: retval
                     // token list labels: 
@@ -5207,7 +5207,7 @@ public class FTSParser extends Parser {
 
 
             // AST REWRITE
-            // elements: uri, identifier, prefix
+            // elements: identifier, prefix, uri
             // token labels: 
             // rule labels: retval
             // token list labels: 
@@ -5367,7 +5367,7 @@ public class FTSParser extends Parser {
 
 
             // AST REWRITE
-            // elements: identifier, uri, prefix
+            // elements: uri, identifier, prefix
             // token labels: 
             // rule labels: retval
             // token list labels: 

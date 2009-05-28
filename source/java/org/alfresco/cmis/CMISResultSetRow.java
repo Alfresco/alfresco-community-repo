@@ -24,10 +24,7 @@
  */
 package org.alfresco.cmis;
 
-import java.io.Serializable;
-import java.util.Map;
-
-import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.search.ResultSetRow;
 
 /**
  * A row in a CMISResultSet
@@ -35,64 +32,11 @@ import org.alfresco.service.cmr.repository.NodeRef;
  * @author andyh
  *
  */
-public interface CMISResultSetRow
+public interface CMISResultSetRow extends ResultSetRow
 {
-    /**
-     * Get all the column data.
-     * @return - a map of serializable column values with the column name as the key
-     */
-    public Map<String, Serializable> getValues();
-    
-    /**
-     * Get the data for a single column
-     * @param columnName
-     * @return the value
-     */
-    public Serializable getValue(String columnName);
-    
-    /**
-     * Get the overall score.
-     * 
-     * @return the overall score
-     */
-    public float getScore();
-    
-    /**
-     * Get the scores.
-     * @return a map of selector name to score.
-     */
-    public Map<String, Float> getScores();
-    
-    /**
-     * Get the score related to the named selector.
-     * @param selectorName
-     * @return - the score.
-     */
-    public float getScore(String selectorName);
-    
-    /**
-     * Gets the node refs
-     * @return a map of selector name to node ref
-     */
-    public Map<String, NodeRef> getNodeRefs();
-
-    /**
-     * Gets the node ref related to the named selector
-     * @param selectorName
-     * @return the node ref
-     */
-    public NodeRef getNodeRef(String selectorName);
-    
-    /**
-     * Get the index of this result set in the result set 
-     * If you want the overall position in paged results you have to add the skipCount fo the result set. 
-     * @return the index of the row.
-     */
-    public int getIndex();
-    
     /**
      * Get the result set for which this row is a member.
      * @return - the result set.
      */
-    public CMISResultSet getResultSet();
+    public CMISResultSet getCMISResultSet();
 }

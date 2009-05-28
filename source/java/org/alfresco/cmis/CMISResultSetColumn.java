@@ -24,6 +24,8 @@
  */
 package org.alfresco.cmis;
 
+import org.alfresco.service.cmr.search.ResultSetColumn;
+
 
 /**
  * The column meta data for a result set
@@ -31,23 +33,17 @@ package org.alfresco.cmis;
  * @author andyh
  *
  */
-public interface CMISResultSetColumn
-{
-    /**
-     * The column name
-     * @return - the column name
-     */
-    public String getName();
-    
+public interface CMISResultSetColumn extends ResultSetColumn
+{   
     /**
      * The property definition if there is one for the column 
      * @return - the property definition or null if it does not make sense for the column 
      */
-    public CMISPropertyDefinition getPropertyDefinition();
+    public CMISPropertyDefinition getCMISPropertyDefinition();
     
     /**
      * The type of the column
      * @return - the CMIS type for the column
      */
-    public CMISDataTypeEnum getPropertyType();
+    public CMISDataTypeEnum getCMISDataType();
 }

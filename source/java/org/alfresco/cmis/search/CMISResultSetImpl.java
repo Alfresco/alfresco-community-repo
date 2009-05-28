@@ -25,9 +25,11 @@
 package org.alfresco.cmis.search;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -37,10 +39,13 @@ import org.alfresco.cmis.CMISResultSet;
 import org.alfresco.cmis.CMISResultSetMetaData;
 import org.alfresco.cmis.CMISResultSetRow;
 import org.alfresco.repo.search.impl.querymodel.Query;
+import org.alfresco.service.cmr.dictionary.DictionaryService;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.search.LimitBy;
 import org.alfresco.service.cmr.search.ResultSet;
+import org.alfresco.service.cmr.search.ResultSetRow;
 
 /**
  * @author andyh
@@ -58,15 +63,18 @@ public class CMISResultSetImpl implements CMISResultSet, Serializable
     Query query;
 
     CMISDictionaryService cmisDictionaryService;
+    
+    DictionaryService alfrescoDictionaryService;
 
 
-    public CMISResultSetImpl(Map<String, ResultSet> wrapped, CMISQueryOptions options, NodeService nodeService, Query query, CMISDictionaryService cmisDictionaryService)
+    public CMISResultSetImpl(Map<String, ResultSet> wrapped, CMISQueryOptions options, NodeService nodeService, Query query, CMISDictionaryService cmisDictionaryService, DictionaryService alfrescoDictionaryService)
     {
         this.wrapped = wrapped;
         this.options = options;
         this.nodeService = nodeService;
         this.query = query;
         this.cmisDictionaryService = cmisDictionaryService;
+        this.alfrescoDictionaryService = alfrescoDictionaryService;
     }
 
     /*
@@ -95,7 +103,7 @@ public class CMISResultSetImpl implements CMISResultSet, Serializable
      */
     public CMISResultSetMetaData getMetaData()
     {
-        return new CMISResultSetMetaDataImpl(options, query, cmisDictionaryService);
+        return new CMISResultSetMetaDataImpl(options, query, cmisDictionaryService, alfrescoDictionaryService);
     }
 
     /*
@@ -195,6 +203,70 @@ public class CMISResultSetImpl implements CMISResultSet, Serializable
             scores.put(selector, Float.valueOf(rs.getScore(getStart() + i)));
         }
         return scores;
+    }
+
+    public ChildAssociationRef getChildAssocRef(int n)
+    {
+        NodeRef nodeRef = getNodeRef(n);
+        return nodeService.getPrimaryParent(nodeRef);
+    }
+
+    
+
+    public List<ChildAssociationRef> getChildAssocRefs()
+    {
+        ArrayList<ChildAssociationRef> cars = new ArrayList<ChildAssociationRef>(length());
+        for (ResultSetRow row : this)
+        {
+            cars.add(row.getChildAssocRef());
+        }
+        return cars;
+    }
+
+    public NodeRef getNodeRef(int n)
+    {
+        Map<String, NodeRef> refs = getNodeRefs(n);
+        if(refs.size() == 1)
+        {
+            return refs.values().iterator().next();
+        }
+        else
+        {
+            throw new IllegalStateException("Ambiguous selector");
+        }
+    }
+
+    public List<NodeRef> getNodeRefs()
+    {
+        ArrayList<NodeRef> nodeRefs = new ArrayList<NodeRef>(length());
+        for (ResultSetRow row : this)
+        {
+            nodeRefs.add(row.getNodeRef());
+        }
+        return nodeRefs;
+    }
+
+    public CMISResultSetMetaData getResultSetMetaData()
+    {
+        return getMetaData();
+    }
+
+    public float getScore(int n)
+    {
+       Map<String, Float> scores = getScores(n);
+       if(scores.size() == 1)
+       {
+           return scores.values().iterator().next();
+       }
+       else
+       {
+           throw new IllegalStateException("Ambiguous selector");
+       }
+    }
+
+    public int length()
+    {
+        return getLength();
     }
 
 }

@@ -1049,6 +1049,10 @@ public class CMISQueryParser
             qualifer = columnReferenceNode.getChild(1).getText();
         }
         CMISPropertyDefinition propDef = cmisDictionaryService.findProperty(cmisPropertyName, null);
+        if(propDef == null)
+        {
+            throw new CMISQueryException("Unknown column/property " + cmisPropertyName);
+        }
         return factory.createPropertyArgument(argumentName, propDef.isQueryable(), propDef.isOrderable(), qualifer, propDef.getPropertyId().getName());
     }
 

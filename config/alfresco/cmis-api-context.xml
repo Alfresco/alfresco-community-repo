@@ -3,6 +3,32 @@
 
 <beans>
 
+	 <bean id="lucene.sql.cmis.strict" class="org.alfresco.repo.search.impl.lucene.LuceneCmisStrictSqlQueryLanguage" >
+        <property name="cmisQueryService">
+            <ref bean="CMISQueryService" />
+        </property>
+	    <property name="factories">
+			<list>
+			    <ref bean="admLuceneIndexerAndSearcherFactory" />	
+				<ref bean="admLuceneUnIndexedIndexerAndSearcherFactory" />	
+				<ref bean="avmLuceneIndexerAndSearcherFactory" />	
+			</list>
+        </property>
+    </bean>
+	
+	<bean id="lucene.sql.alfresco" class="org.alfresco.repo.search.impl.lucene.LuceneAlfrescoSqlQueryLanguage" >
+        <property name="cmisQueryService">
+            <ref bean="CMISQueryService" />
+        </property>
+	    <property name="factories">
+			<list>
+			    <ref bean="admLuceneIndexerAndSearcherFactory" />	
+				<ref bean="admLuceneUnIndexedIndexerAndSearcherFactory" />	
+				<ref bean="avmLuceneIndexerAndSearcherFactory" />	
+			</list>
+        </property>
+    </bean>
+	
     <bean id="CMISMapping" class="org.alfresco.cmis.mapping.CMISMapping" >
         <property name="serviceRegistry">
             <ref bean="ServiceRegistry" />
@@ -57,6 +83,9 @@
         <property name="nodeService">
             <ref bean="nodeService" />
         </property>
+		<property name="alfrescoDictionaryService">
+            <ref bean="dictionaryService" />
+        </property>
     </bean>
    
    
@@ -85,5 +114,7 @@
             </value>
         </property>
     </bean>
+	
+	
    
 </beans>

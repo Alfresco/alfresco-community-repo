@@ -38,6 +38,7 @@ import org.alfresco.cmis.CMISServices;
 import org.alfresco.repo.search.impl.querymodel.Query;
 import org.alfresco.repo.search.impl.querymodel.QueryEngine;
 import org.alfresco.repo.search.impl.querymodel.QueryEngineResults;
+import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.search.ResultSet;
 
@@ -53,6 +54,8 @@ public class CMISQueryServiceImpl implements CMISQueryService
     private QueryEngine queryEngine;
 
     private NodeService nodeService;
+    
+    private DictionaryService alfrescoDictionaryService;
 
     /**
      * @param service
@@ -90,6 +93,17 @@ public class CMISQueryServiceImpl implements CMISQueryService
         this.nodeService = nodeService;
     }
 
+    
+
+    /**
+     * @param alfrescoDictionaryService
+     *            the Alfresco Dictionary Service  to set
+     */
+    public void setAlfrescoDictionaryService(DictionaryService alfrescoDictionaryService)
+    {
+        this.alfrescoDictionaryService = alfrescoDictionaryService;
+    }
+
     /*
      * (non-Javadoc)
      * 
@@ -121,7 +135,7 @@ public class CMISQueryServiceImpl implements CMISQueryService
                 wrapped.put(selector, current);
             }
         }
-        CMISResultSet cmis = new CMISResultSetImpl(wrapped, options, nodeService, query, cmisDictionaryService);
+        CMISResultSet cmis = new CMISResultSetImpl(wrapped, options, nodeService, query, cmisDictionaryService, alfrescoDictionaryService);
         return cmis;
     }
 

@@ -36,7 +36,22 @@ import org.apache.lucene.search.Sort;
  */
 public interface LuceneQueryBuilder
 {
+    /**
+     * Build the matching lucene query
+     * @param selectors
+     * @param luceneContext
+     * @param functionContext
+     * @return - the query
+     * @throws ParseException
+     */
     public  Query buildQuery(Set<String> selectors,  LuceneQueryBuilderContext luceneContext, FunctionEvaluationContext functionContext) throws ParseException;
 
+    /**
+     * Build the matching lucene sort
+     * @param selectors
+     * @param luceneContext
+     * @param functionContext
+     * @return - the sort spec
+     */
     public Sort buildSort(Set<String> selectors, LuceneQueryBuilderContext luceneContext, FunctionEvaluationContext functionContext);
 }

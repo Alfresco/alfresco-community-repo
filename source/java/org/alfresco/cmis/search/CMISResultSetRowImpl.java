@@ -30,11 +30,16 @@ import java.util.Map;
 
 import org.alfresco.cmis.CMISDictionaryService;
 import org.alfresco.cmis.CMISResultSet;
+import org.alfresco.cmis.CMISResultSetMetaData;
 import org.alfresco.cmis.CMISResultSetRow;
 import org.alfresco.repo.search.impl.querymodel.Column;
 import org.alfresco.repo.search.impl.querymodel.Query;
+import org.alfresco.repo.search.results.ResultSetSPIWrapper;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.search.ResultSet;
+import org.alfresco.service.namespace.QName;
 
 /**
  * @author andyh
@@ -87,9 +92,9 @@ public class CMISResultSetRowImpl implements CMISResultSetRow
      * 
      * @see org.alfresco.cmis.search.CMISResultSetRow#getResultSet()
      */
-    public CMISResultSet getResultSet()
+    public ResultSet getResultSet()
     {
-        return resultSet;
+        return new ResultSetSPIWrapper<CMISResultSetRow, CMISResultSetMetaData>(resultSet);
     }
 
     /*
@@ -184,6 +189,39 @@ public class CMISResultSetRowImpl implements CMISResultSetRow
             answer.put(column, getValue(column));
         }
         return answer;
+    }
+
+    public CMISResultSet getCMISResultSet()
+    {
+        return resultSet;
+    }
+
+    public ChildAssociationRef getChildAssocRef()
+    {
+        NodeRef nodeRef = getNodeRef();
+        return nodeService.getPrimaryParent(nodeRef);
+    }
+
+    public NodeRef getNodeRef()
+    {
+        if(getCMISResultSet().getMetaData().getColumns().length == 1)
+        {
+            return getNodeRef(getCMISResultSet().getMetaData().getColumns()[0].getName());
+        }
+        else
+        {
+            throw new UnsupportedOperationException("Ambiguous selector");
+        }
+    }
+
+    public QName getQName()
+    {
+       return getChildAssocRef().getQName();
+    }
+
+    public Serializable getValue(QName qname)
+    {
+        throw new UnsupportedOperationException();
     }
 
 }

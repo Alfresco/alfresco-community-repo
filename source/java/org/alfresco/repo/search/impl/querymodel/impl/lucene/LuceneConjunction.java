@@ -36,7 +36,6 @@ import org.apache.lucene.index.Term;
 import org.apache.lucene.queryParser.ParseException;
 import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanQuery;
-import org.apache.lucene.search.MatchAllDocsQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TermQuery;
 
@@ -66,6 +65,7 @@ public class LuceneConjunction extends BaseConjunction implements LuceneQueryBui
     {
         BooleanQuery query = new BooleanQuery();
         boolean must = false;
+        @SuppressWarnings("unused")
         boolean should = false;
         boolean must_not = false;
         for (Constraint constraint : getConstraints())

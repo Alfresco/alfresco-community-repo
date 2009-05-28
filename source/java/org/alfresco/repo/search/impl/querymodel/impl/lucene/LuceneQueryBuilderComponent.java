@@ -37,5 +37,14 @@ import org.apache.lucene.search.Query;
  */
 public interface LuceneQueryBuilderComponent
 {
+    /**
+     * Generate the lucene query from the query component
+     * @param selectors
+     * @param functionArgs
+     * @param luceneContext
+     * @param functionContext
+     * @return - the lucene query fragment for this component
+     * @throws ParseException
+     */
     public Query addComponent(Set<String> selectors, Map<String, Argument> functionArgs, LuceneQueryBuilderContext luceneContext, FunctionEvaluationContext functionContext) throws ParseException;
 }

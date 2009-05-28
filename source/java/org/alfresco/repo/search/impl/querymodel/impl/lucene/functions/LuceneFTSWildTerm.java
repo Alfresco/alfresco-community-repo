@@ -37,6 +37,11 @@ import org.alfresco.repo.search.impl.querymodel.impl.lucene.LuceneQueryBuilderCo
 import org.apache.lucene.queryParser.ParseException;
 import org.apache.lucene.search.Query;
 
+/**
+ * Wild Card
+ * @author andyh
+ *
+ */
 public class LuceneFTSWildTerm extends FTSWildTerm implements LuceneQueryBuilderComponent
 {
 

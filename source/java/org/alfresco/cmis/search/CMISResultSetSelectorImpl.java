@@ -26,6 +26,7 @@ package org.alfresco.cmis.search;
 
 import org.alfresco.cmis.CMISResultSetSelector;
 import org.alfresco.cmis.CMISTypeDefinition;
+import org.alfresco.service.namespace.QName;
 
 /**
  * @author andyh
@@ -58,6 +59,12 @@ public class CMISResultSetSelectorImpl implements CMISResultSetSelector
     public CMISTypeDefinition getTypeDefinition()
     {
         return typeDefinition;
+    }
+
+
+    public QName getType()
+    {
+        return typeDefinition.getTypeId().getQName();
     }
 
 }

@@ -42,6 +42,16 @@ public class LuceneQueryBuilderContext
 
     private NamespacePrefixResolver namespacePrefixResolver;
 
+    /**
+     * Context for building lucene queries
+     * 
+     * @param dictionaryService
+     * @param namespacePrefixResolver
+     * @param tenantService
+     * @param searchParameters
+     * @param config
+     * @param indexReader
+     */
     public LuceneQueryBuilderContext(DictionaryService dictionaryService, NamespacePrefixResolver namespacePrefixResolver, TenantService tenantService,
             SearchParameters searchParameters, LuceneConfig config, IndexReader indexReader)
     {
@@ -60,7 +70,7 @@ public class LuceneQueryBuilderContext
     }
 
     /**
-     * @return
+     * @return - the parser
      */
     public LuceneQueryParser getLuceneQueryParser()
     {
@@ -68,7 +78,7 @@ public class LuceneQueryBuilderContext
     }
 
     /**
-     * @return
+     * @return - the namespace prefix resolver
      */
     public NamespacePrefixResolver getNamespacePrefixResolver()
     {

@@ -26,6 +26,7 @@ package org.alfresco.repo.search.impl.parsers;
 
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Map;
 
 import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
@@ -41,14 +42,41 @@ import org.apache.lucene.search.Query;
 
 public class AlfrescoFunctionEvaluationContext implements FunctionEvaluationContext
 {
+    private static HashSet<String> EXPOSED_FIELDS = new HashSet<String>();
+    
     private NamespacePrefixResolver namespacePrefixResolver;
 
     private DictionaryService dictionaryService;
+    
+    private String defaultNamespace;
 
-    public AlfrescoFunctionEvaluationContext(NamespacePrefixResolver namespacePrefixResolver, DictionaryService dictionaryService)
+    static
+    {
+        EXPOSED_FIELDS.add("PATH");
+        EXPOSED_FIELDS.add("TEXT");
+        EXPOSED_FIELDS.add("ID");
+        EXPOSED_FIELDS.add("ISROOT");
+        EXPOSED_FIELDS.add("ISNODE");
+        EXPOSED_FIELDS.add("TX");
+        EXPOSED_FIELDS.add("PARENT");
+        EXPOSED_FIELDS.add("PRIMARYPARENT");
+        EXPOSED_FIELDS.add("QNAME");
+        EXPOSED_FIELDS.add("CLASS");
+        EXPOSED_FIELDS.add("TYPE");
+        EXPOSED_FIELDS.add("EXACTTYPE");
+        EXPOSED_FIELDS.add("ASPECT");
+        EXPOSED_FIELDS.add("EXACTASPECT");
+        EXPOSED_FIELDS.add("ALL");
+        EXPOSED_FIELDS.add("ISUNSET");
+        EXPOSED_FIELDS.add("ISNULL");
+        EXPOSED_FIELDS.add("ISNOTNULL");
+    }
+    
+    public AlfrescoFunctionEvaluationContext(NamespacePrefixResolver namespacePrefixResolver, DictionaryService dictionaryService, String defaultNamespace)
     {
         this.namespacePrefixResolver = namespacePrefixResolver;
         this.dictionaryService = dictionaryService;
+        this.defaultNamespace = defaultNamespace;
     }
 
     public Query buildLuceneEquality(LuceneQueryParser lqp, String propertyName, Serializable value, PredicateMode mode) throws ParseException
@@ -192,8 +220,20 @@ public class AlfrescoFunctionEvaluationContext implements FunctionEvaluationCont
             }
         }
         
-        return propertyName;
+        if(EXPOSED_FIELDS.contains(propertyName))
+        {
+            return propertyName;
+        }
         
+        QName qname = QName.createQName(defaultNamespace, propertyName);
+        if (dictionaryService.getProperty(qname) != null)
+        {
+            return "@" + qname.toString();
+        }
+        else
+        {
+            throw new FTSQueryException("Unknown property: "+propertyName);
+        }
         
     }
 

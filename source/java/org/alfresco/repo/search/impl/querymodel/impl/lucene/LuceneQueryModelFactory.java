@@ -99,8 +99,11 @@ import org.alfresco.service.namespace.QName;
  */
 public class LuceneQueryModelFactory implements QueryModelFactory
 {
-    public HashMap<String, Function> functions = new HashMap<String, Function>();
+    private HashMap<String, Function> functions = new HashMap<String, Function>();
 
+    /**
+     * Default lucene query model factory and functions 
+     */
     public LuceneQueryModelFactory()
     {
         functions.put(Equals.NAME, new LuceneEquals());

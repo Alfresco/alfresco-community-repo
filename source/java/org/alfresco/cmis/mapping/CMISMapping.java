@@ -225,7 +225,7 @@ public class CMISMapping implements InitializingBean
         registerEvaluator(CMISScope.DOCUMENT, new FixedValueActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_ADD_POLICY, false));
         registerEvaluator(CMISScope.DOCUMENT, new FixedValueActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_GET_APPLIED_POLICIES, false));
         registerEvaluator(CMISScope.DOCUMENT, new FixedValueActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_REMOVE_POLICY, false));
-        registerEvaluator(CMISScope.DOCUMENT, new PermissionActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_CREATE_RELATIONSHIP, PermissionService.CREATE_ASSOCIATIONS));
+        registerEvaluator(CMISScope.DOCUMENT, new FixedValueActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_CREATE_RELATIONSHIP, true));
 
         registerEvaluator(CMISScope.FOLDER, new PermissionActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_DELETE, PermissionService.DELETE_NODE));
         registerEvaluator(CMISScope.FOLDER, new PermissionActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_UPDATE_PROPERTIES, PermissionService.WRITE_PROPERTIES));
@@ -248,7 +248,7 @@ public class CMISMapping implements InitializingBean
 
         registerEvaluator(CMISScope.RELATIONSHIP, new FixedValueActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_DELETE, true));
         registerEvaluator(CMISScope.RELATIONSHIP, new FixedValueActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_UPDATE_PROPERTIES, false));
-        registerEvaluator(CMISScope.RELATIONSHIP, new FixedValueActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_GET_PROPERTIES, false));
+        registerEvaluator(CMISScope.RELATIONSHIP, new FixedValueActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_GET_PROPERTIES, true));
 
         registerEvaluator(CMISScope.POLICY, new FixedValueActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_DELETE, false));
         registerEvaluator(CMISScope.POLICY, new FixedValueActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_UPDATE_PROPERTIES, false));

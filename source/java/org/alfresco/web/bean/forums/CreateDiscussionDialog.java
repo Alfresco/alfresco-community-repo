@@ -88,8 +88,9 @@ public class CreateDiscussionDialog extends CreateTopicDialog
       // as we are cancelling the creation of a discussion we know we need to go back
       // to the browse screen, this also makes sure we don't end up in the forum that
       // just got deleted!
-      return AlfrescoNavigationHandler.CLOSE_DIALOG_OUTCOME + 
-             AlfrescoNavigationHandler.OUTCOME_SEPARATOR + "browse";
+      FacesContext.getCurrentInstance().getExternalContext().getSessionMap().remove(
+              AlfrescoNavigationHandler.EXTERNAL_CONTAINER_SESSION);
+      return getDefaultCancelOutcome();
    }
    
    // ------------------------------------------------------------------------------

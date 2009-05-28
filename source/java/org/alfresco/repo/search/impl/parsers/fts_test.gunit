@@ -13,7 +13,7 @@ ftsQuery:
 "test:flag:true AND %test:field" -> "(CONJUNCTION (DISJUNCTION (CONJUNCTION (DEFAULT (TERM true (FIELD_REF flag (PREFIX test)))) (DEFAULT (TEMPLATE (FIELD_REF field (PREFIX test)))))))"
 "test:flag:true AND %NEST" -> "(CONJUNCTION (DISJUNCTION (CONJUNCTION (DEFAULT (TERM true (FIELD_REF flag (PREFIX test)))) (DEFAULT (TEMPLATE (FIELD_REF NEST))))))"
 "test:flag:true AND %(NEST,test:field, test_field1, {http://www.alfresco.org/model/content/1.0}name)" -> "(CONJUNCTION (DISJUNCTION (CONJUNCTION (DEFAULT (TERM true (FIELD_REF flag (PREFIX test)))) (DEFAULT (TEMPLATE (FIELD_REF NEST) (FIELD_REF field (PREFIX test)) (FIELD_REF test_field1) (FIELD_REF name (NAME_SPACE {http://www.alfresco.org/model/content/1.0})))))))" 
-"+PATH:\"/app:company_home/st:sites/cm:rmtestnew1/cm:documentLibrary//*\" +(ASPECT:\"{http://www.alfresco.org/model/recordsmanagement/1.0}record\") -TYPE:\"{http://www.alfresco.org/model/content/1.0}thumbnail\"" -> "OK"
+"+PATH:\"/app:company_home/st:sites/cm:rmtestnew1/cm:documentLibrary//*\" +(ASPECT:\"{http://www.alfresco.org/model/recordsmanagement/1.0}record\") -TYPE:\"{http://www.alfresco.org/model/content/1.0}thumbnail\"" -> "(CONJUNCTION (DISJUNCTION (CONJUNCTION (MANDATORY (PHRASE \"/app:company_home/st:sites/cm:rmtestnew1/cm:documentLibrary//*\" (FIELD_REF PATH))))) (DISJUNCTION (CONJUNCTION (MANDATORY (CONJUNCTION (DISJUNCTION (CONJUNCTION (DEFAULT (PHRASE \"{http://www.alfresco.org/model/recordsmanagement/1.0}record\" (FIELD_REF ASPECT))))))))) (DISJUNCTION (CONJUNCTION (EXCLUDE (PHRASE \"{http://www.alfresco.org/model/content/1.0}thumbnail\" (FIELD_REF TYPE))))))"
 
 
 ftsImplicitConjunctionOrDisjunction:

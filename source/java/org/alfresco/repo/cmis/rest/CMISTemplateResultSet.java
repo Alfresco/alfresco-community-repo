@@ -231,7 +231,7 @@ public class CMISTemplateResultSet implements Serializable
             public String getColumnType(String colName)
             {
                 CMISResultSetColumn col = resultSet.getMetaData().getColumn(colName);
-                return col == null ? null : col.getPropertyType().name();
+                return col == null ? null : col.getCMISDataType().name();
             }
             
             /**

@@ -90,7 +90,7 @@ public class DMDiscoveryServicePort extends DMAbstractServicePort implements Dis
             // for each column...
             for (CMISResultSetColumn column : columns)
             {
-                CMISDataTypeEnum type = column.getPropertyType();
+                CMISDataTypeEnum type = column.getCMISDataType();
                 if (type == CMISDataTypeEnum.BOOLEAN)
                 {
                     addBooleanProperty(properties, filter, column.getName(), values);

@@ -405,4 +405,49 @@ public class CMISCustomTypeTest extends BaseCMISWebScriptTest
         assertEquals(target.getSelfLink().getHref(), relEntry.getLink(CMISConstants.REL_TARGET).getHref());
     }
     
+    public void testDeleteRelationship()
+        throws Exception
+    {
+        Entry testFolder = createTestFolder("testDeleteCustomRelationship");
+        Link childrenLink = testFolder.getLink(CMISConstants.REL_CHILDREN);
+        assertNotNull(childrenLink);
+        Feed children = getFeed(childrenLink.getHref());
+        assertNotNull(children);
+        Entry source = createDocument(children.getSelfLink().getHref(), "testSource", "/org/alfresco/repo/cmis/rest/test/createcustomdocument.atomentry.xml");
+        assertNotNull(source);
+        Entry target = createDocument(children.getSelfLink().getHref(), "testTarget", "/org/alfresco/repo/cmis/rest/test/createcustomdocument.atomentry.xml");
+        assertNotNull(target);
+    
+        // retrieve relationships feed on source
+        Link relsLink = source.getLink(CMISConstants.REL_RELATIONSHIPS);
+        assertNotNull(relsLink);
+        Feed relsBefore = getFeed(relsLink.getHref());
+        assertNotNull(relsBefore);
+        assertEquals(0, relsBefore.getEntries().size());
+        
+        // create relationship between source and target documents
+        CMISObject targetObject = target.getExtension(CMISConstants.OBJECT);
+        assertNotNull(targetObject);
+        String targetId = targetObject.getObjectId().getStringValue();
+        assertNotNull(targetId);
+        Entry rel = createRelationship(relsLink.getHref(), "R/cmiscustom_assoc", targetId);
+        assertNotNull(rel);
+    
+        // check relationships for created item
+        Map<String, String> args = new HashMap<String, String>();
+        args.put(CMISScript.ARG_INCLUDE_SUB_RELATIONSHIP_TYPES, "true");
+        Feed relsAfterCreate = getFeed(relsLink.getHref(), args);
+        assertNotNull(relsAfterCreate);
+        assertEquals(1, relsAfterCreate.getEntries().size());
+        
+        // delete relationship
+        Response deleteRes = sendRequest(new DeleteRequest(rel.getSelfLink().getHref().toString()), 204);
+        assertNotNull(deleteRes);
+        
+        // check relationships for deleted item
+        Feed relsAfterDelete = getFeed(relsLink.getHref(), args);
+        assertNotNull(relsAfterDelete);
+        assertEquals(0, relsAfterDelete.getEntries().size());
+    }
+    
 }

@@ -18,22 +18,24 @@ script:
     var source = [url.templateArgs.store_type, url.templateArgs.store_id, url.templateArgs.id];
     var target = [url.templateArgs.target_store_type, url.templateArgs.target_store_id, url.templateArgs.target_id];
 
-    // property filter 
-    model.filter = args[cmis.ARG_FILTER];
-    if (model.filter === null)
-    {
-        model.filter = "*";
-    }
-   
-    // include allowable actions
-    var includeAllowableActions = args[cmis.ARG_INCLUDE_ALLOWABLE_ACTIONS];
-    model.includeAllowableActions = (includeAllowableActions == "true" ? true : false);
-    
     // locate association
-    model.assoc = cmis.findRelationship(model.relTypeDef, source, target);
-    if (model.assoc === null)
+    var assoc = cmis.findRelationship(model.relTypeDef, source, target);
+    if (assoc === null)
     {
         status.setCode(404, "Assoc " + source.join("/") + "/" + relType + "/" + target.join("/") + " not found");
         break script;
     }
+
+    // TODO: check permission
+//    if (!assoc.source.hasPermission("DeleteAssociations"))
+//    {
+//        status.setCode(403, "Permission to delete is denied");
+//        break script;
+//    }
+
+    // delete
+    assoc.source.removeAssociation(assoc.target, assoc.type);
+    
+    status.code = 204;  // Success, but no response content
+    status.redirect = true;
 }

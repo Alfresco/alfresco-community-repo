@@ -19,7 +19,7 @@ function main()
             for (i = 0; i < versionHistory.length; i++)
             {
                var version = versionHistory[i];
-               var p = people.getPerson(versionHistory[0].creator);
+               var p = people.getPerson(version.creator);
                versions[versions.length] =
                {
                   nodeRef: version.node.nodeRef.toString(),

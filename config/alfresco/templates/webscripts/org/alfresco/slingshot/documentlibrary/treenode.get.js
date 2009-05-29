@@ -11,12 +11,12 @@ function getTreenode(siteId, path)
    try
    {
       var items = new Array(),
+         hasSubfolders,
          ignoredTypes =
          {
-            "{http://www.alfresco.org/model/forum/1.0}forums": true,
             "{http://www.alfresco.org/model/forum/1.0}forum": true,
             "{http://www.alfresco.org/model/forum/1.0}topic": true,
-            "{http://www.alfresco.org/model/forum/1.0}post": true
+            "{http://www.alfresco.org/model/content/1.0}systemfolder": true
          };
    
       // Use helper function to get the arguments
@@ -31,7 +31,13 @@ function getTreenode(siteId, path)
       {
          if (item.isSubType("cm:folder") && !(item.type in ignoredTypes))
          {
-            items.push(item);
+            hasSubfolders = item.childrenByXPath("*[subtypeOf('cm:folder') and not(subtypeOf('fm:forum')) and not(subtypeOf('cm:systemfolder'))]").length > 0;
+            
+            items.push(
+            {
+               node: item,
+               hasSubfolders: hasSubfolders
+            });
          }
       }
    
@@ -53,5 +59,5 @@ function getTreenode(siteId, path)
 /* Sort the results by case-insensitive name */
 function sortByName(a, b)
 {
-   return (b.name.toLowerCase() > a.name.toLowerCase() ? -1 : 1);
+   return (b.node.name.toLowerCase() > a.node.name.toLowerCase() ? -1 : 1);
 }

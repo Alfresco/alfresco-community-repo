@@ -22,8 +22,8 @@
       "onlineEditing": ${doclist.onlineEditing?string},
       "itemCounts":
       {
-         "folders": ${(itemCount.folders!0)?string},
-         "documents": ${(itemCount.documents!0)?string}
+         "folders": ${(itemCount.folders!0)?c},
+         "documents": ${(itemCount.documents!0)?c}
       }
    },
    "items":

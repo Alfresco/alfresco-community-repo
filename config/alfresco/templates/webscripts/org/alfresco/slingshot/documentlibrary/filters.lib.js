@@ -23,6 +23,7 @@ function getFilterParams(filter, parsedArgs)
          var filterQuery = "+PATH:\"" + parsedArgs.rootNode.qnamePath + "//*\"";
          filterQuery += " -TYPE:\"{http://www.alfresco.org/model/content/1.0}thumbnail\"";
          filterQuery += " -TYPE:\"{http://www.alfresco.org/model/content/1.0}folder\"";
+         filterQuery += " -TYPE:\"{http://www.alfresco.org/model/content/1.0}systemfolder\"";
          filterQuery += " -TYPE:\"{http://www.alfresco.org/model/forum/1.0}forums\"";
          filterQuery += " -TYPE:\"{http://www.alfresco.org/model/forum/1.0}forum\"";
          filterQuery += " -TYPE:\"{http://www.alfresco.org/model/forum/1.0}topic\"";
@@ -75,6 +76,7 @@ function getFilterParams(filter, parsedArgs)
          filterQuery += " -ASPECT:\"{http://www.alfresco.org/model/content/1.0}workingcopy\"";
          filterQuery += " -TYPE:\"{http://www.alfresco.org/model/content/1.0}thumbnail\"";
          filterQuery += " -TYPE:\"{http://www.alfresco.org/model/content/1.0}folder\"";
+         filterQuery += " -TYPE:\"{http://www.alfresco.org/model/content/1.0}systemfolder\"";
          filterQuery += " -TYPE:\"{http://www.alfresco.org/model/forum/1.0}forums\"";
          filterQuery += " -TYPE:\"{http://www.alfresco.org/model/forum/1.0}forum\"";
          filterQuery += " -TYPE:\"{http://www.alfresco.org/model/forum/1.0}topic\"";
@@ -107,6 +109,7 @@ function getFilterParams(filter, parsedArgs)
       default:
          var filterQuery = "+PATH:\"" + parsedArgs.parentNode.qnamePath + "/*\"";
          filterQuery += " -ASPECT:\"{http://www.alfresco.org/model/content/1.0}workingcopy\"";
+         filterQuery += " -TYPE:\"{http://www.alfresco.org/model/content/1.0}systemfolder\"";
          filterQuery += " -TYPE:\"{http://www.alfresco.org/model/forum/1.0}forums\"";
          filterQuery += " -TYPE:\"{http://www.alfresco.org/model/forum/1.0}forum\"";
          filterQuery += " -TYPE:\"{http://www.alfresco.org/model/forum/1.0}topic\"";

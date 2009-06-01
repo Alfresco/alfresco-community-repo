@@ -1,28 +1,33 @@
 <import resource="classpath:/alfresco/templates/webscripts/org/alfresco/slingshot/search/search.lib.js">
 
-const MAX_RESULTS = 3;
-
 function getContents(user,type,maxResults)
 {
+   var padZeros = function padZeros(number)
+   {
+      return (number<10) ? '0'+number : number;
+   }
    //set range to within last 28 days
    var date = new Date();
-   var toQuery = date.getFullYear() + "\\-" + (date.getMonth()+1) + "\\-" + date.getDate();
+   var toQuery = date.getFullYear() + "\\-" + padZeros((date.getMonth()+1)) + "\\-" + padZeros(date.getDate());
    date.setDate(date.getDate() - 28);
-   var fromQuery = date.getFullYear() + "\\-" + (date.getMonth()+1) + "\\-" + date.getDate();
-   
-   var query = "+PATH:\"/app:company_home//*\" "+
-               "+TYPE:\"{http://www.alfresco.org/model/content/1.0}content\" " +
-               "+@cm\\:modifier:" + user + " " +
-               "+@cm\\:" + type + ":[" + fromQuery + "T00\\:00\\:00 TO " + toQuery + "T23\\:59\\:59]";
+   var fromQuery = date.getFullYear() + "\\-" + padZeros((date.getMonth()+1)) + "\\-" + padZeros(date.getDate());
 
+   var userType = (type=='created') ? 'creator' : 'modifier';
+   
+   var query = "+PATH:\"/app:company_home/st:sites/*//*\" "+
+               "+TYPE:\"{http://www.alfresco.org/model/content/1.0}content\" " +
+               "+@cm\\:" + userType +":" + user + " " +
+               "+@cm\\:" + type + ":[" + fromQuery + "T00\\:00\\:00 TO " + toQuery + "T23\\:59\\:59]" +
+               "-TYPE:\"{http://www.alfresco.org/model/forum/1.0}post\" " +
+               "-TYPE:\"{http://www.alfresco.org/model/content/1.0}thumbnail\""
+   q = query;
    var nodes = [];
-   nodes = search.luceneSearch(query);
+   nodes = search.luceneSearch(query,"cm:"+type,false);
 
    return processResults(nodes, maxResults);
 }
+var maxResults = (args.maxResults !== undefined) ? parseInt(args.maxResults, 10) : DEFAULT_MAX_RESULTS;
 
 model.data = [];
-model.data['created'] = getContents(args.user,'created',MAX_RESULTS);
-model.data['modified'] = getContents(args.user,'modified',MAX_RESULTS);
-model.user = args.user;
-
+model.data['created'] = getContents(args.user,'created',maxResults);
+model.data['modified'] = getContents(args.user,'modified',maxResults);

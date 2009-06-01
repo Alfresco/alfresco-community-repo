@@ -26,9 +26,7 @@
                "shortName": "${item.site.shortName}",
                "title": "${item.site.title}"
             },
-            "container": "${item.container}",
-            "src":"${item.src!''}",
-            "srcP":"${item.srcP!''}"
+            "container": "${item.container}"
          }<#if item_has_next>,</#if>
          </#list>       
       ]

@@ -521,14 +521,17 @@ public class ImporterComponent
         public void importMetaData(Map<QName, String> properties)
         {
             // Determine if we're importing a complete repository
-            String path = properties.get(QName.createQName(NamespaceService.REPOSITORY_VIEW_1_0_URI, "exportOf"));
-            if (path != null && path.equals("/"))
+            String complexPath = properties.get(QName.createQName(NamespaceService.REPOSITORY_VIEW_1_0_URI, "exportOf"));
+            for (String path : complexPath.split(","))
             {
-                // Only allow complete repository import into root
-                NodeRef storeRootRef = nodeService.getRootNode(rootRef.getStoreRef());
-                if (!storeRootRef.equals(rootRef))
+                if (path != null && path.equals("/"))
                 {
-                    throw new ImporterException("A complete repository package cannot be imported here");
+                    // Only allow complete repository import into root
+                    NodeRef storeRootRef = nodeService.getRootNode(rootRef.getStoreRef());
+                    if (!storeRootRef.equals(rootRef))
+                    {
+                        throw new ImporterException("A complete repository package cannot be imported here");
+                    }
                 }
             }
         }

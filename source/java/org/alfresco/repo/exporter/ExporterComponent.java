@@ -270,50 +270,52 @@ public class ExporterComponent
             // Export Nodes
             //
             
-            // determine if root repository node
-            NodeRef nodeRef = context.getExportOf();
-            if (parameters.isCrawlSelf())
+            while (context.canRetrieve())
             {
-                // export root node of specified export location
-                walkStartNamespaces(parameters, exporter);
-                boolean rootNode = nodeService.getRootNode(nodeRef.getStoreRef()).equals(nodeRef);
-                walkNode(nodeRef, parameters, exporter, rootNode);
-                walkEndNamespaces(parameters, exporter);
-            }
-            else if (parameters.isCrawlChildNodes())
-            {
-                // export child nodes only
-                List<ChildAssociationRef> childAssocs = nodeService.getChildAssocs(nodeRef);
-                for (ChildAssociationRef childAssoc : childAssocs)
+                // determine if root repository node
+                NodeRef nodeRef = context.getExportOf();
+                if (parameters.isCrawlSelf())
                 {
+                    // export root node of specified export location
                     walkStartNamespaces(parameters, exporter);
-                    walkNode(childAssoc.getChildRef(), parameters, exporter, false);
+                    boolean rootNode = nodeService.getRootNode(nodeRef.getStoreRef()).equals(nodeRef);
+                    walkNode(nodeRef, parameters, exporter, rootNode);
                     walkEndNamespaces(parameters, exporter);
                 }
-            }
+                else if (parameters.isCrawlChildNodes())
+                {
+                    // export child nodes only
+                    List<ChildAssociationRef> childAssocs = nodeService.getChildAssocs(nodeRef);
+                    for (ChildAssociationRef childAssoc : childAssocs)
+                    {
+                        walkStartNamespaces(parameters, exporter);
+                        walkNode(childAssoc.getChildRef(), parameters, exporter, false);
+                        walkEndNamespaces(parameters, exporter);
+                    }
+                }
 
-            //
-            // Export Secondary Links between Nodes
-            //
-            
-            for (NodeRef nodeWithAssociations : nodesWithSecondaryLinks.keySet())
-            {
-                walkStartNamespaces(parameters, exporter);
-                walkNodeSecondaryLinks(nodeWithAssociations, parameters, exporter);
-                walkEndNamespaces(parameters, exporter);
-            }
+                //
+                // Export Secondary Links between Nodes
+                //
+                for (NodeRef nodeWithAssociations : nodesWithSecondaryLinks.keySet())
+                {
+                    walkStartNamespaces(parameters, exporter);
+                    walkNodeSecondaryLinks(nodeWithAssociations, parameters, exporter);
+                    walkEndNamespaces(parameters, exporter);
+                }
 
-            //
-            // Export Associations between Nodes
-            //
+                //
+                // Export Associations between Nodes
+                //
+                for (NodeRef nodeWithAssociations : nodesWithAssociations.keySet())
+                {
+                    walkStartNamespaces(parameters, exporter);
+                    walkNodeAssociations(nodeWithAssociations, parameters, exporter);
+                    walkEndNamespaces(parameters, exporter);
+                }
             
-            for (NodeRef nodeWithAssociations : nodesWithAssociations.keySet())
-            {
-                walkStartNamespaces(parameters, exporter);
-                walkNodeAssociations(nodeWithAssociations, parameters, exporter);
-                walkEndNamespaces(parameters, exporter);
+                context.setNextValue();
             }
-            
             exporter.end();
         }
         
@@ -807,27 +809,28 @@ public class ExporterComponent
             boolean isWithin = false;
             
             // Current strategy is to determine if node is a child of the root exported node
-            NodeRef exportRoot = context.getExportOf();
-            if (nodeRef.equals(exportRoot) && parameters.isCrawlSelf() == true)
+            for (NodeRef exportRoot : context.getExportList())
             {
-                // node to export is the root export node (and root is to be exported)
-                isWithin = true;
-            }
-            else
-            {
-                // locate export root in primary parent path of node
-                Path nodePath = nodeService.getPath(nodeRef);
-                for (int i = nodePath.size() -1; i >= 0; i--)
+                if (nodeRef.equals(exportRoot) && parameters.isCrawlSelf() == true)
                 {
-                    Path.ChildAssocElement pathElement = (Path.ChildAssocElement)nodePath.get(i);
-                    if (pathElement.getRef().getChildRef().equals(exportRoot))
+                    // node to export is the root export node (and root is to be exported)
+                    isWithin = true;
+                }
+                else
+                {
+                    // locate export root in primary parent path of node
+                    Path nodePath = nodeService.getPath(nodeRef);
+                    for (int i = nodePath.size() -1; i >= 0; i--)
                     {
-                        isWithin = true;
-                        break;
+                        Path.ChildAssocElement pathElement = (Path.ChildAssocElement)nodePath.get(i);
+                        if (pathElement.getRef().getChildRef().equals(exportRoot))
+                        {
+                            isWithin = true;
+                            break;
+                        }
                     }
                 }
             }
-            
             return isWithin;
         }
     }
@@ -838,11 +841,13 @@ public class ExporterComponent
      */
     private class ExporterContextImpl implements ExporterContext
     {
-        private NodeRef exportOf;
-        private NodeRef parent;
+        private NodeRef[] exportList;
+        private NodeRef[] parentList;
         private String exportedBy;
         private Date exportedDate;
         private String exporterVersion;
+        
+        private int index;
         
         /**
          * Construct
@@ -851,21 +856,47 @@ public class ExporterComponent
          */
         public ExporterContextImpl(ExporterCrawlerParameters parameters)
         {
+            index = 0;
+            
             // get current user performing export
             String currentUserName = authenticationService.getCurrentUserName();
             exportedBy = (currentUserName == null) ? "unknown" : currentUserName;
 
             // get current date
             exportedDate = new Date(System.currentTimeMillis());
-            
-            // get export of
-            exportOf = getNodeRef(parameters.getExportFrom());
-            
-            // get export parent
-            parent = getParent(exportOf, parameters.isCrawlSelf());
+
+            // get list of exported nodes
+            exportList = (parameters.getExportFrom() == null) ? null : parameters.getExportFrom().getNodeRefs();
+            if (exportList == null)
+            {
+                // multi-node export
+                exportList = new NodeRef[1];
+                NodeRef exportOf = getNodeRef(parameters.getExportFrom());
+                exportList[0] = exportOf;
+            }
+            parentList = new NodeRef[exportList.length];
+            for (int i = 0; i < exportList.length; i++)
+            {
+                parentList[i] = getParent(exportList[i], parameters.isCrawlSelf());
+            }
             
             // get exporter version
             exporterVersion = descriptorService.getServerDescriptor().getVersion();
+        }
+        
+        public boolean canRetrieve()
+        {
+            return index < exportList.length;
+        }
+        
+        public int setNextValue()
+        {
+            return ++index;
+        }
+        
+        public void resetContext()
+        {
+            index = 0;
         }
         
         /* (non-Javadoc)
@@ -897,7 +928,11 @@ public class ExporterComponent
          */
         public NodeRef getExportOf()
         {
-            return exportOf;
+            if (canRetrieve())
+            {
+                return exportList[index];
+            }
+            return null;
         }
         
         /*
@@ -906,8 +941,31 @@ public class ExporterComponent
          */
         public NodeRef getExportParent()
         {
-            return parent;
+            if (canRetrieve())
+            {
+                return parentList[index];
+            }
+            return null;
         }
+        
+        /*
+         * (non-Javadoc)
+         * @see org.alfresco.service.cmr.view.ExporterContext#getExportList()
+         */
+        public NodeRef[] getExportList()
+        {
+            return exportList;
+        }
+
+        /*
+         * (non-Javadoc)
+         * @see org.alfresco.service.cmr.view.ExporterContext#getExportParentList()
+         */
+        public NodeRef[] getExportParentList()
+        {
+            return parentList;
+        }
+
         
         /**
          * Get the Node Ref from the specified Location

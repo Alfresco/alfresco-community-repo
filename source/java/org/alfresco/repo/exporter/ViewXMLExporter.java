@@ -45,6 +45,7 @@ import org.alfresco.service.cmr.view.ExporterException;
 import org.alfresco.service.cmr.view.ReferenceType;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.apache.commons.lang.ArrayUtils;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
@@ -212,10 +213,19 @@ import org.xml.sax.helpers.AttributesImpl;
 
             // export of
             contentHandler.startElement(NamespaceService.REPOSITORY_VIEW_PREFIX, EXPORTOF_LOCALNAME, EXPORTOF_QNAME.toPrefixString(), EMPTY_ATTRIBUTES);
-            String path = nodeService.getPath(context.getExportOf()).toPrefixString(namespaceService);
-            contentHandler.characters(path.toCharArray(), 0, path.length());
+            NodeRef[] exportList = context.getExportList();
+            int comma = 1;
+            for(int i=0;i < exportList.length; i++)
+            {
+                NodeRef nodeRef = exportList[i]; 
+                String path = nodeService.getPath(nodeRef).toPrefixString(namespaceService);
+                if (i == exportList.length - 1)
+                {
+                    comma = 0;
+                }
+                contentHandler.characters(ArrayUtils.addAll(path.toCharArray(), ",".toCharArray()), 0, path.length() + comma);
+            }
             contentHandler.endElement(NamespaceService.REPOSITORY_VIEW_PREFIX, EXPORTOF_LOCALNAME, EXPORTOF_QNAME.toPrefixString());
-            
             contentHandler.endElement(NamespaceService.REPOSITORY_VIEW_PREFIX, METADATA_LOCALNAME, METADATA_QNAME.toPrefixString());
         }
         catch (SAXException e)
@@ -545,7 +555,7 @@ import org.xml.sax.helpers.AttributesImpl;
                 NodeRef valueNodeRef = (NodeRef)value;
                 if (nodeRef.getStoreRef().equals(valueNodeRef.getStoreRef()))
                 {
-                    Path nodeRefPath = createPath(context.getExportOf(), nodeRef, valueNodeRef);
+                    Path nodeRefPath = createPath(context.getExportParent(), nodeRef, valueNodeRef);
                     value = (nodeRefPath == null) ? null : nodeRefPath.toPrefixString(namespaceService);
                 }
             }
@@ -569,12 +579,11 @@ import org.xml.sax.helpers.AttributesImpl;
             String strValue = (String)DefaultTypeConverter.INSTANCE.convert(String.class, value);
             if (strValue != null)
             {
-            	for (int i = 0; i < strValue.length(); i++) 
-            	{
-            		char[] temp = new char[]{strValue.charAt(i)};
-            		contentHandler.characters(temp, 0, 1); 
-            	}
-                          	
+                for (int i = 0; i < strValue.length(); i++) 
+                {
+                    char[] temp = new char[]{strValue.charAt(i)};
+                    contentHandler.characters(temp, 0, 1); 
+                }
             }
 
             // output value wrapper if property data type is any
@@ -802,26 +811,33 @@ import org.xml.sax.helpers.AttributesImpl;
                 if (i == rootPath.size())
                 {
                     // Determine if to node is relative to export tree
-                    i = 0;
-                    while (i < rootPath.size() && i < toPath.size() && rootPath.get(i).equals(toPath.get(i)))
+                    for (NodeRef nodeRef : context.getExportParentList())
                     {
-                        i++;
-                    }
-                    if (i == rootPath.size())
-                    {
-                        // build relative path between from and to
-                        relativePath = new Path();
-                        for (int p = 0; p < fromPath.size() - i; p++)
+                        int j = 0;
+                        Path tryPath = createIndexedPath(nodeRef, nodeService.getPath(nodeRef));
+                        while (j < tryPath.size() && j < toPath.size() && tryPath.get(j).equals(toPath.get(j)))
                         {
-                            relativePath.append(new Path.ParentElement());
+                            j++;
                         }
-                        if (i < toPath.size())
+                        if (j == tryPath.size())
                         {
-                            relativePath.append(toPath.subPath(i, toPath.size() -1));
+                            // build relative path between from and to
+                            relativePath = new Path();
+                            for (int p = 0; p < fromPath.size() - i; p++)
+                            {
+                                relativePath.append(new Path.ParentElement());
+                            }
+                            if (j < toPath.size())
+                            {
+                                relativePath.append(toPath.subPath(j, toPath.size() - 1));
+                            }
+                            
+                            break;
                         }
                     }
                 }
             }
+
             
             if (relativePath == null)
             {

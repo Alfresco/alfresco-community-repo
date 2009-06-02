@@ -38,6 +38,7 @@ public class Location
 {
     private StoreRef storeRef = null;
     private NodeRef nodeRef = null;
+    private NodeRef[] nodeRefs = null;
     private String path = null;
     private QName childAssocType = null;
     
@@ -53,6 +54,19 @@ public class Location
         this.storeRef = nodeRef.getStoreRef();
         this.nodeRef = nodeRef;
     }
+
+    /**
+     * Construct
+     * 
+     * @param nodeRefs
+     */
+    public Location(NodeRef[] nodeRefs)
+    {
+        ParameterCheck.mandatory("Node Refs", nodeRefs);
+        this.storeRef = nodeRefs[0].getStoreRef();
+        this.nodeRefs = nodeRefs;
+    }
+
 
     /**
      * Construct
@@ -79,6 +93,20 @@ public class Location
     public NodeRef getNodeRef()
     {
         return nodeRef;
+    }
+    
+    /**
+     * @return  the node refs
+     */
+    public NodeRef[] getNodeRefs()
+    {
+        return nodeRefs;
+    }
+    
+    public void setNodeRefs(NodeRef[] nodeRefs)
+    {
+        this.nodeRef = null;
+        this.nodeRefs = nodeRefs;   
     }
     
     /**

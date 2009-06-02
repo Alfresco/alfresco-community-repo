@@ -1,5 +1,6 @@
 <#macro dateFormat date>${date?string("dd MMM yyyy HH:mm:ss 'GMT'Z '('zzz')'")}</#macro>
 <#macro formatDataItems data>
+   <#escape x as jsonUtils.encodeJSONString(x)>
    {
       "items":
       [
@@ -31,10 +32,9 @@
          </#list>       
       ]
    }
+   </#escape>
 </#macro>
-<#escape x as jsonUtils.encodeJSONString(x)>
 {
 	"created": <@formatDataItems data['created'] />,
 	"modified": <@formatDataItems data['modified'] />
 }
-</#escape>

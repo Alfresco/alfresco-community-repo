@@ -58,6 +58,7 @@ public interface DataTypeDefinition
     public QName ASSOC_REF = QName.createQName(NamespaceService.DICTIONARY_MODEL_1_0_URI, "assocref");
     public QName PATH = QName.createQName(NamespaceService.DICTIONARY_MODEL_1_0_URI, "path");
     public QName LOCALE = QName.createQName(NamespaceService.DICTIONARY_MODEL_1_0_URI, "locale");
+    public QName PERIOD = QName.createQName(NamespaceService.DICTIONARY_MODEL_1_0_URI, "period");
     
     
     /**

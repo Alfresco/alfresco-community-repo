@@ -53,6 +53,7 @@ import org.alfresco.service.cmr.repository.EntityRef;
 import org.alfresco.service.cmr.repository.MLText;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.Path;
+import org.alfresco.service.cmr.repository.Period;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ISO8601DateFormat;
 import org.alfresco.util.VersionNumber;
@@ -291,6 +292,14 @@ public class DefaultTypeConverter
             }
         });
 
+        INSTANCE.addConverter(String.class, Period.class, new TypeConverter.Converter<String, Period>()
+        {
+            public Period convert(String source)
+            {
+                return new Period(source);
+            }
+        });
+
         INSTANCE.addConverter(String.class, VersionNumber.class, new TypeConverter.Converter<String, VersionNumber>()
         {
             public VersionNumber convert(String source)
@@ -399,6 +408,15 @@ public class DefaultTypeConverter
             }
         });
 
+        // From Period
+
+        INSTANCE.addConverter(Period.class, String.class, new TypeConverter.Converter<Period, String>()
+        {
+            public String convert(Period source)
+            {
+                return source.toString();
+            }
+        });
         
         //
         // Number to Subtypes and Date

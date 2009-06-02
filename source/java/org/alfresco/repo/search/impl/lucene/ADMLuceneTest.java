@@ -81,6 +81,7 @@ import org.alfresco.service.cmr.repository.MLText;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.Path;
+import org.alfresco.service.cmr.repository.Period;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.repository.datatype.Duration;
@@ -314,6 +315,7 @@ public class ADMLuceneTest extends TestCase
         testProperties.put(QName.createQName(TEST_NAMESPACE, "noderef-ista"), n1);
         testProperties.put(QName.createQName(TEST_NAMESPACE, "path-ista"), nodeService.getPath(n3));
         testProperties.put(QName.createQName(TEST_NAMESPACE, "locale-ista"), Locale.UK);
+        testProperties.put(QName.createQName(TEST_NAMESPACE, "period-ista"), new Period("period|12"));
         testProperties.put(QName.createQName(TEST_NAMESPACE, "null"), null);
         testProperties.put(QName.createQName(TEST_NAMESPACE, "list"), new ArrayList<Object>());
         MLText mlText = new MLText();
@@ -3877,6 +3879,14 @@ public class ADMLuceneTest extends TestCase
         assertNotNull(results.getRow(0).getValue(QName.createQName(TEST_NAMESPACE, "path-ista")));
         results.close();
 
+        // Period
+        
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(QName.createQName(TEST_NAMESPACE, "period-ista")) + ":\"period|12\"", null);
+        assertEquals(1, results.length());
+        assertNotNull(results.getRow(0).getValue(QName.createQName(TEST_NAMESPACE, "path-ista")));
+        results.close();
+
+        
         // Type
 
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "TYPE:\"" + testType.toString() + "\"", null);

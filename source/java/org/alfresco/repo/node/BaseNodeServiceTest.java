@@ -129,7 +129,8 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
     public static final QName PROP_QNAME_CATEGORY_VALUE = QName.createQName(NAMESPACE, "categoryValue");
     public static final QName PROP_QNAME_LOCALE_VALUE = QName.createQName(NAMESPACE, "localeValue");
     public static final QName PROP_QNAME_NULL_VALUE = QName.createQName(NAMESPACE, "nullValue");
-    public static final QName PROP_QNAME_MULTI_VALUE = QName.createQName(NAMESPACE, "multiValue");    
+    public static final QName PROP_QNAME_MULTI_VALUE = QName.createQName(NAMESPACE, "multiValue");   
+    public static final QName PROP_QNAME_PERIOD_VALUE = QName.createQName(NAMESPACE, "periodValue");   
     public static final QName PROP_QNAME_MULTI_ML_VALUE = QName.createQName(NAMESPACE, "multiMLValue");    
     public static final QName PROP_QNAME_MARKER_PROP = QName.createQName(NAMESPACE, "markerProp");
     public static final QName PROP_QNAME_PROP1 = QName.createQName(NAMESPACE, "prop1");
@@ -1533,6 +1534,7 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         properties.put(PROP_QNAME_LOCALE_VALUE, Locale.CHINESE);
         properties.put(PROP_QNAME_NULL_VALUE, null);
         properties.put(PROP_QNAME_MULTI_VALUE, listProperty);
+        properties.put(PROP_QNAME_PERIOD_VALUE, "period|1");
         // Get the check values
         Map<QName, Serializable> expectedProperties = new HashMap<QName, Serializable>(properties);
         getExpectedPropertyValues(expectedProperties);

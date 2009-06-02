@@ -48,6 +48,7 @@ import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.MLText;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.Path;
+import org.alfresco.service.cmr.repository.Period;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.EqualsHelper;
@@ -441,6 +442,26 @@ public class PropertyValue implements Cloneable, Serializable
             {
                 return DefaultTypeConverter.INSTANCE.convert(VersionNumber.class, value);
             }
+        },
+        PERIOD
+        {
+            @Override
+            public Integer getOrdinalNumber()
+            {
+                return Integer.valueOf(20);
+            }
+
+            @Override
+            protected ValueType getPersistedType(Serializable value)
+            {
+                return ValueType.STRING;
+            }
+
+            @Override
+            Serializable convert(Serializable value)
+            {
+                return DefaultTypeConverter.INSTANCE.convert(Period.class, value);
+            }
         };
         
         /**
@@ -567,6 +588,10 @@ public class PropertyValue implements Cloneable, Serializable
         {
             return ValueType.MLTEXT;
         }
+        else if (value instanceof Period)
+        {
+            return ValueType.PERIOD;
+        }
         else
         {
             // type is not recognised as belonging to any particular slot
@@ -602,6 +627,7 @@ public class PropertyValue implements Cloneable, Serializable
         valueTypesByPropertyType.put(DataTypeDefinition.PATH, ValueType.PATH);
         valueTypesByPropertyType.put(DataTypeDefinition.QNAME, ValueType.QNAME);
         valueTypesByPropertyType.put(DataTypeDefinition.LOCALE, ValueType.LOCALE);
+        valueTypesByPropertyType.put(DataTypeDefinition.PERIOD, ValueType.PERIOD);
         
         valueTypesByOrdinalNumber = new HashMap<Integer, ValueType>(37);
         for (ValueType valueType : ValueType.values())

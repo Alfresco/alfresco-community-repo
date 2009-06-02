@@ -31,13 +31,10 @@ import java.util.Map;
 
 import javax.xml.ws.Holder;
 
-import org.alfresco.cmis.CMISDataTypeEnum;
 import org.alfresco.cmis.CMISQueryOptions;
 import org.alfresco.cmis.CMISResultSet;
 import org.alfresco.cmis.CMISResultSetColumn;
-import org.alfresco.cmis.CMISResultSetMetaData;
 import org.alfresco.cmis.CMISResultSetRow;
-import org.alfresco.repo.cmis.PropertyFilter;
 
 /**
  * Port for Discovery service.
@@ -74,9 +71,7 @@ public class DMDiscoveryServicePort extends DMAbstractServicePort implements Dis
 
         // execute query
         CMISResultSet resultSet = cmisQueryService.query(options);
-        CMISResultSetMetaData metaData = resultSet.getMetaData();
-        CMISResultSetColumn[] columns = metaData.getColumns();
-        PropertyFilter filter = new PropertyFilter();
+        CMISResultSetColumn[] columns = resultSet.getMetaData().getColumns();
 
         // build query response
         QueryResponse response = new QueryResponse();
@@ -90,44 +85,10 @@ public class DMDiscoveryServicePort extends DMAbstractServicePort implements Dis
             // for each column...
             for (CMISResultSetColumn column : columns)
             {
-                CMISDataTypeEnum type = column.getCMISDataType();
-                if (type == CMISDataTypeEnum.BOOLEAN)
+                CmisProperty property = propertiesUtil.createProperty(column.getName(), column.getCMISDataType(), values.get(column.getName()));
+                if (property != null)
                 {
-                    addBooleanProperty(properties, filter, column.getName(), values);
-                }
-                else if (type == CMISDataTypeEnum.DATETIME)
-                {
-                    addDateTimeProperty(properties, filter, column.getName(), values);
-                }
-                else if (type == CMISDataTypeEnum.DECIMAL)
-                {
-                    addDecimalProperty(properties, filter, column.getName(), values);
-                }
-                else if (type == CMISDataTypeEnum.ID)
-                {
-                    addIDProperty(properties, filter, column.getName(), values);
-                }
-                else if (type == CMISDataTypeEnum.INTEGER)
-                {
-                    addIntegerProperty(properties, filter, column.getName(), values);
-                }
-                else if (type == CMISDataTypeEnum.STRING)
-                {
-                    addStringProperty(properties, filter, column.getName(), values);
-                }
-                else if (type == CMISDataTypeEnum.URI)
-                {
-                    addURIProperty(properties, filter, column.getName(), values);
-                }
-                else if (type == CMISDataTypeEnum.XML)
-                {
-                    // TODO:
-                    throw cmisObjectsUtils.createCmisException("", EnumServiceException.NOT_SUPPORTED);
-                }
-                else if (type == CMISDataTypeEnum.HTML)
-                {
-                    // TODO:
-                    throw cmisObjectsUtils.createCmisException("", EnumServiceException.NOT_SUPPORTED);
+                    properties.getProperty().add(property);
                 }
             }
 

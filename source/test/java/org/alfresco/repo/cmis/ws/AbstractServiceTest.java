@@ -29,6 +29,7 @@ import java.util.List;
 import junit.framework.TestCase;
 
 import org.alfresco.cmis.CMISDictionaryModel;
+import org.alfresco.repo.cmis.ws.utils.PropertyUtil;
 
 /**
  * @author Michael Shavnev
@@ -52,6 +53,7 @@ public abstract class AbstractServiceTest extends TestCase
 
     protected Object servicePort = null;
     protected CmisServiceTestHelper helper;
+    protected PropertyUtil propertiesUtil = new PropertyUtil();
 
     private static boolean testAsUser = false;
 
@@ -109,7 +111,7 @@ public abstract class AbstractServiceTest extends TestCase
         {
             CmisObjectType object = response.getObject();
             CmisPropertiesType properties = object.getProperties();
-            property = (String) PropertyUtil.getProperty(properties, CMISDictionaryModel.PROP_NAME);
+            property = (String) propertiesUtil.getCmisPropertyValue(properties, CMISDictionaryModel.PROP_NAME, null);
         }
         else
         {
@@ -126,9 +128,9 @@ public abstract class AbstractServiceTest extends TestCase
         {
             CmisObjectType object = response.getObject();
             CmisPropertiesType properties = object.getProperties();
-            if (PropertyUtil.getProperty(properties, propertyName) != null)
+            if (propertiesUtil.getCmisPropertyValue(properties, propertyName, null) != null)
             {
-                property = (String) PropertyUtil.getProperty(properties, propertyName);
+                property = (String) propertiesUtil.getCmisPropertyValue(properties, propertyName, null);
             }
         }
         else
@@ -146,9 +148,9 @@ public abstract class AbstractServiceTest extends TestCase
         {
             CmisObjectType object = response.getObject();
             CmisPropertiesType properties = object.getProperties();
-            if (PropertyUtil.getProperty(properties, propertyName) != null)
+            if (propertiesUtil.getCmisPropertyValue(properties, propertyName, null) != null)
             {
-                property = (Boolean) PropertyUtil.getProperty(properties, propertyName);
+                property = (Boolean) propertiesUtil.getCmisPropertyValue(properties, propertyName, null);
             }
         }
         else
@@ -166,7 +168,7 @@ public abstract class AbstractServiceTest extends TestCase
         {
             CmisObjectType object = response.getObject();
             CmisPropertiesType properties = object.getProperties();
-            property = (String) PropertyUtil.getProperty(properties, CMISDictionaryModel.PROP_OBJECT_ID);
+            property = (String) propertiesUtil.getCmisPropertyValue(properties, CMISDictionaryModel.PROP_OBJECT_ID, null);
         }
         else
         {
@@ -180,7 +182,7 @@ public abstract class AbstractServiceTest extends TestCase
         for (CmisObjectType object : objects)
         {
             CmisPropertiesType properties = object.getProperties();
-            String name = (String) PropertyUtil.getProperty(properties, CMISDictionaryModel.PROP_NAME);
+            String name = (String) propertiesUtil.getCmisPropertyValue(properties, CMISDictionaryModel.PROP_NAME, null);
             assertNotNull(name);
         }
 
@@ -192,7 +194,7 @@ public abstract class AbstractServiceTest extends TestCase
         for (CmisObjectType object : objects)
         {
             CmisPropertiesType properties = object.getProperties();
-            String property = (String) PropertyUtil.getProperty(properties, propertyName);
+            String property = (String) propertiesUtil.getCmisPropertyValue(properties, propertyName, null);
             if (property.equals(propertyValue))
             {
                 isFound = true;

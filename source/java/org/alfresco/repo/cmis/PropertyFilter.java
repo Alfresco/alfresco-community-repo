@@ -40,6 +40,8 @@ import org.alfresco.repo.cmis.ws.utils.CmisObjectsUtils;
  */
 public class PropertyFilter
 {
+    public static final String PROPERTY_NAME_TOKENS_DELIMETER = ",";
+
     private static final int MINIMAL_ALLOWED_STRUCTURE_SIZE = 1;
     private static final String MATCH_ALL_FILTER = "*";
     private static final Pattern PROPERTY_FILTER_REGEX = Pattern.compile("^(\\*)|([\\p{Alpha}\\p{Digit}_]+((,){1}( )*[\\p{Alpha}\\p{Digit}_]+)*)$");
@@ -63,7 +65,7 @@ public class PropertyFilter
 
         if (!filter.equals(MATCH_ALL_FILTER) && filter.length() >= MINIMAL_ALLOWED_STRUCTURE_SIZE)
         {
-            splitFilterOnTokens(filter.split(","));
+            splitFilterOnTokens(filter.split(PROPERTY_NAME_TOKENS_DELIMETER));
         }
     }
 
@@ -84,5 +86,4 @@ public class PropertyFilter
     {
         return properties == null || properties.contains(property.toLowerCase());
     }
-
 }

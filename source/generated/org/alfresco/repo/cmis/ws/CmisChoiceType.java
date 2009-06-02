@@ -42,15 +42,15 @@ import javax.xml.namespace.QName;
     "choice"
 })
 @XmlSeeAlso({
-    CmisChoiceDateTimeType.class,
+    CmisChoiceXmlType.class,
     CmisChoiceStringType.class,
     CmisChoiceDecimalType.class,
     CmisChoiceUriType.class,
     CmisChoiceIntegerType.class,
-    CmisChoiceXmlType.class,
-    CmisChoiceBooleanType.class,
     CmisChoiceIdType.class,
-    CmisChoiceHtmlType.class
+    CmisChoiceBooleanType.class,
+    CmisChoiceHtmlType.class,
+    CmisChoiceDateTimeType.class
 })
 public abstract class CmisChoiceType {
 
@@ -79,16 +79,16 @@ public abstract class CmisChoiceType {
      * 
      * <p>
      * Objects of the following type(s) are allowed in the list
-     * {@link JAXBElement }{@code <}{@link CmisChoiceUriType }{@code >}
-     * {@link JAXBElement }{@code <}{@link CmisChoiceIntegerType }{@code >}
-     * {@link JAXBElement }{@code <}{@link CmisChoiceXmlType }{@code >}
      * {@link JAXBElement }{@code <}{@link CmisChoiceHtmlType }{@code >}
-     * {@link JAXBElement }{@code <}{@link CmisChoiceStringType }{@code >}
-     * {@link JAXBElement }{@code <}{@link CmisChoiceDateTimeType }{@code >}
-     * {@link JAXBElement }{@code <}{@link CmisChoiceIdType }{@code >}
+     * {@link JAXBElement }{@code <}{@link CmisChoiceType }{@code >}
      * {@link JAXBElement }{@code <}{@link CmisChoiceBooleanType }{@code >}
      * {@link JAXBElement }{@code <}{@link CmisChoiceDecimalType }{@code >}
-     * {@link JAXBElement }{@code <}{@link CmisChoiceType }{@code >}
+     * {@link JAXBElement }{@code <}{@link CmisChoiceIdType }{@code >}
+     * {@link JAXBElement }{@code <}{@link CmisChoiceDateTimeType }{@code >}
+     * {@link JAXBElement }{@code <}{@link CmisChoiceUriType }{@code >}
+     * {@link JAXBElement }{@code <}{@link CmisChoiceXmlType }{@code >}
+     * {@link JAXBElement }{@code <}{@link CmisChoiceStringType }{@code >}
+     * {@link JAXBElement }{@code <}{@link CmisChoiceIntegerType }{@code >}
      * 
      * 
      */

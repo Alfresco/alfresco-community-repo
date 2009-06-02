@@ -27,7 +27,6 @@ package org.alfresco.repo.cmis.ws;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -121,9 +120,12 @@ public class DMRepositoryServicePort extends DMAbstractServicePort implements Re
         Descriptor serverDescriptor = descriptorService.getCurrentRepositoryDescriptor();
         repositoryEntryType.setRepositoryId(serverDescriptor.getId());
         repositoryEntryType.setRepositoryName(serverDescriptor.getName());
-        // TODO: Hardcoded! repositoryUri should be reteived using standart mechanism
+
+        // TODO: Hardcoded! repositoryUri should be retrieved using standard mechanism
         repositoryEntryType.setRepositoryURI(repositoryUri);
-        return Collections.singletonList(repositoryEntryType);
+        List<CmisRepositoryEntryType> result = new LinkedList<CmisRepositoryEntryType>();
+        result.add(repositoryEntryType);
+        return result;
     }
 
     /**
@@ -146,7 +148,7 @@ public class DMRepositoryServicePort extends DMAbstractServicePort implements Re
         repositoryInfoType.setVendorName("Alfresco");
         repositoryInfoType.setProductName("Alfresco Repository (" + serverDescriptor.getEdition() + ")");
         repositoryInfoType.setProductVersion(serverDescriptor.getVersion());
-        repositoryInfoType.setRootFolderId((String) cmisService.getProperty(cmisService.getDefaultRootNodeRef(), CMISDictionaryModel.PROP_OBJECT_ID));
+        repositoryInfoType.setRootFolderId(propertiesUtil.getProperty(cmisService.getDefaultRootNodeRef(), CMISDictionaryModel.PROP_OBJECT_ID, (String) null));
         CmisRepositoryCapabilitiesType capabilities = new CmisRepositoryCapabilitiesType();
         capabilities.setCapabilityMultifiling(true);
         capabilities.setCapabilityUnfiling(false);
@@ -183,7 +185,7 @@ public class DMRepositoryServicePort extends DMAbstractServicePort implements Re
         case DATETIME:
             CmisChoiceDateTimeType choiceDateTimeType = new CmisChoiceDateTimeType();
             choiceDateTimeType.setKey(choice.getName());
-            choiceDateTimeType.getValue().add(convert((Date) choice.getValue()));
+            choiceDateTimeType.getValue().add(propertiesUtil.convert((Date) choice.getValue()));
             result = cmisObjectFactory.createChoiceDateTime(choiceDateTimeType);
             break;
         case DECIMAL:
@@ -249,7 +251,6 @@ public class DMRepositoryServicePort extends DMAbstractServicePort implements Re
      * @param choices repository choice object
      * @param cmisChoices web service choice object
      */
-    @SuppressWarnings("unused")
     private void addChoices(CMISDataTypeEnum propertyType, Collection<CMISChoice> choices, List<CmisChoiceType> cmisChoices)
     {
         for (CMISChoice choice : choices)
@@ -345,17 +346,13 @@ public class DMRepositoryServicePort extends DMAbstractServicePort implements Re
      * @param typeDefinition repository type definition
      * @param includeProperties true if need property definitions for type definition
      */
-    @SuppressWarnings("unused")
     private void setCmisTypeDefinitionProperties(CmisTypeDefinitionType cmisTypeDefinition, CMISTypeDefinition typeDefinition, boolean includeProperties) throws CmisException
     {
         cmisTypeDefinition.setTypeId(typeDefinition.getTypeId().getId());
         cmisTypeDefinition.setQueryName(typeDefinition.getQueryName());
         cmisTypeDefinition.setDisplayName(typeDefinition.getDisplayName());
         cmisTypeDefinition.setBaseType(EnumBaseObjectType.fromValue(typeDefinition.getBaseType().getTypeId().getId()));
-        if (typeDefinition.getParentType() != null)
-        {
-            cmisTypeDefinition.setParentId(typeDefinition.getParentType().getTypeId().getId());
-        }
+        cmisTypeDefinition.setParentId(typeDefinition.getParentType().getTypeId().getId());
         cmisTypeDefinition.setBaseTypeQueryName(typeDefinition.getBaseType().getQueryName());
         cmisTypeDefinition.setDescription(typeDefinition.getDescription());
         cmisTypeDefinition.setCreatable(typeDefinition.isCreatable());
@@ -384,6 +381,11 @@ public class DMRepositoryServicePort extends DMAbstractServicePort implements Re
      */
     private CmisTypeDefinitionType getCmisTypeDefinition(CMISTypeDefinition typeDef, boolean includeProperties) throws CmisException
     {
+        if (typeDef.getParentType() == null)
+        {
+            return null;
+        }
+
         if (typeDef == null)
         {
             throw cmisObjectsUtils.createCmisException("Type not found", EnumServiceException.OBJECT_NOT_FOUND);
@@ -416,7 +418,7 @@ public class DMRepositoryServicePort extends DMAbstractServicePort implements Re
             result = cmisObjectFactory.createRelationshipType(relationshipDefinitionType);
             break;
         case UNKNOWN:
-            throw new CmisException("Unknown CMIS Type");
+            throw cmisObjectsUtils.createCmisException("Unknown CMIS Type", EnumServiceException.INVALID_ARGUMENT);
         }
 
         return result.getValue();
@@ -443,11 +445,6 @@ public class DMRepositoryServicePort extends DMAbstractServicePort implements Re
         {
             CMISTypeDefinition typeDef = cmisDictionaryService.findType(typeId);
             typeDefs = typeDef.getSubTypes(true);
-        }
-
-        if (maxItems != null)
-        {
-            hasMoreItems.value = new Boolean((skipCount.intValue() + maxItems.intValue()) < typeDefs.size());            
         }
 
         // skip
@@ -486,5 +483,4 @@ public class DMRepositoryServicePort extends DMAbstractServicePort implements Re
         CMISTypeDefinition typeDef = cmisDictionaryService.findType(typeId);
         return getCmisTypeDefinition(typeDef, true);
     }
-
 }

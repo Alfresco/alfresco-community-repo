@@ -55,15 +55,15 @@ import org.w3c.dom.Element;
 public class CmisPropertiesType {
 
     @XmlElements({
+        @XmlElement(name = "propertyBoolean", type = CmisPropertyBoolean.class, nillable = true),
+        @XmlElement(name = "propertyDecimal", type = CmisPropertyDecimal.class, nillable = true),
         @XmlElement(name = "propertyXml", type = CmisPropertyXml.class, nillable = true),
         @XmlElement(name = "propertyDateTime", type = CmisPropertyDateTime.class, nillable = true),
         @XmlElement(name = "propertyInteger", type = CmisPropertyInteger.class, nillable = true),
-        @XmlElement(name = "propertyDecimal", type = CmisPropertyDecimal.class, nillable = true),
-        @XmlElement(name = "propertyBoolean", type = CmisPropertyBoolean.class, nillable = true),
-        @XmlElement(name = "propertyId", type = CmisPropertyId.class, nillable = true),
         @XmlElement(name = "propertyString", type = CmisPropertyString.class, nillable = true),
+        @XmlElement(name = "propertyHtml", type = CmisPropertyHtml.class, nillable = true),
         @XmlElement(name = "propertyUri", type = CmisPropertyUri.class, nillable = true),
-        @XmlElement(name = "propertyHtml", type = CmisPropertyHtml.class, nillable = true)
+        @XmlElement(name = "propertyId", type = CmisPropertyId.class, nillable = true)
     })
     protected List<CmisProperty> property;
     @XmlAnyElement(lax = true)
@@ -89,15 +89,15 @@ public class CmisPropertiesType {
      * 
      * <p>
      * Objects of the following type(s) are allowed in the list
+     * {@link CmisPropertyBoolean }
+     * {@link CmisPropertyDecimal }
      * {@link CmisPropertyXml }
      * {@link CmisPropertyDateTime }
      * {@link CmisPropertyInteger }
-     * {@link CmisPropertyDecimal }
-     * {@link CmisPropertyBoolean }
-     * {@link CmisPropertyId }
      * {@link CmisPropertyString }
-     * {@link CmisPropertyUri }
      * {@link CmisPropertyHtml }
+     * {@link CmisPropertyUri }
+     * {@link CmisPropertyId }
      * 
      * 
      */

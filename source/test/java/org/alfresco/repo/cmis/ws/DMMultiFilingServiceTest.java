@@ -81,7 +81,7 @@ public class DMMultiFilingServiceTest extends AbstractServiceTest
         boolean found = false;
         for (CmisObjectType cmisObjectType : helper.getChildren(anotherFolderId, EnumTypesOfFileableObjects.DOCUMENTS, 0, CMISDictionaryModel.PROP_OBJECT_ID).getObject())
         {
-            if ((found = PropertyUtil.getProperty(cmisObjectType.getProperties(), CMISDictionaryModel.PROP_OBJECT_ID).equals(documentId)))
+            if ((found = propertiesUtil.getCmisPropertyValue(cmisObjectType.getProperties(), CMISDictionaryModel.PROP_OBJECT_ID, null).equals(documentId)))
             {
                 break;
             }

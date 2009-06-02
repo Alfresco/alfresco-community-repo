@@ -286,9 +286,19 @@
         <property name="lockService" ref="LockService" />
         <property name="checkOutCheckInService" ref="CheckoutCheckinService" />
         <property name="authorityService" ref="AuthorityService" />
+        <property name="versionService" ref="VersionService" />
         <property name="cmisDictionaryService" ref="CMISDictionaryService" />
         <property name="fileFolderService" ref="FileFolderService" />
         <property name="nodeService" ref="NodeService" />
+    </bean>
+
+    <bean id="propertiesUtils" class="org.alfresco.repo.cmis.ws.utils.PropertyUtil">
+        <property name="cmisDictionaryService" ref="CMISDictionaryService" />
+        <property name="cmisObjectsUtils" ref="cmisObjectsUtils" />
+        <property name="cmisService" ref="CMISService" />
+        <property name="nodeService" ref="NodeService" />
+        <property name="dictionaryService" ref="DictionaryService" />
+        <property name="namespaceService" ref="NamespaceService" />
     </bean>
 
     <bean id="dmRepositoryService" parent="dmAbstractService" class="org.alfresco.repo.cmis.ws.DMRepositoryServicePort" />
@@ -326,6 +336,7 @@
         <property name="searchService" ref="SearchService" />
 
         <property name="cmisObjectsUtils" ref="cmisObjectsUtils" />
+        <property name="propertiesUtil" ref="propertiesUtils" />
     </bean>
 
     <!-- ========================================================================================================= -->

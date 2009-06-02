@@ -81,7 +81,7 @@ public class DMVersioningServiceTest extends AbstractServiceTest
         String checkinComment = "Test checkin" + System.currentTimeMillis();
         ((VersioningServicePort) servicePort).checkIn(repositoryId, documentIdHolder, Boolean.TRUE, properties, contentStream, checkinComment);
 
-        assertEquals(checkinComment, PropertyUtil.getProperty(helper.getObjectProperties(documentId).getObject().getProperties(), CMISDictionaryModel.PROP_CHECKIN_COMMENT));
+        assertEquals(checkinComment, propertiesUtil.getCmisPropertyValue(helper.getObjectProperties(documentId).getObject().getProperties(), CMISDictionaryModel.PROP_CHECKIN_COMMENT, null));
     }
 
     public void testCheckOutCheckInDefault() throws Exception
@@ -108,7 +108,7 @@ public class DMVersioningServiceTest extends AbstractServiceTest
 
         // Cancel check out
         ((VersioningServicePort) servicePort).cancelCheckOut(repositoryId, documentIdHolder.value);
-        assertFalse((Boolean) PropertyUtil.getProperty(helper.getObjectProperties(documentId).getObject().getProperties(), CMISDictionaryModel.PROP_IS_VERSION_SERIES_CHECKED_OUT));
+        assertFalse((Boolean) propertiesUtil.getCmisPropertyValue(helper.getObjectProperties(documentId).getObject().getProperties(), CMISDictionaryModel.PROP_IS_VERSION_SERIES_CHECKED_OUT, null));
     }
 
     public void testCheckinNoExistsCheckOut() throws Exception
@@ -159,7 +159,7 @@ public class DMVersioningServiceTest extends AbstractServiceTest
         assertNotNull(response.getObject());
         CmisObjectType objectType = response.getObject();
         assertNotNull(objectType.getProperties());
-        assertTrue((Boolean) PropertyUtil.getProperty(objectType.getProperties(), CMISDictionaryModel.PROP_IS_LATEST_VERSION));
+        assertTrue((Boolean) propertiesUtil.getCmisPropertyValue(objectType.getProperties(), CMISDictionaryModel.PROP_IS_LATEST_VERSION, null));
     }
 
     public void testGetPropertiesOfLatestVersionDefault() throws Exception
@@ -172,7 +172,7 @@ public class DMVersioningServiceTest extends AbstractServiceTest
         assertNotNull(response.getObject());
         CmisObjectType objectType = response.getObject();
         assertNotNull(objectType.getProperties());
-        assertTrue((Boolean) PropertyUtil.getProperty(objectType.getProperties(), CMISDictionaryModel.PROP_IS_LATEST_VERSION));
+        assertTrue((Boolean) propertiesUtil.getCmisPropertyValue(objectType.getProperties(), CMISDictionaryModel.PROP_IS_LATEST_VERSION, null));
     }
 
     public void testGetAllVersionsDefault() throws Exception
@@ -192,7 +192,7 @@ public class DMVersioningServiceTest extends AbstractServiceTest
         GetAllVersionsResponse response = ((VersioningServicePort) servicePort).getAllVersions(request);
         assertNotNull(response);
         assertNotNull(response.getObject());
-        assertEquals(checkinComment, PropertyUtil.getProperty(response.getObject().get(0).getProperties(), CMISDictionaryModel.PROP_CHECKIN_COMMENT));
+        assertEquals(checkinComment, propertiesUtil.getCmisPropertyValue(response.getObject().get(0).getProperties(), CMISDictionaryModel.PROP_CHECKIN_COMMENT, null));
     }
 
     public void testGetAllVersions() throws Exception
@@ -215,7 +215,7 @@ public class DMVersioningServiceTest extends AbstractServiceTest
         GetAllVersionsResponse response = ((VersioningServicePort) servicePort).getAllVersions(request);
         assertNotNull(response);
         assertNotNull(response.getObject());
-        assertEquals(checkinComment, PropertyUtil.getProperty(response.getObject().get(0).getProperties(), CMISDictionaryModel.PROP_CHECKIN_COMMENT));
+        assertEquals(checkinComment, propertiesUtil.getCmisPropertyValue(response.getObject().get(0).getProperties(), CMISDictionaryModel.PROP_CHECKIN_COMMENT, null));
     }
 
     public void testGetAllVersionsForNoVersionHistory() throws Exception
@@ -256,11 +256,11 @@ public class DMVersioningServiceTest extends AbstractServiceTest
             {
                 if (!checkedOutfound)
                 {
-                    checkedOutfound = (Boolean) PropertyUtil.getProperty(cmisObjectType.getProperties(), CMISDictionaryModel.PROP_IS_VERSION_SERIES_CHECKED_OUT);
+                    checkedOutfound = (Boolean) propertiesUtil.getCmisPropertyValue(cmisObjectType.getProperties(), CMISDictionaryModel.PROP_IS_VERSION_SERIES_CHECKED_OUT, null);
                 }
                 if (!pwcFound)
                 {
-                    pwcFound = ((String) PropertyUtil.getProperty(cmisObjectType.getProperties(), CMISDictionaryModel.PROP_OBJECT_ID)).startsWith(documentIdHolder.value);
+                    pwcFound = ((String) propertiesUtil.getCmisPropertyValue(cmisObjectType.getProperties(), CMISDictionaryModel.PROP_OBJECT_ID, null)).startsWith(documentIdHolder.value);
                 }
             }
             assertTrue("No checked out version found", checkedOutfound);

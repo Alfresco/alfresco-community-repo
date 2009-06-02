@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2009 Alfresco Software Limited.
+ * Copyright (C) 2005-2008 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -76,7 +76,7 @@ public class DMNavigationServicePort extends DMAbstractServicePort implements Na
         String folderIdParam = parameters.getFolderId() == null ? null : parameters.getFolderId().getValue();
         if ((folderIdParam != null) && !folderIdParam.equals(""))
         {
-            folderId = cmisObjectsUtils.getIdentifierInstance(folderIdParam, AlfrescoObjectType.FOLDER_OBJECT).getConvertedIdentifier();
+            folderId = cmisObjectsUtils.getIdentifierInstance(folderIdParam, AlfrescoObjectType.FOLDER_OBJECT);
         }
 
         @SuppressWarnings("unused")
@@ -120,7 +120,7 @@ public class DMNavigationServicePort extends DMAbstractServicePort implements Na
         checkRepositoryId(parameters.getRepositoryId());
         PropertyFilter propertyFilter = createPropertyFilter(parameters.getFilter());
 
-        NodeRef folderNodeRef = cmisObjectsUtils.getIdentifierInstance(parameters.getFolderId(), AlfrescoObjectType.FOLDER_OBJECT).getConvertedIdentifier();
+        NodeRef folderNodeRef = cmisObjectsUtils.getIdentifierInstance(parameters.getFolderId(), AlfrescoObjectType.FOLDER_OBJECT);
 
         EnumTypesOfFileableObjects types = EnumTypesOfFileableObjects.ANY;
         if ((parameters.getType() != null) && ((parameters.getType().getValue() != null)))
@@ -146,8 +146,7 @@ public class DMNavigationServicePort extends DMAbstractServicePort implements Na
             listing = cmisService.getChildren(folderNodeRef, CMISTypesFilterEnum.FOLDERS);
             break;
         case POLICIES:
-            throw new CmisException(POLICIES_LISTING_UNSUPPORTED_EXCEPTION_MESSAGE, cmisObjectsUtils.createCmisException(POLICIES_LISTING_UNSUPPORTED_EXCEPTION_MESSAGE,
-                    EnumServiceException.NOT_SUPPORTED));
+            throw cmisObjectsUtils.createCmisException(POLICIES_LISTING_UNSUPPORTED_EXCEPTION_MESSAGE, EnumServiceException.NOT_SUPPORTED);
         case ANY:
             listing = cmisService.getChildren(folderNodeRef, CMISTypesFilterEnum.ANY);
             break;
@@ -249,7 +248,7 @@ public class DMNavigationServicePort extends DMAbstractServicePort implements Na
         checkRepositoryId(parameters.getRepositoryId());
 
         String filter = parameters.getFilter();
-        if (filter != null)
+        if ((filter != null) && !filter.equals("") && !filter.equals("*"))
         {
             if (!filter.contains(CMISDictionaryModel.PROP_PARENT_ID))
             {
@@ -262,7 +261,7 @@ public class DMNavigationServicePort extends DMAbstractServicePort implements Na
             }
         }
 
-        PropertyFilter propertyFilter = createPropertyFilter(parameters.getFilter());
+        PropertyFilter propertyFilter = createPropertyFilter(filter);
         GetFolderParentResponse response = new GetFolderParentResponse();
 
         boolean returnToRoot = ((parameters.getReturnToRoot() != null) && (parameters.getReturnToRoot().getValue() != null)) ? (parameters.getReturnToRoot().getValue()) : false;
@@ -290,8 +289,7 @@ public class DMNavigationServicePort extends DMAbstractServicePort implements Na
         PropertyFilter propertyFilter = createPropertyFilter(parameters.getFilter());
         GetObjectParentsResponse response = new GetObjectParentsResponse();
 
-        List<NodeRef> parents = receiveObjectParents((NodeRef) cmisObjectsUtils.getIdentifierInstance(parameters.getObjectId(), AlfrescoObjectType.DOCUMENT_OBJECT)
-                .getConvertedIdentifier());
+        List<NodeRef> parents = receiveObjectParents((NodeRef) cmisObjectsUtils.getIdentifierInstance(parameters.getObjectId(), AlfrescoObjectType.DOCUMENT_OBJECT));
         createCmisObjectList(propertyFilter, parents, response.getObject());
 
         // TODO: includeAllowableActions, includeRelationships
@@ -307,8 +305,7 @@ public class DMNavigationServicePort extends DMAbstractServicePort implements Na
             return result;
         }
 
-        NodeRef currentParent = receiveNextParentNodeReference((NodeRef) cmisObjectsUtils.getIdentifierInstance(targetChildIdentifier, AlfrescoObjectType.FOLDER_OBJECT)
-                .getConvertedIdentifier(), result);
+        NodeRef currentParent = receiveNextParentNodeReference((NodeRef) cmisObjectsUtils.getIdentifierInstance(targetChildIdentifier, AlfrescoObjectType.FOLDER_OBJECT), result);
         return (fullParentsHierarchy) ? (receiveFullAncestorsHierachy(currentParent, result)) : (result);
     }
 
@@ -420,7 +417,7 @@ public class DMNavigationServicePort extends DMAbstractServicePort implements Na
          */
         public List<NodeRef> receiveHierarchy(String rootFolderIdentifier, List<Pair<String, Boolean>> orderingFields) throws CmisException
         {
-            descendantsFolders.add((NodeRef) cmisObjectsUtils.getIdentifierInstance(rootFolderIdentifier, AlfrescoObjectType.FOLDER_OBJECT).getConvertedIdentifier());
+            descendantsFolders.add((NodeRef) cmisObjectsUtils.getIdentifierInstance(rootFolderIdentifier, AlfrescoObjectType.FOLDER_OBJECT));
             while (!descendantsFolders.isEmpty())
             {
                 descendantsFolders = performDescendantsResultObjectsStoring(returnObjectsType, resultList, descendantsFolders, new LinkedList<NodeRef>(),
@@ -457,7 +454,7 @@ public class DMNavigationServicePort extends DMAbstractServicePort implements Na
          */
         public List<NodeRef> receiveHierarchy(String rootFolderIdentifier, List<Pair<String, Boolean>> orderingFields) throws CmisException
         {
-            descendantsFolders.add((NodeRef) cmisObjectsUtils.getIdentifierInstance(rootFolderIdentifier, AlfrescoObjectType.FOLDER_OBJECT).getConvertedIdentifier());
+            descendantsFolders.add((NodeRef) cmisObjectsUtils.getIdentifierInstance(rootFolderIdentifier, AlfrescoObjectType.FOLDER_OBJECT));
 
             do
             {
@@ -469,5 +466,4 @@ public class DMNavigationServicePort extends DMAbstractServicePort implements Na
             return this.resultList;
         }
     }
-
 }

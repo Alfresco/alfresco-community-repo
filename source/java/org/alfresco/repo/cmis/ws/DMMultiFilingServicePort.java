@@ -49,16 +49,20 @@ public class DMMultiFilingServicePort extends DMAbstractServicePort implements M
     public void addObjectToFolder(String repositoryId, String objectId, String folderId) throws CmisException
     {
         checkRepositoryId(repositoryId);
-        NodeRef objectNodeRef = cmisObjectsUtils.getIdentifierInstance(objectId, AlfrescoObjectType.DOCUMENT_OR_FOLDER_OBJECT).getConvertedIdentifier();
-        NodeRef parentFolderNodeRef = cmisObjectsUtils.getIdentifierInstance(folderId, AlfrescoObjectType.FOLDER_OBJECT).getConvertedIdentifier();
+        NodeRef objectNodeRef = cmisObjectsUtils.getIdentifierInstance(objectId, AlfrescoObjectType.DOCUMENT_OBJECT);
+        NodeRef parentFolderNodeRef = cmisObjectsUtils.getIdentifierInstance(folderId, AlfrescoObjectType.FOLDER_OBJECT);
 
-        CMISTypeDefinition objectType = cmisDictionaryService.findType((String) cmisService.getProperty(objectNodeRef, CMISDictionaryModel.PROP_OBJECT_TYPE_ID));
-        CMISTypeDefinition folderType = cmisDictionaryService.findType((String) cmisService.getProperty(parentFolderNodeRef, CMISDictionaryModel.PROP_OBJECT_TYPE_ID));
+        CMISTypeDefinition objectType = cmisDictionaryService.findType(propertiesUtil.getProperty(objectNodeRef, CMISDictionaryModel.PROP_OBJECT_TYPE_ID, (String) null));
+        CMISTypeDefinition folderType = cmisDictionaryService.findType(propertiesUtil.getProperty(parentFolderNodeRef, CMISDictionaryModel.PROP_OBJECT_TYPE_ID, (String) null));
 
-        if (!folderType.getAllowedTargetTypes().contains(objectType))
+        if (folderType == null)
         {
-            cmisObjectsUtils.createCmisException("The typeID of Object is not in the list of AllowedChildObjectTypeIds of the parent-folder specified by folderId",
-                    EnumServiceException.CONSTRAINT);
+            throw cmisObjectsUtils.createCmisException("Type of the specified parent folder can't be resovled", EnumServiceException.RUNTIME);
+        }
+
+        if (!folderType.getAllowedTargetTypes().isEmpty() && !folderType.getAllowedTargetTypes().contains(objectType))
+        {
+            throw cmisObjectsUtils.createCmisException("The typeID of Object is not in the list of AllowedChildObjectTypeIds of the parent-folder specified by folderId", EnumServiceException.CONSTRAINT);
         }
         cmisObjectsUtils.addObjectToFolder(objectNodeRef, parentFolderNodeRef);
     }
@@ -75,7 +79,7 @@ public class DMMultiFilingServicePort extends DMAbstractServicePort implements M
     {
         checkRepositoryId(repositoryId);
 
-        NodeRef objectNodeReference = cmisObjectsUtils.getIdentifierInstance(objectId, AlfrescoObjectType.DOCUMENT_OR_FOLDER_OBJECT).getConvertedIdentifier();
+        NodeRef objectNodeReference = cmisObjectsUtils.getIdentifierInstance(objectId, AlfrescoObjectType.DOCUMENT_OBJECT);
         NodeRef folderNodeReference = checkAndReceiveFolderIdentifier(folderId);
 
         assertExistFolder(folderNodeReference);
@@ -91,7 +95,7 @@ public class DMMultiFilingServicePort extends DMAbstractServicePort implements M
     {
         try
         {
-            return cmisObjectsUtils.getIdentifierInstance(folderIdentifier, AlfrescoObjectType.FOLDER_OBJECT).getConvertedIdentifier();
+            return cmisObjectsUtils.getIdentifierInstance(folderIdentifier, AlfrescoObjectType.FOLDER_OBJECT);
         }
         catch (Throwable e)
         {

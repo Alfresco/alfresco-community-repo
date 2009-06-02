@@ -29,6 +29,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 import org.alfresco.cmis.CMISDictionaryService;
 import org.alfresco.cmis.CMISScope;
@@ -37,6 +38,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.cmis.ws.CmisException;
 import org.alfresco.repo.cmis.ws.CmisFaultType;
 import org.alfresco.repo.cmis.ws.EnumObjectType;
+import org.alfresco.repo.cmis.ws.EnumRelationshipDirection;
 import org.alfresco.repo.cmis.ws.EnumServiceException;
 import org.alfresco.repo.cmis.ws.utils.DescendantsQueueManager.DescendantElement;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -47,11 +49,19 @@ import org.alfresco.service.cmr.lock.LockStatus;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
+import org.alfresco.service.cmr.repository.ContentIOException;
+import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.AuthorityService;
+import org.alfresco.service.cmr.version.Version;
+import org.alfresco.service.cmr.version.VersionHistory;
+import org.alfresco.service.cmr.version.VersionService;
+import org.alfresco.service.cmr.version.VersionType;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.service.namespace.QNamePattern;
+import org.alfresco.util.Pair;
 
 /**
  * @author Dmitry Velichkevich
@@ -59,8 +69,10 @@ import org.alfresco.service.namespace.QName;
 public class CmisObjectsUtils
 {
     public static final String NODE_REFERENCE_ID_DELIMETER = "/";
-    private static final int NODE_REFERENCE_WITH_SUFFIX_DELIMETERS_COUNT = 5;
-    private static final String DOUBLE_NODE_REFERENCE_ID_DELIMETER = NODE_REFERENCE_ID_DELIMETER + NODE_REFERENCE_ID_DELIMETER;
+
+    private static final Pattern VERSION_LABEL_MATCHING_COMPILED_PATTERN = Pattern.compile("([\\p{Graph}])+([\\p{Digit}]*)\\.([\\p{Digit}]*)$");
+
+    private static final String INVALID_OBJECT_IDENTIFIER_MESSAGE = "Invalid Object Identifier was specified: Identifier is incorrect or Object with the specified Identifier does not exist";
 
     private static final List<QName> DOCUMENT_AND_FOLDER_TYPES;
     static
@@ -76,6 +88,9 @@ public class CmisObjectsUtils
         CLASS_TO_ENUM_EXCEPTION_MAPPING = new HashMap<String, EnumServiceException>();
         CLASS_TO_ENUM_EXCEPTION_MAPPING.put(AccessDeniedException.class.getName(), EnumServiceException.PERMISSION_DENIED);
         CLASS_TO_ENUM_EXCEPTION_MAPPING.put(java.lang.RuntimeException.class.getName(), EnumServiceException.RUNTIME);
+        CLASS_TO_ENUM_EXCEPTION_MAPPING.put(UnsupportedOperationException.class.getName(), EnumServiceException.NOT_SUPPORTED);
+        CLASS_TO_ENUM_EXCEPTION_MAPPING.put(InvalidNodeRefException.class.getName(), EnumServiceException.INVALID_ARGUMENT);
+        CLASS_TO_ENUM_EXCEPTION_MAPPING.put(ContentIOException.class.getName(), EnumServiceException.NOT_SUPPORTED);
         // TODO: insert CLASS_TO_ENUM_EXCEPTION_MAPPING.put(<Concreate_Exception_Type>.class.getName(), EnumServiceException.<Appropriate_Enum_value>);
     }
 
@@ -83,6 +98,7 @@ public class CmisObjectsUtils
     private CMISDictionaryService cmisDictionaryService;
     private FileFolderService fileFolderService;
     private AuthorityService authorityService;
+    private VersionService versionService;
     private NodeService nodeService;
     private LockService lockService;
 
@@ -116,6 +132,11 @@ public class CmisObjectsUtils
     public void setAuthorityService(AuthorityService authorityService)
     {
         this.authorityService = authorityService;
+    }
+
+    public void setVersionService(VersionService versionService)
+    {
+        this.versionService = versionService;
     }
 
     public CmisException createCmisException(String message, EnumServiceException exceptionType)
@@ -152,34 +173,35 @@ public class CmisObjectsUtils
         return new CmisException(message, fault, cause);
     }
 
-    public IdentifierConversionResults getIdentifierInstance(String identifier, AlfrescoObjectType expectedType) throws CmisException
+    @SuppressWarnings("unchecked")
+    public <IdentifierType> IdentifierType getIdentifierInstance(String identifier, AlfrescoObjectType expectedType) throws CmisException
     {
         if (!(identifier instanceof String))
         {
             throw createCmisException("Invalid Object Identifier was specified", EnumServiceException.INVALID_ARGUMENT);
         }
 
-        IdentifierConversionResults result;
+        IdentifierType result;
         AlfrescoObjectType actualObjectType;
 
         if (isRelationship(identifier))
         {
-            result = createAssociationIdentifierResult(identifier);
+            result = (IdentifierType) safeGetAssociationRef(identifier);
             actualObjectType = AlfrescoObjectType.RELATIONSHIP_OBJECT;
         }
         else
         {
-            NodeRef nodeReference = safeGetNodeRef(cutNodeVersionIfNecessary(identifier, identifier.split(NODE_REFERENCE_ID_DELIMETER), 1));
-            result = createNodeReferenceIdentifierResult(nodeReference);
+            NodeRef nodeReference = safeGetNodeRef(identifier);
+            result = (IdentifierType) nodeReference;
             actualObjectType = determineActualObjectType(expectedType, this.nodeService.getType(nodeReference));
         }
 
-        if ((expectedType == AlfrescoObjectType.ANY_OBJECT) || (actualObjectType == expectedType))
+        if ((AlfrescoObjectType.ANY_OBJECT == expectedType) || (actualObjectType == expectedType))
         {
             return result;
         }
 
-        throw createCmisException(("Unexpected object type of the specified Object Identifier " + identifier), EnumServiceException.INVALID_ARGUMENT);
+        throw createCmisException(("Unexpected object type of the specified Object with \"" + identifier + "\" identifier"), EnumServiceException.INVALID_ARGUMENT);
     }
 
     public void deleteFolder(NodeRef folderNodeReference, boolean continueOnFailure, boolean totalDeletion, List<String> resultList) throws CmisException
@@ -221,6 +243,29 @@ public class CmisObjectsUtils
 
     public boolean deleteObject(NodeRef objectNodeReference)
     {
+        if (null == objectNodeReference)
+        {
+            return false;
+        }
+
+        if (versionService.getVersionStoreReference().getIdentifier().equals(objectNodeReference.getStoreRef().getIdentifier()))
+        {
+            String versionLabel = (String) nodeService.getProperty(objectNodeReference, ContentModel.PROP_VERSION_LABEL);
+
+            if ((null != versionLabel) && !versionLabel.equals(""))
+            {
+                Version currentVersion = versionService.getCurrentVersion(objectNodeReference);
+
+                if ((null != currentVersion) && nodeService.exists(currentVersion.getVersionedNodeRef()))
+                {
+                    versionService.deleteVersion(currentVersion.getVersionedNodeRef(), currentVersion);
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
         return canLock(objectNodeReference) && performNodeDeletion(objectNodeReference);
     }
 
@@ -337,6 +382,66 @@ public class CmisObjectsUtils
         return nodeService.hasAspect(objectIdentifier, ContentModel.ASPECT_WORKING_COPY);
     }
 
+    public List<AssociationRef> receiveAssociations(NodeRef objectNodeReference, QNamePattern qnameFilter, EnumRelationshipDirection direction)
+    {
+        List<AssociationRef> result = new LinkedList<AssociationRef>();
+
+        if ((direction == EnumRelationshipDirection.EITHER) || (direction == EnumRelationshipDirection.TARGET))
+        {
+            result.addAll(nodeService.getSourceAssocs(objectNodeReference, qnameFilter));
+        }
+
+        if ((direction == EnumRelationshipDirection.EITHER) || (direction == EnumRelationshipDirection.SOURCE))
+        {
+            result.addAll(nodeService.getTargetAssocs(objectNodeReference, qnameFilter));
+        }
+
+        return result;
+    }
+
+    /**
+     * Returns latest minor or major version of document
+     * 
+     * @param documentNodeRef document node reference
+     * @param major need latest major version
+     * @return latest version node reference
+     */
+    public NodeRef getLatestNode(NodeRef documentNodeRef, boolean major)
+    {
+        Version specifiedVersion = versionService.getCurrentVersion(documentNodeRef);
+        NodeRef latestVersionNodeRef = documentNodeRef;
+
+        if ((null != specifiedVersion) && (null != specifiedVersion.getVersionedNodeRef()))
+        {
+            latestVersionNodeRef = specifiedVersion.getVersionedNodeRef();
+
+            if (major)
+            {
+                Version latestVersion = versionService.getCurrentVersion(latestVersionNodeRef);
+
+                if ((null != latestVersion) && (VersionType.MAJOR != latestVersion.getVersionType()))
+                {
+                    VersionHistory versionHistory = versionService.getVersionHistory(latestVersion.getFrozenStateNodeRef());
+
+                    if (null != versionHistory)
+                    {
+                        do
+                        {
+                            latestVersion = versionHistory.getPredecessor(latestVersion);
+                        } while ((null != latestVersion) && (VersionType.MAJOR != latestVersion.getVersionType()));
+                    }
+
+                    if ((null != latestVersion) && (null != latestVersion.getFrozenStateNodeRef()))
+                    {
+                        latestVersionNodeRef = latestVersion.getFrozenStateNodeRef();
+                    }
+                }
+            }
+        }
+
+        return latestVersionNodeRef;
+    }
+
     private boolean performNodeDeletion(NodeRef objectNodeReference)
     {
         if (nodeService.hasAspect(objectNodeReference, ContentModel.ASPECT_WORKING_COPY))
@@ -347,6 +452,23 @@ public class CmisObjectsUtils
 
         try
         {
+            List<AssociationRef> associations = receiveAssociations(objectNodeReference, new MatcheAllQNames(), EnumRelationshipDirection.EITHER);
+            for (AssociationRef association : associations)
+            {
+                if ((null != association) && (null != association.getSourceRef()) && (null != association.getTargetRef()) && (null != association.getTypeQName()))
+                {
+                    nodeService.removeAssociation(association.getSourceRef(), association.getTargetRef(), association.getTypeQName());
+                }
+            }
+
+            for (ChildAssociationRef parentAssociation : nodeService.getParentAssocs(objectNodeReference))
+            {
+                if (!parentAssociation.isPrimary())
+                {
+                    nodeService.removeChildAssociation(parentAssociation);
+                }
+            }
+
             nodeService.deleteNode(objectNodeReference);
         }
         catch (Throwable e)
@@ -383,30 +505,80 @@ public class CmisObjectsUtils
         return new UnlinkOperationStatus(objectUnlinked, new LinkedList<ChildAssociationRef>());
     }
 
+    private AssociationRef safeGetAssociationRef(String identifier) throws CmisException
+    {
+        AssociationRef result = new AssociationRef(identifier);
+
+        if (!nodeService.exists(result.getSourceRef()) || !nodeService.exists(result.getTargetRef()))
+        {
+            throw createCmisException(INVALID_OBJECT_IDENTIFIER_MESSAGE, EnumServiceException.INVALID_ARGUMENT);
+        }
+
+        return result;
+    }
+
     private NodeRef safeGetNodeRef(String nodeIdentifier) throws CmisException
     {
-        if (NodeRef.isNodeRef(nodeIdentifier))
+        Pair<String, String> nodeRefAndVersionLabel = (null != nodeIdentifier) ? (splitOnNodeRefAndVersionLabel(nodeIdentifier)) : (null);
+        if ((null != nodeRefAndVersionLabel) && (null != nodeRefAndVersionLabel.getFirst()) && NodeRef.isNodeRef(nodeRefAndVersionLabel.getFirst()))
         {
-            NodeRef result = new NodeRef(nodeIdentifier);
+            NodeRef result = new NodeRef(nodeRefAndVersionLabel.getFirst());
             if (nodeService.exists(result))
             {
+                result = getNodeRefFromVersion(result, nodeRefAndVersionLabel.getSecond());
+
+                if ((null != result) || !nodeService.exists(result))
+                {
                 return result;
             }
         }
+        }
 
-        throw createCmisException("Invalid Object Identifier was specified: Identifier is incorrect or Object with the specified Identifier does not exist",
-                EnumServiceException.OBJECT_NOT_FOUND);
+        throw createCmisException(INVALID_OBJECT_IDENTIFIER_MESSAGE, EnumServiceException.OBJECT_NOT_FOUND);
     }
 
-    private String cutNodeVersionIfNecessary(String identifier, String[] splitNodeIdentifier, int startIndex)
+    private Pair<String, String> splitOnNodeRefAndVersionLabel(String nodeIdentifier)
     {
-        String withoutVersionSuffix = identifier;
-        if (splitNodeIdentifier.length == NODE_REFERENCE_WITH_SUFFIX_DELIMETERS_COUNT)
+        String versionLabel = null;
+        int versionDelimeterIndex = nodeIdentifier.lastIndexOf(NODE_REFERENCE_ID_DELIMETER);
+        if (versionDelimeterIndex > 0)
         {
-            withoutVersionSuffix = splitNodeIdentifier[startIndex++ - 1] + DOUBLE_NODE_REFERENCE_ID_DELIMETER + splitNodeIdentifier[startIndex++] + NODE_REFERENCE_ID_DELIMETER
-                    + splitNodeIdentifier[startIndex];
+            versionLabel = nodeIdentifier.substring(versionDelimeterIndex + 1);
+            if ((null != versionLabel) && !versionLabel.equals("") && VERSION_LABEL_MATCHING_COMPILED_PATTERN.matcher(versionLabel).matches())
+            {
+                nodeIdentifier = nodeIdentifier.substring(0, versionDelimeterIndex);
+            }
+            else
+            {
+                versionLabel = null;
+            }
         }
-        return withoutVersionSuffix;
+
+        return new Pair<String, String>(nodeIdentifier, versionLabel);
+    }
+
+    private NodeRef getNodeRefFromVersion(NodeRef nodeRef, String versionLabel) throws CmisException
+    {
+        NodeRef result = nodeRef;
+
+        NodeRef latestNodeRef = ((null != versionLabel) && (null != nodeRef)) ? (getLatestNode(nodeRef, false)) : (null);
+        if ((null != latestNodeRef) && !versionLabel.equals(nodeService.getProperty(latestNodeRef, ContentModel.PROP_VERSION_LABEL)))
+        {
+            VersionHistory versionHistory = versionService.getVersionHistory(latestNodeRef);
+            if (null != versionHistory)
+            {
+                Version version = versionHistory.getVersion(versionLabel);
+
+                if ((null == version) || (null == version.getFrozenStateNodeRef()))
+                {
+                    throw createCmisException(("Specified object has no " + versionLabel + " version"), EnumServiceException.INVALID_ARGUMENT);
+                }
+
+                result = version.getFrozenStateNodeRef();
+        }
+        }
+
+        return result;
     }
 
     private AlfrescoObjectType determineActualObjectType(AlfrescoObjectType expectedType, QName objectType)
@@ -425,33 +597,12 @@ public class CmisObjectsUtils
         return AlfrescoObjectType.ANY_OBJECT;
     }
 
-    private IdentifierConversionResults createAssociationIdentifierResult(final String identifier)
+    private class MatcheAllQNames implements QNamePattern
     {
-        return new IdentifierConversionResults()
+        public boolean isMatch(QName qname)
         {
-            @SuppressWarnings("unchecked")
-            public AssociationRef getConvertedIdentifier()
-            {
-                return new AssociationRef(identifier);
-            }
-        };
-    }
-
-    private IdentifierConversionResults createNodeReferenceIdentifierResult(final NodeRef identifier)
-    {
-        return new IdentifierConversionResults()
-        {
-            @SuppressWarnings("unchecked")
-            public NodeRef getConvertedIdentifier()
-            {
-                return identifier;
-            }
-        };
-    }
-
-    public interface IdentifierConversionResults
-    {
-        public <I> I getConvertedIdentifier();
+            return true;
+        }
     }
 
     private class UnlinkOperationStatus

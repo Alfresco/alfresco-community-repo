@@ -34,7 +34,6 @@ import org.alfresco.repo.content.MimetypeMap;
 
 /**
  * @author Alexander Tsvetkov
- * 
  */
 
 public class DMObjectServiceTest extends AbstractServiceTest
@@ -129,7 +128,7 @@ public class DMObjectServiceTest extends AbstractServiceTest
         helper.checkIn(documentIdHolder, "checkin Comment", true);
         assertTrue(getPropertyValue(propertiesResponse, CMISDictionaryModel.PROP_VERSION_LABEL).equals("1.0"));
 
-        // documentId = (String) PropertyUtil.getProperty(response.getObject().iterator().next().getProperties(), CMISMapping.PROP_OBJECT_ID);
+        // documentId = (String) propertiesUtil.getCmisPropertyValue(response.getObject().iterator().next().getProperties(), CMISMapping.PROP_OBJECT_ID);
         // deleteDocument(documentId);
     }
 
@@ -220,16 +219,16 @@ public class DMObjectServiceTest extends AbstractServiceTest
 
         assertEquals(3, responseVersions.getObject().size());
         assertTrue("Initial version was not returned", isExistItemWithProperty(responseVersions.getObject(), CMISDictionaryModel.PROP_VERSION_LABEL, "1.0"));
-        assertTrue("Invalid response ordering: First object is not latest version", (Boolean) PropertyUtil.getProperty(responseVersions.getObject().get(0).getProperties(),
-                CMISDictionaryModel.PROP_IS_LATEST_VERSION));
-        assertTrue("Invalid response ordering: Second object is not head version", (Boolean) PropertyUtil.getProperty(responseVersions.getObject().get(1).getProperties(),
-                CMISDictionaryModel.PROP_IS_LATEST_VERSION));
+        assertTrue("Invalid response ordering: First object is not latest version", (Boolean) propertiesUtil.getCmisPropertyValue(responseVersions.getObject().get(0)
+                .getProperties(), CMISDictionaryModel.PROP_IS_LATEST_VERSION, null));
+        assertTrue("Invalid response ordering: Second object is not head version", (Boolean) propertiesUtil.getCmisPropertyValue(responseVersions.getObject().get(1)
+                .getProperties(), CMISDictionaryModel.PROP_IS_LATEST_VERSION, null));
     }
 
     // This test don't asserts until CMIS setProperty()/setProperties() logic is unimplemented
     public void testGetDocumentProperties_Other() throws Exception
     {
-        // If includeAllowableActionsâ is TRUE, the repository will return the allowable actions for the current user for the object as part of the output.
+        // If includeAllowableActionsï¿½ is TRUE, the repository will return the allowable actions for the current user for the object as part of the output.
         // "IncludeRelationships" indicates whether relationships are also returned for the object. If it is set to "source" or "target", relationships for which the returned
         // object is a source, or respectively a target, will also be returned. If it is set to "both", relationships for which the returned object is either a source or a target
         // will be returned. If it is set to "none", relationships are not returned.
@@ -329,7 +328,14 @@ public class DMObjectServiceTest extends AbstractServiceTest
         try
         {
             @SuppressWarnings("unused")
-            CmisContentStreamType result = ((ObjectServicePort) servicePort).getContentStream(repositoryId, documentId);
+            GetPropertiesOfLatestVersion request = new GetPropertiesOfLatestVersion();
+            request.setRepositoryId(repositoryId);
+            request.setFilter(cmisObjectFactory.createGetPropertiesOfLatestVersionFilter("*"));
+            request.setMajorVersion(Boolean.FALSE);
+            request.setVersionSeriesId(documentId);
+            GetPropertiesOfLatestVersionResponse response = helper.versioningServicePort.getPropertiesOfLatestVersion(request);
+            documentId = (String) propertiesUtil.getCmisPropertyValue(response.getObject().getProperties(), CMISDictionaryModel.PROP_OBJECT_ID, null);
+            ((ObjectServicePort) servicePort).getContentStream(repositoryId, documentId);
             fail("Content stream was not deleted");
         }
         catch (Exception e)
@@ -428,8 +434,8 @@ public class DMObjectServiceTest extends AbstractServiceTest
 
         /*
          * // on DELETESINGLEFILED deletes only relationships and folder. Primary parent folder and contend should not be deleted folderName = "Test Cmis Folder (" +
-         * System.currentTimeMillis() + ")"; folderId1 = helper.createFolder(folderName, folderId); folderName = "Test Cmis Folder (" + System.currentTimeMillis() + ")"; folderId2 =
-         * helper.createFolder(folderName, companyHomeId); documentName = "Test cmis document (" + System.currentTimeMillis() + ")"; documentId2 =
+         * System.currentTimeMillis() + ")"; folderId1 = helper.createFolder(folderName, folderId); folderName = "Test Cmis Folder (" + System.currentTimeMillis() + ")"; folderId2
+         * = helper.createFolder(folderName, companyHomeId); documentName = "Test cmis document (" + System.currentTimeMillis() + ")"; documentId2 =
          * helper.createDocument(documentName, folderId2); String relationshipId = createRelationship("test relashionship", folderId1, documentId2); response = ((ObjectServicePort)
          * servicePort).deleteTree(repositoryId, folderId1, EnumUnfileNonfolderObjects.DELETESINGLEFILED, true); assertNotNull("DELETESINGLEFILED", response);
          * assertNull("DELETESINGLEFILED", helper.getObjectProperties(folderId1)); assertNull("DELETESINGLEFILED", helper.getObjectProperties(relationshipId));
@@ -485,7 +491,7 @@ public class DMObjectServiceTest extends AbstractServiceTest
 
         GetObjectParentsResponse parentsResponse = helper.getObjectParents(documentId, "*");
         assertTrue(parentsResponse.getObject().size() == 1);
-        assertTrue(PropertyUtil.getProperty(parentsResponse.getObject().get(0).getProperties(), CMISDictionaryModel.PROP_NAME).equals(folderName));
+        assertTrue(propertiesUtil.getCmisPropertyValue(parentsResponse.getObject().get(0).getProperties(), CMISDictionaryModel.PROP_NAME, null).equals(folderName));
 
     }
 
@@ -528,7 +534,7 @@ public class DMObjectServiceTest extends AbstractServiceTest
         // public void setContentStream(String repositoryId, Holder<String> documentId, Boolean overwriteFlag, CmisContentStreamType contentStream)
         ((ObjectServicePort) servicePort).setContentStream(repositoryId, documentIdHolder, true, contentStream);
 
-        CmisContentStreamType result = ((ObjectServicePort) servicePort).getContentStream(repositoryId, documentId);
+        CmisContentStreamType result = ((ObjectServicePort) servicePort).getContentStream(repositoryId, documentIdHolder.value);
         if (result.getLength().intValue() == 0)
         {
             fail("Content Stream is empty");
@@ -558,11 +564,11 @@ public class DMObjectServiceTest extends AbstractServiceTest
         contentStream.setMimeType(MimetypeMap.MIMETYPE_TEXT_PLAIN);
         DataHandler dataHandler = new DataHandler(newContent, MimetypeMap.MIMETYPE_TEXT_PLAIN);
         contentStream.setStream(dataHandler);
-
+        Holder<String> holder = new Holder<String>(documentId);
         try
         {
             // public void setContentStream(String repositoryId, Holder<String> documentId, Boolean overwriteFlag, CmisContentStreamType contentStream)
-            ((ObjectServicePort) servicePort).setContentStream(repositoryId, new Holder<String>(documentId), false, contentStream);
+            ((ObjectServicePort) servicePort).setContentStream(repositoryId, holder, false, contentStream);
             fail("ContentAlreadyExists should be thrown");
         }
         catch (CmisException e)
@@ -570,15 +576,16 @@ public class DMObjectServiceTest extends AbstractServiceTest
             assertTrue(e.getFaultInfo().getType().equals(EnumServiceException.CONTENT_ALREADY_EXISTS));
         }
 
+        documentId = holder.value;
         // now we can not set any property (beside name) when we create new document - so this case not working
         propertiesResponse = helper.getObjectProperties(documentId);
-        Boolean contentStreamAllowed = getPropertyBooleanValue(propertiesResponse, CMISDictionaryModel.PROP_CONTENT_STREAM_ALLOWED);
-        if (contentStreamAllowed != null && contentStreamAllowed == false)
+        String contentStreamAllowed = propertiesUtil.getCmisPropertyValue(propertiesResponse.getObject().getProperties(), CMISDictionaryModel.PROP_CONTENT_STREAM_ALLOWED, null);
+        if (contentStreamAllowed != null && contentStreamAllowed.equals(EnumContentStreamAllowed.NOTALLOWED.value()))
         {
             try
             {
                 // public void setContentStream(String repositoryId, Holder<String> documentId, Boolean overwriteFlag, CmisContentStreamType contentStream)
-                ((ObjectServicePort) servicePort).setContentStream(repositoryId, new Holder<String>(documentId), true, contentStream);
+                ((ObjectServicePort) servicePort).setContentStream(repositoryId, holder, true, contentStream);
                 fail("ConstraintViolationException should be thrown");
             }
             catch (CmisException e)
@@ -622,12 +629,18 @@ public class DMObjectServiceTest extends AbstractServiceTest
         cmisProperty.setName(CMISDictionaryModel.PROP_OBJECT_ID);
         cmisProperty.getValue().add("new id value");
         propertiesList.add(cmisProperty);
-
         try
         {
+            Holder<String> holder = new Holder<String>(documentId);
             // public void updateProperties(String repositoryId, Holder<String> objectId, String changeToken, CmisPropertiesType properties)
-            ((ObjectServicePort) servicePort).updateProperties(repositoryId, new Holder<String>(documentId), new String(""), properties);
-            fail("should not update read only propery");
+            ((ObjectServicePort) servicePort).updateProperties(repositoryId, holder, new String(""), properties);
+            documentId = holder.value;
+            GetProperties getProperties = new GetProperties();
+            getProperties.setRepositoryId(repositoryId);
+            getProperties.setObjectId(holder.value);
+            GetPropertiesResponse response = ((ObjectServicePort) servicePort).getProperties(getProperties);
+            String documentIdAfterUpdate = propertiesUtil.getCmisPropertyValue(response.getObject().getProperties(), CMISDictionaryModel.PROP_OBJECT_ID, null);
+            assertTrue("should not update read only propery", !"new id value".equals(documentIdAfterUpdate) && documentId.equals(documentIdAfterUpdate));
         }
         catch (CmisException e)
         {

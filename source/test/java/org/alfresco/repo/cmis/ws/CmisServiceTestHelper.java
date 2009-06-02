@@ -46,6 +46,7 @@ import junit.framework.TestCase;
 
 import org.alfresco.cmis.CMISDictionaryModel;
 import org.alfresco.cmis.CMISTypeId;
+import org.alfresco.repo.cmis.ws.utils.PropertyUtil;
 import org.alfresco.repo.content.MimetypeMap;
 import org.apache.cxf.binding.soap.saaj.SAAJOutInterceptor;
 import org.apache.cxf.endpoint.Client;
@@ -386,14 +387,15 @@ public class CmisServiceTestHelper extends TestCase
     public String getUserHomeId(String repositoryId, String companyHomeId)
     {
         String userHomeFolder = null;
+        PropertyUtil propertiesUtil = new PropertyUtil();
         try
         {
             GetChildrenResponse response = getChildren(companyHomeId, EnumTypesOfFileableObjects.FOLDERS, 0, "*");
             for (CmisObjectType object : response.getObject())
             {
-                if (PropertyUtil.getProperty(object.getProperties(), CMISDictionaryModel.PROP_NAME).equals("User Homes"))
+                if (propertiesUtil.getCmisPropertyValue(object.getProperties(), CMISDictionaryModel.PROP_NAME, null).equals("User Homes"))
                 {
-                    return (String) PropertyUtil.getProperty(object.getProperties(), CMISDictionaryModel.PROP_OBJECT_ID);
+                    return (String) propertiesUtil.getCmisPropertyValue(object.getProperties(), CMISDictionaryModel.PROP_OBJECT_ID, null);
                 }
             }
 

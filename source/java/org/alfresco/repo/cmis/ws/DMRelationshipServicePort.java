@@ -25,7 +25,6 @@
 package org.alfresco.repo.cmis.ws;
 
 import java.math.BigInteger;
-import java.util.LinkedList;
 import java.util.List;
 
 import org.alfresco.cmis.CMISScope;
@@ -84,11 +83,11 @@ public class DMRelationshipServicePort extends DMAbstractServicePort implements 
 
         // TODO: process 'includeAllowableActions' param, see DMObjectServicePort->determineObjectAllowableActions
         PropertyFilter propertyFilter = createPropertyFilter(parameters.getFilter());
-        NodeRef objectNodeRef = (NodeRef) cmisObjectsUtils.getIdentifierInstance(parameters.getObjectId(), AlfrescoObjectType.DOCUMENT_OR_FOLDER_OBJECT).getConvertedIdentifier();
+        NodeRef objectNodeRef = cmisObjectsUtils.getIdentifierInstance(parameters.getObjectId(), AlfrescoObjectType.DOCUMENT_OR_FOLDER_OBJECT);
         List<AssociationRef> assocs = null;
         try
         {
-            assocs = receiveAssociations(objectNodeRef, associationType, direction, includingSubtypes);
+            assocs = cmisObjectsUtils.receiveAssociations(objectNodeRef, new RelationshipTypeFilter(associationType, includingSubtypes), direction);
         }
         catch (Exception e)
         {
@@ -97,25 +96,8 @@ public class DMRelationshipServicePort extends DMAbstractServicePort implements 
         return formatResponse(propertyFilter, assocs.toArray(), new GetRelationshipsResponse(), skipCount, maxItems);
     }
 
-    private List<AssociationRef> receiveAssociations(NodeRef objectNodeReference, QName relationshipType, EnumRelationshipDirection direction, boolean includeSubtypes)
-    {
-        List<AssociationRef> result = new LinkedList<AssociationRef>();
-        QNamePattern matcher = new RelationshipTypeFilter(relationshipType, includeSubtypes);
-
-        if ((direction == EnumRelationshipDirection.EITHER) || (direction == EnumRelationshipDirection.TARGET))
-        {
-            result.addAll(nodeService.getSourceAssocs(objectNodeReference, matcher));
-        }
-
-        if ((direction == EnumRelationshipDirection.EITHER) || (direction == EnumRelationshipDirection.SOURCE))
-        {
-            result.addAll(nodeService.getTargetAssocs(objectNodeReference, matcher));
-        }
-
-        return result;
-    }
-
     private GetRelationshipsResponse formatResponse(PropertyFilter filter, Object[] sourceArray, GetRelationshipsResponse result, BigInteger skipCount, BigInteger maxItems)
+            throws CmisException
     {
         Cursor cursor = createCursor(sourceArray.length, skipCount, maxItems);
         for (int i = cursor.getStartRow(); i < cursor.getEndRow(); i++)
@@ -153,5 +135,4 @@ public class DMRelationshipServicePort extends DMAbstractServicePort implements 
             }
         }
     }
-
 }

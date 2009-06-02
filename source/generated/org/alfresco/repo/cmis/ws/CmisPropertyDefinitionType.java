@@ -80,15 +80,15 @@ import org.w3c.dom.Element;
     "any"
 })
 @XmlSeeAlso({
-    CmisPropertyUriDefinitionType.class,
     CmisPropertyHtmlDefinitionType.class,
-    CmisPropertyStringDefinitionType.class,
     CmisPropertyIntegerDefinitionType.class,
-    CmisPropertyIdDefinitionType.class,
-    CmisPropertyXmlDefinitionType.class,
     CmisPropertyBooleanDefinitionType.class,
+    CmisPropertyStringDefinitionType.class,
+    CmisPropertyDateTimeDefinitionType.class,
+    CmisPropertyUriDefinitionType.class,
     CmisPropertyDecimalDefinitionType.class,
-    CmisPropertyDateTimeDefinitionType.class
+    CmisPropertyIdDefinitionType.class,
+    CmisPropertyXmlDefinitionType.class
 })
 public class CmisPropertyDefinitionType {
 
@@ -112,15 +112,15 @@ public class CmisPropertyDefinitionType {
     protected boolean queryable;
     protected boolean orderable;
     @XmlElements({
+        @XmlElement(name = "choiceId", type = CmisChoiceIdType.class),
         @XmlElement(name = "choiceDateTime", type = CmisChoiceDateTimeType.class),
-        @XmlElement(name = "choiceBoolean", type = CmisChoiceBooleanType.class),
-        @XmlElement(name = "choiceUri", type = CmisChoiceUriType.class),
+        @XmlElement(name = "choiceString", type = CmisChoiceStringType.class),
         @XmlElement(name = "choiceInteger", type = CmisChoiceIntegerType.class),
         @XmlElement(name = "choiceDecimal", type = CmisChoiceDecimalType.class),
-        @XmlElement(name = "choiceHtml", type = CmisChoiceHtmlType.class),
         @XmlElement(name = "choiceXml", type = CmisChoiceXmlType.class),
-        @XmlElement(name = "choiceId", type = CmisChoiceIdType.class),
-        @XmlElement(name = "choiceString", type = CmisChoiceStringType.class)
+        @XmlElement(name = "choiceHtml", type = CmisChoiceHtmlType.class),
+        @XmlElement(name = "choiceBoolean", type = CmisChoiceBooleanType.class),
+        @XmlElement(name = "choiceUri", type = CmisChoiceUriType.class)
     })
     protected List<CmisChoiceType> choice;
     protected Boolean openChoice;
@@ -411,15 +411,15 @@ public class CmisPropertyDefinitionType {
      * 
      * <p>
      * Objects of the following type(s) are allowed in the list
+     * {@link CmisChoiceIdType }
      * {@link CmisChoiceDateTimeType }
-     * {@link CmisChoiceBooleanType }
-     * {@link CmisChoiceUriType }
+     * {@link CmisChoiceStringType }
      * {@link CmisChoiceIntegerType }
      * {@link CmisChoiceDecimalType }
-     * {@link CmisChoiceHtmlType }
      * {@link CmisChoiceXmlType }
-     * {@link CmisChoiceIdType }
-     * {@link CmisChoiceStringType }
+     * {@link CmisChoiceHtmlType }
+     * {@link CmisChoiceBooleanType }
+     * {@link CmisChoiceUriType }
      * 
      * 
      */

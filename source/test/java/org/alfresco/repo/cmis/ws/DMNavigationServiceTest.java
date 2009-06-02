@@ -130,16 +130,16 @@ public class DMNavigationServiceTest extends AbstractServiceTest
 
         response = getChildren(folderId, EnumTypesOfFileableObjects.ANY, 0);
         assertEquals(2, response.getObject().size());
-        assertTrue(PropertyUtil.getProperty(response.getObject().get(0).getProperties(), CMISDictionaryModel.PROP_NAME).equals(folderName1));
-        assertTrue(PropertyUtil.getProperty(response.getObject().get(1).getProperties(), CMISDictionaryModel.PROP_NAME).equals(documentName1));
+        assertTrue(propertiesUtil.getCmisPropertyValue(response.getObject().get(0).getProperties(), CMISDictionaryModel.PROP_NAME, null).equals(folderName1));
+        assertTrue(propertiesUtil.getCmisPropertyValue(response.getObject().get(1).getProperties(), CMISDictionaryModel.PROP_NAME, null).equals(documentName1));
 
         response = getChildren(folderId, EnumTypesOfFileableObjects.FOLDERS, 0);
         assertTrue(response.getObject().size() == 1);
-        assertTrue(PropertyUtil.getProperty(response.getObject().get(0).getProperties(), CMISDictionaryModel.PROP_NAME).equals(folderName1));
+        assertTrue(propertiesUtil.getCmisPropertyValue(response.getObject().get(0).getProperties(), CMISDictionaryModel.PROP_NAME, null).equals(folderName1));
 
         response = getChildren(folderId, EnumTypesOfFileableObjects.DOCUMENTS, 0);
         assertTrue(response.getObject().size() == 1);
-        assertTrue(PropertyUtil.getProperty(response.getObject().get(0).getProperties(), CMISDictionaryModel.PROP_NAME).equals(documentName1));
+        assertTrue(propertiesUtil.getCmisPropertyValue(response.getObject().get(0).getProperties(), CMISDictionaryModel.PROP_NAME, null).equals(documentName1));
 
         // FIXME: bug • If maxItems > 0, Bool hasMoreItems
         // Should return 1 item
@@ -158,7 +158,7 @@ public class DMNavigationServiceTest extends AbstractServiceTest
 
         // filters
         // response = getChildren(folderId, EnumTypesOfFileableObjects.DOCUMENTS, 0, CMISMapping.PROP_NAME);
-        // assertNotNull(PropertyUtil.getProperty(response.getObject().get(0).getProperties(), CMISMapping.PROP_NAME));
+        // assertNotNull(propertiesUtil.getCmisPropertyValue(response.getObject().get(0).getProperties(), CMISMapping.PROP_NAME));
 
         response = getChildren(folderId);
         assertTrue(response.getObject().size() == 2);
@@ -187,16 +187,16 @@ public class DMNavigationServiceTest extends AbstractServiceTest
 
         response = getDescendants(folderId, EnumTypesOfFileableObjects.FOLDERS, 1);
         assertTrue(response.getObject().size() == 1);
-        assertTrue(PropertyUtil.getProperty(response.getObject().get(0).getProperties(), CMISDictionaryModel.PROP_NAME).equals(folderName));
+        assertTrue(propertiesUtil.getCmisPropertyValue(response.getObject().get(0).getProperties(), CMISDictionaryModel.PROP_NAME, null).equals(folderName));
 
         response = getDescendants(folderId, EnumTypesOfFileableObjects.DOCUMENTS, 2);
         assertTrue(response.getObject().size() == 1);
-        assertTrue(PropertyUtil.getProperty(response.getObject().get(0).getProperties(), CMISDictionaryModel.PROP_NAME).equals(documentName));
+        assertTrue(propertiesUtil.getCmisPropertyValue(response.getObject().get(0).getProperties(), CMISDictionaryModel.PROP_NAME, null).equals(documentName));
 
         response = getDescendants(folderId, EnumTypesOfFileableObjects.ANY, 2);
         assertTrue(response.getObject().size() == 2);
-        assertTrue(PropertyUtil.getProperty(response.getObject().get(0).getProperties(), CMISDictionaryModel.PROP_NAME).equals(folderName));
-        assertTrue(PropertyUtil.getProperty(response.getObject().get(1).getProperties(), CMISDictionaryModel.PROP_NAME).equals(documentName));
+        assertTrue(propertiesUtil.getCmisPropertyValue(response.getObject().get(0).getProperties(), CMISDictionaryModel.PROP_NAME, null).equals(folderName));
+        assertTrue(propertiesUtil.getCmisPropertyValue(response.getObject().get(1).getProperties(), CMISDictionaryModel.PROP_NAME, null).equals(documentName));
 
         response = getDescendants(folderId, EnumTypesOfFileableObjects.ANY, -1);
         assertTrue(response.getObject().size() == 2);
@@ -213,7 +213,7 @@ public class DMNavigationServiceTest extends AbstractServiceTest
         // Filter test
         // response = getDescendants(folderId, EnumTypesOfFileableObjects.DOCUMENTS, 2, CMISMapping.PROP_NAME);
         // assertTrue(response.getObject().size() == 1);
-        // assertTrue(PropertyUtil.getProperty(response.getObject().get(0).getProperties(), CMISMapping.PROP_NAME).equals(documentName));
+        // assertTrue(propertiesUtil.getCmisPropertyValue(response.getObject().get(0).getProperties(), CMISMapping.PROP_NAME).equals(documentName));
 
         helper.deleteFolder(folderId1);
 
@@ -239,14 +239,14 @@ public class DMNavigationServiceTest extends AbstractServiceTest
         folderId1 = helper.createFolder(folderName1, folderId);
 
         response = getFolderParent(folderId1, false);
-        assertTrue(PropertyUtil.getProperty(response.getObject().get(0).getProperties(), CMISDictionaryModel.PROP_NAME).equals(folderName));
+        assertTrue(propertiesUtil.getCmisPropertyValue(response.getObject().get(0).getProperties(), CMISDictionaryModel.PROP_NAME, null).equals(folderName));
 
         String folderName2 = "Test Cmis Folder (" + System.currentTimeMillis() + ")";
         String folderId2 = helper.createFolder(folderName2, folderId1);
 
         response = getFolderParent(folderId2, true);
-        assertTrue(PropertyUtil.getProperty(response.getObject().get(0).getProperties(), CMISDictionaryModel.PROP_NAME).equals(folderName1));
-        assertTrue(PropertyUtil.getProperty(response.getObject().get(1).getProperties(), CMISDictionaryModel.PROP_NAME).equals(folderName));
+        assertTrue(propertiesUtil.getCmisPropertyValue(response.getObject().get(0).getProperties(), CMISDictionaryModel.PROP_NAME, null).equals(folderName1));
+        assertTrue(propertiesUtil.getCmisPropertyValue(response.getObject().get(1).getProperties(), CMISDictionaryModel.PROP_NAME, null).equals(folderName));
         assertTrue(response.getObject().size() >= 3);
 
     }
@@ -274,7 +274,7 @@ public class DMNavigationServiceTest extends AbstractServiceTest
 
         response = helper.getObjectParents(documentId1, "*");
         assertTrue(response.getObject().size() == 1);
-        assertTrue(PropertyUtil.getProperty(response.getObject().get(0).getProperties(), CMISDictionaryModel.PROP_NAME).equals(folderName1));
+        assertTrue(propertiesUtil.getCmisPropertyValue(response.getObject().get(0).getProperties(), CMISDictionaryModel.PROP_NAME, null).equals(folderName1));
 
         // TODO: not implemented
         // assertNotNull(response.getObject().get(0).getAllowableActions());
@@ -283,12 +283,12 @@ public class DMNavigationServiceTest extends AbstractServiceTest
         // filters
         // response = getObjectParents(documentId1, CMISMapping.PROP_NAME);
         // assertTrue(response.getObject().size() >= 2);
-        // assertNotNull(PropertyUtil.getProperty(response.getObject().get(0).getProperties(), CMISMapping.PROP_NAME));
+        // assertNotNull(propertiesUtil.getCmisPropertyValue(response.getObject().get(0).getProperties(), CMISMapping.PROP_NAME));
 
         response = helper.getObjectParents(documentId1);
         assertTrue(response.getObject().size() == 1);
-        assertTrue(PropertyUtil.getProperty(response.getObject().get(0).getProperties(), CMISDictionaryModel.PROP_NAME).equals(folderName1));
-        // assertTrue(PropertyUtil.getProperty(response.getObject().get(1).getProperties(), CMISMapping.PROP_NAME).equals(folderName));
+        assertTrue(propertiesUtil.getCmisPropertyValue(response.getObject().get(0).getProperties(), CMISDictionaryModel.PROP_NAME, null).equals(folderName1));
+        // assertTrue(propertiesUtil.getCmisPropertyValue(response.getObject().get(1).getProperties(), CMISMapping.PROP_NAME).equals(folderName));
 
     }
 

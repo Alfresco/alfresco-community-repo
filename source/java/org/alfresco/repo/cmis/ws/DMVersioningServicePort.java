@@ -24,7 +24,6 @@
  */
 package org.alfresco.repo.cmis.ws;
 
-import java.io.Serializable;
 import java.util.List;
 
 import javax.xml.ws.Holder;
@@ -69,7 +68,7 @@ public class DMVersioningServicePort extends DMAbstractServicePort implements Ve
     public void cancelCheckOut(String repositoryId, String documentId) throws CmisException
     {
         checkRepositoryId(repositoryId);
-        NodeRef workingCopyNodeRef = cmisObjectsUtils.getIdentifierInstance(documentId, AlfrescoObjectType.DOCUMENT_OBJECT).getConvertedIdentifier();
+        NodeRef workingCopyNodeRef = cmisObjectsUtils.getIdentifierInstance(documentId, AlfrescoObjectType.DOCUMENT_OBJECT);
         assertWorkingCopy(workingCopyNodeRef);
         checkOutCheckInService.cancelCheckout(workingCopyNodeRef);
     }
@@ -90,7 +89,7 @@ public class DMVersioningServicePort extends DMAbstractServicePort implements Ve
             throws CmisException
     {
         checkRepositoryId(repositoryId);
-        NodeRef workingCopyNodeRef = cmisObjectsUtils.getIdentifierInstance(documentId.value, AlfrescoObjectType.DOCUMENT_OBJECT).getConvertedIdentifier();
+        NodeRef workingCopyNodeRef = cmisObjectsUtils.getIdentifierInstance(documentId.value, AlfrescoObjectType.DOCUMENT_OBJECT);
         assertWorkingCopy(workingCopyNodeRef);
 
         if (contentStream != null)
@@ -110,11 +109,8 @@ public class DMVersioningServicePort extends DMAbstractServicePort implements Ve
         NodeRef nodeRef = checkOutCheckInService.checkin(workingCopyNodeRef,
                 createVersionProperties(checkinComment, major != null && major ? VersionType.MAJOR : VersionType.MINOR));
 
-        if (properties != null)
-        {
-            setProperties(nodeRef, properties);
-        }
-        documentId.value = (String) cmisService.getProperty(nodeRef, CMISDictionaryModel.PROP_OBJECT_ID);
+        propertiesUtil.setProperties(nodeRef, properties, createPropertyFilter(propertiesUtil.createStandardNotUpdatablePropertiesFilter()));
+        documentId.value = propertiesUtil.getProperty(nodeRef, CMISDictionaryModel.PROP_OBJECT_ID, documentId.value);
     }
 
     /**
@@ -131,7 +127,7 @@ public class DMVersioningServicePort extends DMAbstractServicePort implements Ve
     {
         checkRepositoryId(repositoryId);
 
-        NodeRef documentNodeRef = cmisObjectsUtils.getIdentifierInstance(documentId.value, AlfrescoObjectType.DOCUMENT_OBJECT).getConvertedIdentifier();
+        NodeRef documentNodeRef = cmisObjectsUtils.getIdentifierInstance(documentId.value, AlfrescoObjectType.DOCUMENT_OBJECT);
         LockStatus lockStatus = lockService.getLockStatus(documentNodeRef);
 
         if (lockStatus.equals(LockStatus.LOCKED) || lockStatus.equals(LockStatus.LOCK_OWNER) || nodeService.hasAspect(documentNodeRef, ContentModel.ASPECT_WORKING_COPY))
@@ -140,7 +136,7 @@ public class DMVersioningServicePort extends DMAbstractServicePort implements Ve
         }
 
         NodeRef pwcNodeRef = checkoutNode(documentNodeRef);
-        documentId.value = (String) cmisService.getProperty(pwcNodeRef, CMISDictionaryModel.PROP_OBJECT_ID);
+        documentId.value = propertiesUtil.getProperty(pwcNodeRef, CMISDictionaryModel.PROP_OBJECT_ID, documentId.value);
         contentCopied.value = true;
     }
 
@@ -154,7 +150,7 @@ public class DMVersioningServicePort extends DMAbstractServicePort implements Ve
     public void deleteAllVersions(String repositoryId, String versionSeriesId) throws CmisException
     {
         checkRepositoryId(repositoryId);
-        NodeRef documentNodeRef = cmisObjectsUtils.getIdentifierInstance(versionSeriesId, AlfrescoObjectType.DOCUMENT_OBJECT).getConvertedIdentifier();
+        NodeRef documentNodeRef = cmisObjectsUtils.getIdentifierInstance(versionSeriesId, AlfrescoObjectType.DOCUMENT_OBJECT);
         versionService.deleteVersionHistory(documentNodeRef);
     }
 
@@ -169,8 +165,8 @@ public class DMVersioningServicePort extends DMAbstractServicePort implements Ve
     {
         checkRepositoryId(parameters.getRepositoryId());
 
-        NodeRef documentNodeRef = cmisObjectsUtils.getIdentifierInstance(parameters.getVersionSeriesId(), AlfrescoObjectType.DOCUMENT_OBJECT).getConvertedIdentifier();
-        documentNodeRef = getLatestNode(documentNodeRef, false);
+        NodeRef documentNodeRef = cmisObjectsUtils.getIdentifierInstance(parameters.getVersionSeriesId(), AlfrescoObjectType.DOCUMENT_OBJECT);
+        documentNodeRef = cmisObjectsUtils.getLatestNode(documentNodeRef, false);
         PropertyFilter propertyFilter = createPropertyFilter(parameters.getFilter());
 
         GetAllVersionsResponse response = new GetAllVersionsResponse();
@@ -209,23 +205,23 @@ public class DMVersioningServicePort extends DMAbstractServicePort implements Ve
         checkRepositoryId(parameters.getRepositoryId());
         PropertyFilter propertyFilter = createPropertyFilter(parameters.getFilter());
 
-        NodeRef documentNodeRef = cmisObjectsUtils.getIdentifierInstance(parameters.getVersionSeriesId(), AlfrescoObjectType.DOCUMENT_OBJECT).getConvertedIdentifier();
-        NodeRef latestVersionNodeRef = getLatestNode(documentNodeRef, parameters.isMajorVersion());
+        NodeRef documentNodeRef = cmisObjectsUtils.getIdentifierInstance(parameters.getVersionSeriesId(), AlfrescoObjectType.DOCUMENT_OBJECT);
+        NodeRef latestVersionNodeRef = cmisObjectsUtils.getLatestNode(documentNodeRef, parameters.isMajorVersion());
 
-        Serializable property = cmisService.getProperty(latestVersionNodeRef, CMISDictionaryModel.PROP_IS_MAJOR_VERSION);
-        if (parameters.isMajorVersion() && ((property == null) || !((Boolean)property)))
+        Boolean majorVersionProperty = propertiesUtil.getProperty(latestVersionNodeRef, CMISDictionaryModel.PROP_IS_MAJOR_VERSION, false);
+        if (parameters.isMajorVersion() && !majorVersionProperty)
         {
             throw cmisObjectsUtils.createCmisException("Object that was specified has no latest major version", EnumServiceException.OBJECT_NOT_FOUND);
         }
 
         GetPropertiesOfLatestVersionResponse response = new GetPropertiesOfLatestVersionResponse();
         response.setObject(new CmisObjectType());
-        response.getObject().setProperties(getPropertiesType(latestVersionNodeRef.toString(), propertyFilter));
+        response.getObject().setProperties(propertiesUtil.getPropertiesType(latestVersionNodeRef.toString(), propertyFilter));
 
         return response;
     }
 
-    private void searchWorkingCopy(NodeRef documentNodeRef, PropertyFilter propertyFilter, List<CmisObjectType> resultList)
+    private void searchWorkingCopy(NodeRef documentNodeRef, PropertyFilter propertyFilter, List<CmisObjectType> resultList) throws CmisException
     {
         NodeRef workingCopyNodeReference = cmisObjectsUtils.isWorkingCopy(documentNodeRef) ? documentNodeRef : checkOutCheckInService.getWorkingCopy(documentNodeRef);
         if (workingCopyNodeReference != null)

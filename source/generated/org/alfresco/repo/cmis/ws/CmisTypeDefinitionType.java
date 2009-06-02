@@ -78,10 +78,10 @@ import org.w3c.dom.Element;
     "any"
 })
 @XmlSeeAlso({
-    CmisTypeDocumentDefinitionType.class,
     CmisTypeRelationshipDefinitionType.class,
+    CmisTypePolicyDefinitionType.class,
     CmisTypeFolderDefinitionType.class,
-    CmisTypePolicyDefinitionType.class
+    CmisTypeDocumentDefinitionType.class
 })
 public class CmisTypeDefinitionType {
 
@@ -104,15 +104,15 @@ public class CmisTypeDefinitionType {
     @XmlElement(defaultValue = "true")
     protected boolean includedInSupertypeQuery;
     @XmlElements({
-        @XmlElement(name = "propertyXmlDefinition", type = CmisPropertyXmlDefinitionType.class),
-        @XmlElement(name = "propertyStringDefinition", type = CmisPropertyStringDefinitionType.class),
         @XmlElement(name = "propertyIdDefinition", type = CmisPropertyIdDefinitionType.class),
-        @XmlElement(name = "propertyBooleanDefinition", type = CmisPropertyBooleanDefinitionType.class),
+        @XmlElement(name = "propertyXmlDefinition", type = CmisPropertyXmlDefinitionType.class),
+        @XmlElement(name = "propertyUriDefinition", type = CmisPropertyUriDefinitionType.class),
         @XmlElement(name = "propertyDecimalDefinition", type = CmisPropertyDecimalDefinitionType.class),
         @XmlElement(name = "propertyIntegerDefinition", type = CmisPropertyIntegerDefinitionType.class),
+        @XmlElement(name = "propertyStringDefinition", type = CmisPropertyStringDefinitionType.class),
         @XmlElement(name = "propertyHtmlDefinition", type = CmisPropertyHtmlDefinitionType.class),
         @XmlElement(name = "propertyDateTimeDefinition", type = CmisPropertyDateTimeDefinitionType.class),
-        @XmlElement(name = "propertyUriDefinition", type = CmisPropertyUriDefinitionType.class)
+        @XmlElement(name = "propertyBooleanDefinition", type = CmisPropertyBooleanDefinitionType.class)
     })
     protected List<CmisPropertyDefinitionType> propertyDefinition;
     @XmlAnyElement(lax = true)
@@ -386,15 +386,15 @@ public class CmisTypeDefinitionType {
      * 
      * <p>
      * Objects of the following type(s) are allowed in the list
-     * {@link CmisPropertyXmlDefinitionType }
-     * {@link CmisPropertyStringDefinitionType }
      * {@link CmisPropertyIdDefinitionType }
-     * {@link CmisPropertyBooleanDefinitionType }
+     * {@link CmisPropertyXmlDefinitionType }
+     * {@link CmisPropertyUriDefinitionType }
      * {@link CmisPropertyDecimalDefinitionType }
      * {@link CmisPropertyIntegerDefinitionType }
+     * {@link CmisPropertyStringDefinitionType }
      * {@link CmisPropertyHtmlDefinitionType }
      * {@link CmisPropertyDateTimeDefinitionType }
-     * {@link CmisPropertyUriDefinitionType }
+     * {@link CmisPropertyBooleanDefinitionType }
      * 
      * 
      */

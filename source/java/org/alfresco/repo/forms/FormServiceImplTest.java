@@ -39,6 +39,7 @@ import org.alfresco.repo.forms.AssociationFieldDefinition.Direction;
 import org.alfresco.repo.forms.PropertyFieldDefinition.FieldConstraint;
 import org.alfresco.repo.jscript.ClasspathScriptLocation;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
+import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
@@ -729,6 +730,10 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
         String newMimetype = MimetypeMap.MIMETYPE_HTML;
         data.addData("prop_mimetype", newMimetype);
         
+        // update the author property (this is on an aspect not applied)
+        String newAuthor = "Gavin Cornwell";
+        data.addData("prop_cm_author", newAuthor);
+        
         // update the originator
         String newOriginator = "jane@example.com";
         data.addData("prop_cm_originator", newOriginator);
@@ -739,6 +744,9 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
         
         // set the date to null (using an empty string)
         data.addData("prop_cm_sentdate", "");
+        
+        // add an association to the child doc (as an attachment which is defined on an aspect not applied)
+        //data.addData("assoc_cm_attachments_added", this.childDoc.toString());
         
         // try and update non-existent properties (make sure there are no exceptions)
         data.addData("prop_cm_wrong", "This should not be persisted");
@@ -751,6 +759,7 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
         Map<QName, Serializable> updatedProps = this.nodeService.getProperties(this.document);
         String updatedName = (String)updatedProps.get(ContentModel.PROP_NAME);
         String updatedTitle = (String)updatedProps.get(ContentModel.PROP_TITLE);
+        String updatedAuthor = (String)updatedProps.get(ContentModel.PROP_AUTHOR);
         String updatedOriginator = (String)updatedProps.get(ContentModel.PROP_ORIGINATOR);
         List updatedAddressees = (List)updatedProps.get(ContentModel.PROP_ADDRESSEES);
         String wrong = (String)updatedProps.get(QName.createQName("cm", "wrong", this.namespaceService));
@@ -758,6 +767,7 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
         
         assertEquals(newName, updatedName);
         assertEquals(newTitle, updatedTitle);
+        assertEquals(newAuthor, updatedAuthor);
         assertEquals(newOriginator, updatedOriginator);
         assertNull("Expecting sentdate to be null", sentDate);
         assertNull("Expecting my:wrong to be null", wrong);
@@ -767,6 +777,14 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
         assertEquals(VALUE_ADDRESSEES2, updatedAddressees.get(1));
         assertEquals(VALUE_ADDRESSEES3, updatedAddressees.get(2));
         
+        // check the titled aspect was automatically applied
+        assertTrue("Expecting the cm:titled to have been applied", 
+                    this.nodeService.hasAspect(this.document, ContentModel.ASPECT_TITLED));
+        
+        // check the author aspect was automatically applied
+        assertTrue("Expecting the cm:author to have been applied", 
+                    this.nodeService.hasAspect(this.document, ContentModel.ASPECT_AUTHOR));
+        
         // check mimetype was updated
         ContentData contentData = (ContentData)updatedProps.get(ContentModel.PROP_CONTENT);
         if (contentData != null)
@@ -774,6 +792,16 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
             String updatedMimetype = contentData.getMimetype();
             assertEquals(MimetypeMap.MIMETYPE_HTML, updatedMimetype);
         }
+        
+        // check the association was added and the aspect it belongs to applied
+        /*
+        List<AssociationRef> assocs = this.nodeService.getTargetAssocs(this.document, 
+                    ContentModel.ASSOC_ATTACHMENTS);
+        assertEquals("Expecting 1 attachment association", 1, assocs.size());
+        assertEquals(assocs.get(0).getTargetRef().toString(), this.childDoc.toString());
+        assertTrue("Expecting the cm:attachable to have been applied", 
+                    this.nodeService.hasAspect(this.document, ContentModel.ASPECT_ATTACHABLE));
+        */
     }
     
     public void testNoForm() throws Exception

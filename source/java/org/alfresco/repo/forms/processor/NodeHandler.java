@@ -861,24 +861,20 @@ public class NodeHandler extends AbstractHandler
         
             // ensure that the property being persisted is defined in the model
             PropertyDefinition propDef = propDefs.get(fullQName);
+            
+            // if the property is not defined on the node, check for the property in all models
+            if (propDef == null)
+            {
+                propDef = this.dictionaryService.getProperty(fullQName);
+            }
+            
+            // if we have a property definition attempt the persist
             if (propDef != null)
             {                
                 // look for properties that have well known handling requirements
                 if (fullQName.equals(ContentModel.PROP_NAME))
                 {
                     processNamePropertyPersist(nodeRef, fieldData);
-                }
-                else if (fullQName.equals(ContentModel.PROP_TITLE))
-                {
-                    processTitlePropertyPersist(nodeRef, fieldData, propsToPersist);
-                }
-                else if (fullQName.equals(ContentModel.PROP_DESCRIPTION))
-                {
-                    processDescriptionPropertyPersist(nodeRef, fieldData, propsToPersist);
-                }
-                else if (fullQName.equals(ContentModel.PROP_AUTHOR))
-                {
-                    processAuthorPropertyPersist(nodeRef, fieldData, propsToPersist);
                 }
                 else
                 {
@@ -991,16 +987,23 @@ public class NodeHandler extends AbstractHandler
             String localName = m.group(2);
             String assocSuffix = m.group(3);
             
-            QName fullQNameFromJSON = QName.createQName(qNamePrefix, localName, namespaceService);
+            QName fullQName = QName.createQName(qNamePrefix, localName, namespaceService);
         
             // ensure that the association being persisted is defined in the model
-            AssociationDefinition assocDef = assocDefs.get(fullQNameFromJSON);
+            AssociationDefinition assocDef = assocDefs.get(fullQName);
+            
+            // TODO: if the association is not defined on the node, check for the association 
+            //       in all models, however, the source of an association can be critical so we
+            //       can't just look up the association in the model regardless. We need to
+            //       either check the source class of the node and the assoc def match or we
+            //       check that the association was defined as part of an aspect (where by it's
+            //       nature can have any source type)
             
             if (assocDef == null)
             {
                 if (logger.isWarnEnabled())
                 {
-                    logger.warn("Definition for association " + fullQNameFromJSON + " not recognised and not persisted.");
+                    logger.warn("Definition for association " + fullQName + " not recognised and not persisted.");
                 }
                 return;
             }
@@ -1021,12 +1024,12 @@ public class NodeHandler extends AbstractHandler
                             if (assocDef.isChild())
                             {
                                 assocCommands.add(new AddChildAssocCommand(nodeRef, new NodeRef(nextTargetNode),
-                                        fullQNameFromJSON));
+                                        fullQName));
                             }
                             else
                             {
                                 assocCommands.add(new AddAssocCommand(nodeRef, new NodeRef(nextTargetNode),
-                                        fullQNameFromJSON));
+                                        fullQName));
                             }
                         }
                         else if (assocSuffix.equals(ASSOC_DATA_REMOVED_SUFFIX))
@@ -1034,12 +1037,12 @@ public class NodeHandler extends AbstractHandler
                             if (assocDef.isChild())
                             {
                                 assocCommands.add(new RemoveChildAssocCommand(nodeRef, new NodeRef(nextTargetNode),
-                                        fullQNameFromJSON));
+                                        fullQName));
                             }
                             else
                             {
                                 assocCommands.add(new RemoveAssocCommand(nodeRef, new NodeRef(nextTargetNode),
-                                        fullQNameFromJSON));
+                                        fullQName));
                             }
                         }
                         else
@@ -1096,63 +1099,6 @@ public class NodeHandler extends AbstractHandler
         {
             throw new FormException("Failed to persist field '" + fieldData.getName() + "'", fnne);
         }
-    }
-    
-    /**
-     * Persists the given field data as the title property
-     *  
-     * @param nodeRef The NodeRef to update the title for
-     * @param fieldData The data representing the new title value
-     * @param propsToPersist Map of properties to be persisted
-     */
-    protected void processTitlePropertyPersist(NodeRef nodeRef, FieldData fieldData,
-                Map<QName, Serializable> propsToPersist)
-    {
-        // if a title property is present ensure the 'titled' aspect is applied
-        if (this.nodeService.hasAspect(nodeRef, ContentModel.ASPECT_TITLED) == false)
-        {
-           this.nodeService.addAspect(nodeRef, ContentModel.ASPECT_TITLED, null);
-        }
-        
-        propsToPersist.put(ContentModel.PROP_TITLE, (String)fieldData.getValue());
-    }
-    
-    /**
-     * Persists the given field data as the description property
-     *  
-     * @param nodeRef The NodeRef to update the description for
-     * @param fieldData The data representing the new description value
-     * @param propsToPersist Map of properties to be persisted
-     */
-    protected void processDescriptionPropertyPersist(NodeRef nodeRef, FieldData fieldData,
-                Map<QName, Serializable> propsToPersist)
-    {
-        // if a description property is present ensure the 'titled' aspect is applied
-        if (this.nodeService.hasAspect(nodeRef, ContentModel.ASPECT_TITLED) == false)
-        {
-           this.nodeService.addAspect(nodeRef, ContentModel.ASPECT_TITLED, null);
-        }
-        
-        propsToPersist.put(ContentModel.PROP_DESCRIPTION, (String)fieldData.getValue());
-    }
-    
-    /**
-     * Persists the given field data as the author property
-     *  
-     * @param nodeRef The NodeRef to update the author for
-     * @param fieldData The data representing the new author value
-     * @param propsToPersist Map of properties to be persisted
-     */
-    protected void processAuthorPropertyPersist(NodeRef nodeRef, FieldData fieldData,
-                Map<QName, Serializable> propsToPersist)
-    {
-        // if an author property is present ensure the 'author' aspect is applied
-        if (this.nodeService.hasAspect(nodeRef, ContentModel.ASPECT_AUTHOR) == false)
-        {
-           this.nodeService.addAspect(nodeRef, ContentModel.ASPECT_AUTHOR, null);
-        }
-        
-        propsToPersist.put(ContentModel.PROP_AUTHOR, (String)fieldData.getValue());
     }
     
     /**

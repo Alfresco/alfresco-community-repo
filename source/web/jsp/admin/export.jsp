@@ -29,27 +29,47 @@
 <%@ taglib uri="/WEB-INF/repo.tld" prefix="r" %>
 
 <f:verbatim>
+<script type="text/javascript" src="<%=request.getContextPath()%>/scripts/validation.js"> </script>
+
 <script type="text/javascript">
-window.onload = pageLoaded;
-
-function pageLoaded()
-{
-	document.getElementById("dialog:dialog-body:package-name").focus();
-	checkButtonState();
-}
-
-function checkButtonState()
-{
-	if (document.getElementById("dialog:dialog-body:package-name").value.length == 0 ||
-		 document.getElementById("destination-value").value.length == 0)
+	var finishButtonPressed = false;
+	window.onload = pageLoaded;
+	
+	function pageLoaded()
 	{
-		document.getElementById("dialog:finish-button").disabled = true;
+		document.getElementById("dialog:dialog-body:package-name").focus();
+		document.getElementById("dialog").onsubmit = validate;
+		document.getElementById("dialog:finish-button").onclick = function() {finishButtonPressed = true; clear_dialog();}
+		checkButtonState();
 	}
-	else
+	
+	function checkButtonState()
 	{
-		document.getElementById("dialog:finish-button").disabled = false;
+		if (document.getElementById("dialog:dialog-body:package-name").value.length == 0 ||
+			 document.getElementById("destination-value").value.length == 0)
+		{
+			document.getElementById("dialog:finish-button").disabled = true;
+		}
+		else
+		{
+			document.getElementById("dialog:finish-button").disabled = false;
+		}
 	}
-}
+	
+	function validate()
+	{
+	   if (finishButtonPressed)
+	   {
+	      finishButtonPressed = false;
+	      return validateName(document.getElementById("dialog:dialog-body:package-name"), 
+	                          unescape('</f:verbatim><a:outputText value="#{msg.validation_invalid_character}" encodeForJavaScript="true" /><f:verbatim>'),
+	                          true);
+	   }
+	   else
+	   {
+	      return true;
+	   }
+	}
 </script>
 
 <table cellpadding="2" cellspacing="2" border="0" width="100%">

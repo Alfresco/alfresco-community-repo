@@ -146,11 +146,10 @@ public class ScriptAuthorityService extends BaseScopableProcessorExtension
 		/**
 		 * Modify shortNameFilter to be "shortName*"
 		 */
-		if(shortNameFilter.length() > 0)
+		if (shortNameFilter.length() > 0)
 		{
-			filter = filter + "*";
+			filter = filter.replace("\"", "") + "*";
 		}
-		
 		
 		Set<ScriptGroup> groups = new LinkedHashSet<ScriptGroup>(0);
 		Set<String> authorities = authorityService.findAuthoritiesByShortName(AuthorityType.GROUP, filter);
@@ -162,5 +161,4 @@ public class ScriptAuthorityService extends BaseScopableProcessorExtension
 		}
 		return groups.toArray(new ScriptGroup[groups.size()]);
 	}
-	
 }

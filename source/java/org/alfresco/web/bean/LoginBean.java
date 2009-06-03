@@ -444,12 +444,14 @@ public class LoginBean implements Serializable
    private static final String MSG_ERROR_LOGIN_MAXUSERS = "error_login_maxusers";
    private static final String MSG_NONE = "none";
    
+   public static final String MSG_ERROR_LOGIN_NOPERMISSIONS = "login_err_permissions";
    public static final String MSG_USERNAME_LENGTH = "login_err_username_length";
    public static final String MSG_PASSWORD_LENGTH = "login_err_password_length";
    public static final String MSG_USER_ERR = "user_err_user_name";
    
-   public static final String LOGIN_REDIRECT_KEY = "_alfRedirect";
-   public static final String LOGIN_EXTERNAL_AUTH= "_alfExternalAuth";
+   public static final String LOGIN_REDIRECT_KEY  = "_alfRedirect";
+   public static final String LOGIN_EXTERNAL_AUTH = "_alfExternalAuth";
+   public static final String LOGIN_NOPERMISSIONS = "_alfNoPermissions";
 
    /** user name */
    private String username = null;
@@ -474,6 +476,4 @@ public class LoginBean implements Serializable
    
    /** The user preferences bean reference */
    protected UserPreferencesBean preferences;
-
-
 }

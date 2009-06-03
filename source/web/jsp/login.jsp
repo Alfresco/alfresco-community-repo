@@ -31,7 +31,9 @@
 <%@ page import="org.alfresco.web.app.servlet.BaseServlet" %>
 <%@ page import="org.alfresco.web.app.servlet.AuthenticationHelper" %>
 <%@ page import="org.alfresco.web.ui.common.PanelGenerator" %>
+<%@ page import="org.alfresco.web.ui.common.Utils" %>
 <%@ page import="org.alfresco.web.app.Application" %>
+<%@ page import="org.alfresco.web.bean.LoginBean" %>
 <%@ page import="javax.faces.context.FacesContext" %>
 <%@ page import="javax.servlet.http.Cookie" %>
 <%@ page import="java.util.Locale" %>
@@ -74,6 +76,13 @@
 
    // set locale for JSF framework usage
    fc.getViewRoot().setLocale(locale);
+   
+   // set permissions error if applicable
+   if (session.getAttribute(LoginBean.LOGIN_NOPERMISSIONS) != null)
+   {
+   	Utils.addErrorMessage(Application.getMessage(fc, LoginBean.MSG_ERROR_LOGIN_NOPERMISSIONS));
+   	session.setAttribute(LoginBean.LOGIN_NOPERMISSIONS, null);
+   }
 %>
    
    <%-- load a bundle of properties I18N strings here --%>

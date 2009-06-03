@@ -40,6 +40,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.filestore.FileContentReader;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.model.FileNotFoundException;
@@ -56,6 +57,7 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.util.URLDecoder;
 import org.alfresco.util.URLEncoder;
 import org.alfresco.web.app.Application;
+import org.alfresco.web.bean.LoginBean;
 import org.apache.commons.logging.Log;
 
 /**
@@ -229,6 +231,11 @@ public abstract class BaseDownloadContentServlet extends BaseServlet
                if (logger.isDebugEnabled())
                   logger.debug("Redirecting to login page...");
                
+               // TODO: replace with serviceRegistry.getAuthorityService().hasGuestAuthority() from 3.1E
+               if (!AuthenticationUtil.getFullyAuthenticatedUser().equals(AuthenticationUtil.getGuestUserName()))
+               {
+                   req.getSession().setAttribute(LoginBean.LOGIN_NOPERMISSIONS, Boolean.TRUE);
+               }
                redirectToLoginPage(req, res, getServletContext());
             }
             else

@@ -1,0 +1,10 @@
+<alfresco-config>   
+
+   <!-- Test for ETHREEOH-2145 where having an empty client config element wipes out -->
+   <!-- existing values -->
+   <config>
+      <client>
+      </client>
+   </config>
+   
+</alfresco-config>

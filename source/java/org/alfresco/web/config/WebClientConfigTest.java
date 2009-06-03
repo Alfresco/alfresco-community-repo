@@ -33,6 +33,7 @@ import org.alfresco.config.Config;
 import org.alfresco.config.ConfigElement;
 import org.alfresco.config.ConfigException;
 import org.alfresco.config.xml.XMLConfigService;
+import org.alfresco.service.namespace.QName;
 import org.alfresco.util.BaseTest;
 import org.alfresco.web.config.ActionsConfigElement.ActionDefinition;
 import org.alfresco.web.config.ActionsConfigElement.ActionGroup;
@@ -321,6 +322,10 @@ public class WebClientConfigTest extends BaseTest
       assertEquals("recent spaces", 1, clientConfig.getRecentSpacesItems());
       assertEquals("search minimum", 10, clientConfig.getSearchMinimum());
       assertFalse("shelf visible", clientConfig.isShelfVisible());
+      
+      List<QName> attrs = clientConfig.getSimpleSearchAdditionalAttributes();
+      assertNotNull("Expecting a list of search attributes", attrs);
+      assertEquals("Expecting 4 search attributes", 4, attrs.size());
    }
    
    /**
@@ -894,5 +899,26 @@ public class WebClientConfigTest extends BaseTest
       
       assertEquals("number of items in new_group group", 1, actions.size());
       assertEquals("action", "custom_action", actions.get(0));
+   }
+   
+   public void testETHREEOH2145()
+   {
+      XMLConfigService svc = initXMLConfigService("test-config.xml", "test-config-e30-2145.xml");
+      
+      // get the "client" config from global config section
+      Config cfg = svc.getGlobalConfig();
+      assertNotNull("cfg should not be null", cfg);
+      ClientConfigElement clientConfig = (ClientConfigElement)cfg.getConfigElement("client");
+      assertNotNull("clientConfig should not be null", clientConfig);
+      
+      assertEquals("from-email-address", "alfresco@alfresco.org", clientConfig.getFromEmailAddress());
+      assertEquals("cifs-url-suffix", ".alfresco.org", clientConfig.getCifsURLSuffix());
+      assertEquals("edit-link-type", "http", clientConfig.getEditLinkType());
+      assertEquals("error-page", "/jsp/error.jsp", clientConfig.getErrorPage());
+      assertEquals("home-space-permission", "Consumer", clientConfig.getHomeSpacePermission());
+      
+      List<QName> attrs = clientConfig.getSimpleSearchAdditionalAttributes();
+      assertNotNull("Expecting a list of search attributes", attrs);
+      assertEquals("Expecting 2 search attributes", 2, attrs.size());
    }
 }

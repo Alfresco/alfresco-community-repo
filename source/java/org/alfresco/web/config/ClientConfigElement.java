@@ -24,6 +24,7 @@
  */
 package org.alfresco.web.config;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.faces.context.FacesContext;
@@ -80,7 +81,7 @@ public class ClientConfigElement extends ConfigElementAdapter
    private int minUsernameLength = 2;
    private int minPasswordLength = 3;
    private String breadcrumbMode = BREADCRUMB_PATH;
-   private String cifsURLSuffix;
+   private String cifsURLSuffix = null;
    private boolean languageSelect = true;
    private boolean zeroByteFileUploads = true;
    private boolean userGroupAdmin = true;
@@ -160,6 +161,38 @@ public class ClientConfigElement extends ConfigElementAdapter
          combinedElement.setHomeSpacePermission(newElement.getHomeSpacePermission());
       }
       
+      if (newElement.getCifsURLSuffix() == null)
+      {
+         combinedElement.setCifsURLSuffix(this.cifsURLSuffix);
+      }
+      else
+      {
+         combinedElement.setCifsURLSuffix(newElement.getCifsURLSuffix());
+      }
+      
+      if (newElement.getSimpleSearchAdditionalAttributes() == null)
+      {
+          combinedElement.setSimpleSearchAdditionalAttributes(this.simpleSearchAdditionalAttributes);
+      }
+      else
+      {
+          if (this.simpleSearchAdditionalAttributes == null)
+          {
+              // there aren't any existing attributes so just use the new set
+              combinedElement.setSimpleSearchAdditionalAttributes(newElement.getSimpleSearchAdditionalAttributes());
+          }
+          else
+          {
+              // get the current list and add the additional attributes to it
+              List<QName> newAttrs = newElement.getSimpleSearchAdditionalAttributes();
+              List<QName> combinedAttrs = new ArrayList<QName>(
+                          this.simpleSearchAdditionalAttributes.size() + newAttrs.size());
+              combinedAttrs.addAll(this.simpleSearchAdditionalAttributes);
+              combinedAttrs.addAll(newAttrs);
+              combinedElement.setSimpleSearchAdditionalAttributes(combinedAttrs);
+          }
+      }
+      
       // override default values if they have changed
       if (newElement.getDefaultHomeSpacePath() != null &&
           newElement.getDefaultHomeSpacePath().equals(combinedElement.getDefaultHomeSpacePath()) == false)
@@ -234,12 +267,6 @@ public class ClientConfigElement extends ConfigElementAdapter
          combinedElement.setAllowGuestConfig(newElement.getAllowGuestConfig());
       }
       
-      if (newElement.getSimpleSearchAdditionalAttributes() != null &&
-          newElement.getSimpleSearchAdditionalAttributes().equals(combinedElement.getSimpleSearchAdditionalAttributes()) == false)
-      {
-         combinedElement.setSimpleSearchAdditionalAttributes(newElement.getSimpleSearchAdditionalAttributes());
-      }
-      
       if (newElement.getMinUsernameLength() != combinedElement.getMinUsernameLength())
       {
          combinedElement.setMinUsernameLength(newElement.getMinUsernameLength());
@@ -248,12 +275,6 @@ public class ClientConfigElement extends ConfigElementAdapter
       if (newElement.getMinPasswordLength() != combinedElement.getMinPasswordLength())
       {
          combinedElement.setMinPasswordLength(newElement.getMinPasswordLength());
-      }
-      
-      if ( newElement.getCifsURLSuffix() != null &&
-    	   newElement.getCifsURLSuffix().equals(combinedElement.getCifsURLSuffix()) == false)
-      {
-    	   combinedElement.setCifsURLSuffix(newElement.getCifsURLSuffix());
       }
       
       if (newElement.getBreadcrumbMode() != null &&

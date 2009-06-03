@@ -29,6 +29,12 @@
          
          <!-- the from address to use when sending emails from the client -->
          <from-email-address>me@somewhere.com</from-email-address>
+         
+         <!-- add some more search attributes -->
+         <simple-search-additional-attributes>
+            <qname>attr3</qname>
+            <qname>attr4</qname>
+         </simple-search-additional-attributes>
       </client>
    </config>
    

@@ -45,8 +45,12 @@
          <!-- can be: http|webdav|cifs -->
          <edit-link-type>http</edit-link-type>
          
-         <!-- the from address to use when sending emails from the client -->
-         <from-email-address>alfresco@alfresco.org</from-email-address>
+         <cifs-url-suffix>.alfresco.org</cifs-url-suffix>
+         
+         <simple-search-additional-attributes>
+            <qname>attr1</qname>
+            <qname>attr2</qname>
+         </simple-search-additional-attributes>
       </client>
       
       <actions>

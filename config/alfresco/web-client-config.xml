@@ -91,7 +91,7 @@
 
          <!-- Domain suffix appended to the CIFS URL host name -->
          <!--
-         <cifs-url-suffix>.alfresco.org<cifs-url-suffix>
+         <cifs-url-suffix>.alfresco.org</cifs-url-suffix>
          -->
          
          <!-- Breadcrumb mode, can be either 'path' or 'location' -->

@@ -25,14 +25,14 @@
 package org.alfresco.repo.search.impl.lucene.fts;
 
 import org.alfresco.service.cmr.repository.StoreRef;
-import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
+import org.springframework.beans.factory.BeanFactoryAware;
 
 /**
  * API for full text search indexing in the background
  * 
  * @author andyh
  */
-public interface FullTextSearchIndexer extends BeanFactoryPostProcessor
+public interface FullTextSearchIndexer extends BeanFactoryAware
 {
     /**
      * Mark a store as dirty, requiring a background index update to fix it up.

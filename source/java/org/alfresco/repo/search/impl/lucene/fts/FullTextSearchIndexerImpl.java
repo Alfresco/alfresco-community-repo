@@ -34,6 +34,8 @@ import org.alfresco.repo.search.IndexerAndSearcher;
 import org.alfresco.repo.search.SupportsBackgroundIndexing;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.BeanFactory;
+import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
@@ -243,10 +245,13 @@ public class FullTextSearchIndexerImpl implements FTSIndexerAware, FullTextSearc
         ApplicationContext ctx = new ClassPathXmlApplicationContext("classpath:alfresco/application-context.xml");
     }
 
-    public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException
+
+    public void setBeanFactory(BeanFactory beanFactory) throws BeansException
     {
+        ListableBeanFactory listableBeanFactory = (ListableBeanFactory)beanFactory;
+    
         // Find bean implementaing SupportsBackgroundIndexing and register
-        for(Object bgindexable : beanFactory.getBeansOfType(SupportsBackgroundIndexing.class).values())
+        for(Object bgindexable : listableBeanFactory.getBeansOfType(SupportsBackgroundIndexing.class).values())
         {
             if(bgindexable instanceof SupportsBackgroundIndexing)
             {

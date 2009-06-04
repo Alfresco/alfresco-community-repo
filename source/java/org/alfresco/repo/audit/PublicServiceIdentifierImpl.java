@@ -34,8 +34,9 @@ import org.aopalliance.intercept.MethodInvocation;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
-import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
+import org.springframework.beans.factory.BeanFactory;
+import org.springframework.beans.factory.BeanFactoryAware;
+import org.springframework.beans.factory.ListableBeanFactory;
 
 /**
  * Identify public services by method invocation. Look ups are cached on a thread local as they are quite expensive. All public service names end with "Service" and start with
@@ -43,23 +44,27 @@ import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
  * 
  * @author Andy Hind
  */
-public class PublicServiceIdentifierImpl implements PublicServiceIdentifier, BeanFactoryPostProcessor
+public class PublicServiceIdentifierImpl implements PublicServiceIdentifier, BeanFactoryAware
 {
     private static Log s_logger = LogFactory.getLog(PublicServiceIdentifierImpl.class);
 
     private static ThreadLocal<HashMap<Method, String>> methodToServiceMap = new ThreadLocal<HashMap<Method, String>>();
 
-    private ConfigurableListableBeanFactory beanFactory;
+    private ListableBeanFactory beanFactory;
 
     public PublicServiceIdentifierImpl()
     {
         super();
     }
 
-    public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException
+   
+
+    public void setBeanFactory(BeanFactory beanFactory) throws BeansException
     {
-        this.beanFactory = beanFactory;
+        this.beanFactory = (ListableBeanFactory)beanFactory;
     }
+
+
 
     public String getPublicServiceName(MethodInvocation mi)
     {

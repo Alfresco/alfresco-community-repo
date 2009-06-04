@@ -732,11 +732,13 @@ public class UIDeploymentServers extends UIInput
       UIComponent host = context.getApplication().createComponent(
                UIInput.COMPONENT_TYPE);
       FacesHelper.setupComponentId(context, host, "deployServerHost");
+      
       host.getAttributes().put("styleClass", "inputField");
       host.getAttributes().put("onkeyup", 
                "javascript:Alfresco.checkDeployConfigButtonState();");
       host.getAttributes().put("onchange", 
                "javascript:Alfresco.checkDeployConfigButtonState();");
+      
       ValueBinding vbHost = context.getApplication().createValueBinding(
                "#{WizardManager.bean.editedDeployServerProperties." + 
                DeploymentServerConfig.PROP_HOST + "}");
@@ -757,13 +759,22 @@ public class UIDeploymentServers extends UIInput
                UIInput.COMPONENT_TYPE);
       FacesHelper.setupComponentId(context, port, "deployServerPort");
       port.getAttributes().put("styleClass", "inputField");
+      port.getAttributes().put("onkeyup", 
+      			"javascript:Alfresco.checkDeployConfigButtonState();");
+      port.getAttributes().put("onchange", 
+      			"javascript:Alfresco.checkDeployConfigButtonState();");
+      
       ValueBinding vbPort = context.getApplication().createValueBinding(
             "#{WizardManager.bean.editedDeployServerProperties." + 
             DeploymentServerConfig.PROP_PORT + "}");
       port.setValueBinding("value", vbPort);
       this.getChildren().add(port);
       Utils.encodeRecursive(context, port);
-      out.write("</td></tr>");
+      out.write("</td><td><img src='");
+      out.write(contextPath);
+      out.write("/images/icons/required_field.gif' title='");
+      out.write(bundle.getString("required_field"));
+      out.write("'/></td></tr>");
       
       // create the server url field
       out.write("<tr><td align='right'>");

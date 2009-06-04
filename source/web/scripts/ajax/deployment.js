@@ -117,18 +117,24 @@ Alfresco.checkDeployConfigPage = function()
 Alfresco.checkDeployConfigButtonState = function()
 {
    var host = document.getElementById('wizard:wizard-body:deployServerHost');
+   var port = document.getElementById('wizard:wizard-body:deployServerPort');
    var button = document.getElementById('wizard:wizard-body:deployActionButton');
+   
+   console.log(button);
    
    if (button != null)
    {
-      if (host != null && host.value.length == 0)
+	  var buttonState = false;
+	   
+	  if (port != null && port.value.length == 0)
+	  {
+		 buttonState = true;
+	  }
+	  if (host != null && host.value.length == 0)
       {
-         button.disabled = true;
+         buttonState = true;
       }
-      else
-      {
-         button.disabled = false;
-      }
+	  button.disabled = buttonState;
    }
 }
 

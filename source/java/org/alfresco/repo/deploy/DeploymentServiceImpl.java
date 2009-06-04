@@ -29,9 +29,11 @@ import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.Serializable;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -45,13 +47,16 @@ import java.util.concurrent.TimeUnit;
 
 import org.alfresco.deployment.DeploymentReceiverService;
 import org.alfresco.deployment.DeploymentReceiverTransport;
+import org.alfresco.deployment.DeploymentToken;
 import org.alfresco.deployment.DeploymentTransportOutputFilter;
 import org.alfresco.deployment.FileDescriptor;
 import org.alfresco.deployment.FileType;
 import org.alfresco.repo.action.ActionServiceRemote;
 import org.alfresco.repo.avm.AVMNodeConverter;
+import org.alfresco.repo.avm.AVMNodeService;
 import org.alfresco.repo.avm.util.SimplePath;
 import org.alfresco.repo.domain.PropertyValue;
+import org.alfresco.repo.lock.JobLockService;
 import org.alfresco.repo.remote.AVMRemoteImpl;
 import org.alfresco.repo.remote.AVMSyncServiceRemote;
 import org.alfresco.repo.remote.ClientTicketHolder;
@@ -76,11 +81,13 @@ import org.alfresco.service.cmr.remote.AVMRemote;
 import org.alfresco.service.cmr.remote.AVMRemoteTransport;
 import org.alfresco.service.cmr.remote.AVMSyncServiceTransport;
 import org.alfresco.service.cmr.repository.ContentData;
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.NameMatcher;
 import org.alfresco.util.Pair;
+import org.alfresco.util.PropertyCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.remoting.rmi.RmiProxyFactoryBean;
@@ -102,11 +109,18 @@ public class DeploymentServiceImpl implements DeploymentService
      * The local AVMService Instance.
      */
     private AVMService fAVMService;
+    
+    private AVMNodeService fAVMNodeService;
 
     /**
      * The local Transaction Service Instance
      */
     TransactionService trxService;
+    
+    /**
+     * The jobLockService
+     */
+    private JobLockService jobLockService;
     
     /**
      * The Ticket holder.
@@ -116,7 +130,37 @@ public class DeploymentServiceImpl implements DeploymentService
     /**
      * number of concurrent sending threads
      */
-    private int numberOfSendingThreads = 3;
+    private int numberOfSendingThreads = 4;
+    
+    /**
+     * Hold the deployment lock for 3600 seconds  (1 hour)
+     */
+	private long targetLockTimeToLive = 3600000;
+	
+	/**
+	 * Retry for target lock every 10 seconds
+	 */
+	private long targetLockRetryWait = 10000;
+	
+	/**
+	 * Retry 10000 times before giving up
+	 */
+	private int targetLockRetryCount = 10000;
+	
+	/**
+	 * The size of the output buffers
+	 */
+	private int OUTPUT_BUFFER_SIZE = 20000;
+	
+	private int outputBufferSize = OUTPUT_BUFFER_SIZE;
+    
+    public void init()
+    {
+    	  PropertyCheck.mandatory(this, "jobLockService", jobLockService);
+    	  PropertyCheck.mandatory(this, "transactionService", trxService);
+    	  PropertyCheck.mandatory(this, "avmService", fAVMService);
+    	  PropertyCheck.mandatory(this, "avmNodeService", fAVMNodeService);
+    }
 
     /**
      * Default constructor.
@@ -163,216 +207,226 @@ public class DeploymentServiceImpl implements DeploymentService
             final boolean dontDo,
             final List<DeploymentCallback> callbacks)
     {
-        DeploymentDestination dest = getLock(hostName, port);
-        synchronized (dest)
-        {
-            if (fgLogger.isDebugEnabled())
-            {
-                fgLogger.debug("Deploying to Remote Alfresco at " + dest);
-            }
-            try
-            {
-                RetryingTransactionHelper trn = trxService.getRetryingTransactionHelper();
-                
-            	fgLogger.debug("Connecting to remote AVM at " + hostName + ":" +port);
-                final AVMRemote remote = getRemote(hostName, port, userName, password);
-                if (version < 0)
-                {
-                	/**
-                	 * If version is -1, Create a local snapshot to deploy
-                	 */
-                    fgLogger.debug("creating snapshot of local version");
-                    final String storeName = srcPath.substring(0, srcPath.indexOf(":"));
-                    version = snapshotLocal(storeName);
-   
-//                    RetryingTransactionCallback<Integer> localSnapshot = new RetryingTransactionCallback<Integer>()
-//                    {
-//                        public  Integer execute() throws Throwable
-//                        {
-//                            int newVersion = fAVMService.createSnapshot(storeName, null, null).get(storeName);
-//                            return new Integer(newVersion);
-//                        }
-//                    };
-//                    version = trn.doInTransaction(localSnapshot, false, true).intValue();  
-//                    fgLogger.debug("snapshot local created " + storeName + ", " + version);
-                }
+		final String storeName = srcPath.substring(0, srcPath.indexOf(":"));
+		
+    	/**
+    	 * Lock the cluster for the remote target
+    	 */
+		String lockStr = hostName + "." + "asr." + storeName;
+		QName lockQName = QName.createQName("{org.alfresco.deployment.lock}" + lockStr);
+		Lock lock = new Lock(lockQName);
+		lock.makeLock();
+		
+		/**
+		 * Got the lock - now do a deployment
+		 */
+    	if (fgLogger.isDebugEnabled())
+    	{
+    		fgLogger.debug("Deploying to Remote Alfresco at " + hostName);
+    	}
+    	
+    	
+    	try
+    	{
+    		RetryingTransactionHelper trn = trxService.getRetryingTransactionHelper();
 
-                {
-                	DeploymentEvent event = new DeploymentEvent(DeploymentEvent.Type.START,
-                                                                new Pair<Integer, String>(version, srcPath),
-                                                                dstPath);
-                	processEvent(event, callbacks);
-                }
-                                
-                /*
-                 * Create a snapshot on the destination server.
-                 */
-                boolean createdRoot = false;
-                String [] storePath = dstPath.split(":");
-                int snapshot = -1;
-                
-                // Get the root of the deployment on the destination server.
-                AVMNodeDescriptor dstRoot = remote.lookup(-1, dstPath);
-                
-                if (!dontDo)
-                {
-                    // Get the root of the deployment on the destination server.
-                   
-                    if (dstRoot == null)
-                    {
-                        if (createDst)
-                        {
-                            fgLogger.debug("Create destination parent folder:" +  dstPath);
-                            createDestination(remote, dstPath);
-                            dstRoot = remote.lookup(-1, dstPath);
-                            createdRoot = true;
-                        }
-                        else
-                        {
-                            throw new AVMNotFoundException("Node Not Found: " + dstRoot);
-                        }
-                    }
-                    fgLogger.debug("create snapshot on remote");
-                    snapshot = remote.createSnapshot(storePath[0], "PreDeploy", "Pre Deployment Snapshot").get(storePath[0]);
-                    fgLogger.debug("snapshot created on remote");
-                }
-                
-                final int srcVersion = version;
-                final String srcFinalPath = srcPath;
-                RetryingTransactionCallback<AVMNodeDescriptor> readRoot = new RetryingTransactionCallback<AVMNodeDescriptor>()
-                {
-                    public  AVMNodeDescriptor execute() throws Throwable
-                    {
-                    	 return fAVMService.lookup(srcVersion, srcFinalPath);
-                    }
-                };
-                
-                final AVMNodeDescriptor srcRoot = trn.doInTransaction(readRoot, true, true);  
+    		fgLogger.debug("Connecting to remote AVM at " + hostName + ":" +port);
+    		final AVMRemote remote = getRemote(hostName, port, userName, password);
+    		if (version < 0)
+    		{
+    			/**
+    			 * If version is -1, Create a local snapshot to deploy
+    			 */
+    			fgLogger.debug("creating snapshot of local version");
+    
 
-                // Get the root of the deployment from this server.
-                // AVMNodeDescriptor srcRoot = fAVMService.lookup(version, srcPath);
-                
-                if (srcRoot == null)
-                {
-                    throw new AVMNotFoundException("Directory Not Found: " + srcPath);
-                }
-                if (!srcRoot.isDirectory())
-                {
-                    throw new AVMWrongTypeException("Not a directory: " + srcPath);
-                }
-                           
-                // Get the root of the deployment on the destination server.
-                if (createdRoot)
-                {
-                	/**
-                	 * This is the first deployment
-                	 */
-                    if (dontDo)
-                    {
-                    	fgLogger.debug("dont do specified returning");
-                        return;
-                    }
-                    
-                    /**
-                     * Copy the new directory
-                     */
-                    fgLogger.debug("start copying to remote");
-                    final AVMNodeDescriptor dstParentNode = dstRoot;
-                    RetryingTransactionCallback<Integer> copyContents = new RetryingTransactionCallback<Integer>()
-                    {
-                        public  Integer execute() throws Throwable
-                        {
-                            copyDirectory(srcVersion, srcRoot, dstParentNode, remote, matcher, callbacks);
-                            return new Integer(0);
-                        }
-                    };
-                    trn.setMaxRetries(1);
-                    version = trn.doInTransaction(copyContents, false, true).intValue();  
-                    
-                    fgLogger.debug("finished copying, snapshot remote");
-                    remote.createSnapshot(storePath[0], "Deployment", "Post Deployment Snapshot.");
-                    if (callbacks != null)
-                    {
-                    	 DeploymentEvent event = new DeploymentEvent(DeploymentEvent.Type.END,
-                                                    new Pair<Integer, String>(version, srcPath),
-                                                    dstPath);
-                        processEvent(event, callbacks);
+    			RetryingTransactionCallback<Integer> localSnapshot = new RetryingTransactionCallback<Integer>()
+    			{
+    				public  Integer execute() throws Throwable
+    				{
+    					int newVersion = fAVMService.createSnapshot(storeName, null, null).get(storeName);
+    					return new Integer(newVersion);
+    				}
+    			};
+    			version = trn.doInTransaction(localSnapshot, false, true).intValue();  
+    			fgLogger.debug("snapshot local created " + storeName + ", " + version);
+    		}
 
-                    }
-                    return;
-                }
-                
-                /**
-                 * The destination directory exists - check is actually a directory
-                 */
-                if (!dstRoot.isDirectory())
-                {
-                    throw new AVMWrongTypeException("Not a Directory: " + dstPath);
-                }
+    		{
+    			DeploymentEvent event = new DeploymentEvent(DeploymentEvent.Type.START,
+    					new Pair<Integer, String>(version, srcPath),
+    					dstPath);
+    			processEvent(event, callbacks);
+    		}
 
-                try
-                {
-                	/**
-                	 * Recursivly copy
-                	 */
-                    fgLogger.debug("both src and dest exist, recursivly deploy");
-                    final AVMNodeDescriptor dstParentNode = dstRoot;
-                    RetryingTransactionCallback<Integer> copyContentsRecursivly = new RetryingTransactionCallback<Integer>()
-                    {
-                        public  Integer execute() throws Throwable
-                        {
-                            deployDirectoryPush(srcVersion, srcRoot, dstParentNode, remote, matcher, dontDelete, dontDo, callbacks);
-                            return new Integer(0);
-                        }
-                    };
-                    
-                    trn.setMaxRetries(1);
-                    trn.doInTransaction(copyContentsRecursivly, false, true);
+    		/*
+    		 * Create a snapshot on the destination server.
+    		 */
+    		boolean createdRoot = false;
+    		String [] storePath = dstPath.split(":");
+    		int snapshot = -1;
 
-                    fgLogger.debug("finished copying, snapshot remote");
-                    remote.createSnapshot(storePath[0], "Deployment", "Post Deployment Snapshot.");
-  
-                        DeploymentEvent event = new DeploymentEvent(DeploymentEvent.Type.END,
-                                                                    new Pair<Integer, String>(version, srcPath),
-                                                                    dstPath);
-                        processEvent(event, callbacks);
-                    return;
-                }
-                catch (AVMException e)
-                {
-                	fgLogger.debug("error during remote copy and snapshot");
-                    try
-                    {
-                        if (snapshot != -1)
-                        {
-                        	fgLogger.debug("Attempting to roll back ");
-                            AVMSyncService syncService = getSyncService(hostName, port);
-                            List<AVMDifference> diffs = syncService.compare(snapshot, dstPath, -1, dstPath, null);
-                            syncService.update(diffs, null, false, false, true, true, "Aborted Deployment", "Aborted Deployment");
-                        }
-                    }
-                    catch (Exception ee)
-                    {
-                        throw new AVMException("Failed to rollback to version " + snapshot + " on " + hostName, ee);
-                    }
-                    throw new AVMException("Deployment to " + hostName + " failed.", e);
-                }
-            }
-            catch (Exception e)
-            {
-                DeploymentEvent event = new DeploymentEvent(DeploymentEvent.Type.FAILED,
-                                                                new Pair<Integer, String>(version, srcPath),
-                                                                dstPath, e.getMessage());
-                processEvent(event, callbacks);
-                
-                throw new AVMException("Deployment to " + hostName + " failed." + e.toString(), e);
-            }
-            finally
-            {
-            	fgLogger.debug("ASR Finally block, Releasing ASR deployment ticket");
-                fTicketHolder.setTicket(null);
-            }
-        }
+    		// Get the root of the deployment on the destination server.
+    		AVMNodeDescriptor dstRoot = remote.lookup(-1, dstPath);
+
+    		if (!dontDo)
+    		{
+    			// Get the root of the deployment on the destination server.
+
+    			if (dstRoot == null)
+    			{
+    				if (createDst)
+    				{
+    					fgLogger.debug("Create destination parent folder:" +  dstPath);
+    					createDestination(remote, dstPath);
+    					dstRoot = remote.lookup(-1, dstPath);
+    					createdRoot = true;
+    				}
+    				else
+    				{
+    					throw new AVMNotFoundException("Node Not Found: " + dstRoot);
+    				}
+    			}
+    			fgLogger.debug("create snapshot on remote");
+    			snapshot = remote.createSnapshot(storePath[0], "PreDeploy", "Pre Deployment Snapshot").get(storePath[0]);
+    			fgLogger.debug("snapshot created on remote");
+    		}
+
+    		final int srcVersion = version;
+    		final String srcFinalPath = srcPath;
+    		RetryingTransactionCallback<AVMNodeDescriptor> readRoot = new RetryingTransactionCallback<AVMNodeDescriptor>()
+    		{
+    			public  AVMNodeDescriptor execute() throws Throwable
+    			{
+    				return fAVMService.lookup(srcVersion, srcFinalPath);
+    			}
+    		};
+
+    		final AVMNodeDescriptor srcRoot = trn.doInTransaction(readRoot, true, true);  
+
+    		// Get the root of the deployment from this server.
+    		// AVMNodeDescriptor srcRoot = fAVMService.lookup(version, srcPath);
+
+    		if (srcRoot == null)
+    		{
+    			throw new AVMNotFoundException("Directory Not Found: " + srcPath);
+    		}
+    		if (!srcRoot.isDirectory())
+    		{
+    			throw new AVMWrongTypeException("Not a directory: " + srcPath);
+    		}
+
+    		// Get the root of the deployment on the destination server.
+    		if (createdRoot)
+    		{
+    			/**
+    			 * This is the first deployment
+    			 */
+    			if (dontDo)
+    			{
+    				fgLogger.debug("dont do specified returning");
+    				return;
+    			}
+
+    			/**
+    			 * Copy the new directory
+    			 */
+    			fgLogger.debug("start copying to remote");
+    			final AVMNodeDescriptor dstParentNode = dstRoot;
+    			RetryingTransactionCallback<Integer> copyContents = new RetryingTransactionCallback<Integer>()
+    			{
+    				public  Integer execute() throws Throwable
+    				{
+    					copyDirectory(srcVersion, srcRoot, dstParentNode, remote, matcher, callbacks);
+    					return new Integer(0);
+    				}
+    			};
+    			trn.setMaxRetries(1);
+    			version = trn.doInTransaction(copyContents, false, true).intValue();  
+
+    			fgLogger.debug("finished copying, snapshot remote");
+    			remote.createSnapshot(storePath[0], "Deployment", "Post Deployment Snapshot.");
+    			if (callbacks != null)
+    			{
+    				DeploymentEvent event = new DeploymentEvent(DeploymentEvent.Type.END,
+    						new Pair<Integer, String>(version, srcPath),
+    						dstPath);
+    				processEvent(event, callbacks);
+
+    			}
+    			return;
+    		}
+
+    		/**
+    		 * The destination directory exists - check is actually a directory
+    		 */
+    		if (!dstRoot.isDirectory())
+    		{
+    			throw new AVMWrongTypeException("Not a Directory: " + dstPath);
+    		}
+
+    		try
+    		{
+    			/**
+    			 * Recursivly copy
+    			 */
+    			fgLogger.debug("both src and dest exist, recursivly deploy");
+    			final AVMNodeDescriptor dstParentNode = dstRoot;
+    			RetryingTransactionCallback<Integer> copyContentsRecursivly = new RetryingTransactionCallback<Integer>()
+    			{
+    				public  Integer execute() throws Throwable
+    				{
+    					deployDirectoryPush(srcVersion, srcRoot, dstParentNode, remote, matcher, dontDelete, dontDo, callbacks);
+    					return new Integer(0);
+    				}
+    			};
+
+    			trn.setMaxRetries(1);
+    			trn.doInTransaction(copyContentsRecursivly, false, true);
+
+    			fgLogger.debug("finished copying, snapshot remote");
+    			remote.createSnapshot(storePath[0], "Deployment", "Post Deployment Snapshot.");
+
+    			DeploymentEvent event = new DeploymentEvent(DeploymentEvent.Type.END,
+    					new Pair<Integer, String>(version, srcPath),
+    					dstPath);
+    			processEvent(event, callbacks);
+    			return;
+    		}
+    		catch (AVMException e)
+    		{
+    			fgLogger.debug("error during remote copy and snapshot");
+    			try
+    			{
+    				if (snapshot != -1)
+    				{
+    					fgLogger.debug("Attempting to roll back ");
+    					AVMSyncService syncService = getSyncService(hostName, port);
+    					List<AVMDifference> diffs = syncService.compare(snapshot, dstPath, -1, dstPath, null);
+    					syncService.update(diffs, null, false, false, true, true, "Aborted Deployment", "Aborted Deployment");
+    				}
+    			}
+    			catch (Exception ee)
+    			{
+    				throw new AVMException("Failed to rollback to version " + snapshot + " on " + hostName, ee);
+    			}
+    			throw new AVMException("Deployment to " + hostName + " failed.", e);
+    		}
+    	}
+    	catch (Exception e)
+    	{
+    		DeploymentEvent event = new DeploymentEvent(DeploymentEvent.Type.FAILED,
+    				new Pair<Integer, String>(version, srcPath),
+    				dstPath, e.getMessage());
+    		processEvent(event, callbacks);
+
+    		throw new AVMException("Deployment to " + hostName + " failed." + e.toString(), e);
+    	}
+    	finally
+    	{
+    		fgLogger.debug("ASR Finally block, Releasing ASR deployment ticket");
+    		fTicketHolder.setTicket(null);
+    	}
     }    
 
     /**
@@ -467,7 +521,7 @@ public class DeploymentServiceImpl implements DeploymentService
                 Pair<Integer, String> source =
                     new Pair<Integer, String>(version, src.getPath());
                 String destination = AVMNodeConverter.ExtendAVMPath(dstParent.getPath(), src.getName());
-                DeploymentEvent event = new DeploymentEvent(DeploymentEvent.Type.COPIED,
+                DeploymentEvent event = new DeploymentEvent(DeploymentEvent.Type.CREATED,
                                                       source,
                                                       destination);
                 processEvent(event, callbacks);
@@ -478,10 +532,12 @@ public class DeploymentServiceImpl implements DeploymentService
                 copyDirectory(version, src, dstParent, remote, matcher, callbacks);
                 return;
             }
+            
+            // here when src is a file
             Pair<Integer, String> source =
                 new Pair<Integer, String>(version, src.getPath());
             String destination = AVMNodeConverter.ExtendAVMPath(dstParent.getPath(), src.getName());
-            DeploymentEvent event = new DeploymentEvent(DeploymentEvent.Type.COPIED,
+            DeploymentEvent event = new DeploymentEvent(DeploymentEvent.Type.CREATED,
                                                         source,
                                                         destination);
             processEvent(event, callbacks);
@@ -491,12 +547,28 @@ public class DeploymentServiceImpl implements DeploymentService
             }
             // Copy a source file.
             OutputStream out = remote.createFile(dstParent.getPath(), src.getName());
-            InputStream in = fAVMService.getFileInputStream(src);
-            copyStream(in, out);
-            copyMetadata(version, src, remote.lookup(-1, dstParent.getPath() + '/' + src.getName()), remote);
+            try
+            {
+            	InputStream in = fAVMService.getFileInputStream(src);
+            	copyStream(in, out);
+            	copyMetadata(version, src, remote.lookup(-1, dstParent.getPath() + '/' + src.getName()), remote);
+            }
+            finally
+            {
+            	try
+            	{
+            		out.close();
+            	}
+                catch (IOException e)
+                {
+                        throw new AVMException("I/O Exception", e);
+                }
+            	out = null;
+            }
             return;
         }
-        // Destination exists.
+        
+        // Destination exists and is a directory.
         if (src.isDirectory())
         {
             // If the destination is also a directory, recursively deploy.
@@ -508,7 +580,7 @@ public class DeploymentServiceImpl implements DeploymentService
             Pair<Integer, String> source =
                 new Pair<Integer, String>(version, src.getPath());
             String destination = dst.getPath();
-            DeploymentEvent event = new DeploymentEvent(DeploymentEvent.Type.COPIED,
+            DeploymentEvent event = new DeploymentEvent(DeploymentEvent.Type.CREATED,
                                                         source, destination);
             processEvent(event, callbacks);
             
@@ -522,7 +594,7 @@ public class DeploymentServiceImpl implements DeploymentService
             copyDirectory(version, src, dstParent, remote, matcher, callbacks);
             return;
         }
-        // Source is a file.
+        // Source exists and is a file.
         if (dst.isFile())
         {
             // Destination is also a file. Overwrite if the GUIDS are different.
@@ -593,7 +665,7 @@ public class DeploymentServiceImpl implements DeploymentService
                 if (child.isFile())
                 {   
                     DeploymentEvent event =
-                        new DeploymentEvent(DeploymentEvent.Type.COPIED,
+                        new DeploymentEvent(DeploymentEvent.Type.CREATED,
                                             new Pair<Integer, String>(version,  src.getPath() + '/' + child.getName()),
                                             newParent.getPath() + '/' + child.getName());
                     processEvent(event, callbacks);
@@ -607,7 +679,7 @@ public class DeploymentServiceImpl implements DeploymentService
                 {
                 	// is a directory
                     DeploymentEvent event =
-                        new DeploymentEvent(DeploymentEvent.Type.COPIED,
+                        new DeploymentEvent(DeploymentEvent.Type.CREATED,
                                             new Pair<Integer, String>(version,  src.getPath() + '/' + child.getName() ),
                                             newParent.getPath() + '/' + child.getName());
                     processEvent(event, callbacks);
@@ -634,7 +706,6 @@ public class DeploymentServiceImpl implements DeploymentService
                 out.write(buff, 0, read);
             }
             in.close();
-            out.close();
         }
         catch (IOException e)
         {
@@ -856,33 +927,30 @@ public class DeploymentServiceImpl implements DeploymentService
         }
     }
     
-    /**
-     * Create a new local snapshot
-     * @param storeName
-     * @return the version
-     */
-	private int snapshotLocal(final String storeName)
-	{
-		 RetryingTransactionHelper trn = trxService.getRetryingTransactionHelper();
-		 
-    	/**
-    	 * If version is -1, Create a local snapshot to deploy
-    	 */
-        fgLogger.debug("creating snapshot of local version");
+  	private  Set<String>getAspects(AVMService avmService, AVMNodeDescriptor src)
+  	{
+    	Set<QName>aspects = avmService.getAspects(src);
+  		Set<String>stringAspects = new HashSet<String>();
+  		for (QName aspect : aspects)
+  		{
+  			stringAspects.add(aspect.toString());
+  		}
+  		return stringAspects;
+  	}
+	
+  	private Map<String, Serializable> getProperties(AVMNodeDescriptor src)
+  	{
+  		Map<QName, PropertyValue> properties = fAVMService.getNodeProperties(src);
+  		
+  		NodeRef nodeRef = AVMNodeConverter.ToNodeRef(src.getVersionID(), src.getPath());
 
-        RetryingTransactionCallback<Integer> localSnapshot = new RetryingTransactionCallback<Integer>()
-        {
-            public  Integer execute() throws Throwable
-            {
-                int newVersion = fAVMService.createSnapshot(storeName, null, null).get(storeName);
-                return new Integer(newVersion);
-            }
-        };
-        int version = trn.doInTransaction(localSnapshot, false, true).intValue();  
-        fgLogger.debug("snapshot local created " + storeName + ", " + version);
-        
-        return version;
-	}
+  		Map<String, Serializable> stringProperties = new HashMap<String, Serializable>();
+  		for(QName key : properties.keySet())
+  		{
+  			stringProperties.put(key.toString(), fAVMNodeService.getProperty(nodeRef, key));
+  		}
+  		return stringProperties;
+  	}
 
     /**
      * Deploy differences to a File System Receiver, FSR
@@ -900,6 +968,8 @@ public class DeploymentServiceImpl implements DeploymentService
      *  @param dontDelete   Not implemented
      *  @param dontDo		Not implemented
      *  @param callbacks	Event callbacks when a deployment Starts, Ends, Adds, Deletes etc.
+     *
+     *  @throws AVMException
      *  
      * @see org.alfresco.service.cmr.avm.deploy.DeploymentService#deployDifferenceFS(int, java.lang.String, java.lang.String, int, java.lang.String, java.lang.String, java.lang.String, boolean, boolean)
      */
@@ -917,9 +987,25 @@ public class DeploymentServiceImpl implements DeploymentService
 			boolean dontDo, 
 			List<DeploymentCallback> callbacks) 
     {
+		
+    	/**
+    	 * Lock cluster for the remote target
+    	 */
+		String lockStr = hostName + "." + target;
+		QName lockQName = QName.createQName("{org.alfresco.deployment.lock}" + lockStr);
+		Lock lock = new Lock(lockQName);
+		lock.makeLock();
+		
+
+		/**
+		 * Cluster Lock held here
+		 */
+		
         if (fgLogger.isDebugEnabled())
         {
-            fgLogger.debug("Deploying To File System Reciever on " + hostName + " to target " + target);
+        	Object[] objs = {version, srcPath, adapterName, hostName, port, target};
+        	MessageFormat f = new MessageFormat("Deployment Lock Held: version {0}, srcPath {1}, adapterName {2}, hostName {3}, port {4}, target {5}");
+            fgLogger.debug(f.format(objs));
         }
         
         DeploymentReceiverService service = null;
@@ -939,15 +1025,24 @@ public class DeploymentServiceImpl implements DeploymentService
                 
             try 
             {
-
+            	final String storeName = srcPath.substring(0, srcPath.indexOf(':'));
                 try {           
                 
                 	if (version < 0)
                 	{
-                		String storeName = srcPath.substring(0, srcPath.indexOf(':'));
-                		version = snapshotLocal(storeName);
-                		//version = fAVMService.createSnapshot(storeName, null, null).get(storeName);
-                	}
+                		RetryingTransactionHelper trn = trxService.getRetryingTransactionHelper();
+                		
+            			RetryingTransactionCallback<Integer> localSnapshot = new RetryingTransactionCallback<Integer>()
+            			{
+            				public  Integer execute() throws Throwable
+            				{
+            					int newVersion = fAVMService.createSnapshot(storeName, null, null).get(storeName);
+            					return new Integer(newVersion);
+            				}
+            			};
+            			version = trn.doInTransaction(localSnapshot, false, true).intValue();  
+            			fgLogger.debug("snapshot local created " + storeName + ", " + version);
+            		}
 
                 	transformers = getTransformers(adapterName);
                 	service = getDeploymentReceiverService(adapterName, hostName, port, version, srcPath);
@@ -984,9 +1079,10 @@ public class DeploymentServiceImpl implements DeploymentService
             	}
                
                 try 
-                {
-                	ticket = service.begin(target, userName, password);
-                	deployDirectoryPushFSR(service, ticket, version, srcPath, "/", matcher, eventQueue, sendQueue, errors);
+                {	
+                	DeploymentToken token = service.begin(target, storeName, version, userName, password);
+                	ticket = token.getTicket();
+                	deployDirectoryPushFSR(service, ticket, version, srcPath, "/", matcher, eventQueue, sendQueue, errors, lock);
                 }
                 catch (Exception e)
                 {
@@ -1010,6 +1106,8 @@ public class DeploymentServiceImpl implements DeploymentService
                 	{
                 		try 
                 		{
+                			fgLogger.debug("no errors - prepare and commit");
+                			service.prepare(ticket);
                 			service.commit(ticket);
                 		} 
                 		catch (Exception e)
@@ -1020,6 +1118,7 @@ public class DeploymentServiceImpl implements DeploymentService
                 
                 	if(errors.size() > 0)
                 	{
+                		fgLogger.debug("errors on deployment workers");
                 		Exception firstError = errors.get(0);
                 
                 		eventQueue.add(new DeploymentEvent(DeploymentEvent.Type.FAILED,
@@ -1093,12 +1192,15 @@ public class DeploymentServiceImpl implements DeploymentService
             NameMatcher matcher,
     		BlockingQueue<DeploymentEvent> eventQueue,
     		BlockingQueue<DeploymentWork> sendQueue,
-    		List<Exception> errors)
+    		List<Exception> errors,
+    		Lock lock)
     {
         Map<String, AVMNodeDescriptor> srcListing = fAVMService.getDirectoryListing(version, srcPath);
         List<FileDescriptor> dstListing = service.getListing(ticket, dstPath);
         Iterator<AVMNodeDescriptor> srcIter = srcListing.values().iterator();
         Iterator<FileDescriptor> dstIter = dstListing.iterator();
+        
+        lock.refreshLock();
 	    
         // Here with two sorted directory listings
         AVMNodeDescriptor src = null;
@@ -1125,6 +1227,9 @@ public class DeploymentServiceImpl implements DeploymentService
             {
                 fgLogger.debug("comparing src:" + src + " dst:"+ dst);
             }
+            
+            lock.refreshLock();
+            
             // This means no entry on src so delete what is on dst.
             if (src == null)
             {
@@ -1186,10 +1291,7 @@ public class DeploymentServiceImpl implements DeploymentService
                     			new DeploymentEvent(DeploymentEvent.Type.UPDATED,
                                 new Pair<Integer, String>(version, src.getPath()),                              
                                 extendedPath), ticket, src));
-                        // Work in progress
-//                        copyFileToFSR(service, ticket, version, src,
-//                                 extendedPath, false);
-                    }
+                    	}
                     src = null;
                     dst = null;
                     continue;
@@ -1198,11 +1300,20 @@ public class DeploymentServiceImpl implements DeploymentService
                 if (dst.getType() == FileType.DIR)
                 {
                     String extendedPath = extendPath(dstPath, dst.getName());
+                    
+                    Set<String>stringAspects = getAspects(fAVMService, src);       	        	
+                	Map<String, Serializable> stringProperties = getProperties(src);
+                	
+                	/**
+                	 * Update the directory before any children
+                	 */
+                    service.updateDirectory(ticket, extendedPath, src.getGuid(), stringAspects, stringProperties);
+                    
                     if (!excluded(matcher, src.getPath(), extendedPath))
                     {
-                        deployDirectoryPushFSR(service, ticket, version, src.getPath(), extendedPath, matcher, eventQueue, sendQueue, errors);
+                        deployDirectoryPushFSR(service, ticket, version, src.getPath(), extendedPath, matcher, eventQueue, sendQueue, errors, lock);
                     }
-                    service.setGuid(ticket, extendedPath, src.getGuid());
+                   
                     src = null;
                     dst = null;
                     continue;
@@ -1256,21 +1367,25 @@ public class DeploymentServiceImpl implements DeploymentService
     {
         String dstPath = extendPath(parentPath, src.getName());
         
+        // Need to queue the request to copy file or dir to remote.
     	sendQueue.add(new DeploymentWork(
-    			new DeploymentEvent(DeploymentEvent.Type.COPIED,
+    			new DeploymentEvent(DeploymentEvent.Type.CREATED,
                 new Pair<Integer, String>(version, src.getPath()),                              
                 dstPath), ticket, src));
     	
         if (src.isFile())
         {
- //           copyFileToFSR(service, ticket, version, src, dstPath, true, transformers);
             return;
         }
         
-        // Need to create directories in controlling thread since then need to be BEFORE any children are written
+        // here if src is a directory.  
         
-        // here if src is a directory.   
-    	service.mkdir(ticket, dstPath, src.getGuid());
+        // Need to create directories in controlling thread since it needs to be created  
+        // BEFORE any children are written
+    	Set<String>stringAspects = getAspects(fAVMService, src);       	        	
+    	Map<String, Serializable> stringProperties = getProperties(src);
+    	
+    	service.createDirectory(ticket, dstPath, src.getGuid(), stringAspects, stringProperties);
 
         // now copy the children over
         Map<String, AVMNodeDescriptor> listing = fAVMService.getDirectoryListing(src);
@@ -1323,26 +1438,7 @@ public class DeploymentServiceImpl implements DeploymentService
     private boolean excluded(NameMatcher matcher, String srcPath, String dstPath)
     {
         return matcher != null && ((srcPath != null && matcher.matches(srcPath)) || (dstPath != null && matcher.matches(dstPath)));
-    }
-
-    /**
-     * Get the object to lock for an alfresco->alfresco target.
-     * @param host
-     * @param port
-     * @return the lock
-     */
-    private synchronized DeploymentDestination getLock(String host, int port)
-    {
-        DeploymentDestination newDest = new DeploymentDestination(host, port);
-        DeploymentDestination dest = fDestinations.get(newDest);
-        if (dest == null)
-        {
-            dest = newDest;
-            fDestinations.put(dest, dest);
-        }
-        return dest;
-    }
-    
+    }    
 
     private Map<String, DeploymentReceiverTransportAdapter> deploymentReceiverTransportAdapters;
     /**
@@ -1375,6 +1471,54 @@ public class DeploymentServiceImpl implements DeploymentService
 
 	public int getNumberOfSendingThreads() {
 		return numberOfSendingThreads;
+	}
+
+	public void setJobLockService(JobLockService jobLockService) {
+		this.jobLockService = jobLockService;
+	}
+
+	public JobLockService getJobLockService() {
+		return jobLockService;
+	}
+
+	public void setTargetLockTimeToLive(long targetLockTimeToLive) {
+		this.targetLockTimeToLive = targetLockTimeToLive;
+	}
+
+	public long getTargetLockTimeToLive() {
+		return targetLockTimeToLive;
+	}
+
+	public void setTargetLockRetryWait(long targetLockRetryWait) {
+		this.targetLockRetryWait = targetLockRetryWait;
+	}
+
+	public long getTargetLockRetryWait() {
+		return targetLockRetryWait;
+	}
+
+	public void setTargetLockRetryCount(int targetLockRetryCount) {
+		this.targetLockRetryCount = targetLockRetryCount;
+	}
+
+	public int getTargetLockRetryCount() {
+		return targetLockRetryCount;
+	}
+	
+	public void setAvmNodeService(AVMNodeService fAVMNodeService) {
+		this.fAVMNodeService = fAVMNodeService;
+	}
+
+	public AVMNodeService getAvmNodeService() {
+		return fAVMNodeService;
+	}
+
+	public void setOutputBufferSize(int outputBufferSize) {
+		this.outputBufferSize = outputBufferSize;
+	}
+
+	public int getOutputBufferSize() {
+		return outputBufferSize;
 	}
 
 	/**
@@ -1439,6 +1583,47 @@ public class DeploymentServiceImpl implements DeploymentService
 			stopMe = true;
 		}
 		
+		
+		
+	}
+	
+	/**
+	 * Inner Class to Decorate the jobLockService to add control over the refreshLock behaviour to 
+	 * reduce the number of calls to the underlying lock service.
+	 */
+	private class Lock
+	{	
+		QName lockQName;
+		long lockTime;
+		
+		public Lock(QName lockQName)
+		{
+			this.lockQName = lockQName;
+		}
+		
+		/**
+		 * @throws LockAquisitionException
+		 */
+		public void makeLock()
+		{
+			jobLockService.getTransacionalLock(lockQName, getTargetLockTimeToLive(), getTargetLockRetryWait(), getTargetLockRetryCount());
+			lockTime = new Date().getTime();
+			fgLogger.debug("lock taken" + lockQName);
+		}
+		
+		public void refreshLock()
+		{
+			/**
+			 * Optimisation to stop the lock being refreshed thousands of times, refresh lock only after half lock time has expired
+			 */
+			Date now = new Date();
+			if(now.getTime() - lockTime > (targetLockTimeToLive / 2))
+			{
+				fgLogger.debug("lock refreshed" + lockQName);
+				jobLockService.getTransacionalLock(lockQName, getTargetLockTimeToLive(), getTargetLockRetryWait(), getTargetLockRetryCount());
+				lockTime = new Date().getTime();
+			}
+		}
 	}
 	
 	/**
@@ -1516,7 +1701,7 @@ public class DeploymentServiceImpl implements DeploymentService
 						{
 							service.delete(ticket, event.getDestination());
 						} 
-						else if (event.getType().equals(DeploymentEvent.Type.COPIED))
+						else if (event.getType().equals(DeploymentEvent.Type.CREATED))
 						{
 							AVMNodeDescriptor src = work.getSrc();
 							if(src.isFile())
@@ -1571,25 +1756,40 @@ public class DeploymentServiceImpl implements DeploymentService
                 {
                     public Boolean execute() throws Exception
                     {
-        	        	InputStream in = avmService.getFileInputStream(src);
+                    	ContentData data = avmService.getContentDataForRead(src);
+         	        	InputStream in = avmService.getFileInputStream(src);
+        	        	String encoding = data.getEncoding();
+        	        	String mimeType = data.getMimetype();
+  
+        	        	Set<String>stringAspects = getAspects(avmService, src);       	        	
+        	        	Map<String, Serializable> stringProperties = getProperties(src);
+        	        	OutputStream out = service.send(ticket, dstPath, src.getGuid(), encoding, mimeType, stringAspects, stringProperties);
+      
+                        try
+                        {
+                        	// Buffer the output, we don't want to send lots of small packets
+                        	out = new BufferedOutputStream(out, outputBufferSize);
         	        
-        	        	OutputStream out = service.send(ticket, dstPath, src.getGuid());
-        	        	OutputStream baseStream = out; // finish send needs out, not a decorated stream
-        	        
-        	        	// Buffer the output, we don't want to send lots of small packets
-        	        	out = new BufferedOutputStream(out, 10000);
-        	        
-        	        	// Call content transformers here to transform from local to network format
-        	        	if(transformers != null && transformers.size() > 0) {
-        	        		// yes we have pay-load transformers
-        	        		for(DeploymentTransportOutputFilter transformer : transformers) 
-        	        		{
-        	        			out = transformer.addFilter(out, src.getPath());
-        	        		}
-        	        	}
+                        	// Call content transformers here to transform from local to network format
+                        	if(transformers != null && transformers.size() > 0) {
+                        		// yes we have pay-load transformers
+                        		for(DeploymentTransportOutputFilter transformer : transformers) 
+                        		{
+                        			out = transformer.addFilter(out, src.getPath(), encoding, mimeType);
+                        		}
+                        	}
         	        		        
-        	            copyStream(in, out);
-                        service.finishSend(ticket, baseStream);
+                        	copyStream(in, out);
+                        }
+                        finally
+                        {
+                        	// whatever happens close the output stream
+                        	if(out != null)
+                        	{
+                        		out.close();
+                        		out = null;
+                        	}
+                        }
                         return true;
                     }
                 }, true);

@@ -43,6 +43,8 @@ public class DeploymentClientOutputStream extends OutputStream
     
     private String fOutputToken;
     
+    private boolean open = true;
+    
     /**
      * Make one up.
      * @param transport
@@ -75,7 +77,11 @@ public class DeploymentClientOutputStream extends OutputStream
     @Override
     public void close() throws IOException
     {
-        // NO OP
+    	if(open)
+    	{
+    		fTransport.finishSend(fTicket, fOutputToken);
+    	}
+        open = false;
     }
 
     /* (non-Javadoc)

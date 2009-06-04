@@ -43,7 +43,7 @@ public class DeploymentEvent implements Serializable
      */
     public static enum Type implements Serializable
     {
-        COPIED,    // Copied a source node that did not exist on the destination.
+        CREATED,   // Copied a source node that did not exist on the destination.
         UPDATED,   // Overwrote the destination.
         DELETED,   // Deleted the destination node.
         START,     // A Deployment has begun.

@@ -53,12 +53,21 @@
      
 
      <!--  Deployment Service -->
-     <bean id="deploymentService" class="org.alfresco.repo.deploy.DeploymentServiceImpl">
+     <bean id="deploymentService" class="org.alfresco.repo.deploy.DeploymentServiceImpl" init-method="init">
         <property name="avmService">
             <ref bean="indexingAVMService"/>
         </property>
+        
+        <property name="avmNodeService">
+            <ref bean="avmNodeService"/>
+        </property>
+        
         <property name="transactionService">
             <ref bean="transactionService"/>
+        </property>
+        
+        <property name="jobLockService">
+        	<ref bean="jobLockService"/>
         </property>
         
         <!-- how many files to send in parallel -->

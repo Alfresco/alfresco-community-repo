@@ -119,10 +119,10 @@ public class ASRDeploymentTest extends AVMServiceTestBase
             String buffyText = "This is test data: Buffy the Vampire Slayer is an Emmy Award-winning and Golden Globe-nominated American cult television series that aired from March 10, 1997 until May 20, 2003. The series was created in 1997 by writer-director Joss Whedon under his production tag, Mutant Enemy Productions with later co-executive producers being Jane Espenson, David Fury, and Marti Noxon. The series narrative follows Buffy Summers (played by Sarah Michelle Gellar), the latest in a line of young women chosen by fate to battle against vampires, demons, and the forces of darkness as the Slayer. Like previous Slayers, Buffy is aided by a Watcher, who guides and trains her. Unlike her predecessors, Buffy surrounds herself with a circle of loyal friends who become known as the Scooby Gang.";
             fService.createFile("main:/a/b", "buffy").close();
             writer = fService.getContentWriter("main:/a/b/buffy");
+            
             // Force a conversion
             writer.setEncoding("UTF-16");
-            writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
-            
+            writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);         
             writer.putContent(buffyText);
             
             fService.createFile("main:/a/b", "fudge.bak").close();
@@ -144,14 +144,14 @@ public class ASRDeploymentTest extends AVMServiceTestBase
         	assertTrue("first deployment no start", firstDeployment.contains(new DeploymentEvent(DeploymentEvent.Type.START, null, destRef)));
         	assertTrue("first deployment no finish", firstDeployment.contains(new DeploymentEvent(DeploymentEvent.Type.END, null, destRef)));
         	assertTrue("first deployment wrong size", firstDeployment.size() == 11);
-        	assertTrue("Update missing: /a", firstDeployment.contains(new DeploymentEvent(DeploymentEvent.Type.COPIED, null, destRef + "/a")));
-        	assertTrue("Update missing: /a/b", firstDeployment.contains(new DeploymentEvent(DeploymentEvent.Type.COPIED, null, destRef + "/a/b")));
-        	assertTrue("Update missing: /a/b/c", firstDeployment.contains(new DeploymentEvent(DeploymentEvent.Type.COPIED, null, destRef  + "/a/b/c")));
-        	assertTrue("Update missing: /d/e", firstDeployment.contains(new DeploymentEvent(DeploymentEvent.Type.COPIED, null, destRef + "/d/e")));
-        	assertTrue("Update missing: /a/b/c/foo", firstDeployment.contains(new DeploymentEvent(DeploymentEvent.Type.COPIED, null, destRef + "/a/b/c/foo")));
-        	assertTrue("Update missing: /a/b/c/bar", firstDeployment.contains(new DeploymentEvent(DeploymentEvent.Type.COPIED, null, destRef + "/a/b/c/bar")));        	
-        	assertTrue("Update missing: /a/b/buffy", firstDeployment.contains(new DeploymentEvent(DeploymentEvent.Type.COPIED, null, destRef + "/a/b/buffy")));
-        	assertFalse("Fudge has not been excluded", firstDeployment.contains(new DeploymentEvent(DeploymentEvent.Type.COPIED, null, destRef + "/a/b/fudge.bak")));
+        	assertTrue("Update missing: /a", firstDeployment.contains(new DeploymentEvent(DeploymentEvent.Type.CREATED, null, destRef + "/a")));
+        	assertTrue("Update missing: /a/b", firstDeployment.contains(new DeploymentEvent(DeploymentEvent.Type.CREATED, null, destRef + "/a/b")));
+        	assertTrue("Update missing: /a/b/c", firstDeployment.contains(new DeploymentEvent(DeploymentEvent.Type.CREATED, null, destRef  + "/a/b/c")));
+        	assertTrue("Update missing: /d/e", firstDeployment.contains(new DeploymentEvent(DeploymentEvent.Type.CREATED, null, destRef + "/d/e")));
+        	assertTrue("Update missing: /a/b/c/foo", firstDeployment.contains(new DeploymentEvent(DeploymentEvent.Type.CREATED, null, destRef + "/a/b/c/foo")));
+        	assertTrue("Update missing: /a/b/c/bar", firstDeployment.contains(new DeploymentEvent(DeploymentEvent.Type.CREATED, null, destRef + "/a/b/c/bar")));        	
+        	assertTrue("Update missing: /a/b/buffy", firstDeployment.contains(new DeploymentEvent(DeploymentEvent.Type.CREATED, null, destRef + "/a/b/buffy")));
+        	assertFalse("Fudge has not been excluded", firstDeployment.contains(new DeploymentEvent(DeploymentEvent.Type.CREATED, null, destRef + "/a/b/fudge.bak")));
         	
         	// Check that files exist in the destination AVM Store	
         	{

@@ -126,7 +126,7 @@ public class BulkLoader
             catch (IOException e)
             {
                 e.printStackTrace(System.err);
-                throw new AVMException("I/O Error");
+                throw new AVMException("I/O Error", e);
             }
         }
     }

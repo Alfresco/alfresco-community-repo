@@ -27,9 +27,13 @@ package org.alfresco.repo.deploy;
 
 import java.io.OutputStream;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.io.Serializable;
 
 import org.alfresco.deployment.DeploymentReceiverService;
 import org.alfresco.deployment.DeploymentReceiverTransport;
+import org.alfresco.deployment.DeploymentToken;
 import org.alfresco.deployment.FileDescriptor;
 
 /**
@@ -68,9 +72,17 @@ public class DeploymentReceiverServiceClient implements
     /* (non-Javadoc)
      * @see org.alfresco.deployment.DeploymentReceiverService#begin(java.lang.String, java.lang.String, java.lang.String)
      */
-    public String begin(String target, String user, String password)
+    public DeploymentToken begin(String target, String storeName, int version, String user, String password)
     {
-        return fTransport.begin(target, user, password);
+        return fTransport.begin(target, storeName, version, user, password);
+    }
+    
+    /* (non-Javadoc)
+     * @see org.alfresco.deployment.DeploymentReceiverService#commit(java.lang.String)
+     */
+    public void prepare(String ticket)
+    {
+        fTransport.prepare(ticket);
     }
 
     /* (non-Javadoc)
@@ -109,17 +121,17 @@ public class DeploymentReceiverServiceClient implements
     /* (non-Javadoc)
      * @see org.alfresco.deployment.DeploymentReceiverService#mkdir(java.lang.String, java.lang.String, java.lang.String)
      */
-    public void mkdir(String ticket, String path, String guid)
+    public void createDirectory(String ticket, String path, String guid, Set<String>aspects, Map<String, Serializable> properties)
     {
-        fTransport.mkdir(ticket, path, guid);
+        fTransport.createDirectory(ticket, path, guid, aspects, properties);
     }
 
     /* (non-Javadoc)
      * @see org.alfresco.deployment.DeploymentReceiverService#send(java.lang.String, java.lang.String, java.lang.String)
      */
-    public OutputStream send(String ticket, String path, String guid)
+    public OutputStream send(String ticket, String path, String guid, String encoding, String mimeType, Set<String>aspects, Map<String, Serializable> props)
     {
-        String outputToken = fTransport.getSendToken(ticket, path, guid);
+        String outputToken = fTransport.getSendToken(ticket, path, guid, encoding, mimeType, aspects, props);
         return new DeploymentClientOutputStream(fTransport, ticket, outputToken);
     }
 
@@ -131,8 +143,8 @@ public class DeploymentReceiverServiceClient implements
         fTransport.shutDown(user, password);
     }
 
-    public void setGuid(String ticket, String path, String guid)
+    public void updateDirectory(String ticket, String path, String guid, Set<String>aspects, Map<String, Serializable> props)
     {
-        fTransport.setGuid(ticket, path, guid);
+        fTransport.updateDirectory(ticket, path, guid, aspects, props);
     }
 }

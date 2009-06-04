@@ -418,8 +418,18 @@ public class AVMDeployWebsiteAction extends ActionExecuterAbstractBase
                logger.debug("Performing Alfresco deployment to " + host + ":" + port +
                             " using deploymentserver: " + serverProps);
 
-            this.deployService.deployDifference(version, path, host, port,
-                 remoteUsername, remotePassword, targetPath, regexMatcher, true, false, false, callbacks);
+            this.deployService.deployDifference(version, 
+            		path, 
+            		host, 
+            		port,
+            		remoteUsername, 
+            		remotePassword, 
+            		targetPath, 
+            		regexMatcher, 
+            		true, 
+            		false, 
+            		false, 
+            		callbacks);
          }
       }
       catch (Throwable err)

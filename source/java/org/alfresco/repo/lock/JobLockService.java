@@ -78,6 +78,7 @@ public interface JobLockService
      * make use of retrying; the lock is actually being refreshed and will therefore never
      * become valid if it doesn't refresh directly.
      * 
+     * @param timeToLive            the time (in milliseconds) for the lock to remain valid
      * @param retryWait             the time (in milliseconds) to wait before trying again
      * @param retryCount            the maximum number of times to attempt the lock acquisition
      * @throws LockAcquisitionException if the lock could not be acquired

@@ -102,7 +102,7 @@ public class LockEntity
     
     public boolean hasExpired()
     {
-        return System.currentTimeMillis() >= expiryTime;
+        return System.currentTimeMillis() > expiryTime;
     }
     
     public Long getId()

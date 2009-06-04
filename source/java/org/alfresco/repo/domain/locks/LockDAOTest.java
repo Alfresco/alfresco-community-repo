@@ -293,9 +293,9 @@ public class LockDAOTest extends TestCase
     public synchronized void testLockExpiry() throws Exception
     {
         lock(lockAAA, 50L, true);
-        this.wait(50L);
+        this.wait(100L);
         lock(lockAA, 50L, true);
-        this.wait(50L);
+        this.wait(100L);
         lock(lockA, 100L, true);
     }
 
@@ -308,10 +308,10 @@ public class LockDAOTest extends TestCase
         String tokenAAA = lock(lockAAA, 500L, true);
         release(lockAAA, tokenAAA, true);
         tokenAAA = lock(lockAAA, 50L, true);        // Make sure we can re-acquire the lock
-        this.wait(50L);                             // Wait for expiry
+        this.wait(100L);                            // Wait for expiry
         String grabbedTokenAAAA = lock(lockAAA, 50L, true); // Grabbed lock over the expiry
         release(lockAAA, tokenAAA, false);          // Can't release any more
-        this.wait(50L);                             // Wait for expiry
+        this.wait(100L);                            // Wait for expiry
         release(lockAAA, grabbedTokenAAAA, true);   // Proof that expiry, on it's own, doesn't prevent release
     }
     

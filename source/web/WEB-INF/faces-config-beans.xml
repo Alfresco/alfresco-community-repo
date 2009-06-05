@@ -2867,6 +2867,17 @@
    </managed-bean>
    
    <managed-bean>
+      <description>Backing bean used to dump JMX objects</description>
+      <managed-bean-name>JmxDumperBean</managed-bean-name>
+      <managed-bean-class>org.alfresco.web.bean.jmx.JmxDumperBean</managed-bean-class>
+      <managed-bean-scope>application</managed-bean-scope>
+      <managed-property>
+         <property-name>mbeanServer</property-name>
+         <value>#{mbeanServer}</value>
+      </managed-property>
+   </managed-bean>
+
+   <managed-bean>
       <description>Backing bean used for the Web Client Config Admin Console</description>
       <managed-bean-name>ConfigAdminConsoleBean</managed-bean-name>
       <managed-bean-class>org.alfresco.web.bean.admin.ConfigAdminConsoleBean</managed-bean-class>

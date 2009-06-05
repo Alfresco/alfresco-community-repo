@@ -190,7 +190,7 @@ public class FSDeploymentTest extends AVMServiceTestBase
         	assertFalse("Fudge has not been excluded", firstDeployment.contains(new DeploymentEvent(DeploymentEvent.Type.CREATED, null, "/a/b/fudge.bak")));
         	
         	// Check that files exist on target
-        	File target = new File("target");
+        	File target = new File("sampleTarget");
         	assertTrue("target dir does not extist", target.exists());
         	assertTrue("target dir is not a directory", target.isDirectory());
         	

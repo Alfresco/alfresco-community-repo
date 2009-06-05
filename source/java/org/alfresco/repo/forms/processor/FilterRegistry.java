@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2008 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -31,70 +31,76 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 /**
- * Holds a list of handlers for a type of form processor, the handlers are called 
- * in sequence to check their applicability, if the handler applies to the item
- * being processed it's generate or persist method is called.
- *
- * @see org.alfresco.repo.forms.processor.Handler
+ * Holds a list of filters for a type of form processor.
+ * <p>
+ * Each filter is called before and after the processor generates and
+ * persists the form, thus allowing the form and the effected objects
+ * to be manipulated prior to generation or persistence or after the 
+ * fact.
+ * </p>
+ * <p>
+ * Each filter is responsible for determing whether it applies to the item
+ * being processed.
+ * </p>
+ * 
+ * @see org.alfresco.repo.forms.processor.Filter
  * @author Gavin Cornwell
  */
-public class HandlerRegistry
+public class FilterRegistry
 {
-    private static final Log logger = LogFactory.getLog(HandlerRegistry.class);
+    private static final Log logger = LogFactory.getLog(FilterRegistry.class);
     
-    protected List<Handler> handlers;
+    protected List<Filter> filters;
     
     /**
      * Constructs the registry
      */
-    public HandlerRegistry()
+    public FilterRegistry()
     {
-        this.handlers = new ArrayList<Handler>(4);
+        this.filters = new ArrayList<Filter>(4);
     }
     
     /**
-     * Registers a handler
+     * Registers a filter
      * 
-     * @param handler The Handler to regsiter
+     * @param filter The Filter to regsiter
      */
-    public void addHandler(Handler handler)
+    public void addFilter(Filter filter)
     {
-        if (handler.isActive())
+        if (filter.isActive())
         {
-            this.handlers.add(handler);
+            this.filters.add(filter);
             
             if (logger.isDebugEnabled())
-                logger.debug("Registered handler: " + handler + " in register: " + this);
+                logger.debug("Registered filter: " + filter + " in register: " + this);
         }
         else if (logger.isWarnEnabled())
         {
-            logger.warn("Ignored registration of handler " + handler + "as it was marked as inactive");
+            logger.warn("Ignored registration of filter " + filter + " as it was marked as inactive");
         }
     }
     
     /**
-     * Returns a list of handlers applicable for the given item
+     * Returns a list of active filters
      * 
-     * @param item The item the form is being processed for
-     * @return List of applicable Handler objects
+     * @return List of active Filter objects
      */
-    public List<Handler> getApplicableHandlers(Object item)
+    public List<Filter> getFilters()
     {
-        List<Handler> applicableHandlers = new ArrayList<Handler>(4);
+        List<Filter> activeFilters = new ArrayList<Filter>(4);
         
-        // iterate round the handlers and add each active applicable
-        // handler to the list
-        for (Handler handler : this.handlers)
+        // iterate round the filters and add each active filter to the list
+        for (Filter filter: this.filters)
         {
-            if (handler.isActive() && handler.isApplicable(item))
+            if (filter.isActive())
             {
-                applicableHandlers.add(handler);
+                activeFilters.add(filter);
             }
         }
         
         if (logger.isDebugEnabled())
-            logger.debug("Returning applicable handlers: " + applicableHandlers);
+            logger.debug("Returning active filters: " + activeFilters);
         
-        return applicableHandlers;
+        return activeFilters;
     }
 }

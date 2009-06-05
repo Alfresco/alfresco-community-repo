@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2008 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -28,31 +28,31 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 /**
- * Abstract base class for all Handler implementations.
+ * Abstract base class for all Filter implementations.
  *
  * @author Gavin Cornwell
  */
-public abstract class AbstractHandler implements Handler
+public abstract class AbstractFilter implements Filter
 {
-    private static final Log logger = LogFactory.getLog(AbstractHandler.class);
+    private static final Log logger = LogFactory.getLog(AbstractFilter.class);
     
-    protected HandlerRegistry handlerRegistry;
+    protected FilterRegistry filterRegistry;
     protected boolean active = true;
 
     /**
-     * Sets the handler registry
+     * Sets the filter registry
      * 
-     * @param handlerRegistry The FormProcessorHandlerRegistry instance
+     * @param filterRegistry The FilterRegistry instance
      */
-    public void setHandlerRegistry(HandlerRegistry handlerRegistry)
+    public void setFilterRegistry(FilterRegistry filterRegistry)
     {
-        this.handlerRegistry = handlerRegistry;
+        this.filterRegistry = filterRegistry;
     }
     
     /**
-     * Sets whether this processor is active
+     * Sets whether this filter is active
      * 
-     * @param active true if the processor should be active
+     * @param active true if the filter should be active
      */
     public void setActive(boolean active)
     {
@@ -60,37 +60,28 @@ public abstract class AbstractHandler implements Handler
     }
     
     /**
-     * Registers this handler with the handler registry
+     * Registers this filter with the filter registry
      */
     public void register()
     {
-        if (handlerRegistry == null)
+        if (filterRegistry == null)
         {
             if (logger.isWarnEnabled())
-                logger.warn("Property 'handlerRegistry' has not been set.  Ignoring auto-registration of handler: " + this);
+                logger.warn("Property 'filterRegistry' has not been set. Ignoring auto-registration of filter: " + this);
             
             return;
         }
 
         // register this instance
-        handlerRegistry.addHandler(this);
+        filterRegistry.addFilter(this);
     }
 
     /*
-     * @see org.alfresco.repo.forms.processor.Handler#isActive()
+     * @see org.alfresco.repo.forms.processor.Filter#isActive()
      */
     public boolean isActive()
     {
         return this.active;
-    }
-    
-    /*
-     * @see org.alfresco.repo.forms.processor.Handler#isApplicable(java.lang.String)
-     */
-    public boolean isApplicable(Object item)
-    {
-        // by default all handlers are applicable
-        return true;
     }
     
     /*

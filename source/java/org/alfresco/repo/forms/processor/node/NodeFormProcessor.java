@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2008 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -22,7 +22,7 @@
  * the FLOSS exception, and it is also available here: 
  * http://www.alfresco.com/legal/licensing"
  */
-package org.alfresco.repo.forms.processor;
+package org.alfresco.repo.forms.processor.node;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -39,10 +39,13 @@ import org.alfresco.repo.forms.AssociationFieldDefinition;
 import org.alfresco.repo.forms.Form;
 import org.alfresco.repo.forms.FormData;
 import org.alfresco.repo.forms.FormException;
+import org.alfresco.repo.forms.FormNotFoundException;
+import org.alfresco.repo.forms.Item;
 import org.alfresco.repo.forms.PropertyFieldDefinition;
 import org.alfresco.repo.forms.AssociationFieldDefinition.Direction;
 import org.alfresco.repo.forms.FormData.FieldData;
 import org.alfresco.repo.forms.PropertyFieldDefinition.FieldConstraint;
+import org.alfresco.repo.forms.processor.FilteredFormProcessor;
 import org.alfresco.service.cmr.dictionary.AssociationDefinition;
 import org.alfresco.service.cmr.dictionary.ChildAssociationDefinition;
 import org.alfresco.service.cmr.dictionary.Constraint;
@@ -57,6 +60,7 @@ import org.alfresco.service.cmr.model.FileNotFoundException;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
+import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.NamespaceService;
@@ -66,17 +70,16 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 /**
- * Handler to handle the generation and persistence of a Form object for a repository node.
- * <p>
- * This handler will add all properties (including those of any aspects applied) and 
- * associations of the node to the Form.
+ * FormProcessor implementation that can generate and persist Form objects
+ * for repository nodes.
  *
  * @author Gavin Cornwell
  */
-public class NodeHandler extends AbstractHandler
+public class NodeFormProcessor extends FilteredFormProcessor
 {
-    private static final Log logger = LogFactory.getLog(NodeHandler.class);
-
+    /** Logger */
+    private static Log logger = LogFactory.getLog(NodeFormProcessor.class);
+    
     protected static final String ON = "on";
     protected static final String PROP = "prop";
     protected static final String ASSOC = "assoc";
@@ -163,11 +166,65 @@ public class NodeHandler extends AbstractHandler
     {
         this.namespaceService = namespaceService;
     }
+    
+    /*
+     * @see org.alfresco.repo.forms.processor.FilteredFormProcessor#getTypedItem(org.alfresco.repo.forms.Item)
+     */
+    @Override
+    protected Object getTypedItem(Item item)
+    {
+        // create NodeRef representation, the id could already be in a valid
+        // NodeRef format or it may be in a URL friendly format
+        NodeRef nodeRef = null;
+        if (NodeRef.isNodeRef(item.getId()))
+        {
+            nodeRef = new NodeRef(item.getId());
+        }
+        else
+        {
+            // split the string into the 3 required parts
+            String[] parts = item.getId().split("/");
+            if (parts.length == 3)
+            {
+                try
+                {
+                    nodeRef = new NodeRef(parts[0], parts[1], parts[2]);
+                }
+                catch (IllegalArgumentException iae)
+                {
+                    // ignored for now, dealt with below
+                    
+                    if (logger.isDebugEnabled())
+                        logger.debug("NodeRef creation failed for: " + item.getId(), iae);
+                }
+            }
+        } 
+        
+        // check we have a valid node ref
+        if (nodeRef == null)
+        {
+            throw new FormNotFoundException(item, 
+                        new IllegalArgumentException(item.getId()));
+        }
+        
+        // check the node itself exists
+        if (this.nodeService.exists(nodeRef) == false)
+        {
+            throw new FormNotFoundException(item, 
+                        new InvalidNodeRefException("Node does not exist: " + nodeRef, nodeRef));
+        }
+        else
+        {
+            // all Node based filters can expect to get a NodeRef
+            return nodeRef;
+        }
+    }
 
     /*
-     * @see org.alfresco.repo.forms.processor.Handler#handleGenerate(java.lang.Object, java.util.List, java.util.List, org.alfresco.repo.forms.Form)
+     * @see org.alfresco.repo.forms.processor.FilteredFormProcessor#internalGenerate(java.lang.Object, java.util.List, java.util.List, org.alfresco.repo.forms.Form)
      */
-    public Form handleGenerate(Object item, List<String> fields, List<String> forcedFields, Form form)
+    @Override
+    protected void internalGenerate(Object item, List<String> fields, List<String> forcedFields, Form form)
     {
         if (logger.isDebugEnabled())
             logger.debug("Generating form for: " + item);
@@ -179,11 +236,9 @@ public class NodeHandler extends AbstractHandler
         generateNode(nodeRef, fields, forcedFields, form);
         
         if (logger.isDebugEnabled())
-            logger.debug("Returning form: " + form);
-        
-        return form;
+            logger.debug("Generated form: " + form);
     }
-
+    
     /**
      * Sets up the Form object for the given NodeRef
      * 
@@ -766,11 +821,12 @@ public class NodeHandler extends AbstractHandler
         
         return assocValues;
     }
-    
+
     /*
-     * @see org.alfresco.repo.forms.processor.FormProcessorHandler#handlePersist(java.lang.Object, org.alfresco.repo.forms.FormData)
+     * @see org.alfresco.repo.forms.processor.FilteredFormProcessor#internalPersist(java.lang.Object, org.alfresco.repo.forms.FormData)
      */
-    public void handlePersist(Object item, FormData data)
+    @Override
+    protected Object internalPersist(Object item, FormData data)
     {
         if (logger.isDebugEnabled())
             logger.debug("Persisting form for: " + item);
@@ -780,6 +836,8 @@ public class NodeHandler extends AbstractHandler
         
         // persist the node
         persistNode(nodeRef, data);
+        
+        return item;
     }
     
     /**

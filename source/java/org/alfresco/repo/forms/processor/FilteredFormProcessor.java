@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2008 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -28,32 +28,30 @@ import java.util.List;
 
 import org.alfresco.repo.forms.Form;
 import org.alfresco.repo.forms.FormData;
-import org.alfresco.repo.forms.FormException;
 import org.alfresco.repo.forms.Item;
 
 /**
  * Abstract base class for all FormProcessor implementations that wish to use the 
- * handler mechanism.
+ * filter mechanism.
  *
  * @author Gavin Cornwell
  */
-public abstract class AbstractFormProcessorByHandlers extends AbstractFormProcessor
+public abstract class FilteredFormProcessor extends AbstractFormProcessor
 {
-    protected HandlerRegistry handlerRegistry;
+    protected FilterRegistry filterRegistry;
     
     /**
-     * Sets the form processor handler registry 
+     * Sets the filter registry 
      * 
-     * @param handlerRegistry The FormProcessorHandlerRegistry instance
+     * @param filterRegistry The FilterRegistry instance
      */
-    public void setHandlerRegistry(HandlerRegistry handlerRegistry)
+    public void setFilterRegistry(FilterRegistry filterRegistry)
     {
-        this.handlerRegistry = handlerRegistry;
+        this.filterRegistry = filterRegistry;
     }
         
     /**
-     * Generates a Form for the given item, constructed by calling each
-     * applicable registered handler
+     * Generates a Form for the given item.
      * 
      * @see org.alfresco.repo.forms.processor.FormProcessor#generate(org.alfresco.repo.forms.Item, java.util.List, java.util.List)
      * @param item The item to generate a form for
@@ -63,21 +61,31 @@ public abstract class AbstractFormProcessorByHandlers extends AbstractFormProces
      */
     public Form generate(Item item, List<String> fields, List<String> forcedFields)
     {
-        if (this.handlerRegistry == null)
-        {
-            throw new FormException("Property 'handlerRegistry' has not been set.");
-        }
-        
         // get the typed object representing the item
         Object typedItem = getTypedItem(item);
 
         // create an empty Form
         Form form = new Form(item);
         
-        // execute each applicable handler
-        for (Handler handler: this.handlerRegistry.getApplicableHandlers(typedItem))
+        // inform all regsitered filters the form is about to be generated
+        if (this.filterRegistry != null)
         {
-            form = handler.handleGenerate(typedItem, fields, forcedFields, form);
+            for (Filter filter: this.filterRegistry.getFilters())
+            {
+                filter.beforeGenerate(typedItem, fields, forcedFields, form);
+            }
+        }
+        
+        // perform the actual generation of the form
+        internalGenerate(typedItem, fields, forcedFields, form);
+        
+        // inform all regsitered filters the form has been generated
+        if (this.filterRegistry != null)
+        {
+            for (Filter filter: this.filterRegistry.getFilters())
+            {
+                filter.afterGenerate(typedItem, fields, forcedFields, form);
+            }
         }
         
         return form;
@@ -93,18 +101,28 @@ public abstract class AbstractFormProcessorByHandlers extends AbstractFormProces
      */
     public void persist(Item item, FormData data)
     {
-        if (this.handlerRegistry == null)
-        {
-            throw new FormException("Property 'handlerRegistry' has not been set.");
-        }
-        
         // get the typed object representing the item
         Object typedItem = getTypedItem(item);
-        
-        // execute each applicable handler
-        for (Handler handler: this.handlerRegistry.getApplicableHandlers(typedItem))
+
+        // inform all regsitered filters the form is about to be persisted
+        if (this.filterRegistry != null)
         {
-            handler.handlePersist(typedItem, data);
+            for (Filter filter: this.filterRegistry.getFilters())
+            {
+                filter.beforePersist(typedItem, data);
+            }
+        }
+        
+        // perform the actual persistence of the form
+        Object persistedObject = internalPersist(typedItem, data);
+        
+        // inform all regsitered filters the form has been persisted
+        if (this.filterRegistry != null)
+        {
+            for (Filter filter: this.filterRegistry.getFilters())
+            {
+                filter.afterPersist(typedItem, data, persistedObject);
+            }
         }
     }
     
@@ -119,4 +137,23 @@ public abstract class AbstractFormProcessorByHandlers extends AbstractFormProces
      * @return The typed object
      */
     protected abstract Object getTypedItem(Item item);
+    
+    /**
+     * Generates the form.
+     * 
+     * @param item The object to generate a form for
+     * @param fields Restricted list of fields to include
+     * @param forcedFields List of fields to forcibly include
+     * @param form The form object being generated
+     */
+    protected abstract void internalGenerate(Object item, List<String> fields, List<String> forcedFields, Form form);
+    
+    /**
+     * Persists the form data.
+     * 
+     * @param item The object to persist the form for
+     * @param data The data to persist
+     * @return The object that got created or modified
+     */
+    protected abstract Object internalPersist(Object item, FormData data);
 }

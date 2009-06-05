@@ -52,8 +52,8 @@
     <bean id="formProcessorRegistry" 
           class="org.alfresco.repo.forms.processor.FormProcessorRegistry" />
 
-    <bean id="nodeHandlerRegistry"
-          class="org.alfresco.repo.forms.processor.HandlerRegistry" />
+    <bean id="nodeFilterRegistry"
+          class="org.alfresco.repo.forms.processor.FilterRegistry" />
     
     <!-- Form processors  -->
     <bean id="baseFormProcessor" abstract="true" init-method="register"
@@ -61,38 +61,31 @@
         <property name="processorRegistry" ref="formProcessorRegistry" />
     </bean>
     
-    <bean id="baseFormProcessorByHandlers" abstract="true"
-          class="org.alfresco.repo.forms.processor.AbstractFormProcessorByHandlers" 
+    <bean id="filteredFormProcessor" abstract="true"
+          class="org.alfresco.repo.forms.processor.FilteredFormProcessor" 
           parent="baseFormProcessor" />
      
     <bean id="nodeFormProcessor" 
-          class="org.alfresco.repo.forms.processor.NodeFormProcessor" 
-          parent="baseFormProcessorByHandlers">
-        <property name="handlerRegistry" ref="nodeHandlerRegistry" />
+          class="org.alfresco.repo.forms.processor.node.NodeFormProcessor" 
+          parent="filteredFormProcessor">
+        <property name="filterRegistry" ref="nodeFilterRegistry" />
         <property name="nodeService" ref="NodeService" />
+        <property name="fileFolderService" ref="FileFolderService" />
+        <property name="dictionaryService" ref="DictionaryService" />
+        <property name="namespaceService" ref="NamespaceService" />
         <property name="matchPattern">
             <value>node</value>
         </property>
     </bean>
     
-    <!--  Handlers -->
-    <bean id="baseFormHandler" abstract="true" init-method="register"
-          class="org.alfresco.repo.forms.processor.AbstractHandler" />
+    <!--  Filters -->
+    <bean id="baseFormFilter" abstract="true" init-method="register"
+          class="org.alfresco.repo.forms.processor.AbstractFilter" />
     
-    <bean id="nodeFormHandler"
-          class="org.alfresco.repo.forms.processor.NodeHandler"
-          parent="baseFormHandler">
-        <property name="handlerRegistry" ref="nodeHandlerRegistry" />
-        <property name="nodeService" ref="NodeService" />
-        <property name="fileFolderService" ref="FileFolderService" />
-        <property name="dictionaryService" ref="DictionaryService" />
-        <property name="namespaceService" ref="NamespaceService" />
-    </bean>
-          
     <!-- 
-    <bean id="imageAspectFormHandler"
-          class="org.alfresco.repo.forms.processor.ImageAspectHandler"
-          parent="baseFormHandler" />
+    <bean id="imageAspectFormFilter"
+          class="org.alfresco.repo.forms.processor.node.ImageAspectHandler"
+          parent="baseFormFilter" />
     -->
      
     <bean id="formServiceScript" parent="baseJavaScriptExtension" class="org.alfresco.repo.forms.script.ScriptFormService">

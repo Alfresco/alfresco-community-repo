@@ -39,19 +39,9 @@ function getDocList(filter)
    var typeQuery = getTypeFilterQuery(url.templateArgs.type);
    query += " " + typeQuery;
 
-   // Sort the list before trimming to page chunks 
-   allAssets = search.luceneSearch(query, filterParams.sortBy, filterParams.sortByAscending);
+   // Query and sort the list before trimming to page chunks below
+   allAssets = search.luceneSearch(query, filterParams.sortBy, filterParams.sortByAscending, filterParams.limitResults ? filterParams.limitResults : 0);
 
-   // Limit the resultset?
-   if (filterParams.limitResults)
-   {
-      /**
-       * This isn't a true results trim (page-trimming is done below), as we haven't yet filtered by type.
-       * However, it's useful for a quick slimming-down of the "recently..." queries.
-       */
-      allAssets = allAssets.slice(0, filterParams.limitResults);
-   }
-      
    // Ensure folders and folderlinks appear at the top of the list
    folderAssets = new Array();
    documentAssets = new Array();

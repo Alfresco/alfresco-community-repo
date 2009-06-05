@@ -1,7 +1,5 @@
-
 function main()
 {
-
    var json = "";
    var versions = [];
 

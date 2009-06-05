@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2008 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -36,7 +36,7 @@ public interface PreviewURIService
 {
     /**
      * @param storeId     The id of the store to generate the preview URI for.
-     * @param pathToAsset The path to the asset to generate the preview URI for.
+     * @param pathToAsset The path to the asset to generate the preview URI for (can be null or empty, to return preview URL to store)
      * @return The Preview URI for the given store id and/or asset (<i>may be null</i>).
      */
     String getPreviewURI(String storeId, String pathToAsset);

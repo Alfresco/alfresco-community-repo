@@ -65,7 +65,6 @@ import org.alfresco.web.app.servlet.FacesHelper;
 import org.alfresco.web.bean.BrowseBean;
 import org.alfresco.web.bean.dialog.BaseDialogBean;
 import org.alfresco.web.bean.repository.Repository;
-import org.alfresco.web.config.ClientConfigElement;
 import org.alfresco.web.forms.FormInstanceData;
 import org.alfresco.web.forms.FormsService;
 import org.alfresco.web.forms.Rendition;
@@ -1045,12 +1044,7 @@ public class SubmitDialog extends BaseDialogBean
 
       public String getPreviewUrl()
       {
-         ClientConfigElement config =  Application.getClientConfig(FacesContext.getCurrentInstance());
-         String dns = AVMUtil.lookupStoreDNS(AVMUtil.getStoreName(descriptor.getPath()));
-         return AVMUtil.buildAssetUrl(AVMUtil.getSandboxRelativePath(descriptor.getPath()),
-                                           config.getWCMDomain(),
-                                           config.getWCMPort(),
-                                           dns);
+         return AVMUtil.getPreviewURI(descriptor.getPath());
       }
 
       public AVMNodeDescriptor getDescriptor()

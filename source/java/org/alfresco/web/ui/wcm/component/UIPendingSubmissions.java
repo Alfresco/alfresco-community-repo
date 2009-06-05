@@ -168,7 +168,7 @@ public class UIPendingSubmissions extends SelfRenderingComponent
          }
          
          // get the preview url for the sandbox
-         String sandboxPreviewUrl = AVMUtil.buildStoreUrl(sandbox);
+         String sandboxPreviewUrl = AVMUtil.getPreviewURI(sandbox);
          
          // get the noderef representing the web project
          PropertyValue val = Repository.getServiceRegistry(context).getAVMService().
@@ -290,7 +290,7 @@ public class UIPendingSubmissions extends SelfRenderingComponent
                NodeRef pkg = task.path.instance.workflowPackage;
                Pair<Integer, String> pkgPath = AVMNodeConverter.ToAVMVersionPath(pkg);
                String workflowStore = AVMUtil.getStoreName(pkgPath.getSecond());
-               String workflowPreviewUrl = AVMUtil.buildStoreUrl(workflowStore);               
+               String workflowPreviewUrl = AVMUtil.getPreviewURI(workflowStore);
                
                UIActionLink preview = findAction(ACT_PREVIEW, sandbox);
                if (preview == null)

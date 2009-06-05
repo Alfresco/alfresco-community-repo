@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -211,7 +211,7 @@ import org.xml.sax.SAXException;
 
    public String getUrl()
    {
-      return AVMUtil.buildAssetUrl(this.getPath());
+      return AVMUtil.getPreviewURI(this.getPath());
    }
 
    public String getFileTypeImage()

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -143,7 +143,7 @@ public class FileDetailsBean extends AVMDetailsBean
     */
    public String getPreviewUrl()
    {
-      return AVMUtil.buildAssetUrl(getAvmNode().getPath());
+      return AVMUtil.getPreviewURI(getAvmNode().getPath());
    }
    
    /**

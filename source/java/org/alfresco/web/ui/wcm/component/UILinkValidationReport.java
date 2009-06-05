@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -45,7 +45,6 @@ import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.bean.wcm.AVMNode;
 import org.alfresco.web.bean.wcm.AVMUtil;
 import org.alfresco.web.bean.wcm.LinkValidationState;
-import org.alfresco.web.config.ClientConfigElement;
 import org.alfresco.web.ui.common.ComponentConstants;
 import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.common.component.UIActionLink;
@@ -79,8 +78,7 @@ public class UILinkValidationReport extends AbstractLinkValidationReportComponen
    
    // ------------------------------------------------------------------------------
    // Component implementation
-
-   @SuppressWarnings("unchecked")
+   
    @Override
    public void restoreState(FacesContext context, Object state)
    {
@@ -102,7 +100,6 @@ public class UILinkValidationReport extends AbstractLinkValidationReportComponen
       return values;
    }
    
-   @SuppressWarnings("unchecked")
    @Override
    public void encodeBegin(FacesContext context) throws IOException
    {
@@ -231,16 +228,11 @@ public class UILinkValidationReport extends AbstractLinkValidationReportComponen
                UIActions actions = aquireFileActions("broken_file_actions", getValue().getStore());
                AVMService avmService = Repository.getServiceRegistry(context).getAVMService();
                int rootPathIndex = AVMUtil.buildSandboxRootPath(linkState.getStore()).length();
-               String dns = AVMUtil.lookupStoreDNS(linkState.getStore());
-               ClientConfigElement config = Application.getClientConfig(context);
-               String wcmDomain = config.getWCMDomain();
-               String wcmPort = config.getWCMPort();
-            
                // render each broken file
                for (String file : brokenFiles)
                {
                   renderBrokenFile(context, out, file, linkState, actions, avmService,
-                           rootPathIndex, wcmDomain, wcmPort, dns, sectionsExpanded);
+                           rootPathIndex, linkState.getStore(), sectionsExpanded);
                }
             }
             
@@ -395,8 +387,7 @@ public class UILinkValidationReport extends AbstractLinkValidationReportComponen
    
    protected void renderBrokenFile(FacesContext context, ResponseWriter out,
             String file, LinkValidationState linkState, UIActions actions,
-            AVMService avmService, int rootPathIndex, String wcmDomain, 
-            String wcmPort, String dns, boolean brokenLinksExpanded) 
+            AVMService avmService, int rootPathIndex, String storeId, boolean brokenLinksExpanded) 
             throws IOException
    {
       // gather the data to show for the file
@@ -430,7 +421,7 @@ public class UILinkValidationReport extends AbstractLinkValidationReportComponen
       AVMNode node = new AVMNode(desc);
       
       String assetPath = file.substring(rootPathIndex);
-      String previewUrl = AVMUtil.buildAssetUrl(assetPath, wcmDomain, wcmPort, dns);   
+      String previewUrl = AVMUtil.getPreviewURI(storeId, assetPath);
       node.getProperties().put("previewUrl", previewUrl);
       actions.setContext(node);
       

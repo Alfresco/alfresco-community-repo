@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2008 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -299,20 +299,9 @@ public final class AVMUtil extends WCMUtil
               : buildStoreUrl(store) + '/' + webapp);
    }
    
-   public static String buildAssetUrl(final String avmPath)
-   {
-      if (avmPath == null || avmPath.length() == 0)
-      {
-         throw new IllegalArgumentException("AVM path is mandatory.");
-      }
-      final String[] s = avmPath.split(":");
-      if (s.length != 2)
-      {
-         throw new IllegalArgumentException("expected exactly one ':' in " + avmPath);
-      }
-      return AVMUtil.buildAssetUrl(s[0], s[1]);
-   }
-   
+   /**
+    * NOTE: do not call directly from client - use getPreviewURI instead
+    */
    public static String buildAssetUrl(String store, String assetPath)
    {
       if (store == null || store.length() == 0)
@@ -330,6 +319,24 @@ public final class AVMUtil extends WCMUtil
    public static String buildAssetUrl(String assetPath, String domain, String port, String dns)
    {
       return WCMUtil.buildAssetUrl(assetPath, domain, port, dns);
+   }
+   
+   public static String getPreviewURI(String storeNameOrAvmPath)
+   {
+       if (storeNameOrAvmPath == null || storeNameOrAvmPath.length() == 0)
+       {
+          throw new IllegalArgumentException("AVM store name or absolute path is mandatory.");
+       }
+       final String[] s = storeNameOrAvmPath.split(AVM_STORE_SEPARATOR);
+       if (s.length == 1)
+       {
+           return AVMUtil.getPreviewURI(s[0], null);
+       }
+       if (s.length != 2)
+       {
+          throw new IllegalArgumentException("expected exactly one ':' in " + storeNameOrAvmPath);
+       }
+       return AVMUtil.getPreviewURI(s[0], s[1]);
    }
    
    public static String getPreviewURI(final String storeId, final String assetPath)

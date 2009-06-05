@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2008 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -43,13 +43,18 @@ public class VirtualisationServerPreviewURIService
      */
     public String getPreviewURI(final String storeId, final String pathToAsset)
     {
+        if ((pathToAsset == null) || (pathToAsset.length() == 0))
+        {
+            return AVMUtil.buildStoreUrl(storeId);
+        }
+        
         // Sanity checking
         if (!pathToAsset.startsWith('/' + JNDIConstants.DIR_DEFAULT_WWW + '/' + JNDIConstants.DIR_DEFAULT_APPBASE))
         {
             throw new IllegalStateException("Invalid asset path in AVM node ref: " + storeId + ":" + pathToAsset);
         }
 
-        return(AVMUtil.buildAssetUrl(storeId, pathToAsset));
+        return AVMUtil.buildAssetUrl(storeId, pathToAsset);
     }
 
 }

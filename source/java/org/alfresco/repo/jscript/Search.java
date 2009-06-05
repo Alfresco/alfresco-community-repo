@@ -285,7 +285,17 @@ public final class Search extends BaseScopableProcessorExtension
      */
     public Scriptable luceneSearch(String search, String sortColumn, boolean asc)
     {
-        return luceneSearch(null, search, sortColumn, asc);
+        return luceneSearch(null, search, sortColumn, asc, 0);
+    }
+    
+    public Scriptable luceneSearch(String search, String sortColumn, boolean asc, int max)
+    {
+        return luceneSearch(null, search, sortColumn, asc, max);
+    }
+    
+    public Scriptable luceneSearch(String store, String search, String sortColumn, boolean asc)
+    {
+       return luceneSearch(null, search, sortColumn, asc, 0);
     }
     
     /**
@@ -298,7 +308,7 @@ public final class Search extends BaseScopableProcessorExtension
      * 
      * @return JavaScript array of Node results from the search - can be empty but not null
      */
-    public Scriptable luceneSearch(String store, String search, String sortColumn, boolean asc)
+    public Scriptable luceneSearch(String store, String search, String sortColumn, boolean asc, int max)
     {
         if (search == null || search.length() == 0)
         {
@@ -311,7 +321,7 @@ public final class Search extends BaseScopableProcessorExtension
         
         SortColumn[] sort = new SortColumn[1];
         sort[0] = new SortColumn(sortColumn, asc);
-        Object[] results = query(store, search, sort, SearchService.LANGUAGE_LUCENE);
+        Object[] results = query(store, search, sort, SearchService.LANGUAGE_LUCENE, max, 0);
         return Context.getCurrentContext().newArray(getScope(), results);
     }
     
@@ -569,7 +579,7 @@ public final class Search extends BaseScopableProcessorExtension
      * @param search        Lucene search to execute
      * @param sort          Columns to sort by
      * @param language      Search language to use e.g. SearchService.LANGUAGE_LUCENE
-     * @param maxResults    Maximum results to return, -1 for all
+     * @param maxResults    Maximum results to return if > 0
      * @param skipResults   Results to skip in the result set
      * 
      * @return Array of Node objects
@@ -586,7 +596,7 @@ public final class Search extends BaseScopableProcessorExtension
             sp.addStore(store != null ? new StoreRef(store) : this.storeRef);
             sp.setLanguage(language != null ? language : SearchService.LANGUAGE_LUCENE);
             sp.setQuery(search);
-            if (maxResults != -1)
+            if (maxResults > 0)
             {
                 sp.setLimit(maxResults);
                 sp.setLimitBy(LimitBy.FINAL_SIZE);

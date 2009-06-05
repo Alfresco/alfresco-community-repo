@@ -100,6 +100,7 @@ public class JBPMSpringTest extends BaseSpringTest
         throws Exception
     {
         theProcessInstanceContinuesWhenAnAsyncMessageIsReceived();
+        undeployProcessDefinition();
         setComplete();
     }
     
@@ -135,6 +136,21 @@ public class JBPMSpringTest extends BaseSpringTest
         });
     }
 
+    
+    private void undeployProcessDefinition()
+    {
+        jbpmTemplate.execute(new JbpmCallback()
+        {
+            public Object doInJbpm(JbpmContext context)
+            {
+                GraphSession graphSession = context.getGraphSession();
+                ProcessDefinition processDefinition = graphSession.findLatestProcessDefinition("hello world");
+                graphSession.deleteProcessDefinition(processDefinition.getId());
+                return null;
+            }
+        });
+    }
+    
     private void processInstanceIsCreatedWhenUserSubmitsWebappForm()
     {
         jbpmTemplate.execute(new JbpmCallback()

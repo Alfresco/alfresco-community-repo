@@ -129,7 +129,15 @@ public class WorkflowServiceImplTest extends BaseSpringTest
         assertNotNull(nodeRef);
         assertTrue(nodeService.hasAspect(nodeRef, WorkflowModel.ASPECT_WORKFLOW_PACKAGE));
         ChildAssociationRef childAssoc = nodeService.createNode(rootRef, ContentModel.ASSOC_CONTAINS, QName.createQName(NamespaceService.CONTENT_MODEL_PREFIX, "test"), ContentModel.TYPE_CONTENT, null);
-        nodeService.addChild(nodeRef, childAssoc.getChildRef(), ContentModel.ASSOC_CONTAINS, QName.createQName(NamespaceService.CONTENT_MODEL_PREFIX, "test"));
+
+        List<WorkflowInstance> exisingInstances = workflowService.getWorkflowsForContent(childAssoc.getChildRef(), true);
+        int size = 0;
+        if (exisingInstances != null)
+        {
+            size = exisingInstances.size();
+        }
+        
+        nodeService.addChild(nodeRef, childAssoc.getChildRef(), ContentModel.ASSOC_CONTAINS, QName.createQName(NamespaceService.CONTENT_MODEL_PREFIX, "test123"));
         
         // start workflow
         List<WorkflowDefinition> workflowDefs = workflowService.getDefinitions();
@@ -154,8 +162,29 @@ public class WorkflowServiceImplTest extends BaseSpringTest
         // get workflows for content
         List<WorkflowInstance> instances = workflowService.getWorkflowsForContent(childAssoc.getChildRef(), true);
         assertNotNull(instances);
-        assertEquals(1, instances.size());
-        assertEquals(instances.get(0).id, path.instance.id);
+        assertEquals(size + 1, instances.size());
+
+        for (WorkflowInstance instance : instances)
+        {
+            boolean fNew = true;
+            for (WorkflowInstance exisingInstance : exisingInstances)
+            {
+                if (instance.id.equals(exisingInstance.id))
+                {
+                    fNew = false;
+                    break;
+                }
+                fNew = true;
+                break;
+            }
+
+            if (fNew)
+            {
+                assertEquals(instance.id, path.instance.id);
+            }
+
+        }
+        
         List<WorkflowInstance> completedInstances = workflowService.getWorkflowsForContent(childAssoc.getChildRef(), false);
         assertNotNull(completedInstances);
         assertEquals(0, completedInstances.size());

@@ -90,15 +90,6 @@ public class AlfrescoTimer extends Timer
             public Boolean doWork() throws Exception
             {
                 boolean deleteTimer = AlfrescoTimer.super.execute(jbpmContext);
-                
-                // NOTE: there may be an issue in jBPM where a timer that causes a process to
-                //       end is deleted twice (once via specific delete operation and once via
-                //       delete DML statement) which causes a hibernate exception.
-                //       Only delete timer if not at end of process
-                if (getProcessInstance().getEnd() != null)
-                {
-                    deleteTimer = false;
-                }
                 return deleteTimer;
             }
         }, (username == null) ? "system" : username);

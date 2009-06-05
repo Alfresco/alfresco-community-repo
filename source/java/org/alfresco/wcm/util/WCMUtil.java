@@ -434,6 +434,12 @@ public class WCMUtil
            throw new IllegalArgumentException("Domain and port are mandatory.");
        }
        
+       // NOTE: for backwards compatibility - avmPath is converted to storeName (path is ignored)
+       if (storeName.indexOf(AVM_STORE_SEPARATOR) != -1)
+       {
+           storeName = storeName.substring(0, storeName.indexOf(AVM_STORE_SEPARATOR));
+       }
+       
        return MessageFormat.format(JNDIConstants.PREVIEW_SANDBOX_URL, 
                lookupStoreDNS(avmService, storeName), 
                domain, 

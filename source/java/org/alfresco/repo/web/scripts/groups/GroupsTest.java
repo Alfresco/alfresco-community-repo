@@ -33,7 +33,6 @@ import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.PersonService;
-
 import org.alfresco.util.PropertyMap;
 import org.alfresco.web.scripts.Status;
 import org.alfresco.web.scripts.TestWebScriptServer.DeleteRequest;
@@ -102,17 +101,22 @@ public class GroupsTest extends BaseWebScriptTest
         {
             this.authenticationComponent.setSystemUserAsCurrentUser();
         	 
-        	rootGroupName = authorityService.createAuthority(AuthorityType.GROUP, null, TEST_ROOTGROUP , TEST_ROOTGROUP_DISPLAY_NAME);
-        	authorityService.createAuthority(AuthorityType.GROUP, rootGroupName, TEST_GROUPA);
-        	String groupB = authorityService.createAuthority(AuthorityType.GROUP, rootGroupName, TEST_GROUPB);
-        	authorityService.createAuthority(AuthorityType.GROUP, groupB, TEST_GROUPD);
+        	rootGroupName = authorityService.createAuthority(AuthorityType.GROUP, TEST_ROOTGROUP, TEST_ROOTGROUP_DISPLAY_NAME, null);
+        	String groupA = authorityService.createAuthority(AuthorityType.GROUP, TEST_GROUPA);
+        	authorityService.addAuthority(rootGroupName, groupA);
+        	String groupB = authorityService.createAuthority(AuthorityType.GROUP, TEST_GROUPB);
+            authorityService.addAuthority(rootGroupName, groupB);
+        	String groupD = authorityService.createAuthority(AuthorityType.GROUP, TEST_GROUPD);
+            authorityService.addAuthority(groupB, groupD);
         	authorityService.addAuthority(groupB, USER_TWO);
         	authorityService.addAuthority(groupB, USER_THREE);
         
-        	String groupC = authorityService.createAuthority(AuthorityType.GROUP, rootGroupName, TEST_GROUPC);
+        	String groupC = authorityService.createAuthority(AuthorityType.GROUP, TEST_GROUPC);
+        	authorityService.addAuthority(rootGroupName, groupC);
         	authorityService.addAuthority(groupC, USER_TWO);
         
-        	authorityService.createAuthority(AuthorityType.GROUP, rootGroupName, TEST_LINK);
+        	String link = authorityService.createAuthority(AuthorityType.GROUP, TEST_LINK);
+        	authorityService.addAuthority(rootGroupName, link);
         	
             this.authenticationComponent.setCurrentUser(USER_ONE);
         }

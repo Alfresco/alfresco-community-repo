@@ -289,8 +289,7 @@ public class InviteServiceTest extends BaseWebScriptTest
         // create group if it does not exist
         if (this.authorityService.authorityExists(fullGroupName) == false)
         {
-            this.authorityService.createAuthority(AuthorityType.GROUP, null,
-                    fullGroupName);
+            this.authorityService.createAuthority(AuthorityType.GROUP, fullGroupName);
         }
 
         // add the user to the group

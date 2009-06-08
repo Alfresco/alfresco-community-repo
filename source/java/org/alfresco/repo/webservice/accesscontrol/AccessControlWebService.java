@@ -675,7 +675,11 @@ public class AccessControlWebService extends AbstractWebService implements Acces
 		for (NewAuthority newAuthority : newAuthorites) 
 		{
 			AuthorityType authorityType = AuthorityType.valueOf(newAuthority.getAuthorityType());
-			String authority = this.authorityService.createAuthority(authorityType, parentAuthority, newAuthority.getName());
+			String authority = this.authorityService.createAuthority(authorityType, newAuthority.getName());
+			if (parentAuthority != null)
+            {
+                this.authorityService.addAuthority(parentAuthority, authority);
+            }
 			result[index] = authority;
 			index++;
 		}		

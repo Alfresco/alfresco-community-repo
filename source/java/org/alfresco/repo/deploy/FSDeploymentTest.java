@@ -77,7 +77,7 @@ public class FSDeploymentTest extends AVMServiceTestBase
         metadata.mkdir();
         data = new File("depdata");
         data.mkdir();
-        target = new File("target");
+        target = new File("sampleTarget");
         target.mkdir();
         
     	/**
@@ -331,7 +331,10 @@ public class FSDeploymentTest extends AVMServiceTestBase
     	fService.createFile("main:/a", "test01.html").close();
     	fService.createFile("main:/a", "test03.html").close();
     	service.deployDifferenceFS(-1, "main:/", "default", "localhost", 44100, TEST_USER, TEST_PASSWORD, TEST_TARGET, null, false, false, false, callbacks);
-    	
+        for (DeploymentEvent event : report)
+    	{
+            System.out.println(event);
+        }
     	report = new DeploymentReport();
     	callbacks = new ArrayList<DeploymentCallback>();
     	callbacks.add(new DeploymentReportCallback(report));
@@ -344,7 +347,10 @@ public class FSDeploymentTest extends AVMServiceTestBase
     	
     	assertTrue("Update missing: /a/test02.html", firstDeployment.contains(new DeploymentEvent(DeploymentEvent.Type.CREATED, null, "/a/test02.html")));
     	assertTrue("delete missing: /a/test03.html", firstDeployment.contains(new DeploymentEvent(DeploymentEvent.Type.DELETED, null, "/a/test03.html")));
-
+        for (DeploymentEvent event : report)
+        {
+            System.out.println(event);
+        }
 
     	
     }

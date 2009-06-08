@@ -33,10 +33,7 @@
             <value>${deployment.filesystem.logdir}</value>
         </property>
         
-        <!--  where to store meta data -->
-        <property name="metaDataDirectory">
-            <value>${deployment.filesystem.metadatadir}</value>
-        </property>
+
         
         <property name="commandQueue"><ref bean="deploymentReceiverCommandQueue" /></property>      
     </bean>
@@ -56,6 +53,12 @@
 		<property name="target">
 		    <bean class="org.alfresco.deployment.impl.fsr.FileSystemDeploymentTarget" init-method="init">
                 	    <property name="rootDirectory"><value>${deployment.filesystem.default.rootdir}</value></property>
+            	    	
+            	    	 <!--  where to store meta data -->
+        				<property name="metaDataDirectory">
+            				<value>${deployment.filesystem.default.metadatadir}</value>
+        				</property>
+            	    	
             	    	<property name="autoFix"><value>${deployment.filesystem.autofix}</value></property> 
             	    	<property name="fileSystemReceiverService"><ref bean="fileSystemReceiverService"/></property> 
             	    	

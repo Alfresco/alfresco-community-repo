@@ -28,20 +28,22 @@ import java.text.ParseException;
 import java.util.Date;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
+import org.alfresco.service.namespace.QName;
 import org.quartz.CronExpression;
 
 /**
  * Cron based periods
+ * 
  * @author andyh
- *
  */
 public class Cron extends AbstractPeriodProvider
 {
     /**
      * Period type
      */
-    public static final String PERIOD_TYPE = "cron"; 
-    
+    public static final String PERIOD_TYPE = "cron";
+
     public String getDefaultExpression()
     {
         return "59 59 23 * * ?";
@@ -49,7 +51,7 @@ public class Cron extends AbstractPeriodProvider
 
     public ExpressionMutiplicity getExpressionMutiplicity()
     {
-       return ExpressionMutiplicity.MANDATORY;
+        return ExpressionMutiplicity.MANDATORY;
     }
 
     public Date getNextDate(Date date, String expression)
@@ -61,7 +63,7 @@ public class Cron extends AbstractPeriodProvider
         }
         catch (ParseException e)
         {
-            throw new AlfrescoRuntimeException("Invalid cron expression: "+expression);
+            throw new AlfrescoRuntimeException("Invalid cron expression: " + expression);
         }
         return ce.getNextValidTimeAfter(date);
     }
@@ -69,6 +71,11 @@ public class Cron extends AbstractPeriodProvider
     public String getPeriodType()
     {
         return PERIOD_TYPE;
+    }
+
+    public QName getExpressionDataType()
+    {
+        return DataTypeDefinition.TEXT;
     }
 
 }

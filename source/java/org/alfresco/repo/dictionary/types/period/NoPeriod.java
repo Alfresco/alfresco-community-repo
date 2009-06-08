@@ -25,27 +25,30 @@
 package org.alfresco.repo.dictionary.types.period;
 
 import java.util.Date;
+
+import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
+import org.alfresco.service.namespace.QName;
+
 /**
- * No period
- * Period type "none"
+ * No period Period type "none"
+ * 
  * @author andyh
- *
  */
 public class NoPeriod extends AbstractPeriodProvider
 {
     /**
      * 
      */
-    public static final String PERIOD_TYPE = "none"; 
-    
+    public static final String PERIOD_TYPE = "none";
+
     /**
      * Default constructor
      */
     public NoPeriod()
     {
-        
+
     }
-    
+
     public String getDefaultExpression()
     {
         return null;
@@ -66,5 +69,8 @@ public class NoPeriod extends AbstractPeriodProvider
         return PERIOD_TYPE;
     }
 
-
+    public QName getExpressionDataType()
+    {
+        return null;
+    }
 }

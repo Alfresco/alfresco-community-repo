@@ -26,6 +26,8 @@ package org.alfresco.service.cmr.repository;
 
 import java.util.Date;
 
+import org.alfresco.service.namespace.QName;
+
 /**
  * Provider API for period implementations
  * @author andyh
@@ -79,4 +81,10 @@ public interface PeriodProvider
      * @return - the default expression.
      */
     public String getDefaultExpression();
+    
+    /**
+     * Return the Alfresco data type QName to which the string value of the expression will be converted.   
+     * @return the alfresco data type or null if an expression is not allowed.
+     */
+    public QName getExpressionDataType();
 }

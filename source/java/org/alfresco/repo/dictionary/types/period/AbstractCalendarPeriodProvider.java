@@ -27,6 +27,9 @@ package org.alfresco.repo.dictionary.types.period;
 import java.util.Calendar;
 import java.util.Date;
 
+import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
+import org.alfresco.service.namespace.QName;
+
 /**
  * Support for calendar based periods
  * @author andyh
@@ -64,4 +67,8 @@ public abstract class AbstractCalendarPeriodProvider extends AbstractPeriodProvi
      */
     public abstract void add(Calendar calendar, int value);
 
+    public QName getExpressionDataType()
+    {
+        return DataTypeDefinition.INT;
+    }
 }

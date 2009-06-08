@@ -408,6 +408,12 @@
         <property name="defaultEncoding">
             <value>${mail.encoding}</value>
         </property>
+		<property name="javaMailProperties">
+			<props>
+				<prop key="mail.smtp.auth">${mail.smtp.auth}</prop>
+				<prop key="mail.smtp.timeout">${mail.smtp.timeout}</prop>
+			</props>
+		</property>
     </bean>
 
     <!--                         -->

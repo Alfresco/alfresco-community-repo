@@ -79,7 +79,11 @@ public class CreateGroupDialog extends BaseDialogBean
       String groupName = this.getAuthService().getName(AuthorityType.GROUP, this.name);
       if (this.getAuthService().authorityExists(groupName) == false)
       {
-         this.getAuthService().createAuthority(AuthorityType.GROUP, this.parentGroup, this.name);
+         this.getAuthService().createAuthority(AuthorityType.GROUP, this.name);
+         if (this.parentGroup != null)
+         {
+             this.getAuthService().addAuthority(this.parentGroup, groupName);
+         }
       }
       else
       {

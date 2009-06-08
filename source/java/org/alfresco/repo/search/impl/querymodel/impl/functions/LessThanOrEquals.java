@@ -46,7 +46,7 @@ public class LessThanOrEquals extends BaseComparison
      */
     public LessThanOrEquals()
     {
-        super(NAME, DataTypeDefinition.BOOLEAN, args);
+        super(NAME, DataTypeDefinition.BOOLEAN, ARGS);
     }
 
     /*

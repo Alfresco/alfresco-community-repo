@@ -28,6 +28,7 @@ import java.io.Serializable;
 import java.util.Collection;
 
 import org.alfresco.repo.search.impl.lucene.AnalysisMode;
+import org.alfresco.repo.search.impl.lucene.LuceneFunction;
 import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
 import org.alfresco.repo.search.impl.querymodel.PredicateMode;
 import org.alfresco.service.ServiceRegistry;
@@ -76,9 +77,9 @@ public abstract class AbstractSimpleProperty extends AbstractProperty
      * (non-Javadoc)
      * @see org.alfresco.cmis.property.PropertyLuceneBuilder#buildLuceneEquality(org.alfresco.repo.search.impl.lucene.LuceneQueryParser, java.io.Serializable, org.alfresco.repo.search.impl.querymodel.PredicateMode)
      */
-    public Query buildLuceneEquality(LuceneQueryParser lqp, Serializable value, PredicateMode mode) throws ParseException
+    public Query buildLuceneEquality(LuceneQueryParser lqp, Serializable value, PredicateMode mode, LuceneFunction luceneFunction) throws ParseException
     {
-        return lqp.getFieldQuery(getLuceneFieldName(), getValueAsString(value), AnalysisMode.IDENTIFIER);
+        return lqp.getFieldQuery(getLuceneFieldName(), getValueAsString(value), AnalysisMode.IDENTIFIER, luceneFunction);
     }
     
     /*
@@ -89,11 +90,11 @@ public abstract class AbstractSimpleProperty extends AbstractProperty
     {
         if (not)
         {
-            return lqp.getFieldQuery("ISNULL", getQNameForExists().toString(), AnalysisMode.DEFAULT);
+            return lqp.getFieldQuery("ISNULL", getQNameForExists().toString(), AnalysisMode.DEFAULT, LuceneFunction.FIELD);
         }
         else
         {
-            return lqp.getFieldQuery("ISNOTNULL", getQNameForExists().toString(), AnalysisMode.DEFAULT);
+            return lqp.getFieldQuery("ISNOTNULL", getQNameForExists().toString(), AnalysisMode.DEFAULT, LuceneFunction.FIELD);
         }
     }
 
@@ -101,22 +102,22 @@ public abstract class AbstractSimpleProperty extends AbstractProperty
      * (non-Javadoc)
      * @see org.alfresco.cmis.property.PropertyLuceneBuilder#buildLuceneGreaterThan(org.alfresco.repo.search.impl.lucene.LuceneQueryParser, java.io.Serializable, org.alfresco.repo.search.impl.querymodel.PredicateMode)
      */
-    public Query buildLuceneGreaterThan(LuceneQueryParser lqp, Serializable value, PredicateMode mode) throws ParseException
+    public Query buildLuceneGreaterThan(LuceneQueryParser lqp, Serializable value, PredicateMode mode, LuceneFunction luceneFunction) throws ParseException
     {
         String field = getLuceneFieldName();
         String stringValue = getValueAsString(value);
-        return lqp.getRangeQuery(field, stringValue, getRangeMax(), false, true, AnalysisMode.IDENTIFIER);
+        return lqp.getRangeQuery(field, stringValue, getRangeMax(), false, true, AnalysisMode.IDENTIFIER, luceneFunction);
     }
 
     /*
      * (non-Javadoc)
      * @see org.alfresco.cmis.property.PropertyLuceneBuilder#buildLuceneGreaterThanOrEquals(org.alfresco.repo.search.impl.lucene.LuceneQueryParser, java.io.Serializable, org.alfresco.repo.search.impl.querymodel.PredicateMode)
      */
-    public Query buildLuceneGreaterThanOrEquals(LuceneQueryParser lqp, Serializable value, PredicateMode mode) throws ParseException
+    public Query buildLuceneGreaterThanOrEquals(LuceneQueryParser lqp, Serializable value, PredicateMode mode, LuceneFunction luceneFunction) throws ParseException
     {
         String field = getLuceneFieldName();
         String stringValue = getValueAsString(value);
-        return lqp.getRangeQuery(field, stringValue, getRangeMax(), true, true, AnalysisMode.IDENTIFIER);
+        return lqp.getRangeQuery(field, stringValue, getRangeMax(), true, true, AnalysisMode.IDENTIFIER, luceneFunction);
     }
 
     /*
@@ -149,11 +150,11 @@ public abstract class AbstractSimpleProperty extends AbstractProperty
             String value = asStrings.iterator().next();
             if (not)
             {
-                return lqp.getDoesNotMatchFieldQuery(field, value, AnalysisMode.IDENTIFIER);
+                return lqp.getDoesNotMatchFieldQuery(field, value, AnalysisMode.IDENTIFIER, LuceneFunction.FIELD);
             }
             else
             {
-                return lqp.getFieldQuery(field, value, AnalysisMode.IDENTIFIER);
+                return lqp.getFieldQuery(field, value, AnalysisMode.IDENTIFIER, LuceneFunction.FIELD);
             }
         }
         else
@@ -165,7 +166,7 @@ public abstract class AbstractSimpleProperty extends AbstractProperty
             }
             for (String value : asStrings)
             {
-                Query any = lqp.getFieldQuery(field, value, AnalysisMode.IDENTIFIER);
+                Query any = lqp.getFieldQuery(field, value, AnalysisMode.IDENTIFIER, LuceneFunction.FIELD);
                 if (not)
                 {
                     booleanQuery.add(any, Occur.MUST_NOT);
@@ -183,33 +184,33 @@ public abstract class AbstractSimpleProperty extends AbstractProperty
      * (non-Javadoc)
      * @see org.alfresco.cmis.property.PropertyLuceneBuilder#buildLuceneInequality(org.alfresco.repo.search.impl.lucene.LuceneQueryParser, java.io.Serializable, org.alfresco.repo.search.impl.querymodel.PredicateMode)
      */
-    public Query buildLuceneInequality(LuceneQueryParser lqp, Serializable value, PredicateMode mode) throws ParseException
+    public Query buildLuceneInequality(LuceneQueryParser lqp, Serializable value, PredicateMode mode, LuceneFunction luceneFunction) throws ParseException
     {
         String field = getLuceneFieldName();
         String stringValue = getValueAsString(value);
-        return lqp.getDoesNotMatchFieldQuery(field, stringValue, AnalysisMode.IDENTIFIER);
+        return lqp.getDoesNotMatchFieldQuery(field, stringValue, AnalysisMode.IDENTIFIER, luceneFunction);
     }
 
     /*
      * (non-Javadoc)
      * @see org.alfresco.cmis.property.PropertyLuceneBuilder#buildLuceneLessThan(org.alfresco.repo.search.impl.lucene.LuceneQueryParser, java.io.Serializable, org.alfresco.repo.search.impl.querymodel.PredicateMode)
      */
-    public Query buildLuceneLessThan(LuceneQueryParser lqp, Serializable value, PredicateMode mode) throws ParseException
+    public Query buildLuceneLessThan(LuceneQueryParser lqp, Serializable value, PredicateMode mode, LuceneFunction luceneFunction) throws ParseException
     {
         String field = getLuceneFieldName();
         String stringValue = getValueAsString(value);
-        return lqp.getRangeQuery(field, getRangeMin(), stringValue, true, false, AnalysisMode.IDENTIFIER);
+        return lqp.getRangeQuery(field, getRangeMin(), stringValue, true, false, AnalysisMode.IDENTIFIER, luceneFunction);
     }
 
     /*
      * (non-Javadoc)
      * @see org.alfresco.cmis.property.PropertyLuceneBuilder#buildLuceneLessThanOrEquals(org.alfresco.repo.search.impl.lucene.LuceneQueryParser, java.io.Serializable, org.alfresco.repo.search.impl.querymodel.PredicateMode)
      */
-    public Query buildLuceneLessThanOrEquals(LuceneQueryParser lqp, Serializable value, PredicateMode mode) throws ParseException
+    public Query buildLuceneLessThanOrEquals(LuceneQueryParser lqp, Serializable value, PredicateMode mode, LuceneFunction luceneFunction) throws ParseException
     {
         String field = getLuceneFieldName();
         String stringValue = getValueAsString(value);
-        return lqp.getRangeQuery(field, getRangeMin(), stringValue, true, true, AnalysisMode.IDENTIFIER);
+        return lqp.getRangeQuery(field, getRangeMin(), stringValue, true, true, AnalysisMode.IDENTIFIER, luceneFunction);
     }
 
     /*

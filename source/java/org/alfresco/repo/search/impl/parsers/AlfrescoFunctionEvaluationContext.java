@@ -29,7 +29,9 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Map;
 
+import org.alfresco.repo.search.impl.lucene.LuceneFunction;
 import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
+import org.alfresco.repo.search.impl.querymodel.FunctionArgument;
 import org.alfresco.repo.search.impl.querymodel.FunctionEvaluationContext;
 import org.alfresco.repo.search.impl.querymodel.PredicateMode;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -40,14 +42,19 @@ import org.alfresco.service.namespace.QName;
 import org.apache.lucene.queryParser.ParseException;
 import org.apache.lucene.search.Query;
 
+/**
+ * Alfrecso function evaluation context for evaluating FTS expressions against lucene.
+ * @author andyh
+ *
+ */
 public class AlfrescoFunctionEvaluationContext implements FunctionEvaluationContext
 {
     private static HashSet<String> EXPOSED_FIELDS = new HashSet<String>();
-    
+
     private NamespacePrefixResolver namespacePrefixResolver;
 
     private DictionaryService dictionaryService;
-    
+
     private String defaultNamespace;
 
     static
@@ -71,7 +78,12 @@ public class AlfrescoFunctionEvaluationContext implements FunctionEvaluationCont
         EXPOSED_FIELDS.add("ISNULL");
         EXPOSED_FIELDS.add("ISNOTNULL");
     }
-    
+
+    /**
+     * @param namespacePrefixResolver
+     * @param dictionaryService
+     * @param defaultNamespace
+     */
     public AlfrescoFunctionEvaluationContext(NamespacePrefixResolver namespacePrefixResolver, DictionaryService dictionaryService, String defaultNamespace)
     {
         this.namespacePrefixResolver = namespacePrefixResolver;
@@ -79,7 +91,7 @@ public class AlfrescoFunctionEvaluationContext implements FunctionEvaluationCont
         this.defaultNamespace = defaultNamespace;
     }
 
-    public Query buildLuceneEquality(LuceneQueryParser lqp, String propertyName, Serializable value, PredicateMode mode) throws ParseException
+    public Query buildLuceneEquality(LuceneQueryParser lqp, String propertyName, Serializable value, PredicateMode mode, LuceneFunction luceneFunction) throws ParseException
     {
         throw new UnsupportedOperationException();
     }
@@ -89,12 +101,12 @@ public class AlfrescoFunctionEvaluationContext implements FunctionEvaluationCont
         throw new UnsupportedOperationException();
     }
 
-    public Query buildLuceneGreaterThan(LuceneQueryParser lqp, String propertyName, Serializable value, PredicateMode mode) throws ParseException
+    public Query buildLuceneGreaterThan(LuceneQueryParser lqp, String propertyName, Serializable value, PredicateMode mode, LuceneFunction luceneFunction) throws ParseException
     {
         throw new UnsupportedOperationException();
     }
 
-    public Query buildLuceneGreaterThanOrEquals(LuceneQueryParser lqp, String propertyName, Serializable value, PredicateMode mode) throws ParseException
+    public Query buildLuceneGreaterThanOrEquals(LuceneQueryParser lqp, String propertyName, Serializable value, PredicateMode mode, LuceneFunction luceneFunction) throws ParseException
     {
         throw new UnsupportedOperationException();
     }
@@ -104,17 +116,17 @@ public class AlfrescoFunctionEvaluationContext implements FunctionEvaluationCont
         throw new UnsupportedOperationException();
     }
 
-    public Query buildLuceneInequality(LuceneQueryParser lqp, String propertyName, Serializable value, PredicateMode mode) throws ParseException
+    public Query buildLuceneInequality(LuceneQueryParser lqp, String propertyName, Serializable value, PredicateMode mode, LuceneFunction luceneFunction) throws ParseException
     {
         throw new UnsupportedOperationException();
     }
 
-    public Query buildLuceneLessThan(LuceneQueryParser lqp, String propertyName, Serializable value, PredicateMode mode) throws ParseException
+    public Query buildLuceneLessThan(LuceneQueryParser lqp, String propertyName, Serializable value, PredicateMode mode, LuceneFunction luceneFunction) throws ParseException
     {
         throw new UnsupportedOperationException();
     }
 
-    public Query buildLuceneLessThanOrEquals(LuceneQueryParser lqp, String propertyName, Serializable value, PredicateMode mode) throws ParseException
+    public Query buildLuceneLessThanOrEquals(LuceneQueryParser lqp, String propertyName, Serializable value, PredicateMode mode, LuceneFunction luceneFunction) throws ParseException
     {
         throw new UnsupportedOperationException();
     }
@@ -177,7 +189,7 @@ public class AlfrescoFunctionEvaluationContext implements FunctionEvaluationCont
             return propertyName;
         }
 
-        if(propertyName.startsWith("{"))
+        if (propertyName.startsWith("{"))
         {
             QName qname = QName.createQName(propertyName);
             if (dictionaryService.getProperty(qname) != null)
@@ -186,10 +198,10 @@ public class AlfrescoFunctionEvaluationContext implements FunctionEvaluationCont
             }
             else
             {
-                throw new FTSQueryException("Unknown property: "+propertyName);
+                throw new FTSQueryException("Unknown property: " + propertyName);
             }
         }
-        
+
         int index = propertyName.indexOf(':');
         if (index != -1)
         {
@@ -201,30 +213,30 @@ public class AlfrescoFunctionEvaluationContext implements FunctionEvaluationCont
             }
             else
             {
-                throw new FTSQueryException("Unknown property: "+propertyName);
+                throw new FTSQueryException("Unknown property: " + propertyName);
             }
         }
-        
+
         index = propertyName.indexOf('_');
         if (index != -1)
         {
             // Try as a property, if invalid pass through
-            QName qname = QName.createQName(propertyName.substring(0, index), propertyName.substring(index+1), namespacePrefixResolver);
+            QName qname = QName.createQName(propertyName.substring(0, index), propertyName.substring(index + 1), namespacePrefixResolver);
             if (dictionaryService.getProperty(qname) != null)
             {
                 return "@" + qname.toString();
             }
             else
             {
-                throw new FTSQueryException("Unknown property: "+propertyName);
+                throw new FTSQueryException("Unknown property: " + propertyName);
             }
         }
-        
-        if(EXPOSED_FIELDS.contains(propertyName))
+
+        if (EXPOSED_FIELDS.contains(propertyName))
         {
             return propertyName;
         }
-        
+
         QName qname = QName.createQName(defaultNamespace, propertyName);
         if (dictionaryService.getProperty(qname) != null)
         {
@@ -232,9 +244,14 @@ public class AlfrescoFunctionEvaluationContext implements FunctionEvaluationCont
         }
         else
         {
-            throw new FTSQueryException("Unknown property: "+propertyName);
+            throw new FTSQueryException("Unknown property: " + propertyName);
         }
-        
+
+    }
+
+    public LuceneFunction getLuceneFunction(FunctionArgument functionArgument)
+    {
+        throw new UnsupportedOperationException();
     }
 
 }

@@ -40,7 +40,6 @@ import org.apache.lucene.search.Query;
 
 /**
  * @author andyh
- *
  */
 public class LuceneNotEquals extends NotEquals implements LuceneQueryBuilderComponent
 {
@@ -65,16 +64,16 @@ public class LuceneNotEquals extends NotEquals implements LuceneQueryBuilderComp
     {
         LuceneQueryParser lqp = luceneContext.getLuceneQueryParser();
         setPropertyAndStaticArguments(functionArgs);
-       
-        Query query = functionContext.buildLuceneInequality(lqp, getPropertyArgument().getPropertyName(), getStaticArgument().getValue(functionContext), PredicateMode.ANY);
-        
-        if(query == null)
+
+        Query query = functionContext.buildLuceneInequality(lqp, getPropertyName(), getStaticArgument().getValue(functionContext), PredicateMode.ANY, functionContext
+                .getLuceneFunction(getFunctionArgument()));
+
+        if (query == null)
         {
-            throw new QueryModelException("No query time mapping for property  "+getPropertyArgument().getPropertyName()+", it should not be allowed in predicates");
+            throw new QueryModelException("No query time mapping for property  " + getPropertyArgument().getPropertyName() + ", it should not be allowed in predicates");
         }
-        
+
         return query;
     }
 
-    
 }

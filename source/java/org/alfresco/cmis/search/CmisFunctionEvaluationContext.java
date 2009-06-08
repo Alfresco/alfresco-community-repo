@@ -28,16 +28,19 @@ import java.io.Serializable;
 import java.util.Collection;
 import java.util.Map;
 
-import org.alfresco.cmis.CMISDictionaryModel;
 import org.alfresco.cmis.CMISDictionaryService;
 import org.alfresco.cmis.CMISPropertyDefinition;
 import org.alfresco.cmis.mapping.CMISMapping;
+import org.alfresco.repo.search.impl.lucene.LuceneFunction;
 import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
+import org.alfresco.repo.search.impl.querymodel.FunctionArgument;
 import org.alfresco.repo.search.impl.querymodel.FunctionEvaluationContext;
 import org.alfresco.repo.search.impl.querymodel.PredicateMode;
+import org.alfresco.repo.search.impl.querymodel.QueryModelException;
+import org.alfresco.repo.search.impl.querymodel.impl.functions.Lower;
+import org.alfresco.repo.search.impl.querymodel.impl.functions.Upper;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.namespace.QName;
 import org.apache.lucene.queryParser.ParseException;
 import org.apache.lucene.search.Query;
 
@@ -151,10 +154,10 @@ public class CmisFunctionEvaluationContext implements FunctionEvaluationContext
         this.score = score;
     }
 
-    public Query buildLuceneEquality(LuceneQueryParser lqp, String propertyName, Serializable value, PredicateMode mode) throws ParseException
+    public Query buildLuceneEquality(LuceneQueryParser lqp, String propertyName, Serializable value, PredicateMode mode, LuceneFunction luceneFunction) throws ParseException
     {
         CMISPropertyDefinition propertyDef = cmisDictionaryService.findProperty(propertyName, null);
-        return propertyDef.getPropertyLuceneBuilder().buildLuceneEquality(lqp, value, mode);
+        return propertyDef.getPropertyLuceneBuilder().buildLuceneEquality(lqp, value, mode, luceneFunction);
     }
 
     /*
@@ -176,10 +179,10 @@ public class CmisFunctionEvaluationContext implements FunctionEvaluationContext
      *      org.alfresco.service.namespace.QName, java.io.Serializable,
      *      org.alfresco.repo.search.impl.querymodel.PredicateMode)
      */
-    public Query buildLuceneGreaterThan(LuceneQueryParser lqp, String propertyName, Serializable value, PredicateMode mode) throws ParseException
+    public Query buildLuceneGreaterThan(LuceneQueryParser lqp, String propertyName, Serializable value, PredicateMode mode, LuceneFunction luceneFunction) throws ParseException
     {
         CMISPropertyDefinition propertyDef = cmisDictionaryService.findProperty(propertyName, null);
-        return propertyDef.getPropertyLuceneBuilder().buildLuceneGreaterThan(lqp, value, mode);
+        return propertyDef.getPropertyLuceneBuilder().buildLuceneGreaterThan(lqp, value, mode, luceneFunction);
     }
 
     /*
@@ -189,10 +192,10 @@ public class CmisFunctionEvaluationContext implements FunctionEvaluationContext
      *      org.alfresco.service.namespace.QName, java.io.Serializable,
      *      org.alfresco.repo.search.impl.querymodel.PredicateMode)
      */
-    public Query buildLuceneGreaterThanOrEquals(LuceneQueryParser lqp, String propertyName, Serializable value, PredicateMode mode) throws ParseException
+    public Query buildLuceneGreaterThanOrEquals(LuceneQueryParser lqp, String propertyName, Serializable value, PredicateMode mode, LuceneFunction luceneFunction) throws ParseException
     {
         CMISPropertyDefinition propertyDef = cmisDictionaryService.findProperty(propertyName, null);
-        return propertyDef.getPropertyLuceneBuilder().buildLuceneGreaterThanOrEquals(lqp, value, mode);
+        return propertyDef.getPropertyLuceneBuilder().buildLuceneGreaterThanOrEquals(lqp, value, mode, luceneFunction);
     }
 
     /*
@@ -215,10 +218,10 @@ public class CmisFunctionEvaluationContext implements FunctionEvaluationContext
      *      org.alfresco.service.namespace.QName, java.io.Serializable,
      *      org.alfresco.repo.search.impl.querymodel.PredicateMode)
      */
-    public Query buildLuceneInequality(LuceneQueryParser lqp, String propertyName, Serializable value, PredicateMode mode) throws ParseException
+    public Query buildLuceneInequality(LuceneQueryParser lqp, String propertyName, Serializable value, PredicateMode mode, LuceneFunction luceneFunction) throws ParseException
     {
         CMISPropertyDefinition propertyDef = cmisDictionaryService.findProperty(propertyName, null);
-        return propertyDef.getPropertyLuceneBuilder().buildLuceneInequality(lqp, value, mode);
+        return propertyDef.getPropertyLuceneBuilder().buildLuceneInequality(lqp, value, mode, luceneFunction);
     }
 
     /*
@@ -228,10 +231,10 @@ public class CmisFunctionEvaluationContext implements FunctionEvaluationContext
      *      org.alfresco.service.namespace.QName, java.io.Serializable,
      *      org.alfresco.repo.search.impl.querymodel.PredicateMode)
      */
-    public Query buildLuceneLessThan(LuceneQueryParser lqp, String propertyName, Serializable value, PredicateMode mode) throws ParseException
+    public Query buildLuceneLessThan(LuceneQueryParser lqp, String propertyName, Serializable value, PredicateMode mode, LuceneFunction luceneFunction) throws ParseException
     {
         CMISPropertyDefinition propertyDef = cmisDictionaryService.findProperty(propertyName, null);
-        return propertyDef.getPropertyLuceneBuilder().buildLuceneLessThan(lqp, value, mode);
+        return propertyDef.getPropertyLuceneBuilder().buildLuceneLessThan(lqp, value, mode, luceneFunction);
     }
 
     /*
@@ -241,10 +244,10 @@ public class CmisFunctionEvaluationContext implements FunctionEvaluationContext
      *      org.alfresco.service.namespace.QName, java.io.Serializable,
      *      org.alfresco.repo.search.impl.querymodel.PredicateMode)
      */
-    public Query buildLuceneLessThanOrEquals(LuceneQueryParser lqp, String propertyName, Serializable value, PredicateMode mode) throws ParseException
+    public Query buildLuceneLessThanOrEquals(LuceneQueryParser lqp, String propertyName, Serializable value, PredicateMode mode, LuceneFunction luceneFunction) throws ParseException
     {
         CMISPropertyDefinition propertyDef = cmisDictionaryService.findProperty(propertyName, null);
-        return propertyDef.getPropertyLuceneBuilder().buildLuceneLessThanOrEquals(lqp, value, mode);
+        return propertyDef.getPropertyLuceneBuilder().buildLuceneLessThanOrEquals(lqp, value, mode, luceneFunction);
     }
 
     /*
@@ -319,6 +322,30 @@ public class CmisFunctionEvaluationContext implements FunctionEvaluationContext
         {
             // TODO: restrict to supported "special" fields
             return propertyName;
+        }
+    }
+    
+    public LuceneFunction getLuceneFunction(FunctionArgument functionArgument)
+    {
+        if (functionArgument == null)
+        {
+            return LuceneFunction.FIELD;
+        }
+        else
+        {
+            String functionName = functionArgument.getFunction().getName();
+            if (functionName.equals(Upper.NAME))
+            {
+                return LuceneFunction.UPPER;
+            }
+            else if (functionName.equals(Lower.NAME))
+            {
+                return LuceneFunction.LOWER;
+            }
+            else
+            {
+                throw new QueryModelException("Unsupported function: " + functionName);
+            }
         }
     }
     

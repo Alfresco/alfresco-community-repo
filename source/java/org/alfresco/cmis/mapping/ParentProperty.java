@@ -29,6 +29,7 @@ import java.util.Collection;
 
 import org.alfresco.cmis.CMISDictionaryModel;
 import org.alfresco.repo.search.impl.lucene.AnalysisMode;
+import org.alfresco.repo.search.impl.lucene.LuceneFunction;
 import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
 import org.alfresco.repo.search.impl.querymodel.PredicateMode;
 import org.alfresco.service.ServiceRegistry;
@@ -100,11 +101,11 @@ public class ParentProperty extends AbstractProperty
      * (non-Javadoc)
      * @see org.alfresco.cmis.property.PropertyLuceneBuilder#buildLuceneEquality(org.alfresco.repo.search.impl.lucene.LuceneQueryParser, java.io.Serializable, org.alfresco.repo.search.impl.querymodel.PredicateMode)
      */
-    public Query buildLuceneEquality(LuceneQueryParser lqp, Serializable value, PredicateMode mode) throws ParseException
+    public Query buildLuceneEquality(LuceneQueryParser lqp, Serializable value, PredicateMode mode, LuceneFunction luceneFunction) throws ParseException
     {
         String field = getLuceneFieldName();
         String stringValue = getValueAsString(value);
-        return lqp.getFieldQuery(field, stringValue, AnalysisMode.IDENTIFIER);
+        return lqp.getFieldQuery(field, stringValue, AnalysisMode.IDENTIFIER, luceneFunction);
     }
 
     /*
@@ -153,11 +154,11 @@ public class ParentProperty extends AbstractProperty
             String value = asStrings.iterator().next();
             if (not)
             {
-                return lqp.getDoesNotMatchFieldQuery(field, value, AnalysisMode.IDENTIFIER);
+                return lqp.getDoesNotMatchFieldQuery(field, value, AnalysisMode.IDENTIFIER, LuceneFunction.FIELD);
             }
             else
             {
-                return lqp.getFieldQuery(field, value, AnalysisMode.IDENTIFIER);
+                return lqp.getFieldQuery(field, value, AnalysisMode.IDENTIFIER, LuceneFunction.FIELD);
             }
         }
         else
@@ -169,7 +170,7 @@ public class ParentProperty extends AbstractProperty
             }
             for (String value : asStrings)
             {
-                Query any = lqp.getFieldQuery(field, value, AnalysisMode.IDENTIFIER);
+                Query any = lqp.getFieldQuery(field, value, AnalysisMode.IDENTIFIER, LuceneFunction.FIELD);
                 if (not)
                 {
                     booleanQuery.add(any, Occur.MUST_NOT);
@@ -187,11 +188,11 @@ public class ParentProperty extends AbstractProperty
      * (non-Javadoc)
      * @see org.alfresco.cmis.property.PropertyLuceneBuilder#buildLuceneInequality(org.alfresco.repo.search.impl.lucene.LuceneQueryParser, java.io.Serializable, org.alfresco.repo.search.impl.querymodel.PredicateMode)
      */
-    public Query buildLuceneInequality(LuceneQueryParser lqp, Serializable value, PredicateMode mode) throws ParseException
+    public Query buildLuceneInequality(LuceneQueryParser lqp, Serializable value, PredicateMode mode, LuceneFunction luceneFunction) throws ParseException
     {
         String field = getLuceneFieldName();
         String stringValue = getValueAsString(value);
-        return lqp.getDoesNotMatchFieldQuery(field, stringValue, AnalysisMode.IDENTIFIER);
+        return lqp.getDoesNotMatchFieldQuery(field, stringValue, AnalysisMode.IDENTIFIER, luceneFunction);
     }
 
 

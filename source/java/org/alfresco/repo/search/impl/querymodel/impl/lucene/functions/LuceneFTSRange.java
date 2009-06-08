@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.repo.search.impl.lucene.AnalysisMode;
+import org.alfresco.repo.search.impl.lucene.LuceneFunction;
 import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
 import org.alfresco.repo.search.impl.querymodel.Argument;
 import org.alfresco.repo.search.impl.querymodel.FunctionEvaluationContext;
@@ -78,11 +79,11 @@ public class LuceneFTSRange extends FTSRange implements LuceneQueryBuilderCompon
         if (propArg != null)
         {
             String prop = propArg.getPropertyName();
-            query = lqp.getRangeQuery(functionContext.getLuceneFieldName(prop), from, to, fromInc, toInc, AnalysisMode.DEFAULT);
+            query = lqp.getRangeQuery(functionContext.getLuceneFieldName(prop), from, to, fromInc, toInc, AnalysisMode.DEFAULT, LuceneFunction.FIELD);
         }
         else
         {
-            query = lqp.getRangeQuery("TEXT", from, to, fromInc, toInc, AnalysisMode.DEFAULT);
+            query = lqp.getRangeQuery("TEXT", from, to, fromInc, toInc, AnalysisMode.DEFAULT, LuceneFunction.FIELD);
         }
         return query;
     }

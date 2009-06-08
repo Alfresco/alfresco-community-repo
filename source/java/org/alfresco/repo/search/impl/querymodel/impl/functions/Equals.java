@@ -47,7 +47,7 @@ public class Equals extends BaseComparison
      */
     public Equals()
     {
-        super(NAME, DataTypeDefinition.BOOLEAN, args);   
+        super(NAME, DataTypeDefinition.BOOLEAN, ARGS);   
     }
 
     /* (non-Javadoc)

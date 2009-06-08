@@ -46,7 +46,7 @@ public class NotEquals extends BaseComparison
      */
     public NotEquals()
     {
-        super(NAME, DataTypeDefinition.BOOLEAN, args);
+        super(NAME, DataTypeDefinition.BOOLEAN, ARGS);
     }
 
     /*

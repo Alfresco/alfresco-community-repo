@@ -45,7 +45,8 @@ import org.alfresco.repo.search.MLAnalysisMode;
 import org.alfresco.repo.search.SearcherException;
 import org.alfresco.repo.search.impl.lucene.analysis.DateTimeAnalyser;
 import org.alfresco.repo.search.impl.lucene.analysis.MLTokenDuplicator;
-import org.alfresco.repo.search.impl.lucene.analysis.VerbatimAnalyser;
+import org.alfresco.repo.search.impl.lucene.query.CaseInsensitiveFieldQuery;
+import org.alfresco.repo.search.impl.lucene.query.CaseInsensitiveFieldRangeQuery;
 import org.alfresco.repo.search.impl.lucene.query.PathQuery;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
@@ -66,7 +67,6 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.Token;
 import org.apache.lucene.analysis.TokenStream;
-import org.apache.lucene.document.Field;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.queryParser.CharStream;
@@ -132,7 +132,14 @@ public class LuceneQueryParser extends QueryParser
      *            the default field for query terms.
      * @param analyzer
      *            used to find terms in the query text.
+     * @param namespacePrefixResolver 
+     * @param dictionaryService 
+     * @param tenantService 
+     * @param defaultOperator 
+     * @param searchParameters 
      * @param config
+     * @param indexReader 
+     * @return - the query
      * @throws ParseException
      *             if the parsing fails
      */
@@ -161,31 +168,51 @@ public class LuceneQueryParser extends QueryParser
         return result;
     }
 
+    /**
+     * @param config
+     */
     public void setLuceneConfig(LuceneConfig config)
     {
         this.config = config;
     }
 
+    /**
+     * @param indexReader
+     */
     public void setIndexReader(IndexReader indexReader)
     {
         this.indexReader = indexReader;
     }
 
+    /**
+     * @param searchParameters
+     */
     public void setSearchParameters(SearchParameters searchParameters)
     {
         this.searchParameters = searchParameters;
     }
 
+    /**
+     * @param namespacePrefixResolver
+     */
     public void setNamespacePrefixResolver(NamespacePrefixResolver namespacePrefixResolver)
     {
         this.namespacePrefixResolver = namespacePrefixResolver;
     }
 
+    /**
+     * @param tenantService
+     */
     public void setTenantService(TenantService tenantService)
     {
         this.tenantService = tenantService;
     }
 
+    /**
+     * Lucene default constructor
+     * @param arg0
+     * @param arg1
+     */
     public LuceneQueryParser(String arg0, Analyzer arg1)
     {
         super(arg0, arg1);
@@ -195,11 +222,19 @@ public class LuceneQueryParser extends QueryParser
         }
     }
 
+    /**
+     * Lucene default constructor
+     * @param arg0
+     */
     public LuceneQueryParser(CharStream arg0)
     {
         super(arg0);
     }
 
+    /**
+     * Lucene default constructor
+     * @param arg0
+     */
     public LuceneQueryParser(QueryParserTokenManager arg0)
     {
         super(arg0);
@@ -220,12 +255,21 @@ public class LuceneQueryParser extends QueryParser
 
     }
 
-    public Query getFieldQuery(String field, String queryText, AnalysisMode analysisMode, int slop) throws ParseException
+    /**
+     * @param field
+     * @param queryText
+     * @param analysisMode
+     * @param slop
+     * @param luceneFunction
+     * @return the query
+     * @throws ParseException
+     */
+    public Query getFieldQuery(String field, String queryText, AnalysisMode analysisMode, int slop, LuceneFunction luceneFunction) throws ParseException
     {
         try
         {
             internalSlop = slop;
-            Query query = getFieldQuery(field, queryText, analysisMode);
+            Query query = getFieldQuery(field, queryText, analysisMode, luceneFunction);
             return query;
         }
         finally
@@ -235,17 +279,32 @@ public class LuceneQueryParser extends QueryParser
 
     }
 
+    /**
+     * @param field
+     * @param sqlLikeClause
+     * @param analysisMode
+     * @return the query
+     * @throws ParseException
+     */
     public Query getLikeQuery(String field, String sqlLikeClause, AnalysisMode analysisMode) throws ParseException
     {
         String luceneWildCardExpression = SearchLanguageConversion.convertSQLLikeToLucene(sqlLikeClause);
-        return getFieldQuery(field, luceneWildCardExpression, analysisMode);
+        return getFieldQuery(field, luceneWildCardExpression, analysisMode, LuceneFunction.FIELD);
     }
 
-    public Query getDoesNotMatchFieldQuery(String field, String queryText, AnalysisMode analysisMode) throws ParseException
+    /**
+     * @param field
+     * @param queryText
+     * @param analysisMode
+     * @param luceneFunction
+     * @return the query
+     * @throws ParseException
+     */
+    public Query getDoesNotMatchFieldQuery(String field, String queryText, AnalysisMode analysisMode, LuceneFunction luceneFunction) throws ParseException
     {
         BooleanQuery query = new BooleanQuery();
         Query allQuery = new MatchAllDocsQuery();
-        Query matchQuery = getFieldQuery(field, queryText, analysisMode);
+        Query matchQuery = getFieldQuery(field, queryText, analysisMode, luceneFunction);
         if ((matchQuery != null))
         {
             query.add(allQuery, Occur.MUST);
@@ -260,9 +319,17 @@ public class LuceneQueryParser extends QueryParser
 
     public Query getFieldQuery(String field, String queryText) throws ParseException
     {
-        return getFieldQuery(field, queryText, AnalysisMode.DEFAULT);
+        return getFieldQuery(field, queryText, AnalysisMode.DEFAULT, LuceneFunction.FIELD);
     }
 
+    /**
+     * @param field
+     * @param first
+     * @param last
+     * @param slop
+     * @param inOrder
+     * @return the query
+     */
     public Query getSpanQuery(String field, String first, String last, int slop, boolean inOrder)
     {
         if (field.equals("TEXT"))
@@ -342,7 +409,15 @@ public class LuceneQueryParser extends QueryParser
 
     }
 
-    public Query getFieldQuery(String field, String queryText, AnalysisMode analysisMode) throws ParseException
+    /**
+     * @param field
+     * @param queryText
+     * @param analysisMode
+     * @param luceneFunction
+     * @return the query
+     * @throws ParseException
+     */
+    public Query getFieldQuery(String field, String queryText, AnalysisMode analysisMode, LuceneFunction luceneFunction) throws ParseException
     {
         try
         {
@@ -380,7 +455,7 @@ public class LuceneQueryParser extends QueryParser
                     for (QName qname : contentAttributes)
                     {
                         // The super implementation will create phrase queries etc if required
-                        Query part = getFieldQuery("@" + qname.toString(), queryText, analysisMode);
+                        Query part = getFieldQuery("@" + qname.toString(), queryText, analysisMode, luceneFunction);
                         if (part != null)
                         {
                             query.add(part, Occur.SHOULD);
@@ -397,7 +472,7 @@ public class LuceneQueryParser extends QueryParser
                     BooleanQuery query = new BooleanQuery();
                     for (String fieldName : text)
                     {
-                        Query part = getFieldQuery(fieldName, queryText, analysisMode);
+                        Query part = getFieldQuery(fieldName, queryText, analysisMode, luceneFunction);
                         if (part != null)
                         {
                             query.add(part, Occur.SHOULD);
@@ -497,7 +572,7 @@ public class LuceneQueryParser extends QueryParser
                 {
                     throw new SearcherException("Invalid type: " + queryText);
                 }
-                return getFieldQuery(target.isAspect() ? "ASPECT" : "TYPE", queryText, analysisMode);
+                return getFieldQuery(target.isAspect() ? "ASPECT" : "TYPE", queryText, analysisMode, luceneFunction);
             }
             else if (field.equals("TYPE"))
             {
@@ -634,7 +709,7 @@ public class LuceneQueryParser extends QueryParser
             }
             else if (field.startsWith("@"))
             {
-                Query query = attributeQueryBuilder(field, queryText, new FieldQuery(), analysisMode);
+                Query query = attributeQueryBuilder(field, queryText, new FieldQuery(), analysisMode, luceneFunction);
                 return query;
             }
             else if (field.equals("ALL"))
@@ -647,7 +722,7 @@ public class LuceneQueryParser extends QueryParser
                     for (QName qname : contentAttributes)
                     {
                         // The super implementation will create phrase queries etc if required
-                        Query part = getFieldQuery("@" + qname.toString(), queryText, analysisMode);
+                        Query part = getFieldQuery("@" + qname.toString(), queryText, analysisMode, luceneFunction);
                         if (part != null)
                         {
                             query.add(part, Occur.SHOULD);
@@ -664,7 +739,7 @@ public class LuceneQueryParser extends QueryParser
                     BooleanQuery query = new BooleanQuery();
                     for (String fieldName : all)
                     {
-                        Query part = getFieldQuery(fieldName, queryText, analysisMode);
+                        Query part = getFieldQuery(fieldName, queryText, analysisMode, luceneFunction);
                         if (part != null)
                         {
                             query.add(part, Occur.SHOULD);
@@ -689,7 +764,7 @@ public class LuceneQueryParser extends QueryParser
                     QName container = containerClass.getName();
                     BooleanQuery query = new BooleanQuery();
                     String classType = containerClass.isAspect() ? "ASPECT" : "TYPE";
-                    Query typeQuery = getFieldQuery(classType, container.toString(), analysisMode);
+                    Query typeQuery = getFieldQuery(classType, container.toString(), analysisMode, luceneFunction);
                     Query presenceQuery = getWildcardQuery("@" + qname.toString(), "*");
                     if ((typeQuery != null) && (presenceQuery != null))
                     {
@@ -700,7 +775,7 @@ public class LuceneQueryParser extends QueryParser
                 }
                 else
                 {
-                    return getFieldQueryImpl(field, queryText, analysisMode);
+                    return getFieldQueryImpl(field, queryText, analysisMode, luceneFunction);
                 }
 
             }
@@ -722,7 +797,7 @@ public class LuceneQueryParser extends QueryParser
                 }
                 else
                 {
-                    return getFieldQueryImpl(field, queryText, analysisMode);
+                    return getFieldQueryImpl(field, queryText, analysisMode, luceneFunction);
                 }
 
             }
@@ -737,7 +812,7 @@ public class LuceneQueryParser extends QueryParser
                     QName container = containerClass.getName();
                     BooleanQuery query = new BooleanQuery();
                     String classType = containerClass.isAspect() ? "ASPECT" : "TYPE";
-                    Query typeQuery = getFieldQuery(classType, container.toString(), analysisMode);
+                    Query typeQuery = getFieldQuery(classType, container.toString(), analysisMode, luceneFunction);
                     Query presenceQuery = getWildcardQuery("@" + qname.toString(), "*");
                     if ((typeQuery != null) && (presenceQuery != null))
                     {
@@ -748,7 +823,7 @@ public class LuceneQueryParser extends QueryParser
                 }
                 else
                 {
-                    return getFieldQueryImpl(field, queryText, analysisMode);
+                    return getFieldQueryImpl(field, queryText, analysisMode, luceneFunction);
                 }
 
             }
@@ -759,7 +834,7 @@ public class LuceneQueryParser extends QueryParser
                 for (QName qname : contentAttributes)
                 {
                     // The super implementation will create phrase queries etc if required
-                    Query part = getFieldQuery("@" + qname.toString(), queryText, analysisMode);
+                    Query part = getFieldQuery("@" + qname.toString(), queryText, analysisMode, luceneFunction);
                     if (part != null)
                     {
                         query.add(part, Occur.SHOULD);
@@ -778,7 +853,7 @@ public class LuceneQueryParser extends QueryParser
             }
             else
             {
-                return getFieldQueryImpl(field, queryText, analysisMode);
+                return getFieldQueryImpl(field, queryText, analysisMode, luceneFunction);
             }
 
         }
@@ -789,10 +864,17 @@ public class LuceneQueryParser extends QueryParser
 
     }
 
-    private Query getFieldQueryImpl(String field, String queryText, AnalysisMode analysisMode) throws ParseException
+    private Query getFieldQueryImpl(String field, String queryText, AnalysisMode analysisMode, LuceneFunction luceneFunction) throws ParseException
     {
         // Use the analyzer to get all the tokens, and then build a TermQuery,
-        // PhraseQuery, or nothing based on the term count
+        // PhraseQuery, or noth
+
+        // TODO: Untokenised columns with functions require special handling
+
+        if (luceneFunction != LuceneFunction.FIELD)
+        {
+            throw new UnsupportedOperationException("Field queries are not supported on lucene functions (UPPER, LOWER, etc)");
+        }
 
         boolean requiresMLTokenDuplication = false;
         String testText = queryText;
@@ -1404,14 +1486,23 @@ public class LuceneQueryParser extends QueryParser
      */
     protected Query getRangeQuery(String field, String part1, String part2, boolean inclusive) throws ParseException
     {
-        return getRangeQuery(field, part1, part2, inclusive, inclusive, AnalysisMode.DEFAULT);
+        return getRangeQuery(field, part1, part2, inclusive, inclusive, AnalysisMode.DEFAULT, LuceneFunction.FIELD);
     }
 
     /**
+     * @param field 
+     * @param part1 
+     * @param part2
+     * @param includeLower 
+     * @param includeUpper 
+     * @param analysisMode 
+     * @param luceneFunction 
+     * @return the query 
      * @exception ParseException
      *                throw in overridden method to disallow
      */
-    public Query getRangeQuery(String field, String part1, String part2, boolean includeLower, boolean includeUpper, AnalysisMode analysisMode) throws ParseException
+    public Query getRangeQuery(String field, String part1, String part2, boolean includeLower, boolean includeUpper, AnalysisMode analysisMode, LuceneFunction luceneFunction)
+            throws ParseException
     {
 
         if (field.startsWith("@"))
@@ -1433,6 +1524,44 @@ public class LuceneQueryParser extends QueryParser
 
             if (propertyDef != null)
             {
+                if (luceneFunction != LuceneFunction.FIELD)
+                {
+                    if (propertyDef.getDataType().getName().equals(DataTypeDefinition.TEXT))
+                    {
+                        BooleanQuery booleanQuery = new BooleanQuery();
+                        MLAnalysisMode mlAnalysisMode = searchParameters.getMlAnalaysisMode() == null ? config.getDefaultMLSearchAnalysisMode() : searchParameters
+                                .getMlAnalaysisMode();
+                        List<Locale> locales = searchParameters.getLocales();
+                        List<Locale> expandedLocales = new ArrayList<Locale>();
+                        for (Locale locale : (((locales == null) || (locales.size() == 0)) ? Collections.singletonList(I18NUtil.getLocale()) : locales))
+                        {
+                            expandedLocales.addAll(MLAnalysisMode.getLocales(mlAnalysisMode, locale, false));
+                        }
+                        for (Locale locale : (((expandedLocales == null) || (expandedLocales.size() == 0)) ? Collections.singletonList(I18NUtil.getLocale()) : expandedLocales))
+                        {
+                            if (locale.toString().length() == 0)
+                            {
+                                continue;
+                            }
+
+                            String textFieldName = fieldName;
+
+                            if (tokenisationMode == IndexTokenisationMode.BOTH)
+                            {
+                                textFieldName = textFieldName + "." + locale + ".sort";
+                            }
+
+                            addLocaleSpecificUntokenisedTextRangeFunction(field, part1, part2, includeLower, includeUpper, luceneFunction, booleanQuery, mlAnalysisMode, locale, textFieldName);
+
+                        }
+                        return booleanQuery;
+                    }
+                    else
+                    {
+                        throw new UnsupportedOperationException("Lucene Function");
+                    }
+                }
+
                 if (propertyDef.getDataType().getName().equals(DataTypeDefinition.MLTEXT))
                 {
                     throw new UnsupportedOperationException("Range is not supported against ml-text");
@@ -1620,6 +1749,72 @@ public class LuceneQueryParser extends QueryParser
         }
     }
 
+    private void addLocaleSpecificUntokenisedTextRangeFunction(String expandedFieldName, String lower, String upper, boolean includeLower, boolean includeUpper, LuceneFunction luceneFunction, BooleanQuery booleanQuery,
+            MLAnalysisMode mlAnalysisMode, Locale locale, String textFieldName)
+    {
+        String lowerTermText = lower;
+        if (locale.toString().length() > 0)
+        {
+            lowerTermText = "{" + locale + "}" + lower;
+        }
+        String upperTermText = upper;
+        if (locale.toString().length() > 0)
+        {
+            upperTermText = "{" + locale + "}" + upper;
+        }
+        Query subQuery = buildRangeFunctionQuery(textFieldName, lowerTermText,  upperTermText, includeLower, includeUpper, luceneFunction);
+        booleanQuery.add(subQuery, Occur.SHOULD);
+
+        if (booleanQuery.getClauses().length == 0)
+        {
+            booleanQuery.add(new TermQuery(new Term("NO_TOKENS", "__")), Occur.SHOULD);
+        }
+    }
+
+    private Query buildRangeFunctionQuery(String expandedFieldName, String lowerTermText, String upperTermText, boolean includeLower, boolean includeUpper, LuceneFunction luceneFunction)
+    {
+        String testLowerTermText = lowerTermText;
+        if (testLowerTermText.startsWith("{"))
+        {
+            int index = lowerTermText.indexOf("}");
+            testLowerTermText = lowerTermText.substring(index + 1);
+        }
+        
+        String testUpperTermText = upperTermText;
+        if (testUpperTermText.startsWith("{"))
+        {
+            int index = upperTermText.indexOf("}");
+            testUpperTermText = upperTermText.substring(index + 1);
+        }
+        
+        switch (luceneFunction)
+        {
+        case LOWER:
+            if (testLowerTermText.equals(testLowerTermText.toLowerCase()) && testUpperTermText.equals(testUpperTermText.toLowerCase()))
+            {
+                return new CaseInsensitiveFieldRangeQuery(expandedFieldName, lowerTermText, upperTermText, includeLower, includeUpper);
+            }
+            else
+            {
+                // No match
+                return new TermQuery(new Term("NO_TOKENS", "__"));
+            }
+        case UPPER:
+            if (testLowerTermText.equals(testLowerTermText.toUpperCase()) && testUpperTermText.equals(testUpperTermText.toUpperCase()))
+            {
+                return new CaseInsensitiveFieldRangeQuery(expandedFieldName, lowerTermText, upperTermText, includeLower, includeUpper);
+            }
+            else
+            {
+                // No match
+                return new TermQuery(new Term("NO_TOKENS", "__"));
+            }
+        default:
+            throw new UnsupportedOperationException("Unsupported Lucene Function " + luceneFunction);
+
+        }
+    }
+
     private void addLocaleSpecificTokenisedTextRange(String part1, String part2, boolean includeLower, boolean includeUpper, AnalysisMode analysisMode, String fieldName,
             BooleanQuery booleanQuery, Locale locale, String textFieldName) throws ParseException
     {
@@ -1645,7 +1840,7 @@ public class LuceneQueryParser extends QueryParser
             lower = "{" + locale + "}" + part1;
             upper = "{" + locale + "}" + part2;
         }
-  
+
         Query subQuery = new ConstantScoreRangeQuery(textFieldName, lower, upper, includeLower, includeUpper);
         booleanQuery.add(subQuery, Occur.SHOULD);
 
@@ -2394,7 +2589,7 @@ public class LuceneQueryParser extends QueryParser
     {
         if (field.startsWith("@"))
         {
-            return attributeQueryBuilder(field, termStr, new PrefixQuery(), AnalysisMode.PREFIX);
+            return attributeQueryBuilder(field, termStr, new PrefixQuery(), AnalysisMode.PREFIX, LuceneFunction.FIELD);
         }
         else if (field.equals("TEXT"))
         {
@@ -2447,7 +2642,7 @@ public class LuceneQueryParser extends QueryParser
     {
         if (field.startsWith("@"))
         {
-            return attributeQueryBuilder(field, termStr, new WildcardQuery(), AnalysisMode.WILD);
+            return attributeQueryBuilder(field, termStr, new WildcardQuery(), AnalysisMode.WILD, LuceneFunction.FIELD);
         }
 
         else if (field.equals("TEXT"))
@@ -2501,7 +2696,7 @@ public class LuceneQueryParser extends QueryParser
     {
         if (field.startsWith("@"))
         {
-            return attributeQueryBuilder(field, termStr, new FuzzyQuery(minSimilarity), AnalysisMode.FUZZY);
+            return attributeQueryBuilder(field, termStr, new FuzzyQuery(minSimilarity), AnalysisMode.FUZZY, LuceneFunction.FIELD);
         }
 
         else if (field.equals("TEXT"))
@@ -2550,26 +2745,56 @@ public class LuceneQueryParser extends QueryParser
         }
     }
 
+    /**
+     * @param dictionaryService
+     */
     public void setDictionaryService(DictionaryService dictionaryService)
     {
         this.dictionaryService = dictionaryService;
     }
 
-    public Query getSuperFieldQuery(String field, String queryText, AnalysisMode analysisMode) throws ParseException
+    /**
+     * @param field
+     * @param queryText
+     * @param analysisMode
+     * @param luceneFunction
+     * @return the query
+     * @throws ParseException
+     */
+    public Query getSuperFieldQuery(String field, String queryText, AnalysisMode analysisMode, LuceneFunction luceneFunction) throws ParseException
     {
-        return getFieldQueryImpl(field, queryText, analysisMode);
+        return getFieldQueryImpl(field, queryText, analysisMode, luceneFunction);
     }
 
+    /**
+     * @param field
+     * @param termStr
+     * @param minSimilarity
+     * @return the query
+     * @throws ParseException
+     */
     public Query getSuperFuzzyQuery(String field, String termStr, float minSimilarity) throws ParseException
     {
         return super.getFuzzyQuery(field, termStr, minSimilarity);
     }
 
+    /**
+     * @param field
+     * @param termStr
+     * @return the query
+     * @throws ParseException
+     */
     public Query getSuperPrefixQuery(String field, String termStr) throws ParseException
     {
         return super.getPrefixQuery(field, termStr);
     }
 
+    /**
+     * @param field
+     * @param termStr
+     * @return the query
+     * @throws ParseException
+     */
     public Query getSuperWildcardQuery(String field, String termStr) throws ParseException
     {
         return super.getWildcardQuery(field, termStr);
@@ -2577,14 +2802,22 @@ public class LuceneQueryParser extends QueryParser
 
     interface SubQuery
     {
-        Query getQuery(String field, String queryText, AnalysisMode analysisMode) throws ParseException;
+        /**
+         * @param field
+         * @param queryText
+         * @param analysisMode
+         * @param luceneFunction
+         * @return the query
+         * @throws ParseException
+         */
+        Query getQuery(String field, String queryText, AnalysisMode analysisMode, LuceneFunction luceneFunction) throws ParseException;
     }
 
     class FieldQuery implements SubQuery
     {
-        public Query getQuery(String field, String queryText, AnalysisMode analysisMode) throws ParseException
+        public Query getQuery(String field, String queryText, AnalysisMode analysisMode, LuceneFunction luceneFunction) throws ParseException
         {
-            return getSuperFieldQuery(field, queryText, analysisMode);
+            return getSuperFieldQuery(field, queryText, analysisMode, luceneFunction);
         }
     }
 
@@ -2597,7 +2830,7 @@ public class LuceneQueryParser extends QueryParser
             this.minSimilarity = minSimilarity;
         }
 
-        public Query getQuery(String field, String termStr, AnalysisMode analysisMode) throws ParseException
+        public Query getQuery(String field, String termStr, AnalysisMode analysisMode, LuceneFunction luceneFunction) throws ParseException
         {
             return getSuperFuzzyQuery(field, termStr, minSimilarity);
         }
@@ -2605,7 +2838,7 @@ public class LuceneQueryParser extends QueryParser
 
     class PrefixQuery implements SubQuery
     {
-        public Query getQuery(String field, String termStr, AnalysisMode analysisMode) throws ParseException
+        public Query getQuery(String field, String termStr, AnalysisMode analysisMode, LuceneFunction luceneFunction) throws ParseException
         {
             return getSuperPrefixQuery(field, termStr);
         }
@@ -2613,13 +2846,13 @@ public class LuceneQueryParser extends QueryParser
 
     class WildcardQuery implements SubQuery
     {
-        public Query getQuery(String field, String termStr, AnalysisMode analysisMode) throws ParseException
+        public Query getQuery(String field, String termStr, AnalysisMode analysisMode, LuceneFunction luceneFunction) throws ParseException
         {
             return getSuperWildcardQuery(field, termStr);
         }
     }
 
-    private Query attributeQueryBuilder(String field, String queryText, SubQuery subQueryBuilder, AnalysisMode analysisMode) throws ParseException
+    private Query attributeQueryBuilder(String field, String queryText, SubQuery subQueryBuilder, AnalysisMode analysisMode, LuceneFunction luceneFunction) throws ParseException
     {
         // TODO: Fix duplicate token generation for mltext, content and text.
         // -locale expansion here and in tokeisation -> duplicates
@@ -2628,43 +2861,24 @@ public class LuceneQueryParser extends QueryParser
 
         String expandedFieldName = expandAttributeFieldName(field);
 
-        // Mime type
+        // Get type info etc
+        QName propertyQName = null;
         if (expandedFieldName.endsWith(".mimetype"))
         {
-            QName propertyQName = QName.createQName(expandedFieldName.substring(1, expandedFieldName.length() - 9));
-            PropertyDefinition propertyDef = dictionaryService.getProperty(propertyQName);
-            if ((propertyDef != null) && (propertyDef.getDataType().getName().equals(DataTypeDefinition.CONTENT)))
-            {
-                return subQueryBuilder.getQuery(expandedFieldName, queryText, analysisMode);
-            }
-
+            propertyQName = QName.createQName(expandedFieldName.substring(1, expandedFieldName.length() - 9));
         }
         else if (expandedFieldName.endsWith(".size"))
         {
-            QName propertyQName = QName.createQName(expandedFieldName.substring(1, expandedFieldName.length() - 5));
-            PropertyDefinition propertyDef = dictionaryService.getProperty(propertyQName);
-            if ((propertyDef != null) && (propertyDef.getDataType().getName().equals(DataTypeDefinition.CONTENT)))
-            {
-                return subQueryBuilder.getQuery(expandedFieldName, queryText, analysisMode);
-            }
-
+            propertyQName = QName.createQName(expandedFieldName.substring(1, expandedFieldName.length() - 5));
         }
         else if (expandedFieldName.endsWith(".locale"))
         {
-            QName propertyQName = QName.createQName(expandedFieldName.substring(1, expandedFieldName.length() - 7));
-            PropertyDefinition propertyDef = dictionaryService.getProperty(propertyQName);
-            if ((propertyDef != null) && (propertyDef.getDataType().getName().equals(DataTypeDefinition.CONTENT)))
-            {
-                return subQueryBuilder.getQuery(expandedFieldName, queryText, analysisMode);
-            }
-
+            propertyQName = QName.createQName(expandedFieldName.substring(1, expandedFieldName.length() - 7));
         }
-
-        // Already in expanded form
-
-        // ML
-
-        QName propertyQName = QName.createQName(expandedFieldName.substring(1));
+        else
+        {
+            propertyQName = QName.createQName(expandedFieldName.substring(1));
+        }
         PropertyDefinition propertyDef = dictionaryService.getProperty(propertyQName);
         IndexTokenisationMode tokenisationMode = IndexTokenisationMode.TRUE;
         if (propertyDef != null)
@@ -2675,6 +2889,44 @@ public class LuceneQueryParser extends QueryParser
                 tokenisationMode = IndexTokenisationMode.TRUE;
             }
         }
+
+        if (luceneFunction != LuceneFunction.FIELD)
+        {
+            if ((tokenisationMode == IndexTokenisationMode.FALSE) || (tokenisationMode == IndexTokenisationMode.BOTH))
+            {
+                return functionQueryBuilder(expandedFieldName, propertyQName, propertyDef, tokenisationMode, queryText, luceneFunction);
+            }
+        }
+
+        // Mime type
+        if (expandedFieldName.endsWith(".mimetype"))
+        {
+            if ((propertyDef != null) && (propertyDef.getDataType().getName().equals(DataTypeDefinition.CONTENT)))
+            {
+                return subQueryBuilder.getQuery(expandedFieldName, queryText, analysisMode, luceneFunction);
+            }
+
+        }
+        else if (expandedFieldName.endsWith(".size"))
+        {
+            if ((propertyDef != null) && (propertyDef.getDataType().getName().equals(DataTypeDefinition.CONTENT)))
+            {
+                return subQueryBuilder.getQuery(expandedFieldName, queryText, analysisMode, luceneFunction);
+            }
+
+        }
+        else if (expandedFieldName.endsWith(".locale"))
+        {
+            if ((propertyDef != null) && (propertyDef.getDataType().getName().equals(DataTypeDefinition.CONTENT)))
+            {
+                return subQueryBuilder.getQuery(expandedFieldName, queryText, analysisMode, luceneFunction);
+            }
+
+        }
+
+        // Already in expanded form
+
+        // ML
 
         if ((propertyDef != null) && (propertyDef.getDataType().getName().equals(DataTypeDefinition.MLTEXT)))
         {
@@ -2713,18 +2965,20 @@ public class LuceneQueryParser extends QueryParser
                     default:
                     case DEFAULT:
                     case TOKENISE:
-                        addLocaleSpecificTokenisedMLOrTextAttribute(queryText, subQueryBuilder, analysisMode, booleanQuery, locale, mlFieldName);
+                        addLocaleSpecificTokenisedMLOrTextAttribute(queryText, subQueryBuilder, analysisMode, luceneFunction, booleanQuery, locale, mlFieldName);
                         break;
                     case IDENTIFIER:
                     case FUZZY:
                     case PREFIX:
                     case WILD:
-                        addLocaleSpecificUntokenisedMLOrTextAttribute(field, queryText, subQueryBuilder, analysisMode, booleanQuery, mlAnalysisMode, locale, mlFieldName);
+                        addLocaleSpecificUntokenisedMLOrTextAttribute(field, queryText, subQueryBuilder, analysisMode, luceneFunction, booleanQuery, mlAnalysisMode, locale,
+                                mlFieldName);
                         break;
                     }
                     break;
                 case FALSE:
-                    addLocaleSpecificUntokenisedMLOrTextAttribute(field, queryText, subQueryBuilder, analysisMode, booleanQuery, mlAnalysisMode, locale, mlFieldName);
+                    addLocaleSpecificUntokenisedMLOrTextAttribute(field, queryText, subQueryBuilder, analysisMode, luceneFunction, booleanQuery, mlAnalysisMode, locale,
+                            mlFieldName);
                     break;
                 case TRUE:
                 default:
@@ -2734,12 +2988,13 @@ public class LuceneQueryParser extends QueryParser
                     case DEFAULT:
                     case TOKENISE:
                     case IDENTIFIER:
-                        addLocaleSpecificTokenisedMLOrTextAttribute(queryText, subQueryBuilder, analysisMode, booleanQuery, locale, mlFieldName);
+                        addLocaleSpecificTokenisedMLOrTextAttribute(queryText, subQueryBuilder, analysisMode, luceneFunction, booleanQuery, locale, mlFieldName);
                         break;
                     case FUZZY:
                     case PREFIX:
                     case WILD:
-                        addLocaleSpecificUntokenisedMLOrTextAttribute(field, queryText, subQueryBuilder, analysisMode, booleanQuery, mlAnalysisMode, locale, mlFieldName);
+                        addLocaleSpecificUntokenisedMLOrTextAttribute(field, queryText, subQueryBuilder, analysisMode, luceneFunction, booleanQuery, mlAnalysisMode, locale,
+                                mlFieldName);
                         break;
                     }
                 }
@@ -2758,7 +3013,7 @@ public class LuceneQueryParser extends QueryParser
 
             if (mlAnalysisMode.includesAll())
             {
-                return subQueryBuilder.getQuery(expandedFieldName, queryText, analysisMode);
+                return subQueryBuilder.getQuery(expandedFieldName, queryText, analysisMode, luceneFunction);
             }
 
             List<Locale> locales = searchParameters.getLocales();
@@ -2771,7 +3026,7 @@ public class LuceneQueryParser extends QueryParser
             if (expandedLocales.size() > 0)
             {
                 BooleanQuery booleanQuery = new BooleanQuery();
-                Query contentQuery = subQueryBuilder.getQuery(expandedFieldName, queryText, analysisMode);
+                Query contentQuery = subQueryBuilder.getQuery(expandedFieldName, queryText, analysisMode, luceneFunction);
                 if (contentQuery != null)
                 {
                     booleanQuery.add(contentQuery, Occur.MUST);
@@ -2812,7 +3067,7 @@ public class LuceneQueryParser extends QueryParser
             }
             else
             {
-                Query query = subQueryBuilder.getQuery(expandedFieldName, queryText, analysisMode);
+                Query query = subQueryBuilder.getQuery(expandedFieldName, queryText, analysisMode, luceneFunction);
                 if (query != null)
                 {
                     return query;
@@ -2830,7 +3085,7 @@ public class LuceneQueryParser extends QueryParser
                     || propertyQName.equals(ContentModel.PROP_USERNAME) || propertyQName.equals(ContentModel.PROP_AUTHORITY_NAME)
                     || propertyQName.equals(ContentModel.PROP_MEMBERS))
             {
-                return subQueryBuilder.getQuery(expandedFieldName, queryText, analysisMode);
+                return subQueryBuilder.getQuery(expandedFieldName, queryText, analysisMode, luceneFunction);
             }
 
             BooleanQuery booleanQuery = new BooleanQuery();
@@ -2866,18 +3121,20 @@ public class LuceneQueryParser extends QueryParser
                     default:
                     case DEFAULT:
                     case TOKENISE:
-                        addLocaleSpecificTokenisedMLOrTextAttribute(queryText, subQueryBuilder, analysisMode, booleanQuery, locale, textFieldName);
+                        addLocaleSpecificTokenisedMLOrTextAttribute(queryText, subQueryBuilder, analysisMode, luceneFunction, booleanQuery, locale, textFieldName);
                         break;
                     case IDENTIFIER:
                     case FUZZY:
                     case PREFIX:
                     case WILD:
-                        addLocaleSpecificUntokenisedMLOrTextAttribute(field, queryText, subQueryBuilder, analysisMode, booleanQuery, mlAnalysisMode, locale, textFieldName);
+                        addLocaleSpecificUntokenisedMLOrTextAttribute(field, queryText, subQueryBuilder, analysisMode, luceneFunction, booleanQuery, mlAnalysisMode, locale,
+                                textFieldName);
                         break;
                     }
                     break;
                 case FALSE:
-                    addLocaleSpecificUntokenisedMLOrTextAttribute(field, queryText, subQueryBuilder, analysisMode, booleanQuery, mlAnalysisMode, locale, textFieldName);
+                    addLocaleSpecificUntokenisedMLOrTextAttribute(field, queryText, subQueryBuilder, analysisMode, luceneFunction, booleanQuery, mlAnalysisMode, locale,
+                            textFieldName);
                     break;
                 case TRUE:
                 default:
@@ -2886,12 +3143,13 @@ public class LuceneQueryParser extends QueryParser
                     case DEFAULT:
                     case TOKENISE:
                     case IDENTIFIER:
-                        addLocaleSpecificTokenisedMLOrTextAttribute(queryText, subQueryBuilder, analysisMode, booleanQuery, locale, textFieldName);
+                        addLocaleSpecificTokenisedMLOrTextAttribute(queryText, subQueryBuilder, analysisMode, luceneFunction, booleanQuery, locale, textFieldName);
                         break;
                     case FUZZY:
                     case PREFIX:
                     case WILD:
-                        addLocaleSpecificUntokenisedMLOrTextAttribute(field, queryText, subQueryBuilder, analysisMode, booleanQuery, mlAnalysisMode, locale, textFieldName);
+                        addLocaleSpecificUntokenisedMLOrTextAttribute(field, queryText, subQueryBuilder, analysisMode, luceneFunction, booleanQuery, mlAnalysisMode, locale,
+                                textFieldName);
                         break;
                     }
                     break;
@@ -2904,7 +3162,7 @@ public class LuceneQueryParser extends QueryParser
         {
             // Sort and id is only special for MLText, text, and content
             // Dates are not special in this case
-            Query query = subQueryBuilder.getQuery(expandedFieldName, queryText, AnalysisMode.DEFAULT);
+            Query query = subQueryBuilder.getQuery(expandedFieldName, queryText, AnalysisMode.DEFAULT, luceneFunction);
             if (query != null)
             {
                 return query;
@@ -2917,7 +3175,7 @@ public class LuceneQueryParser extends QueryParser
     }
 
     private void addLocaleSpecificUntokenisedMLOrTextAttribute(String sourceField, String queryText, SubQuery subQueryBuilder, AnalysisMode analysisMode,
-            BooleanQuery booleanQuery, MLAnalysisMode mlAnalysisMode, Locale locale, String actualField) throws ParseException
+            LuceneFunction luceneFunction, BooleanQuery booleanQuery, MLAnalysisMode mlAnalysisMode, Locale locale, String actualField) throws ParseException
     {
 
         String termText = queryText;
@@ -2925,7 +3183,7 @@ public class LuceneQueryParser extends QueryParser
         {
             termText = "{" + locale + "}" + queryText;
         }
-        Query subQuery = subQueryBuilder.getQuery(actualField, termText, analysisMode);
+        Query subQuery = subQueryBuilder.getQuery(actualField, termText, analysisMode, luceneFunction);
         booleanQuery.add(subQuery, Occur.SHOULD);
 
         if (booleanQuery.getClauses().length == 0)
@@ -2934,12 +3192,12 @@ public class LuceneQueryParser extends QueryParser
         }
     }
 
-    private void addLocaleSpecificTokenisedMLOrTextAttribute(String queryText, SubQuery subQueryBuilder, AnalysisMode analysisMode, BooleanQuery booleanQuery, Locale locale,
-            String actualField) throws ParseException
+    private void addLocaleSpecificTokenisedMLOrTextAttribute(String queryText, SubQuery subQueryBuilder, AnalysisMode analysisMode, LuceneFunction luceneFunction,
+            BooleanQuery booleanQuery, Locale locale, String actualField) throws ParseException
     {
         StringBuilder builder = new StringBuilder(queryText.length() + 10);
         builder.append("\u0000").append(locale.toString()).append("\u0000").append(queryText);
-        Query subQuery = subQueryBuilder.getQuery(actualField, builder.toString(), analysisMode);
+        Query subQuery = subQueryBuilder.getQuery(actualField, builder.toString(), analysisMode, luceneFunction);
         if (subQuery != null)
         {
             booleanQuery.add(subQuery, Occur.SHOULD);
@@ -2947,6 +3205,161 @@ public class LuceneQueryParser extends QueryParser
         else
         {
             booleanQuery.add(new TermQuery(new Term("NO_TOKENS", "__")), Occur.SHOULD);
+        }
+    }
+
+    private Query functionQueryBuilder(String expandedFieldName, QName propertyQName, PropertyDefinition propertyDef, IndexTokenisationMode tokenisationMode, String queryText,
+            LuceneFunction luceneFunction) throws ParseException
+    {
+
+        // Mime type
+        if (expandedFieldName.endsWith(".mimetype"))
+        {
+            if ((propertyDef != null) && (propertyDef.getDataType().getName().equals(DataTypeDefinition.CONTENT)))
+            {
+                throw new UnsupportedOperationException("Lucene Function");
+            }
+
+        }
+        else if (expandedFieldName.endsWith(".size"))
+        {
+            if ((propertyDef != null) && (propertyDef.getDataType().getName().equals(DataTypeDefinition.CONTENT)))
+            {
+                throw new UnsupportedOperationException("Lucene Function");
+            }
+
+        }
+        else if (expandedFieldName.endsWith(".locale"))
+        {
+            if ((propertyDef != null) && (propertyDef.getDataType().getName().equals(DataTypeDefinition.CONTENT)))
+            {
+                throw new UnsupportedOperationException("Lucene Function");
+            }
+
+        }
+
+        // Already in expanded form
+
+        // ML
+
+        if ((propertyDef != null) && (propertyDef.getDataType().getName().equals(DataTypeDefinition.MLTEXT)))
+        {
+            // Build a sub query for each locale and or the results together - the analysis will take care of
+            // cross language matching for each entry
+            BooleanQuery booleanQuery = new BooleanQuery();
+            MLAnalysisMode mlAnalysisMode = searchParameters.getMlAnalaysisMode() == null ? config.getDefaultMLSearchAnalysisMode() : searchParameters.getMlAnalaysisMode();
+            List<Locale> locales = searchParameters.getLocales();
+            List<Locale> expandedLocales = new ArrayList<Locale>();
+            for (Locale locale : (((locales == null) || (locales.size() == 0)) ? Collections.singletonList(I18NUtil.getLocale()) : locales))
+            {
+                expandedLocales.addAll(MLAnalysisMode.getLocales(mlAnalysisMode, locale, false));
+            }
+            for (Locale locale : (((expandedLocales == null) || (expandedLocales.size() == 0)) ? Collections.singletonList(I18NUtil.getLocale()) : expandedLocales))
+            {
+                String mlFieldName = expandedFieldName;
+
+                if (tokenisationMode == IndexTokenisationMode.BOTH)
+                {
+                    mlFieldName = mlFieldName + "." + locale + ".sort";
+                }
+
+                addLocaleSpecificUntokenisedMLOrTextFunction(expandedFieldName, queryText, luceneFunction, booleanQuery, mlAnalysisMode, locale, mlFieldName);
+
+            }
+            return booleanQuery;
+        }
+        // Content
+        else if ((propertyDef != null) && (propertyDef.getDataType().getName().equals(DataTypeDefinition.CONTENT)))
+        {
+            throw new UnsupportedOperationException("Lucene functions not supported for content");
+        }
+        else if ((propertyDef != null) && (propertyDef.getDataType().getName().equals(DataTypeDefinition.TEXT)))
+        {
+            if (propertyQName.equals(ContentModel.PROP_USER_USERNAME)
+                    || propertyQName.equals(ContentModel.PROP_USERNAME) || propertyQName.equals(ContentModel.PROP_AUTHORITY_NAME)
+                    || propertyQName.equals(ContentModel.PROP_MEMBERS))
+            {
+                throw new UnsupportedOperationException("Functions are not supported agaisnt special text fields");
+            }
+
+            BooleanQuery booleanQuery = new BooleanQuery();
+            MLAnalysisMode mlAnalysisMode = searchParameters.getMlAnalaysisMode() == null ? config.getDefaultMLSearchAnalysisMode() : searchParameters.getMlAnalaysisMode();
+            List<Locale> locales = searchParameters.getLocales();
+            List<Locale> expandedLocales = new ArrayList<Locale>();
+            for (Locale locale : (((locales == null) || (locales.size() == 0)) ? Collections.singletonList(I18NUtil.getLocale()) : locales))
+            {
+                expandedLocales.addAll(MLAnalysisMode.getLocales(mlAnalysisMode, locale, false));
+            }
+            for (Locale locale : (((expandedLocales == null) || (expandedLocales.size() == 0)) ? Collections.singletonList(I18NUtil.getLocale()) : expandedLocales))
+            {
+                String textFieldName = expandedFieldName;
+
+                if (tokenisationMode == IndexTokenisationMode.BOTH)
+                {
+                    textFieldName = textFieldName + "." + locale + ".sort";
+                }
+
+                addLocaleSpecificUntokenisedMLOrTextFunction(expandedFieldName, queryText, luceneFunction, booleanQuery, mlAnalysisMode, locale, textFieldName);
+
+            }
+            return booleanQuery;
+        }
+        else
+        {
+            throw new UnsupportedOperationException("Lucene Function");
+        }
+    }
+
+    private void addLocaleSpecificUntokenisedMLOrTextFunction(String expandedFieldName, String queryText, LuceneFunction luceneFunction, BooleanQuery booleanQuery,
+            MLAnalysisMode mlAnalysisMode, Locale locale, String textFieldName)
+    {
+        String termText = queryText;
+        if (locale.toString().length() > 0)
+        {
+            termText = "{" + locale + "}" + queryText;
+        }
+        Query subQuery = buildFunctionQuery(textFieldName, termText, luceneFunction);
+        booleanQuery.add(subQuery, Occur.SHOULD);
+
+        if (booleanQuery.getClauses().length == 0)
+        {
+            booleanQuery.add(new TermQuery(new Term("NO_TOKENS", "__")), Occur.SHOULD);
+        }
+    }
+
+    private Query buildFunctionQuery(String expandedFieldName, String termText, LuceneFunction luceneFunction)
+    {
+        String testText = termText;
+        if (termText.startsWith("{"))
+        {
+            int index = termText.indexOf("}");
+            testText = termText.substring(index + 1);
+        }
+        switch (luceneFunction)
+        {
+        case LOWER:
+            if (testText.equals(testText.toLowerCase()))
+            {
+                return new CaseInsensitiveFieldQuery(new Term(expandedFieldName, termText));
+            }
+            else
+            {
+                // No match
+                return new TermQuery(new Term("NO_TOKENS", "__"));
+            }
+        case UPPER:
+            if (testText.equals(testText.toUpperCase()))
+            {
+                return new CaseInsensitiveFieldQuery(new Term(expandedFieldName, termText));
+            }
+            else
+            {
+                // No match
+                return new TermQuery(new Term("NO_TOKENS", "__"));
+            }
+        default:
+            throw new UnsupportedOperationException("Unsupported Lucene Function " + luceneFunction);
+
         }
     }
 

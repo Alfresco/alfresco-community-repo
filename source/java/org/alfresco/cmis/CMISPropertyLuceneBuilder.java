@@ -27,6 +27,7 @@ package org.alfresco.cmis;
 import java.io.Serializable;
 import java.util.Collection;
 
+import org.alfresco.repo.search.impl.lucene.LuceneFunction;
 import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
 import org.alfresco.repo.search.impl.querymodel.PredicateMode;
 import org.apache.lucene.queryParser.ParseException;
@@ -43,15 +44,16 @@ public interface CMISPropertyLuceneBuilder
      * @param lqp
      * @param value
      * @param mode
-     * @return
+     * @param luceneFunction 
+     * @return the query
      * @throws ParseException
      */
-    public Query buildLuceneEquality(LuceneQueryParser lqp, Serializable value, PredicateMode mode) throws ParseException;
+    public Query buildLuceneEquality(LuceneQueryParser lqp, Serializable value, PredicateMode mode, LuceneFunction luceneFunction) throws ParseException;
 
     /**
      * @param lqp
      * @param not
-     * @return
+     * @return the query
      * @throws ParseException
      */
     public Query buildLuceneExists(LuceneQueryParser lqp, Boolean not) throws ParseException;
@@ -60,24 +62,29 @@ public interface CMISPropertyLuceneBuilder
      * @param lqp
      * @param value
      * @param mode
-     * @return
+     * @param luceneFunction 
+     * @return the query
+     * @throws ParseException 
      */
-    public Query buildLuceneGreaterThan(LuceneQueryParser lqp, Serializable value, PredicateMode mode) throws ParseException;
+    public Query buildLuceneGreaterThan(LuceneQueryParser lqp, Serializable value, PredicateMode mode, LuceneFunction luceneFunction) throws ParseException;
 
     /**
      * @param lqp
      * @param value
      * @param mode
-     * @return
+     * @param luceneFunction 
+     * @return the query
+     * @throws ParseException 
      */
-    public Query buildLuceneGreaterThanOrEquals(LuceneQueryParser lqp, Serializable value, PredicateMode mode) throws ParseException;
+    public Query buildLuceneGreaterThanOrEquals(LuceneQueryParser lqp, Serializable value, PredicateMode mode, LuceneFunction luceneFunction) throws ParseException;
 
     /**
      * @param lqp
      * @param values
      * @param not
      * @param mode
-     * @return
+     * @return the query
+     * @throws ParseException 
      */
     public Query buildLuceneIn(LuceneQueryParser lqp, Collection<Serializable> values, Boolean not, PredicateMode mode) throws ParseException;
 
@@ -85,40 +92,48 @@ public interface CMISPropertyLuceneBuilder
      * @param lqp
      * @param value
      * @param mode
-     * @return
+     * @param luceneFunction 
+     * @return the query
+     * @throws ParseException 
      */
-    public Query buildLuceneInequality(LuceneQueryParser lqp, Serializable value, PredicateMode mode) throws ParseException;
+    public Query buildLuceneInequality(LuceneQueryParser lqp, Serializable value, PredicateMode mode, LuceneFunction luceneFunction) throws ParseException;
 
     /**
      * @param lqp
      * @param value
      * @param mode
-     * @return
+     * @param luceneFunction 
+     * @return the query
+     * @throws ParseException 
      */
-    public Query buildLuceneLessThan(LuceneQueryParser lqp, Serializable value, PredicateMode mode) throws ParseException;
+    public Query buildLuceneLessThan(LuceneQueryParser lqp, Serializable value, PredicateMode mode, LuceneFunction luceneFunction) throws ParseException;
 
     /**
      * @param lqp
      * @param value
      * @param mode
-     * @return
+     * @param luceneFunction 
+     * @return the query
+     * @throws ParseException 
      */
-    public Query buildLuceneLessThanOrEquals(LuceneQueryParser lqp, Serializable value, PredicateMode mode) throws ParseException;
+    public Query buildLuceneLessThanOrEquals(LuceneQueryParser lqp, Serializable value, PredicateMode mode, LuceneFunction luceneFunction) throws ParseException;
 
     /**
      * @param lqp
      * @param value
      * @param not
-     * @return
+     * @return the query
+     * @throws ParseException 
      */
     public Query buildLuceneLike(LuceneQueryParser lqp, Serializable value, Boolean not) throws ParseException;
 
     /**
-     * @return
+     * @return the sort field
      */
     public String getLuceneSortField();
     
     /**
+     * @return the field name
      * 
      */
     public String getLuceneFieldName();

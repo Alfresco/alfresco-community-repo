@@ -47,7 +47,7 @@ public class GreaterThan extends BaseComparison
      */
     public GreaterThan()
     {
-        super(NAME, DataTypeDefinition.BOOLEAN, args);   
+        super(NAME, DataTypeDefinition.BOOLEAN, ARGS);   
     }
 
     /* (non-Javadoc)

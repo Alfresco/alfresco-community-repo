@@ -1473,6 +1473,26 @@ public class QueryTest extends BaseCMISTest
         rs = null;
 
     }
+    
+    public void testUpperAndLower()
+    {
+        testQuery("SELECT * FROM Folder WHERE Name = 'Folder 1'", 1, false, "ObjectId", new String(), false);
+        testQuery("SELECT * FROM Folder WHERE Name = 'FOLDER 1'", 0, false, "ObjectId", new String(), false);
+        testQuery("SELECT * FROM Folder WHERE Name = 'folder 1'", 0, false, "ObjectId", new String(), false);
+        testQuery("SELECT * FROM Folder WHERE Upper(Name) = 'FOLDER 1'", 1, false, "ObjectId", new String(), false);
+        testQuery("SELECT * FROM Folder WHERE Lower(Name) = 'folder 1'", 1, false, "ObjectId", new String(), false);
+        testQuery("SELECT * FROM Folder WHERE Upper(Name) = 'folder 1'", 0, false, "ObjectId", new String(), false);
+        testQuery("SELECT * FROM Folder WHERE Lower(Name) = 'FOLDER 1'", 0, false, "ObjectId", new String(), false);
+        testQuery("SELECT * FROM Folder WHERE Upper(Name) = 'Folder 1'", 0, false, "ObjectId", new String(), false);
+        testQuery("SELECT * FROM Folder WHERE Lower(Name) = 'Folder 1'", 0, false, "ObjectId", new String(), false);
+        
+        testQuery("SELECT * FROM Folder WHERE Upper(Name) <> 'FOLDER 1'", 9, false, "ObjectId", new String(), false);
+        
+        testQuery("SELECT * FROM Folder WHERE Upper(Name) <= 'FOLDER 1'", 2, false, "ObjectId", new String(), false);
+        testQuery("SELECT * FROM Folder WHERE Upper(Name) < 'FOLDER 1'", 1, false, "ObjectId", new String(), false);
+        testQuery("SELECT * FROM Folder WHERE Upper(Name) >= 'FOLDER 1'", 9, false, "ObjectId", new String(), false);
+        testQuery("SELECT * FROM Folder WHERE Upper(Name) > 'FOLDER 1'", 8, false, "ObjectId", new String(), false);
+    }
 
     public void testAllSimpleTextPredicates()
     {

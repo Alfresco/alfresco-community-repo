@@ -65,7 +65,7 @@ public class LuceneGreaterThan extends GreaterThan implements LuceneQueryBuilder
         LuceneQueryParser lqp = luceneContext.getLuceneQueryParser();
         setPropertyAndStaticArguments(functionArgs);
        
-        Query query = functionContext.buildLuceneGreaterThan(lqp, getPropertyArgument().getPropertyName(), getStaticArgument().getValue(functionContext), PredicateMode.ANY);
+        Query query = functionContext.buildLuceneGreaterThan(lqp, getPropertyName(), getStaticArgument().getValue(functionContext), PredicateMode.ANY, functionContext.getLuceneFunction(getFunctionArgument()));
         
         if(query == null)
         {

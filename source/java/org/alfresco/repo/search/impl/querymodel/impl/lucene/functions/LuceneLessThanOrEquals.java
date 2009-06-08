@@ -66,7 +66,7 @@ public class LuceneLessThanOrEquals extends LessThanOrEquals implements LuceneQu
         LuceneQueryParser lqp = luceneContext.getLuceneQueryParser();
         setPropertyAndStaticArguments(functionArgs);
        
-        Query query = functionContext.buildLuceneLessThanOrEquals(lqp, getPropertyArgument().getPropertyName(), getStaticArgument().getValue(functionContext), PredicateMode.ANY);
+        Query query = functionContext.buildLuceneLessThanOrEquals(lqp, getPropertyName(), getStaticArgument().getValue(functionContext), PredicateMode.ANY, functionContext.getLuceneFunction(getFunctionArgument()));
         if(query == null)
         {
             throw new QueryModelException("No query time mapping for property  "+getPropertyArgument().getPropertyName()+", it should not be allowed in predicates");

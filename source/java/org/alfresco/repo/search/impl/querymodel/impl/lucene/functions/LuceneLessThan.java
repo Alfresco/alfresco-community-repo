@@ -66,7 +66,7 @@ public class LuceneLessThan extends LessThan implements LuceneQueryBuilderCompon
         LuceneQueryParser lqp = luceneContext.getLuceneQueryParser();
         setPropertyAndStaticArguments(functionArgs);
        
-        Query query = functionContext.buildLuceneLessThan(lqp, getPropertyArgument().getPropertyName(), getStaticArgument().getValue(functionContext), PredicateMode.ANY);
+        Query query = functionContext.buildLuceneLessThan(lqp, getPropertyName(), getStaticArgument().getValue(functionContext), PredicateMode.ANY, functionContext.getLuceneFunction(getFunctionArgument()));
         
         if(query == null)
         {

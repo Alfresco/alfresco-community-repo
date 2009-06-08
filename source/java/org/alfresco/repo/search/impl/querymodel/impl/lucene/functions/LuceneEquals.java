@@ -65,7 +65,7 @@ public class LuceneEquals extends Equals  implements LuceneQueryBuilderComponent
         LuceneQueryParser lqp = luceneContext.getLuceneQueryParser();
         setPropertyAndStaticArguments(functionArgs);
        
-        Query query = functionContext.buildLuceneEquality(lqp, getPropertyArgument().getPropertyName(), getStaticArgument().getValue(functionContext), PredicateMode.ANY);
+        Query query = functionContext.buildLuceneEquality(lqp, getPropertyName(), getStaticArgument().getValue(functionContext), PredicateMode.ANY, functionContext.getLuceneFunction(getFunctionArgument()));
         
         if(query == null)
         {

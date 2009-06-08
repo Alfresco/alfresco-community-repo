@@ -201,6 +201,19 @@ public interface ContentModel
     
     static final QName ASSOC_AVATAR = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "avatar");
     
+    // Authority
+    static final QName TYPE_AUTHORITY = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "authority");
+    
+    static final QName TYPE_AUTHORITY_CONTAINER = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "authorityContainer");
+    static final QName PROP_AUTHORITY_NAME = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "authorityName");
+    static final QName PROP_AUTHORITY_DISPLAY_NAME = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "authorityDisplayName");
+    
+    static final QName ASSOC_MEMBER = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "member");
+
+    // Zone
+    static final QName TYPE_ZONE = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "zone");
+    static final QName ASSOC_IN_ZONE = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "inZone");
+
     // Ownable aspect  
     static final QName ASPECT_OWNABLE = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "ownable");
     static final QName PROP_OWNER = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "owner");
@@ -292,15 +305,5 @@ public interface ContentModel
     static final QName PROP_CREDENTIALS_EXPIRE = QName.createQName(USER_MODEL_URI, "credentialsExpire");
     static final QName PROP_CREDENTIALS_EXPIRY_DATE = QName.createQName(USER_MODEL_URI, "credentialsExpiryDate");
     static final QName PROP_ACCOUNT_LOCKED = QName.createQName(USER_MODEL_URI, "accountLocked");
-    static final QName PROP_SALT = QName.createQName(USER_MODEL_URI, "salt");
-
-    static final QName TYPE_AUTHORITY = QName.createQName(USER_MODEL_URI, "authority");
-    
-    static final QName TYPE_AUTHORITY_CONTAINER = QName.createQName(USER_MODEL_URI, "authorityContainer");
-    static final QName PROP_AUTHORITY_NAME = QName.createQName(USER_MODEL_URI, "authorityName");
-    static final QName PROP_AUTHORITY_DISPLAY_NAME = QName.createQName(USER_MODEL_URI, "authorityDisplayName");
-    
-    static final QName ASSOC_MEMBER = QName.createQName(USER_MODEL_URI, "member");
-    static final QName PROP_MEMBERS = QName.createQName(USER_MODEL_URI, "members");    
-    
+    static final QName PROP_SALT = QName.createQName(USER_MODEL_URI, "salt");    
 }

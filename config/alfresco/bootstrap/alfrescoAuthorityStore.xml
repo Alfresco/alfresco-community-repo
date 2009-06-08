@@ -3,8 +3,61 @@
            xmlns:sys="http://www.alfresco.org/model/system/1.0"
            xmlns:usr="http://www.alfresco.org/model/user/1.0"
            xmlns:app="http://www.alfresco.org/model/application/1.0">
-           
-    <sys:container view:childName="${alfresco_user_store.authorities_container.childname}">
+
+    <sys:container view:childName="${system.authorities_container.childname}">
+        <view:acl>
+            <view:ace view:access="ALLOWED">
+                <view:authority>GROUP_EVERYONE</view:authority>
+                <view:permission>Read</view:permission>
+            </view:ace>
+        </view:acl>
+        <view:associations>
+            <sys:children>
+                <cm:authorityContainer view:childName="cm:GROUP_ALFRESCO_ADMINISTRATORS">
+                    <view:aspects>
+                        <sys:referenceable />
+                    </view:aspects>
+                    <view:properties>
+                        <sys:node-uuid>GROUP_ALFRESCO_ADMINISTRATORS</sys:node-uuid>
+                        <cm:name>GROUP_ALFRESCO_ADMINISTRATORS</cm:name>
+                        <cm:authorityName>GROUP_ALFRESCO_ADMINISTRATORS</cm:authorityName>
+                    </view:properties>
+                    <view:associations>
+                        <cm:member>
+                            <view:reference
+                                view:pathref="${system.people_container.childname}/cm:${alfresco_user_store.adminusername}"
+                                view:childName="cm:${alfresco_user_store.adminusername}" />
+                        </cm:member>
+                    </view:associations>
+                </cm:authorityContainer>
+                <cm:authorityContainer view:childName="cm:GROUP_EMAIL_CONTRIBUTORS">
+                    <view:aspects>
+                        <sys:referenceable />
+                    </view:aspects>
+                    <view:properties>
+                        <cm:name>GROUP_EMAIL_CONTRIBUTORS</cm:name>
+                        <sys:node-uuid>GROUP_EMAIL_CONTRIBUTORS</sys:node-uuid>
+                        <cm:authorityName>GROUP_EMAIL_CONTRIBUTORS</cm:authorityName>
+                    </view:properties>
+                    <view:associations>
+                        <cm:member>
+                            <view:reference
+                                view:pathref="${system.people_container.childname}/cm:${alfresco_user_store.adminusername}"
+                                view:childName="cm:${alfresco_user_store.adminusername}" />
+                        </cm:member>
+                    </view:associations>
+                </cm:authorityContainer>
+            </sys:children>
+        </view:associations>
+    </sys:container>
+
+    <sys:container view:childName="${system.zones_container.childname}">
+        <view:acl>
+            <view:ace view:access="ALLOWED">
+                <view:authority>GROUP_EVERYONE</view:authority>
+                <view:permission>Read</view:permission>
+            </view:ace>
+        </view:acl>
     </sys:container>
            
 </view:view>

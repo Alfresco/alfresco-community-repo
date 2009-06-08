@@ -449,20 +449,12 @@
         </property>
     </bean>
 
-   <!-- Optional LDAP synchronization chain -->
-   <bean id="Synchronization" class="org.alfresco.repo.management.subsystems.DefaultChildApplicationContextManager"
-      parent="abstractPropertyBackedBean">
-      <property name="autoStart">
-         <value>true</value>
-      </property>
-      <property name="defaultChain">
-         <value>${synchronization.chain}</value>
-      </property>
-      <!-- LDAP is the default (and only) instance type -->
-      <property name="defaultTypeName">
-         <value>ldap</value>
-      </property>
-   </bean>
+    <!-- User registry synchronization jobs (e.g. LDAP) -->
+    <bean id="Synchronization" class="org.alfresco.repo.management.subsystems.ChildApplicationContextFactory" parent="abstractPropertyBackedBean">
+        <property name="autoStart">
+            <value>true</value>
+        </property>
+    </bean>
 
     <!-- Workflow Scheduler -->
     <bean id="workflowScheduler" class="org.alfresco.repo.workflow.jbpm.JBPMScheduler">

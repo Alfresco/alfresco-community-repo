@@ -585,12 +585,15 @@ public final class People extends BaseScopableProcessorExtension
         String actualName = services.getAuthorityService().getName(AuthorityType.GROUP, groupName);
         if (authorityService.authorityExists(actualName) == false)
         {
-            String parentGroupName = null;
+            String result = authorityService.createAuthority(AuthorityType.GROUP, groupName);
             if (parentGroup != null)
             {
-                parentGroupName = (String)parentGroup.getProperties().get(ContentModel.PROP_AUTHORITY_NAME);
+                String parentGroupName = (String)parentGroup.getProperties().get(ContentModel.PROP_AUTHORITY_NAME);
+                if (parentGroupName != null)
+                {
+                    authorityService.addAuthority(parentGroupName, actualName);
+                }
             }
-            String result = authorityService.createAuthority(AuthorityType.GROUP, parentGroupName, groupName);
             group = getGroup(result);
         }
         

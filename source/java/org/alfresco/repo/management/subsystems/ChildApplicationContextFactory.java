@@ -463,7 +463,15 @@ public class ChildApplicationContextFactory extends AbstractPropertyBackedBean i
         if (this.applicationContext != null)
         {
             ChildApplicationContextFactory.logger.info("Stopping '" + getCategory() + "' subsystem, ID: " + getId());
-            this.applicationContext.close();
+            try
+            {
+                this.applicationContext.close();
+            }
+            catch (Exception e)
+            {
+                ChildApplicationContextFactory.logger.error(e);
+                // Continue anyway. Perhaps it didn't start properly
+            }
             this.applicationContext = null;
             ChildApplicationContextFactory.logger.info("Stopped '" + getCategory() + "' subsystem, ID: " + getId());
         }

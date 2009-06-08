@@ -3082,8 +3082,7 @@ public class LuceneQueryParser extends QueryParser
         else if ((propertyDef != null) && (propertyDef.getDataType().getName().equals(DataTypeDefinition.TEXT)))
         {
             if (propertyQName.equals(ContentModel.PROP_USER_USERNAME)
-                    || propertyQName.equals(ContentModel.PROP_USERNAME) || propertyQName.equals(ContentModel.PROP_AUTHORITY_NAME)
-                    || propertyQName.equals(ContentModel.PROP_MEMBERS))
+                    || propertyQName.equals(ContentModel.PROP_USERNAME) || propertyQName.equals(ContentModel.PROP_AUTHORITY_NAME))
             {
                 return subQueryBuilder.getQuery(expandedFieldName, queryText, analysisMode, luceneFunction);
             }
@@ -3276,8 +3275,7 @@ public class LuceneQueryParser extends QueryParser
         else if ((propertyDef != null) && (propertyDef.getDataType().getName().equals(DataTypeDefinition.TEXT)))
         {
             if (propertyQName.equals(ContentModel.PROP_USER_USERNAME)
-                    || propertyQName.equals(ContentModel.PROP_USERNAME) || propertyQName.equals(ContentModel.PROP_AUTHORITY_NAME)
-                    || propertyQName.equals(ContentModel.PROP_MEMBERS))
+                    || propertyQName.equals(ContentModel.PROP_USERNAME) || propertyQName.equals(ContentModel.PROP_AUTHORITY_NAME))
             {
                 throw new UnsupportedOperationException("Functions are not supported agaisnt special text fields");
             }

@@ -768,5 +768,26 @@
          node.id asc
       ]]>
    </query>
+    
+   <sql-query name="node.GetNodesWithoutParentAssocsOfType">
+      <return-scalar column="id" type="long"/>
+      <return-scalar column="protocol" type="string"/>
+      <return-scalar column="identifier" type="string"/>
+      <return-scalar column="uuid" type="string"/>
+      SELECT
+         n.id,
+         s.protocol,
+         s.identifier,
+         n.uuid
+      FROM
+         alf_node n
+         JOIN alf_store s ON (s.id = n.store_id)
+         LEFT OUTER JOIN alf_child_assoc a ON (a.child_node_id = n.id AND a.type_qname_id = :assocTypeQNameID)
+      WHERE
+         s.protocol = :storeProtocol AND
+         s.identifier = :storeIdentifier AND
+         n.type_qname_id = :nodeTypeQNameID AND
+         a.child_node_id IS NULL
+   </sql-query>    
 
 </hibernate-mapping>

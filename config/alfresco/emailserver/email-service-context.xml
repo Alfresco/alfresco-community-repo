@@ -82,6 +82,9 @@
 		<property name="retryingTransactionHelper">
 			<ref bean="retryingTransactionHelper" />
 		</property>
+        <property name="authorityService">
+            <ref bean="authorityService" />
+        </property>
 	</bean>
 
 	<bean id="emailMessageHandlerBase" abstract="true">

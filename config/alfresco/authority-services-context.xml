@@ -47,17 +47,20 @@
     <!-- This bean uses the userToAuthorityCache configured in cache-context.xml  -->
     <!--                                                                          -->
     <bean id="authorityDAO" class="org.alfresco.repo.security.authority.AuthorityDAOImpl">
+        <property name="storeUrl">
+            <value>${spaces.store}</value>
+        </property>
         <property name="nodeService">
             <ref bean="mlAwareNodeService" />
         </property>
         <property name="namespacePrefixResolver">
             <ref bean="namespaceService" />
         </property>
-        <property name="searchService">
-            <ref bean="admSearchService" />
-        </property>
         <property name="dictionaryService">
             <ref bean="dictionaryService" />
+        </property>
+        <property name="personService">
+            <ref bean="personService" />
         </property>
         <property name="userToAuthorityCache">
             <ref bean="userToAuthorityCache" />

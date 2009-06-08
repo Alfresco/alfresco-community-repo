@@ -41,7 +41,7 @@ public class ExtendedPermissionServiceTest extends AbstractPermissionTest
         permissionService.setPermission(new SimplePermissionEntry(rootNodeRef, getPermission(PermissionService.READ),
                 "GROUP_test", AccessStatus.ALLOWED));
         assertFalse(permissionService.hasPermission(rootNodeRef, getPermission(PermissionService.READ)) == AccessStatus.ALLOWED);
-        authorityService.createAuthority(AuthorityType.GROUP, null, "test");
+        authorityService.createAuthority(AuthorityType.GROUP, "test");
         authorityService.addAuthority("GROUP_test", "andy");
         assertTrue(permissionService.hasPermission(rootNodeRef, getPermission(PermissionService.READ)) == AccessStatus.ALLOWED);
         authorityService.removeAuthority("GROUP_test", "andy");
@@ -58,7 +58,7 @@ public class ExtendedPermissionServiceTest extends AbstractPermissionTest
         permissionService.setPermission(new SimplePermissionEntry(rootNodeRef, getPermission(PermissionService.READ),
                 "GROUP_test", AccessStatus.ALLOWED));
         assertFalse(permissionService.hasPermission(rootNodeRef, getPermission(PermissionService.READ)) == AccessStatus.ALLOWED);
-        authorityService.createAuthority(AuthorityType.GROUP, null, "test");
+        authorityService.createAuthority(AuthorityType.GROUP, "test");
         authorityService.addAuthority("GROUP_test", "andy");
         assertTrue(permissionService.hasPermission(rootNodeRef, getPermission(PermissionService.READ)) == AccessStatus.ALLOWED);
         permissionService.deletePermissions("GROUP_test");

@@ -171,7 +171,7 @@ public class AuthorityServiceTest extends TestCase
                 {
                     StringBuilder name = new StringBuilder();
                     name.append("__").append(i).append(j).append(k);
-                    pubAuthorityService.createAuthority(AuthorityType.GROUP, null, name.toString());
+                    pubAuthorityService.createAuthority(AuthorityType.GROUP, name.toString());
                 }
             }
         }
@@ -239,7 +239,7 @@ public class AuthorityServiceTest extends TestCase
     {
         try
         {
-            pubAuthorityService.createAuthority(AuthorityType.ADMIN, null, "woof");
+            pubAuthorityService.createAuthority(AuthorityType.ADMIN, "woof");
             fail("Should not be able to create an admin authority");
         }
         catch (AuthorityException ae)
@@ -252,7 +252,7 @@ public class AuthorityServiceTest extends TestCase
     {
         try
         {
-            pubAuthorityService.createAuthority(AuthorityType.EVERYONE, null, "woof");
+            pubAuthorityService.createAuthority(AuthorityType.EVERYONE, "woof");
             fail("Should not be able to create an everyone authority");
         }
         catch (AuthorityException ae)
@@ -265,7 +265,7 @@ public class AuthorityServiceTest extends TestCase
     {
         try
         {
-            pubAuthorityService.createAuthority(AuthorityType.GUEST, null, "woof");
+            pubAuthorityService.createAuthority(AuthorityType.GUEST, "woof");
             fail("Should not be able to create an guest authority");
         }
         catch (AuthorityException ae)
@@ -278,7 +278,7 @@ public class AuthorityServiceTest extends TestCase
     {
         try
         {
-            pubAuthorityService.createAuthority(AuthorityType.OWNER, null, "woof");
+            pubAuthorityService.createAuthority(AuthorityType.OWNER, "woof");
             fail("Should not be able to create an owner authority");
         }
         catch (AuthorityException ae)
@@ -291,7 +291,7 @@ public class AuthorityServiceTest extends TestCase
     {
         try
         {
-            pubAuthorityService.createAuthority(AuthorityType.USER, null, "woof");
+            pubAuthorityService.createAuthority(AuthorityType.USER, "woof");
             fail("Should not be able to create an user authority");
         }
         catch (AuthorityException ae)
@@ -306,7 +306,7 @@ public class AuthorityServiceTest extends TestCase
 
         assertEquals(2, pubAuthorityService.getAllAuthorities(AuthorityType.GROUP).size());
         assertEquals(2, pubAuthorityService.getAllRootAuthorities(AuthorityType.GROUP).size());
-        auth = pubAuthorityService.createAuthority(AuthorityType.GROUP, null, "woof");
+        auth = pubAuthorityService.createAuthority(AuthorityType.GROUP, "woof");
         assertEquals(3, pubAuthorityService.getAllAuthorities(AuthorityType.GROUP).size());
         assertEquals(3, pubAuthorityService.getAllRootAuthorities(AuthorityType.GROUP).size());
         pubAuthorityService.deleteAuthority(auth);
@@ -315,7 +315,7 @@ public class AuthorityServiceTest extends TestCase
 
         assertEquals(0, pubAuthorityService.getAllAuthorities(AuthorityType.ROLE).size());
         assertEquals(0, pubAuthorityService.getAllRootAuthorities(AuthorityType.ROLE).size());
-        auth = pubAuthorityService.createAuthority(AuthorityType.ROLE, null, "woof");
+        auth = pubAuthorityService.createAuthority(AuthorityType.ROLE, "woof");
         assertEquals(1, pubAuthorityService.getAllAuthorities(AuthorityType.ROLE).size());
         assertEquals(1, pubAuthorityService.getAllRootAuthorities(AuthorityType.ROLE).size());
         pubAuthorityService.deleteAuthority(auth);
@@ -334,20 +334,23 @@ public class AuthorityServiceTest extends TestCase
         assertFalse(pubAuthorityService.authorityExists(pubAuthorityService.getName(AuthorityType.GROUP, "one")));
         assertEquals(2, pubAuthorityService.getAllAuthorities(AuthorityType.GROUP).size());
         assertEquals(2, pubAuthorityService.getAllRootAuthorities(AuthorityType.GROUP).size());
-        auth1 = pubAuthorityService.createAuthority(AuthorityType.GROUP, null, "one");
+        auth1 = pubAuthorityService.createAuthority(AuthorityType.GROUP, "one");
         assertTrue(pubAuthorityService.authorityExists(auth1));
         assertEquals(3, pubAuthorityService.getAllAuthorities(AuthorityType.GROUP).size());
         assertEquals(3, pubAuthorityService.getAllRootAuthorities(AuthorityType.GROUP).size());
-        auth2 = pubAuthorityService.createAuthority(AuthorityType.GROUP, null, "two");
+        auth2 = pubAuthorityService.createAuthority(AuthorityType.GROUP, "two");
         assertEquals(4, pubAuthorityService.getAllAuthorities(AuthorityType.GROUP).size());
         assertEquals(4, pubAuthorityService.getAllRootAuthorities(AuthorityType.GROUP).size());
-        auth3 = pubAuthorityService.createAuthority(AuthorityType.GROUP, auth1, "three");
+        auth3 = pubAuthorityService.createAuthority(AuthorityType.GROUP, "three");
+        pubAuthorityService.addAuthority(auth1, auth3);
         assertEquals(5, pubAuthorityService.getAllAuthorities(AuthorityType.GROUP).size());
         assertEquals(4, pubAuthorityService.getAllRootAuthorities(AuthorityType.GROUP).size());
-        auth4 = pubAuthorityService.createAuthority(AuthorityType.GROUP, auth1, "four");
+        auth4 = pubAuthorityService.createAuthority(AuthorityType.GROUP, "four");
+        pubAuthorityService.addAuthority(auth1, auth4);
         assertEquals(6, pubAuthorityService.getAllAuthorities(AuthorityType.GROUP).size());
         assertEquals(4, pubAuthorityService.getAllRootAuthorities(AuthorityType.GROUP).size());
-        auth5 = pubAuthorityService.createAuthority(AuthorityType.GROUP, auth2, "five");
+        auth5 = pubAuthorityService.createAuthority(AuthorityType.GROUP, "five");
+        pubAuthorityService.addAuthority(auth2, auth5);
         assertEquals(7, pubAuthorityService.getAllAuthorities(AuthorityType.GROUP).size());
         assertEquals(4, pubAuthorityService.getAllRootAuthorities(AuthorityType.GROUP).size());
 
@@ -369,19 +372,22 @@ public class AuthorityServiceTest extends TestCase
 
         assertEquals(0, pubAuthorityService.getAllAuthorities(AuthorityType.ROLE).size());
         assertEquals(0, pubAuthorityService.getAllRootAuthorities(AuthorityType.ROLE).size());
-        auth1 = pubAuthorityService.createAuthority(AuthorityType.ROLE, null, "one");
+        auth1 = pubAuthorityService.createAuthority(AuthorityType.ROLE, "one");
         assertEquals(1, pubAuthorityService.getAllAuthorities(AuthorityType.ROLE).size());
         assertEquals(1, pubAuthorityService.getAllRootAuthorities(AuthorityType.ROLE).size());
-        auth2 = pubAuthorityService.createAuthority(AuthorityType.ROLE, null, "two");
+        auth2 = pubAuthorityService.createAuthority(AuthorityType.ROLE, "two");
         assertEquals(2, pubAuthorityService.getAllAuthorities(AuthorityType.ROLE).size());
         assertEquals(2, pubAuthorityService.getAllRootAuthorities(AuthorityType.ROLE).size());
-        auth3 = pubAuthorityService.createAuthority(AuthorityType.ROLE, auth1, "three");
+        auth3 = pubAuthorityService.createAuthority(AuthorityType.ROLE, "three");
+        pubAuthorityService.addAuthority(auth1, auth3);
         assertEquals(3, pubAuthorityService.getAllAuthorities(AuthorityType.ROLE).size());
         assertEquals(2, pubAuthorityService.getAllRootAuthorities(AuthorityType.ROLE).size());
-        auth4 = pubAuthorityService.createAuthority(AuthorityType.ROLE, auth1, "four");
+        auth4 = pubAuthorityService.createAuthority(AuthorityType.ROLE, "four");
+        pubAuthorityService.addAuthority(auth1, auth4);
         assertEquals(4, pubAuthorityService.getAllAuthorities(AuthorityType.ROLE).size());
         assertEquals(2, pubAuthorityService.getAllRootAuthorities(AuthorityType.ROLE).size());
-        auth5 = pubAuthorityService.createAuthority(AuthorityType.ROLE, auth2, "five");
+        auth5 = pubAuthorityService.createAuthority(AuthorityType.ROLE, "five");
+        pubAuthorityService.addAuthority(auth2, auth5);
         assertEquals(5, pubAuthorityService.getAllAuthorities(AuthorityType.ROLE).size());
         assertEquals(2, pubAuthorityService.getAllRootAuthorities(AuthorityType.ROLE).size());
 
@@ -424,23 +430,26 @@ public class AuthorityServiceTest extends TestCase
 
         assertEquals(2, pubAuthorityService.getAllAuthorities(AuthorityType.GROUP).size());
         assertEquals(2, pubAuthorityService.getAllRootAuthorities(AuthorityType.GROUP).size());
-        auth1 = pubAuthorityService.createAuthority(AuthorityType.GROUP, null, "one");
+        auth1 = pubAuthorityService.createAuthority(AuthorityType.GROUP, "one");
         assertEquals("GROUP_one", auth1);
         assertEquals(3, pubAuthorityService.getAllAuthorities(AuthorityType.GROUP).size());
         assertEquals(3, pubAuthorityService.getAllRootAuthorities(AuthorityType.GROUP).size());
-        auth2 = pubAuthorityService.createAuthority(AuthorityType.GROUP, null, "two");
+        auth2 = pubAuthorityService.createAuthority(AuthorityType.GROUP, "two");
         assertEquals("GROUP_two", auth2);
         assertEquals(4, pubAuthorityService.getAllAuthorities(AuthorityType.GROUP).size());
         assertEquals(4, pubAuthorityService.getAllRootAuthorities(AuthorityType.GROUP).size());
-        auth3 = pubAuthorityService.createAuthority(AuthorityType.GROUP, auth1, "three");
+        auth3 = pubAuthorityService.createAuthority(AuthorityType.GROUP, "three");
+        pubAuthorityService.addAuthority(auth1, auth3);
         assertEquals("GROUP_three", auth3);
         assertEquals(5, pubAuthorityService.getAllAuthorities(AuthorityType.GROUP).size());
         assertEquals(4, pubAuthorityService.getAllRootAuthorities(AuthorityType.GROUP).size());
-        auth4 = pubAuthorityService.createAuthority(AuthorityType.GROUP, auth1, "four");
+        auth4 = pubAuthorityService.createAuthority(AuthorityType.GROUP, "four");
+        pubAuthorityService.addAuthority(auth1, auth4);
         assertEquals("GROUP_four", auth4);
         assertEquals(6, pubAuthorityService.getAllAuthorities(AuthorityType.GROUP).size());
         assertEquals(4, pubAuthorityService.getAllRootAuthorities(AuthorityType.GROUP).size());
-        auth5 = pubAuthorityService.createAuthority(AuthorityType.GROUP, auth2, "five");
+        auth5 = pubAuthorityService.createAuthority(AuthorityType.GROUP, "five");
+        pubAuthorityService.addAuthority(auth2, auth5);
         assertEquals("GROUP_five", auth5);
         assertEquals(7, pubAuthorityService.getAllAuthorities(AuthorityType.GROUP).size());
         assertEquals(4, pubAuthorityService.getAllRootAuthorities(AuthorityType.GROUP).size());
@@ -491,19 +500,22 @@ public class AuthorityServiceTest extends TestCase
 
         assertEquals(2, pubAuthorityService.getAllAuthorities(AuthorityType.GROUP).size());
         assertEquals(2, pubAuthorityService.getAllRootAuthorities(AuthorityType.GROUP).size());
-        auth1 = pubAuthorityService.createAuthority(AuthorityType.GROUP, null, "one");
+        auth1 = pubAuthorityService.createAuthority(AuthorityType.GROUP, "one");
         assertEquals(3, pubAuthorityService.getAllAuthorities(AuthorityType.GROUP).size());
         assertEquals(3, pubAuthorityService.getAllRootAuthorities(AuthorityType.GROUP).size());
-        auth2 = pubAuthorityService.createAuthority(AuthorityType.GROUP, null, "two");
+        auth2 = pubAuthorityService.createAuthority(AuthorityType.GROUP, "two");
         assertEquals(4, pubAuthorityService.getAllAuthorities(AuthorityType.GROUP).size());
         assertEquals(4, pubAuthorityService.getAllRootAuthorities(AuthorityType.GROUP).size());
-        auth3 = pubAuthorityService.createAuthority(AuthorityType.GROUP, auth1, "three");
+        auth3 = pubAuthorityService.createAuthority(AuthorityType.GROUP, "three");
+        pubAuthorityService.addAuthority(auth1, auth3);
         assertEquals(5, pubAuthorityService.getAllAuthorities(AuthorityType.GROUP).size());
         assertEquals(4, pubAuthorityService.getAllRootAuthorities(AuthorityType.GROUP).size());
-        auth4 = pubAuthorityService.createAuthority(AuthorityType.GROUP, auth1, "four");
+        auth4 = pubAuthorityService.createAuthority(AuthorityType.GROUP, "four");
+        pubAuthorityService.addAuthority(auth1, auth4);
         assertEquals(6, pubAuthorityService.getAllAuthorities(AuthorityType.GROUP).size());
         assertEquals(4, pubAuthorityService.getAllRootAuthorities(AuthorityType.GROUP).size());
-        auth5 = pubAuthorityService.createAuthority(AuthorityType.GROUP, auth2, "five");
+        auth5 = pubAuthorityService.createAuthority(AuthorityType.GROUP, "five");
+        pubAuthorityService.addAuthority(auth2, auth5);
         assertEquals(7, pubAuthorityService.getAllAuthorities(AuthorityType.GROUP).size());
         assertEquals(4, pubAuthorityService.getAllRootAuthorities(AuthorityType.GROUP).size());
 
@@ -558,19 +570,22 @@ public class AuthorityServiceTest extends TestCase
 
         assertEquals(2, pubAuthorityService.getAllAuthorities(AuthorityType.GROUP).size());
         assertEquals(2, pubAuthorityService.getAllRootAuthorities(AuthorityType.GROUP).size());
-        auth1 = pubAuthorityService.createAuthority(AuthorityType.GROUP, null, "one");
+        auth1 = pubAuthorityService.createAuthority(AuthorityType.GROUP, "one");
         assertEquals(3, pubAuthorityService.getAllAuthorities(AuthorityType.GROUP).size());
         assertEquals(3, pubAuthorityService.getAllRootAuthorities(AuthorityType.GROUP).size());
-        auth2 = pubAuthorityService.createAuthority(AuthorityType.GROUP, null, "two");
+        auth2 = pubAuthorityService.createAuthority(AuthorityType.GROUP, "two");
         assertEquals(4, pubAuthorityService.getAllAuthorities(AuthorityType.GROUP).size());
         assertEquals(4, pubAuthorityService.getAllRootAuthorities(AuthorityType.GROUP).size());
-        auth3 = pubAuthorityService.createAuthority(AuthorityType.GROUP, auth1, "three");
+        auth3 = pubAuthorityService.createAuthority(AuthorityType.GROUP, "three");
+        pubAuthorityService.addAuthority(auth1, auth3);
         assertEquals(5, pubAuthorityService.getAllAuthorities(AuthorityType.GROUP).size());
         assertEquals(4, pubAuthorityService.getAllRootAuthorities(AuthorityType.GROUP).size());
-        auth4 = pubAuthorityService.createAuthority(AuthorityType.GROUP, auth1, "four");
+        auth4 = pubAuthorityService.createAuthority(AuthorityType.GROUP, "four");
+        pubAuthorityService.addAuthority(auth1, auth4);
         assertEquals(6, pubAuthorityService.getAllAuthorities(AuthorityType.GROUP).size());
         assertEquals(4, pubAuthorityService.getAllRootAuthorities(AuthorityType.GROUP).size());
-        auth5 = pubAuthorityService.createAuthority(AuthorityType.GROUP, auth2, "five");
+        auth5 = pubAuthorityService.createAuthority(AuthorityType.GROUP, "five");
+        pubAuthorityService.addAuthority(auth2, auth5);
         assertEquals(7, pubAuthorityService.getAllAuthorities(AuthorityType.GROUP).size());
         assertEquals(4, pubAuthorityService.getAllRootAuthorities(AuthorityType.GROUP).size());
 
@@ -629,20 +644,25 @@ public class AuthorityServiceTest extends TestCase
         personService.getPerson("andy6");
         assertEquals(2, pubAuthorityService.getAllAuthorities(AuthorityType.GROUP).size());
         assertEquals(2, pubAuthorityService.getAllRootAuthorities(AuthorityType.GROUP).size());
-        String auth1 = pubAuthorityService.createAuthority(AuthorityType.GROUP, null, "one");
+        String auth1 = pubAuthorityService.createAuthority(AuthorityType.GROUP, "one");
         pubAuthorityService.addAuthority(auth1, "andy1");
-        String auth2 = pubAuthorityService.createAuthority(AuthorityType.GROUP, auth1, "two");
+        String auth2 = pubAuthorityService.createAuthority(AuthorityType.GROUP, "two");
+        pubAuthorityService.addAuthority(auth1, auth2);
         pubAuthorityService.addAuthority(auth2, "andy1");
         pubAuthorityService.addAuthority(auth2, "andy2");
-        String auth3 = pubAuthorityService.createAuthority(AuthorityType.GROUP, auth2, "three");
+        String auth3 = pubAuthorityService.createAuthority(AuthorityType.GROUP, "three");
+        pubAuthorityService.addAuthority(auth2, auth3);
         pubAuthorityService.addAuthority(auth3, "andy3");
-        String auth4 = pubAuthorityService.createAuthority(AuthorityType.GROUP, auth3, "four");
+        String auth4 = pubAuthorityService.createAuthority(AuthorityType.GROUP, "four");
+        pubAuthorityService.addAuthority(auth3, auth4);
         pubAuthorityService.addAuthority(auth4, "andy1");
         pubAuthorityService.addAuthority(auth4, "andy4");
-        String auth5 = pubAuthorityService.createAuthority(AuthorityType.GROUP, auth4, "five");
+        String auth5 = pubAuthorityService.createAuthority(AuthorityType.GROUP, "five");
+        pubAuthorityService.addAuthority(auth4, auth5);
         pubAuthorityService.addAuthority(auth5, "andy1");
         pubAuthorityService.addAuthority(auth5, "andy5");
-        String auth6 = pubAuthorityService.createAuthority(AuthorityType.GROUP, auth3, "six");
+        String auth6 = pubAuthorityService.createAuthority(AuthorityType.GROUP, "six");
+        pubAuthorityService.addAuthority(auth3, auth6);
         pubAuthorityService.addAuthority(auth6, "andy1");
         pubAuthorityService.addAuthority(auth6, "andy5");
         pubAuthorityService.addAuthority(auth6, "andy6");
@@ -802,17 +822,17 @@ public class AuthorityServiceTest extends TestCase
 
         assertEquals(2, pubAuthorityService.getAllAuthorities(AuthorityType.GROUP).size());
         assertEquals(2, pubAuthorityService.getAllRootAuthorities(AuthorityType.GROUP).size());
-        String auth1 = pubAuthorityService.createAuthority(AuthorityType.GROUP, null, "one");
+        String auth1 = pubAuthorityService.createAuthority(AuthorityType.GROUP, "one");
         pubAuthorityService.addAuthority(auth1, "1234");
-        String auth2 = pubAuthorityService.createAuthority(AuthorityType.GROUP, null, "two");
+        String auth2 = pubAuthorityService.createAuthority(AuthorityType.GROUP, "two");
         pubAuthorityService.addAuthority(auth2, "andy");
-        String auth3 = pubAuthorityService.createAuthority(AuthorityType.GROUP, null, "three");
+        String auth3 = pubAuthorityService.createAuthority(AuthorityType.GROUP, "three");
         pubAuthorityService.addAuthority(auth3, "Novalike");
-        String auth4 = pubAuthorityService.createAuthority(AuthorityType.GROUP, null, "four");
+        String auth4 = pubAuthorityService.createAuthority(AuthorityType.GROUP, "four");
         pubAuthorityService.addAuthority(auth4, "1andy");
-        String auth5 = pubAuthorityService.createAuthority(AuthorityType.GROUP, null, "five");
+        String auth5 = pubAuthorityService.createAuthority(AuthorityType.GROUP, "five");
         pubAuthorityService.addAuthority(auth5, "andy2");
-        String auth6 = pubAuthorityService.createAuthority(AuthorityType.GROUP, null, "six");
+        String auth6 = pubAuthorityService.createAuthority(AuthorityType.GROUP, "six");
         pubAuthorityService.addAuthority(auth6, "an3dy");
 
         assertEquals(1, pubAuthorityService.getContainedAuthorities(null, auth1, true).size());
@@ -848,21 +868,25 @@ public class AuthorityServiceTest extends TestCase
         assertEquals(2, pubAuthorityService.getAllAuthorities(AuthorityType.GROUP).size());
         assertEquals(2, pubAuthorityService.getAllRootAuthorities(AuthorityType.GROUP).size());
 
-        String auth1234 = pubAuthorityService.createAuthority(AuthorityType.GROUP, null, "1234");
+        String auth1234 = pubAuthorityService.createAuthority(AuthorityType.GROUP, "1234");
         assertEquals(0, pubAuthorityService.getContainedAuthorities(AuthorityType.GROUP, auth1234, false).size());
-        String authC1 = pubAuthorityService.createAuthority(AuthorityType.GROUP, auth1234, "circle");
+        String authC1 = pubAuthorityService.createAuthority(AuthorityType.GROUP, "circle");
+        pubAuthorityService.addAuthority(auth1234, authC1);
         assertEquals(1, pubAuthorityService.getContainedAuthorities(AuthorityType.GROUP, auth1234, false).size());
         assertEquals(0, pubAuthorityService.getContainedAuthorities(AuthorityType.GROUP, authC1, false).size());
-        String authC2 = pubAuthorityService.createAuthority(AuthorityType.GROUP, authC1, "bigCircle");
+        String authC2 = pubAuthorityService.createAuthority(AuthorityType.GROUP, "bigCircle");
+        pubAuthorityService.addAuthority(authC1, authC2);
         assertEquals(2, pubAuthorityService.getContainedAuthorities(AuthorityType.GROUP, auth1234, false).size());
         assertEquals(1, pubAuthorityService.getContainedAuthorities(AuthorityType.GROUP, authC1, false).size());
         assertEquals(0, pubAuthorityService.getContainedAuthorities(AuthorityType.GROUP, authC2, false).size());
-        String authStuff = pubAuthorityService.createAuthority(AuthorityType.GROUP, authC2, "|<>?~@:}{+_)(*&^%$£!¬`,./#';][=-0987654321 1234556678 '");
+        String authStuff = pubAuthorityService.createAuthority(AuthorityType.GROUP, "|<>?~@:}{+_)(*&^%$£!¬`,./#';][=-0987654321 1234556678 '");
+        pubAuthorityService.addAuthority(authC2, authStuff);
         assertEquals(3, pubAuthorityService.getContainedAuthorities(AuthorityType.GROUP, auth1234, false).size());
         assertEquals(2, pubAuthorityService.getContainedAuthorities(AuthorityType.GROUP, authC1, false).size());
         assertEquals(1, pubAuthorityService.getContainedAuthorities(AuthorityType.GROUP, authC2, false).size());
         assertEquals(0, pubAuthorityService.getContainedAuthorities(AuthorityType.GROUP, authStuff, false).size());
-        String authSpace = pubAuthorityService.createAuthority(AuthorityType.GROUP, authStuff, "  Circles     ");
+        String authSpace = pubAuthorityService.createAuthority(AuthorityType.GROUP, "  Circles     ");
+        pubAuthorityService.addAuthority(authStuff, authSpace);
         assertEquals(4, pubAuthorityService.getContainedAuthorities(AuthorityType.GROUP, auth1234, false).size());
         assertEquals(3, pubAuthorityService.getContainedAuthorities(AuthorityType.GROUP, authC1, false).size());
         assertEquals(2, pubAuthorityService.getContainedAuthorities(AuthorityType.GROUP, authC2, false).size());
@@ -905,12 +929,12 @@ public class AuthorityServiceTest extends TestCase
 
     public void testAuthorityDisplayNames()
     {
-        String authOne = pubAuthorityService.createAuthority(AuthorityType.GROUP, null, "One");
+        String authOne = pubAuthorityService.createAuthority(AuthorityType.GROUP, "One");
         assertEquals(pubAuthorityService.getAuthorityDisplayName(authOne), "One");
         pubAuthorityService.setAuthorityDisplayName(authOne, "Selfish Crocodile");
         assertEquals(pubAuthorityService.getAuthorityDisplayName(authOne), "Selfish Crocodile");
 
-        String authTwo = pubAuthorityService.createAuthority(AuthorityType.GROUP, null, "Two", "Lamp posts");
+        String authTwo = pubAuthorityService.createAuthority(AuthorityType.GROUP, "Two", "Lamp posts", null);
         assertEquals(pubAuthorityService.getAuthorityDisplayName(authTwo), "Lamp posts");
         pubAuthorityService.setAuthorityDisplayName(authTwo, "Happy Hippos");
         assertEquals(pubAuthorityService.getAuthorityDisplayName(authTwo), "Happy Hippos");

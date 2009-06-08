@@ -203,7 +203,7 @@ public class MoveWCMToGroupBasedPermissionsPatch extends AbstractPatch
             String group = this.authorityService.getName(AuthorityType.GROUP, shortName);
             if (!this.authorityService.authorityExists(group))
             {
-                String newGroup = this.authorityService.createAuthority(AuthorityType.GROUP, null, shortName);
+                String newGroup = this.authorityService.createAuthority(AuthorityType.GROUP, shortName);
                 this.permissionService.setPermission(dirRef, newGroup, permission, true);
             }
         }

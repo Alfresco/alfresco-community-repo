@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -18,7 +18,7 @@
  * As a special exception to the terms and conditions of version 2.0 of 
  * the GPL, you may redistribute this Program in connection with Free/Libre 
  * and Open Source Software ("FLOSS") applications as described in Alfresco's 
- * FLOSS exception.  You should have recieved a copy of the text describing 
+ * FLOSS exception.  You should have received a copy of the text describing 
  * the FLOSS exception, and it is also available here: 
  * http://www.alfresco.com/legal/licensing"
  */
@@ -28,6 +28,8 @@ import java.util.Set;
 
 import org.alfresco.service.Auditable;
 import org.alfresco.service.PublicService;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.namespace.QName;
 
 /**
  * The service that encapsulates authorities granted to users.
@@ -46,6 +48,13 @@ import org.alfresco.service.PublicService;
 @PublicService
 public interface AuthorityService
 {
+    
+    /**
+     * The default zone that owns all authorities for which a zone is not explicitly specified in the authorityZone
+     * property
+     */
+    public static final String DEFAULT_ZONE = "";
+    
     /**
      * Check of the current user has admin authority.
      * 
@@ -105,7 +114,7 @@ public interface AuthorityService
      * Find authorities by pattern matching (* and ?) against the full authority name.   
      * @param type - the authority type
      * @param namePattern - the pattern which will be matched against the full authority name.   
-     * @return the names of the authorites matching the pattern and type.
+     * @return the names of the authorities matching the pattern and type.
      */
     @Auditable(parameters = {"type"})
     public Set<String> findAuthorities(AuthorityType type,  String namePattern);
@@ -123,14 +132,10 @@ public interface AuthorityService
     public Set<String> getAllRootAuthorities(AuthorityType type);
 
     /**
-     * Create an authority. If the parent is null thisw method creates a root
-     * authority.
+     * Create an authority.
      * 
      * @param type -
      *            the type of the authority
-     * @param parentName -
-     *            the full name of the parent authority. If this is null then a root
-     *            authority is created.
      * @param shortName -
      *            the short name of the authority to create
      *            this will also be set as the default display name for the authority 
@@ -138,28 +143,25 @@ public interface AuthorityService
      * @return the name of the authority (this will be the prefix, if any
      *         associated with the type appended with the short name)
      */
-    @Auditable(parameters = {"type", "parentName", "shortName"})
-    public String createAuthority(AuthorityType type, String parentName, String shortName);
+    @Auditable(parameters = {"type", "shortName"})
+    public String createAuthority(AuthorityType type, String shortName);
 
     /**
-     * Create an authority. If the parent is null this method creates a root
-     * authority.
+     * Create an authority with a display name and zone.
      * 
-     * @param type -
+     * @param type
      *            the type of the authority
-     * @param parentName -
-     *            the full name of the parent authority. If this is null then a root
-     *            authority is created.
-     * @param shortName -
+     * @param shortName
      *            the short name of the authority to create
-     * @param authorityDisplayName           
-     *            the display name for the authority 
-     * 
-     * @return the full name of the authority (this will be the prefix, if any
-     *         associated with the type appended with the short name)
+     * @param authorityDisplayName
+     *            the display name for the authority
+     * @param authorityZone
+     *            identifier for external user registry owning the authority or <code>null</code> if not applicable
+     * @return the full name of the authority (this will be the prefix, if any associated with the type appended with
+     *         the short name)
      */
-    @Auditable(parameters = {"type", "parentName", "shortName", "authorityDisplayName"})
-    public String createAuthority(AuthorityType type, String parentName, String shortName, String authorityDisplayName);
+    @Auditable(parameters = {"type", "shortName", "authorityDisplayName", "authorityZone"})
+    public String createAuthority(AuthorityType type, String shortName, String authorityDisplayName, String authorityZone);
 
     /**
      * Set an authority to include another authority. For example, adding a
@@ -279,4 +281,36 @@ public interface AuthorityService
     @Auditable(parameters = {"authorityName", "authorityDisplayName"})
     public void setAuthorityDisplayName(String authorityName, String authorityDisplayName);
 
+    /**
+     * Gets or creates an authority zone node with the specified name
+     * 
+     * @param zoneName
+     *            the zone name
+     * @return reference to the zone node
+     */
+    @Auditable(parameters = {"zoneName"})
+    public NodeRef getOrCreateZone(String zoneName);
+    
+    /**
+     * Gets the name of the zone containing the specified authority.
+     * 
+     * @param name
+     *            the authority long name
+     * @return the the name of the zone containing the specified authority, {@link AuthorityService#DEFAULT_ZONE} if the
+     *         authority exists but has no zone, or <code>null</code> if the authority does not exist.
+     */
+    @Auditable(parameters = {"name"})
+    public String getAuthorityZone(String name);
+    
+    /**
+     * Gets the names of all authorities in a zone, optionally filtered by type.
+     * 
+     * @param zoneName
+     *            the zone name
+     * @param type
+     *            the authority type to filter by or <code>null</code> for all authority types
+     * @return the names of all authorities in a zone, optionally filtered by type
+     */
+    @Auditable(parameters = {"zoneName", "type"})
+    public Set<String> getAllAuthoritiesInZone(String zoneName, AuthorityType type);
 }

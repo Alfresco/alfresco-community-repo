@@ -148,6 +148,7 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
     private static final String QUERY_GET_PRIMARY_CHILD_ASSOCS_NOT_IN_SAME_STORE = "node.GetPrimaryChildAssocsNotInSameStore";
     private static final String QUERY_GET_NODES_WITH_CHILDREN_IN_DIFFERENT_STORE ="node.GetNodesWithChildrenInDifferentStore";
     private static final String QUERY_GET_NODES_WITH_ASPECT ="node.GetNodesWithAspect";
+    private static final String QUERY_GET_NODES_WITHOUT_PARENT_ASSOCS_OF_TYPE ="node.GetNodesWithoutParentAssocsOfType";
     private static final String QUERY_GET_PARENT_ASSOCS = "node.GetParentAssocs";
     private static final String QUERY_GET_NODE_ASSOC = "node.GetNodeAssoc";
     private static final String QUERY_GET_NODE_ASSOCS_TO_AND_FROM = "node.GetNodeAssocsToAndFrom";
@@ -2774,7 +2775,40 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
 
         // Done
     }
-    
+
+    public void getNodesWithoutParentAssocsOfType(final StoreRef storeRef, final QName nodeTypeQName,
+            final QName assocTypeQName, NodeRefQueryCallback resultsCallback)
+    {
+        HibernateCallback callback = new HibernateCallback()
+        {
+            public Object doInHibernate(Session session)
+            {
+                Query query = session.getNamedQuery(
+                        HibernateNodeDaoServiceImpl.QUERY_GET_NODES_WITHOUT_PARENT_ASSOCS_OF_TYPE).setString(
+                        "storeProtocol", storeRef.getProtocol()).setString("storeIdentifier", storeRef.getIdentifier())
+                        .setLong("nodeTypeQNameID", qnameDAO.getOrCreateQName(nodeTypeQName).getFirst()).setLong(
+                                "assocTypeQNameID", qnameDAO.getOrCreateQName(assocTypeQName).getFirst());
+                DirtySessionMethodInterceptor.setQueryFlushMode(session, query);
+                return query.scroll(ScrollMode.FORWARD_ONLY);
+            }
+        };
+        ScrollableResults queryResults = null;
+        try
+        {
+            queryResults = (ScrollableResults) getHibernateTemplate().execute(callback);
+            processNodeResults(queryResults, resultsCallback);
+        }
+        finally
+        {
+            if (queryResults != null)
+            {
+                queryResults.close();
+            }
+        }
+
+        // Done
+    }
+
     /**
      * <pre>
             Node ID = (Long) row[0];

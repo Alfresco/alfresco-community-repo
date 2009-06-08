@@ -364,7 +364,7 @@
                     </source>
                     <target>
                         <!-- TODO: Refactor when group is pulled into content model -->
-                        <class>usr:authorityContainer</class>
+                        <class>cm:authorityContainer</class>
                         <mandatory>true</mandatory>
                         <many>false</many>
                     </target>
@@ -387,7 +387,7 @@
                     </source>
                     <target>
                         <!-- TODO: Refactor when group is pulled into content model -->
-                        <class>usr:authorityContainer</class>
+                        <class>cm:authorityContainer</class>
                         <mandatory>true</mandatory>
                         <many>true</many>
                     </target>

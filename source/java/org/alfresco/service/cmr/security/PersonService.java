@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -18,7 +18,7 @@
  * As a special exception to the terms and conditions of version 2.0 of 
  * the GPL, you may redistribute this Program in connection with Free/Libre 
  * and Open Source Software ("FLOSS") applications as described in Alfresco's 
- * FLOSS exception.  You should have recieved a copy of the text describing 
+ * FLOSS exception.  You should have received a copy of the text describing 
  * the FLOSS exception, and it is also available here: 
  * http://www.alfresco.com/legal/licensing"
  */
@@ -138,6 +138,21 @@ public interface PersonService
      */
     @Auditable(parameters = {"properties"})
     public NodeRef createPerson(Map<QName, Serializable> properties);
+
+    /**
+     * Create a new person with the given properties, recording them against the given zone name (usually identifying an
+     * external user registry from which the details were obtained). The userName is one of the properties. Users with
+     * duplicate userNames are not allowed.
+     * 
+     * @param properties
+     *            the properties
+     * @param zone
+     *            an identifier for the external user registry owning the person information, or <code>null</code> if
+     *            not applicable.
+     * @return the node ref
+     */
+    @Auditable(parameters = {"properties", "zone"})
+    public NodeRef createPerson(Map<QName, Serializable> properties, String zone);
 
     /**
      * Delete the person identified by the given user name.

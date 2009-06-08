@@ -138,7 +138,7 @@ public class WebProjectServiceImplTest extends AbstractWCMServiceImplTest
         String groupName = authorityService.getName(AuthorityType.GROUP, shortName);
         if (authorityService.authorityExists(groupName) == false)
         {
-            authorityService.createAuthority(AuthorityType.GROUP, null, shortName);
+            authorityService.createAuthority(AuthorityType.GROUP, shortName);
             
             for (String userName : userNames)
             {

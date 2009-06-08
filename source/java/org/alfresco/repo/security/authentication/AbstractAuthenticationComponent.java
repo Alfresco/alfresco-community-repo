@@ -35,9 +35,9 @@ import net.sf.acegisecurity.GrantedAuthorityImpl;
 import net.sf.acegisecurity.UserDetails;
 import net.sf.acegisecurity.providers.dao.User;
 
-import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
+import org.alfresco.repo.security.sync.UserRegistrySynchronizer;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
@@ -63,6 +63,8 @@ public abstract class AbstractAuthenticationComponent implements AuthenticationC
 
     private Set<String> defaultAdministratorUserNames = Collections.emptySet();
 
+    private boolean syncWhenMissingPeopleLogIn = true;
+
     private boolean autoCreatePeopleOnLogin = true;
     
     private AuthenticationContext authenticationContext;
@@ -72,6 +74,8 @@ public abstract class AbstractAuthenticationComponent implements AuthenticationC
     private NodeService nodeService;
 
     private TransactionService transactionService;
+    
+    private UserRegistrySynchronizer userRegistrySynchronizer;
 
     public AbstractAuthenticationComponent()
     {
@@ -107,6 +111,11 @@ public abstract class AbstractAuthenticationComponent implements AuthenticationC
     {
         this.transactionService = transactionService;
     }
+    
+    public void setUserRegistrySynchronizer(UserRegistrySynchronizer userRegistrySynchronizer)
+    {
+        this.userRegistrySynchronizer = userRegistrySynchronizer;
+    }
 
     public TransactionService getTransactionService()
     {
@@ -138,6 +147,11 @@ public abstract class AbstractAuthenticationComponent implements AuthenticationC
         this.autoCreatePeopleOnLogin = autoCreatePeopleOnLogin;
     }
         
+    public void setSyncWhenMissingPeopleLogIn(boolean syncWhenMissingPeopleLogIn)
+    {
+        this.syncWhenMissingPeopleLogIn = syncWhenMissingPeopleLogIn;
+    }
+
     public void authenticate(String userName, char[] password) throws AuthenticationException
     {
         // Support guest login from the login screen
@@ -434,26 +448,19 @@ public abstract class AbstractAuthenticationComponent implements AuthenticationC
                 {
                     public String doWork() throws Exception
                     {
-                        if (personService.personExists(userName))
+                        boolean personExists = personService.personExists(userName);
+                        
+                        // If the person is missing, synchronize or auto-create the missing person if we are allowed
+                        if (!personExists)
                         {
-                            NodeRef userNode = personService.getPerson(userName);
-                            if (userNode != null)
+                            if ((userName != null) && !userName.equals(AuthenticationUtil.getSystemUserName()))
                             {
-                                // Get the person name and use that as the current user to line up with permission
-                                // checks
-                                return (String) nodeService.getProperty(userNode, ContentModel.PROP_USERNAME);
-                            }
-                            else
-                            {
-                                // Get user name
-                                return userName;
-                            }
-                        }
-                        else
-                        {
-                            if (autoCreatePeopleOnLogin && (userName != null) && !userName.equals(AuthenticationUtil.getSystemUserName()))
-                            {
-                                if (personService.createMissingPeople())
+                                if (syncWhenMissingPeopleLogIn)
+                                {
+                                    userRegistrySynchronizer.synchronize(false);
+                                    personExists = personService.personExists(userName);
+                                }
+                                if (!personExists && autoCreatePeopleOnLogin && personService.createMissingPeople())
                                 {
                                     AuthorityType authorityType = AuthorityType.getAuthorityType(userName);
                                     if (authorityType == AuthorityType.USER)
@@ -462,9 +469,19 @@ public abstract class AbstractAuthenticationComponent implements AuthenticationC
                                     }
                                 }
                             }
-                            // Get user name
-                            return userName;
                         }
+
+                        if (personExists)
+                        {
+                            NodeRef userNode = personService.getPerson(userName);
+                            if (userNode != null)
+                            {
+                                // Get the person name and use that as the current user to line up with permission
+                                // checks
+                                return (String) nodeService.getProperty(userNode, ContentModel.PROP_USERNAME);
+                            }
+                        }
+                        return userName;
                     }
                 }, getSystemUserName(getUserDomain(userName)));
 

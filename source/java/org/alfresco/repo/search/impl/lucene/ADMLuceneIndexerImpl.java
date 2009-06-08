@@ -1105,8 +1105,7 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
                     {
                         // Temporary special case for uids and gids
                         if (propertyName.equals(ContentModel.PROP_USER_USERNAME)
-                                || propertyName.equals(ContentModel.PROP_USERNAME) || propertyName.equals(ContentModel.PROP_AUTHORITY_NAME)
-                                || propertyName.equals(ContentModel.PROP_MEMBERS))
+                                || propertyName.equals(ContentModel.PROP_USERNAME) || propertyName.equals(ContentModel.PROP_AUTHORITY_NAME))
                         {
                             doc.add(new Field(attributeName, strValue, fieldStore, fieldIndex, Field.TermVector.NO));
                         }

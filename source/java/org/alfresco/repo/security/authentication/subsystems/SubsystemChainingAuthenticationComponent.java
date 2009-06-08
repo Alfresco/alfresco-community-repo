@@ -28,6 +28,7 @@ import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.alfresco.repo.management.subsystems.ActivateableBean;
 import org.alfresco.repo.management.subsystems.ChildApplicationContextManager;
 import org.alfresco.repo.security.authentication.AbstractChainingAuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
@@ -80,7 +81,15 @@ public class SubsystemChainingAuthenticationComponent extends AbstractChainingAu
             ApplicationContext context = this.applicationContextManager.getApplicationContext(instance);
             try
             {
-                result.add((AuthenticationComponent) context.getBean(sourceBeanName));
+                AuthenticationComponent authenticationComponent = (AuthenticationComponent) context
+                        .getBean(sourceBeanName);
+                // Only add active authentication components. E.g. we might have an ldap context that is only used for
+                // synchronizing
+                if (!(authenticationComponent instanceof ActivateableBean)
+                        || ((ActivateableBean) authenticationComponent).isActive())
+                {
+                    result.add(authenticationComponent);
+                }
             }
             catch (NoSuchBeanDefinitionException e)
             {

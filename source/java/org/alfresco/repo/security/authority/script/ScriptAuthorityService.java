@@ -128,7 +128,7 @@ public class ScriptAuthorityService extends BaseScopableProcessorExtension
 	 */
 	public ScriptGroup createRootGroup(String shortName, String displayName)
 	{
-		authorityService.createAuthority(AuthorityType.GROUP, null, shortName, displayName);
+		authorityService.createAuthority(AuthorityType.GROUP, shortName, displayName, null);
 		return getGroup(shortName);
 	}
 	

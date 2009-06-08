@@ -30,9 +30,9 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.i18n.I18NUtil;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.admin.patch.AbstractPatch;
-import org.alfresco.repo.security.authority.AuthorityDAOImpl;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 
@@ -73,7 +73,7 @@ public class TopLevelGroupParentChildAssociationTypePatch extends AbstractPatch
         QName qnameAssocAuthorities = QName.createQName("sys", "authorities", this.namespaceService);
 
        
-        NodeRef rootNodeRef = nodeService.getRootNode(AuthorityDAOImpl.STOREREF_USERS);
+        NodeRef rootNodeRef = nodeService.getRootNode(new StoreRef("user", "alfrescoUserStore"));
         List<ChildAssociationRef> results = nodeService.getChildAssocs(rootNodeRef, RegexQNamePattern.MATCH_ALL,
                 qnameAssocSystem);
         NodeRef sysNodeRef = null;

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -18,7 +18,7 @@
  * As a special exception to the terms and conditions of version 2.0 of 
  * the GPL, you may redistribute this Program in connection with Free/Libre 
  * and Open Source Software ("FLOSS") applications as described in Alfresco's 
- * FLOSS exception.  You should have recieved a copy of the text describing 
+ * FLOSS exception.  You should have received a copy of the text describing 
  * the FLOSS exception, and it is also available here: 
  * http://www.alfresco.com/legal/licensing"
  */
@@ -558,6 +558,22 @@ public interface NodeService
      */
     @Auditable(key = Auditable.Key.ARG_0 ,parameters = {"nodeRef"})
     public ChildAssociationRef getPrimaryParent(NodeRef nodeRef) throws InvalidNodeRefException;
+    
+    /**
+     * Gets the set of nodes of a certain type without parent associations of a certain type. In effect the 'orphans'
+     * with respect to a certain association type.
+     * 
+     * @param storeRef
+     *            the store reference
+     * @param nodeTypeQName
+     *            the node type QName
+     * @param assocTypeQName
+     *            the association type QName
+     * @return the set of nodes of the required type without parent associations of the required type
+     */
+    @Auditable(key = Auditable.Key.ARG_0 ,parameters = {"storeRef", "nodeTypeQName", "assocTypeQName"})
+    public Collection<NodeRef> getNodesWithoutParentAssocsOfType(final StoreRef storeRef, final QName nodeTypeQName,
+            final QName assocTypeQName);
     
     /**
      * 

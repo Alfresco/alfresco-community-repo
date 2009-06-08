@@ -27,6 +27,7 @@ package org.alfresco.repo.security.authentication.subsystems;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.alfresco.repo.management.subsystems.ActivateableBean;
 import org.alfresco.repo.management.subsystems.ChildApplicationContextManager;
 import org.alfresco.repo.security.authentication.AbstractChainingAuthenticationService;
 import org.alfresco.service.cmr.security.AuthenticationService;
@@ -83,7 +84,15 @@ public class SubsystemChainingAuthenticationService extends AbstractChainingAuth
             ApplicationContext context = this.applicationContextManager.getApplicationContext(instance);
             try
             {
-                return (AuthenticationService) context.getBean(sourceBeanName);
+                AuthenticationService authenticationService = (AuthenticationService) context.getBean(sourceBeanName);
+                // Only add active authentication services. E.g. we might have an ldap context that is only used for
+                // synchronizing
+                if (!(authenticationService instanceof ActivateableBean)
+                        || ((ActivateableBean) authenticationService).isActive())
+                {
+
+                    return authenticationService;
+                }
             }
             catch (NoSuchBeanDefinitionException e)
             {
@@ -107,7 +116,15 @@ public class SubsystemChainingAuthenticationService extends AbstractChainingAuth
             ApplicationContext context = this.applicationContextManager.getApplicationContext(instance);
             try
             {
-                result.add((AuthenticationService) context.getBean(sourceBeanName));
+                AuthenticationService authenticationService = (AuthenticationService) context.getBean(sourceBeanName);
+                // Only add active authentication components. E.g. we might have an ldap context that is only used for
+                // synchronizing
+                if (!(authenticationService instanceof ActivateableBean)
+                        || ((ActivateableBean) authenticationService).isActive())
+                {
+
+                    result.add(authenticationService);
+                }
             }
             catch (NoSuchBeanDefinitionException e)
             {

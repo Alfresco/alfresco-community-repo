@@ -288,9 +288,9 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
         }
     }
     
-    public String createAuthority(AuthorityType type, String parentName, String shortName)
+    public String createAuthority(AuthorityType type, String shortName)
     {
-        return createAuthority(type, parentName, shortName, shortName);
+        return createAuthority(type, shortName, shortName, null);
     }
 
     public void deleteAuthority(String name)
@@ -360,11 +360,12 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
        return authorityDAO.authorityExists(name);
     }
 
-    public String createAuthority(AuthorityType type, String parentName, String shortName, String authorityDisplayName)
+    public String createAuthority(AuthorityType type, String shortName, String authorityDisplayName,
+            String authorityZone)
     {
         checkTypeIsMutable(type);
         String name = getName(type, shortName);
-        authorityDAO.createAuthority(parentName, name, authorityDisplayName);
+        authorityDAO.createAuthority(name, authorityDisplayName, authorityZone);
         return name;
     }
 
@@ -385,4 +386,18 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
         authorityDAO.setAuthorityDisplayName(authorityName, authorityDisplayName);
     }
 
+    public String getAuthorityZone(String name)
+    {
+        return authorityDAO.getAuthorityZone(name);
+    }
+
+    public NodeRef getOrCreateZone(String zoneName)
+    {
+        return authorityDAO.getOrCreateZone(zoneName);
+    }
+
+    public Set<String> getAllAuthoritiesInZone(String zoneName, AuthorityType type)
+    {
+        return authorityDAO.getAllAuthoritiesInZone(zoneName, type);
+    }
 }

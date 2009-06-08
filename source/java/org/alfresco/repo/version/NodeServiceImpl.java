@@ -650,4 +650,13 @@ public class NodeServiceImpl implements NodeService, VersionModel
     {
         throw new UnsupportedOperationException(MSG_UNSUPPORTED);
     }
+
+    /**
+     * @throws UnsupportedOperationException always
+     */
+    public Collection<NodeRef> getNodesWithoutParentAssocsOfType(StoreRef storeRef, QName nodeTypeQName,
+            QName assocTypeQName)
+    {
+        throw new UnsupportedOperationException(MSG_UNSUPPORTED);
+    }
 }

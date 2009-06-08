@@ -25,6 +25,9 @@
 
    <bean id="authenticationComponent" class="org.alfresco.repo.security.authentication.ldap.LDAPAuthenticationComponentImpl"
       parent="authenticationComponentBase">
+      <property name="active">
+         <value>${ldap.authentication.active}</value>
+      </property>
       <property name="LDAPInitialDirContextFactory">
          <ref bean="ldapInitialDirContextFactory" />
       </property>
@@ -139,5 +142,193 @@
          </map>
       </property>
    </bean>
+
+    <!-- Regularly exports user and group information from LDAP -->
+    
+    <bean id="userRegistry" class="org.alfresco.repo.security.sync.ldap.LDAPUserRegistry">
+        <property name="active">
+            <value>${ldap.synchronization.active}</value>
+        </property>
+        <!--
+        The query to select all objects that represent the groups to import.
+        
+        For Open LDAP, using a basic schema, the following is probably what you want:
+        (objectclass=groupOfNames)
+        
+        For Active Directory:
+        (objectclass=group)
+        -->
+        <property name="groupQuery">
+            <value>${ldap.synchronization.groupQuery}</value>
+        </property>
+        
+        <!--
+        The query to select objects that represent the groups to import that have changed since a certain time.
+        
+        For Open LDAP, using a basic schema, the following is probably what you want:
+        (&(objectclass=groupOfNames)(!(modifyTimestamp<={0})))
+        
+        For Active Directory:
+        (&(objectclass=group)(!(modifyTimestamp<={0})))
+        -->
+        <property name="groupDifferentialQuery">
+            <value>${ldap.synchronization.groupDifferentialQuery}</value>
+        </property>
+
+        <!-- 
+        The query to select all objects that represent the users to import.
+        
+        For Open LDAP, using a basic schema, the following is probably what you want:
+        (objectclass=inetOrgPerson)
+        
+        For Active Directory:
+        (objectclass=user)
+        -->
+        <property name="personQuery">
+            <value>${ldap.synchronization.personQuery}</value>
+        </property>
+        
+        <!-- 
+        The query to select objects that represent the users to import that have changed since a certain time.
+        
+        For Open LDAP, using a basic schema, the following is probably what you want:
+        (&(objectclass=inetOrgPerson)(!(modifyTimestamp<={0})))
+        
+        For Active Directory:
+        (&(objectclass=user)(!(modifyTimestamp<={0})))
+        -->
+        <property name="personDifferentialQuery">
+            <value>${ldap.synchronization.personDifferentialQuery}</value>
+        </property>
+
+        <!--
+        The group search base restricts the LDAP group query to a sub section of tree on the LDAP server.
+        -->
+        <property name="groupSearchBase">
+            <value>${ldap.synchronization.groupSearchBase}</value>
+        </property>
+        
+        <!--
+        The user search base restricts the LDAP user query to a sub section of tree on the LDAP server.
+        -->
+        <property name="userSearchBase">
+            <value>${ldap.synchronization.userSearchBase}</value>
+        </property>
+
+        <!--
+        The unique identifier for the user.
+        -->
+        <property name="userIdAttributeName">
+            <value>${ldap.synchronization.userIdAttributeName}</value>
+        </property>
+        
+        <!--
+        The name of the operational attribute recording the last update time for a group or user.
+        -->
+        <property name="modifyTimestampAttributeName">
+            <value>${ldap.synchronization.modifyTimestampAttributeName}</value>
+        </property>
+
+        <!--
+        An attribute that is a unique identifier for each group found. 
+        This is also the name of the group with the current group implementation.
+        This is mandatory for any groups found.
+        
+        OpenLDAP: "cn" as it is mandatory on groupOfNames
+        Active Directory: "cn"
+        
+        -->
+        <property name="groupIdAttributeName">
+            <value>${ldap.synchronization.groupIdAttributeName}</value>
+        </property>
+        
+        <!-- 
+        The objectClass attribute for group members.
+        For each member of a group, the distinguished name is given.
+        The object is looked up by its DN. If the object is of this class it is treated as a group. 
+        -->
+        <property name="groupType">
+            <value>${ldap.synchronization.groupType}</value>
+        </property>
+        
+        <!-- 
+        The objectClass attribute for person members.
+        For each member of a group, the distinguished name is given.
+        The object is looked up by its DN. If the object is of this class it is treated as a person. 
+        -->
+        <property name="personType">
+            <value>${ldap.synchronization.personType}</value>
+        </property>
+        
+        <!--
+        The repeating attribute on group objects (found by query or as sub groups)
+        used to define membership of the group. This is assumed to hold distinguished names of
+        other groups or users/people; the above types are used to determine this.
+        
+        OpenLDAP: "member" as it is mandatory on groupOfNames
+        Active Directory: "member"
+        
+        -->
+        <property name="memberAttribute">
+            <value>${ldap.synchronization.groupMemberAttributeName}</value>
+        </property>        
+
+        <!--
+        This property defines a mapping between attributes held on LDAP user objects and
+        the properties of user objects held in the repository. The key is the QName of an attribute in
+        the repository, the value is the attribute name from the user/inetOrgPerson/.. object in the
+        LDAP repository.     
+        -->
+        <property name="attributeMapping">
+            <map>
+                <entry key="cm:userName">
+                    <!-- Must match the same attribute as userIdAttributeName -->
+                    <value>${ldap.synchronization.userIdAttributeName}</value>
+                </entry>
+                <entry key="cm:firstName">
+                    <!-- OpenLDAP: "givenName" -->
+                    <!-- Active Directory: "givenName" -->
+                    <value>${ldap.synchronization.userFirstNameAttributeName}</value>
+                </entry>
+                <entry key="cm:lastName">
+                    <!-- OpenLDAP: "sn" -->
+                    <!-- Active Directory: "sn" -->
+                    <value>${ldap.synchronization.userLastNameAttributeName}</value>
+                </entry>
+                <entry key="cm:email">
+                    <!-- OpenLDAP: "mail" -->
+                    <!-- Active Directory: "???" -->
+                    <value>${ldap.synchronization.userEmailAttributeName}</value>
+                </entry>
+                <entry key="cm:organizationId">
+                    <!-- OpenLDAP: "o" -->
+                    <!-- Active Directory: "???" -->
+                    <value>${ldap.synchronization.userOrganizationalIdAttributeName}</value>
+                </entry>
+                <!-- Always use the default -->
+                <entry key="cm:homeFolderProvider">
+                    <null/>
+                </entry>
+            </map>
+        </property>
+        <!-- Set a default home folder provider -->
+        <!-- Defaults only apply for values above -->
+        <property name="attributeDefaults">
+            <map>
+                <entry key="cm:homeFolderProvider">
+                    <value>${ldap.synchronization.defaultHomeFolderProvider}</value>
+                </entry>
+            </map>
+        </property>
+
+        <!-- Services -->
+        <property name="LDAPInitialDirContextFactory">
+            <ref bean="ldapInitialDirContextFactory"/>
+        </property>
+        <property name="namespaceService">
+            <ref bean="namespaceService"/>
+        </property>
+        
+    </bean>
 
 </beans>

@@ -1,0 +1,33 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>    
+    <!-- Job definitions to import people and groups from one or more external user registries in the authentication chain (e.g. LDAP directory) -->
+    
+    <bean id="syncTrigger" class="org.alfresco.util.CronTriggerBean">
+        <property name="jobDetail">
+            <bean id="ldapPeopleJobDetail" class="org.springframework.scheduling.quartz.JobDetailBean">
+                <property name="jobClass">
+                    <value>org.alfresco.repo.security.sync.UserRegistrySynchronizerJob</value>
+                </property>
+                <property name="jobDataAsMap">
+                    <map>
+                        <entry key="userRegistrySynchronizer">
+                            <ref bean="UserRegistrySynchronizer"/>
+                        </entry>
+                        <entry key="synchronizeChangesOnly">
+                            <value>${synchronization.synchronizeChangesOnly}</value>
+                        </entry>
+                    </map>
+                </property>
+            </bean>
+        </property>
+        <property name="cronExpression">
+			<value>${synchronization.import.cron}</value>
+		</property>
+        <property name="scheduler">
+            <ref bean="schedulerFactory" />
+        </property>
+    </bean>
+        
+</beans>

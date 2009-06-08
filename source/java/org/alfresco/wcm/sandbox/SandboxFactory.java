@@ -365,7 +365,7 @@ public final class SandboxFactory extends WCMUtil
                    String group = authorityService.getName(AuthorityType.GROUP, shortName);
                    if (!authorityService.authorityExists(group))
                    {
-                       authorityService.createAuthority(AuthorityType.GROUP, null, shortName);
+                       authorityService.createAuthority(AuthorityType.GROUP, shortName);
                    }
                    if (!isPermissionSet(dirRef, group, permission))
                    {
@@ -399,7 +399,7 @@ public final class SandboxFactory extends WCMUtil
                String group = authorityService.getName(AuthorityType.GROUP, shortName);
                if (!authorityService.authorityExists(group))
                {
-                   authorityService.createAuthority(AuthorityType.GROUP, null, shortName);
+                   authorityService.createAuthority(AuthorityType.GROUP, shortName);
                }
                Set<String> members = authorityService.getContainedAuthorities(AuthorityType.USER, group, true);
                if (!members.contains(user))

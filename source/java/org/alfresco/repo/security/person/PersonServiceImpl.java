@@ -583,6 +583,11 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
 
     public NodeRef createPerson(Map<QName, Serializable> properties)
     {
+        return createPerson(properties, null);
+    }
+
+    public NodeRef createPerson(Map<QName, Serializable> properties, String zone)
+    {
         String userName = DefaultTypeConverter.INSTANCE.convert(String.class, properties.get(ContentModel.PROP_USERNAME));
         AuthorityType authorityType = AuthorityType.getAuthorityType(userName);
         if (authorityType != AuthorityType.USER)
@@ -595,12 +600,19 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
         properties.put(ContentModel.PROP_USERNAME, userName);
         properties.put(ContentModel.PROP_SIZE_CURRENT, 0L);
 
-        NodeRef personRef =  nodeService.createNode(
+        NodeRef personRef = nodeService.createNode(
                 getPeopleContainer(),
                 ContentModel.ASSOC_CHILDREN,
                 QName.createQName("cm", userName.toLowerCase(), namespacePrefixResolver),       // Lowercase: ETHREEOH-1431
                 ContentModel.TYPE_PERSON,
                 properties).getChildRef();
+        
+        if (zone != null)
+        {
+            // Add the person to an authentication zone (corresponding to an external user registry)
+            // Let's preserve case on this child association
+            nodeService.addChild(authorityService.getOrCreateZone(zone), personRef, ContentModel.ASSOC_IN_ZONE, QName.createQName("cm", userName, namespacePrefixResolver));
+        }
         return personRef;
     }
 
@@ -630,14 +642,6 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
 
     public void deletePerson(String userName)
     {
-        NodeRef personNodeRef = getPersonOrNull(userName);
-
-        // delete the person
-        if (personNodeRef != null)
-        {
-            nodeService.deleteNode(personNodeRef);
-        }
-
         // remove user from any containing authorities
         Set<String> containerAuthorities = authorityService.getContainingAuthorities(null, userName, true);
         for (String containerAuthority : containerAuthorities)
@@ -647,6 +651,13 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
 
         // remove any user permissions
         permissionServiceSPI.deletePermissions(userName);
+
+        // delete the person
+        NodeRef personNodeRef = getPersonOrNull(userName);
+        if (personNodeRef != null)
+        {
+            nodeService.deleteNode(personNodeRef);
+        }
     }
 
     public Set<NodeRef> getAllPeople()

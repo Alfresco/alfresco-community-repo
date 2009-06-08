@@ -881,7 +881,12 @@ public class MultiTDemoTest extends TestCase
                }
            }
            
-           this.authorityService.createAuthority(AuthorityType.GROUP, parentGroupName, shortName);
+           this.authorityService.createAuthority(AuthorityType.GROUP, shortName);
+           
+           if (parentGroupName != null)
+           {
+               this.authorityService.addAuthority(parentGroupName, groupName);
+           }
            
         }
         else

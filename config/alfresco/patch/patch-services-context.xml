@@ -111,26 +111,6 @@
     <!-- Patch definitions -->
     <!--                   -->
     
-    <bean id="patch.authoritiesFolder" class="org.alfresco.repo.admin.patch.impl.GenericBootstrapPatch" parent="basePatch" >
-        <property name="id"><value>patch.authoritiesFolder</value></property>
-        <property name="description"><value>patch.authoritiesFolder.description</value></property>
-        <property name="fixesFromSchema"><value>0</value></property>
-        <property name="fixesToSchema"><value>0</value></property>
-        <property name="targetSchema"><value>6</value></property>
-        <!-- bootstrap view -->
-        <property name="importerBootstrap">
-            <ref bean="userBootstrap" />
-        </property>
-        <property name="checkPath">
-            <value>/${alfresco_user_store.system_container.childname}/${alfresco_user_store.authorities_container.childname}</value>
-        </property>
-        <property name="bootstrapView">
-            <props>
-                <prop key="path">/${alfresco_user_store.system_container.childname}</prop>
-                <prop key="location">alfresco/bootstrap/alfrescoAuthorityStore.xml</prop>
-            </props>
-        </property>
-    </bean>
     <bean id="patch.savedSearchesFolder" class="org.alfresco.repo.admin.patch.impl.SavedSearchFolderPatch" parent="basePatch" >
         <property name="id"><value>patch.savedSearchesFolder</value></property>
         <property name="description"><value>patch.savedSearchesFolder.description</value></property>
@@ -550,24 +530,6 @@
         </property>
     </bean>
 
-    <bean id="patch.authoritiesFolderPermission" class="org.alfresco.repo.admin.patch.impl.GenericBootstrapPatch" parent="basePatch" >
-        <property name="id"><value>patch.authoritiesFolderPermission</value></property>
-        <property name="description"><value>patch.authoritiesFolderPermission.description</value></property>
-        <property name="fixesFromSchema"><value>0</value></property>
-        <property name="fixesToSchema"><value>32</value></property>
-        <property name="targetSchema"><value>33</value></property>
-        <!-- bootstrap view -->
-        <property name="importerBootstrap">
-            <ref bean="userBootstrap" />
-        </property>
-        <property name="bootstrapView">
-            <props>
-                <prop key="path">/${alfresco_user_store.system_container.childname}</prop>
-                <prop key="location">alfresco/bootstrap/alfrescoAuthorityStorePermission.xml</prop>
-            </props>
-        </property>
-    </bean>
-    
     <bean id="patch.LinkNodeFileExtension" class="org.alfresco.repo.admin.patch.impl.LinkNodeFileExtensionPatch" parent="basePatch" >
         <property name="id"><value>patch.LinkNodeFileExtension</value></property>
         <property name="description"><value>patch.linkNodeExtension.description</value></property>
@@ -996,27 +958,6 @@
         </property>
     </bean>
 
-    <bean id="patch.emailContributorGroup" class="org.alfresco.repo.admin.patch.impl.GenericBootstrapPatch" parent="basePatch" >
-        <property name="id"><value>patch.emailContributorGroup</value></property>
-        <property name="description"><value>patch.emailContributorGroup.description</value></property>
-        <property name="fixesFromSchema"><value>0</value></property>
-        <property name="fixesToSchema"><value>108</value></property>
-        <property name="targetSchema"><value>109</value></property>
-        <!-- bootstrap view -->
-        <property name="importerBootstrap">
-            <ref bean="userBootstrap" />
-        </property>
-        <property name="checkPath">
-            <value>/${alfresco_user_store.system_container.childname}/sys:authorities/usr:GROUP_EMAIL_CONTRIBUTORS</value>
-        </property>
-        <property name="bootstrapView">
-            <props>
-                <prop key="path">/${alfresco_user_store.system_container.childname}/sys:authorities</prop>
-                <prop key="location">alfresco/bootstrap/emailServer.xml</prop>
-            </props>
-        </property>
-    </bean>
-    
     <bean id="patch.avmStoreAsIdentifier" class="org.alfresco.repo.admin.patch.impl.AVMStorePropertyTokenisationPatch" parent="basePatch" >
         <property name="id"><value>patch.avmStoreAsIdentifier</value></property>
         <property name="description"><value>patch.avmStoreAsIdentifier.description</value></property>
@@ -1438,6 +1379,11 @@
         <property name="authorityService">
             <ref bean="AuthorityService" />
         </property>
+        <property name="dependsOn">
+            <list>
+                <ref bean="patch.zonedAuthorities" />
+            </list>
+        </property>
     </bean>
     
     <bean id="patch.migrateVersionStore" class="org.alfresco.repo.admin.patch.impl.MigrateVersionStorePatch" parent="basePatch" >
@@ -1549,28 +1495,7 @@
             </list>
         </property>
     </bean>
-
-    <bean id="patch.administratorGroup" class="org.alfresco.repo.admin.patch.impl.GenericBootstrapPatch" parent="basePatch" >
-        <property name="id"><value>patch.administratorGroup</value></property>
-        <property name="description"><value>patch.administratorGroup.description</value></property>
-        <property name="fixesFromSchema"><value>0</value></property>
-        <property name="fixesToSchema"><value>1001</value></property>
-        <property name="targetSchema"><value>1002</value></property>
-        <!-- bootstrap view -->
-        <property name="importerBootstrap">
-            <ref bean="userBootstrap" />
-        </property>
-        <property name="checkPath">
-            <value>/${alfresco_user_store.system_container.childname}/sys:authorities/usr:GROUP_ALFRESCO_ADMINISTRATORS</value>
-        </property>
-        <property name="bootstrapView">
-            <props>
-                <prop key="path">/${alfresco_user_store.system_container.childname}/sys:authorities</prop>
-                <prop key="location">alfresco/bootstrap/adminGroup.xml</prop>
-            </props>
-        </property>
-    </bean>
-
+    
     <!-- For support of asynchronous wcm submit -->
     <bean id="patch.redeploySubmitProcess5" class="org.alfresco.repo.admin.patch.impl.GenericWorkflowPatch" parent="basePatch" >
         <property name="id"><value>patch.redeploySubmitProcess5</value></property>
@@ -1633,6 +1558,11 @@
         </property>
         <property name="replaceAllWith">
             <value>ContentManager</value>
+        </property>
+        <property name="dependsOn">
+            <list>
+                <ref bean="patch.zonedAuthorities" />
+            </list>
         </property>
     </bean>
     
@@ -1835,6 +1765,46 @@
         <property name="scriptUrl">
             <!-- Share a create script -->
             <value>classpath:alfresco/dbscripts/create/3.2/${db.script.dialect}/AlfrescoPostCreate-3.2-LockTables.sql</value>
+        </property>
+    </bean>
+
+    <bean id="patch.zonedAuthorities" class="org.alfresco.repo.admin.patch.impl.GenericBootstrapPatch" parent="basePatch" >
+        <property name="id"><value>patch.zonedAuthorities</value></property>
+        <property name="description"><value>patch.zonedAuthorities.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>2011</value></property>
+        <property name="targetSchema"><value>2012</value></property>
+        <!-- bootstrap view -->
+        <property name="importerBootstrap">
+            <ref bean="spacesBootstrap" />
+        </property>
+        <property name="checkPath">
+            <value>/${system.system_container.childname}/${system.authorities_container.childname}</value>
+        </property>
+        <property name="bootstrapView">
+            <props>
+                <prop key="path">/${system.system_container.childname}</prop>
+                <prop key="location">alfresco/bootstrap/alfrescoAuthorityStore.xml</prop>
+            </props>
+        </property>
+    </bean>
+
+    <bean id="patch.authorityMigration" class="org.alfresco.repo.admin.patch.impl.AuthorityMigrationPatch" parent="basePatch" >
+        <property name="id"><value>patch.authorityMigration</value></property>
+        <property name="description"><value>patch.authorityMigration.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>2012</value></property>
+        <property name="targetSchema"><value>2013</value></property>
+        <property name="authorityService">
+            <ref bean="AuthorityService" />
+        </property>
+        <property name="userBootstrap">
+            <ref bean="userBootstrap" />
+        </property>
+        <property name="dependsOn">
+            <list>
+                <ref bean="patch.zonedAuthorities" />
+            </list>
         </property>
     </bean>
     

@@ -2407,7 +2407,7 @@ public class PermissionServiceTest extends AbstractPermissionTest
         NodeRef n10 = nodeService.createNode(n1, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}ten"), ContentModel.TYPE_FOLDER).getChildRef();
 
         personService.getPerson("andy");
-        String groupAuth = authorityService.createAuthority(AuthorityType.GROUP, null, "G");
+        String groupAuth = authorityService.createAuthority(AuthorityType.GROUP, "G");
         authorityService.addAuthority(groupAuth, "andy");
 
         // assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermissionForCurrentUser("Consumer",

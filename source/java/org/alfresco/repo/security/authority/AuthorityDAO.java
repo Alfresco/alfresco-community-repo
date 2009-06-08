@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -18,7 +18,7 @@
  * As a special exception to the terms and conditions of version 2.0 of 
  * the GPL, you may redistribute this Program in connection with Free/Libre 
  * and Open Source Software ("FLOSS") applications as described in Alfresco's 
- * FLOSS exception.  You should have recieved a copy of the text describing 
+ * FLOSS exception.  You should have received a copy of the text describing 
  * the FLOSS exception, and it is also available here: 
  * http://www.alfresco.com/legal/licensing"
  */
@@ -27,6 +27,7 @@ package org.alfresco.repo.security.authority;
 import java.util.Set;
 
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
 
 public interface AuthorityDAO
@@ -42,11 +43,11 @@ public interface AuthorityDAO
     /**
      * Create an authority.
      * 
-     * @param parentName
      * @param name
-     * @param authorityDisplayName 
+     * @param authorityDisplayName
+     * @param authorityZone
      */
-    void createAuthority(String parentName, String name, String authorityDisplayName);
+    void createAuthority(String name, String authorityDisplayName, String authorityZone);
 
     /**
      * Delete an authority.
@@ -148,4 +149,33 @@ public interface AuthorityDAO
      */
     public Set<String> findAuthorities(AuthorityType type, String namePattern);
 
+    /**
+     * Gets or creates an authority zone node with the specified name
+     * 
+     * @param zoneName
+     *            the zone name
+     * @return reference to the zone node
+     */
+    public NodeRef getOrCreateZone(String zoneName);
+    
+    /**
+     * Gets the name of the zone containing the specified authority.
+     * 
+     * @param name
+     *            the authority long name
+     * @return the the name of the zone containing the specified authority, {@link AuthorityService#DEFAULT_ZONE} if the
+     *         authority exists but has no zone, or <code>null</code> if the authority does not exist.
+     */
+    public String getAuthorityZone(String name);
+    
+    /**
+     * Gets the names of all authorities in a zone, optionally filtered by type.
+     * 
+     * @param zoneName
+     *            the zone name
+     * @param type
+     *            the authority type to filter by or <code>null</code> for all authority types
+     * @return the names of all authorities in a zone, optionally filtered by type
+     */
+    public Set<String> getAllAuthoritiesInZone(String zoneName, AuthorityType type);
 }

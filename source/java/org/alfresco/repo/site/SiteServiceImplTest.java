@@ -112,18 +112,19 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
         createUser(USER_FOUR);
      
         // Create the test groups
-        this.groupOne = this.authorityService.createAuthority(AuthorityType.GROUP, null, GROUP_ONE);
+        this.groupOne = this.authorityService.createAuthority(AuthorityType.GROUP, GROUP_ONE);
         this.authorityService.addAuthority(this.groupOne, USER_TWO);
         
-        this.groupTwo = this.authorityService.createAuthority(AuthorityType.GROUP, null, GROUP_TWO);
+        this.groupTwo = this.authorityService.createAuthority(AuthorityType.GROUP, GROUP_TWO);
         this.authorityService.addAuthority(this.groupTwo, USER_TWO);
         this.authorityService.addAuthority(this.groupTwo, USER_THREE);
         
-        this.groupThree = this.authorityService.createAuthority(AuthorityType.GROUP, null, GROUP_THREE);
+        this.groupThree = this.authorityService.createAuthority(AuthorityType.GROUP, GROUP_THREE);
         this.authorityService.addAuthority(this.groupThree, USER_TWO);
         this.authorityService.addAuthority(this.groupThree, USER_THREE);
         
-        this.groupFour = this.authorityService.createAuthority(AuthorityType.GROUP, this.groupThree, GROUP_FOUR);
+        this.groupFour = this.authorityService.createAuthority(AuthorityType.GROUP, GROUP_FOUR);
+        this.authorityService.addAuthority(this.groupThree, this.groupFour);
         this.authorityService.addAuthority(this.groupFour, USER_FOUR);
 
         

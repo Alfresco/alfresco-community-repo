@@ -24,7 +24,6 @@
  */
 package org.alfresco.email.server;
 
-import java.util.Collection;
 import java.util.Map;
 
 import org.alfresco.email.server.handler.EmailMessageHandler;
@@ -45,6 +44,8 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchService;
+import org.alfresco.service.cmr.security.AuthorityService;
+import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ParameterCheck;
@@ -62,7 +63,6 @@ public class EmailServiceImpl implements EmailService
     private static final String ERR_ACCESS_DENIED = "email.server.err.access_denied";
     private static final String ERR_UNKNOWN_SOURCE_ADDRESS = "email.server.err.unknown_source_address";
     private static final String ERR_USER_NOT_EMAIL_CONTRIBUTOR = "email.server.err.user_not_email_contributor";
-    private static final String ERR_NO_EMAIL_CONTRIBUTOR_GROUP = "email.server.err.no_email_contributor_group";
     private static final String ERR_INVALID_NODE_ADDRESS = "email.server.err.invalid_node_address";
     private static final String ERR_HANDLER_NOT_FOUND = "email.server.err.handler_not_found";
     
@@ -70,6 +70,7 @@ public class EmailServiceImpl implements EmailService
     private NodeService nodeService;
     private SearchService searchService;
     private RetryingTransactionHelper retryingTransactionHelper;
+    private AuthorityService authorityService;
 
     private boolean emailInboundEnabled;
     /** Login of user that is set as unknown. */
@@ -109,7 +110,15 @@ public class EmailServiceImpl implements EmailService
     {
         this.retryingTransactionHelper = retryingTransactionHelper;
     }
-    
+            
+    /**
+     * @param authorityService Alfresco authority service
+     */
+    public void setAuthorityService(AuthorityService authorityService)
+    {
+        this.authorityService = authorityService;
+    }
+
     /**
      * @return Map of message handlers
      */
@@ -359,28 +368,7 @@ public class EmailServiceImpl implements EmailService
      */
     private boolean isEmailContributeUser(String userName)
     {
-        String searchQuery = "TYPE:\"{http://www.alfresco.org/model/user/1.0}authorityContainer\"  +@usr\\:authorityName:\"GROUP_EMAIL_CONTRIBUTORS\"";
-        StoreRef storeRef = new StoreRef("user", "alfrescoUserStore");
-        ResultSet resultSet = searchService.query(storeRef, SearchService.LANGUAGE_LUCENE, searchQuery);
-
-        if (resultSet.length() == 0)
-        {
-            throw new EmailMessageException(ERR_NO_EMAIL_CONTRIBUTOR_GROUP);
-        }
-
-        NodeRef groupNode = resultSet.getNodeRef(0);
-
-        Collection<String> memberCollection = DefaultTypeConverter.INSTANCE.getCollection(
-                String.class,
-                nodeService.getProperty(groupNode, ContentModel.PROP_MEMBERS));
-
-        if (memberCollection.contains(userName))
-        {
-            return true;
-        }
-        else
-        {
-            return false;
-        }
+        return this.authorityService.getContainingAuthorities(AuthorityType.GROUP, userName, false).contains(
+                authorityService.getName(AuthorityType.GROUP, "EMAIL_CONTRIBUTORS"));
     }
 }

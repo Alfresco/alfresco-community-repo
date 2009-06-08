@@ -106,9 +106,9 @@ public class AVMLockingServiceTest extends TestCase
         // Set up sample users groups and roles.
         fAuthenticationService.createAuthentication("Buffy", "Buffy".toCharArray());
         fPersonService.getPerson("Buffy");
-        fAuthorityService.createAuthority(AuthorityType.GROUP, null, "Scoobies");
+        fAuthorityService.createAuthority(AuthorityType.GROUP, "Scoobies");
         fAuthorityService.addAuthority("GROUP_Scoobies", "Buffy");
-        fAuthorityService.createAuthority(AuthorityType.ROLE, null, "SUPER_POWERED");
+        fAuthorityService.createAuthority(AuthorityType.ROLE, "SUPER_POWERED");
         fAuthorityService.addAuthority("ROLE_SUPER_POWERED", "Buffy");
         fAuthenticationService.createAuthentication("Willow", "Willow".toCharArray());
         fPersonService.getPerson("Willow");
@@ -121,7 +121,7 @@ public class AVMLockingServiceTest extends TestCase
         fAuthenticationService.createAuthentication("Spike", "Spike".toCharArray());
         fPersonService.getPerson("Spike");
         fAuthorityService.addAuthority("ROLE_SUPER_POWERED", "Spike");
-        fAuthorityService.createAuthority(AuthorityType.GROUP, null, "vampires");
+        fAuthorityService.createAuthority(AuthorityType.GROUP, "vampires");
         fAuthorityService.addAuthority("GROUP_vampires", "Spike");
     }
 

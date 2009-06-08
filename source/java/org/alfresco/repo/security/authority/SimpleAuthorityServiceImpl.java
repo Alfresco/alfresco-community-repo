@@ -184,13 +184,18 @@ public class SimpleAuthorityServiceImpl implements AuthorityService
     {
         
     }
-
     
-    public String createAuthority(AuthorityType type, String parentName, String shortName)
+    public String createAuthority(AuthorityType type, String shortName)
     {
        return "";
     }
 
+    public String createAuthority(AuthorityType type, String shortName, String authorityDisplayName,
+            String authorityZone)
+    {
+        return "";
+    }
+    
     public void deleteAuthority(String name)
     {
       
@@ -269,11 +274,6 @@ public class SimpleAuthorityServiceImpl implements AuthorityService
         return authorities;
     }
 
-    public String createAuthority(AuthorityType type, String parentName, String shortName, String authorityDisplayName)
-    {
-        return "";
-    }
-
     public String getAuthorityDisplayName(String name)
     {
         return "";
@@ -291,4 +291,18 @@ public class SimpleAuthorityServiceImpl implements AuthorityService
     	return findAuthorities(type, fullNamePattern);
 	}
 
+    public Set<String> getAllAuthoritiesInZone(String zoneName, AuthorityType type)
+    {
+        return Collections.emptySet();
+    }
+
+    public String getAuthorityZone(String name)
+    {
+        return AuthorityService.DEFAULT_ZONE;
+    }
+
+    public NodeRef getOrCreateZone(String zoneName)
+    {
+        return null;
+    }
 }

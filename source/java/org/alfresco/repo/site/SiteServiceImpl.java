@@ -359,16 +359,15 @@ public class SiteServiceImpl implements SiteService, SiteModel
             public String doWork() throws Exception
             {
                 // Create the site's groups
-                String siteGroup = authorityService.createAuthority(
-                        AuthorityType.GROUP, null, getSiteGroup(shortName,
-                                false));
+                String siteGroup = authorityService
+                        .createAuthority(AuthorityType.GROUP, getSiteGroup(shortName, false));
                 Set<String> permissions = permissionService.getSettablePermissions(SiteModel.TYPE_SITE);
                 for (String permission : permissions)
                 {
                     // Create a group for the permission
-                    String permissionGroup = authorityService.createAuthority(
-                            AuthorityType.GROUP, siteGroup, getSiteRoleGroup(
-                                    shortName, permission, false));
+                    String permissionGroup = authorityService.createAuthority(AuthorityType.GROUP, getSiteRoleGroup(
+                            shortName, permission, false));
+                    authorityService.addAuthority(siteGroup, permissionGroup);
 
                     // Assign the group the relevant permission on the site
                     permissionService.setPermission(siteNodeRef, permissionGroup, permission, true);

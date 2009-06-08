@@ -32,6 +32,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -1630,6 +1631,25 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         addMissingAspects(sourceNodePair, assocTypeQName);
 
         return assocRef;
+    }
+
+    public Collection<NodeRef> getNodesWithoutParentAssocsOfType(final StoreRef storeRef, final QName nodeTypeQName,
+            final QName assocTypeQName)
+    {
+        final Collection<NodeRef> results = new LinkedList<NodeRef>();
+
+        NodeDaoService.NodeRefQueryCallback callback = new NodeDaoService.NodeRefQueryCallback()
+        {
+            public boolean handle(Pair<Long, NodeRef> nodePair)
+            {
+                results.add(nodePair.getSecond());
+                return true;
+            }
+        };
+
+        nodeDaoService.getNodesWithoutParentAssocsOfType(storeRef, nodeTypeQName, assocTypeQName, callback);
+
+        return results;
     }
 
     public void removeAssociation(NodeRef sourceRef, NodeRef targetRef, QName assocTypeQName)

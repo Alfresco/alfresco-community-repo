@@ -2014,6 +2014,23 @@ public class ServerConfigurationBean extends AbstractServerConfigurationBean {
       
       try
       {
+    	  // Check if ACL manager debugging is enabled
+    	  
+    	  GenericConfigElement params = new GenericConfigElement( "");
+    	  
+    	  if ( config.getConfigElement("aclDebug") != null)
+    		  params.addChild( new GenericConfigElement("debug"));
+    		  
+    	  // Use the default ACL manager
+      
+    	  secConfig.setAccessControlManager( "org.alfresco.jlan.server.auth.acl.DefaultAccessControlManager", params);
+      }
+      catch ( Exception ex) {
+    	  throw new AlfrescoRuntimeException("Failed to set ACL manager", ex);
+      }
+      
+      try
+      {
         // Check if global access controls have been specified
   
         ConfigElement globalACLs = config.getConfigElement("globalAccessControl");

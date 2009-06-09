@@ -1,0 +1,14 @@
+<!--
+   Define valid subtypes using the following example:
+
+   <type name="cm:content">
+      <subtype name="cm:mysubtype" />
+   </type>
+-->
+<types>
+   <type name="cm:content">
+   </type>
+
+   <type name="cm:folder">
+   </type>
+</types>

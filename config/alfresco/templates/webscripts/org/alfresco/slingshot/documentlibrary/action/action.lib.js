@@ -17,8 +17,8 @@
 function main()
 {
    // Params object contains commonly-used arguments
-   var params = {};
-   var files, rootNode;
+   var params = {},
+      files, rootNode;
    
    if (url.templateArgs.store_type != undefined)
    {
@@ -211,18 +211,18 @@ function getSiteInputParams()
  */
 function getNodeRefInputParams()
 {
-   var params = {};
-   var error = null;
+   var params = {},
+      error = null;
    
    try
    {
       // First try to get the parameters from the URI
-      var storeType = url.templateArgs.store_type;
-      var storeId = url.templateArgs.store_id;
-      var id = url.templateArgs.id;
+      var storeType = url.templateArgs.store_type,
+         storeId = url.templateArgs.store_id,
+         id = url.templateArgs.id;
 
-      var nodeRef = storeType + "://" + storeId + "/" + id;
-      var rootNode = null;
+      var nodeRef = storeType + "://" + storeId + "/" + id,
+         rootNode = null;
 
       if (nodeRef == "alfresco://company/home")
       {

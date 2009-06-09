@@ -39,7 +39,7 @@
 {
 <@personJSONinner person=person/>
 	,
-	"groups" : [<#list groups as g>"${jsonUtils.encodeJSONString(g.properties["usr:authorityName"])}"<#if g_has_next>, </#if></#list>]
+	"groups" : [<#list groups as g>"${jsonUtils.encodeJSONString(g.properties["cm:authorityName"])}"<#if g_has_next>, </#if></#list>]
 }
 </#macro>
 

@@ -1,6 +1,4 @@
 <#-- Web Site Membership renders an authority object which can be either a Java Script person or a Java Script group -->
-
-
 <#macro membershipJSON site role authority>
 <#escape x as jsonUtils.encodeJSONString(x)>
 {
@@ -8,25 +6,22 @@
 
 <#if authority.authorityType?? && authority.authorityType = "GROUP" >     
 <#-- this is a group authority type -->
-
-    "authority":
-	{
-	    "authorityType" : "${authority.authorityType}",
-        "shortName" : "${authority.shortName}",
-        "fullName" : "${authority.fullName}",
-        "displayName" : "${authority.displayName}",
-        "url" : "${url.serviceContext + "/api/groups/" + authority.shortName }"
-	},
-	"url" : "${url.serviceContext + "/api/sites/" + site.shortName + "/memberships/" + authority.fullName}"
-	
-
-<#else >
-<#-- this is a person authority type -->
-
 	"authority":
 	{
-	 	"authorityType" : "USER",
-	 	"fullName" : "${authority.properties.userName}",
+		"authorityType" : "${authority.authorityType}",
+		"shortName" : "${authority.shortName}",
+		"fullName" : "${authority.fullName}",
+		"displayName" : "${authority.displayName}",
+		"url" : "${url.serviceContext + "/api/groups/" + authority.shortName }"
+	},
+	"url" : "${url.serviceContext + "/api/sites/" + site.shortName + "/memberships/" + authority.fullName}"
+
+<#else>
+<#-- this is a person authority type -->
+	"authority":
+	{
+		"authorityType" : "USER",
+		"fullName" : "${authority.properties.userName}",
 		"userName" : "${authority.properties.userName}",
 		"firstName" : "${authority.properties.firstName}",
 		"lastName" : "${authority.properties.lastName}",
@@ -44,7 +39,6 @@
 	"url" : "${url.serviceContext + "/api/sites/" + site.shortName + "/memberships/" + authority.properties.userName}"
 
 </#if>
-
 }
 </#escape>
 </#macro>

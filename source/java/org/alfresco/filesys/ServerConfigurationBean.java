@@ -1084,7 +1084,7 @@ public class ServerConfigurationBean extends AbstractServerConfigurationBean {
   
         // Check if WINS is configured, if we are running on Windows and socket based NetBIOS is enabled
   
-        else if (cifsConfig.hasNetBIOSSMB() && getPlatformType() == Platform.Type.WINDOWS && isNativeCodeDisabled())
+        else if (cifsConfig.hasNetBIOSSMB() && getPlatformType() == Platform.Type.WINDOWS && isNativeCodeDisabled() == false)
         {
             // Get the WINS server list
   

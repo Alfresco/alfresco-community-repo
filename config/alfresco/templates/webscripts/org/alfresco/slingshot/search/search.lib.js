@@ -154,7 +154,7 @@ function getDocumentItem(siteId, containerId, restOfPath, node)
    {
       item.type = "folder";
       item.size = -1;
-      item.browseUrl = containerId + "#path=" + encodeURIComponent(getSpaceNamePath(siteId, containerId, node));
+      item.browseUrl = "documentlibrary?path=" + encodeURIComponent(getSpaceNamePath(siteId, containerId, node));
    }
    else if (node.isDocument)
    {

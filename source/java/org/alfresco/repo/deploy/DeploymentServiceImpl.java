@@ -33,6 +33,7 @@ import java.io.Serializable;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -41,6 +42,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
+import java.util.TreeSet;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
@@ -1169,6 +1171,26 @@ public class DeploymentServiceImpl implements DeploymentService
             throw new AVMException(f.format(objs), e);
         }
     }
+	
+	private class ComparatorFileDescriptorCaseSensitive  implements Comparator<FileDescriptor> 
+	{
+		public int compare(FileDescriptor o1, FileDescriptor o2)
+		{
+			return o1.getName().compareTo(o2.getName());
+		}
+	}
+
+	private class ComparatorAVMNodeDescriptorCaseSensitive implements Comparator<AVMNodeDescriptor> 
+	{
+		public int compare(AVMNodeDescriptor o1, AVMNodeDescriptor o2)
+		{
+			return o1.getName().compareTo(o2.getName());
+		}
+	}
+
+	private ComparatorFileDescriptorCaseSensitive FILE_DESCRIPTOR_CASE_SENSITIVE  = new ComparatorFileDescriptorCaseSensitive();
+	private ComparatorAVMNodeDescriptorCaseSensitive AVM_DESCRIPTOR_CASE_SENSITIVE = new ComparatorAVMNodeDescriptorCaseSensitive();
+	
     /**
      * deployDirectoryPush (FSR only)
      * 
@@ -1195,10 +1217,18 @@ public class DeploymentServiceImpl implements DeploymentService
     		List<Exception> errors,
     		Lock lock)
     {
-        Map<String, AVMNodeDescriptor> srcListing = fAVMService.getDirectoryListing(version, srcPath);
-        List<FileDescriptor> dstListing = service.getListing(ticket, dstPath);
-        Iterator<AVMNodeDescriptor> srcIter = srcListing.values().iterator();
+        Map<String, AVMNodeDescriptor> rawSrcListing = fAVMService.getDirectoryListing(version, srcPath);
+        List<FileDescriptor> rawDstListing = service.getListing(ticket, dstPath);
+       
+        // Need to change from case insensitive order to case sensitive order
+        TreeSet<FileDescriptor> dstListing = new TreeSet<FileDescriptor>(FILE_DESCRIPTOR_CASE_SENSITIVE);
+        dstListing.addAll(rawDstListing);
+        
+        TreeSet<AVMNodeDescriptor> srcListing = new TreeSet<AVMNodeDescriptor>(AVM_DESCRIPTOR_CASE_SENSITIVE);
+        srcListing.addAll(rawSrcListing.values());
+        
         Iterator<FileDescriptor> dstIter = dstListing.iterator();
+        Iterator<AVMNodeDescriptor> srcIter = srcListing.iterator();
         
         lock.refreshLock();
 	    
@@ -1260,7 +1290,7 @@ public class DeploymentServiceImpl implements DeploymentService
             }
             
             // Here with src and dst containing something
-            int diff = src.getName().compareToIgnoreCase(dst.getName());
+            int diff = src.getName().compareTo(dst.getName());
             if (diff < 0)
             {
             	// src is less than dst - must be new content in src
@@ -1625,6 +1655,8 @@ public class DeploymentServiceImpl implements DeploymentService
 			}
 		}
 	}
+	
+
 	
 	/**
 	 * This thread processes the send queue

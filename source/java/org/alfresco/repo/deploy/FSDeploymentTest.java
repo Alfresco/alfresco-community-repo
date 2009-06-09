@@ -354,6 +354,59 @@ public class FSDeploymentTest extends AVMServiceTestBase
 
     	
     }
+    
+    /**
+     * Test for ETWOTWO-1236
+     * 1. create a file in a Web Project called "CamelCase.txt"
+	 * 2. submit the file to staging
+	 * 3. deploy it to an FSR, ideally on a *nix OS (the issues are more severe on *nix than on Windows)
+	 * 4. rename the file to "cAMELcASE.TXT"
+     * 5. submit the change to staging
+     * 6. deploy it to the same FSR
+     */ 
+
+    public void testCaseSensitivity() throws Exception
+    {
+        DeploymentReport report = new DeploymentReport();
+        List<DeploymentCallback> callbacks = new ArrayList<DeploymentCallback>();
+        callbacks.add(new DeploymentReportCallback(report));
+        
+        /**
+         * Deploy CamelCase.txt
+         */
+    	fService.createFile("main:/", "CamelCase.txt").close();
+    	service.deployDifferenceFS(-1, "main:/", "default", "localhost", 44100, TEST_USER, TEST_PASSWORD, TEST_TARGET, null, false, false, false, callbacks);
+        for (DeploymentEvent event : report)
+    	{
+            System.out.println(event);
+        }
+    	Set<DeploymentEvent> firstDeployment = new HashSet<DeploymentEvent>();
+    	firstDeployment.addAll(report.getEvents());
+    	assertTrue("Create missing: /CamelCase.txt", firstDeployment.contains(new DeploymentEvent(DeploymentEvent.Type.CREATED, null, "/CamelCase.txt")));
+        
+        
+    	report = new DeploymentReport();
+    	callbacks = new ArrayList<DeploymentCallback>();
+    	callbacks.add(new DeploymentReportCallback(report));
+    	
+    	//fService.rename("main:/", "CamelCase.txt", "main:/", "cAMELcASE.TXT");
+    	fService.removeNode("main:/", "CamelCase.txt");
+    	fService.createFile("main:/", "cAMELcASE.TXT").close();
+    	
+    
+    	service.deployDifferenceFS(-1, "main:/", "default", "localhost", 44100, TEST_USER, TEST_PASSWORD, TEST_TARGET, null, false, false, false, callbacks);
+    	Set<DeploymentEvent> secondDeployment = new HashSet<DeploymentEvent>();
+    	secondDeployment.addAll(report.getEvents());
+        for (DeploymentEvent event : report)
+        {
+            System.out.println(event);
+        }																												
+
+    	assertTrue("delete missing: /CamelCase.txt", secondDeployment.contains(new DeploymentEvent(DeploymentEvent.Type.DELETED, null, "/CamelCase.txt")));
+    	assertTrue("Create missing: /cAMELcASE.TXT", secondDeployment.contains(new DeploymentEvent(DeploymentEvent.Type.CREATED, null, "/cAMELcASE.TXT")));
+    	
+    }
+
 
 
     
@@ -496,9 +549,14 @@ public class FSDeploymentTest extends AVMServiceTestBase
     	assertTrue("big update no start", bigUpdate.contains(new DeploymentEvent(DeploymentEvent.Type.START, null, TEST_TARGET)));
     	assertTrue("big update no finish", bigUpdate.contains(new DeploymentEvent(DeploymentEvent.Type.END, null, TEST_TARGET)));
     	assertTrue("big update too small", bigUpdate.size() > 100);
+    	assertTrue("Update missing /avm/AVMServiceTest.java", bigUpdate.contains(new DeploymentEvent(DeploymentEvent.Type.CREATED, null, "/avm/AVMServiceTest.java")));
     
     	/**
     	 * Now do a smaller update and check that just a few files update
+    	 * Start
+    	 * Delete /avm/hibernate
+    	 * Update /avm/AVMServiceTest.java
+    	 * End
     	 */
     	fService.removeNode("main:/avm/hibernate");
     	fService.getFileOutputStream("main:/avm/AVMServiceTest.java").close();
@@ -513,8 +571,8 @@ public class FSDeploymentTest extends AVMServiceTestBase
     	{
     		System.out.println(event);
     	}
-    	assertEquals(4, smallUpdate.size());
     	
+    	assertEquals(4, smallUpdate.size());
     	assertTrue("Start missing", smallUpdate.contains(new DeploymentEvent(DeploymentEvent.Type.START, null, TEST_TARGET)));
     	assertTrue("End missing", smallUpdate.contains(new DeploymentEvent(DeploymentEvent.Type.DELETED, null, "/avm/hibernate")));
     	assertTrue("Update missing", smallUpdate.contains(new DeploymentEvent(DeploymentEvent.Type.UPDATED, null, "/avm/AVMServiceTest.java")));

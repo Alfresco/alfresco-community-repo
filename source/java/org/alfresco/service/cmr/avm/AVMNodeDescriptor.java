@@ -450,9 +450,9 @@ public class AVMNodeDescriptor implements Serializable
         switch (fType)
         {
             case AVMNodeType.PLAIN_FILE :
-                return "[PF:" + fID + "]";
+                return "[PF:" + fID + ":" + fName + ": FILE]";
             case AVMNodeType.PLAIN_DIRECTORY :
-                return "[PD:" + fID + "]";
+                return "[PF:" + fID + ":" + fName + ": DIR]";
             case AVMNodeType.LAYERED_FILE :
                 return "[LF:" + fID + ":" + fIndirection + "]";
             case AVMNodeType.LAYERED_DIRECTORY :

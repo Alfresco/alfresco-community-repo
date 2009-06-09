@@ -215,7 +215,8 @@ public class AuthorityServiceTest extends TestCase
         authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
         assertTrue(authorityService.hasAdminAuthority());
         assertTrue(pubAuthorityService.hasAdminAuthority());
-        assertEquals(4, authorityService.getAuthorities().size());
+        Set<String> authorities = authorityService.getAuthorities();
+        assertEquals("Unexpected result: " + authorities, 4, authorityService.getAuthorities().size());
     }
 
     public void testAuthorities()

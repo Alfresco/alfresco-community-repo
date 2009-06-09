@@ -7,7 +7,8 @@ package org.alfresco.filesys.debug;
  */
 
 import org.alfresco.config.ConfigElement;
-import org.alfresco.jlan.debug.DebugInterface;
+import org.alfresco.jlan.debug.Debug;
+import org.alfresco.jlan.debug.DebugInterfaceBase;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -16,7 +17,7 @@ import org.apache.commons.logging.LogFactory;
  * 
  * @author gkspencer
  */
-public class FileServerDebugInterface implements DebugInterface {
+public class FileServerDebugInterface extends DebugInterfaceBase {
 
   // Logger to use for all file server debug output
   
@@ -34,41 +35,61 @@ public class FileServerDebugInterface implements DebugInterface {
   }
   
   /**
-   * Close the debug output.
-   */
-  public void close() {
-  }
-
-  /**
    * Output a debug string.
    *
-   * @param str java.lang.String
+   * @param str String
    */
-  public void debugPrint(String str) {
-    if ( logger.isDebugEnabled())
+  public void debugPrint(String str, int level) {
+    if ( level <= getLogLevel())
       m_printBuf.append( str);
   }
 
   /**
    * Output a debug string, and a newline.
    *
-   * @param str java.lang.String
+   * @param str String
    */
-  public void debugPrintln(String str) {
-    if ( logger.isDebugEnabled()) {
+  public void debugPrintln(String str, int level) {
+    if ( level <= getLogLevel()) {
       
       // Check if there is any buffered output
       
       if ( m_printBuf.length() > 0) {
         m_printBuf.append( str);
-        logger.debug( m_printBuf.toString());
+        logOutput( m_printBuf.toString(), level);
         m_printBuf.setLength( 0);
       }
       else
-        logger.debug( str);
+        logOutput( str, level);
     }
   }
 
+  /**
+   * Output to the logger at the appropriate log level
+   * 
+   * @param str String
+   * @param level int
+   */
+  protected void logOutput(String str, int level) {
+	  switch ( level) {
+		case Debug.Debug:
+		  logger.debug( str);
+		  break;
+		case Debug.Info:
+		  logger.info( str);
+		  break;
+		case Debug.Warn:
+		  logger.warn( str);
+		  break;
+		case Debug.Fatal:
+		  logger.fatal( str);
+		  break;
+		case Debug.Error:
+		  logger.error( str);
+		  break;
+	  }
+  }
+  
   /**
    * Initialize the debug interface using the specified named parameters.
    *
@@ -78,6 +99,21 @@ public class FileServerDebugInterface implements DebugInterface {
   public void initialize(ConfigElement params)
     throws Exception {
 
-    // Nothing to do 
+    // Set the log level from the log4j Log object
+	  
+	int logLevel = Debug.Error;
+	
+	if ( logger.isDebugEnabled())
+	  logLevel = Debug.Debug;
+	else if ( logger.isInfoEnabled())
+	  logLevel = Debug.Info;
+	else if ( logger.isWarnEnabled())
+	  logLevel = Debug.Warn;
+	else if ( logger.isErrorEnabled())
+	  logLevel = Debug.Error;
+	else if ( logger.isFatalEnabled())
+	  logLevel = Debug.Fatal;
+	
+	setLogLevel(logLevel);
   }
 }

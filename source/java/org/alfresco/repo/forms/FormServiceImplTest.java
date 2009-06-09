@@ -39,7 +39,6 @@ import org.alfresco.repo.forms.AssociationFieldDefinition.Direction;
 import org.alfresco.repo.forms.PropertyFieldDefinition.FieldConstraint;
 import org.alfresco.repo.jscript.ClasspathScriptLocation;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
-import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
@@ -108,6 +107,7 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
     
     private static final String USER_ONE = "UserOne_FormServiceImplTest";
     private static final String NODE_FORM_ITEM_KIND = "node";
+    private static final String TYPE_FORM_ITEM_KIND = "type";
     
     /**
      * Called during the transaction setup
@@ -802,6 +802,55 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
         assertTrue("Expecting the cm:attachable to have been applied", 
                     this.nodeService.hasAspect(this.document, ContentModel.ASPECT_ATTACHABLE));
         */
+    }
+    
+    // TODO: enable this once the RM caveat stuff is fixed
+    public void xtestGetAllCreateForm() throws Exception
+    {
+        // get a form for the cm:content type
+        Form form = this.formService.getForm(new Item(TYPE_FORM_ITEM_KIND, "cm:content"));
+        
+        // check a form got returned
+        assertNotNull("Expecting form to be present", form);
+        
+        // check item identifier matches
+        assertEquals(TYPE_FORM_ITEM_KIND, form.getItem().getKind());
+        assertEquals("cm:content", form.getItem().getId());
+        
+        // check the type is correct
+        assertEquals(ContentModel.TYPE_CONTENT.toPrefixString(this.namespaceService), 
+                    form.getItem().getType());
+        
+        // check there is no group info
+        assertNull("Expecting the form groups to be null!", form.getFieldGroups());
+        
+        // check the field definitions
+        Collection<FieldDefinition> fieldDefs = form.getFieldDefinitions();
+        assertNotNull("Expecting to find fields", fieldDefs);
+        assertEquals("Expecting to find 11 fields", 11, fieldDefs.size());
+        
+        // create a Map of the field definitions
+        // NOTE: we can safely do this as we know there are no duplicate field names and we're not
+        //       concerned with ordering!
+        Map<String, FieldDefinition> fieldDefMap = new HashMap<String, FieldDefinition>(fieldDefs.size());
+        for (FieldDefinition fieldDef : fieldDefs)
+        {
+            fieldDefMap.put(fieldDef.getName(), fieldDef);
+        }
+        
+        // find the fields
+        PropertyFieldDefinition nameField = (PropertyFieldDefinition)fieldDefMap.get("cm:name");
+        PropertyFieldDefinition createdField = (PropertyFieldDefinition)fieldDefMap.get("cm:created");
+        PropertyFieldDefinition creatorField = (PropertyFieldDefinition)fieldDefMap.get("cm:creator");
+        PropertyFieldDefinition modifiedField = (PropertyFieldDefinition)fieldDefMap.get("cm:modified");
+        PropertyFieldDefinition modifierField = (PropertyFieldDefinition)fieldDefMap.get("cm:modifier");
+        
+        // check fields are present
+        assertNotNull("Expecting to find the cm:name field", nameField);
+        assertNotNull("Expecting to find the cm:created field", createdField);
+        assertNotNull("Expecting to find the cm:creator field", creatorField);
+        assertNotNull("Expecting to find the cm:modified field", modifiedField);
+        assertNotNull("Expecting to find the cm:modifier field", modifierField);
     }
     
     public void testNoForm() throws Exception

@@ -26,6 +26,7 @@ package org.alfresco.repo.forms.processor.node;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -260,7 +261,7 @@ public class NodeFormProcessor extends FilteredFormProcessor
         
         if (fields != null && fields.size() > 0)
         {
-            generateSelectedFields(nodeRef, fields, forcedFields, form);
+            generateSelectedFields(nodeRef, null, fields, forcedFields, form);
         }
         else
         {
@@ -273,28 +274,52 @@ public class NodeFormProcessor extends FilteredFormProcessor
     
     /**
      * Sets up the field definitions for all the requested fields.
-     * If any of the requested fields are not present on the node and they
-     * appear in the forcedFields list an attempt to find a model
+     * <p>
+     * A NodeRef or TypeDefinition can be provided, however, if a NodeRef 
+     * is provided all type information will be derived from the NodeRef
+     * and the TypeDefinition will be ignored.
+     * </p><p>
+     * If any of the requested fields are not present on the type and 
+     * they appear in the forcedFields list an attempt to find a model
      * definition for those fields is made so they can be included.
+     * </p>
      * 
-     * @param nodeRef The NodeRef of the node being setup
+     * @param nodeRef The NodeRef of the item being generated
+     * @param typeDef The TypeDefiniton of the item being generated
      * @param fields Restricted list of fields to include
      * @param forcedFields List of field names that should be included
      *                     even if the field is not currently present
      * @param form The Form instance to populate
      */
-    protected void generateSelectedFields(NodeRef nodeRef, List<String> fields, List<String> forcedFields, Form form)
+    protected void generateSelectedFields(NodeRef nodeRef, TypeDefinition typeDef, 
+                List<String> fields, List<String> forcedFields, Form form)
     {
+        // ensure a NodeRef or TypeDefinition is provided
+        if (nodeRef == null && typeDef == null)
+        {
+            throw new IllegalArgumentException("A NodeRef or TypeDefinition must be provided");
+        }
+        
         if (logger.isDebugEnabled())
             logger.debug("Generating selected fields: " + fields + " and forcing: " + forcedFields);
         
-        // get data dictionary definition for node
-        QName type = this.nodeService.getType(nodeRef);
-        TypeDefinition typeDef = this.dictionaryService.getAnonymousType(type,
-                    this.nodeService.getAspects(nodeRef));
+        // get data dictionary definition for node if it is provided
+        QName type = null;
+        Map<QName, Serializable> propValues = Collections.emptyMap();
+        
+        if (nodeRef != null)
+        {
+            type = this.nodeService.getType(nodeRef);
+            typeDef = this.dictionaryService.getAnonymousType(type, this.nodeService.getAspects(nodeRef));
+            propValues = this.nodeService.getProperties(nodeRef);
+        }
+        else
+        {
+            type = typeDef.getName();
+        }
+        
         Map<QName, PropertyDefinition> propDefs = typeDef.getProperties();
-        Map<QName, AssociationDefinition> assocDefs = typeDef.getAssociations();
-        Map<QName, Serializable> propValues = this.nodeService.getProperties(nodeRef);
+        Map<QName, AssociationDefinition> assocDefs = typeDef.getAssociations(); 
         
         for (String fieldName : fields)
         {
@@ -365,7 +390,8 @@ public class NodeFormProcessor extends FilteredFormProcessor
                     {
                         // generate the association field
                         generateAssociationField(assocDef, 
-                                    retrieveAssociationValues(nodeRef, assocDef), form);
+                                    (nodeRef != null) ? retrieveAssociationValues(nodeRef, assocDef) : null, 
+                                    form);
                         
                         foundField = true;
                     }
@@ -382,7 +408,8 @@ public class NodeFormProcessor extends FilteredFormProcessor
                     else if (logger.isDebugEnabled())
                     {
                         logger.debug("Ignoring field \"" + fieldName + 
-                                    "\" as it is not defined for the current node and it does not appear in the 'force' list");
+                                    "\" as it is not defined for the current " + ((nodeRef != null) ? "node" : "type") + 
+                                    " and it does not appear in the 'force' list");
                     }
                 }
             }
@@ -393,7 +420,7 @@ public class NodeFormProcessor extends FilteredFormProcessor
                     TRANSIENT_SIZE.equals(fieldName))
                 {
                     // if the node type is content or sublcass thereof generate appropriate field
-                    if (this.dictionaryService.isSubClass(type, ContentModel.TYPE_CONTENT))
+                    if (nodeRef != null && this.dictionaryService.isSubClass(type, ContentModel.TYPE_CONTENT))
                     {
                         ContentData content = (ContentData)this.nodeService.getProperty(nodeRef, ContentModel.PROP_CONTENT);
                         if (content != null)

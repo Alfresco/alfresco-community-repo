@@ -78,6 +78,19 @@
         </property>
     </bean>
     
+    <bean id="typeFormProcessor" 
+          class="org.alfresco.repo.forms.processor.node.TypeFormProcessor" 
+          parent="filteredFormProcessor">
+        <!-- <property name="filterRegistry" ref="nodeFilterRegistry" /> -->
+        <property name="nodeService" ref="NodeService" />
+        <property name="fileFolderService" ref="FileFolderService" />
+        <property name="dictionaryService" ref="DictionaryService" />
+        <property name="namespaceService" ref="NamespaceService" />
+        <property name="matchPattern">
+            <value>type</value>
+        </property>
+    </bean>
+    
     <!--  Filters -->
     <bean id="baseFormFilter" abstract="true" init-method="register"
           class="org.alfresco.repo.forms.processor.AbstractFilter" />

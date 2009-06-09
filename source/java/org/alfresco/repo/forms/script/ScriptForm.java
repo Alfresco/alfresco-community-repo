@@ -51,8 +51,13 @@ public class ScriptForm implements Serializable
         this.form = formObject;
         
         fieldDefinitionData = new HashMap<String, FieldDefinition>();
-        for (FieldDefinition fd : form.getFieldDefinitions()) {
-            fieldDefinitionData.put(fd.getName(), fd);
+        List<FieldDefinition> fieldDefs = form.getFieldDefinitions();
+        if (fieldDefs != null)
+        {
+            for (FieldDefinition fd : fieldDefs) 
+            {
+                fieldDefinitionData.put(fd.getName(), fd);
+            }
         }
     }
 

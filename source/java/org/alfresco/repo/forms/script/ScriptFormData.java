@@ -51,10 +51,13 @@ public class ScriptFormData implements Serializable
     public ScriptableHashMap<String, ScriptFieldData> getData()
     {
         ScriptableHashMap<String, ScriptFieldData> result = new ScriptableHashMap<String, ScriptFieldData>();
-        for (String k : formData.getData().keySet())
+        if (this.formData != null)
         {
-            ScriptFieldData wrappedFieldData = new ScriptFieldData(formData.getData().get(k));
-            result.put(k, wrappedFieldData);
+            for (String k : formData.getData().keySet())
+            {
+                ScriptFieldData wrappedFieldData = new ScriptFieldData(formData.getData().get(k));
+                result.put(k, wrappedFieldData);
+            }
         }
         return result;
     }

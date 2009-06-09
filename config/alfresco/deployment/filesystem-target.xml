@@ -64,8 +64,7 @@
             	    	
             	    	<!--  how to authenticate for this particular target -->
 						<property name="authenticator">
-						<bean
-							class="org.alfresco.deployment.impl.DeploymentReceiverAuthenticatorAuthenticationService"
+						<bean class="org.alfresco.repo.deploy.DeploymentReceiverAuthenticatorAuthenticationService"
 							init-method="init">
 							<property name="authenticationService">
 								<ref bean="AuthenticationService" />

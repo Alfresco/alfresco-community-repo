@@ -155,5 +155,14 @@
             <value>cropContent</value>
         </property>
     </bean>
+
+    <bean id="shortQNameTemplateExtension" parent="baseTemplateImplementation" class="org.alfresco.repo.template.ShortQNameMethod">
+        <property name="extensionName">
+            <value>shortQName</value>
+        </property>
+        <property name="serviceRegistry">
+            <ref bean="ServiceRegistry"/>
+        </property>
+    </bean>
     
 </beans>

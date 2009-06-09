@@ -42,6 +42,8 @@ import org.alfresco.util.ISO8601DateFormat;
  */
 public final class ScriptUtils extends BaseScopableProcessorExtension
 {
+    private final static String NAMESPACE_BEGIN = "" + QName.NAMESPACE_BEGIN;
+
     /** Services */
     private ServiceRegistry services;
     
@@ -146,5 +148,38 @@ public final class ScriptUtils extends BaseScopableProcessorExtension
     public Date fromISO8601(String isoDateString)
     {
         return ISO8601DateFormat.parse(isoDateString);
+    }
+    
+    /**
+     * Given a long-form QName string, this method uses the namespace service to create a
+     * short-form QName string.
+     * 
+     * @param s   Fully qualified QName string
+     * @return the short form of the QName string, e.g. "cm:content"
+     */
+    public String shortQName(String s)
+    {
+        return createQName(s).toPrefixString(services.getNamespaceService());
+    }
+
+    /**
+     * Helper to create a QName from either a fully qualified or short-name QName string
+     * 
+     * @param s    Fully qualified or short-name QName string
+     * 
+     * @return QName
+     */
+    private QName createQName(String s)
+    {
+        QName qname;
+        if (s.indexOf(NAMESPACE_BEGIN) != -1)
+        {
+            qname = QName.createQName(s);
+        }
+        else
+        {
+            qname = QName.createQName(s, this.services.getNamespaceService());
+        }
+        return qname;
     }
 }

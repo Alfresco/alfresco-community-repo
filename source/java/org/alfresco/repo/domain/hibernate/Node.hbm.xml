@@ -787,6 +787,7 @@
          s.protocol = :storeProtocol AND
          s.identifier = :storeIdentifier AND
          n.type_qname_id = :nodeTypeQNameID AND
+         n.node_deleted = :isDeleted AND
          a.child_node_id IS NULL
    </sql-query>    
 

@@ -122,9 +122,11 @@ public class AuthorityDAOImpl implements AuthorityDAO
             throw new UnknownAuthorityException("An authority was not found for " + parentName);
         }
         AuthorityType authorityType = AuthorityType.getAuthorityType(childName);
-        if (!authorityType.equals(AuthorityType.USER) && !authorityType.equals(AuthorityType.GROUP))
+        if (!authorityType.equals(AuthorityType.USER) && !authorityType.equals(AuthorityType.GROUP)
+                && !(authorityType.equals(AuthorityType.ROLE) && AuthorityType.getAuthorityType(parentName).equals(
+                        AuthorityType.ROLE)))
         {
-            throw new AlfrescoRuntimeException("Authorities of the type " + AuthorityType.getAuthorityType(childName)
+            throw new AlfrescoRuntimeException("Authorities of the type " + authorityType
                     + " may not be added to other authorities");
         }
         NodeRef childRef = getAuthorityOrNull(childName);
@@ -308,7 +310,8 @@ public class AuthorityDAOImpl implements AuthorityDAO
     private void findAuthorities(AuthorityType type, String name, Set<String> authorities, boolean parents,
             boolean recursive)
     {
-        if (AuthorityType.getAuthorityType(name).equals(AuthorityType.GUEST))
+        AuthorityType localType = AuthorityType.getAuthorityType(name); 
+        if (localType.equals(AuthorityType.GUEST))
         {
             // Nothing to do
         }
@@ -316,13 +319,16 @@ public class AuthorityDAOImpl implements AuthorityDAO
         {
             NodeRef ref = getAuthorityOrNull(name);
 
-            if (ref == null)
+            if (ref != null)
             {
+                findAuthorities(type, null, ref, authorities, parents, recursive, false);
+            }
+            else if (!localType.equals(AuthorityType.USER))
+            {
+                // Don't worry about missing person objects. It might be the system user or a user yet to be
+                // auto-created
                 throw new UnknownAuthorityException("An authority was not found for " + name);
             }
-
-            findAuthorities(type, null, ref, authorities, parents, recursive, false);
-
         }
     }
 

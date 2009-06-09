@@ -1796,7 +1796,7 @@
         <property name="fixesToSchema"><value>2012</value></property>
         <property name="targetSchema"><value>2013</value></property>
         <property name="authorityService">
-            <ref bean="AuthorityService" />
+            <ref bean="authorityService" />
         </property>
         <property name="userBootstrap">
             <ref bean="userBootstrap" />

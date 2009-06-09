@@ -215,7 +215,7 @@ public class AuthorityServiceTest extends TestCase
         authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
         assertTrue(authorityService.hasAdminAuthority());
         assertTrue(pubAuthorityService.hasAdminAuthority());
-        assertEquals(3, authorityService.getAuthorities().size());
+        assertEquals(4, authorityService.getAuthorities().size());
     }
 
     public void testAuthorities()
@@ -613,7 +613,9 @@ public class AuthorityServiceTest extends TestCase
         pubAuthorityService.addAuthority(auth3, auth2);
 
         assertEquals(7, pubAuthorityService.getAllAuthorities(AuthorityType.GROUP).size());
-        assertEquals(4, pubAuthorityService.getAllRootAuthorities(AuthorityType.GROUP).size());
+        
+        // Number of root authorities has been reduced since auth2 is no longer an orphan
+        assertEquals(3, pubAuthorityService.getAllRootAuthorities(AuthorityType.GROUP).size());
         // The next call looks for people not users :-)
         checkAuthorityCollectionSize(3, pubAuthorityService.getAllAuthorities(AuthorityType.USER), AuthorityType.USER);
         assertEquals(4, pubAuthorityService.getContainingAuthorities(null, "andy", false).size());

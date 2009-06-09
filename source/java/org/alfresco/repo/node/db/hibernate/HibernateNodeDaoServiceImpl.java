@@ -2787,7 +2787,8 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
                         HibernateNodeDaoServiceImpl.QUERY_GET_NODES_WITHOUT_PARENT_ASSOCS_OF_TYPE).setString(
                         "storeProtocol", storeRef.getProtocol()).setString("storeIdentifier", storeRef.getIdentifier())
                         .setLong("nodeTypeQNameID", qnameDAO.getOrCreateQName(nodeTypeQName).getFirst()).setLong(
-                                "assocTypeQNameID", qnameDAO.getOrCreateQName(assocTypeQName).getFirst());
+                                "assocTypeQNameID", qnameDAO.getOrCreateQName(assocTypeQName).getFirst()).setBoolean(
+                                "isDeleted", false);
                 DirtySessionMethodInterceptor.setQueryFlushMode(session, query);
                 return query.scroll(ScrollMode.FORWARD_ONLY);
             }

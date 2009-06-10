@@ -295,8 +295,20 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
 
     public void deleteAuthority(String name)
     {
+        deleteAuthority(name, false);
+    }
+
+    public void deleteAuthority(String name, boolean cascade)
+    {
         AuthorityType type = AuthorityType.getAuthorityType(name);
         checkTypeIsMutable(type);
+        if (cascade)
+        {
+            for (String child : getContainedAuthorities(type, name, true))
+            {
+                deleteAuthority(child, true);
+            }
+        }
         authorityDAO.deleteAuthority(name);
         permissionServiceSPI.deletePermissions(name);
     }

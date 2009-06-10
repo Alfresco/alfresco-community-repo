@@ -190,12 +190,24 @@ public interface AuthorityService
     public void removeAuthority(String parentName, String childName);
 
     /**
-     * Delete an authority and all its relationships.
+     * Delete an authority and all its relationships. Note child authorities are not deleted.
      * 
      * @param name
      */
     @Auditable(parameters = {"name"})
     public void deleteAuthority(String name);
+
+    /**
+     * Delete an authority and all its relationships, optionally recursively deleting child authorities of the same
+     * type.
+     * 
+     * @param name
+     *            the authority long name
+     * @param cascade
+     *            should the delete be cascaded to child authorities of the same type?
+     */
+    @Auditable(parameters = {"name", "cascade"})
+    public void deleteAuthority(String name, boolean cascade);
 
     /**
      * Get all the authorities that are contained by the given authority.

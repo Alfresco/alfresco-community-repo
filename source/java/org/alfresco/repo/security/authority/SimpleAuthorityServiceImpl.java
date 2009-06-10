@@ -201,6 +201,11 @@ public class SimpleAuthorityServiceImpl implements AuthorityService
       
     }
 
+    public void deleteAuthority(String name, boolean cascade)
+    {
+        
+    }
+
     public Set<String> getAllRootAuthorities(AuthorityType type)
     {
         return getAllAuthorities(type);

@@ -926,12 +926,12 @@ public class SiteServiceImpl implements SiteService, SiteModel
         // Delete the node
         this.nodeService.deleteNode(siteNodeRef);
 
-        // Delete the associated group's
+        // Delete the associated groups
         AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
         {
             public Object doWork() throws Exception
             {
-                authorityService.deleteAuthority(getSiteGroup(shortName, true));
+                authorityService.deleteAuthority(getSiteGroup(shortName, true), true);
                 return null;
             }
         }, AuthenticationUtil.getSystemUserName());

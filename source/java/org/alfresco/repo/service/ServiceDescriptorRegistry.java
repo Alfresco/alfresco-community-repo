@@ -75,6 +75,7 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.wcm.asset.AssetService;
+import org.alfresco.wcm.preview.PreviewURIService;
 import org.alfresco.wcm.sandbox.SandboxService;
 import org.alfresco.wcm.webproject.WebProjectService;
 import org.springframework.beans.BeansException;
@@ -491,6 +492,14 @@ public class ServiceDescriptorRegistry
     public AssetService getAssetService()
     {
         return (AssetService)getService(ASSET_SERVICE);
+    }
+    
+    /* (non-Javadoc)
+     * @see org.alfresco.service.ServiceRegistry#getPreviewURIService()
+     */
+    public PreviewURIService getPreviewURIService()
+    {
+        return (PreviewURIService)getService(PREVIEW_URI_SERVICE);
     }
     
     /* (non-Javadoc)

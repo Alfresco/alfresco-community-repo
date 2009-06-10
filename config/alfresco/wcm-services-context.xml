@@ -53,6 +53,7 @@
        <property name="personService" ref="PersonService"/>
        <property name="sandboxFactory" ref="sandboxFactory"/>
        <property name="virtServerRegistry" ref="VirtServerRegistry"/>
+       <property name="previewURIServiceRegistry" ref="previewURIServiceRegistry"/>
     </bean>
 
 
@@ -232,5 +233,74 @@
         <property name="assetService" ref="AssetService"/>
         <property name="namespaceService" ref="NamespaceService"/>
     </bean>
+    
+    <!-- PreviewURI Service -->
+    
+    <!-- PreviewURI service bean - note: named WCMPreviewURIService to allow backwards compatibility with deprecated "PreviewURIService" (as hard-coded in AVMUtil) -->
+    <bean id="WCMPreviewURIService" class="org.springframework.aop.framework.ProxyFactoryBean">
+        <property name="proxyInterfaces">
+            <value>org.alfresco.wcm.preview.PreviewURIService</value>
+        </property>
+        <property name="target">
+            <ref bean="previewURIService"/>
+        </property>
+        <property name="interceptorNames">
+            <list>
+                <idref local="PreviewURIService_transaction"/>
+                <idref bean="AuditMethodInterceptor"/>
+                <idref bean="exceptionTranslator"/>
+                <idref local="PreviewURIService_security"/>
+            </list>
+        </property>
+    </bean>
+
+    <!-- PreviewURI Service service transaction bean -->
+    <bean id="PreviewURIService_transaction" class="org.springframework.transaction.interceptor.TransactionInterceptor">
+        <property name="transactionManager">
+            <ref bean="transactionManager"/>
+        </property>
+        <property name="transactionAttributes">
+            <props>
+                <prop key="get*">${server.transaction.mode.readOnly}</prop>
+                <prop key="*">${server.transaction.mode.default}</prop>
+            </props>
+        </property>
+    </bean>
+    
+    <!-- PreviewURIService service security bean -->
+    <bean id="PreviewURIService_security" class="org.alfresco.repo.security.permissions.impl.AlwaysProceedMethodInterceptor" />
+    
+    <bean id="previewURIService" class="org.alfresco.wcm.preview.PreviewURIServiceImpl">
+        <property name="webProjectService" ref="WebProjectService"/>
+        <property name="previewURIServiceRegistry" ref="previewURIServiceRegistry"/>
+    </bean>
+    
+    <!-- override this bean in a custom-wcm-preview-context.xml file to extend/change list of preview providers -->
+    <bean id="previewURIServiceRegistry" class="org.alfresco.wcm.preview.PreviewURIServiceRegistryImpl">
+        <property name="defaultProviderName">
+           <value>Virtualisation Server Preview</value>
+       </property>
+       <property name="previewURIServiceProvidersByName">
+           <map>
+               <entry key="Virtualisation Server Preview">
+                   <ref bean="virtServerPreviewURIService"/>
+               </entry>
+               <!--
+               <entry key="NOOP Preview">
+                   <ref bean="nullPreviewURIService"/>
+               </entry>
+               -->
+           </map>
+       </property>
+    </bean>
+    
+    <bean id="basePreviewURIServiceProvider" class="org.alfresco.wcm.preview.AbstractPreviewURIServiceProvider" abstract="true"/>
+    
+    <bean id="virtServerPreviewURIService" class="org.alfresco.wcm.preview.VirtualisationServerPreviewURIService" parent="basePreviewURIServiceProvider">
+        <property name="avmService" ref="AVMService"/>
+        <property name="virtServerRegistry" ref="VirtServerRegistry"/>
+    </bean>
+    
+    <bean id="nullPreviewURIService" class="org.alfresco.wcm.preview.NullPreviewURIService" parent="basePreviewURIServiceProvider"/>
     
 </beans>

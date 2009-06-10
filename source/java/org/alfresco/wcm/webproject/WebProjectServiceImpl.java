@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2008 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -47,6 +47,7 @@ import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.TransactionListenerAdapter;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
+import org.alfresco.service.cmr.avm.AVMNotFoundException;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.avm.locking.AVMLockingService;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
@@ -67,6 +68,8 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.DNSNameMangler;
 import org.alfresco.util.ParameterCheck;
+import org.alfresco.wcm.preview.PreviewURIServiceRegistry;
+import org.alfresco.wcm.sandbox.SandboxConstants;
 import org.alfresco.wcm.sandbox.SandboxFactory;
 import org.alfresco.wcm.sandbox.SandboxInfo;
 import org.alfresco.wcm.sandbox.SandboxFactory.UserRoleWrapper;
@@ -101,6 +104,7 @@ public class WebProjectServiceImpl extends WCMUtil implements WebProjectService
     
     private SandboxFactory sandboxFactory;
     private VirtServerRegistry virtServerRegistry;
+    private PreviewURIServiceRegistry previewURIProviderRegistry;
     
     public void setNodeService(NodeService nodeService)
     {
@@ -141,13 +145,17 @@ public class WebProjectServiceImpl extends WCMUtil implements WebProjectService
     {
         this.sandboxFactory = sandboxFactory;
     }
-
+    
     public void setVirtServerRegistry(VirtServerRegistry virtServerRegistry)
     {
         this.virtServerRegistry = virtServerRegistry;
     }
     
-
+    public void setPreviewURIServiceRegistry(PreviewURIServiceRegistry previewURIProviderRegistry)
+    {
+        this.previewURIProviderRegistry = previewURIProviderRegistry;
+    }
+    
     /* (non-Javadoc)
      * @see org.alfresco.wcm.WebProjectService#createWebProject(java.lang.String, java.lang.String, java.lang.String, java.lang.String)
      */
@@ -169,8 +177,25 @@ public class WebProjectServiceImpl extends WCMUtil implements WebProjectService
      */
     public WebProjectInfo createWebProject(String dnsName, String name, String title, String description, String defaultWebApp, boolean useAsTemplate, NodeRef sourceNodeRef)
     {
+        return createWebProject(new WebProjectInfoImpl(dnsName, name, title, description, defaultWebApp, useAsTemplate, sourceNodeRef, null));
+    }
+    
+    public WebProjectInfo createWebProject(WebProjectInfo wpInfo)
+    {
+        String wpStoreId = wpInfo.getStoreId();
+        String name = wpInfo.getName();
+        String title = wpInfo.getTitle();
+        String description = wpInfo.getDescription();
+        boolean useAsTemplate = wpInfo.isTemplate();
+        NodeRef sourceNodeRef = wpInfo.getNodeRef();
+        String defaultWebApp = wpInfo.getDefaultWebApp();
+        String previewProviderName = wpInfo.getPreviewProviderName();
+        
+        ParameterCheck.mandatoryString("wpStoreId", wpStoreId);
+        ParameterCheck.mandatoryString("name", name);
+        
         // Generate web project store id (an AVM store name)
-        String wpStoreId = DNSNameMangler.MakeDNSName(dnsName);
+        wpStoreId = DNSNameMangler.MakeDNSName(wpStoreId);
         
         if (wpStoreId.indexOf(WCMUtil.STORE_SEPARATOR) != -1)
         {
@@ -182,9 +207,26 @@ public class WebProjectServiceImpl extends WCMUtil implements WebProjectService
             throw new IllegalArgumentException("Unexpected store id '"+wpStoreId+"' - should not contain '"+WCMUtil.AVM_STORE_SEPARATOR+"'");
         }
         
+        if (previewProviderName == null)
+        {
+            // default preview URI service provider
+            previewProviderName = previewURIProviderRegistry.getDefaultProviderName();
+        }
+        else if (! previewURIProviderRegistry.getPreviewURIServiceProviders().keySet().contains(previewProviderName))
+        {
+            throw new AlfrescoRuntimeException("Cannot update web project '" + wpInfo.getStoreId() + "' - unknown preview URI service provider ("+previewProviderName+")");
+        }
+        
+        // default webapp name
+        defaultWebApp = (defaultWebApp != null && defaultWebApp.length() != 0) ? defaultWebApp : WCMUtil.DIR_ROOT;
+        
         // create the website space in the correct parent folder
         Map<QName, Serializable> props = new HashMap<QName, Serializable>(1);
         props.put(ContentModel.PROP_NAME, name);
+        props.put(WCMAppModel.PROP_ISSOURCE, useAsTemplate);
+        props.put(WCMAppModel.PROP_DEFAULTWEBAPP, defaultWebApp);
+        props.put(WCMAppModel.PROP_AVMSTORE, wpStoreId); // reference to the root AVM store
+        props.put(WCMAppModel.PROP_PREVIEW_PROVIDER, previewProviderName);
         
         ChildAssociationRef childAssocRef = nodeService.createNode(
               getWebProjectsRoot(),
@@ -203,16 +245,6 @@ public class WebProjectServiceImpl extends WCMUtil implements WebProjectService
         uiFacetsProps.put(ContentModel.PROP_DESCRIPTION, description);
         nodeService.addAspect(wpNodeRef, ApplicationModel.ASPECT_UIFACETS, uiFacetsProps);
         
-        // use as template source flag
-        nodeService.setProperty(wpNodeRef, WCMAppModel.PROP_ISSOURCE, useAsTemplate);
-        
-        // set the default webapp name for the project
-        defaultWebApp = (defaultWebApp != null && defaultWebApp.length() != 0) ? defaultWebApp : WCMUtil.DIR_ROOT;
-        nodeService.setProperty(wpNodeRef, WCMAppModel.PROP_DEFAULTWEBAPP, defaultWebApp);
-
-        // set the property on the node to reference the root AVM store
-        nodeService.setProperty(wpNodeRef, WCMAppModel.PROP_AVMSTORE, wpStoreId);
-
         // branch from source web project, if supplied
         String branchStoreId = null;
         if (sourceNodeRef != null)
@@ -223,10 +255,11 @@ public class WebProjectServiceImpl extends WCMUtil implements WebProjectService
         // create the AVM staging store to represent the newly created location website
         sandboxFactory.createStagingSandbox(wpStoreId, wpNodeRef, branchStoreId); // ignore return, fails if web project already exists
         
+        String stagingStore = WCMUtil.buildStagingStoreName(wpStoreId);
+        
         // create the default webapp folder under the hidden system folders
         if (branchStoreId == null)
         {
-           String stagingStore = WCMUtil.buildStagingStoreName(wpStoreId);
            String stagingStoreRoot = WCMUtil.buildSandboxRootPath(stagingStore);
            avmService.createDirectory(stagingStoreRoot, defaultWebApp);
            avmService.addAspect(AVMNodeConverter.ExtendAVMPath(stagingStoreRoot, defaultWebApp), WCMAppModel.ASPECT_WEBAPP);
@@ -235,8 +268,10 @@ public class WebProjectServiceImpl extends WCMUtil implements WebProjectService
         // now the sandbox is created set the permissions masks for the store
         sandboxFactory.setStagingPermissionMasks(wpStoreId);
         
-        // set the property on the node to reference the root AVM store
-        nodeService.setProperty(wpNodeRef, WCMAppModel.PROP_AVMSTORE, wpStoreId);
+        // set preview provider on staging store (used for preview lookup)
+        avmService.setStoreProperty(stagingStore,
+                SandboxConstants.PROP_WEB_PROJECT_PREVIEW_PROVIDER,
+                new PropertyValue(DataTypeDefinition.TEXT, previewProviderName));
         
         // inform the locking service about this new instance
         avmLockingService.addWebProject(wpStoreId);
@@ -261,8 +296,7 @@ public class WebProjectServiceImpl extends WCMUtil implements WebProjectService
         }
         
         // Return created web project info
-        WebProjectInfo wpInfo = new WebProjectInfoImpl(name, title, description, wpStoreId, defaultWebApp, useAsTemplate, wpNodeRef);
-        return wpInfo;
+        return new WebProjectInfoImpl(wpStoreId, name, title, description, defaultWebApp, useAsTemplate, wpNodeRef, previewProviderName);
     }
     
     /* (non-Javadoc)
@@ -370,6 +404,8 @@ public class WebProjectServiceImpl extends WCMUtil implements WebProjectService
         {
             // get AVM store name of the staging sandbox
             final String wpStoreId = wpInfo.getStoreId();
+            
+            WCMUtil.removeVServerWebapp(virtServerRegistry, WCMUtil.buildStoreWebappPath(wpStoreId, webAppName), true);
             
             AuthenticationUtil.runAs(new RunAsWork<Object>()
             {
@@ -526,6 +562,38 @@ public class WebProjectServiceImpl extends WCMUtil implements WebProjectService
     }
     
     /* (non-Javadoc)
+     * @see org.alfresco.wcm.webproject.WebProjectService#getPreviewProvider(java.lang.String)
+     */
+    public String getPreviewProvider(String wpStoreId)
+    {
+        ParameterCheck.mandatoryString("wpStoreId", wpStoreId);
+        
+        String previewProviderName = null;
+        
+        try
+        {
+            String stagingStoreId = WCMUtil.buildStagingStoreName(wpStoreId);
+            PropertyValue pValue = avmService.getStoreProperty(stagingStoreId, SandboxConstants.PROP_WEB_PROJECT_PREVIEW_PROVIDER);
+            
+            if (pValue != null)
+            {
+                previewProviderName = (String)pValue.getValue(DataTypeDefinition.TEXT);
+            }
+        }
+        catch (AVMNotFoundException nfe)
+        {
+            logger.warn(wpStoreId + " is not a web project: " + nfe);
+        }
+        
+        if (previewProviderName == null)
+        {
+            previewProviderName = previewURIProviderRegistry.getDefaultProviderName();
+        }
+        
+        return previewProviderName;
+    }
+    
+    /* (non-Javadoc)
      * @see org.alfresco.wcm.webproject.WebProjectService#getWebProject(org.alfresco.service.cmr.repository.NodeRef)
      */
     public WebProjectInfo getWebProject(NodeRef wpNodeRef)
@@ -544,9 +612,10 @@ public class WebProjectServiceImpl extends WCMUtil implements WebProjectService
         String wpStoreId = (String)properties.get(WCMAppModel.PROP_AVMSTORE);
         String defaultWebApp = (String)properties.get(WCMAppModel.PROP_DEFAULTWEBAPP);
         Boolean useAsTemplate = (Boolean)properties.get(WCMAppModel.PROP_ISSOURCE);
+        String previewProvider = (String)properties.get(WCMAppModel.PROP_PREVIEW_PROVIDER);
         
         // Create and return the web project info
-        WebProjectInfo wpInfo = new WebProjectInfoImpl(name, title, description, wpStoreId, defaultWebApp, useAsTemplate, wpNodeRef);
+        WebProjectInfo wpInfo = new WebProjectInfoImpl(wpStoreId, name, title, description, defaultWebApp, useAsTemplate, wpNodeRef, previewProvider);
         return wpInfo;
     }
 
@@ -558,7 +627,21 @@ public class WebProjectServiceImpl extends WCMUtil implements WebProjectService
         NodeRef wpNodeRef = getWebProjectNodeFromStore(wpInfo.getStoreId());
         if (wpNodeRef == null)
         {
-            throw new AlfrescoRuntimeException("Cannot update web project '" + wpInfo.getStoreId() + "' because it does not exist.");
+            throw new AlfrescoRuntimeException("Cannot update web project '" + wpInfo.getStoreId() + "' - it does not exist.");
+        }
+        
+        if (! listWebApps(wpNodeRef).contains(wpInfo.getDefaultWebApp()))
+        {
+            throw new AlfrescoRuntimeException("Cannot update web project '" + wpInfo.getStoreId() + "' - unknown default web app  ("+wpInfo.getDefaultWebApp()+")");
+        }
+        
+        if (wpInfo.getPreviewProviderName() == null)
+        {
+            wpInfo.setPreviewProviderName(previewURIProviderRegistry.getDefaultProviderName());
+        }
+        else if (! previewURIProviderRegistry.getPreviewURIServiceProviders().keySet().contains(wpInfo.getPreviewProviderName()))
+        {
+            throw new AlfrescoRuntimeException("Cannot update web project '" + wpInfo.getStoreId() + "' - unknown preview URI service provider ("+wpInfo.getPreviewProviderName()+")");
         }
         
         // Note: the site preset and short name can not be updated
@@ -571,8 +654,17 @@ public class WebProjectServiceImpl extends WCMUtil implements WebProjectService
         properties.put(ContentModel.PROP_DESCRIPTION, wpInfo.getDescription());
         properties.put(WCMAppModel.PROP_DEFAULTWEBAPP, wpInfo.getDefaultWebApp());
         properties.put(WCMAppModel.PROP_ISSOURCE, wpInfo.isTemplate());
+        properties.put(WCMAppModel.PROP_PREVIEW_PROVIDER, wpInfo.getPreviewProviderName());
         
         this.nodeService.setProperties(wpNodeRef, properties);
+        
+        // set preview provider on staging store (used for preview lookup)
+        String stagingStore = WCMUtil.buildStagingStoreName(wpInfo.getStoreId());
+        
+        avmService.deleteStoreProperty(stagingStore, SandboxConstants.PROP_WEB_PROJECT_PREVIEW_PROVIDER);
+        avmService.setStoreProperty(stagingStore,
+                SandboxConstants.PROP_WEB_PROJECT_PREVIEW_PROVIDER,
+                new PropertyValue(DataTypeDefinition.TEXT, wpInfo.getPreviewProviderName()));
         
         if (logger.isDebugEnabled())
         {

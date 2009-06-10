@@ -74,6 +74,7 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.wcm.asset.AssetService;
+import org.alfresco.wcm.preview.PreviewURIService;
 import org.alfresco.wcm.sandbox.SandboxService;
 import org.alfresco.wcm.webproject.WebProjectService;
 
@@ -125,21 +126,26 @@ public interface ServiceRegistry
     static final QName OWNABLE_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "OwnableService");
     static final QName PERSON_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "PersonService");
     static final QName SITE_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "SiteService");
+    static final QName ATTRIBUTE_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "AttributeService");
+    static final QName THUMBNAIL_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "ThumbnailService");
+    static final QName TAGGING_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "TaggingService");
+    static final QName FORM_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "FormService");
+    static final QName INVITATION_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "InvitationService");
+    
+    // WCM / AVM
     static final QName AVM_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "AVMService");
     static final QName AVM_LOCKING_AWARE_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "AVMLockingAwareService");
     static final QName AVM_SYNC_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "AVMSyncService");
     static final QName CROSS_REPO_COPY_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "CrossRepositoryCopyService");
-    static final QName ATTRIBUTE_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "AttributeService");
     static final QName AVM_LOCKING_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "AVMLockingService");
     static final QName VIRT_SERVER_REGISTRY = QName.createQName(NamespaceService.ALFRESCO_URI, "VirtServerRegistry");
-    static final QName THUMBNAIL_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "ThumbnailService");
-    static final QName TAGGING_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "TaggingService");
     static final QName DEPLOYMENT_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "DeploymentService");
     static final QName WEBPROJECT_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "WebProjectService");
     static final QName SANDBOX_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "SandboxService");
     static final QName ASSET_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "AssetService");
-    static final QName FORM_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "FormService");
-    static final QName INVITATION_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "InvitationService");
+    static final QName PREVIEW_URI_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "WCMPreviewURIService");
+    
+    // CMIS
     static final QName CMIS_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "CMISService");
     static final QName CMIS_DICTIONARY_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "CMISDictionaryService");
     static final QName CMIS_QUERY_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "CMISQueryService");
@@ -432,7 +438,7 @@ public interface ServiceRegistry
     TaggingService getTaggingService();
     
     /**
-     * Get the Deployment Service
+     * Get the WCM Deployment Service
      * @return the deployment service (or null, if one is not provided)
      */
     @NotAuditable
@@ -458,6 +464,13 @@ public interface ServiceRegistry
      */
     @NotAuditable
     AssetService getAssetService();
+    
+    /**
+     * Get the WCM Preview URI Service
+     * @return
+     */
+    @NotAuditable
+    PreviewURIService getPreviewURIService();
     
     /**
      * Get the form service (or null if one is not provided)

@@ -188,7 +188,7 @@ public class AVM extends BaseTemplateProcessorExtension
      */
     public String websiteStagingUrl(String storeId)
     {
-        return WCMUtil.buildStoreUrl(this.services.getAVMService(), storeId, getVServerDomain(), getVServerPort());
+        return this.services.getPreviewURIService().getPreviewURI(storeId, null);
     }
 
     /**
@@ -210,9 +210,9 @@ public class AVM extends BaseTemplateProcessorExtension
      * 
      * @return the preview URL to the specified store asset
      */
-    public String assetUrl(String store, String assetPath)
+    public String assetUrl(String storeId, String assetPath)
     {
-        return WCMUtil.buildAssetUrl(assetPath, getVServerDomain(), getVServerPort(), WCMUtil.lookupStoreDNS(this.services.getAVMService(), store));
+        return this.services.getPreviewURIService().getPreviewURI(storeId, assetPath);
     }
 
     /**
@@ -229,32 +229,6 @@ public class AVM extends BaseTemplateProcessorExtension
             throw new IllegalArgumentException("Expected exactly one ':' in " + avmPath);
         }
         return assetUrl(s[0], s[1]);
-    }
-
-    /**
-     * @return VServer Port
-     */
-    private String getVServerPort()
-    {
-        Integer port = this.services.getVirtServerRegistry().getVirtServerHttpPort();
-        if (port == null)
-        {
-            port = JNDIConstants.DEFAULT_VSERVER_PORT;
-        }
-        return port.toString();
-    }
-
-    /**
-     * @return VServer Domain
-     */
-    private String getVServerDomain()
-    {
-        String domain = this.services.getVirtServerRegistry().getVirtServerFQDN();
-        if (domain == null)
-        {
-            domain = JNDIConstants.DEFAULT_VSERVER_IP;
-        }
-        return domain;
     }
 
     /**

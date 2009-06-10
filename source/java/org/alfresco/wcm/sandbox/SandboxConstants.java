@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2008 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -56,6 +56,7 @@ public class  SandboxConstants
     public final static QName PROP_WEBSITE_NAME                      = QName.createQName(null, ".website.name");
     public final static QName PROP_AUTHOR_NAME                       = QName.createQName(null, ".author.name");
     public final static QName PROP_WEB_PROJECT_NODE_REF              = QName.createQName(null, ".web_project.noderef");
+    public final static QName PROP_WEB_PROJECT_PREVIEW_PROVIDER      = QName.createQName(null, ".web_project.previewprovider");
     
     public final static QName PROP_LINK_VALIDATION_REPORT            = QName.createQName(null, ".link.validation.report");
     public final static QName PROP_LAST_DEPLOYMENT_ID                = QName.createQName(null, ".deployment.id");

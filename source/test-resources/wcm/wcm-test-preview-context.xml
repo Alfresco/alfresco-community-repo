@@ -1,0 +1,22 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+
+    <bean id="previewURIServiceRegistry" class="org.alfresco.wcm.preview.PreviewURIServiceRegistryImpl">
+        <property name="defaultProviderName">
+           <value>Virtualisation Server Preview</value>
+       </property>
+       <property name="previewURIServiceProvidersByName">
+           <map>
+               <entry key="Virtualisation Server Preview">
+                   <ref bean="virtServerPreviewURIService"/>
+               </entry>
+               <entry key="NOOP Preview">
+                   <ref bean="nullPreviewURIService"/>
+               </entry>
+           </map>
+       </property>
+    </bean>
+    
+</beans>

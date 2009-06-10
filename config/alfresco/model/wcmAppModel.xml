@@ -39,7 +39,7 @@
    <types>
    
       <type name="wca:webfolder">
-         <title>AVM Website Folder</title>
+         <title>WCM Web Project Folder</title>
          <parent>wcm:avmfolder</parent>
          <properties>
             <!-- root name of the avm staging stores for this web folder -->
@@ -75,6 +75,11 @@
             <property name="wca:issource">
                <title>Used as a template website</title>
                <type>d:boolean</type>
+            </property>
+            <!-- Preview URI Service Provider Name (since 3.2) -->
+            <property name="wca:previewprovidername">
+               <title>Preview Provider</title>
+               <type>d:text</type>
             </property>
          </properties>
          <associations>

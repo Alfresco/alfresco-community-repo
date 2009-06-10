@@ -457,7 +457,7 @@ public class WebProjectServiceImplTest extends AbstractWCMServiceImplTest
     
     public void testUpdateWebProject()
     {
-        WebProjectInfo wpInfo = new WebProjectInfoImpl(TEST_WEBPROJ_DNS+"-update", TEST_WEBPROJ_NAME+"-update", TEST_WEBPROJ_TITLE, TEST_WEBPROJ_DESCRIPTION, TEST_WEBPROJ_DEFAULT_WEBAPP, false, null);
+        WebProjectInfo wpInfo = new WebProjectInfoImpl(TEST_WEBPROJ_DNS+"-update", TEST_WEBPROJ_NAME+"-update", TEST_WEBPROJ_TITLE, TEST_WEBPROJ_DESCRIPTION, TEST_WEBPROJ_DEFAULT_WEBAPP, false, null, null);
         
         try
         {

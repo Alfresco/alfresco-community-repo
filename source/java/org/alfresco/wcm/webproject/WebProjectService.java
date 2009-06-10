@@ -1,3 +1,27 @@
+/*
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+
+ * As a special exception to the terms and conditions of version 2.0 of 
+ * the GPL, you may redistribute this Program in connection with Free/Libre 
+ * and Open Source Software ("FLOSS") applications as described in Alfresco's 
+ * FLOSS exception.  You should have recieved a copy of the text describing 
+ * the FLOSS exception, and it is also available here: 
+ * http://www.alfresco.com/legal/licensing"
+ */
 package org.alfresco.wcm.webproject;
 
 import java.util.List;
@@ -25,7 +49,7 @@ public interface WebProjectService
      * Note: the DNS name will be used to generate the web project store id, which can be subsequently retrieved via WebProjectInfo.getStoreId()
      * 
      * @param dnsName          DNS name (required, must be unique)
-     * @param name             name (require, must be unique)
+     * @param name             name (required, must be unique)
      * @param title            title
      * @param description      description
      * @return WebProjectInfo  the created web project info
@@ -43,6 +67,8 @@ public interface WebProjectService
      * @param description      description
      * @param sourceNodeRef    web project node ref to branch from (can be null)
      * @return WebProjectInfo  the created web project info
+     * 
+     * @deprecated see createWebProject(String dnsName, WebProjectInfo wpInfo)
      */
     public WebProjectInfo createWebProject(String dnsName, String name, String title, String description, NodeRef sourceNodeRef);
     
@@ -51,8 +77,8 @@ public interface WebProjectService
      * <p>
      * Note: the DNS name will be used to generate the web project store id, which can be subsequently retrieved via WebProjectInfo.getStoreId()
      * 
-     * @param dnsName          DNS name (must be unique)
-     * @param name             name (must be unique)
+     * @param dnsName          DNS name (required, must be unique)
+     * @param name             name (required, must be unique)
      * @param title            title
      * @param description      description
      * @param defaultWebApp    default webapp (if null, will default to ROOT webapp)
@@ -61,6 +87,28 @@ public interface WebProjectService
      * @return WebProjectInfo  the created web project info
      */
     public WebProjectInfo createWebProject(String dnsName, String name, String title, String description, String defaultWebApp, boolean useAsTemplate, NodeRef sourceNodeRef);
+    
+    /**
+     * Create a new web project (with given web project info)
+     * <p>
+     * Note: the DNS name will be used to generate the web project store id, which can be subsequently retrieved via WebProjectInfo.getStoreId()
+     * 
+     * @param wpInfo  web project info
+     * 
+     * Note:
+     * 
+     * @param dnsName          DNS name (required, must be unique)
+     * @param name             name (required, must be unique)
+     * @param title            title
+     * @param description      description
+     * @param defaultWebApp    default webapp (if null, will default to ROOT webapp)
+     * @param useAsTemplate    <tt>true</tt> if this web project can be used as a template to branch from
+     * @param sourceNodeRef    web project node ref to branch from (can be null)
+     * @param previewProvider  preview URI service provider name (must correspond to registered name, if null will be set to default provider)
+     * 
+     * @return WebProjectInfo  the created web project info
+     */
+    public WebProjectInfo createWebProject(WebProjectInfo wpInfo);
     
     /**
      * Returns the Web Projects container
@@ -137,6 +185,13 @@ public interface WebProjectService
     public WebProjectInfo getWebProject(NodeRef wpNodeRef);
     
     /**
+     * Get preview provider name configured for given web project (if not configured then return default preview provider)
+     * @param wpStoreId             web project store id
+     * @return previewProviderName  preview URI service provide name
+     */
+    public String getPreviewProvider(String wpStoreId);
+    
+    /**
      * Update the web project info
      * <p>
      * Note: the nodeRef and storeId (dnsName) of a web project cannot be updated once the web project has been created
@@ -178,9 +233,9 @@ public interface WebProjectService
      * <p>
      * Current user must be a content manager for the web project
      * 
-     * @param wpStoreId      web project store id
-     * @param name        webapp name (must be unique within a web project)
-     * @param description webapp description
+     * @param wpStoreId    web project store id
+     * @param name         webapp name (must be unique within a web project)
+     * @param description  webapp description
      */
     public void createWebApp(String wpStoreId, String name, String description);
     

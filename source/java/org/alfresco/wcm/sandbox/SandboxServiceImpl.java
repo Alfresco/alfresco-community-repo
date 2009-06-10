@@ -466,8 +466,8 @@ public class SandboxServiceImpl implements SandboxService
         getSandbox(srcSandboxStoreId); // ignore result
         getSandbox(dstSandboxStoreId); // ignore result
         
-        String avmSrcPath = srcSandboxStoreId + WCMUtil.AVM_STORE_SEPARATOR + srcRelativePath;
-        String avmDstPath = dstSandboxStoreId + WCMUtil.AVM_STORE_SEPARATOR + dstRelativePath;
+        String avmSrcPath = WCMUtil.buildPath(srcSandboxStoreId, srcRelativePath);
+        String avmDstPath = WCMUtil.buildPath(dstSandboxStoreId, dstRelativePath);
         
         return listChanged(-1, avmSrcPath, -1, avmDstPath, includeDeleted);
     }
@@ -635,34 +635,13 @@ public class SandboxServiceImpl implements SandboxService
         RetryingTransactionHelper txnHelper = transactionService.getRetryingTransactionHelper();
         
         final List<String> srcPaths = new ArrayList<String>(relativePaths.size());
-
-        String derivedWebApp = null;
-        boolean multiWebAppsFound = false;
-        
         for (String relativePath : relativePaths)
         {
-            // Example srcPath:
-            //     mysite--alice:/www/avm_webapps/ROOT/foo.txt
-            String srcPath = sbStoreId + WCMUtil.AVM_STORE_SEPARATOR + relativePath;
-            srcPaths.add(srcPath);
-           
-            // derive webapp for now (TODO check usage)
-            String srcWebApp = WCMUtil.getWebapp(srcPath);
-            if (srcWebApp != null)
-            {
-                if (derivedWebApp == null)
-                {
-                    derivedWebApp = srcWebApp;
-                }
-                else if (! derivedWebApp.equals(srcWebApp))
-                {
-                    multiWebAppsFound = true;
-                }
-            }
+            srcPaths.add(WCMUtil.buildPath(sbStoreId, relativePath));
         }
         
-        final String webApp = (multiWebAppsFound == false ? derivedWebApp : null);
-       
+        final String webApp = WCMUtil.getCommonWebApp(sbStoreId, relativePaths);
+        
         RetryingTransactionCallback<Pair<SandboxInfo, String>> sandboxCallback = new RetryingTransactionCallback<Pair<SandboxInfo, String>>()
         {
             public Pair<SandboxInfo, String> execute() throws Throwable
@@ -671,10 +650,10 @@ public class SandboxServiceImpl implements SandboxService
                 return createWorkflowSandbox(finalWorkflowName, finalWorkflowParams, stagingSandboxId, srcPaths, expirationDates);
             }
         };
-
+        
         // create the workflow sandbox firstly
         final Pair<SandboxInfo, String> workflowInfo = txnHelper.doInTransaction(sandboxCallback, false, true);
-
+        
         if (workflowInfo != null)
         {
             final SandboxInfo wfSandboxInfo = workflowInfo.getFirst();
@@ -685,7 +664,7 @@ public class SandboxServiceImpl implements SandboxService
             {
                 WCMUtil.updateVServerWebapp(virtServerRegistry, virtUpdatePath, true);
             }
-
+            
             try
             {
                 RetryingTransactionCallback<String> workflowCallback = new RetryingTransactionCallback<String>()

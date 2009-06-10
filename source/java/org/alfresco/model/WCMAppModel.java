@@ -40,6 +40,7 @@ public interface WCMAppModel
     static final QName PROP_SELECTEDDEPLOYTO = QName.createQName(NamespaceService.WCMAPP_MODEL_1_0_URI, "selecteddeployto");
     static final QName PROP_SELECTEDDEPLOYVERSION = QName.createQName(NamespaceService.WCMAPP_MODEL_1_0_URI, "selecteddeployversion");
     static final QName PROP_ISSOURCE = QName.createQName(NamespaceService.WCMAPP_MODEL_1_0_URI, "issource");
+    static final QName PROP_PREVIEW_PROVIDER = QName.createQName(NamespaceService.WCMAPP_MODEL_1_0_URI, "previewprovidername");
     static final QName ASSOC_WEBUSER = QName.createQName(NamespaceService.WCMAPP_MODEL_1_0_URI, "webuser");
     static final QName ASSOC_WEBFORM = QName.createQName(NamespaceService.WCMAPP_MODEL_1_0_URI, "webform");
     static final QName ASSOC_WEBWORKFLOWDEFAULTS = QName.createQName(NamespaceService.WCMAPP_MODEL_1_0_URI, "webworkflowdefaults");

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2008 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -119,4 +119,23 @@ public interface WebProjectInfo
      * @param isTemplate set to <tt>true</tt> if this web project can also be used as a template
      */
     public void setIsTemplate(boolean isTemplate);
+    
+    /**
+     * Get the preview URI service provider name
+     * 
+     * @since 3.2
+     * 
+     * @return the preview URI service provider name
+     * 
+     */
+    public String getPreviewProviderName();
+    
+    /**
+     * Set the preview URI service provider name
+     * 
+     * @since 3.2
+     * 
+     * @param previewURIServiceProviderName the preview URI service provider name to set
+     */
+    public void setPreviewProviderName(String previewURIServiceProviderName);
 }

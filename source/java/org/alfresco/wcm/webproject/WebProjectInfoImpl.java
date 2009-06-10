@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2008 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -54,24 +54,30 @@ public class WebProjectInfoImpl implements WebProjectInfo
     
     /** Web Project true if the web project can also be used as template */
     private boolean isTemplate;
-   
+    
+    /** Web Project preview provider name (if null then default preview provider will be used) */
+    private String previewURIServiceProviderName;
     
     /**
      * Constructor
-     * 
-     * @param name          name
-     * @param description   description
-     * @param nodeRef       web project node reference
      */
-    /*package*/ WebProjectInfoImpl(String name, String title, String description, String wpStoreId, String defaultWebApp, boolean isTemplate, NodeRef nodeRef)
+    public WebProjectInfoImpl(String wpStoreId, 
+                              String name, 
+                              String title, 
+                              String description, 
+                              String defaultWebApp, 
+                              boolean isTemplate, 
+                              NodeRef nodeRef, 
+                              String previewProvider)
     {
+        this.wpStoreId = wpStoreId;
         this.name = name;
         this.title = title;
         this.description = description;
-        this.wpStoreId = wpStoreId;
         this.defaultWebApp = defaultWebApp;
         this.isTemplate = isTemplate;
         this.nodeRef = nodeRef;
+        this.previewURIServiceProviderName = previewProvider;
     }
     
     /**
@@ -187,4 +193,14 @@ public class WebProjectInfoImpl implements WebProjectInfo
 	{
 		this.isTemplate = isTemplate;
 	}
+	
+    public String getPreviewProviderName()
+    {
+        return previewURIServiceProviderName;
+    }
+    
+    public void setPreviewProviderName(String previewURIServiceProviderName)
+    {
+        this.previewURIServiceProviderName = previewURIServiceProviderName;
+    }
 }

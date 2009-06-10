@@ -24,7 +24,6 @@
  */
 package org.alfresco.wcm.util;
 
-import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -54,11 +53,8 @@ import org.apache.commons.logging.LogFactory;
 
 /**
  * Helper methods and constants related to WCM directories, paths and store name manipulation.
- * 
- * TODO refactor ...
- * 
- * @author Ariel Backenroth
- * @author Kevin Roast
+ *
+ * @author Ariel Backenroth, Kevin Roast, janv
  */
 public class WCMUtil
 {
@@ -425,60 +421,6 @@ public class WCMUtil
        return WCMUtil.buildSandboxRootPath(storeName) + '/' + webApp;
    }
    
-   public static String buildStoreUrl(AVMService avmService, String storeName, String domain, String port)
-   {
-       ParameterCheck.mandatoryString("storeName", storeName);
-
-       if (domain == null || port == null)
-       {
-           throw new IllegalArgumentException("Domain and port are mandatory.");
-       }
-       
-       // NOTE: for backwards compatibility - avmPath is converted to storeName (path is ignored)
-       if (storeName.indexOf(AVM_STORE_SEPARATOR) != -1)
-       {
-           storeName = storeName.substring(0, storeName.indexOf(AVM_STORE_SEPARATOR));
-       }
-       
-       return MessageFormat.format(JNDIConstants.PREVIEW_SANDBOX_URL, 
-               lookupStoreDNS(avmService, storeName), 
-               domain, 
-               port);
-   }
-
-   protected static String buildWebappUrl(AVMService avmService, final String storeName, final String webApp, String domain, String port)
-   {
-       ParameterCheck.mandatoryString("webApp", webApp);
-       return (webApp.equals(DIR_ROOT)
-               ? buildStoreUrl(avmService, storeName, domain, port)
-               : buildStoreUrl(avmService, storeName, domain, port) + '/' + webApp);
-   }
-   
-   public static String buildAssetUrl(String assetPath, String domain, String port, String dns)
-   {
-       ParameterCheck.mandatoryString("assetPath", assetPath);
-       
-      if (domain == null || port == null || dns == null)
-      {
-         throw new IllegalArgumentException("Domain, port and dns name are mandatory.");
-      }
-      
-      if (assetPath.startsWith(JNDIConstants.DIR_DEFAULT_WWW_APPBASE))
-      {
-         assetPath = assetPath.substring((JNDIConstants.DIR_DEFAULT_WWW_APPBASE).length());
-      }
-      if (assetPath.startsWith('/' + DIR_ROOT))
-      {
-         assetPath = assetPath.substring(('/' + DIR_ROOT).length());
-      }
-      if (assetPath.length() == 0 || assetPath.charAt(0) != '/')
-      {
-         assetPath = '/' + assetPath;
-      }
-      
-      return MessageFormat.format(JNDIConstants.PREVIEW_ASSET_URL, dns, domain, port, assetPath);
-   }
-   
    public static String lookupStoreDNS(AVMService avmService, String store)
    {
        ParameterCheck.mandatoryString("store", store);
@@ -761,10 +703,58 @@ public class WCMUtil
        return storePath;
    }
    
+   public static String buildPath(String sbStoreId, String relativePath)
+   {
+       return sbStoreId + AVM_STORE_SEPARATOR + addLeadingSlash(relativePath);
+   }
+   
+   public static String addLeadingSlash(String relativePath)
+   {
+       if ((relativePath.length() == 0) || (relativePath.charAt(0) != PATH_SEPARATOR))
+       {
+           relativePath = PATH_SEPARATOR + relativePath;
+       }
+       
+       return relativePath;
+   }
+   
+   // return common web app or null if paths span multiple web apps (or no web app)
+   public static String getCommonWebApp(String sbStoreId, List<String> storeRelativePaths)
+   {
+       String derivedWebApp = null;
+       boolean multiWebAppsFound = false;
+       
+       for (String storeRelativePath : storeRelativePaths)
+       {
+           // Example srcPath:
+           //     mysite--alice:/www/avm_webapps/ROOT/foo.txt
+           String srcPath = WCMUtil.buildPath(sbStoreId, storeRelativePath);
+           
+           // TODO - don't really need the sbStoreId 
+           // derive webapp for now
+           String srcWebApp = WCMUtil.getWebapp(srcPath);
+           if (srcWebApp != null)
+           {
+               if (derivedWebApp == null)
+               {
+                   derivedWebApp = srcWebApp;
+               }
+               else if (! derivedWebApp.equals(srcWebApp))
+               {
+                   multiWebAppsFound = true;
+               }
+           }
+       }
+       
+       return (multiWebAppsFound == false ? derivedWebApp : null);
+   }
+   
    // Component Separator.
    protected static final String STORE_SEPARATOR = "--";
    
    public static final String AVM_STORE_SEPARATOR = ":";
+   
+   public static final char PATH_SEPARATOR = '/';
    
    // names of the stores representing the layers for an AVM website
    //XXXarielb this should be private

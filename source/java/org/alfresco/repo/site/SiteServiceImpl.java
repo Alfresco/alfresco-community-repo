@@ -100,6 +100,7 @@ public class SiteServiceImpl implements SiteService, SiteModel
     
     private static final String SITE_PREFIX = "site_";
     private static final String GROUP_SITE_PREFIX = PermissionService.GROUP_PREFIX + SITE_PREFIX;
+    private static final int GROUP_PREFIX_LENGTH = PermissionService.GROUP_PREFIX.length();
     private static final int GROUP_SITE_PREFIX_LENGTH = GROUP_SITE_PREFIX.length();
     
     /** Site home ref cache (Tennant aware) */
@@ -1024,7 +1025,7 @@ public class SiteServiceImpl implements SiteService, SiteModel
                         if (nameFilter != null && nameFilter.length() != 0)
                         {
                             // found a filter - does it match Group name part?
-                            if (group.substring(GROUP_SITE_PREFIX_LENGTH).toLowerCase().contains(nameFilter.toLowerCase()))
+                            if (group.substring(GROUP_PREFIX_LENGTH).toLowerCase().contains(nameFilter.toLowerCase()))
                             {
                                 members.put(group, permission);
                             }

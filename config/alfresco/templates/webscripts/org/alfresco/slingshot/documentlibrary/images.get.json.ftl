@@ -1,13 +1,17 @@
+<#macro dateFormat date>${date?string("dd MMM yyyy HH:mm:ss 'GMT'Z '('zzz')'")}</#macro>
 <#escape x as jsonUtils.encodeJSONString(x)>
 {
-   "items":
-   [
-   <#list images.items as item>
-      {
-         "title": "${(item.properties.title!item.name)}",
-         "nodeRef": "${item.nodeRef}"
-      }<#if item_has_next>,</#if>
-   </#list>
-   ]
+	"items":
+	[
+	<#list images.items as item>
+		{
+		   "name": "${(item.properties.name)}",
+			"title": "${(item.properties.title!item.name)}",
+			"modifier": "${(item.properties.modifier)}",
+			"modifiedOn": "<@dateFormat item.properties.modified />",
+			"nodeRef": "${item.nodeRef}"
+		}<#if item_has_next>,</#if>
+	</#list>
+	]
 }
 </#escape>

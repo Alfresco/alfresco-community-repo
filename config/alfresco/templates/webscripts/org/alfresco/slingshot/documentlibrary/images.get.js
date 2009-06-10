@@ -17,16 +17,16 @@ function getImageList()
    {
       return;
    }
-
+   
    // Use the "all" filter
    filterParams = getFilterParams("all", parsedArgs);
    query = filterParams.query;
    // Specialise by image type
    query += " " + getTypeFilterQuery("images");
-
+   
    // Sort the list before trimming to page chunks 
-   assets = search.luceneSearch(query, filterParams.sortBy, filterParams.sortByAscending);
-
+   assets = search.luceneSearch(query, filterParams.sortBy, filterParams.sortByAscending, filterParams.limitResults ? filterParams.limitResults : 0);
+   
    return (
    {
       luceneQuery: filterParams.query,

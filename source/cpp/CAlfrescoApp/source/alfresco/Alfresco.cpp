@@ -19,6 +19,7 @@
 #include "util\DataBuffer.h"
 #include "util\Exception.h"
 #include "util\Integer.h"
+#include "util\Debug.h"
 
 #include <WinNetWk.h>
 
@@ -251,7 +252,7 @@ DesktopResponse AlfrescoInterface::runAction(AlfrescoActionInfo& action, Desktop
 	// Build the run action I/O control request
 
 	DataBuffer reqbuf( 1024);
-	DataBuffer respbuf( 16384);
+	DataBuffer respbuf( 16 * 1024);
 
 	reqbuf.putFixedString( IOSignature, IOSignatureLen);
 	reqbuf.putString( action.getName());
@@ -272,40 +273,6 @@ DesktopResponse AlfrescoInterface::runAction(AlfrescoActionInfo& action, Desktop
 	sendIOControl( FSCTL_ALFRESCO_RUNACTION, reqbuf, respbuf);
 
 	// Unpack the run action response
-
-	unsigned int actionSts = respbuf.getInt();
-	String actionMsg = respbuf.getString();
-
-	// Return the desktop response
-
-	DesktopResponse response(actionSts, actionMsg);
-	return response;
-}
-
-/**
- * Get the authentication ticket for this session
- *
- * @return DesktopResponse
- */
-DesktopResponse AlfrescoInterface::getAuthenticationTicket( void) {
-
-	// Check if the folder handle is valid
-
-	if ( m_handle == INVALID_HANDLE_VALUE)
-		throw BadInterfaceException();
-
-	// Build the run action I/O control request
-
-	DataBuffer reqbuf( 32);
-	DataBuffer respbuf( 256);
-
-	reqbuf.putFixedString( IOSignature, IOSignatureLen);
-
-	// Send the get auth ticket request
-
-	sendIOControl( FSCTL_ALFRESCO_GETAUTHTICKET, reqbuf, respbuf);
-
-	// Unpack the get auth ticket response
 
 	unsigned int actionSts = respbuf.getInt();
 	String actionMsg = respbuf.getString();
@@ -411,7 +378,19 @@ bool AlfrescoInterface::setRootPath( const wchar_t* rootPath) {
 
 			// Open the path
 
-			m_handle = CreateFile(m_uncPath, FILE_WRITE_DATA, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, NULL);
+			m_handle = CreateFile(m_uncPath, FILE_READ_DATA, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, NULL);
+
+			if ( m_handle == INVALID_HANDLE_VALUE) {
+				
+				// DEBUG
+
+				if ( HAS_DEBUG)
+					DBGOUT_TS << "%% Error opening folder " << m_uncPath << ", error " << GetLastError() << endl;
+
+				// Error, failed to open folder on Alfresco CIFS share
+
+				return false;
+			}
 		}
 
 		// Set the root path

@@ -1,5 +1,5 @@
 <#assign isImage=node.isDocument && (node.mimetype = "image/gif" || node.mimetype = "image/jpeg" || node.mimetype = "image/png")>
-<table width="690" cellpadding="2" cellspacing="0" border="0" onclick="event.cancelBubble=true;">
+<table width="692" cellpadding="2" cellspacing="0" border="0" onclick="event.cancelBubble=true;">
    <tr>
       <td>
          <div class="spacePreview">

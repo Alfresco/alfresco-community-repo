@@ -597,6 +597,20 @@ public class CMISTest extends BaseCMISWebScriptTest
         assertEquals("Iñtërnâtiônàlizætiøn - 2", updated.getTitle());
     }
 
+    public void testContentStreamEmpty()
+        throws Exception
+    {
+        // retrieve test folder for content stream tests
+        Entry testFolder = createTestFolder("testContentStreamEmpty");
+        Link childrenLink = testFolder.getLink(CMISConstants.REL_CHILDREN);
+        
+        // create document for setting / getting content
+        Entry document = createDocument(childrenLink.getHref(), "testContent", "createdocumentNoContent.atomentry.xml");
+    
+        // retrieve content
+        sendRequest(new GetRequest(document.getContentSrc().toString()), 404);
+    }
+    
     public void testContentStream()
         throws Exception
     {
@@ -623,6 +637,31 @@ public class CMISTest extends BaseCMISWebScriptTest
         Response documentUpdatedContentRes = sendRequest(new GetRequest(document.getContentSrc().toString()), 200);
         String resUpdatedContent = documentUpdatedContentRes.getContentAsString();
         assertEquals(UPDATED_CONTENT, resUpdatedContent);
+    }
+    
+    public void testDeleteContentStream()
+        throws Exception
+    {
+        // retrieve test folder for content stream tests
+        Entry testFolder = createTestFolder("testContentStreamEmpty");
+        Link childrenLink = testFolder.getLink(CMISConstants.REL_CHILDREN);
+
+        // create document for setting / getting content
+        Entry document = createDocument(childrenLink.getHref(), "testContent");
+
+        // retrieve content
+        Response documentContentRes = sendRequest(new GetRequest(document.getContentSrc().toString()), 200);
+        String resContent = documentContentRes.getContentAsString();
+        assertEquals(document.getTitle(), resContent);
+
+        // delete content
+        Link editMediaLink = document.getEditMediaLink();
+        assertNotNull(editMediaLink);
+        Response res = sendRequest(new DeleteRequest(editMediaLink.getHref().toString()), 204);
+        assertNotNull(res);
+        
+        // retrieve deleted content
+        sendRequest(new GetRequest(document.getContentSrc().toString()), 404);
     }
     
     public void testAllowableActions()

@@ -1,5 +1,6 @@
 <#macro dateFormat date>${date?string("dd MMM yyyy HH:mm:ss 'GMT'Z '('zzz')'")}</#macro>
 <#macro renderItem item>
+<#escape x as jsonUtils.encodeJSONString(x)>
 {
    "name":"${item.name}",
    "nodeRef": "${item.nodeRef}",
@@ -24,6 +25,7 @@
    "container": "${item.container}"
    </#if>            
 }
+</#escape>
 </#macro>
 <#escape x as jsonUtils.encodeJSONString(x)>
 {

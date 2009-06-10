@@ -15,6 +15,8 @@ function getDraftBlogPostList()
            " -TYPE:\"{http://www.alfresco.org/model/calendar}calendarEvent\" " +
            " -ASPECT:\"cm:versionable\" " +
            " -ASPECT:\"cm:lockable\"";
+   q += " +(@\\{http\\://www.alfresco.org/model/content/1.0\\}content.mimetype:application/octet-stream OR";
+   q += "  @\\{http\\://www.alfresco.org/model/content/1.0\\}content.mimetype:text/html)"
 
    // // get the data
    nodes = search.luceneSearch(q,"cm:modified",false);

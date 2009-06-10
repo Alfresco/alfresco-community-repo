@@ -336,7 +336,7 @@ a.resourceLink:link, a.resourceLink:visited
 }
 
 .taskAction a {
-   background: url("${url.context}/images/parts/task_btn_normal_right.png") no-repeat 100% 0;
+   background: url("${url.context}/images/parts/task_btn_normal_right.png") no-repeat 100% 50%;
    float: left;
    margin: 4px;
    padding: 0px;
@@ -344,7 +344,7 @@ a.resourceLink:link, a.resourceLink:visited
    cursor: pointer;
 }
 .taskAction a span {
-   background: url("${url.context}/images/parts/task_btn_normal_left.png") no-repeat;
+   background: url("${url.context}/images/parts/task_btn_normal_left.png") no-repeat 0 50%;
    font-family: Trebuchet MS, Arial, Helvetica, sans-serif;
    font-size: 11px;
    font-weight: bold;
@@ -354,12 +354,12 @@ a.resourceLink:link, a.resourceLink:visited
 }
 
 .taskAction a:hover {
-   background: url("${url.context}/images/parts/task_btn_rollover_right.png") no-repeat 100% 0;
+   background: url("${url.context}/images/parts/task_btn_rollover_right.png") no-repeat 100% 50%;
    text-decoration: none;
 }
 
 .taskAction a:hover span {
-   background: url("${url.context}/images/parts/task_btn_rollover_left.png") no-repeat;
+   background: url("${url.context}/images/parts/task_btn_rollover_left.png") no-repeat 0 50%;
 }
 
 .taskManage ul {

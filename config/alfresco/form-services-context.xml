@@ -54,6 +54,9 @@
 
     <bean id="nodeFilterRegistry"
           class="org.alfresco.repo.forms.processor.FilterRegistry" />
+          
+    <bean id="typeFilterRegistry"
+          class="org.alfresco.repo.forms.processor.FilterRegistry" />
     
     <!-- Form processors  -->
     <bean id="baseFormProcessor" abstract="true" init-method="register"
@@ -81,7 +84,7 @@
     <bean id="typeFormProcessor" 
           class="org.alfresco.repo.forms.processor.node.TypeFormProcessor" 
           parent="filteredFormProcessor">
-        <!-- <property name="filterRegistry" ref="nodeFilterRegistry" /> -->
+        <property name="filterRegistry" ref="typeFilterRegistry" />
         <property name="nodeService" ref="NodeService" />
         <property name="fileFolderService" ref="FileFolderService" />
         <property name="dictionaryService" ref="DictionaryService" />
@@ -98,7 +101,9 @@
     <!-- 
     <bean id="imageAspectFormFilter"
           class="org.alfresco.repo.forms.processor.node.ImageAspectHandler"
-          parent="baseFormFilter" />
+          parent="baseFormFilter">
+       <property name="filterRegistry" ref="nodeFilterRegistry" />
+    </bean>
     -->
      
     <bean id="formServiceScript" parent="baseJavaScriptExtension" class="org.alfresco.repo.forms.script.ScriptFormService">

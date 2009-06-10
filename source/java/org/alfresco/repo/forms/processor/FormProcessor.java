@@ -77,6 +77,7 @@ public interface FormProcessor
      *
      * @param item The item to generate a Form object for
      * @param data An object representing the data of the form
+     * @return The object persisted
      */
-    public void persist(Item item, FormData data);
+    public Object persist(Item item, FormData data);
 }

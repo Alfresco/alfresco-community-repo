@@ -78,6 +78,7 @@ public interface FormService
      * 
      * @param item The item to persist the form for
      * @param data An object representing the form data to persist
+     * @return The object persisted
      */
-    public void saveForm(Item item, FormData data);
+    public Object saveForm(Item item, FormData data);
 }

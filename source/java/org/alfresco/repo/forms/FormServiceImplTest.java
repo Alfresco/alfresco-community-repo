@@ -713,7 +713,7 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
     }
     
     @SuppressWarnings("unchecked")
-    public void testSaveForm() throws Exception
+    public void testSaveNodeForm() throws Exception
     {
         // create FormData object containing the values to update
         FormData data = new FormData();
@@ -804,8 +804,7 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
         */
     }
     
-    // TODO: enable this once the RM caveat stuff is fixed
-    public void xtestGetAllCreateForm() throws Exception
+    public void testGetAllCreateForm() throws Exception
     {
         // get a form for the cm:content type
         Form form = this.formService.getForm(new Item(TYPE_FORM_ITEM_KIND, "cm:content"));
@@ -851,6 +850,102 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
         assertNotNull("Expecting to find the cm:creator field", creatorField);
         assertNotNull("Expecting to find the cm:modified field", modifiedField);
         assertNotNull("Expecting to find the cm:modifier field", modifierField);
+    }
+    
+    public void testGetSelectedFieldsCreateForm() throws Exception
+    {
+        // define a list of fields to retrieve from the node
+        List<String> fields = new ArrayList<String>(8);
+        fields.add("cm:name");
+        fields.add("cm:title");
+        
+        // get a form for the cm:content type
+        Form form = this.formService.getForm(new Item(TYPE_FORM_ITEM_KIND, "cm:content"), fields);
+        
+        // check a form got returned
+        assertNotNull("Expecting form to be present", form);
+        
+        // check item identifier matches
+        assertEquals(TYPE_FORM_ITEM_KIND, form.getItem().getKind());
+        assertEquals("cm:content", form.getItem().getId());
+        
+        // check the type is correct
+        assertEquals(ContentModel.TYPE_CONTENT.toPrefixString(this.namespaceService), 
+                    form.getItem().getType());
+        
+        // check there is no group info
+        assertNull("Expecting the form groups to be null!", form.getFieldGroups());
+        
+        // check the field definitions
+        Collection<FieldDefinition> fieldDefs = form.getFieldDefinitions();
+        assertNotNull("Expecting to find fields", fieldDefs);
+        assertEquals("Expecting to find 1 field", 1, fieldDefs.size());
+        
+        // create a Map of the field definitions
+        // NOTE: we can safely do this as we know there are no duplicate field names and we're not
+        //       concerned with ordering!
+        Map<String, FieldDefinition> fieldDefMap = new HashMap<String, FieldDefinition>(fieldDefs.size());
+        for (FieldDefinition fieldDef : fieldDefs)
+        {
+            fieldDefMap.put(fieldDef.getName(), fieldDef);
+        }
+        
+        // find the fields
+        PropertyFieldDefinition nameField = (PropertyFieldDefinition)fieldDefMap.get("cm:name");
+        assertNotNull("Expecting to find the cm:name field", nameField);
+        
+        // now force the title field to be present and check
+        List<String> forcedFields = new ArrayList<String>(2);
+        forcedFields.add("cm:title");
+        // get a form for the cm:content type
+        form = this.formService.getForm(new Item(TYPE_FORM_ITEM_KIND, "cm:content"), fields, forcedFields);
+        fieldDefs = form.getFieldDefinitions();
+        assertNotNull("Expecting to find fields", fieldDefs);
+        assertEquals("Expecting to find 2 fields", 2, fieldDefs.size());
+        
+    }
+    
+    public void testSaveTypeForm() throws Exception
+    {
+        // create FormData object containing the values to update
+        FormData data = new FormData();
+        
+        // supply the name
+        String name = "new-" + this.documentName;
+        data.addData("prop_cm_name", name);
+        
+        // supply the title property
+        String title = "This is the title property";
+        data.addData("prop_cm_title", title);
+        
+        // persist the data (without a destination and make sure it fails)
+        try
+        {
+            this.formService.saveForm(new Item(TYPE_FORM_ITEM_KIND, "cm:content"), data);
+            
+            fail("Expected the persist to fail as there was no destination");
+        }
+        catch (FormException fe)
+        {
+            // expected
+        }
+        
+        // supply the destination
+        data.addData("destination", this.folder.toString());
+        
+        // persist the data
+        NodeRef newNode = (NodeRef)this.formService.saveForm(new Item(TYPE_FORM_ITEM_KIND, "cm:content"), data);
+        
+        // retrieve the data directly from the node service to ensure its there
+        Map<QName, Serializable> props = this.nodeService.getProperties(newNode);
+        String newName = (String)props.get(ContentModel.PROP_NAME);
+        String newTitle = (String)props.get(ContentModel.PROP_TITLE);
+        assertEquals(name, newName);
+        assertEquals(title, newTitle);
+        
+        // check the titled aspect was automatically applied
+        assertTrue("Expecting the cm:titled to have been applied", 
+                    this.nodeService.hasAspect(this.document, ContentModel.ASPECT_TITLED));
     }
     
     public void testNoForm() throws Exception

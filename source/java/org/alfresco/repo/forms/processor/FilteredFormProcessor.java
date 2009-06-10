@@ -98,8 +98,9 @@ public abstract class FilteredFormProcessor extends AbstractFormProcessor
      * @see org.alfresco.repo.forms.processor.FormProcessor#persist(org.alfresco.repo.forms.Item, org.alfresco.repo.forms.FormData)
      * @param item The item to save the form for
      * @param data The object representing the form data
+     * @return The object persisted
      */
-    public void persist(Item item, FormData data)
+    public Object persist(Item item, FormData data)
     {
         // get the typed object representing the item
         Object typedItem = getTypedItem(item);
@@ -124,6 +125,8 @@ public abstract class FilteredFormProcessor extends AbstractFormProcessor
                 filter.afterPersist(typedItem, data, persistedObject);
             }
         }
+        
+        return persistedObject;
     }
     
     /**

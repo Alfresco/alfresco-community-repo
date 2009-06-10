@@ -98,7 +98,7 @@ public class FormServiceImpl implements FormService
     /*
      * @see org.alfresco.repo.forms.FormService#saveForm(org.alfresco.repo.forms.Item, org.alfresco.repo.forms.FormData)
      */
-    public void saveForm(Item item, FormData data)
+    public Object saveForm(Item item, FormData data)
     {
         if (this.processorRegistry == null)
         {
@@ -116,7 +116,7 @@ public class FormServiceImpl implements FormService
         }
         else
         {
-            processor.persist(item, data);
+            return processor.persist(item, data);
         }
     }
 }

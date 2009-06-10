@@ -24,19 +24,27 @@
  */
 package org.alfresco.repo.forms.processor.node;
 
+import java.io.Serializable;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.alfresco.model.ContentModel;
 import org.alfresco.repo.forms.Form;
 import org.alfresco.repo.forms.FormData;
+import org.alfresco.repo.forms.FormException;
 import org.alfresco.repo.forms.FormNotFoundException;
 import org.alfresco.repo.forms.Item;
+import org.alfresco.repo.forms.FormData.FieldData;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.AssociationDefinition;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.InvalidQNameException;
+import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.GUID;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -51,6 +59,12 @@ public class TypeFormProcessor extends NodeFormProcessor
     /** Logger */
     private static Log logger = LogFactory.getLog(TypeFormProcessor.class);
     
+    protected static final String DESTINATION = "destination";
+    protected static final String NAME_PROP_DATA = PROP + DATA_KEY_SEPARATOR + "cm" + DATA_KEY_SEPARATOR + "name";
+    
+    /*
+     * @see org.alfresco.repo.forms.processor.node.NodeFormProcessor#getTypedItem(org.alfresco.repo.forms.Item)
+     */
     @Override
     protected Object getTypedItem(Item item)
     {
@@ -80,6 +94,9 @@ public class TypeFormProcessor extends NodeFormProcessor
         return typeDef;
     }
 
+    /*
+     * @see org.alfresco.repo.forms.processor.node.NodeFormProcessor#internalGenerate(java.lang.Object, java.util.List, java.util.List, org.alfresco.repo.forms.Form)
+     */
     @Override
     protected void internalGenerate(Object item, List<String> fields, List<String> forcedFields, Form form)
     {
@@ -178,6 +195,9 @@ public class TypeFormProcessor extends NodeFormProcessor
         }
     }
 
+    /*
+     * @see org.alfresco.repo.forms.processor.node.NodeFormProcessor#internalPersist(java.lang.Object, org.alfresco.repo.forms.FormData)
+     */
     @Override
     protected Object internalPersist(Object item, FormData data)
     {
@@ -187,10 +207,82 @@ public class TypeFormProcessor extends NodeFormProcessor
         // cast to the expected NodeRef representation
         TypeDefinition typeDef = (TypeDefinition)item;
         
-        if (logger.isWarnEnabled())
-            logger.warn("Persisting of 'type' form items has not been implemented yet!");
+        // create a new instance of the type
+        NodeRef nodeRef = createNode(typeDef, data);
         
-        return item;
+        // persist the form data
+        persistNode(nodeRef, data);
+        
+        // return the newly created node
+        return nodeRef;
     }
 
+    /**
+     * Creates a new instance of the given type.
+     * <p>
+     * If the form data has the name property present it is used as 
+     * the name of the node.
+     * </p><p>
+     * The new node is placed in the location defined by the "destination"
+     * data item in the form data (this will usually be a hidden field), 
+     * this will also be the NodeRef representation of the parent for the
+     * new node.
+     * </p>
+     * 
+     * @param typeDef The type defintion of the type to create
+     * @param data The form data
+     * @return NodeRef representing the newly created node
+     */
+    protected NodeRef createNode(TypeDefinition typeDef, FormData data)
+    {
+        NodeRef nodeRef = null;
+        
+        if (data != null)
+        {
+            Map<String, FieldData> fieldData = data.getData();
+            if (fieldData != null)
+            {
+                // firstly, ensure we have a destination to create the node in
+                NodeRef parentRef = null;
+                FieldData destination = fieldData.get(DESTINATION);
+                if (destination == null)
+                {
+                    throw new FormException("Failed to persist form for '" + 
+                                typeDef.getName().toPrefixString(this.namespaceService) +
+                                "' as destination data was not present.");
+                }
+                
+                // create the parent NodeRef
+                parentRef = new NodeRef((String)destination.getValue());
+                
+                // TODO: determine what association to use when creating the node in the destination,
+                // defaults to ContentModel.ASSOC_CONTAINS
+                
+                // if a name property is present in the form data use it as the node name,
+                // otherwise generate a guid
+                String nodeName = null;
+                FieldData nameData = fieldData.get(NAME_PROP_DATA);
+                if (nameData != null)
+                {
+                    nodeName = (String)nameData.getValue();
+                    
+                    // remove the name data otherwise 'rename' gets called in persistNode
+                    fieldData.remove(NAME_PROP_DATA);
+                }
+                if (nodeName == null || nodeName.length() == 0)
+                {
+                    nodeName = GUID.generate();
+                }
+                
+                // create the node
+                Map<QName, Serializable> nodeProps = new HashMap<QName, Serializable>(1);
+                nodeProps.put(ContentModel.PROP_NAME, nodeName);
+                nodeRef = this.nodeService.createNode(parentRef, ContentModel.ASSOC_CONTAINS, 
+                            QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, QName.createValidLocalName(nodeName)), 
+                            typeDef.getName(), nodeProps).getChildRef();
+            }
+        }
+        
+        return nodeRef;
+    }
 }

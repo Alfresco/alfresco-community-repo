@@ -27,6 +27,7 @@ package org.alfresco.repo.jscript;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.io.Reader;
 import java.io.Serializable;
 import java.text.MessageFormat;
@@ -2814,6 +2815,29 @@ public class ScriptNode implements Serializable, Scopeable, NamespacePrefixResol
             this.contentData = (ContentData) services.getNodeService().getProperty(nodeRef, this.property);
         }
 
+        /**
+         * Delete the content stream
+         */
+        public void delete()
+        {
+            ContentService contentService = services.getContentService();
+            ContentWriter writer = contentService.getWriter(nodeRef, this.property, true);
+            OutputStream output = writer.getContentOutputStream();
+            try
+            {
+                output.close();
+            }
+            catch (IOException e)
+            {
+                // NOTE: fall-through
+            }
+            writer.setMimetype(null);
+            writer.setEncoding(null);
+            
+            // update cached variables after putContent()
+            this.contentData = (ContentData) services.getNodeService().getProperty(nodeRef, this.property);
+        }
+        
         /**
          * @return download URL to the content
          */

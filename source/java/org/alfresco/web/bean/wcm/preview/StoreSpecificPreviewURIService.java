@@ -40,10 +40,12 @@ import org.alfresco.util.Pair;
  * is being generated for. 
  *
  * @author Peter Monks (peter.monks@alfresco.com)
- * @version $Id$
+ * 
+ * @since 2.2.1
+ * 
+ * @deprecated see org.alfresco.wcm.preview.*
  */
-public class StoreSpecificPreviewURIService
-    implements PreviewURIService
+public class StoreSpecificPreviewURIService implements PreviewURIService
 {
     private final List<Pair<Pattern, PreviewURIService>> storeURIGenerators;
     private final PreviewURIService                      fallback;

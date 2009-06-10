@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2008 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -25,22 +25,19 @@
 
 package org.alfresco.web.bean.wcm.preview;
 
-
 /**
  * A PreviewURIService that always returns null (no preview URI).
  *
  * @author Peter Monks (peter.monks@alfresco.com)
- * @version $Id$
+ * 
+ * @since 2.2.1
+ * 
+ * @deprecated see org.alfresco.web.bean.wcm.preview.NullPreviewURIService
  */
-public class NullPreviewURIService
-    implements PreviewURIService
+public class NullPreviewURIService extends org.alfresco.wcm.preview.NullPreviewURIService implements PreviewURIService
 {
-    /**
-     * @see org.alfresco.web.bean.wcm.preview.PreviewURIService#getPreviewURI(java.lang.String, java.lang.String)
-     */
     public String getPreviewURI(final String storeId, final String webapp)
     {
-        return(null);
+        return super.getPreviewURI(storeId, webapp, null);
     }
-
 }

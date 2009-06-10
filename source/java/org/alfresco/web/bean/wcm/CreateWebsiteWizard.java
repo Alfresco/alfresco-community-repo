@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2008 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -31,6 +31,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
@@ -50,8 +51,10 @@ import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.ExpiringValueCache;
+import org.alfresco.wcm.preview.PreviewURIService;
 import org.alfresco.wcm.util.WCMUtil;
 import org.alfresco.wcm.webproject.WebProjectInfo;
+import org.alfresco.wcm.webproject.WebProjectInfoImpl;
 import org.alfresco.wcm.webproject.WebProjectService;
 import org.alfresco.web.app.AlfrescoNavigationHandler;
 import org.alfresco.web.app.Application;
@@ -112,19 +115,21 @@ public class CreateWebsiteWizard extends BaseWizardBean
    protected String webapp = WEBAPP_DEFAULT;
    protected String createFrom = null;
    protected boolean isSource;
+   protected String previewProvider;
    protected NodeRef wpNodeRef;
    
    protected String[] sourceWebProject = null;
    protected ExpiringValueCache<List<UIListItem>> webProjectsList;
    protected List<SelectItem> webappsList;
+   protected List<SelectItem> previewProvidersList;
    protected boolean showAllSourceProjects;
    protected String websiteDescriptionAttribute;
    
    transient private WorkflowService workflowService;
    transient private PersonService personService;
    transient private FormsService formsService;
-   
    transient private WebProjectService wpService;
+   transient private PreviewURIService previewURIService;
    
    /** set true when an option in the Create From screen is changed - this is used as an
        indicator to reload the wizard data model from the selected source web project */
@@ -183,6 +188,7 @@ public class CreateWebsiteWizard extends BaseWizardBean
       this.sourceWebProject = null;
       this.createFromValueChanged = false;
       this.showAllSourceProjects = false;
+      this.websiteDescriptionAttribute = null;
    }
 
    private void clearFormsWorkflowsDeploymentAndUsers()
@@ -222,7 +228,7 @@ public class CreateWebsiteWizard extends BaseWizardBean
          sourceNodeRef = new NodeRef(this.sourceWebProject[0]);
       }
       
-      WebProjectInfo wpInfo = getWebProjectService().createWebProject(this.dnsName, this.name, this.title, this.description, this.webapp, this.isSource, sourceNodeRef);
+      WebProjectInfo wpInfo = getWebProjectService().createWebProject(new WebProjectInfoImpl(this.dnsName, this.name, this.title, this.description, this.webapp, this.isSource, sourceNodeRef, this.previewProvider));
       
       String avmStore = wpInfo.getStoreId();
       NodeRef wpNodeRef = wpInfo.getNodeRef();
@@ -406,6 +412,7 @@ public class CreateWebsiteWizard extends BaseWizardBean
          this.webapp = wpInfo.getDefaultWebApp();
          this.isSource = wpInfo.isTemplate();
          this.wpNodeRef = wpInfo.getNodeRef();
+         this.previewProvider = wpInfo.getPreviewProviderName();
       }
       
       if (loadUsers)
@@ -593,9 +600,26 @@ public class CreateWebsiteWizard extends BaseWizardBean
    {
       if (wpService == null)
       {
-          wpService = (WebProjectService) FacesHelper.getManagedBean(FacesContext.getCurrentInstance(), "WebProjectService");
+          wpService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getWebProjectService();
       }
       return wpService;
+   }
+   
+   /**
+    * @param previewURIService    The PreviewURIService to set.
+    */
+   public void setPreviewURIService(final PreviewURIService previewURIService)
+   {
+      this.previewURIService = previewURIService;
+   }
+   
+   protected PreviewURIService getPreviewURIService()
+   {
+      if (previewURIService == null)
+      {
+          previewURIService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getPreviewURIService();
+      }
+      return previewURIService;
    }
    
    // ------------------------------------------------------------------------------
@@ -703,6 +727,16 @@ public class CreateWebsiteWizard extends BaseWizardBean
    public void setWebapp(String webapp)
    {
       this.webapp = webapp;
+   }
+   
+   public String getPreviewProvider()
+   {
+      return this.previewProvider;
+   }
+   
+   public void setPreviewProvider(String previewProvider)
+   {
+      this.previewProvider = previewProvider;
    }
    
    /**
@@ -850,6 +884,31 @@ public class CreateWebsiteWizard extends BaseWizardBean
       }
       
       return this.webappsList;
+   }
+   
+   public List<SelectItem> getPreviewProvidersList()
+   {
+      if (this.previewProvidersList == null)
+      {
+         // create list of preview providers
+         
+         String defaultPreviewProvider = getPreviewURIService().getDefaultProviderName();
+         Set<String> previewProviders = getPreviewURIService().getProviderNames();
+         
+         this.previewProvidersList = new ArrayList<SelectItem>(previewProviders.size());
+         
+         this.previewProvidersList.add(new SelectItem(defaultPreviewProvider, defaultPreviewProvider));
+         
+         for (String previewProvider : previewProviders)
+         {
+            if (! previewProvider.equals(defaultPreviewProvider))
+            {
+                this.previewProvidersList.add(new SelectItem(previewProvider, previewProvider));
+            }
+         }
+      }
+      
+      return this.previewProvidersList;
    }
    
    /**
@@ -1387,6 +1446,7 @@ public class CreateWebsiteWizard extends BaseWizardBean
        attribute.append(DescriptionAttributeHelper.getTableLine(fc, "title", getTitle()));
        attribute.append(DescriptionAttributeHelper.getTableLine(fc, "description", 
                 DescriptionAttributeHelper.getDescriptionNotEmpty(fc, getDescription()), false));
+       attribute.append(DescriptionAttributeHelper.getTableLine(fc, "website_preview_provider", getPreviewProvider()));
        attribute.append(DescriptionAttributeHelper.getTableEnd());
        return attribute.toString();
    }

@@ -377,7 +377,7 @@ public class RenderingEngineTemplateImpl
       final String formInstanceDataAvmPath = formInstanceData.getPath();
       final String renditionAvmPath = rendition.getPath();
       final String parentPath = AVMNodeConverter.SplitBase(formInstanceDataAvmPath)[0];
-      final String sandboxUrl = AVMUtil.buildStoreUrl(AVMUtil.getStoreName(formInstanceDataAvmPath));
+      final String sandboxUrl = AVMUtil.getPreviewURI(AVMUtil.getStoreName(formInstanceDataAvmPath));
       final String webappUrl = AVMUtil.buildWebappUrl(formInstanceDataAvmPath);
       final HashMap<QName, Object> model = new HashMap<QName, Object>();
       // add simple scalar parameters

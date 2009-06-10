@@ -185,5 +185,20 @@
          <f:verbatim>
       </td>
    </tr>
+   <tr>
+      <td></td>
+      <td>
+         </f:verbatim>
+         <h:outputText value="#{msg.website_preview_provider}:"/>
+         <f:verbatim>
+      </td>
+      <td>
+         </f:verbatim>
+         <h:selectOneMenu id="previewprovider" value="#{WizardManager.bean.previewProvider}">
+            <f:selectItems value="#{WizardManager.bean.previewProvidersList}" />
+         </h:selectOneMenu>
+         <f:verbatim>
+      </td>
+   </tr>
 </table>
 </f:verbatim>

@@ -25,37 +25,34 @@
 
 package org.alfresco.web.bean.wcm.preview;
 
-import org.alfresco.config.JNDIConstants;
-import org.alfresco.web.bean.wcm.AVMUtil;
+import javax.faces.context.FacesContext;
+
+import org.alfresco.service.ServiceRegistry;
+import org.alfresco.web.bean.repository.Repository;
 
 
 /**
  * A PreviewURIService that constructs a virtualisation server URI.
  *
  * @author Peter Monks (peter.monks@alfresco.com)
- * @version $Id$
+ * 
+ * @since 2.2.1
+ * 
+ * @deprecated see org.alfresco.wcm.preview.VirtualisationServerPreviewURIService
  */
-public class VirtualisationServerPreviewURIService
-    implements PreviewURIService
+public class VirtualisationServerPreviewURIService extends org.alfresco.wcm.preview.VirtualisationServerPreviewURIService implements PreviewURIService
 {
     /**
      * @see org.alfresco.web.bean.wcm.preview.PreviewURIService#getPreviewURI(java.lang.String, java.lang.String)
      */
-    public String getPreviewURI(final String storeId, final String pathToAsset)
+    public String getPreviewURI(final String sbStoreId, final String pathToAsset)
     {
-        if ((pathToAsset == null) || (pathToAsset.length() == 0))
-        {
-            return AVMUtil.buildStoreUrl(storeId);
-        }
+        ServiceRegistry serviceRegistry = Repository.getServiceRegistry(FacesContext.getCurrentInstance());
         
-        // Sanity checking
-        if (!pathToAsset.startsWith('/' + JNDIConstants.DIR_DEFAULT_WWW + '/' + JNDIConstants.DIR_DEFAULT_APPBASE))
-        {
-            throw new IllegalStateException("Invalid asset path in AVM node ref: " + storeId + ":" + pathToAsset);
-        }
-
-        return AVMUtil.buildAssetUrl(storeId, pathToAsset);
+        this.setAvmService(serviceRegistry.getAVMService());
+        this.setVirtServerRegistry(serviceRegistry.getVirtServerRegistry());
+        
+        return super.getPreviewURI(sbStoreId, pathToAsset, null);
     }
 
 }
-

@@ -35,15 +35,14 @@ import org.alfresco.config.ConfigService;
 import org.alfresco.config.JNDIConstants;
 import org.alfresco.mbeans.VirtServerRegistry;
 import org.alfresco.repo.avm.AVMNodeConverter;
-import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.avm.AVMNotFoundException;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.wcm.util.WCMUtil;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.bean.wcm.preview.PreviewURIService;
-import org.alfresco.web.bean.wcm.preview.VirtualisationServerPreviewURIService;
-import org.alfresco.web.config.ClientConfigElement;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.jsf.FacesContextUtils;
 
@@ -57,6 +56,8 @@ import org.springframework.web.jsf.FacesContextUtils;
  */
 public final class AVMUtil extends WCMUtil
 {
+   private static Log logger = LogFactory.getLog(AVMUtil.class);
+    
    /////////////////////////////////////////////////////////////////////////////
    
    public static enum PathRelation
@@ -270,14 +271,6 @@ public final class AVMUtil extends WCMUtil
       return WCMUtil.buildStoreWebappPath(storeName, webapp);
    }
    
-   public static String buildStoreUrl(String store)
-   {
-      ServiceRegistry serviceRegistry = Repository.getServiceRegistry(FacesContext.getCurrentInstance());
-      AVMService avmService = serviceRegistry.getAVMService();
-      ClientConfigElement config = Application.getClientConfig(FacesContext.getCurrentInstance());
-      return WCMUtil.buildStoreUrl(avmService, store, config.getWCMDomain(), config.getWCMPort());
-   }
-   
    public static String buildWebappUrl(final String avmPath)
    {
       if (avmPath == null || avmPath.length() == 0)
@@ -285,7 +278,7 @@ public final class AVMUtil extends WCMUtil
          throw new IllegalArgumentException("AVM path is mandatory.");
       }
       return AVMUtil.buildWebappUrl(AVMUtil.getStoreName(avmPath),
-                                         AVMUtil.getWebapp(avmPath));
+                                    AVMUtil.getWebapp(avmPath));
    }
    
    public static String buildWebappUrl(final String store, final String webapp)
@@ -295,30 +288,8 @@ public final class AVMUtil extends WCMUtil
          throw new IllegalArgumentException("Webapp name is mandatory.");
       }
       return (webapp.equals(DIR_ROOT)
-              ? buildStoreUrl(store)
-              : buildStoreUrl(store) + '/' + webapp);
-   }
-   
-   /**
-    * NOTE: do not call directly from client - use getPreviewURI instead
-    */
-   public static String buildAssetUrl(String store, String assetPath)
-   {
-      if (store == null || store.length() == 0)
-      {
-         throw new IllegalArgumentException("Store name is mandatory.");
-      }
-      if (assetPath == null || assetPath.length() == 0)
-      {
-         throw new IllegalArgumentException("Asset path is mandatory.");
-      }
-      ClientConfigElement config = Application.getClientConfig(FacesContext.getCurrentInstance());
-      return buildAssetUrl(assetPath, config.getWCMDomain(), config.getWCMPort(), lookupStoreDNS(store));
-   }
-   
-   public static String buildAssetUrl(String assetPath, String domain, String port, String dns)
-   {
-      return WCMUtil.buildAssetUrl(assetPath, domain, port, dns);
+              ? getPreviewURI(store)
+              : getPreviewURI(store) + '/' + webapp);
    }
    
    public static String getPreviewURI(String storeNameOrAvmPath)
@@ -327,50 +298,49 @@ public final class AVMUtil extends WCMUtil
        {
           throw new IllegalArgumentException("AVM store name or absolute path is mandatory.");
        }
-       final String[] s = storeNameOrAvmPath.split(AVM_STORE_SEPARATOR);
+       final String[] s = storeNameOrAvmPath.split(WCMUtil.AVM_STORE_SEPARATOR);
        if (s.length == 1)
        {
-           return AVMUtil.getPreviewURI(s[0], null);
+           return getPreviewURI(s[0], null);
        }
        if (s.length != 2)
        {
           throw new IllegalArgumentException("expected exactly one ':' in " + storeNameOrAvmPath);
        }
-       return AVMUtil.getPreviewURI(s[0], s[1]);
+       return getPreviewURI(s[0], s[1]);
    }
    
-   public static String getPreviewURI(final String storeId, final String assetPath)
+   public static String getPreviewURI(String storeId, String assetPath)
    {
-      if (previewURIGenerator == null)
+      if (! deprecatedPreviewURIGeneratorChecked)
       {
-         WebApplicationContext wac = FacesContextUtils.getRequiredWebApplicationContext(
-                     FacesContext.getCurrentInstance());
-            
-         if (wac.containsBean(SPRING_BEAN_NAME_PREVIEW_URI_SERVICE))
+         if (deprecatedPreviewURIGenerator == null)
          {
-            // if the bean is present retrieve it
-            previewURIGenerator = (PreviewURIService)wac.getBean(SPRING_BEAN_NAME_PREVIEW_URI_SERVICE, 
-                     PreviewURIService.class);
+            // backwards compatibility - will hide new implementation, until custom providers/context are migrated
+            WebApplicationContext wac = FacesContextUtils.getRequiredWebApplicationContext(
+                         FacesContext.getCurrentInstance());
+                
+            if (wac.containsBean(SPRING_BEAN_NAME_PREVIEW_URI_SERVICE))
+            {
+                // if the bean is present retrieve it
+                 deprecatedPreviewURIGenerator = (PreviewURIService)wac.getBean(SPRING_BEAN_NAME_PREVIEW_URI_SERVICE, 
+                         PreviewURIService.class);
+                 
+                 logger.warn("Found deprecated '"+SPRING_BEAN_NAME_PREVIEW_URI_SERVICE+"' config - which will be used instead of new 'WCMPreviewURIService' until migrated (changing web project preview provider will have no effect)");
+            }
          }
-         else
-         {
-            // Backwards compatibility - if the new Spring bean doesn't exist, default to the 
-            // existing behaviour (create a URL to the virtualisation server).
-            previewURIGenerator = new VirtualisationServerPreviewURIService();
-         }
+          
+         deprecatedPreviewURIGeneratorChecked = true;
       }
-       
-      return previewURIGenerator.getPreviewURI(storeId, assetPath);
+      
+      if (deprecatedPreviewURIGenerator != null)
+      {
+          return deprecatedPreviewURIGenerator.getPreviewURI(storeId, assetPath);
+      }
+      
+      return getPreviewURIService().getPreviewURI(storeId, assetPath);
    }
    
-   public static String lookupStoreDNS(String store)
-   {
-      final ServiceRegistry serviceRegistry =
-         Repository.getServiceRegistry(FacesContext.getCurrentInstance());
-      final AVMService avmService = serviceRegistry.getAVMService();
-      return WCMUtil.lookupStoreDNS(avmService, store);
-   }
-
    /**
     * Converts the provided path to an absolute path within the avm.
     *
@@ -443,9 +413,7 @@ public final class AVMUtil extends WCMUtil
     */
    public static void makeAllDirectories(final String avmDirectoryPath)
    {
-      final ServiceRegistry serviceRegistry =
-         Repository.getServiceRegistry(FacesContext.getCurrentInstance());
-      final AVMService avmService = serviceRegistry.getAVMService();
+      final AVMService avmService = getAVMService();
       // LOGGER.debug("mkdir -p " + avmDirectoryPath);
       String s = avmDirectoryPath;
       final Stack<String[]> dirNames = new Stack<String[]>();
@@ -467,7 +435,7 @@ public final class AVMUtil extends WCMUtil
          // LOGGER.debug("pushing " + sb[1]);
          dirNames.push(sb);
       }
-
+      
       while (!dirNames.isEmpty())
       {
          final String[] sb = dirNames.pop();
@@ -494,6 +462,16 @@ public final class AVMUtil extends WCMUtil
    private static VirtServerRegistry getVirtServerRegistry()
    {
       return Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getVirtServerRegistry();
+   }
+   
+   private static AVMService getAVMService()
+   {
+      return Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getAVMService();
+   }
+   
+   private static org.alfresco.wcm.preview.PreviewURIService getPreviewURIService()
+   {
+      return Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getPreviewURIService();
    }
    
    private static ConfigElement getDeploymentConfig()
@@ -541,6 +519,8 @@ public final class AVMUtil extends WCMUtil
    private static ConfigElement deploymentConfig = null;
    private static ConfigElement linksManagementConfig = null;
    
-   private final static String      SPRING_BEAN_NAME_PREVIEW_URI_SERVICE = "PreviewURIService";
-   private static PreviewURIService previewURIGenerator                  = null;
+   // deprecated
+   private final static String SPRING_BEAN_NAME_PREVIEW_URI_SERVICE = "PreviewURIService";
+   private static PreviewURIService deprecatedPreviewURIGenerator = null;
+   private static boolean deprecatedPreviewURIGeneratorChecked = false;
 }

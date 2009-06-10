@@ -30,7 +30,10 @@ package org.alfresco.web.bean.wcm.preview;
  * Abstraction for generating preview URLs.
  *
  * @author Peter Monks (peter.monks@alfresco.com)
- * @version $Id$
+ * 
+ * @since 2.2.1
+ * 
+ * @deprecated see org.alfresco.wcm.preview.PreviewURIServiceProvider
  */
 public interface PreviewURIService
 {

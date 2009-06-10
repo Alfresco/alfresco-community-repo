@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2008 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -34,18 +34,13 @@ package org.alfresco.web.bean.wcm.preview;
  * </ul>
  *
  * @author Peter Monks (peter.monks@alfresco.com)
- * @version $Id$
+ * 
+ * @since 2.2.1
+ * 
+ * @deprecated see org.alfresco.wcm.preview.URITemplatePreviewURIService
  */
-public class URITemplatePreviewURIService
-    implements PreviewURIService
+public class URITemplatePreviewURIService extends org.alfresco.wcm.preview.URITemplatePreviewURIService implements PreviewURIService
 {
-    private final static String URI_TEMPLATE_PARAMETER_STORE_ID      = "{storeId}";
-    private final static String URI_TEMPLATE_PARAMETER_PATH_TO_ASSET = "{pathToAsset}";
-    
-    
-    private final String uriTemplate;
-    
-    
     public URITemplatePreviewURIService(final String uriTemplate)
     {
         // PRECONDITIONS
@@ -55,40 +50,8 @@ public class URITemplatePreviewURIService
         this.uriTemplate = uriTemplate;
     }
     
-
-    /**
-     * @see org.alfresco.web.bean.wcm.preview.PreviewURIService#getPreviewURI(java.lang.String, java.lang.String)
-     */
-    public String getPreviewURI(final String storeId, final String pathToAsset)
+    public String getPreviewURI(final String storeId, final String webapp)
     {
-        String result = uriTemplate;
-        
-        if (uriTemplate.contains(URI_TEMPLATE_PARAMETER_STORE_ID))
-        {
-            if (storeId != null && storeId.trim().length() > 0)
-            {
-                result = result.replace(URI_TEMPLATE_PARAMETER_STORE_ID, storeId);
-            }
-            else
-            {
-                // Shouldn't ever happen (store ids are always provided), but better to be safe than sorry
-                result = result.replace(URI_TEMPLATE_PARAMETER_STORE_ID, "");
-            }
-        }
-        
-        if (uriTemplate.contains(URI_TEMPLATE_PARAMETER_PATH_TO_ASSET))
-        {
-            if (pathToAsset != null && pathToAsset.trim().length() > 0)
-            {
-                result = result.replace(URI_TEMPLATE_PARAMETER_PATH_TO_ASSET, pathToAsset);
-            }
-            else
-            {
-                result = result.replace(URI_TEMPLATE_PARAMETER_PATH_TO_ASSET, "");
-            }
-        }
-        
-        return(result);
+        return super.getPreviewURI(storeId, webapp, null);
     }
-
 }

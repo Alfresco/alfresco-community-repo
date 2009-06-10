@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2008 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -31,7 +31,6 @@ import java.util.Map;
 import javax.faces.context.FacesContext;
 import javax.faces.model.SelectItem;
 
-import org.alfresco.model.ContentModel;
 import org.alfresco.model.WCMAppModel;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -117,6 +116,7 @@ public class EditWebsiteWizard extends CreateWebsiteWizard
       wpInfo.setTitle(this.title);
       wpInfo.setDescription(this.description);
       wpInfo.setIsTemplate(this.isSource);
+      wpInfo.setPreviewProviderName(this.previewProvider);
       
       getWebProjectService().updateWebProject(wpInfo);
       

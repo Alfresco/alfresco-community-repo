@@ -11,6 +11,9 @@ function getBlogPostList(node, index, count)
    // query information
    var luceneQuery = " +TYPE:\"{http://www.alfresco.org/model/content/1.0}content\" " +
                      " +PATH:\"" + node.qnamePath + "/*\" ";
+   luceneQuery += " +(@\\{http\\://www.alfresco.org/model/content/1.0\\}content.mimetype:application/octet-stream OR";
+   luceneQuery += "  @\\{http\\://www.alfresco.org/model/content/1.0\\}content.mimetype:text/html)"
+   
                        
    // add the drafts part
    luceneQuery += " -ISNOTNULL:\"{http://www.alfresco.org/model/content/1.0}published\" " +

@@ -1,0 +1,61 @@
+<#macro dateFormat date>${date?string("dd MMM yyyy HH:mm:ss 'GMT'Z '('zzz')'")}</#macro>
+<#macro renderItem item>
+{
+   "name":"${item.name}",
+   "nodeRef": "${item.nodeRef}",
+   "type": "${item.type}",
+   "displayName": "${item.displayName!''}",
+   "description": "${item.description!''}",
+   "createdOn": "<@dateFormat item.createdOn />",
+   "createdBy": "${item.createdBy!''}",
+   "createdByUser": "${item.createdByUser!''}",
+   "modifiedOn": "<@dateFormat item.modifiedOn />",
+   "modifiedByUser": "${item.modifiedByUser}",
+   "modifiedBy": "${item.modifiedBy}",
+   "size": ${item.size?c},
+   "tags": [<#list item.tags as tag>"${tag}"<#if tag_has_next>,</#if></#list>],
+   <#if item.browseUrl??>
+   "browseUrl": "${item.browseUrl}",
+   "site":
+   {
+      "shortName": "${item.site.shortName}",
+      "title": "${item.site.title}"
+   },
+   "container": "${item.container}"
+   </#if>            
+}
+</#macro>
+<#escape x as jsonUtils.encodeJSONString(x)>
+{
+    "blogPosts": 
+      {
+         "items":
+            [
+         <#list data.blogPosts.items as item>
+            <@renderItem item />
+            <#if item_has_next>,</#if>
+         </#list>
+            ]
+      },
+    "wikiPages":
+      {
+         "items":
+            [
+         <#list data.wikiPages.items as item>
+            <@renderItem item />
+            <#if item_has_next>,</#if>
+         </#list>
+            ]
+      },
+    "forumPosts":
+      {
+         "items":      
+            [
+         <#list data.discussions.items as item>
+            <@renderItem item />
+            <#if item_has_next>,</#if>
+         </#list>
+            ]
+      }
+}
+</#escape>

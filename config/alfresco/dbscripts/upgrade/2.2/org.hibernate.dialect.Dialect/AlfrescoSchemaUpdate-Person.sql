@@ -18,7 +18,8 @@ UPDATE
          FROM
             alf_namespace n
          WHERE
-            n.uri = 'http://www.alfresco.org/model/content/1.0'),
+            n.uri = 'http://www.alfresco.org/model/content/1.0'
+      ),
       qname_localname =
       (
          SELECT
@@ -29,7 +30,8 @@ UPDATE
             JOIN alf_namespace n on q.ns_id = n.id
          WHERE
             p.node_id = alf_child_assoc.child_node_id AND
-            q.local_name ='userName' AND n.uri = 'http://www.alfresco.org/model/content/1.0'
+            q.local_name ='userName' AND
+            n.uri = 'http://www.alfresco.org/model/content/1.0'
       )
    WHERE exists
    (

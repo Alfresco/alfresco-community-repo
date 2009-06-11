@@ -423,21 +423,6 @@ public class NodePropertyValue implements Cloneable, Serializable
                 return Integer.valueOf(19);
             }
 
-            @SuppressWarnings("unchecked")
-            @Override
-            protected ValueType getPersistedType(Serializable value)
-            {
-                if (value instanceof Collection)
-                {
-                    Collection collectionValue = (Collection) value;
-                    if (collectionValue.size() == 0)
-                    {
-                        return ValueType.NULL;
-                    }
-                }
-                return ValueType.SERIALIZABLE;
-            }
-
             /**
              * @return      Returns and empty <tt>Collection</tt> if the value is null
              *              otherwise it just returns the original value
@@ -568,14 +553,6 @@ public class NodePropertyValue implements Cloneable, Serializable
         else if (value instanceof VersionNumber)
         {
             return ValueType.VERSION_NUMBER;
-        }
-        else if (value instanceof Collection)
-        {
-            return ValueType.COLLECTION;
-        }
-        else if (value instanceof MLText)
-        {
-            return ValueType.MLTEXT;
         }
         else if (value instanceof Period)
         {

@@ -39,7 +39,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import org.alfresco.error.AlfrescoRuntimeException;
@@ -125,6 +127,8 @@ public class SchemaBootstrap extends AbstractLifecycleBean
     private static final String ERR_VALIDATION_FAILED = "schema.update.err.validation_failed";
     private static final String ERR_SCRIPT_NOT_RUN = "schema.update.err.update_script_not_run";
     private static final String ERR_SCRIPT_NOT_FOUND = "schema.update.err.script_not_found";
+    private static final String ERR_STATEMENT_VAR_ASSIGNMENT_BEFORE_SQL = "schema.update.err.statement_var_assignment_before_sql";
+    private static final String ERR_STATEMENT_VAR_ASSIGNMENT_FORMAT = "schema.update.err.statement_var_assignment_format";
     private static final String ERR_STATEMENT_TERMINATOR = "schema.update.err.statement_terminator";
     
     public static final int DEFAULT_LOCK_RETRY_COUNT = 24;
@@ -910,6 +914,9 @@ public class SchemaBootstrap extends AbstractLifecycleBean
             int line = 0;
             // loop through all statements
             StringBuilder sb = new StringBuilder(1024);
+            String fetchVarName = null;
+            String fetchColumnName = null;
+            Map<String, Object> varAssignments = new HashMap<String, Object>(13);
             while(true)
             {
                 String sqlOriginal = reader.readLine();
@@ -923,6 +930,25 @@ public class SchemaBootstrap extends AbstractLifecycleBean
                 
                 // trim it
                 String sql = sqlOriginal.trim();
+                // Check for variable assignment
+                if (sql.startsWith("--ASSIGN:"))
+                {
+                    if (sb.length() > 0)
+                    {
+                        // This can only be set before a new SQL statement
+                        throw AlfrescoRuntimeException.create(ERR_STATEMENT_VAR_ASSIGNMENT_BEFORE_SQL, (line - 1), scriptUrl);
+                    }
+                    String assignStr = sql.substring(9, sql.length());
+                    String[] assigns = assignStr.split("=");
+                    if (assigns.length != 2 || assigns[0].length() == 0 || assigns[1].length() == 0)
+                    {
+                        throw AlfrescoRuntimeException.create(ERR_STATEMENT_VAR_ASSIGNMENT_FORMAT, (line - 1), scriptUrl);
+                    }
+                    fetchVarName = assigns[0];
+                    fetchColumnName = assigns[1];
+                    continue;
+                }
+                // Check for comments
                 if (sql.length() == 0 ||
                     sql.startsWith( "--" ) ||
                     sql.startsWith( "//" ) ||
@@ -978,8 +1004,23 @@ public class SchemaBootstrap extends AbstractLifecycleBean
                 if (execute)
                 {
                     sql = sb.toString();
-                    executeStatement(connection, sql, optional, line, scriptFile);
+                    
+                    // Perform variable replacement using the ${var} format
+                    for (Map.Entry<String, Object> entry : varAssignments.entrySet())
+                    {
+                        String var = entry.getKey();
+                        Object val = entry.getValue();
+                        sql = sql.replaceAll("\\$\\{" + var + "\\}", val.toString());
+                    }
+                    
+                    Object fetchedVal = executeStatement(connection, sql, fetchColumnName, optional, line, scriptFile);
+                    if (fetchVarName != null && fetchColumnName != null)
+                    {
+                        varAssignments.put(fetchVarName, fetchedVal);
+                    }
                     sb = new StringBuilder(1024);
+                    fetchVarName = null;
+                    fetchColumnName = null;
                 }
             }
         }
@@ -993,8 +1034,16 @@ public class SchemaBootstrap extends AbstractLifecycleBean
     /**
      * Execute the given SQL statement, absorbing exceptions that we expect during
      * schema creation or upgrade.
+     * 
+     * @param fetchColumnName       the name of the column value to return
      */
-    private void executeStatement(Connection connection, String sql, boolean optional, int line, File file) throws Exception
+    private Object executeStatement(
+            Connection connection,
+            String sql,
+            String fetchColumnName,
+            boolean optional,
+            int line,
+            File file) throws Exception
     {
         StringBuilder executedStatements = executedStatementsThreadLocal.get();
         if (executedStatements == null)
@@ -1003,15 +1052,25 @@ public class SchemaBootstrap extends AbstractLifecycleBean
         }
 
         Statement stmt = connection.createStatement();
+        Object ret = null;
         try
         {
             if (logger.isDebugEnabled())
             {
                 LogUtil.debug(logger, MSG_EXECUTING_STATEMENT, sql);
             }
-            stmt.execute(sql);
+            boolean haveResults = stmt.execute(sql);
             // Record the statement
             executedStatements.append(sql).append(";\n\n");
+            if (haveResults && fetchColumnName != null)
+            {
+                ResultSet rs = stmt.getResultSet();
+                if (rs.next())
+                {
+                    // Get the result value
+                    ret = rs.getObject(fetchColumnName);
+                }
+            }
         }
         catch (SQLException e)
         {
@@ -1030,6 +1089,7 @@ public class SchemaBootstrap extends AbstractLifecycleBean
         {
             try { stmt.close(); } catch (Throwable e) {}
         }
+        return ret;
     }
     
     /**

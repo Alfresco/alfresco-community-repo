@@ -4425,6 +4425,7 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
             LocaleDAO localeDAO)
     {
         Serializable result = null;
+        Collection<Serializable> collectionResult = null;
         // A working map.  Ordering is not important for this map.
         Map<PropertyMapKey, NodePropertyValue> scratch = new HashMap<PropertyMapKey, NodePropertyValue>(3);
         // Iterate (sorted) over the map entries and extract values with the same list index
@@ -4456,15 +4457,17 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
                 {
                     result = collapsedValue;
                 }
-                else if (result instanceof Collection)
+                else if (collectionResult != null)
                 {
-                    @SuppressWarnings("unchecked")
-                    Collection<Serializable> collectionResult = (Collection<Serializable>) result;
+                    // We have started a collection, so just add the value to it.
                     collectionResult.add(collapsedValue);
                 }
                 else
                 {
-                    Collection<Serializable> collectionResult = new ArrayList<Serializable>(20);
+                    // We already had a result, and now have another.  A collection has not been
+                    // started.  We start a collection and explicitly keep track of it so that
+                    // we don't get mixed up with collections of collections (ETHREEOH-2064).
+                    collectionResult = new ArrayList<Serializable>(20);
                     collectionResult.add(result);                   // Add the first result
                     collectionResult.add(collapsedValue);           // Add the new value
                     result = (Serializable) collectionResult;

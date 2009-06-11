@@ -1614,7 +1614,61 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
     
     public List<ChildAssociationRef> getChildAssocs(NodeRef nodeRef, Set<QName> childNodeTypes)
     {
-        throw new UnsupportedOperationException();
+        /*
+         * ETWOTWO-961 forced an implementation, but this is just a workaround.
+         * We do a listing and then keep files or folders looking specifically
+         * for cm:folder and cm:content types from childNodeTypes.
+         */
+        Pair<Integer, String> avmVersionPath = AVMNodeConverter.ToAVMVersionPath(nodeRef);
+        int version = avmVersionPath.getFirst();
+        String path = avmVersionPath.getSecond();
+        List<ChildAssociationRef> result = new ArrayList<ChildAssociationRef>();
+        SortedMap<String, AVMNodeDescriptor> children = null;
+        try
+        {
+            children =
+                fAVMService.getDirectoryListing(version,
+                                                path);
+        }
+        catch (AVMNotFoundException e)
+        {
+            return result;
+        }
+        for (Map.Entry<String, AVMNodeDescriptor> entry : children.entrySet())
+        {
+            String name = entry.getKey();
+            AVMNodeDescriptor descriptor = entry.getValue();
+            if (descriptor.isFile())
+            {
+                if (!childNodeTypes.contains(ContentModel.TYPE_CONTENT))
+                {
+                    continue;
+                }
+            }
+            else if (descriptor.isDirectory())
+            {
+                if (!childNodeTypes.contains(ContentModel.TYPE_FOLDER))
+                {
+                    continue;
+                }
+            }
+            else
+            {
+                // Not a file or directory???
+                continue;
+            }
+            result.add(new ChildAssociationRef(ContentModel.ASSOC_CONTAINS,
+                                               nodeRef,
+                                               QName.createQName(
+                                                       NamespaceService.CONTENT_MODEL_1_0_URI,
+                                                       name),
+                                               AVMNodeConverter.ToNodeRef(
+                                                       version,
+                                                       AVMNodeConverter.ExtendAVMPath(path, name)),
+                                               true,
+                                               -1));
+        }
+        return result;
     }
 
     public List<ChildAssociationRef> getChildrenByName(NodeRef nodeRef, QName assocTypeQName, Collection<String> childNames)

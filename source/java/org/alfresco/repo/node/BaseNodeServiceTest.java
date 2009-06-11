@@ -32,6 +32,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -1430,6 +1431,7 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         assertTrue("Serialization/deserialization failed", checkPropertyQname instanceof QName);
     }
     
+    @SuppressWarnings("unchecked")
     public void testMultiProp() throws Exception
     {
         QName undeclaredPropQName = QName.createQName(NAMESPACE, getName());
@@ -1439,7 +1441,7 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
                 ASSOC_TYPE_QNAME_TEST_CHILDREN,
                 QName.createQName("pathA"),
                 TYPE_QNAME_TEST_MULTIPLE_TESTER).getChildRef();
-        ArrayList<String> values = new ArrayList<String>(1);
+        ArrayList<Serializable> values = new ArrayList<Serializable>(1);
         values.add("ABC");
         values.add("DEF");
         // test allowable conditions
@@ -1464,6 +1466,62 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
             txn.begin();
             // this should fail as we are passing multiple values into a non-any that is multiple=false
             nodeService.setProperty(nodeRef, PROP_QNAME_STRING_PROP_SINGLE, values);
+        }
+        catch (DictionaryException e)
+        {
+            // expected
+        }
+        finally
+        {
+            try { txn.rollback(); } catch (Throwable e) {}
+        }
+        
+        txn = transactionService.getUserTransaction();
+        try
+        {
+            txn.begin();
+            // Check that multi-valued d:mltext can be collections of MLText
+            values.clear();
+            values.add(new MLText("ABC"));
+            values.add(new MLText("DEF"));
+            nodeService.setProperty(nodeRef, PROP_QNAME_MULTI_ML_VALUE, values);
+            List<Serializable> checkValues = (List<Serializable>) nodeService.getProperty(
+                    nodeRef, PROP_QNAME_MULTI_ML_VALUE);
+            assertEquals("Expected 2 MLText values back", 2, checkValues.size());
+            assertTrue("Incorrect type in collection", checkValues.get(0) instanceof MLText);
+            assertTrue("Incorrect type in collection", checkValues.get(1) instanceof MLText);
+            
+            // Check that multi-valued d:any properties can be collections of collections (empty)
+            // We put ArrayLists and HashSets into the Collection of d:any, so that is exactly what should come out
+            values.clear();
+            ArrayList<Serializable> arrayListVal = new ArrayList<Serializable>(2);
+            HashSet<Serializable> hashSetVal = new HashSet<Serializable>(2);
+            values.add(arrayListVal);
+            values.add(hashSetVal);
+            nodeService.setProperty(nodeRef, PROP_QNAME_ANY_PROP_MULTIPLE, values);
+            checkValues = (List<Serializable>) nodeService.getProperty(
+                    nodeRef, PROP_QNAME_ANY_PROP_MULTIPLE);
+            assertEquals("Expected 2 Collection values back", 2, checkValues.size());
+            assertTrue("Incorrect type in collection", checkValues.get(0) instanceof ArrayList);  // ArrayList in - ArrayList out
+            assertTrue("Incorrect type in collection", checkValues.get(1) instanceof HashSet);  // HashSet in - HashSet out
+            
+            // Check that multi-valued d:any properties can be collections of collections (with values)
+            // We put ArrayLists and HashSets into the Collection of d:any, so that is exactly what should come out
+            arrayListVal.add("ONE");
+            arrayListVal.add("TWO");
+            hashSetVal.add("ONE");
+            hashSetVal.add("TWO");
+            values.clear();
+            values.add(arrayListVal);
+            values.add(hashSetVal);
+            nodeService.setProperty(nodeRef, PROP_QNAME_ANY_PROP_MULTIPLE, values);
+            checkValues = (List<Serializable>) nodeService.getProperty(
+                    nodeRef, PROP_QNAME_ANY_PROP_MULTIPLE);
+            assertEquals("Expected 2 Collection values back", 2, checkValues.size());
+            assertTrue("Incorrect type in collection", checkValues.get(0) instanceof ArrayList);  // ArrayList in - ArrayList out
+            assertTrue("Incorrect type in collection", checkValues.get(1) instanceof HashSet);  // HashSet in - HashSet out
+            assertEquals("First collection incorrect", 2, ((Collection)checkValues.get(0)).size());
+            assertEquals("Second collection incorrect", 2, ((Collection)checkValues.get(1)).size());
         }
         catch (DictionaryException e)
         {

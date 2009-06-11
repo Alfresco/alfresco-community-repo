@@ -46,7 +46,6 @@ import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.web.scripts.Status;
 import org.alfresco.web.scripts.WebScriptException;
 import org.alfresco.web.scripts.WebScriptResponse;
-import org.alfresco.web.scripts.servlet.WebScriptServletResponse;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -167,11 +166,10 @@ public class AVMRemoteStore extends BaseRemoteStore
                     }
                     
                     // set mimetype for the content and the character encoding + length for the stream
-                    WebScriptServletResponse httpRes = (WebScriptServletResponse)res;
-                    httpRes.setContentType(mimetype);
-                    httpRes.getHttpServletResponse().setCharacterEncoding(reader.getEncoding());
-                    httpRes.getHttpServletResponse().setDateHeader("Last-Modified", desc.getModDate());
-                    httpRes.setHeader("Content-Length", Long.toString(reader.getSize()));
+                    res.setContentType(mimetype);
+                    res.setContentEncoding(reader.getEncoding());
+                    res.setHeader("Last-Modified", Long.toString(desc.getModDate()));
+                    res.setHeader("Content-Length", Long.toString(reader.getSize()));
                     
                     if (logger.isDebugEnabled())
                         logger.debug("AVMRemoteStore.getDocument() " + mimetype + " of size: " + reader.getSize());

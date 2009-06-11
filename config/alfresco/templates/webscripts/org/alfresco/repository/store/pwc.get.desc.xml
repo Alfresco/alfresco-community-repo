@@ -3,6 +3,7 @@
   <description>Retrieves the properties of a private working copy</description>
   <url>/api/pwc/{store_type}/{store_id}/{id}?filter={filter?}</url>
   <authentication>user</authentication>
+  <transaction allow="readonly"/>
   <format default="atomentry">argument</format>
   <family>CMIS</family>
 </webscript>

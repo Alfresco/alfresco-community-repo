@@ -26,6 +26,7 @@ Each CMIS protocol binding will provide a way for fetching a  sub-range within a
   <url>/api/node/{store_type}/{store_id}/{id}/content{property}?a={attach?}</url>
   <url>/api/path/{store_type}/{store_id}/{id}/content{property}?a={attach?}</url>
   <authentication>guest</authentication>
+  <transaction allow="readonly"/>
   <format default="">argument</format>
   <family>CMIS</family>
   <lifecycle>public_api</lifecycle>

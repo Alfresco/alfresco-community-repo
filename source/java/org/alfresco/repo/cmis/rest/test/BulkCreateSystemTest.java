@@ -57,13 +57,12 @@ public class BulkCreateSystemTest
         abdera.getFactory().registerExtension(new CMISExtensionFactory());
 
         AbderaClient client = new AbderaClient(abdera);
-        client.setMaxConnectionsTotal(1);
         client.usePreemptiveAuthentication(true);
         client.addCredentials("http://localhost:8080", null, "basic", new UsernamePasswordCredentials("admin", "admin"));
 
         String root = createFolder(client,
                 "http://localhost:8080/alfresco/service/api/path/workspace/SpacesStore/Company%20Home/children",
-                "testfolder7");
+                "testfolder14");
 
         for (int i = 0; i < 100; i++)
         {

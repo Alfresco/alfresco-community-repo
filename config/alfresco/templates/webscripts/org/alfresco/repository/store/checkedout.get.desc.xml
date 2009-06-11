@@ -30,6 +30,7 @@ If no “maxItems” value is provided, then the Repository will determine an ap
   </description>
   <url>/api/checkedout?folderId={folderId?}&amp;includeDescendants={includeDescendants?}&amp;filter={filter?}&amp;skipCount={skipCount?}&amp;maxItems={maxItems?}&amp;includeAllowableActions={includeAllowableActions?}</url>
   <authentication>user</authentication>
+  <transaction allow="readonly"/>
   <format default="atomfeed"/>
   <family>CMIS</family>
 </webscript>

@@ -35,7 +35,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.alfresco.model.ContentModel;
@@ -58,8 +57,6 @@ import org.alfresco.web.scripts.WebScriptException;
 import org.alfresco.web.scripts.WebScriptRequest;
 import org.alfresco.web.scripts.WebScriptResponse;
 import org.alfresco.web.scripts.WebScriptStatus;
-import org.alfresco.web.scripts.servlet.WebScriptServletRequest;
-import org.alfresco.web.scripts.servlet.WebScriptServletResponse;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.util.FileCopyUtils;
@@ -298,14 +295,6 @@ public class StreamContent extends AbstractWebScript
     protected void streamContent(WebScriptRequest req, WebScriptResponse res, NodeRef nodeRef, QName propertyQName, boolean attach)
         throws IOException
     {
-        // NOTE: This web script must be executed in a HTTP Servlet environment
-        if (!(req instanceof WebScriptServletRequest))
-        {
-            throw new WebScriptException("Content retrieval must be executed in HTTP Servlet environment");
-        }
-        HttpServletRequest httpReq = ((WebScriptServletRequest)req).getHttpServletRequest();
-        HttpServletResponse httpRes = ((WebScriptServletResponse)res).getHttpServletResponse();
-        
         if (logger.isDebugEnabled())
             logger.debug("Retrieving content from node ref " + nodeRef.toString() + " (property: " + propertyQName.toString() + ") (attach: " + attach + ")");
 
@@ -317,14 +306,19 @@ public class StreamContent extends AbstractWebScript
        
         // check If-Modified-Since header and set Last-Modified header as appropriate
         Date modified = (Date)nodeService.getProperty(nodeRef, ContentModel.PROP_MODIFIED);
-        long modifiedSince = httpReq.getDateHeader("If-Modified-Since");
+        String modifiedSinceStr = req.getHeader("If-Modified-Since");
+        if (modifiedSinceStr == null)
+        {
+            modifiedSinceStr = "-1";
+        }
+        long modifiedSince = new Long(modifiedSinceStr);
         if (modifiedSince > 0L)
         {
             // round the date to the ignore millisecond value which is not supplied by header
             long modDate = (modified.getTime() / 1000L) * 1000L;
             if (modDate <= modifiedSince)
             {
-                httpRes.setStatus(HttpServletResponse.SC_NOT_MODIFIED);
+                res.setStatus(HttpServletResponse.SC_NOT_MODIFIED);
                 return;
             }
         }
@@ -337,7 +331,7 @@ public class StreamContent extends AbstractWebScript
         }
         
         // Stream the cotent
-        streamContentImpl(req, res, reader, attach, modified, String.valueOf(modifiedSince));        
+        streamContentImpl(req, res, reader, attach, modified, String.valueOf(modifiedSince));
     }
 
     /**
@@ -398,15 +392,12 @@ public class StreamContent extends AbstractWebScript
     protected void streamContentImpl(WebScriptRequest req, WebScriptResponse res, ContentReader reader, boolean attach, Date modified, String eTag)
         throws IOException
     {
-        HttpServletRequest httpReq = ((WebScriptServletRequest)req).getHttpServletRequest();
-        HttpServletResponse httpRes = ((WebScriptServletResponse)res).getHttpServletResponse();
-        
         // handle attachment
         if (attach == true)
         {
             // set header based on filename - will force a Save As from the browse if it doesn't recognize it
             // this is better than the default response of the browser trying to display the contents
-            httpRes.setHeader("Content-Disposition", "attachment");
+            res.setHeader("Content-Disposition", "attachment");
         }
 
         // establish mimetype
@@ -428,9 +419,9 @@ public class StreamContent extends AbstractWebScript
         }
 
         // set mimetype for the content and the character encoding + length for the stream
-        httpRes.setContentType(mimetype);
-        httpRes.setCharacterEncoding(reader.getEncoding());
-        httpRes.setHeader("Content-Length", Long.toString(reader.getSize()));
+        res.setContentType(mimetype);
+        res.setContentEncoding(reader.getEncoding());
+        res.setHeader("Content-Length", Long.toString(reader.getSize()));
         
         // set caching
         Cache cache = new Cache();

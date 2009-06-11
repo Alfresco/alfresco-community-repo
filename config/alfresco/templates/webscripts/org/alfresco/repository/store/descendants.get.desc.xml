@@ -35,6 +35,7 @@ If “includeAllowableActions” is TRUE, the repository will return the allowab
   <url>/api/node/{store_type}/{store_id}/{id}/descendants?types={types}&amp;filter={filter?}&amp;depth={depth?}&amp;includeAllowableActions={includeAllowableActions?}</url>
   <url>/api/path/{store_type}/{store_id}/{id}/descendants?types={types}&amp;filter={filter?}&amp;depth={depth?}&amp;includeAllowableActions={includeAllowableActions?}</url>
   <authentication>guest</authentication>
+  <transaction allow="readonly"/>
   <format default="atomfeed">argument</format>
   <family>CMIS</family>
 </webscript>

@@ -31,6 +31,7 @@ It is recommended that “includeAllowableActions” be used with query statemen
   </description>
   <url>/api/query</url>
   <authentication>user</authentication>
+  <transaction allow="readonly"/>
   <format default="atomfeed"/>
   <family>CMIS</family>
 </webscript>

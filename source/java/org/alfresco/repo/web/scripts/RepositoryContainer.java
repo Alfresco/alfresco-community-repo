@@ -24,7 +24,12 @@
  */
 package org.alfresco.repo.web.scripts;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.UnsupportedEncodingException;
+import java.io.Writer;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -32,6 +37,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.transaction.Status;
 import javax.transaction.UserTransaction;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -40,6 +46,7 @@ import org.alfresco.repo.tenant.TenantAdminService;
 import org.alfresco.repo.tenant.TenantDeployer;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
+import org.alfresco.repo.transaction.TransactionListener;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.TemplateService;
@@ -47,15 +54,19 @@ import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.descriptor.DescriptorService;
 import org.alfresco.web.scripts.AbstractRuntimeContainer;
 import org.alfresco.web.scripts.Authenticator;
+import org.alfresco.web.scripts.Cache;
 import org.alfresco.web.scripts.Description;
 import org.alfresco.web.scripts.Registry;
+import org.alfresco.web.scripts.Runtime;
 import org.alfresco.web.scripts.ServerModel;
 import org.alfresco.web.scripts.WebScript;
 import org.alfresco.web.scripts.WebScriptException;
 import org.alfresco.web.scripts.WebScriptRequest;
 import org.alfresco.web.scripts.WebScriptResponse;
+import org.alfresco.web.scripts.WrappingWebScriptResponse;
 import org.alfresco.web.scripts.Description.RequiredAuthentication;
 import org.alfresco.web.scripts.Description.RequiredTransaction;
+import org.alfresco.web.scripts.Description.TransactionCapability;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.ObjectFactory;
@@ -71,6 +82,9 @@ public class RepositoryContainer extends AbstractRuntimeContainer implements Ten
     // Logger
     protected static final Log logger = LogFactory.getLog(RepositoryContainer.class);
 
+    // Transaction key for buffered response
+    private static String BUFFERED_RESPONSE_KEY = RepositoryContainer.class.getName() + ".bufferedresponse";
+    
     /** Component Dependencies */
     private Repository repository;
     private RepositoryImageResolver imageResolver;
@@ -92,7 +106,8 @@ public class RepositoryContainer extends AbstractRuntimeContainer implements Ten
     /**
      * @param registryFactory
      */
-    public void setRegistryFactory(ObjectFactory registryFactory) {
+    public void setRegistryFactory(ObjectFactory registryFactory)
+    {
         this.registryFactory = registryFactory;
     }
     
@@ -314,9 +329,22 @@ public class RepositoryContainer extends AbstractRuntimeContainer implements Ten
                     try
                     {
                         if (logger.isDebugEnabled())
-                            logger.debug("Begin retry transaction block: " + description.getRequiredTransaction());
+                            logger.debug("Begin retry transaction block: " + description.getRequiredTransaction() + "," + description.getTransactionCapability());
+
+                        WebScriptResponse redirectedRes = scriptRes;
+                        if (description.getTransactionCapability() == TransactionCapability.readwrite)
+                        {
+                            if (logger.isDebugEnabled())
+                                logger.debug("Creating Transactional Response for ReadWrite transaction");
+
+                            // create buffered response that's sensitive transaction boundary
+                            BufferedResponse bufferedRes = new BufferedResponse(scriptRes);
+                            AlfrescoTransactionSupport.bindResource(BUFFERED_RESPONSE_KEY, bufferedRes); 
+                            AlfrescoTransactionSupport.bindListener(bufferedRes);
+                            redirectedRes = bufferedRes;
+                        }
                         
-                        script.execute(scriptReq, scriptRes);
+                        script.execute(scriptReq, redirectedRes);
                     }
                     catch(Exception e)
                     {
@@ -356,21 +384,16 @@ public class RepositoryContainer extends AbstractRuntimeContainer implements Ten
                     finally
                     {
                         if (logger.isDebugEnabled())
-                            logger.debug("End retry transaction block: " + description.getRequiredTransaction());
+                            logger.debug("End retry transaction block: " + description.getRequiredTransaction() + "," + description.getTransactionCapability());
                     }
                     
                     return null;
                 }        
             };
         
-            if (description.getRequiredTransaction() == RequiredTransaction.required)
-            {
-                retryingTransactionHelper.doInTransaction(work); 
-            }
-            else
-            {
-                retryingTransactionHelper.doInTransaction(work, false, true); 
-            }
+            boolean readonly = description.getTransactionCapability() == TransactionCapability.readonly;
+            boolean requiresNew = description.getRequiredTransaction() == RequiredTransaction.requiresnew;
+            retryingTransactionHelper.doInTransaction(work, readonly, requiresNew); 
         }
     }
     
@@ -464,5 +487,214 @@ public class RepositoryContainer extends AbstractRuntimeContainer implements Ten
     public void destroy()
     {
         webScriptsRegistryCache.remove(tenantAdminService.getCurrentUserDomain());
+    }
+    
+    
+    /**
+     * Transactional Buffered Response
+     */
+    private static class BufferedResponse implements TransactionListener, WrappingWebScriptResponse
+    {
+        private WebScriptResponse res;
+        private ByteArrayOutputStream outputStream;
+        private OutputStreamWriter outputWriter;
+        
+        /**
+         * Construct
+         * 
+         * @param res
+         */
+        public BufferedResponse(WebScriptResponse res)
+        {
+            this.res = res;
+            this.outputStream = new ByteArrayOutputStream(4096);
+            try
+            {
+                this.outputWriter = new OutputStreamWriter(outputStream, "UTF-8");
+            }
+            catch (UnsupportedEncodingException e)
+            {
+                throw new AlfrescoRuntimeException("Failed to create buffered response", e);
+            };
+        }
+
+        /*
+         * (non-Javadoc)
+         * @see org.alfresco.web.scripts.WrappingWebScriptResponse#getNext()
+         */
+        public WebScriptResponse getNext()
+        {
+            return res;
+        }
+
+        /*
+         * (non-Javadoc)
+         * @see org.alfresco.web.scripts.WebScriptResponse#addHeader(java.lang.String, java.lang.String)
+         */
+        public void addHeader(String name, String value)
+        {
+            res.addHeader(name, value);
+        }
+
+        /*
+         * (non-Javadoc)
+         * @see org.alfresco.web.scripts.WebScriptResponse#encodeScriptUrl(java.lang.String)
+         */
+        public String encodeScriptUrl(String url)
+        {
+            return res.encodeScriptUrl(url);
+        }
+
+        /*
+         * (non-Javadoc)
+         * @see org.alfresco.web.scripts.WebScriptResponse#getEncodeScriptUrlFunction(java.lang.String)
+         */
+        public String getEncodeScriptUrlFunction(String name)
+        {
+            return res.getEncodeScriptUrlFunction(name);
+        }
+
+        /*
+         * (non-Javadoc)
+         * @see org.alfresco.web.scripts.WebScriptResponse#getOutputStream()
+         */
+        public OutputStream getOutputStream() throws IOException
+        {
+            return outputStream;
+        }
+
+        /*
+         * (non-Javadoc)
+         * @see org.alfresco.web.scripts.WebScriptResponse#getRuntime()
+         */
+        public Runtime getRuntime()
+        {
+            return res.getRuntime();
+        }
+
+        /*
+         * (non-Javadoc)
+         * @see org.alfresco.web.scripts.WebScriptResponse#getWriter()
+         */
+        public Writer getWriter() throws IOException
+        {
+            return outputWriter;
+        }
+
+        /*
+         * (non-Javadoc)
+         * @see org.alfresco.web.scripts.WebScriptResponse#reset()
+         */
+        public void reset()
+        {
+            outputStream.reset();
+            res.reset();
+        }
+
+        /*
+         * (non-Javadoc)
+         * @see org.alfresco.web.scripts.WebScriptResponse#setCache(org.alfresco.web.scripts.Cache)
+         */
+        public void setCache(Cache cache)
+        {
+            res.setCache(cache);
+        }
+
+        /*
+         * (non-Javadoc)
+         * @see org.alfresco.web.scripts.WebScriptResponse#setContentType(java.lang.String)
+         */
+        public void setContentType(String contentType)
+        {
+            res.setContentType(contentType);
+        }
+
+        /*
+         * (non-Javadoc)
+         * @see org.alfresco.web.scripts.WebScriptResponse#setContentEncoding(java.lang.String)
+         */
+        public void setContentEncoding(String contentEncoding)
+        {
+            res.setContentEncoding(contentEncoding);
+        }
+
+        /*
+         * (non-Javadoc)
+         * @see org.alfresco.web.scripts.WebScriptResponse#setHeader(java.lang.String, java.lang.String)
+         */
+        public void setHeader(String name, String value)
+        {
+            res.setHeader(name, value);
+        }
+
+        /*
+         * (non-Javadoc)
+         * @see org.alfresco.web.scripts.WebScriptResponse#setStatus(int)
+         */
+        public void setStatus(int status)
+        {
+            res.setStatus(status);
+        }
+
+        /*
+         * (non-Javadoc)
+         * @see org.alfresco.repo.transaction.TransactionListener#afterCommit()
+         */
+        public void afterCommit()
+        {
+            writeResponse();
+        }
+
+        /*
+         * (non-Javadoc)
+         * @see org.alfresco.repo.transaction.TransactionListener#afterRollback()
+         */
+        public void afterRollback()
+        {
+            writeResponse();
+        }
+
+        /*
+         * (non-Javadoc)
+         * @see org.alfresco.repo.transaction.TransactionListener#beforeCommit(boolean)
+         */
+        public void beforeCommit(boolean readOnly)
+        {
+        }
+
+        /*
+         * (non-Javadoc)
+         * @see org.alfresco.repo.transaction.TransactionListener#beforeCompletion()
+         */
+        public void beforeCompletion()
+        {
+        }
+
+        /*
+         * (non-Javadoc)
+         * @see org.alfresco.repo.transaction.TransactionListener#flush()
+         */
+        public void flush()
+        {
+        }
+
+        /**
+         * Write buffered response to underlying response
+         */
+        private void writeResponse()
+        {
+            try
+            {
+                if (logger.isDebugEnabled())
+                    logger.debug("Writing Transactional response: size=" + outputStream.size());
+                
+                outputStream.flush();
+                outputStream.writeTo(res.getOutputStream());
+            }
+            catch (IOException e)
+            {
+                throw new AlfrescoRuntimeException("Failed to commit buffered response", e);
+            }
+        }
     }
 }

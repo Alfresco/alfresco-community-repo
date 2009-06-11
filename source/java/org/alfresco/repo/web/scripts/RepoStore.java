@@ -243,7 +243,7 @@ public class RepoStore implements Store, TenantDeployer
                                         "Web Script Store " + repoStore.toString() + repoPath + " must exist; it was not found");
                             }
                         }
-                    });
+                    }, true, false);
                 }
     	    }, AuthenticationUtil.getSystemUserName());
     		
@@ -364,7 +364,7 @@ public class RepoStore implements Store, TenantDeployer
                         
                         return documentPaths != null ? documentPaths.toArray(new String[documentPaths.size()]) : new String[0];
                     }
-                });
+                }, true, false);
             }
         }, AuthenticationUtil.getSystemUserName());
     }
@@ -423,7 +423,7 @@ public class RepoStore implements Store, TenantDeployer
                         }
                         return documentPaths.toArray(new String[documentPaths.size()]);
                     }
-                });
+                }, true, false);
             }
         }, AuthenticationUtil.getSystemUserName());
     }
@@ -499,7 +499,7 @@ public class RepoStore implements Store, TenantDeployer
                         
                         return documentPaths.toArray(new String[documentPaths.size()]);
                     }
-                });
+                }, true, false);
             }
         }, AuthenticationUtil.getSystemUserName());
     }
@@ -521,7 +521,7 @@ public class RepoStore implements Store, TenantDeployer
                                 findNodeRef(documentPath), ContentModel.PROP_CONTENT);
                         return reader.getLastModified();
                     }
-                });
+                }, true, false);
             }
         }, AuthenticationUtil.getSystemUserName());            
     }
@@ -542,7 +542,7 @@ public class RepoStore implements Store, TenantDeployer
                         NodeRef nodeRef = findNodeRef(documentPath);
                         return (nodeRef != null);
                     }
-                });
+                }, true, false);
             }
         }, AuthenticationUtil.getSystemUserName());
     }
@@ -573,7 +573,7 @@ public class RepoStore implements Store, TenantDeployer
                         }
                         return reader.getContentInputStream();
                     }
-                });
+                }, true, false);
             }
         }, AuthenticationUtil.getSystemUserName());
     }
@@ -867,9 +867,9 @@ public class RepoStore implements Store, TenantDeployer
                             }
                             return location;
                         }
-                    });
+                    }, true, false);
                 }
-            }, AuthenticationUtil.getSystemUserName());            
+            }, AuthenticationUtil.getSystemUserName());
         }
     }
     

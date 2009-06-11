@@ -3,6 +3,7 @@
   <description>Retrieve list of documents that are not in any folder</description>
   <url>/api/unfiled</url>
   <authentication>guest</authentication>
+  <transaction allow="readonly"/>
   <format default="atomfeed"/>
   <family>CMIS</family>
 </webscript>

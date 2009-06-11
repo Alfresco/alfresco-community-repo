@@ -3,6 +3,7 @@
   <description>Retrieve list of all child Types</description>
   <url>/api/type/{typeId}/children?includePropertyDefinitions={includePropertyDefinitions?}&amp;skipCount={skipCount?}&amp;maxItems={maxItems?}</url>
   <authentication>user</authentication>
+  <transaction allow="readonly"/>
   <format default="atomfeed"/>
   <family>CMIS</family>
 </webscript>

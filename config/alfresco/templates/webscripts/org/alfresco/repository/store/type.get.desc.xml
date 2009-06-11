@@ -21,6 +21,7 @@ When includeInheritedProperties is true, the repository SHOULD return all proper
   </description>
   <url>/api/type/{typeId}?includeInheritedProperties={includeInheritedProperties?}</url>
   <authentication>user</authentication>
+  <transaction allow="readonly"/>
   <format default="atomentry"/>
   <family>CMIS</family>
 </webscript>

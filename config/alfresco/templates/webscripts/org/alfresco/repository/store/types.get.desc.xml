@@ -28,6 +28,7 @@ If “returnPropertyDefinitions” is False, then the Repository will return onl
 </description>
   <url>/api/types?type={type?}&amp;includePropertyDefinitions={includePropertyDefinitions?}&amp;skipCount={skipCount?}&amp;maxItems={maxItems?}</url>
   <authentication>user</authentication>
+  <transaction allow="readonly"/>
   <format default="atomfeed"/>
   <family>CMIS</family>
 </webscript>

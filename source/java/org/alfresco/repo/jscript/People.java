@@ -256,8 +256,8 @@ public final class People extends BaseScopableProcessorExtension
             }
             
             person = createPerson(userName, firstName, lastName, emailAddress);
-    		
-    		if (password != null)
+            
+    		if (person != null && password != null)
     		{   			
     			// create account for person with the userName and password
     			mutableAuthenticationDao.createUser(userName, password.toCharArray());

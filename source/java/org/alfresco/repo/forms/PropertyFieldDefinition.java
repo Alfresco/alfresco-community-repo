@@ -35,6 +35,7 @@ import java.util.Map;
 public class PropertyFieldDefinition extends FieldDefinition
 {
     protected String dataType;
+    protected DataTypeParameters dataTypeParams;
     protected boolean mandatory = false;
     protected boolean repeats = false;
     protected List<FieldConstraint> constraints;
@@ -61,6 +62,26 @@ public class PropertyFieldDefinition extends FieldDefinition
     public String getDataType()
     {
         return this.dataType;
+    }
+    
+    /**
+     * Returns the data type parameters for the field
+     * 
+     * @return DataTypeParameters object or null
+     */
+    public DataTypeParameters getDataTypeParameters()
+    {
+        return this.dataTypeParams;
+    }
+
+    /**
+     * Sets the data type parameters for the field
+     * 
+     * @param dataTypeParams The DataTypeParameters for the field
+     */
+    public void setDataTypeParameters(DataTypeParameters dataTypeParams)
+    {
+        this.dataTypeParams = dataTypeParams;
     }
 
     /**
@@ -133,6 +154,7 @@ public class PropertyFieldDefinition extends FieldDefinition
         buffer.append(" (");
         buffer.append("name=").append(this.name);
         buffer.append(", dataType=").append(this.dataType);
+        buffer.append(", dataTypeParams=").append(this.dataTypeParams);
         buffer.append(", label=").append(this.label);
         buffer.append(", description=").append(this.description);
         buffer.append(", binding=").append(this.binding);

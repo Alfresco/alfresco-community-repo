@@ -30,6 +30,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -64,6 +65,7 @@ import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.Period;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
@@ -596,6 +598,21 @@ public class NodeFormProcessor extends FilteredFormProcessor
         // define the data key name and set
         String dataKeyName = PROP_DATA_PREFIX + nameParts[0] + DATA_KEY_SEPARATOR + nameParts[1];
         fieldDef.setDataKeyName(dataKeyName);
+        
+        // setup any parameters requried for the data type
+        if (propDef.getDataType().getName().equals(DataTypeDefinition.PERIOD))
+        {
+            // if the property data type is d:period we need to setup a data
+            // type parameters object to represent the options and rules
+            PeriodDataTypeParameters periodOptions = new PeriodDataTypeParameters();
+            Set<String> providers = Period.getProviderNames();
+            for (String provider : providers)
+            {
+                periodOptions.addPeriodProvider(Period.getProvider(provider));
+            }
+            
+            fieldDef.setDataTypeParameters(periodOptions);
+        }
         
         // setup constraints for the property
         List<ConstraintDefinition> constraints = propDef.getConstraints();

@@ -4,5 +4,5 @@
    <url>/api/classes/{classname}/subclasses?r={recursive?}&amp;nsp={namespacePrefix?}&amp;n={name?}</url>
    <format default="json">argument</format>
    <authentication>user</authentication>
-   <transaction>required</transaction>
+   <transaction allow="readonly">required</transaction>
 </webscript>

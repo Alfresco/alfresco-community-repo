@@ -10,7 +10,7 @@
   <url>/api/tags/{store_type}/{store_id}?tf={tag_filter?}</url>
   <format default="json">argument</format>
   <authentication>user</authentication>
-  <transaction>required</transaction>
+  <transaction allow="readonly">required</transaction>
   <lifecycle>draft_public_api</lifecycle>
   <family>Tagging</family>
 </webscript>

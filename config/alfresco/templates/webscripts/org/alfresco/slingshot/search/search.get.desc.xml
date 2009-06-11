@@ -2,7 +2,7 @@
    <shortname>search</shortname>
    <description>Site Search Component Data Webscript</description>
    <url>/slingshot/search?term={term}&amp;site={site?}&amp;container={container?}</url>
-  <format default="json">argument</format>
+   <format default="json">argument</format>
    <authentication>user</authentication>
-   <transaction>required</transaction>
+   <transaction allow="readonly">required</transaction>
 </webscript>

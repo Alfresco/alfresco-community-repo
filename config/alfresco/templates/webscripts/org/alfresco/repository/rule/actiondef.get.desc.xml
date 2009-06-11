@@ -4,5 +4,5 @@
    <url>/api/rules/actiondefs/{actionDefinitionName}</url>
    <format default="json">argument</format>
    <authentication>user</authentication>
-   <transaction>required</transaction>
+   <transaction allow="readonly">required</transaction>
 </webscript>

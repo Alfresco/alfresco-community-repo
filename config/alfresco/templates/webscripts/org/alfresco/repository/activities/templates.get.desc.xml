@@ -7,5 +7,5 @@
   <url>/api/activities/templates/{path}?format=json</url>
   <format default="json">argument</format>
   <authentication>admin</authentication>
-  <transaction>required</transaction>
+  <transaction allow="readonly">required</transaction>
 </webscript>

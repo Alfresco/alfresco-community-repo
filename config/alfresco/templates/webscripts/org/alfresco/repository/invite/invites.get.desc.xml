@@ -5,5 +5,5 @@
    <url>/api/invites?inviteId={inviteId}</url>
    <format default="json">argument</format>
    <authentication>user</authentication>
-   <transaction>required</transaction>
+   <transaction allow="readonly">required</transaction>
 </webscript>

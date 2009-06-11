@@ -5,5 +5,5 @@
   <url>/slingshot/doclib/images/site/{site}/{container}</url>
   <format default="json">argument</format>
   <authentication>user</authentication>
-  <transaction>required</transaction>
+  <transaction allow="readonly">required</transaction>
 </webscript>

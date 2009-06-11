@@ -4,5 +4,5 @@
   <url>/webframework/content/metadata</url>
   <format default="html">argument</format>
   <authentication>user</authentication>
-  <transaction>required</transaction>
+  <transaction allow="readonly">required</transaction>
 </webscript>

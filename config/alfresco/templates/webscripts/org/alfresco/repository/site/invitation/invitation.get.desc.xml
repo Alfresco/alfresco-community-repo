@@ -8,5 +8,5 @@
   <format default="json"/>
   <lifecycle>draft_public_api</lifecycle>
   <authentication>user</authentication>
-  <transaction>required</transaction>
+  <transaction allow="readonly">required</transaction>
 </webscript>

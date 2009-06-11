@@ -5,5 +5,5 @@
   <url>/calendar/events/{site}/user</url>
   <format default="json">argument</format>
   <authentication>user</authentication>
-  <transaction>required</transaction>
+  <transaction allow="readonly">required</transaction>
 </webscript>

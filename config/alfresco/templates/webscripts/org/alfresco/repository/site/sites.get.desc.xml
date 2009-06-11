@@ -4,5 +4,5 @@
   <url>/api/sites?nf={namefilter?}&amp;spf={sitepresetfilter?}&amp;size={pagesize?}&amp;pos={position?}</url>
   <format default="json">argument</format>
   <authentication>user</authentication>
-  <transaction>required</transaction>
+  <transaction allow="readonly">required</transaction>
 </webscript>

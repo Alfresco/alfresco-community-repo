@@ -7,6 +7,6 @@
    <url>/api/groups/{shortName}</url>
    <format default="json">argument</format>
    <authentication>user</authentication>
-   <transaction>required</transaction>
+   <transaction allow="readonly">required</transaction>
    <lifecycle>draft_public_api</lifecycle>
 </webscript>

@@ -7,5 +7,5 @@
   <url>/api/activities/feed/site/{siteId}?format=rss</url>
   <format default="atomfeed">argument</format>
   <authentication>user</authentication>
-  <transaction>required</transaction>
+  <transaction allow="readonly">required</transaction>
 </webscript>

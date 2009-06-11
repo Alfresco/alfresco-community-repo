@@ -16,6 +16,6 @@
   <url>/api/sites/{shortname}/memberships?nf={namefilter?}&amp;rf={rolefilter?}&amp;size={pagesize?}&amp;pos={position?}&amp;authorityType={authorityType?}</url>
   <format default="json">argument</format>
   <authentication>user</authentication>
-  <transaction>required</transaction>
+  <transaction allow="readonly">required</transaction>
   <lifecycle>draft_public_api</lifecycle>
 </webscript>

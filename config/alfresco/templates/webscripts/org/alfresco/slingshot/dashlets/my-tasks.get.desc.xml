@@ -4,5 +4,5 @@
   <url>/slingshot/dashlets/my-tasks?filter={filter?}&amp;date={date?}</url>
   <format default="json"></format>
   <authentication>user</authentication>
-  <transaction>required</transaction>
+  <transaction allow="readonly">required</transaction>
 </webscript>

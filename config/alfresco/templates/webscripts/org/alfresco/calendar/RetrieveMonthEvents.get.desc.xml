@@ -4,5 +4,5 @@
 	<url>/calendar/RetrieveMonthEvents?d={requiredDate}&amp;s={currentSpace}</url> 
 	<format default="html">extension</format> 
    <authentication>user</authentication>
-   <transaction>required</transaction>
+   <transaction allow="readonly">required</transaction>
 </webscript>

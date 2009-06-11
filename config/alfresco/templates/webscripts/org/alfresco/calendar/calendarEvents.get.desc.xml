@@ -1,6 +1,7 @@
 <webscript>
-<shortname>Calendar Events</shortname>
-<description>Calendar Events</description>
-<url>/calendar/getCalendarEvents</url>
-<authentication>user</authentication>
+   <shortname>Calendar Events</shortname>
+   <description>Calendar Events</description>
+   <url>/calendar/getCalendarEvents</url>
+   <authentication>user</authentication>
+   <transaction allow="readonly">required</transaction>
 </webscript>

@@ -4,5 +4,5 @@
   <url>/api/forms/picker/{type}/{store_type}/{store_id}/{id}/children</url>
   <format default="json"/>
   <authentication>user</authentication>
-  <transaction>required</transaction>
+  <transaction allow="readonly">required</transaction>
 </webscript>

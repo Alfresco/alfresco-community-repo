@@ -8,6 +8,6 @@
   <url>/avmstore/{method}/s/{store}/w/{webapp}</url>
   <url>/avmstore/{method}/s/{store}/w/{webapp}/{path}</url>  
   <authentication>guest</authentication>
-  <transaction>required</transaction>
+  <transaction allow="readonly">required</transaction>
   <format default="">argument</format>
 </webscript>

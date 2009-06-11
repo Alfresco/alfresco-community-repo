@@ -4,5 +4,5 @@
   <url>/api/node/{store_type}/{store_id}/{id}/comments</url>
   <format default="json">argument</format>
   <authentication>user</authentication>
-  <transaction>required</transaction>
+  <transaction allow="readonly">required</transaction>
 </webscript>

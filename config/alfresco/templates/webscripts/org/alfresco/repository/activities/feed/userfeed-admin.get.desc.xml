@@ -12,5 +12,5 @@
   <url>/api/activities/feed/user/{userId}?s={siteId?}&amp;exclUser={false?}&amp;exclOthers={false?}&amp;format=json</url>
   <format default="atomfeed">argument</format>
   <authentication>admin</authentication>
-  <transaction>required</transaction>
+  <transaction allow="readonly">required</transaction>
 </webscript>

@@ -5,5 +5,5 @@
   <url>/api/activities/template/{path}?format=text</url>
   <format default="text">argument</format>
   <authentication>admin</authentication>
-  <transaction>required</transaction>
+  <transaction allow="readonly">required</transaction>
 </webscript>

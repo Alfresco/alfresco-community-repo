@@ -5,5 +5,5 @@
   <url>/api/activities/feed/controls?format=json</url>
   <format default="json"/>
   <authentication>user</authentication>
-  <transaction>required</transaction>
+  <transaction allow="readonly">required</transaction>
 </webscript>

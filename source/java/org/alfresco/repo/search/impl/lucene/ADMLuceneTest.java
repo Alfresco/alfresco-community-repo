@@ -38,15 +38,23 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Random;
 
+import javax.transaction.HeuristicMixedException;
+import javax.transaction.HeuristicRollbackException;
+import javax.transaction.RollbackException;
 import javax.transaction.Status;
+import javax.transaction.SystemException;
 import javax.transaction.UserTransaction;
 
 import junit.framework.TestCase;
 
+import org.alfresco.cmis.CMISQueryOptions;
+import org.alfresco.cmis.CMISResultSet;
+import org.alfresco.cmis.CMISResultSetRow;
 import org.alfresco.i18n.I18NUtil;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.dictionary.DictionaryDAO;
@@ -88,6 +96,7 @@ import org.alfresco.service.cmr.repository.datatype.Duration;
 import org.alfresco.service.cmr.search.QueryParameter;
 import org.alfresco.service.cmr.search.QueryParameterDefinition;
 import org.alfresco.service.cmr.search.ResultSet;
+import org.alfresco.service.cmr.search.ResultSetMetaData;
 import org.alfresco.service.cmr.search.ResultSetRow;
 import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
@@ -641,6 +650,147 @@ public class ADMLuceneTest extends TestCase
 
     }
 
+    public void testPublicServiceSearchServicePaging() throws Exception
+    {
+        testTX.commit();
+        testTX = transactionService.getUserTransaction();
+        testTX.begin();
+
+        List<NodeRef> expected = new ArrayList<NodeRef>(15);
+
+        SearchParameters sp = new SearchParameters();
+        sp.setLanguage(SearchService.LANGUAGE_FTS_ALFRESCO);
+        sp.setQuery("PATH:\"//.\"");
+        sp.addStore(rootNodeRef.getStoreRef());
+        sp.excludeDataInTheCurrentTransaction(true);
+
+        ResultSet results;
+        ResultSetMetaData md;
+
+        results = serviceRegistry.getSearchService().query(sp);
+        assertEquals(15, results.length());
+        md = results.getResultSetMetaData();
+        for (ResultSetRow row : results)
+        {
+            expected.add(row.getNodeRef());
+        }
+        results.close();
+        for (int skip = 0; skip < 20; skip++)
+        {
+            for (int max = 0; max < 20; max++)
+            {
+                doPage(expected, skip, max, sp, serviceRegistry.getSearchService());
+            }
+        }
+
+        this.authenticationComponent.setCurrentUser("admin");
+        sp = new SearchParameters();
+        sp.setLanguage(SearchService.LANGUAGE_LUCENE);
+        sp.setQuery("PATH:\"//.\"");
+        sp.addStore(rootNodeRef.getStoreRef());
+        sp.excludeDataInTheCurrentTransaction(true);
+
+        results = serviceRegistry.getSearchService().query(sp);
+        assertEquals(15, results.length());
+        results.close();
+
+        sp.setMaxPermissionChecks(2);
+        results = serviceRegistry.getSearchService().query(sp);
+        assertEquals(2, results.length());
+        results.close();
+        
+        sp.setLanguage(SearchService.LANGUAGE_FTS_ALFRESCO);
+        sp.setMaxPermissionChecks(2);
+        results = serviceRegistry.getSearchService().query(sp);
+        assertEquals(2, results.length());
+        results.close();
+
+        // Even though it is picked up they go though before the time moves on
+        // sp.setMaxPermissionChecks(-1);
+        // sp.setMaxPermissionCheckTimeMillis(0);
+        // results = serviceRegistry.getSearchService().query(sp);
+        // assertEquals(0, results.length());
+        // results.close();
+
+    }
+
+    private void doPage(List<NodeRef> expected, int skip, int max, SearchParameters sp, SearchService searcher)
+    {
+        sp.setSkipCount(skip);
+        sp.setMaxItems(max);
+        ResultSet results = searcher.query(sp);
+        assertEquals("Skip = " + skip + " max  = " + max, skip + max > 15 ? 15 - skip : max, results.length());
+        assertEquals("Skip = " + skip + " max  = " + max, (skip + max) < 15, results.hasMore());
+        assertEquals("Skip = " + skip + " max  = " + max, skip, results.getStart());
+        int actualPosition = skip;
+        for (ResultSetRow row : results)
+        {
+            NodeRef nodeRef = row.getNodeRef();
+            assertEquals("Skip = " + skip + " max  = " + max + " actual = " + actualPosition, expected.get(actualPosition), nodeRef);
+            actualPosition++;
+        }
+    }
+
+    public void testNonPublicSearchServicePaging() throws InterruptedException
+    {
+        luceneFTS.pause();
+        buildBaseIndex();
+
+        ADMLuceneSearcherImpl searcher = ADMLuceneSearcherImpl.getSearcher(rootNodeRef.getStoreRef(), indexerAndSearcher);
+        searcher.setNodeService(nodeService);
+        searcher.setDictionaryService(dictionaryService);
+        searcher.setTenantService(tenantService);
+        searcher.setNamespacePrefixResolver(getNamespacePrefixReolsver("namespace"));
+        searcher.setQueryRegister(queryRegisterComponent);
+        searcher.setQueryLanguages(((AbstractLuceneIndexerAndSearcherFactory) indexerAndSearcher).queryLanguages);
+
+        List<NodeRef> expected = new ArrayList<NodeRef>(15);
+
+        SearchParameters sp = new SearchParameters();
+        sp.setLanguage(SearchService.LANGUAGE_FTS_ALFRESCO);
+        sp.setQuery("PATH:\"//.\"");
+        sp.addStore(rootNodeRef.getStoreRef());
+        sp.excludeDataInTheCurrentTransaction(true);
+
+        ResultSet results;
+        ResultSetMetaData md;
+
+        results = searcher.query(sp);
+        assertEquals(15, results.length());
+        md = results.getResultSetMetaData();
+        for (ResultSetRow row : results)
+        {
+            expected.add(row.getNodeRef());
+        }
+        results.close();
+
+        for (int skip = 0; skip < 20; skip++)
+        {
+            for (int max = 0; max < 20; max++)
+            {
+                doPage(expected, skip, max, sp, searcher);
+            }
+        }
+
+    }
+
+    private void doPage(List<NodeRef> expected, int skip, int max, SearchParameters sp, ADMLuceneSearcherImpl searcher)
+    {
+        sp.setSkipCount(skip);
+        sp.setMaxItems(max);
+        ResultSet results = searcher.query(sp);
+        assertEquals("Skip = " + skip + " max  = " + max, skip + max > 15 ? 15 - skip : max, results.length());
+        assertEquals("Skip = " + skip + " max  = " + max, (skip + max) < 15, results.hasMore());
+        assertEquals("Skip = " + skip + " max  = " + max, skip, results.getStart());
+        int actualPosition = skip;
+        for (ResultSetRow row : results)
+        {
+            NodeRef nodeRef = row.getNodeRef();
+            assertEquals("Skip = " + skip + " max  = " + max + " actual = " + actualPosition, expected.get(actualPosition), nodeRef);
+            actualPosition++;
+        }
+    }
+
     public void testAlfrescoSql() throws InterruptedException
     {
         luceneFTS.pause();
@@ -657,7 +807,7 @@ public class ADMLuceneTest extends TestCase
         alfrescoSqlQueryWithCount(searcher, "SELECT * FROM DOCUMENT", 1);
         alfrescoSqlQueryWithCount(searcher, "SELECT * FROM DOCUMENT D JOIN CM_OWNABLE O ON (D.OBJECTID = O.OBJECTID)", 0);
     }
-    
+
     public void alfrescoSqlQueryWithCount(ADMLuceneSearcherImpl searcher, String query, int count)
     {
         ResultSet results = searcher.query(rootNodeRef.getStoreRef(), SearchService.LANGUAGE_SQL_ALFTRESCO, query, null);
@@ -665,7 +815,7 @@ public class ADMLuceneTest extends TestCase
         results.getResultSetMetaData();
         results.close();
     }
-    
+
     public void testCmisSql() throws InterruptedException
     {
         luceneFTS.pause();
@@ -682,7 +832,7 @@ public class ADMLuceneTest extends TestCase
         sqlQueryWithCount(searcher, "SELECT * FROM DOCUMENT", 1);
         sqlQueryWithCount(searcher, "SELECT * FROM DOCUMENT D WHERE CONTAINS(D,'lazy')", 1);
     }
-    
+
     public void sqlQueryWithCount(ADMLuceneSearcherImpl searcher, String query, int count)
     {
         ResultSet results = searcher.query(rootNodeRef.getStoreRef(), SearchService.LANGUAGE_SQL_CMIS_STRICT, query, null);
@@ -690,7 +840,7 @@ public class ADMLuceneTest extends TestCase
         results.getResultSetMetaData();
         results.close();
     }
-    
+
     public void testFTS() throws InterruptedException
     {
         luceneFTS.pause();
@@ -785,7 +935,7 @@ public class ADMLuceneTest extends TestCase
         ftsQueryWithCount(searcher, "TEXT:(brown *(6) dog)", 1);
 
         // ftsQueryWithCount(searcher, "brown..dog", 1); // is this allowed??
-        //ftsQueryWithCount(searcher, "cm:content:brown..dog", 1);
+        // ftsQueryWithCount(searcher, "cm:content:brown..dog", 1);
 
         QName qname = QName.createQName(TEST_NAMESPACE, "float\\-ista");
         ftsQueryWithCount(searcher, qname + ":3.40", 1);
@@ -887,26 +1037,26 @@ public class ADMLuceneTest extends TestCase
         ftsQueryWithCount(searcher, "lazy -lazy", 15, null, n14);
         ftsQueryWithCount(searcher, "lazy^20 -lazy", 15, n14, null);
         ftsQueryWithCount(searcher, "lazy^20 -lazy^20", 15, null, n14);
-        
+
         ftsQueryWithCount(searcher, "cm:content:lazy", 1);
         // Simple template
         ftsQueryWithCount(searcher, "ANDY:lazy", 1);
         // default namesapce cm
         ftsQueryWithCount(searcher, "content:lazy", 1);
-        
-        
+
         ftsQueryWithCount(searcher, "PATH:\"//.\"", 15);
-        
+
         ftsQueryWithCount(searcher, "+PATH:\"/app:company_home/st:sites/cm:rmtestnew1/cm:documentLibrary//*\"", 0);
         ftsQueryWithCount(searcher, "+PATH:\"/app:company_home/st:sites/cm:rmtestnew1/cm:documentLibrary//*\" -TYPE:\"{http://www.alfresco.org/model/content/1.0}thumbnail\"", 15);
-        ftsQueryWithCount(searcher, "+PATH:\"/app:company_home/st:sites/cm:rmtestnew1/cm:documentLibrary//*\" AND -TYPE:\"{http://www.alfresco.org/model/content/1.0}thumbnail\"", 0);
+        ftsQueryWithCount(searcher, "+PATH:\"/app:company_home/st:sites/cm:rmtestnew1/cm:documentLibrary//*\" AND -TYPE:\"{http://www.alfresco.org/model/content/1.0}thumbnail\"",
+                0);
 
     }
 
     public void ftsQueryWithCount(ADMLuceneSearcherImpl searcher, String query, int count)
     {
         SearchParameters sp = new SearchParameters();
-        sp.setLanguage( SearchService.LANGUAGE_FTS_ALFRESCO);
+        sp.setLanguage(SearchService.LANGUAGE_FTS_ALFRESCO);
         sp.addStore(rootNodeRef.getStoreRef());
         sp.setQuery(query);
         sp.addQueryTemplate("ANDY", "%cm:content");
@@ -920,18 +1070,18 @@ public class ADMLuceneTest extends TestCase
     public void ftsQueryWithCount(ADMLuceneSearcherImpl searcher, String query, int count, NodeRef first, NodeRef last)
     {
         ResultSet results = searcher.query(rootNodeRef.getStoreRef(), SearchService.LANGUAGE_FTS_ALFRESCO, query, null);
-        for(ResultSetRow row : results)
+        for (ResultSetRow row : results)
         {
-            System.out.println(""+ row.getScore() + nodeService.getProperty(row.getNodeRef(), ContentModel.PROP_NAME));
+            System.out.println("" + row.getScore() + nodeService.getProperty(row.getNodeRef(), ContentModel.PROP_NAME));
         }
         assertEquals(count, results.length());
         if (first != null)
         {
             assertEquals(first, results.getNodeRef(0));
         }
-        if(last != null)
+        if (last != null)
         {
-            assertEquals(last, results.getNodeRef(results.length()-1));
+            assertEquals(last, results.getNodeRef(results.length() - 1));
         }
         results.close();
     }
@@ -3599,14 +3749,12 @@ public class ADMLuceneTest extends TestCase
         results.close();
 
         sDate = CachingDateFormat.getDateFormat().format(date);
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(QName.createQName(TEST_NAMESPACE, "datetime-ista")) + ":[MIN TO " + sDate + "]",
-                null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(QName.createQName(TEST_NAMESPACE, "datetime-ista")) + ":[MIN TO " + sDate + "]", null);
         assertEquals(1, results.length());
         results.close();
 
         sDate = CachingDateFormat.getDateFormat().format(date);
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(QName.createQName(TEST_NAMESPACE, "datetime-ista")) + ":[" + sDate + " TO MAX]",
-                null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(QName.createQName(TEST_NAMESPACE, "datetime-ista")) + ":[" + sDate + " TO MAX]", null);
         assertEquals(usesDateTimeAnalyser ? 0 : 1, results.length());
         results.close();
 
@@ -3681,8 +3829,7 @@ public class ADMLuceneTest extends TestCase
         assertNotNull(results.getRow(0).getValue(QName.createQName(TEST_NAMESPACE, "any-many-ista")));
         results.close();
 
-        results = searcher
-                .query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(QName.createQName(TEST_NAMESPACE, "any-many-ista")) + ":\"anyValueAsString\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(QName.createQName(TEST_NAMESPACE, "any-many-ista")) + ":\"anyValueAsString\"", null);
         assertEquals(1, results.length());
         assertNotNull(results.getRow(0).getValue(QName.createQName(TEST_NAMESPACE, "any-many-ista")));
         results.close();
@@ -3710,38 +3857,32 @@ public class ADMLuceneTest extends TestCase
         assertEquals(1, results.length());
         results.close();
 
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "@" + LuceneQueryParser.escape(ContentModel.PROP_DESCRIPTION.toString()) + ":\"Alfresco Tutorial\"", 
-                null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "@" + LuceneQueryParser.escape(ContentModel.PROP_DESCRIPTION.toString()) + ":\"Alfresco Tutorial\"", null);
 
         assertEquals(1, results.length());
         results.close();
 
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "@" + LuceneQueryParser.escape(ContentModel.PROP_DESCRIPTION.toString()) + ":\"Tutorial Alfresco\"", 
-                null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "@" + LuceneQueryParser.escape(ContentModel.PROP_DESCRIPTION.toString()) + ":\"Tutorial Alfresco\"", null);
 
         assertEquals(0, results.length());
         results.close();
 
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "@" + LuceneQueryParser.escape(ContentModel.PROP_DESCRIPTION.toString()) + ":\"Tutorial Alfresco\"~0", 
-                null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "@" + LuceneQueryParser.escape(ContentModel.PROP_DESCRIPTION.toString()) + ":\"Tutorial Alfresco\"~0", null);
 
         assertEquals(0, results.length());
         results.close();
 
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "@" + LuceneQueryParser.escape(ContentModel.PROP_DESCRIPTION.toString()) + ":\"Tutorial Alfresco\"~1", 
-                null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "@" + LuceneQueryParser.escape(ContentModel.PROP_DESCRIPTION.toString()) + ":\"Tutorial Alfresco\"~1", null);
 
         assertEquals(0, results.length());
         results.close();
 
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "@" + LuceneQueryParser.escape(ContentModel.PROP_DESCRIPTION.toString()) + ":\"Tutorial Alfresco\"~2", 
-                null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "@" + LuceneQueryParser.escape(ContentModel.PROP_DESCRIPTION.toString()) + ":\"Tutorial Alfresco\"~2", null);
 
         assertEquals(1, results.length());
         results.close();
 
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "@" + LuceneQueryParser.escape(ContentModel.PROP_DESCRIPTION.toString()) + ":\"Tutorial Alfresco\"~3", 
-                null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "@" + LuceneQueryParser.escape(ContentModel.PROP_DESCRIPTION.toString()) + ":\"Tutorial Alfresco\"~3", null);
 
         assertEquals(1, results.length());
         results.close();
@@ -3880,13 +4021,12 @@ public class ADMLuceneTest extends TestCase
         results.close();
 
         // Period
-        
+
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(QName.createQName(TEST_NAMESPACE, "period-ista")) + ":\"period|12\"", null);
         assertEquals(1, results.length());
         assertNotNull(results.getRow(0).getValue(QName.createQName(TEST_NAMESPACE, "path-ista")));
         results.close();
 
-        
         // Type
 
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "TYPE:\"" + testType.toString() + "\"", null);
@@ -4015,8 +4155,7 @@ public class ADMLuceneTest extends TestCase
         assertEquals(1, results.length());
         results.close();
 
-        results = searcher
-                .query(rootNodeRef.getStoreRef(), "lucene", "@" + LuceneQueryParser.escape(ContentModel.PROP_CONTENT.toString()) + ".mimetype:\"text/plain\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "@" + LuceneQueryParser.escape(ContentModel.PROP_CONTENT.toString()) + ".mimetype:\"text/plain\"", null);
         assertEquals(1, results.length());
         results.close();
 
@@ -5129,7 +5268,7 @@ public class ADMLuceneTest extends TestCase
 
         // TODO: should not have a null property type definition
         QueryParameterDefImpl paramDef = new QueryParameterDefImpl(QName.createQName("alf:lemur", namespacePrefixResolver), (DataTypeDefinition) null, true, "fox");
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "TEXT:\"${alf:lemur}\"",  new QueryParameterDefinition[] { paramDef });
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "TEXT:\"${alf:lemur}\"", new QueryParameterDefinition[] { paramDef });
         assertEquals(1, results.length());
         results.close();
 

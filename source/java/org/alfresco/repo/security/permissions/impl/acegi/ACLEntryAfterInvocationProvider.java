@@ -42,6 +42,7 @@ import net.sf.acegisecurity.ConfigAttributeDefinition;
 import net.sf.acegisecurity.afterinvocation.AfterInvocationProvider;
 
 import org.alfresco.repo.search.SimpleResultSetMetaData;
+import org.alfresco.repo.search.impl.lucene.PagingLuceneResultSet;
 import org.alfresco.repo.search.impl.querymodel.QueryEngineResults;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.permissions.impl.SimplePermissionReference;
@@ -67,7 +68,6 @@ import org.springframework.beans.factory.InitializingBean;
  * Enforce permission after the method calll
  * 
  * @author andyh
- *
  */
 public class ACLEntryAfterInvocationProvider implements AfterInvocationProvider, InitializingBean
 {
@@ -78,9 +78,13 @@ public class ACLEntryAfterInvocationProvider implements AfterInvocationProvider,
     private static final String AFTER_ACL_PARENT = "AFTER_ACL_PARENT";
 
     private PermissionService permissionService;
+
     private NamespacePrefixResolver nspr;
+
     private NodeService nodeService;
+
     private int maxPermissionChecks;
+
     private long maxPermissionCheckTimeMillis;
 
     /**
@@ -105,6 +109,7 @@ public class ACLEntryAfterInvocationProvider implements AfterInvocationProvider,
 
     /**
      * Get the permission service.
+     * 
      * @return - the permission service
      */
     public PermissionService getPermissionService()
@@ -114,6 +119,7 @@ public class ACLEntryAfterInvocationProvider implements AfterInvocationProvider,
 
     /**
      * Get the namespace prefix resolver
+     * 
      * @return the namespace prefix resolver
      */
     public NamespacePrefixResolver getNamespacePrefixResolver()
@@ -123,6 +129,7 @@ public class ACLEntryAfterInvocationProvider implements AfterInvocationProvider,
 
     /**
      * Set the namespace prefix resolver
+     * 
      * @param nspr
      */
     public void setNamespacePrefixResolver(NamespacePrefixResolver nspr)
@@ -130,8 +137,9 @@ public class ACLEntryAfterInvocationProvider implements AfterInvocationProvider,
         this.nspr = nspr;
     }
 
-    /** 
+    /**
      * Get the node service
+     * 
      * @return the node service
      */
     public NodeService getNodeService()
@@ -141,6 +149,7 @@ public class ACLEntryAfterInvocationProvider implements AfterInvocationProvider,
 
     /**
      * Set the node service
+     * 
      * @param nodeService
      */
     public void setNodeService(NodeService nodeService)
@@ -148,26 +157,29 @@ public class ACLEntryAfterInvocationProvider implements AfterInvocationProvider,
         this.nodeService = nodeService;
     }
 
-    /** 
+    /**
      * Set the authentication service
+     * 
      * @param authenticationService
      */
     public void setAuthenticationService(AuthenticationService authenticationService)
     {
         log.warn("Bean property 'authenticationService' no longer required.");
     }
-    
+
     /**
      * Set the max number of permission checks
+     * 
      * @param maxPermissionChecks
      */
     public void setMaxPermissionChecks(int maxPermissionChecks)
     {
         this.maxPermissionChecks = maxPermissionChecks;
     }
-    
+
     /**
      * Set the max time for permission checks
+     * 
      * @param maxPermissionCheckTimeMillis
      */
     public void setMaxPermissionCheckTimeMillis(long maxPermissionCheckTimeMillis)
@@ -191,8 +203,7 @@ public class ACLEntryAfterInvocationProvider implements AfterInvocationProvider,
         }
     }
 
-    public Object decide(Authentication authentication, Object object, ConfigAttributeDefinition config,
-            Object returnedObject) throws AccessDeniedException
+    public Object decide(Authentication authentication, Object object, ConfigAttributeDefinition config, Object returnedObject) throws AccessDeniedException
     {
         if (log.isDebugEnabled())
         {
@@ -223,8 +234,7 @@ public class ACLEntryAfterInvocationProvider implements AfterInvocationProvider,
                 {
                     log.debug("Store access");
                 }
-                return decide(authentication, object, config, nodeService.getRootNode((StoreRef) returnedObject))
-                        .getStoreRef();
+                return decide(authentication, object, config, nodeService.getRootNode((StoreRef) returnedObject)).getStoreRef();
             }
             else if (NodeRef.class.isAssignableFrom(returnedObject.getClass()))
             {
@@ -253,6 +263,14 @@ public class ACLEntryAfterInvocationProvider implements AfterInvocationProvider,
                     log.debug("Result Set access");
                 }
                 return decide(authentication, object, config, (ResultSet) returnedObject);
+            }
+            else if (PagingLuceneResultSet.class.isAssignableFrom(returnedObject.getClass()))
+            {
+                if (log.isDebugEnabled())
+                {
+                    log.debug("Result Set access");
+                }
+                return decide(authentication, object, config, (PagingLuceneResultSet) returnedObject);
             }
             else if (QueryEngineResults.class.isAssignableFrom(returnedObject.getClass()))
             {
@@ -308,12 +326,7 @@ public class ACLEntryAfterInvocationProvider implements AfterInvocationProvider,
 
     }
 
-    
-    private NodeRef decide(
-            Authentication authentication,
-            Object object,
-            ConfigAttributeDefinition config,
-            NodeRef returnedObject) throws AccessDeniedException
+    private NodeRef decide(Authentication authentication, Object object, ConfigAttributeDefinition config, NodeRef returnedObject) throws AccessDeniedException
 
     {
         if (returnedObject == null)
@@ -341,8 +354,7 @@ public class ACLEntryAfterInvocationProvider implements AfterInvocationProvider,
                 testNodeRef = nodeService.getPrimaryParent(returnedObject).getParentRef();
             }
 
-            if ((testNodeRef != null)
-                    && (permissionService.hasPermission(testNodeRef, cad.required.toString()) == AccessStatus.DENIED))
+            if ((testNodeRef != null) && (permissionService.hasPermission(testNodeRef, cad.required.toString()) == AccessStatus.DENIED))
             {
                 throw new AccessDeniedException("Access Denied");
             }
@@ -352,11 +364,7 @@ public class ACLEntryAfterInvocationProvider implements AfterInvocationProvider,
         return returnedObject;
     }
 
-    private FileInfo decide(
-            Authentication authentication,
-            Object object,
-            ConfigAttributeDefinition config,
-            FileInfo returnedObject) throws AccessDeniedException
+    private FileInfo decide(Authentication authentication, Object object, ConfigAttributeDefinition config, FileInfo returnedObject) throws AccessDeniedException
 
     {
         NodeRef nodeRef = returnedObject.getNodeRef();
@@ -384,8 +392,8 @@ public class ACLEntryAfterInvocationProvider implements AfterInvocationProvider,
         return definitions;
     }
 
-    private ChildAssociationRef decide(Authentication authentication, Object object, ConfigAttributeDefinition config,
-            ChildAssociationRef returnedObject) throws AccessDeniedException
+    private ChildAssociationRef decide(Authentication authentication, Object object, ConfigAttributeDefinition config, ChildAssociationRef returnedObject)
+            throws AccessDeniedException
 
     {
         if (returnedObject == null)
@@ -413,8 +421,7 @@ public class ACLEntryAfterInvocationProvider implements AfterInvocationProvider,
                 testNodeRef = ((ChildAssociationRef) returnedObject).getParentRef();
             }
 
-            if ((testNodeRef != null)
-                    && (permissionService.hasPermission(testNodeRef, cad.required.toString()) == AccessStatus.DENIED))
+            if ((testNodeRef != null) && (permissionService.hasPermission(testNodeRef, cad.required.toString()) == AccessStatus.DENIED))
             {
                 throw new AccessDeniedException("Access Denied");
             }
@@ -424,71 +431,99 @@ public class ACLEntryAfterInvocationProvider implements AfterInvocationProvider,
         return returnedObject;
     }
 
-    private ResultSet decide(Authentication authentication, Object object, ConfigAttributeDefinition config,
-            ResultSet returnedObject) throws AccessDeniedException
+    private ResultSet decide(Authentication authentication, Object object, ConfigAttributeDefinition config, PagingLuceneResultSet returnedObject) throws AccessDeniedException
+
+    {
+        ResultSet raw = returnedObject.getWrapped();
+        ResultSet filteredForPermissions = decide(authentication, object, config, raw);
+        PagingLuceneResultSet newPaging = new PagingLuceneResultSet(filteredForPermissions, returnedObject.getResultSetMetaData().getSearchParameters(), nodeService);
+        return newPaging;
+    }
+
+    private ResultSet decide(Authentication authentication, Object object, ConfigAttributeDefinition config, ResultSet returnedObject) throws AccessDeniedException
 
     {
         if (returnedObject == null)
         {
             return null;
         }
-        
+
         FilteringResultSet filteringResultSet = new FilteringResultSet(returnedObject);
 
-       
         List<ConfigAttributeDefintion> supportedDefinitions = extractSupportedDefinitions(config);
 
         Integer maxSize = null;
-        if(returnedObject.getResultSetMetaData().getSearchParameters().getLimitBy() == LimitBy.FINAL_SIZE)
+        if (returnedObject.getResultSetMetaData().getSearchParameters().getMaxItems() >= 0)
+        {
+            maxSize = new Integer(returnedObject.getResultSetMetaData().getSearchParameters().getMaxItems());
+        }
+        if ((maxSize == null) && (returnedObject.getResultSetMetaData().getSearchParameters().getLimitBy() == LimitBy.FINAL_SIZE))
         {
             maxSize = new Integer(returnedObject.getResultSetMetaData().getSearchParameters().getLimit());
         }
-        
+        // Allow for skip
+        if ((maxSize != null) && (returnedObject.getResultSetMetaData().getSearchParameters().getSkipCount() >= 0))
+        {
+            maxSize = new Integer(maxSize + returnedObject.getResultSetMetaData().getSearchParameters().getSkipCount());
+        }
+
+        int maxChecks = maxPermissionChecks;
+        if (returnedObject.getResultSetMetaData().getSearchParameters().getMaxPermissionChecks() >= 0)
+        {
+            maxChecks = returnedObject.getResultSetMetaData().getSearchParameters().getMaxPermissionChecks();
+        }
+
+        long maxCheckTime = maxPermissionCheckTimeMillis;
+        if (returnedObject.getResultSetMetaData().getSearchParameters().getMaxPermissionCheckTimeMillis() >= 0)
+        {
+            maxCheckTime = returnedObject.getResultSetMetaData().getSearchParameters().getMaxPermissionCheckTimeMillis();
+        }
+
         if (supportedDefinitions.size() == 0)
         {
-            if(maxSize == null)
+            if (maxSize == null)
             {
-               return returnedObject;
+                return returnedObject;
             }
             else if (returnedObject.length() > maxSize.intValue())
             {
-                for(int i = 0; i < maxSize.intValue(); i++)
+                for (int i = 0; i < maxSize.intValue(); i++)
                 {
                     filteringResultSet.setIncluded(i, true);
                 }
-                filteringResultSet.setResultSetMetaData(new SimpleResultSetMetaData(LimitBy.FINAL_SIZE, PermissionEvaluationMode.EAGER, returnedObject.getResultSetMetaData().getSearchParameters()));
+                filteringResultSet.setResultSetMetaData(new SimpleResultSetMetaData(LimitBy.FINAL_SIZE, PermissionEvaluationMode.EAGER, returnedObject.getResultSetMetaData()
+                        .getSearchParameters()));
             }
             else
             {
-                for(int i = 0; i < maxSize.intValue(); i++)
+                for (int i = 0; i < maxSize.intValue(); i++)
                 {
                     filteringResultSet.setIncluded(i, true);
                 }
-                filteringResultSet.setResultSetMetaData(new SimpleResultSetMetaData(LimitBy.UNLIMITED, PermissionEvaluationMode.EAGER, returnedObject.getResultSetMetaData().getSearchParameters()));
+                filteringResultSet.setResultSetMetaData(new SimpleResultSetMetaData(LimitBy.UNLIMITED, PermissionEvaluationMode.EAGER, returnedObject.getResultSetMetaData()
+                        .getSearchParameters()));
             }
         }
 
         // record the start time
         long startTimeMillis = System.currentTimeMillis();
         // set the default, unlimited resultset type
-        filteringResultSet.setResultSetMetaData(new SimpleResultSetMetaData(LimitBy.UNLIMITED, PermissionEvaluationMode.EAGER, returnedObject.getResultSetMetaData().getSearchParameters()));
-        
+        filteringResultSet.setResultSetMetaData(new SimpleResultSetMetaData(LimitBy.UNLIMITED, PermissionEvaluationMode.EAGER, returnedObject.getResultSetMetaData()
+                .getSearchParameters()));
+
         for (int i = 0; i < returnedObject.length(); i++)
         {
             long currentTimeMillis = System.currentTimeMillis();
-            if ( i >= maxPermissionChecks || (currentTimeMillis - startTimeMillis) > maxPermissionCheckTimeMillis)
+            if (i >= maxChecks || (currentTimeMillis - startTimeMillis) > maxCheckTime)
             {
-                filteringResultSet.setResultSetMetaData(
-                        new SimpleResultSetMetaData(
-                                LimitBy.NUMBER_OF_PERMISSION_EVALUATIONS,
-                                PermissionEvaluationMode.EAGER,
-                                returnedObject.getResultSetMetaData().getSearchParameters()));
+                filteringResultSet.setResultSetMetaData(new SimpleResultSetMetaData(LimitBy.NUMBER_OF_PERMISSION_EVALUATIONS, PermissionEvaluationMode.EAGER, returnedObject
+                        .getResultSetMetaData().getSearchParameters()));
                 break;
             }
-            
+
             // All permission checks must pass
             filteringResultSet.setIncluded(i, true);
-            
+
             for (ConfigAttributeDefintion cad : supportedDefinitions)
             {
                 NodeRef testNodeRef = null;
@@ -501,44 +536,50 @@ public class ACLEntryAfterInvocationProvider implements AfterInvocationProvider,
                     testNodeRef = returnedObject.getChildAssocRef(i).getParentRef();
                 }
 
-                if (filteringResultSet.getIncluded(i) 
-                        && (testNodeRef != null)
-                        && (permissionService.hasPermission(testNodeRef, cad.required.toString()) == AccessStatus.DENIED))
+                if (filteringResultSet.getIncluded(i) && (testNodeRef != null) && (permissionService.hasPermission(testNodeRef, cad.required.toString()) == AccessStatus.DENIED))
                 {
                     filteringResultSet.setIncluded(i, false);
                 }
             }
-            
+
             // Bug out if we are limiting by size
             if ((maxSize != null) && (filteringResultSet.length() > maxSize.intValue()))
             {
                 // Renove the last match to fix the correct size
                 filteringResultSet.setIncluded(i, false);
-                filteringResultSet.setResultSetMetaData(new SimpleResultSetMetaData(LimitBy.FINAL_SIZE, PermissionEvaluationMode.EAGER, returnedObject.getResultSetMetaData().getSearchParameters()));
+                filteringResultSet.setResultSetMetaData(new SimpleResultSetMetaData(LimitBy.FINAL_SIZE, PermissionEvaluationMode.EAGER, returnedObject.getResultSetMetaData()
+                        .getSearchParameters()));
                 break;
             }
         }
         return filteringResultSet;
     }
 
-    private QueryEngineResults decide(Authentication authentication, Object object, ConfigAttributeDefinition config,
-            QueryEngineResults returnedObject) throws AccessDeniedException
+    private QueryEngineResults decide(Authentication authentication, Object object, ConfigAttributeDefinition config, QueryEngineResults returnedObject)
+            throws AccessDeniedException
 
     {
         Map<Set<String>, ResultSet> map = returnedObject.getResults();
         Map<Set<String>, ResultSet> answer = new HashMap<Set<String>, ResultSet>(map.size(), 1.0f);
-       
+
         for (Set<String> group : map.keySet())
         {
             ResultSet raw = map.get(group);
-            ResultSet permed = decide(authentication, object, config, raw);
+            ResultSet permed;
+            if (PagingLuceneResultSet.class.isAssignableFrom(raw.getClass()))
+            {
+                permed = decide(authentication, object, config, (PagingLuceneResultSet)raw);
+            }
+            else
+            {
+                permed = decide(authentication, object, config, raw);
+            }
             answer.put(group, permed);
         }
         return new QueryEngineResults(answer);
     }
-    
-    private Collection decide(Authentication authentication, Object object, ConfigAttributeDefinition config,
-            Collection returnedObject) throws AccessDeniedException
+
+    private Collection decide(Authentication authentication, Object object, ConfigAttributeDefinition config, Collection returnedObject) throws AccessDeniedException
 
     {
         if (returnedObject == null)
@@ -563,21 +604,21 @@ public class ACLEntryAfterInvocationProvider implements AfterInvocationProvider,
         // record search start time
         long startTimeMillis = System.currentTimeMillis();
         int count = 0;
-        
+
         Iterator iterator = returnedObject.iterator();
         while (iterator.hasNext())
         {
             Object nextObject = iterator.next();
-            
+
             // if the maximum result size or time has been exceeded, then we have to remove only
             long currentTimeMillis = System.currentTimeMillis();
-            if ( count >= maxPermissionChecks || (currentTimeMillis - startTimeMillis) > maxPermissionCheckTimeMillis)
+            if (count >= maxPermissionChecks || (currentTimeMillis - startTimeMillis) > maxPermissionCheckTimeMillis)
             {
                 // just remove it
                 iterator.remove();
                 continue;
             }
-            
+
             boolean allowed = true;
             for (ConfigAttributeDefintion cad : supportedDefinitions)
             {
@@ -603,8 +644,7 @@ public class ACLEntryAfterInvocationProvider implements AfterInvocationProvider,
                     }
                     else
                     {
-                        throw new ACLEntryVoterException(
-                                "The specified parameter is not a collection of NodeRefs, ChildAssociationRefs or FileInfos");
+                        throw new ACLEntryVoterException("The specified parameter is not a collection of NodeRefs, ChildAssociationRefs or FileInfos");
                     }
                 }
                 else if (cad.typeString.equals(AFTER_ACL_PARENT))
@@ -628,19 +668,16 @@ public class ACLEntryAfterInvocationProvider implements AfterInvocationProvider,
                     }
                     else
                     {
-                        throw new ACLEntryVoterException(
-                                "The specified parameter is not a collection of NodeRefs or ChildAssociationRefs");
+                        throw new ACLEntryVoterException("The specified parameter is not a collection of NodeRefs or ChildAssociationRefs");
                     }
                 }
-                
+
                 if (log.isDebugEnabled())
                 {
                     log.debug("\t" + cad.typeString + " test on " + testNodeRef + " from " + nextObject.getClass().getName());
                 }
-                
-                if (allowed
-                        && (testNodeRef != null)
-                        && (permissionService.hasPermission(testNodeRef, cad.required.toString()) == AccessStatus.DENIED))
+
+                if (allowed && (testNodeRef != null) && (permissionService.hasPermission(testNodeRef, cad.required.toString()) == AccessStatus.DENIED))
                 {
                     allowed = false;
                 }
@@ -658,8 +695,7 @@ public class ACLEntryAfterInvocationProvider implements AfterInvocationProvider,
         return returnedObject;
     }
 
-    private Object[] decide(Authentication authentication, Object object, ConfigAttributeDefinition config,
-            Object[] returnedObject) throws AccessDeniedException
+    private Object[] decide(Authentication authentication, Object object, ConfigAttributeDefinition config, Object[] returnedObject) throws AccessDeniedException
 
     {
         BitSet incudedSet = new BitSet(returnedObject.length);
@@ -736,9 +772,7 @@ public class ACLEntryAfterInvocationProvider implements AfterInvocationProvider,
                     log.debug("\t" + cad.typeString + " test on " + testNodeRef + " from " + current.getClass().getName());
                 }
 
-                if (incudedSet.get(i)
-                        && (testNodeRef != null)
-                        && (permissionService.hasPermission(testNodeRef, cad.required.toString()) == AccessStatus.DENIED))
+                if (incudedSet.get(i) && (testNodeRef != null) && (permissionService.hasPermission(testNodeRef, cad.required.toString()) == AccessStatus.DENIED))
                 {
                     incudedSet.set(i, false);
                 }
@@ -763,9 +797,7 @@ public class ACLEntryAfterInvocationProvider implements AfterInvocationProvider,
 
     public boolean supports(ConfigAttribute attribute)
     {
-        if ((attribute.getAttribute() != null)
-                && (attribute.getAttribute().startsWith(AFTER_ACL_NODE) || attribute.getAttribute().startsWith(
-                        AFTER_ACL_PARENT)))
+        if ((attribute.getAttribute() != null) && (attribute.getAttribute().startsWith(AFTER_ACL_NODE) || attribute.getAttribute().startsWith(AFTER_ACL_PARENT)))
         {
             return true;
         }

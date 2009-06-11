@@ -63,11 +63,11 @@ public class CMISResultSetImpl implements CMISResultSet, Serializable
     Query query;
 
     CMISDictionaryService cmisDictionaryService;
-    
+
     DictionaryService alfrescoDictionaryService;
 
-
-    public CMISResultSetImpl(Map<String, ResultSet> wrapped, CMISQueryOptions options, NodeService nodeService, Query query, CMISDictionaryService cmisDictionaryService, DictionaryService alfrescoDictionaryService)
+    public CMISResultSetImpl(Map<String, ResultSet> wrapped, CMISQueryOptions options, NodeService nodeService, Query query, CMISDictionaryService cmisDictionaryService,
+            DictionaryService alfrescoDictionaryService)
     {
         this.wrapped = wrapped;
         this.options = options;
@@ -125,16 +125,9 @@ public class CMISResultSetImpl implements CMISResultSet, Serializable
     {
         for (ResultSet resultSet : wrapped.values())
         {
-            if (resultSet.getResultSetMetaData().getLimitedBy() != LimitBy.UNLIMITED)
+            if (resultSet.hasMore())
             {
                 return true;
-            }
-            else
-            {
-                if(resultSet.length() - getStart() > getLength() )
-                {
-                    return true;
-                }
             }
         }
         return false;
@@ -149,16 +142,7 @@ public class CMISResultSetImpl implements CMISResultSet, Serializable
     {
         for (ResultSet resultSet : wrapped.values())
         {
-            int max = options.getMaxItems();
-            int skip = options.getSkipCount();
-            if((max >= 0) && (max < (resultSet.length() - skip)))
-            {
-                return options.getMaxItems();
-            }
-            else
-            {
-                return resultSet.length() - skip;
-            }
+            return resultSet.length();
         }
         throw new IllegalStateException();
     }
@@ -189,7 +173,7 @@ public class CMISResultSetImpl implements CMISResultSet, Serializable
         for (String selector : wrapped.keySet())
         {
             ResultSet rs = wrapped.get(selector);
-            refs.put(selector, rs.getNodeRef(getStart() + i));
+            refs.put(selector, rs.getNodeRef(i));
         }
         return refs;
     }
@@ -200,7 +184,7 @@ public class CMISResultSetImpl implements CMISResultSet, Serializable
         for (String selector : wrapped.keySet())
         {
             ResultSet rs = wrapped.get(selector);
-            scores.put(selector, Float.valueOf(rs.getScore(getStart() + i)));
+            scores.put(selector, Float.valueOf(rs.getScore(i)));
         }
         return scores;
     }
@@ -210,8 +194,6 @@ public class CMISResultSetImpl implements CMISResultSet, Serializable
         NodeRef nodeRef = getNodeRef(n);
         return nodeService.getPrimaryParent(nodeRef);
     }
-
-    
 
     public List<ChildAssociationRef> getChildAssocRefs()
     {
@@ -226,7 +208,7 @@ public class CMISResultSetImpl implements CMISResultSet, Serializable
     public NodeRef getNodeRef(int n)
     {
         Map<String, NodeRef> refs = getNodeRefs(n);
-        if(refs.size() == 1)
+        if (refs.size() == 1)
         {
             return refs.values().iterator().next();
         }
@@ -253,15 +235,15 @@ public class CMISResultSetImpl implements CMISResultSet, Serializable
 
     public float getScore(int n)
     {
-       Map<String, Float> scores = getScores(n);
-       if(scores.size() == 1)
-       {
-           return scores.values().iterator().next();
-       }
-       else
-       {
-           throw new IllegalStateException("Ambiguous selector");
-       }
+        Map<String, Float> scores = getScores(n);
+        if (scores.size() == 1)
+        {
+            return scores.values().iterator().next();
+        }
+        else
+        {
+            throw new IllegalStateException("Ambiguous selector");
+        }
     }
 
     public int length()

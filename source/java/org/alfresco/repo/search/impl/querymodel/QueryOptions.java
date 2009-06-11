@@ -67,28 +67,38 @@ public class QueryOptions
 
     private boolean includeInTransactionData = true;
 
+    // By default uses the central config
+    private int maxPermissionChecks = -1;
+
+    // By default uses the central config
+    private long maxPermissionCheckTimeMillis = -1;
+
     /**
-     * Create a CMISQueryOptions instance with the default options other than the query and store ref.
-     * The query will be run using the locale returned by I18NUtil.getLocale()
+     * Create a CMISQueryOptions instance with the default options other than the query and store ref. The query will be
+     * run using the locale returned by I18NUtil.getLocale()
      * 
-     * @param query - the query to run
-     * @param storeRef - the store against which to run the query
+     * @param query -
+     *            the query to run
+     * @param storeRef -
+     *            the store against which to run the query
      */
     public QueryOptions(String query, StoreRef storeRef)
     {
         this(query, storeRef, I18NUtil.getLocale());
     }
-    
+
     /**
      * Create a CMISQueryOptions instance with the default options other than the query, store ref and locale.
      * 
-     * @param query - the query to run
-     * @param storeRef - the store against which to run the query
+     * @param query -
+     *            the query to run
+     * @param storeRef -
+     *            the store against which to run the query
      */
     public QueryOptions(String query, StoreRef storeRef, Locale locale)
     {
         this.query = query;
-        this.stores.add(storeRef);   
+        this.stores.add(storeRef);
         this.locales.add(locale);
     }
 
@@ -105,7 +115,8 @@ public class QueryOptions
     /**
      * Set the query string
      * 
-     * @param query the query to set
+     * @param query
+     *            the query to set
      */
     public void setQuery(String query)
     {
@@ -113,8 +124,8 @@ public class QueryOptions
     }
 
     /**
-     * Get the list of stores in which to run the query.
-     * Only one store is supported at the momentOnly one store is supported at the moment
+     * Get the list of stores in which to run the query. Only one store is supported at the momentOnly one store is
+     * supported at the moment
      * 
      * @return the stores
      */
@@ -124,10 +135,10 @@ public class QueryOptions
     }
 
     /**
-     * Set the stores against which to run the query.
-     * Only one store is supported at the moment.
+     * Set the stores against which to run the query. Only one store is supported at the moment.
      * 
-     * @param stores the stores to set
+     * @param stores
+     *            the stores to set
      */
     public void setStores(List<StoreRef> stores)
     {
@@ -135,8 +146,7 @@ public class QueryOptions
     }
 
     /**
-     * Get the max number of rows for the result set
-     * 0 or less is unlimited
+     * Get the max number of rows for the result set 0 or less is unlimited
      * 
      * @return the maxItems
      */
@@ -146,10 +156,10 @@ public class QueryOptions
     }
 
     /**
-     * Set the max number of rows for the result set
-     * 0 or less is unlimited
+     * Set the max number of rows for the result set 0 or less is unlimited
      * 
-     * @param maxItems the maxItems to set
+     * @param maxItems
+     *            the maxItems to set
      */
     public void setMaxItems(int maxItems)
     {
@@ -169,7 +179,8 @@ public class QueryOptions
     /**
      * Set the skip count - the number of rows to skip at the start of the query.
      * 
-     * @param skipCount the skipCount to set
+     * @param skipCount
+     *            the skipCount to set
      */
     public void setSkipCount(int skipCount)
     {
@@ -189,7 +200,8 @@ public class QueryOptions
     /**
      * Set the default connective used when OR and AND are not specified for the FTS contains() function.
      * 
-     * @param defaultFTSConnective the defaultFTSConnective to set
+     * @param defaultFTSConnective
+     *            the defaultFTSConnective to set
      */
     public void setDefaultFTSConnective(Connective defaultFTSConnective)
     {
@@ -209,7 +221,8 @@ public class QueryOptions
     /**
      * As setDefaultFTSConnective() but for field groups
      * 
-     * @param defaultFTSFieldConnective the defaultFTSFieldConnective to set
+     * @param defaultFTSFieldConnective
+     *            the defaultFTSFieldConnective to set
      */
     public void setDefaultFTSFieldConnective(Connective defaultFTSFieldConnective)
     {
@@ -217,9 +230,7 @@ public class QueryOptions
     }
 
     /**
-     * Get the fetch size
-     *  0 - no prefetch
-     * -1 - prefetch all
+     * Get the fetch size 0 - no prefetch -1 - prefetch all
      * 
      * @return the fetchSize
      */
@@ -229,11 +240,10 @@ public class QueryOptions
     }
 
     /**
-     * Set the fetch size
-     *  0 - no prefetch
-     * -1 - prefetch all
+     * Set the fetch size 0 - no prefetch -1 - prefetch all
      * 
-     * @param fetchSize the fetchSize to set
+     * @param fetchSize
+     *            the fetchSize to set
      */
     public void setFetchSize(int fetchSize)
     {
@@ -253,7 +263,8 @@ public class QueryOptions
     /**
      * sSet the list of locales to use for the query
      * 
-     * @param locales the locales to set
+     * @param locales
+     *            the locales to set
      */
     public void setLocales(List<Locale> locales)
     {
@@ -261,7 +272,7 @@ public class QueryOptions
     }
 
     /**
-     * Get the mode for multi-lingual text analaysis 
+     * Get the mode for multi-lingual text analaysis
      * 
      * @return the mlAnalaysisMode
      */
@@ -273,7 +284,8 @@ public class QueryOptions
     /**
      * Set the mode for multi-lingual text analaysis
      * 
-     * @param mlAnalaysisMode the mlAnalaysisMode to set
+     * @param mlAnalaysisMode
+     *            the mlAnalaysisMode to set
      */
     public void setMlAnalaysisMode(MLAnalysisMode mlAnalaysisMode)
     {
@@ -293,7 +305,8 @@ public class QueryOptions
     /**
      * Set the query parameters
      * 
-     * @param queryParameterDefinitions the queryParameterDefinitions to set
+     * @param queryParameterDefinitions
+     *            the queryParameterDefinitions to set
      */
     public void setQueryParameterDefinitions(List<QueryParameterDefinition> queryParameterDefinitions)
     {
@@ -313,12 +326,46 @@ public class QueryOptions
     /**
      * Set to true if the search include any changes made in the current transaction.
      * 
-     * @param includeInTransactionData the includeInTransactionData to set
+     * @param includeInTransactionData
+     *            the includeInTransactionData to set
      */
     public void setIncludeInTransactionData(boolean includeInTransactionData)
     {
         this.includeInTransactionData = includeInTransactionData;
     }
 
-    
+    /**
+     * @return the timeout in millis for permission checks
+     */
+    public long getMaxPermissionCheckTimeMillis()
+    {
+        return maxPermissionCheckTimeMillis;
+    }
+
+    /**
+     * @param maxPermissionCheckTimeMillis -
+     *            the timeout in millis for permission checks
+     */
+    public void setMaxPermissionCheckTimeMillis(long maxPermissionCheckTimeMillis)
+    {
+        this.maxPermissionCheckTimeMillis = maxPermissionCheckTimeMillis;
+    }
+
+    /**
+     * @return the max number of permission checks to carry out
+     */
+    public int getMaxPermissionChecks()
+    {
+        return maxPermissionChecks;
+    }
+
+    /**
+     * @param maxPermissionChecks -
+     *            the max number of permission checks to carry out
+     */
+    public void setMaxPermissionChecks(int maxPermissionChecks)
+    {
+        this.maxPermissionChecks = maxPermissionChecks;
+    }
+
 }

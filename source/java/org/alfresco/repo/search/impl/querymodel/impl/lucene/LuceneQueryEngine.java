@@ -35,6 +35,7 @@ import org.alfresco.repo.search.impl.lucene.ClosingIndexSearcher;
 import org.alfresco.repo.search.impl.lucene.LuceneIndexerAndSearcher;
 import org.alfresco.repo.search.impl.lucene.LuceneResultSet;
 import org.alfresco.repo.search.impl.lucene.LuceneSearcher;
+import org.alfresco.repo.search.impl.lucene.PagingLuceneResultSet;
 import org.alfresco.repo.search.impl.querymodel.FunctionEvaluationContext;
 import org.alfresco.repo.search.impl.querymodel.Query;
 import org.alfresco.repo.search.impl.querymodel.QueryEngine;
@@ -142,10 +143,14 @@ public class LuceneQueryEngine implements QueryEngine
         SearchParameters searchParameters = new SearchParameters();
         searchParameters.setBulkFetch(options.getFetchSize() > 0);
         searchParameters.setBulkFetchSize(options.getFetchSize());
-        if (options.getMaxItems() > 0)
+        searchParameters.setSkipCount(options.getSkipCount());
+        searchParameters.setMaxPermissionChecks(options.getMaxPermissionChecks());
+        searchParameters.setMaxPermissionCheckTimeMillis(options.getMaxPermissionCheckTimeMillis());
+        if (options.getMaxItems() >= 0)
         {
             searchParameters.setLimitBy(LimitBy.FINAL_SIZE);
-            searchParameters.setLimit(options.getMaxItems() + options.getSkipCount());
+            searchParameters.setLimit(options.getMaxItems());
+            searchParameters.setMaxItems(options.getMaxItems());
         }
         else
         {
@@ -183,8 +188,9 @@ public class LuceneQueryEngine implements QueryEngine
                     }
 
                     LuceneResultSet result = new LuceneResultSet(hits, searcher, nodeService, tenantService, searchParameters, indexAndSearcher);
+                    ResultSet rs = new PagingLuceneResultSet(result, searchParameters, nodeService);
                     Map<Set<String>, ResultSet> map = new HashMap<Set<String>, ResultSet>(1);
-                    map.put(selectorGroup, result);
+                    map.put(selectorGroup, rs);
                     return new QueryEngineResults(map);
                 }
                 else

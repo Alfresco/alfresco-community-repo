@@ -46,6 +46,7 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.AuthenticationService;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
@@ -96,6 +97,8 @@ public abstract class BaseCMISTest extends TestCase
 
     protected ContentService contentService;
 
+    protected PermissionService permissionService;
+
     public void setUp() throws Exception
     {
         serviceRegistry = (ServiceRegistry) ctx.getBean("ServiceRegistry");
@@ -115,6 +118,8 @@ public abstract class BaseCMISTest extends TestCase
         searchService = (SearchService) ctx.getBean("searchService");
         
         contentService = (ContentService) ctx.getBean("contentService");
+        
+        permissionService = (PermissionService) ctx.getBean("permissionService");
         
         authenticationService = (AuthenticationService) ctx.getBean("authenticationService");
         authenticationDAO = (MutableAuthenticationDao) ctx.getBean("authenticationDao");

@@ -54,6 +54,7 @@ import org.alfresco.service.cmr.repository.MLText;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.repository.datatype.Duration;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.CachingDateFormat;
 import org.antlr.runtime.ANTLRStringStream;
@@ -77,10 +78,14 @@ public class QueryTest extends BaseCMISTest
     public void setUp() throws Exception
     {
         super.setUp();
-
+        
+      
         f0 = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("cm", "Folder 0", namespaceService), ContentModel.TYPE_FOLDER).getChildRef();
         nodeService.setProperty(f0, ContentModel.PROP_NAME, "Folder 0");
         folder_count++;
+        
+        permissionService.setPermission(f0, "cmis", PermissionService.READ, true);
+
 
         NodeRef f1 = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("cm", "Folder 1", namespaceService), ContentModel.TYPE_FOLDER)
                 .getChildRef();
@@ -1591,6 +1596,13 @@ public class QueryTest extends BaseCMISTest
     {
         runAs("guest");
         testQuery("SELECT * FROM Document", 0, false, "ObjectId", new String(), false);
+
+    }
+    
+    public void testBasicSelectAsCmis()
+    {
+        runAs("cmis");
+        testQuery("SELECT * FROM Document", 7, false, "ObjectId", new String(), false);
 
     }
 

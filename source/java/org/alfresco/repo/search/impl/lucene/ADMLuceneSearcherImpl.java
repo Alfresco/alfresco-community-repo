@@ -433,6 +433,7 @@ public class ADMLuceneSearcherImpl extends AbstractLuceneBase implements LuceneS
                 }
 
                 ResultSet rs = new LuceneResultSet(hits, searcher, nodeService, tenantService, searchParameters, getLuceneConfig());
+                rs = new PagingLuceneResultSet(rs, searchParameters, nodeService);
                 if (getLuceneConfig().getPostSortDateTime() && requiresPostSort)
                 {
                     ResultSet sorted = new SortedResultSet(rs, nodeService, searchParameters, namespacePrefixResolver);
@@ -474,7 +475,9 @@ public class ADMLuceneSearcherImpl extends AbstractLuceneBase implements LuceneS
                     return new EmptyResultSet();
                 }
                 Hits hits = searcher.search(query);
-                return new LuceneResultSet(hits, searcher, nodeService, tenantService, searchParameters, getLuceneConfig());
+                ResultSet rs = new LuceneResultSet(hits, searcher, nodeService, tenantService, searchParameters, getLuceneConfig());
+                rs = new PagingLuceneResultSet(rs, searchParameters, nodeService);
+                return rs;
             }
             catch (SAXPathException e)
             {

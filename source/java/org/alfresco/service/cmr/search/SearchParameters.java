@@ -85,7 +85,7 @@ public class SearchParameters
         /**
          * OR
          */
-        OR, 
+        OR,
         /**
          * AND
          */
@@ -100,7 +100,7 @@ public class SearchParameters
      */
     public static final Operator OR = Operator.OR;
 
-    /** 
+    /**
      * AND
      */
     public static final Operator AND = Operator.AND;
@@ -150,6 +150,12 @@ public class SearchParameters
 
     private String namespace = NamespaceService.CONTENT_MODEL_1_0_URI;
 
+    // By default uses the central config
+    private int maxPermissionChecks = -1;
+
+    // By default uses the central config
+    private long maxPermissionCheckTimeMillis = -1;
+
     /**
      * Default constructor
      */
@@ -160,7 +166,8 @@ public class SearchParameters
 
     /**
      * Get the search language
-     * @return - string id of search language 
+     * 
+     * @return - string id of search language
      */
     public String getLanguage()
     {
@@ -213,7 +220,6 @@ public class SearchParameters
         }
         stores.add(store);
     }
-
 
     /**
      * Add parameter definitions for the query - used to parameterise the query string
@@ -319,7 +325,7 @@ public class SearchParameters
     /**
      * Get the default operator for query elements when they are not explicit in the query.
      * 
-     * @return the default operator 
+     * @return the default operator
      */
     public Operator getDefaultOperator()
     {
@@ -329,7 +335,7 @@ public class SearchParameters
     /**
      * Get how the result set should be limited
      * 
-     * @return how the result set will be limited
+     * @return how the result set will be or was limited
      */
     public LimitBy getLimitBy()
     {
@@ -431,7 +437,8 @@ public class SearchParameters
     /**
      * Add a field for TEXT expansion
      * 
-     * @param attribute - field/attribute in the index
+     * @param attribute -
+     *            field/attribute in the index
      */
     public void addTextAttribute(String attribute)
     {
@@ -451,7 +458,8 @@ public class SearchParameters
     /**
      * Add a field for ALL expansion
      * 
-     * @param attribute - field/attribute in the index
+     * @param attribute -
+     *            field/attribute in the index
      */
     public void addAllAttribute(String attribute)
     {
@@ -594,6 +602,7 @@ public class SearchParameters
 
     /**
      * Get the default namespace.
+     * 
      * @return the default namspace uri or prefix.
      */
     public String getNamespace()
@@ -603,16 +612,18 @@ public class SearchParameters
 
     /**
      * Set the default namespace
-     * @param namespace - the uri or prefix for the default namespace.
+     * 
+     * @param namespace -
+     *            the uri or prefix for the default namespace.
      */
     public void setNamespace(String namespace)
     {
         this.namespace = namespace;
     }
 
-
     /**
      * Get the query templates
+     * 
      * @return - the query templates
      */
     public Map<String, String> getQueryTemplates()
@@ -621,17 +632,42 @@ public class SearchParameters
     }
 
     /**
-     * Add/replace a query template
-     * Not all languages support query templates
-     * @param name 
-     * @param template 
+     * Add/replace a query template Not all languages support query templates
+     * 
+     * @param name
+     * @param template
      * @return any removed template or null
      */
     public String addQueryTemplate(String name, String template)
     {
         return queryTemplates.put(name, template);
     }
-    
+
+    public long getMaxPermissionCheckTimeMillis()
+    {
+        return maxPermissionCheckTimeMillis;
+    }
+
+    public void setMaxPermissionCheckTimeMillis(long maxPermissionCheckTimeMillis)
+    {
+        this.maxPermissionCheckTimeMillis = maxPermissionCheckTimeMillis;
+    }
+
+    public int getMaxPermissionChecks()
+    {
+        return maxPermissionChecks;
+    }
+
+    public void setMaxPermissionChecks(int maxPermissionChecks)
+    {
+        this.maxPermissionChecks = maxPermissionChecks;
+    }
+
+    public int getBulkFetchSize()
+    {
+        return bulkFetchSize;
+    }
+
     /**
      * A helper class for sort definition. Encapsulated using the lucene sortType, field name and a flag for
      * ascending/descending.
@@ -643,19 +679,19 @@ public class SearchParameters
 
         /**
          * What is used for the sort
+         * 
          * @author andyh
-         *
          */
         public enum SortType
         {
             /**
              * A Field
              */
-            FIELD, 
+            FIELD,
             /**
              * Doc number
              */
-            DOCUMENT, 
+            DOCUMENT,
             /**
              * Score
              */
@@ -677,6 +713,7 @@ public class SearchParameters
 
         /**
          * Is ascending
+         * 
          * @return true if ascending
          */
         public boolean isAscending()
@@ -686,6 +723,7 @@ public class SearchParameters
 
         /**
          * Field
+         * 
          * @return - the field
          */
         public String getField()
@@ -695,6 +733,7 @@ public class SearchParameters
 
         /**
          * What is used for the sort
+         * 
          * @return sort type
          */
         public SortType getSortType()
@@ -703,7 +742,5 @@ public class SearchParameters
         }
 
     }
-
-
 
 }

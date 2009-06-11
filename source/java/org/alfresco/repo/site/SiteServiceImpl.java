@@ -548,7 +548,7 @@ public class SiteServiceImpl implements SiteService, SiteModel
                             
                             return results.get(0);
                         }
-                    });
+                    }, true);
                 }
             }, AuthenticationUtil.getSystemUserName());
             

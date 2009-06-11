@@ -44,7 +44,7 @@ function processCommand()
       {
          var message = "Unknown command: " + command;
          logger.log(message);
-         createEmail(message, message, message);
+         createEmail(message, message, message, false);
          return;
       }
       
@@ -54,7 +54,7 @@ function processCommand()
       if (commandFolder == null)
       {
          var message = "Command Processor: wrong command=" + command;
-         createEmail(message, message, message);
+         createEmail(message, message, message, false);
          logger.log(message);
          return;
       }

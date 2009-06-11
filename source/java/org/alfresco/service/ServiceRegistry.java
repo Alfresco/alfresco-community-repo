@@ -31,7 +31,6 @@ import org.alfresco.cmis.CMISQueryService;
 import org.alfresco.cmis.CMISServices;
 import org.alfresco.mbeans.VirtServerRegistry;
 import org.alfresco.repo.forms.FormService;
-import org.alfresco.repo.imap.ImapService;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.attributes.AttributeService;
@@ -150,7 +149,6 @@ public interface ServiceRegistry
     static final QName CMIS_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "CMISService");
     static final QName CMIS_DICTIONARY_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "CMISDictionaryService");
     static final QName CMIS_QUERY_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "CMISQueryService");
-    static final QName IMAP_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "ImapService");
     
 
     /**
@@ -508,11 +506,4 @@ public interface ServiceRegistry
      */
     @NotAuditable
     CMISQueryService getCMISQueryService();
-
-    /**
-     * Get the IMAP service (or null if one is not provided)
-     * @return the IMAP service
-     */
-    @NotAuditable
-    ImapService getImapService();
 }

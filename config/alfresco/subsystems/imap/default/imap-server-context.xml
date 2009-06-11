@@ -11,10 +11,41 @@
         </property>
     </bean>
 
-    <bean id="imapServer" class="org.alfresco.repo.imap.AlfrescoImapServer">
-        <property name="host">
-            <value>${imap.server.host}</value>
+    <bean id="imapHelper" class="org.alfresco.repo.imap.ImapHelper">
+        <property name="nodeService" ref="NodeService" />
+        <property name="fileFolderService" ref="FileFolderService" />
+        <property name="searchService" ref="SearchService" />
+        <property name="namespaceService" ref="NamespaceService" />
+        <property name="templateService" ref="TemplateService" />
+        <property name="permissionService" ref="PermissionService" />
+        <property name="dictionaryService" ref="DictionaryService" />
+        <property name="preferenceService" ref="PreferenceService" />
+        <property name="siteService" ref="SiteService" />
+        <property name="patchService" ref="patchComponent" />
+        <property name="serviceRegistry" ref="ServiceRegistry" />
+
+        <property name="imapConfigBeans">
+            <ref bean="imap.server.mountPoints" />
         </property>
+
+        <property name="defaultFromAddress">
+            <value>${mail.from.default}</value>
+        </property>
+
+        <property name="webApplicationContextUrl">
+            <value>${web.application.context.url}</value>
+        </property>
+
+        <property name="imapRoot">
+            <value>${spaces.store}/${spaces.company_home.childname}/${spaces.imap_home.childname}</value>
+        </property>
+
+        <property name="repositoryTemplatePath">
+            <value>${spaces.store}/${spaces.company_home.childname}/${spaces.dictionary.childname}/${spaces.imapConfig.childname}/${spaces.imap_templates.childname}</value>
+        </property>
+    </bean>
+
+    <bean id="imapServer" class="org.alfresco.repo.imap.AlfrescoImapServer">
         <property name="port">
             <value>${imap.server.port}</value>
         </property>
@@ -27,13 +58,16 @@
         <property name="imapUserManager">
             <ref local="imapUserManager" />
         </property>
+        <property name="imapHelper">
+            <ref local="imapHelper" />
+        </property>
     </bean>
 
     <!--The configurable list of mount points - actually a post-processed composite property! -->
     <bean id="imap.server.mountPoints" class="org.springframework.beans.factory.config.ListFactoryBean">
         <property name="sourceList">
             <list>
-                <bean id="Repository_virtual" class="org.alfresco.repo.imap.config.ImapConfigMountPointsBean">
+                <bean id="Repository_virtual" class="org.alfresco.repo.imap.config.ImapConfigBean">
                     <property name="mode">
                         <value>virtual</value>
                     </property>
@@ -44,7 +78,7 @@
                         <value>/${spaces.company_home.childname}</value>
                     </property>
                 </bean>
-                <bean id="Repository_archive" class="org.alfresco.repo.imap.config.ImapConfigMountPointsBean">
+                <bean id="Repository_archive" class="org.alfresco.repo.imap.config.ImapConfigBean">
                     <property name="mode">
                         <value>archive</value>
                     </property>
@@ -59,101 +93,17 @@
         </property>
     </bean>
 
-    <!--The configurable list of folders that ignore attachment extraction - actually a post-processed composite property! -->
-    <bean id="imap.ignore.extraction" class="org.springframework.beans.factory.config.ListFactoryBean">
-        <property name="sourceList">
-            <list>
-                <bean id="ignored" class="org.alfresco.repo.imap.config.ImapConfigBean">
-                    <property name="store">
-                        <value>${spaces.store}</value>
-                    </property>
-                    <property name="rootPath">
-                        <value>/${spaces.company_home.childname}</value>
-                    </property>
-                </bean>            
-            </list>
-        </property>
-    </bean>
-    
-    <bean id="ImapService_transaction" class="org.springframework.transaction.interceptor.TransactionInterceptor">
-        <property name="transactionManager">
-            <ref bean="transactionManager"/>
-        </property>
-        <property name="transactionAttributes">
-            <props>
-                <prop key="search*">${server.transaction.mode.readOnly}</prop>
-                <prop key="getFolder">${server.transaction.mode.default}</prop>
-                <prop key="getFlags">${server.transaction.mode.default}</prop>
-                <prop key="get*">${server.transaction.mode.readOnly}</prop>
-                <prop key="*">${server.transaction.mode.default}</prop>
-            </props>
-        </property>
-    </bean>
-    
-
-    <bean id="imapService" class="org.alfresco.repo.imap.ImapServiceImpl" init-method="init">
-        <property name="fileFolderService">
-            <ref bean="FileFolderService"/>
-        </property>
-        <property name="nodeService">
-            <ref bean="NodeService"/>
-        </property>
-        <property name="serviceRegistry">
-            <ref bean="ServiceRegistry"/>
-        </property>
-        
-        <property name="imapConfigMountPointsBeans">
-            <ref bean="imap.server.mountPoints" />
-        </property>
-        <property name="ignoreExtractionFolders">
-            <ref bean="imap.ignore.extraction" />
-        </property>
-        <property name="imapRoot">
-            <value>${spaces.store}/${spaces.company_home.childname}/${spaces.imap_home.childname}</value>
-        </property>
-        <property name="defaultFromAddress">
-            <value>${mail.from.default}</value>
-        </property>
-        <property name="webApplicationContextUrl">
-            <value>${web.application.context.url}</value>
-        </property>
-        <property name="repositoryTemplatePath">
-            <value>${spaces.store}/${spaces.company_home.childname}/${spaces.dictionary.childname}/${spaces.imapConfig.childname}/${spaces.imap_templates.childname}</value>
-        </property>
-        <property name="extractAttachmentsEnabled">
-            <value>${imap.server.attachments.extraction.enabled}</value>
-        </property>
-    </bean>
-    
-    <!-- Public Imap Service -->
-    
-    <bean id="ImapService" class="org.springframework.aop.framework.ProxyFactoryBean">
-        <property name="proxyInterfaces">
-            <list>
-                <value>org.alfresco.repo.imap.ImapService</value>
-            </list>
-        </property>
-        <property name="target">
-            <ref bean="imapService"/>
-        </property>
-        <property name="interceptorNames">
-            <list>
-                <idref local="ImapService_transaction"/>
-            </list>
-        </property>
-    </bean>
-    
-
     <bean id="imapHostManager" class="org.alfresco.repo.imap.AlfrescoImapHostManager">
-        <property name="imapService">
-            <ref bean="ImapService" /> 
-        </property>
-        <property name="transactionService">
-            <ref bean="transactionService" /> 
-        </property>
+        <property name="serviceRegistry" ref="ServiceRegistry" />
+        <property name="nodeService" ref="NodeService" />
+        <property name="fileFolderService" ref="FileFolderService" />
+        <property name="imapHelper" ref="imapHelper" />
     </bean>
 
     <bean id="imapUserManager" class="org.alfresco.repo.imap.AlfrescoImapUserManager">
+        <property name="imapHostManager">
+            <ref local="imapHostManager" />
+        </property>
         <property name="authenticationService" ref="AuthenticationService" />
         <property name="personService" ref="PersonService" />
         <property name="nodeService" ref="NodeService" />

@@ -37,6 +37,7 @@ import org.alfresco.service.cmr.security.PersonService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import com.icegreen.greenmail.imap.ImapHostManager;
 import com.icegreen.greenmail.user.GreenMailUser;
 import com.icegreen.greenmail.user.UserException;
 import com.icegreen.greenmail.user.UserManager;
@@ -49,6 +50,7 @@ public class AlfrescoImapUserManager extends UserManager
     private Log logger = LogFactory.getLog(AlfrescoImapUserManager.class);
 
     protected Map<String, GreenMailUser> userMap = Collections.synchronizedMap(new HashMap<String, GreenMailUser>());
+    protected ImapHostManager imapHostManager;
 
     protected AuthenticationService authenticationService;
     protected PersonService personService;
@@ -59,11 +61,17 @@ public class AlfrescoImapUserManager extends UserManager
         super(null);
     }
 
+    public AlfrescoImapUserManager(ImapHostManager imapHostManager)
+    {
+        this();
+        this.imapHostManager = imapHostManager;
+    }
+
     public GreenMailUser createUser(String email, String login, String password) throws UserException
     {
         // TODO: User creation/addition code should be implemented here (in the AlfrescoImapUserManager).
         // Following code is not need and not used in the current implementation.
-        GreenMailUser user = new AlfrescoImapUser(email, login, password);
+        GreenMailUser user = new AlfrescoImapUser(email, login, password, imapHostManager);
         user.create();
         addUser(user);
         return user;
@@ -121,7 +129,7 @@ public class AlfrescoImapUserManager extends UserManager
                 NodeRef personNodeRef = personService.getPerson(userid);
                 email = (String) nodeService.getProperty(personNodeRef, ContentModel.PROP_EMAIL);
             }
-            GreenMailUser user = new AlfrescoImapUser(email, userid, password);
+            GreenMailUser user = new AlfrescoImapUser(email, userid, password, imapHostManager);
             addUser(user);
         }
         catch (AuthenticationException ex)
@@ -130,6 +138,16 @@ public class AlfrescoImapUserManager extends UserManager
             return false;
         }
         return true;
+    }
+
+    public ImapHostManager getImapHostManager()
+    {
+        return this.imapHostManager;
+    }
+
+    public void setImapHostManager(ImapHostManager imapHostManager)
+    {
+        this.imapHostManager = imapHostManager;
     }
 
     public void setAuthenticationService(AuthenticationService authenticationService)

@@ -41,7 +41,6 @@ import org.alfresco.service.cmr.view.ImporterService;
 import org.alfresco.service.cmr.view.Location;
 import org.springframework.context.MessageSource;
 import org.springframework.core.io.ClassPathResource;
-
 /**
  * Builds folders tree necessary for IMAP functionality and imports email action scripts.
  * 
@@ -177,7 +176,6 @@ public class ImapFoldersPatch extends AbstractPatch
             throw new PatchException("XPath returned too many results: \n" + "   root: " + storeRootNodeRef + "\n" + "   xpath: " + xpath + "\n" + "   results: " + nodeRefs);
         }
         this.dictionaryNodeRef = nodeRefs.get(0);
-
         sb.append("/").append(scriptsChildName);
         xpath = sb.toString();
         nodeRefs = searchService.selectNodes(storeRootNodeRef, xpath, null, namespaceService, false);
@@ -190,7 +188,6 @@ public class ImapFoldersPatch extends AbstractPatch
             throw new PatchException("XPath returned too many results: \n" + "   root: " + storeRootNodeRef + "\n" + "   xpath: " + xpath + "\n" + "   results: " + nodeRefs);
         }
         this.scriptsNodeRef = nodeRefs.get(0);
-
         // get the ImapConfig node
         sb.delete((sb.length() - (scriptsChildName.length() + 1)), sb.length());
         sb.append("/").append(imapConfigChildName);

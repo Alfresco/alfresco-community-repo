@@ -29,9 +29,9 @@ function main()
    }
    
    var password = "password";
-   if(json.has("password"))
+   if (json.has("password"))
    {
-	   password = json.get("password");
+      password = json.get("password");
    }
    
    // Create the person with the supplied user name
@@ -42,7 +42,7 @@ function main()
    // return error message if a person with that user name could not be created
    if (person === null)
    {
-      status.setCode(status.STATUS_INTERNAL_SERVER_ERROR, "Person could not be created with user name: " + userName);
+      status.setCode(status.STATUS_CONFLICT, "User name already exists: " + userName);
       return;
    }
    

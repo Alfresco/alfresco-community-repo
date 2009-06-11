@@ -120,7 +120,7 @@ public class SimpleAuthorityServiceTest extends TestCase
         authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
         assertTrue(authorityService.hasAdminAuthority());
         assertTrue(pubAuthorityService.hasAdminAuthority());
-        assertEquals(3, authorityService.getAuthorities().size());
+        assertEquals(4, authorityService.getAuthorities().size());
     }
 
     public void testAuthorities()

@@ -120,6 +120,12 @@ public class LDAPUserRegistry implements UserRegistry, InitializingBean, Activat
     /** The attribute defaults. */
     private Map<String, String> attributeDefaults;
 
+    /**
+     * The query batch size. If positive, indicates that RFC 2696 paged results should be used to split query results
+     * into batches of the specified size. Overcomes any size limits imposed by the LDAP server.
+     */
+    private int queryBatchSize;
+
     /** Should we error on missing group members? */
     private boolean errorOnMissingMembers;
 
@@ -377,6 +383,18 @@ public class LDAPUserRegistry implements UserRegistry, InitializingBean, Activat
         this.attributeMapping = attributeMapping;
     }
 
+    /**
+     * Sets the query batch size.
+     * 
+     * @param queryBatchSize
+     *            If positive, indicates that RFC 2696 paged results should be used to split query results into batches
+     *            of the specified size. Overcomes any size limits imposed by the LDAP server.
+     */
+    public void setQueryBatchSize(int queryBatchSize)
+    {
+        this.queryBatchSize = queryBatchSize;
+    }
+
     /*
      * (non-Javadoc)
      * @see org.alfresco.repo.management.subsystems.ActivateableBean#isActive()
@@ -426,183 +444,187 @@ public class LDAPUserRegistry implements UserRegistry, InitializingBean, Activat
     public Iterator<NodeDescription> getGroups(Date modifiedSince)
     {
         Map<String, NodeDescription> lookup = new TreeMap<String, NodeDescription>();
+        SearchControls userSearchCtls = new SearchControls();
+        userSearchCtls.setSearchScope(SearchControls.SUBTREE_SCOPE);
+        userSearchCtls.setReturningAttributes(this.groupAttributeNames);
+
         InitialDirContext ctx = null;
         try
         {
-            ctx = this.ldapInitialContextFactory.getDefaultIntialDirContext();
-
-            SearchControls userSearchCtls = new SearchControls();
-            userSearchCtls.setSearchScope(SearchControls.SUBTREE_SCOPE);
-            userSearchCtls.setReturningAttributes(this.groupAttributeNames);
-
-            NamingEnumeration<SearchResult> searchResults;
-
-            if (modifiedSince == null)
+            ctx = this.ldapInitialContextFactory.getDefaultIntialDirContext(this.queryBatchSize);
+            do
             {
-                searchResults = ctx.search(this.groupSearchBase, this.groupQuery, userSearchCtls);
-            }
-            else
-            {
-                searchResults = ctx.search(this.groupSearchBase, this.groupDifferentialQuery, new Object[]
-                {
-                    LDAPUserRegistry.LDAP_GENERALIZED_TIME_FORMAT.format(modifiedSince)
-                }, userSearchCtls);
-            }
+                NamingEnumeration<SearchResult> searchResults;
 
-            LdapName groupDistinguishedNamePrefix = new LdapName(this.groupSearchBase);
-            LdapName userDistinguishedNamePrefix = new LdapName(this.userSearchBase);
-
-            while (searchResults.hasMoreElements())
-            {
-                SearchResult result = searchResults.next();
-                Attributes attributes = result.getAttributes();
-                Attribute gidAttribute = attributes.get(this.groupIdAttributeName);
-                if (gidAttribute == null)
+                if (modifiedSince == null)
                 {
-                    if (this.errorOnMissingGID)
-                    {
-                        throw new AlfrescoRuntimeException(
-                                "NodeDescription returned by group search does not have mandatory group id attribute "
-                                        + attributes);
-                    }
-                    else
-                    {
-                        LDAPUserRegistry.logger.warn("Missing GID on " + attributes);
-                        continue;
-                    }
-                }
-                String gid = "GROUP_" + gidAttribute.get(0);
-
-                NodeDescription group = lookup.get(gid);
-                if (group == null)
-                {
-                    group = new NodeDescription();
-                    group.getProperties().put(ContentModel.PROP_AUTHORITY_NAME, gid);
-                    lookup.put(gid, group);
-                }
-                else if (this.errorOnDuplicateGID)
-                {
-                    throw new AlfrescoRuntimeException("Duplicate group id found for " + gid);
+                    searchResults = ctx.search(this.groupSearchBase, this.groupQuery, userSearchCtls);
                 }
                 else
                 {
-                    LDAPUserRegistry.logger.warn("Duplicate gid found for " + gid + " -> merging definitions");
-                }
-
-                Attribute modifyTimestamp = attributes.get(this.modifyTimestampAttributeName);
-                if (modifyTimestamp != null)
-                {
-                    group.setLastModified(LDAPUserRegistry.LDAP_GENERALIZED_TIME_FORMAT.parse(modifyTimestamp.get()
-                            .toString()));
-                }
-                Set<String> childAssocs = group.getChildAssociations();
-
-                Attribute memAttribute = attributes.get(this.memberAttributeName);
-                // check for null
-                if (memAttribute != null)
-                {
-                    for (int i = 0; i < memAttribute.size(); i++)
+                    searchResults = ctx.search(this.groupSearchBase, this.groupDifferentialQuery, new Object[]
                     {
-                        String attribute = (String) memAttribute.get(i);
-                        if (attribute != null)
+                        LDAPUserRegistry.LDAP_GENERALIZED_TIME_FORMAT.format(modifiedSince)
+                    }, userSearchCtls);
+                }
+
+                LdapName groupDistinguishedNamePrefix = new LdapName(this.groupSearchBase);
+                LdapName userDistinguishedNamePrefix = new LdapName(this.userSearchBase);
+
+                while (searchResults.hasMoreElements())
+                {
+                    SearchResult result = searchResults.next();
+                    Attributes attributes = result.getAttributes();
+                    Attribute gidAttribute = attributes.get(this.groupIdAttributeName);
+                    if (gidAttribute == null)
+                    {
+                        if (this.errorOnMissingGID)
                         {
-                            LdapName distinguishedName = new LdapName(attribute);
-                            Attribute nameAttribute;
+                            throw new AlfrescoRuntimeException(
+                                    "NodeDescription returned by group search does not have mandatory group id attribute "
+                                            + attributes);
+                        }
+                        else
+                        {
+                            LDAPUserRegistry.logger.warn("Missing GID on " + attributes);
+                            continue;
+                        }
+                    }
+                    String gid = "GROUP_" + gidAttribute.get(0);
 
-                            // If the user and group search bases are different we may be able to recognise user and
-                            // group DNs without a secondary lookup
-                            if (!this.userSearchBase.equals(this.groupSearchBase))
+                    NodeDescription group = lookup.get(gid);
+                    if (group == null)
+                    {
+                        group = new NodeDescription();
+                        group.getProperties().put(ContentModel.PROP_AUTHORITY_NAME, gid);
+                        lookup.put(gid, group);
+                    }
+                    else if (this.errorOnDuplicateGID)
+                    {
+                        throw new AlfrescoRuntimeException("Duplicate group id found for " + gid);
+                    }
+                    else
+                    {
+                        LDAPUserRegistry.logger.warn("Duplicate gid found for " + gid + " -> merging definitions");
+                    }
+
+                    Attribute modifyTimestamp = attributes.get(this.modifyTimestampAttributeName);
+                    if (modifyTimestamp != null)
+                    {
+                        group.setLastModified(LDAPUserRegistry.LDAP_GENERALIZED_TIME_FORMAT.parse(modifyTimestamp.get()
+                                .toString()));
+                    }
+                    Set<String> childAssocs = group.getChildAssociations();
+
+                    Attribute memAttribute = attributes.get(this.memberAttributeName);
+                    // check for null
+                    if (memAttribute != null)
+                    {
+                        for (int i = 0; i < memAttribute.size(); i++)
+                        {
+                            String attribute = (String) memAttribute.get(i);
+                            if (attribute != null)
                             {
-                                Attributes nameAttributes = distinguishedName.getRdn(distinguishedName.size() - 1)
-                                        .toAttributes();
+                                LdapName distinguishedName = new LdapName(attribute);
+                                Attribute nameAttribute;
 
-                                // Recognise user DNs
-                                if (distinguishedName.startsWith(userDistinguishedNamePrefix)
-                                        && (nameAttribute = nameAttributes.get(this.userIdAttributeName)) != null)
+                                // If the user and group search bases are different we may be able to recognise user and
+                                // group DNs without a secondary lookup
+                                if (!this.userSearchBase.equalsIgnoreCase(this.groupSearchBase))
                                 {
-                                    childAssocs.add((String) nameAttribute.get());
-                                    continue;
-                                }
+                                    Attributes nameAttributes = distinguishedName.getRdn(distinguishedName.size() - 1)
+                                            .toAttributes();
 
-                                // Recognise group DNs
-                                if (distinguishedName.startsWith(groupDistinguishedNamePrefix)
-                                        && (nameAttribute = nameAttributes.get(this.groupIdAttributeName)) != null)
-                                {
-                                    childAssocs.add("GROUP_" + nameAttribute.get());
-                                    continue;
-                                }
-                            }
-
-                            // If we can't determine the name and type from the DN alone, try a directory lookup
-                            if (distinguishedName.startsWith(userDistinguishedNamePrefix)
-                                    || distinguishedName.startsWith(groupDistinguishedNamePrefix))
-                            {
-                                try
-                                {
-
-                                    Attributes childAttributes = ctx.getAttributes(attribute, new String[]
+                                    // Recognise user DNs
+                                    if (distinguishedName.startsWith(userDistinguishedNamePrefix)
+                                            && (nameAttribute = nameAttributes.get(this.userIdAttributeName)) != null)
                                     {
-                                        "objectclass", this.groupIdAttributeName, this.userIdAttributeName
-                                    });
-                                    String objectclass = (String) childAttributes.get("objectclass").get();
-                                    if (objectclass.equals(this.personType))
-                                    {
-                                        nameAttribute = childAttributes.get(this.userIdAttributeName);
-                                        if (nameAttribute == null)
-                                        {
-                                            if (this.errorOnMissingUID)
-                                            {
-                                                throw new AlfrescoRuntimeException(
-                                                        "User missing user id attribute DN =" + attribute + "  att = "
-                                                                + this.userIdAttributeName);
-                                            }
-                                            else
-                                            {
-                                                LDAPUserRegistry.logger.warn("User missing user id attribute DN ="
-                                                        + attribute + "  att = " + this.userIdAttributeName);
-                                                continue;
-                                            }
-                                        }
-
                                         childAssocs.add((String) nameAttribute.get());
                                         continue;
                                     }
-                                    else if (objectclass.equals(this.groupType))
-                                    {
 
-                                        nameAttribute = childAttributes.get(this.groupIdAttributeName);
-                                        if (nameAttribute == null)
-                                        {
-                                            if (this.errorOnMissingGID)
-                                            {
-                                                throw new AlfrescoRuntimeException(
-                                                        "Group returned by group search does not have mandatory group id attribute "
-                                                                + attributes);
-                                            }
-                                            else
-                                            {
-                                                LDAPUserRegistry.logger.warn("Missing GID on " + childAttributes);
-                                                continue;
-                                            }
-                                        }
+                                    // Recognise group DNs
+                                    if (distinguishedName.startsWith(groupDistinguishedNamePrefix)
+                                            && (nameAttribute = nameAttributes.get(this.groupIdAttributeName)) != null)
+                                    {
                                         childAssocs.add("GROUP_" + nameAttribute.get());
                                         continue;
                                     }
                                 }
-                                catch (NamingException e)
+
+                                // If we can't determine the name and type from the DN alone, try a directory lookup
+                                if (distinguishedName.startsWith(userDistinguishedNamePrefix)
+                                        || distinguishedName.startsWith(groupDistinguishedNamePrefix))
                                 {
-                                    // Unresolvable name
+                                    try
+                                    {
+
+                                        Attributes childAttributes = ctx.getAttributes(attribute, new String[]
+                                        {
+                                            "objectclass", this.groupIdAttributeName, this.userIdAttributeName
+                                        });
+                                        String objectclass = (String) childAttributes.get("objectclass").get();
+                                        if (objectclass.equalsIgnoreCase(this.personType))
+                                        {
+                                            nameAttribute = childAttributes.get(this.userIdAttributeName);
+                                            if (nameAttribute == null)
+                                            {
+                                                if (this.errorOnMissingUID)
+                                                {
+                                                    throw new AlfrescoRuntimeException(
+                                                            "User missing user id attribute DN =" + attribute
+                                                                    + "  att = " + this.userIdAttributeName);
+                                                }
+                                                else
+                                                {
+                                                    LDAPUserRegistry.logger.warn("User missing user id attribute DN ="
+                                                            + attribute + "  att = " + this.userIdAttributeName);
+                                                    continue;
+                                                }
+                                            }
+
+                                            childAssocs.add((String) nameAttribute.get());
+                                            continue;
+                                        }
+                                        else if (objectclass.equalsIgnoreCase(this.groupType))
+                                        {
+
+                                            nameAttribute = childAttributes.get(this.groupIdAttributeName);
+                                            if (nameAttribute == null)
+                                            {
+                                                if (this.errorOnMissingGID)
+                                                {
+                                                    throw new AlfrescoRuntimeException(
+                                                            "Group returned by group search does not have mandatory group id attribute "
+                                                                    + attributes);
+                                                }
+                                                else
+                                                {
+                                                    LDAPUserRegistry.logger.warn("Missing GID on " + childAttributes);
+                                                    continue;
+                                                }
+                                            }
+                                            childAssocs.add("GROUP_" + nameAttribute.get());
+                                            continue;
+                                        }
+                                    }
+                                    catch (NamingException e)
+                                    {
+                                        // Unresolvable name
+                                    }
                                 }
+                                if (this.errorOnMissingMembers)
+                                {
+                                    throw new AlfrescoRuntimeException("Failed to resolve distinguished name: "
+                                            + attribute);
+                                }
+                                LDAPUserRegistry.logger.warn("Failed to resolve distinguished name: " + attribute);
                             }
-                            if (this.errorOnMissingMembers)
-                            {
-                                throw new AlfrescoRuntimeException("Failed to resolve distinguished name: " + attribute);
-                            }
-                            LDAPUserRegistry.logger.warn("Failed to resolve distinguished name: " + attribute);
                         }
                     }
                 }
             }
+            while (this.ldapInitialContextFactory.hasNextPage(ctx, this.queryBatchSize));
 
             if (LDAPUserRegistry.logger.isDebugEnabled())
             {
@@ -643,6 +665,10 @@ public class LDAPUserRegistry implements UserRegistry, InitializingBean, Activat
         /** The directory context. */
         private InitialDirContext ctx;
 
+        private SearchControls userSearchCtls;
+
+        private Date modifiedSince;
+
         /** The search results. */
         private NamingEnumeration<SearchResult> searchResults;
 
@@ -663,29 +689,18 @@ public class LDAPUserRegistry implements UserRegistry, InitializingBean, Activat
         {
             try
             {
-                this.ctx = LDAPUserRegistry.this.ldapInitialContextFactory.getDefaultIntialDirContext();
+                this.ctx = LDAPUserRegistry.this.ldapInitialContextFactory
+                        .getDefaultIntialDirContext(LDAPUserRegistry.this.queryBatchSize);
 
                 // Authentication has been successful.
                 // Set the current user, they are now authenticated.
 
-                SearchControls userSearchCtls = new SearchControls();
-                userSearchCtls.setSearchScope(SearchControls.SUBTREE_SCOPE);
-                userSearchCtls.setCountLimit(Integer.MAX_VALUE);
-                userSearchCtls.setReturningAttributes(LDAPUserRegistry.this.userAttributeNames);
+                this.userSearchCtls = new SearchControls();
+                this.userSearchCtls.setSearchScope(SearchControls.SUBTREE_SCOPE);
+                this.userSearchCtls.setReturningAttributes(LDAPUserRegistry.this.userAttributeNames);
 
-                if (modifiedSince == null)
-                {
-                    this.searchResults = this.ctx.search(LDAPUserRegistry.this.userSearchBase,
-                            LDAPUserRegistry.this.personQuery, userSearchCtls);
-                }
-                else
-                {
-                    this.searchResults = this.ctx.search(LDAPUserRegistry.this.userSearchBase,
-                            LDAPUserRegistry.this.personDifferentialQuery, new Object[]
-                            {
-                                LDAPUserRegistry.LDAP_GENERALIZED_TIME_FORMAT.format(modifiedSince)
-                            }, userSearchCtls);
-                }
+                this.modifiedSince = modifiedSince;
+
                 this.next = fetchNext();
             }
             catch (NamingException e)
@@ -748,74 +763,88 @@ public class LDAPUserRegistry implements UserRegistry, InitializingBean, Activat
          */
         private NodeDescription fetchNext() throws NamingException
         {
-            while (this.searchResults.hasMoreElements())
+            boolean readyForNextPage;
+            do
             {
-                SearchResult result = this.searchResults.next();
-                Attributes attributes = result.getAttributes();
-                Attribute uidAttribute = attributes.get(LDAPUserRegistry.this.userIdAttributeName);
-                if (uidAttribute == null)
+                readyForNextPage = this.searchResults == null;
+                while (!readyForNextPage && this.searchResults.hasMoreElements())
                 {
-                    if (LDAPUserRegistry.this.errorOnMissingUID)
+                    SearchResult result = this.searchResults.next();
+                    Attributes attributes = result.getAttributes();
+                    Attribute uidAttribute = attributes.get(LDAPUserRegistry.this.userIdAttributeName);
+                    if (uidAttribute == null)
                     {
-                        throw new AlfrescoRuntimeException(
-                                "User returned by user search does not have mandatory user id attribute " + attributes);
+                        if (LDAPUserRegistry.this.errorOnMissingUID)
+                        {
+                            throw new AlfrescoRuntimeException(
+                                    "User returned by user search does not have mandatory user id attribute "
+                                            + attributes);
+                        }
+                        else
+                        {
+                            LDAPUserRegistry.logger
+                                    .warn("User returned by user search does not have mandatory user id attribute "
+                                            + attributes);
+                            continue;
+                        }
                     }
-                    else
+                    String uid = (String) uidAttribute.get(0);
+
+                    if (this.uids.contains(uid))
                     {
                         LDAPUserRegistry.logger
-                                .warn("User returned by user search does not have mandatory user id attribute "
-                                        + attributes);
-                        continue;
+                                .warn("Duplicate uid found - there will be more than one person object for this user - "
+                                        + uid);
                     }
-                }
-                String uid = (String) uidAttribute.get(0);
 
-                if (this.uids.contains(uid))
-                {
-                    LDAPUserRegistry.logger
-                            .warn("Duplicate uid found - there will be more than one person object for this user - "
-                                    + uid);
-                }
+                    this.uids.add(uid);
 
-                this.uids.add(uid);
-
-                if (LDAPUserRegistry.logger.isDebugEnabled())
-                {
-                    LDAPUserRegistry.logger.debug("Adding user for " + uid);
-                }
-
-                NodeDescription person = new NodeDescription();
-
-                Attribute modifyTimestamp = attributes.get(LDAPUserRegistry.this.modifyTimestampAttributeName);
-                if (modifyTimestamp != null)
-                {
-                    try
+                    if (LDAPUserRegistry.logger.isDebugEnabled())
                     {
-                        person.setLastModified(LDAPUserRegistry.LDAP_GENERALIZED_TIME_FORMAT.parse(modifyTimestamp
-                                .get().toString()));
+                        LDAPUserRegistry.logger.debug("Adding user for " + uid);
                     }
-                    catch (ParseException e)
-                    {
-                        throw new AlfrescoRuntimeException("Failed to import people.", e);
-                    }
-                }
 
-                PropertyMap properties = person.getProperties();
-                for (String key : LDAPUserRegistry.this.attributeMapping.keySet())
-                {
-                    QName keyQName = QName.createQName(key, LDAPUserRegistry.this.namespaceService);
+                    NodeDescription person = new NodeDescription();
 
-                    // cater for null
-                    String attributeName = LDAPUserRegistry.this.attributeMapping.get(key);
-                    if (attributeName != null)
+                    Attribute modifyTimestamp = attributes.get(LDAPUserRegistry.this.modifyTimestampAttributeName);
+                    if (modifyTimestamp != null)
                     {
-                        Attribute attribute = attributes.get(attributeName);
-                        if (attribute != null)
+                        try
                         {
-                            String value = (String) attribute.get(0);
-                            if (value != null)
+                            person.setLastModified(LDAPUserRegistry.LDAP_GENERALIZED_TIME_FORMAT.parse(modifyTimestamp
+                                    .get().toString()));
+                        }
+                        catch (ParseException e)
+                        {
+                            throw new AlfrescoRuntimeException("Failed to import people.", e);
+                        }
+                    }
+
+                    PropertyMap properties = person.getProperties();
+                    for (String key : LDAPUserRegistry.this.attributeMapping.keySet())
+                    {
+                        QName keyQName = QName.createQName(key, LDAPUserRegistry.this.namespaceService);
+
+                        // cater for null
+                        String attributeName = LDAPUserRegistry.this.attributeMapping.get(key);
+                        if (attributeName != null)
+                        {
+                            Attribute attribute = attributes.get(attributeName);
+                            if (attribute != null)
                             {
-                                properties.put(keyQName, value);
+                                String value = (String) attribute.get(0);
+                                if (value != null)
+                                {
+                                    properties.put(keyQName, value);
+                                }
+                            }
+                            else
+                            {
+                                String defaultValue = LDAPUserRegistry.this.attributeDefaults.get(key);
+                                if (defaultValue != null)
+                                {
+                                    properties.put(keyQName, defaultValue);
+                                }
                             }
                         }
                         else
@@ -827,17 +856,35 @@ public class LDAPUserRegistry implements UserRegistry, InitializingBean, Activat
                             }
                         }
                     }
+                    return person;
+                }
+
+                // Examine the paged results control response for an indication that another page is available
+                if (!readyForNextPage)
+                {
+                    readyForNextPage = LDAPUserRegistry.this.ldapInitialContextFactory.hasNextPage(this.ctx,
+                            LDAPUserRegistry.this.queryBatchSize);
+                }
+
+                // Fetch the next page if there is one
+                if (readyForNextPage)
+                {
+                    if (this.modifiedSince == null)
+                    {
+                        this.searchResults = this.ctx.search(LDAPUserRegistry.this.userSearchBase,
+                                LDAPUserRegistry.this.personQuery, this.userSearchCtls);
+                    }
                     else
                     {
-                        String defaultValue = LDAPUserRegistry.this.attributeDefaults.get(key);
-                        if (defaultValue != null)
-                        {
-                            properties.put(keyQName, defaultValue);
-                        }
+                        this.searchResults = this.ctx.search(LDAPUserRegistry.this.userSearchBase,
+                                LDAPUserRegistry.this.personDifferentialQuery, new Object[]
+                                {
+                                    LDAPUserRegistry.LDAP_GENERALIZED_TIME_FORMAT.format(this.modifiedSince)
+                                }, this.userSearchCtls);
                     }
                 }
-                return person;
             }
+            while (readyForNextPage);
             this.searchResults.close();
             this.searchResults = null;
             this.ctx.close();

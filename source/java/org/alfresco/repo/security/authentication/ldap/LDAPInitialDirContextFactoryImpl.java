@@ -24,6 +24,7 @@
  */
 package org.alfresco.repo.security.authentication.ldap;
 
+import java.io.IOException;
 import java.util.Collections;
 import java.util.Hashtable;
 import java.util.Map;
@@ -35,7 +36,13 @@ import javax.naming.directory.Attribute;
 import javax.naming.directory.Attributes;
 import javax.naming.directory.BasicAttribute;
 import javax.naming.directory.BasicAttributes;
+import javax.naming.directory.DirContext;
 import javax.naming.directory.InitialDirContext;
+import javax.naming.ldap.Control;
+import javax.naming.ldap.InitialLdapContext;
+import javax.naming.ldap.LdapContext;
+import javax.naming.ldap.PagedResultsControl;
+import javax.naming.ldap.PagedResultsResponseControl;
 
 import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.util.ApplicationContextHelper;
@@ -72,17 +79,36 @@ public class LDAPInitialDirContextFactoryImpl implements LDAPInitialDirContextFa
 
     public InitialDirContext getDefaultIntialDirContext() throws AuthenticationException
     {
+        return getDefaultIntialDirContext(0);
+    }
+
+    public InitialDirContext getDefaultIntialDirContext(int pageSize) throws AuthenticationException
+    {
         Hashtable<String, String> env = new Hashtable<String, String>(initialDirContextEnvironment.size());
         env.putAll(initialDirContextEnvironment);
         env.put("javax.security.auth.useSubjectCredsOnly", "false");
-        return buildInitialDirContext(env);
+        return buildInitialDirContext(env, pageSize);
     }
 
-    private InitialDirContext buildInitialDirContext(Hashtable<String, String> env) throws AuthenticationException
+    private InitialDirContext buildInitialDirContext(Hashtable<String, String> env, int pageSize)
+            throws AuthenticationException
     {
         try
         {
-            return new InitialDirContext(env);
+            // If a page size has been requested, use LDAP v3 paging
+            if (pageSize > 0)
+            {
+                InitialLdapContext ctx = new InitialLdapContext(env, null);
+                ctx.setRequestControls(new Control[]
+                {
+                    new PagedResultsControl(pageSize, Control.CRITICAL)
+                });
+                return ctx;
+            }
+            else
+            {
+                return new InitialDirContext(env);
+            }
         }
         catch (javax.naming.AuthenticationException ax)
         {
@@ -92,6 +118,54 @@ public class LDAPInitialDirContextFactoryImpl implements LDAPInitialDirContextFa
         {
             throw new AuthenticationException("Unable to connect to LDAP Server; check LDAP configuration", nx);
         }
+        catch (IOException e)
+        {
+            throw new AuthenticationException("Unable to encode LDAP v3 request controls; check LDAP configuration", e);
+        }
+    }
+
+    public boolean hasNextPage(DirContext ctx, int pageSize)
+    {
+        if (pageSize > 0)
+        {
+            try
+            {
+                LdapContext ldapContext = (LdapContext) ctx;
+                Control[] controls = ldapContext.getResponseControls();
+
+                // Retrieve the paged result cookie if there is one
+                if (controls != null)
+                {
+                    for (Control control : controls)
+                    {
+                        if (control instanceof PagedResultsResponseControl)
+                        {
+                            byte[] cookie = ((PagedResultsResponseControl) control).getCookie();
+                            if (cookie != null)
+                            {
+                                // Prepare for next page
+                                ldapContext.setRequestControls(new Control[]
+                                {
+                                    new PagedResultsControl(pageSize, cookie, Control.CRITICAL)
+                                });
+                                return true;
+                            }
+                        }
+                    }
+                }
+            }
+            catch (NamingException nx)
+            {
+                throw new AuthenticationException("Unable to connect to LDAP Server; check LDAP configuration", nx);
+            }
+            catch (IOException e)
+            {
+                throw new AuthenticationException(
+                        "Unable to encode LDAP v3 request controls; check LDAP configuration", e);
+            }
+
+        }
+        return false;
     }
 
     public InitialDirContext getInitialDirContext(String principal, String credentials) throws AuthenticationException
@@ -100,7 +174,7 @@ public class LDAPInitialDirContextFactoryImpl implements LDAPInitialDirContextFa
         {
             throw new AuthenticationException("Null user name provided.");
         }
-        
+
         if (principal.length() == 0)
         {
             throw new AuthenticationException("Empty user name provided.");
@@ -110,18 +184,18 @@ public class LDAPInitialDirContextFactoryImpl implements LDAPInitialDirContextFa
         {
             throw new AuthenticationException("No credentials provided.");
         }
-        
+
         if (credentials.length() == 0)
         {
             throw new AuthenticationException("Empty credentials provided.");
         }
-        
+
         Hashtable<String, String> env = new Hashtable<String, String>(initialDirContextEnvironment.size());
         env.putAll(initialDirContextEnvironment);
         env.put(Context.SECURITY_PRINCIPAL, principal);
         env.put(Context.SECURITY_CREDENTIALS, credentials);
 
-        return buildInitialDirContext(env);
+        return buildInitialDirContext(env, 0);
     }
 
     public static void main(String[] args)
@@ -214,7 +288,7 @@ public class LDAPInitialDirContextFactoryImpl implements LDAPInitialDirContextFa
     public void afterPropertiesSet() throws Exception
     {
         // Check Anonymous bind
-        
+
         Hashtable<String, String> env = new Hashtable<String, String>(initialDirContextEnvironment.size());
         env.putAll(initialDirContextEnvironment);
         env.remove(Context.SECURITY_PRINCIPAL);
@@ -229,18 +303,18 @@ public class LDAPInitialDirContextFactoryImpl implements LDAPInitialDirContextFa
         {
 
         }
-        catch(AuthenticationNotSupportedException e)
+        catch (AuthenticationNotSupportedException e)
         {
-            
+
         }
         catch (NamingException nx)
         {
             logger.error("Unable to connect to LDAP Server; check LDAP configuration", nx);
             return;
         }
-        
+
         // Simple DN and password
-        
+
         env = new Hashtable<String, String>(initialDirContextEnvironment.size());
         env.putAll(initialDirContextEnvironment);
         env.put(Context.SECURITY_PRINCIPAL, "daftAsABrush");
@@ -259,7 +333,7 @@ public class LDAPInitialDirContextFactoryImpl implements LDAPInitialDirContextFa
         {
             logger.info("LDAP server does not fall back to anonymous bind for a string uid and password at " + env.get(Context.PROVIDER_URL));
         }
-        catch(AuthenticationNotSupportedException e)
+        catch (AuthenticationNotSupportedException e)
         {
             logger.info("LDAP server does not fall back to anonymous bind for a string uid and password at " + env.get(Context.PROVIDER_URL)); 
         }
@@ -267,9 +341,9 @@ public class LDAPInitialDirContextFactoryImpl implements LDAPInitialDirContextFa
         {
             logger.info("LDAP server does not support simple string user ids and invalid credentials at "+ env.get(Context.PROVIDER_URL));
         }
-        
+
         // DN and password
-        
+
         env = new Hashtable<String, String>(initialDirContextEnvironment.size());
         env.putAll(initialDirContextEnvironment);
         env.put(Context.SECURITY_PRINCIPAL, "cn=daftAsABrush,dc=woof");
@@ -288,7 +362,7 @@ public class LDAPInitialDirContextFactoryImpl implements LDAPInitialDirContextFa
         {
             logger.info("LDAP server does not fall back to anonymous bind for a simple dn and password at " + env.get(Context.PROVIDER_URL));
         }
-        catch(AuthenticationNotSupportedException e)
+        catch (AuthenticationNotSupportedException e)
         {
             logger.info("LDAP server does not fall back to anonymous bind for a simple dn and password at " + env.get(Context.PROVIDER_URL));
         }
@@ -298,13 +372,13 @@ public class LDAPInitialDirContextFactoryImpl implements LDAPInitialDirContextFa
         }
 
         // Check more if we have a real principal we expect to work
-        
+
         env = new Hashtable<String, String>(initialDirContextEnvironment.size());
         env.putAll(initialDirContextEnvironment);
-        if(env.get(Context.SECURITY_PRINCIPAL) != null)
+        if (env.get(Context.SECURITY_PRINCIPAL) != null)
         {
             // Correct principal invalid password
-            
+
             env = new Hashtable<String, String>(initialDirContextEnvironment.size());
             env.putAll(initialDirContextEnvironment);
             env.put(Context.SECURITY_CREDENTIALS, "sdasdasdasdasd123123123");
@@ -322,7 +396,7 @@ public class LDAPInitialDirContextFactoryImpl implements LDAPInitialDirContextFa
             {
                 logger.info("LDAP server does not fall back to anonymous bind for known principal and invalid credentials at " + env.get(Context.PROVIDER_URL));
             }
-            catch(AuthenticationNotSupportedException e)
+            catch (AuthenticationNotSupportedException e)
             {
                 logger.info("LDAP server does not support the required authentication mechanism");
             }

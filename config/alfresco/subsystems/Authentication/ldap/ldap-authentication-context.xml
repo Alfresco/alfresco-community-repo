@@ -149,6 +149,16 @@
         <property name="active">
             <value>${ldap.synchronization.active}</value>
         </property>
+
+        <!--
+        If positive, this property indicates that RFC 2696 paged results should be
+        used to split query results into batches of the specified size. This
+        overcomes any size limits imposed by the LDAP server.        
+        -->
+        <property name="queryBatchSize">
+            <value>${ldap.synchronization.queryBatchSize}</value>
+        </property>
+
         <!--
         The query to select all objects that represent the groups to import.
         

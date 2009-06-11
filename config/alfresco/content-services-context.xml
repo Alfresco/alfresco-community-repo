@@ -437,6 +437,10 @@
          class="org.alfresco.repo.content.transform.MailContentTransformer"
          parent="baseContentTransformer" />
 
+   <bean id="transformer.RFC822"
+         class="org.alfresco.repo.content.transform.EMLTransformer"
+         parent="baseContentTransformer" />
+
    <!-- Import the ImageMagick transformer from the third party subsystem -->
    <bean id="transformer.worker.ImageMagick" class="org.alfresco.repo.management.subsystems.SubsystemProxyFactory">
       <property name="sourceApplicationContextFactory">

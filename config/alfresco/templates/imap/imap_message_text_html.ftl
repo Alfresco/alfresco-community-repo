@@ -84,7 +84,7 @@
 <legend> Content links </legend>
 <table class="links">
    <tr>
-   <td>Content folder:</td><td><a href="${contextUrl}${document.displayPath}">${contextUrl}${document.displayPath}</a></td>
+   <td>Content folder:</td><td><a href="${contextUrl}/navigate/browse${document.displayPath}">${contextUrl}/navigate/browse${document.displayPath}</a></td>
    </tr>
    <tr>
    <td>Content URL:</td><td><a href="${contextUrl}${document.url}">${contextUrl}${document.url}</a></td>
@@ -101,7 +101,7 @@
 <legend> Start Workflow </legend>
 <form id="start_workflow"
       name="start_workflow"
-      method="get"
+      method="post"
       action="${contextUrl}/service/imap/start-workflow"
       enctype="application/x-www-form-urlencoded">
    <input type="hidden" name="alfTicket" value="${alfTicket}" />

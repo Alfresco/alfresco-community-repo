@@ -414,11 +414,29 @@
         <property name="compositePropertyTypes">
             <map>
                 <entry key="imap.server.mountPoints">
+                   <value>org.alfresco.repo.imap.config.ImapConfigMountPointsBean</value>
+               </entry>
+               <entry key="imap.ignore.extraction">
                     <value>org.alfresco.repo.imap.config.ImapConfigBean</value>
                 </entry>
             </map>
         </property>
     </bean>
+
+    <bean id="ImapService" class="org.alfresco.repo.management.subsystems.SubsystemProxyFactory">
+      <property name="sourceApplicationContextFactory">
+         <ref bean="imap" />
+      </property>
+       <property name="sourceBeanName">
+           <value>ImapService</value>
+       </property>
+      <property name="interfaces">
+         <list>
+            <value>org.alfresco.repo.imap.ImapService</value>
+         </list>
+      </property>
+   </bean>
+
 
    <bean id="fileServerConfiguration" class="org.alfresco.repo.management.subsystems.SubsystemProxyFactory">
       <property name="sourceApplicationContextFactory">

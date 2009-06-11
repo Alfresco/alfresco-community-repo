@@ -31,6 +31,7 @@ import org.alfresco.cmis.CMISQueryService;
 import org.alfresco.cmis.CMISServices;
 import org.alfresco.mbeans.VirtServerRegistry;
 import org.alfresco.repo.forms.FormService;
+import org.alfresco.repo.imap.ImapService;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.action.ActionService;
@@ -543,5 +544,14 @@ public class ServiceDescriptorRegistry
     public CMISQueryService getCMISQueryService() 
     {
          return (CMISQueryService)getService(CMIS_QUERY_SERVICE);
+    }
+
+    /*
+     * (non-Javadoc)
+     * @see org.alfresco.service.ServiceRegistry#getCMISQueryService()
+     */
+    public ImapService getImapService() 
+    {
+        return (ImapService)getService(IMAP_SERVICE);
     }
 }

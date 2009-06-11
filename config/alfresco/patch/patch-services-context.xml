@@ -1808,4 +1808,40 @@
         </property>
     </bean>
     
+   <bean id="patch.imapFolders" class="org.alfresco.repo.admin.patch.impl.ImapFoldersPatch" parent="basePatch" >
+      <property name="id"><value>patch.imapFolders</value></property>
+      <property name="description"><value>patch.imapFolders.description</value></property>
+      <property name="fixesFromSchema"><value>0</value></property>
+      <property name="fixesToSchema"><value>2012</value></property>
+      <property name="targetSchema"><value>2013</value></property>
+      <property name="importerBootstrap">
+         <ref bean="spacesBootstrap" />
+      </property>
+      <property name="messageSource">
+         <ref bean="bootstrapSpacesMessageSource" />
+      </property>
+      <property name="importerService">
+         <ref bean="importerComponent" />
+      </property>
+      <property name="configFoldersACP"><value>alfresco/templates/imap/imap_config_space.acp</value></property>   
+      <property name="emailActionsACP"><value>alfresco/templates/imap/email_actions_space.acp</value></property>   
+      <property name="scriptsACP"><value>alfresco/templates/imap/command_processor_scripts.acp</value></property>   
+   </bean>
+   
+   <bean id="patch.imapUserFolders" class="org.alfresco.repo.admin.patch.impl.ImapUsersPatch" parent="basePatch" >
+      <property name="id"><value>patch.imapUserFolders</value></property>
+      <property name="description"><value>patch.imapUserFolders.description</value></property>
+      <property name="fixesFromSchema"><value>0</value></property>
+      <property name="fixesToSchema"><value>2012</value></property>
+      <property name="targetSchema"><value>2013</value></property>
+      <!-- helper beans for execution -->
+      <property name="messageSource">
+         <ref bean="bootstrapSpacesMessageSource" />
+      </property>
+      <property name="importerBootstrap">
+         <ref bean="spacesBootstrap" />
+      </property>
+   </bean>
+
+    
 </beans>

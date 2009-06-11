@@ -353,6 +353,9 @@
             <extension>dwt</extension>
          </mimetype>
          <mimetype mimetype="message/rfc822" display="EMail">
+            <extension>eml</extension>
+         </mimetype>
+         <mimetype mimetype="application/vnd.ms-outlook" display="Outlook MSG">
             <extension>msg</extension>
          </mimetype>
          <mimetype mimetype="application/vnd.openxmlformats-officedocument.wordprocessingml.document" display="Microsoft Word 2007">

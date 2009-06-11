@@ -35,14 +35,18 @@ public interface ImapModel
 {
     static final String IMAP_MODEL_1_0_URI = "http://www.alfresco.org/model/imap/1.0";
 
-    static final QName ASPECT_IMAP_FOLDER_SUBSCRIBED = QName.createQName(IMAP_MODEL_1_0_URI, "subscribed");
+    static final QName ASPECT_IMAP_FOLDER_NONSUBSCRIBED = QName.createQName(IMAP_MODEL_1_0_URI, "nonSubscribed");
     static final QName ASPECT_IMAP_FOLDER_NONSELECTABLE = QName.createQName(IMAP_MODEL_1_0_URI, "nonselectable");
 
-    static final QName TYPE_IMAP_CONTENT = QName.createQName(IMAP_MODEL_1_0_URI, "imapContent");
+    static final QName ASPECT_IMAP_CONTENT = QName.createQName(IMAP_MODEL_1_0_URI, "imapContent");
     static final QName PROP_MESSAGE_FROM = QName.createQName(IMAP_MODEL_1_0_URI, "messageFrom");
     static final QName PROP_MESSAGE_TO = QName.createQName(IMAP_MODEL_1_0_URI, "messageTo");
     static final QName PROP_MESSAGE_CC = QName.createQName(IMAP_MODEL_1_0_URI, "messageCc");
     static final QName PROP_MESSAGE_SUBJECT = QName.createQName(IMAP_MODEL_1_0_URI, "messageSubject");
+    static final QName PROP_MESSAGE_ID = QName.createQName(IMAP_MODEL_1_0_URI, "messageId");
+    static final QName PROP_THREAD_INDEX = QName.createQName(IMAP_MODEL_1_0_URI, "threadIndex");
+    static final QName ASSOC_IMAP_ATTACHMENT = QName.createQName(IMAP_MODEL_1_0_URI, "attachment");
+    static final QName ASSOC_IMAP_ATTACHMENTS_FOLDER = QName.createQName(IMAP_MODEL_1_0_URI, "attachmentsFolder");
 
     static final QName ASPECT_FLAGGABLE = QName.createQName(IMAP_MODEL_1_0_URI, "flaggable");
     static final QName PROP_FLAG_ANSWERED = QName.createQName(IMAP_MODEL_1_0_URI, "flagAnswered");

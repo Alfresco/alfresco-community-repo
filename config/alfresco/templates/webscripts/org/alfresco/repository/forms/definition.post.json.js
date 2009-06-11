@@ -109,7 +109,7 @@ function main()
     // I don't see a way to get these dynamically at runtime.
     var supportedBaseFieldNames = ['name', 'label', 'description', 'binding',
                                    'defaultValue', 'dataKeyName', 'group', 'protectedField'];
-    var supportedPropertyFieldNames = ['dataType', 'mandatory',
+    var supportedPropertyFieldNames = ['dataType', 'dataTypeParameters', 'mandatory',
                                        'repeating', 'constraints'];
     var supportedAssociationFieldNames = ['endpointType', 'endpointDirection',
                                           'endpointMandatory', 'endpointMany'];

@@ -37,7 +37,11 @@
                     </#list>
                     }]<#if key_has_next>,</#if>
                     <#else>
+                    <#if field[key]?starts_with("[")>
+                    "${key}" : ${field[key]}<#if key_has_next>,</#if>
+                    <#else>
                     "${key}" : "${field[key]}"<#if key_has_next>,</#if>
+                    </#if>
                     </#if>
                     </#list>
                 }<#if field_has_next>,</#if>

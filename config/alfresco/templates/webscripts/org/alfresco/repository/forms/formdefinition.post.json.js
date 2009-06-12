@@ -91,70 +91,42 @@ function main()
         return;
     }
     
-    var formModel = {};
-    formModel.data = {};
-
-    formModel.data.item = formScriptObj.itemUrl;
-    formModel.data.type = formScriptObj.itemType;
-    formModel.data.submissionUrl = formScriptObj.submissionUrl;
-    if (formScriptObj.submissionUrl === null)
+    // ensure there is a submission url
+    var submissionUrl = formScriptObj.submissionUrl;
+    if (submissionUrl === null)
     {
-        formModel.data.submissionUrl = '/api/' + itemKind + '/' + itemId + '/formprocessor';
+        submissionUrl = '/api/' + itemKind + '/' + itemId + '/formprocessor';
     }
     
-    formModel.data.definition = {};
-    formModel.data.definition.fields = [];
-    
-    // We're explicitly listing the object fields of FieldDefinition.java and its subclasses here.
-    // I don't see a way to get these dynamically at runtime.
-    var supportedBaseFieldNames = ['name', 'label', 'description', 'binding',
-                                   'defaultValue', 'dataKeyName', 'group', 'protectedField'];
-    var supportedPropertyFieldNames = ['dataType', 'dataTypeParameters', 'mandatory',
-                                       'repeating', 'constraints'];
-    var supportedAssociationFieldNames = ['endpointType', 'endpointDirection',
-                                          'endpointMandatory', 'endpointMany'];
-
-    var allSupportedFieldNames = supportedBaseFieldNames
-       .concat(supportedPropertyFieldNames)
-       .concat(supportedAssociationFieldNames);
-
-    var fieldDefs = formScriptObj.fieldDefinitions;
-    for (var x = 0; x < fieldDefs.length; x++)
+    // create form model
+    var formModel = 
     {
-        var fieldDef = fieldDefs[x];
-        var field = {};
+        item : formScriptObj.itemUrl,
+        submissionUrl: submissionUrl,
+        type : formScriptObj.itemType,
+        fields : formScriptObj.fieldDefinitions,
+        formData : {}
+    };
 
-        for (var i = 0; i < allSupportedFieldNames.length; i++) 
-        {
-            var nextSupportedName = allSupportedFieldNames[i];
-            var nextValue = fieldDef[nextSupportedName];
-
-            if (nextValue != null) 
-            {
-                field[nextSupportedName] = nextValue;
-            }
-        }
-
-        field.type = (fieldDef.dataType != null) ? "property" : "association";
-        formModel.data.definition.fields.push(field);
-    }
-
-    formModel.data.formData = {};
+    // populate the form data model
     for (var k in formScriptObj.formData.data)
     {
         var value = formScriptObj.formData.data[k].value;
 
         if (value instanceof java.util.Date)
         {
-            formModel.data.formData[k] = utils.toISO8601(value);
+            formModel.formData[k] = utils.toISO8601(value);
         }
         // There is no need to handle java.util.List instances here as they are
         // returned from ScriptFormData.java as Strings
         else
         {
-            formModel.data.formData[k] = value;
+            formModel.formData[k] = value;
         }
     }
+    
+    if (logger.isLoggingEnabled())
+        logger.log("formModel = " + jsonUtils.toJSONString(formModel));
 
     model.form = formModel;
 }

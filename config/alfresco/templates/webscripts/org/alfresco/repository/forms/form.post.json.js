@@ -32,7 +32,7 @@ function main()
     for ( ; jsonKeys.hasNext(); )
     {
 	     var nextKey = jsonKeys.next();
-	     repoFormData.addData(nextKey, json.get(nextKey));
+	     repoFormData.addFieldData(nextKey, json.get(nextKey));
     }
 
     try

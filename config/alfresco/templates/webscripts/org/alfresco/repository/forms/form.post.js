@@ -25,7 +25,7 @@ function main()
             var repoFormData = new Packages.org.alfresco.repo.forms.FormData();
             for (var i = 0; i < formdata.fields.length; i++)
             {
-                repoFormData.addData(formdata.fields[i].name, formdata.fields[i].value);
+                repoFormData.addFieldData(formdata.fields[i].name, formdata.fields[i].value);
             }
 
             formService.saveForm(itemKind, itemId, repoFormData);

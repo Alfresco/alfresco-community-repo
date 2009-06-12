@@ -66,6 +66,7 @@ import org.alfresco.web.scripts.WebScriptResponse;
 import org.alfresco.web.scripts.WrappingWebScriptResponse;
 import org.alfresco.web.scripts.Description.RequiredAuthentication;
 import org.alfresco.web.scripts.Description.RequiredTransaction;
+import org.alfresco.web.scripts.Description.RequiredTransactionParameters;
 import org.alfresco.web.scripts.Description.TransactionCapability;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -329,19 +330,29 @@ public class RepositoryContainer extends AbstractRuntimeContainer implements Ten
                     try
                     {
                         if (logger.isDebugEnabled())
-                            logger.debug("Begin retry transaction block: " + description.getRequiredTransaction() + "," + description.getTransactionCapability());
+                            logger.debug("Begin retry transaction block: " + description.getRequiredTransaction() + "," 
+                                    + description.getRequiredTransactionParameters().getCapability());
 
                         WebScriptResponse redirectedRes = scriptRes;
-                        if (description.getTransactionCapability() == TransactionCapability.readwrite)
+                        RequiredTransactionParameters trxParams = description.getRequiredTransactionParameters();
+                        if (trxParams.getCapability() == TransactionCapability.readwrite)
                         {
-                            if (logger.isDebugEnabled())
-                                logger.debug("Creating Transactional Response for ReadWrite transaction");
-
-                            // create buffered response that's sensitive transaction boundary
-                            BufferedResponse bufferedRes = new BufferedResponse(scriptRes);
-                            AlfrescoTransactionSupport.bindResource(BUFFERED_RESPONSE_KEY, bufferedRes); 
-                            AlfrescoTransactionSupport.bindListener(bufferedRes);
-                            redirectedRes = bufferedRes;
+                            if (trxParams.getBufferSize() > 0)
+                            {
+                                if (logger.isDebugEnabled())
+                                    logger.debug("Creating Transactional Response for ReadWrite transaction; buffersize=" + trxParams.getBufferSize());
+    
+                                // create buffered response that's sensitive transaction boundary
+                                BufferedResponse bufferedRes = new BufferedResponse(scriptRes, trxParams.getBufferSize());
+                                AlfrescoTransactionSupport.bindResource(BUFFERED_RESPONSE_KEY, bufferedRes); 
+                                AlfrescoTransactionSupport.bindListener(bufferedRes);
+                                redirectedRes = bufferedRes;
+                            }
+                            else
+                            {
+                                if (logger.isDebugEnabled())
+                                    logger.debug("Transactional Response bypassed for ReadWrite - buffersize=0");
+                            }
                         }
                         
                         script.execute(scriptReq, redirectedRes);
@@ -384,14 +395,15 @@ public class RepositoryContainer extends AbstractRuntimeContainer implements Ten
                     finally
                     {
                         if (logger.isDebugEnabled())
-                            logger.debug("End retry transaction block: " + description.getRequiredTransaction() + "," + description.getTransactionCapability());
+                            logger.debug("End retry transaction block: " + description.getRequiredTransaction() + "," 
+                                    + description.getRequiredTransactionParameters().getCapability());
                     }
                     
                     return null;
                 }        
             };
         
-            boolean readonly = description.getTransactionCapability() == TransactionCapability.readonly;
+            boolean readonly = description.getRequiredTransactionParameters().getCapability() == TransactionCapability.readonly;
             boolean requiresNew = description.getRequiredTransaction() == RequiredTransaction.requiresnew;
             retryingTransactionHelper.doInTransaction(work, readonly, requiresNew); 
         }
@@ -499,15 +511,17 @@ public class RepositoryContainer extends AbstractRuntimeContainer implements Ten
         private ByteArrayOutputStream outputStream;
         private OutputStreamWriter outputWriter;
         
+
         /**
          * Construct
          * 
          * @param res
+         * @param bufferSize
          */
-        public BufferedResponse(WebScriptResponse res)
+        public BufferedResponse(WebScriptResponse res, int bufferSize)
         {
             this.res = res;
-            this.outputStream = new ByteArrayOutputStream(4096);
+            this.outputStream = new ByteArrayOutputStream(bufferSize);
             try
             {
                 this.outputWriter = new OutputStreamWriter(outputStream, "UTF-8");

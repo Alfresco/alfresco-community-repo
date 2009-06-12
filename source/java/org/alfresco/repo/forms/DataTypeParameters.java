@@ -42,9 +42,15 @@ public interface DataTypeParameters
     public Object getParameters();
     
     /**
-     * Returns the parameters in a REST API friendly manner i.e. as JSON.
+     * Returns the parameters represented as JSON.
+     * <p>
+     * Implementations can use whatever JSON libraries they
+     * desire, the only rule is that the object returned must
+     * toString() to either a JSON array or JSON object i.e.
+     * [...] or {...}
+     * </p>
      * 
-     * @return JSON String representing the data type parameters
+     * @return JSON Object representing the parameters
      */
-    public String getParametersAsJSONString();
+    public Object getParametersAsJSON();
 }

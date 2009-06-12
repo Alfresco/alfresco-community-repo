@@ -44,6 +44,9 @@ import org.alfresco.repo.dictionary.types.period.XMLDuration;
 import org.alfresco.repo.dictionary.types.period.Years;
 import org.alfresco.repo.forms.DataTypeParameters;
 import org.alfresco.service.cmr.repository.PeriodProvider;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 /**
  * Represents the parameters for the period data type.
@@ -91,62 +94,47 @@ public class PeriodDataTypeParameters implements DataTypeParameters, Serializabl
     {
         return this.providers;
     }
-
+    
     /**
-     * Retrieves a JSON array representing the valid period options 
-     * for the property
+     * Returns the valid period options as a JSONArray of JSONObject's.
      * 
-     * @see org.alfresco.repo.forms.DataTypeParameters#getParametersAsJSONString()
-     * @return A JSON string representing the period options for the property
+     * @see org.alfresco.repo.forms.DataTypeParameters#getParametersAsJSON()
+     * @return A JSONArray object holding JSONObject's representing the
+     *         period definitions
      */
-    public String getParametersAsJSONString()
+    public Object getParametersAsJSON()
     {
-        StringBuilder builder = new StringBuilder("[\n");
+        JSONArray periods = new JSONArray();
         
-        boolean isFirst = true;
-        for (PeriodProvider pp : this.providers)
+        try
         {
-            if (isFirst == false)
+            for (PeriodProvider pp : this.providers)
             {
-                builder.append(",\n");
+                boolean hasExpression = !(pp.getExpressionMutiplicity().equals(PeriodProvider.ExpressionMutiplicity.NONE)); 
+                
+                JSONObject period = new JSONObject();
+                period.put("type", pp.getPeriodType());
+                period.put("label", getPeriodTypeLabel(pp));
+                period.put("hasExpression", hasExpression);
+                
+                if (hasExpression)
+                {
+                    period.put("expressionMandatory", 
+                                pp.getExpressionMutiplicity().equals(PeriodProvider.ExpressionMutiplicity.MANDATORY));
+                    period.put("expressionType", pp.getExpressionDataType().toPrefixString());
+                    period.put("defaultExpression", pp.getDefaultExpression());
+                }
+                
+                periods.put(period);
             }
-            else
-            {
-                isFirst = false;
-            }
-            
-            boolean hasExpression = !(pp.getExpressionMutiplicity().equals(PeriodProvider.ExpressionMutiplicity.NONE)); 
-            
-            builder.append("{ \"type\" : \"").append(pp.getPeriodType()).append("\",");
-            builder.append(" \"label\" : \"").append(getPeriodTypeLabel(pp)).append("\",");
-            builder.append(" \"hasExpression\" : ").append(hasExpression);
-            if (hasExpression)
-            {
-                builder.append(", \"expressionMandatory\" : ").append(
-                        pp.getExpressionMutiplicity().equals(PeriodProvider.ExpressionMutiplicity.MANDATORY)).append(",");
-                builder.append(" \"expressionType\" : \"").append(pp.getExpressionDataType().toPrefixString()).append("\",");
-                builder.append(" \"defaultExpression\" : \"").append(pp.getDefaultExpression()).append("\"");
-            }
-            builder.append(" }");
+        }
+        catch (JSONException je)
+        {
+            // return an empty array
+            periods = new JSONArray();
         }
         
-        builder.append("\n]");
-        
-        return builder.toString();
-    }
-    
-    /*
-     * @see java.lang.Object#toString()
-     */
-    @Override
-    public String toString()
-    {
-        // NOTE: Until the script and REST API for the form service is
-        // made a little less generic toString() will be called for these
-        // objects, we'll therefore temporarily return the result of
-        // getParametersAsJSONString() from here, eventually the js/ftl 
-        // will call it directly.
-        return getParametersAsJSONString();
+        return periods;
     }
     
     protected String getPeriodTypeLabel(PeriodProvider pp)

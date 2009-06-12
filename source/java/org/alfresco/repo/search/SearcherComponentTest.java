@@ -121,7 +121,6 @@ public class SearcherComponentTest extends TestCase
 
     public void testNodeXPath() throws Exception
     {
-
         Map<QName, ChildAssociationRef> assocRefs = BaseNodeServiceTest.buildNodeGraph(nodeService, rootNodeRef);
 
         Map<QName, Serializable> properties = new HashMap<QName, Serializable>();
@@ -274,6 +273,12 @@ public class SearcherComponentTest extends TestCase
         xpath.addNamespace(BaseNodeServiceTest.TEST_PREFIX, BaseNodeServiceTest.NAMESPACE);
         list = xpath.selectNodes(assocRefs.get(qname));
         assertEquals(1, list.size());
+        
+        xpathStr = "test:root_p_n1 | test:root_p_n2";
+        xpath = new NodeServiceXPath(xpathStr, documentNavigator, null);
+        xpath.addNamespace(BaseNodeServiceTest.TEST_PREFIX, BaseNodeServiceTest.NAMESPACE);
+        list = xpath.selectNodes(new ChildAssociationRef(null, null, null, rootNodeRef));
+        assertEquals(2, list.size());
     }
 
     public void testSelectAPI() throws Exception
@@ -296,6 +301,51 @@ public class SearcherComponentTest extends TestCase
         List<Serializable> attributes = searcher.selectProperties(rootNodeRef, "//@test:animal", null,
                 namespacePrefixResolver, false);
         assertEquals(1, attributes.size());
+        
+        NodeRef n1 = assocRefs.get(QName.createQName(BaseNodeServiceTest.NAMESPACE, "root_p_n1")).getChildRef();
+        NodeRef n2 = assocRefs.get(QName.createQName(BaseNodeServiceTest.NAMESPACE, "root_p_n2")).getChildRef();
+        
+        answer = searcher.selectNodes(rootNodeRef, "test:root_p_n1 | test:root_p_n2", null, namespacePrefixResolver, false);
+        assertEquals(2, answer.size());
+        assertTrue(answer.contains(n1));
+        assertTrue(answer.contains(n2));
+        
+        NodeRef n3 = assocRefs.get(QName.createQName(BaseNodeServiceTest.NAMESPACE, "n1_p_n3")).getChildRef();
+        
+        answer = searcher.selectNodes(rootNodeRef, "//@test:animal", null, namespacePrefixResolver, false);
+        assertEquals(1, answer.size());
+        assertTrue(answer.contains(n3));
+        
+        answer = searcher.selectNodes(rootNodeRef, "*//.[@test:animal]", null, namespacePrefixResolver, false);
+        assertEquals(1, answer.size());
+        assertTrue(answer.contains(n3));
+        
+        answer = searcher.selectNodes(rootNodeRef, "*//.[@test:animal='monkey']", null, namespacePrefixResolver, false);
+        assertEquals(1, answer.size());
+        assertTrue(answer.contains(n3));
+        
+        answer = searcher.selectNodes(rootNodeRef, "//.[@test:animal='monkey']", null, namespacePrefixResolver, false);
+        assertEquals(1, answer.size());
+        assertTrue(answer.contains(n3));
+        
+        answer = searcher.selectNodes(rootNodeRef, "*//.[@test:animal='monkey']", null, namespacePrefixResolver, false);
+        assertEquals(1, answer.size());
+        assertTrue(answer.contains(n3));
+        
+        answer = searcher.selectNodes(rootNodeRef, "//*[like(@test:animal, 'monk*')]", null, namespacePrefixResolver, false);
+        assertEquals(1, answer.size());
+        assertTrue(answer.contains(n3));
+        
+        answer = searcher.selectNodes(rootNodeRef, "//@*", null, namespacePrefixResolver, false);
+        assertEquals(9, answer.size());
+        
+        QName qname = QName.createQName(BaseNodeServiceTest.NAMESPACE, "my@test_with_at_sign");
+        ChildAssociationRef assoc = nodeService.createNode(n1, BaseNodeServiceTest.ASSOC_TYPE_QNAME_TEST_CHILDREN, qname, ContentModel.TYPE_CONTAINER);
+        NodeRef n4 = assoc.getChildRef();
+        
+        answer = searcher.selectNodes(rootNodeRef, "/test:root_p_n1/test:my@test_with_at_sign", null, namespacePrefixResolver, false);
+        assertEquals(1, answer.size());
+        assertTrue(answer.contains(n4));
     }
 
     /**

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -123,11 +123,15 @@ public class NodeSearcher
                             throw new IllegalArgumentException("Malformed order by expression " + split[1]);
                         }
                     }
-
                 }
-
             }
-
+            else
+            {
+                // match '@' in a folder/filename (but do not match XPath query syntax '[@' or '/@' or '(@' or '@*')
+                // TODO cannot yet match '(@' or '[@' in a folder/filename - would need to identify and encode path elements
+                xpath = xpath.replaceAll("(?<![/\\[(])@(?!//*)", "_x0040_");
+            }
+            
             DocumentNavigator documentNavigator = new DocumentNavigator(dictionaryService, nodeService, searchService,
                     namespacePrefixResolver, followAllParentLinks, useJCRXPath);
             NodeServiceXPath nsXPath = new NodeServiceXPath(xpath, documentNavigator, paramDefs);

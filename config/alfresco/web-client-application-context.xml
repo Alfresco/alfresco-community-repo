@@ -262,4 +262,29 @@
       </property>
    </bean>
    
+   <bean id="SharepointAuthenticationHandler" class="org.alfresco.repo.management.subsystems.ChainingSubsystemProxyFactory">
+      <property name="applicationContextManager">
+         <ref bean="Authentication" />
+      </property>
+      <property name="interfaces">
+         <list>
+            <value>org.alfresco.web.sharepoint.auth.AuthenticationHandler</value>
+         </list>
+      </property>
+      <property name="sourceBeanName">
+         <value>sharepointAuthenticationHandler</value>
+      </property>
+      <!-- Fall back to the default alfresco implementation -->
+      <property name="defaultTarget">
+         <bean class="org.alfresco.web.sharepoint.auth.BasicAuthenticationHandler">
+            <property name="authenticationService">
+               <ref bean="AuthenticationService" />
+            </property>
+            <property name="personService">
+               <ref bean="personService" />
+            </property>
+         </bean>
+      </property>
+   </bean>
+
 </beans>

@@ -30,9 +30,12 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Writer;
 import java.net.SocketException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletResponse;
@@ -73,6 +76,11 @@ public class StreamContent extends AbstractWebScript
 {
     // Logger
     private static final Log logger = LogFactory.getLog(StreamContent.class);
+
+ 	/**
+ 	 * format definied by RFC 822, see http://www.w3.org/Protocols/rfc2616/rfc2616-sec3.html#sec3.3 
+ 	 */
+ 	private static final SimpleDateFormat dateFormat = new SimpleDateFormat("EEE', 'dd' 'MMM' 'yyyy' 'HH:mm:ss' 'Z", Locale.US);
     
     /** Services */
     protected PermissionService permissionService;
@@ -306,20 +314,33 @@ public class StreamContent extends AbstractWebScript
        
         // check If-Modified-Since header and set Last-Modified header as appropriate
         Date modified = (Date)nodeService.getProperty(nodeRef, ContentModel.PROP_MODIFIED);
+        long modifiedSince = -1;
         String modifiedSinceStr = req.getHeader("If-Modified-Since");
         if (modifiedSinceStr == null)
         {
-            modifiedSinceStr = "-1";
+            modifiedSince = -1;
         }
-        long modifiedSince = new Long(modifiedSinceStr);
-        if (modifiedSince > 0L)
+        else
         {
-            // round the date to the ignore millisecond value which is not supplied by header
-            long modDate = (modified.getTime() / 1000L) * 1000L;
-            if (modDate <= modifiedSince)
+            try
             {
-                res.setStatus(HttpServletResponse.SC_NOT_MODIFIED);
-                return;
+                modifiedSince = dateFormat.parse(modifiedSinceStr).getTime();
+            }
+            catch (ParseException e)
+            {
+                if (logger.isInfoEnabled())
+                    logger.info("Browser sent badly-formatted If-Modified-Since header: " + modifiedSinceStr);
+            }
+
+            if (modifiedSince > 0L)
+            {
+                // round the date to the ignore millisecond value which is not supplied by header
+                long modDate = (modified.getTime() / 1000L) * 1000L;
+                if (modDate <= modifiedSince)
+                {
+                    res.setStatus(HttpServletResponse.SC_NOT_MODIFIED);
+                    return;
+                }
             }
         }
 

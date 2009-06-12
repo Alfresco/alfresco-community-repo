@@ -24,7 +24,7 @@
                     "type" : "property",
                     "dataType" : "${field.dataType}",
                     <#if field.dataTypeParameters??>"dataTypeParameters" : 
-                    ${field.dataTypeParameters},</#if>
+                    ${field.dataTypeParameters.parametersAsJSON},</#if>
                     <#if field.constraints??>"constraints" : 
                     [{
                     <#list field.constraints as cnstrnt>

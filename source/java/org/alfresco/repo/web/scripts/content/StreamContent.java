@@ -325,7 +325,12 @@ public class StreamContent extends AbstractWebScript
             catch (ParseException e)
             {
                 if (logger.isInfoEnabled())
-                    logger.info("Browser sent badly-formatted If-Modified-Since header: " + modifiedSinceStr);
+                    logger.info("ParseException: Browser sent badly-formatted If-Modified-Since header: " + modifiedSinceStr);
+            }
+            catch (NumberFormatException e)
+            {
+                if (logger.isInfoEnabled())
+                    logger.info("NumberFormatException: Browser sent badly-formatted If-Modified-Since header: " + modifiedSinceStr);
             }
 
             if (modifiedSince > 0L)

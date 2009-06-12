@@ -188,7 +188,7 @@ public class Form
             this.data = new FormData();
         }
         
-        this.data.addData(fieldName, fieldData);
+        this.data.addFieldData(fieldName, fieldData);
     }
     
     /*

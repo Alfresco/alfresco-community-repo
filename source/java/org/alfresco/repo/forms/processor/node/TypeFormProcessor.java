@@ -239,48 +239,44 @@ public class TypeFormProcessor extends NodeFormProcessor
         
         if (data != null)
         {
-            Map<String, FieldData> fieldData = data.getData();
-            if (fieldData != null)
+            // firstly, ensure we have a destination to create the node in
+            NodeRef parentRef = null;
+            FieldData destination = data.getFieldData(DESTINATION);
+            if (destination == null)
             {
-                // firstly, ensure we have a destination to create the node in
-                NodeRef parentRef = null;
-                FieldData destination = fieldData.get(DESTINATION);
-                if (destination == null)
-                {
-                    throw new FormException("Failed to persist form for '" + 
-                                typeDef.getName().toPrefixString(this.namespaceService) +
-                                "' as destination data was not present.");
-                }
-                
-                // create the parent NodeRef
-                parentRef = new NodeRef((String)destination.getValue());
-                
-                // TODO: determine what association to use when creating the node in the destination,
-                // defaults to ContentModel.ASSOC_CONTAINS
-                
-                // if a name property is present in the form data use it as the node name,
-                // otherwise generate a guid
-                String nodeName = null;
-                FieldData nameData = fieldData.get(NAME_PROP_DATA);
-                if (nameData != null)
-                {
-                    nodeName = (String)nameData.getValue();
-                    
-                    // remove the name data otherwise 'rename' gets called in persistNode
-                    fieldData.remove(NAME_PROP_DATA);
-                }
-                if (nodeName == null || nodeName.length() == 0)
-                {
-                    nodeName = GUID.generate();
-                }
-                
-                // create the node
-                Map<QName, Serializable> nodeProps = new HashMap<QName, Serializable>(1);
-                nodeProps.put(ContentModel.PROP_NAME, nodeName);
-                nodeRef = this.nodeService.createNode(parentRef, ContentModel.ASSOC_CONTAINS, 
-                            QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, QName.createValidLocalName(nodeName)), 
-                            typeDef.getName(), nodeProps).getChildRef();
+                throw new FormException("Failed to persist form for '" + 
+                            typeDef.getName().toPrefixString(this.namespaceService) +
+                            "' as destination data was not present.");
             }
+            
+            // create the parent NodeRef
+            parentRef = new NodeRef((String)destination.getValue());
+            
+            // TODO: determine what association to use when creating the node in the destination,
+            // defaults to ContentModel.ASSOC_CONTAINS
+            
+            // if a name property is present in the form data use it as the node name,
+            // otherwise generate a guid
+            String nodeName = null;
+            FieldData nameData = data.getFieldData(NAME_PROP_DATA);
+            if (nameData != null)
+            {
+                nodeName = (String)nameData.getValue();
+                
+                // remove the name data otherwise 'rename' gets called in persistNode
+                data.removeFieldData(NAME_PROP_DATA);
+            }
+            if (nodeName == null || nodeName.length() == 0)
+            {
+                nodeName = GUID.generate();
+            }
+            
+            // create the node
+            Map<QName, Serializable> nodeProps = new HashMap<QName, Serializable>(1);
+            nodeProps.put(ContentModel.PROP_NAME, nodeName);
+            nodeRef = this.nodeService.createNode(parentRef, ContentModel.ASSOC_CONTAINS, 
+                        QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, QName.createValidLocalName(nodeName)), 
+                        typeDef.getName(), nodeProps).getChildRef();
         }
         
         return nodeRef;

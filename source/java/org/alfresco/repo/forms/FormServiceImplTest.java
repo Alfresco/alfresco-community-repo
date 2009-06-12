@@ -350,18 +350,16 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
         // check the form data
         FormData data = form.getFormData();
         assertNotNull("Expecting form data", data);
-        Map<String, FormData.FieldData> fieldData = data.getData();
-        assertNotNull("Expecting field data", fieldData);
-        assertEquals(VALUE_TITLE, fieldData.get(titleField.getDataKeyName()).getValue());
-        assertEquals(VALUE_DESCRIPTION, fieldData.get(descField.getDataKeyName()).getValue());
-        assertEquals(VALUE_MIMETYPE, fieldData.get(mimetypeField.getDataKeyName()).getValue());
-        assertEquals(VALUE_ENCODING, fieldData.get(encodingField.getDataKeyName()).getValue());
-        assertEquals(VALUE_ORIGINATOR, fieldData.get(originatorField.getDataKeyName()).getValue());
-        assertEquals(VALUE_ADDRESSEE, fieldData.get(addresseeField.getDataKeyName()).getValue());
-        assertEquals(VALUE_SUBJECT, fieldData.get(subjectField.getDataKeyName()).getValue());
-        assertTrue("Expecting size to be > 0", ((Long)fieldData.get(sizeField.getDataKeyName()).getValue()).longValue() > 0);
+        assertEquals(VALUE_TITLE, data.getFieldData(titleField.getDataKeyName()).getValue());
+        assertEquals(VALUE_DESCRIPTION, data.getFieldData(descField.getDataKeyName()).getValue());
+        assertEquals(VALUE_MIMETYPE, data.getFieldData(mimetypeField.getDataKeyName()).getValue());
+        assertEquals(VALUE_ENCODING, data.getFieldData(encodingField.getDataKeyName()).getValue());
+        assertEquals(VALUE_ORIGINATOR, data.getFieldData(originatorField.getDataKeyName()).getValue());
+        assertEquals(VALUE_ADDRESSEE, data.getFieldData(addresseeField.getDataKeyName()).getValue());
+        assertEquals(VALUE_SUBJECT, data.getFieldData(subjectField.getDataKeyName()).getValue());
+        assertTrue("Expecting size to be > 0", ((Long)data.getFieldData(sizeField.getDataKeyName()).getValue()).longValue() > 0);
         
-        String addressees = (String)fieldData.get(addresseesField.getDataKeyName()).getValue();
+        String addressees = (String)data.getFieldData(addresseesField.getDataKeyName()).getValue();
         assertNotNull(addressees);
         assertTrue("Expecting the addressees value to have at least 1 comma", addressees.indexOf(",") != -1);
         String[] addresseesArr = StringUtils.delimitedListToStringArray(addressees, ",");
@@ -372,10 +370,10 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
         Calendar calTestValue = Calendar.getInstance();
         calTestValue.setTime(VALUE_SENT_DATE);
         Calendar calServiceValue = Calendar.getInstance();
-        calServiceValue.setTime((Date)fieldData.get(sentDateField.getDataKeyName()).getValue());
+        calServiceValue.setTime((Date)data.getFieldData(sentDateField.getDataKeyName()).getValue());
         assertEquals(calTestValue.getTimeInMillis(), calServiceValue.getTimeInMillis());
         
-        List<String> targets = (List<String>)fieldData.get(referencesField.getDataKeyName()).getValue();
+        List<String> targets = (List<String>)data.getFieldData(referencesField.getDataKeyName()).getValue();
         assertEquals("Expecting 1 target", 1, targets.size());
         assertEquals(this.associatedDoc.toString(), targets.get(0));
     }
@@ -481,25 +479,23 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
         // check the form data
         FormData data = form.getFormData();
         assertNotNull("Expecting form data", data);
-        Map<String, FormData.FieldData> fieldData = data.getData();
-        assertNotNull("Expecting field data", fieldData);
-        assertEquals(this.documentName, fieldData.get(nameField.getDataKeyName()).getValue());
-        assertEquals(VALUE_TITLE, fieldData.get(titleField.getDataKeyName()).getValue());
-        assertEquals(VALUE_MIMETYPE, fieldData.get(mimetypeField.getDataKeyName()).getValue());
-        assertEquals(VALUE_SUBJECT, fieldData.get(subjectField.getDataKeyName()).getValue());
-        assertEquals(USER_ONE, fieldData.get(modifierField.getDataKeyName()).getValue());
+        assertEquals(this.documentName, data.getFieldData(nameField.getDataKeyName()).getValue());
+        assertEquals(VALUE_TITLE, data.getFieldData(titleField.getDataKeyName()).getValue());
+        assertEquals(VALUE_MIMETYPE, data.getFieldData(mimetypeField.getDataKeyName()).getValue());
+        assertEquals(VALUE_SUBJECT, data.getFieldData(subjectField.getDataKeyName()).getValue());
+        assertEquals(USER_ONE, data.getFieldData(modifierField.getDataKeyName()).getValue());
 
-        Date modifiedDate = (Date)fieldData.get(modifiedField.getDataKeyName()).getValue();
+        Date modifiedDate = (Date)data.getFieldData(modifiedField.getDataKeyName()).getValue();
         assertNotNull("Expecting to find modified date", modifiedDate);
         assertTrue("Expecting modified field to return a Date", (modifiedDate instanceof Date));
         
         Calendar calTestValue = Calendar.getInstance();
         calTestValue.setTime(VALUE_SENT_DATE);
         Calendar calServiceValue = Calendar.getInstance();
-        calServiceValue.setTime((Date)fieldData.get(sentDateField.getDataKeyName()).getValue());
+        calServiceValue.setTime((Date)data.getFieldData(sentDateField.getDataKeyName()).getValue());
         assertEquals(calTestValue.getTimeInMillis(), calServiceValue.getTimeInMillis());
         
-        List<String> targets = (List<String>)fieldData.get(referencesField.getDataKeyName()).getValue();
+        List<String> targets = (List<String>)data.getFieldData(referencesField.getDataKeyName()).getValue();
         assertEquals("Expecting 1 target", 1, targets.size());
         assertEquals(this.associatedDoc.toString(), targets.get(0));
     }
@@ -553,10 +549,8 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
         // check the form data
         FormData data = form.getFormData();
         assertNotNull("Expecting form data", data);
-        Map<String, FormData.FieldData> fieldData = data.getData();
-        assertNotNull("Expecting field data", fieldData);
-        assertEquals(this.documentName, fieldData.get(nameField.getDataKeyName()).getValue());
-        assertEquals(VALUE_TITLE, fieldData.get(titleField.getDataKeyName()).getValue());
+        assertEquals(this.documentName, data.getFieldData(nameField.getDataKeyName()).getValue());
+        assertEquals(VALUE_TITLE, data.getFieldData(titleField.getDataKeyName()).getValue());
     }
     
     public void testForcedFieldsDocForm() throws Exception
@@ -621,11 +615,9 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
         // check the form data
         FormData data = form.getFormData();
         assertNotNull("Expecting form data", data);
-        Map<String, FormData.FieldData> fieldData = data.getData();
-        assertNotNull("Expecting field data", fieldData);
-        assertEquals(this.documentName, fieldData.get(nameField.getDataKeyName()).getValue());
-        assertEquals(VALUE_TITLE, fieldData.get(titleField.getDataKeyName()).getValue());
-        assertNull("Didn't expect to find a value for cm:author", fieldData.get(authorField.getDataKeyName()));
+        assertEquals(this.documentName, data.getFieldData(nameField.getDataKeyName()).getValue());
+        assertEquals(VALUE_TITLE, data.getFieldData(titleField.getDataKeyName()).getValue());
+        assertNull("Didn't expect to find a value for cm:author", data.getFieldData(authorField.getDataKeyName()));
     }
     
     @SuppressWarnings("unchecked")
@@ -694,11 +686,9 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
         // check the form data
         FormData data = form.getFormData();
         assertNotNull("Expecting form data", data);
-        Map<String, FormData.FieldData> fieldData = data.getData();
-        assertNotNull("Expecting field data", fieldData);
-        assertEquals(this.folderName, fieldData.get(nameField.getDataKeyName()).getValue());
+        assertEquals(this.folderName, data.getFieldData(nameField.getDataKeyName()).getValue());
         
-        List<String> children = (List<String>)fieldData.get(containsField.getDataKeyName()).getValue();
+        List<String> children = (List<String>)data.getFieldData(containsField.getDataKeyName()).getValue();
         assertEquals("Expecting 3 children", 3, children.size());
         assertEquals(this.document.toString(), children.get(0));
         assertEquals(this.associatedDoc.toString(), children.get(1));
@@ -720,37 +710,37 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
         
         // update the name
         String newName = "new-" + this.documentName;
-        data.addData("prop_cm_name", newName);
+        data.addFieldData("prop_cm_name", newName);
         
         // update the title property
         String newTitle = "This is the new title property";
-        data.addData("prop_cm_title", newTitle);
+        data.addFieldData("prop_cm_title", newTitle);
         
         // update the mimetype
         String newMimetype = MimetypeMap.MIMETYPE_HTML;
-        data.addData("prop_mimetype", newMimetype);
+        data.addFieldData("prop_mimetype", newMimetype);
         
         // update the author property (this is on an aspect not applied)
         String newAuthor = "Gavin Cornwell";
-        data.addData("prop_cm_author", newAuthor);
+        data.addFieldData("prop_cm_author", newAuthor);
         
         // update the originator
         String newOriginator = "jane@example.com";
-        data.addData("prop_cm_originator", newOriginator);
+        data.addFieldData("prop_cm_originator", newOriginator);
         
         // update the adressees, add another
         String newAddressees = VALUE_ADDRESSEES1 + "," + VALUE_ADDRESSEES2 + "," + VALUE_ADDRESSEES3;
-        data.addData("prop_cm_addressees", newAddressees);
+        data.addFieldData("prop_cm_addressees", newAddressees);
         
         // set the date to null (using an empty string)
-        data.addData("prop_cm_sentdate", "");
+        data.addFieldData("prop_cm_sentdate", "");
         
         // add an association to the child doc (as an attachment which is defined on an aspect not applied)
-        //data.addData("assoc_cm_attachments_added", this.childDoc.toString());
+        //data.addField("assoc_cm_attachments_added", this.childDoc.toString());
         
         // try and update non-existent properties (make sure there are no exceptions)
-        data.addData("prop_cm_wrong", "This should not be persisted");
-        data.addData("cm_wrong", "This should not be persisted");
+        data.addFieldData("prop_cm_wrong", "This should not be persisted");
+        data.addFieldData("cm_wrong", "This should not be persisted");
         
         // persist the data
         this.formService.saveForm(new Item(NODE_FORM_ITEM_KIND, this.document.toString()), data);
@@ -912,11 +902,11 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
         
         // supply the name
         String name = "new-" + this.documentName;
-        data.addData("prop_cm_name", name);
+        data.addFieldData("prop_cm_name", name);
         
         // supply the title property
         String title = "This is the title property";
-        data.addData("prop_cm_title", title);
+        data.addFieldData("prop_cm_title", title);
         
         // persist the data (without a destination and make sure it fails)
         try
@@ -931,7 +921,7 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
         }
         
         // supply the destination
-        data.addData("destination", this.folder.toString());
+        data.addFieldData("destination", this.folder.toString());
         
         // persist the data
         NodeRef newNode = (NodeRef)this.formService.saveForm(new Item(TYPE_FORM_ITEM_KIND, "cm:content"), data);

@@ -25,8 +25,10 @@
 package org.alfresco.repo.forms;
 
 import java.io.InputStream;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.lang.NotImplementedException;
 
@@ -35,8 +37,11 @@ import org.apache.commons.lang.NotImplementedException;
  *
  * @author Gavin Cornwell
  */
-public class FormData
+public class FormData implements Iterable<FormData.FieldData>
 {
+    // TODO: Once we fully support file based FieldData add other methods
+    //       in here to retrieve just file fields, just data fields etc.
+    
     protected Map<String, FieldData> data;
     
     /**
@@ -48,35 +53,83 @@ public class FormData
     }
     
     /**
-     * Returns the data
+     * Determines whether field data for the given item exists.
      * 
-     * @return Map of DataItem objects representing the data
+     * @param fieldName Name of field to look for
+     * @return true if the field exists, false otherwise
      */
-    public Map<String, FieldData> getData()
+    public boolean hasFieldData(String fieldName)
     {
-        return this.data;
+        return this.data.containsKey(fieldName);
     }
     
     /**
-     * Sets the form data
+     * Returns the data for the given field.
      * 
-     * @param data Map of DataItem objects representing the data
+     * @param fieldName Name of field to look for 
+     * @return FieldData object representing the data for
+     * the field or null if it doesn't exist
      */
-    public void setData(Map<String, FieldData> data)
+    public FieldData getFieldData(String fieldName)
     {
-        this.data = data;
+        return this.data.get(fieldName);
     }
     
     /**
-     * Adds the given data to the form
+     * Adds the given data to the form.
+     * If data for the given field is already present it will be
+     * overwritten.
      * 
-     * @param name The name of the data
-     * @param value The value of the data
+     * @param fieldName The name of the field
+     * @param fieldValue The value of the data
      */
-    public void addData(String name, Object value)
+    public void addFieldData(String fieldName, Object fieldValue)
     {
-        FieldData item = new FieldData(name, value, false);
-        this.data.put(name, item);
+        FieldData item = new FieldData(fieldName, fieldValue, false);
+        this.data.put(fieldName, item);
+    }
+    
+    /**
+     * Removes the data associated with the given field
+     * if it exists.
+     * 
+     * @param fieldName Name of the field to remove
+     */
+    public void removeFieldData(String fieldName)
+    {
+        this.data.remove(fieldName);
+    }
+    
+    /**
+     * Returns a list of the names of the fields held by this
+     * object.
+     * 
+     * @return List of String objects
+     */
+    public Set<String> getFieldNames()
+    {
+        return this.data.keySet();
+    }
+    
+    /**
+     * Returns the number of fields data is being held for.
+     * 
+     * @return Number of fields
+     */
+    public int getNumberOfFields()
+    {
+        return this.data.size();
+    }
+    
+    /**
+     * Returns an Iterator over the FieldData objects
+     * held by this object.
+     * 
+     * @return Iterator of FieldData
+     */
+    public Iterator<FormData.FieldData> iterator()
+    {
+        return this.data.values().iterator();
     }
     
     /*

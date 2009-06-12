@@ -900,12 +900,11 @@ public class NodeFormProcessor extends FilteredFormProcessor
         Map<QName, ChildAssociationDefinition> childAssocDefs = typeDef.getChildAssociations();
         Map<QName, PropertyDefinition> propDefs = typeDef.getProperties();
         
-        Map<QName, Serializable> propsToPersist = new HashMap<QName, Serializable>(data.getData().size());
+        Map<QName, Serializable> propsToPersist = new HashMap<QName, Serializable>(data.getNumberOfFields());
         List<AbstractAssocCommand> assocsToPersist = new ArrayList<AbstractAssocCommand>();
         
-        for (String dataKey : data.getData().keySet())
+        for (FieldData fieldData : data)
         {
-            FieldData fieldData = data.getData().get(dataKey);
             // NOTE: ignore file fields for now, not supported yet!
             if (fieldData.isFile() == false)
             {

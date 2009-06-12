@@ -46,6 +46,7 @@ import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.PropertyMap;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.quartz.Scheduler;
 import org.springframework.context.ApplicationContext;
 
 /**
@@ -105,6 +106,11 @@ public class SiteActivityTest extends TestCase
     {
         super.setUp();
         String testid = ""+System.currentTimeMillis();
+        
+        // Let's shut down the scheduler so that we aren't competing with the scheduled versions of the post lookup and
+        // feed generator jobs
+        Scheduler scheduler = (Scheduler) applicationContext.getBean("schedulerFactory");
+        scheduler.shutdown();
         
         // Get the required services
         this.activityService = (ActivityService)applicationContext.getBean("activityService");

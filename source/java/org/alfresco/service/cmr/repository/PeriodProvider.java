@@ -63,6 +63,12 @@ public interface PeriodProvider
     public String getPeriodType();
     
     /**
+     * Gets the display label for the period.
+     * @return display label
+     */
+    public String getDisplayLabel();
+    
+    /**
      * Get the next date - the provided date + period
      * @param date
      * @param expression

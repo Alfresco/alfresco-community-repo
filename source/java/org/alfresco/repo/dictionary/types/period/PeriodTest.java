@@ -69,6 +69,7 @@ public class PeriodTest extends TestCase
         assertNull(provider.getNextDate(new Date(), "meep"));
         assertEquals(provider.getPeriodType(), NoPeriod.PERIOD_TYPE);
         assertNull(provider.getExpressionDataType());
+        assertEquals("None", provider.getDisplayLabel());
     }
 
     /**
@@ -111,6 +112,7 @@ public class PeriodTest extends TestCase
         assertNotNull(provider.getNextDate(now, "2"));
         assertEquals(provider.getPeriodType(), Days.PERIOD_TYPE);
         assertEquals(DataTypeDefinition.INT, provider.getExpressionDataType());
+        assertEquals("Day", provider.getDisplayLabel());
     }
 
     /**
@@ -153,6 +155,7 @@ public class PeriodTest extends TestCase
         assertNotNull(provider.getNextDate(now, "2"));
         assertEquals(provider.getPeriodType(), Weeks.PERIOD_TYPE);
         assertEquals(DataTypeDefinition.INT, provider.getExpressionDataType());
+        assertEquals("Week", provider.getDisplayLabel());
     }
 
     /**
@@ -195,6 +198,7 @@ public class PeriodTest extends TestCase
         assertNotNull(provider.getNextDate(now, "2"));
         assertEquals(provider.getPeriodType(), Months.PERIOD_TYPE);
         assertEquals(DataTypeDefinition.INT, provider.getExpressionDataType());
+        assertEquals("Month", provider.getDisplayLabel());
     }
 
     /**
@@ -237,6 +241,7 @@ public class PeriodTest extends TestCase
         assertNotNull(provider.getNextDate(now, "2"));
         assertEquals(provider.getPeriodType(), Quarters.PERIOD_TYPE);
         assertEquals(DataTypeDefinition.INT, provider.getExpressionDataType());
+        assertEquals("Quarter", provider.getDisplayLabel());
     }
 
     /**
@@ -279,6 +284,7 @@ public class PeriodTest extends TestCase
         assertNotNull(provider.getNextDate(now, "2"));
         assertEquals(provider.getPeriodType(), Years.PERIOD_TYPE);
         assertEquals(DataTypeDefinition.INT, provider.getExpressionDataType());
+        assertEquals("Year", provider.getDisplayLabel());
     }
 
     /**
@@ -324,6 +330,7 @@ public class PeriodTest extends TestCase
         assertNotNull(provider.getNextDate(now, "2"));
         assertEquals(provider.getPeriodType(), EndOfMonth.PERIOD_TYPE);
         assertEquals(DataTypeDefinition.INT, provider.getExpressionDataType());
+        assertEquals("End Of Month", provider.getDisplayLabel());
     }
 
     /**
@@ -369,6 +376,7 @@ public class PeriodTest extends TestCase
         assertNotNull(provider.getNextDate(now, "2"));
         assertEquals(provider.getPeriodType(), EndOfYear.PERIOD_TYPE);
         assertEquals(DataTypeDefinition.INT, provider.getExpressionDataType());
+        assertEquals("End Of Year", provider.getDisplayLabel());
     }
 
     /**
@@ -383,6 +391,7 @@ public class PeriodTest extends TestCase
         assertEquals(provider.getExpressionMutiplicity(), PeriodProvider.ExpressionMutiplicity.OPTIONAL);
         assertEquals(provider.getPeriodType(), EndOfQuarter.PERIOD_TYPE);
         assertEquals(DataTypeDefinition.INT, provider.getExpressionDataType());
+        assertEquals("End Of Quarter", provider.getDisplayLabel());
 
         SimpleDateFormat df = CachingDateFormat.getDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS", true);
         Period period = new Period(EndOfQuarter.PERIOD_TYPE);
@@ -532,6 +541,7 @@ public class PeriodTest extends TestCase
         assertNotNull(provider.getNextDate(now, "2"));
         assertEquals(provider.getPeriodType(), EndOfFinancialMonth.PERIOD_TYPE);
         assertEquals(DataTypeDefinition.INT, provider.getExpressionDataType());
+        assertEquals("End Of Financial Month", provider.getDisplayLabel());
     }
 
     /**
@@ -546,6 +556,7 @@ public class PeriodTest extends TestCase
         assertEquals(provider.getExpressionMutiplicity(), PeriodProvider.ExpressionMutiplicity.OPTIONAL);
         assertEquals(provider.getPeriodType(), EndOfFinancialYear.PERIOD_TYPE);
         assertEquals(DataTypeDefinition.INT, provider.getExpressionDataType());
+        assertEquals("End Of Financial Year", provider.getDisplayLabel());
 
         SimpleDateFormat df = CachingDateFormat.getDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS", true);
         Period period = new Period(EndOfFinancialYear.PERIOD_TYPE);
@@ -579,6 +590,7 @@ public class PeriodTest extends TestCase
         assertEquals(provider.getExpressionMutiplicity(), PeriodProvider.ExpressionMutiplicity.OPTIONAL);
         assertEquals(provider.getPeriodType(), EndOfFinancialQuarter.PERIOD_TYPE);
         assertEquals(DataTypeDefinition.INT, provider.getExpressionDataType());
+        assertEquals("End Of Financial Quarter", provider.getDisplayLabel());
 
         SimpleDateFormat df = CachingDateFormat.getDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS", true);
         Period period = new Period(EndOfFinancialQuarter.PERIOD_TYPE);
@@ -835,6 +847,7 @@ public class PeriodTest extends TestCase
         assertEquals(provider.getExpressionMutiplicity(), PeriodProvider.ExpressionMutiplicity.MANDATORY);
         assertEquals(provider.getPeriodType(), Cron.PERIOD_TYPE);
         assertEquals(DataTypeDefinition.TEXT, provider.getExpressionDataType());
+        assertEquals("Cron Expression", provider.getDisplayLabel());
         
         SimpleDateFormat df = CachingDateFormat.getDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS", true);
         Period period = new Period(Cron.PERIOD_TYPE);
@@ -857,6 +870,7 @@ public class PeriodTest extends TestCase
         assertEquals(provider.getExpressionMutiplicity(), PeriodProvider.ExpressionMutiplicity.MANDATORY);
         assertEquals(provider.getPeriodType(), XMLDuration.PERIOD_TYPE);
         assertEquals(DataTypeDefinition.TEXT, provider.getExpressionDataType());
+        assertEquals("XML Duration", provider.getDisplayLabel());
         
         SimpleDateFormat df = CachingDateFormat.getDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS", true);
         Period period = new Period(XMLDuration.PERIOD_TYPE);

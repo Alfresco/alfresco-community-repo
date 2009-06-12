@@ -29,19 +29,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.alfresco.repo.dictionary.types.period.Cron;
-import org.alfresco.repo.dictionary.types.period.Days;
-import org.alfresco.repo.dictionary.types.period.EndOfFinancialMonth;
-import org.alfresco.repo.dictionary.types.period.EndOfFinancialQuarter;
-import org.alfresco.repo.dictionary.types.period.EndOfFinancialYear;
-import org.alfresco.repo.dictionary.types.period.EndOfMonth;
-import org.alfresco.repo.dictionary.types.period.EndOfQuarter;
-import org.alfresco.repo.dictionary.types.period.EndOfYear;
-import org.alfresco.repo.dictionary.types.period.Months;
-import org.alfresco.repo.dictionary.types.period.NoPeriod;
-import org.alfresco.repo.dictionary.types.period.Quarters;
-import org.alfresco.repo.dictionary.types.period.Weeks;
 import org.alfresco.repo.dictionary.types.period.XMLDuration;
-import org.alfresco.repo.dictionary.types.period.Years;
 import org.alfresco.repo.forms.DataTypeParameters;
 import org.alfresco.service.cmr.repository.PeriodProvider;
 import org.json.JSONArray;
@@ -55,7 +43,7 @@ import org.json.JSONObject;
  */
 public class PeriodDataTypeParameters implements DataTypeParameters, Serializable
 {
-    private static final long serialVersionUID = -6158584544200642857L;
+    private static final long serialVersionUID = -3654041242831123509L;
     
     protected List<PeriodProvider> providers;
     
@@ -114,7 +102,7 @@ public class PeriodDataTypeParameters implements DataTypeParameters, Serializabl
                 
                 JSONObject period = new JSONObject();
                 period.put("type", pp.getPeriodType());
-                period.put("label", getPeriodTypeLabel(pp));
+                period.put("label", pp.getDisplayLabel());
                 period.put("hasExpression", hasExpression);
                 
                 if (hasExpression)
@@ -135,74 +123,5 @@ public class PeriodDataTypeParameters implements DataTypeParameters, Serializabl
         }
         
         return periods;
-    }
-    
-    protected String getPeriodTypeLabel(PeriodProvider pp)
-    {
-        // TODO: The label for the period should be localisable
-        //       and returned via the PeriodProvider, for now
-        //       we will provide them here.
-        
-        String type = pp.getPeriodType();
-        String label = type;
-        
-        if (Cron.PERIOD_TYPE.equals(type))
-        {
-            label = "Cron Expression";
-        }
-        else if (Days.PERIOD_TYPE.equals(type))
-        {
-            label = "Days";
-        }
-        else if (EndOfFinancialMonth.PERIOD_TYPE.equals(type))
-        {
-            label = "End Of Financial Month";
-        }
-        else if (EndOfFinancialQuarter.PERIOD_TYPE.equals(type))
-        {
-            label = "End Of Financial Quarter";
-        }
-        else if (EndOfFinancialYear.PERIOD_TYPE.equals(type))
-        {
-            label = "End Of Financial Year";
-        }
-        else if (EndOfMonth.PERIOD_TYPE.equals(type))
-        {
-            label = "End Of Month";
-        }
-        else if (EndOfQuarter.PERIOD_TYPE.equals(type))
-        {
-            label = "End Of Quarter";
-        }
-        else if (EndOfYear.PERIOD_TYPE.equals(type))
-        {
-            label = "End Of Year";
-        }
-        else if (Months.PERIOD_TYPE.equals(type))
-        {
-            label = "Month";
-        }
-        else if (NoPeriod.PERIOD_TYPE.equals(type))
-        {
-            label = "None";
-        }
-        else if (Quarters.PERIOD_TYPE.equals(type))
-        {
-            label = "Quarter";
-        }
-        else if (Weeks.PERIOD_TYPE.equals(type))
-        {
-            label = "Week";
-        }
-        else if (XMLDuration.PERIOD_TYPE.equals(type))
-        {
-            label = "XML Duration";
-        }
-        else if (Years.PERIOD_TYPE.equals(type))
-        {
-            label = "Year";
-        }
-        
-        return label;
     }
 }

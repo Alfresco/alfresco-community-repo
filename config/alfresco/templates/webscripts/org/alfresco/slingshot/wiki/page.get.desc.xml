@@ -4,5 +4,5 @@
   <url>/slingshot/wiki/page/{siteId}/{pageTitle}</url>
   <format default="json">argument</format>
   <authentication>user</authentication>
-  <transaction allow="readonly">required</transaction>
+  <transaction allow="readwrite" buffersize="0">required</transaction>
 </webscript>

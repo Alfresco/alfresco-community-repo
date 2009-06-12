@@ -316,11 +316,7 @@ public class StreamContent extends AbstractWebScript
         Date modified = (Date)nodeService.getProperty(nodeRef, ContentModel.PROP_MODIFIED);
         long modifiedSince = -1;
         String modifiedSinceStr = req.getHeader("If-Modified-Since");
-        if (modifiedSinceStr == null)
-        {
-            modifiedSince = -1;
-        }
-        else
+        if (modifiedSinceStr != null)
         {
             try
             {

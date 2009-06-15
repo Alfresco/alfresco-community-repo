@@ -24,21 +24,13 @@
                     "type" : "property",
                     "dataType" : "${field.dataType}",
                     <#if field.dataTypeParameters??>"dataTypeParameters" : 
-                    ${field.dataTypeParameters.parametersAsJSON},</#if>
+                    ${field.dataTypeParameters.asJSON},</#if>
                     <#if field.constraints??>"constraints" : 
                     [{
                     <#list field.constraints as cnstrnt>
-                        "type" : "${cnstrnt.type}"<#if cnstrnt.params??>,
-                        "params" : 
-                        {
-                        <#list cnstrnt.params?keys as p>
-                            <#if cnstrnt.params[p]?is_boolean>
-                            "${p}" : ${cnstrnt.params[p]}<#if p_has_next>,</#if>
-                            <#else>
-                            "${p}" : "${cnstrnt.params[p]}"<#if p_has_next>,</#if>
-                            </#if>
-                        </#list>
-                        }
+                        "type" : "${cnstrnt.type}"<#if cnstrnt.parametersAsJSON??>,
+                        "parameters" : 
+                        ${cnstrnt.parametersAsJSON}
                         </#if>
                     </#list>
                     }],</#if>

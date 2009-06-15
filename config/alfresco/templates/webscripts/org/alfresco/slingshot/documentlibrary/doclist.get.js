@@ -1,7 +1,19 @@
 <import resource="classpath:/alfresco/templates/webscripts/org/alfresco/slingshot/documentlibrary/action-sets.lib.js">
 <import resource="classpath:/alfresco/templates/webscripts/org/alfresco/slingshot/documentlibrary/filters.lib.js">
 <import resource="classpath:/alfresco/templates/webscripts/org/alfresco/slingshot/documentlibrary/parse-args.lib.js">
-var THUMBNAIL_NAME = "doclib";
+const THUMBNAIL_NAME = "doclib",
+   PREF_FAVOURITES = "org.alfresco.share.documents.favourites";
+
+var PeopleCache = {};
+
+function getPerson(username)
+{
+   if (typeof PeopleCache[username] == "undefined")
+   {
+      PeopleCache[username] = people.getPerson(username);
+   }
+   return PeopleCache[username];
+}
 
 /**
  * Document List Component: doclist
@@ -11,8 +23,8 @@ model.doclist = getDocList(args["filter"]);
 /* Create collection of documents and folders in the given space */
 function getDocList(filter)
 {
-   var items = new Array();
-   var assets;
+   var items = new Array(),
+      assets;
    
    // Is our thumbnail type registered?
    var haveThumbnails = thumbnailService.isThumbnailNameRegistered(THUMBNAIL_NAME);
@@ -30,10 +42,37 @@ function getDocList(filter)
       filter = "node";
    }
 
+   // Get the user's favourite docs from our slightly eccentric Preferences Service
+   var prefs = preferenceService.getPreferences(person.properties.userName, PREF_FAVOURITES),
+      favourites = {};
+   try
+   {
+      /**
+       * Fasten seatbelts...
+       * An "eval" could be used here, but the Rhino debugger will complain if throws an exception, which gets old very quickly.
+       * e.g. var strFavs = eval('try{(prefs.' + PREF_FAVOURITES + ')}catch(e){}');
+       */
+      if (prefs && prefs.org && prefs.org.alfresco && prefs.org.alfresco.share && prefs.org.alfresco.share.documents)
+      {
+         var strFavs = prefs.org.alfresco.share.documents.favourites;
+         if (typeof strFavs == "string")
+         {
+            arrFavs = strFavs.split(",");
+            for (var f = 0, ff = arrFavs.length; f < ff; f++)
+            {
+               favourites[arrFavs[f]] = true;
+            }
+         }
+      }
+   }
+   catch (e)
+   {
+   }
+
    // Try to find a filter query based on the passed-in arguments
-   var allAssets, filterQuery, query;
-   var filterParams = getFilterParams(filter, parsedArgs);
-   query = filterParams.query;
+   var allAssets, filterQuery,
+      filterParams = getFilterParams(filter, parsedArgs, favourites),
+      query = filterParams.query;
 
    // Specialise by passed-in type
    var typeQuery = getTypeFilterQuery(url.templateArgs.type);
@@ -80,18 +119,20 @@ function getDocList(filter)
    var totalRecords = assets.length;
 
    // Pagination
-   var pageSize = args["size"] || assets.length;
-   var pagePos = args["pos"] || "1";
-   var startIndex = (pagePos - 1) * pageSize;
+   var pageSize = args["size"] || assets.length,
+      pagePos = args["pos"] || "1",
+      startIndex = (pagePos - 1) * pageSize;
+   
    assets = assets.slice(startIndex, pagePos * pageSize);
    
-   var itemStatus, itemOwner, actionSet, thumbnail, createdBy, modifiedBy, activeWorkflows, assetType, linkAsset, isLink;
-   var defaultLocation, location, qnamePaths, displayPaths, locationAsset;
+   var itemStatus, itemOwner, actionSet, thumbnail, createdBy, modifiedBy, activeWorkflows, assetType, linkAsset, isLink,
+      location, qnamePaths, displayPaths, locationAsset;
 
    // Location if we're in a site
    var defaultLocation =
    {
       site: parsedArgs.location.site,
+      siteTitle: parsedArgs.location.siteTitle,
       container: parsedArgs.location.container,
       path: parsedArgs.location.path,
       file: null
@@ -127,12 +168,12 @@ function getDocList(filter)
       if (asset.isLocked)
       {
          itemStatus.push("locked");
-         itemOwner = people.getPerson(asset.properties["cm:lockOwner"]);
+         itemOwner = getPerson(asset.properties["cm:lockOwner"]);
       }
       if (asset.hasAspect("cm:workingcopy"))
       {
          itemStatus.push("workingCopy");
-         itemOwner = people.getPerson(asset.properties["cm:workingCopyOwner"]);
+         itemOwner = getPerson(asset.properties["cm:workingCopyOwner"]);
       }
       // Is this user the item owner?
       if (itemOwner && (itemOwner.properties.userName == person.properties.userName))
@@ -141,8 +182,8 @@ function getDocList(filter)
       }
       
       // Get users
-      createdBy = people.getPerson(asset.properties["cm:creator"]);
-      modifiedBy = people.getPerson(asset.properties["cm:modifier"]);
+      createdBy = getPerson(asset.properties["cm:creator"]);
+      modifiedBy = getPerson(asset.properties["cm:modifier"]);
       
       // Asset type
       if (asset.isContainer)
@@ -191,13 +232,15 @@ function getDocList(filter)
                container: qnamePaths[4].substr(3),
                path: "/" + displayPaths.slice(5, displayPaths.length).join("/"),
                file: locationAsset.name
-            }
+            };
+            location.siteTitle = siteService.getSite(location.site).title;
          }
          else
          {
             location =
             {
                site: null,
+               siteTitle: null,
                container: null,
                path: null,
                file: locationAsset.name
@@ -209,6 +252,7 @@ function getDocList(filter)
          location =
          {
             site: defaultLocation.site,
+            siteTitle: defaultLocation.siteTitle,
             container: defaultLocation.container,
             path: defaultLocation.path,
             file: asset.name
@@ -254,7 +298,8 @@ function getDocList(filter)
          actionSet: actionSet,
          tags: asset.tags,
          activeWorkflows: activeWorkflows,
-         location: location
+         location: location,
+         isFavourite: (favourites[asset.nodeRef] == true)
       });
    }
 

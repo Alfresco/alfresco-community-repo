@@ -1,4 +1,4 @@
-function getFilterParams(filter, parsedArgs)
+function getFilterParams(filter, parsedArgs, favourites)
 {
    var filterParams =
    {
@@ -7,7 +7,7 @@ function getFilterParams(filter, parsedArgs)
       sortBy: "@{http://www.alfresco.org/model/content/1.0}name",
       sortByAscending: true,
       variablePath: false
-   }
+   };
 
    // Max returned results specified?
    var argMax = args["max"];
@@ -15,9 +15,15 @@ function getFilterParams(filter, parsedArgs)
    {
       filterParams.limitResults = argMax;
    }
+   
+   if (typeof favourites == "undefined")
+   {
+      favourites = [];
+   }
 
    // Create query based on passed-in arguments
-   switch (String(filter))
+   var strFilter = String(filter);
+   switch (strFilter)
    {
       case "all":
          var filterQuery = "+PATH:\"" + parsedArgs.rootNode.qnamePath + "//*\"";
@@ -41,20 +47,17 @@ function getFilterParams(filter, parsedArgs)
          filterParams.query = "+PATH:\"" + parsedArgs.rootNode.qnamePath + "//*\" +PATH:\"/cm:taggable/cm:" + search.ISO9075Encode(args["filterData"]) + "/member\"";
          break;
       
-      case "recentlyModified":
-         var usingModified = true;
-         // fall through...
       case "recentlyAdded":
-         // Which query: created, or modified?
-         var dateField = "modified";
-         if (typeof usingModified === "undefined")
-         {
-            dateField = "created";
-         }
+      case "recentlyModified":
+      case "recentlyCreatedByMe":
+      case "recentlyModifiedByMe":
+         var onlySelf = (strFilter.indexOf("ByMe")) > 0 ? true : false,
+            dateField = (strFilter.indexOf("Created") > 0) ? "created" : "modified",
+            ownerField = (dateField == "created") ? "creator" : "modifier";
          
          // Default to 7 days - can be overridden using "days" argument
-         var dayCount = 7;
-         var argDays = args["days"];
+         var dayCount = 7,
+            argDays = args["days"];
          if ((argDays != null) && !isNaN(argDays))
          {
             dayCount = argDays;
@@ -71,8 +74,18 @@ function getFilterParams(filter, parsedArgs)
          date.setDate(date.getDate() - dayCount);
          var fromQuery = date.getFullYear() + "\\-" + (date.getMonth() + 1) + "\\-" + date.getDate();
 
-         var filterQuery = "+PATH:\"" + parsedArgs.rootNode.qnamePath + "//*\"";
+         var filterQuery = "+PATH:\"" + parsedArgs.rootNode.qnamePath;
+         if (parsedArgs.nodeRef == "alfresco://sites/home")
+         {
+            // Special case for "Sites home" pseudo-nodeRef
+            filterQuery += "/*/cm:documentLibrary";
+         }
+         filterQuery += "//*\"";
          filterQuery += " +@cm\\:" + dateField + ":[" + fromQuery + "T00\\:00\\:00.000 TO " + toQuery + "T23\\:59\\:59.999]";
+         if (onlySelf)
+         {
+            filterQuery += " +@cm\\:" + ownerField + ":" + person.properties.userName;
+         }
          filterQuery += " -ASPECT:\"{http://www.alfresco.org/model/content/1.0}workingcopy\"";
          filterQuery += " -TYPE:\"{http://www.alfresco.org/model/content/1.0}thumbnail\"";
          filterQuery += " -TYPE:\"{http://www.alfresco.org/model/content/1.0}folder\"";
@@ -104,6 +117,23 @@ function getFilterParams(filter, parsedArgs)
 
          filterParams.variablePath = true;
          filterParams.query = filterQuery;
+         break;
+      
+      case "favouriteDocuments":
+         var filterQuery = "",
+            foundOne = false;
+         
+         for (favourite in favourites)
+         {
+            if (foundOne)
+            {
+               filterQuery += " OR ";
+            }
+            foundOne = true;
+            filterQuery += "ID:\"" + favourite + "\"";
+         }
+         filterParams.variablePath = true;
+         filterParams.query = filterQuery.length > 0 ? "+PATH:\"" + parsedArgs.rootNode.qnamePath + "//*\" +(" + filterQuery + ")" : "+ID:\"\"";
          break;
       
       default:

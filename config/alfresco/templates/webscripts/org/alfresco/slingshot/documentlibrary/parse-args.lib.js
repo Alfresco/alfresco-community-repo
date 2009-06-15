@@ -45,6 +45,7 @@ function getParsedArgs(containerType)
 {
    var rootNode = null,
       parentNode = null,
+      nodeRef = null,
       siteId, siteNode, containerId;
 
    if (url.templateArgs.store_type !== null)
@@ -52,8 +53,9 @@ function getParsedArgs(containerType)
       // nodeRef input
       var storeType = url.templateArgs.store_type,
          storeId = url.templateArgs.store_id,
-         id = url.templateArgs.id,
-         nodeRef = storeType + "://" + storeId + "/" + id;
+         id = url.templateArgs.id;
+
+      nodeRef = storeType + "://" + storeId + "/" + id;
       
       if (nodeRef == "alfresco://company/home")
       {
@@ -142,6 +144,7 @@ function getParsedArgs(containerType)
    var location =
    {
       site: null,
+      siteTitle: null,
       container: null,
       path: "/" + path
    };
@@ -163,6 +166,7 @@ function getParsedArgs(containerType)
       location = 
       {
          site: siteId,
+         siteTitle: siteService.getSite(siteId).title,
          siteNode: siteNode,
          container: containerId,
          containerNode: siteNode.getContainer(containerId),
@@ -175,7 +179,8 @@ function getParsedArgs(containerType)
       rootNode: rootNode,
       parentNode: parentNode,
       path: path,
-      location: location
+      location: location,
+      nodeRef: nodeRef
    };
 
    // Multiple input files in the JSON body?

@@ -67,5 +67,6 @@
 	
 	<!--  Now import the deployment targets -->
 	<import resource="classpath*:alfresco/deployment/*-target.xml" />
+	<import resource="classpath*:alfresco/extension/deployment/*-target.xml" />
     
 </beans>

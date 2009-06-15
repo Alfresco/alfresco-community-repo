@@ -507,8 +507,6 @@ var MySpaces = {
       $E("#space-name", panel).removeClass("spaceFormItemError");
 
       Alfresco.Dom.smartAlignElement(panel, panel.getParent());
-      // make into a dragable panel
-      new Drag.Move(panel);
       
       var anim = new Fx.Styles(
          panel,

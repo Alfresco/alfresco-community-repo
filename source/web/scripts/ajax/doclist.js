@@ -600,8 +600,6 @@ var MyDocs = {
       panel.setStyle("opacity", 0);
       panel.setStyle("display", "inline");
       Alfresco.Dom.smartAlignElement(panel, actionEl);
-      // make into a dragable panel
-      new Drag.Move(panel);
       
       // Generate a file upload element
       // To perform the actual upload, the element is moved to a hidden iframe

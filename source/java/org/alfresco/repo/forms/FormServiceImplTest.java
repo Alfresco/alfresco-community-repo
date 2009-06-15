@@ -324,7 +324,7 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
         assertEquals("Expecting 1 constraint for cm:name", 1, constraints.size());
         FieldConstraint constraint = constraints.get(0);
         assertEquals("Expecting name of constraint to be 'REGEX'", "REGEX", constraint.getType());
-        Map<String, String> params = constraint.getParams();
+        Map<String, Object> params = constraint.getParameters();
         assertNotNull("Expecting constraint parameters", params);
         assertEquals("Expecting 2 constraint parameters", 2, params.size());
         assertNotNull("Expecting an 'expression' constraint parameter", params.get("expression"));

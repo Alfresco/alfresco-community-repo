@@ -39,7 +39,7 @@ public interface DataTypeParameters
      * 
      * @return An Object representing the data type parameters
      */
-    public Object getParameters();
+    public Object getAsObject();
     
     /**
      * Returns the parameters represented as JSON.
@@ -52,5 +52,5 @@ public interface DataTypeParameters
      * 
      * @return JSON Object representing the parameters
      */
-    public Object getParametersAsJSON();
+    public Object getAsJSON();
 }

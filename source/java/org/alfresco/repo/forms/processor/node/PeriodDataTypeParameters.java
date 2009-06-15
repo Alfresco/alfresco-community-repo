@@ -75,10 +75,10 @@ public class PeriodDataTypeParameters implements DataTypeParameters, Serializabl
      * Retrieves a List of PeriodProvider objects representing
      * the valid period options for the property 
      * 
-     * @see org.alfresco.repo.forms.DataTypeParameters#getParameters()
+     * @see org.alfresco.repo.forms.DataTypeParameters#getAsObject()
      * @return List of PeriodProvider objects
      */
-    public Object getParameters()
+    public Object getAsObject()
     {
         return this.providers;
     }
@@ -86,11 +86,11 @@ public class PeriodDataTypeParameters implements DataTypeParameters, Serializabl
     /**
      * Returns the valid period options as a JSONArray of JSONObject's.
      * 
-     * @see org.alfresco.repo.forms.DataTypeParameters#getParametersAsJSON()
+     * @see org.alfresco.repo.forms.DataTypeParameters#getAsJSON()
      * @return A JSONArray object holding JSONObject's representing the
      *         period definitions
      */
-    public Object getParametersAsJSON()
+    public Object getAsJSON()
     {
         JSONArray periods = new JSONArray();
         

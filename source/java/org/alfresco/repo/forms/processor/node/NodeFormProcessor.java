@@ -624,26 +624,8 @@ public class NodeFormProcessor extends FilteredFormProcessor
             for (ConstraintDefinition constraintDef : constraints)
             {
                 Constraint constraint = constraintDef.getConstraint();
-                Map<String, String> fieldConstraintParams = null;
-                Map<String, Object> constraintParams = constraint.getParameters();
-                if (constraintParams != null)
-                {
-                    // TODO: Just return the param value object, don't convert to String
-                    fieldConstraintParams = new HashMap<String, String>(constraintParams.size());
-                    for (String name : constraintParams.keySet())
-                    {
-                        Object paramValue = constraintParams.get(name);
-                        
-                        if (paramValue instanceof List)
-                        {
-                            paramValue = makeListString((List)paramValue);
-                        }
-                        
-                        fieldConstraintParams.put(name, paramValue.toString());
-                    }
-                }
                 FieldConstraint fieldConstraint = fieldDef.new FieldConstraint(
-                            constraint.getType(), fieldConstraintParams);
+                            constraint.getType(), constraint.getParameters());
                 fieldConstraints.add(fieldConstraint);
             }
             

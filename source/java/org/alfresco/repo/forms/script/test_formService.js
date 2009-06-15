@@ -86,7 +86,7 @@ function testGetFormForContentNode()
     test.assertEquals(1, constraints.size());
     var constraint = constraints.get(0);
     test.assertEquals("REGEX", constraint.type);
-    var params = constraint.params;
+    var params = constraint.parameters;
     test.assertNotNull(params, "params should not be null.");
     test.assertEquals(2, params.length);
     test.assertNotNull(params["expression"], "params['expression'] should not be null.");

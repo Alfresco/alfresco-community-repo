@@ -24,8 +24,15 @@
  */
 package org.alfresco.repo.forms;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 /**
  * A property field definition.
@@ -34,6 +41,9 @@ import java.util.Map;
  */
 public class PropertyFieldDefinition extends FieldDefinition
 {
+    /** Logger */
+    private static Log logger = LogFactory.getLog(PropertyFieldDefinition.class);
+    
     protected String dataType;
     protected DataTypeParameters dataTypeParams;
     protected boolean mandatory = false;
@@ -175,7 +185,7 @@ public class PropertyFieldDefinition extends FieldDefinition
     public class FieldConstraint
     {
         protected String type;
-        protected Map<String, String> params;
+        protected Map<String, Object> params;
         
         /**
          * Constructs a FieldConstraint
@@ -183,7 +193,7 @@ public class PropertyFieldDefinition extends FieldDefinition
          * @param type      The type of the constraint
          * @param params    Map of parameters for the constraint
          */
-        public FieldConstraint(String type, Map<String, String> params)
+        public FieldConstraint(String type, Map<String, Object> params)
         {
             super();
             this.type = type;
@@ -206,9 +216,51 @@ public class PropertyFieldDefinition extends FieldDefinition
          * @return Map of parameters for the constraint or null if
          *         there are no parameters
          */
-        public Map<String, String> getParams()
+        public Map<String, Object> getParameters()
         {
             return this.params;
+        }
+        
+        /**
+         * Returns the paramters for the constraint as a JSONObject
+         * 
+         * @return JSONObject representation of the parameters
+         */
+        @SuppressWarnings("unchecked")
+        public JSONObject getParametersAsJSON()
+        {
+            JSONObject result = null;
+            
+            if (this.params != null)
+            {
+                result = new JSONObject();
+                
+                for (String name : this.params.keySet())
+                {
+                    try
+                    {
+                        Object value = this.params.get(name);
+                        if (value instanceof Collection)
+                        {
+                            // if the value is a Collection add to JSONObject as a JSONArray
+                            result.put(name, new JSONArray((Collection)value));
+                        }
+                        else
+                        {
+                            result.put(name, value);
+                        }
+                    }
+                    catch (JSONException je)
+                    {
+                        // just log a warning
+                        if (logger.isWarnEnabled())
+                            logger.warn("Failed to add constraint parameter '" + name +
+                                        "' to JSON object.", je);
+                    }
+                }
+            }
+            
+            return result;
         }
     }
 }

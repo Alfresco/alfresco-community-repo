@@ -457,6 +457,7 @@ public class WebProjectServiceImpl extends WCMUtil implements WebProjectService
                     // More than one root web projects folder exits
                     throw new AlfrescoRuntimeException("More than one root 'Web Projects' folder exists");
                 }
+                this.webProjectsRootNodeRef = resultSet.getNodeRef(0);
             }
             finally
             {
@@ -464,9 +465,7 @@ public class WebProjectServiceImpl extends WCMUtil implements WebProjectService
                 {
                     resultSet.close();
                 }
-            }
-            
-            this.webProjectsRootNodeRef = resultSet.getNodeRef(0);
+            }            
         }
         
         return this.webProjectsRootNodeRef;

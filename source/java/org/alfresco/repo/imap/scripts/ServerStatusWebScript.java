@@ -20,6 +20,8 @@ public class ServerStatusWebScript extends AbstractWebScript
         {
             res.getWriter().write("disabled");
         }
+        res.getWriter().flush();
+        res.getWriter().close();
     }
 
     public void setImapServerEnabled(boolean imapServerEnabled)

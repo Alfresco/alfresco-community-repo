@@ -1,0 +1,11 @@
+<webscript>
+   <shortname>Vti WebScript placeholder</shortname>
+   <description>
+      This script is a placeholder so the Share DocLib can query the Vti Server parameters without throwing an HTTP 404 error.
+   </description>
+   <url>/api/vti/{dummy}</url>
+   <url>/api/vti</url>
+   <format default="json">argument</format>
+   <authentication>none</authentication>
+   <transaction allow="readonly">required</transaction>
+</webscript>

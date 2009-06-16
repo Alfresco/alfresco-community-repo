@@ -32,6 +32,7 @@ class DeploymentWork
     private DeploymentEvent event;
     private AVMNodeDescriptor src;
     private String ticket;
+    private int version;
     	
     public DeploymentWork(DeploymentEvent event, String ticket) 
     {
@@ -39,12 +40,12 @@ class DeploymentWork
     	this.ticket = ticket;	
     }
     	
-    public DeploymentWork(DeploymentEvent event, String ticket,  AVMNodeDescriptor src) 
+    public DeploymentWork(DeploymentEvent event, String ticket,  AVMNodeDescriptor src, int version) 
     {
     	this.event = event;
     	this.ticket = ticket;
     	this.setSrc(src);
-    		
+    	this.version = version;
     }
     	
     public DeploymentEvent getEvent() 
@@ -63,6 +64,11 @@ class DeploymentWork
 
 	public AVMNodeDescriptor getSrc() {
 		return src;
-	}	
+	}
+	
+	public int getVersion()
+	{
+		return version;
+	}
     
 }

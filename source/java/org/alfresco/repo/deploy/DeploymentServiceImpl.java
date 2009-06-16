@@ -940,18 +940,26 @@ public class DeploymentServiceImpl implements DeploymentService
   		return stringAspects;
   	}
 	
-  	private Map<String, Serializable> getProperties(AVMNodeDescriptor src)
+  	private Map<String, Serializable> getProperties(AVMNodeDescriptor src, int version)
   	{
+  		/**
+  		 * Get the AVM properties - which do not have any of the "syntetic" Node Service Values.
+  		 */
   		Map<QName, PropertyValue> properties = fAVMService.getNodeProperties(src);
+  		NodeRef nodeRef = AVMNodeConverter.ToNodeRef(version, src.getPath());
   		
-  		NodeRef nodeRef = AVMNodeConverter.ToNodeRef(src.getVersionID(), src.getPath());
-
-  		Map<String, Serializable> stringProperties = new HashMap<String, Serializable>();
-  		for(QName key : properties.keySet())
-  		{
-  			stringProperties.put(key.toString(), fAVMNodeService.getProperty(nodeRef, key));
-  		}
-  		return stringProperties;
+  		/**
+  		 * Get the properties in Node Service format
+  		 */
+  		Map<QName, Serializable> nodeProps = fAVMNodeService.getProperties(nodeRef);
+  	  		
+  		Map<String, Serializable> retVal = new HashMap<String, Serializable>();
+  	  	for(QName key : properties.keySet())
+  	  	{
+  	  			Serializable value = nodeProps.get(key);
+  	  			retVal.put(key.toString(), value);
+  	  	}
+  	  	return retVal;
   	}
 
     /**
@@ -1320,7 +1328,7 @@ public class DeploymentServiceImpl implements DeploymentService
                     	sendQueue.add(new DeploymentWork(
                     			new DeploymentEvent(DeploymentEvent.Type.UPDATED,
                                 new Pair<Integer, String>(version, src.getPath()),                              
-                                extendedPath), ticket, src));
+                                extendedPath), ticket, src, version));
                     	}
                     src = null;
                     dst = null;
@@ -1332,7 +1340,7 @@ public class DeploymentServiceImpl implements DeploymentService
                     String extendedPath = extendPath(dstPath, dst.getName());
                     
                     Set<String>stringAspects = getAspects(fAVMService, src);       	        	
-                	Map<String, Serializable> stringProperties = getProperties(src);
+                	Map<String, Serializable> stringProperties = getProperties(src, version);
                 	
                 	/**
                 	 * Update the directory before any children
@@ -1401,7 +1409,7 @@ public class DeploymentServiceImpl implements DeploymentService
     	sendQueue.add(new DeploymentWork(
     			new DeploymentEvent(DeploymentEvent.Type.CREATED,
                 new Pair<Integer, String>(version, src.getPath()),                              
-                dstPath), ticket, src));
+                dstPath), ticket, src, version));
     	
         if (src.isFile())
         {
@@ -1413,7 +1421,7 @@ public class DeploymentServiceImpl implements DeploymentService
         // Need to create directories in controlling thread since it needs to be created  
         // BEFORE any children are written
     	Set<String>stringAspects = getAspects(fAVMService, src);       	        	
-    	Map<String, Serializable> stringProperties = getProperties(src);
+    	Map<String, Serializable> stringProperties = getProperties(src, version);
     	
     	service.createDirectory(ticket, dstPath, src.getGuid(), stringAspects, stringProperties);
 
@@ -1738,7 +1746,7 @@ public class DeploymentServiceImpl implements DeploymentService
 							AVMNodeDescriptor src = work.getSrc();
 							if(src.isFile())
 							{
-								copyFileToFSR(src, event.getDestination(), ticket);
+								copyFileToFSR(src, work.getVersion(), event.getDestination(), ticket);
 							}
 							else
 							{
@@ -1748,7 +1756,7 @@ public class DeploymentServiceImpl implements DeploymentService
 						}
 						else if (event.getType().equals(DeploymentEvent.Type.UPDATED))
 						{
-							copyFileToFSR(work.getSrc(), event.getDestination(), ticket);
+							copyFileToFSR(work.getSrc(), work.getVersion(), event.getDestination(), ticket);
 						}
 						// success, now put the event onto the event queue
 						eventQueue.add(event);
@@ -1776,6 +1784,7 @@ public class DeploymentServiceImpl implements DeploymentService
 	     */
 	    private void copyFileToFSR(
 	            final AVMNodeDescriptor src, 
+	            final int version,
 	            final String dstPath,
 	            final String ticket)
 	    {
@@ -1794,7 +1803,7 @@ public class DeploymentServiceImpl implements DeploymentService
         	        	String mimeType = data.getMimetype();
   
         	        	Set<String>stringAspects = getAspects(avmService, src);       	        	
-        	        	Map<String, Serializable> stringProperties = getProperties(src);
+        	        	Map<String, Serializable> stringProperties = getProperties(src, version);
         	        	OutputStream out = service.send(ticket, dstPath, src.getGuid(), encoding, mimeType, stringAspects, stringProperties);
       
                         try

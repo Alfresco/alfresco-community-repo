@@ -4,7 +4,8 @@
 const THUMBNAIL_NAME = "doclib",
    PREF_FAVOURITES = "org.alfresco.share.documents.favourites";
 
-var PeopleCache = {};
+var PeopleCache = {},
+   SitesCache = {};
 
 function getPerson(username)
 {
@@ -13,6 +14,15 @@ function getPerson(username)
       PeopleCache[username] = people.getPerson(username);
    }
    return PeopleCache[username];
+}
+
+function getSite(siteId)
+{
+   if (typeof SiteCache[siteId] == "undefined")
+   {
+      SiteCache[siteId] = siteService.getSite(siteId);
+   }
+   return SiteCache[siteId];
 }
 
 /**
@@ -233,7 +243,7 @@ function getDocList(filter)
                path: "/" + displayPaths.slice(5, displayPaths.length).join("/"),
                file: locationAsset.name
             };
-            location.siteTitle = siteService.getSite(location.site).title;
+            location.siteTitle = getSite(location.site).title;
          }
          else
          {

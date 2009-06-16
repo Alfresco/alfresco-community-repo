@@ -276,7 +276,7 @@ public class PersonServiceTest extends BaseWebScriptTest
         
         // Check for duplicate names
         createPerson(userName, "myTitle", "myFirstName", "mylastName", "myOrganisation",
-                "myJobTitle", "myEmail", "myBio", "images/avatar.jpg", 500);
+                "myJobTitle", "myEmail", "myBio", "images/avatar.jpg", 409);
     }
     
     public void testCreatePersonMissingUserName() throws Exception

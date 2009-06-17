@@ -5,7 +5,7 @@ const THUMBNAIL_NAME = "doclib",
    PREF_FAVOURITES = "org.alfresco.share.documents.favourites";
 
 var PeopleCache = {},
-   SitesCache = {};
+   SiteCache = {};
 
 function getPerson(username)
 {

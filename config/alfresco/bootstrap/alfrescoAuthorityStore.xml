@@ -58,6 +58,72 @@
                 <view:permission>Read</view:permission>
             </view:ace>
         </view:acl>
+		 <view:associations>
+            <sys:children>
+                <cm:zone view:childName="cm:AUTH.ALF">
+                    <view:aspects>
+                        <sys:referenceable />
+                    </view:aspects>
+                    <view:properties>
+                        <sys:node-uuid>AUTH.ALF</sys:node-uuid>
+                        <cm:name>AUTH.ALF</cm:name>
+                    </view:properties>
+                    <view:associations>
+                        <cm:inZone>
+                            <view:reference
+                                view:pathref="${system.people_container.childname}/cm:${alfresco_user_store.adminusername}"
+                                view:childName="cm:${alfresco_user_store.adminusername}" />
+                        </cm:inZone>
+						<cm:inZone>
+                            <view:reference
+                                view:pathref="${system.people_container.childname}/cm:${alfresco_user_store.guestusername}"
+                                view:childName="cm:${alfresco_user_store.guestusername}" />
+                        </cm:inZone>
+						<cm:inZone>
+                            <view:reference
+                                view:pathref="${system.authorities_container.childname}/cm:GROUP_ALFRESCO_ADMINISTRATORS"
+                                view:childName="cm:GROUP_ALFRESCO_ADMINISTRATORS" />
+                        </cm:inZone>
+						<cm:inZone>
+                            <view:reference
+                                view:pathref="${system.authorities_container.childname}/cm:GROUP_EMAIL_CONTRIBUTORS"
+                                view:childName="cm:GROUP_EMAIL_CONTRIBUTORS" />
+                        </cm:inZone>
+                    </view:associations>
+                </cm:zone>
+                <cm:zone view:childName="cm:APP.DEFAULT">
+                    <view:aspects>
+                        <sys:referenceable />
+                    </view:aspects>
+                    <view:properties>
+                        <sys:node-uuid>APP.DEFAULT</sys:node-uuid>
+                        <cm:name>APP.DEFAULT</cm:name>
+                    </view:properties>
+                    <view:associations>
+                        <cm:inZone>
+                            <view:reference
+                                view:pathref="${system.people_container.childname}/cm:${alfresco_user_store.adminusername}"
+                                view:childName="cm:${alfresco_user_store.adminusername}" />
+                        </cm:inZone>
+						<cm:inZone>
+                            <view:reference
+                                view:pathref="${system.people_container.childname}/cm:${alfresco_user_store.guestusername}"
+                                view:childName="cm:${alfresco_user_store.guestusername}" />
+                        </cm:inZone>
+						<cm:inZone>
+                            <view:reference
+                                view:pathref="${system.authorities_container.childname}/cm:GROUP_ALFRESCO_ADMINISTRATORS"
+                                view:childName="cm:GROUP_ALFRESCO_ADMINISTRATORS" />
+                        </cm:inZone>
+						<cm:inZone>
+                            <view:reference
+                                view:pathref="${system.authorities_container.childname}/cm:GROUP_EMAIL_CONTRIBUTORS"
+                                view:childName="cm:GROUP_EMAIL_CONTRIBUTORS" />
+                        </cm:inZone>
+                    </view:associations>
+                </cm:zone>
+            </sys:children>
+        </view:associations>
     </sys:container>
            
 </view:view>

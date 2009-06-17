@@ -26,6 +26,7 @@ package org.alfresco.repo.security.authority;
 
 import java.io.Serializable;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -159,6 +160,93 @@ public class AuthorityServiceTest extends TestCase
         super.tearDown();
     }
 
+    
+    public void testZones()
+    {   
+        assertNull(pubAuthorityService.getAuthorityZones("GROUP_DEFAULT"));
+        assertNull(pubAuthorityService.getAuthorityZones("GROUP_NULL"));
+        assertNull(pubAuthorityService.getAuthorityZones("GROUP_EMPTY"));
+        assertNull(pubAuthorityService.getAuthorityZones("GROUP_1"));
+        assertNull(pubAuthorityService.getAuthorityZones("GROUP_2"));
+        assertNull(pubAuthorityService.getAuthorityZones("GROUP_3"));
+        
+        pubAuthorityService.createAuthority(AuthorityType.GROUP, "DEFAULT");
+        Set<String> zones = pubAuthorityService.getAuthorityZones("GROUP_DEFAULT");
+        assertEquals(2, zones.size());
+        pubAuthorityService.removeAuthorityFromZones("GROUP_DEFAULT", zones);
+        assertEquals(0, pubAuthorityService.getAuthorityZones("GROUP_DEFAULT").size());
+        pubAuthorityService.addAuthorityToZones("GROUP_DEFAULT", zones);
+        assertEquals(2, pubAuthorityService.getAuthorityZones("GROUP_DEFAULT").size());
+        
+        HashSet<String> newZones = null;
+        pubAuthorityService.createAuthority(AuthorityType.GROUP, "NULL", "NULL", newZones);
+        assertEquals(0, pubAuthorityService.getAuthorityZones("GROUP_NULL").size());
+        
+        newZones = new HashSet<String>();
+        pubAuthorityService.createAuthority(AuthorityType.GROUP, "EMPTY", "EMPTY", newZones);
+        assertEquals(0, pubAuthorityService.getAuthorityZones("GROUP_EMPTY").size());
+        
+        newZones.add("One");
+        pubAuthorityService.createAuthority(AuthorityType.GROUP, "1", "1", newZones);
+        assertEquals(1, pubAuthorityService.getAuthorityZones("GROUP_1").size());
+        
+        newZones.add("Two");
+        pubAuthorityService.createAuthority(AuthorityType.GROUP, "2", "2", newZones);
+        assertEquals(2, pubAuthorityService.getAuthorityZones("GROUP_2").size());
+        
+        newZones.add("Three");
+        pubAuthorityService.createAuthority(AuthorityType.GROUP, "3", "3", newZones);
+        assertEquals(3, pubAuthorityService.getAuthorityZones("GROUP_3").size());
+        
+        HashSet<String> toRemove = null;
+        pubAuthorityService.removeAuthorityFromZones("GROUP_3", toRemove);
+        assertEquals(3, pubAuthorityService.getAuthorityZones("GROUP_3").size());
+        
+        toRemove = new HashSet<String>();
+        pubAuthorityService.removeAuthorityFromZones("GROUP_3", toRemove);
+        assertEquals(3, pubAuthorityService.getAuthorityZones("GROUP_3").size());
+        
+        toRemove.add("Three");
+        pubAuthorityService.removeAuthorityFromZones("GROUP_3", toRemove);
+        assertEquals(2, pubAuthorityService.getAuthorityZones("GROUP_3").size());
+        
+        toRemove.add("Two");
+        pubAuthorityService.removeAuthorityFromZones("GROUP_3", toRemove);
+        assertEquals(1, pubAuthorityService.getAuthorityZones("GROUP_3").size());
+        
+        toRemove.add("One");
+        pubAuthorityService.removeAuthorityFromZones("GROUP_3", toRemove);
+        assertEquals(0, pubAuthorityService.getAuthorityZones("GROUP_3").size());
+        
+        pubAuthorityService.addAuthorityToZones("GROUP_3", newZones);
+        assertEquals(3, pubAuthorityService.getAuthorityZones("GROUP_3").size());
+        assertEquals(3, pubAuthorityService.getAllAuthoritiesInZone("One", null).size());
+        assertEquals(2, pubAuthorityService.getAllAuthoritiesInZone("Two", null).size());
+        assertEquals(1, pubAuthorityService.getAllAuthoritiesInZone("Three", null).size());
+        assertEquals(3, pubAuthorityService.getAllAuthoritiesInZone("One", AuthorityType.GROUP).size());
+        assertEquals(2, pubAuthorityService.getAllAuthoritiesInZone("Two", AuthorityType.GROUP).size());
+        assertEquals(1, pubAuthorityService.getAllAuthoritiesInZone("Three", AuthorityType.GROUP).size());
+        
+        assertEquals(3, pubAuthorityService.getAllRootAuthoritiesInZone("One", null).size());
+        assertEquals(2, pubAuthorityService.getAllRootAuthoritiesInZone("Two", null).size());
+        assertEquals(1, pubAuthorityService.getAllRootAuthoritiesInZone("Three", null).size());
+        assertEquals(3, pubAuthorityService.getAllRootAuthoritiesInZone("One", AuthorityType.GROUP).size());
+        assertEquals(2, pubAuthorityService.getAllRootAuthoritiesInZone("Two", AuthorityType.GROUP).size());
+        assertEquals(1, pubAuthorityService.getAllRootAuthoritiesInZone("Three", AuthorityType.GROUP).size());
+        
+        // I am not convinced of the definition of root within zone ...
+        
+        pubAuthorityService.addAuthority("GROUP_1", "GROUP_2");
+        pubAuthorityService.addAuthority("GROUP_1", "GROUP_3");
+        
+        assertEquals(1, pubAuthorityService.getAllRootAuthoritiesInZone("One", null).size());
+        assertEquals(0, pubAuthorityService.getAllRootAuthoritiesInZone("Two", null).size());
+        assertEquals(0, pubAuthorityService.getAllRootAuthoritiesInZone("Three", null).size());
+        assertEquals(1, pubAuthorityService.getAllRootAuthoritiesInZone("One", AuthorityType.GROUP).size());
+        assertEquals(0, pubAuthorityService.getAllRootAuthoritiesInZone("Two", AuthorityType.GROUP).size());
+        assertEquals(0, pubAuthorityService.getAllRootAuthoritiesInZone("Three", AuthorityType.GROUP).size());
+    }
+    
     public void testGroupWildcards()
     {
         long before, after;
@@ -937,7 +1025,7 @@ public class AuthorityServiceTest extends TestCase
         pubAuthorityService.setAuthorityDisplayName(authOne, "Selfish Crocodile");
         assertEquals(pubAuthorityService.getAuthorityDisplayName(authOne), "Selfish Crocodile");
 
-        String authTwo = pubAuthorityService.createAuthority(AuthorityType.GROUP, "Two", "Lamp posts", null);
+        String authTwo = pubAuthorityService.createAuthority(AuthorityType.GROUP, "Two", "Lamp posts", authorityService.getDefaultZones());
         assertEquals(pubAuthorityService.getAuthorityDisplayName(authTwo), "Lamp posts");
         pubAuthorityService.setAuthorityDisplayName(authTwo, "Happy Hippos");
         assertEquals(pubAuthorityService.getAuthorityDisplayName(authTwo), "Happy Hippos");

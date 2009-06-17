@@ -382,7 +382,7 @@
     <!-- dictionary models -->
     <cache 
         name="org.alfresco.cache.compiledModelsCache" 
-        maxElementsInMemory="100"
+        maxElementsInMemory="10000"
         eternal="true"
         overflowToDisk="false"
         />
@@ -390,7 +390,7 @@
 	<!-- dictionary namespaces -->
     <cache 
         name="org.alfresco.cache.prefixesCache" 
-        maxElementsInMemory="100"
+        maxElementsInMemory="10000"
         eternal="true"
         overflowToDisk="false"
         />

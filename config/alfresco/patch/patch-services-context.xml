@@ -1807,5 +1807,30 @@
             </list>
         </property>
     </bean>
+	
+	<bean id="patch.authorityDefaultZonesPatch" class="org.alfresco.repo.admin.patch.impl.AuthorityDefaultZonesPatch" parent="basePatch" >
+        <property name="id"><value>patch.authorityDefaultZonesPatch</value></property>
+        <property name="description"><value>patch.authorityDefaultZonesPatch.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>2013</value></property>
+        <property name="targetSchema"><value>2014</value></property>
+        <property name="authorityService">
+            <ref bean="authorityService" />
+        </property>
+		<property name="avmService">
+            <ref bean="avmService" />
+        </property>
+		<property name="siteService">
+            <ref bean="siteService" />
+        </property>
+		<property name="hibernateSessionHelper">
+            <ref bean="hibernateSessionHelper"/>
+        </property>
+        <property name="dependsOn">
+            <list>
+                <ref bean="patch.authorityMigration" />
+            </list>
+        </property>
+    </bean>
     
 </beans>

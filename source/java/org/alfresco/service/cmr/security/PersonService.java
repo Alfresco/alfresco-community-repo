@@ -146,13 +146,12 @@ public interface PersonService
      * 
      * @param properties
      *            the properties
-     * @param zone
-     *            an identifier for the external user registry owning the person information, or <code>null</code> if
-     *            not applicable.
+     * @param zones
+     *            a set if zones including the identifier for the external user registry owning the person information, or <code>null</code> or an empty set
      * @return the node ref
      */
-    @Auditable(parameters = {"properties", "zone"})
-    public NodeRef createPerson(Map<QName, Serializable> properties, String zone);
+    @Auditable(parameters = {"properties", "zones"})
+    public NodeRef createPerson(Map<QName, Serializable> properties, Set<String> zones);
 
     /**
      * Delete the person identified by the given user name.

@@ -815,11 +815,11 @@ public class IndexInfo implements IndexMonitor
                     {
                         indexEntries.put(id, new IndexEntry(IndexType.DELTA, id, "", TransactionStatus.ACTIVE, "", 0, 0, false));
                     }
-                    // Downgrade lock
-                    getReadLock();
+                   
                 }
                 finally
-                {
+                { // Downgrade lock
+                    getReadLock();
                     releaseWriteLock();
                 }
             }
@@ -1075,11 +1075,11 @@ public class IndexInfo implements IndexMonitor
                 getWriteLock();
                 try
                 {
-                    mainIndexReader = null;
-                    getReadLock();
+                    mainIndexReader = null;    
                 }
                 finally
                 {
+                    getReadLock();
                     releaseWriteLock();
                 }
             }
@@ -1110,10 +1110,11 @@ public class IndexInfo implements IndexMonitor
                         mainIndexReader = createMainIndexReader();
 
                     }
-                    getReadLock();
+                    
                 }
                 finally
                 {
+                    getReadLock();
                     releaseWriteLock();
                 }
             }
@@ -1162,10 +1163,10 @@ public class IndexInfo implements IndexMonitor
                 try
                 {
                     mainIndexReader = null;
-                    getReadLock();
                 }
                 finally
                 {
+                    getReadLock();
                     releaseWriteLock();
                 }
             }
@@ -1195,10 +1196,10 @@ public class IndexInfo implements IndexMonitor
                         mainIndexReader = createMainIndexReader();
 
                     }
-                    getReadLock();
                 }
                 finally
                 {
+                    getReadLock();
                     releaseWriteLock();
                 }
             }
@@ -1294,10 +1295,10 @@ public class IndexInfo implements IndexMonitor
                     }
                     dumpInfo();
                 }
-                getReadLock();
             }
             finally
             {
+                getReadLock();
                 releaseWriteLock();
             }
         }
@@ -3073,10 +3074,10 @@ public class IndexInfo implements IndexMonitor
                                 return true;
                             }
                         });
-                        getReadLock();
                     }
                     finally
                     {
+                        getReadLock();
                         releaseWriteLock();
                     }
                 }
@@ -3342,10 +3343,10 @@ public class IndexInfo implements IndexMonitor
                     }
 
                 });
-                getReadLock();
             }
             finally
             {
+                getReadLock();
                 releaseWriteLock();
             }
 

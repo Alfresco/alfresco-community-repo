@@ -297,7 +297,7 @@ public class ScriptGroup implements Authority, Serializable
 	 */
 	public ScriptGroup createGroup(String shortName, String displayName)
 	{
-		String authorityName = authorityService.createAuthority(AuthorityType.GROUP, shortName, displayName, null);
+		String authorityName = authorityService.createAuthority(AuthorityType.GROUP, shortName, displayName, authorityService.getDefaultZones());
 		authorityService.addAuthority(fullName, authorityName);
 		ScriptGroup childGroup = new ScriptGroup(authorityName, authorityService);
 		clearCaches();

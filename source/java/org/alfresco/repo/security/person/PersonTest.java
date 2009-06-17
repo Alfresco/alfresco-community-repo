@@ -26,7 +26,9 @@ package org.alfresco.repo.security.person;
 
 import java.io.Serializable;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -94,6 +96,67 @@ public class PersonTest extends BaseSpringTest
         super.onTearDownInTransaction();
     }
 
+    public void testZones()
+    {
+        assertNull(authorityService.getAuthorityZones("derek"));
+        assertNull(authorityService.getAuthorityZones("null"));
+        
+        personService.createPerson(createDefaultProperties("derek", "Derek", "Hulley", "dh@dh", "alfresco", rootNodeRef));
+        Set<String> zones = authorityService.getAuthorityZones("derek");
+        assertEquals(2, zones.size());
+        authorityService.removeAuthorityFromZones("derek", zones);
+        assertEquals(0, authorityService.getAuthorityZones("derek").size());
+        authorityService.addAuthorityToZones("derek", zones);
+        assertEquals(2, authorityService.getAuthorityZones("derek").size());
+        
+        HashSet<String> newZones = null;
+        personService.createPerson(createDefaultProperties("null", "null", "null", "null", "null", rootNodeRef), newZones);
+        assertEquals(0, authorityService.getAuthorityZones("null").size());
+        
+        newZones = new HashSet<String>();
+        personService.createPerson(createDefaultProperties("empty", "empty", "empty", "empty", "empty", rootNodeRef), newZones);
+        assertEquals(0, authorityService.getAuthorityZones("empty").size());
+        
+        newZones.add("One");
+        personService.createPerson(createDefaultProperties("1", "1", "1", "1", "1", rootNodeRef), newZones);
+        assertEquals(1, authorityService.getAuthorityZones("1").size());
+        
+        newZones.add("Two");
+        personService.createPerson(createDefaultProperties("2", "2", "2", "2", "2", rootNodeRef), newZones);
+        assertEquals(2, authorityService.getAuthorityZones("2").size());
+        
+        newZones.add("Three");
+        personService.createPerson(createDefaultProperties("3", "3", "3", "3", "3", rootNodeRef), newZones);
+        assertEquals(3, authorityService.getAuthorityZones("3").size());
+        
+        HashSet<String> toRemove = null;
+        authorityService.removeAuthorityFromZones("3", toRemove);
+        assertEquals(3, authorityService.getAuthorityZones("3").size());
+        
+        toRemove = new HashSet<String>();
+        authorityService.removeAuthorityFromZones("3", toRemove);
+        assertEquals(3, authorityService.getAuthorityZones("3").size());
+        
+        toRemove.add("Three");
+        authorityService.removeAuthorityFromZones("3", toRemove);
+        assertEquals(2, authorityService.getAuthorityZones("3").size());
+        
+        toRemove.add("Two");
+        authorityService.removeAuthorityFromZones("3", toRemove);
+        assertEquals(1, authorityService.getAuthorityZones("3").size());
+        
+        toRemove.add("One");
+        authorityService.removeAuthorityFromZones("3", toRemove);
+        assertEquals(0, authorityService.getAuthorityZones("3").size());
+        
+        authorityService.addAuthorityToZones("3", newZones);
+        assertEquals(3, authorityService.getAuthorityZones("3").size());
+        assertEquals(3, authorityService.getAllAuthoritiesInZone("One", null).size());
+        assertEquals(2, authorityService.getAllAuthoritiesInZone("Two", null).size());
+        assertEquals(1, authorityService.getAllAuthoritiesInZone("Three", null).size());
+        
+    }
+    
     public void xtestPerformance()
     {
         personService.setCreateMissingPeople(false);
@@ -481,6 +544,8 @@ public class PersonTest extends BaseSpringTest
         }
         // It should work in a write transaction, though
         transactionService.getRetryingTransactionHelper().doInTransaction(getMissingPersonWork, false, true);
+        
+        transactionService.getRetryingTransactionHelper().doInTransaction(deletePersonWork, false, true);
     }
 
     public void testSplitPersonCleanup() throws Exception

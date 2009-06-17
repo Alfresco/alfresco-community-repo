@@ -27,9 +27,9 @@ package org.alfresco.service.cmr.security;
 import java.util.Set;
 
 import org.alfresco.service.Auditable;
+import org.alfresco.service.NotAuditable;
 import org.alfresco.service.PublicService;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.namespace.QName;
 
 /**
  * The service that encapsulates authorities granted to users.
@@ -47,13 +47,32 @@ import org.alfresco.service.namespace.QName;
  */
 @PublicService
 public interface AuthorityService
-{
+{   
+    /**
+     * The default application zone.
+     */
+    public static String ZONE_APP_DEFAULT = "APP.DEFAULT";
     
     /**
-     * The default zone that owns all authorities for which a zone is not explicitly specified in the authorityZone
-     * property
+     * The WCM application zone.
      */
-    public static final String DEFAULT_ZONE = "";
+    public static String ZONE_APP_WCM = "APP.WCM";
+    
+    /**
+     * The SHARE application zone.
+     */
+    public static String ZONE_APP_SHARE = "APP.SHARE";
+    
+    /**
+     * Default authentication 
+     */
+    public static String ZONE_AUTH_ALFRESCO = "AUTH.ALF";
+    
+    /**
+     * Prefix for external auth ids
+     */
+    public static String ZONE_AUTH_EXT_PREFIX = "AUTH.EXT.";
+   
     
     /**
      * Check of the current user has admin authority.
@@ -160,8 +179,8 @@ public interface AuthorityService
      * @return the full name of the authority (this will be the prefix, if any associated with the type appended with
      *         the short name)
      */
-    @Auditable(parameters = {"type", "shortName", "authorityDisplayName", "authorityZone"})
-    public String createAuthority(AuthorityType type, String shortName, String authorityDisplayName, String authorityZone);
+    @Auditable(parameters = {"type", "shortName", "authorityDisplayName", "authorityZones"})
+    public String createAuthority(AuthorityType type, String shortName, String authorityDisplayName, Set<String> authorityZones);
 
     /**
      * Set an authority to include another authority. For example, adding a
@@ -312,7 +331,7 @@ public interface AuthorityService
      *         authority exists but has no zone, or <code>null</code> if the authority does not exist.
      */
     @Auditable(parameters = {"name"})
-    public String getAuthorityZone(String name);
+    public Set<String> getAuthorityZones(String name);
     
     /**
      * Gets the names of all authorities in a zone, optionally filtered by type.
@@ -325,4 +344,39 @@ public interface AuthorityService
      */
     @Auditable(parameters = {"zoneName", "type"})
     public Set<String> getAllAuthoritiesInZone(String zoneName, AuthorityType type);
+    
+    /**
+     * Gets the names of all authorities in a zone, optionally filtered by type.
+     * 
+     * @param zoneName
+     *            the zone name
+     * @param type
+     *            the authority type to filter by or <code>null</code> for all authority types
+     * @return the names of all authorities in a zone, optionally filtered by type
+     */
+    @Auditable(parameters = {"zoneName", "type"})
+    public Set<String> getAllRootAuthoritiesInZone(String zoneName, AuthorityType type);
+    
+    /**
+     * Add a zone to an authority.
+     * @param authorityName
+     * @param zone
+     */
+    @Auditable(parameters = {"authorityName", "zones"})
+    public void addAuthorityToZones(String authorityName, Set<String> zones);
+    
+    /**
+     * Remove a zone from an authority
+     * @param authorityName
+     * @param zone
+     */
+    @Auditable(parameters = {"authorityName", "zones"})
+    public void removeAuthorityFromZones(String authorityName, Set<String> zones);
+    
+    /**
+     * Get the name of the default zone.
+     * @return the default zone
+     */
+    @NotAuditable
+    public Set<String> getDefaultZones();
 }

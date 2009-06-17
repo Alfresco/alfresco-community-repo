@@ -26,6 +26,7 @@ package org.alfresco.repo.site;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -103,6 +104,8 @@ public class SiteServiceImpl implements SiteService, SiteModel
     private static final int GROUP_PREFIX_LENGTH = PermissionService.GROUP_PREFIX.length();
     private static final int GROUP_SITE_PREFIX_LENGTH = GROUP_SITE_PREFIX.length();
     
+    private static final Set<String> ZONES;
+    
     /** Site home ref cache (Tennant aware) */
     private Map<String, NodeRef> siteHomeRefs = new ConcurrentHashMap<String, NodeRef>(4);
     
@@ -139,6 +142,13 @@ public class SiteServiceImpl implements SiteService, SiteModel
     private RetryingTransactionHelper retryingTransactionHelper;
     private Comparator<String> roleComparator ;
 
+    static
+    {
+        HashSet<String> zones = new HashSet<String>(2, 1.0f);
+        zones.add(AuthorityService.ZONE_APP_SHARE);
+        zones.add(AuthorityService.ZONE_AUTH_ALFRESCO);
+        ZONES = Collections.unmodifiableSet(zones);
+    }
 
     /**
      * Set the path to the location of the sites root folder.  For example:
@@ -361,13 +371,13 @@ public class SiteServiceImpl implements SiteService, SiteModel
             {
                 // Create the site's groups
                 String siteGroup = authorityService
-                        .createAuthority(AuthorityType.GROUP, getSiteGroup(shortName, false));
+                        .createAuthority(AuthorityType.GROUP, getSiteGroup(shortName, false), getSiteGroup(shortName, false), ZONES);
                 Set<String> permissions = permissionService.getSettablePermissions(SiteModel.TYPE_SITE);
                 for (String permission : permissions)
                 {
                     // Create a group for the permission
                     String permissionGroup = authorityService.createAuthority(AuthorityType.GROUP, getSiteRoleGroup(
-                            shortName, permission, false));
+                            shortName, permission, false), getSiteRoleGroup(shortName, permission, false), ZONES);
                     authorityService.addAuthority(siteGroup, permissionGroup);
 
                     // Assign the group the relevant permission on the site

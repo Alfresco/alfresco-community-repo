@@ -173,12 +173,11 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
         PropertyCheck.mandatory(this, "personCache", personCache);
         PropertyCheck.mandatory(this, "personDao", personDao);
 
-     
-        this.policyComponent.bindClassBehaviour(QName.createQName(NamespaceService.ALFRESCO_URI, "onCreateNode"), ContentModel.TYPE_PERSON, new JavaBehaviour(this, "onCreateNode"));
+        this.policyComponent
+                .bindClassBehaviour(QName.createQName(NamespaceService.ALFRESCO_URI, "onCreateNode"), ContentModel.TYPE_PERSON, new JavaBehaviour(this, "onCreateNode"));
         this.policyComponent.bindClassBehaviour(QName.createQName(NamespaceService.ALFRESCO_URI, "beforeDeleteNode"), ContentModel.TYPE_PERSON, new JavaBehaviour(this,
                 "beforeDeleteNode"));
-        
-        
+
     }
 
     public UserNameMatcher getUserNameMatcher()
@@ -257,7 +256,7 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
         if (tenantService.isEnabled() && (AuthenticationUtil.SYSTEM_USER_NAME.equals(AuthenticationUtil.getRunAsUser())) && tenantService.isTenantUser(userName))
         {
             final String tenantDomain = tenantService.getUserDomain(userName);
-            
+
             return AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<NodeRef>()
             {
                 public NodeRef doWork() throws Exception
@@ -271,7 +270,7 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
             return getPersonImpl(userName);
         }
     }
-    
+
     private NodeRef getPersonImpl(String userName)
     {
         NodeRef personNode = getPersonOrNull(userName);
@@ -583,10 +582,10 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
 
     public NodeRef createPerson(Map<QName, Serializable> properties)
     {
-        return createPerson(properties, null);
+        return createPerson(properties, authorityService.getDefaultZones());
     }
 
-    public NodeRef createPerson(Map<QName, Serializable> properties, String zone)
+    public NodeRef createPerson(Map<QName, Serializable> properties, Set<String> zones)
     {
         String userName = DefaultTypeConverter.INSTANCE.convert(String.class, properties.get(ContentModel.PROP_USERNAME));
         AuthorityType authorityType = AuthorityType.getAuthorityType(userName);
@@ -594,24 +593,24 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
         {
             throw new AlfrescoRuntimeException("Attempt to create person for an authority which is not a user");
         }
-        
+
         tenantService.checkDomainUser(userName);
 
         properties.put(ContentModel.PROP_USERNAME, userName);
         properties.put(ContentModel.PROP_SIZE_CURRENT, 0L);
 
-        NodeRef personRef = nodeService.createNode(
-                getPeopleContainer(),
-                ContentModel.ASSOC_CHILDREN,
-                QName.createQName("cm", userName.toLowerCase(), namespacePrefixResolver),       // Lowercase: ETHREEOH-1431
-                ContentModel.TYPE_PERSON,
-                properties).getChildRef();
-        
-        if (zone != null)
+        NodeRef personRef = nodeService.createNode(getPeopleContainer(), ContentModel.ASSOC_CHILDREN, QName.createQName("cm", userName.toLowerCase(), namespacePrefixResolver), // Lowercase:
+                                                                                                                                                                                // ETHREEOH-1431
+                ContentModel.TYPE_PERSON, properties).getChildRef();
+
+        if (zones != null)
         {
-            // Add the person to an authentication zone (corresponding to an external user registry)
-            // Let's preserve case on this child association
-            nodeService.addChild(authorityService.getOrCreateZone(zone), personRef, ContentModel.ASSOC_IN_ZONE, QName.createQName("cm", userName, namespacePrefixResolver));
+            for (String zone : zones)
+            {
+                // Add the person to an authentication zone (corresponding to an external user registry)
+                // Let's preserve case on this child association
+                nodeService.addChild(authorityService.getOrCreateZone(zone), personRef, ContentModel.ASSOC_IN_ZONE, QName.createQName("cm", userName, namespacePrefixResolver));
+            }
         }
         return personRef;
     }

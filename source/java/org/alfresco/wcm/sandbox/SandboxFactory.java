@@ -25,6 +25,7 @@
 package org.alfresco.wcm.sandbox;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -64,6 +65,8 @@ import org.apache.commons.logging.LogFactory;
  */
 public final class SandboxFactory extends WCMUtil
 {
+   private static final Set<String> ZONES; 
+    
    public static final String[] PERMISSIONS = new String[] {
         PermissionService.WCM_CONTENT_MANAGER, 
         PermissionService.WCM_CONTENT_PUBLISHER,
@@ -79,6 +82,14 @@ public final class SandboxFactory extends WCMUtil
    private AVMLockingService avmLockingService;
    private VirtServerRegistry virtServerRegistry;
    private AuthorityService authorityService;
+   
+   static
+   {
+       HashSet<String> zones = new HashSet<String>(2, 1.0f);
+       zones.add(AuthorityService.ZONE_APP_WCM);
+       zones.add(AuthorityService.ZONE_AUTH_ALFRESCO);
+       ZONES = Collections.unmodifiableSet(zones);
+   }
    
    public void setNodeService(NodeService nodeService)
    {
@@ -365,7 +376,7 @@ public final class SandboxFactory extends WCMUtil
                    String group = authorityService.getName(AuthorityType.GROUP, shortName);
                    if (!authorityService.authorityExists(group))
                    {
-                       authorityService.createAuthority(AuthorityType.GROUP, shortName);
+                       authorityService.createAuthority(AuthorityType.GROUP, shortName, shortName, ZONES);
                    }
                    if (!isPermissionSet(dirRef, group, permission))
                    {
@@ -399,7 +410,7 @@ public final class SandboxFactory extends WCMUtil
                String group = authorityService.getName(AuthorityType.GROUP, shortName);
                if (!authorityService.authorityExists(group))
                {
-                   authorityService.createAuthority(AuthorityType.GROUP, shortName);
+                   authorityService.createAuthority(AuthorityType.GROUP, shortName, shortName, ZONES);
                }
                Set<String> members = authorityService.getContainedAuthorities(AuthorityType.USER, group, true);
                if (!members.contains(user))

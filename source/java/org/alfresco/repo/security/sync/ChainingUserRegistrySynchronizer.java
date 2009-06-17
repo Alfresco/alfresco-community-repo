@@ -26,6 +26,7 @@ package org.alfresco.repo.security.sync;
 
 import java.text.DateFormat;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
@@ -162,21 +163,25 @@ public class ChainingUserRegistrySynchronizer implements UserRegistrySynchronize
     public void synchronize(boolean force)
     {
         Set<String> visitedZoneIds = new TreeSet<String>();
-        for (String zoneId : this.applicationContextManager.getInstanceIds())
+        for (String id : this.applicationContextManager.getInstanceIds())
         {
-            ApplicationContext context = this.applicationContextManager.getApplicationContext(zoneId);
+            StringBuilder builder = new StringBuilder(32);
+            builder.append(AuthorityService.ZONE_AUTH_EXT_PREFIX);
+            builder.append(id);
+            String zoneId = builder.toString();
+            ApplicationContext context = this.applicationContextManager.getApplicationContext(id);
             try
             {
                 UserRegistry plugin = (UserRegistry) context.getBean(this.sourceBeanName);
                 if (!(plugin instanceof ActivateableBean) || ((ActivateableBean) plugin).isActive())
                 {
                     ChainingUserRegistrySynchronizer.logger.info("Synchronizing users and groups with user registry '"
-                            + zoneId + "'");
+                            + id + "'");
                     if (force)
                     {
                         ChainingUserRegistrySynchronizer.logger
                                 .warn("Forced synchronization with user registry '"
-                                        + zoneId
+                                        + id
                                         + "'; some users and groups previously created by synchronization with this user registry may be removed.");
                     }
                     int personsProcessed = syncPersonsWithPlugin(zoneId, plugin, force, visitedZoneIds);
@@ -243,10 +248,11 @@ public class ChainingUserRegistrySynchronizer implements UserRegistrySynchronize
             else
             {
                 // The person does not exist in this zone, but may exist in another zone
-                String zone = this.authorityService.getAuthorityZone(personName);
-                if (zone != null)
+                Set<String> zones = this.authorityService.getAuthorityZones(personName);
+                if (zones != null)
                 {
-                    if (visitedZoneIds.contains(zone))
+                    zones.retainAll(visitedZoneIds);
+                    if (zones.size() > 0)
                     {
                         // A person that exists in a different zone with higher precedence
                         continue;
@@ -263,7 +269,7 @@ public class ChainingUserRegistrySynchronizer implements UserRegistrySynchronize
                     // The person did not exist at all
                     ChainingUserRegistrySynchronizer.logger.info("Creating user '" + personName + "'");
                 }
-                this.personService.createPerson(personProperties, zoneId);
+                this.personService.createPerson(personProperties, getZones(zoneId));
             }
             // Increment the count of processed people
             processedCount++;
@@ -294,7 +300,7 @@ public class ChainingUserRegistrySynchronizer implements UserRegistrySynchronize
 
         return processedCount;
     }
-
+    
     /**
      * Synchronizes local groups (authorities) with a {@link UserRegistry} for a particular zone.
      * 
@@ -360,10 +366,11 @@ public class ChainingUserRegistrySynchronizer implements UserRegistrySynchronize
             else
             {
                 String groupShortName = this.authorityService.getShortName(groupName);
-                String groupZone = this.authorityService.getAuthorityZone(groupName);
-                if (groupZone != null)
+                Set<String> groupZones = this.authorityService.getAuthorityZones(groupName);
+                if (groupZones != null)
                 {
-                    if (visitedZoneIds.contains(groupZone))
+                    groupZones.retainAll(visitedZoneIds);
+                    if (groupZones.size() > 0)
                     {
                         // A group that exists in a different zone with higher precedence
                         continue;
@@ -382,7 +389,7 @@ public class ChainingUserRegistrySynchronizer implements UserRegistrySynchronize
 
                 // create the group
                 this.authorityService.createAuthority(AuthorityType.getAuthorityType(groupName), groupShortName,
-                        (String) groupProperties.get(ContentModel.PROP_AUTHORITY_DISPLAY_NAME), zoneId);
+                        (String) groupProperties.get(ContentModel.PROP_AUTHORITY_DISPLAY_NAME), getZones(zoneId));
                 Set<String> children = group.getChildAssociations();
                 if (!children.isEmpty())
                 {
@@ -475,5 +482,13 @@ public class ChainingUserRegistrySynchronizer implements UserRegistrySynchronize
                     new MapAttributeValue());
         }
         this.attributeService.setAttribute(path, zoneId, new LongAttributeValue(lastModifiedMillis));
+    }
+    
+    private Set<String> getZones(String zoneId)
+    {
+        HashSet<String> zones = new HashSet<String>(2, 1.0f);
+        zones.add(AuthorityService.ZONE_APP_DEFAULT);
+        zones.add(zoneId);
+        return zones;
     }
 }

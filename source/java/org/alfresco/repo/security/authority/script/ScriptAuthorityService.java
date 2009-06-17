@@ -76,7 +76,7 @@ public class ScriptAuthorityService extends BaseScopableProcessorExtension
 	public ScriptGroup[] getAllRootGroups(boolean includeInternal)
 	{
 		Set<ScriptGroup> groups = new LinkedHashSet<ScriptGroup>(0);
-		Set<String> authorities = authorityService.getAllRootAuthorities(AuthorityType.GROUP);
+		Set<String> authorities = authorityService.getAllRootAuthoritiesInZone(AuthorityService.ZONE_APP_DEFAULT, AuthorityType.GROUP);
 		for(String authority : authorities)
 		{
 			ScriptGroup group = new ScriptGroup(authority, authorityService);
@@ -128,7 +128,7 @@ public class ScriptAuthorityService extends BaseScopableProcessorExtension
 	 */
 	public ScriptGroup createRootGroup(String shortName, String displayName)
 	{
-		authorityService.createAuthority(AuthorityType.GROUP, shortName, displayName, null);
+		authorityService.createAuthority(AuthorityType.GROUP, shortName, displayName, authorityService.getDefaultZones());
 		return getGroup(shortName);
 	}
 	

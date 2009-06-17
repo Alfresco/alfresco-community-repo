@@ -347,7 +347,7 @@ public class ChainingUserRegistrySynchronizerTest extends BaseSpringTest
         assertTrue(this.authorityService.authorityExists(longName));
 
         // Check in correct zone
-        assertEquals(zone, this.authorityService.getAuthorityZone(longName));
+        assertTrue(this.authorityService.getAuthorityZones(longName).contains(AuthorityService.ZONE_AUTH_EXT_PREFIX+zone));
         if (AuthorityType.getAuthorityType(longName).equals(AuthorityType.GROUP))
         {
             // Check groups have expected members
@@ -378,7 +378,7 @@ public class ChainingUserRegistrySynchronizerTest extends BaseSpringTest
         assertFalse(this.authorityService.authorityExists(longName));
 
         // Check there is no zone
-        assertNull(this.authorityService.getAuthorityZone(longName));
+        assertNull(this.authorityService.getAuthorityZones(longName));
         if (!AuthorityType.getAuthorityType(longName).equals(AuthorityType.GROUP))
         {
             // Check person does not exist

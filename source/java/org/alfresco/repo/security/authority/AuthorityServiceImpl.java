@@ -53,6 +53,8 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
 {
     private static Log logger = LogFactory.getLog(AuthorityServiceImpl.class);
     
+    private static Set<String> DEFAULT_ZONES = new HashSet<String>();
+    
     private PersonService personService;
 
     private NodeService nodeService;
@@ -72,6 +74,12 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
     private Set<String> allSet = Collections.singleton(PermissionService.ALL_AUTHORITIES);
 
     private Set<String> adminGroups = Collections.emptySet();
+    
+    static
+    {
+        DEFAULT_ZONES.add(AuthorityService.ZONE_APP_DEFAULT);
+        DEFAULT_ZONES.add(AuthorityService.ZONE_AUTH_ALFRESCO);
+    }
     
     public AuthorityServiceImpl()
     {
@@ -290,7 +298,7 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
     
     public String createAuthority(AuthorityType type, String shortName)
     {
-        return createAuthority(type, shortName, shortName, null);
+        return createAuthority(type, shortName, shortName, getDefaultZones());
     }
 
     public void deleteAuthority(String name)
@@ -373,11 +381,11 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
     }
 
     public String createAuthority(AuthorityType type, String shortName, String authorityDisplayName,
-            String authorityZone)
+            Set<String> authorityZones)
     {
         checkTypeIsMutable(type);
         String name = getName(type, shortName);
-        authorityDAO.createAuthority(name, authorityDisplayName, authorityZone);
+        authorityDAO.createAuthority(name, authorityDisplayName, authorityZones);
         return name;
     }
 
@@ -398,9 +406,9 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
         authorityDAO.setAuthorityDisplayName(authorityName, authorityDisplayName);
     }
 
-    public String getAuthorityZone(String name)
+    public Set<String> getAuthorityZones(String name)
     {
-        return authorityDAO.getAuthorityZone(name);
+        return authorityDAO.getAuthorityZones(name);
     }
 
     public NodeRef getOrCreateZone(String zoneName)
@@ -411,5 +419,26 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
     public Set<String> getAllAuthoritiesInZone(String zoneName, AuthorityType type)
     {
         return authorityDAO.getAllAuthoritiesInZone(zoneName, type);
+    }
+
+    public void addAuthorityToZones(String authorityName, Set<String> zones)
+    {
+        authorityDAO.addAuthorityToZones(authorityName,  zones);
+        
+    }
+
+    public void removeAuthorityFromZones(String authorityName, Set<String> zones)
+    {
+        authorityDAO.removeAuthorityFromZones(authorityName,  zones);   
+    }
+
+    public Set<String> getDefaultZones()
+    {
+      return DEFAULT_ZONES;
+    }
+
+    public Set<String> getAllRootAuthoritiesInZone(String zoneName, AuthorityType type)
+    {
+        return authorityDAO.getAllRootAuthoritiesInZone(zoneName, type);
     }
 }

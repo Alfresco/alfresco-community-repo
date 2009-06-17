@@ -45,9 +45,9 @@ public interface AuthorityDAO
      * 
      * @param name
      * @param authorityDisplayName
-     * @param authorityZone
+     * @param authorityZones
      */
-    void createAuthority(String name, String authorityDisplayName, String authorityZone);
+    void createAuthority(String name, String authorityDisplayName, Set<String> authorityZones);
 
     /**
      * Delete an authority.
@@ -163,10 +163,10 @@ public interface AuthorityDAO
      * 
      * @param name
      *            the authority long name
-     * @return the the name of the zone containing the specified authority, {@link AuthorityService#DEFAULT_ZONE} if the
+     * @return the set of names of all zones containing the specified authority, an empty set if the
      *         authority exists but has no zone, or <code>null</code> if the authority does not exist.
      */
-    public String getAuthorityZone(String name);
+    public Set<String> getAuthorityZones(String name);
     
     /**
      * Gets the names of all authorities in a zone, optionally filtered by type.
@@ -178,4 +178,26 @@ public interface AuthorityDAO
      * @return the names of all authorities in a zone, optionally filtered by type
      */
     public Set<String> getAllAuthoritiesInZone(String zoneName, AuthorityType type);
+    
+    /**
+     * Add an authority to zones
+     * @param authorityName
+     * @param zones
+     */
+    public void addAuthorityToZones(String authorityName, Set<String> zones);
+
+    /**
+     * Remove an authority from zones.
+     * @param authorityName
+     * @param zones
+     */
+    public void removeAuthorityFromZones(String authorityName, Set<String> zones);
+    
+    /**
+     * Get all root authorities in a zone
+     * @param zoneName
+     * @param type (optional)
+     * @return the set of authority names
+     */
+    public Set<String> getAllRootAuthoritiesInZone(String zoneName, AuthorityType type);
 }

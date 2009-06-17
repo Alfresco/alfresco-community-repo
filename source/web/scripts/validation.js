@@ -127,10 +127,11 @@ function validateName(control, message, showMessage)
 {
    var result = true;
    var pattern = /([\"\*\\\>\<\?\/\:\|]+)|([ ]+$)|([\.]?[\.]+$)/;
-   var idx = control.value.search(pattern);
+   var trimed = control.value.replace(/^\s\s*/, '').replace(/\s\s*$/, '');
+   var idx = trimed.search(pattern);
    if (idx != -1)
    {
-      informUser(control, "'" + control.value.charAt(idx) + "' " + message, showMessage);
+      informUser(control, "'" + trimed.charAt(idx) + "' " + message, showMessage);
       result = false;
    }
    

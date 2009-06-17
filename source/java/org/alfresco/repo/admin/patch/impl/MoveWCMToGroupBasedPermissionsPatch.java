@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -64,6 +64,8 @@ public class MoveWCMToGroupBasedPermissionsPatch extends AbstractPatch
         PermissionService.WCM_CONTENT_MANAGER, PermissionService.WCM_CONTENT_PUBLISHER,
         PermissionService.WCM_CONTENT_CONTRIBUTOR, PermissionService.WCM_CONTENT_REVIEWER
     };
+    
+    protected static final String WCM_STORE_SEPARATOR = "--";
 
     private static final String MSG_SUCCESS = "patch.moveWCMToGroupBasedPermissionsPatch.result";
 
@@ -209,7 +211,7 @@ public class MoveWCMToGroupBasedPermissionsPatch extends AbstractPatch
         }
     }
 
-    private void addToGroupIfRequired(String stagingStoreName, String user, String permission)
+    protected void addToGroupIfRequired(String stagingStoreName, String user, String permission)
     {
         String shortName = stagingStoreName + "-" + permission;
         String group = this.authorityService.getName(AuthorityType.GROUP, shortName);
@@ -248,7 +250,7 @@ public class MoveWCMToGroupBasedPermissionsPatch extends AbstractPatch
             for (ChildAssociationRef ref : userInfoRefs)
             {
                 NodeRef userInfoRef = ref.getChildRef();
-                String username = (String) this.nodeService.getProperty(userInfoRef, WCMAppModel.PROP_WEBUSERNAME);
+                //String username = (String) this.nodeService.getProperty(userInfoRef, WCMAppModel.PROP_WEBUSERNAME); // not used
                 String userrole = (String) this.nodeService.getProperty(userInfoRef, WCMAppModel.PROP_WEBUSERROLE);
 
                 if (userrole.equals(PermissionService.ALL_PERMISSIONS))
@@ -260,7 +262,7 @@ public class MoveWCMToGroupBasedPermissionsPatch extends AbstractPatch
         }
     }
 
-    private void setStagingAreaPermissions(AVMStoreDescriptor store)
+    protected void setStagingAreaPermissions(AVMStoreDescriptor store) throws Exception
     {
         QName propQName = QName.createQName(null, ".web_project.noderef");
 
@@ -308,7 +310,7 @@ public class MoveWCMToGroupBasedPermissionsPatch extends AbstractPatch
         }
     }
 
-    private void setStagingAreaMasks(AVMStoreDescriptor store)
+    protected void setStagingAreaMasks(AVMStoreDescriptor store)
     {
         // groups must exist
         NodeRef dirRef = AVMNodeConverter.ToNodeRef(-1, store.getName() + ":/www");
@@ -369,7 +371,7 @@ public class MoveWCMToGroupBasedPermissionsPatch extends AbstractPatch
 
     }
 
-    private void setSandBoxMasks(AVMStoreDescriptor sandBoxStore)
+    protected void setSandBoxMasks(AVMStoreDescriptor sandBoxStore)
     {
         // get the settings from the staging store ...
 
@@ -380,7 +382,7 @@ public class MoveWCMToGroupBasedPermissionsPatch extends AbstractPatch
 
         NodeRef dirRef = AVMNodeConverter.ToNodeRef(-1, sandBoxStore.getName() + ":/www");
 
-        Map<QName, PropertyValue> woof = this.avmService.getStoreProperties(stagingAreaName);
+        //Map<QName, PropertyValue> woof = this.avmService.getStoreProperties(stagingAreaName); // not used
         PropertyValue pValue = this.avmService.getStoreProperty(stagingAreaName, propQName);
 
         if (!isMaskSet(dirRef.getStoreRef(), PermissionService.ALL_AUTHORITIES, PermissionService.READ))
@@ -428,12 +430,12 @@ public class MoveWCMToGroupBasedPermissionsPatch extends AbstractPatch
 
     private String extractOwner(String name)
     {
-        int start = name.indexOf("--");
+        int start = name.indexOf(WCM_STORE_SEPARATOR);
         if (start == -1)
         {
             throw new UnsupportedOperationException(name);
         }
-        int end = name.indexOf("--", start + 1);
+        int end = name.indexOf(WCM_STORE_SEPARATOR, start + 1);
         if (end == -1)
         {
             return name.substring(start + 2);
@@ -441,9 +443,9 @@ public class MoveWCMToGroupBasedPermissionsPatch extends AbstractPatch
         return name.substring(start + 2, end);
     }
 
-    private String extractStagingAreaName(String name)
+    protected String extractStagingAreaName(String name)
     {
-        int index = name.indexOf("--");
+        int index = name.indexOf(WCM_STORE_SEPARATOR);
         if (index == -1)
         {
             throw new UnsupportedOperationException(name);

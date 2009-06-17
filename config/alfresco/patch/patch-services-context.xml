@@ -1534,27 +1534,29 @@
         </property>
     </bean>
 
-    <bean id="patch.moveWCMToGroupBasedPermissionsPatch" class="org.alfresco.repo.admin.patch.impl.MoveWCMToGroupBasedPermissionsPatch" parent="basePatch" >
-        <property name="id"><value>patch.moveWCMToGroupBasedPermissionsPatch</value></property>
-        <property name="description"><value>patch.moveWCMToGroupBasedPermissionsPatch.description</value></property>
+    <bean id="patch.resetWCMToGroupBasedPermissionsPatch" class="org.alfresco.repo.admin.patch.impl.ResetWCMToGroupBasedPermissionsPatch" parent="basePatch" >
+        <property name="id"><value>patch.resetWCMToGroupBasedPermissionsPatch</value></property>
+        <property name="description"><value>patch.resetWCMToGroupBasedPermissionsPatch.description</value></property>
         <property name="fixesFromSchema"><value>0</value></property>
         <property name="fixesToSchema"><value>2001</value></property>
         <property name="targetSchema"><value>2002</value></property>
-        <!-- helper beans -->
+        <property name="sessionFactory">
+            <ref bean="sessionFactory" />
+        </property>
         <property name="avmService">
             <ref bean="avmService" />
         </property>
         <property name="permissionService">
             <ref bean="permissionService" />
         </property>
-        <property name="aclDaoComponent">
-            <ref bean="aclDaoComponent" />
-        </property>
-        <property name="avmSnapShotTriggeredIndexingMethodInterceptor">
-            <ref bean="avmSnapShotTriggeredIndexingMethodInterceptor" />
+        <property name="personService">
+            <ref bean="personService" />
         </property>
         <property name="authorityService">
             <ref bean="authorityService" />
+        </property>
+        <property name="qnameDAO">
+            <ref bean="qnameDAO" />
         </property>
         <property name="replaceAllWith">
             <value>ContentManager</value>
@@ -1564,15 +1566,21 @@
                 <ref bean="patch.zonedAuthorities" />
             </list>
         </property>
+        <property name="alternatives" >
+            <list>
+                <ref bean="patch.moveWCMToGroupBasedPermissionsPatch" />
+            </list>
+        </property>
     </bean>
-    
-     <bean id="patch.wcmPostPermissionSnapshotPatch2" class="org.alfresco.repo.admin.patch.impl.WCMPostPermissionSnapshotPatch" parent="basePatch" >
-        <property name="id"><value>patch.wcmPostPermissionSnapshotPatch2</value></property>
+
+    <!-- note: does not need to be run if patch.wcmPostPermissionSnapshotPatch2 already applied -->
+    <bean id="patch.wcmPostPermissionSnapshotPatch3" class="org.alfresco.repo.admin.patch.impl.WCMPostPermissionSnapshotPatch" parent="basePatch" >
+        <property name="id"><value>patch.wcmPostPermissionSnapshotPatch3</value></property>
         <property name="description"><value>patch.wcmPostPermissionSnapshotPatch.description</value></property>
         <property name="fixesFromSchema"><value>0</value></property>
         <property name="fixesToSchema"><value>2001</value></property>
         <property name="targetSchema"><value>2002</value></property>
-        <!-- helper beans -->
+
         <property name="avmService">
             <ref bean="AVMService" />
         </property>
@@ -1584,10 +1592,46 @@
         </property>
         <property name="dependsOn" >
             <list>
-                <ref bean="patch.moveWCMToGroupBasedPermissionsPatch" />
+                <ref bean="patch.resetWCMToGroupBasedPermissionsPatch" />
+            </list>
+        </property>
+        <property name="alternatives" >
+            <list>
+                <ref bean="patch.wcmPostPermissionSnapshotPatch2" />
             </list>
         </property>
     </bean>
+    
+    <!-- note: NOOP - superceded by patch.resetWCMToGroupBasedPermissionsPatch -->
+    <bean id="patch.moveWCMToGroupBasedPermissionsPatch" class="org.alfresco.repo.admin.patch.impl.NoOpPatch" parent="basePatch" >
+        <property name="id"><value>patch.moveWCMToGroupBasedPermissionsPatch</value></property>
+        <property name="description"><value>patch.noOpPatch.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>2001</value></property>
+        <property name="targetSchema"><value>2002</value></property>
+        
+        <property name="dependsOn" >
+            <list>
+                <ref bean="patch.resetWCMToGroupBasedPermissionsPatch" />
+            </list>
+        </property>
+    </bean>
+    
+    <!-- note: NOOP - superceded by patch.wcmPostPermissionSnapshotPatch3 -->
+    <bean id="patch.wcmPostPermissionSnapshotPatch2" class="org.alfresco.repo.admin.patch.impl.NoOpPatch" parent="basePatch" >
+        <property name="id"><value>patch.wcmPostPermissionSnapshotPatch2</value></property>
+        <property name="description"><value>patch.noOpPatch.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>2001</value></property>
+        <property name="targetSchema"><value>2002</value></property>
+        
+        <property name="dependsOn" >
+            <list>
+                <ref bean="patch.wcmPostPermissionSnapshotPatch3" />
+            </list>
+        </property>
+    </bean>
+    
     
     <!--  Redeploy both direct and indirect submit processes for addition submit failure handling -->
     <bean id="patch.redeploySubmitProcess6" class="org.alfresco.repo.admin.patch.impl.GenericWorkflowPatch" parent="basePatch" >

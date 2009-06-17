@@ -5313,6 +5313,7 @@ public class AVMServiceTest extends AVMServiceTestBase
             fService.setStoreProperty("main", QName.createQName("", ".other.property"), new PropertyValue(null, "other value"));
             Map<QName, PropertyValue> result = fService.queryStorePropertyKey("main", QName.createQName("", ".dns.%"));
             assertEquals(1, result.size());
+            
             fService.createStore("second");
             fService.setStoreProperty("second", QName.createQName("", ".dns.alice"), new PropertyValue(null, "alice-space"));
             Map<String, Map<QName, PropertyValue>> matches = fService.queryStoresPropertyKeys(QName.createQName("", ".dns.%"));
@@ -5320,15 +5321,22 @@ public class AVMServiceTest extends AVMServiceTestBase
             assertEquals(1, matches.get("second").size());
             assertEquals("alice-preview", matches.get("main").get(QName.createQName(null, ".dns.alice--preview")).getStringValue());
             assertEquals("alice-space", matches.get("second").get(QName.createQName(null, ".dns.alice")).getStringValue());
+            
+            fService.createStore("third");
+            fService.setStoreProperty("third", QName.createQName("", ".dns.someUPPERcase"), new PropertyValue(null, "someUPPERcase-space"));
+            matches = fService.queryStoresPropertyKeys(QName.createQName("", ".dns.someuppercase%"));
+            assertEquals(1, matches.get("third").size());
+            assertEquals("someUPPERcase-space", matches.get("third").get(QName.createQName(null, ".dns.someUPPERcase")).getStringValue());
         }
         catch (Exception e)
         {
             e.printStackTrace(System.err);
-            
+            throw e;
         }
         finally
         {
             fService.purgeStore("second");
+            fService.purgeStore("third");
         }
     }
     

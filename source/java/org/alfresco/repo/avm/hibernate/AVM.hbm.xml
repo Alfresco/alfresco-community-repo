@@ -339,7 +339,7 @@
          JOIN alf_namespace ns ON (ns.id = qn.ns_id)
       WHERE
          ns.uri LIKE :uri AND
-         qn.local_name LIKE :localName
+         upper(qn.local_name) LIKE upper(:localName)
    </sql-query>
     
    <sql-query name="avm.GetStorePropertiesByStoreAndKeyPattern">
@@ -353,7 +353,7 @@
       WHERE
          asp.avm_store_id = :storeId AND
          ns.uri LIKE :uri AND
-         qn.local_name LIKE :localName
+         upper(qn.local_name) LIKE upper(:localName)
    </sql-query>
     
    <sql-query name="avm.DeleteStorePropertiesByType">

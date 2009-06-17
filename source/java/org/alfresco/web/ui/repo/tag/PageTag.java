@@ -350,7 +350,7 @@ public class PageTag extends TagSupport
          final HttpServletRequest req = (HttpServletRequest)pageContext.getRequest();
          PageTag.alfresco = ("<center><table style='margin: 0px auto;'><tr><td>" +
                              "<a href='" + ALF_URL + "'>" +
-                             "<img style='vertical-align:middle;border-width:0px;' alt='' title='" + ALF_TEXT + 
+                             "<img style='vertical-align:middle;border-width:0px;' width='176' height='26' alt='' title='" + ALF_TEXT + 
                              "' src='" + ("http".equals(req.getScheme()) ? ALF_LOGO_HTTP : ALF_LOGO_HTTPS) + 
                              "'>" +"</a></td><td align='center'>" +
                              "<span class='footer'>" + ALF_COPY +

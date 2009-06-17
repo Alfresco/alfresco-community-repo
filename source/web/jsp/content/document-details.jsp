@@ -42,8 +42,10 @@
 <h:panelGroup id="dashboard-panel-facets">
    <f:facet name="title">
       <r:permissionEvaluator value="#{DialogManager.bean.document}" allow="Write" id="evalChange">
-         <a:actionLink id="actModify" value="#{msg.modify}" action="dialog:applyDocTemplate" showLink="false" image="/images/icons/preview.gif" style="padding-right:8px" />
-         <a:actionLink id="actRemove" value="#{msg.remove}" actionListener="#{DialogManager.bean.removeTemplate}" showLink="false" image="/images/icons/delete.gif" />
+         <r:actionInstanceEvaluator id="eval1" value="#{DialogManager.bean.document}" evaluatorClassName="org.alfresco.web.action.evaluator.UnlockedDocEvaluator">
+            <a:actionLink id="actModify" value="#{msg.modify}" action="dialog:applyDocTemplate" showLink="false" image="/images/icons/preview.gif" style="padding-right:8px" />
+            <a:actionLink id="actRemove" value="#{msg.remove}" actionListener="#{DialogManager.bean.removeTemplate}" showLink="false" image="/images/icons/delete.gif" />
+         </r:actionInstanceEvaluator>
       </r:permissionEvaluator>
    </f:facet>
 </h:panelGroup>
@@ -52,16 +54,16 @@
    <f:verbatim>
       <table width=100% cellspacing=0 cellpadding=0 border=0>
          <tr>
-            <td align=left></f:verbatim><r:permissionEvaluator value="#{DialogManager.bean.document}" allow="Write" id="evalApply">
-               <a:actionLink id="actDashboard" value="#{msg.apply_template}" rendered="#{!DialogManager.bean.hasCustomView}" action="dialog:applyDocTemplate" />
-            </r:permissionEvaluator> <a:panel id="template-panel" rendered="#{DialogManager.bean.hasCustomView}">
-               <f:verbatim>
-                  <div style="padding: 4px; border: 1px dashed #cccccc"><r:webScript id="webscript" scriptUrl="#{DialogManager.bean.webscriptUrl}" context="#{DialogManager.bean.document.nodeRef}"
-                     rendered="#{DialogManager.bean.hasWebscriptView}" />
-               </f:verbatim>
-               <r:template id="dashboard" template="#{DialogManager.bean.templateRef}" model="#{DialogManager.bean.templateModel}" rendered="#{!DialogManager.bean.hasWebscriptView && DialogManager.bean.hasTemplateView}" />
-               </div>
-            </a:panel><f:verbatim></td>
+            <td align=left></f:verbatim>
+               <r:permissionEvaluator value="#{DialogManager.bean.document}" allow="Write" id="evalApply">
+                  <a:actionLink id="actDashboard" value="#{msg.apply_template}" rendered="#{!DialogManager.bean.hasCustomView}" action="dialog:applyDocTemplate" />
+               </r:permissionEvaluator>
+               <a:panel id="template-panel" rendered="#{DialogManager.bean.hasCustomView}">
+                  <f:verbatim><div style="padding: 4px; border: 1px dashed #cccccc"></f:verbatim>
+                  <r:webScript id="webscript" scriptUrl="#{DialogManager.bean.webscriptUrl}" context="#{DialogManager.bean.document.nodeRef}" rendered="#{DialogManager.bean.hasWebscriptView}" />
+                  <r:template id="dashboard" template="#{DialogManager.bean.templateRef}" model="#{DialogManager.bean.templateModel}" rendered="#{!DialogManager.bean.hasWebscriptView && DialogManager.bean.hasTemplateView}" />
+                  <f:verbatim></div></f:verbatim>
+               </a:panel><f:verbatim></td>
          </tr>
       </table>
    </f:verbatim>

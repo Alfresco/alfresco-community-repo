@@ -574,15 +574,15 @@ public class XFormsBean implements Serializable
                                        request.getContextPath() + "/wcservice");
                String rewrittenURI = uri;
                
-               if (uri.contains("{storeid}"))
-               {
-                  final String storeId = AVMUtil.getStoreName(cwdAvmPath);
-                  rewrittenURI         = uri.replace("{storeid}", storeId);
-               }
-               else if (uri.contains("${storeid}"))
+               if (uri.contains("${storeid}"))
                {
                   final String storeId = AVMUtil.getStoreName(cwdAvmPath);
                   rewrittenURI         = uri.replace("${storeid}", storeId);
+               }
+               else if (uri.contains("{storeid}"))
+               {
+                  final String storeId = AVMUtil.getStoreName(cwdAvmPath);
+                  rewrittenURI         = uri.replace("{storeid}", storeId);
                }
                else
                {
@@ -590,17 +590,17 @@ public class XFormsBean implements Serializable
                      LOGGER.debug("no store id specified in webscript URI " + uri);
                }
                
-               if (uri.contains("{ticket}"))
-               {
-                  AuthenticationService authenticationService = Repository.getServiceRegistry(facesContext).getAuthenticationService();
-                  final String ticket = authenticationService.getCurrentTicket();
-                  rewrittenURI        = rewrittenURI.replace("{ticket}", ticket);
-               }
-               else if (uri.contains("${ticket}"))
+               if (uri.contains("${ticket}"))
                {
                   AuthenticationService authenticationService = Repository.getServiceRegistry(facesContext).getAuthenticationService();
                   final String ticket = authenticationService.getCurrentTicket();
                   rewrittenURI        = rewrittenURI.replace("${ticket}", ticket);
+               }
+               else if (uri.contains("{ticket}"))
+               {
+                  AuthenticationService authenticationService = Repository.getServiceRegistry(facesContext).getAuthenticationService();
+                  final String ticket = authenticationService.getCurrentTicket();
+                  rewrittenURI        = rewrittenURI.replace("{ticket}", ticket);
                }
                else
                {

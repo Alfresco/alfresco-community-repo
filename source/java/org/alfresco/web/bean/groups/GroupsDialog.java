@@ -355,11 +355,11 @@ public class GroupsDialog extends BaseDialogBean
             // root groups
             if (immediate == true)
             {
-               authorities = this.getAuthorityService().getAllRootAuthorities(AuthorityType.GROUP);
+               authorities = this.getAuthorityService().getAllRootAuthoritiesInZone(AuthorityService.ZONE_APP_DEFAULT, AuthorityType.GROUP);
             }
             else
             {
-               authorities = this.getAuthorityService().getAllAuthorities(AuthorityType.GROUP);
+               authorities = this.getAuthorityService().getAllAuthoritiesInZone(AuthorityService.ZONE_APP_DEFAULT, AuthorityType.GROUP);
             }
          }
          else

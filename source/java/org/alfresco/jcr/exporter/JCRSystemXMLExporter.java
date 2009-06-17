@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -26,6 +26,7 @@ package org.alfresco.jcr.exporter;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Locale;
 
 import javax.jcr.PropertyType;
 import javax.jcr.RepositoryException;
@@ -436,7 +437,15 @@ public class JCRSystemXMLExporter implements Exporter
     public void endReference(NodeRef nodeRef)
     {
     }
-    
+
+    public void endValueMLText(NodeRef nodeRef)
+    {
+    }
+
+    public void startValueMLText(NodeRef nodeRef, Locale locale)
+    {
+    }
+
     /* (non-Javadoc)
      * @see org.alfresco.service.cmr.view.Exporter#warning(java.lang.String)
      */

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -26,6 +26,7 @@ package org.alfresco.repo.exporter;
 
 import java.io.InputStream;
 import java.util.List;
+import java.util.Locale;
 
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -74,6 +75,8 @@ import org.xml.sax.helpers.AttributesImpl;
     private static final String EXPORTEDDATE_LOCALNAME  = "exportDate";
     private static final String EXPORTERVERSION_LOCALNAME  = "exporterVersion";
     private static final String EXPORTOF_LOCALNAME  = "exportOf";
+    private static final String MLVALUE_LOCALNAME = "mlvalue";
+    private static final String LOCALE_LOCALNAME = "locale";
     private static final String ACL_LOCALNAME  = "acl";
     private static final String ACE_LOCALNAME  = "ace";
     private static final String ACCESS_LOCALNAME  = "access";
@@ -106,6 +109,8 @@ import org.xml.sax.helpers.AttributesImpl;
     private static QName REFERENCE_QNAME;
     private static QName PATHREF_QNAME;
     private static QName NODEREF_QNAME;
+    private static QName LOCALE_QNAME;
+    private static QName MLVALUE_QNAME;
     private static final AttributesImpl EMPTY_ATTRIBUTES = new AttributesImpl();
     
     // Service dependencies
@@ -164,6 +169,9 @@ import org.xml.sax.helpers.AttributesImpl;
         REFERENCE_QNAME = QName.createQName(NamespaceService.REPOSITORY_VIEW_PREFIX, REFERENCE_LOCALNAME, namespaceService);
         PATHREF_QNAME = QName.createQName(NamespaceService.REPOSITORY_VIEW_PREFIX, PATHREF_LOCALNAME, namespaceService);
         NODEREF_QNAME = QName.createQName(NamespaceService.REPOSITORY_VIEW_PREFIX, NODEREF_LOCALNAME, namespaceService);
+        LOCALE_QNAME = QName.createQName(NamespaceService.REPOSITORY_VIEW_PREFIX, LOCALE_LOCALNAME, namespaceService);
+        MLVALUE_QNAME = QName.createQName(NamespaceService.REPOSITORY_VIEW_PREFIX, MLVALUE_LOCALNAME, namespaceService);
+
     }
     
     
@@ -718,7 +726,34 @@ import org.xml.sax.helpers.AttributesImpl;
             throw new ExporterException("Failed to process end reference", e);
         }
     }
-    
+
+    public void startValueMLText(NodeRef nodeRef, Locale locale)
+    {
+        AttributesImpl attrs = new AttributesImpl();
+        attrs.addAttribute(NamespaceService.REPOSITORY_VIEW_PREFIX, LOCALE_LOCALNAME, LOCALE_QNAME.toPrefixString(), null, locale.toString());
+        try
+        {
+            contentHandler.startElement(NamespaceService.REPOSITORY_VIEW_PREFIX, MLVALUE_LOCALNAME, MLVALUE_QNAME.toPrefixString(), attrs);
+        }
+        catch (SAXException e)
+        {
+            throw new ExporterException("Failed to process start mlvalue", e);
+        }
+    }
+
+    public void endValueMLText(NodeRef nodeRef)
+    {
+        try
+        {
+            contentHandler.endElement(NamespaceService.REPOSITORY_VIEW_PREFIX, MLVALUE_LOCALNAME, MLVALUE_QNAME.toPrefixString());
+        }
+        catch (SAXException e)
+        {
+            throw new ExporterException("Failed to process end mltext", e);
+        }
+
+    }
+
     /* (non-Javadoc)
      * @see org.alfresco.service.cmr.view.Exporter#warning(java.lang.String)
      */

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -27,6 +27,7 @@ package org.alfresco.repo.exporter;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -350,7 +351,23 @@ import org.alfresco.service.namespace.QName;
             exporter.endReference(nodeRef);
         }
     }
-    
+
+    public void startValueMLText(NodeRef nodeRef, Locale locale)
+    {
+        for (Exporter exporter : exporters)
+        {
+            exporter.startValueMLText(nodeRef, locale);
+        }
+    }
+
+    public void endValueMLText(NodeRef nodeRef)
+    {
+        for (Exporter exporter : exporters)
+        {
+            exporter.endValueMLText(nodeRef);
+        }
+    }
+
     /* (non-Javadoc)
      * @see org.alfresco.service.cmr.view.Exporter#warning(java.lang.String)
      */

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -28,7 +28,9 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.util.Locale;
 
+import org.alfresco.i18n.I18NUtil;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.ContentData;
@@ -96,7 +98,10 @@ public class ExporterComponentTest extends BaseSpringTest
         InputStream test = getClass().getClassLoader().getResourceAsStream("org/alfresco/repo/importer/importercomponent_test.xml");
         InputStreamReader testReader = new InputStreamReader(test, "UTF-8");
         importerService.importView(testReader, location, null, null);        
-        System.out.println(NodeStoreInspector.dumpNodeStore((NodeService)applicationContext.getBean("NodeService"), storeRef));
+        
+        dumpNodeStore(Locale.ENGLISH);
+        dumpNodeStore(Locale.FRENCH);
+        dumpNodeStore(Locale.GERMAN);
         
         // now export
         location.setPath("/system");
@@ -108,6 +113,13 @@ public class ExporterComponentTest extends BaseSpringTest
         output.close();
     }
 
+    private void dumpNodeStore(Locale locale)
+    {
+     
+        System.out.println(locale.getDisplayLanguage() + " LOCALE: ");
+        I18NUtil.setLocale(locale);
+        System.out.println(NodeStoreInspector.dumpNodeStore((NodeService) applicationContext.getBean("NodeService"), storeRef));
+    }
     
     private static class TestProgress
         implements Exporter
@@ -251,6 +263,16 @@ public class ExporterComponentTest extends BaseSpringTest
         public void endReference(NodeRef nodeRef)
         {
 //          System.out.println("TestProgress: endReference: " + nodeRef);
+        }
+
+        public void endValueMLText(NodeRef nodeRef)
+        {
+             System.out.println("TestProgress: end MLValue.");            
+        }
+
+        public void startValueMLText(NodeRef nodeRef, Locale locale)
+        {
+             System.out.println("TestProgress: start MLValue for locale: " + locale);            
         }
 
     }

@@ -77,11 +77,32 @@
       <cm:name>Some content</cm:name>
       <cm:content>contentUrl=classpath:org/alfresco/repo/importer/importercomponent_testfile.txt|mimetype=text|size=|encoding=</cm:content>
    </cm:content>
+   
+   <cm:folder view:id="ML Text">
+      <view:aspects>
+         <cm:auditable/>
+      </view:aspects>
+      <view:properties>
+         <cm:name>ML Text</cm:name>
+         <cm:title>
+            <view:mlvalue view:locale="fr_FR">FR_TITLE</view:mlvalue>
+            <view:mlvalue view:locale="de_DE">GE_TITLE</view:mlvalue>
+            <view:mlvalue view:locale="en_US">ENG_TITLE</view:mlvalue>
+         </cm:title>
+         <cm:description>
+            <view:mlvalue view:locale="fr_FR">FR_DESCRIPTION</view:mlvalue>
+            <view:mlvalue view:locale="de_DE">GE_DESCRIPTION</view:mlvalue>
+            <view:mlvalue view:locale="en_US">ENG_DESCRIPTION</view:mlvalue>
+         </cm:description>
+      </view:properties>
+   </cm:folder>
+
 
    <view:reference view:idref="the root system folder">
        <view:associations>
            <cm:contains>
                <view:reference view:idref="some content" view:childName="link to some content"/>
+               <view:reference view:idref="ML Text" view:childName="link to ML Text"/>
            </cm:contains>
        </view:associations>
    </view:reference>

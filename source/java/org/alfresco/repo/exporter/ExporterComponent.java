@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -34,10 +34,12 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.node.MLPropertyInterceptor;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
@@ -46,6 +48,7 @@ import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
+import org.alfresco.service.cmr.repository.MLText;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.Path;
@@ -427,7 +430,9 @@ public class ExporterComponent
             
             // Export node properties
             exporter.startProperties(nodeRef);
+            boolean aware = MLPropertyInterceptor.setMLAware(true);
             Map<QName, Serializable> properties = nodeService.getProperties(nodeRef);
+            MLPropertyInterceptor.setMLAware(aware);
             for (QName property : properties.keySet())
             {
                 // filter out properties whose namespace is excluded
@@ -459,7 +464,27 @@ public class ExporterComponent
                 }
                 else
                 {
-                    walkProperty(nodeRef, property, value, -1, parameters, exporter);
+                    if (value instanceof MLText)
+                    {
+                        MLText valueMLT = (MLText) value;
+                        Set<Locale> locales = valueMLT.getLocales();
+                        for (Locale locale : locales)
+                        {
+                            String localeValue = valueMLT.getValue(locale);
+                            if (localeValue == null)
+                            {
+                                walkProperty(nodeRef, property, localeValue, -1, parameters, exporter);
+                                continue;
+                            }
+                            exporter.startValueMLText(nodeRef, locale);
+                            walkProperty(nodeRef, property, localeValue, -1, parameters, exporter);
+                            exporter.endValueMLText(nodeRef);
+                        }
+                    }
+                    else
+                    {
+                        walkProperty(nodeRef, property, value, -1, parameters, exporter);
+                    }
                 }
 
                 // end export of property

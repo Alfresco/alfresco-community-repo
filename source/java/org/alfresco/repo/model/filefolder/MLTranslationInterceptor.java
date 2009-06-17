@@ -91,6 +91,7 @@ public class MLTranslationInterceptor implements MethodInterceptor
         METHOD_NAMES_OTHER.add("delete");
         METHOD_NAMES_OTHER.add("getReader");
         METHOD_NAMES_OTHER.add("getWriter");
+        METHOD_NAMES_OTHER.add("getType");
     }
     
     private static Log logger = LogFactory.getLog(MLTranslationInterceptor.class);

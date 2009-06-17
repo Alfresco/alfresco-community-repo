@@ -29,12 +29,14 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 import javax.transaction.UserTransaction;
 
 import junit.framework.TestCase;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.i18n.I18NUtil;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.dictionary.DictionaryDAO;
 import org.alfresco.repo.dictionary.M2Model;
@@ -44,6 +46,7 @@ import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.model.FileExistsException;
 import org.alfresco.service.cmr.model.FileFolderService;
+import org.alfresco.service.cmr.model.FileFolderServiceType;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.model.FileNotFoundException;
 import org.alfresco.service.cmr.repository.ContentReader;
@@ -650,5 +653,15 @@ public class FileFolderServiceImplTest extends TestCase
         NodeRef fileNodeRef = fileFolderService.searchSimple(workingRootNodeRef, fileName);
         assertNotNull("Long filename not found", fileNodeRef);
         assertEquals(fileInfo.getNodeRef(), fileNodeRef);
+    }
+    
+    /**
+     * Validates <a href="https://issues.alfresco.com/jira/browse/ALFCOM-2655">ACT-7225</a>
+     */
+    public void testGetType() throws Exception
+    {
+        I18NUtil.setContentLocale(Locale.CANADA);
+        FileFolderServiceType type = fileFolderService.getType(ContentModel.TYPE_FOLDER);
+        assertEquals("Type incorrect for folder", FileFolderServiceType.FOLDER, type);
     }
 }

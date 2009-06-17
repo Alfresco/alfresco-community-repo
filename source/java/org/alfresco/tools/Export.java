@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -26,6 +26,7 @@ package org.alfresco.tools;
 
 import java.io.File;
 import java.io.InputStream;
+import java.util.Locale;
 
 import org.alfresco.repo.exporter.ACPExportPackageHandler;
 import org.alfresco.repo.exporter.FileExportPackageHandler;
@@ -643,6 +644,14 @@ public final class Export extends Tool
          * @see org.alfresco.service.cmr.view.Exporter#endReference(org.alfresco.service.cmr.repository.NodeRef)
          */
         public void endReference(NodeRef nodeRef)
+        {
+        }
+
+        public void endValueMLText(NodeRef nodeRef)
+        {
+        }
+
+        public void startValueMLText(NodeRef nodeRef, Locale locale)
         {
         }
     }

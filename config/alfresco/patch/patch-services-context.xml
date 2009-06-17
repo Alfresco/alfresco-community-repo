@@ -1646,8 +1646,8 @@
             <ref bean="versionCounterService" />
         </property>
     </bean>
-	
-	<bean id="patch.db-V2.2-Person-2" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
+
+    <bean id="patch.db-V2.2-Person-2" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
         <property name="id"><value>patch.db-V2.2-Person-2</value></property>
         <property name="description"><value>patch.schemaUpgradeScript.description</value></property>
         <property name="fixesFromSchema"><value>0</value></property>
@@ -1830,6 +1830,30 @@
             <list>
                 <ref bean="patch.authorityMigration" />
             </list>
+        </property>
+    </bean>
+    
+    <bean id="patch.fixNameCrcValues" class="org.alfresco.repo.admin.patch.impl.FixNameCrcValuesPatch" parent="basePatch" >
+        <property name="id"><value>patch.fixNameCrcValues</value></property>
+        <property name="description"><value>patch.fixNameCrcValues.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>2014</value></property>
+        <property name="targetSchema"><value>2015</value></property>
+        <property name="dependsOn" >
+            <list>
+                <ref bean="patch.uniqueChildName" />
+                <ref bean="patch.InvalidNameEnding" />
+            </list>
+        </property>
+        <!-- helper beans -->
+        <property name="sessionFactory">
+            <ref bean="sessionFactory" />
+        </property>
+        <property name="nodeDaoService">
+            <ref bean="nodeDaoService" />
+        </property>
+        <property name="qnameDAO">
+            <ref bean="qnameDAO" />
         </property>
     </bean>
     

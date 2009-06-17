@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -945,7 +945,7 @@ public class ImporterComponent
                 if (value instanceof Collection)
                 {
                     List<Serializable> boundCollection = new ArrayList<Serializable>();
-                    for (String collectionValue : (Collection<String>)value)
+                    for (Serializable collectionValue : (Collection<Serializable>)value)
                     {
                         Serializable objValue = bindValue(context, property, valueDataType, collectionValue);
                         boundCollection.add(objValue);
@@ -954,7 +954,7 @@ public class ImporterComponent
                 }
                 else
                 {
-                    value = bindValue(context, property, valueDataType, (String)value);
+                    value = bindValue(context, property, valueDataType, value);
                 }
 
                 // choose to provide property on node creation or at end of import for lazy binding
@@ -1002,19 +1002,22 @@ public class ImporterComponent
          * @param value  string form of value
          * @return  the bound value
          */
-        private Serializable bindValue(ImportNode context, QName property, DataTypeDefinition valueType, String value)
+        private Serializable bindValue(ImportNode context, QName property, DataTypeDefinition valueType, Serializable value)
         {
             Serializable objValue = null;
             if (value != null && valueType != null)
             {
-                String strValue = bindPlaceHolder(value, binding);
+                if (value instanceof String)
+                {
+                    value = bindPlaceHolder(value.toString(), binding);
+                }
                 if ((valueType.getName().equals(DataTypeDefinition.NODE_REF) || valueType.getName().equals(DataTypeDefinition.CATEGORY)))
                 {
-                    objValue = strValue;
+                    objValue = value;
                 }
                 else
                 {
-                    objValue = (Serializable)DefaultTypeConverter.INSTANCE.convert(valueType, strValue);
+                    objValue = (Serializable) DefaultTypeConverter.INSTANCE.convert(valueType, value);
                 }
                 
             }

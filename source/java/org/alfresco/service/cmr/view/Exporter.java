@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -25,6 +25,7 @@
 package org.alfresco.service.cmr.view;
 
 import java.io.InputStream;
+import java.util.Locale;
 
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -177,6 +178,21 @@ public interface Exporter
      * @param property  the property name
      */
     public void startValueCollection(NodeRef nodeRef, QName property);
+
+    /**
+     * Start export MLText
+     * 
+     * @param nodeRef the node reference
+     * @param locale
+     */
+    public void startValueMLText(NodeRef nodeRef, Locale locale);
+
+    /**
+     * End export MLText
+     * 
+     * @param nodeRef
+     */
+    public void endValueMLText(NodeRef nodeRef);
 
     /**
      * Export property value

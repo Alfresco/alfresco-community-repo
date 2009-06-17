@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -26,7 +26,9 @@ package org.alfresco.repo.importer.view;
 
 import java.io.IOException;
 import java.io.Reader;
+import java.io.Serializable;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
@@ -35,11 +37,14 @@ import org.alfresco.repo.importer.Importer;
 import org.alfresco.repo.importer.Parser;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.AssociationDefinition;
+import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
+import org.alfresco.service.cmr.repository.MLText;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.view.ImporterException;
 import org.alfresco.service.namespace.NamespaceService;
@@ -71,6 +76,7 @@ public class ViewParser implements Parser
     private static final String VIEW_IDREF_ATTR = "idref";
     private static final String VIEW_PATHREF_ATTR = "pathref";
     private static final String VIEW_NODEREF_ATTR = "noderef";
+    private static final String VIEW_LOCALE_ATTR = "locale";
     private static final QName VIEW_METADATA = QName.createQName(NamespaceService.REPOSITORY_VIEW_1_0_URI, "metadata");
     private static final QName VIEW_VALUE_QNAME = QName.createQName(NamespaceService.REPOSITORY_VIEW_1_0_URI, "value");
     private static final QName VIEW_VALUES_QNAME = QName.createQName(NamespaceService.REPOSITORY_VIEW_1_0_URI, "values");
@@ -82,7 +88,7 @@ public class ViewParser implements Parser
     private static final QName VIEW_AUTHORITY = QName.createQName(NamespaceService.REPOSITORY_VIEW_1_0_URI, "authority");
     private static final QName VIEW_PERMISSION = QName.createQName(NamespaceService.REPOSITORY_VIEW_1_0_URI, "permission");
     private static final QName VIEW_REFERENCE = QName.createQName(NamespaceService.REPOSITORY_VIEW_1_0_URI, "reference");
-    
+    private static final QName VIEW_ML_VALUE = QName.createQName(NamespaceService.REPOSITORY_VIEW_1_0_URI, "mlvalue");
     
     // XML Pull Parser Factory
     private XmlPullParserFactory factory;
@@ -670,6 +676,7 @@ public class ViewParser implements Parser
         {
             // Extract collection, if specified
             boolean isCollection = false;
+            boolean isMLProperty = false;
             if (eventType == XmlPullParser.START_TAG)
             {
                 QName name = getName(xpp);
@@ -683,6 +690,66 @@ public class ViewParser implements Parser
                         eventType = xpp.next();
                     }
                 }
+                else if (name.equals(VIEW_ML_VALUE))
+                {
+                    isMLProperty = true;
+                }
+            }
+
+            // Extract ML value
+
+            if (isMLProperty)
+            {
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("Start parsing MLValue for property: " + propertyName);
+                }
+                value = "";
+                String locale = "";
+                node.addDatatype(propertyName, dictionaryService.getDataType(DataTypeDefinition.MLTEXT));
+                MLText mlText = new MLText();
+                while (isMLProperty)
+                {
+                    isMLProperty = false;
+
+                    locale = xpp.getAttributeValue(NamespaceService.REPOSITORY_VIEW_1_0_URI, VIEW_LOCALE_ATTR);
+                    eventType = xpp.next();
+                    if (eventType == XmlPullParser.TEXT)
+                    {
+                        value = xpp.getText();
+                        eventType = xpp.next();
+                    }
+                    if (eventType == XmlPullParser.END_TAG)
+                    {
+                        if (logger.isDebugEnabled())
+                        {
+                            logger.debug("Found ML entry: " + locale + "=" + value);
+                        }
+                        mlText.addValue(DefaultTypeConverter.INSTANCE.convert(Locale.class, locale), value);
+
+                        eventType = xpp.next();
+                        if (eventType == XmlPullParser.TEXT)
+                        {
+                            eventType = xpp.next();
+                        }
+                    }
+
+                    if (eventType == XmlPullParser.START_TAG)
+                    {
+                        QName name = getName(xpp);
+                        if (name.equals(VIEW_ML_VALUE))
+                        {
+                            isMLProperty = true;
+                        }
+                    }
+                }
+
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("End parsing MLValue for property: " + propertyName);
+                }
+                node.addProperty(propertyName, mlText);
+
             }
             
             // Extract decorated value

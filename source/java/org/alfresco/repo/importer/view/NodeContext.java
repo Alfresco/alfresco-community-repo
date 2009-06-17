@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -247,7 +247,7 @@ public class NodeContext extends ElementContext
      * @param property  the property name
      * @param value  the property value
      */
-    public void addProperty(QName property, String value)
+    public void addProperty(QName property, Serializable value)
     {
         // Process "special" properties
         // TODO: Make this configurable...
@@ -256,7 +256,7 @@ public class NodeContext extends ElementContext
         // Process Alfresco UUID
         if (uuid == null && propDef != null && propDef.getName().equals(ContentModel.PROP_NODE_UUID))
         {
-            uuid = value;
+            uuid = value.toString();
         }
 
         // Do not import properties of sys:referenceable or cm:versionable

@@ -461,7 +461,7 @@ public class ResetWCMToGroupBasedPermissionsPatch extends MoveWCMToGroupBasedPer
                     logger.debug("Create: "+group);
                 }
                 
-                this.authorityService.createAuthority(AuthorityType.GROUP, null, shortName);
+                this.authorityService.createAuthority(AuthorityType.GROUP, shortName);
                 count++;
             }
             else

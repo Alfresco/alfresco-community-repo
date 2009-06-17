@@ -1,6 +1,6 @@
 /**
  * List/Search groups
- */ 
+ */
 
 function main ()
 {

@@ -4,7 +4,7 @@
       Delete a root group and all its dependents.
       <br />
       You must have "administrator" privileges to delete a group.
-      </br /> 
+      <br /> 
    ]]>
    </description>
    <url>/api/rootgroups/{shortName}</url>

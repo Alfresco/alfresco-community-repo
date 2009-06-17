@@ -4,7 +4,7 @@
       Remove an authority (USER or GROUP) from a group.  A user will not be deleted by this method.
       <br />
       You must have "administrator" privileges to alter a group.
-      </br /> 
+      <br /> 
    ]]>
    </description>
    <url>/api/groups/{shortGroupName}/children/{fullAuthorityName}</url>

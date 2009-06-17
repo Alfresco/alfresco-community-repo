@@ -26,11 +26,14 @@ package org.alfresco.repo.admin.patch.impl;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.zip.CRC32;
 
+import org.alfresco.config.JNDIConstants;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.i18n.I18NUtil;
 import org.alfresco.model.WCMAppModel;
@@ -72,6 +75,7 @@ import org.hibernate.ScrollableResults;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.type.LongType;
+import org.hibernate.type.StringType;
 import org.springframework.orm.hibernate3.HibernateCallback;
 import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
 
@@ -90,6 +94,8 @@ public class ResetWCMToGroupBasedPermissionsPatch extends MoveWCMToGroupBasedPer
     
     private PersonService personService;
     
+    private static int batchSize = 500;
+    
     // cache staging store acl change set and shared acl id
     private Map<String, Pair<DbAccessControlListChangeSet, Long>> stagingData = new HashMap<String, Pair<DbAccessControlListChangeSet, Long>>(10);
     
@@ -106,6 +112,11 @@ public class ResetWCMToGroupBasedPermissionsPatch extends MoveWCMToGroupBasedPer
     public void setPersonService(PersonService personService)
     {
         this.personService = personService;
+    }
+    
+    public void setBatchSize(int batchSizeOverride)
+    {
+        batchSize = batchSizeOverride;
     }
     
     public ResetWCMToGroupBasedPermissionsPatch()
@@ -166,6 +177,9 @@ public class ResetWCMToGroupBasedPermissionsPatch extends MoveWCMToGroupBasedPer
                 
                 makeGroupsIfRequired(store);
                 addUsersToGroupIfRequired(store);
+                
+                // belts-and-braces - nullify root children acls (if any) that are not 'www' (which will be overwritten anyway for staging stores)
+                nullifyAvmNodeAclsExcluding(store.getName(), JNDIConstants.DIR_DEFAULT_WWW);
                 
                 setStagingAreaPermissions(store);
                 
@@ -254,6 +268,17 @@ public class ResetWCMToGroupBasedPermissionsPatch extends MoveWCMToGroupBasedPer
             case AUTHOR:
             case WORKFLOW:
                 
+                if (stagingData.get(extractBaseStore(store.getName())) == null)
+                {
+                    // skip store - no corresponding base store
+                    if (logger.isDebugEnabled())
+                    {
+                        logger.debug("Skip store "+store.getName()+" ("+storeType+") since no corresponding base store");
+                    }
+                    
+                    break;
+                }
+                
                 if (logger.isDebugEnabled())
                 {
                     logger.debug("Process store "+store.getName()+" ("+storeType+")");
@@ -270,6 +295,17 @@ public class ResetWCMToGroupBasedPermissionsPatch extends MoveWCMToGroupBasedPer
                 break;
                 
             case STAGING_PREVIEW:
+                
+                if (stagingData.get(extractBaseStore(store.getName())) == null)
+                {
+                    // skip store - no corresponding base store
+                    if (logger.isDebugEnabled())
+                    {
+                        logger.debug("Skip store "+store.getName()+" ("+storeType+") since no corresponding base store");
+                    }
+                    
+                    break;
+                }
                 
                 if (logger.isDebugEnabled())
                 {
@@ -309,6 +345,17 @@ public class ResetWCMToGroupBasedPermissionsPatch extends MoveWCMToGroupBasedPer
             case AUTHOR_WORKFLOW:
             case WORKFLOW_PREVIEW:
                 
+                if (stagingData.get(extractBaseStore(store.getName())) == null)
+                {
+                    // skip store - no corresponding base store
+                    if (logger.isDebugEnabled())
+                    {
+                        logger.debug("Skip store "+store.getName()+" ("+storeType+") since no corresponding base store");
+                    }
+                    
+                    break;
+                }
+                
                 if (logger.isDebugEnabled())
                 {
                     logger.debug("Process store "+store.getName()+" ("+storeType+")");
@@ -344,6 +391,17 @@ public class ResetWCMToGroupBasedPermissionsPatch extends MoveWCMToGroupBasedPer
             switch (storeType)
             {
             case AUTHOR_WORKFLOW_PREVIEW:
+                
+                if (stagingData.get(extractBaseStore(store.getName())) == null)
+                {
+                    // skip store - no corresponding base store
+                    if (logger.isDebugEnabled())
+                    {
+                        logger.debug("Skip store "+store.getName()+" ("+storeType+") since no corresponding base store");
+                    }
+                    
+                    break;
+                }
                 
                 if (logger.isDebugEnabled())
                 {
@@ -433,6 +491,18 @@ public class ResetWCMToGroupBasedPermissionsPatch extends MoveWCMToGroupBasedPer
         }
     }
     
+    private void nullifyAvmNodeAclsExcluding(String storeName, String excludeRootChild) throws Exception
+    {
+        long startTime = System.currentTimeMillis();
+        
+        int updatedCount = helper.nullifyAvmNodeAclsExcluding(storeName, excludeRootChild);
+        
+        if (logger.isDebugEnabled() && (updatedCount > 0))
+        {
+            logger.debug("nullifyAvmNodeAcls ("+updatedCount+") for store: "+storeName+" excluding '"+excludeRootChild+"' in "+(System.currentTimeMillis()-startTime)/1000+" secs");
+        }
+    }
+    
     private void deleteDangling()
     {
         try
@@ -488,7 +558,7 @@ public class ResetWCMToGroupBasedPermissionsPatch extends MoveWCMToGroupBasedPer
         helper.updateAclInheritsFrom(sharedAclId, definingAclId);
         helper.updateAclInherited(sharedAclId, sharedAclId); // mimics current - do we need ?
         
-        // set defining acl
+        // set defining acl (on 'www')
         helper.setRootAcl(stagingStoreName, definingAclId);
         
         // set shared acls
@@ -530,7 +600,7 @@ public class ResetWCMToGroupBasedPermissionsPatch extends MoveWCMToGroupBasedPer
         helper.updateAclInheritsFrom(layeredAclId, baseSharedAclId);
         helper.updateAclInheritsFrom(sharedAclId, layeredAclId);
         
-        // set layered acl
+        // set layered acl (on 'www')
         helper.setRootAcl(sandboxStoreName, layeredAclId);
         
         // set shared acls
@@ -650,12 +720,60 @@ public class ResetWCMToGroupBasedPermissionsPatch extends MoveWCMToGroupBasedPer
             {
                 long rootId = getAVMStoreCurrentRootNodeId(storeName);
                 
+                // recursively nullify below the root
                 int updatedCount = nullifyAvmNodeAcls(rootId);
+                
+                // also nullify the root
+                List<Long> childIds = new ArrayList<Long>(1);
+                childIds.add(rootId);
+                updatedCount += nullifyAvmNodeAclsForChildren(childIds);
+                
                 return updatedCount;
             }
             catch (Throwable e)
             {
                 String msg = "Failed to nullify avm node acl ids for: "+storeName;
+                logger.error(msg, e);
+                throw new PatchException(msg, e);
+            }
+        }
+        
+        private int nullifyAvmNodeAclsExcluding(String storeName, String excludeRootChild)
+        {
+            try
+            {
+                long rootId = getAVMStoreCurrentRootNodeId(storeName);
+                
+                List<Pair<Long, String>> children = getAVMChildrenWithName(rootId);
+                
+                int totalUpdatedCount = 0;
+                
+                List<Long> childIds = new ArrayList<Long>(0);
+                
+                for (Pair<Long, String> child : children)
+                {
+                    Long childId = child.getFirst();
+                    String name = child.getSecond();
+                    
+                    if (! name.equals(excludeRootChild))
+                    {
+                        // recursively nullify below the (non-excluded) root children
+                        totalUpdatedCount += nullifyAvmNodeAcls(childId);
+                        childIds.add(childId);
+                    }
+                }
+                
+                if (childIds.size() > 0)
+                {
+                    // also nullify the (non-excluded) root children
+                    totalUpdatedCount += nullifyAvmNodeAclsForChildren(childIds);
+                }
+                
+                return totalUpdatedCount;
+            }
+            catch (Throwable e)
+            {
+                String msg = "Failed to nullify avm node acl ids for: "+storeName+" (excluding "+excludeRootChild+")";
                 logger.error(msg, e);
                 throw new PatchException(msg, e);
             }
@@ -669,7 +787,7 @@ public class ResetWCMToGroupBasedPermissionsPatch extends MoveWCMToGroupBasedPer
             
             if (childIds.size() > 0)
             {
-                updatedCount = nullifyAvmNodeAclsForChildren(parentId);
+                updatedCount = nullifyAvmNodeAclsForChildren(childIds);
                 
                 for (Long childId : childIds)
                 {
@@ -681,55 +799,107 @@ public class ResetWCMToGroupBasedPermissionsPatch extends MoveWCMToGroupBasedPer
             return updatedCount;
         }
         
-        private int nullifyAvmNodeAclsForChildren(final long parentId)
+        private int nullifyAvmNodeAclsForChildren(List<Long> childIds)
         {
-            // native SQL
-            SQLQuery query = getSession()
-                    .createSQLQuery(
-                        " update avm_nodes set acl_id = null "+
-                        " where acl_id is not null " +
-                        " and id in "+
-                        "   (select ce.child_id "+
-                        "    from avm_child_entries ce "+
-                        "    where ce.parent_id = :parentId) "+
-                        "");
+            int totalUpdateCount = 0;
             
-            query.setLong("parentId", parentId);
+            Iterator<Long> childIdIterator = childIds.iterator();
+            List<Long> batchChildIds = new ArrayList<Long>(batchSize);
             
-            return (Integer)query.executeUpdate();
+            while (childIdIterator.hasNext())
+            {
+                Long childId = childIdIterator.next();
+                
+                batchChildIds.add(childId);
+                
+                if (batchChildIds.size() == batchSize || !childIdIterator.hasNext())
+                {
+                    // native SQL
+                    SQLQuery query = getSession()
+                            .createSQLQuery(
+                                " update avm_nodes set acl_id = null "+
+                                " where acl_id is not null " +
+                                " and id in (:childIds) "+
+                                "");
+                    
+                    query.setParameterList("childIds", batchChildIds);
+                    
+                    int batchUpdateCount = (Integer)query.executeUpdate();
+                    totalUpdateCount = totalUpdateCount + batchUpdateCount;
+                    
+                    batchChildIds.clear();
+                }
+            }
+            
+            return totalUpdateCount;
         }
         
-        private int updateChildNodeAclIds(final long parentId, final long aclId)
+        private int updateChildNodeAclIds(long aclId, List<Long> childIds)
         {
-            // native SQL
-            SQLQuery query = getSession()
-                    .createSQLQuery(
-                        " update avm_nodes set acl_id = :aclId "+
-                        " where id in "+
-                        "   (select ce.child_id "+
-                        "    from avm_child_entries ce "+
-                        "    where ce.parent_id = :parentId) "+
-                        "");
+            int totalUpdateCount = 0;
             
-            query.setLong("parentId", parentId);
+            Iterator<Long> childIdIterator = childIds.iterator();
+            List<Long> batchChildIds = new ArrayList<Long>(batchSize);
             
-            query.setLong("aclId", aclId);
+            while (childIdIterator.hasNext())
+            {
+                Long childId = childIdIterator.next();
+                
+                batchChildIds.add(childId);
+                
+                if (batchChildIds.size() == batchSize || !childIdIterator.hasNext())
+                {
+                    // native SQL
+                    SQLQuery query = getSession()
+                            .createSQLQuery(
+                                " update avm_nodes set acl_id = :aclId "+
+                                " where id in (:childIds) "+
+                                "");
+                    
+                    query.setParameterList("childIds", batchChildIds);
+                    
+                    query.setLong("aclId", aclId);
+                    
+                    int batchUpdateCount = (Integer)query.executeUpdate();
+                    totalUpdateCount = totalUpdateCount + batchUpdateCount;
+                    
+                    batchChildIds.clear();
+                }
+            }
             
-            return (Integer)query.executeUpdate();
+            return totalUpdateCount;
         }
         
         // set root acl on top node (eg. defining or layered acl applied to 'www')
-        private void setRootAcl(final String storeName, final long aclId) throws Exception
+        private void setRootAcl(String storeName, long aclId) throws Exception
         {
             try
             {
                 long rootId = getAVMStoreCurrentRootNodeId(storeName);
                 
-                int updatedCount = updateChildNodeAclIds(rootId, aclId);
-            
-                if (updatedCount != 1)
+                List<Pair<Long, String>> children = getAVMChildrenWithName(rootId);
+                
+                int totalUpdatedCount = 0;
+                
+                for (Pair<Long, String> child : children)
                 {
-                    throw new AlfrescoRuntimeException("Failed to set top acl for store: "+storeName+" (unexpected updateCount = "+updatedCount);
+                    Long childId = child.getFirst();
+                    String name = child.getSecond();
+                    
+                    if (name.equals(JNDIConstants.DIR_DEFAULT_WWW))
+                    {
+                        List<Long> childIds = new ArrayList<Long>(1);
+                        childIds.add(childId);
+                        
+                        int updatedCount = updateChildNodeAclIds(aclId, childIds);
+                        totalUpdatedCount += updatedCount;
+                    }
+                }
+                
+                // belts-and-braces - we expect to find & update 'www'
+                if (totalUpdatedCount != 1)
+                {
+                    throw new AlfrescoRuntimeException("Failed to set top acl for store: "+storeName+" (unexpected updateCount = "+totalUpdatedCount);
                 }
             }
             catch (Throwable e)
@@ -747,11 +917,25 @@ public class ResetWCMToGroupBasedPermissionsPatch extends MoveWCMToGroupBasedPer
             {
                 long rootId = getAVMStoreCurrentRootNodeId(storeName);
                 
-                List<Long> childIds = getAVMChildren(rootId);
+                List<Pair<Long, String>> children = getAVMChildrenWithName(rootId);
                 
+                List<Long> childIds = new ArrayList<Long>(1);
+                
+                for (Pair<Long, String> child : children)
+                {
+                    Long childId = child.getFirst();
+                    String name = child.getSecond();
+                    
+                    if (name.equals(JNDIConstants.DIR_DEFAULT_WWW))
+                    {
+                        childIds.add(childId);
+                    }
+                }
+                
+                // belts-and-braces
                 if (childIds.size() != 1)
                 {
-                    throw new AlfrescoRuntimeException("Expected 1 child of root ('www') found "+childIds.size()+ " children: "+storeName);
+                    throw new AlfrescoRuntimeException("Did not find one 'www' ("+childIds.size()+ ") for: "+storeName);
                 }
                 
                 return setSharedAcls(childIds.get(0), sharedAclId);
@@ -772,7 +956,7 @@ public class ResetWCMToGroupBasedPermissionsPatch extends MoveWCMToGroupBasedPer
             
             if (childIds.size() > 0)
             {
-                updatedCount = updateChildNodeAclIds(parentId, sharedAclId);
+                updatedCount = updateChildNodeAclIds(sharedAclId, childIds);
                 
                 for (Long childId : childIds)
                 {
@@ -801,52 +985,172 @@ public class ResetWCMToGroupBasedPermissionsPatch extends MoveWCMToGroupBasedPer
         // note: dangling shared acl currently possible (after creating new sandbox)
         private int deleteDanglingAcls() throws Exception
         {
-            // native SQL
-            SQLQuery query = getSession()
-                    .createSQLQuery(
-                        " delete from alf_acl_member "+
-                        " where acl_id in ("+
-                        " select a.id "+
-                        " from alf_access_control_list a "+
-                        " where a.id not in (" +
-                        " select acl_id from avm_nodes where acl_id is not null "+
-                        " union "+
-                        " select acl_id from avm_stores where acl_id is not null "+
-                        " union "+
-                        " select acl_id from alf_node where acl_id is not null "+
-                        " union "+
-                        " select acl_id from alf_attributes where acl_id is not null "+
-                        " ))");
+            Set<Long> nonDanglingAclIds = getNonDanglingAcls();
+            Set<Long> aclIds = getAllAcls();
             
-            int deletedCount = query.executeUpdate();
+            // get set of dangling acl ids
+            aclIds.removeAll(nonDanglingAclIds);
+            
+            int totalDeletedCount = 0;
+                
+            Iterator<Long> aclIdIterator = aclIds.iterator();
+            List<Long> batchAclIds = new ArrayList<Long>(batchSize);
+            
+            while (aclIdIterator.hasNext())
+            {
+                Long aclId = aclIdIterator.next();
+                
+                batchAclIds.add(aclId);
+                
+                if (batchAclIds.size() == batchSize || !aclIdIterator.hasNext())
+                {
+                    // native SQL
+                    SQLQuery query = getSession()
+                            .createSQLQuery(
+                                " delete from alf_acl_member "+
+                                " where acl_id in (:aclIds) "+
+                                "");
+                    
+                    query.setParameterList("aclIds", batchAclIds);
+                    
+                    int batchDeletedCount = (Integer)query.executeUpdate();
+                    totalDeletedCount = totalDeletedCount + batchDeletedCount;
+                    
+                    batchAclIds.clear();
+                }
+            }
             
             if (logger.isDebugEnabled())
             {
-                logger.debug("Deleted "+deletedCount+" dangling acl members");
+                logger.debug("Deleted "+totalDeletedCount+" dangling acl members");
             }
             
-            // native SQL
-            query = getSession()
-                    .createSQLQuery(
-                        " delete from alf_access_control_list "+
-                        " where id not in ("+
-                        " select acl_id from avm_nodes where acl_id is not null "+
-                        " union "+
-                        " select acl_id from avm_stores where acl_id is not null "+
-                        " union "+
-                        " select acl_id from alf_node where acl_id is not null "+
-                        " union "+
-                        " select acl_id from alf_attributes where acl_id is not null "+
-                        " )");
+            totalDeletedCount = 0;
             
-            deletedCount = query.executeUpdate();
+            aclIdIterator = aclIds.iterator();
+            batchAclIds = new ArrayList<Long>(batchSize);
+            
+            while (aclIdIterator.hasNext())
+            {
+                Long aclId = aclIdIterator.next();
+                
+                batchAclIds.add(aclId);
+                
+                if (batchAclIds.size() == batchSize || !aclIdIterator.hasNext())
+                {
+                    // native SQL
+                    SQLQuery query = getSession()
+                            .createSQLQuery(
+                                " delete from alf_access_control_list "+
+                                " where id in (:aclIds) "+
+                                "");
+                    
+                    query.setParameterList("aclIds", batchAclIds);
+                    
+                    int batchDeletedCount = (Integer)query.executeUpdate();
+                    totalDeletedCount = totalDeletedCount + batchDeletedCount;
+                    
+                    batchAclIds.clear();
+                }
+            }
             
             if (logger.isDebugEnabled())
             {
-                logger.debug("Deleted "+deletedCount+" dangling acls");
+                logger.debug("Deleted "+totalDeletedCount+" dangling acls");
             }
             
-            return deletedCount;
+            return totalDeletedCount;
+        }
+        
+        private Set<Long> getNonDanglingAcls()
+        {
+            final Set<Long> aclIds = new HashSet<Long>(10000);
+            
+            HibernateCallback callback = new HibernateCallback()
+            {
+                public Object doInHibernate(Session session)
+                {
+                    // native SQL
+                    SQLQuery query = getSession().createSQLQuery(
+                            " select acl_id from avm_nodes where acl_id is not null "+
+                            " union "+
+                            " select acl_id from avm_stores where acl_id is not null "+
+                            " union "+
+                            " select acl_id from alf_node where acl_id is not null "+
+                            " union "+
+                            " select acl_id from alf_attributes where acl_id is not null");
+                    
+                    query.addScalar("acl_id", new LongType());
+                    
+                    return query.scroll(ScrollMode.FORWARD_ONLY);
+                }
+            };
+            ScrollableResults rs = null;
+            try
+            {
+                rs = (ScrollableResults) getHibernateTemplate().execute(callback);
+                while (rs.next())
+                {
+                    Long aclId = (Long) rs.get(0);
+                    aclIds.add(aclId);
+                }
+            }
+            catch (Throwable e)
+            {
+                String msg = "Failed to query for non-dangling acls";
+                logger.error(msg, e);
+                throw new PatchException(msg, e);
+            }
+            finally
+            {
+                if (rs != null)
+                {
+                    try { rs.close(); } catch (Throwable e) { logger.error(e); }
+                }
+            }
+            return aclIds;
+        }
+        
+        private Set<Long> getAllAcls()
+        {
+            final Set<Long> aclIds = new HashSet<Long>(10000);
+            
+            HibernateCallback callback = new HibernateCallback()
+            {
+                public Object doInHibernate(Session session)
+                {
+                    // native SQL
+                    SQLQuery query = getSession().createSQLQuery("select id from alf_access_control_list ");
+                    
+                    query.addScalar("id", new LongType());
+                    
+                    return query.scroll(ScrollMode.FORWARD_ONLY);
+                }
+            };
+            ScrollableResults rs = null;
+            try
+            {
+                rs = (ScrollableResults) getHibernateTemplate().execute(callback);
+                while (rs.next())
+                {
+                    Long aclId = (Long) rs.get(0);
+                    aclIds.add(aclId);
+                }
+            }
+            catch (Throwable e)
+            {
+                String msg = "Failed to query for all acls";
+                logger.error(msg, e);
+                throw new PatchException(msg, e);
+            }
+            finally
+            {
+                if (rs != null)
+                {
+                    try { rs.close(); } catch (Throwable e) { logger.error(e); }
+                }
+            }
+            return aclIds;
         }
         
         private long getAVMStoreCurrentRootNodeId(final String avmStoreName)
@@ -901,6 +1205,51 @@ public class ResetWCMToGroupBasedPermissionsPatch extends MoveWCMToGroupBasedPer
                 }
             }
             return childIds;
+        }
+        
+        private List<Pair<Long, String>> getAVMChildrenWithName(final long parentId)
+        {
+            final List<Pair<Long, String>> children = new ArrayList<Pair<Long, String>>(100);
+            
+            HibernateCallback callback = new HibernateCallback()
+            {
+                public Object doInHibernate(Session session)
+                {
+                    // native SQL
+                    SQLQuery query = getSession().createSQLQuery("select child_id, name as name from avm_child_entries where parent_id = :parentId");
+                    
+                    query.setLong("parentId", parentId);
+                    query.addScalar("child_id", new LongType());
+                    query.addScalar("name", new StringType());
+                    
+                    return query.scroll(ScrollMode.FORWARD_ONLY);
+                }
+            };
+            ScrollableResults rs = null;
+            try
+            {
+                rs = (ScrollableResults) getHibernateTemplate().execute(callback);
+                while (rs.next())
+                {
+                    Long childId = (Long) rs.get(0);
+                    String name = (String) rs.get(1);
+                    children.add(new Pair<Long, String>(childId, name));
+                }
+            }
+            catch (Throwable e)
+            {
+                String msg = "Failed to query for child entries (parent_id = "+parentId+")";
+                logger.error(msg, e);
+                throw new PatchException(msg, e);
+            }
+            finally
+            {
+                if (rs != null)
+                {
+                    try { rs.close(); } catch (Throwable e) { logger.error(e); }
+                }
+            }
+            return children;
         }
         
         private long findOrCreateAce(final String authorityName, final String permissionName) throws Exception

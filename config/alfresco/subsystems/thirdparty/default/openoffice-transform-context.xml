@@ -13,6 +13,13 @@
       </property>
    </bean>
 
+   <!--  We have to convert the user directory to an Open Office compatible URI -->
+   <bean id="userInstallationURI" class="org.alfresco.util.OpenOfficeURI">
+      <constructor-arg>
+         <value>${ooo.user}</value>
+      </constructor-arg>
+   </bean>
+
    <bean id="openOfficeStartupCommand" class="org.alfresco.util.exec.RuntimeExec">
       <property name="commandsAndArguments">
          <map>
@@ -20,7 +27,14 @@
                <list>
                   <value>${ooo.exe}</value>
                   <value>-accept=socket,host=localhost,port=8100;urp;StarOffice.ServiceManager</value>
-                  <value>-env:UserInstallation=file:///${ooo.user}</value>
+                  <bean class="org.alfresco.util.StringAppendingFactoryBean">
+                     <property name="items">
+                        <list>
+                           <value>-env:UserInstallation=</value>
+                           <ref bean="userInstallationURI" />
+                        </list>
+                     </property>
+                  </bean>
                   <value>-nologo</value>
                   <value>-headless</value>
                   <value>-nofirststartwizard</value>

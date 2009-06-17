@@ -101,7 +101,7 @@ public class GroupsTest extends BaseWebScriptTest
         {
             this.authenticationComponent.setSystemUserAsCurrentUser();
         	 
-        	rootGroupName = authorityService.createAuthority(AuthorityType.GROUP, TEST_ROOTGROUP, TEST_ROOTGROUP_DISPLAY_NAME, null);
+        	rootGroupName = authorityService.createAuthority(AuthorityType.GROUP, TEST_ROOTGROUP, TEST_ROOTGROUP_DISPLAY_NAME, authorityService.getDefaultZones());
         	String groupA = authorityService.createAuthority(AuthorityType.GROUP, TEST_GROUPA);
         	authorityService.addAuthority(rootGroupName, groupA);
         	String groupB = authorityService.createAuthority(AuthorityType.GROUP, TEST_GROUPB);

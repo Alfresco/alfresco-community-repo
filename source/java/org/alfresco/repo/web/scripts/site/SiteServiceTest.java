@@ -419,7 +419,7 @@ public class SiteServiceTest extends BaseWebScriptTest
         {
             this.authenticationComponent.setSystemUserAsCurrentUser();
         	 
-        	testGroupName = authorityService.createAuthority(AuthorityType.GROUP, testGroup, testGroup, null);
+        	testGroupName = authorityService.createAuthority(AuthorityType.GROUP, testGroup, testGroup, authorityService.getDefaultZones());
         }     	
          
         this.authenticationComponent.setCurrentUser(USER_ONE);

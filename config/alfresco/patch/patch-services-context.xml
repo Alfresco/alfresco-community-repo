@@ -1571,6 +1571,7 @@
         </property>
         <property name="dependsOn">
             <list>
+                <ref bean="patch.updateAvmPermissionData" />
                 <ref bean="patch.zonedAuthorities" />
             </list>
         </property>

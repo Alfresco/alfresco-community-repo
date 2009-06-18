@@ -595,6 +595,13 @@ public class NodeFormProcessor extends FilteredFormProcessor
         fieldDef.setProtectedField(propDef.isProtected());
         fieldDef.setRepeating(propDef.isMultiValued());
         
+        // any property from the system model (sys prefix) should be protected
+        // the model doesn't currently enforce this so make sure they are not editable
+        if (NamespaceService.SYSTEM_MODEL_1_0_URI.equals(propDef.getName().getNamespaceURI()))
+        {
+            fieldDef.setProtectedField(true);
+        }
+        
         // define the data key name and set
         String dataKeyName = PROP_DATA_PREFIX + nameParts[0] + DATA_KEY_SEPARATOR + nameParts[1];
         fieldDef.setDataKeyName(dataKeyName);

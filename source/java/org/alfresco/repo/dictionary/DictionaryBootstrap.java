@@ -116,6 +116,7 @@ public class DictionaryBootstrap implements DictionaryListener
      */
     public void register()
     {
+        dictionaryDAO.destroy(); // deployer - force reload on next get
     	dictionaryDAO.register(this);
     }
 

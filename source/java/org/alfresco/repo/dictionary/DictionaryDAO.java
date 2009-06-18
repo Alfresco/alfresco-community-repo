@@ -160,11 +160,11 @@ public interface DictionaryDAO extends ModelQuery
     
     /**
      *
-     * Register with the Dictionary
+     * Register listener with the Dictionary
      * 
-     * @param dictionaryDeployer
+     * @param dictionaryListener
      */
-    public void register(DictionaryListener dictionaryDeployer);
+    public void register(DictionaryListener dictionaryListener);
     
     /**
      * Reset the Dictionary - destroy & re-initialise

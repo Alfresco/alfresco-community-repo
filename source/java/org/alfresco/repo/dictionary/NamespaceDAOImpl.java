@@ -396,9 +396,17 @@ public class NamespaceDAOImpl implements NamespaceDAO
     private NamespaceRegistry getNamespaceRegistry(String tenantDomain)
     {
         NamespaceRegistry namespaceRegistry =  null;
+        
+        // check threadlocal first - return if set
+        namespaceRegistry = getNamespaceRegistryLocal(tenantDomain);
+        if (namespaceRegistry != null)
+        {
+            return namespaceRegistry; // return local namespaceRegistry
+        }
+        
         try
         {
-            // check cache first - return if set
+            // check cache second - return if set
             readLock.lock();
             namespaceRegistry = namespaceRegistryCache.get(tenantDomain);
             
@@ -410,13 +418,6 @@ public class NamespaceDAOImpl implements NamespaceDAO
         finally
         {
             readLock.unlock();
-        }
-        
-        // check threadlocal second - return if set
-        namespaceRegistry = getNamespaceRegistryLocal(tenantDomain);
-        if (namespaceRegistry != null)
-        {
-            return namespaceRegistry; // return local namespaceRegistry
         }
         
         // reset caches - may have been invalidated (e.g. in a cluster)

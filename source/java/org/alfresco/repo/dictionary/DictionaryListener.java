@@ -26,10 +26,9 @@ package org.alfresco.repo.dictionary;
 
 
 /**
- * Dictionary Deployer interface.
+ * Dictionary Listener interface.
  * <p>
- * This interface allows DictionaryDAO to be (re-)initialised.
- * Dictionary Deployer components must register with the DictionaryService.
+ * This interface allows Dictionary Listeners to register with the DictionaryService.
  *
  */
 public interface DictionaryListener

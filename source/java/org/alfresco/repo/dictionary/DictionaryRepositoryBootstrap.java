@@ -436,6 +436,8 @@ public class DictionaryRepositoryBootstrap extends AbstractLifecycleBean impleme
      */
     public void register()
     {
+        dictionaryDAO.destroy(); // deployer - force reload on next get
+        
     	// register with Dictionary Service to allow (re-)init
     	dictionaryDAO.register(this);
     	

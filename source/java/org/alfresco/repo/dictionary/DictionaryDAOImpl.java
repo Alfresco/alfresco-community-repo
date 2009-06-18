@@ -40,6 +40,7 @@ import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.tenant.TenantService;
+import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.AssociationDefinition;
 import org.alfresco.service.cmr.dictionary.ClassDefinition;
@@ -118,12 +119,11 @@ public class DictionaryDAOImpl implements DictionaryDAO
     /**
      * Register with the Dictionary
      */
-    public void register(DictionaryListener dictionaryDeployer)
+    public void register(DictionaryListener dictionaryListener)
     {
-        if (! dictionaryListeners.contains(dictionaryDeployer))
+        if (! dictionaryListeners.contains(dictionaryListener))
         {
-            destroy(); // force reload on next get
-            dictionaryListeners.add(dictionaryDeployer);
+            dictionaryListeners.add(dictionaryListener);
         }
     }
     
@@ -937,12 +937,19 @@ public class DictionaryDAOImpl implements DictionaryDAO
     {
         DictionaryRegistry dictionaryRegistry = null;
         
+        // check threadlocal first - return if set
+        dictionaryRegistry = getDictionaryRegistryLocal(tenantDomain);
+        if (dictionaryRegistry != null)
+        {
+            return dictionaryRegistry; // return local dictionaryRegistry
+        }
+        
         try
         {
-            // check cache first - return if set
+            // check cache second - return if set
             readLock.lock();
             dictionaryRegistry = dictionaryRegistryCache.get(tenantDomain);
-
+            
             if (dictionaryRegistry != null)
             {
                 return dictionaryRegistry; // return cached config
@@ -953,11 +960,9 @@ public class DictionaryDAOImpl implements DictionaryDAO
             readLock.unlock();
         }
         
-        // check threadlocal second - return if set
-        dictionaryRegistry = getDictionaryRegistryLocal(tenantDomain);
-        if (dictionaryRegistry != null)
+        if (logger.isDebugEnabled())
         {
-            return dictionaryRegistry; // return local dictionaryRegistry
+            logger.debug("getDictionaryRegistry: not in cache (or threadlocal) - re-init ["+Thread.currentThread().getId()+", "+AlfrescoTransactionSupport.getTransactionId()+"]"+(tenantDomain.equals(TenantService.DEFAULT_DOMAIN) ? "" : " (Tenant: "+tenantDomain+")"));
         }
         
         // reset caches - may have been invalidated (e.g. in a cluster)

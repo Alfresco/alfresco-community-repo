@@ -43,11 +43,13 @@ public class OpenOfficeURI
      * Instantiates a new open office URI.
      * 
      * @param source
-     *            the source file to convert to a URI
+     *            the source file name to convert to a URI
+     * @throws IOException
+     *             if the string cannot be resolved to a canonical file path
      */
-    public OpenOfficeURI(File source)
+    public OpenOfficeURI(String source) throws IOException
     {
-        this.source = source;
+        this.source = new File(source).getCanonicalFile();
     }
 
     /*
@@ -57,15 +59,7 @@ public class OpenOfficeURI
     @Override
     public String toString()
     {
-        String absolute;
-        try
-        {
-            absolute = this.source.getCanonicalPath();
-        }
-        catch (IOException e)
-        {
-            throw new RuntimeException(e);
-        }
+        String absolute = this.source.getAbsolutePath();
         if (File.separatorChar != '/')
         {
             absolute = absolute.replace(File.separatorChar, '/');

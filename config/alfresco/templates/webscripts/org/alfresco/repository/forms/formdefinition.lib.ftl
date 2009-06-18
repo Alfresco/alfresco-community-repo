@@ -26,14 +26,16 @@
                     <#if field.dataTypeParameters??>"dataTypeParameters" : 
                     ${field.dataTypeParameters.asJSON},</#if>
                     <#if field.constraints??>"constraints" : 
-                    [{
+                    [
                     <#list field.constraints as cnstrnt>
-                        "type" : "${cnstrnt.type}"<#if cnstrnt.parametersAsJSON??>,
-                        "parameters" : 
-                        ${cnstrnt.parametersAsJSON}
-                        </#if>
+                       {
+                          "type" : "${cnstrnt.type}"<#if cnstrnt.parametersAsJSON??>,
+                          "parameters" : 
+                          ${cnstrnt.parametersAsJSON}
+                          </#if>
+                       }<#if cnstrnt_has_next>,</#if>
                     </#list>
-                    }],</#if>
+                    ],</#if>
                     "mandatory" : ${field.mandatory?string},
                     "repeating" : ${field.repeating?string}
                     <#else>

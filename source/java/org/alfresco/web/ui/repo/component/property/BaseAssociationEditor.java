@@ -1025,7 +1025,12 @@ public abstract class BaseAssociationEditor extends UIInput
             
             if (contains != null && contains.length() > 0)
             {
-               String safeContains = contains.trim();
+               String safeContains = null;
+               if (contains != null && contains.length() > 0)
+               {
+                  safeContains = Utils.remove(contains.trim(), "\"");
+                  safeContains = safeContains.toLowerCase();
+               }
                
                // if the association's target is the person type search on the 
                // firstName and lastName properties instead of the name property

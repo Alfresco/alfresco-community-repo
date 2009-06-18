@@ -444,7 +444,6 @@ public class NamespaceDAOImpl implements NamespaceDAO
             if (! tenantDomain.equals(TenantService.DEFAULT_DOMAIN))
             {
                 namespaceRegistryThreadLocal.set(namespaceRegistry);
-                
             }
             
             if (defaultNamespaceRegistryThreadLocal.get() == null)
@@ -487,6 +486,7 @@ public class NamespaceDAOImpl implements NamespaceDAO
         }
         else
         {
+            defaultNamespaceRegistryThreadLocal.set(null); // it's in the cache, clear the threadlocal
             namespaceRegistryThreadLocal.set(null); // it's in the cache, clear the threadlocal
         }
     }

@@ -177,7 +177,36 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
         {
             // Expected
         }
+         
+        
     }
+    
+    /**
+     * Test for duplicate site exception where the duplicate is a private site.
+     * 
+     * @throws Exception
+     */
+	public void testETHREEOH_2133() throws Exception
+	{
+	       
+        // Test for duplicate site error with a private site
+        
+        this.siteService.createSite(TEST_SITE_PRESET, "wibble", TEST_TITLE, TEST_DESCRIPTION, SiteVisibility.PRIVATE);
+        
+        authenticationComponent.setCurrentUser(USER_THREE);
+        
+        try
+        {
+            this.siteService.createSite(TEST_SITE_PRESET, "wibble", TEST_TITLE, TEST_DESCRIPTION, SiteVisibility.PRIVATE);
+            fail("Shouldn't allow duplicate site short names.");
+        }
+        catch (AlfrescoRuntimeException exception)
+        {
+            // Expected
+        }
+
+		
+	}
     
     public void testETHREEOH_15() throws Exception
     {

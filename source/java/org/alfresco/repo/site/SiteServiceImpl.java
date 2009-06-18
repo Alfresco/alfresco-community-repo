@@ -26,7 +26,6 @@ package org.alfresco.repo.site;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -104,8 +103,6 @@ public class SiteServiceImpl implements SiteService, SiteModel
     private static final int GROUP_PREFIX_LENGTH = PermissionService.GROUP_PREFIX.length();
     private static final int GROUP_SITE_PREFIX_LENGTH = GROUP_SITE_PREFIX.length();
     
-    private static final Set<String> ZONES;
-    
     /** Site home ref cache (Tennant aware) */
     private Map<String, NodeRef> siteHomeRefs = new ConcurrentHashMap<String, NodeRef>(4);
     
@@ -142,13 +139,6 @@ public class SiteServiceImpl implements SiteService, SiteModel
     private RetryingTransactionHelper retryingTransactionHelper;
     private Comparator<String> roleComparator ;
 
-    static
-    {
-        HashSet<String> zones = new HashSet<String>(2, 1.0f);
-        zones.add(AuthorityService.ZONE_APP_SHARE);
-        zones.add(AuthorityService.ZONE_AUTH_ALFRESCO);
-        ZONES = Collections.unmodifiableSet(zones);
-    }
 
     /**
      * Set the path to the location of the sites root folder.  For example:
@@ -328,14 +318,24 @@ public class SiteServiceImpl implements SiteService, SiteModel
     {
         // Remove spaces from shortName
         final String shortName = passedShortName.replaceAll(" ", "");
-
-        // Check to see if we already have a site of this name
-        NodeRef existingSite = getSiteNodeRef(shortName);
-        if (existingSite != null)
+        
+        /**
+         * Check that the site does not already exist
+         */
+        AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
         {
-            // Throw an exception since we have a duplicate site name
-            throw new SiteServiceException(MSG_UNABLE_TO_CREATE, new Object[]{shortName});
-        }
+            public String doWork() throws Exception
+            {
+            	// Check to see if we already have a site of this name
+            	NodeRef existingSite = getSiteNodeRef(shortName);
+            	if (existingSite != null)
+            	{
+            		// Throw an exception since we have a duplicate site name
+            		throw new SiteServiceException(MSG_UNABLE_TO_CREATE, new Object[]{shortName});
+            	}
+            	return null;
+            }
+        }, AuthenticationUtil.getSystemUserName());
 
         // Get the site parent node reference
         NodeRef siteParent = getSiteParent(shortName);
@@ -371,13 +371,13 @@ public class SiteServiceImpl implements SiteService, SiteModel
             {
                 // Create the site's groups
                 String siteGroup = authorityService
-                        .createAuthority(AuthorityType.GROUP, getSiteGroup(shortName, false), getSiteGroup(shortName, false), ZONES);
+                        .createAuthority(AuthorityType.GROUP, getSiteGroup(shortName, false));
                 Set<String> permissions = permissionService.getSettablePermissions(SiteModel.TYPE_SITE);
                 for (String permission : permissions)
                 {
                     // Create a group for the permission
                     String permissionGroup = authorityService.createAuthority(AuthorityType.GROUP, getSiteRoleGroup(
-                            shortName, permission, false), getSiteRoleGroup(shortName, permission, false), ZONES);
+                            shortName, permission, false));
                     authorityService.addAuthority(siteGroup, permissionGroup);
 
                     // Assign the group the relevant permission on the site

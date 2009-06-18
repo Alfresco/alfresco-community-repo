@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -58,6 +58,14 @@ public class QueryParameterDefImpl implements QueryParameterDefinition
     
     private String defaultValue;
 
+    /**
+     * QueryParameterDefImpl
+     * 
+     * @param qName
+     * @param propertyDefinition
+     * @param hasDefaultValue
+     * @param defaultValue
+     */
     public QueryParameterDefImpl(QName qName, PropertyDefinition propertyDefinition, boolean hasDefaultValue, String defaultValue)
     {
         this(qName, hasDefaultValue, defaultValue);
@@ -65,6 +73,12 @@ public class QueryParameterDefImpl implements QueryParameterDefinition
         this.dataTypeDefintion = propertyDefinition.getDataType();
     }
 
+    /**
+     * 
+     * @param qName
+     * @param hasDefaultValue
+     * @param defaultValue
+     */
     private QueryParameterDefImpl(QName qName, boolean hasDefaultValue, String defaultValue)
     {
         super();
@@ -73,6 +87,13 @@ public class QueryParameterDefImpl implements QueryParameterDefinition
         this.defaultValue = defaultValue;
     }
     
+    /**
+     * 
+     * @param qName
+     * @param dataTypeDefintion
+     * @param hasDefaultValue
+     * @param defaultValue
+     */
     public QueryParameterDefImpl(QName qName, DataTypeDefinition dataTypeDefintion, boolean hasDefaultValue, String defaultValue)
     {
         this(qName, hasDefaultValue, defaultValue);

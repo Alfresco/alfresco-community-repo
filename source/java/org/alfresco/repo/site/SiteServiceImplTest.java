@@ -54,7 +54,7 @@ import org.alfresco.util.BaseAlfrescoSpringTest;
 import org.alfresco.util.PropertyMap;
 
 /**
- * Thumbnail service implementation unit test
+ * Site service implementation unit test
  * 
  * @author Roy Wetherall
  */
@@ -232,27 +232,31 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
         assertTrue(this.taggingService.isTagScope(siteInfo.getNodeRef()));
     }
     
+    /**
+     * Test listSite methods.
+     * 
+     * @throws Exception
+     */
     public void testListSites() throws Exception
-    {
-        // TODO
-        // - check filters
-        // - check private excluded when not owner (or admin)
-        
-        // Check for no sites
+    {    	
+        /**
+         *  Check for no pre-existing sites before we start the test
+         */
         List<SiteInfo> sites = this.siteService.listSites(null, null);
-        assertNotNull(sites);
-        assertTrue(sites.isEmpty());
+        assertNotNull("sites already exist prior to starting test", sites);
+        assertTrue("sites already exist prior to starting test", sites.isEmpty());
         
         // Create some sites
         this.siteService.createSite(TEST_SITE_PRESET, "mySiteOne", TEST_TITLE, TEST_DESCRIPTION, SiteVisibility.PUBLIC);
         this.siteService.createSite(TEST_SITE_PRESET, "mySiteTwo", TEST_TITLE, TEST_DESCRIPTION, SiteVisibility.PRIVATE);
         this.siteService.createSite(TEST_SITE_PRESET_2, "mySiteThree", TEST_TITLE, TEST_DESCRIPTION, SiteVisibility.PUBLIC);
         this.siteService.createSite(TEST_SITE_PRESET_2, "mySiteFour", TEST_TITLE, TEST_DESCRIPTION, SiteVisibility.PRIVATE);
+        this.siteService.createSite(TEST_SITE_PRESET_2, "mySiteFive", TEST_TITLE, TEST_DESCRIPTION, SiteVisibility.MODERATED);
         
         // Get all the sites
         sites = this.siteService.listSites(null, null);
         assertNotNull(sites);
-        assertEquals(4, sites.size());
+        assertEquals(5, sites.size());
         
         // Get sites by matching name
         sites = this.siteService.listSites("One", null);
@@ -262,12 +266,12 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
         // Get sites by matching title
         sites = this.siteService.listSites("title", null);
         assertNotNull(sites);
-        assertEquals(4, sites.size());
+        assertEquals(5, sites.size());
 
         // Get sites by matching description
         sites = this.siteService.listSites("description", null);
         assertNotNull(sites);
-        assertEquals(4, sites.size());
+        assertEquals(5, sites.size());
 
         // Do detailed check of the site info objects
         for (SiteInfo site : sites)
@@ -289,12 +293,19 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
             {
                 checkSiteInfo(site, TEST_SITE_PRESET_2, "mySiteFour", TEST_TITLE, TEST_DESCRIPTION, SiteVisibility.PRIVATE);                
             }
+            else if (shortName.equals("mySiteFive") == true)
+            {
+                checkSiteInfo(site, TEST_SITE_PRESET_2, "mySiteFive", TEST_TITLE, TEST_DESCRIPTION, SiteVisibility.MODERATED);                
+            }
             else
             {
                 fail("The shortname " + shortName + " is not recognised");
             }
         }
         
+        /**
+         * Test list sites for a user
+         */
         sites = this.siteService.listSites(USER_TWO);
         assertNotNull(sites);
         assertEquals(0, sites.size());
@@ -302,14 +313,110 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
         this.siteService.setMembership("mySiteOne", USER_TWO, SiteModel.SITE_CONSUMER);
         this.siteService.setMembership("mySiteTwo", USER_TWO, SiteModel.SITE_CONSUMER);
         
-        sites = this.siteService.listSites(USER_TWO);
+		sites = this.siteService.listSites(USER_TWO);
         assertNotNull(sites);
         assertEquals(2, sites.size());
         
+        /**
+         * User One is the creator of all the sites.
+         */
         sites = this.siteService.listSites(USER_ONE);
         assertNotNull(sites);
-        assertEquals(4, sites.size());
+        assertEquals(5, sites.size());
         
+        /**
+         * Test list sites with a name filter
+         */
+        sites = this.siteService.listSites("One", null, 10);
+        assertNotNull(sites);
+        assertEquals(1, sites.size());
+        
+        /**
+         * Search for partial match on more titles - matches word "Site"
+         */
+        sites = this.siteService.listSites("ite", null, 10);
+        assertNotNull(sites);
+        assertEquals(5, sites.size());    
+        
+        /**
+         * Now Switch to User Two and do the same sort of searching.
+         */
+        // Set the current authentication
+        this.authenticationComponent.setCurrentUser(USER_TWO);
+        
+        /**
+         * As User Two Search for partial match on more titles - matches word "Site" - should not find private sites
+         */
+        sites = this.siteService.listSites("ite", null, 10);
+        assertNotNull(sites);
+        assertEquals(4, sites.size()); 
+        for (SiteInfo site : sites)
+        {
+        	String shortName = site.getShortName();
+        	if (shortName.equals("mySiteOne") == true)
+        	{
+        		checkSiteInfo(site, TEST_SITE_PRESET, "mySiteOne", TEST_TITLE, TEST_DESCRIPTION, SiteVisibility.PUBLIC);
+        	}
+        	else if (shortName.equals("mySiteTwo") == true)
+        	{
+        		// User Two is a member of this private site
+        		checkSiteInfo(site, TEST_SITE_PRESET, "mySiteTwo", TEST_TITLE, TEST_DESCRIPTION, SiteVisibility.PRIVATE);
+        	}
+        	else if (shortName.equals("mySiteThree") == true)
+        	{
+        		checkSiteInfo(site, TEST_SITE_PRESET_2, "mySiteThree", TEST_TITLE, TEST_DESCRIPTION, SiteVisibility.PUBLIC);
+        	}
+        	else if (shortName.equals("mySiteFour") == true)
+        	{
+        		// User two is not a member of this site
+        		fail("Can see private site mySiteFour");             
+        	}
+        	else if (shortName.equals("mySiteFive") == true)
+        	{
+        		// User Two should be able to see this moderated site.
+        		checkSiteInfo(site, TEST_SITE_PRESET_2, "mySiteFive", TEST_TITLE, TEST_DESCRIPTION, SiteVisibility.MODERATED);                
+        	}
+        	else
+        	{
+        		fail("The shortname " + shortName + " is not recognised");
+        	}
+        }
+        
+        authenticationComponent.setCurrentUser(USER_THREE);
+        /**
+         * As User Three Search for partial match on more titles - matches word "Site" - should not find private and moderated sites
+         */
+        sites = this.siteService.listSites("ite", null, 10);
+        assertNotNull(sites);
+        assertEquals(3, sites.size()); 
+        for (SiteInfo site : sites)
+        {
+        	String shortName = site.getShortName();
+        	if (shortName.equals("mySiteOne") == true)
+        	{
+        		checkSiteInfo(site, TEST_SITE_PRESET, "mySiteOne", TEST_TITLE, TEST_DESCRIPTION, SiteVisibility.PUBLIC);
+        	}
+        	else if (shortName.equals("mySiteTwo") == true)
+        	{
+        		fail("Can see private site mySiteTwo");
+        	}
+        	else if (shortName.equals("mySiteThree") == true)
+        	{
+        		checkSiteInfo(site, TEST_SITE_PRESET_2, "mySiteThree", TEST_TITLE, TEST_DESCRIPTION, SiteVisibility.PUBLIC);
+        	}
+        	else if (shortName.equals("mySiteFour") == true)
+        	{
+        		fail("Can see private site mySiteFour");             
+        	}
+        	else if (shortName.equals("mySiteFive") == true)
+        	{
+        		checkSiteInfo(site, TEST_SITE_PRESET_2, "mySiteFive", TEST_TITLE, TEST_DESCRIPTION, SiteVisibility.MODERATED);                
+        	}
+        	else
+        	{
+        		fail("The shortname " + shortName + " is not recognised");
+        	}
+        }        
     }
     
     public void testGetSite()
@@ -860,7 +967,7 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
         siteInfo = this.siteService.getSite("testSiteVisibilityModeratedSite");
         checkSiteInfo(siteInfo, TEST_SITE_PRESET, "testSiteVisibilityModeratedSite", TEST_TITLE, TEST_DESCRIPTION, SiteVisibility.MODERATED);
         //  - are the permissions correct for non-members?
-        testVisibilityPermissions("Testing visibility of moderated site", USER_TWO, siteInfo, true, false);
+        testVisibilityPermissions("Testing visibility of moderated site", USER_TWO, siteInfo, true, true);
         
         // Create a private site
         siteInfo = createTestSiteWithContent("testSiteVisibilityPrivateSite", "testComp", SiteVisibility.PRIVATE);
@@ -880,7 +987,7 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
         //  - check the updated sites visibility
         siteInfo = this.siteService.getSite("testSiteVisibilityChangeSite");
         checkSiteInfo(siteInfo, TEST_SITE_PRESET, "testSiteVisibilityChangeSite", TEST_TITLE, TEST_DESCRIPTION, SiteVisibility.MODERATED);
-        testVisibilityPermissions("Testing visibility of moderated site", USER_TWO, siteInfo, true, false);
+        testVisibilityPermissions("Testing visibility of moderated site", USER_TWO, siteInfo, true, true);
         
         // Switch from moderated -> private
         changeSite.setVisibility(SiteVisibility.PRIVATE);

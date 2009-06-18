@@ -396,7 +396,8 @@ public class SiteServiceImpl implements SiteService, SiteModel
                 }
                 else if (SiteVisibility.MODERATED.equals(visibility) == true)
                 {
-                    permissionService.setPermission(siteNodeRef, PermissionService.ALL_AUTHORITIES, PermissionService.READ_PROPERTIES, true);
+                	permissionService.setPermission(siteNodeRef, PermissionService.ALL_AUTHORITIES, SITE_CONSUMER, true);
+                    //permissionService.setPermission(siteNodeRef, PermissionService.ALL_AUTHORITIES, PermissionService.READ_PROPERTIES, true);
                 }
                 permissionService.setPermission(siteNodeRef,
                         PermissionService.ALL_AUTHORITIES,
@@ -589,7 +590,7 @@ public class SiteServiceImpl implements SiteService, SiteModel
         {
             String escNameFilter = LuceneQueryParser.escape(nameFilter.replace('"', ' '));
             // Perform a Lucene search under the Site parent node using *name*, title and description search query
-            QueryParameterDefinition[] params = new QueryParameterDefinition[3];
+            final QueryParameterDefinition[] params = new QueryParameterDefinition[3];
             params[0] = new QueryParameterDefImpl(
                     ContentModel.PROP_NAME,
                     dictionaryService.getDataType(
@@ -621,7 +622,8 @@ public class SiteServiceImpl implements SiteService, SiteModel
                     siteRoot.getStoreRef(),
                     SearchService.LANGUAGE_LUCENE,
                     query.toString(),
-                    params);
+                    params);           
+             
             result = new ArrayList<SiteInfo>(results.length());
             try
             {
@@ -895,7 +897,8 @@ public class SiteServiceImpl implements SiteService, SiteModel
             }
             else if (SiteVisibility.MODERATED.equals(currentVisibility) == true)
             {
-                this.permissionService.deletePermission(siteNodeRef, PermissionService.ALL_AUTHORITIES, PermissionService.READ_PROPERTIES);
+                this.permissionService.deletePermission(siteNodeRef, PermissionService.ALL_AUTHORITIES, SITE_CONSUMER);
+                //this.permissionService.deletePermission(siteNodeRef, PermissionService.ALL_AUTHORITIES, PermissionService.READ_PROPERTIES);
                 // TODO update all child folders ?? ...
             }
             
@@ -906,7 +909,8 @@ public class SiteServiceImpl implements SiteService, SiteModel
             }
             else if (SiteVisibility.MODERATED.equals(updatedVisibility) == true)
             {
-                this.permissionService.setPermission(siteNodeRef, PermissionService.ALL_AUTHORITIES, PermissionService.READ_PROPERTIES, true);
+                this.permissionService.setPermission(siteNodeRef, PermissionService.ALL_AUTHORITIES, SITE_CONSUMER, true);
+                //this.permissionService.setPermission(siteNodeRef, PermissionService.ALL_AUTHORITIES, PermissionService.READ_PROPERTIES, true);
                 // TODO update all child folders ?? ...
             }
             

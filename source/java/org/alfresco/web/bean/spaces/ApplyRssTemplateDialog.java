@@ -41,14 +41,14 @@ import org.alfresco.web.ui.common.Utils;
 
 public class ApplyRssTemplateDialog extends BaseDialogBean
 {
-
     private static final long serialVersionUID = 9207265799149337182L;
-
+    
     private static final String DIALOG_CLOSE = "dialog:close";
-
     private static final String MSG_APPLY_RSS_FEED = "apply_rss_feed";
+    
     private String rssTemplate;
-
+    
+    
     public void setRSSTemplate(String rssTemplate)
     {
         this.rssTemplate = rssTemplate;
@@ -69,11 +69,6 @@ public class ApplyRssTemplateDialog extends BaseDialogBean
     {
         applyRSSTemplate(null);
         return DIALOG_CLOSE;
-    }
-
-    public boolean getFinishButtonDisabled()
-    {
-        return false;
     }
 
     public String getContainerTitle()

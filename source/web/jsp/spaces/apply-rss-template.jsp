@@ -35,51 +35,48 @@
 <r:loadBundle var="msg"/>
 
 <f:verbatim>
-	<table cellspacing="0" cellpadding="0" border="0" width="100%">
-		<tr>
-			<%-- TODO: check for Guest user access and hide panel? --%>
-			<td width="100%" valign="top">
-			<%
-						PanelGenerator.generatePanelStart(out, request.getContextPath(),
-						"yellowInner", "#ffffcc");
-			%>
-			<table cellpadding="0"  cellspacing="0" border="0" width="100%">
-				<tr>
-					<td valign=top style="padding-top:2px" width=20></f:verbatim><h:graphicImage
-						url="/images/icons/info_icon.gif" width="16" height="16" /><f:verbatim></td>
-					<td class="mainSubText"></f:verbatim><h:outputText
-						value="#{msg.apply_rss_feed_warning1} " /> <a:actionLink
-						value="#{msg.manage_invited_users}"
-						actionListener="#{BrowseBean.setupSpaceAction}"
-						action="dialog:manageInvitedUsers">
-						<f:param name="id" value="#{SpaceDetailsDialog.id}" />
-					</a:actionLink> <h:outputText value=" #{msg.apply_rss_feed_warning2}" /><f:verbatim></td>
-				</tr>
-			</table>
-			<%
-						PanelGenerator.generatePanelEnd(out, request.getContextPath(),
-						"yellowInner");
-			%>
+<script type="text/javascript">
+	var finishButtonPressed = false;
+	window.onload = pageLoaded;
+	
+	function pageLoaded()
+	{
+		checkButtonState();
+	}
+	
+	function checkButtonState()
+	{
+		if (document.getElementById("dialog:dialog-body:template").value == "none")
+		{
+			document.getElementById("dialog:finish-button").disabled = true;
+		}
+		else
+		{
+			document.getElementById("dialog:finish-button").disabled = false;
+		}
+	}
+</script>
 
-			<div style="padding:4px"></div>
-			<%
-						PanelGenerator.generatePanelStart(out, request.getContextPath(),
-						"white", "white");
-			%>
-			<table cellpadding="2" cellspacing="2" border="0" width="100%">
-				<tr>
-					<td><nobr></f:verbatim><h:outputText value="#{msg.rss_template}" /><f:verbatim>:</nobr></td>
-					<td width=100%><%-- Templates drop-down selector --%> </f:verbatim><h:selectOneMenu
-						value="#{ApplyRssTemplateDialog.RSSTemplate}">
-						<f:selectItems value="#{TemplateSupportBean.RSSTemplates}" />
-					</h:selectOneMenu><f:verbatim></td>
-				</tr>
-			</table>
-			<%
-						PanelGenerator.generatePanelEnd(out, request.getContextPath(),
-						"white");
-			%>
-			</td>
-		</tr>
-	</table>
+   <% PanelGenerator.generatePanelStart(out, request.getContextPath(), "yellowInner", "#ffffcc"); %>
+   	<table cellpadding="0"  cellspacing="0" border="0" width="100%">
+   		<tr>
+   			<td valign="top" style="padding-top:2px" width="20"></f:verbatim><h:graphicImage url="/images/icons/info_icon.gif" width="16" height="16" /><f:verbatim></td>
+   			<td class="mainSubText"></f:verbatim>
+   			   <h:outputText value="#{msg.apply_rss_feed_warning1}" />
+   			   <a:actionLink value=" #{msg.manage_invited_users} " actionListener="#{BrowseBean.setupSpaceAction}" action="dialog:manageInvitedUsers">
+   				   <f:param name="id" value="#{SpaceDetailsDialog.id}" />
+   			   </a:actionLink>
+   			   <h:outputText value="#{msg.apply_rss_feed_warning2}" /><f:verbatim></td>
+   		</tr>
+   	</table>
+	<% PanelGenerator.generatePanelEnd(out, request.getContextPath(), "yellowInner"); %>
+	<div style="padding:4px"></div>
+	<% PanelGenerator.generatePanelStart(out, request.getContextPath(), "white", "white"); %></f:verbatim>
+      <h:panelGrid id="template-panel" columns="2" cellpadding="2" cellspacing="2" border="0" width="100%" columnClasses="panelGridLabelColumnAuto,panelGridValueColumn">
+         <h:outputText value="#{msg.rss_template}:" />
+      	<h:selectOneMenu id="template" value="#{ApplyRssTemplateDialog.RSSTemplate}" onchange="checkButtonState();">
+      		<f:selectItems value="#{TemplateSupportBean.RSSTemplates}" />
+      	</h:selectOneMenu>
+      </h:panelGrid><f:verbatim>
+	<% PanelGenerator.generatePanelEnd(out, request.getContextPath(), "white"); %>
 </f:verbatim>

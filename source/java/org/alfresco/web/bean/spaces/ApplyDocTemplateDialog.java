@@ -40,15 +40,14 @@ import org.alfresco.web.ui.common.Utils;
 
 public class ApplyDocTemplateDialog extends BaseDialogBean
 {
-
     private static final long serialVersionUID = -9098279672434597354L;
-
-    protected String template;
-
+    
     private static final String DIALOG_CLOSE = "dialog:close";
-
     private static final String MSG_APPLY_TEMPLATE = "apply_template";
-
+    
+    protected String template;
+    
+    
     @Override
     protected String finishImpl(FacesContext context, String outcome) throws Exception
     {
@@ -80,27 +79,22 @@ public class ApplyDocTemplateDialog extends BaseDialogBean
         return DIALOG_CLOSE;
     }
 
-    public boolean getFinishButtonDisabled()
-    {
-        return false;
-    }
-
     public String getContainerTitle()
     {
         return Application.getMessage(FacesContext.getCurrentInstance(), MSG_APPLY_TEMPLATE) + " '" + getName() + "'";
     }
 
-     public String getTemplate()
-     {
-     // return current template if it exists
-     NodeRef ref = (NodeRef) getNode().getProperties().get(ContentModel.PROP_TEMPLATE);
-     return ref != null ? ref.getId() : this.template;
-     }
+    public String getTemplate()
+    {
+        // return current template if it exists
+        NodeRef ref = (NodeRef) getNode().getProperties().get(ContentModel.PROP_TEMPLATE);
+        return ref != null ? ref.getId() : this.template;
+    }
 
-     public void setTemplate(String template)
-     {
-     this.template = template;
-     }
+    public void setTemplate(String template)
+    {
+        this.template = template;
+    }
 
     public Node getNode()
     {

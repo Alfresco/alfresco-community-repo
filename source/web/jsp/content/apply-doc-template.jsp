@@ -29,13 +29,32 @@
 <%@ taglib uri="/WEB-INF/repo.tld" prefix="r"%>
 
 <f:verbatim>
-<table cellpadding="2" cellspacing="2" border="0" width="100%">
-	<tr>
-		<td></f:verbatim><h:outputText value="#{msg.template}" /><f:verbatim>:</td>
-		<td width=100%><%-- Templates drop-down selector --%> </f:verbatim><h:selectOneMenu
-			value="#{ApplyDocTemplateDialog.template}">
-			<f:selectItems value="#{TemplateSupportBean.contentTemplates}" />
-		</h:selectOneMenu><f:verbatim></td>
-	</tr>
-</table>
+<script type="text/javascript">
+	var finishButtonPressed = false;
+	window.onload = pageLoaded;
+	
+	function pageLoaded()
+	{
+		checkButtonState();
+	}
+	
+	function checkButtonState()
+	{
+		if (document.getElementById("dialog:dialog-body:template").value == "none")
+		{
+			document.getElementById("dialog:finish-button").disabled = true;
+		}
+		else
+		{
+			document.getElementById("dialog:finish-button").disabled = false;
+		}
+	}
+</script>
 </f:verbatim>
+
+<h:panelGrid id="template-panel" columns="2" cellpadding="2" cellspacing="2" border="0" width="100%" columnClasses="panelGridLabelColumnAuto,panelGridValueColumn">
+   <h:outputText value="#{msg.template}:" />
+	<h:selectOneMenu id="template" value="#{ApplyDocTemplateDialog.template}" onchange="checkButtonState();">
+		<f:selectItems value="#{TemplateSupportBean.contentTemplates}" />
+	</h:selectOneMenu>
+</h:panelGrid>

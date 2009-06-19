@@ -31,6 +31,8 @@ import java.util.Map;
 import org.alfresco.i18n.I18NUtil;
 import org.alfresco.repo.admin.patch.AbstractPatch;
 import org.alfresco.repo.invitation.InvitationServiceImpl;
+import org.alfresco.service.cmr.workflow.WorkflowDefinition;
+
 import org.alfresco.repo.invitation.WorkflowModelNominatedInvitation;
 import org.alfresco.repo.invitation.site.AcceptInviteAction;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -114,43 +116,39 @@ public class InvitationMigrationPatch extends AbstractPatch
 	@Override
 	protected String applyInternal() throws Exception 
 	{
-		List<WorkflowInstance> currentInstances = null;
-		try 
-		{
-			// Get the process properties.
-			currentInstances = workflowService.getActiveWorkflows(OldInviteModel.WF_PROCESS_INVITE.toPrefixString());
-		}
-		catch (WorkflowException we)
-		{
-				logger.debug("no invites to cancel" , we);	
-		        String msg = I18NUtil.getMessage(MSG_NO_INVITES);
-		        return msg;
-		}		
-		int count = 0;
+
+		WorkflowDefinition def = workflowService.getDefinitionByName(OldInviteModel.WORKFLOW_DEFINITION_NAME);
 		
-		for(WorkflowInstance oldInstance : currentInstances)
+		if(def != null)
 		{
-			String oldWorkflowId = oldInstance.id;
 			
-			try 
+			// Get the process properties.
+			List<WorkflowInstance> currentInstances = workflowService.getActiveWorkflows(def.getId());
+		
+			int count = 0;
+		
+			for(WorkflowInstance oldInstance : currentInstances)
 			{
+				String oldWorkflowId = oldInstance.id;
+			
 				convertOldInvite(oldWorkflowId);
-			} 
-			catch (Exception e)
-			{
-				// swallow error - a lost invitation is not a show stopper
-				logger.error("unable to re-invite oldInstance:" + oldWorkflowId, e);	
+			
+				// Cancel the old workflow instance
+				workflowService.cancelWorkflow(oldWorkflowId);
+			
+				count++;	
 			}
 			
-			// Cancel the old workflow instance
-			workflowService.cancelWorkflow(oldWorkflowId);
-			
-			count++;
+		    // build the result message
+		    String msg = I18NUtil.getMessage(MSG_SUCCESS, count);
+		    return msg;
 		}
-			
-	    // build the result message
-	    String msg = I18NUtil.getMessage(MSG_SUCCESS, count);
-	    return msg;
+		else
+		{
+			logger.debug("no invites to cancel");	
+	        String msg = I18NUtil.getMessage(MSG_NO_INVITES);
+	        return msg;
+		}	
 	}
 
 	public void setWorkflowService(WorkflowService workflowService) 

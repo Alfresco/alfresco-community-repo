@@ -21,7 +21,8 @@ var OfficeTags =
 
       // ajax call to get repository tag data
       var actionURL = window.serviceContextPath + "/collaboration/tagQuery";
-      var myJsonRequest = new Json.Remote(actionURL, {
+      var myJsonRequest = new Json.Remote(actionURL,
+      {
          method: 'get',
          headers: {'If-Modified-Since': 'Sat, 1 Jan 2000 00:00:00 GMT'},
          onComplete: function(tagQuery)
@@ -34,9 +35,9 @@ var OfficeTags =
    
    populateTagCloud: function(tagQuery)
    {
-      var tagCloud = $("tagCloud");
-      var range = tagQuery.countMax - tagQuery.countMin;
-      var scale = (range / OfficeTags.SCALE_FACTOR);
+      var tagCloud = $("tagCloud"),
+         range = tagQuery.countMax - tagQuery.countMin,
+         scale = (range / OfficeTags.SCALE_FACTOR);
       
       var tagContainer, tagName, tagNameClass, tagCount;
 
@@ -61,6 +62,10 @@ var OfficeTags =
          tagCount.appendText("(" + tag.count + ")");
          tagCount.injectInside(tagName);
       });
+      if (OfficeTags.preselectedTag !== "")
+      {
+         OfficeTags.selectTag(OfficeTags.preselectedTag);
+      }
    },
 
    /* AJAX call to perform server-side tag search */
@@ -68,12 +73,11 @@ var OfficeTags =
    {
       OfficeAddin.showStatusText("Searching tags...", "ajax_anim.gif", false);
 
-      // var maxResults = $('maxResults').value;
-      var maxResults = 100;
-      
-      var args = OfficeAddin.defaultQuery + "&type=tag";
-      var actionURL = window.serviceContextPath + "/office/searchResults" + args + "&search=" + encodeURI(tagName.replace(" ", "_x0020_")) + "&maxresults=" + maxResults;
-      var myAjax = new Ajax(actionURL, {
+      var maxResults = 100,
+         args = OfficeAddin.defaultQuery + "&type=tag",
+         actionURL = window.serviceContextPath + "/office/searchResults" + args + "&search=" + encodeURIComponent(tagName) + "&maxresults=" + maxResults;
+      var myAjax = new Ajax(actionURL,
+      {
          method: 'get',
          headers: {'If-Modified-Since': 'Sat, 1 Jan 2000 00:00:00 GMT'},
          evalScripts: true,
@@ -102,7 +106,6 @@ var OfficeTags =
    preselectTag: function(tagName)
    {
       OfficeTags.preselectedTag = tagName;
-      OfficeTags.selectTag(tagName);
    }
 };
 
@@ -112,7 +115,7 @@ var OfficeSearch =
    itemsFound: function(shownResults, totalResults)
    {
       var strFound;
-      if (totalResults == 0)
+      if (totalResults === 0)
       {
          strFound = "No items found";
       }

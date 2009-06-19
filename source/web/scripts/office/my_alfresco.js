@@ -68,8 +68,9 @@ var OfficeMyAlfresco =
    setupToggles: function()
    {
       // Elements of interest
-      var panels = $$('.togglePanel');
-      var toggles = $$('.toggle');
+      var panels = $$('.togglePanel'),
+         toggles = $$('.toggle'),
+         toggle;
 
       // Animation
       var fxPanel = new Fx.Elements(panels, {wait: false, duration: OfficeMyAlfresco.ANIM_LENGTH, transition: Fx.Transitions.Back.easeInOut});

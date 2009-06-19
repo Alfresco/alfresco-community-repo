@@ -25,7 +25,7 @@ var OfficeSearch =
    itemsFound: function(shownResults, totalResults)
    {
       var strFound;
-      if (totalResults == 0)
+      if (totalResults === 0)
       {
          strFound = "No items found";
       }
@@ -54,7 +54,8 @@ var OfficeSearch =
 
       OfficeAddin.showStatusText("Searching...", "ajax_anim.gif", false);
       var actionURL = useTemplate + argPath + "&search=" + encodeURIComponent(searchString) + "&maxresults=" + maxResults;
-      var myAjax = new Ajax(actionURL, {
+      var myAjax = new Ajax(actionURL,
+      {
          method: 'get',
          headers: {'If-Modified-Since': 'Sat, 1 Jan 2000 00:00:00 GMT'},
          evalScripts: true,
@@ -62,6 +63,13 @@ var OfficeSearch =
          {
             OfficeAddin.hideStatusText();
             $('searchResultsList').innerHTML = textResponse;
+            /* Custom tooltips
+            var myTips = new Tips($$(".toolTip"),
+            {
+               fixed: true,
+               maxTitleChars: 50
+            });
+            */
          }
       });
       myAjax.request();

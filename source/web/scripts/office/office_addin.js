@@ -13,14 +13,14 @@ var OfficeAddin =
    {
       window.queryObject = OfficeAddin.toQueryObject(document.location.search);
       window.contextPath = OfficeAddin.getContextPath();
-      window.serviceContextPath = OfficeAddin.getServiceContextPath();;
+      window.serviceContextPath = OfficeAddin.getServiceContextPath();
 
       /* Update needed after page load? */      
       if(this.queryObject.st)
       {
-         var objResponse = Json.evaluate(this.queryObject.st);
-         var imgSuccess = (objResponse.statusCode ? "action_successful.gif" : "action_failed.gif");
-         var colBackground = (objResponse.statusCode ? "#50ff50" : "#ff5050");
+         var objResponse = Json.evaluate(this.queryObject.st),
+            imgSuccess = (objResponse.statusCode ? "action_successful.gif" : "action_failed.gif"),
+            colBackground = (objResponse.statusCode ? "#50ff50" : "#ff5050");
          OfficeAddin.showStatusText(objResponse.statusString, imgSuccess, true, colBackground);
       }
       
@@ -58,7 +58,7 @@ var OfficeAddin =
       }
       e.innerHTML = statusText;
       e.setStyle("opacity", "1");
-      if (statusText == "")
+      if (statusText === "")
       {
          e.setStyle("border-top", "");
       }
@@ -72,13 +72,13 @@ var OfficeAddin =
          });
          if (fadeOut)
          {
-            fx.onComplete = new function()
+            fx.onComplete = function()
             {
                OfficeAddin.hideStatusText.delay(OfficeAddin.STATUS_FADE);
-            }
+            };
          }
-         var colBackground = (colBackground == null) ? "#ffffcc" : colBackground;
-         fx.start(colBackground, "#ffffff");
+         var fxBackground = (typeof colBackground == "undefined") ? "#ffffcc" : colBackground;
+         fx.start(fxBackground, "#ffffff");
       }
    },
    
@@ -95,17 +95,17 @@ var OfficeAddin =
    /* AJAX call to perform server-side actions */
    getAction: function(useTemplate, action, nodeId, confirmMsg, inParams, outParams)
    {
-      return OfficeAddin.runAction("get", useTemplate, action, nodeId, confirmMsg, inParams, outParams)
+      return OfficeAddin.runAction("get", useTemplate, action, nodeId, confirmMsg, inParams, outParams);
    },
    postAction: function(useTemplate, action, nodeId, confirmMsg, inParams, outParams)
    {
-      return OfficeAddin.runAction("post", useTemplate, action, nodeId, confirmMsg, inParams, outParams)
+      return OfficeAddin.runAction("post", useTemplate, action, nodeId, confirmMsg, inParams, outParams);
    },
    runAction: function(httpMethod, useTemplate, action, nodeId, confirmMsg, inParams, outParams)
    {
-      if ((confirmMsg != null) && (confirmMsg != ""))
+      if ((confirmMsg !== null) && (confirmMsg !== ""))
       {
-         if (!confirm(confirmMsg))
+         if (!window.confirm(confirmMsg))
          {
             return;
          }
@@ -113,25 +113,26 @@ var OfficeAddin =
    
       OfficeAddin.showStatusText("Running action...", "ajax_anim.gif", false);
       var actionURL = useTemplate + "?a=" + action + "&n=" + nodeId;
-      if ((inParams != null) && (inParams != ""))
+      if ((inParams !== null) && (inParams !== ""))
       {
          actionURL += "&" + inParams;
       }
-      var myAjax = new Ajax(actionURL, {
+      var myAjax = new Ajax(actionURL,
+      {
          method: httpMethod,
          headers: {'If-Modified-Since': 'Sat, 1 Jan 2000 00:00:00 GMT'},
          onComplete: function(textResponse, xmlResponse)
          {
             // Remove any trailing hash
-            var href = window.location.href.replace("#", "")
+            var href = window.location.href.replace("#", "");
             // Remove any previous "st" parameters
             href = OfficeAddin.removeParameters(href, "st|version");
             // Optionally add a status string
-            if (textResponse != "")
+            if (textResponse !== "")
             {
                href += (href.indexOf("?") == -1) ? "?" : "&";
-               href += "st=" + encodeURI(textResponse);
-               if ((outParams != null) && (outParams != ""))
+               href += "st=" + encodeURIComponent(textResponse);
+               if ((outParams !== null) && (outParams !== ""))
                {
                   href += "&" + outParams;
                }
@@ -144,9 +145,9 @@ var OfficeAddin =
    /* Calculates and returns the context path for the current page */
    getContextPath: function()
    {
-      var path = window.location.pathname;
-      var idx = path.indexOf("/", 1);
-      var contextPath = "";
+      var path = window.location.pathname,
+         idx = path.indexOf("/", 1),
+         contextPath = "";
       if (idx != -1)
       {
          contextPath = path.substring(0, idx);
@@ -162,9 +163,9 @@ var OfficeAddin =
    /* Calculates and returns the service context path for the current page */
    getServiceContextPath: function()
    {
-      var path = window.location.pathname;
-      var idx = path.indexOf("/", 1);
-      var serviceContextPath = "";
+      var path = window.location.pathname,
+         idx = path.indexOf("/", 1),
+         serviceContextPath = "";
       if (idx != -1)
       {
          serviceContextPath = path.substring(0, idx);
@@ -183,8 +184,8 @@ var OfficeAddin =
    /* Removes params "param1|param2...|paramN" from a URL */
    removeParameters: function(theUrl, theParams)
    {
-      var regexp = new RegExp("[?&](" + theParams + ")=([^&$]+)", "g");
-      var url = theUrl.replace(regexp, "");
+      var regexp = new RegExp("[?&](" + theParams + ")=([^&$]+)", "g"),
+         url = theUrl.replace(regexp, "");
 
       // Check that an href still contains a "?" after removing parameters
       var pos = url.indexOf("?");
@@ -203,7 +204,7 @@ var OfficeAddin =
    
    sortTasks: function(taskContainer)
    {
-      var taskArray = new Array();
+      var taskArray = [];
       taskContainer.getElementsBySelector('.taskItem').each(function(task, i)
       {
          taskArray[i] = {dueDate: task.getProperty('rel'), theTask: task.clone()};
@@ -214,15 +215,15 @@ var OfficeAddin =
 
       for(var i = 0; i < taskArray.length; i++)
       {
-         taskArray[i].theTask.addClass((i % 2  == 0) ? "odd" : "even");
+         taskArray[i].theTask.addClass((i % 2 === 0) ? "odd" : "even");
          taskArray[i].theTask.injectInside(taskContainer);
       }
    },
    
    sortByDueDate: function(a, b)
    {
-      var x = a.dueDate;
-      var y = b.dueDate;
+      var x = a.dueDate,
+         y = b.dueDate;
       return ((x < y) ? -1 : ((x > y) ? 1 : 0));
    },
    

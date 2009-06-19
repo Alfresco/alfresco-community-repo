@@ -30,8 +30,9 @@ var OfficeNavigation =
    setupToggles: function()
    {
       // Elements of interest
-      var panels = $$('.togglePanel');
-      var toggles = $$('.toggle');
+      var panels = $$('.togglePanel'),
+         toggles = $$('.toggle'),
+         toggle;
 
       // Animation
       var fxPanel = new Fx.Elements(panels,
@@ -198,11 +199,11 @@ var OfficeNavigation =
          onComplete: function(textResponse, xmlResponse)
          {
             // Remove any trailing hash
-            var href = window.location.href.replace("#", "")
+            var href = window.location.href.replace("#", "");
             // Remove any "st" and "cc" parameters
             href = OfficeAddin.removeParameters(href, "st|cc");
             // Optionally add a status string
-            if (textResponse != "")
+            if (textResponse !== "")
             {
                href += (href.indexOf("?") == -1) ? "?" : "&";
                href += "st=" + encodeURIComponent(textResponse);
@@ -218,10 +219,10 @@ var OfficeNavigation =
       // Does the current doc have an extension? - async request
       ExternalComponent.docHasExtension(function()
       {
-         ExternalComponent.saveToAlfresco(currentPath)
+         ExternalComponent.saveToAlfresco(currentPath);
       }, function()
       {
-         OfficeNavigation.showSaveFilenamePanel(currentPath)
+         OfficeNavigation.showSaveFilenamePanel(currentPath);
       });
    },
    
@@ -235,6 +236,22 @@ var OfficeNavigation =
       var panel = $("saveDetailsPanel");
       panel.setStyle("opacity", 0);
       panel.setStyle("display", "inline");
+      
+      var fnToggleOK = function()
+      {
+         var pattern = new RegExp(/([\"\*\\\><\?\/\:\|]+)|([\.]?[\.]+$)/),
+            filename = $('saveFilename').value;
+         if (filename.trim() === "" || pattern.test(filename))
+         {
+            $('saveFilenameOK').addClass('disabled');
+         }
+         else
+         {
+            $('saveFilenameOK').removeClass('disabled');
+         }
+      };
+
+      fnToggleOK();
             
       var anim = new Fx.Styles(panel,
       {
@@ -249,21 +266,27 @@ var OfficeNavigation =
                {
                   OfficeNavigation.saveOK();
                   event.stop();
-                  $('saveFilename').removeEvent('keypress');
+                  this.removeEvent('keypress');
+                  this.removeEvent('keyup');
                }
                else if (event.key == 'esc')
                {
                   OfficeNavigation.saveCancel();
                   event.stop();
-                  $('saveFilename').removeEvent('keypress');
+                  this.removeEvent('keypress');
+                  this.removeEvent('keyup');
                }
+            });
+            $('saveFilename').addEvent('keyup', function(event)
+            {
+               fnToggleOK();
             });
             $('saveFilename').focus();
          }
       }).start({'opacity': 1});
 
       this.fxOverlay.start(OfficeNavigation.OVERLAY_OPACITY);
-      if (panel != null)
+      if (panel !== null)
       {
          this.popupPanel = panel;
          this.popupPanel.currentPath = currentPath;
@@ -273,14 +296,14 @@ var OfficeNavigation =
    saveOK: function()
    {
 		// Shortcut for double-event firing issue
-		if (this.popupPanel == null)
+		if (this.popupPanel === null)
 		{
 			return;
 		}
 		
-      var filename = $('saveFilename').value;
-      var currentPath = this.popupPanel.currentPath;
-      var cancelSave = false;
+      var filename = $('saveFilename').value.trim(),
+         currentPath = this.popupPanel.currentPath,
+         cancelSave = false;
       
       if (filename.length > 0)
       {
@@ -289,7 +312,7 @@ var OfficeNavigation =
          {
             if ((doc == filename) || (doc == filename + ".doc"))
             {
-               if (!confirm("The document exists and is not versionable. Overwrite this file?"))
+               if (!window.confirm("The document exists and is not versionable. Overwrite this file?"))
                {
                   cancelSave = true;
                }
@@ -306,7 +329,7 @@ var OfficeNavigation =
    
    saveCancel: function()
    {
-      if (this.popupPanel != null)
+      if (this.popupPanel !== null)
       {
          this.popupPanel.setStyle("display", "none");
          this.popupPanel = null;

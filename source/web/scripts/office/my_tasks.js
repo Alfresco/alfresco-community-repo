@@ -60,8 +60,7 @@ var OfficeMyTasks =
             {
               this.setProperty('value', this.getProperty('value').substr(0, OfficeMyTasks.MAX_DESCRIPTION));
             }
-         }
-         
+         };
       }
    },
 
@@ -77,7 +76,9 @@ var OfficeMyTasks =
          task.addEvent('mouseenter', function(e)
          {
             if (task.isOpen)
+            {
                return;
+            }
 
             // highlight the item title
             task.addClass('taskItemSelected');
@@ -97,7 +98,9 @@ var OfficeMyTasks =
          task.addEvent('mouseleave', function(e)
          {
             if (task.isOpen)
+            {
                return;
+            }
 
             // unhighlight the item title
             task.removeClass('taskItemSelected');
@@ -119,7 +122,8 @@ var OfficeMyTasks =
 
                // ajax call to load task details               
                var actionURL = window.serviceContextPath + "/office/myTasksDetail" + OfficeAddin.defaultQuery + "&t=" + task.id.replace(/\./, "$");
-               var myAjax = new Ajax(actionURL, {
+               var myAjax = new Ajax(actionURL,
+               {
                   method: 'get',
                   headers: {'If-Modified-Since': 'Sat, 1 Jan 2000 00:00:00 GMT'},
                   onComplete: function(textResponse, xmlResponse)
@@ -171,21 +175,22 @@ var OfficeMyTasks =
       OfficeAddin.showStatusText("Running workflow...", "ajax_anim.gif", false);
 
       // ajax call to run workflow
-      var myAjax = new Ajax(commandURL, {
+      var myAjax = new Ajax(commandURL,
+      {
          method: 'get',
          headers: {'If-Modified-Since': 'Sat, 1 Jan 2000 00:00:00 GMT'},
          onComplete: function(textResponse, xmlResponse)
          {
             // Remove any trailing hash
-            var href = window.location.href.replace("#", "")
+            var href = window.location.href.replace("#", "");
             // Remove any "st" and "w" parameters
             href = OfficeAddin.removeParameters(href, "st|w");
             // Optionally add a status string
-            if (successMessage != "")
+            if (successMessage !== "")
             {
                var json = "{\"statusString\":\"" + successMessage + "\",\"statusCode\":true}";
                href += (href.indexOf("?") == -1) ? "?" : "&";
-               href += "st=" + encodeURI(json);
+               href += "st=" + encodeURIComponent(json);
             }
             window.location.href = href;
          },
@@ -198,41 +203,48 @@ var OfficeMyTasks =
    
    startWorkflow: function(commandURL, Doc)
    {
-      var wrkType=$('wrkType').value;
-      // wrkAssignTo should be "First Last (Username)"
-      var wrkAssignTo=$('wrkAssignTo').value;
+      var wrkType = $('wrkType').value,
+         wrkAssignTo = $('wrkAssignTo').value,
+         wrkDueDate = $('wrkDueDate').value,
+         wrkDescription=$('wrkDescription').value;
+
       if (wrkAssignTo.test(/(?:\(([^\)]+)\))/))
       {
-         // Extract the Username
-         wrkAssignTo=wrkAssignTo.match(/(?:\(([^\)]+)\))/)[1];
+         // Extract the Username - should be "First Last (Username)"
+         wrkAssignTo = wrkAssignTo.match(/(?:\(([^\)]+)\))/)[1];
       }
-      var wrkDueDate = $('wrkDueDate').value;;
-      var wrkDescription=$('wrkDescription').value;
+      
+      if (wrkAssignTo === "")
+      {
+         OfficeAddin.showStatusText("Assign to cannot be empty", "info.gif", true);
+         return;
+      }
       
       OfficeAddin.showStatusText("Starting workflow...", "ajax_anim.gif", false);
       var actionURL = commandURL + "?a=workflow&n=" + Doc;
       actionURL += "&wt=" + wrkType;
       actionURL += "&at=" + wrkAssignTo;
       // Date supplied?
-      if (wrkDueDate != "")
+      if (wrkDueDate !== "")
       {
          actionURL += "&dd=" + wrkDueDate;
       }
       actionURL += "&desc=" + wrkDescription;
-      var myAjax = new Ajax(actionURL, {
+      var myAjax = new Ajax(actionURL,
+      {
          method: 'get',
          headers: {'If-Modified-Since': 'Sat, 1 Jan 2000 00:00:00 GMT'},
          onComplete: function(textResponse, xmlResponse)
          {
             // Remove any trailing hash
-            var href = window.location.href.replace("#", "")
+            var href = window.location.href.replace("#", "");
             // Remove any previous "st", "w" or "wd" parameters
             href = OfficeAddin.removeParameters(href, "st|w|wd");
             // Optionally add a status string
-            if (textResponse != "")
+            if (textResponse !== "")
             {
                href += (href.indexOf("?") == -1) ? "?" : "&";
-               href += "st=" + encodeURI(textResponse);
+               href += "st=" + encodeURIComponent(textResponse);
             }
             window.location.href = href;
          }
@@ -244,12 +256,12 @@ var OfficeMyTasks =
    runAction: function(useTemplate, action, nodeId, confirmMsg)
    {
       // Re-select a selected task after reload
-      var taskSel = $E('#taskList .taskItemSelected');
-      var outParams = null;
-      if (taskSel != null)
+      var taskSel = $E('#taskList .taskItemSelected'),
+         outParams = null;
+      if (taskSel !== null)
       {
          var taskId = taskSel.id;
-         outParams = "t=" + encodeURI(taskId);
+         outParams = "t=" + encodeURIComponent(taskId);
       }
       
       return OfficeAddin.getAction(useTemplate, action, nodeId, confirmMsg, null, outParams);
@@ -258,16 +270,16 @@ var OfficeMyTasks =
    refreshPage: function()
    {
       // Remove any trailing hash
-      var href = window.location.href.replace("#", "")
+      var href = window.location.href.replace("#", "");
       // Remove any previous "st", "w", "wd" or "t" parameters
       href = OfficeAddin.removeParameters(href, "st|w|wd|t");
       // Re-select a selected task after reload
       var taskSel = $E('#taskList .taskItemSelected');
-      if (taskSel != null)
+      if (taskSel !== null)
       {
          var taskId = taskSel.id;
          href += (href.indexOf("?") == -1) ? "?" : "&";
-         href += "t=" + encodeURI(taskId);
+         href += "t=" + encodeURIComponent(taskId);
       }
       window.location.href = href;
    }

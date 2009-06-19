@@ -11,6 +11,8 @@ command like write, create that require input data.
 
 Click Execute to run the command.
 
+To quit / exit, close this window or tab (and logout from Alfresco Explorer or close the web browser).
+
 Individual Commands:
 
 ls - Lists the contents of the given directory.

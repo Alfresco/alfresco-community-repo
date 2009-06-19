@@ -2,7 +2,7 @@
 <!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
 
 <beans>    
-    <!-- Job definitions to import people and groups from one or more external user registries in the authentication chain (e.g. LDAP directory) -->
+    <!-- Job definition to import people and groups from one or more external user registries in the authentication chain (e.g. LDAP directory) -->
     
     <bean id="syncTrigger" class="org.alfresco.util.CronTriggerBean">
         <property name="jobDetail">
@@ -30,4 +30,30 @@
         </property>
     </bean>
         
+    <!-- The chaining user registry synchronizer -->
+    <bean id="userRegistrySynchronizer" class="org.alfresco.repo.security.sync.ChainingUserRegistrySynchronizer">
+       <property name="syncWhenMissingPeopleLogIn">
+            <value>${synchronization.syncWhenMissingPeopleLogIn}</value>
+        </property>
+       <property name="autoCreatePeopleOnLogin">
+            <value>${synchronization.autoCreatePeopleOnLogin}</value>
+        </property>
+        <property name="authorityService">
+            <ref bean="authorityService" />
+        </property>
+        <property name="personService">
+            <ref bean="personService" />
+        </property>
+        <property name="attributeService">
+            <ref bean="attributeService" />
+        </property>
+        <property name="applicationContextManager">
+            <ref bean="Authentication" />
+        </property>
+        <property name="sourceBeanName">
+            <value>userRegistry</value>
+        </property>
+    </bean>
+
+
 </beans>

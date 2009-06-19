@@ -39,6 +39,7 @@ import org.alfresco.repo.attributes.LongAttributeValue;
 import org.alfresco.repo.attributes.MapAttributeValue;
 import org.alfresco.repo.management.subsystems.ActivateableBean;
 import org.alfresco.repo.management.subsystems.ChildApplicationContextManager;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.attributes.AttributeService;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
@@ -66,14 +67,16 @@ import org.springframework.context.ApplicationContext;
  * <code>false</code> then only those users and groups modified since the most recent modification date of all the
  * objects last queried from the same {@link UserRegistry} are retrieved. In this mode, local users and groups are
  * created and updated, but not deleted (except where a name collision with a lower priority {@link UserRegistry} is
- * detected). This 'differential' mode is much faster, and by default is triggered when a user is successfully
- * authenticated who doesn't yet have a local person object in Alfresco. This should mean that new users and their group
- * information are pulled over from LDAP servers as and when required.
+ * detected). This 'differential' mode is much faster, and by default is triggered by
+ * {@link #createMissingPerson(String)} when a user is successfully authenticated who doesn't yet have a local person
+ * object in Alfresco. This should mean that new users and their group information are pulled over from LDAP servers as
+ * and when required.
  * 
  * @author dward
  */
 public class ChainingUserRegistrySynchronizer implements UserRegistrySynchronizer
 {
+
     /** The logger. */
     private static final Log logger = LogFactory.getLog(ChainingUserRegistrySynchronizer.class);
 
@@ -100,6 +103,12 @@ public class ChainingUserRegistrySynchronizer implements UserRegistrySynchronize
 
     /** The attribute service. */
     private AttributeService attributeService;
+
+    /** Should we trigger a sync when missing people log in? */
+    private boolean syncWhenMissingPeopleLogIn = true;
+
+    /** Should we auto create a missing person on log in? */
+    private boolean autoCreatePeopleOnLogin = true;
 
     /**
      * Sets the application context manager.
@@ -156,6 +165,28 @@ public class ChainingUserRegistrySynchronizer implements UserRegistrySynchronize
         this.attributeService = attributeService;
     }
 
+    /**
+     * Controls whether we auto create a missing person on log in
+     * 
+     * @param autoCreatePeopleOnLogin
+     *            <code>true</code> if we should auto create a missing person on log in
+     */
+    public void setAutoCreatePeopleOnLogin(boolean autoCreatePeopleOnLogin)
+    {
+        this.autoCreatePeopleOnLogin = autoCreatePeopleOnLogin;
+    }
+
+    /**
+     * Controls whether we trigger a sync when missing people log in
+     * 
+     * @param syncWhenMissingPeopleLogIn
+     *            <codetrue</code> if we should trigger a sync when missing people log in
+     */
+    public void setSyncWhenMissingPeopleLogIn(boolean syncWhenMissingPeopleLogIn)
+    {
+        this.syncWhenMissingPeopleLogIn = syncWhenMissingPeopleLogIn;
+    }
+
     /*
      * (non-Javadoc)
      * @see org.alfresco.repo.security.sync.UserRegistrySynchronizer#synchronize(boolean)
@@ -188,7 +219,8 @@ public class ChainingUserRegistrySynchronizer implements UserRegistrySynchronize
                     int groupsProcessed = syncGroupsWithPlugin(zoneId, plugin, force, visitedZoneIds);
                     ChainingUserRegistrySynchronizer.logger
                             .info("Finished synchronizing users and groups with user registry '" + zoneId + "'");
-                    logger.info(personsProcessed + " user(s) and " + groupsProcessed + " group(s) processed");
+                    ChainingUserRegistrySynchronizer.logger.info(personsProcessed + " user(s) and " + groupsProcessed
+                            + " group(s) processed");
                 }
             }
             catch (NoSuchBeanDefinitionException e)
@@ -197,6 +229,36 @@ public class ChainingUserRegistrySynchronizer implements UserRegistrySynchronize
             }
             visitedZoneIds.add(zoneId);
         }
+    }
+
+    /*
+     * (non-Javadoc)
+     * @see org.alfresco.repo.security.sync.UserRegistrySynchronizer#ensureExists(java.lang.String)
+     */
+    public boolean createMissingPerson(String userName)
+    {
+        // synchronize or auto-create the missing person if we are allowed
+        if (userName != null && !userName.equals(AuthenticationUtil.getSystemUserName()))
+        {
+            if (this.syncWhenMissingPeopleLogIn)
+            {
+                synchronize(false);
+                if (this.personService.personExists(userName))
+                {
+                    return true;
+                }
+            }
+            if (this.autoCreatePeopleOnLogin && this.personService.createMissingPeople())
+            {
+                AuthorityType authorityType = AuthorityType.getAuthorityType(userName);
+                if (authorityType == AuthorityType.USER)
+                {
+                    this.personService.getPerson(userName);
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     /**
@@ -300,7 +362,7 @@ public class ChainingUserRegistrySynchronizer implements UserRegistrySynchronize
 
         return processedCount;
     }
-    
+
     /**
      * Synchronizes local groups (authorities) with a {@link UserRegistry} for a particular zone.
      * 
@@ -318,7 +380,7 @@ public class ChainingUserRegistrySynchronizer implements UserRegistrySynchronize
      *            of the zones in this set, then it will be ignored as this zone has lower priority.
      * @return the number of groups processed
      */
-    private int syncGroupsWithPlugin(String zoneId, UserRegistry plugin, boolean force, Set<String> visitedZoneIds)
+    private int syncGroupsWithPlugin(String zoneId, UserRegistry userRegistry, boolean force, Set<String> visitedZoneIds)
     {
         int processedCount = 0;
         long lastModifiedMillis = force ? -1L : getMostRecentUpdateTime(
@@ -334,7 +396,7 @@ public class ChainingUserRegistrySynchronizer implements UserRegistrySynchronize
                     + DateFormat.getDateTimeInstance().format(lastModified) + " from user registry '" + zoneId + "'");
         }
 
-        Iterator<NodeDescription> groups = plugin.getGroups(lastModified);
+        Iterator<NodeDescription> groups = userRegistry.getGroups(lastModified);
         Map<String, Set<String>> groupAssocsToCreate = new TreeMap<String, Set<String>>();
         Set<String> groupsToDelete = this.authorityService.getAllAuthoritiesInZone(zoneId, AuthorityType.GROUP);
         while (groups.hasNext())
@@ -483,7 +545,16 @@ public class ChainingUserRegistrySynchronizer implements UserRegistrySynchronize
         }
         this.attributeService.setAttribute(path, zoneId, new LongAttributeValue(lastModifiedMillis));
     }
-    
+
+    /**
+     * Gets the default set of zones to set on a person or group belonging to the user registry with the given zone ID.
+     * We add the default zone as well as the zone corresponding to the user registry so that the users and groups are
+     * visible in the UI.
+     * 
+     * @param zoneId
+     *            the zone id
+     * @return the zone set
+     */
     private Set<String> getZones(String zoneId)
     {
         HashSet<String> zones = new HashSet<String>(2, 1.0f);

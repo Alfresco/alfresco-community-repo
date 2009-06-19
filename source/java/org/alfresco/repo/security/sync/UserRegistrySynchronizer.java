@@ -31,7 +31,18 @@ package org.alfresco.repo.security.sync;
  * @author dward
  */
 public interface UserRegistrySynchronizer
-{
+{    
+    /**
+     * Creates a person object for a successfully authenticated user who does not yet have a person object, if allowed
+     * to by configuration. Depending on configuration, may trigger a partial synchronize and/or create a new person
+     * with default settings.
+     * 
+     * @param username
+     *            the user name
+     * @return true, if a person is created
+     */
+    public boolean createMissingPerson(String username);
+    
     /**
      * Retrieves timestamped user and group information from configured external sources and compares it with the local
      * users and groups last retrieved from the same sources. Any updates and additions made to those users and groups

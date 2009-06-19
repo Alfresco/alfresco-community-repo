@@ -44,7 +44,6 @@ import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport.TxnReadState;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.transaction.TransactionService;
 
@@ -63,10 +62,6 @@ public abstract class AbstractAuthenticationComponent implements AuthenticationC
 
     private Set<String> defaultAdministratorUserNames = Collections.emptySet();
 
-    private boolean syncWhenMissingPeopleLogIn = true;
-
-    private boolean autoCreatePeopleOnLogin = true;
-    
     private AuthenticationContext authenticationContext;
     
     private PersonService personService;
@@ -135,21 +130,6 @@ public abstract class AbstractAuthenticationComponent implements AuthenticationC
     public PersonService getPersonService()
     {
         return personService;
-    }
-
-    public boolean isAutoCreatePeopleOnLogin()
-    {
-        return autoCreatePeopleOnLogin;
-    }
-
-    public void setAutoCreatePeopleOnLogin(boolean autoCreatePeopleOnLogin)
-    {
-        this.autoCreatePeopleOnLogin = autoCreatePeopleOnLogin;
-    }
-        
-    public void setSyncWhenMissingPeopleLogIn(boolean syncWhenMissingPeopleLogIn)
-    {
-        this.syncWhenMissingPeopleLogIn = syncWhenMissingPeopleLogIn;
     }
 
     public void authenticate(String userName, char[] password) throws AuthenticationException
@@ -448,30 +428,7 @@ public abstract class AbstractAuthenticationComponent implements AuthenticationC
                 {
                     public String doWork() throws Exception
                     {
-                        boolean personExists = personService.personExists(userName);
-                        
-                        // If the person is missing, synchronize or auto-create the missing person if we are allowed
-                        if (!personExists)
-                        {
-                            if ((userName != null) && !userName.equals(AuthenticationUtil.getSystemUserName()))
-                            {
-                                if (syncWhenMissingPeopleLogIn)
-                                {
-                                    userRegistrySynchronizer.synchronize(false);
-                                    personExists = personService.personExists(userName);
-                                }
-                                if (!personExists && autoCreatePeopleOnLogin && personService.createMissingPeople())
-                                {
-                                    AuthorityType authorityType = AuthorityType.getAuthorityType(userName);
-                                    if (authorityType == AuthorityType.USER)
-                                    {
-                                        personService.getPerson(userName);
-                                    }
-                                }
-                            }
-                        }
-
-                        if (personExists)
+                        if (personService.personExists(userName)|| userRegistrySynchronizer.createMissingPerson(userName))
                         {
                             NodeRef userNode = personService.getPerson(userName);
                             if (userNode != null)
@@ -481,7 +438,7 @@ public abstract class AbstractAuthenticationComponent implements AuthenticationC
                                 return (String) nodeService.getProperty(userNode, ContentModel.PROP_USERNAME);
                             }
                         }
-                        return userName;
+                        throw new AuthenticationException("Person does not exist in Alfresco");
                     }
                 }, getSystemUserName(getUserDomain(userName)));
 

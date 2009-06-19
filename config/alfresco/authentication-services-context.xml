@@ -198,9 +198,6 @@
        <property name="userRegistrySynchronizer">
             <ref bean="userRegistrySynchronizer"/>
         </property>
-       <property name="syncWhenMissingPeopleLogIn">
-            <value>${authentication.syncWhenMissingPeopleLogIn}</value>
-        </property>
     </bean>
 
     <!-- The chaining authentication component -->
@@ -223,24 +220,17 @@
         </property>
     </bean>
 
-    <!-- The chaining user registry synchronizer -->
-    <bean id="userRegistrySynchronizer" class="org.alfresco.repo.security.sync.ChainingUserRegistrySynchronizer">
-        <property name="authorityService">
-            <ref bean="authorityService" />
-        </property>
-        <property name="personService">
-            <ref bean="personService" />
-        </property>
-        <property name="attributeService">
-            <ref bean="attributeService" />
-        </property>
-        <property name="applicationContextManager">
-            <ref bean="Authentication" />
-        </property>
-        <property name="sourceBeanName">
-            <value>userRegistry</value>
-        </property>
-    </bean>
+   <!-- Import the user registry synchronizer from the synchronization subsystem -->
+   <bean id="userRegistrySynchronizer" class="org.alfresco.repo.management.subsystems.SubsystemProxyFactory">
+      <property name="sourceApplicationContextFactory">
+         <ref bean="Synchronization" />
+      </property>
+      <property name="interfaces">
+         <list>
+            <value>org.alfresco.repo.security.sync.UserRegistrySynchronizer</value>
+         </list>
+      </property>
+   </bean>
 
     <bean id="authenticationContext" class="org.alfresco.repo.security.authentication.AuthenticationContextImpl">
        <property name="tenantService">

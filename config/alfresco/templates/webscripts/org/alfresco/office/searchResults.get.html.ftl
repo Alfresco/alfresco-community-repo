@@ -43,10 +43,10 @@
       </#if>
 <div class="documentItem ${(resCount % 2 = 0)?string("odd", "even")}">
    <span class="documentItemIcon">
-      <a href="${openURL}" ${hrefExtra}><img src="${url.context}${child.icon32}" alt="${message("office.action.open", child.name?html)}" /></a>
+      <a class="toolTip" href="${openURL}" ${hrefExtra} title="${child.displayPath?html}"><img src="${url.context}${child.icon32}" alt="${message("office.action.open", child.name?html)}" /></a>
    </span>
    <span class="documentItemDetails">
-      <a class="bold" href="${openURL}" ${hrefExtra} title="${message("office.action.open", child.name?html)}">${child.name?html}</a><br />
+      <a class="bold toolTip" href="${openURL}" ${hrefExtra} title="${child.displayPath?html}">${child.name?html}</a><br />
       <#if child.properties.description??>
          <#if (child.properties.description?length > 0)>
             ${child.properties.description?html}<br />
@@ -72,9 +72,6 @@
       </#if>
    </span>
 </div>
-      <#if resCount = maxresults>
-         <#break>
-      </#if>
    </#list>
 </#if>
 

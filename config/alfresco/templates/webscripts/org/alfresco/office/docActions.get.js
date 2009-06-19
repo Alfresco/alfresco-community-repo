@@ -67,22 +67,29 @@ if ((docNodeId != "") && (docNodeId != null))
          }
          else if (runAction == "workflow")
          {
-            var workflowType = "jbpm$wf:" + args.wt;
-            var assignTo = people.getPerson(args.at);
-            var dueDate = new Date(args.dd);
-            var description = args.desc;
-   
-            var workflow = actions.create("start-workflow");
-            workflow.parameters.workflowName = workflowType;
-            workflow.parameters["bpm:workflowDescription"] = description;
-            workflow.parameters["bpm:assignee"] = assignTo;
-            if ((args.dd) && (args.dd != ""))
+            var workflowType = "jbpm$wf:" + args.wt,
+               assignTo = people.getPerson(args.at),
+               dueDate = new Date(args.dd),
+               description = args.desc;
+            
+            if (assignTo == null)
             {
-               workflow.parameters["bpm:workflowDueDate"] = dueDate;
-            } 
-            workflow.execute(docNode);
-            resultString = "workflow_started";
-            resultCode = true;
+               resultString = "user_not_found";
+            }
+            else
+            {
+               var workflow = actions.create("start-workflow");
+               workflow.parameters.workflowName = workflowType;
+               workflow.parameters["bpm:workflowDescription"] = description;
+               workflow.parameters["bpm:assignee"] = assignTo;
+               if ((args.dd) && (args.dd != ""))
+               {
+                  workflow.parameters["bpm:workflowDueDate"] = dueDate;
+               } 
+               workflow.execute(docNode);
+               resultString = "workflow_started";
+               resultCode = true;
+            }
          }
          else if (runAction == "test")
          {

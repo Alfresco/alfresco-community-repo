@@ -129,8 +129,8 @@
             <#list d.properties["cm:taggable"]?sort_by("name") as tag>
                <#if tag??>
       <div class="tagListEntry">
-         <a class="tagListDelete" href="#" title="${message("office.action.remove_tag", tag.name)?html}" onclick="OfficeDocDetails.removeTag('${d.id}', '${tag.name?html}');">[x]</a>
-         <a class="tagListName" href="${url.serviceContext}/office/tags${defaultQuery?html}&amp;tag=${tag.name?html}">${tag.name?html}</a>
+         <a class="tagListDelete" href="#" title="${message("office.action.remove_tag", tag.name)?html}" onclick="OfficeDocDetails.removeTag('${d.id}', '${tag.name?js_string}');">[x]</a>
+         <a class="tagListName" href="${url.serviceContext}/office/tags${defaultQuery?html}&amp;tag=${tag.name?url}">${tag.name?html}</a>
       </div>
                </#if>
             </#list>
@@ -159,17 +159,17 @@
             <#assign versionRow=versionRow+1>
          <tr class="${(versionRow % 2 = 0)?string("odd", "even")}">
             <td valign="top">
-               <a title="${message("office.action.download", record.versionLabel)}" href="${url.context}${record.downloadUrl}"><img src="${url.context}/images/office/document.gif" alt="${message("office.action.download", record.versionLabel)}" /></a>
+               <a title="${message("office.action.download", record.versionLabel)}" href="${url.context}${record.downloadUrl}" target="_blank"><img src="${url.context}/images/office/document.gif" alt="${message("office.action.download", record.versionLabel)}" /></a>
             </td>
             <td>
-               <a title="${message("office.action.download", record.versionLabel)}" href="${url.context}${record.downloadUrl}"><span style="font-weight:bold;">${record.versionLabel}</span></a><br />
+               <a title="${message("office.action.download", record.versionLabel)}" href="${url.context}${record.downloadUrl}" target="_blank"><span style="font-weight:bold;">${record.versionLabel}</span></a><br />
                ${message("office.property.author")}: ${record.creator}<br />
                ${message("office.property.date")}: ${record.createdDate?datetime}<br />
             <#if record.description??>
                ${message("office.version.notes")}: ${record.description?html}<br />
             </#if>
             <#-- Only Word supports document compare -->
-            <#if extn == "doc" || extn == "odt" || extn == "sxw" >
+            <#if extn == "doc" || extn == "docx" || extn == "odt" || extn == "sxw" >
                <a class="bold" href="#" onclick="ExternalComponent.compareDocument('${record.url}')" title="${message("office.action.compare_current")}">${message("office.action.compare_current")}</a><br />
             </#if>
             </td>

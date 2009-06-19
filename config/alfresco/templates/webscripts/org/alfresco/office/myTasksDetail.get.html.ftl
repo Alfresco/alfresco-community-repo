@@ -8,11 +8,11 @@
 </#if>
 
 <#if task??>
-   <table width="100%">
+   <table width="260">
       <tr>
          <td width="32" valign="top"><img src="${url.context}/images/office/task_item.gif" alt="${message("office.tip.task_item")}" /></td>
          <td>
-            <span style="font-weight: bold;">${(task.description!"")?html}</span>
+            <span style="font-weight: bold;">${(task.description!"")?html?replace("\r", "<br />")}</span>
             <br />     
             <table style="margin-top: 4px;">
                <tr>

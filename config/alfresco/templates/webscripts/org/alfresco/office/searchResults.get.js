@@ -1,10 +1,18 @@
-var searchString = args.search;
-var searchType = args.type;
-var queryString;
+var searchString = args.search,
+   searchType = args.type,
+   maxResults = args.maxresults,
+   queryString,
+   results = [];
+
+if (maxResults == null)
+{
+   maxResults = 10;
+}
 
 if ((searchString != null) && (searchString != ""))
 {
-   searchString = searchString.replace(/\"/g, '\\"');
+   // searchString = searchString.replace(/\"/g, '\\"');
+   searchString = search.ISO9075Encode(searchString);
 
    if (searchType == "tag")
    {
@@ -14,20 +22,15 @@ if ((searchString != null) && (searchString != ""))
    {
       queryString = "(TEXT:\"" + searchString + "\") OR (@cm\\:name:*" + searchString + "*)";
    }
+   
+   queryString = "+(" + queryString + ") +(ISNOTNULL:\"cm:modified\")"
+
+   results = search.luceneSearch(queryString, "@{http://www.alfresco.org/model/content/1.0}name", true, maxResults);
 }
 else
 {
    searchString = "";
    queryString = "";
-}
-
-var luceneResults = search.luceneSearch(queryString), results = new Array(), i, ii;
-for (i = 0, ii = luceneResults.length; i < ii; i++)
-{
-   if (luceneResults[i].properties["cm:modified"] != null)
-   {
-      results.push(luceneResults[i]);
-   }
 }
 
 model.results = results;

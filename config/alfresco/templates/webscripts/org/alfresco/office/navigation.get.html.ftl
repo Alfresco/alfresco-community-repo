@@ -226,7 +226,7 @@
    <div id="saveDetailsPanel">
       ${message("office.property.filename")}:<br />
       <input class="saveDetailsItem" type="text" id="saveFilename" style="height: 18px; width: 168px;" />
-      <a class="spaceAction" href="#" onclick="OfficeNavigation.saveOK(this);">${message("office.button.ok")}</a>
+      <a id="saveFilenameOK" class="spaceAction" href="#" onclick="OfficeNavigation.saveOK(this);">${message("office.button.ok")}</a>
       <a class="spaceAction" href="#" onclick="OfficeNavigation.saveCancel();">${message("office.button.cancel")}</a>
    </div>
    <div id="nonStatusText">

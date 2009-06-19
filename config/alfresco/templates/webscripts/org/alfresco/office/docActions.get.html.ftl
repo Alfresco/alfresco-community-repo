@@ -1,4 +1,1 @@
-{
-   "statusString":"${message(resultString)}",
-   "statusCode":${resultCode?string}
-}
+{"statusString":"${message(resultString)}","statusCode":${resultCode?string}}

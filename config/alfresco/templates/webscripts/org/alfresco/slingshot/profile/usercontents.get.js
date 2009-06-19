@@ -1,6 +1,6 @@
 <import resource="classpath:/alfresco/templates/webscripts/org/alfresco/slingshot/search/search.lib.js">
 
-function getContents(user,type,maxResults)
+function getContents(user, type, maxResults)
 {
    var padZeros = function padZeros(number)
    {
@@ -19,15 +19,15 @@ function getContents(user,type,maxResults)
                "+@cm\\:" + userType +":" + user + " " +
                "+@cm\\:" + type + ":[" + fromQuery + "T00\\:00\\:00 TO " + toQuery + "T23\\:59\\:59]" +
                "-TYPE:\"{http://www.alfresco.org/model/forum/1.0}post\" " +
-               "-TYPE:\"{http://www.alfresco.org/model/content/1.0}thumbnail\""
-   q = query;
-   var nodes = [];
-   nodes = search.luceneSearch(query,"cm:"+type,false);
-
+               "-TYPE:\"{http://www.alfresco.org/model/content/1.0}thumbnail\"";
+   
+   var nodes = search.luceneSearch(query, "cm:"+type, false, maxResults);
+   
    return processResults(nodes, maxResults);
 }
+
 var maxResults = (args.maxResults !== undefined) ? parseInt(args.maxResults, 10) : DEFAULT_MAX_RESULTS;
 
 model.data = [];
-model.data['created'] = getContents(args.user,'created',maxResults);
-model.data['modified'] = getContents(args.user,'modified',maxResults);
+model.data['created'] = getContents(args.user, 'created', maxResults);
+model.data['modified'] = getContents(args.user, 'modified', maxResults);

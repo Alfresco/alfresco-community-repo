@@ -9,9 +9,6 @@ that are older than 180 days.
 <beans>
    
     <bean id="avmDeploymentAttemptCleaner" class="org.alfresco.repo.avm.AVMDeploymentAttemptCleaner">
-        <property name="adminUserName">
-            <value>admin</value>
-        </property>
         <!-- number of days to keep deployment attempts -->
         <property name="maxAge">
             <value>180</value>

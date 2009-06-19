@@ -25,6 +25,7 @@
 package org.alfresco.web.sharepoint.auth.ntlm;
 
 import java.io.IOException;
+import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -42,6 +43,7 @@ import org.alfresco.jlan.server.auth.PasswordEncryptor;
 import org.alfresco.jlan.server.auth.ntlm.NTLM;
 import org.alfresco.jlan.server.auth.ntlm.NTLMLogonDetails;
 import org.alfresco.jlan.server.auth.ntlm.NTLMMessage;
+import org.alfresco.jlan.server.auth.ntlm.NTLMv2Blob;
 import org.alfresco.jlan.server.auth.ntlm.TargetInfo;
 import org.alfresco.jlan.server.auth.ntlm.Type1NTLMMessage;
 import org.alfresco.jlan.server.auth.ntlm.Type2NTLMMessage;
@@ -81,8 +83,13 @@ public class NtlmAuthenticationHandler extends AbstractAuthenticationHandler
     private NLTMAuthenticator authenticationComponent;
     private TransactionService transactionService;
     private NodeService nodeService;
-    private static final int ntlmFlags = NTLM.Flag56Bit + NTLM.FlagLanManKey + NTLM.FlagNegotiateNTLM
-            + NTLM.FlagNegotiateOEM + NTLM.FlagNegotiateUnicode;
+   
+    private static final int ntlmFlags = NTLM.Flag56Bit +
+                                         NTLM.Flag128Bit +
+                                         NTLM.FlagLanManKey +
+                                         NTLM.FlagNegotiateNTLM +
+                                         NTLM.FlagNTLM2Key +
+                                         NTLM.FlagNegotiateUnicode;
     
     public void setAuthenticationComponent(NLTMAuthenticator authenticationComponent)
     {
@@ -503,7 +510,44 @@ public class NtlmAuthenticationHandler extends AbstractAuthenticationHandler
             return false;
         }
 
-        authenticated = checkNTLMv1(md4hash, ntlmDetails.getChallengeKey(), type3Msg, false);
+        if (type3Msg.hasFlag(NTLM.FlagNTLM2Key))
+        {
+            //  Determine if the client sent us an NTLMv2 blob or an NTLMv2 session key
+            if (type3Msg.getNTLMHashLength() > 24)
+            {
+                //  Looks like an NTLMv2 blob
+                authenticated = checkNTLMv2(md4hash, ntlmDetails.getChallengeKey(), type3Msg);                
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug((authenticated ? "Logged on" : "Logon failed") + " using NTLMSSP/NTLMv2");
+                }
+                
+                if ( authenticated == false && type3Msg.hasFlag(NTLM.Flag56Bit) && type3Msg.getLMHashLength() == 24)
+                {   
+                    authenticated = checkNTLMv1(md4hash, ntlmDetails.getChallengeKey(), type3Msg, true);
+                    if (logger.isDebugEnabled())
+                    {
+                        logger.debug((authenticated ? "Logged on" : "Logon failed") + " using NTLMSSP/NTLMv1 (via fallback)");
+                    }
+                }
+            }
+            else
+            {                
+                authenticated = checkNTLMv2SessionKey(md4hash, ntlmDetails.getChallengeKey(), type3Msg);                
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug((authenticated ? "Logged on" : "Logon failed") + " using NTLMSSP/NTLMv2SessKey");
+                }
+            }
+        }
+        else
+        {            
+            authenticated = checkNTLMv1(md4hash, ntlmDetails.getChallengeKey(), type3Msg, false);
+            if (logger.isDebugEnabled())
+            {
+                logger.debug((authenticated ? "Logged on" : "Logon failed") + " using NTLMSSP/NTLMv1");
+            }
+        }
 
         return authenticated;
     }
@@ -549,6 +593,143 @@ public class NtlmAuthenticationHandler extends AbstractAuthenticationHandler
         return false;
     }
 
+    private final boolean checkNTLMv2(String md4hash, byte[] challenge, Type3NTLMMessage type3Msg)
+    {
+        boolean ntlmv2OK = false;
+        boolean lmv2OK   = false;
+        
+        try
+        {
+            byte[] v2hash = encryptor.doNTLM2Encryption(md4Encoder.decodeHash(md4hash), type3Msg.getUserName(), type3Msg.getDomain());
+
+            NTLMv2Blob v2blob = new NTLMv2Blob(type3Msg.getNTLMHash());
+
+            byte[] srvHmac = v2blob.calculateHMAC(challenge, v2hash);
+            byte[] clientHmac = v2blob.getHMAC();
+
+            if (clientHmac != null && srvHmac != null && clientHmac.length == srvHmac.length)
+            {
+                int i = 0;
+
+                while (i < clientHmac.length && clientHmac[i] == srvHmac[i])
+                {
+                    i++;
+                }
+                if (i == clientHmac.length)
+                {
+                    ntlmv2OK = true;
+                }
+            }
+
+            if ( ntlmv2OK == false)
+            {
+                byte[] lmv2 = type3Msg.getLMHash();
+                byte[] clChallenge = v2blob.getClientChallenge();
+                
+                if ( lmv2 != null && lmv2.length == 24 && clChallenge != null && clChallenge.length == 8)
+                {   
+                    int i = 0;
+                    
+                    while ( i < clChallenge.length && lmv2[ i + 16] == clChallenge[ i])
+                        i++;
+                    
+                    if ( i == clChallenge.length)
+                    {                        
+                        
+                        byte[] lmv2Hmac = v2blob.calculateLMv2HMAC(v2hash, challenge, clChallenge);
+                        i = 0;
+    
+                        while (i < lmv2Hmac.length && lmv2[i] == lmv2Hmac[i])
+                            i++;
+    
+                        if (i == lmv2Hmac.length)
+                        {
+                            lmv2OK = true;
+                        }
+                        
+                    }
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            if (logger.isDebugEnabled())
+            {
+                logger.debug(ex);
+            }
+        }
+        if ( ntlmv2OK || lmv2OK)
+            return true;
+        return false;
+    }
+    
+    private final boolean checkNTLMv2SessionKey(String md4hash, byte[] challenge, Type3NTLMMessage type3Msg)
+    {
+        // Create the value to be encrypted by appending the server challenge and client challenge
+        // and applying an MD5 digest
+        byte[] nonce = new byte[16];
+        System.arraycopy(challenge, 0, nonce, 0, 8);
+        System.arraycopy(type3Msg.getLMHash(), 0, nonce, 8, 8);
+
+        MessageDigest md5 = null;
+        byte[] v2challenge = new byte[8];
+
+        try
+        {
+            md5 = MessageDigest.getInstance("MD5");
+            //  Apply the MD5 digest to the nonce
+            md5.update(nonce);
+            byte[] md5nonce = md5.digest();
+
+            //  We only want the first 8 bytes
+            System.arraycopy(md5nonce, 0, v2challenge, 0, 8);
+        }
+        catch (NoSuchAlgorithmException ex)
+        {
+            if (logger.isDebugEnabled())
+            {
+                logger.debug(ex.getMessage());                
+            }
+        }
+
+        // Generate the local encrypted password using the MD5 generated challenge
+        byte[] p21 = new byte[21];
+        byte[] md4byts = md4Encoder.decodeHash(md4hash);
+        System.arraycopy(md4byts, 0, p21, 0, 16);
+
+        // Generate the local hash of the password
+        byte[] localHash = null;
+
+        try
+        {
+            localHash = encryptor.doNTLM1Encryption(p21, v2challenge);
+        }
+        catch (NoSuchAlgorithmException ex)
+        {
+            if (logger.isDebugEnabled())
+            {
+                logger.debug(ex.getMessage());
+            }
+        }
+        byte[] clientHash = type3Msg.getNTLMHash();
+
+        if (clientHash != null && localHash != null && clientHash.length == localHash.length)
+        {
+            int i = 0;
+
+            while (i < clientHash.length && clientHash[i] == localHash[i])
+            {
+                i++;
+            }
+
+            if (i == clientHash.length)
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+    
     @SuppressWarnings("unchecked")
     private void putNtlmLogonDetailsToSession(HttpServletRequest request, NTLMLogonDetails details)
     {

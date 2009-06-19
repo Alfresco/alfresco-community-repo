@@ -9,11 +9,14 @@ ok> help
 ok> r
 
     Repeat last command.
+    
+##
+##  Quit / Exit
+##
 
-
-ok> quit | exit
-
-    Quit this console.
+    If running in a web browser, then close this window or tab (and logout from Alfresco Explorer or close the web browser).
+    
+    If running as a command-line utility, then type 'quit' or 'exit'.
 
 ##
 ##  General Repo Admin Commands

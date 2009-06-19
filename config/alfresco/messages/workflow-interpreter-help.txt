@@ -15,13 +15,17 @@
         Switch to specified <userName>.  If <userName> is omitted, the currently 
         selected user is shown. 
     
-    ok> quit | exit
-    
-        Quit this workflow console.
-        
     ok> use
     
         Show current workflow context.
+        
+    ##
+    ##  Quit / Exit
+    ##
+    
+        If running in a web browser, then close this window or tab (and logout from Alfresco Explorer or close the web browser).
+    
+        If running as a command-line utility, then type 'quit' or 'exit'.
     
     ## 
     ##  Workflow Definition Commands 

@@ -111,7 +111,7 @@ public class AuthorityDefaultZonesPatch extends AbstractPatch
         defaultZones.add(AuthorityService.ZONE_AUTH_ALFRESCO);
 
         List<Action> personActions = new ArrayList<Action>(1);
-        personActions.add(new Action(null, defaultZones, ActionType.ADD));
+        personActions.add(new Action(null, defaultZones, ActionType.SET));
 
         setZones(AuthorityType.USER, personActions);
 
@@ -137,20 +137,20 @@ public class AuthorityDefaultZonesPatch extends AbstractPatch
         List<Action> groupActions = new ArrayList<Action>(stores.size() * 4 + sites.size() * 5 + 1);
         for (AVMStoreDescriptor store : stores)
         {
-            groupActions.add(new Action("GROUP_"+store.getName()+"-ContentManager", wcmZones, ActionType.ADD));
-            groupActions.add(new Action("GROUP_"+store.getName()+"-ContentPublisher", wcmZones, ActionType.ADD));
-            groupActions.add(new Action("GROUP_"+store.getName()+"-ContentContributor", wcmZones, ActionType.ADD));
-            groupActions.add(new Action("GROUP_"+store.getName()+"-ContentReviewer", wcmZones, ActionType.ADD));
+            groupActions.add(new Action("GROUP_"+store.getName()+"-ContentManager", wcmZones, ActionType.SET));
+            groupActions.add(new Action("GROUP_"+store.getName()+"-ContentPublisher", wcmZones, ActionType.SET));
+            groupActions.add(new Action("GROUP_"+store.getName()+"-ContentContributor", wcmZones, ActionType.SET));
+            groupActions.add(new Action("GROUP_"+store.getName()+"-ContentReviewer", wcmZones, ActionType.SET));
         }
         for (SiteInfo site : sites)
         {
-            groupActions.add(new Action("GROUP_site_" + site.getShortName(), shareZones, ActionType.ADD));
-            groupActions.add(new Action("GROUP_site_" + site.getShortName()+"_SiteManager", shareZones, ActionType.ADD));
-            groupActions.add(new Action("GROUP_site_" + site.getShortName()+"_SiteCollaborator", shareZones, ActionType.ADD));
-            groupActions.add(new Action("GROUP_site_" + site.getShortName()+"_SiteContributor", shareZones, ActionType.ADD));
-            groupActions.add(new Action("GROUP_site_" + site.getShortName()+"_SiteConsumer", shareZones, ActionType.ADD));
+            groupActions.add(new Action("GROUP_site_" + site.getShortName(), shareZones, ActionType.SET));
+            groupActions.add(new Action("GROUP_site_" + site.getShortName()+"_SiteManager", shareZones, ActionType.SET));
+            groupActions.add(new Action("GROUP_site_" + site.getShortName()+"_SiteCollaborator", shareZones, ActionType.SET));
+            groupActions.add(new Action("GROUP_site_" + site.getShortName()+"_SiteContributor", shareZones, ActionType.SET));
+            groupActions.add(new Action("GROUP_site_" + site.getShortName()+"_SiteConsumer", shareZones, ActionType.SET));
         }
-        groupActions.add(new Action(null, defaultZones, ActionType.ADD));
+        groupActions.add(new Action(null, defaultZones, ActionType.SET));
 
         setZones(AuthorityType.GROUP, groupActions);
 
@@ -159,9 +159,9 @@ public class AuthorityDefaultZonesPatch extends AbstractPatch
     private void setZones(AuthorityType authorityType, List<Action> actions)
     {
 
-        //hibernateSessionHelper.mark();
+        hibernateSessionHelper.mark();
         Set<String> authorities = authorityService.getAllAuthorities(authorityType);
-        //hibernateSessionHelper.reset();
+        hibernateSessionHelper.reset();
         for (String authority : authorities)
         {
             for (Action action : actions)
@@ -180,9 +180,10 @@ public class AuthorityDefaultZonesPatch extends AbstractPatch
                     break;
                 }
             }
-            //hibernateSessionHelper.reset();
+            hibernateSessionHelper.reset();
         }
     }
+    
 
     private void fixAuthority(ActionType actionType, Set<String> zones, String authority)
     {

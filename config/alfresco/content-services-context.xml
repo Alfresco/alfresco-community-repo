@@ -34,11 +34,17 @@
    <!-- Abstract bean definition defining base definition for content store cleaner -->
    <!-- Performs the content cleanup -->
    <bean id="baseContentStoreCleaner" class="org.alfresco.repo.content.cleanup.ContentStoreCleaner" abstract="true">
+      <property name="jobLockService">
+         <ref bean="jobLockService" />
+      </property>
+      <property name="contentCleanDAO">
+      	  <ref bean="contentCleanDAO"/>
+      </property>
+      <property name="contentDataDAO">
+      	  <ref bean="contentDataDAO"/>
+      </property>
       <property name="dictionaryService">
          <ref bean="dictionaryService" />
-      </property>
-      <property name="policyComponent">
-         <ref bean="policyComponent" />
       </property>
       <property name="contentService" >
          <ref bean="contentService" />
@@ -49,14 +55,8 @@
       <property name="avmNodeDAO">
             <ref bean="avmNodeDAO"/>
       </property>
-      <property name="contentUrlDAO">
-      	  <ref bean="contentUrlDAO"/>
-      </property>
       <property name="transactionService" >
          <ref bean="transactionService" />
-      </property>
-      <property name="eagerOrphanCleanup" >
-         <value>${system.content.eagerOrphanCleanup}</value>
       </property>
       <property name="protectDays" >
          <value>14</value>
@@ -71,6 +71,20 @@
          <list>
             <ref bean="fileContentStore" />
          </list>
+      </property>
+   </bean>
+   
+   <bean id="eagerContentStoreCleaner" class="org.alfresco.repo.content.cleanup.EagerContentStoreCleaner" init-method="init">
+      <property name="eagerOrphanCleanup" >
+         <value>${system.content.eagerOrphanCleanup}</value>
+      </property>
+      <property name="stores" >
+         <list>
+            <ref bean="fileContentStore" />
+         </list>
+      </property>
+      <property name="listeners" >
+         <ref bean="deletedContentBackupListeners" />
       </property>
    </bean>
    

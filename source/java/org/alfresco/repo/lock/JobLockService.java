@@ -68,21 +68,63 @@ public interface JobLockService
      * @throws LockAcquisitionException if the lock could not be acquired
      * @throws IllegalStateException if a transaction is not active
      */
-    void getTransacionalLock(QName lockQName, long timeToLive);
+    void getTransactionalLock(QName lockQName, long timeToLive);
     
     /**
-     * {@inheritDoc JobLockService#getTransacionalLock(QName, long)}
+     * {@inheritDoc JobLockService#getTransactionalLock(QName, long)}
      * <p>
      * If the lock cannot be immediately acquired, the process will wait and retry.  Note
      * that second and subsequent attempts to get the lock during a transaction cannot
      * make use of retrying; the lock is actually being refreshed and will therefore never
      * become valid if it doesn't refresh directly.
      * 
-     * @param timeToLive            the time (in milliseconds) for the lock to remain valid
      * @param retryWait             the time (in milliseconds) to wait before trying again
      * @param retryCount            the maximum number of times to attempt the lock acquisition
      * @throws LockAcquisitionException if the lock could not be acquired
      * @throws IllegalStateException if a transaction is not active
      */
-    void getTransacionalLock(QName lockQName, long timeToLive, long retryWait, int retryCount);
+    void getTransactionalLock(QName lockQName, long timeToLive, long retryWait, int retryCount);
+    
+    /**
+     * Take a manually-managed lock.  The lock current thread or transaction will not be tagged -
+     * the returned lock token must be used for further management of the lock.
+     * <p>
+     * No lock management is provided: the lock must be released manually or will only become
+     * available by expiry.  No deadlock management is provided, either.
+     * 
+     * @param lockQName             the name of the lock to acquire
+     * @param timeToLive            the time (in milliseconds) for the lock to remain valid
+     * @return                      Returns the newly-created lock token
+     * @throws LockAcquisitionException if the lock could not be acquired
+     */
+    String getLock(QName lockQName, long timeToLive);
+    
+    /**
+     * {@inheritDoc JobLockService#getLock(QName, long)}
+     * <p>
+     * If the lock cannot be immediately acquired, the process will wait and retry.
+     * 
+     * @param retryWait             the time (in milliseconds) to wait before trying again
+     * @param retryCount            the maximum number of times to attempt the lock acquisition
+     * @throws LockAcquisitionException if the lock could not be acquired
+     */
+    String getLock(QName lockQName, long timeToLive, long retryWait, int retryCount);
+    
+    /**
+     * Refresh the lock using a valid lock token.
+     * 
+     * @param lockToken             the lock token returned when the lock was acquired
+     * @param lockQName             the name of the previously-acquired lock
+     * @param timeToLive            the time (in milliseconds) for the lock to remain valid
+     * @throws LockAcquisitionException if the lock could not be refreshed or acquired
+     */
+    void refreshLock(String lockToken, QName lockQName, long timeToLive);
+    
+    /**
+     * Release the lock using a valid lock token.
+     * 
+     * @param lockToken             the lock token returned when the lock was acquired
+     * @param lockQName             the name of the previously-acquired lock
+     */
+    void releaseLock(String lockToken, QName lockQName);
 }

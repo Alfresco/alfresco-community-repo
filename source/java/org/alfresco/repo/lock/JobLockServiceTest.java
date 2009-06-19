@@ -97,7 +97,7 @@ public class JobLockServiceTest extends TestCase
     {
         try
         {
-            jobLockService.getTransacionalLock(lockAAA, 50L);
+            jobLockService.getTransactionalLock(lockAAA, 50L);
             fail("Service did not enforce the presence of a transaction");
         }
         catch (IllegalStateException e)
@@ -116,7 +116,7 @@ public class JobLockServiceTest extends TestCase
         {
             public Object execute() throws Throwable
             {
-                jobLockService.getTransacionalLock(lockAAA, 500);
+                jobLockService.getTransactionalLock(lockAAA, 500);
                 return null;
             }
         };
@@ -132,7 +132,7 @@ public class JobLockServiceTest extends TestCase
         {
             public Object execute() throws Throwable
             {
-                jobLockService.getTransacionalLock(lockAAA, 5000);
+                jobLockService.getTransactionalLock(lockAAA, 5000);
                 return null;
             }
         };
@@ -142,7 +142,7 @@ public class JobLockServiceTest extends TestCase
         {
             public Object execute() throws Throwable
             {
-                jobLockService.getTransacionalLock(lockAAA, 50);
+                jobLockService.getTransactionalLock(lockAAA, 50);
                 return null;
             }
         };
@@ -158,7 +158,7 @@ public class JobLockServiceTest extends TestCase
         {
             public Object execute() throws Throwable
             {
-                jobLockService.getTransacionalLock(lockAAA, 5000);
+                jobLockService.getTransactionalLock(lockAAA, 5000);
                 throw new UnsupportedOperationException("ALERT!");
             }
         };
@@ -176,7 +176,7 @@ public class JobLockServiceTest extends TestCase
         {
             public Object execute() throws Throwable
             {
-                jobLockService.getTransacionalLock(lockAAA, 50);
+                jobLockService.getTransactionalLock(lockAAA, 50);
                 return null;
             }
         };
@@ -259,7 +259,7 @@ public class JobLockServiceTest extends TestCase
                         {
                             // Advance and grab the lock
                             currentLock++;
-                            jobLockService.getTransacionalLock(lockQNames[currentLock], 5000L);
+                            jobLockService.getTransactionalLock(lockQNames[currentLock], 5000L);
                         }
                         else
                         {

@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE sqlMap      
+    PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"      
+    "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="alfresco.content">
+
+    <insert id="insert.Mimetype" parameterClass="Mimetype" >
+        <include refid="insert.Mimetype.AutoIncrement"/>
+        <selectKey resultClass="long" keyProperty="id" type="post">
+            KEY_COLUMN:GENERATED_KEY
+        </selectKey>
+    </insert>
+
+    <insert id="insert.Encoding" parameterClass="Encoding" >
+        <include refid="insert.Encoding.AutoIncrement"/>
+        <selectKey resultClass="long" keyProperty="id" type="post">
+            KEY_COLUMN:GENERATED_KEY
+        </selectKey>
+    </insert>
+
+    <insert id="insert.ContentUrl" parameterClass="ContentUrl" >
+        <include refid="insert.ContentUrl.AutoIncrement"/>
+        <selectKey resultClass="long" keyProperty="id" type="post">
+            KEY_COLUMN:GENERATED_KEY
+        </selectKey>
+    </insert>
+
+    <insert id="insert.ContentData" parameterClass="ContentData" >
+        <include refid="insert.ContentData.AutoIncrement"/>
+        <selectKey resultClass="long" keyProperty="id" type="post">
+            KEY_COLUMN:GENERATED_KEY
+        </selectKey>
+    </insert>
+
+</sqlMap>

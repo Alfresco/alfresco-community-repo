@@ -217,9 +217,9 @@ public class ContentData implements Serializable
             return false;
         ContentData that = (ContentData) obj;
         return (EqualsHelper.nullSafeEquals(this.contentUrl, that.contentUrl) &&
-                EqualsHelper.nullSafeEquals(this.mimetype, that.mimetype) &&
+                EqualsHelper.nullSafeEquals(this.mimetype, that.mimetype, true) &&
                 this.size == that.size &&
-                EqualsHelper.nullSafeEquals(this.encoding, that.encoding) &&
+                EqualsHelper.nullSafeEquals(this.encoding, that.encoding, true) &&
                 EqualsHelper.nullSafeEquals(this.locale, that.locale));
     }
     

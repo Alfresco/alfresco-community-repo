@@ -61,6 +61,7 @@ import org.alfresco.repo.domain.Server;
 import org.alfresco.repo.domain.Store;
 import org.alfresco.repo.domain.Transaction;
 import org.alfresco.repo.domain.UsageDeltaDAO;
+import org.alfresco.repo.domain.contentdata.ContentDataDAO;
 import org.alfresco.repo.domain.hibernate.ChildAssocImpl;
 import org.alfresco.repo.domain.hibernate.DMPermissionsDaoComponentImpl;
 import org.alfresco.repo.domain.hibernate.DbAccessControlListImpl;
@@ -94,6 +95,7 @@ import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.repository.AssociationExistsException;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
+import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.DuplicateChildNodeNameException;
 import org.alfresco.service.cmr.repository.EntityRef;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
@@ -181,6 +183,7 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
     }
 
     private QNameDAO qnameDAO;
+    private ContentDataDAO contentDataDAO;
     private UsageDeltaDAO usageDeltaDAO;
     private AclDaoComponent aclDaoComponent;
     private LocaleDAO localeDAO;
@@ -253,6 +256,14 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
     public void setQnameDAO(QNameDAO qnameDAO)
     {
         this.qnameDAO = qnameDAO;
+    }
+
+    /**
+     * Set the component for storing and retrieving <code>ContentData</code>
+     */
+    public void setContentDataDAO(ContentDataDAO contentDataDAO)
+    {
+        this.contentDataDAO = contentDataDAO;
     }
 
     public void setUsageDeltaDAO(UsageDeltaDAO usageDeltaDAO)
@@ -1284,7 +1295,7 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
         Serializable propertyValue = HibernateNodeDaoServiceImpl.getPublicProperty(
                 nodeProperties,
                 propertyQName,
-                qnameDAO, localeDAO, dictionaryService);
+                qnameDAO, localeDAO, contentDataDAO, dictionaryService);
         return propertyValue;
     }
 
@@ -1298,6 +1309,7 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
                 nodeProperties,
                 qnameDAO,
                 localeDAO,
+                contentDataDAO,
                 dictionaryService);
         
         // Handle cm:auditable
@@ -1327,6 +1339,18 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
         PropertyDefinition propertyDef = dictionaryService.getProperty(qname);
         Long qnameId = qnameDAO.getOrCreateQName(qname).getFirst();
         
+        /*
+         * TODO: Put into interceptor
+         * This method will replaces a content property.  We therefore remove the existing content data.
+         * New ContentData entities will be created.  Re-using content data will mean comparing old
+         * with new - it is faster to just create a new row.
+         */
+        if (propertyDef != null && propertyDef.getDataType().getName().equals(DataTypeDefinition.CONTENT))
+        {
+            Set<Long> contentQNamesToRemoveIds = Collections.singleton(qnameId);
+            contentDataDAO.deleteContentDataForNode(node.getId(), contentQNamesToRemoveIds);
+        }
+
         Map<PropertyMapKey, NodePropertyValue> persistableProperties = new HashMap<PropertyMapKey, NodePropertyValue>(3);
         
         HibernateNodeDaoServiceImpl.addValueToPersistedProperties(
@@ -1336,7 +1360,8 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
                 qnameId,
                 localeId,
                 value,
-                localeDAO);
+                localeDAO,
+                contentDataDAO);
         
         Map<PropertyMapKey, NodePropertyValue> nodeProperties = node.getProperties();
         
@@ -1392,6 +1417,16 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
 
     public void setNodeProperties(Long nodeId, Map<QName, Serializable> propertiesIncl)
     {
+        /*
+         * TODO: Put into interceptor
+         * This method will replace all properties.  We therefore remove all existing content data.
+         * New ContentData entities will be created.  Re-using content data will mean comparing old
+         * with new - it is faster to just create a new row.
+         */
+        Set<QName> contentQNames = new HashSet<QName>(dictionaryService.getAllProperties(DataTypeDefinition.CONTENT));
+        Set<Long> contentQNameIds = qnameDAO.convertQNamesToIds(contentQNames, false);
+        contentDataDAO.deleteContentDataForNode(nodeId, contentQNameIds);
+
         Node node = getNodeNotNull(nodeId);
         
         // Handle cm:auditable.  These need to be removed from the properties.
@@ -1413,6 +1448,7 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
                 properties,
                 qnameDAO,
                 localeDAO,
+                contentDataDAO,
                 dictionaryService);
 
         // Get the persistent map attached to the node
@@ -1443,6 +1479,24 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
 
     public void removeNodeProperties(Long nodeId, Set<QName> propertyQNamesIncl)
     {
+        /*
+         * TODO: Put into interceptor
+         * This method will replace all properties.  We therefore remove all existing content data.
+         * New ContentData entities will be created.  Re-using content data will mean comparing old
+         * with new - it is faster to just create a new row.
+         */
+        Set<QName> contentQNames = new HashSet<QName>(dictionaryService.getAllProperties(DataTypeDefinition.CONTENT));
+        Set<QName> contentQNamesToRemove = new HashSet<QName>(3);
+        for (QName propertyQName : propertyQNamesIncl)
+        {
+            if (contentQNames.contains(propertyQName))
+            {
+                contentQNamesToRemove.add(propertyQName);
+            }
+        }
+        Set<Long> contentQNamesToRemoveIds = qnameDAO.convertQNamesToIds(contentQNamesToRemove, false);
+        contentDataDAO.deleteContentDataForNode(nodeId, contentQNamesToRemoveIds);
+
         Node node = getNodeNotNull(nodeId);
         
         // Handle cm:auditable.  These need to be removed from the list.
@@ -1559,6 +1613,14 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
      */
     public void deleteNode(Long nodeId)
     {
+        /*
+         * TODO: Put into interceptor
+         * This method will remove all properties.  We therefore remove all existing content data.
+         */
+        Set<QName> contentQNames = new HashSet<QName>(dictionaryService.getAllProperties(DataTypeDefinition.CONTENT));
+        Set<Long> contentQNamesToRemoveIds = qnameDAO.convertQNamesToIds(contentQNames, false);
+        contentDataDAO.deleteContentDataForNode(nodeId, contentQNamesToRemoveIds);
+
         Node node = getNodeNotNull(nodeId);
         
         // Propagate timestamps
@@ -4032,6 +4094,7 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
             Map<QName, Serializable> in,
             QNameDAO qnameDAO,
             LocaleDAO localeDAO,
+            ContentDataDAO contentDataDAO,
             DictionaryService dictionaryService)
     {
         Map<PropertyMapKey, NodePropertyValue> propertyMap = new HashMap<PropertyMapKey, NodePropertyValue>(in.size() + 5);
@@ -4053,7 +4116,8 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
                     propertyQNameId,
                     propertylocaleId,
                     value,
-                    localeDAO);
+                    localeDAO,
+                    contentDataDAO);
         }
         // Done
         return propertyMap;
@@ -4079,7 +4143,8 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
             Long propertyQNameId,
             Long propertyLocaleId,
             Serializable value,
-            LocaleDAO localeDAO)
+            LocaleDAO localeDAO,
+            ContentDataDAO contentDataDAO)
     {
         if (value == null)
         {
@@ -4134,7 +4199,8 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
                     propertyQNameId,
                     propertyLocaleId,
                     value,
-                    localeDAO);
+                    localeDAO,
+                    contentDataDAO);
         }
         else if (collectionIndex == IDX_NO_COLLECTION && value instanceof Collection)
         {
@@ -4188,7 +4254,8 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
                             propertyQNameId,
                             propertyLocaleId,
                             collectionValue,
-                            localeDAO);
+                            localeDAO,
+                            contentDataDAO);
                 }
                 catch (Throwable e)
                 {
@@ -4212,6 +4279,13 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
                         "   Property: " + propertyDef + "\n" +
                         "   Type: " + propertyTypeQName + "\n" +
                         "   Value: " + value);
+            }
+            // Handle ContentData
+            if (value instanceof ContentData)
+            {
+                // Needs converting to an ID
+                ContentData contentData = (ContentData) value;
+                value = contentDataDAO.createContentData(contentData).getFirst();
             }
             // Handle MLText
             if (value instanceof MLText)
@@ -4295,6 +4369,7 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
             QName propertyQName,
             QNameDAO qnameDAO,
             LocaleDAO localeDAO,
+            ContentDataDAO contentDataDAO,
             DictionaryService dictionaryService)
     {
         // Get the qname ID
@@ -4322,7 +4397,8 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
             Serializable collapsedValue = HibernateNodeDaoServiceImpl.collapsePropertiesWithSameQName(
                     propertyDef,
                     scratch,
-                    localeDAO);
+                    localeDAO,
+                    contentDataDAO);
             return collapsedValue;
         }
         else
@@ -4335,6 +4411,7 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
             Map<PropertyMapKey, NodePropertyValue> propertyValues,
             QNameDAO qnameDAO,
             LocaleDAO localeDAO,
+            ContentDataDAO contentDataDAO,
             DictionaryService dictionaryService)
     {
         Map<QName, Serializable> propertyMap = new HashMap<QName, Serializable>(propertyValues.size(), 1.0F);
@@ -4377,7 +4454,8 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
                     collapsedValue = HibernateNodeDaoServiceImpl.collapsePropertiesWithSameQNameAndListIndex(
                             currentPropertyDef,
                             scratch,
-                            localeDAO);
+                            localeDAO,
+                            contentDataDAO);
                 }
                 else
                 {
@@ -4385,7 +4463,8 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
                     collapsedValue = HibernateNodeDaoServiceImpl.collapsePropertiesWithSameQName(
                             currentPropertyDef,
                             scratch,
-                            localeDAO);
+                            localeDAO,
+                            contentDataDAO);
                 }
                 // If the property is multi-valued then the output property must be a collection
                 if (currentPropertyDef != null && currentPropertyDef.isMultiValued())
@@ -4422,7 +4501,8 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
     private static Serializable collapsePropertiesWithSameQName(
             PropertyDefinition propertyDef,
             SortedMap<PropertyMapKey, NodePropertyValue> sortedPropertyValues,
-            LocaleDAO localeDAO)
+            LocaleDAO localeDAO,
+            ContentDataDAO contentDataDAO)
     {
         Serializable result = null;
         Collection<Serializable> collectionResult = null;
@@ -4451,7 +4531,8 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
                 Serializable collapsedValue = HibernateNodeDaoServiceImpl.collapsePropertiesWithSameQNameAndListIndex(
                         propertyDef,
                         scratch,
-                        localeDAO);
+                        localeDAO,
+                        contentDataDAO);
                 // Store.  If there is a value already, then we must build a collection.
                 if (result == null)
                 {
@@ -4510,7 +4591,8 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
     private static Serializable collapsePropertiesWithSameQNameAndListIndex(
             PropertyDefinition propertyDef,
             Map<PropertyMapKey, NodePropertyValue> propertyValues,
-            LocaleDAO localeDAO)
+            LocaleDAO localeDAO,
+            ContentDataDAO contentDataDAO)
     {
         int propertyValuesSize = propertyValues.size();
         Serializable value = null;
@@ -4527,7 +4609,7 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
                     (propertyDef == null || !propertyDef.getDataType().getName().equals(DataTypeDefinition.MLTEXT)))
             {
                 // This is the only value and it is NOT to be converted to MLText
-                value = HibernateNodeDaoServiceImpl.makeSerializableValue(propertyDef, propertyValue);
+                value = HibernateNodeDaoServiceImpl.makeSerializableValue(propertyDef, propertyValue, contentDataDAO);
             }
             else
             {
@@ -4559,10 +4641,14 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
      * 
      * @param propertyDef       the model property definition - may be <tt>null</tt>
      * @param propertyValue     the persisted property
+     * @param contentDataDAO    component that handles <code>ContentData</code> persistence
      * @return                  Returns the value of the property in the format dictated by the property
      *                          definition, or null if the property value is null 
      */
-    private static Serializable makeSerializableValue(PropertyDefinition propertyDef, NodePropertyValue propertyValue)
+    private static Serializable makeSerializableValue(
+            PropertyDefinition propertyDef,
+            NodePropertyValue propertyValue,
+            ContentDataDAO contentDataDAO)
     {
         if (propertyValue == null)
         {
@@ -4582,6 +4668,20 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
         try
         {
             Serializable value = propertyValue.getValue(propertyTypeQName);
+            // Handle conversions to and from ContentData
+            if (propertyTypeQName.equals(DataTypeDefinition.CONTENT) && (value instanceof Long))
+            {
+                Pair<Long, ContentData> contentDataPair = contentDataDAO.getContentData((Long)value);
+                if (contentDataPair == null)
+                {
+                    // It is invalid
+                    value = null;
+                }
+                else
+                {
+                    value = contentDataPair.getSecond();
+                }
+            }
             // done
             return value;
         }

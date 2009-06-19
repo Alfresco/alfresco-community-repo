@@ -1644,9 +1644,12 @@ public class DeploymentServiceImpl implements DeploymentService
 		 */
 		public void makeLock()
 		{
-			jobLockService.getTransacionalLock(lockQName, getTargetLockTimeToLive(), getTargetLockRetryWait(), getTargetLockRetryCount());
+			jobLockService.getTransactionalLock(lockQName, getTargetLockTimeToLive(), getTargetLockRetryWait(), getTargetLockRetryCount());
 			lockTime = new Date().getTime();
-			fgLogger.debug("lock taken" + lockQName);
+			if (fgLogger.isDebugEnabled())
+            {
+	            fgLogger.debug("lock taken" + lockQName);
+            }
 		}
 		
 		public void refreshLock()
@@ -1657,8 +1660,11 @@ public class DeploymentServiceImpl implements DeploymentService
 			Date now = new Date();
 			if(now.getTime() - lockTime > (targetLockTimeToLive / 2))
 			{
-				fgLogger.debug("lock refreshed" + lockQName);
-				jobLockService.getTransacionalLock(lockQName, getTargetLockTimeToLive(), getTargetLockRetryWait(), getTargetLockRetryCount());
+			    if (fgLogger.isDebugEnabled())
+                {
+	                fgLogger.debug("lock refreshed" + lockQName);
+                }
+				jobLockService.getTransactionalLock(lockQName, getTargetLockTimeToLive(), getTargetLockRetryWait(), getTargetLockRetryCount());
 				lockTime = new Date().getTime();
 			}
 		}

@@ -37,6 +37,7 @@ import org.alfresco.repo.domain.Node;
 import org.alfresco.repo.domain.NodePropertyValue;
 import org.alfresco.repo.domain.PropertyMapKey;
 import org.alfresco.repo.domain.QNameDAO;
+import org.alfresco.repo.domain.contentdata.ContentDataDAO;
 import org.alfresco.repo.node.db.hibernate.HibernateNodeDaoServiceImpl;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -59,6 +60,7 @@ public class PersonDaoImpl extends HibernateDaoSupport implements PersonDao
     private Long qNamePropId;
     private Long qNameTypeId;
     private LocaleDAO localeDAO;
+    private ContentDataDAO contentDataDAO;
     private DictionaryService dictionaryService;
 
     private StoreRef storeRef;
@@ -128,7 +130,8 @@ public class PersonDaoImpl extends HibernateDaoSupport implements PersonDao
             Map<PropertyMapKey, NodePropertyValue> nodeProperties = node.getProperties();
 
             // Convert the QName IDs
-            Map<QName, Serializable> converted = HibernateNodeDaoServiceImpl.convertToPublicProperties(nodeProperties, qnameDAO, localeDAO, dictionaryService);
+            Map<QName, Serializable> converted = HibernateNodeDaoServiceImpl.convertToPublicProperties(
+                    nodeProperties, qnameDAO, localeDAO, contentDataDAO, dictionaryService);
 
             Serializable value = converted.get(ContentModel.PROP_USERNAME);
             String realUserName = DefaultTypeConverter.INSTANCE.convert(String.class, value);
@@ -188,6 +191,11 @@ public class PersonDaoImpl extends HibernateDaoSupport implements PersonDao
     public void setDictionaryService(DictionaryService dictionaryService)
     {
         this.dictionaryService = dictionaryService;
+    }
+
+    public void setContentDataDAO(ContentDataDAO contentDataDAO)
+    {
+        this.contentDataDAO = contentDataDAO;
     }
 
 }

@@ -120,6 +120,10 @@ public class HibernateLocaleDAOImpl extends HibernateDaoSupport implements Local
         // Add the cache entry
         localeIdCache.put(id, localeStr);
         localeIdCache.put(localeStr, id);
+        
+        // Force a flush
+        DirtySessionMethodInterceptor.flushSession(getSession(), true);
+        
         // Done
         if (logger.isDebugEnabled())
         {

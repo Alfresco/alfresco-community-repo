@@ -28,39 +28,28 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.model.ContentModel;
 import org.alfresco.repo.avm.AVMNodeDAO;
 import org.alfresco.repo.avm.AVMNodeDAO.ContentUrlHandler;
-import org.alfresco.repo.content.ContentServicePolicies;
 import org.alfresco.repo.content.ContentStore;
-import org.alfresco.repo.copy.CopyServicePolicies;
-import org.alfresco.repo.domain.ContentUrlDAO;
-import org.alfresco.repo.node.NodeServicePolicies;
+import org.alfresco.repo.domain.contentclean.ContentCleanDAO;
+import org.alfresco.repo.domain.contentclean.ContentCleanDAO.ContentUrlBatchProcessor;
+import org.alfresco.repo.domain.contentdata.ContentDataDAO;
+import org.alfresco.repo.lock.JobLockService;
 import org.alfresco.repo.node.db.NodeDaoService;
 import org.alfresco.repo.node.db.NodeDaoService.NodePropertyHandler;
-import org.alfresco.repo.policy.JavaBehaviour;
-import org.alfresco.repo.policy.PolicyComponent;
-import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
-import org.alfresco.repo.transaction.TransactionListenerAdapter;
-import org.alfresco.repo.transaction.TransactionalResourceHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.ContentData;
-import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
-import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
-import org.alfresco.util.Pair;
 import org.alfresco.util.PropertyCheck;
 import org.alfresco.util.VmShutdownListener;
 import org.apache.commons.logging.Log;
@@ -99,39 +88,21 @@ import org.apache.commons.logging.LogFactory;
  * @author Derek Hulley
  */
 public class ContentStoreCleaner
-            extends TransactionListenerAdapter
-            implements CopyServicePolicies.OnCopyCompletePolicy,
-                       NodeServicePolicies.BeforeDeleteNodePolicy,
-                       ContentServicePolicies.OnContentPropertyUpdatePolicy
-                       
 {
-    /**
-     * Content URLs to delete once the transaction commits.
-     * @see #onContentPropertyUpdate(NodeRef, QName, ContentData, ContentData)
-     * @see #afterCommit()
-     */
-    private static final String KEY_POST_COMMIT_DELETION_URLS = "ContentStoreCleaner.PostCommitDeletionUrls";
-    /**
-     * Content URLs to delete if the transaction rolls b ack.
-     * @see #onContentPropertyUpdate(NodeRef, QName, ContentData, ContentData)
-     * @see #afterRollback()
-     */
-    private static final String KEY_POST_ROLLBACK_DELETION_URLS = "ContentStoreCleaner.PostRollbackDeletionUrls";
-    
     private static Log logger = LogFactory.getLog(ContentStoreCleaner.class);
     
     /** kept to notify the thread that it should quit */
     private static VmShutdownListener vmShutdownListener = new VmShutdownListener("ContentStoreCleaner");
     
+    private JobLockService jobLockService;
+    private ContentCleanDAO contentCleanDAO;
+    private ContentDataDAO contentDataDAO;
     private DictionaryService dictionaryService;
-    private PolicyComponent policyComponent;
     private ContentService contentService;
     private NodeDaoService nodeDaoService;
     private AVMNodeDAO avmNodeDAO;
-    private ContentUrlDAO contentUrlDAO;
     private TransactionService transactionService;
     private List<ContentStore> stores;
-    private boolean eagerOrphanCleanup;
     private List<ContentStoreCleanerListener> listeners;
     private int protectDays;
     
@@ -143,19 +114,35 @@ public class ContentStoreCleaner
     }
 
     /**
+     * @param jobLockService        service used to ensure that cleanup runs are not duplicated
+     */
+    public void setJobLockService(JobLockService jobLockService)
+    {
+        this.jobLockService = jobLockService;
+    }
+
+    /**
+     * @param contentCleanDAO       DAO used for manipulating content URLs
+     */
+    public void setContentCleanDAO(ContentCleanDAO contentCleanDAO)
+    {
+        this.contentCleanDAO = contentCleanDAO;
+    }
+
+    /**
+     * @param contentDataDAO        DAO used for enumerating DM content URLs
+     */
+    public void setContentDataDAO(ContentDataDAO contentDataDAO)
+    {
+        this.contentDataDAO = contentDataDAO;
+    }
+
+    /**
      * @param dictionaryService used to determine which properties are content properties
      */
     public void setDictionaryService(DictionaryService dictionaryService)
     {
         this.dictionaryService = dictionaryService;
-    }
-
-    /**
-     * @param policyComponent   used to register to listen for content updates
-     */
-    public void setPolicyComponent(PolicyComponent policyComponent)
-    {
-        this.policyComponent = policyComponent;
     }
 
     /**
@@ -183,14 +170,6 @@ public class ContentStoreCleaner
     }
     
     /**
-     * @param contentUrlDAO     DAO for recording valid <b>Content URLs</b>
-     */
-    public void setContentUrlDAO(ContentUrlDAO contentUrlDAO)
-    {
-        this.contentUrlDAO = contentUrlDAO;
-    }
-    
-    /**
      * @param transactionService the component to ensure proper transactional wrapping
      */
     public void setTransactionService(TransactionService transactionService)
@@ -204,15 +183,6 @@ public class ContentStoreCleaner
     public void setStores(List<ContentStore> stores)
     {
         this.stores = stores;
-    }
-
-    /**
-     * 
-     * @param eagerOrphanCleanup    <tt>true</tt> to clean up content
-     */
-    public void setEagerOrphanCleanup(boolean eagerOrphanCleanup)
-    {
-        this.eagerOrphanCleanup = eagerOrphanCleanup;
     }
 
     /**
@@ -240,26 +210,6 @@ public class ContentStoreCleaner
     public void init()
     {
         checkProperties();
-        if (!eagerOrphanCleanup)
-        {
-            // Don't register for anything because eager cleanup is disabled
-            return;
-        }
-        // Register for the updates
-        this.policyComponent.bindClassBehaviour(
-                QName.createQName(NamespaceService.ALFRESCO_URI, "onContentPropertyUpdate"),
-                this,
-                new JavaBehaviour(this, "onContentPropertyUpdate"));
-        // TODO: This is a RM-specific hack.  Once content properties are separated out, the
-        //       following should be accomplished with a trigger to clean up orphaned content.
-        this.policyComponent.bindClassBehaviour(
-                QName.createQName(NamespaceService.ALFRESCO_URI, "beforeDeleteNode"),
-                ContentModel.TYPE_CONTENT,
-                new JavaBehaviour(this, "beforeDeleteNode"));
-        this.policyComponent.bindClassBehaviour(
-                QName.createQName(NamespaceService.ALFRESCO_URI, "onCopyComplete"),
-                ContentModel.TYPE_CONTENT,
-                new JavaBehaviour(this, "onCopyComplete"));
     }
     
     /**
@@ -267,12 +217,13 @@ public class ContentStoreCleaner
      */
     private void checkProperties()
     {
+        PropertyCheck.mandatory(this, "jobLockService", jobLockService);
+        PropertyCheck.mandatory(this, "contentCleanerDAO", contentCleanDAO);
+        PropertyCheck.mandatory(this, "contentDataDAO", contentDataDAO);
         PropertyCheck.mandatory(this, "dictionaryService", dictionaryService);
-        PropertyCheck.mandatory(this, "policyComponent", policyComponent);
         PropertyCheck.mandatory(this, "contentService", contentService);
         PropertyCheck.mandatory(this, "nodeDaoService", nodeDaoService);
         PropertyCheck.mandatory(this, "avmNodeDAO", avmNodeDAO);
-        PropertyCheck.mandatory(this, "contentUrlDAO", contentUrlDAO);
         PropertyCheck.mandatory(this, "transactionService", transactionService);
         PropertyCheck.mandatory(this, "listeners", listeners);
         
@@ -288,193 +239,35 @@ public class ContentStoreCleaner
                     "It is possible that in-transaction content will be deleted.");
         }
     }
-
-    /**
-     * Makes sure that copied files get a new, unshared binary.
-     */
-    public void onCopyComplete(
-            QName classRef,
-            NodeRef sourceNodeRef,
-            NodeRef targetNodeRef,
-            boolean copyToNewNode,
-            Map<NodeRef, NodeRef> copyMap)
-    {
-        // Get the cm:content of the source
-        ContentReader sourceReader = contentService.getReader(sourceNodeRef, ContentModel.PROP_CONTENT);
-        if (sourceReader == null || !sourceReader.exists())
-        {
-            // No point attempting to duplicate missing content.  We're only interested in cleanin up.
-            return;
-        }
-        // Get the cm:content of the target
-        ContentReader targetReader = contentService.getReader(targetNodeRef, ContentModel.PROP_CONTENT);
-        if (targetReader == null || !targetReader.exists())
-        {
-            // The target's content is not present, so we don't copy anything over
-            return;
-        }
-        else if (!targetReader.getContentUrl().equals(sourceReader.getContentUrl()))
-        {
-            // The target already has a different binary
-            return;
-        }
-        // Create new content for the target node.  This will behave just like an update to the node
-        // but occurs in the same txn as the copy process.  Clearly this is a hack and is only
-        // able to work when properties are copied with all the proper copy-related policies being
-        // triggered.
-        ContentWriter targetWriter = contentService.getWriter(targetNodeRef, ContentModel.PROP_CONTENT, true);
-        targetWriter.putContent(sourceReader);
-        // This will have triggered deletion of the source node's content because the target node
-        // is being updated.  Force the source node's content to be protected.
-        Set<String> urlsToDelete = TransactionalResourceHelper.getSet(KEY_POST_COMMIT_DELETION_URLS);
-        urlsToDelete.remove(sourceReader.getContentUrl());
-    }
-
-    /**
-     * Records the content URLs of <b>cm:content</b> for post-commit cleanup.
-     */
-    public void beforeDeleteNode(NodeRef nodeRef)
-    {
-        // Get the cm:content property
-        Pair<Long, NodeRef> nodePair = nodeDaoService.getNodePair(nodeRef);
-        if (nodePair == null)
-        {
-            return;
-        }
-        ContentData contentData = (ContentData) nodeDaoService.getNodeProperty(
-                nodePair.getFirst(), ContentModel.PROP_CONTENT);
-        if (contentData == null || !ContentData.hasContent(contentData))
-        {
-            return;
-        }
-        String contentUrl = contentData.getContentUrl();
-        // Bind it to the list
-        Set<String> urlsToDelete = TransactionalResourceHelper.getSet(KEY_POST_COMMIT_DELETION_URLS);
-        urlsToDelete.add(contentUrl);
-        AlfrescoTransactionSupport.bindListener(this);
-    }
-
-    /**
-     * Checks for {@link #setEagerOrphanCleanup(boolean) eager cleanup} and pushes the old content URL into
-     * a list for post-transaction deletion.
-     */
-    public void onContentPropertyUpdate(
-            NodeRef nodeRef,
-            QName propertyQName,
-            ContentData beforeValue,
-            ContentData afterValue)
-    {
-        boolean registerListener = false;
-        // Bind in URLs to delete when txn commits
-        if (beforeValue != null && ContentData.hasContent(beforeValue))
-        {
-            // Register the URL to delete
-            String contentUrl = beforeValue.getContentUrl();
-            Set<String> urlsToDelete = TransactionalResourceHelper.getSet(KEY_POST_COMMIT_DELETION_URLS);
-            urlsToDelete.add(contentUrl);
-            // Register to listen for transaction commit
-            registerListener = true;
-        }
-        // Bind in URLs to delete when txn rolls back
-        if (afterValue != null && ContentData.hasContent(afterValue))
-        {
-            // Register the URL to delete
-            String contentUrl = afterValue.getContentUrl();
-            Set<String> urlsToDelete = TransactionalResourceHelper.getSet(KEY_POST_ROLLBACK_DELETION_URLS);
-            urlsToDelete.add(contentUrl);
-            // Register to listen for transaction rollback
-            registerListener = true;
-        }
-        // Register listener
-        if (registerListener)
-        {
-            AlfrescoTransactionSupport.bindListener(this);
-        }
-    }
-
-    /**
-     * Cleans up all newly-orphaned content
-     */
-    @Override
-    public void afterCommit()
-    {
-        Set<String> urlsToDelete = TransactionalResourceHelper.getSet(KEY_POST_COMMIT_DELETION_URLS);
-        // Debug
-        if (logger.isDebugEnabled())
-        {
-            logger.debug("Post-commit deletion of old content URLs: ");
-            int count = 0;
-            for (String contentUrl : urlsToDelete)
-            {
-                if (count == 10)
-                {
-                    logger.debug("   " + (urlsToDelete.size() - 10) + " more ...");
-                }
-                else
-                {
-                    logger.debug("   Deleting content URL: " + contentUrl);
-                }
-                count++;
-            }
-        }
-        // Delete
-        for (String contentUrl : urlsToDelete)
-        {
-            for (ContentStore store : stores)
-            {
-                for (ContentStoreCleanerListener listener : listeners)
-                {
-                    listener.beforeDelete(store, contentUrl);
-                }
-                store.delete(contentUrl);
-            }
-        }
-    }
-
-    @Override
-    public void afterRollback()
-    {
-        Set<String> urlsToDelete = TransactionalResourceHelper.getSet(KEY_POST_ROLLBACK_DELETION_URLS);
-        // Debug
-        if (logger.isDebugEnabled())
-        {
-            logger.debug("Post-rollback deletion of new content URLs: ");
-            int count = 0;
-            for (String contentUrl : urlsToDelete)
-            {
-                if (count == 10)
-                {
-                    logger.debug("   " + (urlsToDelete.size() - 10) + " more ...");
-                }
-                else
-                {
-                    logger.debug("   Deleting content URL: " + contentUrl);
-                }
-                count++;
-            }
-        }
-        // Delete
-        for (String contentUrl : urlsToDelete)
-        {
-            for (ContentStore store : stores)
-            {
-                for (ContentStoreCleanerListener listener : listeners)
-                {
-                    listener.beforeDelete(store, contentUrl);
-                }
-                store.delete(contentUrl);
-            }
-        }
-    }
-
-    private void removeContentUrlsPresentInMetadata()
+    
+    private void removeContentUrlsPresentInMetadata(final ContentUrlBatchProcessor urlRemover)
     {
         RetryingTransactionHelper txnHelper = transactionService.getRetryingTransactionHelper();
         
         // Remove all the Content URLs for the ADM repository
-        // Handler that records the URL
+        // Handlers that record the URLs
+        final ContentDataDAO.ContentUrlHandler contentUrlHandler = new ContentDataDAO.ContentUrlHandler()
+        {
+            long lastLock = 0L;
+            public void handle(String contentUrl)
+            {
+                if (vmShutdownListener.isVmShuttingDown())
+                {
+                    throw new VmShutdownException();
+                }
+                urlRemover.processContentUrl(contentUrl);
+                // Check lock
+                long now = System.currentTimeMillis();
+                if (now - lastLock > (long)(LOCK_TTL/2L))
+                {
+                    jobLockService.getTransactionalLock(LOCK_QNAME, LOCK_TTL);
+                    lastLock = now;
+                }
+            }
+        };
         final NodePropertyHandler nodePropertyHandler = new NodePropertyHandler()
         {
+            long lastLock = 0L;
             public void handle(NodeRef nodeRef, QName nodeTypeQName, QName propertyQName, Serializable value)
             {
                 if (vmShutdownListener.isVmShuttingDown())
@@ -486,16 +279,24 @@ public class ContentStoreCleaner
                 String contentUrl = contentData.getContentUrl();
                 if (contentUrl != null)
                 {
-                    contentUrlDAO.deleteContentUrl(contentUrl);
+                    urlRemover.processContentUrl(contentUrl);
+                }
+                // Check lock
+                long now = System.currentTimeMillis();
+                if (now - lastLock > (long)(LOCK_TTL/2L))
+                {
+                    jobLockService.getTransactionalLock(LOCK_QNAME, LOCK_TTL);
+                    lastLock = now;
                 }
             }
         };
         final DataTypeDefinition contentDataType = dictionaryService.getDataType(DataTypeDefinition.CONTENT);
         // execute in READ-WRITE txn
-        RetryingTransactionCallback<Object> getUrlsCallback = new RetryingTransactionCallback<Object>()
+        RetryingTransactionCallback<Void> getUrlsCallback = new RetryingTransactionCallback<Void>()
         {
-            public Object execute() throws Exception
+            public Void execute() throws Exception
             {
+                contentDataDAO.getAllContentUrls(contentUrlHandler);
                 nodeDaoService.getPropertyValuesByActualType(contentDataType, nodePropertyHandler);
                 return null;
             };
@@ -503,21 +304,29 @@ public class ContentStoreCleaner
         txnHelper.doInTransaction(getUrlsCallback);
         
         // Do the same for the AVM repository.
-        final ContentUrlHandler handler = new ContentUrlHandler()
+        final AVMNodeDAO.ContentUrlHandler handler = new AVMNodeDAO.ContentUrlHandler()
         {
+            long lastLock = 0L;
             public void handle(String contentUrl)
             {
                 if (vmShutdownListener.isVmShuttingDown())
                 {
                     throw new VmShutdownException();
                 }
-                contentUrlDAO.deleteContentUrl(contentUrl);
+                urlRemover.processContentUrl(contentUrl);
+                // Check lock
+                long now = System.currentTimeMillis();
+                if (now - lastLock > (long)(LOCK_TTL/2L))
+                {
+                    jobLockService.getTransactionalLock(LOCK_QNAME, LOCK_TTL);
+                    lastLock = now;
+                }
             }
         };
         // execute in READ-WRITE txn
-        RetryingTransactionCallback<Object> getAVMUrlsCallback = new RetryingTransactionCallback<Object>()
+        RetryingTransactionCallback<Void> getAVMUrlsCallback = new RetryingTransactionCallback<Void>()
         {
-            public Object execute() throws Exception
+            public Void execute() throws Exception
             {
                 avmNodeDAO.getContentUrls(handler);
                 return null;
@@ -526,17 +335,25 @@ public class ContentStoreCleaner
         txnHelper.doInTransaction(getAVMUrlsCallback);
     }
     
-    private void addContentUrlsPresentInStores()
+    private void addContentUrlsPresentInStores(final ContentUrlBatchProcessor urlInserter)
     {
         org.alfresco.repo.content.ContentStore.ContentUrlHandler handler = new org.alfresco.repo.content.ContentStore.ContentUrlHandler()
         {
+            long lastLock = 0L;
             public void handle(String contentUrl)
             {
                 if (vmShutdownListener.isVmShuttingDown())
                 {
                     throw new VmShutdownException();
                 }
-                contentUrlDAO.createContentUrl(contentUrl);
+                urlInserter.processContentUrl(contentUrl);
+                // Check lock
+                long now = System.currentTimeMillis();
+                if (now - lastLock > (long)(LOCK_TTL/2L))
+                {
+                    jobLockService.getTransactionalLock(LOCK_QNAME, LOCK_TTL);
+                    lastLock = now;
+                }
             }
         };
         Date checkAllBeforeDate = new Date(System.currentTimeMillis() - (long) protectDays * 3600L * 1000L * 24L);
@@ -546,25 +363,54 @@ public class ContentStoreCleaner
         }
     }
     
+    private static final QName LOCK_QNAME = QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "ContentStoreCleaner"); 
+    private static final long LOCK_TTL = 30000L;
     public void execute()
     {
         checkProperties();
-        
-        if (logger.isDebugEnabled())
+
+        RetryingTransactionCallback<Void> executeCallback = new RetryingTransactionCallback<Void>()
         {
-            logger.debug("Starting content store cleanup.");
+            public Void execute() throws Exception
+            {
+                logger.debug("Content store cleanup started.");
+                // Get the lock without any waiting
+                // The lock will be refreshed, but the first lock starts the process
+                jobLockService.getTransactionalLock(LOCK_QNAME, LOCK_TTL);
+                executeInternal();
+                return null;
+            }
+        };
+        try
+        {
+            RetryingTransactionHelper txnHelper = transactionService.getRetryingTransactionHelper();
+            txnHelper.setMaxRetries(0);
+            txnHelper.doInTransaction(executeCallback);
+            // Done
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("   Content store cleanup completed.");
+            }
         }
-        // Repeat attempts six times waiting 10 minutes between
-        executeInternal(0, 6, 600000);
+        catch (VmShutdownException e)
+        {
+            // Aborted
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("   Content store cleanup aborted.");
+            }
+        }
     }
     
-    public void executeInternal(int currentAttempt, int maxAttempts, long waitTime)
+    public void executeInternal()
     {
-        currentAttempt++;
-        // This handler removes the URLs from all the stores
-        final org.alfresco.repo.domain.ContentUrlDAO.ContentUrlHandler handler = new org.alfresco.repo.domain.ContentUrlDAO.ContentUrlHandler()
+        final ContentUrlBatchProcessor storeUrlDeleteHandler = new ContentUrlBatchProcessor()
         {
-            public void handle(String contentUrl)
+            long lastLock = 0L;
+            public void start()
+            {
+            }
+            public void processContentUrl(String contentUrl)
             {
                 for (ContentStore store : stores)
                 {
@@ -585,24 +431,52 @@ public class ContentStoreCleaner
                     }
                     // Delete
                     store.delete(contentUrl);
+                    // Check lock
+                    long now = System.currentTimeMillis();
+                    if (now - lastLock > (long)(LOCK_TTL/2L))
+                    {
+                        jobLockService.getTransactionalLock(LOCK_QNAME, LOCK_TTL);
+                        lastLock = now;
+                    }
                 }
+            }
+            public void end()
+            {
             }
         };
         // execute in READ-WRITE txn
-        RetryingTransactionCallback<Object> executeCallback = new RetryingTransactionCallback<Object>()
+        RetryingTransactionCallback<Void> executeCallback = new RetryingTransactionCallback<Void>()
         {
-            public Object execute() throws Exception
+            public Void execute() throws Exception
             {
-                // Delete all the URLs
-                contentUrlDAO.deleteAllContentUrls();
-                // Populate the URLs from the content stores
-                addContentUrlsPresentInStores();
-                // Remove URLs present in the metadata
-                removeContentUrlsPresentInMetadata();
+                // Clean up
+                contentCleanDAO.cleanUp();
+                // Push all store URLs in
+                ContentUrlBatchProcessor urlInserter = contentCleanDAO.getUrlInserter();
+                try
+                {
+                    urlInserter.start();
+                    addContentUrlsPresentInStores(urlInserter);
+                }
+                finally
+                {
+                    urlInserter.end();
+                }
+                // Delete all content URLs
+                ContentUrlBatchProcessor urlRemover = contentCleanDAO.getUrlRemover();
+                try
+                {
+                    urlRemover.start();
+                    removeContentUrlsPresentInMetadata(urlRemover);
+                }
+                finally
+                {
+                    urlRemover.end();
+                }
                 // Any remaining URLs are URls present in the stores but not in the metadata
-                contentUrlDAO.getAllContentUrls(handler);
-                // Delete all the URLs
-                contentUrlDAO.deleteAllContentUrls();
+                contentCleanDAO.listAllUrls(storeUrlDeleteHandler);
+                // Clean up
+                contentCleanDAO.cleanUp();
                 return null;
             };
         };
@@ -621,22 +495,6 @@ public class ContentStoreCleaner
             if (logger.isDebugEnabled())
             {
                 logger.debug("   Content store cleanup aborted.");
-            }
-        }
-        catch (Throwable e)
-        {
-            if (currentAttempt >= maxAttempts)
-            {
-                throw new AlfrescoRuntimeException("Failed to initiate content store clean", e);
-            }
-            if (RetryingTransactionHelper.extractRetryCause(e) != null)
-            {
-                // There are grounds for waiting and retrying
-                synchronized(this)
-                {
-                    try { this.wait(waitTime); } catch (InterruptedException ee) {}
-                }
-                executeInternal(currentAttempt, maxAttempts, waitTime);
             }
         }
     }

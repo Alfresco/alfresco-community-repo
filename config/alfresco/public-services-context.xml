@@ -267,6 +267,10 @@
         </property>
     </bean>
 
+    <!-- Job Lock Service -->
+
+    <alias alias="JobLockService" name="jobLockService"/>
+
     <!-- Version Service -->
 
     <bean id="VersionService" class="org.springframework.aop.framework.ProxyFactoryBean">

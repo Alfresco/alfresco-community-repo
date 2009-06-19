@@ -20,4 +20,27 @@
       <property name="qnameDAO" ref="qnameDAO"/>
    </bean>
    
+   <bean id="mimetypeDAO" class="org.alfresco.repo.domain.mimetype.ibatis.MimetypeDAOImpl">
+      <property name="sqlMapClientTemplate" ref="contentSqlMapClientTemplate"/>
+      <property name="mimetypeEntityCache" ref="mimetypeEntityCache"/>
+   </bean>
+   
+   <bean id="encodingDAO" class="org.alfresco.repo.domain.encoding.ibatis.EncodingDAOImpl">
+      <property name="sqlMapClientTemplate" ref="contentSqlMapClientTemplate"/>
+      <property name="encodingEntityCache" ref="encodingEntityCache"/>
+   </bean>
+   
+   <bean id="contentDataDAO" class="org.alfresco.repo.domain.contentdata.ibatis.ContentDataDAOImpl">
+      <property name="sqlMapClientTemplate" ref="contentSqlMapClientTemplate"/>
+<!--      <property name="contentDataCache" ref="encodingEntityCache"/>   TODO: new cache -->
+      <property name="mimetypeDAO" ref="mimetypeDAO"/>
+      <property name="encodingDAO" ref="encodingDAO"/>
+      <property name="localeDAO" ref="localeDAO"/>
+      <property name="contentStoreCleaner" ref="eagerContentStoreCleaner"/>
+   </bean>
+   
+   <bean id="contentCleanDAO" class="org.alfresco.repo.domain.contentclean.ibatis.ContentCleanDAOImpl">
+      <property name="sqlMapClientTemplate" ref="contentSqlMapClientTemplate"/>
+   </bean>
+   
 </beans>

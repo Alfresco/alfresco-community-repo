@@ -31,6 +31,7 @@ import org.alfresco.cmis.CMISQueryService;
 import org.alfresco.cmis.CMISServices;
 import org.alfresco.mbeans.VirtServerRegistry;
 import org.alfresco.repo.forms.FormService;
+import org.alfresco.repo.lock.JobLockService;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.attributes.AttributeService;
@@ -110,6 +111,7 @@ public interface ServiceRegistry
     static final QName CATEGORY_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "CategoryService");
     static final QName COPY_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "CopyService");
     static final QName LOCK_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "LockService");
+    static final QName JOB_LOCK_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "JobLockService");
     static final QName VERSION_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "VersionService");
     static final QName COCI_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "CheckoutCheckinService");
     static final QName RULE_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "RuleService");
@@ -248,6 +250,12 @@ public interface ServiceRegistry
      */
     @NotAuditable
     LockService getLockService();
+
+    /**
+     * @return the job lock service (or null, if one is not provided)
+     */
+    @NotAuditable
+    JobLockService getJobLockService();
 
     /**
      * @return the dictionary service (or null, if one is not provided)

@@ -686,6 +686,36 @@
     </cache>
 
     <cache
+        name="org.alfresco.cache.mimetypeEntityCache"
+        maxElementsInMemory="1000"
+        eternal="true"
+        overflowToDisk="false">
+
+            <cacheEventListenerFactory
+                    class="net.sf.ehcache.distribution.RMICacheReplicatorFactory"
+                    properties="replicatePuts = false,
+                                replicateUpdates = true,
+                                replicateRemovals = true,
+                                replicateUpdatesViaCopy = false,
+                                replicateAsynchronously = false"/>
+    </cache>
+
+    <cache
+        name="org.alfresco.cache.encodingEntityCache"
+        maxElementsInMemory="1000"
+        eternal="true"
+        overflowToDisk="false">
+
+            <cacheEventListenerFactory
+                    class="net.sf.ehcache.distribution.RMICacheReplicatorFactory"
+                    properties="replicatePuts = false,
+                                replicateUpdates = true,
+                                replicateRemovals = true,
+                                replicateUpdatesViaCopy = false,
+                                replicateAsynchronously = false"/>
+    </cache>
+
+    <cache
         name="org.alfresco.cache.parentAssocsCache"
         maxElementsInMemory="10000"
         eternal="true"

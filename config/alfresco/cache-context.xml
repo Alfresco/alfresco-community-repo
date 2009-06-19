@@ -135,6 +135,78 @@
       </property>
    </bean>
    
+   <!-- ===================================== -->
+   <!-- ID lookup for Mimetype entities       -->
+   <!-- ===================================== -->
+
+   <!-- The cross-transaction shared cache for Mimetype entities -->
+   
+   <bean name="mimetypeEntitySharedCache" class="org.alfresco.repo.cache.EhCacheAdapter">
+      <property name="cache">
+         <bean class="org.springframework.cache.ehcache.EhCacheFactoryBean" >
+            <property name="cacheManager">
+               <ref bean="internalEHCacheManager" />
+            </property>
+            <property name="cacheName">
+               <value>org.alfresco.cache.mimetypeEntityCache</value>
+            </property>
+         </bean>
+      </property>
+   </bean>
+   
+   <!-- The transactional cache for Mimetype entities -->
+   
+   <bean name="mimetypeEntityCache" class="org.alfresco.repo.cache.TransactionalCache">
+      <property name="sharedCache">
+         <ref bean="mimetypeEntitySharedCache" />
+      </property>
+      <property name="cacheManager" >
+         <ref bean="transactionalEHCacheManager" />
+      </property>
+      <property name="name">
+         <value>org.alfresco.cache.mimetypeEntityTransactionalCache</value>
+      </property>
+      <property name="maxCacheSize">
+         <value>100</value>
+      </property>
+   </bean>
+   
+   <!-- ===================================== -->
+   <!-- ID lookup for Encoding entities       -->
+   <!-- ===================================== -->
+
+   <!-- The cross-transaction shared cache for Encoding entities -->
+   
+   <bean name="encodingEntitySharedCache" class="org.alfresco.repo.cache.EhCacheAdapter">
+      <property name="cache">
+         <bean class="org.springframework.cache.ehcache.EhCacheFactoryBean" >
+            <property name="cacheManager">
+               <ref bean="internalEHCacheManager" />
+            </property>
+            <property name="cacheName">
+               <value>org.alfresco.cache.encodingEntityCache</value>
+            </property>
+         </bean>
+      </property>
+   </bean>
+   
+   <!-- The transactional cache for Encoding entities -->
+   
+   <bean name="encodingEntityCache" class="org.alfresco.repo.cache.TransactionalCache">
+      <property name="sharedCache">
+         <ref bean="encodingEntitySharedCache" />
+      </property>
+      <property name="cacheManager" >
+         <ref bean="transactionalEHCacheManager" />
+      </property>
+      <property name="name">
+         <value>org.alfresco.cache.encodingEntityTransactionalCache</value>
+      </property>
+      <property name="maxCacheSize">
+         <value>100</value>
+      </property>
+   </bean>
+   
    <!-- =============================== -->
    <!-- Store and Node ID cache lookup  -->
    <!-- =============================== -->

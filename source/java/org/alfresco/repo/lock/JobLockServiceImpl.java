@@ -33,6 +33,7 @@ import org.alfresco.repo.transaction.TransactionListenerAdapter;
 import org.alfresco.repo.transaction.TransactionalResourceHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.GUID;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -103,15 +104,15 @@ public class JobLockServiceImpl implements JobLockService
     /**
      * {@inheritDoc}
      */
-    public void getTransacionalLock(QName lockQName, long timeToLive)
+    public void getTransactionalLock(QName lockQName, long timeToLive)
     {
-        getTransacionalLock(lockQName, timeToLive, defaultRetryWait, defaultRetryCount);
+        getTransactionalLock(lockQName, timeToLive, defaultRetryWait, defaultRetryCount);
     }
 
     /**
      * {@inheritDoc}
      */
-    public void getTransacionalLock(QName lockQName, long timeToLive, long retryWait, int retryCount)
+    public void getTransactionalLock(QName lockQName, long timeToLive, long retryWait, int retryCount)
     {
         // Check that transaction is present
         final String txnId = AlfrescoTransactionSupport.getTransactionId();
@@ -127,7 +128,7 @@ public class JobLockServiceImpl implements JobLockService
         if (!added)
         {
             // It's a refresh.  Ordering is not important here as we already hold the lock.
-            refreshLock(lockQName, timeToLive);
+            refreshLock(txnId, lockQName, timeToLive);
         }
         else
         {
@@ -144,7 +145,7 @@ public class JobLockServiceImpl implements JobLockService
                 }
                 // If it was last in the set, then the order is correct and we use the
                 // full retry behaviour.
-                getLock(lockQName, timeToLive, retryWait, retryCount);
+                getLockImpl(txnId, lockQName, timeToLive, retryWait, retryCount);
             }
             else
             {
@@ -158,26 +159,47 @@ public class JobLockServiceImpl implements JobLockService
                 }
                 // The lock request is made out of natural order.
                 // Unordered locks do not get any retry behaviour
-                getLock(lockQName, timeToLive, retryWait, 1);
+                getLockImpl(txnId, lockQName, timeToLive, retryWait, 1);
             }
         }
         // It went in, so add it to the transactionally-stored set
         heldLocks.add(lockQName);
         // Done
     }
+
+    /**
+     * {@inheritDoc}
+     * 
+     * @see #getLock(QName, long, long, int)
+     */
+    public String getLock(QName lockQName, long timeToLive)
+    {
+        return getLock(lockQName, timeToLive, defaultRetryWait, defaultRetryCount);
+    }
     
     /**
+     * {@inheritDoc}
+     */
+    public String getLock(QName lockQName, long timeToLive, long retryWait, int retryCount)
+    {
+        String lockToken = GUID.generate();
+        getLockImpl(lockToken, lockQName, timeToLive, retryWait, retryCount);
+        // Done
+        return lockToken;
+    }
+
+    /**
+     * {@inheritDoc}
+     * 
      * @throws LockAcquisitionException on failure
      */
-    private void refreshLock(final QName lockQName, final long timeToLive)
+    public void refreshLock(final String lockToken, final QName lockQName, final long timeToLive)
     {
-        // The lock token is the current transaction ID
-        final String txnId = AlfrescoTransactionSupport.getTransactionId();
         RetryingTransactionCallback<Object> refreshLockCallback = new RetryingTransactionCallback<Object>()
         {
             public Object execute() throws Throwable
             {
-                lockDAO.releaseLock(lockQName, txnId);
+                lockDAO.refreshLock(lockQName, lockToken, timeToLive);
                 return null;
             }
         };
@@ -192,7 +214,7 @@ public class JobLockServiceImpl implements JobLockService
                         "Refreshed Lock: \n" +
                         "   Lock:     " + lockQName + "\n" +
                         "   TTL:      " + timeToLive + "\n" +
-                        "   Txn:      " + txnId);
+                        "   Txn:      " + lockToken);
             }
         }
         catch (LockAcquisitionException e)
@@ -204,7 +226,7 @@ public class JobLockServiceImpl implements JobLockService
                         "Lock refresh failed: \n" +
                         "   Lock:     " + lockQName + "\n" +
                         "   TTL:      " + timeToLive + "\n" +
-                        "   Txn:      " + txnId + "\n" +
+                        "   Txn:      " + lockToken + "\n" +
                         "   Error:    " + e.getMessage());
             }
             throw e;
@@ -212,17 +234,31 @@ public class JobLockServiceImpl implements JobLockService
     }
     
     /**
+     * {@inheritDoc}
+     */
+    public void releaseLock(final String lockToken, final QName lockQName)
+    {
+        RetryingTransactionCallback<Void> releaseCallback = new RetryingTransactionCallback<Void>()
+        {
+            public Void execute() throws Throwable
+            {
+                lockDAO.releaseLock(lockQName, lockToken);
+                return null;
+            }
+        };
+        retryingTransactionHelper.doInTransaction(releaseCallback, false, true);
+    }
+
+    /**
      * @throws LockAcquisitionException on failure
      */
-    private void getLock(final QName lockQName, final long timeToLive, long retryWait, int retryCount)
+    private void getLockImpl(final String lockToken, final QName lockQName, final long timeToLive, long retryWait, int retryCount)
     {
-        // The lock token is the current transaction ID
-        final String txnId = AlfrescoTransactionSupport.getTransactionId();
         RetryingTransactionCallback<Object> getLockCallback = new RetryingTransactionCallback<Object>()
         {
             public Object execute() throws Throwable
             {
-                lockDAO.getLock(lockQName, txnId, timeToLive);
+                lockDAO.getLock(lockQName, lockToken, timeToLive);
                 return null;
             }
         };
@@ -238,7 +274,7 @@ public class JobLockServiceImpl implements JobLockService
                         "Acquired Lock: \n" +
                         "   Lock:     " + lockQName + "\n" +
                         "   TTL:      " + timeToLive + "\n" +
-                        "   Txn:      " + txnId + "\n" +
+                        "   Txn:      " + lockToken + "\n" +
                         "   Attempts: " + iterations);
             }
         }
@@ -251,7 +287,7 @@ public class JobLockServiceImpl implements JobLockService
                         "Lock acquisition failed: \n" +
                         "   Lock:     " + lockQName + "\n" +
                         "   TTL:      " + timeToLive + "\n" +
-                        "   Txn:      " + txnId + "\n" +
+                        "   Txn:      " + lockToken + "\n" +
                         "   Error:    " + e.getMessage());
             }
             throw e;

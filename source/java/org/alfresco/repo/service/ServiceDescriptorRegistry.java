@@ -31,6 +31,7 @@ import org.alfresco.cmis.CMISQueryService;
 import org.alfresco.cmis.CMISServices;
 import org.alfresco.mbeans.VirtServerRegistry;
 import org.alfresco.repo.forms.FormService;
+import org.alfresco.repo.lock.JobLockService;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.action.ActionService;
@@ -184,6 +185,11 @@ public class ServiceDescriptorRegistry
     public LockService getLockService()
     {
         return (LockService)getService(LOCK_SERVICE);
+    }
+
+    public JobLockService getJobLockService()
+    {
+        return (JobLockService)getService(JOB_LOCK_SERVICE);
     }
 
     /* (non-Javadoc)

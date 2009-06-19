@@ -266,13 +266,27 @@ public class NodePropertyValue implements Cloneable, Serializable
             @Override
             protected ValueType getPersistedType(Serializable value)
             {
-                return ValueType.STRING;
+                if (value instanceof Long)
+                {
+                    return ValueType.LONG;
+                }
+                else
+                {
+                    return ValueType.STRING;
+                }
             }
 
             @Override
             Serializable convert(Serializable value)
             {
-                return DefaultTypeConverter.INSTANCE.convert(ContentData.class, value);
+                if (value instanceof Long)
+                {
+                    return value;
+                }
+                else
+                {
+                    return DefaultTypeConverter.INSTANCE.convert(ContentData.class, value);
+                }
             }
         },
         NODEREF

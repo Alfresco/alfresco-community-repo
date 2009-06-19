@@ -1,0 +1,253 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE sqlMap      
+    PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"      
+    "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="alfresco.content">
+
+    <!--                -->
+    <!-- Type Defs      -->
+    <!--                -->
+    
+    <typeAlias alias="Mimetype" type="org.alfresco.repo.domain.mimetype.MimetypeEntity"/>
+    <typeAlias alias="Encoding" type="org.alfresco.repo.domain.encoding.EncodingEntity"/>
+    <typeAlias alias="ContentUrl" type="org.alfresco.repo.domain.contentdata.ContentUrlEntity"/>
+    <typeAlias alias="ContentData" type="org.alfresco.repo.domain.contentdata.ContentDataEntity"/>
+    <typeAlias alias="ContentClean" type="org.alfresco.repo.domain.contentclean.ContentCleanEntity"/>
+
+    <!--                -->
+    <!-- Result Maps    -->
+    <!--                -->
+
+    <resultMap id="result.Mimetype" class="Mimetype">
+        <result property="id" column="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="version" column="version" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="mimetype" column="mimetype_str" jdbcType="VARCHAR" javaType="java.lang.String"/>
+    </resultMap>
+  
+    <resultMap id="result.Encoding" class="Encoding">
+        <result property="id" column="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="version" column="version" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="encoding" column="encoding_str" jdbcType="VARCHAR" javaType="java.lang.String"/>
+    </resultMap>
+  
+    <resultMap id="result.ContentUrl" class="ContentUrl">
+        <result property="id" column="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="version" column="version" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="contentUrl" column="content_url" jdbcType="VARCHAR" javaType="java.lang.String"/>
+        <result property="contentUrlShort" column="content_url_short" jdbcType="VARCHAR" javaType="java.lang.String"/>
+        <result property="contentUrlCrc" column="content_url_crc" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="size" column="content_size" jdbcType="BIGINT" javaType="java.lang.Long"/>
+    </resultMap>
+  
+    <resultMap id="result.ContentData" class="ContentData">
+        <result property="id" column="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="version" column="version" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="contentUrlId" column="content_url_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="contentUrl" column="content_url" jdbcType="VARCHAR" javaType="java.lang.String"/>
+        <result property="size" column="content_size" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="mimetypeId" column="content_mimetype_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="encodingId" column="content_encoding_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="localeId" column="content_locale_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+    </resultMap>
+  
+    <!--                -->
+    <!-- Parameter Maps -->
+    <!--                -->
+
+    <parameterMap id="parameter.IdMap" class="map">
+        <parameter property="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+    </parameterMap>
+  
+    <parameterMap id="parameter.NodeAndQNameMap" class="map">
+        <parameter property="nodeId" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <parameter property="qnameId" jdbcType="BIGINT" javaType="java.lang.Long"/>
+    </parameterMap>
+  
+    <!--                -->
+    <!-- SQL Snippets   -->
+    <!--                -->
+    
+    <sql id="insert.Mimetype.AutoIncrement">
+        insert into alf_mimetype (version, mimetype_str) 
+        values (#version#, lower(#mimetype#))
+    </sql>
+    
+    <sql id="insert.Encoding.AutoIncrement">
+        insert into alf_encoding (version, encoding_str) 
+        values (#version#, lower(#encoding#))
+    </sql>
+    
+    <sql id="insert.ContentUrl.AutoIncrement">
+        insert into alf_content_url (version, content_url, content_url_short, content_url_crc, content_size) 
+        values (#version#, #contentUrl#, #contentUrlShort#, #contentUrlCrc#, #size#)
+    </sql>
+    
+    <sql id="insert.ContentData.AutoIncrement">
+        insert into alf_content_data (version, content_url_id, content_mimetype_id, content_encoding_id, content_locale_id) 
+        values (#version#, #contentUrlId#, #mimetypeId#, #encodingId#, #localeId#)
+    </sql>
+    
+    <!--                -->
+    <!-- Statements     -->
+    <!--                -->
+    
+    <!-- Get the mimetype entity by mimetype -->
+    <select id="select.MimetypeByKey" parameterClass="Mimetype" resultMap="result.Mimetype">
+        select
+            *
+        from
+            alf_mimetype
+        where
+            mimetype_str = lower(#mimetype#)
+    </select>
+
+    <!-- Get a mimetype based on the ID -->
+    <select id="select.MimetypeById" parameterClass="Mimetype" resultMap="result.Mimetype">
+        select
+            *
+        from
+            alf_mimetype
+        where
+            id = #id#
+    </select>
+
+    <!-- Get the encoding entity by encoding -->
+    <select id="select.EncodingByKey" parameterClass="Encoding" resultMap="result.Encoding">
+        select
+            *
+        from
+            alf_encoding
+        where
+            encoding_str = lower(#encoding#)
+    </select>
+
+    <!-- Get a encoding based on the ID -->
+    <select id="select.EncodingById" parameterClass="Encoding" resultMap="result.Encoding">
+        select
+            *
+        from
+            alf_encoding
+        where
+            id = #id#
+    </select>
+
+    <!-- Get the content URL entity by ID -->
+    <select id="select.ContentUrlById" parameterClass="ContentUrl" resultMap="result.ContentUrl">
+        select
+            *
+        from
+            alf_content_url
+        where
+            id = #id#
+    </select>
+
+    <!-- Get the content URL entity by unique key -->
+    <select id="select.ContentUrlByKey" parameterClass="ContentUrl" resultMap="result.ContentUrl">
+        select
+            *
+        from
+            alf_content_url
+        where
+            content_url_short = lower(#contentUrlShort#) and
+            content_url_crc = #contentUrlCrc#
+    </select>
+
+    <!-- Get the ContentData entities by content URL -->
+    <select id="select.ContentDataByContentUrlId" parameterMap="parameter.IdMap" resultMap="result.ContentData">
+        select
+            *
+        from
+            alf_content_data
+        where
+            content_url_id = ?
+    </select>
+
+    <!-- Get the ContentData entity by ID -->
+    <select id="select.ContentDataById" parameterMap="parameter.IdMap" resultMap="result.ContentData">
+        select
+            cd.id as id,
+            cd.version as version,
+            cd.content_url_id as content_url_id,
+            cu.content_url as content_url,
+            cu.content_size as content_size,
+            cd.content_mimetype_id as content_mimetype_id,
+            cd.content_encoding_id as content_encoding_id,
+            cd.content_locale_id as content_locale_id
+        from
+            alf_content_data cd
+            left join alf_content_url cu on (cd.content_url_id = cu.id)
+        where
+            cd.id = ?
+    </select>
+
+    <!-- Get the ContentData entity by Node and property QName -->
+    <select id="select.ContentDataByNodeAndQName" parameterMap="parameter.NodeAndQNameMap" resultClass="long">
+        select
+            np.long_value as id
+        from
+            alf_node_properties np
+        where
+            np.node_id = ? and
+            np.qname_id = ? and
+            np.actual_type_n = 3 and
+            np.persisted_type_n = 3
+    </select>
+
+    <!-- Delete ContentData entity -->
+    <delete id="delete.ContentData" parameterMap="parameter.IdMap">
+        delete
+        from
+            alf_content_data
+        where
+            id = ?
+    </delete>
+
+    <!-- Delete Content URL entity -->
+    <delete id="delete.ContentUrl" parameterMap="parameter.IdMap">
+        delete
+        from
+            alf_content_url
+        where
+            id = ?
+    </delete>
+
+    <!-- Select all content URLs -->
+    <select id="select.ContentUrls" resultClass="string">
+        select
+            content_url
+        from
+            alf_content_url
+    </select>
+
+    <!-- Insert a Content Clean URL -->
+    <insert id="insert.ContentCleanUrl" parameterClass="ContentClean" >
+        insert into alf_content_clean (content_url) values (lower(#contentUrl#))
+    </insert>
+
+    <!-- Select all content clean URLs -->
+    <select id="select.ContentCleanUrls" resultClass="string">
+        select
+            content_url
+        from
+            alf_content_clean
+    </select>
+
+    <!-- Remove a Content Clean URL -->
+    <delete id="delete.ContentCleanUrl" parameterClass="ContentClean" >
+        delete
+        from
+            alf_content_clean
+        where
+            content_url = lower(#contentUrl#)
+    </delete>
+
+    <!-- Remove all Content Clean URLs -->
+    <delete id="delete.ContentCleanUrls" >
+        delete
+        from
+            alf_content_clean
+    </delete>
+
+</sqlMap>

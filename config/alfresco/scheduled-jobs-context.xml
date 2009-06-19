@@ -129,6 +129,7 @@
         </property>
     </bean>
 
+<!--
     <bean id="fileContentStoreCleanerJobDetail" class="org.springframework.scheduling.quartz.JobDetailBean">
         <property name="jobClass">
             <value>org.alfresco.repo.content.cleanup.ContentStoreCleanupJob</value>
@@ -148,11 +149,11 @@
         <property name="scheduler">
             <ref bean="schedulerFactory" />
         </property>
-        <!-- trigger at 4am each day -->
         <property name="cronExpression">
             <value>0 0 4 * * ?</value>
         </property>
     </bean>
+-->
 
     <bean id="nodeServiceCleanupJobDetail" class="org.springframework.scheduling.quartz.JobDetailBean">
         <property name="jobClass">

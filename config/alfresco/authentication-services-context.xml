@@ -281,6 +281,9 @@
         <property name="qnameDAO">
             <ref bean="qnameDAO" />
         </property>
+        <property name="contentDataDAO">
+            <ref bean="contentDataDAO" />
+        </property>
         <property name="dictionaryService">
             <ref bean="dictionaryService" />
         </property>

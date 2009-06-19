@@ -29,7 +29,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CountDownLatch;
 
 import junit.framework.TestCase;
 
@@ -38,9 +37,10 @@ import org.alfresco.repo.avm.AVMNodeDAO;
 import org.alfresco.repo.content.ContentStore;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.content.filestore.FileContentStore;
-import org.alfresco.repo.domain.ContentUrlDAO;
+import org.alfresco.repo.domain.contentclean.ContentCleanDAO;
+import org.alfresco.repo.domain.contentdata.ContentDataDAO;
+import org.alfresco.repo.lock.JobLockService;
 import org.alfresco.repo.node.db.NodeDaoService;
-import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.ServiceRegistry;
@@ -49,16 +49,13 @@ import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
-import org.alfresco.service.cmr.repository.CopyService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
-import org.alfresco.util.EqualsHelper;
 import org.alfresco.util.GUID;
-import org.alfresco.util.Pair;
 import org.alfresco.util.TempFileProvider;
 import org.springframework.context.ConfigurableApplicationContext;
 
@@ -73,9 +70,10 @@ public class ContentStoreCleanerTest extends TestCase
     
     private ContentService contentService;
     private NodeService nodeService;
-    private CopyService copyService;
     private TransactionService transactionService;
+    private JobLockService jobLockService;
     private ContentStoreCleaner cleaner;
+    private EagerContentStoreCleaner eagerCleaner;
     private ContentStore store;
     private ContentStoreCleanerListener listener;
     private List<String> deletedUrls;
@@ -88,14 +86,16 @@ public class ContentStoreCleanerTest extends TestCase
         ServiceRegistry serviceRegistry = (ServiceRegistry) ctx.getBean("ServiceRegistry");
         contentService = serviceRegistry.getContentService();
         nodeService = serviceRegistry.getNodeService();
-        copyService = serviceRegistry.getCopyService();
         transactionService = serviceRegistry.getTransactionService();
+        jobLockService = serviceRegistry.getJobLockService();
         TransactionService transactionService = serviceRegistry.getTransactionService();
         DictionaryService dictionaryService = serviceRegistry.getDictionaryService();
-        PolicyComponent policyComponent = (PolicyComponent) ctx.getBean("policyComponent");
         NodeDaoService nodeDaoService = (NodeDaoService) ctx.getBean("nodeDaoService");
         AVMNodeDAO avmNodeDAO = (AVMNodeDAO) ctx.getBean("avmNodeDAO");
-        ContentUrlDAO contentUrlDAO = (ContentUrlDAO) ctx.getBean("contentUrlDAO");
+        ContentCleanDAO contentCleanDAO = (ContentCleanDAO) ctx.getBean("contentCleanDAO");
+        ContentDataDAO contentDataDAO = (ContentDataDAO) ctx.getBean("contentDataDAO");
+        
+        eagerCleaner = (EagerContentStoreCleaner) ctx.getBean("eagerContentStoreCleaner");
         
         // we need a store
         store = new FileContentStore(ctx, TempFileProvider.getTempDir().getAbsolutePath());
@@ -106,16 +106,16 @@ public class ContentStoreCleanerTest extends TestCase
         
         // construct the test cleaner
         cleaner = new ContentStoreCleaner();
+        cleaner.setJobLockService(jobLockService);
+        cleaner.setContentCleanDAO(contentCleanDAO);
+        cleaner.setContentDataDAO(contentDataDAO);
         cleaner.setTransactionService(transactionService);
         cleaner.setDictionaryService(dictionaryService);
-        cleaner.setPolicyComponent(policyComponent);
         cleaner.setContentService(contentService);
         cleaner.setNodeDaoService(nodeDaoService);
         cleaner.setAvmNodeDAO(avmNodeDAO);
-        cleaner.setContentUrlDAO(contentUrlDAO);
         cleaner.setStores(Collections.singletonList(store));
         cleaner.setListeners(Collections.singletonList(listener));
-        cleaner.setEagerOrphanCleanup(false);
     }
     
     public void tearDown() throws Exception
@@ -125,11 +125,7 @@ public class ContentStoreCleanerTest extends TestCase
     
     public void testEagerCleanupOnCommit() throws Exception
     {
-        // Get the context-defined cleaner
-        ContentStoreCleaner cleaner = (ContentStoreCleaner) ctx.getBean("contentStoreCleaner");
-        // Force eager cleanup
-        cleaner.setEagerOrphanCleanup(true);
-        cleaner.init();
+        eagerCleaner.setEagerOrphanCleanup(true);
         // Create a new file
         RetryingTransactionCallback<NodeRef> makeContentCallback = new RetryingTransactionCallback<NodeRef>()
         {
@@ -178,7 +174,15 @@ public class ContentStoreCleanerTest extends TestCase
         }
         catch (RuntimeException e)
         {
-            // Expected
+            if (e.getMessage().equals("FAIL"))
+            {
+                // Expected
+            }
+            else
+            {
+                // Ooops
+                throw e;
+            }
         }
         // Make sure that the new content is not there
         // The original content must still be there
@@ -221,61 +225,61 @@ public class ContentStoreCleanerTest extends TestCase
         assertFalse("Newly created content should be removed.", contentReaderNew.exists());
     }
     
-    /**
-     * TODO: This test must be replaced with one that checks that the raw content binary lives
-     *       as long as there is a reference to it.  Once the RM-hacks are removed, content
-     *       will once again be shared and must therefore be cleaned up based on unlinking of
-     *       references.
-     */
-    public void testEagerCleanupAfterCopy() throws Exception
-    {
-        // Get the context-defined cleaner
-        ContentStoreCleaner cleaner = (ContentStoreCleaner) ctx.getBean("contentStoreCleaner");
-        // Force eager cleanup
-        cleaner.setEagerOrphanCleanup(true);
-        cleaner.init();
-        // Create a new file, copy it
-        RetryingTransactionCallback<Pair<NodeRef, NodeRef>> copyFileCallback = new RetryingTransactionCallback<Pair<NodeRef, NodeRef>>()
-        {
-            public Pair<NodeRef, NodeRef> execute() throws Throwable
-            {
-                // Create some content
-                StoreRef storeRef = nodeService.createStore("test", "testEagerCleanupAfterCopy-" + GUID.generate());
-                NodeRef rootNodeRef = nodeService.getRootNode(storeRef);
-                Map<QName, Serializable> properties = Collections.singletonMap(ContentModel.PROP_NAME, (Serializable)"test.txt");
-                NodeRef contentNodeRef = nodeService.createNode(
-                        rootNodeRef,
-                        ContentModel.ASSOC_CHILDREN,
-                        ContentModel.ASSOC_CHILDREN,
-                        ContentModel.TYPE_CONTENT,
-                        properties).getChildRef();
-                ContentWriter writer = contentService.getWriter(contentNodeRef, ContentModel.PROP_CONTENT, true);
-                writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
-                writer.putContent("INITIAL CONTENT");
-                // Now copy it
-                NodeRef copiedNodeRef = copyService.copy(
-                        contentNodeRef,
-                        rootNodeRef,
-                        ContentModel.ASSOC_CHILDREN,
-                        ContentModel.ASSOC_CHILDREN);
-                // Done
-                return new Pair<NodeRef, NodeRef>(contentNodeRef, copiedNodeRef);
-            }
-        };
-        Pair<NodeRef, NodeRef> nodeRefPair = transactionService.getRetryingTransactionHelper().doInTransaction(copyFileCallback);
-        // Check that the readers of the content have different URLs
-        ContentReader contentReaderSource = contentService.getReader(nodeRefPair.getFirst(), ContentModel.PROP_CONTENT);
-        assertNotNull("Expected reader for source cm:content", contentReaderSource);
-        assertTrue("Expected content for source cm:content", contentReaderSource.exists());
-        ContentReader contentReaderCopy = contentService.getReader(nodeRefPair.getSecond(), ContentModel.PROP_CONTENT);
-        assertNotNull("Expected reader for copy cm:content", contentReaderCopy);
-        assertTrue("Expected content for copy cm:content", contentReaderCopy.exists());
-        String contentUrlSource = contentReaderSource.getContentUrl();
-        String contentUrlCopy = contentReaderCopy.getContentUrl();
-        assertFalse("Source and copy must have different URLs",
-                EqualsHelper.nullSafeEquals(contentUrlSource, contentUrlCopy));
-    }
-    
+//    /**
+//     * TODO: This test must be replaced with one that checks that the raw content binary lives
+//     *       as long as there is a reference to it.  Once the RM-hacks are removed, content
+//     *       will once again be shared and must therefore be cleaned up based on unlinking of
+//     *       references.
+//     */
+//    public void testEagerCleanupAfterCopy() throws Exception
+//    {
+//        // Get the context-defined cleaner
+//        ContentStoreCleaner cleaner = (ContentStoreCleaner) ctx.getBean("contentStoreCleaner");
+//        // Force eager cleanup
+//        cleaner.setEagerOrphanCleanup(true);
+//        cleaner.init();
+//        // Create a new file, copy it
+//        RetryingTransactionCallback<Pair<NodeRef, NodeRef>> copyFileCallback = new RetryingTransactionCallback<Pair<NodeRef, NodeRef>>()
+//        {
+//            public Pair<NodeRef, NodeRef> execute() throws Throwable
+//            {
+//                // Create some content
+//                StoreRef storeRef = nodeService.createStore("test", "testEagerCleanupAfterCopy-" + GUID.generate());
+//                NodeRef rootNodeRef = nodeService.getRootNode(storeRef);
+//                Map<QName, Serializable> properties = Collections.singletonMap(ContentModel.PROP_NAME, (Serializable)"test.txt");
+//                NodeRef contentNodeRef = nodeService.createNode(
+//                        rootNodeRef,
+//                        ContentModel.ASSOC_CHILDREN,
+//                        ContentModel.ASSOC_CHILDREN,
+//                        ContentModel.TYPE_CONTENT,
+//                        properties).getChildRef();
+//                ContentWriter writer = contentService.getWriter(contentNodeRef, ContentModel.PROP_CONTENT, true);
+//                writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
+//                writer.putContent("INITIAL CONTENT");
+//                // Now copy it
+//                NodeRef copiedNodeRef = copyService.copy(
+//                        contentNodeRef,
+//                        rootNodeRef,
+//                        ContentModel.ASSOC_CHILDREN,
+//                        ContentModel.ASSOC_CHILDREN);
+//                // Done
+//                return new Pair<NodeRef, NodeRef>(contentNodeRef, copiedNodeRef);
+//            }
+//        };
+//        Pair<NodeRef, NodeRef> nodeRefPair = transactionService.getRetryingTransactionHelper().doInTransaction(copyFileCallback);
+//        // Check that the readers of the content have different URLs
+//        ContentReader contentReaderSource = contentService.getReader(nodeRefPair.getFirst(), ContentModel.PROP_CONTENT);
+//        assertNotNull("Expected reader for source cm:content", contentReaderSource);
+//        assertTrue("Expected content for source cm:content", contentReaderSource.exists());
+//        ContentReader contentReaderCopy = contentService.getReader(nodeRefPair.getSecond(), ContentModel.PROP_CONTENT);
+//        assertNotNull("Expected reader for copy cm:content", contentReaderCopy);
+//        assertTrue("Expected content for copy cm:content", contentReaderCopy.exists());
+//        String contentUrlSource = contentReaderSource.getContentUrl();
+//        String contentUrlCopy = contentReaderCopy.getContentUrl();
+//        assertFalse("Source and copy must have different URLs",
+//                EqualsHelper.nullSafeEquals(contentUrlSource, contentUrlCopy));
+//    }
+//    
     public void testImmediateRemoval() throws Exception
     {
         cleaner.setProtectDays(0);
@@ -307,30 +311,6 @@ public class ContentStoreCleanerTest extends TestCase
         assertTrue("Protected content was deleted", store.exists(contentUrl));
         assertFalse("Content listener was called with deletion of protected URL", deletedUrls.contains(contentUrl));
     }
-    
-//    public void testConcurrentRemoval() throws Exception
-//    {
-//        int threadCount = 2;
-//        final CountDownLatch endLatch = new CountDownLatch(threadCount);
-//        // Kick off the threads
-//        for (int i = 0; i < threadCount; i++)
-//        {
-//            Thread thread = new Thread()
-//            {
-//                @Override
-//                public void run()
-//                {
-//                    cleaner.execute();
-//                    // Notify of completion
-//                    endLatch.countDown();
-//                }
-//            };
-//            thread.start();
-//        }
-//        // Wait for them all to be done
-//        endLatch.await();
-//    }
-//    
     private class DummyCleanerListener implements ContentStoreCleanerListener
     {
         public void beforeDelete(ContentStore store, String contentUrl) throws ContentIOException

@@ -244,25 +244,7 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
     
     public Set<String> findAuthorities(AuthorityType type, String namePattern)
     {
-        Set<String> authorities = new HashSet<String>();
-        switch (type)
-        {
-        case ADMIN:
-        case EVERYONE:
-        case GUEST:
-            throw new UnsupportedOperationException();
-        case GROUP:           
-            authorities.addAll(authorityDAO.findAuthorities(type, namePattern));
-            break;
-        case OWNER:
-        case ROLE:
-            throw new UnsupportedOperationException();
-        case USER:
-            throw new UnsupportedOperationException();
-        default:
-            break;
-        }
-        return authorities;
+        return findAuthoritiesInZone(type, namePattern, null);
     }
     
     
@@ -440,5 +422,39 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
     public Set<String> getAllRootAuthoritiesInZone(String zoneName, AuthorityType type)
     {
         return authorityDAO.getAllRootAuthoritiesInZone(zoneName, type);
+    }
+
+    public Set<String> findAuthoritiesByShortNameInZone(AuthorityType type, String shortNamePattern, String zone)
+    {
+        String fullNamePattern = getName(type, shortNamePattern);
+        return findAuthoritiesInZone(type, fullNamePattern, zone);
+    }
+
+    public Set<String> findAuthoritiesInZone(AuthorityType type, String namePattern, String zone)
+    {
+        Set<String> authorities = new HashSet<String>();
+        switch (type)
+        {
+        case ADMIN:
+        case EVERYONE:
+        case GUEST:
+            throw new UnsupportedOperationException();
+        case GROUP:          
+            Set<String> zones = null;
+            if(zone != null)
+            {
+                zones = Collections.singleton(zone);
+            }
+            authorities.addAll(authorityDAO.findAuthorities(type, namePattern, zones));
+            break;
+        case OWNER:
+        case ROLE:
+            throw new UnsupportedOperationException();
+        case USER:
+            throw new UnsupportedOperationException();
+        default:
+            break;
+        }
+        return authorities;
     }
 }

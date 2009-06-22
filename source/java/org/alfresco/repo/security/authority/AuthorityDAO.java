@@ -145,9 +145,10 @@ public interface AuthorityDAO
      * 
      * @param type
      * @param namePattern
+     * @param zones - may be null to indicate all zones
      * @return
      */
-    public Set<String> findAuthorities(AuthorityType type, String namePattern);
+    public Set<String> findAuthorities(AuthorityType type, String namePattern, Set<String> zones);
 
     /**
      * Gets or creates an authority zone node with the specified name

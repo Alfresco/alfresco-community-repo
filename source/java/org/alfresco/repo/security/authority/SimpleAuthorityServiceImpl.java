@@ -330,4 +330,14 @@ public class SimpleAuthorityServiceImpl implements AuthorityService
     {
         
     }
+
+    public Set<String> findAuthoritiesByShortNameInZone(AuthorityType type, String shortNamePattern, String zone)
+    {
+        return Collections.<String>emptySet();
+    }
+
+    public Set<String> findAuthoritiesInZone(AuthorityType type, String namePattern, String zone)
+    {
+        return Collections.<String>emptySet();
+    }
 }

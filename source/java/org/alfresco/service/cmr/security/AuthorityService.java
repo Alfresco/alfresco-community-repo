@@ -379,4 +379,25 @@ public interface AuthorityService
      */
     @NotAuditable
     public Set<String> getDefaultZones();
+    
+
+    /**
+     * Find authorities by pattern matching (* and ?) against the full authority name in a particular zone 
+     * @param type - the authority type
+     * @param namePattern - the pattern which will be matched against the full authority name.   
+     * @param zone - the zone
+     * @return the names of the authorities matching the pattern and type.
+     */
+    @Auditable(parameters = {"type"})
+    public Set<String> findAuthoritiesInZone(AuthorityType type,  String namePattern, String zone);
+    
+    /**
+     * Find authorities by pattern matching (* and ?) against the authority name.   
+     * @param type - the authority type
+     * @param shortNamePattern - the pattern which will be matched against the shortName.   
+     * @param zone 
+     * @return the names of the authorities matching the pattern and type.
+     */
+    @Auditable(parameters = {"type"})
+    public Set<String> findAuthoritiesByShortNameInZone(AuthorityType type,  String shortNamePattern, String zone);
 }

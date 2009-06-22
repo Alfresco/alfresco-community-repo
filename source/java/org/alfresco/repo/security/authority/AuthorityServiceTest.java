@@ -25,6 +25,7 @@
 package org.alfresco.repo.security.authority;
 
 import java.io.Serializable;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -160,16 +161,15 @@ public class AuthorityServiceTest extends TestCase
         super.tearDown();
     }
 
-    
     public void testZones()
-    {   
+    {
         assertNull(pubAuthorityService.getAuthorityZones("GROUP_DEFAULT"));
         assertNull(pubAuthorityService.getAuthorityZones("GROUP_NULL"));
         assertNull(pubAuthorityService.getAuthorityZones("GROUP_EMPTY"));
         assertNull(pubAuthorityService.getAuthorityZones("GROUP_1"));
         assertNull(pubAuthorityService.getAuthorityZones("GROUP_2"));
         assertNull(pubAuthorityService.getAuthorityZones("GROUP_3"));
-        
+
         pubAuthorityService.createAuthority(AuthorityType.GROUP, "DEFAULT");
         Set<String> zones = pubAuthorityService.getAuthorityZones("GROUP_DEFAULT");
         assertEquals(2, zones.size());
@@ -177,47 +177,47 @@ public class AuthorityServiceTest extends TestCase
         assertEquals(0, pubAuthorityService.getAuthorityZones("GROUP_DEFAULT").size());
         pubAuthorityService.addAuthorityToZones("GROUP_DEFAULT", zones);
         assertEquals(2, pubAuthorityService.getAuthorityZones("GROUP_DEFAULT").size());
-        
+
         HashSet<String> newZones = null;
         pubAuthorityService.createAuthority(AuthorityType.GROUP, "NULL", "NULL", newZones);
         assertEquals(0, pubAuthorityService.getAuthorityZones("GROUP_NULL").size());
-        
+
         newZones = new HashSet<String>();
         pubAuthorityService.createAuthority(AuthorityType.GROUP, "EMPTY", "EMPTY", newZones);
         assertEquals(0, pubAuthorityService.getAuthorityZones("GROUP_EMPTY").size());
-        
+
         newZones.add("One");
         pubAuthorityService.createAuthority(AuthorityType.GROUP, "1", "1", newZones);
         assertEquals(1, pubAuthorityService.getAuthorityZones("GROUP_1").size());
-        
+
         newZones.add("Two");
         pubAuthorityService.createAuthority(AuthorityType.GROUP, "2", "2", newZones);
         assertEquals(2, pubAuthorityService.getAuthorityZones("GROUP_2").size());
-        
+
         newZones.add("Three");
         pubAuthorityService.createAuthority(AuthorityType.GROUP, "3", "3", newZones);
         assertEquals(3, pubAuthorityService.getAuthorityZones("GROUP_3").size());
-        
+
         HashSet<String> toRemove = null;
         pubAuthorityService.removeAuthorityFromZones("GROUP_3", toRemove);
         assertEquals(3, pubAuthorityService.getAuthorityZones("GROUP_3").size());
-        
+
         toRemove = new HashSet<String>();
         pubAuthorityService.removeAuthorityFromZones("GROUP_3", toRemove);
         assertEquals(3, pubAuthorityService.getAuthorityZones("GROUP_3").size());
-        
+
         toRemove.add("Three");
         pubAuthorityService.removeAuthorityFromZones("GROUP_3", toRemove);
         assertEquals(2, pubAuthorityService.getAuthorityZones("GROUP_3").size());
-        
+
         toRemove.add("Two");
         pubAuthorityService.removeAuthorityFromZones("GROUP_3", toRemove);
         assertEquals(1, pubAuthorityService.getAuthorityZones("GROUP_3").size());
-        
+
         toRemove.add("One");
         pubAuthorityService.removeAuthorityFromZones("GROUP_3", toRemove);
         assertEquals(0, pubAuthorityService.getAuthorityZones("GROUP_3").size());
-        
+
         pubAuthorityService.addAuthorityToZones("GROUP_3", newZones);
         assertEquals(3, pubAuthorityService.getAuthorityZones("GROUP_3").size());
         assertEquals(3, pubAuthorityService.getAllAuthoritiesInZone("One", null).size());
@@ -226,19 +226,19 @@ public class AuthorityServiceTest extends TestCase
         assertEquals(3, pubAuthorityService.getAllAuthoritiesInZone("One", AuthorityType.GROUP).size());
         assertEquals(2, pubAuthorityService.getAllAuthoritiesInZone("Two", AuthorityType.GROUP).size());
         assertEquals(1, pubAuthorityService.getAllAuthoritiesInZone("Three", AuthorityType.GROUP).size());
-        
+
         assertEquals(3, pubAuthorityService.getAllRootAuthoritiesInZone("One", null).size());
         assertEquals(2, pubAuthorityService.getAllRootAuthoritiesInZone("Two", null).size());
         assertEquals(1, pubAuthorityService.getAllRootAuthoritiesInZone("Three", null).size());
         assertEquals(3, pubAuthorityService.getAllRootAuthoritiesInZone("One", AuthorityType.GROUP).size());
         assertEquals(2, pubAuthorityService.getAllRootAuthoritiesInZone("Two", AuthorityType.GROUP).size());
         assertEquals(1, pubAuthorityService.getAllRootAuthoritiesInZone("Three", AuthorityType.GROUP).size());
-        
+
         // I am not convinced of the definition of root within zone ...
-        
+
         pubAuthorityService.addAuthority("GROUP_1", "GROUP_2");
         pubAuthorityService.addAuthority("GROUP_1", "GROUP_3");
-        
+
         assertEquals(1, pubAuthorityService.getAllRootAuthoritiesInZone("One", null).size());
         assertEquals(0, pubAuthorityService.getAllRootAuthoritiesInZone("Two", null).size());
         assertEquals(0, pubAuthorityService.getAllRootAuthoritiesInZone("Three", null).size());
@@ -246,48 +246,91 @@ public class AuthorityServiceTest extends TestCase
         assertEquals(0, pubAuthorityService.getAllRootAuthoritiesInZone("Two", AuthorityType.GROUP).size());
         assertEquals(0, pubAuthorityService.getAllRootAuthoritiesInZone("Three", AuthorityType.GROUP).size());
     }
-    
+
     public void testGroupWildcards()
     {
         long before, after;
         char end = 'd';
-        for (char i = 'a'; i <= end; i++)
+        String[] zones = new String[] { null, "ONE", "TWO", "THREE" };
+        for (String zone : zones)
         {
-            for (char j = 'a'; j <= end; j++)
+            for (char i = 'a'; i <= end; i++)
             {
-                for (char k = 'a'; k <= end; k++)
+                for (char j = 'a'; j <= end; j++)
                 {
-                    StringBuilder name = new StringBuilder();
-                    name.append("__").append(i).append(j).append(k);
-                    pubAuthorityService.createAuthority(AuthorityType.GROUP, name.toString());
+                    for (char k = 'a'; k <= end; k++)
+                    {
+                        StringBuilder name = new StringBuilder();
+                        name.append("__").append(zone).append("__").append(i).append(j).append(k);
+                        if (zone == null)
+                        {
+                            pubAuthorityService.createAuthority(AuthorityType.GROUP, name.toString());
+                        }
+                        else
+                        {
+                            pubAuthorityService.createAuthority(AuthorityType.GROUP, name.toString(), name.toString(), Collections.singleton(zone));
+                        }
+                    }
                 }
             }
         }
         int size = end - 'a' + 1;
         before = System.nanoTime();
-        Set<String> matches = pubAuthorityService.findAuthorities(AuthorityType.GROUP, "GROUP___a*");
+        Set<String> matches = pubAuthorityService.findAuthorities(AuthorityType.GROUP, "GROUP___*__a*");
         after = System.nanoTime();
-        System.out.println("GROUP___a* in "+((after-before)/1000000000.0f));
-        assertEquals(size*size, matches.size());
-        
+        System.out.println("GROUP___a* in " + ((after - before) / 1000000000.0f));
+        assertEquals(size * size * zones.length, matches.size());
+
         before = System.nanoTime();
-        matches = pubAuthorityService.findAuthorities(AuthorityType.GROUP, "GROUP___aa*");
+        matches = pubAuthorityService.findAuthorities(AuthorityType.GROUP, "GROUP___*__aa*");
         after = System.nanoTime();
-        System.out.println("GROUP___aa* in "+((after-before)/1000000000.0f));
-        assertEquals(size, matches.size());
-        
+        System.out.println("GROUP___aa* in " + ((after - before) / 1000000000.0f));
+        assertEquals(size * zones.length, matches.size());
+
         before = System.nanoTime();
-        matches = pubAuthorityService.findAuthorities(AuthorityType.GROUP, "GROUP___*aa");
+        matches = pubAuthorityService.findAuthorities(AuthorityType.GROUP, "GROUP___*__*aa");
         after = System.nanoTime();
-        System.out.println("GROUP___*aa in "+((after-before)/1000000000.0f));
-        assertEquals(size, matches.size());
+        System.out.println("GROUP___*aa in " + ((after - before) / 1000000000.0f));
+        assertEquals(size * zones.length, matches.size());
         before = System.nanoTime();
-        
-        matches = pubAuthorityService.findAuthorities(AuthorityType.GROUP, "GROUP___*a");
+
+        matches = pubAuthorityService.findAuthorities(AuthorityType.GROUP, "GROUP___*__*a");
         after = System.nanoTime();
-        System.out.println("GROUP___*a in "+((after-before)/1000000000.0f));
-        assertEquals(size*size, matches.size());
-        
+        System.out.println("GROUP___*a in " + ((after - before) / 1000000000.0f));
+        assertEquals(size * size * zones.length, matches.size());
+
+        // Zone specific
+
+        for (String zone : zones)
+        {
+            if (zone != null)
+            {
+                before = System.nanoTime();
+                matches = pubAuthorityService.findAuthoritiesInZone(AuthorityType.GROUP, "GROUP___*__a*", zone);
+                after = System.nanoTime();
+                System.out.println("GROUP___a* in " + ((after - before) / 1000000000.0f));
+                assertEquals(size * size, matches.size());
+
+                before = System.nanoTime();
+                matches = pubAuthorityService.findAuthoritiesInZone(AuthorityType.GROUP, "GROUP___*__aa*", zone);
+                after = System.nanoTime();
+                System.out.println("GROUP___aa* in " + ((after - before) / 1000000000.0f));
+                assertEquals(size, matches.size());
+
+                before = System.nanoTime();
+                matches = pubAuthorityService.findAuthoritiesInZone(AuthorityType.GROUP, "GROUP___*__*aa", zone);
+                after = System.nanoTime();
+                System.out.println("GROUP___*aa in " + ((after - before) / 1000000000.0f));
+                assertEquals(size, matches.size());
+                before = System.nanoTime();
+
+                matches = pubAuthorityService.findAuthoritiesInZone(AuthorityType.GROUP, "GROUP___*__*a", zone);
+                after = System.nanoTime();
+                System.out.println("GROUP___*a in " + ((after - before) / 1000000000.0f));
+                assertEquals(size * size, matches.size());
+            }
+        }
+
     }
 
     public void testNonAdminUser()
@@ -702,7 +745,7 @@ public class AuthorityServiceTest extends TestCase
         pubAuthorityService.addAuthority(auth3, auth2);
 
         assertEquals(7, pubAuthorityService.getAllAuthorities(AuthorityType.GROUP).size());
-        
+
         // Number of root authorities has been reduced since auth2 is no longer an orphan
         assertEquals(3, pubAuthorityService.getAllRootAuthorities(AuthorityType.GROUP).size());
         // The next call looks for people not users :-)

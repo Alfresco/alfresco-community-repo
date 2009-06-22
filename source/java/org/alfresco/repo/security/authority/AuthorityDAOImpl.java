@@ -183,10 +183,10 @@ public class AuthorityDAOImpl implements AuthorityDAO
 
     public Set<String> getAllAuthorities(AuthorityType type)
     {
-        return findAuthorities(type, null);
+        return findAuthorities(type, null, null);
     }
 
-    public Set<String> findAuthorities(AuthorityType type, String namePattern)
+    public Set<String> findAuthorities(AuthorityType type, String namePattern, Set<String> zones)
     {
         Pattern pattern = null;
         if (namePattern != null)
@@ -209,12 +209,32 @@ public class AuthorityDAOImpl implements AuthorityDAO
         // For other types, we just look directly under the authority container
         if (type == null || !type.equals(AuthorityType.USER))
         {
-            NodeRef container = getAuthorityContainer();
-            if (container != null)
+            if (zones == null)
             {
-                for (ChildAssociationRef childRef : nodeService.getChildAssocs(container))
+                NodeRef container = getAuthorityContainer();
+                if (container != null)
                 {
-                    addAuthorityNameIfMatches(authorities, childRef.getQName().getLocalName(), type, pattern);
+                    for (ChildAssociationRef childRef : nodeService.getChildAssocs(container))
+                    {
+                        addAuthorityNameIfMatches(authorities, childRef.getQName().getLocalName(), type, pattern);
+                    }
+                }
+            }
+            else
+            {
+                for (String zone : zones)
+                {
+                    NodeRef container = getOrCreateZone(zone);
+                    if (container != null)
+                    {
+                        if (container != null)
+                        {
+                            for (ChildAssociationRef childRef : nodeService.getChildAssocs(container))
+                            {
+                                addAuthorityNameIfMatches(authorities, childRef.getQName().getLocalName(), type, pattern);
+                            }
+                        }
+                    }
                 }
             }
         }

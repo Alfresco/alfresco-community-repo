@@ -223,6 +223,14 @@
 
 <id>urn:uuid:${node.id}</id>
 <link rel="self" href="${absurl(url.serviceContext)}/api/node/${node.nodeRef.storeRef.protocol}/${node.nodeRef.storeRef.identifier}/${node.nodeRef.id}"/>
+<link rel="edit" href="${absurl(url.serviceContext)}/api/node/${node.nodeRef.storeRef.protocol}/${node.nodeRef.storeRef.identifier}/${node.nodeRef.id}"/>
+[#if node.isDocument]
+  [@linkstream node "enclosure"/]
+  [@linkstream node "edit-media"/]
+  [@documentCMISLinks node=node/]
+[#else]
+  [@folderCMISLinks node=node/]
+[/#if]
 <title>${node.name}</title>
 <updated>${xmldate(node.properties.modified)}</updated>
 [/#if]

@@ -854,7 +854,8 @@ public class MultiTAVMService implements AVMService
     
     private String getBasePath(String avmPath)
     {
-        if ((avmPath == null) || (! isTenantServiceEnabled()))
+        // note: ALFCOM-2893 - getCommonAncestor can return node with path = "/"
+        if ((avmPath == null) || (! isTenantServiceEnabled()) || (avmPath.equals("/")))
         { 
             return avmPath; 
         }

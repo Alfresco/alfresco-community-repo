@@ -159,6 +159,11 @@ public class ContentDataDAOImpl extends AbstractContentDataDAOImpl
             {
                 // Get the content urls
                 ContentDataEntity contentDataEntity = getContentDataEntity(id);
+                // This might be null as there is no constraint ensuring that the node points to a valid ContentData entity
+                if (contentDataEntity == null)
+                {
+                    continue;
+                }
                 // Only check the content URLs if one is present
                 String contentUrl = contentDataEntity.getContentUrl();
                 Long contentUrlId = contentDataEntity.getContentUrlId();

@@ -1348,7 +1348,9 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
         if (propertyDef != null && propertyDef.getDataType().getName().equals(DataTypeDefinition.CONTENT))
         {
             Set<Long> contentQNamesToRemoveIds = Collections.singleton(qnameId);
-            contentDataDAO.deleteContentDataForNode(node.getId(), contentQNamesToRemoveIds);
+            contentDataDAO.deleteContentDataForNode(
+                    node.getId(),
+                    contentQNamesToRemoveIds);
         }
 
         Map<PropertyMapKey, NodePropertyValue> persistableProperties = new HashMap<PropertyMapKey, NodePropertyValue>(3);

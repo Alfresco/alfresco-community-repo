@@ -221,7 +221,9 @@ public abstract class AbstractContentAccessor implements ContentAccessor
 
     /**
      * Advise that listens for the completion of specific methods on the
-     * {@link java.nio.channels.ByteChannel} interface.
+     * {@link java.nio.channels.ByteChannel} interface.  This advise reacts
+     * only in the {@link #afterReturning(Object, Method, Object[], Object) afterReturning} phase
+     * so that the underlying stream methods have been successfully completed.
      * 
      * @author Derek Hulley
      */

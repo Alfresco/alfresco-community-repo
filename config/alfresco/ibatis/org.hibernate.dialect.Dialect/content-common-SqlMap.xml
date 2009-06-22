@@ -157,11 +157,19 @@
     <!-- Get the ContentData entities by content URL -->
     <select id="select.ContentDataByContentUrlId" parameterMap="parameter.IdMap" resultMap="result.ContentData">
         select
-            *
+            cd.id as id,
+            cd.version as version,
+            cd.content_url_id as content_url_id,
+            cu.content_url as content_url,
+            cu.content_size as content_size,
+            cd.content_mimetype_id as content_mimetype_id,
+            cd.content_encoding_id as content_encoding_id,
+            cd.content_locale_id as content_locale_id
         from
-            alf_content_data
+            alf_content_data cd
+            join alf_content_url cu on (cd.content_url_id = cu.id)
         where
-            content_url_id = ?
+            cu.id = ?
     </select>
 
     <!-- Get the ContentData entity by ID -->

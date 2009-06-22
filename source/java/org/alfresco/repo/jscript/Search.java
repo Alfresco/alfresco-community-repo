@@ -601,6 +601,10 @@ public final class Search extends BaseScopableProcessorExtension
                 sp.setLimit(maxResults);
                 sp.setLimitBy(LimitBy.FINAL_SIZE);
             }
+            if (skipResults > 0)
+            {
+                sp.setSkipCount(skipResults);
+            }
             if (sort != null)
             {
                 for (SortColumn sd : sort)

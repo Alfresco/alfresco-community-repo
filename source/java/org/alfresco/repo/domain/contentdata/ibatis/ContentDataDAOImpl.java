@@ -46,10 +46,10 @@ public class ContentDataDAOImpl extends AbstractContentDataDAOImpl
 {
     private static final String SELECT_CONTENT_URL_BY_ID = "select.ContentUrlById";
     private static final String SELECT_CONTENT_URL_BY_KEY = "select.ContentUrlByKey";
+    private static final String SELECT_CONTENT_URL_BY_KEY_UNREFERENCED = "select.ContentUrlByKeyUnreferenced";
     private static final String SELECT_CONTENT_URLS = "select.ContentUrls";
     private static final String SELECT_CONTENT_DATA_BY_ID = "select.ContentDataById";
     private static final String SELECT_CONTENT_DATA_BY_NODE_AND_QNAME = "select.ContentDataByNodeAndQName";
-    private static final String SELECT_CONTENT_DATA_BY_URL_ID = "select.ContentDataByContentUrlId";
     private static final String INSERT_CONTENT_URL = "insert.ContentUrl";
     private static final String INSERT_CONTENT_DATA = "insert.ContentData";
     private static final String DELETE_CONTENT_DATA = "delete.ContentData";
@@ -103,6 +103,16 @@ public class ContentDataDAOImpl extends AbstractContentDataDAOImpl
         Map<String, Object> params = new HashMap<String, Object>(11);
         params.put("id", id);
         return template.delete(DELETE_CONTENT_URL, params);
+    }
+
+    @Override
+    protected ContentUrlEntity getContentUrlEntityUnreferenced(String contentUrl)
+    {
+        ContentUrlEntity contentUrlEntity = new ContentUrlEntity();
+        contentUrlEntity.setContentUrl(contentUrl);
+        contentUrlEntity = (ContentUrlEntity) template.queryForObject(SELECT_CONTENT_URL_BY_KEY_UNREFERENCED, contentUrlEntity);
+        // Done
+        return contentUrlEntity;
     }
 
     @Override
@@ -166,22 +176,13 @@ public class ContentDataDAOImpl extends AbstractContentDataDAOImpl
                 }
                 // Only check the content URLs if one is present
                 String contentUrl = contentDataEntity.getContentUrl();
-                Long contentUrlId = contentDataEntity.getContentUrlId();
                 // Delete the ContentData entity
                 deleteContentData(id);
                 // Check if the content URL was orphaned
-                if (contentUrlId != null)
+                if (contentUrl != null)
                 {
-                    params.clear();
-                    params.put("id", contentUrlId);
-                    @SuppressWarnings("unchecked")
-                    List<ContentDataEntity> contentDataEntities = (List<ContentDataEntity>) template.queryForList(SELECT_CONTENT_DATA_BY_URL_ID, params);
-                    // If there is still ContentData associated with the content URL, then leave it
-                    if (contentDataEntities.size() == 0)
-                    {
-                        // Orphaned
-                        registerOrphanedContentUrl(contentUrl);
-                    }
+                    // It has been dereferenced and may be orphaned - we'll check later
+                    registerDereferenceContentUrl(contentUrl);
                 }
             }
         }

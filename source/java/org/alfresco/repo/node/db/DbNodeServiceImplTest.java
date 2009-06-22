@@ -281,48 +281,6 @@ public class DbNodeServiceImplTest extends BaseNodeServiceTest
         }
     }
     
-    /**
-     * Checks that the string_value retrieval against a property type is working
-     */
-    public void testGetContentDataValues() throws Exception
-    {
-        final DataTypeDefinition contentDataType = dictionaryService.getDataType(DataTypeDefinition.CONTENT);
-
-        ContentData contentDataSingle = new ContentData("url-single", MimetypeMap.MIMETYPE_TEXT_PLAIN, 0L, null);
-        ContentData contentDataMultiple = new ContentData("url-multiple", MimetypeMap.MIMETYPE_TEXT_PLAIN, 0L, null);
-        // put this in as a random single property
-        nodeService.setProperty(
-                rootNodeRef,
-                QName.createQName(NAMESPACE, "random-single"),
-                contentDataSingle);
-        
-        // create a collection of mixed types
-        ArrayList<Serializable> collection = new ArrayList<Serializable>(3);
-        collection.add("abc");
-        collection.add(new Integer(123));
-        collection.add(contentDataMultiple);
-        nodeService.setProperty(
-                rootNodeRef,
-                QName.createQName(NAMESPACE, "random-multiple"),
-                collection);
-        
-        // get a list of all content values
-        final List<Serializable> allContentDatas = new ArrayList<Serializable>(500);
-        NodePropertyHandler handler = new NodePropertyHandler()
-        {
-            public void handle(NodeRef nodeRef, QName nodeTypeQName, QName propertyQName, Serializable value)
-            {
-                allContentDatas.add(value);
-            }
-        };
-        nodeDaoService.getPropertyValuesByActualType(contentDataType, handler);
-        assertTrue("At least two instances expected", allContentDatas.size() >= 2);
-        assertTrue("Single content data not present in results",
-                allContentDatas.contains(contentDataSingle));
-        assertTrue("Multi-valued buried content data not present in results",
-                allContentDatas.contains(contentDataMultiple));
-    }
-    
     public void testMLTextValues() throws Exception
     {
         // Set the server default locale

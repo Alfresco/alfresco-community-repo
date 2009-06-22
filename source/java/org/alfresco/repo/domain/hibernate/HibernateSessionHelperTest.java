@@ -4,6 +4,10 @@ import java.io.Serializable;
 import java.util.Date;
 import java.util.Set;
 
+import javax.transaction.UserTransaction;
+
+import junit.framework.TestCase;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.domain.AuditableProperties;
 import org.alfresco.repo.domain.Node;
@@ -11,16 +15,32 @@ import org.alfresco.repo.domain.QNameDAO;
 import org.alfresco.repo.domain.Server;
 import org.alfresco.repo.domain.Store;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
+import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.util.BaseSpringTest;
+import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.util.ApplicationContextHelper;
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
 import org.hibernate.engine.EntityKey;
+import org.springframework.context.ApplicationContext;
+import org.springframework.orm.hibernate3.SessionFactoryUtils;
 
-public class HibernateSessionHelperTest extends BaseSpringTest
+public class HibernateSessionHelperTest extends TestCase
 {
-
+    private static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
     
-    protected void onTearDownInTransaction()
+    private UserTransaction txn;
+    private SessionFactory sessionFactory;
+    
+    @Override
+    protected void setUp() throws Exception
     {
+        sessionFactory = (SessionFactory) ctx.getBean("sessionFactory");
+        ServiceRegistry serviceRegistry = (ServiceRegistry) ctx.getBean(ServiceRegistry.SERVICE_REGISTRY);
+        TransactionService transactionService = serviceRegistry.getTransactionService();
+        txn = transactionService.getUserTransaction();
+        txn.begin();
+        
         // force a flush to ensure that the database updates succeed
         try
         {
@@ -30,6 +50,28 @@ public class HibernateSessionHelperTest extends BaseSpringTest
         catch (Throwable e)
         {
             e.printStackTrace();
+        }
+    }
+    
+    private Session getSession()
+    {
+        return SessionFactoryUtils.getSession(sessionFactory, true);
+    }
+    
+    @Override
+    protected void tearDown()
+    {
+        if (txn != null)
+        {
+            try
+            {
+                txn.rollback();
+            }
+            catch (Throwable e)
+            {
+                // Don't let this hide errors coming from the tests
+                e.printStackTrace();
+            }
         }
     }
     
@@ -56,7 +98,7 @@ public class HibernateSessionHelperTest extends BaseSpringTest
         
         assertEquals(2, getSession().getStatistics().getEntityCount());
         
-        HibernateSessionHelper helper = (HibernateSessionHelper)getApplicationContext().getBean("hibernateSessionHelper");
+        HibernateSessionHelper helper = (HibernateSessionHelper) ctx.getBean("hibernateSessionHelper");
         assertFalse(SessionSizeResourceManager.isDisableInTransaction());
         helper.mark();
         assertTrue(SessionSizeResourceManager.isDisableInTransaction());
@@ -92,7 +134,7 @@ public class HibernateSessionHelperTest extends BaseSpringTest
         assertEquals(0, getSession().getStatistics().getEntityCount());
         assertFalse(SessionSizeResourceManager.isDisableInTransaction());
         
-        QNameDAO qnameDAO = (QNameDAO) getApplicationContext().getBean("qnameDAO");
+        QNameDAO qnameDAO = (QNameDAO) ctx.getBean("qnameDAO");
         Long baseQNameId = qnameDAO.getOrCreateQName(ContentModel.TYPE_BASE).getFirst();
         
         StoreImpl store = new StoreImpl();
@@ -118,7 +160,7 @@ public class HibernateSessionHelperTest extends BaseSpringTest
         
         assertEquals(4, getSession().getStatistics().getEntityCount());
         
-        HibernateSessionHelper helper = (HibernateSessionHelper)getApplicationContext().getBean("hibernateSessionHelper");
+        HibernateSessionHelper helper = (HibernateSessionHelper)ctx.getBean("hibernateSessionHelper");
         assertFalse(SessionSizeResourceManager.isDisableInTransaction());
         helper.mark();
         assertTrue(SessionSizeResourceManager.isDisableInTransaction());
@@ -284,7 +326,7 @@ public class HibernateSessionHelperTest extends BaseSpringTest
         
         assertEquals(2, getSession().getStatistics().getEntityCount());
         
-        HibernateSessionHelper helper = (HibernateSessionHelper)getApplicationContext().getBean("hibernateSessionHelper");
+        HibernateSessionHelper helper = (HibernateSessionHelper)ctx.getBean("hibernateSessionHelper");
         assertFalse(SessionSizeResourceManager.isDisableInTransaction());
         helper.mark("One");
         assertTrue(SessionSizeResourceManager.isDisableInTransaction());
@@ -320,7 +362,7 @@ public class HibernateSessionHelperTest extends BaseSpringTest
         assertEquals(0, getSession().getStatistics().getEntityCount());
         assertFalse(SessionSizeResourceManager.isDisableInTransaction());
         
-        QNameDAO qnameDAO = (QNameDAO) getApplicationContext().getBean("qnameDAO");
+        QNameDAO qnameDAO = (QNameDAO) ctx.getBean("qnameDAO");
         Long baseQNameId = qnameDAO.getOrCreateQName(ContentModel.TYPE_BASE).getFirst();
         
         StoreImpl store = new StoreImpl();
@@ -346,7 +388,7 @@ public class HibernateSessionHelperTest extends BaseSpringTest
         
         assertEquals(4, getSession().getStatistics().getEntityCount());
         
-        HibernateSessionHelper helper = (HibernateSessionHelper)getApplicationContext().getBean("hibernateSessionHelper");
+        HibernateSessionHelper helper = (HibernateSessionHelper)ctx.getBean("hibernateSessionHelper");
         assertNull(helper.getCurrentMark());
         assertFalse(SessionSizeResourceManager.isDisableInTransaction());
         helper.mark("One");
@@ -504,7 +546,7 @@ public class HibernateSessionHelperTest extends BaseSpringTest
         
         assertEquals(3, getSession().getStatistics().getEntityCount());
         
-        HibernateSessionHelper helper = (HibernateSessionHelper)getApplicationContext().getBean("hibernateSessionHelper");
+        HibernateSessionHelper helper = (HibernateSessionHelper)ctx.getBean("hibernateSessionHelper");
         assertFalse(SessionSizeResourceManager.isDisableInTransaction());
         helper.mark("One"); 
         helper.mark("Two"); 

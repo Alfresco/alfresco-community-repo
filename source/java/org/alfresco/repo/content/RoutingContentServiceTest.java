@@ -27,7 +27,9 @@ package org.alfresco.repo.content;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.Serializable;
 import java.util.Locale;
+import java.util.Map;
 
 import javax.transaction.RollbackException;
 import javax.transaction.UserTransaction;
@@ -790,5 +792,45 @@ public class RoutingContentServiceTest extends TestCase
         ContentReader reader = contentService.getReader(contentNodeRef, ContentModel.PROP_CONTENT);
         assertNotNull("Should be able to get reader", reader);
         assertEquals("Unknown mimetype was changed", bogusMimetype, reader.getMimetype());
+    }
+    
+    /**
+     * Checks that node copy and delete behaviour behaves correctly w.r.t. cleanup and shared URLs
+     */
+    public void testPostCopyContentRetrieval() throws Exception
+    {
+        ContentWriter writer = contentService.getWriter(contentNodeRef, ContentModel.PROP_CONTENT, true);
+        writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
+        writer.putContent("Some content");
+        ContentData writerContentData = writer.getContentData();
+        ContentData nodeContentData = (ContentData) nodeService.getProperty(contentNodeRef, ContentModel.PROP_CONTENT);
+        assertNotNull(nodeContentData);
+        assertEquals("ContentData not the same from NodeService and from ContentWriter", writerContentData, nodeContentData);
+        
+        Map<QName, Serializable> copyProperties = nodeService.getProperties(contentNodeRef);
+        copyProperties.remove(ContentModel.PROP_NODE_UUID);
+        // Copy the node
+        NodeRef contentCopyNodeRef = nodeService.createNode(
+                rootNodeRef,
+                ContentModel.ASSOC_CHILDREN,
+                QName.createQName(TEST_NAMESPACE, GUID.generate()),
+                ContentModel.TYPE_CONTENT,
+                copyProperties).getChildRef();
+        // Now get and check the ContentData for the copy
+        ContentData copyNodeContentData = (ContentData) nodeService.getProperty(contentCopyNodeRef, ContentModel.PROP_CONTENT);
+        assertNotNull(copyNodeContentData);
+        // The copy should share the same URL even
+        assertEquals("Copied node's cm:content ContentData was different", writerContentData, copyNodeContentData);
+        
+        // Delete the first node and ensure that the second valud remains good and the content is editable
+        nodeService.deleteNode(contentNodeRef);
+        copyNodeContentData = (ContentData) nodeService.getProperty(contentCopyNodeRef, ContentModel.PROP_CONTENT);
+        assertNotNull(copyNodeContentData);
+        assertEquals("Post-delete value didn't remain the same", writerContentData, copyNodeContentData);
+        ContentReader copyNodeContentReader = contentService.getReader(contentCopyNodeRef, ContentModel.PROP_CONTENT);
+        assertTrue("Physical content was removed", copyNodeContentReader.exists());
+        
+        txn.commit();
+        txn = null;
     }
 }

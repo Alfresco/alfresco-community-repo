@@ -26,12 +26,16 @@ package org.alfresco.repo.domain.contentdata;
 
 import java.io.Serializable;
 import java.util.Locale;
+import java.util.Set;
 
 import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.content.cleanup.EagerContentStoreCleaner;
 import org.alfresco.repo.domain.LocaleDAO;
 import org.alfresco.repo.domain.encoding.EncodingDAO;
 import org.alfresco.repo.domain.mimetype.MimetypeDAO;
+import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
+import org.alfresco.repo.transaction.TransactionListenerAdapter;
+import org.alfresco.repo.transaction.TransactionalResourceHelper;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.util.Pair;
 import org.apache.commons.logging.Log;
@@ -52,9 +56,13 @@ import org.springframework.dao.ConcurrencyFailureException;
  */
 public abstract class AbstractContentDataDAOImpl implements ContentDataDAO
 {
-    private static Log logger = LogFactory.getLog(AbstractContentDataDAOImpl.class);
-    
+    /**
+     * Content URL IDs to delete before final commit.
+     */
+    private static final String KEY_PRE_COMMIT_CONTENT_URL_DELETIONS = "AbstractContentDataDAOImpl.PreCommitContentUrlDeletions";
     private static final Long CACHE_NULL_LONG = Long.MIN_VALUE;
+
+    private static Log logger = LogFactory.getLog(AbstractContentDataDAOImpl.class);
     
     private MimetypeDAO mimetypeDAO;
     private EncodingDAO encodingDAO;
@@ -100,21 +108,22 @@ public abstract class AbstractContentDataDAOImpl implements ContentDataDAO
      */
     protected void registerNewContentUrl(String contentUrl)
     {
-        if (contentStoreCleaner != null)
-        {
-            contentStoreCleaner.registerNewContentUrl(contentUrl);
-        }
+        contentStoreCleaner.registerNewContentUrl(contentUrl);
     }
     
     /**
-     * Register orphaned content for post-commit handling
+     * A <b>content_url</b> entity was dereferenced.  This makes no assumptions about the
+     * current references - dereference deletion is handled in the commit phase.
      */
-    protected void registerOrphanedContentUrl(String contentUrl)
+    protected void registerDereferenceContentUrl(String contentUrl)
     {
-        if (contentStoreCleaner != null)
+        Set<String> contentUrls = TransactionalResourceHelper.getSet(KEY_PRE_COMMIT_CONTENT_URL_DELETIONS);
+        if (contentUrls.size() == 0)
         {
-            contentStoreCleaner.registerOrphanedContentUrl(contentUrl);
+            ContentUrlDeleteTransactionListener listener = new ContentUrlDeleteTransactionListener();
+            AlfrescoTransactionSupport.bindListener(listener);
         }
+        contentUrls.add(contentUrl);
     }
 
     /**
@@ -289,6 +298,13 @@ public abstract class AbstractContentDataDAOImpl implements ContentDataDAO
     protected abstract ContentUrlEntity getContentUrlEntity(String contentUrl);
     
     /**
+     * @param contentUrl    the URL of the <b>content url</b> entity
+     * @return              Return the entity or <tt>null</tt> if it doesn't exist or is still
+     *                      referenced by a <b>content_data</b> entity
+     */
+    protected abstract ContentUrlEntity getContentUrlEntityUnreferenced(String contentUrl);
+    
+    /**
      * Delete the entity with the given ID
      * @return              Returns the number of rows deleted
      */
@@ -315,4 +331,38 @@ public abstract class AbstractContentDataDAOImpl implements ContentDataDAO
      * @return              Returns the number of rows deleted
      */
     protected abstract int deleteContentDataEntity(Long id);
+    
+    /**
+     * Transactional listener that deletes unreferenced <b>content_url</b> entities.
+     * 
+     * @author Derek Hulley
+     */
+    public class ContentUrlDeleteTransactionListener extends TransactionListenerAdapter
+    {
+        @Override
+        public void beforeCommit(boolean readOnly)
+        {
+            // Ignore read-only
+            if (readOnly)
+            {
+                return;
+            }
+            Set<String> contentUrls = TransactionalResourceHelper.getSet(KEY_PRE_COMMIT_CONTENT_URL_DELETIONS);
+            for (String contentUrl : contentUrls)
+            {
+                ContentUrlEntity contentUrlEntity = getContentUrlEntityUnreferenced(contentUrl);
+                if (contentUrlEntity == null)
+                {
+                    // It is still referenced, so ignore it
+                    continue;
+                }
+                // It needs to be deleted
+                Long contentUrlId = contentUrlEntity.getId();
+                deleteContentUrlEntity(contentUrlId);
+                // Pop this in the queue for deletion from the content store
+                contentStoreCleaner.registerOrphanedContentUrl(contentUrl);
+            }
+            contentUrls.clear();
+        }
+    }
 }

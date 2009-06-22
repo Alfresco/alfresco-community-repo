@@ -26,40 +26,49 @@
 ////////////////////////////////////////////////////////////////////////////////
 if (!alfresco.log)
 {
-   alfresco.log = alfresco.constants.DEBUG ? log : Class.empty;
+  alfresco.log = alfresco.constants.DEBUG ? log : Class.empty;
 }
+
 function alfresco_TinyMCE_urlconverter_callback(href, element, onsave)
 {
   var result = null;
-  if (onsave)
-  {
-    result = (href && href.startsWith(alfresco.constants.AVM_WEBAPP_URL)
-              ? href.substring(alfresco.constants.AVM_WEBAPP_URL.length)
-              : href);
-  }
-  else
-  {
-    result = (href && href.startsWith("/")
-              ? alfresco.constants.AVM_WEBAPP_URL + href
-              : href);
-  }
   
-  if (href && href.startsWith(document.location.href))
-  {
-    result = href.substring(document.location.href.length);
-  }
+  alfresco.log("element = " + element);
   
-  // handle URL issue with IE (WCM-1134)
-  if (tinyMCE.isMSIE)
+  // NOTE: since upgrade of TinyMCE to v3 'onsave' now seems to always = true 
+  
+  if (href)
   {
-     var server = document.location.protocol + "//" + document.location.host;
-     if (href && href.startsWith(server))
-     {
+    if (href.startsWith(alfresco.constants.AVM_WEBAPP_URL))
+    {
+      result = href.substring(alfresco.constants.AVM_WEBAPP_URL.length);
+    }
+    else if (href.startsWith("/"))
+    {
+      result = alfresco.constants.AVM_WEBAPP_URL + href;
+    }
+    else if (href.startsWith(document.location.href))
+    { 
+      result = href.substring(document.location.href.length);
+    }
+    else
+    {
+      result = href;
+    }
+  
+    // handle URL issue with IE (WCM-1134)
+    if (tinyMCE.isMSIE)
+    {
+      var server = document.location.protocol + "//" + document.location.host;
+      if (href.startsWith(server))
+      {
         result = href.substring(server.length);
-     }
+      }
+    }
   }
-
-//  dojo.debug("alfresco_TinyMCE_urlconverter_callback('" + href + "', ... , " + onsave + ") = " + result);
+  
+  alfresco.log("alfresco_TinyMCE_urlconverter_callback('" + href + "', ... , " + onsave + ") = " + result);
+  
   return result;
 }
 

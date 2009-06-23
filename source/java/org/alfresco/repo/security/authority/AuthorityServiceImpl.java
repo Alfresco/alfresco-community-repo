@@ -397,6 +397,11 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
     {
         return authorityDAO.getOrCreateZone(zoneName);
     }
+    
+    public NodeRef getZone(String zoneName)
+    {
+        return authorityDAO.getZone(zoneName);
+    }
 
     public Set<String> getAllAuthoritiesInZone(String zoneName, AuthorityType type)
     {

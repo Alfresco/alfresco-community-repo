@@ -710,6 +710,7 @@
 				org.alfresco.service.cmr.security.AuthorityService.setAuthorityDisplayName=ACL_METHOD.ROLE_ADMINISTRATOR
 				org.alfresco.service.cmr.security.AuthorityService.getAuthorityDisplayName=ACL_ALLOW
 				org.alfresco.service.cmr.security.AuthorityService.getOrCreateZone=ACL_METHOD.ROLE_ADMINISTRATOR
+				org.alfresco.service.cmr.security.AuthorityService.getZone=ACL_ALLOW
 				org.alfresco.service.cmr.security.AuthorityService.getAuthorityZones=ACL_ALLOW
 				org.alfresco.service.cmr.security.AuthorityService.getAllAuthoritiesInZone=ACL_ALLOW
 				org.alfresco.service.cmr.security.AuthorityService.getAllRootAuthoritiesInZone=ACL_ALLOW

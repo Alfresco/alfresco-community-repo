@@ -224,7 +224,7 @@ public class AuthorityDAOImpl implements AuthorityDAO
             {
                 for (String zone : zones)
                 {
-                    NodeRef container = getOrCreateZone(zone);
+                    NodeRef container = getZone(zone);
                     if (container != null)
                     {
                         if (container != null)
@@ -501,19 +501,36 @@ public class AuthorityDAOImpl implements AuthorityDAO
 
     public NodeRef getOrCreateZone(String zoneName)
     {
+        return getOrCreateZone(zoneName, true);
+    }
+
+    private NodeRef getOrCreateZone(String zoneName, boolean create)
+    {
         NodeRef zoneContainerRef = getZoneContainer();
         QName zoneQName = QName.createQName("cm", zoneName, namespacePrefixResolver);
         List<ChildAssociationRef> results = nodeService.getChildAssocs(zoneContainerRef, ContentModel.ASSOC_CHILDREN, zoneQName);
         if (results.isEmpty())
         {
-            HashMap<QName, Serializable> props = new HashMap<QName, Serializable>();
-            props.put(ContentModel.PROP_NAME, zoneName);
-            return nodeService.createNode(zoneContainerRef, ContentModel.ASSOC_CHILDREN, zoneQName, ContentModel.TYPE_ZONE, props).getChildRef();
+            if (create)
+            {
+                HashMap<QName, Serializable> props = new HashMap<QName, Serializable>();
+                props.put(ContentModel.PROP_NAME, zoneName);
+                return nodeService.createNode(zoneContainerRef, ContentModel.ASSOC_CHILDREN, zoneQName, ContentModel.TYPE_ZONE, props).getChildRef();
+            }
+            else
+            {
+                return null;
+            }
         }
         else
         {
             return results.get(0).getChildRef();
         }
+    }
+
+    public NodeRef getZone(String zoneName)
+    {
+        return getOrCreateZone(zoneName, false);
     }
 
     public Set<String> getAuthorityZones(String name)
@@ -550,10 +567,13 @@ public class AuthorityDAOImpl implements AuthorityDAO
     public Set<String> getAllAuthoritiesInZone(String zoneName, AuthorityType type)
     {
         HashSet<String> authorities = new HashSet<String>();
-        NodeRef zoneRef = getOrCreateZone(zoneName);
-        for (ChildAssociationRef childRef : nodeService.getChildAssocs(zoneRef))
+        NodeRef zoneRef = getZone(zoneName);
+        if (zoneRef != null)
         {
-            addAuthorityNameIfMatches(authorities, childRef.getQName().getLocalName(), type, null);
+            for (ChildAssociationRef childRef : nodeService.getChildAssocs(zoneRef))
+            {
+                addAuthorityNameIfMatches(authorities, childRef.getQName().getLocalName(), type, null);
+            }
         }
         return authorities;
     }

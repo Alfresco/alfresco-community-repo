@@ -340,4 +340,9 @@ public class SimpleAuthorityServiceImpl implements AuthorityService
     {
         return Collections.<String>emptySet();
     }
+
+    public NodeRef getZone(String zoneName)
+    {
+        return null;
+    }
 }

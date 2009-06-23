@@ -160,6 +160,15 @@ public interface AuthorityDAO
     public NodeRef getOrCreateZone(String zoneName);
     
     /**
+     * Gets an authority zone node with the specified name
+     * 
+     * @param zoneName
+     *            the zone name
+     * @return reference to the zone node ot null if the zone does not exists
+     */
+    public NodeRef getZone(String zoneName);
+    
+    /**
      * Gets the name of the zone containing the specified authority.
      * 
      * @param name

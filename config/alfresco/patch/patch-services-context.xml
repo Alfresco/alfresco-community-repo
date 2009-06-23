@@ -576,10 +576,10 @@
         <property name="userImporterBootstrap">
             <ref bean="userBootstrap" />
         </property>
-          <property name="spacesImporterBootstrap">
+        <property name="spacesImporterBootstrap">
             <ref bean="spacesBootstrap" />
         </property>
-          <property name="indexerAndSearcher">
+        <property name="indexerAndSearcher">
             <ref bean="indexerAndSearcherFactory" />
         </property>
     </bean>
@@ -1079,8 +1079,8 @@
             </list>
         </property>
     </bean>
-	
-	<bean id="patch.db-V2.2-ACL-From-2.1-A" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
+   
+   <bean id="patch.db-V2.2-ACL-From-2.1-A" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
         <property name="id"><value>patch.db-V2.2-ACL-From-2.1-A</value></property>
         <property name="description"><value>patch.schemaUpgradeScript.description</value></property>
         <property name="fixesFromSchema"><value>0</value></property>
@@ -1095,7 +1095,7 @@
             </list>
         </property>
     </bean>
-	
+   
     <bean id="patch.db-V2.2-ACL" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
         <property name="id"><value>patch.db-V2.2-ACL</value></property>
         <property name="description"><value>patch.schemaUpgradeScript.description</value></property>
@@ -1110,7 +1110,7 @@
                 <ref bean="patch.db-V2.1-NotNullColumns" />
             </list>
         </property>
-		<property name="alternatives" >
+      <property name="alternatives" >
             <list>
                 <ref bean="patch.db-V2.2-ACL-From-2.1-A" />
             </list>
@@ -1455,7 +1455,7 @@
             <ref bean="qnameDAO" />
         </property>
     </bean>
-	
+   
     <bean id="patch.db-V2.1-AuditPathIndex" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
         <property name="id"><value>patch.db-V2.1-AuditPathIndex</value></property>
         <property name="description"><value>patch.schemaUpgradeScript.description</value></property>
@@ -1718,7 +1718,7 @@
         <property name="fixesToSchema"><value>2006</value></property>
         <property name="targetSchema"><value>2007</value></property>
         <property name="permissionService">
-        	<ref bean="permissionService"/>
+           <ref bean="permissionService"/>
         </property>
         <property name="nodeService">
             <ref bean="nodeService"/>
@@ -1742,7 +1742,7 @@
         </property>
     </bean>
     
-	<bean id="patch.db-V3.2-Remove-AVM-Issuer" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
+   <bean id="patch.db-V3.2-Remove-AVM-Issuer" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
         <property name="id"><value>patch.db-V3.2-Remove-AVM-Issuer</value></property>
         <property name="description"><value>patch.schemaUpgradeScript.description</value></property>
         <property name="fixesFromSchema"><value>0</value></property>
@@ -1809,7 +1809,7 @@
         </property>
     </bean>
     
-	<bean id="patch.db-V3.2-LockTables" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
+   <bean id="patch.db-V3.2-LockTables" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
         <property name="id"><value>patch.db-V3.2-LockTables</value></property>
         <property name="description"><value>patch.schemaUpgradeScript.description</value></property>
         <property name="fixesFromSchema"><value>0</value></property>
@@ -1860,8 +1860,8 @@
             </list>
         </property>
     </bean>
-	
-	<bean id="patch.authorityDefaultZonesPatch" class="org.alfresco.repo.admin.patch.impl.AuthorityDefaultZonesPatch" parent="basePatch" >
+   
+   <bean id="patch.authorityDefaultZonesPatch" class="org.alfresco.repo.admin.patch.impl.AuthorityDefaultZonesPatch" parent="basePatch" >
         <property name="id"><value>patch.authorityDefaultZonesPatch</value></property>
         <property name="description"><value>patch.authorityDefaultZonesPatch.description</value></property>
         <property name="fixesFromSchema"><value>0</value></property>
@@ -1870,13 +1870,13 @@
         <property name="authorityService">
             <ref bean="authorityService" />
         </property>
-		<property name="avmService">
+      <property name="avmService">
             <ref bean="avmService" />
         </property>
-		<property name="siteService">
+      <property name="siteService">
             <ref bean="siteService" />
         </property>
-		<property name="hibernateSessionHelper">
+      <property name="hibernateSessionHelper">
             <ref bean="hibernateSessionHelper"/>
         </property>
         <property name="dependsOn">
@@ -1910,7 +1910,7 @@
         </property>
     </bean>
     
-	<bean id="patch.db-V3.2-ContentTables" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
+   <bean id="patch.db-V3.2-ContentTables" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
         <property name="id"><value>patch.db-V3.2-ContentTables</value></property>
         <property name="description"><value>patch.schemaUpgradeScript.description</value></property>
         <property name="fixesFromSchema"><value>0</value></property>
@@ -1930,6 +1930,17 @@
         <property name="targetSchema"><value>2017</value></property>
         <property name="scriptUrl">
             <value>classpath:alfresco/dbscripts/upgrade/3.2/${db.script.dialect}/modify-AVM-mimetype.sql</value>
+        </property>
+    </bean>
+
+    <bean id="patch.db-V3.2-Upgrade-JBPM" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
+        <property name="id"><value>patch.db-V3.2-Upgrade-JBPM</value></property>
+        <property name="description"><value>patch.schemaUpgradeScript.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>2017</value></property>
+        <property name="targetSchema"><value>2018</value></property>
+        <property name="scriptUrl">           
+            <value>classpath:alfresco/dbscripts/upgrade/3.2/${db.script.dialect}/jbpm-upgrade.sql</value>
         </property>
     </bean>
     

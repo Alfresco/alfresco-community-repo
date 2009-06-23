@@ -32,11 +32,11 @@
     -->
     <bean id="shutdownBackstop" class="org.alfresco.repo.shutdown.ShutdownBackstop">
        <property name="timeout">
-       	  <value>${shutdown.backstop.timeout}</value>
+            <value>${shutdown.backstop.timeout}</value>
        </property>
        <property name="enabled">
           <value>${shutdown.backstop.enabled}</value>
-       </property>	
+       </property>   
     </bean>  
 
 
@@ -90,7 +90,7 @@
              <ref bean="patch.schemaUpdateScript-V1.4-2" />
              <ref bean="patch.db-V2.1-NotNullColumns" />
              <ref bean="patch.db-V2.2-ACL-From-2.1-A" />
-			 <ref bean="patch.db-V2.2-ACL" />
+          <ref bean="patch.db-V2.2-ACL" />
              <ref bean="patch.db-V2.2-0-CreateMissingTables" />
              <ref bean="patch.db-V2.2-Upgrade-From-2.1" />
              <ref bean="patch.db-V2.2-Upgrade-From-2.2SP1" />
@@ -111,6 +111,7 @@
              <ref bean="patch.db-V3.0-0-CreateActivitiesExtras" />
              <ref bean="patch.db-V3.2-Remove-AVM-Issuer" />
              <ref bean="patch.db-V3.2-Modify-AVM-MimeType" />
+             <ref bean="patch.db-V3.2-Upgrade-JBPM" />
           </list>
        </property>
     </bean>
@@ -204,7 +205,7 @@
             <value>alfresco</value>
         </property>
     </bean>
-	
+   
     <bean id="workflowBootstrap" parent="workflowDeployer">
         <property name="workflowDefinitions">
             <list>
@@ -289,9 +290,9 @@
          <ref bean="personDaoImpl"/>
        </property>
     </bean>
-	
+   
     <!-- Bootstrap any extensions -->
-	
+   
     <import resource="classpath*:alfresco/extension/bootstrap/*-context.xml" />
 
     <!-- Perform index recovery before applying any patches -->
@@ -486,7 +487,7 @@
         </property>
     </bean>
 
-	<!-- Repository helper class -->
+   <!-- Repository helper class -->
    <bean id="repositoryHelper" class="org.alfresco.repo.model.Repository">
       <property name="transactionHelper" ref="retryingTransactionHelper" />
       <property name="namespaceService" ref="namespaceService" />

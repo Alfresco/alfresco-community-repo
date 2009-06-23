@@ -1013,6 +1013,16 @@ public class SchemaBootstrap extends AbstractLifecycleBean
                         sql = sql.replaceAll("\\$\\{" + var + "\\}", val.toString());
                     }
                     
+                    // Handle the 0/1 values that PostgreSQL doesn't translate to TRUE
+                    if (this.dialect != null && this.dialect instanceof PostgreSQLDialect)
+                    {
+                        sql = sql.replaceAll("\\$\\{TRUE\\}", "TRUE");
+                    }
+                    else
+                    {
+                        sql = sql.replaceAll("\\$\\{TRUE\\}", "1");
+                    }
+                    
                     Object fetchedVal = executeStatement(connection, sql, fetchColumnName, optional, line, scriptFile);
                     if (fetchVarName != null && fetchColumnName != null)
                     {

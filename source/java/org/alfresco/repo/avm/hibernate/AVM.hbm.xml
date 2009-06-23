@@ -115,7 +115,7 @@
             <subclass discriminator-value="plainfile"
                 name="PlainFileNodeImpl" proxy="PlainFileNode" lazy="false">
                 <property name="contentURL" column="content_url" type="string" length="128"/>
-                <property name="mimeType" column="mime_type" type="string" length="64"/>
+                <property name="mimeType" column="mime_type" type="string" length="100"/>
                 <property name="encoding" column="encoding" type="string" length="16"/>
                 <property name="length" column="length" type="long"/>
             </subclass>

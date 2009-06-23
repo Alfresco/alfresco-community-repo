@@ -110,6 +110,7 @@
              <ref bean="patch.db-V2.1-AuditPathIndex" />
              <ref bean="patch.db-V3.0-0-CreateActivitiesExtras" />
              <ref bean="patch.db-V3.2-Remove-AVM-Issuer" />
+             <ref bean="patch.db-V3.2-Modify-AVM-MimeType" />
           </list>
        </property>
     </bean>

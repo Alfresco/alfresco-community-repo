@@ -1922,4 +1922,15 @@
         </property>
     </bean>
     
+    <bean id="patch.db-V3.2-Modify-AVM-MimeType" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
+        <property name="id"><value>patch.db-V3.2-Modify-AVM-MimeType</value></property>
+        <property name="description"><value>patch.schemaUpgradeScript.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>2016</value></property>
+        <property name="targetSchema"><value>2017</value></property>
+        <property name="scriptUrl">
+            <value>classpath:alfresco/dbscripts/upgrade/3.2/${db.script.dialect}/modify-AVM-mimetype.sql</value>
+        </property>
+    </bean>
+    
 </beans>

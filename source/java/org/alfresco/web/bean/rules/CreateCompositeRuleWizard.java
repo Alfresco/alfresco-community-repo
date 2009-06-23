@@ -55,16 +55,18 @@ public class CreateCompositeRuleWizard extends CreateRuleWizard
    // This limitation is introduced by the fact that we are have two "current"
    // conditions - either normal condition, or composite conditions
    // basically, the UI will have to store conditions in a more native way
-   // (instead of DataModel) to get unlimited number of composite conditions
-   // recursing
+   // (instead of DataModel) to get unlimited number of composite conditions recursing
    protected DataModel currentCompositeConditionsDataModel;
    protected List<Map<String, Serializable>> currentCompositeConditionPropertiesList;
 
    private boolean addingCompositeCondition;
-
+   private boolean editCurrentCompositeCondition;
+   
+   private int rowIndex = -1;
+   
+   
    public CreateCompositeRuleWizard()
    {
-      // TODO Auto-generated constructor stub
    }
 
    @Override
@@ -75,7 +77,6 @@ public class CreateCompositeRuleWizard extends CreateRuleWizard
       this.setAddingCompositeCondition(false);
       this.currentCompositeConditionsDataModel = null;
       this.currentCompositeConditionPropertiesList = null;
-
    }
 
    public void setupCompositeConditionsMode()
@@ -83,7 +84,6 @@ public class CreateCompositeRuleWizard extends CreateRuleWizard
       this.setAddingCompositeCondition(true);
       this.currentCompositeConditionsDataModel = new ListDataModel();
       this.currentCompositeConditionPropertiesList = new ArrayList<Map<String, Serializable>>();
-
    }
 
    private void clearCompositeConditionMode()
@@ -94,7 +94,6 @@ public class CreateCompositeRuleWizard extends CreateRuleWizard
       this.currentCompositeConditionsDataModel = null;
       this.currentCompositeConditionPropertiesList = null;
       this.setAddingCompositeCondition(false);
-
    }
 
    /**
@@ -147,10 +146,7 @@ public class CreateCompositeRuleWizard extends CreateRuleWizard
 
       IHandler handler = this.conditionHandlers.get(this.selectedCondition);
 
-      // creating object temporarily so we can pass it to
-      // CompositeConditionHandler
-      // Map<String, Serializable> newCompositeCondition = new HashMap<String,
-      // Serializable>();
+      // creating object temporarily so we can pass it to CompositeConditionHandler
       currentConditionProperties.put(CompositeConditionHandler.PROP_COMPOSITE_CONDITION,
             (Serializable) this.currentCompositeConditionPropertiesList);
       currentConditionProperties.put(PROP_CONDITION_NAME, this.selectedCondition);
@@ -165,11 +161,22 @@ public class CreateCompositeRuleWizard extends CreateRuleWizard
       }
       if (logger.isDebugEnabled())
          logger.debug("Generated Summary - [" + summary + "] + selectedCondition " + this.selectedCondition);
-
-      if (editingCondition == false)
+      
+      if (this.editCurrentCompositeCondition == true)
+      {
+         if (rowIndex != -1)
+         {
+            this.allConditionsPropertiesList.remove(rowIndex);
+            this.allConditionsPropertiesList.add(rowIndex, currentConditionProperties);
+         }
+      }
+      else
       {
          this.allConditionsPropertiesList.add(currentConditionProperties);
       }
+      
+      this.editCurrentCompositeCondition = false;
+      this.rowIndex = -1;
       clearCompositeConditionMode();
       // refresh the wizard
       goToPage(context, this.returnViewId);
@@ -194,6 +201,8 @@ public class CreateCompositeRuleWizard extends CreateRuleWizard
    @Override
    public void cancelAddCondition()
    {
+      this.editCurrentCompositeCondition = false;
+      this.rowIndex = -1;
       if (isAddingCompositeCondition())
       {
          // don't clear when editing, since we are looking at a REFERENCE to an existing condition
@@ -224,7 +233,6 @@ public class CreateCompositeRuleWizard extends CreateRuleWizard
          super.cancelAddCondition();
          return;
       }
-
    }
 
    /**
@@ -274,7 +282,6 @@ public class CreateCompositeRuleWizard extends CreateRuleWizard
       {
          if (logger.isDebugEnabled())
             logger.debug("\tEdited composite condition. ");
-         //editingCondition = false;
       }
 
       this.currentConditionProperties = new HashMap<String, Serializable>(3);
@@ -284,10 +291,12 @@ public class CreateCompositeRuleWizard extends CreateRuleWizard
       this.currentConditionProperties.put(PROP_CONDITION_NAME, CompositeConditionHandler.NAME);
       this.currentConditionProperties.put(BaseConditionHandler.PROP_CONDITION_NOT, Boolean.FALSE);
 
+      // reset the action drop down
+      this.selectedCondition = null;
+      
       // refresh the wizard
       printConditionState();
       goToPage(context, this.returnViewId);
-
    }
 
    /**
@@ -305,6 +314,8 @@ public class CreateCompositeRuleWizard extends CreateRuleWizard
       if (!isAddingCompositeCondition())
       {
          Map condition = (Map) this.allConditionsDataModel.getRowData();
+         this.rowIndex = this.allConditionsDataModel.getRowIndex();
+         this.editCurrentCompositeCondition = true;
          
          if (condition.get(PROP_CONDITION_NAME).equals(CompositeConditionHandler.NAME))
          {
@@ -322,8 +333,6 @@ public class CreateCompositeRuleWizard extends CreateRuleWizard
          super.editCondition(subCondition);
       }
    }
-  
-   
    
    public List<SelectItem> getCompositeConditions()
    {

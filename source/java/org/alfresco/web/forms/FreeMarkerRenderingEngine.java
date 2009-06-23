@@ -22,26 +22,41 @@
  * http://www.alfresco.com/legal/licensing" */
 package org.alfresco.web.forms;
 
-import freemarker.ext.dom.NodeModel;
-import freemarker.cache.TemplateLoader;
-import freemarker.template.*;
-import java.io.*;
-import java.util.*;
-import javax.xml.parsers.DocumentBuilder;
-import org.alfresco.model.ContentModel;
-import org.alfresco.service.cmr.repository.ContentReader;
-import org.alfresco.service.cmr.repository.ContentService;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.Reader;
+import java.util.Date;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.web.bean.wcm.AVMUtil;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.w3c.dom.Document;
-import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
+
+import freemarker.cache.TemplateLoader;
+import freemarker.ext.dom.NodeModel;
+import freemarker.template.Configuration;
+import freemarker.template.SimpleDate;
+import freemarker.template.SimpleHash;
+import freemarker.template.SimpleNumber;
+import freemarker.template.SimpleScalar;
+import freemarker.template.SimpleSequence;
+import freemarker.template.Template;
+import freemarker.template.TemplateBooleanModel;
+import freemarker.template.TemplateException;
+import freemarker.template.TemplateExceptionHandler;
+import freemarker.template.TemplateHashModel;
+import freemarker.template.TemplateMethodModel;
+import freemarker.template.TemplateModel;
+import freemarker.template.TemplateModelException;
 
 /**
  * Implementation of a form data renderer for processing xml instance data
@@ -248,6 +263,10 @@ public class FreeMarkerRenderingEngine
       else if (value instanceof Boolean)
       {
          return (Boolean)value ? TemplateBooleanModel.TRUE : TemplateBooleanModel.FALSE;
+      }
+      else if (value instanceof Date)
+      {
+         return new SimpleDate(((Date)value), SimpleDate.DATETIME);
       }
       else if (value instanceof Document)
       {

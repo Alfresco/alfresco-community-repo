@@ -384,7 +384,7 @@ public class RenderingEngineTemplateImpl
       model.put(QName.createQName(NamespaceService.ALFRESCO_PREFIX,
                                   "date",
                                   namespacePrefixResolver),
-                new SimpleDate(new Date(), SimpleDate.DATETIME));
+                new Date());
       model.put(QName.createQName(NamespaceService.ALFRESCO_PREFIX,
                                   "avm_sandbox_url",
                                   namespacePrefixResolver), 

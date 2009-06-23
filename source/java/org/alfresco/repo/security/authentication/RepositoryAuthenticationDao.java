@@ -57,6 +57,7 @@ import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.springframework.dao.DataAccessException;
+import org.springframework.util.StringUtils;
 
 public class RepositoryAuthenticationDao implements MutableAuthenticationDao
 {
@@ -152,18 +153,14 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao
 
     public NodeRef getUserOrNull(String searchUserName)
     {
-        if (searchUserName == null)
-        {
-            return null;
-        }
-        if (searchUserName.length() == 0)
+        if (searchUserName == null || searchUserName.length() == 0)
         {
             return null;
         }
 
         SearchParameters sp = new SearchParameters();
         sp.setLanguage(SearchService.LANGUAGE_LUCENE);
-        sp.setQuery("@usr\\:username:\"" + searchUserName + "\"");
+        sp.setQuery("@usr\\:username:\"" + StringUtils.delete(searchUserName, "\"") + "\"");
 
         try
         {

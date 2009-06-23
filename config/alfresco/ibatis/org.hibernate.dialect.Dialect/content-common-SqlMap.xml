@@ -154,23 +154,27 @@
             content_url_crc = #contentUrlCrc#
     </select>
 
-    <!-- Get the ContentData entities by content URL -->
-    <select id="select.ContentDataByContentUrlId" parameterMap="parameter.IdMap" resultMap="result.ContentData">
+    <!-- Get unreferenced content URL entity by unique key -->
+    <select id="select.ContentUrlByKeyUnreferenced" parameterClass="ContentUrl" resultMap="result.ContentUrl">
         select
-            cd.id as id,
-            cd.version as version,
-            cd.content_url_id as content_url_id,
-            cu.content_url as content_url,
-            cu.content_size as content_size,
-            cd.content_mimetype_id as content_mimetype_id,
-            cd.content_encoding_id as content_encoding_id,
-            cd.content_locale_id as content_locale_id
+            cu.*
         from
-            alf_content_data cd
-            join alf_content_url cu on (cd.content_url_id = cu.id)
+            alf_content_url cu
+            left outer join alf_content_data cd on (cd.content_url_id = cu.id)
         where
-            cu.id = ?
+            content_url_short = lower(#contentUrlShort#) and
+            content_url_crc = #contentUrlCrc# and
+            cd.id is null
     </select>
+
+    <!-- Delete ContentUrl entity -->
+    <delete id="delete.ContentUrl" parameterMap="parameter.IdMap">
+        delete
+        from
+            alf_content_url
+        where
+            id = ?
+    </delete>
 
     <!-- Get the ContentData entity by ID -->
     <select id="select.ContentDataById" parameterMap="parameter.IdMap" resultMap="result.ContentData">
@@ -208,15 +212,6 @@
         delete
         from
             alf_content_data
-        where
-            id = ?
-    </delete>
-
-    <!-- Delete Content URL entity -->
-    <delete id="delete.ContentUrl" parameterMap="parameter.IdMap">
-        delete
-        from
-            alf_content_url
         where
             id = ?
     </delete>

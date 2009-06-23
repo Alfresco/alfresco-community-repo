@@ -35,6 +35,7 @@ import org.alfresco.processor.ProcessorExtension;
 import org.alfresco.repo.processor.BaseProcessor;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.repository.TemplateException;
 import org.alfresco.service.cmr.repository.TemplateImageResolver;
 import org.alfresco.service.cmr.repository.TemplateProcessor;
@@ -329,7 +330,15 @@ public class FreeMarkerProcessor extends BaseProcessor implements TemplateProces
     {
         if (value instanceof NodeRef)
         {
-            return new TemplateNode((NodeRef)value, this.services, imageResolver);
+            NodeRef ref = (NodeRef)value;
+            if (StoreRef.PROTOCOL_AVM.equals(ref.getStoreRef().getProtocol()))
+            {
+               return new AVMTemplateNode((NodeRef)value, this.services, imageResolver);
+            }
+            else
+            {
+               return new TemplateNode((NodeRef)value, this.services, imageResolver);
+            }
         }
 
         else if (value instanceof AssociationRef)

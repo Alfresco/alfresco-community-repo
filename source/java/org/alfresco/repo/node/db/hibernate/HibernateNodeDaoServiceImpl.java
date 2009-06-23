@@ -157,7 +157,8 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
     private static final String QUERY_GET_TARGET_ASSOCS = "node.GetTargetAssocs";
     private static final String QUERY_GET_SOURCE_ASSOCS = "node.GetSourceAssocs";
     private static final String QUERY_GET_NODES_WITH_PROPERTY_VALUES_BY_STRING_AND_STORE = "node.GetNodesWithPropertyValuesByStringAndStore";
-    private static final String QUERY_GET_CONTENT_URLS_FOR_STORE = "node.GetContentUrlsForStore";
+    private static final String QUERY_GET_CONTENT_URLS_FOR_STORE_OLD = "node.GetContentUrlsForStoreOld";
+    private static final String QUERY_GET_CONTENT_URLS_FOR_STORE_NEW = "node.GetContentUrlsForStoreNew";
     private static final String QUERY_GET_USERS_WITHOUT_USAGE = "node.GetUsersWithoutUsage";
     private static final String QUERY_GET_USERS_WITH_USAGE = "node.GetUsersWithUsage";
     private static final String QUERY_GET_NODES_WITH_PROPERTY_VALUES_BY_ACTUAL_TYPE = "node.GetNodesWithPropertyValuesByActualType";
@@ -3365,13 +3366,14 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
         final Long contentTypeQNameEntityId = qnameDAO.getOrCreateQName(ContentModel.TYPE_CONTENT).getFirst();
         final Long ownerPropQNameEntityId = qnameDAO.getOrCreateQName(ContentModel.PROP_OWNER).getFirst();
         final Long contentPropQNameEntityId = qnameDAO.getOrCreateQName(ContentModel.PROP_CONTENT).getFirst();
-        
-        HibernateCallback callback = new HibernateCallback()
+
+        // Query for the 'old' style content properties stored in 'string_value'
+        HibernateCallback callbackOld = new HibernateCallback()
         {
             public Object doInHibernate(Session session)
             {
                 Query query = session
-                    .getNamedQuery(HibernateNodeDaoServiceImpl.QUERY_GET_CONTENT_URLS_FOR_STORE)
+                    .getNamedQuery(HibernateNodeDaoServiceImpl.QUERY_GET_CONTENT_URLS_FOR_STORE_OLD)
                     .setString("storeProtocol", storeRef.getProtocol())
                     .setString("storeIdentifier", storeRef.getIdentifier())
                     .setParameter("ownerPropQNameID", ownerPropQNameEntityId) // cm:owner
@@ -3385,9 +3387,8 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
         ScrollableResults results = null;
         try
         {
-            results = (ScrollableResults) getHibernateTemplate().execute(callback);
+            results = (ScrollableResults) getHibernateTemplate().execute(callbackOld);
             // Callback with the results
-            Session session = getSession();
             while (results.next())
             {
                 Object[] arr = new Object[3];
@@ -3395,8 +3396,45 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
                 arr[1] = (String)results.get(1); // creator
                 arr[2] = (String)results.get(2); // contentUrl
                 resultsCallback.handle(arr);
-                // Flush if required
-                DirtySessionMethodInterceptor.flushSession(session);
+            }
+        }
+        finally
+        {
+            if (results != null)
+            {
+                results.close();
+            }
+        }
+
+        // Query for the 'new' style content properties stored in the 'content_url' table
+        HibernateCallback callbackNew = new HibernateCallback()
+        {
+            public Object doInHibernate(Session session)
+            {
+                Query query = session
+                    .getNamedQuery(HibernateNodeDaoServiceImpl.QUERY_GET_CONTENT_URLS_FOR_STORE_NEW)
+                    .setString("storeProtocol", storeRef.getProtocol())
+                    .setString("storeIdentifier", storeRef.getIdentifier())
+                    .setParameter("ownerPropQNameID", ownerPropQNameEntityId) // cm:owner
+                    .setParameter("contentPropQNameID", contentPropQNameEntityId) // cm:content
+                    .setParameter("contentTypeQNameID", contentTypeQNameEntityId) // cm:content
+                    ;
+                DirtySessionMethodInterceptor.setQueryFlushMode(session, query);
+                return query.scroll(ScrollMode.FORWARD_ONLY);
+            }
+        };
+        results = null;
+        try
+        {
+            results = (ScrollableResults) getHibernateTemplate().execute(callbackNew);
+            // Callback with the results
+            while (results.next())
+            {
+                Object[] arr = new Object[3];
+                arr[0] = (String)results.get(0); // owner (can be null)
+                arr[1] = (String)results.get(1); // creator
+                arr[2] = (String)results.get(2); // contentUrl
+                resultsCallback.handle(arr);
             }
         }
         finally

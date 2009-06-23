@@ -670,7 +670,7 @@
          p.string_value = :propStringValue
    </sql-query>
    
-   <sql-query name="node.GetContentUrlsForStore">
+   <sql-query name="node.GetContentUrlsForStoreOld">
       <return-scalar column="owner" type="string"/>
       <return-scalar column="creator" type="string"/>
       <return-scalar column="contenturl" type="string"/>
@@ -686,6 +686,29 @@
       WHERE
          s.protocol = :storeProtocol AND
          s.identifier = :storeIdentifier AND
+         p2.string_value IS NOT NULL AND
+         (p1.string_value != 'System' OR (p1.string_value IS NULL AND n.audit_creator != 'System'))
+   </sql-query>
+   
+   <sql-query name="node.GetContentUrlsForStoreNew">
+      <return-scalar column="owner" type="string"/>
+      <return-scalar column="creator" type="string"/>
+      <return-scalar column="contenturl" type="string"/>
+      SELECT
+         p1.string_value AS owner,
+         n.audit_creator AS creator,
+         cu.content_url AS contenturl
+      FROM
+         alf_node n
+         JOIN alf_store s ON (s.id = n.store_id AND n.type_qname_id = :contentTypeQNameID)
+         LEFT JOIN alf_node_properties p1 ON (p1.node_id = n.id AND p1.qname_id = :ownerPropQNameID)
+         JOIN alf_node_properties p2 ON (p2.node_id = n.id AND p2.qname_id = :contentPropQNameID)
+         JOIN alf_content_data cd ON (p2.long_value = cd.id)
+         JOIN alf_content_url cu ON (cd.content_url_id = cu.id)
+      WHERE
+         s.protocol = :storeProtocol AND
+         s.identifier = :storeIdentifier AND
+         p2.string_value IS NOT NULL AND
          (p1.string_value != 'System' OR (p1.string_value IS NULL AND n.audit_creator != 'System'))
    </sql-query>
    

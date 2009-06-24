@@ -3394,7 +3394,7 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
                 Object[] arr = new Object[3];
                 arr[0] = (String)results.get(0); // owner (can be null)
                 arr[1] = (String)results.get(1); // creator
-                arr[2] = (String)results.get(2); // contentUrl
+                arr[2] = (String)results.get(2); // contentdata
                 resultsCallback.handle(arr);
             }
         }
@@ -3428,12 +3428,21 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
         {
             results = (ScrollableResults) getHibernateTemplate().execute(callbackNew);
             // Callback with the results
+            /*
+              <return-scalar column="owner" type="string"/>
+              <return-scalar column="creator" type="string"/>
+              <return-scalar column="contentDataId" type="long"/>
+             */
             while (results.next())
             {
+                Long contentDataId = (Long)results.get(2);
+                // Convert to ContentData
+                ContentData contentData = contentDataDAO.getContentData(contentDataId).getSecond();
+                // Pass down results
                 Object[] arr = new Object[3];
                 arr[0] = (String)results.get(0); // owner (can be null)
                 arr[1] = (String)results.get(1); // creator
-                arr[2] = (String)results.get(2); // contentUrl
+                arr[2] = contentData.toString();
                 resultsCallback.handle(arr);
             }
         }

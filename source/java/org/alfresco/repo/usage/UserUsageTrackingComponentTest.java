@@ -73,7 +73,7 @@ public class UserUsageTrackingComponentTest extends TestCase
 
     private static final String TEST_USER_PREFIX = "user-";
     
-    private static final int MAX_USERS = 100;
+    private static final int MAX_USERS = 5;
     private static final int BATCH_SIZE = 5;
     private static final int PROGRESS_SIZE = 100;
     
@@ -273,7 +273,9 @@ public class UserUsageTrackingComponentTest extends TestCase
             NodeRef personNodeRef = personService.getPerson(userName);
             
             // get user stored usage (not including deltas, if any)
-            assertEquals(userName, i*factor, ((Long)nodeService.getProperty(personNodeRef, ContentModel.PROP_SIZE_CURRENT)).longValue());
+            Long sizeProp = (Long)nodeService.getProperty(personNodeRef, ContentModel.PROP_SIZE_CURRENT);
+            assertNotNull("Property " + ContentModel.PROP_SIZE_CURRENT + "does not exist, yet", sizeProp);
+            assertEquals(userName, i*factor, sizeProp.longValue());
         }
     }
     

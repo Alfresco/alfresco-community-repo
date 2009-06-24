@@ -10,7 +10,6 @@
         <#-- Group specific properties -->
         <#if authority.rootGroup??>"isRootGroup": ${authority.rootGroup?string("true", "false")}, </#if>
         <#if authority.adminGroup??>"isAdminGroup": ${authority.adminGroup?string("true", "false")}, </#if>
-        <#if authority.internalGroup??>"isInternalGroup": ${authority.internalGroup?string("true", "false")}, </#if>
         <#if authority.groupCount??>"groupCount": ${authority.groupCount}, </#if>
         <#if authority.userCount??>"userCount": ${authority.userCount}, </#if>        
         <#-- end of group specific properties -->

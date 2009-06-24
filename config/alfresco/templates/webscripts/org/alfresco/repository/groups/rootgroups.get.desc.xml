@@ -3,14 +3,14 @@
    <description><![CDATA[
       List all root groups.
       <br />
-      If the optional includeInternal parameter is set to 'true' then will include internal groups, if ommitted or 'false' 
-      internal groups will not be returned.
+      If the optional zone parameter is set to 'true' then returns root groups from the specified zone.   
+      If not specified will return groups from all zones.
       <br />
       If the optional shortNameFilter parameter is set then returns those root groups with a partial match on shortName.    
       The shortname filter can contain the wild card characters * and ? but these must be url encoded for this script.
    ]]>
    </description>
-   <url>/api/rootgroups?shortNameFilter={shortNameFilter?}&amp;includeInternal={includeInternal?}</url>
+   <url>/api/rootgroups?shortNameFilter={shortNameFilter?}&amp;zone={zone?}</url>
    <format default="json">argument</format>
    <authentication>user</authentication>
    <transaction allow="readonly">required</transaction>

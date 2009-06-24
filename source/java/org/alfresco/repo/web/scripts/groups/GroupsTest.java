@@ -25,6 +25,9 @@
 package org.alfresco.repo.web.scripts.groups;
 
 
+import java.util.HashSet;
+import java.util.Set;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -63,11 +66,13 @@ public class GroupsTest extends BaseWebScriptTest
     private PersonService personService;
     
     private String ADMIN_GROUP = "ALFRESCO_ADMINISTRATORS";
+    private String EMAIL_GROUP = "EMAIL_CONTRIBUTORS";
     private String TEST_ROOTGROUP = "GroupsTest_ROOT";
     private String TEST_GROUPA = "TestA";
     private String TEST_GROUPB = "TESTB";
     private String TEST_GROUPC = "TesTC";
     private String TEST_GROUPD = "TESTD";
+    private String TEST_GROUPE = "TestE";
     private String TEST_LINK = "TESTLINK";
     private String TEST_ROOTGROUP_DISPLAY_NAME = "GROUPS_TESTROOTDisplayName";
     
@@ -85,6 +90,7 @@ public class GroupsTest extends BaseWebScriptTest
      *	GROUPA
      *	GROUPB
      *		GROUPD
+     *		GROUPE (in Share Zone)
      *		USER_TWO
      *		USER_THREE
      *	GROUPC
@@ -97,25 +103,30 @@ public class GroupsTest extends BaseWebScriptTest
     		rootGroupName = authorityService.getName(AuthorityType.GROUP, TEST_ROOTGROUP);
     	}
     	
+        Set<String> shareZones = new HashSet<String>(1, 1.0f);
+        shareZones.add(AuthorityService.ZONE_APP_SHARE);
+    	
         if(!authorityService.authorityExists(rootGroupName))
         {
             this.authenticationComponent.setSystemUserAsCurrentUser();
         	 
         	rootGroupName = authorityService.createAuthority(AuthorityType.GROUP, TEST_ROOTGROUP, TEST_ROOTGROUP_DISPLAY_NAME, authorityService.getDefaultZones());
-        	String groupA = authorityService.createAuthority(AuthorityType.GROUP, TEST_GROUPA);
+        	String groupA = authorityService.createAuthority(AuthorityType.GROUP, TEST_GROUPA, TEST_GROUPA, authorityService.getDefaultZones());
         	authorityService.addAuthority(rootGroupName, groupA);
-        	String groupB = authorityService.createAuthority(AuthorityType.GROUP, TEST_GROUPB);
+        	String groupB = authorityService.createAuthority(AuthorityType.GROUP, TEST_GROUPB, TEST_GROUPB,authorityService.getDefaultZones());
             authorityService.addAuthority(rootGroupName, groupB);
-        	String groupD = authorityService.createAuthority(AuthorityType.GROUP, TEST_GROUPD);
+        	String groupD = authorityService.createAuthority(AuthorityType.GROUP, TEST_GROUPD, TEST_GROUPD, authorityService.getDefaultZones());
+         	String groupE = authorityService.createAuthority(AuthorityType.GROUP, TEST_GROUPE, TEST_GROUPE, shareZones);
             authorityService.addAuthority(groupB, groupD);
+            authorityService.addAuthority(groupB, groupE);
         	authorityService.addAuthority(groupB, USER_TWO);
         	authorityService.addAuthority(groupB, USER_THREE);
         
-        	String groupC = authorityService.createAuthority(AuthorityType.GROUP, TEST_GROUPC);
+        	String groupC = authorityService.createAuthority(AuthorityType.GROUP, TEST_GROUPC, TEST_GROUPC,authorityService.getDefaultZones());
         	authorityService.addAuthority(rootGroupName, groupC);
         	authorityService.addAuthority(groupC, USER_TWO);
         
-        	String link = authorityService.createAuthority(AuthorityType.GROUP, TEST_LINK);
+        	String link = authorityService.createAuthority(AuthorityType.GROUP, TEST_LINK, TEST_LINK, authorityService.getDefaultZones());
         	authorityService.addAuthority(rootGroupName, link);
         	
             this.authenticationComponent.setCurrentUser(USER_ONE);
@@ -169,22 +180,103 @@ public class GroupsTest extends BaseWebScriptTest
     {
         super.tearDown();
         this.authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
-        //if(rootGroupName != null)
-        //{
-        //	authorityService.deleteAuthority(rootGroupName);
-        //}
     }
     
     /**
      * Detailed test of get root groups
      */
     public void testGetRootGroup() throws Exception
-    {    	
+    { 
+        createTestTree();
+        
     	/**
-    	 * Get all root groups should be at least the ALFRESCO_ADMINISTRATORS groups
+    	 * Get all root groups, regardless of zone, should be at least the ALFRESCO_ADMINISTRATORS, 
+    	 * TEST_ROOTGROUP and EMAIL_CONTRIBUTORS groups
     	 */
     	{
     		Response response = sendRequest(new GetRequest(URL_ROOTGROUPS), Status.STATUS_OK);
+    		JSONObject top = new JSONObject(response.getContentAsString());
+    		logger.debug(response.getContentAsString());
+    		System.out.println(response.getContentAsString());
+    		JSONArray data = top.getJSONArray("data");
+    		assertTrue(data.length() >= 3);
+    		boolean gotRootGroup = false;
+    		boolean gotAdminGroup = false;
+    		boolean gotEmailGroup = false;
+    		
+    		
+    		for(int i = 0; i < data.length(); i++)
+    		{
+    			JSONObject rootGroup = data.getJSONObject(i);
+    			if(rootGroup.getString("shortName").equals(TEST_ROOTGROUP))
+    			{
+    				// This is our test rootgroup
+    				assertEquals("shortName wrong", TEST_ROOTGROUP, rootGroup.getString("shortName"));
+    				assertEquals("displayName wrong", TEST_ROOTGROUP_DISPLAY_NAME, rootGroup.getString("displayName"));
+    				assertEquals("authorityType wrong", "GROUP", rootGroup.getString("authorityType"));
+    				assertFalse("test rootgroup is admin group", rootGroup.getBoolean("isAdminGroup"));
+    				gotRootGroup = true;
+    			}
+    			if(rootGroup.getString("shortName").equals(ADMIN_GROUP))
+    			{
+    				gotAdminGroup = true;
+    				//assertTrue("admin group is not admin group", rootGroup.getBoolean("isAdminGroup"));
+    			}
+    			if(rootGroup.getString("shortName").equals(EMAIL_GROUP))
+    			{
+    				//assertTrue("admin group is not admin group", rootGroup.getBoolean("isAdminGroup"));
+    				gotEmailGroup = true;
+    			}
+    		}
+        	assertTrue("root group not found", gotRootGroup);
+        	assertTrue("admin group not found", gotAdminGroup);
+        	assertTrue("email group not found", gotEmailGroup);
+    	}
+
+    	
+    	if(rootGroupName != null)
+    	{
+    		rootGroupName = authorityService.getName(AuthorityType.GROUP, TEST_ROOTGROUP);
+    	}
+    	
+    	Set<String> zones = authorityService.getAuthorityZones(rootGroupName);
+    	assertTrue("root group is in APP.DEFAULT zone", zones.contains("APP.DEFAULT") );
+    	
+    	/**
+    	 * Get all root groups in the application zone "APP.DEFAULT"
+    	 */
+    	{
+    		Response response = sendRequest(new GetRequest(URL_ROOTGROUPS + "?zone=APP.DEFAULT"), Status.STATUS_OK);
+    		JSONObject top = new JSONObject(response.getContentAsString());
+    		logger.debug(response.getContentAsString());
+    		System.out.println(response.getContentAsString());
+    		JSONArray data = top.getJSONArray("data");
+    		
+    		assertTrue(data.length() > 0);
+    		
+    		for(int i = 0; i < data.length(); i++)
+    		{
+    			JSONObject rootGroup = data.getJSONObject(i);
+    			if(rootGroup.getString("shortName").equals(TEST_ROOTGROUP))
+    			{
+    				// This is our test rootgroup
+    				assertEquals("shortName wrong", TEST_ROOTGROUP, rootGroup.getString("shortName"));
+    				assertEquals("displayName wrong", TEST_ROOTGROUP_DISPLAY_NAME, rootGroup.getString("displayName"));
+    				assertEquals("authorityType wrong", "GROUP", rootGroup.getString("authorityType"));
+    				assertFalse("test rootgroup is admin group", rootGroup.getBoolean("isAdminGroup"));
+    			}
+    			if(rootGroup.getString("shortName").equals(ADMIN_GROUP))
+    			{
+    				//assertTrue("admin group is not admin group", rootGroup.getBoolean("isAdminGroup"));
+    			}
+    		}	
+    	}
+    	
+    	/**
+    	 * Get all root groups in the admin zone
+    	 */
+    	{
+    		Response response = sendRequest(new GetRequest(URL_ROOTGROUPS + "?zone=AUTH.ALF"), Status.STATUS_OK);
     		JSONObject top = new JSONObject(response.getContentAsString());
     		logger.debug(response.getContentAsString());
     		JSONArray data = top.getJSONArray("data");
@@ -207,6 +299,19 @@ public class GroupsTest extends BaseWebScriptTest
     			}
     		}	
     	}
+    	
+    	/**
+    	 * Negative test Get all root groups in the a zone that does not exist
+    	 */
+    	{
+    		Response response = sendRequest(new GetRequest(URL_ROOTGROUPS + "?zone=WIBBLE"), Status.STATUS_OK);
+    		JSONObject top = new JSONObject(response.getContentAsString());
+    		logger.debug(response.getContentAsString());
+    		JSONArray data = top.getJSONArray("data");
+    		assertTrue(data.length() == 0);
+    		// Should return no results
+    	}
+    	
     }
     
     /**
@@ -241,6 +346,19 @@ public class GroupsTest extends BaseWebScriptTest
     		assertTrue(data.length() > 0);
     		assertFalse("group B is not admin group", data.getBoolean("isAdminGroup"));
     		assertFalse("group B is not root group", data.getBoolean("isRootGroup"));
+    	}
+    	
+    	/**
+    	 * Get GROUP E which is in a different zone
+    	 */
+    	{
+    		Response response = sendRequest(new GetRequest(URL_GROUPS + "/" + TEST_GROUPE), Status.STATUS_OK);
+    		JSONObject top = new JSONObject(response.getContentAsString());
+    		logger.debug(response.getContentAsString());
+    		JSONObject data = top.getJSONObject("data");
+    		assertTrue(data.length() > 0);
+    		assertFalse("group E is not admin group", data.getBoolean("isAdminGroup"));
+    		assertFalse("group E is not root group", data.getBoolean("isRootGroup"));
     	}
     
     }
@@ -637,6 +755,67 @@ public class GroupsTest extends BaseWebScriptTest
 			assertEquals("", TEST_GROUPD, authority.getString("shortName"));
 
     	}
+    	
+    	// Search on partial short name of a non root group in default zone
+    	{
+    		String url = URL_GROUPS + "?shortNameFilter=" + TEST_GROUPD + "& zone=" + AuthorityService.ZONE_APP_DEFAULT;
+		    Response response = sendRequest(new GetRequest(url ), Status.STATUS_OK);
+		    JSONObject top = new JSONObject(response.getContentAsString());
+		    logger.debug(response.getContentAsString());
+		    System.out.println(response.getContentAsString());
+		    JSONArray data = top.getJSONArray("data");
+		    assertEquals("length not 1", 1, data.length());
+ 			JSONObject authority = data.getJSONObject(0);
+			assertEquals("", TEST_GROUPD, authority.getString("shortName"));
+    	}
+    	
+    	// Search for a group (which is not in the default zone) in all zones
+    	{
+		    Response response = sendRequest(new GetRequest(URL_GROUPS + "?shortNameFilter=" + TEST_GROUPE ), Status.STATUS_OK);
+		    JSONObject top = new JSONObject(response.getContentAsString());
+		    logger.debug(response.getContentAsString());
+		    System.out.println(response.getContentAsString());
+		    JSONArray data = top.getJSONArray("data");
+		    assertEquals("length not 1", 1, data.length());
+ 			JSONObject authority = data.getJSONObject(0);
+			assertEquals("Group E not found", TEST_GROUPE, authority.getString("shortName"));
+    	}
+    	
+//    	// Search for Group E in a specifc zone (without name filter)
+//    	{
+//		    Response response = sendRequest(new GetRequest(URL_GROUPS + "?zone=" + AuthorityService.ZONE_APP_SHARE), Status.STATUS_OK);
+//		    JSONObject top = new JSONObject(response.getContentAsString());
+//		    logger.debug(response.getContentAsString());
+//		    System.out.println(response.getContentAsString());
+//		    JSONArray data = top.getJSONArray("data");
+//		    assertEquals("Can't find any groups in Share zone", 1, data.length());
+// 			JSONObject authority = data.getJSONObject(0);
+//			assertEquals("", TEST_GROUPE, authority.getString("shortName"));
+//    	}
+//    	
+//    	// Search for a group in a specifc zone
+//    	{
+//		    Response response = sendRequest(new GetRequest(URL_GROUPS + "?shortNameFilter=" + TEST_GROUPE + "&zone=" + AuthorityService.ZONE_APP_SHARE), Status.STATUS_OK);
+//		    JSONObject top = new JSONObject(response.getContentAsString());
+//		    logger.debug(response.getContentAsString());
+//		    System.out.println(response.getContentAsString());
+//		    JSONArray data = top.getJSONArray("data");
+//		    assertEquals("Can't find Group E in Share zone", 1, data.length());
+// 			JSONObject authority = data.getJSONObject(0);
+//			assertEquals("", TEST_GROUPE, authority.getString("shortName"));
+//
+//    	}
+    	
+    	// Negative test Search for a group in a wrong zone
+    	{
+		    Response response = sendRequest(new GetRequest(URL_GROUPS + "?shortNameFilter=" + TEST_GROUPE + "&zone=" + AuthorityService.ZONE_APP_WCM), Status.STATUS_OK);
+		    JSONObject top = new JSONObject(response.getContentAsString());
+		    logger.debug(response.getContentAsString());
+		    System.out.println(response.getContentAsString());
+		    JSONArray data = top.getJSONArray("data");
+		    assertEquals("length not 0", 0, data.length());
+    	}
+    	
     
     }
     
@@ -680,6 +859,19 @@ public class GroupsTest extends BaseWebScriptTest
     		JSONArray data = top.getJSONArray("data");
     		assertTrue(data.length() >= 2);
     	}
+
+// TODO parents script does not have zone parameter    	
+//      /**
+//    	 * Get GROUP E   Which should be a child of GROUPB child of TESTROOT but in a different zone
+//    	 */
+//    	{
+//    		Response response = sendRequest(new GetRequest(URL_GROUPS + "/" + TEST_GROUPE + "/parents?level=ALL"), Status.STATUS_OK);
+//    		JSONObject top = new JSONObject(response.getContentAsString());
+//    		logger.debug(response.getContentAsString());
+//    		JSONArray data = top.getJSONArray("data");
+//    		assertTrue(data.length() >= 2);
+//    	}
+    	
       	/**
     	 * Negative test Get GROUP D level="rubbish"
     	 */
@@ -714,6 +906,7 @@ public class GroupsTest extends BaseWebScriptTest
     		JSONArray data = top.getJSONArray("data");
     		assertTrue(data.length() > 0);
     		boolean gotGroupD = false;
+    		boolean gotGroupE = false;
     		boolean gotUserTwo = false;
     		boolean gotUserThree = false;
       		for(int i = 0; i < data.length(); i++)
@@ -722,6 +915,10 @@ public class GroupsTest extends BaseWebScriptTest
     			if(authority.getString("shortName").equals(TEST_GROUPD))
     			{
     				gotGroupD = true;
+    			}
+    			if(authority.getString("shortName").equals(TEST_GROUPE))
+    			{
+    				gotGroupE = true;
     			}
     			if(authority.getString("shortName").equals(USER_TWO))
     			{
@@ -732,8 +929,9 @@ public class GroupsTest extends BaseWebScriptTest
     				gotUserThree = true;
     			}
     		}
-      		assertEquals("3 groups not returned", 3, data.length());
+      		assertEquals("4 groups not returned", 4, data.length());
       		assertTrue("not got group D", gotGroupD);
+      		assertTrue("not got group E", gotGroupE);
       		assertTrue("not got user two", gotUserTwo);
       		assertTrue("not got user three", gotUserThree);
 
@@ -748,7 +946,7 @@ public class GroupsTest extends BaseWebScriptTest
     		JSONObject top = new JSONObject(response.getContentAsString());
     		logger.debug(response.getContentAsString());
     		JSONArray data = top.getJSONArray("data");
-    		//assertTrue("no child groups of group B", data.length() == 1);
+    		assertTrue("no child groups of group B", data.length() > 1 );
     		
     		JSONObject subGroup = data.getJSONObject(0);
     		assertEquals("shortName wrong", TEST_GROUPD, subGroup.getString("shortName"));
@@ -769,7 +967,7 @@ public class GroupsTest extends BaseWebScriptTest
     		JSONObject top = new JSONObject(response.getContentAsString());
     		logger.debug(response.getContentAsString());
     		JSONArray data = top.getJSONArray("data");
-    		assertTrue(data.length() > 0);
+    		assertTrue(data.length() > 1);
       		for(int i = 0; i < data.length(); i++)
     		{
       			JSONObject authority = data.getJSONObject(i);

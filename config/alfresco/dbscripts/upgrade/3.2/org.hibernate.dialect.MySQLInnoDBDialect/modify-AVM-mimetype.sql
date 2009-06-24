@@ -1,6 +1,6 @@
 --
 -- Title:      Upgrade to V3.2 - modify AVM mimetype
--- Database:   Generic
+-- Database:   MySQL
 -- Since:      V3.2 schema 2017
 -- Author:     janv
 --

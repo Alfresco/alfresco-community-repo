@@ -116,7 +116,7 @@ public class CCUndoCheckoutFileDialog extends CheckinCheckoutDialog
             logger.warn("WARNING: undoCheckout called without a current WorkingDocument!");
         }
 
-        return outcome;
+        return outcome + ":browse";
     }
 
 }

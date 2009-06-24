@@ -29,7 +29,6 @@ import java.io.Serializable;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
-import org.alfresco.repo.security.authority.script.Authority.ScriptAuthorityType;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
 
@@ -261,15 +260,6 @@ public class ScriptGroup implements Authority, Serializable
 		return this.isAdmin;
 	}
 	
-	/**
-	 * Is this an internal group?
-	 * @return
-	 */
-	public boolean isInternalGroup()
-	{
-		//TODO Not yet implemeted
-		return true;
-	}
 	
 	/**
 	 * Get the number of users contained within this group.

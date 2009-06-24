@@ -56,7 +56,47 @@ public class ScriptAuthorityService extends BaseScopableProcessorExtension
 	 * Search the root groups, those without a parent group.
 	 * @return The root groups (empty if there are no root groups)
 	 */
-	public ScriptGroup[] searchRootGroups(String shortNamePattern, boolean includeInternal)
+	public ScriptGroup[] searchRootGroupsInZone(String shortNamePattern, String zone)
+	{
+		Set<ScriptGroup> groups = new LinkedHashSet<ScriptGroup>(0);
+		Set<String> authorities = authorityService.findAuthoritiesByShortNameInZone(AuthorityType.GROUP, shortNamePattern, zone);
+		for(String authority : authorities)
+		{
+			ScriptGroup group = new ScriptGroup(authority, authorityService);
+			if(group.isRootGroup())
+			{
+				groups.add(group);
+			}
+			
+		}
+		return groups.toArray(new ScriptGroup[groups.size()]);
+	}
+	
+	/**
+	 * Search the root groups, those without a parent group.
+	 * @return The root groups (empty if there are no root groups)
+	 */
+	public ScriptGroup[] searchRootGroups(String shortNamePattern)
+	{
+		Set<ScriptGroup> groups = new LinkedHashSet<ScriptGroup>(0);
+		Set<String> authorities = authorityService.findAuthoritiesByShortName(AuthorityType.GROUP, shortNamePattern);
+		for(String authority : authorities)
+		{
+			ScriptGroup group = new ScriptGroup(authority, authorityService);
+			if(group.isRootGroup())
+			{
+				groups.add(group);
+			}
+			
+		}
+		return groups.toArray(new ScriptGroup[groups.size()]);
+	}
+	
+	/**
+	 * Search the root groups, those without a parent group.   Searches in all zones.
+	 * @return The root groups (empty if there are no root groups)
+	 */
+	public ScriptGroup[] getAllRootGroups()
 	{
 		Set<ScriptGroup> groups = new LinkedHashSet<ScriptGroup>(0);
 		Set<String> authorities = authorityService.getAllRootAuthorities(AuthorityType.GROUP);
@@ -71,12 +111,13 @@ public class ScriptAuthorityService extends BaseScopableProcessorExtension
 	
 	/**
 	 * Get the root groups, those without a parent group.
+	 * @param zone zone to search in.
 	 * @return The root groups (empty if there are no root groups)
 	 */
-	public ScriptGroup[] getAllRootGroups(boolean includeInternal)
+	public ScriptGroup[] getAllRootGroupsInZone(String zone)
 	{
 		Set<ScriptGroup> groups = new LinkedHashSet<ScriptGroup>(0);
-		Set<String> authorities = authorityService.getAllRootAuthoritiesInZone(AuthorityService.ZONE_APP_DEFAULT, AuthorityType.GROUP);
+		Set<String> authorities = authorityService.getAllRootAuthoritiesInZone(zone, AuthorityType.GROUP);
 		for(String authority : authorities)
 		{
 			ScriptGroup group = new ScriptGroup(authority, authorityService);
@@ -123,7 +164,8 @@ public class ScriptAuthorityService extends BaseScopableProcessorExtension
 	}
 	
 	/**
-	 * Create a new root group
+	 * Create a new root group in the default application zones
+	 * 
 	 * @return the new root group.
 	 */
 	public ScriptGroup createRootGroup(String shortName, String displayName)
@@ -133,13 +175,12 @@ public class ScriptAuthorityService extends BaseScopableProcessorExtension
 	}
 	
 	/**
-	 * Search for groups
+	 * Search for groups in all zones.
 	 * 
 	 * @param shortNameFilter partial match on shortName (* and ?) work.  If empty then matches everything.
-	 * @param includeInternal
 	 * @return the groups matching the query
 	 */
-	public ScriptGroup[] searchGroups(String shortNameFilter, boolean includeInternal)
+	public ScriptGroup[] searchGroups(String shortNameFilter)
 	{
 		String filter = shortNameFilter;
 		
@@ -153,6 +194,37 @@ public class ScriptAuthorityService extends BaseScopableProcessorExtension
 		
 		Set<ScriptGroup> groups = new LinkedHashSet<ScriptGroup>(0);
 		Set<String> authorities = authorityService.findAuthoritiesByShortName(AuthorityType.GROUP, filter);
+		for(String authority : authorities)
+		{
+			ScriptGroup group = new ScriptGroup(authority, authorityService);
+			groups.add(group);
+			
+		}
+		return groups.toArray(new ScriptGroup[groups.size()]);
+	}
+	
+	/**
+	 * Search for groups in a specific zone
+	 * 
+	 * @param shortNameFilter partial match on shortName (* and ?) work.  If empty then matches everything.
+	 * @param zone zone to search in.
+	 * @return the groups matching the query
+	 */
+	public ScriptGroup[] searchGroupsInZone(String shortNameFilter, String zone)
+	{
+		String filter = shortNameFilter;
+		
+		/**
+		 * Modify shortNameFilter to be "shortName*"
+		 */
+		if (shortNameFilter.length() > 0)
+		{
+			filter = filter.replace("\"", "") + "*";
+		}
+		
+		
+		Set<ScriptGroup> groups = new LinkedHashSet<ScriptGroup>(0);
+		Set<String> authorities = authorityService.findAuthoritiesByShortNameInZone(AuthorityType.GROUP, filter, zone);
 		for(String authority : authorities)
 		{
 			ScriptGroup group = new ScriptGroup(authority, authorityService);

@@ -363,21 +363,28 @@ public class SiteServiceImpl implements SiteService, SiteModel
 
         // Get the current user
         final String currentUser = authenticationContext.getCurrentUserName();
+        
+        
 
         // Create the relevant groups and assign permissions
         AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
         {
             public String doWork() throws Exception
             {
+                Set<String> shareZones = new HashSet<String>(2, 1.0f);
+                shareZones.add(AuthorityService.ZONE_APP_SHARE);
+                shareZones.add(AuthorityService.ZONE_AUTH_ALFRESCO);
+            	
+            	
                 // Create the site's groups
                 String siteGroup = authorityService
-                        .createAuthority(AuthorityType.GROUP, getSiteGroup(shortName, false));
+                        .createAuthority(AuthorityType.GROUP, getSiteGroup(shortName, false), shortName, shareZones);
                 Set<String> permissions = permissionService.getSettablePermissions(SiteModel.TYPE_SITE);
                 for (String permission : permissions)
                 {
                     // Create a group for the permission
                     String permissionGroup = authorityService.createAuthority(AuthorityType.GROUP, getSiteRoleGroup(
-                            shortName, permission, false));
+                            shortName, permission, false), shortName, shareZones);
                     authorityService.addAuthority(siteGroup, permissionGroup);
 
                     // Assign the group the relevant permission on the site

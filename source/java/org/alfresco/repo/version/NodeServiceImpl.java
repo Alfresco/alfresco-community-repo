@@ -34,7 +34,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.domain.contentdata.ContentDataDAO;
 import org.alfresco.repo.version.common.VersionUtil;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -79,22 +81,11 @@ public class NodeServiceImpl implements NodeService, VersionModel
      */
     private static final QName rootAssocName = QName.createQName(VersionModel.NAMESPACE_URI, "versionedState");
 
-    /**
-     * The db node service, used as the version store implementation
-     */
     protected NodeService dbNodeService;
-
-    /**
-     * The repository searcher
-     */
     @SuppressWarnings("unused")
     private SearchService searcher;
-
-    /**
-     * The dictionary service
-     */
     protected DictionaryService dicitionaryService;
-
+    protected ContentDataDAO contentDataDAO;
 
     /**
      * Sets the db node service, used as the version store implementation
@@ -108,8 +99,6 @@ public class NodeServiceImpl implements NodeService, VersionModel
 
     /**
      * Sets the searcher
-     *
-     * @param searcher  the searcher
      */
     public void setSearcher(SearchService searcher)
     {
@@ -118,12 +107,18 @@ public class NodeServiceImpl implements NodeService, VersionModel
 
     /**
      * Sets the dictionary service
-     *
-     * @param dictionaryService  the dictionary service
      */
     public void setDictionaryService(DictionaryService dictionaryService)
     {
         this.dicitionaryService = dictionaryService;
+    }
+
+    /**
+     * Set the DAO to resolved content data reference IDs into ContentData instances
+     */
+    public void setContentDataDAO(ContentDataDAO contentDataDAO)
+    {
+        this.contentDataDAO = contentDataDAO;
     }
 
     /**
@@ -360,7 +355,21 @@ public class NodeServiceImpl implements NodeService, VersionModel
                     DataTypeDefinition dataTypeDef = propDef.getDataType();
                     if (dataTypeDef != null)
                     {
-                        value = (Serializable)DefaultTypeConverter.INSTANCE.convert(dataTypeDef, value);
+                        if (dataTypeDef.getName().equals(DataTypeDefinition.CONTENT) && value instanceof Long)
+                        {
+                            try
+                            {
+                                value = contentDataDAO.getContentData((Long)value).getSecond();
+                            }
+                            catch (AlfrescoRuntimeException e)
+                            {
+                                logger.warn("ContentData with ID " + value + " no longer exists for versioned node " + nodeRef);
+                            }
+                        }
+                        else
+                        {
+                            value = (Serializable)DefaultTypeConverter.INSTANCE.convert(dataTypeDef, value);
+                        }
                     }
                     else
                     {

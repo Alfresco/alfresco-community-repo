@@ -847,6 +847,9 @@
     </bean>
 
     <bean id="versionNodeService" class="org.alfresco.repo.version.Node2ServiceImpl">
+        <property name="contentDataDAO">
+            <ref bean="contentDataDAO" />
+        </property>
         <property name="dbNodeService">
             <ref bean="mtAwareNodeService" />
         </property>

@@ -167,6 +167,9 @@ public class VersionableAspect implements ContentServicePolicies.OnContentUpdate
                 QName.createQName(NamespaceService.ALFRESCO_URI, "getCopyCallback"),
                 ContentModel.ASPECT_VERSIONABLE,
                 new JavaBehaviour(this, "getCopyCallback"));
+        
+        // Create the transaction listener
+        this.transactionListener = new VersionableAspectTransactionListener();
     }
     
     /**

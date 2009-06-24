@@ -27,8 +27,7 @@ package org.alfresco.repo.workflow.jbpm;
 
 import java.util.List;
 
-import junit.framework.TestCase;
-
+import org.alfresco.util.BaseSpringTest;
 import org.jbpm.JbpmConfiguration;
 import org.jbpm.JbpmContext;
 import org.jbpm.db.GraphSession;
@@ -47,43 +46,17 @@ import org.jbpm.taskmgmt.exe.TaskInstance;
  * @author davidc
  */
 
-public class JBPMDeleteProcessTest extends TestCase {
+public class JBPMDeleteProcessTest extends BaseSpringTest {
 
-    static JbpmConfiguration jbpmConfiguration = null; 
-    static long processId = -1L;
-    static String currentTokenPath = null;
+    JbpmConfiguration jbpmConfiguration; 
+    long processId = -1L;
+    String currentTokenPath;
 
-    static {
-      jbpmConfiguration = JbpmConfiguration.parseXmlString(
-        "<jbpm-configuration>" +
-        "  <jbpm-context>" +
-        "    <service name='persistence' factory='org.jbpm.persistence.db.DbPersistenceServiceFactory' />" + 
-        "    <service name='tx' factory='org.jbpm.tx.TxServiceFactory' />" +
-        "  </jbpm-context>" +
-        "  <string name='resource.hibernate.cfg.xml' " +
-        "          value='jbpmresources/hibernate.cfg.xml' />" +
-        "  <string name='resource.business.calendar' " +
-        "          value='org/jbpm/calendar/jbpm.business.calendar.properties' />" +
-        "  <string name='resource.default.modules' " +
-        "          value='org/jbpm/graph/def/jbpm.default.modules.properties' />" +
-        "  <string name='resource.converter' " +
-        "          value='org/jbpm/db/hibernate/jbpm.converter.properties' />" +
-        "  <string name='resource.action.types' " +
-        "          value='org/jbpm/graph/action/action.types.xml' />" +
-        "  <string name='resource.node.types' " +
-        "          value='org/jbpm/graph/node/node.types.xml' />" +
-        "  <string name='resource.varmapping' " +
-        "          value='org/jbpm/context/exe/jbpm.varmapping.xml' />" +
-        "</jbpm-configuration>"
-      );
-    }
     
-    public void setUp() {
-      jbpmConfiguration.createSchema();
-    }
-    
-    public void tearDown() {
-      jbpmConfiguration.dropSchema();
+    @Override
+    protected void onSetUpInTransaction() throws Exception
+    {
+        jbpmConfiguration = (JbpmConfiguration) getApplicationContext().getBean("jbpm_configuration");
     }
 
     public void testDelete() {

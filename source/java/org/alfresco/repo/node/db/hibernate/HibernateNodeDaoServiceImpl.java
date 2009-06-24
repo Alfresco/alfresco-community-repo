@@ -4321,7 +4321,7 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
                         "   Value: " + value);
             }
             // Handle ContentData
-            if (value instanceof ContentData)
+            if (value instanceof ContentData && propertyTypeQName.equals(DataTypeDefinition.CONTENT))
             {
                 // Needs converting to an ID
                 ContentData contentData = (ContentData) value;

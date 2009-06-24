@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2008 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -27,7 +27,9 @@ package org.alfresco.repo.version;
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import org.alfresco.i18n.I18NUtil;
 import org.alfresco.model.ContentModel;
@@ -41,6 +43,7 @@ import org.alfresco.repo.policy.Behaviour;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
+import org.alfresco.repo.transaction.TransactionListenerAdapter;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -52,12 +55,13 @@ import org.alfresco.service.namespace.QName;
 /**
  * Class containing behaviour for the versionable aspect
  * 
- * @author Roy Wetherall
+ * @author Roy Wetherall, janv
  */
 public class VersionableAspect implements ContentServicePolicies.OnContentUpdatePolicy, 
                                           NodeServicePolicies.OnAddAspectPolicy,
                                           NodeServicePolicies.OnRemoveAspectPolicy,
                                           NodeServicePolicies.OnDeleteNodePolicy,
+                                          NodeServicePolicies.OnUpdatePropertiesPolicy,
                                           VersionServicePolicies.AfterCreateVersionPolicy,
                                           CopyServicePolicies.OnCopyNodePolicy
 {
@@ -67,6 +71,7 @@ public class VersionableAspect implements ContentServicePolicies.OnContentUpdate
     
     /** Transaction resource key */
     private static final String KEY_VERSIONED_NODEREFS = "versioned_noderefs";
+    private static final String KEY_PENDING_NODEREFS = "pending_noderefs";
     
     /** The policy component */
     private PolicyComponent policyComponent;
@@ -76,9 +81,11 @@ public class VersionableAspect implements ContentServicePolicies.OnContentUpdate
     
     /** The Version service */
     private VersionService versionService;
-
-    /** Auto version behaviour */
-    private Behaviour autoVersionBehaviour;
+    
+    /** If true, property changes are not auto-versioned (and contentUpdate is not deferred to beforeCommit) */
+    private boolean deprecatedNotOnUpdateProperties = false;
+    
+    private VersionableAspectTransactionListener transactionListener;
     
     /**
      * Set the policy component
@@ -111,6 +118,16 @@ public class VersionableAspect implements ContentServicePolicies.OnContentUpdate
     }
     
     /**
+     * Set to TRUE for to disable auto-versioned property changes (pre-3.2 behaviour)
+     * 
+     * @param deprecatedNotOnUpdateProperties
+     */
+    public void setDeprecatedNotOnUpdateProperties(boolean deprecatedNotOnUpdateProperties)
+    {
+        this.deprecatedNotOnUpdateProperties = deprecatedNotOnUpdateProperties;
+    }
+    
+    /**
      * Initialise the versionable aspect policies
      */
     public void init()
@@ -132,11 +149,18 @@ public class VersionableAspect implements ContentServicePolicies.OnContentUpdate
                 ContentModel.ASPECT_VERSIONABLE, 
                 new JavaBehaviour(this, "afterCreateVersion", Behaviour.NotificationFrequency.EVERY_EVENT));
         
-        autoVersionBehaviour = new JavaBehaviour(this, "onContentUpdate", Behaviour.NotificationFrequency.TRANSACTION_COMMIT);
         this.policyComponent.bindClassBehaviour(
                 ContentServicePolicies.ON_CONTENT_UPDATE,
                 ContentModel.ASPECT_VERSIONABLE,
-                autoVersionBehaviour);
+                new JavaBehaviour(this, "onContentUpdate", Behaviour.NotificationFrequency.TRANSACTION_COMMIT));
+        
+        if (! deprecatedNotOnUpdateProperties)
+        {
+            this.policyComponent.bindClassBehaviour(
+                    QName.createQName(NamespaceService.ALFRESCO_URI, "onUpdateProperties"),
+                    ContentModel.ASPECT_VERSIONABLE,
+                    new JavaBehaviour(this, "onUpdateProperties", Behaviour.NotificationFrequency.TRANSACTION_COMMIT));
+        }
         
         // Register the copy behaviour
         this.policyComponent.bindClassBehaviour(
@@ -252,7 +276,7 @@ public class VersionableAspect implements ContentServicePolicies.OnContentUpdate
                 && this.nodeService.hasAspect(nodeRef, ContentModel.ASPECT_TEMPORARY) == false)
         {
             Map<NodeRef, NodeRef> versionedNodeRefs = (Map)AlfrescoTransactionSupport.getResource(KEY_VERSIONED_NODEREFS);
-            if (versionedNodeRefs == null || versionedNodeRefs.containsKey(nodeRef) == false)            
+            if (versionedNodeRefs == null || versionedNodeRefs.containsKey(nodeRef) == false)
             {
                 // Determine whether the node is auto versionable or not
                 boolean autoVersion = false;
@@ -266,10 +290,52 @@ public class VersionableAspect implements ContentServicePolicies.OnContentUpdate
                 
                 if (autoVersion == true)
                 {
-                    // Create the auto-version
-                    Map<String, Serializable> versionProperties = new HashMap<String, Serializable>(1);
-                    versionProperties.put(Version.PROP_DESCRIPTION, I18NUtil.getMessage(MSG_AUTO_VERSION));
-                    this.versionService.createVersion(nodeRef, versionProperties);
+                    if (deprecatedNotOnUpdateProperties)
+                    {
+                        // Create the auto-version
+                        Map<String, Serializable> versionProperties = new HashMap<String, Serializable>(1);
+                        versionProperties.put(Version.PROP_DESCRIPTION, I18NUtil.getMessage(MSG_AUTO_VERSION));
+                        this.versionService.createVersion(nodeRef, versionProperties);
+                    }
+                    else
+                    {
+                        queueVersion(nodeRef);
+                    }
+                }
+            }
+        }
+    }
+    
+    /**
+     * @since 3.2
+     */
+    @SuppressWarnings("unchecked")
+    public void onUpdateProperties(
+            NodeRef nodeRef,
+            Map<QName, Serializable> before,
+            Map<QName, Serializable> after)
+    {
+        if ((!deprecatedNotOnUpdateProperties) && 
+            (this.nodeService.exists(nodeRef) == true) && 
+            (this.nodeService.hasAspect(nodeRef, ContentModel.ASPECT_VERSIONABLE) == true) && 
+            (this.nodeService.hasAspect(nodeRef, ContentModel.ASPECT_TEMPORARY) == false))
+        {
+            Map<NodeRef, NodeRef> versionedNodeRefs = (Map)AlfrescoTransactionSupport.getResource(KEY_VERSIONED_NODEREFS);
+            if (versionedNodeRefs == null || versionedNodeRefs.containsKey(nodeRef) == false)
+            {
+                // Determine whether the node is auto versionable or not
+                boolean autoVersion = false;
+                Boolean value = (Boolean)this.nodeService.getProperty(nodeRef, ContentModel.PROP_AUTO_VERSION);
+                if (value != null)
+                {
+                    // If the value is not null then 
+                    autoVersion = value.booleanValue();
+                }
+                // else this means that the default value has not been set and the versionable aspect was applied pre-1.1
+                
+                if (autoVersion == true)
+                {
+                    queueVersion(nodeRef);
                 }
             }
         }
@@ -289,4 +355,42 @@ public class VersionableAspect implements ContentServicePolicies.OnContentUpdate
         }
         versionedNodeRefs.put(versionableNode, versionableNode);
     } 
+    
+    @SuppressWarnings("unchecked")
+    private void queueVersion(NodeRef nodeRef)
+    {
+        Set<NodeRef> pendingNodeRefs = (Set<NodeRef>)AlfrescoTransactionSupport.getResource(KEY_PENDING_NODEREFS);
+        if (pendingNodeRefs == null)
+        {
+            pendingNodeRefs = new HashSet<NodeRef>();
+            AlfrescoTransactionSupport.bindResource(KEY_PENDING_NODEREFS, pendingNodeRefs);
+        }
+        pendingNodeRefs.add(nodeRef);
+        
+        AlfrescoTransactionSupport.bindListener(this.transactionListener);
+    }
+    
+    public class VersionableAspectTransactionListener extends TransactionListenerAdapter
+    {
+        /**
+         * @see org.alfresco.repo.transaction.TransactionListener#beforeCommit(boolean)
+         */
+        @SuppressWarnings("unchecked")
+        @Override
+        public void beforeCommit(boolean readOnly)
+        { 
+            Set<NodeRef> pendingNodeRefs = (Set<NodeRef>)AlfrescoTransactionSupport.getResource(KEY_PENDING_NODEREFS);
+            
+            if (pendingNodeRefs != null)
+            {
+                for (NodeRef nodeRef : pendingNodeRefs)
+                {
+                    // Create the auto-version
+                    Map<String, Serializable> versionProperties = new HashMap<String, Serializable>(1);
+                    versionProperties.put(Version.PROP_DESCRIPTION, I18NUtil.getMessage(MSG_AUTO_VERSION));
+                    versionService.createVersion(nodeRef, versionProperties);
+                }
+            }
+        }
+    }
 }

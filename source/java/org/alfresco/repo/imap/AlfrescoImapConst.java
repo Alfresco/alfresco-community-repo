@@ -55,7 +55,7 @@ public interface AlfrescoImapConst
     public static final String CLASSPATH_TEXT_HTML_TEMPLATE = "/alfresco/templates/imap/imap_message_text_html.ftl";
 
     public static final String DICTIONARY_TEMPLATE_PREFIX = "emailbody";
-    public static final String PREF_IMAP_FAVOURITE_SITES = "org.alfresco.share.sites.imap.favourites";
+    public static final String PREF_IMAP_FAVOURITE_SITES = "org.alfresco.share.sites.imapFavourites";
 
     // AlfrescoImapMessage constants
     public static final String MIME_VERSION = "MIME-Version";

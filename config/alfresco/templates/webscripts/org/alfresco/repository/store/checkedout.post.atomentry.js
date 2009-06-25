@@ -21,11 +21,11 @@ script:
     }
     
     // locate node
-    model.node = search.findNode(objectId);
+    model.node = cmis.findNode(objectId);
     if (model.node === null)
     {
         status.code = 400;
-        status.message = "Repository node " + model.node + " not found";
+        status.message = "Repository node " + objectId + " not found";
         status.redirect = true;
         break script;
     }

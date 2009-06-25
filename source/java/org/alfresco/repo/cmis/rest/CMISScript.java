@@ -26,6 +26,8 @@ package org.alfresco.repo.cmis.rest;
 
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.alfresco.cmis.CMISDictionaryService;
 import org.alfresco.cmis.CMISJoinEnum;
@@ -102,6 +104,10 @@ public class CMISScript extends BaseScopableProcessorExtension
     private CMISQueryService cmisQueryService;
     private Paging paging;
     
+    // versioned objectId pattern
+    // TODO: encapsulate elsewhere
+    private static final Pattern versionedObjectIdPattern = Pattern.compile(".+://.+/.+/.+");
+
     
     /**
      * Set the service registry
@@ -229,7 +235,7 @@ public class CMISScript extends BaseScopableProcessorExtension
     }
     
     /**
-     * Finds a Node with the repository given a reference
+     * Finds a Node given a repository reference
      * 
      * @param referenceType  node, path
      * @param reference  node => id, path => path
@@ -244,6 +250,29 @@ public class CMISScript extends BaseScopableProcessorExtension
             node = new ScriptNode(nodeRef, services, getScope());
         }
         return node;
+    }
+
+    /**
+     * Finds a Node given CMIS ObjectId
+     * 
+     * @param objectId
+     * @return  node (or null, if not found)
+     */
+    public ScriptNode findNode(String objectId)
+    {
+        NodeRef nodeRef;
+        Matcher matcher = versionedObjectIdPattern.matcher(objectId);
+        if (matcher.matches())
+        {
+            // TODO: handle version id
+            nodeRef = new NodeRef(objectId.substring(0, objectId.lastIndexOf("/")));
+        }
+        else
+        {
+            nodeRef = new NodeRef(objectId);
+        }
+        String[] reference = new String[] {nodeRef.getStoreRef().getProtocol(), nodeRef.getStoreRef().getIdentifier(), nodeRef.getId()};
+        return findNode("node", reference);
     }
 
     /**

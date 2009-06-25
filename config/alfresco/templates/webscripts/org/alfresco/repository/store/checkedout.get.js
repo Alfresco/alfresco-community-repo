@@ -5,7 +5,7 @@ script:
     var folderId = args[cmis.ARG_FOLDER_ID];
     if (folderId !== null)
     {
-        model.folder = search.findNode(folderId);
+        model.folder = cmis.findNode(folderId);
         if (model.folder === null)
         {
             status.code = 400;

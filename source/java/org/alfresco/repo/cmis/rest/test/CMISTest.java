@@ -1068,6 +1068,10 @@ public class CMISTest extends BaseCMISWebScriptTest
             args2.put("checkin", "true");
             Response checkinRes = sendRequest(new PutRequest(checkinUrl, checkinFile, Format.ATOMENTRY.mimetype()).setArgs(args2), 200, getAtomValidator());
             assertNotNull(checkinRes);
+            
+            // use result of checkin (i.e. document returned), for next checkout
+            xml = checkinRes.getContentAsString();
+            assertNotNull(xml);
         }
 
         // get all versions

@@ -721,11 +721,12 @@ public class VersionServiceImplTest extends BaseVersionStoreTest
     {
         // Create a versionable node
         final NodeRef versionableNode = createNewVersionableNode();
+        
         this.dbNodeService.setProperty(versionableNode, ContentModel.PROP_AUTO_VERSION, false);
-
+        
         setComplete();
         endTransaction();
-
+        
         // The initial version should have been created now
         
         transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Object>()
@@ -916,6 +917,82 @@ public class VersionServiceImplTest extends BaseVersionStoreTest
                 
                 return null;
             }
+        });
+    }
+    
+    public void testAutoVersionOnUpdatePropsOnly()
+    {
+        // test auto-version props on
+        final NodeRef versionableNode = createNewVersionableNode();
+        this.dbNodeService.setProperty(versionableNode, ContentModel.PROP_AUTO_VERSION_PROPS, true);
+        
+        setComplete();
+        endTransaction();
+        
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Object>()
+        {
+            public Object execute() throws Exception
+            {
+                VersionHistory versionHistory = versionService.getVersionHistory(versionableNode);
+                assertNotNull(versionHistory);
+                assertEquals(1, versionHistory.getAllVersions().size());
+                
+                nodeService.setProperty(versionableNode, ContentModel.PROP_AUTHOR, "ano author");
+                
+                return null;
+            }
+        });
+        
+        // Now lets have a look and make sure we have the correct number of entries in the version history
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Object>()
+        {
+            public Object execute() throws Exception
+            {
+                VersionHistory versionHistory = versionService.getVersionHistory(versionableNode);
+                assertNotNull(versionHistory);
+                assertEquals(2, versionHistory.getAllVersions().size());
+                
+                return null;
+            }
+        
+        });
+        
+        // test auto-version props off
+        
+        startNewTransaction();
+        
+        final NodeRef versionableNode2 = createNewVersionableNode();
+        this.dbNodeService.setProperty(versionableNode2, ContentModel.PROP_AUTO_VERSION_PROPS, false);
+        
+        setComplete();
+        endTransaction();
+        
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Object>()
+        {
+            public Object execute() throws Exception
+            {
+                VersionHistory versionHistory = versionService.getVersionHistory(versionableNode2);
+                assertNotNull(versionHistory);
+                assertEquals(1, versionHistory.getAllVersions().size());
+                
+                nodeService.setProperty(versionableNode2, ContentModel.PROP_AUTHOR, "ano author");
+                
+                return null;
+            }
+        });
+        
+        // Now lets have a look and make sure we have the correct number of entries in the version history
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Object>()
+        {
+            public Object execute() throws Exception
+            {
+                VersionHistory versionHistory = versionService.getVersionHistory(versionableNode2);
+                assertNotNull(versionHistory);
+                assertEquals(1, versionHistory.getAllVersions().size());
+                
+                return null;
+            }
+        
         });
     }
     

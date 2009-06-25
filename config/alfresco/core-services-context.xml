@@ -906,9 +906,6 @@
         <property name="nodeService">
             <ref bean="nodeService"/>
         </property>
-        <property name="deprecatedNotOnUpdateProperties">
-            <value>true</value>
-        </property>
     </bean>
 
     <!--                 -->

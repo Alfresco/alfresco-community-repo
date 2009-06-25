@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -513,5 +513,96 @@ public class CheckOutCheckInServiceImplTest extends BaseSpringTest
 		}
     
     }
-
+    
+    public void testMultipleCheckoutsCheckInsWithPropChange()
+    {
+        // Note: this test assumes cm:autoVersionProps=true by default (refer to cm:versionableAspect in contentModel.xml)
+        
+        // Create a new node 
+        ChildAssociationRef childAssocRef = this.nodeService.createNode(
+                rootNodeRef,
+                ContentModel.ASSOC_CHILDREN,
+                QName.createQName("{test}test"),
+                ContentModel.TYPE_CONTENT,
+                null);
+        final NodeRef testNodeRef = childAssocRef.getChildRef();
+        
+        // Add the version aspect to the created node
+        this.nodeService.addAspect(testNodeRef, ContentModel.ASPECT_VERSIONABLE, null);
+        
+        setComplete();
+        endTransaction();
+        
+        // Checkout
+        final NodeRef workingCopy1 = transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<NodeRef>()
+        {
+            public NodeRef execute() throws Exception
+            {
+                return cociService.checkout(testNodeRef);
+            }
+        });
+        
+        // Change property and checkin
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Object>()
+        {
+            public Object execute() throws Exception
+            {
+                nodeService.setProperty(workingCopy1, ContentModel.PROP_AUTHOR, "author1");
+                
+                Map<String, Serializable> versionProperties = new HashMap<String, Serializable>();
+                versionProperties.put(Version.PROP_DESCRIPTION, "This is a test version 1");
+                cociService.checkin(workingCopy1, versionProperties);
+                
+                return null;
+            }
+        });
+        
+        // Checkout
+        final NodeRef workingCopy2 = transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<NodeRef>()
+        {
+            public NodeRef execute() throws Exception
+            {
+                return cociService.checkout(testNodeRef);
+            }
+        });
+        
+        // Change property and checkin
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Object>()
+        {
+            public Object execute() throws Exception
+            {
+                nodeService.setProperty(workingCopy2, ContentModel.PROP_AUTHOR, "author2");
+                
+                Map<String, Serializable> versionProperties = new HashMap<String, Serializable>();
+                versionProperties.put(Version.PROP_DESCRIPTION, "This is a test version 2");
+                cociService.checkin(workingCopy2, versionProperties);
+                
+                return null;
+            }
+        });
+        
+        // Checkout
+        final NodeRef workingCopy3 = transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<NodeRef>()
+        {
+            public NodeRef execute() throws Exception
+            {
+                return cociService.checkout(testNodeRef);
+            }
+        });
+        
+        // Change property and checkin
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Object>()
+        {
+            public Object execute() throws Exception
+            {
+                nodeService.setProperty(workingCopy3, ContentModel.PROP_AUTHOR, "author3");
+                
+                Map<String, Serializable> versionProperties = new HashMap<String, Serializable>();
+                versionProperties.put(Version.PROP_DESCRIPTION, "This is a test version 3");
+                cociService.checkin(workingCopy3, versionProperties);
+                
+                return null;
+            }
+        });
+    }
 }

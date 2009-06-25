@@ -822,6 +822,11 @@
                <type>d:boolean</type>
                <default>true</default>
             </property>
+            <property name="cm:autoVersionOnUpdateProps">
+               <title>Auto Version - on update properties only</title>
+               <type>d:boolean</type>
+               <default>true</default>
+            </property>
           </properties>
       </aspect>
       

@@ -39,6 +39,7 @@ import org.alfresco.repo.domain.hibernate.DirtySessionMethodInterceptor;
 import org.alfresco.repo.node.integrity.IntegrityChecker;
 import org.alfresco.repo.search.impl.lucene.LuceneIndexerAndSearcher;
 import org.alfresco.util.GUID;
+import org.alfresco.util.ParameterCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.orm.hibernate3.SessionFactoryUtils;
@@ -564,6 +565,8 @@ public abstract class AlfrescoTransactionSupport
         @SuppressWarnings("unchecked")
         public boolean addListener(TransactionListener listener)
         {
+            ParameterCheck.mandatory("listener", listener);
+            
             if (listener instanceof TransactionalCache)
             {
                 return transactionalCaches.add((TransactionalCache<Serializable, Object>)listener);

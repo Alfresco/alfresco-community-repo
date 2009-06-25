@@ -145,11 +145,12 @@ public class LDAPUserRegistry implements UserRegistry, InitializingBean, Activat
     private String[] groupAttributeNames;
 
     /** The LDAP generalized time format. */
-    private static DateFormat LDAP_GENERALIZED_TIME_FORMAT;
-    static
+    private DateFormat timestampFormat;
+
+    public LDAPUserRegistry()
     {
-        LDAPUserRegistry.LDAP_GENERALIZED_TIME_FORMAT = new SimpleDateFormat("yyyyMMddHHmmss'Z'");
-        LDAPUserRegistry.LDAP_GENERALIZED_TIME_FORMAT.setTimeZone(TimeZone.getTimeZone("GMT"));
+        // Default to official LDAP generalized time format (unfortunately not used by Active Directory)
+        setTimestampFormat("yyyyMMddHHmmss'Z'");
     }
 
     /**
@@ -293,6 +294,22 @@ public class LDAPUserRegistry implements UserRegistry, InitializingBean, Activat
     public void setModifyTimestampAttributeName(String modifyTimestampAttributeName)
     {
         this.modifyTimestampAttributeName = modifyTimestampAttributeName;
+    }
+
+    /**
+     * Sets the timestamp format. Unfortunately, this varies between directory servers.
+     * 
+     * @param timestampFormat
+     *            the timestamp format
+     *            <ul>
+     *            <li>OpenLDAP: "yyyyMMddHHmmss'Z'"
+     *            <li>Active Directory: "yyyyMMddHHmmss'.0Z'"
+     *            </ul>
+     */
+    public void setTimestampFormat(String timestampFormat)
+    {
+        this.timestampFormat = new SimpleDateFormat(timestampFormat);
+        this.timestampFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
     }
 
     /**
@@ -464,12 +481,17 @@ public class LDAPUserRegistry implements UserRegistry, InitializingBean, Activat
                 {
                     searchResults = ctx.search(this.groupSearchBase, this.groupDifferentialQuery, new Object[]
                     {
-                        LDAPUserRegistry.LDAP_GENERALIZED_TIME_FORMAT.format(modifiedSince)
+                        this.timestampFormat.format(modifiedSince)
                     }, userSearchCtls);
                 }
 
                 LdapName groupDistinguishedNamePrefix = new LdapName(this.groupSearchBase);
                 LdapName userDistinguishedNamePrefix = new LdapName(this.userSearchBase);
+                
+                // Work out whether the user and group trees are disjoint. This may allow us to optimize reverse DN
+                // resolution.
+                boolean disjoint = !groupDistinguishedNamePrefix.startsWith(userDistinguishedNamePrefix)
+                        && !userDistinguishedNamePrefix.startsWith(groupDistinguishedNamePrefix);
 
                 while (searchResults.hasMoreElements())
                 {
@@ -511,8 +533,7 @@ public class LDAPUserRegistry implements UserRegistry, InitializingBean, Activat
                     Attribute modifyTimestamp = attributes.get(this.modifyTimestampAttributeName);
                     if (modifyTimestamp != null)
                     {
-                        group.setLastModified(LDAPUserRegistry.LDAP_GENERALIZED_TIME_FORMAT.parse(modifyTimestamp.get()
-                                .toString()));
+                        group.setLastModified(this.timestampFormat.parse(modifyTimestamp.get().toString()));
                     }
                     Set<String> childAssocs = group.getChildAssociations();
 
@@ -530,7 +551,7 @@ public class LDAPUserRegistry implements UserRegistry, InitializingBean, Activat
 
                                 // If the user and group search bases are different we may be able to recognise user and
                                 // group DNs without a secondary lookup
-                                if (!this.userSearchBase.equalsIgnoreCase(this.groupSearchBase))
+                                if (disjoint)
                                 {
                                     Attributes nameAttributes = distinguishedName.getRdn(distinguishedName.size() - 1)
                                             .toAttributes();
@@ -563,8 +584,8 @@ public class LDAPUserRegistry implements UserRegistry, InitializingBean, Activat
                                         {
                                             "objectclass", this.groupIdAttributeName, this.userIdAttributeName
                                         });
-                                        String objectclass = (String) childAttributes.get("objectclass").get();
-                                        if (objectclass.equalsIgnoreCase(this.personType))
+                                        Attribute objectClass = childAttributes.get("objectclass");
+                                        if (hasAttributeValue(objectClass, this.personType))
                                         {
                                             nameAttribute = childAttributes.get(this.userIdAttributeName);
                                             if (nameAttribute == null)
@@ -586,9 +607,8 @@ public class LDAPUserRegistry implements UserRegistry, InitializingBean, Activat
                                             childAssocs.add((String) nameAttribute.get());
                                             continue;
                                         }
-                                        else if (objectclass.equalsIgnoreCase(this.groupType))
+                                        else if (hasAttributeValue(objectClass, this.groupType))
                                         {
-
                                             nameAttribute = childAttributes.get(this.groupIdAttributeName);
                                             if (nameAttribute == null)
                                             {
@@ -654,6 +674,37 @@ public class LDAPUserRegistry implements UserRegistry, InitializingBean, Activat
                 }
             }
         }
+    }
+
+    /**
+     * Does a case-insensitive search for the given value in an attribute
+     * 
+     * @param attribute
+     *            the attribute
+     * @param value
+     *            the value to search for
+     * @return <code>true</code>, if the value was found
+     * @throws NamingException
+     *             if there is a problem accessing the attribute values
+     */
+    private boolean hasAttributeValue(Attribute attribute, String value) throws NamingException
+    {
+        NamingEnumeration<?> values = attribute.getAll();
+        while (values.hasMore())
+        {
+            try
+            {
+                if (value.equalsIgnoreCase((String) values.next()))
+                {
+                    return true;
+                }
+            }
+            catch (ClassCastException e)
+            {
+                // Not a string value. ignore and continue
+            }
+        }
+        return false;
     }
 
     /**
@@ -811,8 +862,8 @@ public class LDAPUserRegistry implements UserRegistry, InitializingBean, Activat
                     {
                         try
                         {
-                            person.setLastModified(LDAPUserRegistry.LDAP_GENERALIZED_TIME_FORMAT.parse(modifyTimestamp
-                                    .get().toString()));
+                            person.setLastModified(LDAPUserRegistry.this.timestampFormat.parse(modifyTimestamp.get()
+                                    .toString()));
                         }
                         catch (ParseException e)
                         {
@@ -879,7 +930,7 @@ public class LDAPUserRegistry implements UserRegistry, InitializingBean, Activat
                         this.searchResults = this.ctx.search(LDAPUserRegistry.this.userSearchBase,
                                 LDAPUserRegistry.this.personDifferentialQuery, new Object[]
                                 {
-                                    LDAPUserRegistry.LDAP_GENERALIZED_TIME_FORMAT.format(this.modifiedSince)
+                                    LDAPUserRegistry.this.timestampFormat.format(this.modifiedSince)
                                 }, this.userSearchCtls);
                     }
                 }

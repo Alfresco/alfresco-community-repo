@@ -806,7 +806,7 @@ public class DefaultTypeConverter
             public String convert(ContentReader source)
             {
                 String encoding = source.getEncoding();
-                if (encoding == null || !encoding.equals("UTF-8"))
+                if (encoding == null || !encoding.equalsIgnoreCase("UTF-8"))
                 {
                     throw new TypeConversionException("Cannot convert non UTF-8 streams to String.");
                 }

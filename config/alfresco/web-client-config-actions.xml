@@ -308,11 +308,10 @@
             </params>
          </action>
 
-
          <!-- 'Approve' workflow step for document -->
          <action id="approve_doc">
             <permissions>
-               <permission allow="true">WriteProperties</permission>
+               <permission allow="true">Read</permission>
             </permissions>
             <evaluator>org.alfresco.web.action.evaluator.ApproveDocEvaluator</evaluator>
             <label>#{actionContext["app:approveStep"]}</label>
@@ -327,7 +326,7 @@
          <!-- 'Reject' workflow step for document -->
          <action id="reject_doc">
             <permissions>
-               <permission allow="true">WriteProperties</permission>
+               <permission allow="true">Read</permission>
             </permissions>
             <evaluator>org.alfresco.web.action.evaluator.RejectDocEvaluator</evaluator>
             <label>#{actionContext["app:rejectStep"]}</label>
@@ -342,7 +341,7 @@
          <!-- 'Approve' workflow step for document details page -->
          <action id="approve_doc_details">
             <permissions>
-               <permission allow="true">WriteProperties</permission>
+               <permission allow="true">Read</permission>
             </permissions>
             <evaluator>org.alfresco.web.action.evaluator.ApproveDocEvaluator</evaluator>
             <label>#{actionContext.properties["app:approveStep"]}</label>
@@ -357,7 +356,7 @@
          <!-- 'Reject' workflow step for document details page-->
          <action id="reject_doc_details">
             <permissions>
-               <permission allow="true">WriteProperties</permission>
+               <permission allow="true">Read</permission>
             </permissions>
             <evaluator>org.alfresco.web.action.evaluator.RejectDocEvaluator</evaluator>
             <label>#{actionContext.properties["app:rejectStep"]}</label>
@@ -372,7 +371,7 @@
          <!-- 'Approve' workflow step for space -->
          <action id="approve_space">
             <permissions>
-               <permission allow="true">WriteProperties</permission>
+               <permission allow="true">Read</permission>
             </permissions>
             <evaluator>org.alfresco.web.action.evaluator.ApproveDocEvaluator</evaluator>
             <label>#{actionContext["app:approveStep"]}</label>
@@ -387,7 +386,7 @@
          <!-- 'Reject' workflow step for space -->
          <action id="reject_space">
             <permissions>
-               <permission allow="true">WriteProperties</permission>
+               <permission allow="true">Read</permission>
             </permissions>
             <evaluator>org.alfresco.web.action.evaluator.RejectDocEvaluator</evaluator>
             <label>#{actionContext["app:rejectStep"]}</label>
@@ -402,7 +401,7 @@
          <!-- 'Approve' workflow step for space details page -->
          <action id="approve_space_details">
             <permissions>
-               <permission allow="true">WriteProperties</permission>
+               <permission allow="true">Read</permission>
             </permissions>
             <evaluator>org.alfresco.web.action.evaluator.ApproveDocEvaluator</evaluator>
             <label>#{actionContext.properties["app:approveStep"]}</label>
@@ -417,7 +416,7 @@
          <!-- 'Reject' workflow step for space details page-->
          <action id="reject_space_details">
             <permissions>
-               <permission allow="true">WriteProperties</permission>
+               <permission allow="true">Read</permission>
             </permissions>
             <evaluator>org.alfresco.web.action.evaluator.RejectDocEvaluator</evaluator>
             <label>#{actionContext.properties["app:rejectStep"]}</label>

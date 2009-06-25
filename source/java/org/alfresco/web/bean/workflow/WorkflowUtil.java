@@ -33,6 +33,8 @@ import java.util.Map;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.site.SiteServiceException;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.CopyService;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -64,7 +66,7 @@ public class WorkflowUtil
     * 
     * @throws AlfrescoRuntimeException
     */
-   public static void approve(NodeRef ref, NodeService nodeService, CopyService copyService)
+   public static void approve(final NodeRef ref, final NodeService nodeService, final CopyService copyService)
       throws AlfrescoRuntimeException
    {
       Node docNode = new Node(ref);
@@ -80,11 +82,11 @@ public class WorkflowUtil
       Boolean approveMove = (Boolean)props.get(ApplicationModel.PROP_APPROVE_MOVE.toString());
       NodeRef approveFolder = (NodeRef)props.get(ApplicationModel.PROP_APPROVE_FOLDER.toString());
       
-      // first we need to take off the simpleworkflow aspect
-      nodeService.removeAspect(ref, ApplicationModel.ASPECT_SIMPLE_WORKFLOW);
-      
       if (approveMove.booleanValue())
       {
+         // first we need to take off the simpleworkflow aspect
+         nodeService.removeAspect(ref, ApplicationModel.ASPECT_SIMPLE_WORKFLOW);
+         
          // move the node to the specified folder
          String qname = QName.createValidLocalName(docNode.getName());
          nodeService.moveNode(ref, approveFolder, ContentModel.ASSOC_CONTAINS,
@@ -92,6 +94,17 @@ public class WorkflowUtil
       }
       else
       {
+         // first we need to take off the simpleworkflow aspect
+         // NOTE: run as system to allow Consumers to copy an item
+         AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
+         {
+            public String doWork() throws Exception
+            {
+               nodeService.removeAspect(ref, ApplicationModel.ASPECT_SIMPLE_WORKFLOW);
+               return null;
+            }
+         }, AuthenticationUtil.getSystemUserName());
+         
          // copy the node to the specified folder
          String name = docNode.getName();
          String qname = QName.createValidLocalName(name);

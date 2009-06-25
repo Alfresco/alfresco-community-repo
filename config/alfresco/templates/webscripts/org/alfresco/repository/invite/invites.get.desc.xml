@@ -5,4 +5,5 @@
    <url>/api/invites?inviteId={inviteId}</url>
    <format default="json">argument</format>
    <authentication>user</authentication>
+   <lifecycle>deprecated</lifecycle>
 </webscript>

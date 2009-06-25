@@ -197,7 +197,7 @@ public class GroupsTest extends BaseWebScriptTest
     		Response response = sendRequest(new GetRequest(URL_ROOTGROUPS), Status.STATUS_OK);
     		JSONObject top = new JSONObject(response.getContentAsString());
     		logger.debug(response.getContentAsString());
-    		System.out.println(response.getContentAsString());
+    		//System.out.println(response.getContentAsString());
     		JSONArray data = top.getJSONArray("data");
     		assertTrue(data.length() >= 3);
     		boolean gotRootGroup = false;
@@ -249,7 +249,7 @@ public class GroupsTest extends BaseWebScriptTest
     		Response response = sendRequest(new GetRequest(URL_ROOTGROUPS + "?zone=APP.DEFAULT"), Status.STATUS_OK);
     		JSONObject top = new JSONObject(response.getContentAsString());
     		logger.debug(response.getContentAsString());
-    		System.out.println(response.getContentAsString());
+    		//System.out.println(response.getContentAsString());
     		JSONArray data = top.getJSONArray("data");
     		
     		assertTrue(data.length() > 0);
@@ -573,6 +573,9 @@ public class GroupsTest extends BaseWebScriptTest
     		 */
         	String myNewGroup = "GROUP_BUFFY";
     		{
+    			// Delete incase it already exists from a previous test run
+        		sendRequest(new DeleteRequest(URL_ROOTGROUPS + "/" + myNewGroup), 0);
+        		
     			JSONObject newGroupJSON = new JSONObject();
     			Response response = sendRequest(new PostRequest(URL_GROUPS + "/" + myRootGroup +"/children/" + myNewGroup, newGroupJSON.toString(), "application/json" ), Status.STATUS_CREATED);
     			JSONObject top = new JSONObject(response.getContentAsString());
@@ -748,7 +751,7 @@ public class GroupsTest extends BaseWebScriptTest
 		    Response response = sendRequest(new GetRequest(URL_GROUPS + "?shortNameFilter=" + TEST_GROUPD ), Status.STATUS_OK);
 		    JSONObject top = new JSONObject(response.getContentAsString());
 		    logger.debug(response.getContentAsString());
-		    System.out.println(response.getContentAsString());
+		    //System.out.println(response.getContentAsString());
 		    JSONArray data = top.getJSONArray("data");
 		    assertEquals("length not 1", 1, data.length());
  			JSONObject authority = data.getJSONObject(0);
@@ -762,7 +765,7 @@ public class GroupsTest extends BaseWebScriptTest
 		    Response response = sendRequest(new GetRequest(url ), Status.STATUS_OK);
 		    JSONObject top = new JSONObject(response.getContentAsString());
 		    logger.debug(response.getContentAsString());
-		    System.out.println(response.getContentAsString());
+		    //System.out.println(response.getContentAsString());
 		    JSONArray data = top.getJSONArray("data");
 		    assertEquals("length not 1", 1, data.length());
  			JSONObject authority = data.getJSONObject(0);
@@ -774,14 +777,20 @@ public class GroupsTest extends BaseWebScriptTest
 		    Response response = sendRequest(new GetRequest(URL_GROUPS + "?shortNameFilter=" + TEST_GROUPE ), Status.STATUS_OK);
 		    JSONObject top = new JSONObject(response.getContentAsString());
 		    logger.debug(response.getContentAsString());
-		    System.out.println(response.getContentAsString());
+		    //System.out.println(response.getContentAsString());
 		    JSONArray data = top.getJSONArray("data");
 		    assertEquals("length not 1", 1, data.length());
  			JSONObject authority = data.getJSONObject(0);
 			assertEquals("Group E not found", TEST_GROUPE, authority.getString("shortName"));
+			
+			// Double check group E is in the share zone
+			Set<String> zones = authorityService.getAuthorityZones(authority.getString("fullName"));
+			assertTrue(zones.contains(AuthorityService.ZONE_APP_SHARE));
     	}
     	
-//    	// Search for Group E in a specifc zone (without name filter)
+
+//TODO TEST Case failing ?
+//    	// Search for Group E in a specific zone (without name filter)
 //    	{
 //		    Response response = sendRequest(new GetRequest(URL_GROUPS + "?zone=" + AuthorityService.ZONE_APP_SHARE), Status.STATUS_OK);
 //		    JSONObject top = new JSONObject(response.getContentAsString());
@@ -792,19 +801,19 @@ public class GroupsTest extends BaseWebScriptTest
 // 			JSONObject authority = data.getJSONObject(0);
 //			assertEquals("", TEST_GROUPE, authority.getString("shortName"));
 //    	}
-//    	
-//    	// Search for a group in a specifc zone
-//    	{
-//		    Response response = sendRequest(new GetRequest(URL_GROUPS + "?shortNameFilter=" + TEST_GROUPE + "&zone=" + AuthorityService.ZONE_APP_SHARE), Status.STATUS_OK);
-//		    JSONObject top = new JSONObject(response.getContentAsString());
-//		    logger.debug(response.getContentAsString());
-//		    System.out.println(response.getContentAsString());
-//		    JSONArray data = top.getJSONArray("data");
-//		    assertEquals("Can't find Group E in Share zone", 1, data.length());
-// 			JSONObject authority = data.getJSONObject(0);
-//			assertEquals("", TEST_GROUPE, authority.getString("shortName"));
-//
-//    	}
+ 
+    	// Search for a group in a specifc non default zone
+    	{
+		    Response response = sendRequest(new GetRequest(URL_GROUPS + "?shortNameFilter=" + TEST_GROUPE + "&zone=" + AuthorityService.ZONE_APP_SHARE), Status.STATUS_OK);
+		    JSONObject top = new JSONObject(response.getContentAsString());
+		    logger.debug(response.getContentAsString());
+		    System.out.println(response.getContentAsString());
+		    JSONArray data = top.getJSONArray("data");
+		    assertEquals("Can't find Group E in Share zone", 1, data.length());
+ 			JSONObject authority = data.getJSONObject(0);
+			assertEquals("", TEST_GROUPE, authority.getString("shortName"));
+
+    	}
     	
     	// Negative test Search for a group in a wrong zone
     	{
@@ -948,8 +957,28 @@ public class GroupsTest extends BaseWebScriptTest
     		JSONArray data = top.getJSONArray("data");
     		assertTrue("no child groups of group B", data.length() > 1 );
     		
+    		boolean gotGroupD = false;
+    		boolean gotGroupE = false;
     		JSONObject subGroup = data.getJSONObject(0);
-    		assertEquals("shortName wrong", TEST_GROUPD, subGroup.getString("shortName"));
+      		for(int i = 0; i < data.length(); i++)
+    		{
+      			JSONObject authority = data.getJSONObject(i);
+    			if(authority.getString("shortName").equals(TEST_GROUPD))
+    			{
+    				gotGroupD = true;
+    			}
+    			else if(authority.getString("shortName").equals(TEST_GROUPE))
+    			{
+    				gotGroupE = true;
+    			}
+    			else
+    			{
+    				fail("unexpected authority returned:" + authority.getString("shortName"));
+    			}
+    		}
+      		assertTrue("not got group D", gotGroupD);
+      		assertTrue("not got group E", gotGroupE);
+      		
     		assertEquals("authorityType wrong", "GROUP", subGroup.getString("authorityType"));
       		for(int i = 0; i < data.length(); i++)
     		{

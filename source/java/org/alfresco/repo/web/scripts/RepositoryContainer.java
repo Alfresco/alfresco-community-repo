@@ -27,8 +27,6 @@ package org.alfresco.repo.web.scripts;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.util.HashMap;
 import java.util.Map;
@@ -52,6 +50,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.TemplateService;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.descriptor.DescriptorService;
+import org.alfresco.util.StringBuilderWriter;
 import org.alfresco.web.scripts.AbstractRuntimeContainer;
 import org.alfresco.web.scripts.Authenticator;
 import org.alfresco.web.scripts.Cache;
@@ -508,8 +507,9 @@ public class RepositoryContainer extends AbstractRuntimeContainer implements Ten
     private static class BufferedResponse implements TransactionListener, WrappingWebScriptResponse
     {
         private WebScriptResponse res;
-        private ByteArrayOutputStream outputStream;
-        private OutputStreamWriter outputWriter;
+        private int bufferSize;
+        private ByteArrayOutputStream outputStream = null;
+        private StringBuilderWriter outputWriter = null;
         
 
         /**
@@ -521,15 +521,7 @@ public class RepositoryContainer extends AbstractRuntimeContainer implements Ten
         public BufferedResponse(WebScriptResponse res, int bufferSize)
         {
             this.res = res;
-            this.outputStream = new ByteArrayOutputStream(bufferSize);
-            try
-            {
-                this.outputWriter = new OutputStreamWriter(outputStream, "UTF-8");
-            }
-            catch (UnsupportedEncodingException e)
-            {
-                throw new AlfrescoRuntimeException("Failed to create buffered response", e);
-            };
+            this.bufferSize = bufferSize;
         }
 
         /*
@@ -574,6 +566,14 @@ public class RepositoryContainer extends AbstractRuntimeContainer implements Ten
          */
         public OutputStream getOutputStream() throws IOException
         {
+            if (outputStream == null)
+            {
+                if (outputWriter != null)
+                {
+                    throw new AlfrescoRuntimeException("Already buffering output writer");
+                }
+                this.outputStream = new ByteArrayOutputStream(bufferSize);
+            }
             return outputStream;
         }
 
@@ -592,6 +592,14 @@ public class RepositoryContainer extends AbstractRuntimeContainer implements Ten
          */
         public Writer getWriter() throws IOException
         {
+            if (outputWriter == null)
+            {
+                if (outputStream != null)
+                {
+                    throw new AlfrescoRuntimeException("Already buffering output stream");
+                }
+                outputWriter = new StringBuilderWriter(bufferSize);
+            }
             return outputWriter;
         }
 
@@ -601,7 +609,14 @@ public class RepositoryContainer extends AbstractRuntimeContainer implements Ten
          */
         public void reset()
         {
-            outputStream.reset();
+            if (outputStream != null)
+            {
+                outputStream.reset();
+            }
+            else if (outputWriter != null)
+            {
+                outputWriter = null;
+            }
             res.reset();
         }
 
@@ -702,8 +717,16 @@ public class RepositoryContainer extends AbstractRuntimeContainer implements Ten
                 if (logger.isDebugEnabled())
                     logger.debug("Writing Transactional response: size=" + outputStream.size());
                 
-                outputStream.flush();
-                outputStream.writeTo(res.getOutputStream());
+                if (outputWriter != null)
+                {
+                    outputWriter.flush();
+                    res.getWriter().write(outputWriter.toString());
+                }
+                else if (outputStream != null)
+                {
+                    outputStream.flush();
+                    outputStream.writeTo(res.getOutputStream());
+                }
             }
             catch (IOException e)
             {

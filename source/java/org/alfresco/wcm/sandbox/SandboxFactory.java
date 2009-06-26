@@ -1340,4 +1340,28 @@ public final class SandboxFactory extends WCMUtil
            this.userAuth = userAuth;
        }
    }
+   
+   public void removeGroupsForStore(final String storeRoot)
+   {
+       AuthenticationUtil.runAs(new RunAsWork<Void>()
+       {
+
+           public Void doWork() throws Exception
+           {
+               String[] permissions = new String[] { PermissionService.WCM_CONTENT_CONTRIBUTOR, PermissionService.WCM_CONTENT_MANAGER, PermissionService.WCM_CONTENT_PUBLISHER,
+                       PermissionService.WCM_CONTENT_REVIEWER };
+               for (String permission : permissions)
+               {
+                   String shortName = storeRoot + "-" + permission;
+                   String group = authorityService.getName(AuthorityType.GROUP, shortName);
+                   if (authorityService.authorityExists(group))
+                   {
+                       authorityService.deleteAuthority(group);
+                   }
+               }
+               return null;
+           }
+       }, AuthenticationUtil.getSystemUserName());
+
+   }
 }

@@ -724,7 +724,7 @@ public class WebProjectServiceImpl extends WCMUtil implements WebProjectService
             // It does not matter what webapp name we give here, so "/ROOT"
             // is as sensible as anything else. It's all going away.
 
-            String sandbox = WCMUtil.buildStagingStoreName(wpStoreId);
+            final String sandbox = WCMUtil.buildStagingStoreName(wpStoreId);
             String path = WCMUtil.buildStoreWebappPath(sandbox, "/ROOT");
             
             WCMUtil.removeAllVServerWebapps(virtServerRegistry, path, true);
@@ -745,6 +745,8 @@ public class WebProjectServiceImpl extends WCMUtil implements WebProjectService
                     
                     // delete the web project node itself
                     nodeService.deleteNode(wpNodeRef);
+                    
+                    sandboxFactory.removeGroupsForStore(sandbox);
                     
                     return null;
                 }

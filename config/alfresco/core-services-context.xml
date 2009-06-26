@@ -476,6 +476,9 @@
                 <entry key="workspace://lightWeightVersionStore">
                     <ref bean="admLuceneUnIndexedIndexerAndSearcherFactory"></ref>
                 </entry>
+                <entry key="workspace://version2Store">
+                    <ref bean="admLuceneUnIndexedIndexerAndSearcherFactory"></ref>
+                </entry>
             </map>
         </property>
     </bean>

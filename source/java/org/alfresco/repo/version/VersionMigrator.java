@@ -68,7 +68,7 @@ public class VersionMigrator
     
     /** track completion * */
     int percentComplete;
-
+    
     /** start time * */
     long startTime;
     
@@ -146,7 +146,7 @@ public class VersionMigrator
         {
             logger.trace("migrateVersionHistory: oldVersionHistoryRef = " + oldVHNodeRef);
         }
-
+        
         VersionHistory vh = v1BuildVersionHistory(oldVHNodeRef, versionedNodeRef);
         
         // create new version history node
@@ -207,7 +207,7 @@ public class VersionMigrator
         Date versionModified = (Date)dbNodeService.getProperty(VersionUtil.convertNodeRef(frozenStateNodeRef), ContentModel.PROP_MODIFIED);
         String versionModifier = (String)dbNodeService.getProperty(VersionUtil.convertNodeRef(frozenStateNodeRef), ContentModel.PROP_MODIFIER);
         Date versionAccessed = (Date)dbNodeService.getProperty(VersionUtil.convertNodeRef(frozenStateNodeRef), ContentModel.PROP_ACCESSED);
-
+        
         Map<String, Serializable> versionMetaDataProperties = version1Service.getVersionMetaData(VersionUtil.convertNodeRef(frozenStateNodeRef));
         
         // Create the node details
@@ -302,7 +302,9 @@ public class VersionMigrator
     public int migrateVersions(final int batchSize, final boolean deleteImmediately)
     {
         final NodeRef oldRootNodeRef = dbNodeService.getRootNode(VersionMigrator.VERSION_STORE_REF_OLD);
-
+        final NodeRef newRootNodeRef = dbNodeService.getRootNode(VersionMigrator.VERSION_STORE_REF_NEW);
+        
+        long splitTime = System.currentTimeMillis();
         final List<ChildAssociationRef> childAssocRefs = getVersionHistories(oldRootNodeRef);
         
         int toDo = childAssocRefs.size();
@@ -313,9 +315,21 @@ public class VersionMigrator
             return 0;
         }
         
-        if (logger.isDebugEnabled())
+        if (logger.isInfoEnabled())
         {
-            logger.debug("Found "+toDo+" version histories in old version store");
+            logger.info("Found "+childAssocRefs.size()+" version histories in old version store (in "+((System.currentTimeMillis()-splitTime)/1000)+" secs)");
+        }
+        
+        splitTime = System.currentTimeMillis();
+        final List<ChildAssociationRef> newChildAssocRefs = getVersionHistories(newRootNodeRef);
+        final boolean firstMigration = (newChildAssocRefs.size() == 0);
+        
+        if (logger.isInfoEnabled())
+        {
+            if (! firstMigration)
+            {
+                logger.warn("This is not the first migration attempt. Found "+newChildAssocRefs.size()+" version histories in new version store (in "+((System.currentTimeMillis()-splitTime)/1000)+" secs)");
+            }
         }
         
         // note: assumes patch runs before cleanup starts
@@ -333,7 +347,6 @@ public class VersionMigrator
         
         try
         {
-            int batchCount = 0;
             int totalCount = 0;
             
             final List<NodeRef> tmpBatch = new ArrayList<NodeRef>(batchSize);  
@@ -343,80 +356,89 @@ public class VersionMigrator
                 reportProgress(MSG_PATCH_PROGRESS, toDo, totalCount);
                 totalCount++;
                 
-                if (((String)dbNodeService.getProperty(childAssocRef.getChildRef(), ContentModel.PROP_NAME)).startsWith(VersionMigrator.PREFIX_MIGRATED))
+                // short-cut if first migration
+                if (!firstMigration)
                 {
-                    // skip - already migrated
-                    alreadyMigratedCount++;
-                    continue;
+                    if (isMigrated(childAssocRef))
+                    {
+                        // skip - already migrated
+                        alreadyMigratedCount++;
+                        continue;
+                    }
                 }
                 
-                if (batchCount < batchSize)
+                if (tmpBatch.size() < batchSize)
                 {
                     tmpBatch.add(childAssocRef.getChildRef());
-                    batchCount++;
                 }
                 
-                if ((batchCount == batchSize) || (totalCount == childAssocRefs.size()))
+                if ((tmpBatch.size() == batchSize) || (totalCount == childAssocRefs.size()))
                 {
                     while (tmpBatch.size() != 0)
                     {
                         txHelper.setMaxRetries(1);
                         
-                        NodeRef failed = txHelper.doInTransaction(new RetryingTransactionCallback<NodeRef>()
+                        try
                         {
-                            public NodeRef execute() throws Throwable
+                            txHelper.doInTransaction(new RetryingTransactionCallback<NodeRef>()
                             {
-                                if (logger.isTraceEnabled())
+                                public NodeRef execute() throws Throwable
                                 {
-                                    logger.trace("Attempt to migrate batch of "+tmpBatch.size()+" version histories");
-                                }
-                                
-                                long startTime = System.currentTimeMillis();
-                                
-                                for (NodeRef oldVHNodeRef : tmpBatch)
-                                {
-                                    try
+                                    if (logger.isTraceEnabled())
                                     {
-                                        NodeRef versionedNodeRef = v1GetVersionedNodeRef(oldVHNodeRef);                                   
-                                        migrateVersionHistory(oldVHNodeRef, versionedNodeRef);
-                                        
-                                        if (deleteImmediately)
+                                        logger.trace("Attempt to migrate batch of "+tmpBatch.size()+" version histories");
+                                    }
+                                    
+                                    long startTime = System.currentTimeMillis();
+                                    
+                                    for (NodeRef oldVHNodeRef : tmpBatch)
+                                    {
+                                        try
                                         {
-                                            // delete old version history node
-                                            v1DeleteVersionHistory(oldVHNodeRef);
+                                            NodeRef versionedNodeRef = v1GetVersionedNodeRef(oldVHNodeRef);
+                                            migrateVersionHistory(oldVHNodeRef, versionedNodeRef);
+                                            
+                                            if (deleteImmediately)
+                                            {
+                                                // delete old version history node
+                                                v1DeleteVersionHistory(oldVHNodeRef);
+                                            }
+                                            else
+                                            {
+                                                // mark old version history node for later cleanup
+                                                v1MarkVersionHistory(oldVHNodeRef);
+                                            }  
                                         }
-                                        else
+                                        catch (Throwable t)
                                         {
-                                            // mark old version history node for later cleanup
-                                            v1MarkVersionHistory(oldVHNodeRef);
-                                        }  
+                                            logger.error("Skipping migration of: " + oldVHNodeRef, t);
+                                            throw t;
+                                        }
                                     }
-                                    catch (Throwable t)
+                                    
+                                    if (logger.isDebugEnabled())
                                     {
-                                        logger.error("Skipping migration of: " + oldVHNodeRef, t);
-                                        return oldVHNodeRef;
+                                        logger.debug("Migrated batch of "+tmpBatch.size()+" version histories in "+(System.currentTimeMillis()-startTime)+ " ms");
                                     }
+                                    
+                                    return null;
                                 }
-                                
-                                if (logger.isDebugEnabled())
-                                {
-                                    logger.debug("Migrated batch of "+tmpBatch.size()+" version histories in "+(System.currentTimeMillis()-startTime)+ " ms");
-                                }
-                                
-                                return null;
-                            }
-                        }, false, true);
-                        
-                        if (failed != null)
-                        {
-                            tmpBatch.remove(failed); // retry batch without the failed node
-                            failCount++;
-                        }
-                        else
-                        {
+                            }, false, true);
+                            
+                            // batch successful
                             vhCount = vhCount + tmpBatch.size();
                             tmpBatch.clear();
-                            batchCount = 0;
+                        }
+                        catch (Throwable t)
+                        {
+                            // TODO if batchSize > 1 then could switch into batchSize=1 mode, and re-try one-by-one
+                            // in theory, could fail on commit (although integrity checks are disabled by default) hence don't know which nodes failed
+                            
+                            logger.error("Skipping migration of batch size ("+tmpBatch.size()+"): "+t);
+                            
+                            // batch failed
+                            failCount = failCount + tmpBatch.size();
+                            tmpBatch.clear();
                         }
                     }
                 }
@@ -427,7 +449,7 @@ public class VersionMigrator
             MLPropertyInterceptor.setMLAware(wasMLAware);
             SessionSizeResourceManager.setEnableInTransaction();
         }
-
+        
         if (failCount > 0)
         {
             logger.warn(I18NUtil.getMessage(MSG_PATCH_SKIP1, failCount));
@@ -437,7 +459,16 @@ public class VersionMigrator
             logger.warn(I18NUtil.getMessage(MSG_PATCH_SKIP2, alreadyMigratedCount));
         }
         
-        logger.info(I18NUtil.getMessage(MSG_PATCH_COMPLETE, vhCount, ((System.currentTimeMillis()-startTime)/1000)));
+        toDo = toDo - alreadyMigratedCount;
+        
+        if (vhCount != toDo)
+        {
+            logger.warn(I18NUtil.getMessage(MSG_PATCH_COMPLETE, vhCount, toDo, ((System.currentTimeMillis()-startTime)/1000)));
+        }
+        else
+        {
+            logger.info(I18NUtil.getMessage(MSG_PATCH_COMPLETE, vhCount, toDo, ((System.currentTimeMillis()-startTime)/1000)));
+        }
         
         return vhCount;
     }
@@ -476,7 +507,7 @@ public class VersionMigrator
                             int deletedCount = 0;
                             int failCount = 0;
                             int notMigratedCount = 0;
-            
+                            
                             boolean wasMLAware = MLPropertyInterceptor.setMLAware(true);
                             SessionSizeResourceManager.setDisableInTransaction();
                             
@@ -492,8 +523,8 @@ public class VersionMigrator
                                     reportProgress(MSG_DELETE_PROGRESS, toDo, totalCount);
                                     totalCount++;
                                     
-                                    if (((String)dbNodeService.getProperty(childAssocRef.getChildRef(), ContentModel.PROP_NAME)).startsWith(VersionMigrator.PREFIX_MIGRATED))
-                                    {                    
+                                    if (isMigrated(childAssocRef))
+                                    {
                                         if (batchCount < batchSize)
                                         {
                                             tmpBatch.add(childAssocRef.getChildRef());
@@ -596,6 +627,11 @@ public class VersionMigrator
         }
     }
     
+    protected boolean isMigrated(ChildAssociationRef vhChildAssocRef)
+    {
+        return (((String)dbNodeService.getProperty(vhChildAssocRef.getChildRef(), ContentModel.PROP_NAME)).startsWith(VersionMigrator.PREFIX_MIGRATED));
+    }
+    
     /**
      * Support to report % completion and estimated completion time.
      * 
@@ -612,20 +648,20 @@ public class VersionMigrator
         {
             int previous = percentComplete;
             percentComplete = (int) (currentInteration * 100l / estimatedTotal);
-
+            
             if (percentComplete < 100)
             {
                 // conditional report
                 long currentTime = System.currentTimeMillis();
                 long timeSoFar = currentTime - startTime;
                 long timeRemaining = timeSoFar * (100 - percentComplete) / percentComplete;
-
+                
                 int report = -1;
-
+                
                 if (timeRemaining > 60000)
                 {
                     int reportInterval = getreportingInterval(timeSoFar, timeRemaining);
-
+                    
                     for (int i = previous + 1; i <= percentComplete; i++)
                     {
                         if (i % reportInterval == 0)

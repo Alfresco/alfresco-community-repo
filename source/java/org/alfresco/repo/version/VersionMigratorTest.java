@@ -31,7 +31,10 @@ import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.node.integrity.IntegrityChecker;
 import org.alfresco.repo.policy.PolicyComponent;
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.repo.version.common.counter.VersionCounterService;
 import org.alfresco.service.cmr.coci.CheckOutCheckInService;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -41,6 +44,7 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.version.Version;
 import org.alfresco.service.cmr.version.VersionHistory;
+import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -62,6 +66,7 @@ public class VersionMigratorTest extends BaseVersionStoreTest
     protected DictionaryService dictionaryService;
     protected CheckOutCheckInService cociService;
     protected VersionCounterService versionCounterService;
+    protected IntegrityChecker integrityChecker;
     
     public VersionMigratorTest()
     {
@@ -80,6 +85,8 @@ public class VersionMigratorTest extends BaseVersionStoreTest
         
         this.cociService = (CheckOutCheckInService)applicationContext.getBean("CheckoutCheckinService");
         this.versionCounterService = (VersionCounterService)applicationContext.getBean("versionCounterService");
+        
+        this.integrityChecker = (IntegrityChecker)applicationContext.getBean("integrityChecker");
         
         // Version1Service is used to create the version nodes in Version1Store (workspace://lightWeightVersionStore) 
         version1Service.setDbNodeService(dbNodeService);
@@ -125,7 +132,7 @@ public class VersionMigratorTest extends BaseVersionStoreTest
         Map<QName, Serializable> oldVersionProps = versionNodeService.getProperties(oldVersion.getFrozenStateNodeRef());
         
         logger.info("oldVersion props: " + oldVersion);
-        logger.info("oldVersion created: " + oldVersion.getCreatedDate() + " [" + oldVersion.getCreatedDate().getTime()+"]");
+        logger.info("oldVersion created: " + oldVersion.getFrozenModifiedDate() + " [" + oldVersion.getFrozenModifiedDate().getTime()+"]");
         
         logger.info("oldVersion props via versionNodeService: " + oldVersionProps);
         
@@ -147,7 +154,7 @@ public class VersionMigratorTest extends BaseVersionStoreTest
         Version newVersion = vh2.getRootVersion();
         
         logger.info("newVersion props: " + newVersion);
-        logger.info("newVersion created: " + newVersion.getCreatedDate() + " [" + newVersion.getCreatedDate().getTime()+"]");
+        logger.info("newVersion created: " + newVersion.getFrozenModifiedDate() + " [" + newVersion.getFrozenModifiedDate().getTime()+"]");
         
         // check new version - switch to new version service to do the check 
         super.setVersionService(version2Service);
@@ -258,6 +265,167 @@ public class VersionMigratorTest extends BaseVersionStoreTest
         checkNewVersion(beforeVersionTime3, nextVersion3, nextVersionLabel3, newVersions[0], versionableNode);
         
         logger.info("testMigrateMultipleVersions: Migrated from oldVHNodeRef = " + oldVHNodeRef + " to newVHNodeRef = " + newVHNodeRef);
+    }
+    
+    public void testMigrateMultipleNodesSuccessful() throws Exception
+    {
+        testMigrateMultipleNodes(false);
+    }
+    
+    public void test_ETHREEOH_2091() throws Exception
+    {
+        // test partial migration (with skipped nodes)
+        testMigrateMultipleNodes(true);
+    }
+    
+    /**
+     * Test migration of a multiple nodes (each with one version)
+     */
+    private void testMigrateMultipleNodes(final boolean withSkip)
+    {
+        if (version2Service.useDeprecatedV1 == true)
+        {
+            logger.info("testMigrateOneVersion: skip");
+            return;
+        }
+        
+        final int nodeCount = 5;
+        assert(nodeCount > 3);
+        
+        final NodeRef[] versionableNodes = new NodeRef[nodeCount];
+        
+        setComplete();
+        endTransaction();
+        
+        RetryingTransactionHelper txHelper = transactionService.getRetryingTransactionHelper();
+        
+        for (int i = 0; i < nodeCount; i++)
+        {
+            final int idx = i;
+            
+            txHelper.doInTransaction(new RetryingTransactionCallback<NodeRef>()
+            {
+                public NodeRef execute() throws Throwable
+                {
+                    NodeRef versionableNode = null;
+                    if ((idx % 2) == 0)
+                    {
+                        versionableNode = createNewVersionableNode();
+                    }
+                    else
+                    {
+                        versionableNode = createNewVersionableContentNode(true);
+                    }
+                    createVersion(versionableNode);
+                    versionableNodes[idx] = versionableNode;
+                    
+                    return null;
+                }
+            });
+        }
+        
+        setComplete();
+        endTransaction();
+        
+        txHelper.doInTransaction(new RetryingTransactionCallback<NodeRef>()
+        {
+            public NodeRef execute() throws Throwable
+            {
+                // check old version histories
+                for (int i = 0; i< nodeCount; i++)
+                {
+                    VersionHistory vh1 = version1Service.getVersionHistory(versionableNodes[i]);
+                    assertNotNull(vh1);
+                    assertEquals(1, vh1.getAllVersions().size());
+                }
+                
+                return null;
+            }
+        });
+        
+        setComplete();
+        endTransaction();
+        
+        if (withSkip)
+        {
+            // remove test model - those nodes should fail - currently all - add separate create ...
+            
+            // TODO ...
+            dictionaryDAO.removeModel(QName.createQName("http://www.alfresco.org/test/versionstorebasetest/1.0", "versionstorebasetestmodel"));
+        }
+        
+        txHelper = transactionService.getRetryingTransactionHelper();
+        
+        txHelper.doInTransaction(new RetryingTransactionCallback<NodeRef>()
+        {
+            public NodeRef execute() throws Throwable
+            {
+                // Migrate (and don't delete old version history) !
+                versionMigrator.migrateVersions(1, false);
+                
+                return null;
+            }
+        });
+        
+        setComplete();
+        endTransaction();
+        
+        txHelper.doInTransaction(new RetryingTransactionCallback<NodeRef>()
+        {
+            public NodeRef execute() throws Throwable
+            {
+                // check new version histories
+                for (int i = 0; i < nodeCount; i++)
+                {
+                    VersionHistory vh2 = version2Service.getVersionHistory(versionableNodes[i]);
+                    
+                    if (withSkip && ((i % 2) == 0))
+                    {
+                        assertNull(vh2);
+                    }
+                    else
+                    {
+                        assertNotNull(vh2);
+                        assertEquals(1, vh2.getAllVersions().size());
+                    }
+                }
+                
+                return null;
+            }
+        });
+    }
+    
+    private NodeRef createNewVersionableContentNode(boolean versionable)
+    {
+        // Use this map to retrieve the versionable nodes in later tests
+        this.versionableNodes = new HashMap<String, NodeRef>();
+        
+        // Create node (this node has some content)
+        NodeRef nodeRef = this.dbNodeService.createNode(
+                rootNodeRef,
+                ContentModel.ASSOC_CHILDREN,
+                QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "myNode"),
+                ContentModel.TYPE_CONTENT,
+                this.nodeProperties).getChildRef();
+        
+        if (versionable)
+        {
+            this.dbNodeService.addAspect(nodeRef, ContentModel.ASPECT_VERSIONABLE, new HashMap<QName, Serializable>());
+        }
+        
+        assertNotNull(nodeRef);
+        this.versionableNodes.put(nodeRef.getId(), nodeRef);
+        
+        // Add the content to the node
+        ContentWriter contentWriter = this.contentService.getWriter(nodeRef, ContentModel.PROP_CONTENT, true);
+        contentWriter.putContent(TEST_CONTENT);
+        
+        // Set author
+        Map<QName, Serializable> authorProps = new HashMap<QName, Serializable>(1, 1.0f);
+        authorProps.put(ContentModel.PROP_AUTHOR, "Charles Dickens");
+        this.dbNodeService.addAspect(nodeRef, ContentModel.ASPECT_AUTHOR, authorProps);
+        
+        return nodeRef;
     }
     
     public void test_ETHREEOH_1540() throws Exception

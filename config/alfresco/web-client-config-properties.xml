@@ -677,6 +677,18 @@
       </property-sheet>
    </config>
 
+   <!-- ******************************** -->
+   <!-- Configuration for Imap Server   -->
+   <!-- ******************************** -->
+   
+   <config evaluator="aspect-name" condition="imap:imapContent">
+      <property-sheet>
+         <show-association name="imap:attachment" display-label-id="imap.attachments" show-in-edit-mode="false"/>
+         <show-association name="imap:attachmentsFolder" display-label-id="imap.attachments.folder" show-in-edit-mode="false"/>
+      </property-sheet>
+   </config>
+   
+
    <!-- ********************************** -->
    <!-- Configuration for Email ID aspects -->
    <!-- ********************************** -->

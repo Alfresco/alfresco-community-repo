@@ -38,10 +38,10 @@
          <ref bean="jobLockService" />
       </property>
       <property name="contentCleanDAO">
-      	  <ref bean="contentCleanDAO"/>
+           <ref bean="contentCleanDAO"/>
       </property>
       <property name="contentDataDAO">
-      	  <ref bean="contentDataDAO"/>
+           <ref bean="contentDataDAO"/>
       </property>
       <property name="dictionaryService">
          <ref bean="dictionaryService" />
@@ -288,7 +288,7 @@
          parent="baseContentTransformer" >
       <property name="explicitTransformations">
          <list>
-         	<bean class="org.alfresco.repo.content.transform.ExplictTransformationDetails" >
+            <bean class="org.alfresco.repo.content.transform.ExplictTransformationDetails" >
                 <property name="sourceMimetype"><value>application/pdf</value></property>
                 <property name="targetMimetype"><value>text/plain</value></property>
             </bean>
@@ -306,15 +306,15 @@
         parent="baseContentTransformer" >      
       <property name="explicitTransformations">
          <list>
-         	<bean class="org.alfresco.repo.content.transform.ExplictTransformationDetails" >
+            <bean class="org.alfresco.repo.content.transform.ExplictTransformationDetails" >
                 <property name="sourceMimetype"><value>application/pdf</value></property>
                 <property name="targetMimetype"><value>image/jpeg</value></property>
             </bean>
-         	<bean class="org.alfresco.repo.content.transform.ExplictTransformationDetails" >
+            <bean class="org.alfresco.repo.content.transform.ExplictTransformationDetails" >
                 <property name="sourceMimetype"><value>application/pdf</value></property>
                 <property name="targetMimetype"><value>image/png</value></property>
             </bean>
-         	<bean class="org.alfresco.repo.content.transform.ExplictTransformationDetails" >
+            <bean class="org.alfresco.repo.content.transform.ExplictTransformationDetails" >
                 <property name="sourceMimetype"><value>application/pdf</value></property>
                 <property name="targetMimetype"><value>image/gif</value></property>
             </bean>
@@ -362,7 +362,7 @@
       </property>
    </bean>
 
-	<bean id="transformer.complex.Text.Image"
+   <bean id="transformer.complex.Text.Image"
         class="org.alfresco.repo.content.transform.ComplexContentTransformer"
         parent="baseContentTransformer" >
       <property name="transformers">
@@ -449,6 +449,10 @@
    
    <bean id="transformer.OutlookMsg"
          class="org.alfresco.repo.content.transform.MailContentTransformer"
+         parent="baseContentTransformer" />
+
+   <bean id="transformer.RFC822"
+         class="org.alfresco.repo.content.transform.EMLTransformer"
          parent="baseContentTransformer" />
 
    <!-- Import the ImageMagick transformer from the third party subsystem -->

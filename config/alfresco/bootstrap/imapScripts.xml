@@ -1,0 +1,27 @@
+<view:view xmlns:view="http://www.alfresco.org/view/repository/1.0"
+           xmlns:cm="http://www.alfresco.org/model/content/1.0"
+           xmlns:app="http://www.alfresco.org/model/application/1.0" >
+
+   <cm:content>
+       <app:uifacets />
+      <cm:name>${imap.command_search.name}</cm:name>
+      <cm:title>${imap.command_search.title}</cm:title>
+      <cm:description>${imap.command_search.description}</cm:description>
+      <cm:content>contentUrl=classpath:alfresco/imap/scripts/command-search.js|mimetype=application/x-javascript|size=|encoding=UTF-8</cm:content>
+    </cm:content>
+    <cm:content>
+      <app:uifacets />
+      <cm:name>${imap.command_processor.name}</cm:name>
+      <cm:title>${imap.command_processor.title}</cm:title>
+      <cm:description>${imap.command_processor.description}</cm:description>
+      <cm:content>contentUrl=classpath:alfresco/imap/scripts/command-processor.js|mimetype=application/x-javascript|size=|encoding=UTF-8</cm:content>
+    </cm:content>
+    <cm:content>
+      <app:uifacets />
+      <cm:name>${imap.command_utils.name}</cm:name>
+      <cm:title>${imap.command_utils.title}</cm:title>
+      <cm:description>${imap.command_utils.description}</cm:description>
+      <cm:content>contentUrl=classpath:alfresco/imap/scripts/command-utils.js|mimetype=application/x-javascript|size=|encoding=UTF-8</cm:content>
+    </cm:content>
+
+</view:view>

@@ -31,6 +31,7 @@ import org.alfresco.cmis.CMISQueryService;
 import org.alfresco.cmis.CMISServices;
 import org.alfresco.mbeans.VirtServerRegistry;
 import org.alfresco.repo.forms.FormService;
+import org.alfresco.repo.imap.ImapService;
 import org.alfresco.repo.lock.JobLockService;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.service.ServiceRegistry;
@@ -471,14 +472,14 @@ public class ServiceDescriptorRegistry
     /* (non-Javadoc)
      * @see org.alfresco.service.ServiceRegistry#getDeploymentService()
      */
-	public DeploymentService getDeploymentService() 
-	{
+    public DeploymentService getDeploymentService() 
+    {
         return (DeploymentService) getService(DEPLOYMENT_SERVICE);
-	}
+    }
     
-	/* (non-Javadoc)
-	 * @see org.alfresco.service.ServiceRegistry#getWebProjectService()
-	 */
+    /* (non-Javadoc)
+     * @see org.alfresco.service.ServiceRegistry#getWebProjectService()
+     */
     public WebProjectService getWebProjectService()
     {
         return (WebProjectService)getService(WEBPROJECT_SERVICE);
@@ -519,15 +520,15 @@ public class ServiceDescriptorRegistry
     /* (non-Javadoc)
      * @see org.alfresco.service.ServiceRegistry#getInvitationService()
      */
-	public InvitationService getInvitationService() 
-	{
-	     return (InvitationService)getService(INVITATION_SERVICE);
-	}
+    public InvitationService getInvitationService() 
+    {
+         return (InvitationService)getService(INVITATION_SERVICE);
+    }
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.alfresco.service.ServiceRegistry#getCMISService()
-	 */
+    /*
+     * (non-Javadoc)
+     * @see org.alfresco.service.ServiceRegistry#getCMISService()
+     */
     public CMISServices getCMISService() 
     {
          return (CMISServices)getService(CMIS_SERVICE);
@@ -549,5 +550,14 @@ public class ServiceDescriptorRegistry
     public CMISQueryService getCMISQueryService() 
     {
          return (CMISQueryService)getService(CMIS_QUERY_SERVICE);
+    }
+
+    /*
+     * (non-Javadoc)
+     * @see org.alfresco.service.ServiceRegistry#getCMISQueryService()
+     */
+    public ImapService getImapService() 
+    {
+        return (ImapService)getService(IMAP_SERVICE);
     }
 }

@@ -118,4 +118,18 @@
       </property>
    </bean>
 
+   <bean id="ImapService" class="org.alfresco.repo.management.subsystems.SubsystemProxyFactory">
+     <property name="sourceApplicationContextFactory">
+        <ref bean="imap" />
+     </property>
+      <property name="sourceBeanName">
+          <value>ImapService</value>
+      </property>
+     <property name="interfaces">
+        <list>
+           <value>org.alfresco.repo.imap.ImapService</value>
+        </list>
+     </property>
+  </bean>
+
 </beans>

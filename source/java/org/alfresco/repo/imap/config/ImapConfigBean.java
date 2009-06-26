@@ -27,16 +27,13 @@ package org.alfresco.repo.imap.config;
 import org.springframework.beans.factory.BeanNameAware;
 
 /**
- * Provides the parameters for an IMAP mount point (a mapping from an Alfresco node path to an IMAP folder name).
+ * Standard ImapConfig bean. 
  */
 public class ImapConfigBean implements BeanNameAware
 {
 
     /** The IMAP folder name. */
     private String name;
-
-    /** The mode (virtual or archive). */
-    private String mode;
 
     /** The Alfresco store name. */
     private String store;
@@ -61,27 +58,6 @@ public class ImapConfigBean implements BeanNameAware
     public void setBeanName(String name)
     {
         this.name = name;
-    }
-
-    /**
-     * Gets the mode.
-     * 
-     * @return the mode (virtual or archive)
-     */
-    public String getMode()
-    {
-        return this.mode;
-    }
-
-    /**
-     * Sets the mode.
-     * 
-     * @param mode
-     *            the new mode (virtual or archive)
-     */
-    public void setMode(String mode)
-    {
-        this.mode = mode;
     }
 
     /**

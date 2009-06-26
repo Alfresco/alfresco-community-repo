@@ -3,8 +3,8 @@
 
 <beans>
 
-	<bean id="scriptService" class="org.alfresco.repo.processor.ScriptServiceImpl">
-	    <property name="defaultScriptProcessor">
+   <bean id="scriptService" class="org.alfresco.repo.processor.ScriptServiceImpl">
+       <property name="defaultScriptProcessor">
             <value>javascript</value>
         </property>
         <property name="nodeService">
@@ -13,7 +13,7 @@
     </bean>
 
     <bean id="javaScriptProcessor" class="org.alfresco.repo.jscript.RhinoScriptProcessor" init-method="register">
-    	<property name="name">
+       <property name="name">
             <value>javascript</value>
         </property>
         <property name="extension">
@@ -71,6 +71,21 @@
         </property>
     </bean>
 
+    <bean id="imapScript" parent="baseJavaScriptExtension" class="org.alfresco.repo.jscript.Imap">
+        <property name="extensionName">
+            <value>imap</value>
+        </property>        
+        <property name="serviceRegistry">
+            <ref bean="ServiceRegistry"/>
+        </property>
+        <property name="repositoryHelper">
+           <ref bean="repositoryHelper"/>
+        </property>
+        <property name="storeUrl">
+            <value>${spaces.store}</value>
+        </property>
+    </bean>
+
     <bean id="searchScript" parent="baseJavaScriptExtension" class="org.alfresco.repo.jscript.Search">
         <property name="extensionName">
             <value>search</value>
@@ -79,7 +94,7 @@
             <ref bean="ServiceRegistry"/>
         </property>
         <property name="repositoryHelper">
-        	<ref bean="repositoryHelper"/>
+           <ref bean="repositoryHelper"/>
         </property>
         <property name="storeUrl">
             <value>${spaces.store}</value>

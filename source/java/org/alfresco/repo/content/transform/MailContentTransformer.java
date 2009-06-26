@@ -56,7 +56,7 @@ public class MailContentTransformer extends AbstractContentTransformer2
      */
     public boolean isTransformable(String sourceMimetype, String targetMimetype, TransformationOptions options)
     {
-        if (!MimetypeMap.MIMETYPE_RFC822.equals(sourceMimetype) ||
+        if (!MimetypeMap.MIMETYPE_OUTLOOK_MSG.equals(sourceMimetype) ||
             !MimetypeMap.MIMETYPE_TEXT_PLAIN.equals(targetMimetype))
         {
             // only support MSG -> TEXT

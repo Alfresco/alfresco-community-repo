@@ -21,7 +21,7 @@ Size:      ${document.size / 1024} Kb
 
 CONTENT LINKS
 
-Content folder:   ${contextUrl}${document.displayPath}
+Content folder:   ${contextUrl}/navigate/browse${document.displayPath}
 Content URL:      ${contextUrl}${document.url}
 Download URL:     ${contextUrl}${document.downloadUrl}
 WebDAV URL:       ${contextUrl}${document.webdavUrl}

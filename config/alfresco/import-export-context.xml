@@ -35,13 +35,13 @@
             <ref bean="RuleService" />
         </property>
         <property name="permissionService">
-        	<ref bean="PermissionService" />
+           <ref bean="PermissionService" />
         </property>
         <property name="authorityService">
-        	<ref bean="AuthorityService" />
+           <ref bean="AuthorityService" />
         </property>
         <property name="authenticationContext">
-        	<ref bean="authenticationContext" />
+           <ref bean="authenticationContext" />
         </property>
         <property name="viewParser">
             <ref bean="viewParser" />
@@ -53,7 +53,7 @@
             <ref bean="searchService" />
         </property>
         <property name="ownableService">
-        	<ref bean="ownableService" />
+           <ref bean="ownableService" />
         </property>
     </bean>
     
@@ -76,13 +76,13 @@
             <ref bean="RuleService" />
         </property>
         <property name="permissionService">
-        	<ref bean="PermissionService" />
+           <ref bean="PermissionService" />
         </property>
         <property name="authorityService">
-        	<ref bean="AuthorityService" />
+           <ref bean="AuthorityService" />
         </property>
         <property name="authenticationContext">
-        	<ref bean="authenticationContext" />
+           <ref bean="authenticationContext" />
         </property>
         <property name="viewParser">
             <ref bean="viewParser" />
@@ -94,7 +94,7 @@
             <ref bean="searchService" />
         </property>
         <property name="ownableService">
-        	<ref bean="ownableService" />
+           <ref bean="ownableService" />
         </property>
     </bean>
 
@@ -125,23 +125,23 @@
         </property>
     </bean>
 
-	<bean id="repositoryExporterComponent" class="org.alfresco.repo.exporter.RepositoryExporterComponent">
-		<property name="exporterService">
-			<ref bean="ExporterService" />
-		</property>
-		<property name="mimetypeService">
-			<ref bean="mimetypeService" />
-		</property>
-		<property name="fileFolderService">
-			<ref bean="FileFolderService" />
-		</property>
-		<property name="nodeService">
-			<ref bean="NodeService" />
-		</property>
+   <bean id="repositoryExporterComponent" class="org.alfresco.repo.exporter.RepositoryExporterComponent">
+      <property name="exporterService">
+         <ref bean="ExporterService" />
+      </property>
+      <property name="mimetypeService">
+         <ref bean="mimetypeService" />
+      </property>
+      <property name="fileFolderService">
+         <ref bean="FileFolderService" />
+      </property>
+      <property name="nodeService">
+         <ref bean="NodeService" />
+      </property>
         <property name="systemExporter">
             <ref bean="systemExporterImporter" />
         </property>
-		<property name="stores">
+      <property name="stores">
             <list>
                 <props>
                     <prop key="storeRef">system://system</prop>
@@ -169,8 +169,8 @@
                     <prop key="packageName">versions2</prop>
                 </props>
             </list>
-		</property>
-	</bean>
+      </property>
+   </bean>
 
     <bean id="systemExporterImporter" class="org.alfresco.repo.importer.system.SystemExporterImporter">
       <property name="nodeService">
@@ -207,7 +207,7 @@
         </property>
     </bean>
 
-	<!-- General Repository Store Importer -->
+   <!-- General Repository Store Importer -->
 
     <bean id="storeImporter" class="org.alfresco.repo.importer.ImporterBootstrap" abstract="true">
         <property name="transactionService">
@@ -233,16 +233,16 @@
             <value>en_GB</value>
         </property>
         -->
-	</bean>
+   </bean>
 
     <bean id="storeImporterViews" class="org.alfresco.repo.importer.ImporterBootstrapViews" abstract="true">
     </bean>
 
 
-	<!--  -->
-	<!--  Store specific Importers -->
-	<!--  -->
-	
+   <!--  -->
+   <!--  Store specific Importers -->
+   <!--  -->
+   
     <bean id="userStoreImporter" parent="storeImporter" abstract="true">
         <property name="storeUrl">
             <value>${alfresco_user_store.store}</value>
@@ -327,9 +327,10 @@
                 <prop key="spaces.user_homes.childname">${spaces.user_homes.childname}</prop>
                 <prop key="spaces.sites.childname">${spaces.sites.childname}</prop>
                 <prop key="spaces.templates.email.invite.childname">${spaces.templates.email.invite.childname}</prop>
-                <prop key="spaces.imap_home.childname">${spaces.imap_home.childname}</prop>
                 <prop key="spaces.imapConfig.childname">${spaces.imapConfig.childname}</prop>
                 <prop key="spaces.imap_templates.childname">${spaces.imap_templates.childname}</prop>
+                <prop key="spaces.emailActions.childname">${spaces.emailActions.childname}</prop>
+                <prop key="spaces.searchAction.childname">${spaces.searchAction.childname}</prop>
             </props>
         </property>
     </bean>
@@ -509,6 +510,18 @@
                     <prop key="path">/${system.system_container.childname}</prop>
                     <prop key="location">alfresco/bootstrap/alfrescoAuthorityStore.xml</prop>
                 </props>
+                
+                <props>
+                    <prop key="path">/${spaces.company_home.childname}/${spaces.dictionary.childname}/${spaces.scripts.childname}</prop>
+                    <prop key="location">alfresco/bootstrap/imapScripts.xml</prop>
+                    <prop key="messages">alfresco/messages/bootstrap-imapScripts</prop>
+                </props>
+                
+                <props>
+                    <prop key="path">/${spaces.company_home.childname}/${spaces.dictionary.childname}</prop>
+                    <prop key="location">alfresco/bootstrap/imapSpaces.xml</prop>
+                    <prop key="messages">alfresco/messages/bootstrap-spaces</prop>
+                </props>                
             </list>
         </property>
     </bean>

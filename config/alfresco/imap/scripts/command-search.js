@@ -75,7 +75,17 @@ function createResponseTextHtml(nodes)
  */
 function createContentTextHtml(nodes)
 {
-   var content = "Command: " + title + "\n<br/><br/>\n";
+   var content ="<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0 Transitional//EN\">" +
+        "<html><head>" +
+        "<meta http-equiv=Content-Type content=\"text/html; charset=UTF-8\">" +
+        "<style type=\"text/css\">" +
+        "* {font-family:Verdana,Arial,sans-serif;font-size:11px;}" +
+        ".links {border:1px dotted #555555;border-collapse:collapse;width:99%;}" +
+        ".links td {border:1px dotted #555555;padding:5px;}" +
+        "</style>" +
+        "</head>" +
+        "<body>" +
+        "<div>" + "Command: " + title + "\n<br/><br/>\n";
    content += "<table class=\"links\">\n";
    content += "<thead align=\"center\">";
    content += "<tr>";
@@ -83,7 +93,7 @@ function createContentTextHtml(nodes)
    content += "<td>Url</td>";
    content += "<td>Download Url</td>";
    content += "</tr>";
-   content += "</thead>\n"
+   content += "</thead>\n" + "</div></body></html>";
    
    
    for (var i = 0; i < nodes.length; i++)
@@ -133,7 +143,7 @@ function commandSearch(params)
 
    if (query == null)
    {
-      createEmail(errorParameter, errorParameter, errorParameter, false);
+      createEmail(errorParameter, errorParameter, errorParameter);
       return;
    }
 
@@ -154,7 +164,7 @@ function commandSearch(params)
             }
             else
             {
-               createEmail(errorXPathNotValid, errorXPathNotValid, errorXPathNotValid, false);
+               createEmail(errorXPathNotValid, errorXPathNotValid, errorXPathNotValid);
                return;
             }
             break;
@@ -180,8 +190,8 @@ function commandSearch(params)
       createEmail(message, message, subject);
       return;
    }
-   /*createEmail(createResponseTextHtml(nodes), createContentTextPlain(nodes), subject, true);*/
-   createEmail(createContentTextHtml(nodes), createContentTextPlain(nodes), subject, false);
+   /*createEmail(createContentTextPlain(nodes), createResponseTextHtml(nodes), subject);*/
+   createEmail(createContentTextPlain(nodes), createContentTextHtml(nodes), subject);
 }
 /**
  * Decode subject
@@ -224,13 +234,13 @@ function main()
       else
       {
          var message = unknownCommand + ": '" + title + "'";
-         createEmail(message, message, message, false);
+         createEmail(message, message, message);
       }
    }
    else
    {
       var message = unknownCommand + ": '" + title + "'";
-      createEmail(message, message, message, false);
+      createEmail(message, message, message);
    }
    
    document.remove();

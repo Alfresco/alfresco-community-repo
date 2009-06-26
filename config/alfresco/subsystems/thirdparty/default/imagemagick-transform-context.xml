@@ -20,7 +20,7 @@
                   </entry>
                </map>
             </property>
-            <property name="processProperties">
+            <property name="processProperties"> 
                <map>
                   <entry key="MAGICK_HOME">
                      <value>${img.root}</value>

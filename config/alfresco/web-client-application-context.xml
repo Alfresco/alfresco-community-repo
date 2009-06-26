@@ -281,7 +281,7 @@
                <ref bean="AuthenticationService" />
             </property>
             <property name="personService">
-               <ref bean="personService" />
+               <ref bean="PersonService" />
             </property>
          </bean>
       </property>

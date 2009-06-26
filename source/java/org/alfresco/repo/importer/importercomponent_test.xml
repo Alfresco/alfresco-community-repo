@@ -78,6 +78,26 @@
       <cm:content>contentUrl=classpath:org/alfresco/repo/importer/importercomponent_testfile.txt|mimetype=text|size=|encoding=</cm:content>
    </cm:content>
    
+   <cm:folder view:childName="cm:SpaceWithAuditable">
+      <view:aspects>
+         <cm:auditable/>
+      </view:aspects>
+      <cm:name>SpaceWithAuditable</cm:name>
+      <cm:created>2009-05-01T00:00:00.000+01:00</cm:created>
+      <cm:creator>Import Creator</cm:creator>
+      <cm:modified>2009-05-02T00:00:00.000+01:00</cm:modified>
+      <cm:modifier>Import Modifier</cm:modifier>
+   </cm:folder>
+   
+   <cm:folder view:childName="cm:SpaceWithPartialAuditable">
+      <view:aspects>
+         <cm:auditable/>
+      </view:aspects>
+      <cm:name>SpaceWithPartialAuditable"</cm:name>
+      <cm:created>2009-05-01T00:00:00.000+01:00</cm:created>
+      <cm:creator>Import Creator</cm:creator>
+   </cm:folder>
+   
    <cm:folder view:id="ML Text">
       <view:aspects>
          <cm:auditable/>

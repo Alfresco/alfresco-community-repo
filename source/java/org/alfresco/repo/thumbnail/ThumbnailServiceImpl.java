@@ -33,6 +33,9 @@ import java.util.Map;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.repo.policy.BehaviourFilter;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentReader;
@@ -41,6 +44,8 @@ import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.TransformationOptions;
+import org.alfresco.service.cmr.security.AccessStatus;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.thumbnail.ThumbnailException;
 import org.alfresco.service.cmr.thumbnail.ThumbnailParentAssociationDetails;
 import org.alfresco.service.cmr.thumbnail.ThumbnailService;
@@ -71,8 +76,14 @@ public class ThumbnailServiceImpl implements ThumbnailService
     /** Content service */
     private ContentService contentService;
     
+    /** Permission service */
+    private PermissionService permissionService;
+    
     /** Mimetype map */
     private MimetypeMap mimetypeMap;
+    
+    /** Behaviour filter */
+    private BehaviourFilter behaviourFilter;
     
     /** Thumbnail registry */
     private ThumbnailRegistry thumbnailRegistry;
@@ -98,6 +109,14 @@ public class ThumbnailServiceImpl implements ThumbnailService
     }
     
     /**
+     * @param permissionService permission service
+     */
+    public void setPermissionService(PermissionService permissionService)
+    {
+        this.permissionService = permissionService;
+    }
+    
+    /**
      * Sets the mimetype map
      * 
      * @param mimetypeMap   the mimetype map
@@ -105,6 +124,14 @@ public class ThumbnailServiceImpl implements ThumbnailService
     public void setMimetypeMap(MimetypeMap mimetypeMap)
     {
         this.mimetypeMap = mimetypeMap;
+    }
+    
+    /**
+     * @param behaviourFilter  policy behaviour filter 
+     */
+    public void setBehaviourFilter(BehaviourFilter behaviourFilter)
+    {
+        this.behaviourFilter = behaviourFilter;
     }
     
     /**
@@ -136,7 +163,8 @@ public class ThumbnailServiceImpl implements ThumbnailService
     /**
      * @see org.alfresco.service.cmr.thumbnail.ThumbnailService#createThumbnail(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName, java.lang.String, org.alfresco.service.cmr.repository.TransformationOptions, java.lang.String, org.alfresco.service.cmr.thumbnail.ThumbnailParentAssociationDetails)
      */
-    public NodeRef createThumbnail(NodeRef node, QName contentProperty, String mimetype, TransformationOptions transformationOptions, String thumbnailName, ThumbnailParentAssociationDetails assocDetails)
+    public NodeRef createThumbnail(final NodeRef node, final QName contentProperty, final String mimetype,
+            final TransformationOptions transformationOptions, final String thumbnailName, final ThumbnailParentAssociationDetails assocDetails)
     {
         // Parameter check
         ParameterCheck.mandatory("node", node); 
@@ -149,7 +177,10 @@ public class ThumbnailServiceImpl implements ThumbnailService
             logger.debug("Creating thumbnail (node=" + node.toString() + "; contentProperty=" + contentProperty.toString() + "; mimetype=" + mimetype);
         }
         
-        NodeRef thumbnail = null;
+        if (!permissionService.hasPermission(node, PermissionService.READ_PROPERTIES).equals(AccessStatus.ALLOWED))
+        {
+            throw new AccessDeniedException("Access Denied");
+        }
         
         // Check for duplicate names
         if (thumbnailName != null && getThumbnailByName(node, contentProperty, thumbnailName) != null)
@@ -163,79 +194,99 @@ public class ThumbnailServiceImpl implements ThumbnailService
             throw new ThumbnailException(ERR_DUPLICATE_NAME);
         }
         
-        // Apply the thumbnailed aspect to the node if it doesn't already have it
-        if (this.nodeService.hasAspect(node, ContentModel.ASPECT_THUMBNAILED) == false)
+        NodeRef thumbnail = AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<NodeRef>()
         {
-            this.nodeService.addAspect(node, ContentModel.ASPECT_THUMBNAILED, null);
-        }
-        
-        // Get the name of the thumbnail and add to properties map
-        Map<QName, Serializable> properties = new HashMap<QName, Serializable>(2);
-        if (thumbnailName == null || thumbnailName.length() == 0)
-        {
-            thumbnailName = GUID.generate();
-        }
-        else
-        {
-            String thumbnailFileName = generateThumbnailFileName(thumbnailName, mimetype);
-            properties.put(ContentModel.PROP_NAME, thumbnailFileName);
-        }
-        properties.put(ContentModel.PROP_THUMBNAIL_NAME, thumbnailName);
-        
-        // Add the name of the content property
-        properties.put(ContentModel.PROP_CONTENT_PROPERTY_NAME, contentProperty);
-        
-        // See if parent association details have been specified for the thumbnail
-        if (assocDetails == null)
-        {
-            // Create the thumbnail using the thumbnails child association
-            thumbnail = this.nodeService.createNode(
-                    node, 
-                    ContentModel.ASSOC_THUMBNAILS,
-                    QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, thumbnailName), 
-                    ContentModel.TYPE_THUMBNAIL, 
-                    properties).getChildRef();
-        }
-        else
-        {
-            // Create the thumbnail using the specified parent assoc details
-            thumbnail = this.nodeService.createNode(
-                    assocDetails.getParent(),
-                    assocDetails.getAssociationType(),
-                    assocDetails.getAssociationName(),
-                    ContentModel.TYPE_THUMBNAIL,
-                    properties).getChildRef();
-            
-            // Associate the new thumbnail to the source
-            this.nodeService.addChild(
-                    node, 
-                    thumbnail, 
-                    ContentModel.ASSOC_THUMBNAILS, 
-                    QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, thumbnailName));
-        }
-        
-        // Get the content reader and writer for content nodes
-        ContentReader reader = this.contentService.getReader(node, contentProperty);
-        ContentWriter writer = this.contentService.getWriter(thumbnail, ContentModel.PROP_CONTENT, true);
-        writer.setMimetype(mimetype);
-        writer.setEncoding(reader.getEncoding());
-        
-        // Catch the failure to create the thumbnail
-        if (this.contentService.isTransformable(reader, writer, transformationOptions) == false)
-        {
-            if (logger.isDebugEnabled() == true)
+            public NodeRef doWork() throws Exception
             {
-                logger.debug("Creating thumbnail: There is no transformer to generate the thumbnail required (node=" + node.toString() + "; contentProperty=" + contentProperty.toString() + "; mimetype=" + mimetype + ")");
+                NodeRef thumbnail;
+                
+                // Apply the thumbnailed aspect to the node if it doesn't already have it
+                if (nodeService.hasAspect(node, ContentModel.ASPECT_THUMBNAILED) == false)
+                {
+                    // Ensure we do not update the 'modifier' due to thumbnail addition
+                    behaviourFilter.disableBehaviour(node, ContentModel.ASPECT_AUDITABLE);
+                    try
+                    {
+                        nodeService.addAspect(node, ContentModel.ASPECT_THUMBNAILED, null);
+                    }
+                    finally
+                    {
+                        behaviourFilter.enableBehaviour(node, ContentModel.ASPECT_AUDITABLE);
+                    }
+                }
+                
+                // Get the name of the thumbnail and add to properties map
+                String thumbName = thumbnailName;
+                Map<QName, Serializable> properties = new HashMap<QName, Serializable>(4);
+                if (thumbName == null || thumbName.length() == 0)
+                {
+                    thumbName = GUID.generate();
+                }
+                else
+                {
+                    String thumbnailFileName = generateThumbnailFileName(thumbName, mimetype);
+                    properties.put(ContentModel.PROP_NAME, thumbnailFileName);
+                }
+                properties.put(ContentModel.PROP_THUMBNAIL_NAME, thumbName);
+                
+                // Add the name of the content property
+                properties.put(ContentModel.PROP_CONTENT_PROPERTY_NAME, contentProperty);
+                
+                // See if parent association details have been specified for the thumbnail
+                if (assocDetails == null)
+                {
+                    // Create the thumbnail using the thumbnails child association
+                    thumbnail = nodeService.createNode(
+                            node, 
+                            ContentModel.ASSOC_THUMBNAILS,
+                            QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, thumbName), 
+                            ContentModel.TYPE_THUMBNAIL, 
+                            properties).getChildRef();
+                }
+                else
+                {
+                    // Create the thumbnail using the specified parent assoc details
+                    thumbnail = nodeService.createNode(
+                            assocDetails.getParent(),
+                            assocDetails.getAssociationType(),
+                            assocDetails.getAssociationName(),
+                            ContentModel.TYPE_THUMBNAIL,
+                            properties).getChildRef();
+
+                    // Associate the new thumbnail to the source
+                    nodeService.addChild(
+                            node, 
+                            thumbnail, 
+                            ContentModel.ASSOC_THUMBNAILS, 
+                            QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, thumbName));
+                }
+                
+                // Get the content reader and writer for content nodes
+                ContentReader reader = contentService.getReader(node, contentProperty);
+                ContentWriter writer = contentService.getWriter(thumbnail, ContentModel.PROP_CONTENT, true);
+                writer.setMimetype(mimetype);
+                writer.setEncoding(reader.getEncoding());
+                
+                // Catch the failure to create the thumbnail
+                if (contentService.isTransformable(reader, writer, transformationOptions) == false)
+                {
+                    if (logger.isDebugEnabled() == true)
+                    {
+                        logger.debug("Creating thumbnail: There is no transformer to generate the thumbnail required (node=" + node.toString() + "; contentProperty=" + contentProperty.toString() + "; mimetype=" + mimetype + ")");
+                    }
+
+                    // Throw exception indicating that the thumbnail could not be created
+                    throw new ThumbnailException(MessageFormat.format(ERR_NO_CREATE, reader.getMimetype(), writer.getMimetype()));
+                }
+                else
+                {
+                    // Do the thumbnail transformation
+                    contentService.transform(reader, writer, transformationOptions);
+                }
+                
+                return thumbnail;
             }
-            
-            // Throw exception indicating that the thumbnail could not be created
-            throw new ThumbnailException(MessageFormat.format(ERR_NO_CREATE, reader.getMimetype(), writer.getMimetype()));
-        }
-        else
-        {
-            // Do the thumbnail transformation
-            this.contentService.transform(reader, writer, transformationOptions);
-        }
+        }, AuthenticationUtil.getSystemUserName());
         
         // Return the created thumbnail
         return thumbnail;
@@ -256,70 +307,82 @@ public class ThumbnailServiceImpl implements ThumbnailService
     /**
      * @see org.alfresco.service.cmr.thumbnail.ThumbnailService#updateThumbnail(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.repository.TransformationOptions)
      */
-    public void updateThumbnail(NodeRef thumbnail, TransformationOptions transformationOptions)
+    public void updateThumbnail(final NodeRef thumbnail, final TransformationOptions transformationOptions)
     {
         if (logger.isDebugEnabled() == true)
         {
             logger.debug("Updating thumbnail (thumbnail=" + thumbnail.toString() + ")");
         }
         
-        // First check that we are dealing with a thumbnail
-        if (ContentModel.TYPE_THUMBNAIL.equals(this.nodeService.getType(thumbnail)) == true)
-        {         
-            // Get the node that is the source of the thumbnail
-            NodeRef node = null;
-            List<ChildAssociationRef> parents = this.nodeService.getParentAssocs(thumbnail, ContentModel.ASSOC_THUMBNAILS, RegexQNamePattern.MATCH_ALL);
-            if (parents.size() == 0)
-            {
-                if (logger.isDebugEnabled() == true)
-                {
-                    logger.debug("Updating thumbnail: The thumbnails parent cannot be found (thumbnail=" + thumbnail.toString() + ")");
-                }
-                
-                throw new ThumbnailException(ERR_NO_PARENT);
-            }
-            else
-            {
-                node = parents.get(0).getParentRef();
-            }
-            
-            // Get the content property
-            QName contentProperty = (QName)this.nodeService.getProperty(thumbnail, ContentModel.PROP_CONTENT_PROPERTY_NAME);
-            
-            // Get the reader and writer            
-            ContentReader reader = this.contentService.getReader(node, contentProperty);
-            ContentWriter writer = this.contentService.getWriter(thumbnail, ContentModel.PROP_CONTENT, true);
-            
-            // Set the basic detail of the transformation options
-            transformationOptions.setSourceNodeRef(node);
-            transformationOptions.setSourceContentProperty(contentProperty);
-            transformationOptions.setTargetNodeRef(thumbnail);
-            transformationOptions.setTargetContentProperty(ContentModel.PROP_CONTENT);
-            
-            // Catch the failure to create the thumbnail
-            if (this.contentService.isTransformable(reader, writer, transformationOptions) == false)
-            {
-                if (logger.isDebugEnabled() == true)
-                {
-                    logger.debug("Updating thumbnail: there is not transformer to update the thumbnail with (thumbnail=" + thumbnail.toString() + ")");
-                }
-                
-                // Throw exception indicating that the thumbnail could not be created
-                throw new ThumbnailException(MessageFormat.format(ERR_NO_CREATE, reader.getMimetype(), writer.getMimetype()));
-            }
-            else
-            {
-                // Do the thumbnail transformation
-                this.contentService.transform(reader, writer, transformationOptions);
-            }
-        }
-        else
+        if (!permissionService.hasPermission(thumbnail, PermissionService.READ_PROPERTIES).equals(AccessStatus.ALLOWED))
         {
-            if (logger.isDebugEnabled() == true)
-            {
-                logger.debug("Updating thumbnail: cannot update a thumbnail node that isn't the correct thumbnail type (thumbnail=" + thumbnail.toString() + ")");
-            }
+            throw new AccessDeniedException("Access Denied");
         }
+        
+        AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
+        {
+            public Object doWork() throws Exception
+            {
+                // First check that we are dealing with a thumbnail
+                if (ContentModel.TYPE_THUMBNAIL.equals(nodeService.getType(thumbnail)) == true)
+                {
+                    // Get the node that is the source of the thumbnail
+                    NodeRef node = null;
+                    List<ChildAssociationRef> parents = nodeService.getParentAssocs(thumbnail, ContentModel.ASSOC_THUMBNAILS, RegexQNamePattern.MATCH_ALL);
+                    if (parents.size() == 0)
+                    {
+                        if (logger.isDebugEnabled() == true)
+                        {
+                            logger.debug("Updating thumbnail: The thumbnails parent cannot be found (thumbnail=" + thumbnail.toString() + ")");
+                        }
+
+                        throw new ThumbnailException(ERR_NO_PARENT);
+                    }
+                    else
+                    {
+                        node = parents.get(0).getParentRef();
+                    }
+                    
+                    // Get the content property
+                    QName contentProperty = (QName)nodeService.getProperty(thumbnail, ContentModel.PROP_CONTENT_PROPERTY_NAME);
+                    
+                    // Get the reader and writer            
+                    ContentReader reader = contentService.getReader(node, contentProperty);
+                    ContentWriter writer = contentService.getWriter(thumbnail, ContentModel.PROP_CONTENT, true);
+                    
+                    // Set the basic detail of the transformation options
+                    transformationOptions.setSourceNodeRef(node);
+                    transformationOptions.setSourceContentProperty(contentProperty);
+                    transformationOptions.setTargetNodeRef(thumbnail);
+                    transformationOptions.setTargetContentProperty(ContentModel.PROP_CONTENT);
+                    
+                    // Catch the failure to create the thumbnail
+                    if (contentService.isTransformable(reader, writer, transformationOptions) == false)
+                    {
+                        if (logger.isDebugEnabled() == true)
+                        {
+                            logger.debug("Updating thumbnail: there is not transformer to update the thumbnail with (thumbnail=" + thumbnail.toString() + ")");
+                        }
+
+                        // Throw exception indicating that the thumbnail could not be created
+                        throw new ThumbnailException(MessageFormat.format(ERR_NO_CREATE, reader.getMimetype(), writer.getMimetype()));
+                    }
+                    else
+                    {
+                        // Do the thumbnail transformation
+                        contentService.transform(reader, writer, transformationOptions);
+                    }
+                }
+                else
+                {
+                    if (logger.isDebugEnabled() == true)
+                    {
+                        logger.debug("Updating thumbnail: cannot update a thumbnail node that isn't the correct thumbnail type (thumbnail=" + thumbnail.toString() + ")");
+                    }
+                }
+                return null;
+            }
+        }, AuthenticationUtil.getSystemUserName());
     }
 
     /**
@@ -339,6 +402,11 @@ public class ThumbnailServiceImpl implements ThumbnailService
         if (logger.isDebugEnabled() == true)
         {
             logger.debug("Getting thumbnail by name (nodeRef=" + node.toString() + "; contentProperty=" + contentProperty.toString() + "; thumbnailName=" + thumbnailName + ")");
+        }
+        
+        if (!permissionService.hasPermission(node, PermissionService.READ_PROPERTIES).equals(AccessStatus.ALLOWED))
+        {
+            throw new AccessDeniedException("Access Denied");
         }
         
         // Check that the node has the thumbnailed aspect applied
@@ -379,6 +447,11 @@ public class ThumbnailServiceImpl implements ThumbnailService
         if (logger.isDebugEnabled() == true)
         {
             logger.debug("Getting thumbnails (nodeRef=" + node.toString() + "; contentProperty=" + contentProperty.toString() + "; mimetype=" + mimetype + ")");
+        }
+        
+        if (!permissionService.hasPermission(node, PermissionService.READ_PROPERTIES).equals(AccessStatus.ALLOWED))
+        {
+            throw new AccessDeniedException("Access Denied");
         }
         
         // Check that the node has the thumbnailed aspect applied

@@ -73,6 +73,7 @@ import org.alfresco.repo.domain.hibernate.SessionSizeResourceManager;
 import org.alfresco.repo.domain.hibernate.StoreImpl;
 import org.alfresco.repo.domain.hibernate.TransactionImpl;
 import org.alfresco.repo.node.db.NodeDaoService;
+import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.permissions.ACLType;
 import org.alfresco.repo.security.permissions.AccessControlListProperties;
@@ -191,6 +192,7 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
     private DictionaryService dictionaryService;
     private boolean enableTimestampPropagation;
     private RetryingTransactionHelper auditableTransactionHelper;
+    private BehaviourFilter behaviourFilter;
     /** A cache mapping StoreRef and NodeRef instances to the entity IDs (primary key) */
     private SimpleCache<EntityRef, Long> storeAndNodeIdCache;
     /** A cache for more performant lookups of the parent associations */
@@ -309,6 +311,16 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
     public void setAuditableTransactionHelper(RetryingTransactionHelper auditableTransactionHelper)
     {
         this.auditableTransactionHelper = auditableTransactionHelper;
+    }
+
+    /**
+     * Set the component to determine the correct aspect behaviours.  This applies
+     * particularly to the <b>cm:auditable</b> case, where the setting of values
+     * is done automatically except when the behaviour is disabled.
+     */
+    public void setBehaviourFilter(BehaviourFilter behaviourFilter)
+    {
+        this.behaviourFilter = behaviourFilter;
     }
 
     /**
@@ -839,21 +851,56 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
         }
     }
 
+    /**
+     * Record the node update, setting the node's <b>cm:auditable</b> properties.
+     * The <b>cm:auditable</b> properties set implicity if the automatic behaviour
+     * {@link BehaviourFilter#isEnabled(NodeRef, QName) behaviour} is enabled.
+     * 
+     * @see #recordNodeUpdate(Node, Map)
+     */
     private void recordNodeUpdate(Node node)
+    {
+        recordNodeUpdate(node, null);
+    }
+    
+    /**
+     * Record the node update, setting the node's <b>cm:auditable</b> properties.
+     * The <b>cm:auditable</b> properties set implicity if the automatic behaviour
+     * {@link BehaviourFilter#isEnabled(NodeRef, QName) behaviour} is enabled,
+     * otherwise the properties are extracted from the properties passed in.
+     * 
+     * @param node          the node to operate on
+     * @param properties    the node properties from which <b>cm:auditable</b> properties
+     *                      may be extracted
+     */
+    private void recordNodeUpdate(Node node, Map<QName, Serializable> properties)
     {
         updateNodeStatus(node, false);
         // Handle cm:auditable
         if (hasNodeAspect(node, ContentModel.ASPECT_AUDITABLE))
         {
-            String currentUser = getCurrentUser();
-            Date currentDate = new Date();
+            NodeRef nodeRef = node.getNodeRef();
             AuditableProperties auditableProperties = node.getAuditableProperties();
             if (auditableProperties == null)
             {
                 auditableProperties = new AuditableProperties();
                 node.setAuditableProperties(auditableProperties);                
             }
-            auditableProperties.setAuditValues(currentUser, currentDate, false);
+            String currentUser = getCurrentUser();
+            Date currentDate = new Date();
+            // Check if the cm:auditable aspect behaviour is enabled
+            if (behaviourFilter.isEnabled(nodeRef, ContentModel.ASPECT_AUDITABLE))
+            {
+                // Automatic cm:auditable behaviour
+                auditableProperties.setAuditValues(currentUser, currentDate, false);
+            }
+            else if (properties != null)
+            {
+                // Manual cm:auditable behaviour
+                node.getAuditableProperties().setAuditValues(currentUser, currentDate, properties);
+            }
+            // else
+            //      there are no properties, so there is nothing to set
         }
         // Propagate timestamps
         propagateTimestamps(node);
@@ -1398,7 +1445,9 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
         addNodePropertyImpl(node, qname, propertyValue, localeId);
         
         // Record change ID
-        recordNodeUpdate(node);
+        recordNodeUpdate(
+                node,
+                Collections.singletonMap(qname, propertyValue));
     }
     
     @SuppressWarnings("unchecked")
@@ -1410,12 +1459,16 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
         for (Map.Entry<QName, Serializable> entry : properties.entrySet())
         {
             QName qname = entry.getKey();
+            if (AuditableProperties.isAuditableProperty(qname))
+            {
+                continue;
+            }
             Serializable value = entry.getValue();
             addNodePropertyImpl(node, qname, value, localeId);
         }
         
         // Record change ID
-        recordNodeUpdate(node);
+        recordNodeUpdate(node, properties);
     }
 
     public void setNodeProperties(Long nodeId, Map<QName, Serializable> propertiesIncl)
@@ -1477,7 +1530,7 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
         }
         
         // Record change ID
-        recordNodeUpdate(node);
+        recordNodeUpdate(node, propertiesIncl);
     }
 
     public void removeNodeProperties(Long nodeId, Set<QName> propertyQNamesIncl)

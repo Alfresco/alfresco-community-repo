@@ -209,6 +209,65 @@ public class AuditableProperties
     }
 
     /**
+     * Set all <b>cm:auditable</b> parameters as required, giving precedence to the supplied
+     * property map.
+     * 
+     * @param user          the username
+     * @param date          the creation or modification date
+     * @param properties    the properties to override the user and date
+     */
+    public void setAuditValues(String user, Date date, Map<QName, Serializable> properties)
+    {
+        String dateStr = DefaultTypeConverter.INSTANCE.convert(String.class, date);
+        if (properties.containsKey(ContentModel.PROP_CREATOR))
+        {
+            auditCreator = DefaultTypeConverter.INSTANCE.convert(
+                    String.class,
+                    properties.get(ContentModel.PROP_CREATOR));
+        }
+        else if (auditCreator == null)
+        {
+            auditCreator = user;
+        }
+        if (properties.containsKey(ContentModel.PROP_MODIFIER))
+        {
+            auditModifier = DefaultTypeConverter.INSTANCE.convert(
+                    String.class,
+                    properties.get(ContentModel.PROP_MODIFIER));
+        }
+        else if (auditModifier == null)
+        {
+            auditModifier = user;
+        }
+        if (properties.containsKey(ContentModel.PROP_CREATED))
+        {
+            auditCreated = DefaultTypeConverter.INSTANCE.convert(
+                    String.class,
+                    properties.get(ContentModel.PROP_CREATED));
+        }
+        else if (auditCreated == null)
+        {
+            auditCreated = dateStr;
+        }
+        if (properties.containsKey(ContentModel.PROP_MODIFIED))
+        {
+            auditModified = DefaultTypeConverter.INSTANCE.convert(
+                    String.class,
+                    properties.get(ContentModel.PROP_MODIFIED));
+        }
+        else if (auditModified == null)
+        {
+            auditModified = dateStr;
+        }
+        if (properties.containsKey(ContentModel.PROP_ACCESSED))
+        {
+            auditAccessed = DefaultTypeConverter.INSTANCE.convert(
+                    String.class,
+                    properties.get(ContentModel.PROP_ACCESSED));
+        }
+    }
+    
+    /**
      * For persistance use
      */
     @SuppressWarnings("unused")

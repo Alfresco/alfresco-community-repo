@@ -26,14 +26,25 @@ package org.alfresco.repo.importer;
 
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.Serializable;
+import java.util.List;
+import java.util.Map;
 
+import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.view.ImporterService;
 import org.alfresco.service.cmr.view.Location;
 import org.alfresco.service.cmr.view.ImporterBinding.UUID_BINDING;
+import org.alfresco.service.namespace.NamespaceService;
+import org.alfresco.service.namespace.QName;
+import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.BaseSpringTest;
 import org.alfresco.util.debug.NodeStoreInspector;
 
@@ -71,14 +82,63 @@ public class ImporterComponentTest extends BaseSpringTest
     }
     
     
-    public void testImport()
-        throws Exception
+    public void testImport() throws Exception
     {
         InputStream test = getClass().getClassLoader().getResourceAsStream("org/alfresco/repo/importer/importercomponent_test.xml");
         InputStreamReader testReader = new InputStreamReader(test, "UTF-8");
         Location location = new Location(storeRef);
         importerService.importView(testReader, location, null, new ImportTimerProgress());
         System.out.println(NodeStoreInspector.dumpNodeStore(nodeService, storeRef));
+    }
+    
+    public void testImportWithAuditableProperties() throws Exception
+    {
+        InputStream test = getClass().getClassLoader().getResourceAsStream("org/alfresco/repo/importer/importercomponent_test.xml");
+        InputStreamReader testReader = new InputStreamReader(test, "UTF-8");
+        Location location = new Location(storeRef);
+        try
+        {
+            importerService.importView(
+                    testReader,
+                    location,
+                    null,
+                    new ImportTimerProgress());
+        }
+        finally
+        {
+            testReader.close();
+        }
+        
+        NodeRef rootNodeRef = nodeService.getRootNode(storeRef);
+        List<ChildAssociationRef> childAssocs = nodeService.getChildAssocs(
+                rootNodeRef,
+                RegexQNamePattern.MATCH_ALL,
+                new RegexQNamePattern(NamespaceService.CONTENT_MODEL_1_0_URI, "SpaceWith.*"));
+//                QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "SpaceWithAuditable"));
+        assertEquals("'SpaceWith*' path not found", 2, childAssocs.size());
+        
+        NodeRef nodeRef = childAssocs.get(0).getChildRef();
+        Map<QName, Serializable> nodeProps = nodeService.getProperties(nodeRef);
+        String createdDate = DefaultTypeConverter.INSTANCE.convert(String.class, nodeProps.get(ContentModel.PROP_CREATED));
+        String creator = DefaultTypeConverter.INSTANCE.convert(String.class, nodeProps.get(ContentModel.PROP_CREATOR));
+        String modifiedDate = DefaultTypeConverter.INSTANCE.convert(String.class, nodeProps.get(ContentModel.PROP_MODIFIED));
+        String modifier = DefaultTypeConverter.INSTANCE.convert(String.class, nodeProps.get(ContentModel.PROP_MODIFIER));
+        // Check that the cm:auditable properties are correct
+        assertEquals("cm:created not preserved during import", "2009-05-01T00:00:00.000+01:00", createdDate);
+        assertEquals("cm:creator not preserved during import", "Import Creator", creator);
+        assertEquals("cm:modified not preserved during import", "2009-05-02T00:00:00.000+01:00", modifiedDate);
+        assertEquals("cm:modifier not preserved during import", "Import Modifier", modifier);
+        
+        nodeRef = childAssocs.get(1).getChildRef();
+        nodeProps = nodeService.getProperties(nodeRef);
+        createdDate = DefaultTypeConverter.INSTANCE.convert(String.class, nodeProps.get(ContentModel.PROP_CREATED));
+        creator = DefaultTypeConverter.INSTANCE.convert(String.class, nodeProps.get(ContentModel.PROP_CREATOR));
+        modifiedDate = DefaultTypeConverter.INSTANCE.convert(String.class, nodeProps.get(ContentModel.PROP_MODIFIED));
+        modifier = DefaultTypeConverter.INSTANCE.convert(String.class, nodeProps.get(ContentModel.PROP_MODIFIER));
+        // Check that the cm:auditable properties are correct
+        assertEquals("cm:created not preserved during import", "2009-05-01T00:00:00.000+01:00", createdDate);
+        assertEquals("cm:creator not preserved during import", "Import Creator", creator);
+        assertEquals("cm:modifier not preserved during import", AuthenticationUtil.getSystemUserName(), modifier);
     }
     
     public void testImportWithUuidBinding() throws Exception

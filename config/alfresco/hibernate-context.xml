@@ -388,6 +388,9 @@
       <property name="auditableTransactionHelper">
          <ref bean="auditableTransactionHelper" />
       </property>
+      <property name="behaviourFilter">
+         <ref bean="policyBehaviourFilter" />
+      </property>
       <property name="sessionFactory">
          <ref bean="sessionFactory" />
       </property>

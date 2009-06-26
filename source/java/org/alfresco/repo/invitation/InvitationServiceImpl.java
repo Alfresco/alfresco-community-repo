@@ -709,7 +709,7 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
 						{
 							// Uh oh ... crap detected
 							crap = true;
-							System.out.println("ALFCOM-2598 key:" + key + "query:" + val1 +  "task:" + val2);
+							logger.debug("ALFCOM-2598 key:" + key + "query:" + val1 +  "task:" + val2);
 							break;
 						}
 					}
@@ -721,7 +721,7 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
 						{
 							// Uh oh ... crap detected
 							crap = true;
-							System.out.println("ALFCOM-2598 key:" + key + "query:" + val1 +  "task:" + val2);
+							logger.debug("ALFCOM-2598 key:" + key + "query:" + val1 +  "task:" + val2);
 							break;
 						}
 					}
@@ -734,7 +734,7 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
 							
 							// Uh oh ... crap detected
 							crap = true;
-							System.out.println("ALFCOM-2598 key:" + key + "query:" + val1 +  "task:" + val2);
+							logger.debug("ALFCOM-2598 key:" + key + "query:" + val1 +  "task:" + val2);
 							break;
 						}
 					}
@@ -806,7 +806,7 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
 					{
 						// crap detected
 						crap = true;
-						System.out.println("ALFCOM-2598 key:" + key + "query:" + val1 +  "task:" + val2);
+						logger.debug("ALFCOM-2598 key:" + key + "query:" + val1 +  "task:" + val2);
 						break;
 					}
 				}

@@ -5,9 +5,16 @@
     </table>
     <br>
     <table>
-<#list search.results as row>            
+<#list search.results as row>  
+
+      <#if (row.assocs["cm:avatar"]?exists)>
+      		<#assign avatarURL = row.assocs["cm:avatar"][0].url>
+   	  <#else>
+      		<#assign avatarURL = "/images/icons/default_avatar.png">
+   	  </#if>
       <tr>
-      <td><img src="${url.context}${row.assocs[\"cm:avatar\"][0].url}"/></td><td><a href="${absurl(url.context)}/c/ui/userprofile?id=${row.id}">${row.firstName} ${row.lastName}</a></td>
+      <td><img src="${absurl(url.context)}${avatarURL}"/></td>
+      <td><a href="${absurl(url.context)}/c/ui/userprofile?id=${row.id}"><#if row.properties.firstName??>${row.properties.firstName}</#if><#if row.properties.lastName??> ${row.properties.lastName} </#if></a></td>
       </tr>
       <tr>
       <td></td>

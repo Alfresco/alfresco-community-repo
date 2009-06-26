@@ -45,6 +45,7 @@ import org.alfresco.jlan.server.core.DeviceContextException;
 import org.alfresco.jlan.server.filesys.AccessDeniedException;
 import org.alfresco.jlan.server.filesys.AccessMode;
 import org.alfresco.jlan.server.filesys.DirectoryNotEmptyException;
+import org.alfresco.jlan.server.filesys.DiskFullException;
 import org.alfresco.jlan.server.filesys.DiskInterface;
 import org.alfresco.jlan.server.filesys.FileAttribute;
 import org.alfresco.jlan.server.filesys.FileInfo;
@@ -73,6 +74,7 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.lock.NodeLockedException;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.repository.ContentData;
+import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -1472,6 +1474,16 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
             if ( netFile != null)
             	netFile.setFileId( params.getPath().hashCode());
             
+            // If the file has been opened for overwrite then truncate the file to zero length, this will
+            // also prevent the existing content data from being copied to the new version of the file
+            
+            if ( params.isOverwrite() && netFile != null)
+            {
+                // Truncate the file to zero length
+                
+                netFile.truncateFile( 0L);
+            }
+            
             // Create a file state for the open file
             
             if ( ctx.hasStateTable())
@@ -1492,16 +1504,6 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
                 
                 if ( fstate.hasAccessDateTime())
                 	netFile.setAccessDate( fstate.getAccessDateTime());
-            }
-            
-            // If the file has been opened for overwrite then truncate the file to zero length, this will
-            // also prevent the existing content data from being copied to the new version of the file
-            
-            if ( params.isOverwrite() && netFile != null)
-            {
-                // Truncate the file to zero length
-                
-                netFile.truncateFile( 0L);
             }
             
             // Debug
@@ -1665,6 +1667,17 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
             
             throw new AccessDeniedException("Create file " + params.getFullPath());
         }
+        catch (ContentIOException ex)
+        {
+            // Debug
+            
+            if ( logger.isDebugEnabled())
+                logger.debug("Create file - content I/O error, " + params.getFullPath());
+            
+            // Convert to a filesystem disk full status
+            
+            throw new DiskFullException("Create file " + params.getFullPath());
+        }
         catch (AlfrescoRuntimeException ex)
         {
             // Debug
@@ -1743,7 +1756,6 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
                     // Indicate that the file is open
     
                     fstate.setFileStatus(FileStateStatus.FolderExists);
-                    fstate.incrementOpenCount();
                     fstate.setNodeRef(nodeRef);
                     
                     // DEBUG
@@ -1936,9 +1948,17 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
                 {
                     try
                     {
-                        // Delete the file
-                        
-                        fileFolderService.delete(nodeRef);
+                    	try
+                    	{
+	                        // Delete the file
+	                        
+	                        fileFolderService.delete(nodeRef);
+                    	}
+                    	catch ( Exception ex)
+                    	{
+                    		if ( logger.isWarnEnabled())
+                    			logger.warn("Error during delete on close, " + file.getFullName(), ex);
+                    	}
     
                         // Set the file state to indicate a delete on close
                         

@@ -27,6 +27,7 @@ package org.alfresco.repo.version;
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.alfresco.i18n.I18NUtil;
@@ -48,6 +49,7 @@ import org.alfresco.service.cmr.version.Version;
 import org.alfresco.service.cmr.version.VersionService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.EqualsHelper;
 
 /**
  * Class containing behaviour for the versionable aspect
@@ -79,6 +81,13 @@ public class VersionableAspect implements ContentServicePolicies.OnContentUpdate
     /** The Version service */
     private VersionService versionService;
     
+    /** 
+     * Optional list of excluded props 
+     * - only applies if cm:autoVersionOnUpdateProps=true (and cm:autoVersion=true)
+     * - if any one these props changes then "auto version on prop update" does not occur (even if there are other property changes)
+     */
+    private List<String> excludedOnUpdateProps = Collections.emptyList();
+    
     /**
      * Set the policy component
      * 
@@ -107,6 +116,11 @@ public class VersionableAspect implements ContentServicePolicies.OnContentUpdate
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
+    }
+    
+    public void setExcludedOnUpdateProps(List<String> excludedOnUpdateProps)
+    {
+        this.excludedOnUpdateProps = excludedOnUpdateProps;
     }
     
     /**
@@ -334,6 +348,43 @@ public class VersionableAspect implements ContentServicePolicies.OnContentUpdate
                 
                 if ((autoVersion == true) && (autoVersionProps == true))
                 {
+                    // Check for explicitly excluded props - if one or more excluded props changes then do not auto-version on this event (even if other props changed)
+                    if (excludedOnUpdateProps.size() > 0)
+                    {
+                        Map<String, QName> propNames = new HashMap<String, QName>(after.size());
+                        for (QName afterProp : after.keySet())
+                        {
+                            if (excludedOnUpdateProps.contains(afterProp.getPrefixString()))
+                            {
+                                propNames.put(afterProp.getPrefixString(), afterProp);
+                            }
+                        }
+                        for (QName beforeProp : before.keySet())
+                        {
+                            if (excludedOnUpdateProps.contains(beforeProp.getPrefixString()))
+                            {
+                                propNames.put(beforeProp.getPrefixString(), beforeProp);
+                            }
+                        }
+                        
+                        if (propNames.size() > 0)
+                        {
+                            for (QName prop : propNames.values())
+                            {
+                                Serializable beforeValue = before.get(prop);
+                                Serializable afterValue = after.get(prop);
+                                
+                                if (EqualsHelper.nullSafeEquals(beforeValue, afterValue) != true)
+                                {
+                                    // excluded - do not version
+                                    return;
+                                }
+                            }
+                        }
+                        
+                        // drop through and auto-version
+                    }
+                    
                     // Create the auto-version
                     Map<String, Serializable> versionProperties = new HashMap<String, Serializable>(1);
                     versionProperties.put(Version.PROP_DESCRIPTION, I18NUtil.getMessage(MSG_AUTO_VERSION_PROPS));

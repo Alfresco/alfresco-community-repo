@@ -62,7 +62,7 @@ import org.springframework.context.ApplicationContext;
 /**
  * versionService test class.
  * 
- * @author Roy Wetherall
+ * @author Roy Wetherall, janv
  */
 public class VersionServiceImplTest extends BaseVersionStoreTest
 {
@@ -937,7 +937,7 @@ public class VersionServiceImplTest extends BaseVersionStoreTest
                 assertNotNull(versionHistory);
                 assertEquals(1, versionHistory.getAllVersions().size());
                 
-                nodeService.setProperty(versionableNode, ContentModel.PROP_AUTHOR, "ano author");
+                nodeService.setProperty(versionableNode, ContentModel.PROP_AUTHOR, "ano author 1");
                 
                 return null;
             }
@@ -975,7 +975,7 @@ public class VersionServiceImplTest extends BaseVersionStoreTest
                 assertNotNull(versionHistory);
                 assertEquals(1, versionHistory.getAllVersions().size());
                 
-                nodeService.setProperty(versionableNode2, ContentModel.PROP_AUTHOR, "ano author");
+                nodeService.setProperty(versionableNode2, ContentModel.PROP_AUTHOR, "ano author 2");
                 
                 return null;
             }
@@ -989,6 +989,112 @@ public class VersionServiceImplTest extends BaseVersionStoreTest
                 VersionHistory versionHistory = versionService.getVersionHistory(versionableNode2);
                 assertNotNull(versionHistory);
                 assertEquals(1, versionHistory.getAllVersions().size());
+                
+                return null;
+            }
+        
+        });
+    }
+    
+    public void testAutoVersionOnUpdatePropsOnlyWithExcludes()
+    {
+        // test auto-version props on - without any excludes
+        final NodeRef versionableNode = createNewVersionableNode();
+        this.dbNodeService.setProperty(versionableNode, ContentModel.PROP_AUTO_VERSION_PROPS, true);
+        
+        setComplete();
+        endTransaction();
+        
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Object>()
+        {
+            public Object execute() throws Exception
+            {
+                VersionHistory versionHistory = versionService.getVersionHistory(versionableNode);
+                assertNotNull(versionHistory);
+                assertEquals(1, versionHistory.getAllVersions().size());
+                
+                nodeService.setProperty(versionableNode, ContentModel.PROP_AUTHOR, "ano author 1");
+                nodeService.setProperty(versionableNode, ContentModel.PROP_DESCRIPTION, "description 1");
+                
+                return null;
+            }
+        });
+        
+        // Now lets have a look and make sure we have the correct number of entries in the version history
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Object>()
+        {
+            public Object execute() throws Exception
+            {
+                VersionHistory versionHistory = versionService.getVersionHistory(versionableNode);
+                assertNotNull(versionHistory);
+                assertEquals(2, versionHistory.getAllVersions().size());
+                
+                return null;
+            }
+        
+        });
+        
+        VersionableAspect versionableAspect = (VersionableAspect)applicationContext.getBean("versionableAspect");
+        
+        List<String> excludedOnUpdateProps = new ArrayList<String>(1);
+        excludedOnUpdateProps.add(ContentModel.PROP_AUTHOR.toPrefixString());
+        versionableAspect.setExcludedOnUpdateProps(excludedOnUpdateProps);
+        
+        // test auto-version props on - with an excluded prop change
+        
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Object>()
+        {
+            public Object execute() throws Exception
+            {
+                VersionHistory versionHistory = versionService.getVersionHistory(versionableNode);
+                assertNotNull(versionHistory);
+                assertEquals(2, versionHistory.getAllVersions().size());
+                
+                nodeService.setProperty(versionableNode, ContentModel.PROP_AUTHOR, "ano author 2");
+                nodeService.setProperty(versionableNode, ContentModel.PROP_DESCRIPTION, "description 2");
+                
+                return null;
+            }
+        });
+        
+        // Now lets have a look and make sure we have the correct number of entries in the version history
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Object>()
+        {
+            public Object execute() throws Exception
+            {
+                VersionHistory versionHistory = versionService.getVersionHistory(versionableNode);
+                assertNotNull(versionHistory);
+                assertEquals(2, versionHistory.getAllVersions().size());
+                
+                return null;
+            }
+        
+        });
+        
+        // test auto-version props on - with a non-excluded prop change
+        
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Object>()
+        {
+            public Object execute() throws Exception
+            {
+                VersionHistory versionHistory = versionService.getVersionHistory(versionableNode);
+                assertNotNull(versionHistory);
+                assertEquals(2, versionHistory.getAllVersions().size());
+                
+                nodeService.setProperty(versionableNode, ContentModel.PROP_DESCRIPTION, "description 3");
+                
+                return null;
+            }
+        });
+        
+        // Now lets have a look and make sure we have the correct number of entries in the version history
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Object>()
+        {
+            public Object execute() throws Exception
+            {
+                VersionHistory versionHistory = versionService.getVersionHistory(versionableNode);
+                assertNotNull(versionHistory);
+                assertEquals(3, versionHistory.getAllVersions().size());
                 
                 return null;
             }

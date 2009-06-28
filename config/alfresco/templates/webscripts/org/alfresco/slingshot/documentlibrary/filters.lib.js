@@ -22,39 +22,34 @@ function getFilterParams(filter, parsedArgs, favourites)
    }
 
    // Create query based on passed-in arguments
-   var strFilter = String(filter);
-   switch (strFilter)
+   var filterId = String(filter),
+      filterData = String(args["filterData"]);
+
+   // Common types and aspects to filter from the UI
+   var filterQueryDefaults = " -ASPECT:\"{http://www.alfresco.org/model/content/1.0}workingcopy\"";
+   filterQueryDefaults += " -TYPE:\"{http://www.alfresco.org/model/content/1.0}thumbnail\"";
+   filterQueryDefaults += " -TYPE:\"{http://www.alfresco.org/model/content/1.0}systemfolder\"";
+   filterQueryDefaults += " -TYPE:\"{http://www.alfresco.org/model/forum/1.0}forums\"";
+   filterQueryDefaults += " -TYPE:\"{http://www.alfresco.org/model/forum/1.0}forum\"";
+   filterQueryDefaults += " -TYPE:\"{http://www.alfresco.org/model/forum/1.0}topic\"";
+   filterQueryDefaults += " -TYPE:\"{http://www.alfresco.org/model/forum/1.0}post\"";
+   
+   switch (filterId)
    {
       case "all":
          var filterQuery = "+PATH:\"" + parsedArgs.rootNode.qnamePath + "//*\"";
-         filterQuery += " -TYPE:\"{http://www.alfresco.org/model/content/1.0}thumbnail\"";
          filterQuery += " -TYPE:\"{http://www.alfresco.org/model/content/1.0}folder\"";
-         filterQuery += " -TYPE:\"{http://www.alfresco.org/model/content/1.0}systemfolder\"";
-         filterQuery += " -TYPE:\"{http://www.alfresco.org/model/forum/1.0}forums\"";
-         filterQuery += " -TYPE:\"{http://www.alfresco.org/model/forum/1.0}forum\"";
-         filterQuery += " -TYPE:\"{http://www.alfresco.org/model/forum/1.0}topic\"";
-         filterQuery += " -TYPE:\"{http://www.alfresco.org/model/forum/1.0}post\"";
-         filterParams.query = filterQuery;
+         filterParams.query = filterQuery + filterQueryDefaults;
          break;
-         
-      case "node":
-         filterParams.variablePath = true;
-         filterParams.query = "+ID:\"" + parsedArgs.parentNode.nodeRef + "\"";
-         break;
-      
-      case "tag":
-         filterParams.variablePath = true;
-         filterParams.query = "+PATH:\"" + parsedArgs.rootNode.qnamePath + "//*\" +PATH:\"/cm:taggable/cm:" + search.ISO9075Encode(args["filterData"]) + "/member\"";
-         break;
-      
+
       case "recentlyAdded":
       case "recentlyModified":
       case "recentlyCreatedByMe":
       case "recentlyModifiedByMe":
-         var onlySelf = (strFilter.indexOf("ByMe")) > 0 ? true : false,
-            dateField = (strFilter.indexOf("Created") > 0) ? "created" : "modified",
+         var onlySelf = (filterData.indexOf("ByMe")) > 0 ? true : false,
+            dateField = (filterData.indexOf("Created") > 0) ? "created" : "modified",
             ownerField = (dateField == "created") ? "creator" : "modifier";
-         
+
          // Default to 7 days - can be overridden using "days" argument
          var dayCount = 7,
             argDays = args["days"];
@@ -68,7 +63,7 @@ function getFilterParams(filter, parsedArgs, favourites)
          {
             filterParams.limitResults = 50;
          }
-         
+
          var date = new Date();
          var toQuery = date.getFullYear() + "\\-" + (date.getMonth() + 1) + "\\-" + date.getDate();
          date.setDate(date.getDate() - dayCount);
@@ -86,21 +81,14 @@ function getFilterParams(filter, parsedArgs, favourites)
          {
             filterQuery += " +@cm\\:" + ownerField + ":" + person.properties.userName;
          }
-         filterQuery += " -ASPECT:\"{http://www.alfresco.org/model/content/1.0}workingcopy\"";
-         filterQuery += " -TYPE:\"{http://www.alfresco.org/model/content/1.0}thumbnail\"";
          filterQuery += " -TYPE:\"{http://www.alfresco.org/model/content/1.0}folder\"";
-         filterQuery += " -TYPE:\"{http://www.alfresco.org/model/content/1.0}systemfolder\"";
-         filterQuery += " -TYPE:\"{http://www.alfresco.org/model/forum/1.0}forums\"";
-         filterQuery += " -TYPE:\"{http://www.alfresco.org/model/forum/1.0}forum\"";
-         filterQuery += " -TYPE:\"{http://www.alfresco.org/model/forum/1.0}topic\"";
-         filterQuery += " -TYPE:\"{http://www.alfresco.org/model/forum/1.0}post\"";
 
          filterParams.sortBy = "@{http://www.alfresco.org/model/content/1.0}" + dateField;
          filterParams.sortByAscending = false;
          filterParams.variablePath = true;
-         filterParams.query = filterQuery;
+         filterParams.query = filterQuery + filterQueryDefaults;
          break;
-         
+
       case "editingMe":
          var filterQuery = "+PATH:\"" + parsedArgs.rootNode.qnamePath + "//*\"";
          filterQuery += " +ASPECT:\"{http://www.alfresco.org/model/content/1.0}workingcopy\"";
@@ -109,7 +97,7 @@ function getFilterParams(filter, parsedArgs, favourites)
          filterParams.variablePath = true;
          filterParams.query = filterQuery;
          break;
-      
+
       case "editingOthers":
          var filterQuery = "+PATH:\"" + parsedArgs.rootNode.qnamePath + "//*\"";
          filterQuery += " +ASPECT:\"{http://www.alfresco.org/model/content/1.0}workingcopy\"";
@@ -118,11 +106,11 @@ function getFilterParams(filter, parsedArgs, favourites)
          filterParams.variablePath = true;
          filterParams.query = filterQuery;
          break;
-      
+
       case "favouriteDocuments":
          var filterQuery = "",
             foundOne = false;
-         
+
          for (favourite in favourites)
          {
             if (foundOne)
@@ -135,17 +123,20 @@ function getFilterParams(filter, parsedArgs, favourites)
          filterParams.variablePath = true;
          filterParams.query = filterQuery.length > 0 ? "+PATH:\"" + parsedArgs.rootNode.qnamePath + "//*\" +(" + filterQuery + ")" : "+ID:\"\"";
          break;
+
+      case "node":
+         filterParams.variablePath = true;
+         filterParams.query = "+ID:\"" + parsedArgs.parentNode.nodeRef + "\"";
+         break;
+      
+      case "tag":
+         filterParams.variablePath = true;
+         filterParams.query = "+PATH:\"" + parsedArgs.rootNode.qnamePath + "//*\" +PATH:\"/cm:taggable/cm:" + search.ISO9075Encode(filterData) + "/member\"";
+         break;
       
       default:
          var filterQuery = "+PATH:\"" + parsedArgs.parentNode.qnamePath + "/*\"";
-         filterQuery += " -ASPECT:\"{http://www.alfresco.org/model/content/1.0}workingcopy\"";
-         filterQuery += " -TYPE:\"{http://www.alfresco.org/model/content/1.0}systemfolder\"";
-         filterQuery += " -TYPE:\"{http://www.alfresco.org/model/forum/1.0}forums\"";
-         filterQuery += " -TYPE:\"{http://www.alfresco.org/model/forum/1.0}forum\"";
-         filterQuery += " -TYPE:\"{http://www.alfresco.org/model/forum/1.0}topic\"";
-         filterQuery += " -TYPE:\"{http://www.alfresco.org/model/forum/1.0}post\"";
-         
-         filterParams.query = filterQuery;
+         filterParams.query = filterQuery + filterQueryDefaults;
          break;
    }
    

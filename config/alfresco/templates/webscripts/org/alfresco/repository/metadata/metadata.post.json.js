@@ -39,12 +39,18 @@ function main()
    // Set passed-in tags
    if (json.has("tags"))
    {
-      var tags = String(json.get("tags"));
-      if (tags !== "")
+      // Get the tags JSONArray and copy it to a native JavaScript array
+      var jsonTags = json.get("tags"),
+         tags = [];
+      
+      for (var t = 0; t < jsonTags.length(); t++)
       {
-         // Remove leading, trailing and multiple spaces
-         tags = tags.replace(/^\s+|\s+$/g, '').replace(/\s{2,}/, ' ');
-         node.tags = tags.split(" ");
+         tags.push(jsonTags.get(t));
+      }
+
+      if (tags.length > 0)
+      {
+         node.tags = tags;
       }
       else
       {

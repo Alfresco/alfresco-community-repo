@@ -970,20 +970,16 @@ public class NodeFormProcessor extends FilteredFormProcessor
                 {
                     Object value = fieldData.getValue();
                     
-                    // before persisting check data type of property, if it's numerical
-                    // or a date ensure empty strings are changed to null and convert
-                    // locale strings to locale objects
+                    // before persisting check data type of property
                     if ((value instanceof String) && ((String)value).length() == 0)
                     {
-                       if (propDef.getDataType().getName().equals(DataTypeDefinition.DOUBLE) || 
-                           propDef.getDataType().getName().equals(DataTypeDefinition.FLOAT) ||
-                           propDef.getDataType().getName().equals(DataTypeDefinition.INT) || 
-                           propDef.getDataType().getName().equals(DataTypeDefinition.LONG) ||
-                           propDef.getDataType().getName().equals(DataTypeDefinition.DATE) ||
-                           propDef.getDataType().getName().equals(DataTypeDefinition.DATETIME))
-                       {
-                           value = null;
-                       }
+                        // make sure empty strings stay as empty strings, everything else
+                        // should be represented as null
+                        if (!propDef.getDataType().getName().equals(DataTypeDefinition.TEXT) && 
+                            !propDef.getDataType().getName().equals(DataTypeDefinition.MLTEXT))
+                        {
+                            value = null;
+                        }
                     }
                     else if (propDef.isMultiValued())
                     {

@@ -61,8 +61,8 @@ public class MailContentTransformerTest extends AbstractContentTransformerTest
     
     public void testIsTransformable() throws Exception
     {
-        assertFalse(transformer.isTransformable(MimetypeMap.MIMETYPE_TEXT_PLAIN, MimetypeMap.MIMETYPE_RFC822, new TransformationOptions()));
-        assertTrue(transformer.isTransformable(MimetypeMap.MIMETYPE_RFC822, MimetypeMap.MIMETYPE_TEXT_PLAIN, new TransformationOptions()));
+        assertFalse(transformer.isTransformable(MimetypeMap.MIMETYPE_TEXT_PLAIN, MimetypeMap.MIMETYPE_OUTLOOK_MSG, new TransformationOptions()));
+        assertTrue(transformer.isTransformable(MimetypeMap.MIMETYPE_OUTLOOK_MSG, MimetypeMap.MIMETYPE_TEXT_PLAIN, new TransformationOptions())); 
     }
     
     /**
@@ -73,7 +73,7 @@ public class MailContentTransformerTest extends AbstractContentTransformerTest
         File msgSourceFile = loadQuickTestFile("msg");
         File txtTargetFile = TempFileProvider.createTempFile(getName() + "-target-1", ".txt");
         ContentReader reader = new FileContentReader(msgSourceFile);
-        reader.setMimetype(MimetypeMap.MIMETYPE_RFC822);
+        reader.setMimetype(MimetypeMap.MIMETYPE_OUTLOOK_MSG);
         ContentWriter writer = new FileContentWriter(txtTargetFile);
         writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
         
@@ -92,7 +92,7 @@ public class MailContentTransformerTest extends AbstractContentTransformerTest
         File msgSourceFile = loadQuickTestFile("unicode.msg");
         File txtTargetFile = TempFileProvider.createTempFile(getName() + "-target-2", ".txt");
         ContentReader reader = new FileContentReader(msgSourceFile);
-        reader.setMimetype(MimetypeMap.MIMETYPE_RFC822);
+        reader.setMimetype(MimetypeMap.MIMETYPE_OUTLOOK_MSG);
         ContentWriter writer = new FileContentWriter(txtTargetFile);
         writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
         

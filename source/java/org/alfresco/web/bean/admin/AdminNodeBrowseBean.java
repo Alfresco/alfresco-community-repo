@@ -84,6 +84,7 @@ public class AdminNodeBrowseBean implements Serializable
         queryLanguages.add(new SelectItem("noderef"));
         queryLanguages.add(new SelectItem(SearchService.LANGUAGE_XPATH));
         queryLanguages.add(new SelectItem(SearchService.LANGUAGE_LUCENE));
+        queryLanguages.add(new SelectItem(SearchService.LANGUAGE_SQL_CMIS_STRICT));
         queryLanguages.add(new SelectItem("selectnodes"));
     }
 

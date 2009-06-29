@@ -41,6 +41,7 @@ import net.sf.acegisecurity.ConfigAttribute;
 import net.sf.acegisecurity.ConfigAttributeDefinition;
 import net.sf.acegisecurity.afterinvocation.AfterInvocationProvider;
 
+import org.alfresco.cmis.CMISResultSet;
 import org.alfresco.repo.search.SimpleResultSetMetaData;
 import org.alfresco.repo.search.impl.lucene.PagingLuceneResultSet;
 import org.alfresco.repo.search.impl.querymodel.QueryEngineResults;
@@ -256,13 +257,13 @@ public class ACLEntryAfterInvocationProvider implements AfterInvocationProvider,
                 }
                 return decide(authentication, object, config, (ChildAssociationRef) returnedObject);
             }
-            else if (ResultSet.class.isAssignableFrom(returnedObject.getClass()))
+            else if (CMISResultSet.class.isAssignableFrom(returnedObject.getClass()))
             {
                 if (log.isDebugEnabled())
                 {
-                    log.debug("Result Set access");
+                    log.debug("CMIS Result Set - already checked permissions for " + object.getClass().getName());
                 }
-                return decide(authentication, object, config, (ResultSet) returnedObject);
+                return returnedObject;
             }
             else if (PagingLuceneResultSet.class.isAssignableFrom(returnedObject.getClass()))
             {
@@ -271,6 +272,14 @@ public class ACLEntryAfterInvocationProvider implements AfterInvocationProvider,
                     log.debug("Result Set access");
                 }
                 return decide(authentication, object, config, (PagingLuceneResultSet) returnedObject);
+            }
+            else if (ResultSet.class.isAssignableFrom(returnedObject.getClass()))
+            {
+                if (log.isDebugEnabled())
+                {
+                    log.debug("Result Set access");
+                }
+                return decide(authentication, object, config, (ResultSet) returnedObject);
             }
             else if (QueryEngineResults.class.isAssignableFrom(returnedObject.getClass()))
             {

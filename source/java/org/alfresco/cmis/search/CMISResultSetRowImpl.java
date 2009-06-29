@@ -204,14 +204,11 @@ public class CMISResultSetRowImpl implements CMISResultSetRow
 
     public NodeRef getNodeRef()
     {
-        if(getCMISResultSet().getMetaData().getColumns().length == 1)
+        if (nodeRefs.size() == 1)
         {
-            return getNodeRef(getCMISResultSet().getMetaData().getColumns()[0].getName());
+            return nodeRefs.values().iterator().next();
         }
-        else
-        {
-            throw new UnsupportedOperationException("Ambiguous selector");
-        }
+        throw new UnsupportedOperationException("Ambiguous selector");
     }
 
     public QName getQName()

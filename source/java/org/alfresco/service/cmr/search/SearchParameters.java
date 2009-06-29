@@ -34,6 +34,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.repo.search.MLAnalysisMode;
+import org.alfresco.repo.search.impl.querymodel.QueryOptions;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.NamespaceService;
 
@@ -164,6 +165,30 @@ public class SearchParameters
         super();
     }
 
+    /**
+     * Construct from Query Options
+     * 
+     * @param options
+     */
+    public SearchParameters(QueryOptions options)
+    {
+        setBulkFetch(options.getFetchSize() > 0);
+        setBulkFetchSize(options.getFetchSize());
+        setSkipCount(options.getSkipCount());
+        setMaxPermissionChecks(options.getMaxPermissionChecks());
+        setMaxPermissionCheckTimeMillis(options.getMaxPermissionCheckTimeMillis());
+        if (options.getMaxItems() >= 0)
+        {
+            setLimitBy(LimitBy.FINAL_SIZE);
+            setLimit(options.getMaxItems());
+            setMaxItems(options.getMaxItems());
+        }
+        else
+        {
+            setLimitBy(LimitBy.UNLIMITED);
+        }
+    }
+    
     /**
      * Get the search language
      * 

@@ -54,6 +54,7 @@ import org.alfresco.service.namespace.QName;
 public class CMISResultSetMetaDataImpl implements CMISResultSetMetaData
 {
     private CMISQueryOptions options;
+    private SearchParameters searchParams;
 
     private Map<String, CMISResultSetColumn> columnMetaData;
 
@@ -62,6 +63,7 @@ public class CMISResultSetMetaDataImpl implements CMISResultSetMetaData
     public CMISResultSetMetaDataImpl(CMISQueryOptions options, Query query, CMISDictionaryService cmisDictionaryService, DictionaryService alfrescoDictionaryService)
     {
         this.options = options;
+        this.searchParams = new SearchParameters(options);
 
         Map<String, Selector> selectors = query.getSource().getSelectors();
         selectorMetaData = new LinkedHashMap<String, CMISResultSetSelector>();
@@ -196,7 +198,7 @@ public class CMISResultSetMetaDataImpl implements CMISResultSetMetaData
 
     public SearchParameters getSearchParameters()
     {
-        throw new UnsupportedOperationException();
+        return searchParams;
     }
 
 }

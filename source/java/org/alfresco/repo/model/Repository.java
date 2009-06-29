@@ -253,7 +253,7 @@ public class Repository implements ApplicationContextAware, ApplicationListener,
                                 }
                                 return refs.get(0);
                             }
-                        });
+                        }, true);
                     }
                 }, AuthenticationUtil.getSystemUserName());
                 

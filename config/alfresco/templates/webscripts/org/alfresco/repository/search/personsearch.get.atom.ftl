@@ -25,7 +25,7 @@
   <link rel="search" type="application/opensearchdescription+xml" href="${absurl(url.serviceContext)}/api/search/person/description.xml"/>
 <#list search.results as row>
   <entry>
-    <title><#if row.properties.firstName??>${row.properties.firstName}</#if> <#if row.properties.lastName??>${row.properties.lastName}<#if></title>
+    <title><#if row.properties.firstName??>${row.properties.firstName}</#if> <#if row.properties.lastName??>${row.properties.lastName}</#if></title>
     <link rel="alternate" href="${absurl(url.context)}/c/ui/userprofile?id=${row.id}"/>
 <#if row.assocs["cm:avatar"]?exists>
     <icon>${absurl(url.context)}${row.assocs["cm:avatar"][0].url}</icon>

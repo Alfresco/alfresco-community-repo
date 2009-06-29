@@ -319,23 +319,23 @@ public class Site implements Serializable
      * <p>
      * If the user is not a member of the site then null is returned.
      * 
-     * @param userName  user name
+     * @param authorityName  authority name
      * @return String   user's role or null if not a member
      */
-    public String getMembersRole(String userName)
+    public String getMembersRole(String authorityName)
     {
-        return this.siteService.getMembersRole(getShortName(), userName);
+        return this.siteService.getMembersRole(getShortName(), authorityName);
     }
     
     /**
      * Indicates whether a user is a member of the site.
      * 
-     * @param userName  user name
+     * @param authorityName  user name
      * @return boolean  true if the user is a member of the site, false otherwise
      */
-    public boolean isMember(String userName)
+    public boolean isMember(String authorityName)
     {
-        return this.siteService.isMember(getShortName(), userName);
+        return this.siteService.isMember(getShortName(), authorityName);
     }
     
     /**
@@ -347,24 +347,24 @@ public class Site implements Serializable
      * Only a site manager can modify memberships and there must be at least one site manager at
      * all times.
      * 
-     * @param userName  user name
+     * @param authorityName  authority name
      * @param role      site role
      */
-    public void setMembership(String userName, String role)
+    public void setMembership(String authorityName, String role)
     {
-        this.siteService.setMembership(getShortName(), userName, role);
+        this.siteService.setMembership(getShortName(), authorityName, role);
     }
     
     /**
-     * Removes a users membership of the site.
+     * Removes a user or group membership from a site.
      * <p>
      * Only a site manager can remove a user's membership and the last site manager can not be removed.
      * 
-     * @param userName  user name
+     * @param authorityName  authority name
      */
-    public void removeMembership(String userName)
+    public void removeMembership(String authorityName)
     {
-        this.siteService.removeMembership(getShortName(), userName);
+        this.siteService.removeMembership(getShortName(), authorityName);
     }
 
     /**

@@ -35,4 +35,7 @@ public interface ActivityType
     public final String SITE_USER_JOINED = "org.alfresco.site.user-joined";
     public final String SITE_USER_REMOVED = "org.alfresco.site.user-left";
     public final String SITE_USER_ROLE_UPDATE = "org.alfresco.site.user-role-changed";
+    public final String SITE_GROUP_ADDED = "org.alfresco.site.group-added";
+    public final String SITE_GROUP_REMOVED = "org.alfresco.site.group-removed";
+    public final String SITE_GROUP_ROLE_UPDATE = "org.alfresco.site.group-role-changed";
 }

@@ -1291,13 +1291,13 @@ public class SiteServiceImpl implements SiteService, SiteModel
                 {
                     activityService.postActivity(
                             ActivityType.SITE_USER_REMOVED, shortName,
-                            ACTIVITY_TOOL, getActivityData(authorityName, ""));
+                            ACTIVITY_TOOL, getActivityUserData(authorityName, ""));
                 }
                 else
                 {
-                    // TODO - update this, if sites support groups
-                    logger.error("setMembership - failed to post activity: unexpected authority type: "
-                                 + AuthorityType.getAuthorityType(authorityName));
+                    activityService.postActivity(
+                            ActivityType.SITE_GROUP_REMOVED, shortName,
+                            ACTIVITY_TOOL, getActivityUserData(authorityName, ""));
                 }
             }
             else
@@ -1394,14 +1394,13 @@ public class SiteServiceImpl implements SiteService, SiteModel
                     {
                         activityService.postActivity(
                                 ActivityType.SITE_USER_JOINED, shortName,
-                                ACTIVITY_TOOL, getActivityData(authorityName, role));
+                                ACTIVITY_TOOL, getActivityUserData(authorityName, role));
                     } 
                     else
                     {
-                        // TODO - update this, if sites support groups
-                        logger
-                                .error("setMembership - failed to post activity: unexpected authority type: "
-                                        + AuthorityType.getAuthorityType(authorityName));
+                        activityService.postActivity(
+                                ActivityType.SITE_GROUP_ADDED, shortName,
+                                ACTIVITY_TOOL, getActivityGroupData(authorityName, role));                   
                     }
                 } 
                 else
@@ -1410,13 +1409,13 @@ public class SiteServiceImpl implements SiteService, SiteModel
                     {
                         activityService.postActivity(
                                 ActivityType.SITE_USER_ROLE_UPDATE, shortName,
-                                ACTIVITY_TOOL, getActivityData(authorityName, role));
+                                ACTIVITY_TOOL, getActivityUserData(authorityName, role));
                     } 
                     else
                     {
-                        // TODO - update this, if sites support groups
-                        logger.error("setMembership - failed to post activity: unexpected authority type: "
-                                        + AuthorityType.getAuthorityType(authorityName));
+                        activityService.postActivity(
+                                ActivityType.SITE_GROUP_ROLE_UPDATE, shortName,
+                                ACTIVITY_TOOL, getActivityUserData(authorityName, role));
                     }
                 }
             } 
@@ -1584,7 +1583,7 @@ public class SiteServiceImpl implements SiteService, SiteModel
      * @param role          role
      * @return
      */
-    private String getActivityData(String userName, String role)
+    private String getActivityUserData(String userName, String role)
     {
         String memberFN = "";
         String memberLN = "";
@@ -1614,6 +1613,32 @@ public class SiteServiceImpl implements SiteService, SiteModel
             return "";
         }
     }
+    
+    /**
+     * Helper method to get the activity data for a group
+     * 
+     * @param groupName      user name
+     * @param role          role
+     * @return Activity data in JSON format
+     */
+    private String getActivityGroupData(String groupName, String role)
+    {
+        try
+        {
+            JSONObject activityData = new JSONObject();
+            activityData.put("role", role);
+            activityData.put("groupName", groupName);
+
+            return activityData.toString();
+        } 
+        catch (JSONException je)
+        {
+            // log error, subsume exception
+            logger.error("Failed to get activity data: " + je);
+            return "";
+        }
+    }
+
     
     public void setRoleComparator(Comparator<String> roleComparator) {
 		this.roleComparator = roleComparator;

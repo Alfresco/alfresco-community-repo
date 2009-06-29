@@ -451,6 +451,9 @@ public class DictionaryModelType implements ContentServicePolicies.OnContentUpda
                     logger.debug("beforeCommit: pendingModelsCnt="+pendingModels.size());
                 }
                 
+                // unbind the resource from the transaction
+                AlfrescoTransactionSupport.unbindResource(KEY_PENDING_MODELS);
+                
                 for (NodeRef pendingNodeRef : pendingModels)
                 {
                     String tenantDomain = tenantService.getDomain(pendingNodeRef.getStoreRef().getIdentifier());

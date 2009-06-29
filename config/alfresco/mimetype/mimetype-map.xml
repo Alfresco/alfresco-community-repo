@@ -295,10 +295,10 @@
          <mimetype mimetype="application/x-shockwave-flash" display="Shockwave Flash">
             <extension>swf</extension>
          </mimetype>
-       <mimetype mimetype="video/x-flv" display="Flash Video">
-            <extension>flv</extension>
-         </mimetype>
-         <mimetype mimetype="application/x-tar" display="Tarball">
+         <mimetype mimetype="video/x-flv" display="Flash Video">
+            <extension>flv</extension>
+         </mimetype>
+         <mimetype mimetype="application/x-tar" display="Tarball">
             <extension>tar</extension>
          </mimetype>
          <mimetype mimetype="application/x-tcl" display="">

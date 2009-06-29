@@ -168,7 +168,7 @@ public class ImapServiceImplTest extends TestCase
          * "___-___folder_a_a" contains: "____-____file_a_a"
          * 
          */
-        importInternal("imapservice_test_folder_a.acp", testImapFolderNodeRef);
+        importInternal("imap/imapservice_test_folder_a.acp", testImapFolderNodeRef);
 
         reauthenticate(anotherUserName, anotherUserName);
     }

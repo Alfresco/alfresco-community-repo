@@ -6,9 +6,10 @@ import java.util.List;
 
 import javax.mail.Flags;
 
+import junit.framework.TestCase;
+
 import org.alfresco.repo.importer.ACPImportPackageHandler;
 import org.alfresco.service.ServiceRegistry;
-import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -23,10 +24,7 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.io.ClassPathResource;
 
-import com.icegreen.greenmail.imap.ImapConstants;
 import com.icegreen.greenmail.store.SimpleStoredMessage;
-
-import junit.framework.TestCase;
 
 public class LoadTester extends TestCase
 {
@@ -39,6 +37,7 @@ public class LoadTester extends TestCase
     private ImporterService importerService;
     
     private AlfrescoImapUser user;
+    // DH: Do not assume the presence of any specific user or password.  Create a new user for the test.
     private static final String USER_NAME = "admin";
     private static final String USER_PASSWORD = "admin";
     private static final String TEST_DATA_FOLDER_NAME = "test_data";
@@ -80,8 +79,9 @@ public class LoadTester extends TestCase
             nodeService.deleteNode(ch);
         }
 
+        // DH: Do not assume the presence of a path for the IMAP home.  Create the IMAP home and set it on the service.
         NodeRef adminNodeRef = searchService.selectNodes(rootRef, "/app:company_home/imap:imap_home/cm:admin", null, namespaceService, false).get(0);
-        importTestData("test-resources/load_test_data.acp", adminNodeRef);
+        importTestData("test-resources/imap/load_test_data.acp", adminNodeRef);
 
 
         AlfrescoImapFolder testDataFolder = imapService.getFolder(user, TEST_DATA_FOLDER_NAME);

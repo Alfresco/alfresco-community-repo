@@ -94,7 +94,7 @@ public class ChangePasswordPost extends DeclarativeWebScript
             
             // admin users can change/set a password without knowing the old one
             boolean isAdmin = authorityService.hasAdminAuthority();
-            if (!isAdmin)
+            if (!isAdmin || (userName.equalsIgnoreCase(authenticationService.getCurrentUserName())))
             {
                 if (!json.has(PARAM_OLDPW) || json.getString(PARAM_OLDPW).length() == 0)
                 {
@@ -111,7 +111,8 @@ public class ChangePasswordPost extends DeclarativeWebScript
             newPassword = json.getString(PARAM_NEWPW);
             
             // update the password
-            if (!isAdmin)
+            // an Admin user can update without knowing the original pass - but must know their own!
+            if (!isAdmin || (userName.equalsIgnoreCase(authenticationService.getCurrentUserName())))
             {
                 authenticationService.updateAuthentication(userName, oldPassword.toCharArray(), newPassword.toCharArray());
             }

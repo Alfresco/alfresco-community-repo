@@ -197,7 +197,9 @@ public class VersionMigrator
         Map<QName, Serializable> nodeProperties = versionNodeService.getProperties(frozenStateNodeRef);
         
         long nodeDbId = (Long)nodeProperties.get(ContentModel.PROP_NODE_DBID);
-        nodeProperties.remove(ContentModel.PROP_NODE_UUID); // else will try to persist with this node uuid (see AbstractNodeServiceImpl.generateGuid)
+        
+        // ALFCOM-2658
+        nodeProperties.put(ContentModel.PROP_NODE_UUID, frozenStateNodeRef.getId());
         
         int versionNumber = (Integer)dbNodeService.getProperty(VersionUtil.convertNodeRef(frozenStateNodeRef), VersionModel.PROP_QNAME_VERSION_NUMBER);
         

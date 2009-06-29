@@ -192,7 +192,10 @@ public class VersionMigratorTest extends BaseVersionStoreTest
         		assertEquals(""+key, oldVersionProps.get(key), newVersionProps.get(key));
         	}
         }
-
+        
+        // ALFCOM-2658
+        assertEquals(oldVersion.getFrozenStateNodeRef().getId(), newVersion.getFrozenStateNodeRef().getId());
+        
         logger.info("testMigrateOneVersion: Migrated from oldVHNodeRef = " + oldVHNodeRef + " to newVHNodeRef = " + newVHNodeRef);
     }    
     
@@ -263,6 +266,11 @@ public class VersionMigratorTest extends BaseVersionStoreTest
         checkVersion(beforeVersionTime1, nextVersion1, nextVersionLabel1, newVersions[2], versionableNode);
         checkVersion(beforeVersionTime2, nextVersion2, nextVersionLabel2, newVersions[1], versionableNode);
         checkNewVersion(beforeVersionTime3, nextVersion3, nextVersionLabel3, newVersions[0], versionableNode);
+        
+        // ALFCOM-2658
+        assertEquals(version1.getFrozenStateNodeRef().getId(), newVersions[2].getFrozenStateNodeRef().getId());
+        assertEquals(version2.getFrozenStateNodeRef().getId(), newVersions[1].getFrozenStateNodeRef().getId());
+        assertEquals(version3.getFrozenStateNodeRef().getId(), newVersions[0].getFrozenStateNodeRef().getId());
         
         logger.info("testMigrateMultipleVersions: Migrated from oldVHNodeRef = " + oldVHNodeRef + " to newVHNodeRef = " + newVHNodeRef);
     }

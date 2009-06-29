@@ -43,6 +43,7 @@ import org.alfresco.service.cmr.search.LimitBy;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
+import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.PersonService;
@@ -336,9 +337,10 @@ public final class People extends BaseScopableProcessorExtension
         ParameterCheck.mandatoryString("userName", userName);
         ParameterCheck.mandatoryString("password", password);
         
-        if (this.authorityService.hasAdminAuthority())
+        AuthenticationService authService = this.services.getAuthenticationService();
+        if (this.authorityService.hasAdminAuthority() && (userName.equalsIgnoreCase(authService.getCurrentUserName()) == false))
         {
-            this.services.getAuthenticationService().setAuthentication(userName, password.toCharArray());
+            authService.setAuthentication(userName, password.toCharArray());
         }
     }
 

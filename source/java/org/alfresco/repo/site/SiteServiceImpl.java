@@ -1301,7 +1301,7 @@ public class SiteServiceImpl implements SiteService, SiteModel
                 {
                     activityService.postActivity(
                             ActivityType.SITE_GROUP_REMOVED, shortName,
-                            ACTIVITY_TOOL, getActivityUserData(authorityName, ""));
+                            ACTIVITY_TOOL, getActivityGroupData(authorityName, ""));
                 }
             }
             else

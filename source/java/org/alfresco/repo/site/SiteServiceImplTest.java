@@ -1161,6 +1161,71 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
         	// Should go here
         }  
     }
+    
+    /**
+     * Create a site with a USER manager.
+     * Add Group manager membership.
+     * 
+     * Remove User membership - should be O.K. because of Group Membership
+     * Remove Group membership - should be prevented (last manager)
+     * 
+     * Add User membership to Manager
+     * 
+     * Remove Group membership - should be O.K. because of User Membership
+     * Remove User membership - should be prevented (last manager)
+     * 
+     */
+    public void testALFCOM_3111()
+    {
+        // USER_ONE - SiteManager
+        // GROUP_TWO - Manager
+    	
+    	String siteName = "testALFCOM_3019";
+        
+        // Create a site as user one
+        this.siteService.createSite(TEST_SITE_PRESET, siteName, TEST_TITLE, TEST_DESCRIPTION, SiteVisibility.MODERATED);
+        
+        Map<String, String> members = this.siteService.listMembers(siteName, null, null, 0);
+        String managerName = members.keySet().iterator().next();
+        
+         /**
+         *  Add a group (GROUP_TWO) with role Manager
+         */
+        this.siteService.setMembership(siteName, this.groupTwo, SiteModel.SITE_MANAGER);  
+        
+        // Should be allowed
+        this.siteService.removeMembership(siteName, managerName); 
+        
+        /**
+         * Should not be allowed to delete last group
+         */
+        try
+        {
+        	this.siteService.removeMembership(siteName, this.groupTwo); 
+        	fail();
+        }
+        catch (Exception e)
+        {
+        	// Should go here	
+        }
+        
+        this.siteService.setMembership(siteName, managerName, SiteModel.SITE_MANAGER); 
+        
+        this.siteService.removeMembership(siteName, this.groupTwo); 
+        
+        /**
+         * Should not be allowed to delete last user
+         */
+        try
+        {
+        	this.siteService.removeMembership(siteName, managerName); 
+        	fail();
+        }
+        catch (Exception e)
+        {
+        	// Should go here
+        }  
+    }
 
     
     

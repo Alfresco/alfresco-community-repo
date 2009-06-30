@@ -1,11 +1,11 @@
-<!--
-   Define valid subtypes using the following example:
-
-   <type name="cm:content">
-      <subtype name="cm:mysubtype" />
-   </type>
--->
 <types>
+   <!--
+      Define valid subtypes using the following example:
+
+      <type name="cm:content">
+         <subtype name="cm:mysubtype" />
+      </type>
+   -->
    <type name="cm:content">
    </type>
 

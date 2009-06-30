@@ -34,6 +34,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
+import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.apache.poi.poifs.eventfilesystem.POIFSReader;
@@ -62,7 +63,7 @@ public class MailMetadataExtracter extends AbstractMappingMetadataExtracter
     private static final String KEY_ADDRESSEES = "addressees";
     private static final String KEY_SUBJECT = "subjectLine";
 
-    public static String[] SUPPORTED_MIMETYPES = new String[] {"message/rfc822"};
+    public static String[] SUPPORTED_MIMETYPES = new String[] {MimetypeMap.MIMETYPE_OUTLOOK_MSG};
     
     private static final String STREAM_PREFIX = "__substg1.0_";
     private static final int STREAM_PREFIX_LENGTH = STREAM_PREFIX.length();

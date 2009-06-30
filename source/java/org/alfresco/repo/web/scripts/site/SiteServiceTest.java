@@ -176,7 +176,7 @@ public class SiteServiceTest extends BaseWebScriptTest
         Response response = sendRequest(new GetRequest(URL_SITES), 200);        
         JSONArray result = new JSONArray(response.getContentAsString());        
         assertNotNull(result);
-        assertEquals(0, result.length());
+        assertEquals("Sites exist prior to running test", 0, result.length());
         
         createSite("myPreset", GUID.generate(), "myTitle", "myDescription", SiteVisibility.PUBLIC, 200);
         createSite("myPreset", GUID.generate(), "myTitle", "myDescription", SiteVisibility.PUBLIC, 200);

@@ -1097,6 +1097,75 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
         }
     }
     
+    /**
+     * Create a site with a USER manager.
+     * Add Group manager membership.
+     * 
+     * Lower User membership - should be O.K. because of Group Membership
+     * Lower Group membership - should be prevented (last manager)
+     * 
+     * Reset User membership to Manager
+     * 
+     * Lower Group membership - should be O.K. because of User Membership
+     * Lower User membership - should be prevented (last manager)
+     * 
+     */
+    public void testALFCOM_3109()
+    {
+        // USER_ONE - SiteManager
+        // GROUP_TWO - Manager
+    	
+    	String siteName = "testALFCOM_3019";
+        
+        // Create a site as user one
+        this.siteService.createSite(TEST_SITE_PRESET, siteName, TEST_TITLE, TEST_DESCRIPTION, SiteVisibility.MODERATED);
+        
+        Map<String, String> members = this.siteService.listMembers(siteName, null, null, 0);
+        String managerName = members.keySet().iterator().next();
+        
+         /**
+         *  Add a group (GROUP_TWO) with role Manager
+         */
+        this.siteService.setMembership(siteName, this.groupTwo, SiteModel.SITE_MANAGER);  
+        
+        // Should be allowed
+        this.siteService.setMembership(siteName, managerName, SiteModel.SITE_CONTRIBUTOR); 
+        
+        /**
+         * Should not be allowed to delete last group
+         */
+        try
+        {
+        	this.siteService.setMembership(siteName, this.groupTwo, SiteModel.SITE_CONTRIBUTOR); 
+        	fail();
+        }
+        catch (Exception e)
+        {
+        	// Should go here	
+        }
+        
+        this.siteService.setMembership(siteName, managerName, SiteModel.SITE_MANAGER); 
+        
+        this.siteService.setMembership(siteName, this.groupTwo, SiteModel.SITE_CONTRIBUTOR); 
+        
+        /**
+         * Should not be allowed to delete last user
+         */
+        try
+        {
+        	this.siteService.setMembership(siteName, managerName, SiteModel.SITE_CONTRIBUTOR); 
+        	fail();
+        }
+        catch (Exception e)
+        {
+        	// Should go here
+        }  
+    }
+
+    
+    
+    
+    
     // == Test the JavaScript API ==
     
     public void testJSAPI() throws Exception

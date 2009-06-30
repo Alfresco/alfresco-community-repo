@@ -1253,14 +1253,17 @@ public class SiteServiceImpl implements SiteService, SiteModel
             // Check that we are not about to remove the last site manager
             if (SiteModel.SITE_MANAGER.equals(role) == true)
             {
-                Set<String> siteMangers = this.authorityService
-                        .getContainedAuthorities(
-                                AuthorityType.USER,
-                                getSiteRoleGroup(shortName, SITE_MANAGER, true),
-                                true);
-                if (siteMangers.size() == 1)
+            	String mgrGroup = getSiteRoleGroup(shortName, SITE_MANAGER, true);
+                Set<String> siteUserMangers = this.authorityService.getContainedAuthorities(AuthorityType.USER, 
+                                                                                        mgrGroup, 
+                                                                                        true);
+                Set<String> siteGroupManagers = this.authorityService.getContainedAuthorities(AuthorityType.GROUP, 
+                        mgrGroup, 
+                        true);
+                
+                if (siteUserMangers.size() + siteGroupManagers.size() == 1)
                 {
-                    throw new SiteServiceException(MSG_DO_NOT_REMOVE_MGR, new Object[]{authorityName});
+                    throw new SiteServiceException(MSG_DO_NOT_CHANGE_MGR, new Object[]{authorityName});
                 }
             }
 
@@ -1358,10 +1361,15 @@ public class SiteServiceImpl implements SiteService, SiteModel
                 // Check that we are not about to remove the last site manager
                 if (SiteModel.SITE_MANAGER.equals(currentRole) == true)
                 {
-                    Set<String> siteMangers = this.authorityService.getContainedAuthorities(AuthorityType.USER, 
-                                                                                            getSiteRoleGroup(shortName, SITE_MANAGER, true), 
+                	String mgrGroup = getSiteRoleGroup(shortName, SITE_MANAGER, true);
+                    Set<String> siteUserMangers = this.authorityService.getContainedAuthorities(AuthorityType.USER, 
+                                                                                            mgrGroup, 
                                                                                             true);
-                    if (siteMangers.size() == 1)
+                    Set<String> siteGroupManagers = this.authorityService.getContainedAuthorities(AuthorityType.GROUP, 
+                            mgrGroup, 
+                            true);
+                    
+                    if (siteUserMangers.size() + siteGroupManagers.size() == 1)
                     {
                         throw new SiteServiceException(MSG_DO_NOT_CHANGE_MGR, new Object[]{authorityName});
                     }

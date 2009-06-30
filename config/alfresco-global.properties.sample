@@ -12,15 +12,6 @@
 #
 #db.username=alfresco
 #db.password=alfresco
-#db.pool.initial=10
-#db.pool.max=100
-
-#
-# Sample settings to activate a cluster
-#
-#index.tracking.cronExpression=0/5 * * * * ?
-#index.recovery.mode=AUTO
-#alfresco.cluster.name=alfresco-cluster
 
 #
 # Property to control whether schema updates are performed automatically.
@@ -31,29 +22,10 @@
 #db.schema.update=true
 
 #
-# Derby connection
-#
-#db.driver=org.apache.derby.jdbc.EmbeddedDriver
-#db.url=jdbc:derby:/srv/alfresco/alf_data/derby_data/alfresco;create=true
-
-#
 # MySQL connection
 #
 #db.driver=org.gjt.mm.mysql.Driver
 #db.url=jdbc:mysql://localhost/alfresco
-
-#
-# Oracle connection
-#
-#db.driver=oracle.jdbc.OracleDriver
-#db.url=jdbc:oracle:thin:@localhost:1521:alfresco
-
-#
-# SQLServer connection (note you must enable TCP protocol on fixed port 1433)
-#
-#db.driver=com.microsoft.sqlserver.jdbc.SQLServerDriver
-#db.url=jdbc:sqlserver://localhost:1433;databaseName=alfresco
-#db.txn.isolation=4096
 
 # The well known RMI registry port is defined in the alfresco-shared.properties file
 # alfresco.rmi.services.port=50500

@@ -43,11 +43,11 @@
     </collection> 
     <collection href="${absurl(url.serviceContext)}/api/checkedout" cmis:collectionType="checkedout"> 
       <atom:title>checkedout collection</atom:title> 
-      <atom:accept>application/atom+xml;type=entry</atom:accept>
+      <accept>application/atom+xml;type=entry</accept>
     </collection> 
     <collection href="${absurl(url.serviceContext)}/api/unfiled" cmis:collectionType="unfiled"> 
       <atom:title>unfiled collection</atom:title> 
-      <atom:accept>application/atom+xml;type=entry</atom:accept>
+      <accept>application/atom+xml;type=entry</accept>
     </collection>
     <collection href="${absurl(url.serviceContext)}/api/types" cmis:collectionType="typeschildren"> 
       <atom:title>type collection</atom:title> 
@@ -57,8 +57,8 @@
     </collection> 
     <collection href="${absurl(url.serviceContext)}/api/query" cmis:collectionType="query"> 
       <atom:title>query collection</atom:title> 
-      <atom:accept>application/cmisquery+xml</atom:accept>
+      <accept>application/cmisquery+xml</accept>
     </collection>
-     
+
   </workspace> 
 </service> 

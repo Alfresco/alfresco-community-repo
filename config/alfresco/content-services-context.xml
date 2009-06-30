@@ -119,48 +119,6 @@
       </property>
    </bean>
    
-   <!--
-       A ContentStore that can direct content based on the cm:storeName property.
-       The 'storeSelectorContentStore.constraint' ensures that values are mapped to keys in the 'storesByName' map.
-   -->
-   <bean id="storeSelectorContentStore" class="org.alfresco.repo.content.routing.StoreSelectorAspectContentStore" >
-       <property name="nodeService">
-           <ref bean="nodeService"/>
-       </property>
-       <property name="policyComponent">
-           <ref bean="policyComponent" />
-       </property>
-       <property name="dictionaryService">
-           <ref bean="dictionaryService" />
-       </property>
-       <property name="storesCache">
-           <ref bean="routingContentStoreCache"/>
-       </property>
-       <property name="defaultStoreName">
-           <value>default</value>
-       </property>
-       <property name="storesByName">
-           <map>
-               <entry key="default">
-                   <ref bean="fileContentStore" />
-               </entry>
-           </map>
-       </property>
-   </bean>
-   <bean id="storeSelectorContentStore.constraint"
-           class="org.alfresco.repo.content.routing.StoreSelectorAspectContentStore$StoreSelectorConstraint"
-           init-method="initialize" >
-       <property name="shortName">
-           <value>defaultStoreSelector</value>
-       </property>
-       <property name="store">
-           <ref bean="storeSelectorContentStore" />
-       </property>
-       <property name="registry">
-           <ref bean="cm:constraintRegistry" />
-       </property>
-   </bean>
-    
     <bean id="mimetypeConfigService" class="org.alfresco.config.xml.XMLConfigService" init-method="init">
         <constructor-arg>
             <bean class="org.alfresco.config.source.UrlConfigSource">

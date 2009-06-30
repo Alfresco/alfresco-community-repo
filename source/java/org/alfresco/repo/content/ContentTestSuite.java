@@ -24,12 +24,16 @@
  */
 package org.alfresco.repo.content;
 
+import junit.framework.Test;
+import junit.framework.TestSuite;
+
 import org.alfresco.repo.content.cleanup.ContentStoreCleanerTest;
 import org.alfresco.repo.content.encoding.CharsetFinderTest;
 import org.alfresco.repo.content.filestore.FileContentStoreTest;
 import org.alfresco.repo.content.filestore.NoRandomAccessFileContentStoreTest;
 import org.alfresco.repo.content.filestore.ReadOnlyFileContentStoreTest;
 import org.alfresco.repo.content.metadata.HtmlMetadataExtracterTest;
+import org.alfresco.repo.content.metadata.MailMetadataExtracterTest;
 import org.alfresco.repo.content.metadata.MappingMetadataExtracterTest;
 import org.alfresco.repo.content.metadata.OfficeMetadataExtracterTest;
 import org.alfresco.repo.content.metadata.OpenDocumentMetadataExtracterTest;
@@ -37,25 +41,18 @@ import org.alfresco.repo.content.metadata.OpenOfficeMetadataExtracterTest;
 import org.alfresco.repo.content.metadata.PdfBoxMetadataExtracterTest;
 import org.alfresco.repo.content.replication.ContentStoreReplicatorTest;
 import org.alfresco.repo.content.replication.ReplicatingContentStoreTest;
-import org.alfresco.repo.content.routing.StoreSelectorAspectContentStoreTest;
 import org.alfresco.repo.content.transform.BinaryPassThroughContentTransformerTest;
 import org.alfresco.repo.content.transform.ComplexContentTransformerTest;
 import org.alfresco.repo.content.transform.ContentTransformerRegistryTest;
 import org.alfresco.repo.content.transform.HtmlParserContentTransformerTest;
-import org.alfresco.repo.content.transform.OpenOfficeContentTransformerTest;
 import org.alfresco.repo.content.transform.MailContentTransformerTest;
+import org.alfresco.repo.content.transform.OpenOfficeContentTransformerTest;
 import org.alfresco.repo.content.transform.PdfBoxContentTransformerTest;
 import org.alfresco.repo.content.transform.PoiHssfContentTransformerTest;
 import org.alfresco.repo.content.transform.RuntimeExecutableContentTransformerTest;
 import org.alfresco.repo.content.transform.StringExtractingContentTransformerTest;
 import org.alfresco.repo.content.transform.TextMiningContentTransformerTest;
 import org.alfresco.repo.content.transform.TextToPdfContentTransformerTest;
-
-// TODO:  This class is currently missing
-// import org.alfresco.repo.content.transform.TextToPdfContentTransformerTest;
-
-import junit.framework.Test;
-import junit.framework.TestSuite;
 
 /**
  * Suite for content-related tests.
@@ -64,6 +61,7 @@ import junit.framework.TestSuite;
  */
 public class ContentTestSuite extends TestSuite
 {
+    @SuppressWarnings("unchecked")
     public static Test suite() 
     {
         TestSuite suite = new TestSuite();
@@ -75,6 +73,7 @@ public class ContentTestSuite extends TestSuite
         suite.addTestSuite(ReadOnlyFileContentStoreTest.class);
         suite.addTestSuite(MappingMetadataExtracterTest.class);
         suite.addTestSuite(HtmlMetadataExtracterTest.class);
+        suite.addTestSuite(MailMetadataExtracterTest.class);
         suite.addTestSuite(OfficeMetadataExtracterTest.class);
         suite.addTestSuite(OpenDocumentMetadataExtracterTest.class);
         suite.addTestSuite(OpenOfficeMetadataExtracterTest.class);
@@ -97,7 +96,17 @@ public class ContentTestSuite extends TestSuite
         suite.addTestSuite(MimetypeMapTest.class);
         suite.addTestSuite(RoutingContentServiceTest.class);
         suite.addTestSuite(RoutingContentStoreTest.class);
-        suite.addTestSuite(StoreSelectorAspectContentStoreTest.class);
+        
+        try
+        {
+            Class clazz = Class.forName("org.alfresco.repo.content.routing.StoreSelectorAspectContentStoreTest");
+            suite.addTestSuite(clazz);
+        }
+        catch (Throwable e)
+        {
+            // Ignore
+        }
+        
                 
         return suite;
     }

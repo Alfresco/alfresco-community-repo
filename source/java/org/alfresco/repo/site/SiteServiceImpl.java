@@ -1287,13 +1287,14 @@ public class SiteServiceImpl implements SiteService, SiteModel
                     }, AuthenticationUtil.SYSTEM_USER_NAME);
 
                 // Raise events
-                if (AuthorityType.getAuthorityType(authorityName) == AuthorityType.USER)
+                AuthorityType authorityType = AuthorityType.getAuthorityType(authorityName);
+                if (authorityType == AuthorityType.USER)
                 {
                     activityService.postActivity(
                             ActivityType.SITE_USER_REMOVED, shortName,
                             ACTIVITY_TOOL, getActivityUserData(authorityName, ""));
                 }
-                else
+                else if (authorityType == AuthorityType.GROUP)
                 {
                     activityService.postActivity(
                             ActivityType.SITE_GROUP_REMOVED, shortName,
@@ -1390,13 +1391,14 @@ public class SiteServiceImpl implements SiteService, SiteModel
 
                 if (currentRole == null)
                 {
-                    if (AuthorityType.getAuthorityType(authorityName) == AuthorityType.USER)
+                    AuthorityType authorityType = AuthorityType.getAuthorityType(authorityName);
+                    if (authorityType == AuthorityType.USER)
                     {
                         activityService.postActivity(
                                 ActivityType.SITE_USER_JOINED, shortName,
                                 ACTIVITY_TOOL, getActivityUserData(authorityName, role));
                     } 
-                    else
+                    else if (authorityType == AuthorityType.GROUP)
                     {
                         activityService.postActivity(
                                 ActivityType.SITE_GROUP_ADDED, shortName,
@@ -1405,17 +1407,18 @@ public class SiteServiceImpl implements SiteService, SiteModel
                 } 
                 else
                 {
-                    if (AuthorityType.getAuthorityType(authorityName) == AuthorityType.USER)
+                    AuthorityType authorityType = AuthorityType.getAuthorityType(authorityName);
+                    if (authorityType == AuthorityType.USER)
                     {
                         activityService.postActivity(
                                 ActivityType.SITE_USER_ROLE_UPDATE, shortName,
                                 ACTIVITY_TOOL, getActivityUserData(authorityName, role));
                     } 
-                    else
+                    else if (authorityType == AuthorityType.GROUP)
                     {
                         activityService.postActivity(
                                 ActivityType.SITE_GROUP_ROLE_UPDATE, shortName,
-                                ACTIVITY_TOOL, getActivityUserData(authorityName, role));
+                                ACTIVITY_TOOL, getActivityGroupData(authorityName, role));
                     }
                 }
             } 

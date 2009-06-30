@@ -1306,12 +1306,52 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
         {
             Long nodeTypeQNameId = qnameDAO.getOrCreateQName(nodeTypeQName).getFirst();
             if (!nodeTypeQNameId.equals(node.getTypeQNameId()))
-        {
-                node.setTypeQNameId(nodeTypeQNameId);
-            // We will need to record the change
-            recordNodeUpdate(node);
+            {
+                    node.setTypeQNameId(nodeTypeQNameId);
+                // We will need to record the change
+                recordNodeUpdate(node);
+            }
         }
     }
+    
+    public Map<PropertyMapKey, NodePropertyValue> getNodePropertiesRaw(Long nodeId)
+    {
+        Node node = getNodeNotNull(nodeId);
+        Map<PropertyMapKey, NodePropertyValue> props = node.getProperties();
+        // Copy this for adding
+        props = new HashMap<PropertyMapKey, NodePropertyValue>(props);
+        // Add the auditable properties
+        if (hasNodeAspect(node, ContentModel.ASPECT_AUDITABLE))
+        {
+            AuditableProperties auditable = node.getAuditableProperties();
+            Map<QName, Serializable> auditableProperties = auditable.getAuditableProperties();
+            for (Map.Entry<QName, Serializable> entry : auditableProperties.entrySet())
+            {
+                // Get default locale for the key
+                Pair<Long, Locale> defaultLocalePair = localeDAO.getDefaultLocalePair();
+                if (defaultLocalePair == null)
+                {
+                    continue;
+                }
+                
+                QName auditablePropertyQName = entry.getKey();
+                Pair<Long, QName> auditablePropertyQNamePair = qnameDAO.getQName(auditablePropertyQName);
+                if (auditablePropertyQNamePair == null)
+                {
+                    continue;
+                }
+                Serializable auditablePropertyValue = entry.getValue();
+                NodePropertyValue npv = new NodePropertyValue(auditablePropertyQName, auditablePropertyValue);
+                PropertyMapKey npk = new PropertyMapKey();
+                npk.setQnameId(auditablePropertyQNamePair.getFirst());
+                npk.setListIndex(HibernateNodeDaoServiceImpl.IDX_NO_COLLECTION);
+                npk.setLocaleId(defaultLocalePair.getFirst());
+                // Add this property to the map
+                props.put(npk, npv);
+            }
+        }
+        // Done
+        return props;
     }
 
     public Serializable getNodeProperty(Long nodeId, QName propertyQName)

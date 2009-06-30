@@ -32,6 +32,8 @@ import java.util.Set;
 
 import org.alfresco.repo.domain.ChildAssoc;
 import org.alfresco.repo.domain.NodeAssoc;
+import org.alfresco.repo.domain.NodePropertyValue;
+import org.alfresco.repo.domain.PropertyMapKey;
 import org.alfresco.repo.domain.Transaction;
 import org.alfresco.repo.domain.hibernate.DirtySessionAnnotation;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
@@ -135,6 +137,17 @@ public interface NodeDaoService
     
     @DirtySessionAnnotation(markDirty=false)
     public Serializable getNodeProperty(Long nodeId, QName propertyQName);
+
+    /**
+     * 
+     * @param nodeId            the node's ID
+     * @return                  Returns a copy of the low-level properties including auditable properties
+     * @throws ObjectNotFoundException      if the node ID is invalid
+     * 
+     * @see #getNodePair(NodeRef)
+     */
+    @DirtySessionAnnotation(markDirty=false)
+    public Map<PropertyMapKey, NodePropertyValue> getNodePropertiesRaw(Long nodeId);
     
     @DirtySessionAnnotation(markDirty=false)
     public Map<QName, Serializable> getNodeProperties(Long nodeId);

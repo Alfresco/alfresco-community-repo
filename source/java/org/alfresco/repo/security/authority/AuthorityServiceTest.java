@@ -234,17 +234,15 @@ public class AuthorityServiceTest extends TestCase
         assertEquals(2, pubAuthorityService.getAllRootAuthoritiesInZone("Two", AuthorityType.GROUP).size());
         assertEquals(1, pubAuthorityService.getAllRootAuthoritiesInZone("Three", AuthorityType.GROUP).size());
 
-        // I am not convinced of the definition of root within zone ...
-
         pubAuthorityService.addAuthority("GROUP_1", "GROUP_2");
         pubAuthorityService.addAuthority("GROUP_1", "GROUP_3");
 
         assertEquals(1, pubAuthorityService.getAllRootAuthoritiesInZone("One", null).size());
-        assertEquals(0, pubAuthorityService.getAllRootAuthoritiesInZone("Two", null).size());
-        assertEquals(0, pubAuthorityService.getAllRootAuthoritiesInZone("Three", null).size());
+        assertEquals(2, pubAuthorityService.getAllRootAuthoritiesInZone("Two", null).size());
+        assertEquals(1, pubAuthorityService.getAllRootAuthoritiesInZone("Three", null).size());
         assertEquals(1, pubAuthorityService.getAllRootAuthoritiesInZone("One", AuthorityType.GROUP).size());
-        assertEquals(0, pubAuthorityService.getAllRootAuthoritiesInZone("Two", AuthorityType.GROUP).size());
-        assertEquals(0, pubAuthorityService.getAllRootAuthoritiesInZone("Three", AuthorityType.GROUP).size());
+        assertEquals(2, pubAuthorityService.getAllRootAuthoritiesInZone("Two", AuthorityType.GROUP).size());
+        assertEquals(1, pubAuthorityService.getAllRootAuthoritiesInZone("Three", AuthorityType.GROUP).size());
     }
 
     public void testGroupWildcards()

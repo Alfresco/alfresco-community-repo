@@ -560,21 +560,19 @@ public interface NodeService
     public ChildAssociationRef getPrimaryParent(NodeRef nodeRef) throws InvalidNodeRefException;
     
     /**
-     * Gets the set of nodes of a certain type without parent associations of a certain type. In effect the 'orphans'
-     * with respect to a certain association type.
+     * Gets the set of child associations of a certain parent node without parent associations of a certain type to
+     * other nodes with the same parent! In effect the 'orphans' with respect to a certain association type.
      * 
-     * @param storeRef
-     *            the store reference
-     * @param nodeTypeQName
-     *            the node type QName
+     * @param parent
+     *            the parent node reference
      * @param assocTypeQName
      *            the association type QName
-     * @return the set of nodes of the required type without parent associations of the required type
+     * @return a set of child associations
      */
-    @Auditable(key = Auditable.Key.ARG_0 ,parameters = {"storeRef", "nodeTypeQName", "assocTypeQName"})
-    public Collection<NodeRef> getNodesWithoutParentAssocsOfType(final StoreRef storeRef, final QName nodeTypeQName,
+    @Auditable(key = Auditable.Key.ARG_0 ,parameters = {"parent", "assocTypeQName"})
+    public Collection<ChildAssociationRef> getChildAssocsWithoutParentAssocsOfType(final NodeRef parent,
             final QName assocTypeQName);
-    
+
     /**
      * 
      * @param sourceRef a reference to a <b>real</b> node

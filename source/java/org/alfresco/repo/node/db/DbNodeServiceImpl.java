@@ -1631,24 +1631,30 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         addMissingAspects(sourceNodePair, assocTypeQName);
 
         return assocRef;
-    }
-
-    public Collection<NodeRef> getNodesWithoutParentAssocsOfType(final StoreRef storeRef, final QName nodeTypeQName,
-            final QName assocTypeQName)
+    }   
+    
+    public Collection<ChildAssociationRef> getChildAssocsWithoutParentAssocsOfType(NodeRef parent, QName assocTypeQName)
     {
-        final Collection<NodeRef> results = new LinkedList<NodeRef>();
+        // Get the parent node
+        Pair<Long, NodeRef> nodePair = getNodePairNotNull(parent);
+        Long parentNodeId = nodePair.getFirst();
 
-        NodeDaoService.NodeRefQueryCallback callback = new NodeDaoService.NodeRefQueryCallback()
+        final List<ChildAssociationRef> results = new ArrayList<ChildAssociationRef>(100);
+
+        NodeDaoService.ChildAssocRefQueryCallback callback = new NodeDaoService.ChildAssocRefQueryCallback()
         {
-            public boolean handle(Pair<Long, NodeRef> nodePair)
+            public boolean handle(Pair<Long, ChildAssociationRef> childAssocPair, Pair<Long, NodeRef> parentNodePair,
+                    Pair<Long, NodeRef> childNodePair)
             {
-                results.add(nodePair.getSecond());
+                results.add(childAssocPair.getSecond());
                 return true;
             }
         };
 
-        nodeDaoService.getNodesWithoutParentAssocsOfType(storeRef, nodeTypeQName, assocTypeQName, callback);
+        // Get the child associations that meet the criteria
+        nodeDaoService.getChildAssocsWithoutParentAssocsOfType(parentNodeId, assocTypeQName, callback);
 
+        // done
         return results;
     }
 

@@ -1885,11 +1885,10 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.repository.NodeService#getNodesWithoutParentAssocsOfType(org.alfresco.service.cmr.repository.StoreRef, org.alfresco.service.namespace.QName, org.alfresco.service.namespace.QName)
+     * @see org.alfresco.service.cmr.repository.NodeService#getChildAssocsWithoutParentAssocsOfType(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName)
      */
-    public Collection<NodeRef> getNodesWithoutParentAssocsOfType(StoreRef storeRef, QName nodeTypeQName,
-            QName assocTypeQName)
+    public Collection<ChildAssociationRef> getChildAssocsWithoutParentAssocsOfType(NodeRef parent, QName assocTypeQName)
     {
         throw new UnsupportedOperationException("AVM does not support this operation.");
-    }
+    }        
 }

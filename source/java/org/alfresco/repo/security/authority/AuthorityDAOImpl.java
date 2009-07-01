@@ -25,6 +25,7 @@
 package org.alfresco.repo.security.authority;
 
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -42,7 +43,6 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
-import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.NamespacePrefixResolver;
@@ -169,16 +169,7 @@ public class AuthorityDAOImpl implements AuthorityDAO
 
     public Set<String> getAllRootAuthorities(AuthorityType type)
     {
-        if (type != null && type.equals(AuthorityType.USER))
-        {
-            return Collections.<String> emptySet();
-        }
-        Set<String> authorities = new HashSet<String>();
-        for (NodeRef nodeRef : nodeService.getNodesWithoutParentAssocsOfType(this.storeRef, ContentModel.TYPE_AUTHORITY_CONTAINER, ContentModel.ASSOC_MEMBER))
-        {
-            addAuthorityNameIfMatches(authorities, nodeRef, type, null);
-        }
-        return authorities;
+        return getAllRootAuthoritiesUnderContainer(getAuthorityContainer(), type);
     }
 
     public Set<String> getAllAuthorities(AuthorityType type)
@@ -297,12 +288,6 @@ public class AuthorityDAOImpl implements AuthorityDAO
         }
         return authorities;
 
-    }
-
-    private void addAuthorityNameIfMatches(Set<String> authorities, NodeRef nodeRef, AuthorityType type, Pattern pattern)
-    {
-        addAuthorityNameIfMatches(authorities, DefaultTypeConverter.INSTANCE.convert(String.class, nodeService.getProperty(nodeRef, ContentModel.PROP_AUTHORITY_NAME)), type,
-                pattern);
     }
 
     private void addAuthorityNameIfMatches(Set<String> authorities, String authorityName, AuthorityType type, Pattern pattern)
@@ -693,9 +678,22 @@ public class AuthorityDAOImpl implements AuthorityDAO
 
     public Set<String> getAllRootAuthoritiesInZone(String zoneName, AuthorityType type)
     {
-        Set<String> roots = getAllRootAuthorities(type);
-        Set<String> inZone = getAllAuthoritiesInZone(zoneName, type);
-        roots.retainAll(inZone);
-        return roots;
+        NodeRef zone = getZone(zoneName);
+        return zone == null ? Collections.<String> emptySet() : getAllRootAuthoritiesUnderContainer(zone, type);
+    }
+    
+    private Set<String> getAllRootAuthoritiesUnderContainer(NodeRef container, AuthorityType type)
+    {
+        if (type != null && type.equals(AuthorityType.USER))
+        {
+            return Collections.<String> emptySet();
+        }        
+        Collection<ChildAssociationRef> childRefs = nodeService.getChildAssocsWithoutParentAssocsOfType(container, ContentModel.ASSOC_MEMBER);
+        Set<String> authorities = new HashSet<String>(childRefs.size() * 2);
+        for (ChildAssociationRef childRef : childRefs)
+        {
+            addAuthorityNameIfMatches(authorities, childRef.getQName().getLocalName(), type, null);
+        }
+        return authorities;        
     }
 }

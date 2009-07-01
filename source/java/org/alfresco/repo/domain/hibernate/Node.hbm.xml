@@ -812,4 +812,42 @@
          a.child_node_id IS NULL
    </sql-query>    
 
+   <sql-query name="node.GetChildAssocsWithoutParentAssocsOfType">
+      <return-scalar column="id" type="long"/>
+      <return-scalar column="type_qname_id" type="long"/>
+      <return-scalar column="qname_ns_id" type="long"/>
+      <return-scalar column="qname_localname" type="string"/>
+      <return-scalar column="child_node_name" type="string"/>
+      <return-scalar column="child_node_name_crc" type="long"/>
+      <return-scalar column="is_primary" type="boolean"/>
+      <return-scalar column="assoc_index" type="integer"/>
+      <return-scalar column="id" type="long"/>
+      <return-scalar column="protocol" type="string"/>
+      <return-scalar column="identifier" type="string"/>
+      <return-scalar column="uuid" type="string"/>
+      select
+         z1.id,
+         z1.type_qname_id,
+         z1.qname_ns_id,
+         z1.qname_localname,
+         z1.child_node_name,
+         z1.child_node_name_crc,
+         z1.is_primary,
+         z1.assoc_index,
+         n.id,
+         s.protocol,
+         s.identifier,
+         n.uuid
+      FROM
+         (alf_node n
+         JOIN alf_store s ON (s.id = n.store_id)
+         JOIN alf_child_assoc z1 ON (z1.parent_node_id = :parentId and z1.child_node_id = n.id))
+         LEFT OUTER JOIN
+         (alf_child_assoc a
+         JOIN alf_child_assoc z2 ON (z2.parent_node_id = :parentId AND z2.child_node_id = a.parent_node_id ))
+         ON (a.child_node_id = n.id AND a.type_qname_id = :assocTypeQNameID)
+      WHERE
+         a.child_node_id IS NULL
+   </sql-query>
+
 </hibernate-mapping>

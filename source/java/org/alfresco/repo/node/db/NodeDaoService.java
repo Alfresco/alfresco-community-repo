@@ -364,21 +364,19 @@ public interface NodeDaoService
     public void getNodesWithAspect(QName aspectQName, Long minNodeId, int count, NodeRefQueryCallback resultsCallback);
     
     /**
-     * Gets the set of nodes of a certain type without parent associations of a certain type. In effect the 'orphans'
-     * with respect to a certain association type.
+     * Gets the set of child associations of a certain parent node without parent associations of a certain type to
+     * other nodes with the same parent! In effect the 'orphans' with respect to a certain association type.
      * 
-     * @param storeRef
-     *            the store reference
-     * @param nodeTypeQName
-     *            the node type QName
+     * @param parentNodeId
+     *            the parent node ID
      * @param assocTypeQName
      *            the association type QName
      * @param resultsCallback
-     *            the node callback
+     *            the callback that will be called with the results
      */
-    @DirtySessionAnnotation(markDirty=false)
-    public void getNodesWithoutParentAssocsOfType(final StoreRef storeRef, final QName nodeTypeQName, final QName assocTypeQName,
-            NodeRefQueryCallback resultsCallback);
+    @DirtySessionAnnotation(markDirty = false)
+    public void getChildAssocsWithoutParentAssocsOfType(final Long parentNodeId, final QName assocTypeQName,
+            ChildAssocRefQueryCallback resultsCallback);
     /**
      * @return Returns an association matching the given parent, type and child name (<b>cm:name</b>) - or <tt>null</tt> if not found
      */

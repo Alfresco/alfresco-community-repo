@@ -38,7 +38,7 @@ import java.util.TreeSet;
 
 import org.alfresco.config.JBossEnabledResourcePatternResolver;
 import org.alfresco.config.JndiPropertiesFactoryBean;
-import org.alfresco.repo.imap.config.ImapConfigBean;
+import org.alfresco.util.config.RepositoryPathConfigBean;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.BeansException;
@@ -83,36 +83,38 @@ import org.springframework.core.io.support.ResourcePatternResolver;
  * <p>
  * Composite property settings are best controlled either through a JMX console (Enterprise edition only) or
  * /alfresco-global.properties in the classpath (the replacement to /alfresco/extension/custom-repository.properties).
- * For example, suppose "imap.server.mountPoints" was registered as a composite property of type {@link ImapConfigBean}.
- * You can then use the property to configure a list of {@link ImapConfigBean}s. First you specify in the property's
+ * For example, suppose "imap.server.mountPoints" was registered as a composite property of type {@link RepositoryPathConfigBean}.
+ * You can then use the property to configure a list of {@link RepositoryPathConfigBean}s. First you specify in the property's
  * value a list of zero or more 'instance names'. Each name must be unique within the property.
  * <p>
  * <code>imap.server.mountPoints=Repository_virtual,Repository_archive</code>
  * <p>
- * Then, by magic you have two separate instances of {@link ImapConfigBean} whose properties you can address through an
+ * Then, by magic you have two separate instances of {@link RepositoryPathConfigBean} whose properties you can address through an
  * extended set of properties prefixed by "imap.server.mountPoints".
  * <p>
  * To set a property on one of the instances, you append ".value.&lt;instance name>.&lt;bean property name>" to the
  * parent property name. For example:
  * <p>
- * <code>imap.server.mountPoints.value.Repository_virtual.mode=virtual</code>
+ * <code>imap.server.mountPoints.value.Repository_virtual.store=${spaces.store}</code><br/>
+ * <code>imap.server.mountPoints.value.Repository_virtual.path=/${spaces.company_home.childname}</code>
  * <p>
  * To specify a default value for a property on all instances of the bean, you append ".default.&lt;bean property name>"
  * to the parent property name. For example:
  * <p>
- * <code>imap.server.mountPoints.default.store=${spaces.store}</code>
+ * <code>imap.server.mountPoints.default.store=${spaces.store}</code><br/>
+ * <code>imap.server.mountPoints.default.path=/${spaces.company_home.childname}</code>
  * <p>
  * Note that it's perfectly valid to use placeholders in property values that will be resolved from other global
  * properties.
  * <p>
  * In order to actually utilize this configurable list of beans in your child application context, you simply need to
  * declare a {@link ListFactoryBean} whose ID is the same name as the property. For example:
- * 
  * <pre>
  * &lt;bean id=&quot;imap.server.mountPoints&quot; class=&quot;org.springframework.beans.factory.config.ListFactoryBean&quot;&gt;
- * &lt;property name=&quot;sourceList&quot;&gt;
- * &lt;!-- Whatever you declare in here will get replaced by the property value list --&gt;
- * &lt;/property&gt;
+ *    &lt;property name=&quot;sourceList&quot;&gt;
+ *       &lt;!-- Whatever you declare in here will get replaced by the property value list --&gt;
+ *       &lt;!-- This property is not actually required at all --&gt;
+ *    &lt;/property&gt;
  * &lt;/bean&gt;
  * </pre>
  * 

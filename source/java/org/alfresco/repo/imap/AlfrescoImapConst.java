@@ -26,9 +26,29 @@ package org.alfresco.repo.imap;
 
 /**
  * @author Mike Shavnev
+ * @since 3.2
  */
 public interface AlfrescoImapConst
 {
+    /**
+     * @author Derek Hulley
+     * @since 3.2
+     */
+    public static enum ImapViewMode
+    {
+        /**
+         * Defines {@link AlfrescoImapFolder} view mode as virtual mode. Used for IMAP Virtualised View.
+         */
+        VIRTUAL,
+        /**
+         * Defines {@link AlfrescoImapFolder} view mode as mixed mode. Used for IMAP Mixed View.
+         */
+        MIXED,
+        /**
+         * Defines {@link AlfrescoImapFolder} view mode as archive mode. Used for Email Archive View.
+         */
+        ARCHIVE
+    }
 
     public static final char HIERARCHY_DELIMITER = '/';
     public static final String NAMESPACE_PREFIX = "#";
@@ -41,20 +61,6 @@ public interface AlfrescoImapConst
     public static final String EML_EXTENSION = ".eml";
     // Separator for user enties in flag and subscribe properties
     public static final String USER_SEPARATOR = ";";
-
-    /**
-     * Defines {@link AlfrescoImapFolder} view mode as archive mode. Used for Email Archive View.
-     */
-    public static final String MODE_ARCHIVE = "archive";
-    /**
-     * Defines {@link AlfrescoImapFolder} view mode as virtual mode. Used for IMAP Virtualised View.
-     */
-    public static final String MODE_VIRTUAL = "virtual";
-    /**
-     * Defines {@link AlfrescoImapFolder} view mode as mixed mode. Used for IMAP Mixed View.
-     */
-    public static final String MODE_MIXED = "mixed";
-
 
     // Default content model email message templates
     public static final String CLASSPATH_TEXT_PLAIN_TEMPLATE = "/alfresco/templates/imap/imap_message_text_plain.ftl";

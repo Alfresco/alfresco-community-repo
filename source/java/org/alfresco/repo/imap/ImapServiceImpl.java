@@ -26,7 +26,6 @@ package org.alfresco.repo.imap;
 
 import java.io.Serializable;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -42,7 +41,7 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.i18n.I18NUtil;
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.ImapModel;
-import org.alfresco.repo.imap.config.ImapConfigBean;
+import org.alfresco.repo.imap.AlfrescoImapConst.ImapViewMode;
 import org.alfresco.repo.imap.config.ImapConfigMountPointsBean;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.ServiceRegistry;
@@ -51,8 +50,6 @@ import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.preference.PreferenceService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
@@ -62,6 +59,7 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.util.AbstractLifecycleBean;
 import org.alfresco.util.PropertyCheck;
 import org.alfresco.util.Utf7;
+import org.alfresco.util.config.RepositoryFolderConfigBean;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.context.ApplicationEvent;
@@ -84,17 +82,17 @@ public class ImapServiceImpl implements ImapService
     private NodeService nodeService;
     private ServiceRegistry serviceRegistry;
 
-    private Map<String, ImapConfigMountPointsBean> imapConfigMountPointsBeans = Collections.emptyMap();
-    ImapConfigBean[] ignoreExtractionFoldersBeans = new ImapConfigBean[0];
-    private Set<NodeRef> ignoreExtractionFolders = Collections.emptySet();
+    private Map<String, ImapConfigMountPointsBean> imapConfigMountPoints;
+    private RepositoryFolderConfigBean[] ignoreExtractionFoldersBeans;
+    private RepositoryFolderConfigBean imapHomeConfigBean;
 
-    private String imapRoot;
+    private NodeRef imapHomeNodeRef;
+    private Set<NodeRef> ignoreExtractionFolders;
+
     private String defaultFromAddress;
     private String webApplicationContextUrl = "http://localhost:8080/alfresco";
     private String repositoryTemplatePath;
     private boolean extractAttachmentsEnabled = true;
-
-    private NodeRef imapRootNodeRef;
 
     private final static Map<QName, Flags.Flag> qNameToFlag;
     private final static Map<Flags.Flag, QName> flagToQname;
@@ -188,14 +186,9 @@ public class ImapServiceImpl implements ImapService
         this.serviceRegistry = serviceRegistry;
     }
 
-    public String getImapRoot()
+    public void setImapHome(RepositoryFolderConfigBean imapHomeConfigBean)
     {
-        return imapRoot;
-    }
-
-    public void setImapRoot(String imapRoot)
-    {
-        this.imapRoot = imapRoot;
+        this.imapHomeConfigBean = imapHomeConfigBean;
     }
 
     public String getDefaultFromAddress()
@@ -228,33 +221,18 @@ public class ImapServiceImpl implements ImapService
         this.repositoryTemplatePath = repositoryTemplatePath;
     }
 
-    public void setImapConfigMountPointsBeans(ImapConfigMountPointsBean[] imapConfigMountPointsBeans)
+    public void setImapConfigMountPoints(ImapConfigMountPointsBean[] imapConfigMountPointsBeans)
     {
-        this.imapConfigMountPointsBeans = new LinkedHashMap<String, ImapConfigMountPointsBean>(imapConfigMountPointsBeans.length * 2);
+        this.imapConfigMountPoints = new LinkedHashMap<String, ImapConfigMountPointsBean>(imapConfigMountPointsBeans.length * 2);
         for (ImapConfigMountPointsBean bean : imapConfigMountPointsBeans)
         {
-            this.imapConfigMountPointsBeans.put(bean.getName(), bean);
+            this.imapConfigMountPoints.put(bean.getMountPointName(), bean);
         }
     }
 
-    /**
-     * Return map of imap configs. Name of config == key in the map
-     * 
-     * @return map of imap configs.
-     */
-    public Map<String, ImapConfigMountPointsBean> getImapConfigMountPoints()
-    {
-        return this.imapConfigMountPointsBeans;
-    }
-
-    public void setIgnoreExtractionFolders(final ImapConfigBean[] ignoreExtractionFolders)
+    public void setIgnoreExtractionFolders(final RepositoryFolderConfigBean[] ignoreExtractionFolders)
     {
         this.ignoreExtractionFoldersBeans = ignoreExtractionFolders;
-    }
-
-    public boolean getExtractAttachmentsEnabled()
-    {
-        return extractAttachmentsEnabled;
     }
 
     public void setExtractAttachmentsEnabled(boolean extractAttachmentsEnabled)
@@ -264,8 +242,34 @@ public class ImapServiceImpl implements ImapService
 
     // ---------------------- Lifecycle Methods ------------------------------
 
+    public void init()
+    {
+        PropertyCheck.mandatory(this, "imapConfigMountPoints", imapConfigMountPoints);
+        PropertyCheck.mandatory(this, "ignoreExtractionFoldersBeans", ignoreExtractionFoldersBeans);
+        PropertyCheck.mandatory(this, "imapHome", imapHomeConfigBean);
+        
+        PropertyCheck.mandatory(this, "fileFolderService", fileFolderService);
+        PropertyCheck.mandatory(this, "nodeService", nodeService);
+        PropertyCheck.mandatory(this, "serviceRegistry", serviceRegistry);
+        PropertyCheck.mandatory(this, "defaultFromAddress", defaultFromAddress);
+        PropertyCheck.mandatory(this, "repositoryTemplatePath", repositoryTemplatePath);
+    }
+
     public void startup()
     {
+        final NamespaceService namespaceService = serviceRegistry.getNamespaceService();
+        final SearchService searchService = serviceRegistry.getSearchService();
+        
+        // Hit the mount points for early failure
+        AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Void>()
+        {
+            public Void doWork() throws Exception
+            {
+                getMountPoints();
+                return null;
+            }
+        }, AuthenticationUtil.getSystemUserName());
+        
         // Get NodeRefs for folders to ignore
         this.ignoreExtractionFolders = AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Set<NodeRef>>()
         {
@@ -273,111 +277,36 @@ public class ImapServiceImpl implements ImapService
             {
                 Set<NodeRef> result = new HashSet<NodeRef>(ignoreExtractionFoldersBeans.length * 2);
 
-                for (ImapConfigBean bean : ignoreExtractionFoldersBeans)
+                for (RepositoryFolderConfigBean ignoreExtractionFoldersBean : ignoreExtractionFoldersBeans)
                 {
-                    StoreRef storeRef = new StoreRef(bean.getStore());
+                    NodeRef nodeRef = ignoreExtractionFoldersBean.getFolderPath(
+                            namespaceService, nodeService, searchService, fileFolderService);
 
-                    if (nodeService.exists(storeRef) == false)
+                    if (!result.add(nodeRef))
                     {
-                        throw new RuntimeException("No store for path: " + storeRef);
+                        // It was already in the set
+                        throw new AlfrescoRuntimeException(
+                                "The folder extraction path has been referenced already: \n" +
+                                "   Folder: " + ignoreExtractionFoldersBean);
                     }
-                    NodeRef storeRootNodeRef = nodeService.getRootNode(storeRef);
-
-                    NamespaceService namespaceService = serviceRegistry.getNamespaceService();
-                    String rootPathInStore = bean.getRootPath();
-
-                    List<NodeRef> nodeRefs = serviceRegistry.getSearchService().selectNodes(storeRootNodeRef, rootPathInStore, null, namespaceService, false);
-
-                    if (nodeRefs.size() > 1)
-                    {
-                        throw new RuntimeException(
-                                "Multiple possible roots for : \n" +
-                                "   root path: " + rootPathInStore + "\n" +
-                                "   results: " + nodeRefs);
-                    }
-                    else if (nodeRefs.size() == 0)
-                    {
-                        throw new RuntimeException(
-                                "No root found for : \n" +
-                                "   root path: " + rootPathInStore);
-                    }
-
-                    result.add(nodeRefs.get(0));
                 }
 
                 return result;
             }
         }, AuthenticationUtil.getSystemUserName());
-        // Locate IMAP root folder
-        AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Void>()
+        
+        // Locate or create IMAP home
+        imapHomeNodeRef = AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<NodeRef>()
         {
-            public Void doWork() throws Exception
+            public NodeRef doWork() throws Exception
             {
-                int indexOfStoreDelim = imapRoot.indexOf(StoreRef.URI_FILLER);
-
-                if (indexOfStoreDelim == -1)
-                {
-                    throw new RuntimeException("Bad path format, " + StoreRef.URI_FILLER + " not found");
-                }
-
-                indexOfStoreDelim += StoreRef.URI_FILLER.length();
-
-                int indexOfPathDelim = imapRoot.indexOf("/", indexOfStoreDelim);
-
-                if (indexOfPathDelim == -1)
-                {
-                    throw new RuntimeException("Bad path format, / not found");
-                }
-
-                String storePath = imapRoot.substring(0, indexOfPathDelim);
-                String rootPathInStore = imapRoot.substring(indexOfPathDelim);
-
-                StoreRef storeRef = new StoreRef(storePath);
-
-                if (nodeService.exists(storeRef) == false)
-                {
-                    throw new RuntimeException("No store for path: " + storeRef);
-                }
-
-                NodeRef storeRootNodeRef = nodeService.getRootNode(storeRef);
-
-                SearchService searchService = serviceRegistry.getSearchService();
-                NamespaceService namespaceService = serviceRegistry.getNamespaceService();
-
-                List<NodeRef> nodeRefs = searchService.selectNodes(storeRootNodeRef, rootPathInStore, null, namespaceService, false);
-
-                if (nodeRefs.size() > 1)
-                {
-                    throw new RuntimeException(
-                            "Multiple possible roots for : \n" +
-                            "   root path: " + rootPathInStore +
-                            "\n" + "   results: " + nodeRefs);
-                }
-                else if (nodeRefs.size() == 0)
-                {
-                    throw new RuntimeException(
-                            "No root found for : \n" +
-                            "   root path: " + rootPathInStore);
-                }
-
-                imapRootNodeRef = nodeRefs.get(0);
-                return null;
+                return imapHomeConfigBean.getOrCreateFolderPath(namespaceService, nodeService, searchService, fileFolderService);
             }
         }, AuthenticationUtil.getSystemUserName());
     }
 
     public void shutdown()
     {
-    }
-
-    public void init()
-    {
-        PropertyCheck.mandatory(this, "fileFolderService", fileFolderService);
-        PropertyCheck.mandatory(this, "nodeService", nodeService);
-        PropertyCheck.mandatory(this, "serviceRegistry", serviceRegistry);
-        PropertyCheck.mandatory(this, "imapRoot", imapRoot);
-        PropertyCheck.mandatory(this, "defaultFromAddress", defaultFromAddress);
-        PropertyCheck.mandatory(this, "repositoryTemplatePath", repositoryTemplatePath);
     }
 
     // ---------------------- Service Methods --------------------------------
@@ -430,7 +359,7 @@ public class ImapServiceImpl implements ImapService
         NodeRef parentNodeRef = root; // it is used for hierarhy deep search.
         for (String folderName : getMailPathInRepo(mailboxName).split(String.valueOf(AlfrescoImapConst.HIERARCHY_DELIMITER)))
         {
-            List<FileInfo> folders = searchFolders(parentNodeRef, folderName, false, AlfrescoImapConst.MODE_MIXED);
+            List<FileInfo> folders = searchFolders(parentNodeRef, folderName, false, ImapViewMode.MIXED);
             if (logger.isDebugEnabled())
             {
                 logger.debug("Trying to create folder '" + folderName + "'");
@@ -615,7 +544,7 @@ public class ImapServiceImpl implements ImapService
         NodeRef root = getMailboxRootRef(mailboxName, user.getLogin());
         String mountPointName = getMountPointName(mailboxName);
         NodeRef nodeRef = root; // initial top folder
-        String viewMode = getViewMode(mailboxName);
+        ImapViewMode viewMode = getViewMode(mailboxName);
 
         String[] folderNames = getMailPathInRepo(mailboxName).split(String.valueOf(AlfrescoImapConst.HIERARCHY_DELIMITER));
 
@@ -661,10 +590,10 @@ public class ImapServiceImpl implements ImapService
      * @param isVirtualView is folder in "Virtual" View
      * @return list of mailboxes
      */
-    public List<FileInfo> searchFolders(NodeRef contextNodeRef, String namePattern, boolean includeSubFolders, String viewMode)
+    public List<FileInfo> searchFolders(NodeRef contextNodeRef, String namePattern, boolean includeSubFolders, ImapViewMode viewMode)
     {
         List<FileInfo> result = fileFolderService.search(contextNodeRef, namePattern, false, true, includeSubFolders);
-        if (viewMode.equals(AlfrescoImapConst.MODE_VIRTUAL) || viewMode.equals(AlfrescoImapConst.MODE_MIXED))
+        if (viewMode == ImapViewMode.VIRTUAL || viewMode == ImapViewMode.MIXED)
         {
             List<SiteInfo> nonFavSites = getNonFavouriteSites(getCurrentUser());
             for (SiteInfo siteInfo : nonFavSites)
@@ -715,37 +644,33 @@ public class ImapServiceImpl implements ImapService
      * @param includeSubFolders includeSubFolders
      * @return list of emails that context folder contains.
      */
-    public List<FileInfo> searchMails(NodeRef contextNodeRef, String namePattern, String viewMode, boolean includeSubFolders)
+    public List<FileInfo> searchMails(NodeRef contextNodeRef, String namePattern, ImapViewMode viewMode, boolean includeSubFolders)
     {
-
         List<FileInfo> result = new LinkedList<FileInfo>();
         List<FileInfo> searchResult = fileFolderService.search(contextNodeRef, namePattern, true, false, includeSubFolders);
-        if (viewMode.equals(AlfrescoImapConst.MODE_MIXED))
+        switch (viewMode)
         {
-            return searchResult;
-        }
-        else if (viewMode.equals(AlfrescoImapConst.MODE_ARCHIVE))
-        {
+        case MIXED:
+            result = searchResult;
+            break;
+        case ARCHIVE:
             for (FileInfo fileInfo : searchResult)
             {
                 if (nodeService.hasAspect(fileInfo.getNodeRef(), ImapModel.ASPECT_IMAP_CONTENT))
                 {
                     result.add(fileInfo);
                 }
-
             }
-        }
-        else if (viewMode.equals(AlfrescoImapConst.MODE_VIRTUAL))
-        {
+            break;
+        case VIRTUAL:
             for (FileInfo fileInfo : searchResult)
             {
                 if (!nodeService.hasAspect(fileInfo.getNodeRef(), ImapModel.ASPECT_IMAP_CONTENT))
                 {
                     result.add(fileInfo);
                 }
-
             }
-
+            break;
         }
 
         return result;
@@ -831,7 +756,6 @@ public class ImapServiceImpl implements ImapService
         List<AlfrescoImapFolder> result = new LinkedList<AlfrescoImapFolder>();
 
         Map<String, NodeRef> mountPoints = getMountPoints();
-        Map<String, ImapConfigMountPointsBean> imapConfigs = getImapConfigMountPoints();
 
         NodeRef mountPoint;
 
@@ -842,7 +766,7 @@ public class ImapServiceImpl implements ImapService
             mountPoint = mountPoints.get(mountPointName);
             FileInfo mountPointFileInfo = fileFolderService.getFileInfo(mountPoint);
             NodeRef mountParent = nodeService.getParentAssocs(mountPoint).get(0).getParentRef();
-            String viewMode = imapConfigs.get(mountPointName).getMode();
+            ImapViewMode viewMode = imapConfigMountPoints.get(mountPointName).getMode();
 
             if (!mailboxPattern.equals("*"))
             {
@@ -899,14 +823,14 @@ public class ImapServiceImpl implements ImapService
 
         // List mailboxes that are in user IMAP Home
         NodeRef root = getUserImapHomeRef(user.getLogin());
-        List<AlfrescoImapFolder> imapFolders = listFolder(root, root, user, mailboxPattern, listSubscribed, AlfrescoImapConst.MODE_ARCHIVE);
+        List<AlfrescoImapFolder> imapFolders = listFolder(root, root, user, mailboxPattern, listSubscribed, ImapViewMode.ARCHIVE);
 
         if (imapFolders != null)
         {
             for (AlfrescoImapFolder mailFolder : imapFolders)
             {
                 AlfrescoImapFolder folder = (AlfrescoImapFolder) mailFolder;
-                folder.setViewMode(AlfrescoImapConst.MODE_ARCHIVE);
+                folder.setViewMode(ImapViewMode.ARCHIVE);
                 folder.setMountParent(root);
             }
             result.addAll(imapFolders);
@@ -916,7 +840,13 @@ public class ImapServiceImpl implements ImapService
 
     }
 
-    private List<AlfrescoImapFolder> listFolder(NodeRef mailboxRoot, NodeRef root, AlfrescoImapUser user, String mailboxPattern, boolean listSubscribed, String viewMode)
+    private List<AlfrescoImapFolder> listFolder(
+            NodeRef mailboxRoot,
+            NodeRef root,
+            AlfrescoImapUser user,
+            String mailboxPattern,
+            boolean listSubscribed,
+            ImapViewMode viewMode)
     {
         if (logger.isDebugEnabled())
         {
@@ -1111,8 +1041,7 @@ public class ImapServiceImpl implements ImapService
         {
             rootFolder = mailPath;
         }
-        Map<String, ImapConfigMountPointsBean> imapConfigs = getImapConfigMountPoints();
-        if (imapConfigs.keySet().contains(rootFolder))
+        if (imapConfigMountPoints.keySet().contains(rootFolder))
         {
             Map<String, NodeRef> mountPoints = getMountPoints();
             NodeRef rootRef = mountPoints.get(rootFolder);
@@ -1144,8 +1073,7 @@ public class ImapServiceImpl implements ImapService
         {
             rootFolder = mailboxName;
         }
-        Map<String, ImapConfigMountPointsBean> imapConfigs = getImapConfigMountPoints();
-        if (imapConfigs.keySet().contains(rootFolder))
+        if (imapConfigMountPoints.keySet().contains(rootFolder))
         {
             return rootFolder;
         }
@@ -1163,24 +1091,23 @@ public class ImapServiceImpl implements ImapService
      */
     private Map<String, NodeRef> getMountPoints()
     {
-        Map<String, ImapConfigMountPointsBean> imapConfigs = getImapConfigMountPoints();
+        Set<NodeRef> mountPointNodeRefs = new HashSet<NodeRef>(5);
+        
         Map<String, NodeRef> mountPoints = new HashMap<String, NodeRef>();
+        NamespaceService namespaceService = serviceRegistry.getNamespaceService();
         SearchService searchService = serviceRegistry.getSearchService();
-        for (ImapConfigMountPointsBean config : imapConfigs.values())
+        for (ImapConfigMountPointsBean config : imapConfigMountPoints.values())
         {
             // Get node reference
-            StoreRef store = new StoreRef(config.getStore());
-            ResultSet rs = searchService.query(store, SearchService.LANGUAGE_XPATH, config.getRootPath());
-            if (rs.length() == 0)
+            NodeRef nodeRef = config.getFolderPath(namespaceService, nodeService, searchService, fileFolderService);
+
+            if (!mountPointNodeRefs.add(nodeRef))
             {
-                logger.warn("Didn't find " + config.getName());
+                throw new IllegalArgumentException(
+                        "A mount point has been defined twice: \n" +
+                        "   Mount point: " + config);
             }
-            else
-            {
-                NodeRef nodeRef = rs.getNodeRef(0);
-                mountPoints.put(config.getName(), nodeRef);
-            }
-            rs.close();
+            mountPoints.put(config.getMountPointName(), nodeRef);
         }
         return mountPoints;
     }
@@ -1205,7 +1132,7 @@ public class ImapServiceImpl implements ImapService
             rootFolder = mailboxName;
         }
 
-        Map<String, ImapConfigMountPointsBean> imapConfigs = getImapConfigMountPoints();
+        Map<String, ImapConfigMountPointsBean> imapConfigs = imapConfigMountPoints;
         if (imapConfigs.keySet().contains(rootFolder))
         {
             Map<String, NodeRef> mountPoints = getMountPoints();
@@ -1224,7 +1151,7 @@ public class ImapServiceImpl implements ImapService
      */
     private NodeRef getUserImapHomeRef(final String userName)
     {
-        NodeRef userHome = fileFolderService.searchSimple(imapRootNodeRef, userName);
+        NodeRef userHome = fileFolderService.searchSimple(imapHomeNodeRef, userName);
         if (userHome == null)
         {
             // create user home
@@ -1232,7 +1159,7 @@ public class ImapServiceImpl implements ImapService
             {
                 public NodeRef doWork() throws Exception
                 {
-                    NodeRef result = fileFolderService.create(imapRootNodeRef, userName, ContentModel.TYPE_FOLDER).getNodeRef();
+                    NodeRef result = fileFolderService.create(imapHomeNodeRef, userName, ContentModel.TYPE_FOLDER).getNodeRef();
                     nodeService.setProperty(result, ContentModel.PROP_DESCRIPTION, userName);
                     // create inbox
                     fileFolderService.create(result, AlfrescoImapConst.INBOX_NAME, ContentModel.TYPE_FOLDER);
@@ -1276,7 +1203,7 @@ public class ImapServiceImpl implements ImapService
         return result;
     }
 
-    private boolean hasSubscribedChild(FileInfo parent, String userName, String viewMode)
+    private boolean hasSubscribedChild(FileInfo parent, String userName, ImapViewMode viewMode)
     {
         List<FileInfo> list = searchFolders(parent.getNodeRef(), "*", true, viewMode);
 
@@ -1320,7 +1247,7 @@ public class ImapServiceImpl implements ImapService
      * @param mailboxName name of the mailbox in IMAP client.
      * @return view mode of the specified mailbox.
      */
-    private String getViewMode(String mailboxName)
+    private ImapViewMode getViewMode(String mailboxName)
     {
         String rootFolder;
         int index = mailboxName.indexOf(AlfrescoImapConst.HIERARCHY_DELIMITER);
@@ -1332,14 +1259,13 @@ public class ImapServiceImpl implements ImapService
         {
             rootFolder = mailboxName;
         }
-        Map<String, ImapConfigMountPointsBean> imapConfigs = getImapConfigMountPoints();
-        if (imapConfigs.keySet().contains(rootFolder))
+        if (imapConfigMountPoints.keySet().contains(rootFolder))
         {
-            return imapConfigs.get(rootFolder).getMode();
+            return imapConfigMountPoints.get(rootFolder).getMode();
         }
         else
         {
-            return AlfrescoImapConst.MODE_ARCHIVE;
+            return ImapViewMode.ARCHIVE;
         }
     }
 

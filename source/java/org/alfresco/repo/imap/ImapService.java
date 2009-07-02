@@ -29,6 +29,7 @@ import java.util.List;
 import javax.mail.Flags;
 import javax.mail.Flags.Flag;
 
+import org.alfresco.repo.imap.AlfrescoImapConst.ImapViewMode;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.NodeRef;
 
@@ -142,7 +143,7 @@ public interface ImapService
      * @param viewMode (ARCHIVE, MIXED or VIRTUAL)
      * @return list of mailboxes that are visible from specified view
      */
-    public List<FileInfo> searchFolders(NodeRef contextNodeRef, String namePattern, boolean includeSubFolders, String viewMode);
+    public List<FileInfo> searchFolders(NodeRef contextNodeRef, String namePattern, boolean includeSubFolders, ImapViewMode viewMode);
 
     /**
      * Search for emails in specified folder depend on view mode.
@@ -153,7 +154,7 @@ public interface ImapService
      * @param includeSubFolders includeSubFolders
      * @return list of emails that context folder contains.
      */
-    public List<FileInfo> searchMails(NodeRef contextNodeRef, String namePattern, String viewMode, boolean includeSubFolders);
+    public List<FileInfo> searchMails(NodeRef contextNodeRef, String namePattern, ImapViewMode viewMode, boolean includeSubFolders);
 
     /**
      * Return flags that belong to the specified imap folder.

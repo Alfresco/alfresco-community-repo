@@ -38,49 +38,36 @@
         </property>
     </bean>
 
-    <!--The configurable list of mount points - actually a post-processed composite property! -->
-    <bean id="imap.server.mountPoints" class="org.springframework.beans.factory.config.ListFactoryBean">
-        <property name="sourceList">
-            <list>
-                <bean id="Repository_virtual" class="org.alfresco.repo.imap.config.ImapConfigMountPointsBean">
-                    <property name="mode">
-                        <value>virtual</value>
-                    </property>
-                    <property name="store">
-                        <value>${spaces.store}</value>
-                    </property>
-                    <property name="rootPath">
-                        <value>/${spaces.company_home.childname}</value>
-                    </property>
-                </bean>
-                <bean id="Repository_archive" class="org.alfresco.repo.imap.config.ImapConfigMountPointsBean">
-                    <property name="mode">
-                        <value>archive</value>
-                    </property>
-                    <property name="store">
-                        <value>${spaces.store}</value>
-                    </property>
-                    <property name="rootPath">
-                        <value>/${spaces.company_home.childname}</value>
-                    </property>
-                </bean>
-            </list>
-        </property>
+    <!--The configurable list of mount points -->
+    <bean id="imap.config.server.mountPoints" class="org.springframework.beans.factory.config.ListFactoryBean" >
+        <!-- Uses ImapConfigMountPointsBean with:
+            mountPointName (e.g. Repository_virtual')
+            modeName (e.g. 'VIRTUAL', 'ARCHIVE' or 'MIXED')
+            store (e.g. '${spaces.store}')
+            rootPath (e.g. '/${spaces.company_home.childname})
+            folderPath (optional e.g. Projects/T1)
+        -->
     </bean>
 
-    <!--The configurable list of folders that ignore attachment extraction - actually a post-processed composite property! -->
-    <bean id="imap.ignore.extraction" class="org.springframework.beans.factory.config.ListFactoryBean">
-        <property name="sourceList">
-            <list>
-                <bean id="ignored" class="org.alfresco.repo.imap.config.ImapConfigBean">
-                    <property name="store">
-                        <value>${spaces.store}</value>
-                    </property>
-                    <property name="rootPath">
-                        <value>/${spaces.company_home.childname}</value>
-                    </property>
-                </bean>            
-            </list>
+    <!--The configurable list of folders that ignore attachment extraction -->
+    <bean id="imap.config.ignore.extraction" class="org.springframework.beans.factory.config.ListFactoryBean">
+        <!-- Uses RepositoryPathConfigBean with:
+            store (e.g. '${spaces.store}')
+            rootPath (e.g. '/${spaces.company_home.childname})
+            folderPath (optional e.g. Projects/T1)
+        -->
+    </bean>
+    
+    <!-- The IMAP home, which has to be a sub-folder -->
+    <bean id="imap.config.home" class="org.alfresco.util.config.RepositoryFolderConfigBean">
+        <property name="store">
+            <value>${imap.config.home.store}</value>
+        </property>
+        <property name="rootPath">
+            <value>${imap.config.home.rootPath}</value>
+        </property>
+        <property name="folderPath">
+            <value>${imap.config.home.folderPath}</value>
         </property>
     </bean>
     
@@ -111,14 +98,14 @@
             <ref bean="ServiceRegistry"/>
         </property>
         
-        <property name="imapConfigMountPointsBeans">
-            <ref bean="imap.server.mountPoints" />
+        <property name="imapConfigMountPoints">
+            <ref bean="imap.config.server.mountPoints" />
         </property>
         <property name="ignoreExtractionFolders">
-            <ref bean="imap.ignore.extraction" />
+            <ref bean="imap.config.ignore.extraction" />
         </property>
-        <property name="imapRoot">
-            <value>${spaces.store}/${spaces.company_home.childname}</value>
+        <property name="imapHome">
+            <ref bean="imap.config.home" />
         </property>
         <property name="defaultFromAddress">
             <value>${mail.from.default}</value>

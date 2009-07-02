@@ -14,6 +14,7 @@ import junit.framework.TestCase;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.ImapModel;
+import org.alfresco.repo.imap.AlfrescoImapConst.ImapViewMode;
 import org.alfresco.repo.importer.ACPImportPackageHandler;
 import org.alfresco.repo.management.subsystems.ChildApplicationContextFactory;
 import org.alfresco.repo.model.filefolder.FileFolderServiceImpl;
@@ -36,6 +37,7 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.PropertyMap;
+import org.alfresco.util.config.RepositoryFolderConfigBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.io.ClassPathResource;
 
@@ -142,8 +144,11 @@ public class ImapServiceImplTest extends TestCase
         FileFolderServiceImpl.makeFolders(fileFolderService, companyHomeNodeRef, folders, ContentModel.TYPE_FOLDER);
         
         // Setting IMAP root
-        String imapRoot = storePath + companyHomePathInStore + "/" + NamespaceService.CONTENT_MODEL_PREFIX + ":" + TEST_IMAP_FOLDER_NAME;
-        imapServiceImpl.setImapRoot(imapRoot);
+        RepositoryFolderConfigBean imapHome = new RepositoryFolderConfigBean();
+        imapHome.setStore(storePath);
+        imapHome.setRootPath(companyHomePathInStore);
+        imapHome.setFolderPath(TEST_IMAP_FOLDER_NAME);
+        imapServiceImpl.setImapHome(imapHome);
         
         // Starting IMAP
         imapServiceImpl.startup();
@@ -304,33 +309,33 @@ public class ImapServiceImplTest extends TestCase
 
     public void testSearchFoldersInArchive() throws Exception
     {
-        List<FileInfo> fi = imapService.searchFolders(testImapFolderNodeRef, FOLDER_PATTERN, true, AlfrescoImapConst.MODE_ARCHIVE);
+        List<FileInfo> fi = imapService.searchFolders(testImapFolderNodeRef, FOLDER_PATTERN, true, ImapViewMode.ARCHIVE);
         assertNotNull("Can't find folders in Archive Mode", fi);
         assertEquals("Can't find folders in Archive Mode", fi.size(), 2);
         
-        fi = imapService.searchFolders(testImapFolderNodeRef, FOLDER_PATTERN, false, AlfrescoImapConst.MODE_ARCHIVE);
+        fi = imapService.searchFolders(testImapFolderNodeRef, FOLDER_PATTERN, false, ImapViewMode.ARCHIVE);
         assertNotNull("Can't find folders in Archive Mode", fi);
         assertEquals("Can't find folders in Archive Mode", fi.size(), 1);
     }
 
     public void testSearchFoldersInVirtual() throws Exception
     {
-        List<FileInfo> fi = imapService.searchFolders(testImapFolderNodeRef, FOLDER_PATTERN, true, AlfrescoImapConst.MODE_VIRTUAL);
+        List<FileInfo> fi = imapService.searchFolders(testImapFolderNodeRef, FOLDER_PATTERN, true, ImapViewMode.VIRTUAL);
         assertNotNull("Can't find folders in Virtual Mode", fi);
         assertEquals("Can't find folders in Virtual Mode", fi.size(), 2);
 
-        fi = imapService.searchFolders(testImapFolderNodeRef, FOLDER_PATTERN, false, AlfrescoImapConst.MODE_VIRTUAL);
+        fi = imapService.searchFolders(testImapFolderNodeRef, FOLDER_PATTERN, false, ImapViewMode.VIRTUAL);
         assertNotNull("Can't find folders in Virtual Mode", fi);
         assertEquals("Can't find folders in Virtual Mode", fi.size(), 1);
     }
     
     public void testSearchFoldersInMixed() throws Exception
     {
-        List<FileInfo> fi = imapService.searchFolders(testImapFolderNodeRef, FOLDER_PATTERN, true, AlfrescoImapConst.MODE_MIXED);
+        List<FileInfo> fi = imapService.searchFolders(testImapFolderNodeRef, FOLDER_PATTERN, true, ImapViewMode.MIXED);
         assertNotNull("Can't find folders in Mixed Mode", fi);
         assertEquals("Can't find folders in Mixed Mode", fi.size(), 2);
 
-        fi = imapService.searchFolders(testImapFolderNodeRef, FOLDER_PATTERN, false, AlfrescoImapConst.MODE_MIXED);
+        fi = imapService.searchFolders(testImapFolderNodeRef, FOLDER_PATTERN, false, ImapViewMode.MIXED);
         assertNotNull("Can't find folders in Mixed Mode", fi);
         assertEquals("Can't find folders in Mixed Mode", fi.size(), 1);
     }
@@ -344,7 +349,7 @@ public class ImapServiceImplTest extends TestCase
 
     public void testSearchMails() throws Exception
     {
-        List<FileInfo> fi = imapService.searchMails(testImapFolderNodeRef, "*", AlfrescoImapConst.MODE_MIXED, true);
+        List<FileInfo> fi = imapService.searchMails(testImapFolderNodeRef, "*", ImapViewMode.MIXED, true);
         assertNotNull(fi);
         assertTrue(fi.size() > 0);
     }
@@ -379,7 +384,7 @@ public class ImapServiceImplTest extends TestCase
 
     public void testSetFlags() throws Exception
     {
-        List<FileInfo> fis = imapService.searchMails(testImapFolderNodeRef, "*", AlfrescoImapConst.MODE_ARCHIVE, true);
+        List<FileInfo> fis = imapService.searchMails(testImapFolderNodeRef, "*", ImapViewMode.ARCHIVE, true);
         if (fis != null && fis.size() > 0)
         {
             FileInfo messageFileInfo = fis.get(0);
@@ -412,7 +417,7 @@ public class ImapServiceImplTest extends TestCase
     
     public void testSetFlag() throws Exception
     {
-        List<FileInfo> fis = imapService.searchMails(testImapFolderNodeRef, "*", AlfrescoImapConst.MODE_ARCHIVE, true);
+        List<FileInfo> fis = imapService.searchMails(testImapFolderNodeRef, "*", ImapViewMode.ARCHIVE, true);
         if (fis != null && fis.size() > 0)
         {
             FileInfo messageFileInfo = fis.get(0);
@@ -432,7 +437,7 @@ public class ImapServiceImplTest extends TestCase
 
     public void testGetFlags() throws Exception
     {
-        List<FileInfo> fis = imapService.searchMails(testImapFolderNodeRef, "*", AlfrescoImapConst.MODE_ARCHIVE, true);
+        List<FileInfo> fis = imapService.searchMails(testImapFolderNodeRef, "*", ImapViewMode.ARCHIVE, true);
         if (fis != null && fis.size() > 0)
         {
             FileInfo messageFileInfo = fis.get(0);

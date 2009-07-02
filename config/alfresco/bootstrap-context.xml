@@ -417,11 +417,11 @@
         </property>
         <property name="compositePropertyTypes">
             <map>
-               <entry key="imap.server.mountPoints">
+               <entry key="imap.config.server.mountPoints">
                    <value>org.alfresco.repo.imap.config.ImapConfigMountPointsBean</value>
                </entry>
-               <entry key="imap.ignore.extraction">
-                   <value>org.alfresco.repo.imap.config.ImapConfigBean</value>
+               <entry key="imap.config.ignore.extraction">
+                   <value>org.alfresco.util.config.RepositoryPathConfigBean</value>
                </entry>
             </map>
         </property>

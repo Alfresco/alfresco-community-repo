@@ -48,6 +48,7 @@ import javax.mail.internet.MimeUtility;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.ImapModel;
+import org.alfresco.repo.imap.AlfrescoImapConst.ImapViewMode;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.model.FileExistsException;
 import org.alfresco.service.cmr.model.FileFolderService;
@@ -104,9 +105,9 @@ public class AlfrescoImapFolder extends AbstractImapFolder
     private String folderName;
 
     /**
-     * Defines view mode. Can be one of the following: {@link AlfrescoImapConst#MODE_ARCHIVE} or {@link AlfrescoImapConst#MODE_VIRTUAL}.
+     * Defines view mode.
      */
-    private String viewMode;
+    private ImapViewMode viewMode;
 
     /**
      * Name of the mount point.
@@ -168,7 +169,7 @@ public class AlfrescoImapFolder extends AbstractImapFolder
             String qualifiedMailboxName,
             FileInfo folderInfo,
             String folderName,
-            String viewMode,
+            ImapViewMode viewMode,
             NodeRef rootNodeRef,
             String mountPointName,
             boolean extractAttachmentsEnabled,
@@ -193,7 +194,7 @@ public class AlfrescoImapFolder extends AbstractImapFolder
             String qualifiedMailboxName,
             FileInfo folderInfo,
             String folderName,
-            String viewMode,
+            ImapViewMode viewMode,
             NodeRef rootNodeRef,
             String mountPointName,
             ServiceRegistry serviceRegistry,
@@ -205,7 +206,7 @@ public class AlfrescoImapFolder extends AbstractImapFolder
         this.folderInfo = folderInfo;
         this.rootNodeRef = rootNodeRef;
         this.folderName = folderName != null ? folderName : (folderInfo != null ? folderInfo.getName() : null);
-        this.viewMode = viewMode != null ? viewMode : AlfrescoImapConst.MODE_ARCHIVE;
+        this.viewMode = viewMode != null ? viewMode : ImapViewMode.ARCHIVE;
         this.mountPointName = mountPointName;
         this.extractAttachmentsEnabled = extractAttachmentsEnabled;
 
@@ -838,7 +839,7 @@ public class AlfrescoImapFolder extends AbstractImapFolder
         this.folderName = folderName;
     }
 
-    public void setViewMode(String viewMode)
+    public void setViewMode(ImapViewMode viewMode)
     {
         this.viewMode = viewMode;
     }
@@ -889,7 +890,7 @@ public class AlfrescoImapFolder extends AbstractImapFolder
         return readOnly;
     }
 
-    public String getViewMode()
+    public ImapViewMode getViewMode()
     {
         return viewMode;
     }

@@ -84,7 +84,7 @@
 <legend> Content links </legend>
 <table class="links">
    <tr>
-   <td>Content folder:</td><td><a href="${contextUrl}/navigate/browse${document.displayPath}">${contextUrl}/navigate/browse${document.displayPath}</a></td>
+   <td>Content folder:</td><td><a href="${contextUrl}/navigate/browse${document.parent.webdavUrl}">${contextUrl}/navigate/browse${document.parent.webdavUrl}</a></td>
    </tr>
    <tr>
    <td>Content URL:</td><td><a href="${contextUrl}${document.url}">${contextUrl}${document.url}</a></td>

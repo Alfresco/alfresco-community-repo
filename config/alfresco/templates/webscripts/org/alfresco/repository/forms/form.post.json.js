@@ -1,8 +1,8 @@
 function main()
 {
     // Extract template args
-    var itemKind = url.templateArgs['item_kind'];
-    var itemId = url.templateArgs['item_id'];
+    var itemKind = url.templateArgs["item_kind"];
+    var itemId = url.templateArgs["item_id"];
 
     if (logger.isLoggingEnabled())
     {
@@ -66,7 +66,7 @@ function main()
         return;
     }
     
-    model.message = "Successfully updated item [" + itemKind + "]" + itemId;
+    model.message = "Successfully persisted form for item [" + itemKind + "]" + itemId;
 }
 
 main();

@@ -95,7 +95,7 @@ function main()
     var submissionUrl = formScriptObj.submissionUrl;
     if (submissionUrl === null)
     {
-        submissionUrl = '/api/' + itemKind + '/' + itemId + '/formprocessor';
+        submissionUrl = '/api/' + itemKind + '/' + itemId.replace(':', '_') + '/formprocessor';
     }
     
     // create form model

@@ -166,7 +166,7 @@ function getParsedArgs(containerType)
       location = 
       {
          site: siteId,
-         siteTitle: siteService.getSite(siteId).title,
+         siteTitle: siteNode.title,
          siteNode: siteNode,
          container: containerId,
          containerNode: siteNode.getContainer(containerId),

@@ -270,6 +270,92 @@ public class InvitationServiceImplTest extends BaseAlfrescoSpringTest
     	siteService.removeMembership(resourceName, inviteeUserName);
     }
     
+    // TODO MER START
+    /**
+     * Test nominated user - new user who rejects invitation
+     * @throws Exception
+     */
+    public void testNominatedInvitationNewUserReject() throws Exception
+    {
+    	Date startDate = new java.util.Date();
+    	
+    	String inviteeFirstName = PERSON_FIRSTNAME;
+    	String inviteeLastName = PERSON_LASTNAME; 
+    	String inviteeEmail = "123@alfrescotesting.com";
+    	String inviteeUserName = null;
+    	Invitation.ResourceType resourceType = Invitation.ResourceType.WEB_SITE; 
+    	String resourceName = SITE_SHORT_NAME_INVITE;
+    	String inviteeRole = SiteModel.SITE_COLLABORATOR;
+    	String serverPath = "wibble";
+    	String acceptUrl = "froob";
+    	String rejectUrl = "marshmallow";
+    	
+    	this.authenticationComponent.setCurrentUser(USER_MANAGER);
+    	
+    	NominatedInvitation nominatedInvitation = invitationService.inviteNominated(
+    			inviteeFirstName,
+    			inviteeLastName,
+    			inviteeEmail, 
+    			resourceType, 
+    			resourceName, 
+    			inviteeRole, 
+    			serverPath, 
+    			acceptUrl, 
+    			rejectUrl) ;
+    	
+    	assertNotNull("nominated invitation is null", nominatedInvitation);
+    	String inviteId =  nominatedInvitation.getInviteId();
+    	assertEquals("first name wrong", inviteeFirstName, nominatedInvitation.getInviteeFirstName());
+    	assertEquals("last name wrong", inviteeLastName, nominatedInvitation.getInviteeLastName());
+    	assertEquals("email name wrong", inviteeEmail, nominatedInvitation.getInviteeEmail());
+    	
+    	// Generated User Name should be returned
+    	inviteeUserName = nominatedInvitation.getInviteeUserName();
+    	assertNotNull("generated user name is null", inviteeUserName);
+    	// sentInviteDate should be set to today
+    	{
+    		Date sentDate = nominatedInvitation.getSentInviteDate();
+    		assertTrue("sentDate wrong - too early", sentDate.after(startDate));
+    		assertTrue("sentDate wrong - too late", sentDate.before(new Date(new Date().getTime()+ 1)));
+    	}	
+    	
+        	
+    	/**
+    	 * Now reject the invitation
+    	 */
+    	NominatedInvitation rejectedInvitation = (NominatedInvitation)invitationService.reject(nominatedInvitation.getInviteId(), "dont want it");
+    	assertEquals("invite id wrong", nominatedInvitation.getInviteId(), rejectedInvitation.getInviteId());
+    	assertEquals("first name wrong", inviteeFirstName, rejectedInvitation.getInviteeFirstName());
+    	assertEquals("last name wrong", inviteeLastName, rejectedInvitation.getInviteeLastName());
+    	assertEquals("user name wrong", inviteeUserName, rejectedInvitation.getInviteeUserName());
+    	
+    	List<Invitation> it4 = invitationService.listPendingInvitationsForResource(resourceType, resourceName);
+    	assertTrue("invitations is not empty", it4.isEmpty());
+    	    	
+    	/**
+    	 * Now verify access control list inviteeUserName should not exist
+    	 */
+    	String roleName = siteService.getMembersRole(resourceName, inviteeUserName);
+    	if(roleName != null)
+    	{
+    		fail("role has been set for a rejected user");
+    	}
+    	
+    	/**
+    	 * Now verify that the generated user has been removed
+    	 */
+    	if(personService.personExists(inviteeUserName))
+    	{
+    		fail("generated user has not been cleaned up");
+    	}
+    }
+    
+    
+    
+    // TODO MER END
+    
+    
+    
     /**
      * Test nominated user - new user
      * 

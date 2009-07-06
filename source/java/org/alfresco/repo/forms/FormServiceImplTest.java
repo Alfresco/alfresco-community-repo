@@ -37,6 +37,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.forms.AssociationFieldDefinition.Direction;
 import org.alfresco.repo.forms.PropertyFieldDefinition.FieldConstraint;
+import org.alfresco.repo.forms.processor.node.TypeFormProcessor;
 import org.alfresco.repo.jscript.ClasspathScriptLocation;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.service.cmr.repository.ContentData;
@@ -921,7 +922,7 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
         }
         
         // supply the destination
-        data.addFieldData("destination", this.folder.toString());
+        data.addFieldData(TypeFormProcessor.DESTINATION, this.folder.toString());
         
         // persist the data
         NodeRef newNode = (NodeRef)this.formService.saveForm(new Item(TYPE_FORM_ITEM_KIND, "cm:content"), data);
@@ -936,6 +937,13 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
         // check the titled aspect was automatically applied
         assertTrue("Expecting the cm:titled to have been applied", 
                     this.nodeService.hasAspect(this.document, ContentModel.ASPECT_TITLED));
+        
+        // test different forms of itemId's
+        newNode = (NodeRef)this.formService.saveForm(new Item(TYPE_FORM_ITEM_KIND, "cm_content"), data);
+        assertNotNull("Expected new node to be created using itemId cm_content", newNode);
+        
+        newNode = (NodeRef)this.formService.saveForm(new Item(TYPE_FORM_ITEM_KIND, ContentModel.TYPE_CONTENT.toString()), data);
+        assertNotNull("Expected new node to be created using itemId " + ContentModel.TYPE_CONTENT.toString(), newNode);
     }
     
     public void testNoForm() throws Exception

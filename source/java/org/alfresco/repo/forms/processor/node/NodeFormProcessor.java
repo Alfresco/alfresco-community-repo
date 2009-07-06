@@ -48,6 +48,7 @@ import org.alfresco.repo.forms.AssociationFieldDefinition.Direction;
 import org.alfresco.repo.forms.FormData.FieldData;
 import org.alfresco.repo.forms.PropertyFieldDefinition.FieldConstraint;
 import org.alfresco.repo.forms.processor.FilteredFormProcessor;
+import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.AssociationDefinition;
 import org.alfresco.service.cmr.dictionary.ChildAssociationDefinition;
 import org.alfresco.service.cmr.dictionary.Constraint;
@@ -308,20 +309,39 @@ public class NodeFormProcessor extends FilteredFormProcessor
         // get data dictionary definition for node if it is provided
         QName type = null;
         Map<QName, Serializable> propValues = Collections.emptyMap();
+        Map<QName, PropertyDefinition> propDefs = null;
+        Map<QName, AssociationDefinition> assocDefs = null;
         
         if (nodeRef != null)
         {
             type = this.nodeService.getType(nodeRef);
             typeDef = this.dictionaryService.getAnonymousType(type, this.nodeService.getAspects(nodeRef));
+            
+            // NOTE: the anonymous type returns all property and association defs 
+            // for all aspects applied as well as the type
+            propDefs = typeDef.getProperties();
+            assocDefs = typeDef.getAssociations();
             propValues = this.nodeService.getProperties(nodeRef);
         }
         else
         {
             type = typeDef.getName();
-        }
-        
-        Map<QName, PropertyDefinition> propDefs = typeDef.getProperties();
-        Map<QName, AssociationDefinition> assocDefs = typeDef.getAssociations(); 
+            
+            // we only get the properties and associations of the actual type so
+            // we also need to manually get properties and associations from any
+            // mandatory aspects
+            propDefs = new HashMap<QName, PropertyDefinition>(16);
+            assocDefs = new HashMap<QName, AssociationDefinition>(16);
+            propDefs.putAll(typeDef.getProperties());
+            assocDefs.putAll(typeDef.getAssociations());
+            
+            List<AspectDefinition> aspects = typeDef.getDefaultAspects(true);
+            for (AspectDefinition aspect : aspects)
+            {
+                propDefs.putAll(aspect.getProperties());
+                assocDefs.putAll(aspect.getAssociations());
+            }
+        } 
         
         for (String fieldName : fields)
         {

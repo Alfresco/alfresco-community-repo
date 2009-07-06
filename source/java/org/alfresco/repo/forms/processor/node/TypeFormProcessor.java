@@ -59,8 +59,9 @@ public class TypeFormProcessor extends NodeFormProcessor
     /** Logger */
     private static Log logger = LogFactory.getLog(TypeFormProcessor.class);
     
-    protected static final String DESTINATION = "destination";
     protected static final String NAME_PROP_DATA = PROP + DATA_KEY_SEPARATOR + "cm" + DATA_KEY_SEPARATOR + "name";
+    
+    public static final String DESTINATION = "alf_destination";
     
     /*
      * @see org.alfresco.repo.forms.processor.node.NodeFormProcessor#getTypedItem(org.alfresco.repo.forms.Item)
@@ -73,8 +74,29 @@ public class TypeFormProcessor extends NodeFormProcessor
         try
         {
             // convert the prefix type into full QName representation
-            // TODO: Also look for and deal with full QName as itemId
-            QName type = QName.createQName(item.getId(), this.namespaceService);
+            // the type name may be provided in the prefix form i.e.
+            // prefix:type, the : may be replaced with _ if the item id
+            // was passed on a URL or the full qname may be provided.
+            QName type = null;
+            String itemId = item.getId();
+            if (itemId.startsWith("{"))
+            {
+                // item id looks like a full qname
+                type = QName.createQName(itemId);
+            }
+            else if (itemId.indexOf("_") != -1)
+            {
+                // if item id contains _ change the first occurrence to :
+                // as it's more than likely been converted for URL use
+                int idx = itemId.indexOf("_");
+                String parsedItemId = itemId.substring(0, idx) + ":" + itemId.substring(idx+1);
+                type = QName.createQName(parsedItemId, this.namespaceService);
+            }
+            else
+            {
+                // try and create the QName using the item id as is
+                type = QName.createQName(itemId, this.namespaceService);
+            }
         
             // retrieve the type from the dictionary
             typeDef = this.dictionaryService.getType(type);
@@ -246,7 +268,7 @@ public class TypeFormProcessor extends NodeFormProcessor
             {
                 throw new FormException("Failed to persist form for '" + 
                             typeDef.getName().toPrefixString(this.namespaceService) +
-                            "' as destination data was not present.");
+                            "' as '" + DESTINATION + "' data was not provided.");
             }
             
             // create the parent NodeRef

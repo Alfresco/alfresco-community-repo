@@ -38,6 +38,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.i18n.I18NUtil;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.dictionary.IndexTokenisationMode;
@@ -664,6 +665,12 @@ public class LuceneQueryParser extends QueryParser
                         target = dictionaryService.getAspect(QName.createQName(namespacePrefixResolver.getNamespaceURI(queryText.substring(0, colonPosition)), queryText
                                 .substring(colonPosition + 1)));
                     }
+                }
+
+                if (target == null)
+                {
+                    // failed to find the aspect in the dictionary
+                    throw new AlfrescoRuntimeException("Unknown aspect specified in query: " + queryText);
                 }
 
                 Collection<QName> subclasses = dictionaryService.getSubAspects(target.getName(), true);

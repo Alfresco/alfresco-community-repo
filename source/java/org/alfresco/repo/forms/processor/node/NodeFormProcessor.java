@@ -72,6 +72,8 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.json.JSONArray;
+import org.json.JSONException;
 
 /**
  * FormProcessor implementation that can generate and persist Form objects
@@ -991,29 +993,53 @@ public class NodeFormProcessor extends FilteredFormProcessor
                     Object value = fieldData.getValue();
                     
                     // before persisting check data type of property
-                    if ((value instanceof String) && ((String)value).length() == 0)
+                    if (propDef.isMultiValued())
                     {
-                        // make sure empty strings stay as empty strings, everything else
-                        // should be represented as null
-                        if (!propDef.getDataType().getName().equals(DataTypeDefinition.TEXT) && 
-                            !propDef.getDataType().getName().equals(DataTypeDefinition.MLTEXT))
+                        // depending on client the value could be a comma separated
+                        // string, a List object or a JSONArray object
+                        if (value instanceof String)
                         {
-                            value = null;
+                            if (((String)value).length() == 0)
+                            {
+                                // empty string for multi-valued properties
+                                // should be stored as null
+                                value = null;
+                            }
+                            else
+                            {
+                                // if value is a String convert to List of String
+                                StringTokenizer tokenizer = new StringTokenizer((String)value, ",");
+                                List<String> list = new ArrayList<String>(8);
+                                while (tokenizer.hasMoreTokens())
+                                {
+                                    list.add(tokenizer.nextToken());
+                                }
+                                
+                                // persist the List
+                                value = list;
+                            }
                         }
-                    }
-                    else if (propDef.isMultiValued())
-                    {
-                        // currently we expect comma separated lists to represent
-                        // the values of a multi valued property, change into List
-                        StringTokenizer tokenizer = new StringTokenizer((String)value, ",");
-                        List<String> list = new ArrayList<String>(8);
-                        while (tokenizer.hasMoreTokens())
+                        else if (value instanceof JSONArray)
                         {
-                            list.add(tokenizer.nextToken());
+                            // if value is a JSONArray convert to List of Object
+                            JSONArray jsonArr = (JSONArray)value;
+                            int arrLength = jsonArr.length();
+                            List<Object> list = new ArrayList<Object>(arrLength);
+                            try
+                            {
+                                for (int x = 0; x < arrLength; x++)
+                                {
+                                    list.add(jsonArr.get(x));
+                                }
+                            }
+                            catch (JSONException je)
+                            {
+                                throw new FormException("Failed to convert JSONArray to List", je);
+                            }
+                            
+                            // persist the list
+                            value = list;
                         }
-                        
-                        // persist the List
-                        value = list;
                     }
                     else if (propDef.getDataType().getName().equals(DataTypeDefinition.BOOLEAN))
                     {
@@ -1026,6 +1052,16 @@ public class NodeFormProcessor extends FilteredFormProcessor
                     else if (propDef.getDataType().getName().equals(DataTypeDefinition.LOCALE))
                     {
                         value = I18NUtil.parseLocale((String)value);
+                    }
+                    else if ((value instanceof String) && ((String)value).length() == 0)
+                    {
+                        // make sure empty strings stay as empty strings, everything else
+                        // should be represented as null
+                        if (!propDef.getDataType().getName().equals(DataTypeDefinition.TEXT) && 
+                            !propDef.getDataType().getName().equals(DataTypeDefinition.MLTEXT))
+                        {
+                            value = null;
+                        }
                     }
                     
                     // add the property to the map

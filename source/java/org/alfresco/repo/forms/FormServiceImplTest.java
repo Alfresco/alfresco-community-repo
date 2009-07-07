@@ -993,6 +993,45 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
         }
     }
     
+    @SuppressWarnings("unchecked")
+    public void testFormData() throws Exception
+    {
+        FormData formData = new FormData();
+        
+        // test single value goes in and comes out successfully
+        formData.addFieldData("singleValue", "one");
+        assertEquals("Expecting value of 'one'", "one", formData.getFieldData("singleValue").getValue());
+        
+        // test adding multiple values to the same field
+        formData.addFieldData("multipleValues", "one");
+        
+        Object value = formData.getFieldData("multipleValues").getValue();
+        assertTrue("Expecting 'multipleValues' to be a String object", (value instanceof String));
+        
+        formData.addFieldData("multipleValues", "two");
+        value = formData.getFieldData("multipleValues").getValue();
+        assertTrue("Expecting 'multipleValues' to be a List object", (value instanceof List));
+        
+        formData.addFieldData("multipleValues", "three");
+        List list = (List)formData.getFieldData("multipleValues").getValue();
+        assertEquals("Expecting 'multipleValues' List to have 3 items", 3, list.size());
+        
+        // add a List initially then add a value to it
+        formData.addFieldData("listValue", new ArrayList());
+        formData.addFieldData("listValue", "one");
+        formData.addFieldData("listValue", "two");
+        list = (List)formData.getFieldData("listValue").getValue();
+        assertEquals("Expecting 'listValue' List to have 2 items", 2, list.size());
+        
+        // test overwrite parameter
+        formData.addFieldData("overwritten", "one", true);
+        formData.addFieldData("overwritten", "two", true);
+        formData.addFieldData("overwritten", "three", true);
+        value = formData.getFieldData("overwritten").getValue();
+        assertTrue("Expecting 'overwritten' to be a String object", (value instanceof String));
+        assertEquals("Expecting 'overwritten' value to be 'three'", "three", value);
+    }
+    
     public void testJavascriptAPI() throws Exception
     {
     	Map<String, Object> model = new HashMap<String, Object>();

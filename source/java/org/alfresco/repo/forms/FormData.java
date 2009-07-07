@@ -25,8 +25,10 @@
 package org.alfresco.repo.forms;
 
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -77,16 +79,69 @@ public class FormData implements Iterable<FormData.FieldData>
     
     /**
      * Adds the given data to the form.
-     * If data for the given field is already present it will be
-     * overwritten.
+     * <p>
+     * NOTE: Adding the same named data will append the value and 
+     * thereafter return a List containing all added values. 
+     * </p>
      * 
      * @param fieldName The name of the field
      * @param fieldValue The value of the data
      */
     public void addFieldData(String fieldName, Object fieldValue)
     {
-        FieldData item = new FieldData(fieldName, fieldValue, false);
-        this.data.put(fieldName, item);
+        this.addFieldData(fieldName, fieldValue, false);
+    }
+    
+    /**
+     * Adds the given data to the form. If data for the field is already
+     * present the behaviour is controlled by the overwrite property.
+     * <p>
+     * If overwrite is true the provided value replaces the existing value
+     * whereas false will force the creation of a List (if necessary) and the 
+     * provided value will be added to the List.
+     * </p>
+     * 
+     * @param fieldName The name of the field
+     * @param fieldValue The value of the data
+     * @param overwrite 
+     */
+    @SuppressWarnings("unchecked")
+    public void addFieldData(String fieldName, Object fieldValue, boolean overwrite)
+    {
+        // check whether some data already exists
+        if (this.data.containsKey(fieldName))
+        {
+            // if we are overwriting just replace with provided data
+            if (overwrite)
+            {
+                this.data.put(fieldName, new FieldData(fieldName, fieldValue, false));
+            }
+            else
+            {
+                // pull out the existing value and create a List if necessary
+                List currentValues = null;
+                Object currentValue = this.data.get(fieldName).getValue();
+                if (currentValue instanceof List)
+                {
+                    currentValues = (List)currentValue;
+                }
+                else
+                {
+                    // a non List value is present, create the new list
+                    // and add the current value to it
+                    currentValues = new ArrayList(4);
+                    currentValues.add(currentValue);
+                    this.data.put(fieldName, new FieldData(fieldName, currentValues, false));
+                }
+                
+                // add the provided value to the list
+                currentValues.add(fieldValue);
+            }
+        }
+        else
+        {
+            this.data.put(fieldName, new FieldData(fieldName, fieldValue, false));
+        }
     }
     
     /**

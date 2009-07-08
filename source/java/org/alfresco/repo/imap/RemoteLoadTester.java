@@ -25,8 +25,8 @@ public class RemoteLoadTester extends TestCase
 
     private Log logger = LogFactory.getLog(RemoteLoadTester.class);
 
-    private static final String USER_NAME = "admin";
-    private static final String USER_PASSWORD = "admin";
+    private static final String USER_NAME = "test_imap_user";
+    private static final String USER_PASSWORD = "test_imap_user";
     private static final String TEST_FOLDER_NAME = "test_imap1000";
 
     @Override

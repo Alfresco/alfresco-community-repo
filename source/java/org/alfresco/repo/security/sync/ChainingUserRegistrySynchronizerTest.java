@@ -220,7 +220,8 @@ public class ChainingUserRegistrySynchronizerTest extends BaseSpringTest
 
     /**
      * Tests a forced update of the test users and groups. Also tests that groups and users that previously existed in
-     * Z2 get moved when they appear in Z1. The layout is as follows
+     * Z2 get moved when they appear in Z1. Also tests that 'dangling references' to removed users (U4, U5) do not cause
+     * any problems. The layout is as follows
      * 
      * <pre>
      * Z1
@@ -252,7 +253,7 @@ public class ChainingUserRegistrySynchronizerTest extends BaseSpringTest
             newPerson("U1", "somenewemail@alfresco.com"), newPerson("U3"), newPerson("U6")
         }, new NodeDescription[]
         {
-            newGroup("G2", "U1", "U3", "U6"), newGroup("G6", "U3", "G7"), newGroup("G7")
+            newGroup("G2", "U1", "U3", "U4", "U6"), newGroup("G6", "U3", "U4", "G7"), newGroup("G7", "U4", "U5")
         }));
         this.synchronizer.synchronize(true);
         assertExists("Z1", "U2");

@@ -196,38 +196,39 @@ public class ChainingUserRegistrySynchronizer implements UserRegistrySynchronize
         Set<String> visitedZoneIds = new TreeSet<String>();
         for (String id : this.applicationContextManager.getInstanceIds())
         {
-            StringBuilder builder = new StringBuilder(32);
-            builder.append(AuthorityService.ZONE_AUTH_EXT_PREFIX);
-            builder.append(id);
-            String zoneId = builder.toString();
             ApplicationContext context = this.applicationContextManager.getApplicationContext(id);
             try
             {
                 UserRegistry plugin = (UserRegistry) context.getBean(this.sourceBeanName);
                 if (!(plugin instanceof ActivateableBean) || ((ActivateableBean) plugin).isActive())
                 {
-                    ChainingUserRegistrySynchronizer.logger.info("Synchronizing users and groups with user registry '"
-                            + id + "'");
-                    if (force)
+                    if (ChainingUserRegistrySynchronizer.logger.isInfoEnabled())
+                    {
+                        ChainingUserRegistrySynchronizer.logger
+                                .info("Synchronizing users and groups with user registry '" + id + "'");
+                    }
+                    if (force && ChainingUserRegistrySynchronizer.logger.isWarnEnabled())
                     {
                         ChainingUserRegistrySynchronizer.logger
                                 .warn("Forced synchronization with user registry '"
                                         + id
                                         + "'; some users and groups previously created by synchronization with this user registry may be removed.");
                     }
-                    int personsProcessed = syncPersonsWithPlugin(zoneId, plugin, force, visitedZoneIds);
-                    int groupsProcessed = syncGroupsWithPlugin(zoneId, plugin, force, visitedZoneIds);
-                    ChainingUserRegistrySynchronizer.logger
-                            .info("Finished synchronizing users and groups with user registry '" + zoneId + "'");
-                    ChainingUserRegistrySynchronizer.logger.info(personsProcessed + " user(s) and " + groupsProcessed
-                            + " group(s) processed");
+                    int personsProcessed = syncPersonsWithPlugin(id, plugin, force, visitedZoneIds);
+                    int groupsProcessed = syncGroupsWithPlugin(id, plugin, force, visitedZoneIds);
+                    if (ChainingUserRegistrySynchronizer.logger.isInfoEnabled())
+                    {
+                        ChainingUserRegistrySynchronizer.logger
+                                .info("Finished synchronizing users and groups with user registry '" + id + "'");
+                        ChainingUserRegistrySynchronizer.logger.info(personsProcessed + " user(s) and "
+                                + groupsProcessed + " group(s) processed");
+                    }
                 }
             }
             catch (NoSuchBeanDefinitionException e)
             {
                 // Ignore and continue
             }
-            visitedZoneIds.add(zoneId);
         }
     }
 
@@ -264,7 +265,7 @@ public class ChainingUserRegistrySynchronizer implements UserRegistrySynchronize
     /**
      * Synchronizes local users (persons) with a {@link UserRegistry} for a particular zone.
      * 
-     * @param zoneId
+     * @param zone
      *            the zone id. This identifier is used to tag all created users, so that in the future we can tell those
      *            that have been deleted from the registry.
      * @param userRegistry
@@ -278,21 +279,26 @@ public class ChainingUserRegistrySynchronizer implements UserRegistrySynchronize
      *            the zones in this set, then it will be ignored as this zone has lower priority.
      * @return the number of users processed
      */
-    private int syncPersonsWithPlugin(String zoneId, UserRegistry userRegistry, boolean force,
-            Set<String> visitedZoneIds)
+    private int syncPersonsWithPlugin(String zone, UserRegistry userRegistry, boolean force, Set<String> visitedZoneIds)
     {
+        // Create a prefixed zone ID for use with the authority service
+        String zoneId = AuthorityService.ZONE_AUTH_EXT_PREFIX + zone;
+
         int processedCount = 0;
         long lastModifiedMillis = force ? -1L : getMostRecentUpdateTime(
                 ChainingUserRegistrySynchronizer.PERSON_LAST_MODIFIED_ATTRIBUTE, zoneId);
         Date lastModified = lastModifiedMillis == -1 ? null : new Date(lastModifiedMillis);
-        if (lastModified == null)
+        if (ChainingUserRegistrySynchronizer.logger.isInfoEnabled())
         {
-            ChainingUserRegistrySynchronizer.logger.info("Retrieving all users from user registry '" + zoneId + "'");
-        }
-        else
-        {
-            ChainingUserRegistrySynchronizer.logger.info("Retrieving users changed since "
-                    + DateFormat.getDateTimeInstance().format(lastModified) + " from user registry '" + zoneId + "'");
+            if (lastModified == null)
+            {
+                ChainingUserRegistrySynchronizer.logger.info("Retrieving all users from user registry '" + zone + "'");
+            }
+            else
+            {
+                ChainingUserRegistrySynchronizer.logger.info("Retrieving users changed since "
+                        + DateFormat.getDateTimeInstance().format(lastModified) + " from user registry '" + zone + "'");
+            }
         }
         Iterator<NodeDescription> persons = userRegistry.getPersons(lastModified);
         Set<String> personsToDelete = this.authorityService.getAllAuthoritiesInZone(zoneId, AuthorityType.USER);
@@ -304,7 +310,10 @@ public class ChainingUserRegistrySynchronizer implements UserRegistrySynchronize
             if (personsToDelete.remove(personName))
             {
                 // The person already existed in this zone: update the person
-                ChainingUserRegistrySynchronizer.logger.info("Updating user '" + personName + "'");
+                if (ChainingUserRegistrySynchronizer.logger.isInfoEnabled())
+                {
+                    ChainingUserRegistrySynchronizer.logger.info("Updating user '" + personName + "'");
+                }
                 this.personService.setPersonProperties(personName, personProperties);
             }
             else
@@ -320,16 +329,22 @@ public class ChainingUserRegistrySynchronizer implements UserRegistrySynchronize
                         continue;
                     }
                     // The person existed, but in a zone with lower precedence
-                    ChainingUserRegistrySynchronizer.logger
-                            .warn("Recreating occluded user '"
-                                    + personName
-                                    + "'. This user was previously created manually or through synchronization with a lower priority user registry.");
+                    if (ChainingUserRegistrySynchronizer.logger.isWarnEnabled())
+                    {
+                        ChainingUserRegistrySynchronizer.logger
+                                .warn("Recreating occluded user '"
+                                        + personName
+                                        + "'. This user was previously created manually or through synchronization with a lower priority user registry.");
+                    }
                     this.personService.deletePerson(personName);
                 }
                 else
                 {
                     // The person did not exist at all
-                    ChainingUserRegistrySynchronizer.logger.info("Creating user '" + personName + "'");
+                    if (ChainingUserRegistrySynchronizer.logger.isInfoEnabled())
+                    {
+                        ChainingUserRegistrySynchronizer.logger.info("Creating user '" + personName + "'");
+                    }
                 }
                 this.personService.createPerson(personProperties, getZones(zoneId));
             }
@@ -348,7 +363,10 @@ public class ChainingUserRegistrySynchronizer implements UserRegistrySynchronize
         {
             for (String personName : personsToDelete)
             {
-                ChainingUserRegistrySynchronizer.logger.warn("Deleting user '" + personName + "'");
+                if (ChainingUserRegistrySynchronizer.logger.isWarnEnabled())
+                {
+                    ChainingUserRegistrySynchronizer.logger.warn("Deleting user '" + personName + "'");
+                }
                 this.personService.deletePerson(personName);
                 processedCount++;
             }
@@ -360,13 +378,16 @@ public class ChainingUserRegistrySynchronizer implements UserRegistrySynchronize
                     lastModifiedMillis);
         }
 
+        // Remember we have visited this zone
+        visitedZoneIds.add(zoneId);
+
         return processedCount;
     }
 
     /**
      * Synchronizes local groups (authorities) with a {@link UserRegistry} for a particular zone.
      * 
-     * @param zoneId
+     * @param zone
      *            the zone id. This identifier is used to tag all created groups, so that in the future we can tell
      *            those that have been deleted from the registry.
      * @param userRegistry
@@ -380,20 +401,26 @@ public class ChainingUserRegistrySynchronizer implements UserRegistrySynchronize
      *            of the zones in this set, then it will be ignored as this zone has lower priority.
      * @return the number of groups processed
      */
-    private int syncGroupsWithPlugin(String zoneId, UserRegistry userRegistry, boolean force, Set<String> visitedZoneIds)
+    private int syncGroupsWithPlugin(String zone, UserRegistry userRegistry, boolean force, Set<String> visitedZoneIds)
     {
+        // Create a prefixed zone ID for use with the authority service
+        String zoneId = AuthorityService.ZONE_AUTH_EXT_PREFIX + zone;
+
         int processedCount = 0;
         long lastModifiedMillis = force ? -1L : getMostRecentUpdateTime(
                 ChainingUserRegistrySynchronizer.GROUP_LAST_MODIFIED_ATTRIBUTE, zoneId);
         Date lastModified = lastModifiedMillis == -1 ? null : new Date(lastModifiedMillis);
-        if (lastModified == null)
+        if (ChainingUserRegistrySynchronizer.logger.isInfoEnabled())
         {
-            ChainingUserRegistrySynchronizer.logger.info("Retrieving all groups from user registry '" + zoneId + "'");
-        }
-        else
-        {
-            ChainingUserRegistrySynchronizer.logger.info("Retrieving groups changed since "
-                    + DateFormat.getDateTimeInstance().format(lastModified) + " from user registry '" + zoneId + "'");
+            if (lastModified == null)
+            {
+                ChainingUserRegistrySynchronizer.logger.info("Retrieving all groups from user registry '" + zone + "'");
+            }
+            else
+            {
+                ChainingUserRegistrySynchronizer.logger.info("Retrieving groups changed since "
+                        + DateFormat.getDateTimeInstance().format(lastModified) + " from user registry '" + zone + "'");
+            }
         }
 
         Iterator<NodeDescription> groups = userRegistry.getGroups(lastModified);
@@ -419,9 +446,12 @@ public class ChainingUserRegistrySynchronizer implements UserRegistrySynchronize
                 }
                 for (String child : toDelete)
                 {
-                    ChainingUserRegistrySynchronizer.logger.info("Removing '"
-                            + this.authorityService.getShortName(child) + "' from group '"
-                            + this.authorityService.getShortName(groupName) + "'");
+                    if (ChainingUserRegistrySynchronizer.logger.isInfoEnabled())
+                    {
+                        ChainingUserRegistrySynchronizer.logger.info("Removing '"
+                                + this.authorityService.getShortName(child) + "' from group '"
+                                + this.authorityService.getShortName(groupName) + "'");
+                    }
                     this.authorityService.removeAuthority(groupName, child);
                 }
             }
@@ -438,15 +468,21 @@ public class ChainingUserRegistrySynchronizer implements UserRegistrySynchronize
                         continue;
                     }
                     // The group existed, but in a zone with lower precedence
-                    ChainingUserRegistrySynchronizer.logger
-                            .warn("Recreating occluded group '"
-                                    + groupShortName
-                                    + "'. This group was previously created manually or through synchronization with a lower priority user registry.");
+                    if (ChainingUserRegistrySynchronizer.logger.isWarnEnabled())
+                    {
+                        ChainingUserRegistrySynchronizer.logger
+                                .warn("Recreating occluded group '"
+                                        + groupShortName
+                                        + "'. This group was previously created manually or through synchronization with a lower priority user registry.");
+                    }
                     this.authorityService.deleteAuthority(groupName);
                 }
                 else
                 {
-                    ChainingUserRegistrySynchronizer.logger.info("Creating group '" + groupShortName + "'");
+                    if (ChainingUserRegistrySynchronizer.logger.isInfoEnabled())
+                    {
+                        ChainingUserRegistrySynchronizer.logger.info("Creating group '" + groupShortName + "'");
+                    }
                 }
 
                 // create the group
@@ -476,9 +512,25 @@ public class ChainingUserRegistrySynchronizer implements UserRegistrySynchronize
             for (String child : entry.getValue())
             {
                 String groupName = entry.getKey();
-                ChainingUserRegistrySynchronizer.logger.info("Adding '" + this.authorityService.getShortName(child)
-                        + "' to group '" + this.authorityService.getShortName(groupName) + "'");
-                this.authorityService.addAuthority(groupName, child);
+                if (ChainingUserRegistrySynchronizer.logger.isInfoEnabled())
+                {
+                    ChainingUserRegistrySynchronizer.logger.info("Adding '" + this.authorityService.getShortName(child)
+                            + "' to group '" + this.authorityService.getShortName(groupName) + "'");
+                }
+                try
+                {
+                    this.authorityService.addAuthority(groupName, child);
+                }
+                catch (Exception e)
+                {
+                    // Let's not allow referential integrity problems (dangling references) kill the whole process
+                    if (ChainingUserRegistrySynchronizer.logger.isWarnEnabled())
+                    {
+                        ChainingUserRegistrySynchronizer.logger.warn("Failed to add '"
+                                + this.authorityService.getShortName(child) + "' to group '"
+                                + this.authorityService.getShortName(groupName) + "'", e);
+                    }
+                }
             }
 
         }
@@ -488,8 +540,11 @@ public class ChainingUserRegistrySynchronizer implements UserRegistrySynchronize
         {
             for (String group : groupsToDelete)
             {
-                ChainingUserRegistrySynchronizer.logger.warn("Deleting group '"
-                        + this.authorityService.getShortName(group) + "'");
+                if (ChainingUserRegistrySynchronizer.logger.isWarnEnabled())
+                {
+                    ChainingUserRegistrySynchronizer.logger.warn("Deleting group '"
+                            + this.authorityService.getShortName(group) + "'");
+                }
                 this.authorityService.deleteAuthority(group);
                 processedCount++;
             }
@@ -500,6 +555,9 @@ public class ChainingUserRegistrySynchronizer implements UserRegistrySynchronize
             setMostRecentUpdateTime(ChainingUserRegistrySynchronizer.GROUP_LAST_MODIFIED_ATTRIBUTE, zoneId,
                     lastModifiedMillis);
         }
+
+        // Remember we have visited this zone
+        visitedZoneIds.add(zoneId);
 
         return processedCount;
     }

@@ -37,22 +37,29 @@ import org.alfresco.service.cmr.search.ResultSetRow;
 
 /**
  * Filtering result set to support permission checks
+ * 
  * @author andyh
- *
  */
 public class FilteringResultSet extends ACLEntryAfterInvocationProvider implements ResultSet
 {
     private ResultSet unfiltered;
 
     private BitSet inclusionMask;
-    
+
     private ResultSetMetaData resultSetMetaData;
 
-    FilteringResultSet(ResultSet unfiltered)
+    public FilteringResultSet(ResultSet unfiltered)
     {
         super();
         this.unfiltered = unfiltered;
         inclusionMask = new BitSet(unfiltered.length());
+    }
+    
+    public FilteringResultSet(ResultSet unfiltered, BitSet inclusionMask)
+    {
+        super();
+        this.unfiltered = unfiltered;
+        this.inclusionMask = inclusionMask;
     }
 
     /* package */ResultSet getUnFilteredResultSet()
@@ -166,7 +173,7 @@ public class FilteringResultSet extends ACLEntryAfterInvocationProvider implemen
         public ResultSetRow next()
         {
             underlyingPosition = inclusionMask.nextSetBit(underlyingPosition + 1);
-            if( underlyingPosition == -1)
+            if (underlyingPosition == -1)
             {
                 throw new IllegalStateException();
             }
@@ -211,7 +218,7 @@ public class FilteringResultSet extends ACLEntryAfterInvocationProvider implemen
 
         public int nextIndex()
         {
-            return inclusionMask.nextSetBit(underlyingPosition+1);
+            return inclusionMask.nextSetBit(underlyingPosition + 1);
         }
 
         public int previousIndex()
@@ -259,7 +266,7 @@ public class FilteringResultSet extends ACLEntryAfterInvocationProvider implemen
 
         public ResultSet getResultSet()
         {
-           return FilteringResultSet.this;
+            return FilteringResultSet.this;
         }
 
     }
@@ -284,5 +291,4 @@ public class FilteringResultSet extends ACLEntryAfterInvocationProvider implemen
         throw new UnsupportedOperationException();
     }
 
-    
 }

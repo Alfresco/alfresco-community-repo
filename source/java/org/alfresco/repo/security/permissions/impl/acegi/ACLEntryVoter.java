@@ -26,8 +26,10 @@ package org.alfresco.repo.security.permissions.impl.acegi;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.StringTokenizer;
 
 import net.sf.acegisecurity.Authentication;
@@ -67,6 +69,8 @@ public class ACLEntryVoter implements AccessDecisionVoter, InitializingBean
     private static final String ACL_ALLOW = "ACL_ALLOW";
 
     private static final String ACL_METHOD = "ACL_METHOD";
+    
+    private static final String ACL_DENY = "ACL_DENY";
 
     private PermissionService permissionService;
 
@@ -75,6 +79,10 @@ public class ACLEntryVoter implements AccessDecisionVoter, InitializingBean
     private NodeService nodeService;
 
     private AuthorityService authorityService;
+    
+    private Set<QName> abstainForClassQNames = new HashSet<QName>();
+    
+    private Set<String> abstainFor = null;
 
     /**
      * Default constructor
@@ -160,6 +168,16 @@ public class ACLEntryVoter implements AccessDecisionVoter, InitializingBean
         this.authorityService = authorityService;
     }
 
+    
+    /**
+     * Types and aspects for which we will abstain on voting if they are present.
+     * @param abstainFor
+     */
+    public void setAbstainFor(Set<String> abstainFor)
+    {
+        this.abstainFor = abstainFor;
+    }
+
     public void afterPropertiesSet() throws Exception
     {
         if (permissionService == null)
@@ -178,6 +196,14 @@ public class ACLEntryVoter implements AccessDecisionVoter, InitializingBean
         {
             throw new IllegalArgumentException("There must be an authority service");
         }
+        if(abstainFor != null)
+        {
+            for(String qnameString : abstainFor)
+            {
+                QName qname = QName.resolveToQName(nspr, qnameString);
+                abstainForClassQNames.add(qname);
+            }
+        }
 
     }
 
@@ -186,8 +212,9 @@ public class ACLEntryVoter implements AccessDecisionVoter, InitializingBean
         if ((attribute.getAttribute() != null)
                 && (attribute.getAttribute().startsWith(ACL_NODE)
                         || attribute.getAttribute().startsWith(ACL_PARENT)
-                        || attribute.getAttribute().startsWith(ACL_ALLOW)
-                        || attribute.getAttribute().startsWith(ACL_METHOD)))
+                        || attribute.getAttribute().equals(ACL_ALLOW)
+                        || attribute.getAttribute().startsWith(ACL_METHOD)
+                        || attribute.getAttribute().equals(ACL_DENY)))
         {
             return true;
         }
@@ -243,7 +270,11 @@ public class ACLEntryVoter implements AccessDecisionVoter, InitializingBean
         {
             NodeRef testNodeRef = null;
 
-            if (cad.typeString.equals(ACL_ALLOW))
+            if (cad.typeString.equals(ACL_DENY))
+            {
+                return AccessDecisionVoter.ACCESS_DENIED;
+            }
+            else if (cad.typeString.equals(ACL_ALLOW))
             {
                 return AccessDecisionVoter.ACCESS_GRANTED;
             }
@@ -377,6 +408,25 @@ public class ACLEntryVoter implements AccessDecisionVoter, InitializingBean
 
             if (testNodeRef != null)
             {
+                // now we know the node - we can abstain for certain types and aspects (eg, rm)
+                
+                if(abstainForClassQNames.size() > 0)
+                {
+                    QName typeQName = nodeService.getType(testNodeRef);
+                    if(abstainForClassQNames.contains(typeQName))
+                    {
+                        return AccessDecisionVoter.ACCESS_ABSTAIN;
+                    }
+                    Set<QName> aspectQNames = nodeService.getAspects(testNodeRef);
+                    for(QName abstain : abstainForClassQNames)
+                    {
+                        if(aspectQNames.contains(abstain))
+                        {
+                            return AccessDecisionVoter.ACCESS_ABSTAIN;
+                        }
+                    }
+                }
+                
                 if (log.isDebugEnabled())
                 {
                     log.debug("\t\tNode ref is not null");
@@ -441,7 +491,7 @@ public class ACLEntryVoter implements AccessDecisionVoter, InitializingBean
             typeString = st.nextToken();
 
             if (!(typeString.equals(ACL_NODE) || typeString.equals(ACL_PARENT) || typeString.equals(ACL_ALLOW) || typeString
-                    .equals(ACL_METHOD)))
+                    .equals(ACL_METHOD) || typeString.equals(ACL_DENY)))
             {
                 throw new ACLEntryVoterException("Invalid type: must be ACL_NODE, ACL_PARENT or ACL_ALLOW");
             }

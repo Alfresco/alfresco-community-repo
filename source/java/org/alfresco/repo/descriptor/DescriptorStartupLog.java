@@ -170,7 +170,7 @@ public class DescriptorStartupLog extends AbstractLifecycleBean
             int serverSchemaVersion = serverDescriptor.getSchema();
             String installedRepoVersion = installedRepoDescriptor.getVersion();
             int installedSchemaVersion = installedRepoDescriptor.getSchema();
-            logger.info(String.format("Alfresco started (%s): Current version %s schema %d - Installed version %s schema %d",
+            logger.info(String.format("Alfresco started (%s): Current version %s schema %d - Originally installed version %s schema %d",
                serverEdition, serverVersion, serverSchemaVersion, installedRepoVersion, installedSchemaVersion));
         }
     }

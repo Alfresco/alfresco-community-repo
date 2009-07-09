@@ -21,11 +21,11 @@
      </bean>  
      
      <!--  Transport adapters to communicate with remote File System Receivers -->     
-     <!--  Communicate with an FSR over RMI - Default method for Alfresco-->
+     <!--  Communicate with an Deployment Server over RMI - Default method for Alfresco-->
      <bean id="rmiFSRAdapter" class="org.alfresco.repo.deploy.DeploymentReceiverTransportAdapterRMI">
      </bean>
      
-     <!--  communicate with an FSR over RMI with the content encrypted  -->
+     <!--  communicate with an Deployment Server over RMI with the content encrypted  -->
      <bean id="encryptedRMIFSRAdapter" class="org.alfresco.repo.deploy.DeploymentReceiverTransportAdapterRMI">
           <property name="transformers">
             <list>
@@ -34,7 +34,7 @@
         </property>
      </bean>
      
-     <!--  communicate with an FSR over RMI with the content compressed then encrypted  -->
+     <!--  communicate with an Deployment Server over RMI with the content compressed then encrypted  -->
      <bean id="compressEncryptedRMIFSRAdapter" class="org.alfresco.repo.deploy.DeploymentReceiverTransportAdapterRMI">
           <property name="transformers">
             <list>
@@ -44,10 +44,10 @@
         </property>
      </bean>
      
-     <!--  how to communicate with an FSR over Spring HTTP -->
+     <!--  how to communicate with an Deployment Server over Spring HTTP -->
      <bean id="springHttpFSRAdapter" class="org.alfresco.repo.deploy.DeploymentReceiverTransportAdapterSpringHTTP">
         <property name="urlPattern">
-         	<value>http://{1}:{2}/alfrescoFSR/deployment</value>
+         	<value>http://{0}:{1}/ADSR/deployment</value>
         </property>
      </bean>
      

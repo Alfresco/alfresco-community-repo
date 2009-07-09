@@ -39,16 +39,16 @@ public class DeploymentReceiverTransportAdapterHessian extends AbstractDeploymen
 	/**
 	 * The pattern to use when constructing the URL from hostname and port
 	 * 
-	 * eg http://localhost:8080/FSR/deployment
+	 * eg http://localhost:8080/ADSR/deployment
 	 */
-	private String urlPattern = "http://{1}:{2}/FSR/deployment";
+	private String urlPattern = "http://{0}:{1}/ADSR/deployment";
 	
 	public DeploymentReceiverTransport getTransport(String host,
 			int port, int version, String srcPath) 
 	{
-       	MessageFormat f = new MessageFormat(urlPattern);
-    	Object[] objs = { host, port };
-    	String URL = f.format(objs);
+	    MessageFormat f = new MessageFormat(getUrlPattern());
+	    Object[] objs = { host, Integer.toString(port) };
+	    String URL = f.format(objs);
 		
 		// Code to use Hessian transport provided via Spring
 		HessianProxyFactoryBean factory = new HessianProxyFactoryBean();

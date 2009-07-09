@@ -38,17 +38,17 @@ import org.springframework.remoting.httpinvoker.HttpInvokerProxyFactoryBean;
 public class DeploymentReceiverTransportAdapterSpringHTTP extends AbstractDeploymentReceiverTransportAdapter implements DeploymentReceiverTransportAdapter {
 	/**
 	 * The pattern to use when constructing the URL from hostname and port
-	 * {1} substitues for hostname {2} substitues for port
-	 * Default format results in the following URL http://localhost:8080/alfrescoFSR/deployment
+	 * {0} substitues for hostname {1} substitues for port
+	 * Default format results in the following URL http://localhost:8080/ADSR/deployment
 	 */
-	private String urlPattern = "http://{1}:{2}/alfrescoFSR/deployment";
+	private String urlPattern = "http://{0}:{1}/ADSR/deployment";
 	
 	public DeploymentReceiverTransport getTransport(String host,
 			int port, int version, String srcPath) 
 	{
 
 	    MessageFormat f = new MessageFormat(getUrlPattern());
-	    Object[] objs = { host, port };
+	    Object[] objs = { host, Integer.toString(port) };
 	    String URL = f.format(objs);
 		
 		// Code to use HTTP spring transport

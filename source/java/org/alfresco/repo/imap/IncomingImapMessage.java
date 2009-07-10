@@ -85,38 +85,9 @@ public class IncomingImapMessage extends AbstractMimeMessage
         // Add Imap Content Aspect with properties
         NodeService nodeService = serviceRegistry.getNodeService();
         nodeService.addAspect(this.messageFileInfo.getNodeRef(), ImapModel.ASPECT_IMAP_CONTENT, null);
+        imapService.setFlags(messageFileInfo, flags, true);
         // Write content
         writeContent();
-        imapService.setFlags(messageFileInfo, flags, true);
-
-        final NodeRef nodeRef = messageFileInfo.getNodeRef();
-        Map<QName, Serializable> newProperties = new HashMap<QName, Serializable>();
-        newProperties.put(ImapModel.PROP_MESSAGE_FROM, InternetAddress.toString(this.getFrom()));
-        newProperties.put(ImapModel.PROP_MESSAGE_TO, InternetAddress.toString(this.getRecipients(RecipientType.TO)));
-        newProperties.put(ImapModel.PROP_MESSAGE_CC, InternetAddress.toString(this.getRecipients(RecipientType.CC)));
-        newProperties.put(ImapModel.PROP_MESSAGE_ID, this.getMessageID());
-        String[] threadIndexes = this.getHeader("Thread-Index");
-        String threadIndex = (threadIndexes == null || threadIndexes.length == 0) ? null : threadIndexes[0];
-        newProperties.put(ImapModel.PROP_THREAD_INDEX, threadIndex);
-
-        String[] subj = this.getHeader("Subject");
-        if (subj != null && subj.length > 0)
-        {
-            String decodedSubject = subj[0];
-            try
-            {
-                decodedSubject = MimeUtility.decodeText(decodedSubject);
-            }
-            catch (UnsupportedEncodingException e)
-            {
-                logger.warn(e.toString());
-            }
-            newProperties.put(ImapModel.PROP_MESSAGE_SUBJECT, decodedSubject);
-            newProperties.put(ContentModel.PROP_TITLE, decodedSubject);
-            newProperties.put(ContentModel.PROP_DESCRIPTION, decodedSubject);
-        }
-
-        serviceRegistry.getNodeService().addProperties(nodeRef, newProperties);
     }
 
     /**

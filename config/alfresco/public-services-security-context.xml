@@ -764,7 +764,6 @@
                 org.alfresco.service.cmr.security.AuthenticationService.getDomainsThatAllowUserCreation=ACL_METHOD.ROLE_ADMINISTRATOR
                 org.alfresco.service.cmr.security.AuthenticationService.getDomainsThatAllowUserDeletion=ACL_METHOD.ROLE_ADMINISTRATOR
                 org.alfresco.service.cmr.security.AuthenticationService.getDomiansThatAllowUserPasswordChanges=ACL_METHOD.ROLE_ADMINISTRATOR
-                org.alfresco.service.cmr.security.AuthenticationService.*=ACL_DENY
             </value>
         </property>
     </bean>

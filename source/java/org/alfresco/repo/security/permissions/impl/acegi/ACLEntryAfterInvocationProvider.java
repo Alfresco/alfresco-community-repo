@@ -40,6 +40,7 @@ import net.sf.acegisecurity.Authentication;
 import net.sf.acegisecurity.ConfigAttribute;
 import net.sf.acegisecurity.ConfigAttributeDefinition;
 import net.sf.acegisecurity.afterinvocation.AfterInvocationProvider;
+import net.sf.acegisecurity.vote.AccessDecisionVoter;
 
 import org.alfresco.cmis.CMISResultSet;
 import org.alfresco.repo.search.SimpleResultSetMetaData;
@@ -87,6 +88,10 @@ public class ACLEntryAfterInvocationProvider implements AfterInvocationProvider,
     private int maxPermissionChecks;
 
     private long maxPermissionCheckTimeMillis;
+    
+    private Set<QName> unfilteredForClassQNames = new HashSet<QName>();
+    
+    private Set<String> unfilteredFor = null;
 
     /**
      * Default constructor
@@ -188,6 +193,15 @@ public class ACLEntryAfterInvocationProvider implements AfterInvocationProvider,
         this.maxPermissionCheckTimeMillis = maxPermissionCheckTimeMillis;
     }
 
+    /**
+     * Types and aspects for which we will abstain on voting if they are present.
+     * @param abstainFor
+     */
+    public void setUnfilteredFor(Set<String> unfilteredFor)
+    {
+        this.unfilteredFor = unfilteredFor;
+    }
+    
     public void afterPropertiesSet() throws Exception
     {
         if (permissionService == null)
@@ -201,6 +215,14 @@ public class ACLEntryAfterInvocationProvider implements AfterInvocationProvider,
         if (nodeService == null)
         {
             throw new IllegalArgumentException("There must be a node service");
+        }
+        if(unfilteredFor != null)
+        {
+            for(String qnameString : unfilteredFor)
+            {
+                QName qname = QName.resolveToQName(nspr, qnameString);
+                unfilteredForClassQNames.add(qname);
+            }
         }
     }
 
@@ -343,6 +365,11 @@ public class ACLEntryAfterInvocationProvider implements AfterInvocationProvider,
             return null;
         }
 
+        if(isUnfitered(returnedObject))
+        {
+            return returnedObject;
+        }
+        
         List<ConfigAttributeDefintion> supportedDefinitions = extractSupportedDefinitions(config);
 
         if (supportedDefinitions.size() == 0)
@@ -373,9 +400,31 @@ public class ACLEntryAfterInvocationProvider implements AfterInvocationProvider,
         return returnedObject;
     }
 
+    private boolean isUnfitered(NodeRef returnedObject)
+    {
+        if(unfilteredForClassQNames.size() > 0)
+        {
+            QName typeQName = nodeService.getType(returnedObject);
+            if(unfilteredForClassQNames.contains(typeQName))
+            {
+                return true;
+            }
+            Set<QName> aspectQNames = nodeService.getAspects(returnedObject);
+            for(QName abstain : unfilteredForClassQNames)
+            {
+                if(aspectQNames.contains(abstain))
+                {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     private FileInfo decide(Authentication authentication, Object object, ConfigAttributeDefinition config, FileInfo returnedObject) throws AccessDeniedException
 
     {
+        // Filter check done later
         NodeRef nodeRef = returnedObject.getNodeRef();
         // this is virtually equivalent to the noderef
         decide(authentication, object, config, nodeRef);
@@ -430,6 +479,11 @@ public class ACLEntryAfterInvocationProvider implements AfterInvocationProvider,
                 testNodeRef = ((ChildAssociationRef) returnedObject).getParentRef();
             }
 
+            if(isUnfitered(testNodeRef))
+            {
+                continue;
+            }
+            
             if ((testNodeRef != null) && (permissionService.hasPermission(testNodeRef, cad.required.toString()) == AccessStatus.DENIED))
             {
                 throw new AccessDeniedException("Access Denied");
@@ -545,6 +599,11 @@ public class ACLEntryAfterInvocationProvider implements AfterInvocationProvider,
                     testNodeRef = returnedObject.getChildAssocRef(i).getParentRef();
                 }
 
+                if(isUnfitered(testNodeRef))
+                {
+                    continue;
+                }
+                
                 if (filteringResultSet.getIncluded(i) && (testNodeRef != null) && (permissionService.hasPermission(testNodeRef, cad.required.toString()) == AccessStatus.DENIED))
                 {
                     filteringResultSet.setIncluded(i, false);
@@ -686,6 +745,11 @@ public class ACLEntryAfterInvocationProvider implements AfterInvocationProvider,
                     log.debug("\t" + cad.typeString + " test on " + testNodeRef + " from " + nextObject.getClass().getName());
                 }
 
+                if(isUnfitered(testNodeRef))
+                {
+                    continue;
+                }
+                
                 if (allowed && (testNodeRef != null) && (permissionService.hasPermission(testNodeRef, cad.required.toString()) == AccessStatus.DENIED))
                 {
                     allowed = false;
@@ -781,6 +845,11 @@ public class ACLEntryAfterInvocationProvider implements AfterInvocationProvider,
                     log.debug("\t" + cad.typeString + " test on " + testNodeRef + " from " + current.getClass().getName());
                 }
 
+                if(isUnfitered(testNodeRef))
+                {
+                    continue;
+                }
+                
                 if (incudedSet.get(i) && (testNodeRef != null) && (permissionService.hasPermission(testNodeRef, cad.required.toString()) == AccessStatus.DENIED))
                 {
                     incudedSet.set(i, false);

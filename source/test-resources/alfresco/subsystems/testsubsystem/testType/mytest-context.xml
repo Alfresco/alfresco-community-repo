@@ -1,0 +1,39 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+<beans>
+
+	<bean id="testService" class="org.alfresco.repo.management.subsystems.test.TestService">
+	    <!-- This property should retain its subsystem-provided default -->
+        <property name="simpleProp1">
+            <value>${subsystems.test.simpleProp1}</value>
+        </property>
+	    <!-- This property should be overriden by alfresco-global.properties (simulated with repository.properties) -->
+        <property name="simpleProp2">
+            <value>${subsystems.test.simpleProp2}</value>
+        </property>
+		<!-- This property should be overriden by an instance-specific file in the extension classpath -->
+        <property name="simpleProp3">
+            <value>${subsystems.test.simpleProp3}</value>
+        </property>
+        <property name="testBeans">
+            <ref bean="subsystems.test.beanProp"/>
+        </property>
+	</bean>
+
+    <!--A configurable list of TestBeans -->
+    <bean id="subsystems.test.beanProp" class="org.springframework.beans.factory.config.ListFactoryBean" >
+        <!-- Uses TestBean with:
+            id (String)
+            longProperty (long)
+            boolProperty (Boolean)
+            anotherStringProperty (String)
+        -->
+    </bean>
+	
+   <bean id="anotherBean" class="java.lang.String">
+      <constructor-arg>
+         <value>An extra bean</value>
+      </constructor-arg>
+   </bean>
+	
+</beans>

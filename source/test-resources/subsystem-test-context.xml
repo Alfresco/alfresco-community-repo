@@ -1,0 +1,21 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+<beans>
+
+    <bean id="testsubsystem" class="org.alfresco.repo.management.subsystems.ChildApplicationContextFactory" parent="abstractPropertyBackedBean">
+        <property name="autoStart">
+            <value>true</value>
+        </property>
+        <property name="typeName">
+            <value>testType</value>
+        </property>
+        <property name="compositePropertyTypes">
+            <map>
+               <entry key="subsystems.test.beanProp">
+                   <value>org.alfresco.repo.management.subsystems.test.TestBean</value>
+               </entry>
+            </map>
+        </property>
+    </bean>
+
+</beans>

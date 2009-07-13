@@ -83,14 +83,15 @@ import org.springframework.core.io.support.ResourcePatternResolver;
  * <p>
  * Composite property settings are best controlled either through a JMX console (Enterprise edition only) or
  * /alfresco-global.properties in the classpath (the replacement to /alfresco/extension/custom-repository.properties).
- * For example, suppose "imap.server.mountPoints" was registered as a composite property of type {@link RepositoryPathConfigBean}.
- * You can then use the property to configure a list of {@link RepositoryPathConfigBean}s. First you specify in the property's
- * value a list of zero or more 'instance names'. Each name must be unique within the property.
+ * For example, suppose "imap.server.mountPoints" was registered as a composite property of type
+ * {@link RepositoryPathConfigBean}. You can then use the property to configure a list of
+ * {@link RepositoryPathConfigBean}s. First you specify in the property's value a list of zero or more 'instance names'.
+ * Each name must be unique within the property.
  * <p>
  * <code>imap.server.mountPoints=Repository_virtual,Repository_archive</code>
  * <p>
- * Then, by magic you have two separate instances of {@link RepositoryPathConfigBean} whose properties you can address through an
- * extended set of properties prefixed by "imap.server.mountPoints".
+ * Then, by magic you have two separate instances of {@link RepositoryPathConfigBean} whose properties you can address
+ * through an extended set of properties prefixed by "imap.server.mountPoints".
  * <p>
  * To set a property on one of the instances, you append ".value.&lt;instance name>.&lt;bean property name>" to the
  * parent property name. For example:
@@ -109,6 +110,7 @@ import org.springframework.core.io.support.ResourcePatternResolver;
  * <p>
  * In order to actually utilize this configurable list of beans in your child application context, you simply need to
  * declare a {@link ListFactoryBean} whose ID is the same name as the property. For example:
+ * 
  * <pre>
  * &lt;bean id=&quot;imap.server.mountPoints&quot; class=&quot;org.springframework.beans.factory.config.ListFactoryBean&quot;&gt;
  *    &lt;property name=&quot;sourceList&quot;&gt;
@@ -251,9 +253,14 @@ public class ChildApplicationContextFactory extends AbstractPropertyBackedBean i
     @Override
     public void afterPropertiesSet() throws Exception
     {
+        List<String> idList = getId();
+        if (idList.isEmpty())
+        {
+            throw new IllegalStateException("Invalid ID");
+        }
         if (getTypeName() == null)
         {
-            setTypeName(getId().get(0));
+            setTypeName(idList.get(0));
         }
 
         // Load the property defaults
@@ -268,12 +275,12 @@ public class ChildApplicationContextFactory extends AbstractPropertyBackedBean i
         super.afterPropertiesSet();
 
         // Apply any property overrides from the extension classpath and also allow system properties and JNDI to
-        // override
+        // override. We use the type name and last component of the ID in the path
         JndiPropertiesFactoryBean overrideFactory = new JndiPropertiesFactoryBean();
         overrideFactory.setSystemPropertiesMode(PropertyPlaceholderConfigurer.SYSTEM_PROPERTIES_MODE_OVERRIDE);
         overrideFactory.setLocations(getParent().getResources(
                 ChildApplicationContextFactory.EXTENSION_CLASSPATH_PREFIX + getCategory() + '/' + getTypeName() + '/'
-                        + getId() + '/' + ChildApplicationContextFactory.PROPERTIES_SUFFIX));
+                        + idList.get(idList.size() - 1) + '/' + ChildApplicationContextFactory.PROPERTIES_SUFFIX));
         overrideFactory.setProperties(this.properties);
         overrideFactory.afterPropertiesSet();
         this.properties = (Properties) overrideFactory.getObject();
@@ -530,7 +537,7 @@ public class ChildApplicationContextFactory extends AbstractPropertyBackedBean i
                 ChildApplicationContextFactory.CLASSPATH_PREFIX + getCategory() + '/' + getTypeName()
                         + ChildApplicationContextFactory.CONTEXT_SUFFIX,
                 ChildApplicationContextFactory.EXTENSION_CLASSPATH_PREFIX + getCategory() + '/' + getTypeName() + '/'
-                        + getId() + '/' + ChildApplicationContextFactory.CONTEXT_SUFFIX
+                        + getId().get(getId().size() - 1) + '/' + ChildApplicationContextFactory.CONTEXT_SUFFIX
             }, false, ChildApplicationContextFactory.this.getParent());
 
             // Add a property placeholder configurer, with the subsystem-scoped default properties

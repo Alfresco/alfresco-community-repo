@@ -172,7 +172,9 @@ public class ScriptNode implements Serializable, Scopeable, NamespacePrefixResol
     protected TemplateImageResolver imageResolver = null;
     protected ScriptNode parent = null;
     private ChildAssociationRef primaryParentAssoc = null;
+	private ScriptableQNameMap<String, Object> parentAssocs = null;
     // NOTE: see the reset() method when adding new cached members!
+
     
     
     // ------------------------------------------------------------------------------
@@ -581,7 +583,55 @@ public class ScriptNode implements Serializable, Scopeable, NamespacePrefixResol
     {
         return getChildAssocs();
     }
+
+    /**
+     * Return the parent associations to this Node. As a Map of assoc name to a JavaScript array of Nodes.
+     * The Map returned implements the Scriptable interface to allow access to the assoc arrays via JavaScript
+     * associative array access. This means associations of this node can be access thus:
+     * <code>node.parentAssocs["contains"][0]</code>
+     * 
+     * @return parent associations as a Map of assoc name to a JavaScript array of Nodes.
+     */
+    @SuppressWarnings("unchecked")
+    public Map<String, Object> getParentAssocs()
+    {
+        if (this.parentAssocs == null)
+        {
+            // this Map implements the Scriptable interface for native JS syntax property access
+            this.parentAssocs = new ScriptableQNameMap<String, Object>(this);
+            
+            // get the list of child assoc nodes for each association type
+            List<ChildAssociationRef> refs = this.nodeService.getParentAssocs(nodeRef);
+            for (ChildAssociationRef ref : refs)
+            {
+                String qname = ref.getTypeQName().toString();
+                List<ScriptNode> nodes = (List<ScriptNode>)this.parentAssocs.get(qname);
+                if (nodes == null)
+                {
+                    // first access of the list for this qname
+                    nodes = new ArrayList<ScriptNode>(4);
+                    this.parentAssocs.put(ref.getTypeQName().toString(), nodes);
+                }
+                nodes.add(newInstance(ref.getParentRef(), this.services, this.scope));
+            }
+            
+            // convert each Node list into a JavaScript array object
+            for (String qname : this.parentAssocs.keySet())
+            {
+                List<ScriptNode> nodes = (List<ScriptNode>)this.parentAssocs.get(qname);
+                Object[] objs = nodes.toArray(new Object[nodes.size()]);
+                this.parentAssocs.put(qname, Context.getCurrentContext().newArray(this.scope, objs));
+            }
+        }
+        
+        return this.parentAssocs;
+    }
     
+    public Map<String, Object> getParentAssociations()
+    {
+        return getParentAssocs();
+    }
+
     /**
      * Return all the properties known about this node. The Map returned implements the Scriptable interface to
      * allow access to the properties via JavaScript associative array access. This means properties of a node can
@@ -2530,6 +2580,7 @@ public class ScriptNode implements Serializable, Scopeable, NamespacePrefixResol
         this.parent = null;
         this.primaryParentAssoc = null;
         this.activeWorkflows = null;
+        this.parentAssocs = null;
     }
     
     /**

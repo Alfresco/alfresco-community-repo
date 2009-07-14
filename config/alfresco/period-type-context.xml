@@ -9,6 +9,7 @@
 <beans>
 	
 	<bean id="period.none" class="org.alfresco.repo.dictionary.types.period.NoPeriod" />
+	<bean id="period.immediately" class="org.alfresco.repo.dictionary.types.period.Immediately" />
 	<bean id="period.days" class="org.alfresco.repo.dictionary.types.period.Days" />
 	<bean id="period.weeks" class="org.alfresco.repo.dictionary.types.period.Weeks" />
 	<bean id="period.months" class="org.alfresco.repo.dictionary.types.period.Months" />

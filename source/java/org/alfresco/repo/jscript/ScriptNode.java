@@ -172,9 +172,8 @@ public class ScriptNode implements Serializable, Scopeable, NamespacePrefixResol
     protected TemplateImageResolver imageResolver = null;
     protected ScriptNode parent = null;
     private ChildAssociationRef primaryParentAssoc = null;
-	private ScriptableQNameMap<String, Object> parentAssocs = null;
+    private ScriptableQNameMap<String, Object> parentAssocs = null;
     // NOTE: see the reset() method when adding new cached members!
-
     
     
     // ------------------------------------------------------------------------------
@@ -401,34 +400,20 @@ public class ScriptNode implements Serializable, Scopeable, NamespacePrefixResol
      */
     public ScriptNode childByNamePath(String path)
     {
+        NodeRef result = null;
+        
         // convert the name based path to a valid XPath query
-        StringBuilder xpath = new StringBuilder(path.length() << 1);
         StringTokenizer t = new StringTokenizer(path, "/");
-        int count = 0;
-        QueryParameterDefinition[] params = new QueryParameterDefinition[t.countTokens()];
-        DataTypeDefinition ddText =
-            this.services.getDictionaryService().getDataType(DataTypeDefinition.TEXT);
-        NamespaceService ns = this.services.getNamespaceService();
-        while (t.hasMoreTokens())
+        if (t.hasMoreTokens())
         {
-            if (xpath.length() != 0)
+            result = this.nodeRef;
+            while (t.hasMoreTokens() && result != null)
             {
-                xpath.append('/');
+                result = this.nodeService.getChildByName(result, ContentModel.ASSOC_CONTAINS, t.nextToken());
             }
-            String strCount = Integer.toString(count);
-            xpath.append("*[@cm:name=$cm:name")
-                 .append(strCount)
-                 .append(']');
-            params[count++] = new QueryParameterDefImpl(
-                    QName.createQName(NamespaceService.CONTENT_MODEL_PREFIX, "name" + strCount, ns),
-                    ddText,
-                    true,
-                    t.nextToken());
         }
         
-        Object[] nodes = getChildrenByXPath(xpath.toString(), params, true);
-        
-        return (nodes.length != 0) ? (ScriptNode)nodes[0] : null;
+        return (result != null ? newInstance(result, this.services, this.scope) : null);
     }
     
     /**
@@ -583,7 +568,7 @@ public class ScriptNode implements Serializable, Scopeable, NamespacePrefixResol
     {
         return getChildAssocs();
     }
-
+    
     /**
      * Return the parent associations to this Node. As a Map of assoc name to a JavaScript array of Nodes.
      * The Map returned implements the Scriptable interface to allow access to the assoc arrays via JavaScript
@@ -631,7 +616,7 @@ public class ScriptNode implements Serializable, Scopeable, NamespacePrefixResol
     {
         return getParentAssocs();
     }
-
+    
     /**
      * Return all the properties known about this node. The Map returned implements the Scriptable interface to
      * allow access to the properties via JavaScript associative array access. This means properties of a node can
@@ -836,7 +821,7 @@ public class ScriptNode implements Serializable, Scopeable, NamespacePrefixResol
     }
     
     /**
-     * @return the parent node
+     * @return the primary parent node
      */
     public ScriptNode getParent()
     {
@@ -851,6 +836,21 @@ public class ScriptNode implements Serializable, Scopeable, NamespacePrefixResol
         }
         
         return parent;
+    }
+    
+    /**
+     * @return all parent nodes
+     */
+    public Scriptable getParents()
+    {
+        List<ChildAssociationRef> parentRefs = this.nodeService.getParentAssocs(this.nodeRef);
+        Object[] parents = new Object[parentRefs.size()];
+        for (int i = 0; i < parentRefs.size(); i++)
+        {
+            NodeRef ref = parentRefs.get(i).getParentRef();
+            parents[i] = newInstance(ref, this.services, this.scope);
+        }
+        return Context.getCurrentContext().newArray(this.scope, parents);
     }
     
     /**
@@ -2574,13 +2574,13 @@ public class ScriptNode implements Serializable, Scopeable, NamespacePrefixResol
         this.sourceAssocs = null;
         this.childAssocs = null;
         this.children = null;
+        this.parentAssocs = null;
         this.displayPath = null;
         this.isDocument = null;
         this.isContainer = null;
         this.parent = null;
         this.primaryParentAssoc = null;
         this.activeWorkflows = null;
-        this.parentAssocs = null;
     }
     
     /**

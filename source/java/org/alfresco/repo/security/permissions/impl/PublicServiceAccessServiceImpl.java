@@ -36,7 +36,6 @@ import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.ListableBeanFactory;
 
-
 public class PublicServiceAccessServiceImpl implements PublicServiceAccessService, BeanFactoryAware
 {
 
@@ -44,36 +43,46 @@ public class PublicServiceAccessServiceImpl implements PublicServiceAccessServic
 
     public AccessStatus hasAccess(String publicService, String methodName, Object... args)
     {
-        MethodSecurityInterceptor msi = (MethodSecurityInterceptor)beanFactory.getBean(publicService+"_security");
-        if(msi == null)
+        Object interceptor = beanFactory.getBean(publicService + "_security");
+        if (interceptor == null)
         {
-            throw new UnsupportedOperationException("Unknown public service security implementation "+publicService);
+            throw new UnsupportedOperationException("Unknown public service security implementation " + publicService);
         }
-        
-        MethodInvocation methodInvocation = null;
-        Object publicServiceImpl = beanFactory.getBean(publicService);
-        for(Method  method : publicServiceImpl.getClass().getMethods())
+        if (interceptor instanceof AlwaysProceedMethodInterceptor)
         {
-            if(method.getName().equals(methodName))
+            return AccessStatus.ALLOWED;
+        }
+
+        if (interceptor instanceof MethodSecurityInterceptor)
+        {
+            MethodSecurityInterceptor msi = (MethodSecurityInterceptor) interceptor;
+
+            MethodInvocation methodInvocation = null;
+            Object publicServiceImpl = beanFactory.getBean(publicService);
+            for (Method method : publicServiceImpl.getClass().getMethods())
             {
-                if(method.getParameterTypes().length == args.length)
+                if (method.getName().equals(methodName))
                 {
-                    methodInvocation = new ReflectiveMethodInvocation(null, null, method, args, null, null);
+                    if (method.getParameterTypes().length == args.length)
+                    {
+                        methodInvocation = new ReflectiveMethodInvocation(null, null, method, args, null, null);
+                    }
                 }
             }
+
+            if (methodInvocation == null)
+            {
+                throw new UnsupportedOperationException("Unknown public service security implementation " + publicService + "." + methodName);
+            }
+
+            return msi.pre(methodInvocation);
         }
-        
-        if(methodInvocation == null)
-        {
-            throw new UnsupportedOperationException("Unknown public service security implementation "+publicService+"."+methodName);
-        }
-        
-        return msi.pre(methodInvocation);
+        throw new UnsupportedOperationException("Unknown security interceptor "+interceptor.getClass());
     }
 
     public void setBeanFactory(BeanFactory beanFactory) throws BeansException
     {
-        this.beanFactory = (ListableBeanFactory)beanFactory;
+        this.beanFactory = (ListableBeanFactory) beanFactory;
     }
 
 }

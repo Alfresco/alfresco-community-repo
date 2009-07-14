@@ -196,7 +196,7 @@
     <!-- The access decision manager asks voters in order if they should allow access    -->
     <!-- Role and group access do not require ACL based access                           -->
 
-    <bean id="accessDecisionManager" class="net.sf.acegisecurity.vote.AffirmativeBased">
+    <bean id="accessDecisionManager" class="org.alfresco.repo.security.permissions.impl.acegi.AffirmativeBasedAccessDecisionManger">
         <property name="allowIfAllAbstainDecisions"><value>false</value></property>
         <property name="decisionVoters">
             <list>
@@ -339,7 +339,7 @@
     <!--      Requires read for the node                                                 -->
 
 
-    <bean id="NodeService_security" class="net.sf.acegisecurity.intercept.method.aopalliance.MethodSecurityInterceptor">
+    <bean id="NodeService_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor">
         <property name="authenticationManager"><ref bean="authenticationManager"/></property>
         <property name="accessDecisionManager"><ref local="accessDecisionManager"/></property>
         <property name="afterInvocationManager"><ref local="afterInvocationManager"/></property>
@@ -392,7 +392,7 @@
     <!-- FileFolder Service Permissions -->
     <!-- ============================== -->
 
-    <bean id="FileFolderService_security" class="net.sf.acegisecurity.intercept.method.aopalliance.MethodSecurityInterceptor">
+    <bean id="FileFolderService_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor">
         <property name="authenticationManager"><ref bean="authenticationManager"/></property>
         <property name="accessDecisionManager"><ref local="accessDecisionManager"/></property>
         <property name="afterInvocationManager"><ref local="afterInvocationManager"/></property>
@@ -428,7 +428,7 @@
     <!-- Reading requires the permission to read content                                 -->
     <!-- Writing required the permission to write conent                                 -->
 
-    <bean id="ContentService_security" class="net.sf.acegisecurity.intercept.method.aopalliance.MethodSecurityInterceptor">
+    <bean id="ContentService_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor">
         <property name="authenticationManager"><ref bean="authenticationManager"/></property>
         <property name="accessDecisionManager"><ref local="accessDecisionManager"/></property>
         <property name="afterInvocationManager"><ref local="afterInvocationManager"/></property>
@@ -462,7 +462,7 @@
     <!-- All search results are filtered to exclude nodes that the current user can not        -->
     <!-- read. Other methods restrict queries to those nodes the user can read                 -->
 
-    <bean id="SearchService_security" class="net.sf.acegisecurity.intercept.method.aopalliance.MethodSecurityInterceptor">
+    <bean id="SearchService_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor">
         <property name="authenticationManager"><ref bean="authenticationManager"/></property>
         <property name="accessDecisionManager"><ref local="accessDecisionManager"/></property>
         <property name="afterInvocationManager"><ref local="afterInvocationManager"/></property>
@@ -487,7 +487,7 @@
 	
 	<!-- Uses the public node service for all mutations -  access is allowed here and enforced by the public node service -->
 
-    <bean id="CategoryService_security" class="net.sf.acegisecurity.intercept.method.aopalliance.MethodSecurityInterceptor">
+    <bean id="CategoryService_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor">
         <property name="authenticationManager"><ref bean="authenticationManager"/></property>
         <property name="accessDecisionManager"><ref local="accessDecisionManager"/></property>
         <property name="afterInvocationManager"><ref local="afterInvocationManager"/></property>
@@ -526,7 +526,7 @@
     <!-- Lock and Unlock require the related aspect specific permissions. Querying the   -->
     <!-- lock status just requires read access to the node.                              -->
 
-    <bean id="LockService_security" class="net.sf.acegisecurity.intercept.method.aopalliance.MethodSecurityInterceptor">
+    <bean id="LockService_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor">
         <property name="authenticationManager"><ref bean="authenticationManager"/></property>
         <property name="accessDecisionManager"><ref local="accessDecisionManager"/></property>
         <property name="afterInvocationManager"><ref local="afterInvocationManager"/></property>
@@ -559,7 +559,7 @@
     <!-- The version service does not have any restrictions applied at the moment. It    -->
     <!-- does not use a node service that would apply any permissions.                   -->
 
-    <bean id="MultilingualContentService_security" class="net.sf.acegisecurity.intercept.method.aopalliance.MethodSecurityInterceptor">
+    <bean id="MultilingualContentService_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor">
     <property name="authenticationManager"><ref bean="authenticationManager"/></property>
         <property name="accessDecisionManager"><ref local="accessDecisionManager"/></property>
         <property name="afterInvocationManager"><ref local="afterInvocationManager"/></property>
@@ -587,7 +587,7 @@
     <!-- Edition  Service    -->
     <!-- =================== -->
 
-    <bean id="EditionService_security" class="net.sf.acegisecurity.intercept.method.aopalliance.MethodSecurityInterceptor">
+    <bean id="EditionService_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor">
     <property name="authenticationManager"><ref bean="authenticationManager"/></property>
         <property name="accessDecisionManager"><ref local="accessDecisionManager"/></property>
         <property name="afterInvocationManager"><ref local="afterInvocationManager"/></property>
@@ -611,7 +611,7 @@
     <!-- the associated permission, as does cancel check out. See the permission model   -->
     <!-- for how these permissions are granted.                                          -->
 
-    <bean id="CheckoutCheckinService_security" class="net.sf.acegisecurity.intercept.method.aopalliance.MethodSecurityInterceptor">
+    <bean id="CheckoutCheckinService_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor">
         <property name="authenticationManager"><ref bean="authenticationManager"/></property>
         <property name="accessDecisionManager"><ref local="accessDecisionManager"/></property>
         <property name="afterInvocationManager"><ref local="afterInvocationManager"/></property>
@@ -660,7 +660,7 @@
     <!-- and ChangePermissions permissions. Access to some methods are not restricted at -->
     <!-- the moment.                                                                     -->
 
-    <bean id="PermissionService_security" class="net.sf.acegisecurity.intercept.method.aopalliance.MethodSecurityInterceptor">
+    <bean id="PermissionService_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor">
         <property name="authenticationManager"><ref bean="authenticationManager"/></property>
         <property name="accessDecisionManager"><ref local="accessDecisionManager"/></property>
         <property name="afterInvocationManager"><ref local="afterInvocationManager"/></property>
@@ -694,7 +694,7 @@
 
     <!-- This service currently has no restrictions.                                     -->
 
-    <bean id="AuthorityService_security" class="net.sf.acegisecurity.intercept.method.aopalliance.MethodSecurityInterceptor">
+    <bean id="AuthorityService_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor">
         <property name="authenticationManager"><ref bean="authenticationManager"/></property>
         <property name="accessDecisionManager"><ref local="accessDecisionManager"/></property>
         <property name="afterInvocationManager"><ref local="afterInvocationManager"/></property>
@@ -740,7 +740,7 @@
    <!-- NOTE: Authentication is excluded as it sets or clears authentication -->
    <!-- The same for validate ticaket -->
    <!-- Update authentication checks internally -->
-   <bean id="AuthenticationService_security" class="net.sf.acegisecurity.intercept.method.aopalliance.MethodSecurityInterceptor">
+   <bean id="AuthenticationService_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor">
         <property name="authenticationManager"><ref bean="authenticationManager"/></property>
         <property name="accessDecisionManager"><ref local="accessDecisionManager"/></property>
         <property name="afterInvocationManager"><ref local="afterInvocationManager"/></property>
@@ -775,7 +775,7 @@
     <!-- This service currently has no restrictions.                                     -->
     <!-- TODO: respect the permissions on the ownable service                            -->
 
-    <bean id="OwnableService_security" class="net.sf.acegisecurity.intercept.method.aopalliance.MethodSecurityInterceptor">
+    <bean id="OwnableService_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor">
         <property name="authenticationManager"><ref bean="authenticationManager"/></property>
         <property name="accessDecisionManager"><ref local="accessDecisionManager"/></property>
         <property name="afterInvocationManager"><ref local="afterInvocationManager"/></property>
@@ -793,7 +793,7 @@
 
     <!-- Person Service -->
 
-     <bean id="PersonService_security" class="net.sf.acegisecurity.intercept.method.aopalliance.MethodSecurityInterceptor">
+     <bean id="PersonService_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor">
         <property name="authenticationManager"><ref bean="authenticationManager"/></property>
         <property name="accessDecisionManager"><ref local="accessDecisionManager"/></property>
         <property name="afterInvocationManager"><ref local="afterInvocationManager"/></property>

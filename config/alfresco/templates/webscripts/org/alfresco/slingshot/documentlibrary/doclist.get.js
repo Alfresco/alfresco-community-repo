@@ -238,8 +238,8 @@ function getDocList(filter)
             // This asset belongs to a site
             location =
             {
-               site: qnamePaths[3].substr(3),
-               container: qnamePaths[4].substr(3),
+               site: displayPaths[3],
+               container: displayPaths[4],
                path: "/" + displayPaths.slice(5, displayPaths.length).join("/"),
                file: locationAsset.name
             };

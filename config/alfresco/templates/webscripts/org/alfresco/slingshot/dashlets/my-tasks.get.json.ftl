@@ -7,8 +7,8 @@
    <#assign qnamePaths = doc.qnamePath?split("/")>
    <#assign displayPaths = doc.displayPath?split("/") + [""]>
    <#if ((qnamePaths?size &gt; 5) && (qnamePaths[2] == "st:sites"))>
-               "site": "${qnamePaths[3]?substring(3)}",
-               "container": "${qnamePaths[4]?substring(3)}",
+               "site": "${displayPaths[3]}",
+               "container": "${displayPaths[4]}",
                "path": "<#list displayPaths[5..] as path><#if path_has_next>/</#if>${path}</#list>"
    </#if>
 </#macro>

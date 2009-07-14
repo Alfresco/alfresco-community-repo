@@ -161,7 +161,7 @@ function getParsedArgs(containerType)
    {
       siteId = displayPaths[3];
       siteNode = siteService.getSite(siteId);
-      containerId = qnamePaths[4].substr(3);
+      containerId = displayPaths[4];
       
       location = 
       {

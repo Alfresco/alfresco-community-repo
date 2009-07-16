@@ -139,10 +139,6 @@ public abstract class AbstractServerConfigurationBean extends ServerConfiguratio
   
   protected static final int MaxSessionTimeout    = 60 * 60;  // 1 hour
     
-  // Authentication manager
-  
-  private AuthenticationManager m_authenticationManager;
-  
   // Disk interface to use for shared filesystems
   
   private ExtendedDiskInterface m_repoDiskInterface;
@@ -205,16 +201,6 @@ public abstract class AbstractServerConfigurationBean extends ServerConfiguratio
       super( srvName);
   }
   
-  /**
-   * Set the authentication manager
-   * 
-   * @param authenticationManager AuthenticationManager
-   */
-  public void setAuthenticationManager(AuthenticationManager authenticationManager)
-  {
-      m_authenticationManager = authenticationManager;
-  }
-
   /**
    * Set the authentication service
    * 
@@ -391,11 +377,7 @@ public abstract class AbstractServerConfigurationBean extends ServerConfiguratio
   {
       // Check that all required properties have been set
 	  
-      if (m_authenticationManager == null)
-      {
-          throw new AlfrescoRuntimeException("Property 'authenticationManager' not set");
-      }
-      else if (m_authenticationComponent == null)
+      if (m_authenticationComponent == null)
       {
           throw new AlfrescoRuntimeException("Property 'authenticationComponent' not set");
       }

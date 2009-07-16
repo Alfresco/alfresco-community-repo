@@ -46,24 +46,10 @@
         <property name="providers">
             <list>
                 <ref bean="authenticatedAuthenticationPassthroughProvider" />
-                <ref bean="daoAuthenticationProvider" />
             </list>
         </property>
     </bean>
 
-    <!-- We provide a DAO to plug into the Acegi DaoAuthenticationProvider  -->
-
-    <bean id="daoAuthenticationProvider" class="net.sf.acegisecurity.providers.dao.DaoAuthenticationProvider">
-        <property name="authenticationDao">
-            <ref bean="authenticationDao" />
-        </property>
-        <property name="saltSource">
-            <ref bean="saltSource" />
-        </property>
-        <property name="passwordEncoder">
-            <ref bean="passwordEncoder" />
-        </property>
-    </bean>
 
     <!-- An authentication Provider that just believes authentications      -->
     <!-- bound to the local thread are valid if they are set as             -->
@@ -144,10 +130,6 @@
       </property>
    </bean>
     
-    <!-- The DAO also acts as a salt provider.                              -->
-
-    <alias alias="saltSource" name="authenticationDao"/>
-
     <!-- Passwords are encoded using MD4                                    -->
     <!-- This is not ideal and only done to be compatible with NTLM         -->
     <!-- authentication against the default authentication mechanism.       -->

@@ -7,9 +7,6 @@
    <bean id="fileServerConfigurationBase"
          abstract="true"
          destroy-method="closeConfiguration">
-      <property name="authenticationManager">
-         <ref bean="authenticationManager"/>
-      </property>
       <property name="authenticationService">
          <ref bean="authenticationService"/>
       </property>

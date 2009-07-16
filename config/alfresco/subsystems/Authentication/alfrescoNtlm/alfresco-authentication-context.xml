@@ -71,7 +71,7 @@
       </property>
    </bean>
 
-   <!-- Authenticaton service for chaining -->
+   <!-- Authentication service for chaining -->
    <bean id="localAuthenticationService" class="org.alfresco.repo.security.authentication.AuthenticationServiceImpl">
       <property name="authenticationDao">
          <ref bean="authenticationDao" />
@@ -93,5 +93,51 @@
          <value>${alfresco.authentication.authenticateCIFS}</value>
       </property>
    </bean>
+
+   <!--                                                                    -->
+   <!-- The Acegi authentication manager.                                  -->
+   <!--                                                                    -->
+   <!-- Provders are asked to authenticate in order.                       -->
+   <!-- First, is a provider that checks if an acegi authentication object -->
+   <!-- is already bound to the executing thread. If it is, and it is set  -->
+   <!-- as authenticated then no further authentication is required. If    -->
+   <!-- this is absent, Acegi validates the password for every method      -->
+   <!-- invocation, which is too CPU expensive. If we set an               -->
+   <!-- authentication based on a ticket etc .... or we want to set the    -->
+   <!-- the system user as the current user ... we do not have the         -->
+   <!-- password. So if we have set an authentication and set it as        -->
+   <!-- authenticated that is sufficient to validate the user.             -->
+   <!--                                                                    -->
+   <!-- If the authentication bound to the current thread is not set as    -->
+   <!-- authenticated the standard Acegi DAO Authentication provider       -->
+   <!-- is used to authenticate.                                           -->
+   <!--                                                                    -->
+
+   <bean id="authenticationManager" class="net.sf.acegisecurity.providers.ProviderManager">
+      <property name="providers">
+         <list>
+            <ref bean="authenticatedAuthenticationPassthroughProvider" />
+            <ref bean="daoAuthenticationProvider" />
+         </list>
+      </property>
+   </bean>
+
+   <!-- We provide a DAO to plug into the Acegi DaoAuthenticationProvider  -->
+
+   <bean id="daoAuthenticationProvider" class="net.sf.acegisecurity.providers.dao.DaoAuthenticationProvider">
+      <property name="authenticationDao">
+         <ref bean="authenticationDao" />
+      </property>
+      <property name="saltSource">
+         <ref bean="saltSource" />
+      </property>
+      <property name="passwordEncoder">
+         <ref bean="passwordEncoder" />
+      </property>
+   </bean>
+
+   <!-- The DAO also acts as a salt provider.                              -->
+
+   <alias alias="saltSource" name="authenticationDao" />
 
 </beans>

@@ -48,6 +48,8 @@ import net.sf.acegisecurity.providers.dao.SaltSource;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.cache.SimpleCache;
+import org.alfresco.repo.management.subsystems.ApplicationContextFactory;
+import org.alfresco.repo.management.subsystems.ChildApplicationContextManager;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.security.authentication.InMemoryTicketComponentImpl.ExpiryMode;
 import org.alfresco.repo.security.authentication.InMemoryTicketComponentImpl.Ticket;
@@ -96,8 +98,6 @@ public class AuthenticationTest extends TestCase
     private MutableAuthenticationDao dao;
 
     private AuthenticationManager authenticationManager;
-
-    private SaltSource saltSource;
 
     private TicketComponent ticketComponent;
 
@@ -152,8 +152,11 @@ public class AuthenticationTest extends TestCase
         ticketsCache = (SimpleCache<String, Ticket>) ctx.getBean("ticketsCache");
 
         dao = (MutableAuthenticationDao) ctx.getBean("authenticationDao");
-        authenticationManager = (AuthenticationManager) ctx.getBean("authenticationManager");
-        saltSource = (SaltSource) ctx.getBean("saltSource");
+        
+        // Let's look inside the alfresco authentication subsystem to get the DAO-wired authentication manager
+        ChildApplicationContextManager authenticationChain = (ChildApplicationContextManager) ctx.getBean("Authentication");
+        ApplicationContext subsystem = authenticationChain.getApplicationContext(authenticationChain.getInstanceIds().iterator().next());
+        authenticationManager = (AuthenticationManager) subsystem.getBean("authenticationManager");
 
         transactionService = (TransactionService) ctx.getBean(ServiceRegistry.TRANSACTION_SERVICE.getLocalName());
         userTransaction = transactionService.getUserTransaction();
@@ -412,7 +415,7 @@ public class AuthenticationTest extends TestCase
         assertTrue(AndyDetails.isCredentialsNonExpired());
         assertTrue(AndyDetails.isEnabled());
         assertNotSame("cabbage", AndyDetails.getPassword());
-        assertEquals(AndyDetails.getPassword(), passwordEncoder.encodePassword("cabbage", saltSource.getSalt(AndyDetails)));
+        assertEquals(AndyDetails.getPassword(), passwordEncoder.encodePassword("cabbage", dao.getSalt(AndyDetails)));
         assertEquals(1, AndyDetails.getAuthorities().length);
 
         // Object oldSalt = dao.getSalt(AndyDetails);

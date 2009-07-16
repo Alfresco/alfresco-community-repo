@@ -27,6 +27,7 @@ package org.alfresco.repo.jscript;
 import java.io.Serializable;
 import java.io.StringReader;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -67,16 +68,16 @@ import com.werken.saxpath.XPathReader;
  * 
  * @author Kevin Roast
  */
-public final class Search extends BaseScopableProcessorExtension
+public class Search extends BaseScopableProcessorExtension
 {
     /** Service registry */
-    private ServiceRegistry services;
+    protected ServiceRegistry services;
 
     /** Default store reference */
-    private StoreRef storeRef;
+    protected StoreRef storeRef;
     
     /** Repository helper */
-    private Repository repository;
+    protected Repository repository;
 
 
     /**
@@ -433,6 +434,7 @@ public final class Search extends BaseScopableProcessorExtension
      *    query: string,          mandatory, in appropriate format and encoded for the given language
      *    store: string,          optional, defaults to 'workspace://SpacesStore'
      *    language: string,       optional, one of: lucene, xpath, jcr-xpath, fts-alfresco - defaults to 'lucene'
+     *    templates: [],          optional, Array of query language template objects (see below) 
      *    sort: [],               optional, Array of sort column objects (see below)
      *    page: object            optional, paging information object (see below) - if supported by the language
      * }
@@ -448,6 +450,16 @@ public final class Search extends BaseScopableProcessorExtension
      *    maxItems: int,          optional, max number of items to return in result set
      *    skipCount: int          optional, number of items to skip over before returning results
      * }
+     * 
+     * template
+     * {
+     *    field: string,          mandatory, custom field name for the template
+     *    template: string        mandatory, query template replacement for the template
+     * }
+     * 
+     * Note that only some query languages support custom query templates, such as 'fts-alfresco'. 
+     * See the following documentation for more details:
+     * {@link http://wiki.alfresco.com/wiki/Full_Text_Search_Query_Syntax#Templates}
      * </pre>
      * 
      * @param search    Search definition object as above
@@ -514,8 +526,59 @@ public final class Search extends BaseScopableProcessorExtension
                     }
                 }
                 
+                // query templates
+                Map<String, String> queryTemplates = null;
+                List<Map<Serializable, Serializable>> templates = (List<Map<Serializable, Serializable>>)def.get("templates");
+                if (templates != null)
+                {
+                    queryTemplates = new HashMap<String, String>(templates.size(), 1.0f);
+                    
+                    for (Map<Serializable, Serializable> template : templates)
+                    {
+                        String field = (String)template.get("field");
+                        if (field == null || field.length() == 0)
+                        {
+                            throw new AlfrescoRuntimeException("Failed to search: Missing mandatory 'template: field' value.");
+                        }
+                        String t = (String)template.get("template");
+                        if (t == null || t.length() == 0)
+                        {
+                            throw new AlfrescoRuntimeException("Failed to search: Missing mandatory 'template: template' value.");
+                        }
+                        queryTemplates.put(field, t);
+                    }
+                }
+                
+                SearchParameters sp = new SearchParameters();
+                sp.addStore(store != null ? new StoreRef(store) : this.storeRef);
+                sp.setLanguage(language != null ? language : SearchService.LANGUAGE_LUCENE);
+                sp.setQuery(query);
+                if (maxResults > 0)
+                {
+                    sp.setLimit(maxResults);
+                    sp.setLimitBy(LimitBy.FINAL_SIZE);
+                }
+                if (skipResults > 0)
+                {
+                    sp.setSkipCount(skipResults);
+                }
+                if (sort != null)
+                {
+                    for (SortColumn sd : sortColumns)
+                    {
+                        sp.addSort(sd.column, sd.asc);
+                    }
+                }
+                if (queryTemplates != null)
+                {
+                    for (String field: queryTemplates.keySet())
+                    {
+                        sp.addQueryTemplate(field, queryTemplates.get(field));
+                    }
+                }
+                
                 // execute search based on search definition
-                results = query(store, query, sortColumns, language, maxResults, skipResults);
+                results = query(sp);
             }
         }
         
@@ -564,7 +627,7 @@ public final class Search extends BaseScopableProcessorExtension
      * 
      * @return Array of Node objects
      */
-    private Object[] query(String store, String search, SortColumn[] sort, String language)
+    protected Object[] query(String store, String search, SortColumn[] sort, String language)
     {
         return query(store, search, sort, language, -1, 0);
     }
@@ -584,7 +647,43 @@ public final class Search extends BaseScopableProcessorExtension
      * 
      * @return Array of Node objects
      */
-    private Object[] query(String store, String search, SortColumn[] sort, String language, int maxResults, int skipResults)
+    protected Object[] query(String store, String search, SortColumn[] sort, String language, int maxResults, int skipResults)
+    {   
+        SearchParameters sp = new SearchParameters();
+        sp.addStore(store != null ? new StoreRef(store) : this.storeRef);
+        sp.setLanguage(language != null ? language : SearchService.LANGUAGE_LUCENE);
+        sp.setQuery(search);
+        if (maxResults > 0)
+        {
+            sp.setLimit(maxResults);
+            sp.setLimitBy(LimitBy.FINAL_SIZE);
+        }
+        if (skipResults > 0)
+        {
+            sp.setSkipCount(skipResults);
+        }
+        if (sort != null)
+        {
+            for (SortColumn sd : sort)
+            {
+                sp.addSort(sd.column, sd.asc);
+            }
+        }
+        
+        return query(sp);
+    }
+    
+    /**
+     * Execute the query
+     * 
+     * Removes any duplicates that may be present (ID search can cause duplicates -
+     * it is better to remove them here)
+     * 
+     * @param sp            SearchParameters describing the search to execute.
+     * 
+     * @return Array of Node objects
+     */
+    protected Object[] query(SearchParameters sp)
     {   
         Collection<ScriptNode> set = null;
         
@@ -592,27 +691,6 @@ public final class Search extends BaseScopableProcessorExtension
         ResultSet results = null;
         try
         {
-            SearchParameters sp = new SearchParameters();
-            sp.addStore(store != null ? new StoreRef(store) : this.storeRef);
-            sp.setLanguage(language != null ? language : SearchService.LANGUAGE_LUCENE);
-            sp.setQuery(search);
-            if (maxResults > 0)
-            {
-                sp.setLimit(maxResults);
-                sp.setLimitBy(LimitBy.FINAL_SIZE);
-            }
-            if (skipResults > 0)
-            {
-                sp.setSkipCount(skipResults);
-            }
-            if (sort != null)
-            {
-                for (SortColumn sd : sort)
-                {
-                    sp.addSort(sd.column, sd.asc);
-                }
-            }
-            
             results = this.services.getSearchService().query(sp);
             
             if (results.length() != 0)
@@ -627,7 +705,7 @@ public final class Search extends BaseScopableProcessorExtension
         }
         catch (Throwable err)
         {
-            throw new AlfrescoRuntimeException("Failed to execute search: " + search, err);
+            throw new AlfrescoRuntimeException("Failed to execute search: " + sp.getQuery(), err);
         }
         finally
         {
@@ -639,12 +717,12 @@ public final class Search extends BaseScopableProcessorExtension
         
         return set != null ? set.toArray(new Object[(set.size())]) : new Object[0];
     }
-
-
+    
+    
     /**
      * Search sort column 
      */
-    private class SortColumn
+    public class SortColumn
     {
         /**
          * Constructor
@@ -652,7 +730,7 @@ public final class Search extends BaseScopableProcessorExtension
          * @param column  column to sort on
          * @param asc  sort direction
          */
-        SortColumn(String column, boolean asc)
+        public SortColumn(String column, boolean asc)
         {
             this.column = column;
             this.asc = asc;

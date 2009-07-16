@@ -3717,6 +3717,11 @@ public class ADMLuceneTest extends TestCase
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@cm\\:created:[MIN TO " + sDate + "]", null);
         assertEquals(1, results.length());
         results.close();
+        
+        sDate = df.format(date);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@cm\\:created:[MIN TO NOW]", null);
+        assertEquals(1, results.length());
+        results.close();
 
         sDate = df.format(date);
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(ContentModel.PROP_CREATED) + ":[MIN TO " + sDate + "]", null);

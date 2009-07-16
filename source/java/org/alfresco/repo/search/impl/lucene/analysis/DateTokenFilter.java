@@ -41,7 +41,7 @@ import org.apache.lucene.analysis.WhitespaceTokenizer;
 public class DateTokenFilter extends Tokenizer
 {
     Tokenizer baseTokeniser;
-    
+
     public DateTokenFilter(Reader in)
     {
         super(in);
@@ -53,20 +53,26 @@ public class DateTokenFilter extends Tokenizer
         SimpleDateFormat df = CachingDateFormat.getDateFormat();
         SimpleDateFormat dof = CachingDateFormat.getDateOnlyFormat();
         Token candidate;
-        while((candidate = baseTokeniser.next()) != null)
+        while ((candidate = baseTokeniser.next()) != null)
         {
             Date date;
-            try
+            if (candidate.termText().equalsIgnoreCase("now"))
             {
-                date = df.parse(candidate.termText());
+                date = new Date();
             }
-            catch (ParseException e)
+            else
             {
-               continue;
+                try
+                {
+                    date = df.parse(candidate.termText());
+                }
+                catch (ParseException e)
+                {
+                    continue;
+                }
             }
             String valueString = dof.format(date);
-            Token integerToken = new Token(valueString, candidate.startOffset(), candidate.startOffset(),
-                    candidate.type());
+            Token integerToken = new Token(valueString, candidate.startOffset(), candidate.startOffset(), candidate.type());
             return integerToken;
         }
         return null;

@@ -77,13 +77,20 @@ public class DateTimeTokenFilter extends Tokenizer
         while ((candidate = baseTokeniser.next()) != null)
         {
             Date date;
-            try
+            if (candidate.termText().equalsIgnoreCase("now"))
             {
-                date = df.parse(candidate.termText());
+                date = new Date();
             }
-            catch (ParseException e)
+            else
             {
-                continue;
+                try
+                {
+                    date = df.parse(candidate.termText());
+                }
+                catch (ParseException e)
+                {
+                    continue;
+                }
             }
 
             Calendar cal = Calendar.getInstance();

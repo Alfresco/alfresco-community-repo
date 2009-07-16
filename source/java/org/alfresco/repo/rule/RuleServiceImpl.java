@@ -983,7 +983,9 @@ public class RuleServiceImpl implements RuleService, RuntimeRuleService
     private boolean checkForCopy(Set<ExecutedRuleData> executedRules, NodeRef actionedUponNodeRef, Rule rule)
     {
         boolean result = true;
-        if (this.nodeService.exists(actionedUponNodeRef) == true && this.nodeService.hasAspect(actionedUponNodeRef, ContentModel.ASPECT_COPIEDFROM) == true)
+        if (this.nodeService.exists(actionedUponNodeRef)
+                && this.permissionService.hasPermission(actionedUponNodeRef, PermissionService.READ).equals(AccessStatus.ALLOWED)
+                && this.nodeService.hasAspect(actionedUponNodeRef, ContentModel.ASPECT_COPIEDFROM) == true)
         {
             if (logger.isDebugEnabled() == true)
             {

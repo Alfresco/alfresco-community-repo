@@ -36,6 +36,7 @@ import java.util.TimeZone;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
+import javax.naming.InvalidNameException;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 import javax.naming.directory.Attribute;
@@ -469,6 +470,15 @@ public class LDAPUserRegistry implements UserRegistry, InitializingBean, Activat
         try
         {
             ctx = this.ldapInitialContextFactory.getDefaultIntialDirContext(this.queryBatchSize);
+
+            LdapName groupDistinguishedNamePrefix = new LdapName(this.groupSearchBase);
+            LdapName userDistinguishedNamePrefix = new LdapName(this.userSearchBase);
+
+            // Work out whether the user and group trees are disjoint. This may allow us to optimize reverse DN
+            // resolution.
+            boolean disjoint = !groupDistinguishedNamePrefix.startsWith(userDistinguishedNamePrefix)
+                    && !userDistinguishedNamePrefix.startsWith(groupDistinguishedNamePrefix);
+
             do
             {
                 NamingEnumeration<SearchResult> searchResults;
@@ -484,14 +494,6 @@ public class LDAPUserRegistry implements UserRegistry, InitializingBean, Activat
                         this.timestampFormat.format(modifiedSince)
                     }, userSearchCtls);
                 }
-
-                LdapName groupDistinguishedNamePrefix = new LdapName(this.groupSearchBase);
-                LdapName userDistinguishedNamePrefix = new LdapName(this.userSearchBase);
-                
-                // Work out whether the user and group trees are disjoint. This may allow us to optimize reverse DN
-                // resolution.
-                boolean disjoint = !groupDistinguishedNamePrefix.startsWith(userDistinguishedNamePrefix)
-                        && !userDistinguishedNamePrefix.startsWith(groupDistinguishedNamePrefix);
 
                 while (searchResults.hasMoreElements())
                 {
@@ -546,99 +548,110 @@ public class LDAPUserRegistry implements UserRegistry, InitializingBean, Activat
                             String attribute = (String) memAttribute.get(i);
                             if (attribute != null)
                             {
-                                LdapName distinguishedName = new LdapName(attribute);
-                                Attribute nameAttribute;
-
-                                // If the user and group search bases are different we may be able to recognise user and
-                                // group DNs without a secondary lookup
-                                if (disjoint)
+                                try
                                 {
-                                    Attributes nameAttributes = distinguishedName.getRdn(distinguishedName.size() - 1)
-                                            .toAttributes();
+                                    // Attempt to parse the member attribute as a DN. If this fails we have a fallback
+                                    // in the catch block
+                                    LdapName distinguishedName = new LdapName(attribute);
+                                    Attribute nameAttribute;
 
-                                    // Recognise user DNs
-                                    if (distinguishedName.startsWith(userDistinguishedNamePrefix)
-                                            && (nameAttribute = nameAttributes.get(this.userIdAttributeName)) != null)
+                                    // If the user and group search bases are different we may be able to recognise user
+                                    // and group DNs without a secondary lookup
+                                    if (disjoint)
                                     {
-                                        childAssocs.add((String) nameAttribute.get());
-                                        continue;
-                                    }
+                                        Attributes nameAttributes = distinguishedName.getRdn(
+                                                distinguishedName.size() - 1).toAttributes();
 
-                                    // Recognise group DNs
-                                    if (distinguishedName.startsWith(groupDistinguishedNamePrefix)
-                                            && (nameAttribute = nameAttributes.get(this.groupIdAttributeName)) != null)
-                                    {
-                                        childAssocs.add("GROUP_" + nameAttribute.get());
-                                        continue;
-                                    }
-                                }
-
-                                // If we can't determine the name and type from the DN alone, try a directory lookup
-                                if (distinguishedName.startsWith(userDistinguishedNamePrefix)
-                                        || distinguishedName.startsWith(groupDistinguishedNamePrefix))
-                                {
-                                    try
-                                    {
-
-                                        Attributes childAttributes = ctx.getAttributes(attribute, new String[]
+                                        // Recognise user DNs
+                                        if (distinguishedName.startsWith(userDistinguishedNamePrefix)
+                                                && (nameAttribute = nameAttributes.get(this.userIdAttributeName)) != null)
                                         {
-                                            "objectclass", this.groupIdAttributeName, this.userIdAttributeName
-                                        });
-                                        Attribute objectClass = childAttributes.get("objectclass");
-                                        if (hasAttributeValue(objectClass, this.personType))
-                                        {
-                                            nameAttribute = childAttributes.get(this.userIdAttributeName);
-                                            if (nameAttribute == null)
-                                            {
-                                                if (this.errorOnMissingUID)
-                                                {
-                                                    throw new AlfrescoRuntimeException(
-                                                            "User missing user id attribute DN =" + attribute
-                                                                    + "  att = " + this.userIdAttributeName);
-                                                }
-                                                else
-                                                {
-                                                    LDAPUserRegistry.logger.warn("User missing user id attribute DN ="
-                                                            + attribute + "  att = " + this.userIdAttributeName);
-                                                    continue;
-                                                }
-                                            }
-
                                             childAssocs.add((String) nameAttribute.get());
                                             continue;
                                         }
-                                        else if (hasAttributeValue(objectClass, this.groupType))
+
+                                        // Recognise group DNs
+                                        if (distinguishedName.startsWith(groupDistinguishedNamePrefix)
+                                                && (nameAttribute = nameAttributes.get(this.groupIdAttributeName)) != null)
                                         {
-                                            nameAttribute = childAttributes.get(this.groupIdAttributeName);
-                                            if (nameAttribute == null)
-                                            {
-                                                if (this.errorOnMissingGID)
-                                                {
-                                                    throw new AlfrescoRuntimeException(
-                                                            "Group returned by group search does not have mandatory group id attribute "
-                                                                    + attributes);
-                                                }
-                                                else
-                                                {
-                                                    LDAPUserRegistry.logger.warn("Missing GID on " + childAttributes);
-                                                    continue;
-                                                }
-                                            }
                                             childAssocs.add("GROUP_" + nameAttribute.get());
                                             continue;
                                         }
                                     }
-                                    catch (NamingException e)
+
+                                    // If we can't determine the name and type from the DN alone, try a directory lookup
+                                    if (distinguishedName.startsWith(userDistinguishedNamePrefix)
+                                            || distinguishedName.startsWith(groupDistinguishedNamePrefix))
                                     {
-                                        // Unresolvable name
+                                        try
+                                        {
+                                            Attributes childAttributes = ctx.getAttributes(attribute, new String[]
+                                            {
+                                                "objectclass", this.groupIdAttributeName, this.userIdAttributeName
+                                            });
+                                            Attribute objectClass = childAttributes.get("objectclass");
+                                            if (hasAttributeValue(objectClass, this.personType))
+                                            {
+                                                nameAttribute = childAttributes.get(this.userIdAttributeName);
+                                                if (nameAttribute == null)
+                                                {
+                                                    if (this.errorOnMissingUID)
+                                                    {
+                                                        throw new AlfrescoRuntimeException(
+                                                                "User missing user id attribute DN =" + attribute
+                                                                        + "  att = " + this.userIdAttributeName);
+                                                    }
+                                                    else
+                                                    {
+                                                        LDAPUserRegistry.logger
+                                                                .warn("User missing user id attribute DN =" + attribute
+                                                                        + "  att = " + this.userIdAttributeName);
+                                                        continue;
+                                                    }
+                                                }
+
+                                                childAssocs.add((String) nameAttribute.get());
+                                                continue;
+                                            }
+                                            else if (hasAttributeValue(objectClass, this.groupType))
+                                            {
+                                                nameAttribute = childAttributes.get(this.groupIdAttributeName);
+                                                if (nameAttribute == null)
+                                                {
+                                                    if (this.errorOnMissingGID)
+                                                    {
+                                                        throw new AlfrescoRuntimeException(
+                                                                "Group returned by group search does not have mandatory group id attribute "
+                                                                        + attributes);
+                                                    }
+                                                    else
+                                                    {
+                                                        LDAPUserRegistry.logger.warn("Missing GID on "
+                                                                + childAttributes);
+                                                        continue;
+                                                    }
+                                                }
+                                                childAssocs.add("GROUP_" + nameAttribute.get());
+                                                continue;
+                                            }
+                                        }
+                                        catch (NamingException e)
+                                        {
+                                            // Unresolvable name
+                                        }
                                     }
+                                    if (this.errorOnMissingMembers)
+                                    {
+                                        throw new AlfrescoRuntimeException("Failed to resolve distinguished name: "
+                                                + attribute);
+                                    }
+                                    LDAPUserRegistry.logger.warn("Failed to resolve distinguished name: " + attribute);
                                 }
-                                if (this.errorOnMissingMembers)
+                                catch (InvalidNameException e)
                                 {
-                                    throw new AlfrescoRuntimeException("Failed to resolve distinguished name: "
-                                            + attribute);
+                                    // The member attribute didn't parse as a DN. So assume we have a group class like posixGroup (FDS) that directly lists user names
+                                    childAssocs.add(attribute);
                                 }
-                                LDAPUserRegistry.logger.warn("Failed to resolve distinguished name: " + attribute);
                             }
                         }
                     }

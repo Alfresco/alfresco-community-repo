@@ -546,7 +546,7 @@ public class LDAPUserRegistry implements UserRegistry, InitializingBean, Activat
                         for (int i = 0; i < memAttribute.size(); i++)
                         {
                             String attribute = (String) memAttribute.get(i);
-                            if (attribute != null)
+                            if (attribute != null && attribute.length() > 0)
                             {
                                 try
                                 {
@@ -555,14 +555,14 @@ public class LDAPUserRegistry implements UserRegistry, InitializingBean, Activat
                                     LdapName distinguishedName = new LdapName(attribute);
                                     Attribute nameAttribute;
 
-                                    // If the user and group search bases are different we may be able to recognise user
+                                    // If the user and group search bases are different we may be able to recognize user
                                     // and group DNs without a secondary lookup
                                     if (disjoint)
                                     {
                                         Attributes nameAttributes = distinguishedName.getRdn(
                                                 distinguishedName.size() - 1).toAttributes();
 
-                                        // Recognise user DNs
+                                        // Recognize user DNs
                                         if (distinguishedName.startsWith(userDistinguishedNamePrefix)
                                                 && (nameAttribute = nameAttributes.get(this.userIdAttributeName)) != null)
                                         {
@@ -570,7 +570,7 @@ public class LDAPUserRegistry implements UserRegistry, InitializingBean, Activat
                                             continue;
                                         }
 
-                                        // Recognise group DNs
+                                        // Recognize group DNs
                                         if (distinguishedName.startsWith(groupDistinguishedNamePrefix)
                                                 && (nameAttribute = nameAttributes.get(this.groupIdAttributeName)) != null)
                                         {

@@ -134,10 +134,10 @@ public class LDAPUserRegistry implements UserRegistry, InitializingBean, Activat
     private boolean errorOnDuplicateGID;
 
     /** Should we error on missing group IDs? */
-    private boolean errorOnMissingGID = true;
+    private boolean errorOnMissingGID = false;
 
     /** Should we error on missing user IDs? */
-    private boolean errorOnMissingUID = true;
+    private boolean errorOnMissingUID = false;
 
     /** An array of all LDAP attributes to be queried from users */
     private String[] userAttributeNames;

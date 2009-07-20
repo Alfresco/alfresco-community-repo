@@ -841,6 +841,99 @@ public class ADMLuceneTest extends TestCase
         results.close();
     }
 
+    public void testFtsSort() throws Throwable
+    {
+        luceneFTS.pause();
+        buildBaseIndex();
+
+        ADMLuceneSearcherImpl searcher = ADMLuceneSearcherImpl.getSearcher(rootNodeRef.getStoreRef(), indexerAndSearcher);
+        searcher.setNodeService(nodeService);
+        searcher.setDictionaryService(dictionaryService);
+        searcher.setTenantService(tenantService);
+        searcher.setNamespacePrefixResolver(getNamespacePrefixReolsver("namespace"));
+        searcher.setQueryRegister(queryRegisterComponent);
+        searcher.setQueryLanguages(((AbstractLuceneIndexerAndSearcherFactory) indexerAndSearcher).queryLanguages);
+        
+        SearchParameters sp = new SearchParameters();
+        sp.setLanguage(SearchService.LANGUAGE_FTS_ALFRESCO);
+        sp.addStore(rootNodeRef.getStoreRef());
+        sp.setQuery("-eager or -dog");
+        sp.addQueryTemplate("ANDY", "%cm:content");
+        sp.setNamespace(NamespaceService.CONTENT_MODEL_1_0_URI);
+        sp.excludeDataInTheCurrentTransaction(true);
+        sp.addSort(ContentModel.PROP_NODE_UUID.toString(), true);
+        ResultSet results = searcher.query(sp);
+        assertEquals(15, results.length());
+        
+        String f = null;
+        for (ResultSetRow row : results)
+        {
+            String currentBun = DefaultTypeConverter.INSTANCE.convert(String.class, nodeService.getProperty(row.getNodeRef(), ContentModel.PROP_NODE_UUID));
+            // System.out.println( (currentBun == null ? "null" : NumericEncoder.encode(currentBun))+ " "+currentBun);
+            if (f != null)
+            {
+                assertTrue(f.compareTo(currentBun) <= 0);
+            }
+            f = currentBun;
+        }
+        
+        results.close();
+        
+        
+        
+        sp = new SearchParameters();
+        sp.setLanguage(SearchService.LANGUAGE_FTS_ALFRESCO);
+        sp.addStore(rootNodeRef.getStoreRef());
+        sp.setQuery("-eager or -dog");
+        sp.addQueryTemplate("ANDY", "%cm:content");
+        sp.setNamespace(NamespaceService.CONTENT_MODEL_1_0_URI);
+        sp.excludeDataInTheCurrentTransaction(true);
+        sp.addSort(ContentModel.PROP_NODE_UUID.toString(), false);
+        results = searcher.query(sp);
+        assertEquals(15, results.length());
+        
+        f = null;
+        for (ResultSetRow row : results)
+        {
+            String currentBun = DefaultTypeConverter.INSTANCE.convert(String.class, nodeService.getProperty(row.getNodeRef(), ContentModel.PROP_NODE_UUID));
+            // System.out.println( (currentBun == null ? "null" : NumericEncoder.encode(currentBun))+ " "+currentBun);
+            if (f != null)
+            {
+                assertTrue(f.compareTo(currentBun) >= 0);
+            }
+            f = currentBun;
+        }
+        
+        results.close();
+        
+        sp = new SearchParameters();
+        sp.setLanguage(SearchService.LANGUAGE_FTS_ALFRESCO);
+        sp.addStore(rootNodeRef.getStoreRef());
+        sp.setQuery("-eager or -dog");
+        sp.addQueryTemplate("ANDY", "%cm:content");
+        sp.setNamespace(NamespaceService.CONTENT_MODEL_1_0_URI);
+        sp.excludeDataInTheCurrentTransaction(true);
+        sp.addSort("@"+ContentModel.PROP_NODE_UUID.toString(), false);
+        results = searcher.query(sp);
+        assertEquals(15, results.length());
+        
+        f = null;
+        for (ResultSetRow row : results)
+        {
+            String currentBun = DefaultTypeConverter.INSTANCE.convert(String.class, nodeService.getProperty(row.getNodeRef(), ContentModel.PROP_NODE_UUID));
+            // System.out.println( (currentBun == null ? "null" : NumericEncoder.encode(currentBun))+ " "+currentBun);
+            if (f != null)
+            {
+                assertTrue(f.compareTo(currentBun) >= 0);
+            }
+            f = currentBun;
+        }
+        
+        results.close();
+        
+       
+    }
+    
     public void testFTS() throws InterruptedException
     {
         luceneFTS.pause();

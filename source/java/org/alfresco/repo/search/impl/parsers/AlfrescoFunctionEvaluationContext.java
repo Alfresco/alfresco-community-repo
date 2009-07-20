@@ -138,7 +138,7 @@ public class AlfrescoFunctionEvaluationContext implements FunctionEvaluationCont
 
     public String getLuceneSortField(String propertyName)
     {
-        throw new UnsupportedOperationException();
+        return getLuceneFieldName(propertyName);
     }
 
     public Map<String, NodeRef> getNodeRefs()

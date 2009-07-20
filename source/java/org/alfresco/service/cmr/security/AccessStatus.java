@@ -31,5 +31,5 @@ package org.alfresco.service.cmr.security;
  */
 public enum AccessStatus
 {
-    DENIED, ALLOWED
+    DENIED, ALLOWED, UNDETERMINED;
 }

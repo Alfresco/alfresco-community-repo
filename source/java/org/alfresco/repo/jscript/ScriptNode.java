@@ -47,7 +47,6 @@ import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.executer.TransformActionExecuter;
 import org.alfresco.repo.content.transform.magick.ImageTransformationOptions;
-import org.alfresco.repo.search.QueryParameterDefImpl;
 import org.alfresco.repo.tagging.script.TagScope;
 import org.alfresco.repo.thumbnail.CreateThumbnailActionExecuter;
 import org.alfresco.repo.thumbnail.ThumbnailDefinition;
@@ -58,7 +57,6 @@ import org.alfresco.repo.workflow.jscript.JscriptWorkflowInstance;
 import org.alfresco.scripts.ScriptException;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.action.Action;
-import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.lock.LockStatus;
 import org.alfresco.service.cmr.model.FileInfo;
@@ -406,10 +404,15 @@ public class ScriptNode implements Serializable, Scopeable, NamespacePrefixResol
         StringTokenizer t = new StringTokenizer(path, "/");
         if (t.hasMoreTokens())
         {
+            List<String> names = new ArrayList<String>(1);
+            names.add(null);        // ensure first element is set
             result = this.nodeRef;
             while (t.hasMoreTokens() && result != null)
             {
-                result = this.nodeService.getChildByName(result, ContentModel.ASSOC_CONTAINS, t.nextToken());
+                names.set(0, t.nextToken());
+                List<ChildAssociationRef> children = this.nodeService.getChildrenByName(
+                        result, ContentModel.ASSOC_CONTAINS, names);
+                result = (children.size() == 1 ? children.get(0).getChildRef() : null);
             }
         }
         

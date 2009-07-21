@@ -26,21 +26,34 @@ package org.alfresco.repo.search.impl.parsers;
 
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
+import org.alfresco.i18n.I18NUtil;
+import org.alfresco.repo.search.MLAnalysisMode;
+import org.alfresco.repo.search.SearcherException;
 import org.alfresco.repo.search.impl.lucene.LuceneFunction;
 import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
+import org.alfresco.repo.search.impl.lucene.analysis.DateTimeAnalyser;
 import org.alfresco.repo.search.impl.querymodel.FunctionArgument;
 import org.alfresco.repo.search.impl.querymodel.FunctionEvaluationContext;
 import org.alfresco.repo.search.impl.querymodel.PredicateMode;
+import org.alfresco.repo.search.impl.querymodel.impl.lucene.LuceneQueryBuilderContext;
+import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
+import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.namespace.QName;
+import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.index.IndexReader.FieldOption;
 import org.apache.lucene.queryParser.ParseException;
 import org.apache.lucene.search.Query;
+import org.apache.lucene.search.SortField;
 
 /**
  * Alfrecso function evaluation context for evaluating FTS expressions against lucene.
@@ -90,6 +103,7 @@ public class AlfrescoFunctionEvaluationContext implements FunctionEvaluationCont
         this.dictionaryService = dictionaryService;
         this.defaultNamespace = defaultNamespace;
     }
+   
 
     public Query buildLuceneEquality(LuceneQueryParser lqp, String propertyName, Serializable value, PredicateMode mode, LuceneFunction luceneFunction) throws ParseException
     {
@@ -136,9 +150,96 @@ public class AlfrescoFunctionEvaluationContext implements FunctionEvaluationCont
         throw new UnsupportedOperationException();
     }
 
-    public String getLuceneSortField(String propertyName)
+    public String getLuceneSortField(LuceneQueryParser lqp, String propertyName)
     {
-        return getLuceneFieldName(propertyName);
+        // Score is special
+        if(propertyName.equalsIgnoreCase("Score"))
+        {
+            return "Score";
+        }
+        String field =  getLuceneFieldName(propertyName);
+        // need to find the real field to use
+        Locale sortLocale = null;
+        if (field.startsWith("@"))
+        {
+            PropertyDefinition propertyDef = dictionaryService.getProperty(QName.createQName(field.substring(1)));
+
+            if (propertyDef.getDataType().getName().equals(DataTypeDefinition.CONTENT))
+            {
+                throw new SearcherException("Order on content properties is not curently supported");
+            }
+            else if ((propertyDef.getDataType().getName().equals(DataTypeDefinition.MLTEXT))
+                    || (propertyDef.getDataType().getName().equals(DataTypeDefinition.TEXT)))
+            {
+                List<Locale> locales = lqp.getSearchParameters().getLocales();
+                if (((locales == null) || (locales.size() == 0)))
+                {
+                    locales = Collections.singletonList(I18NUtil.getLocale());
+                }
+
+                if (locales.size() > 1)
+                {
+                    throw new SearcherException("Order on text/mltext properties with more than one locale is not curently supported");
+                }
+
+                sortLocale = locales.get(0);
+                // find best field match
+
+                HashSet<String> allowableLocales = new HashSet<String>();
+                MLAnalysisMode analysisMode = lqp.getConfig().getDefaultMLSearchAnalysisMode();
+                for (Locale l : MLAnalysisMode.getLocales(analysisMode, sortLocale, false))
+                {
+                    allowableLocales.add(l.toString());
+                }
+
+                String sortField = field;
+
+                for (Object current :  lqp.getIndexReader().getFieldNames(FieldOption.INDEXED))
+                {
+                    String currentString = (String) current;
+                    if (currentString.startsWith(field) && currentString.endsWith(".sort"))
+                    {
+                        String fieldLocale = currentString.substring(field.length() + 1, currentString.length() - 5);
+                        if (allowableLocales.contains(fieldLocale))
+                        {
+                            if (fieldLocale.equals(sortLocale.toString()))
+                            {
+                                sortField = currentString;
+                                break;
+                            }
+                            else if (sortLocale.toString().startsWith(fieldLocale))
+                            {
+                                if (sortField.equals(field) || (currentString.length() < sortField.length()))
+                                {
+                                    sortField = currentString;
+                                }
+                            }
+                            else if (fieldLocale.startsWith(sortLocale.toString()))
+                            {
+                                if (sortField.equals(field) || (currentString.length() < sortField.length()))
+                                {
+                                    sortField = currentString;
+                                }
+                            }
+                        }
+                    }
+                }
+
+                field = sortField;
+
+            }
+            else if (propertyDef.getDataType().getName().equals(DataTypeDefinition.DATETIME))
+            {
+                DataTypeDefinition dataType = propertyDef.getDataType();
+                String analyserClassName = dataType.getAnalyserClassName();
+                if (analyserClassName.equals(DateTimeAnalyser.class.getCanonicalName()))
+                {
+                    field = field + ".sort";
+                }
+            }
+
+        }
+        return field;
     }
 
     public Map<String, NodeRef> getNodeRefs()

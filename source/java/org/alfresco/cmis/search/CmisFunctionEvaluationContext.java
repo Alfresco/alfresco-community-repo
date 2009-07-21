@@ -265,7 +265,7 @@ public class CmisFunctionEvaluationContext implements FunctionEvaluationContext
     /* (non-Javadoc)
      * @see org.alfresco.repo.search.impl.querymodel.FunctionEvaluationContext#getLuceneSortField(org.alfresco.service.namespace.QName)
      */
-    public String getLuceneSortField(String propertyName)
+    public String getLuceneSortField(LuceneQueryParser lqp, String propertyName)
     {
         CMISPropertyDefinition propertyDef = cmisDictionaryService.findProperty(propertyName, null);
         return propertyDef.getPropertyLuceneBuilder().getLuceneSortField();

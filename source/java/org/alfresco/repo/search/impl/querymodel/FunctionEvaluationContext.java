@@ -26,12 +26,17 @@ package org.alfresco.repo.search.impl.querymodel;
 
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
+import org.alfresco.repo.search.MLAnalysisMode;
 import org.alfresco.repo.search.impl.lucene.LuceneFunction;
 import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
+import org.alfresco.repo.search.impl.querymodel.impl.lucene.LuceneQueryBuilderContext;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.queryParser.ParseException;
 import org.apache.lucene.search.Query;
 
@@ -173,9 +178,13 @@ public interface FunctionEvaluationContext
 
     /**
      * @param propertyName
+     * @param luceneContext 
+     * @param locales 
+     * @param analysisMode 
+     * @param reader 
      * @return the field used for sorting the given property
      */
-    public String getLuceneSortField(String propertyName);
+    public String getLuceneSortField(LuceneQueryParser lqp, String propertyName);
     
     /**
      * @param propertyName

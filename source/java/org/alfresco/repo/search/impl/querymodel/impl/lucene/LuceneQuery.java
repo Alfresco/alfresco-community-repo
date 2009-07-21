@@ -178,7 +178,7 @@ public class LuceneQuery extends BaseQuery implements LuceneQueryBuilder
 
                 String propertyName = property.getPropertyName();
 
-                String luceneField = functionContext.getLuceneSortField(propertyName);
+                String luceneField = functionContext.getLuceneSortField(luceneContext.getLuceneQueryParser(), propertyName);
 
                 if (luceneField != null)
                 {

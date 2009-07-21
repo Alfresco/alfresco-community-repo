@@ -931,6 +931,31 @@ public class ADMLuceneTest extends TestCase
         
         results.close();
         
+        sp = new SearchParameters();
+        sp.setLanguage(SearchService.LANGUAGE_FTS_ALFRESCO);
+        sp.addStore(rootNodeRef.getStoreRef());
+        sp.setQuery("-eager or -dog");
+        sp.addQueryTemplate("ANDY", "%cm:content");
+        sp.setNamespace(NamespaceService.CONTENT_MODEL_1_0_URI);
+        sp.excludeDataInTheCurrentTransaction(true);
+        sp.addSort("cm:name", false);
+        results = searcher.query(sp);
+        assertEquals(15, results.length());
+        
+        f = null;
+        for (ResultSetRow row : results)
+        {
+            String currentBun = DefaultTypeConverter.INSTANCE.convert(String.class, nodeService.getProperty(row.getNodeRef(), ContentModel.PROP_NODE_UUID));
+            // System.out.println( (currentBun == null ? "null" : NumericEncoder.encode(currentBun))+ " "+currentBun);
+            if (f != null)
+            {
+                assertTrue(f.compareTo(currentBun) >= 0);
+            }
+            f = currentBun;
+        }
+        
+        results.close();
+        
        
     }
     

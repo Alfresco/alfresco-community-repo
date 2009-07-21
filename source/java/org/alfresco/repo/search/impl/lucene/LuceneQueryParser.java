@@ -133,13 +133,13 @@ public class LuceneQueryParser extends QueryParser
      *            the default field for query terms.
      * @param analyzer
      *            used to find terms in the query text.
-     * @param namespacePrefixResolver 
-     * @param dictionaryService 
-     * @param tenantService 
-     * @param defaultOperator 
-     * @param searchParameters 
+     * @param namespacePrefixResolver
+     * @param dictionaryService
+     * @param tenantService
+     * @param defaultOperator
+     * @param searchParameters
      * @param config
-     * @param indexReader 
+     * @param indexReader
      * @return - the query
      * @throws ParseException
      *             if the parsing fails
@@ -209,8 +209,24 @@ public class LuceneQueryParser extends QueryParser
         this.tenantService = tenantService;
     }
 
+    public SearchParameters getSearchParameters()
+    {
+        return searchParameters;
+    }
+
+    public IndexReader getIndexReader()
+    {
+        return indexReader;
+    }
+
+    public LuceneConfig getConfig()
+    {
+        return config;
+    }
+
     /**
      * Lucene default constructor
+     * 
      * @param arg0
      * @param arg1
      */
@@ -225,6 +241,7 @@ public class LuceneQueryParser extends QueryParser
 
     /**
      * Lucene default constructor
+     * 
      * @param arg0
      */
     public LuceneQueryParser(CharStream arg0)
@@ -234,6 +251,7 @@ public class LuceneQueryParser extends QueryParser
 
     /**
      * Lucene default constructor
+     * 
      * @param arg0
      */
     public LuceneQueryParser(QueryParserTokenManager arg0)
@@ -1497,14 +1515,14 @@ public class LuceneQueryParser extends QueryParser
     }
 
     /**
-     * @param field 
-     * @param part1 
+     * @param field
+     * @param part1
      * @param part2
-     * @param includeLower 
-     * @param includeUpper 
-     * @param analysisMode 
-     * @param luceneFunction 
-     * @return the query 
+     * @param includeLower
+     * @param includeUpper
+     * @param analysisMode
+     * @param luceneFunction
+     * @return the query
      * @exception ParseException
      *                throw in overridden method to disallow
      */
@@ -1558,7 +1576,8 @@ public class LuceneQueryParser extends QueryParser
                                 textFieldName = textFieldName + "." + locale + ".sort";
                             }
 
-                            addLocaleSpecificUntokenisedTextRangeFunction(field, part1, part2, includeLower, includeUpper, luceneFunction, booleanQuery, mlAnalysisMode, locale, textFieldName);
+                            addLocaleSpecificUntokenisedTextRangeFunction(field, part1, part2, includeLower, includeUpper, luceneFunction, booleanQuery, mlAnalysisMode, locale,
+                                    textFieldName);
 
                         }
                         return booleanQuery;
@@ -1756,8 +1775,8 @@ public class LuceneQueryParser extends QueryParser
         }
     }
 
-    private void addLocaleSpecificUntokenisedTextRangeFunction(String expandedFieldName, String lower, String upper, boolean includeLower, boolean includeUpper, LuceneFunction luceneFunction, BooleanQuery booleanQuery,
-            MLAnalysisMode mlAnalysisMode, Locale locale, String textFieldName)
+    private void addLocaleSpecificUntokenisedTextRangeFunction(String expandedFieldName, String lower, String upper, boolean includeLower, boolean includeUpper,
+            LuceneFunction luceneFunction, BooleanQuery booleanQuery, MLAnalysisMode mlAnalysisMode, Locale locale, String textFieldName)
     {
         String lowerTermText = lower;
         if (locale.toString().length() > 0)
@@ -1769,7 +1788,7 @@ public class LuceneQueryParser extends QueryParser
         {
             upperTermText = "{" + locale + "}" + upper;
         }
-        Query subQuery = buildRangeFunctionQuery(textFieldName, lowerTermText,  upperTermText, includeLower, includeUpper, luceneFunction);
+        Query subQuery = buildRangeFunctionQuery(textFieldName, lowerTermText, upperTermText, includeLower, includeUpper, luceneFunction);
         booleanQuery.add(subQuery, Occur.SHOULD);
 
         if (booleanQuery.getClauses().length == 0)
@@ -1778,7 +1797,8 @@ public class LuceneQueryParser extends QueryParser
         }
     }
 
-    private Query buildRangeFunctionQuery(String expandedFieldName, String lowerTermText, String upperTermText, boolean includeLower, boolean includeUpper, LuceneFunction luceneFunction)
+    private Query buildRangeFunctionQuery(String expandedFieldName, String lowerTermText, String upperTermText, boolean includeLower, boolean includeUpper,
+            LuceneFunction luceneFunction)
     {
         String testLowerTermText = lowerTermText;
         if (testLowerTermText.startsWith("{"))
@@ -1786,14 +1806,14 @@ public class LuceneQueryParser extends QueryParser
             int index = lowerTermText.indexOf("}");
             testLowerTermText = lowerTermText.substring(index + 1);
         }
-        
+
         String testUpperTermText = upperTermText;
         if (testUpperTermText.startsWith("{"))
         {
             int index = upperTermText.indexOf("}");
             testUpperTermText = upperTermText.substring(index + 1);
         }
-        
+
         switch (luceneFunction)
         {
         case LOWER:
@@ -3088,8 +3108,7 @@ public class LuceneQueryParser extends QueryParser
         }
         else if ((propertyDef != null) && (propertyDef.getDataType().getName().equals(DataTypeDefinition.TEXT)))
         {
-            if (propertyQName.equals(ContentModel.PROP_USER_USERNAME)
-                    || propertyQName.equals(ContentModel.PROP_USERNAME) || propertyQName.equals(ContentModel.PROP_AUTHORITY_NAME))
+            if (propertyQName.equals(ContentModel.PROP_USER_USERNAME) || propertyQName.equals(ContentModel.PROP_USERNAME) || propertyQName.equals(ContentModel.PROP_AUTHORITY_NAME))
             {
                 return subQueryBuilder.getQuery(expandedFieldName, queryText, analysisMode, luceneFunction);
             }
@@ -3281,8 +3300,7 @@ public class LuceneQueryParser extends QueryParser
         }
         else if ((propertyDef != null) && (propertyDef.getDataType().getName().equals(DataTypeDefinition.TEXT)))
         {
-            if (propertyQName.equals(ContentModel.PROP_USER_USERNAME)
-                    || propertyQName.equals(ContentModel.PROP_USERNAME) || propertyQName.equals(ContentModel.PROP_AUTHORITY_NAME))
+            if (propertyQName.equals(ContentModel.PROP_USER_USERNAME) || propertyQName.equals(ContentModel.PROP_USERNAME) || propertyQName.equals(ContentModel.PROP_AUTHORITY_NAME))
             {
                 throw new UnsupportedOperationException("Functions are not supported agaisnt special text fields");
             }

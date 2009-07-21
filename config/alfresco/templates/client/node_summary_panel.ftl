@@ -1,5 +1,7 @@
 <#assign isImage=node.isDocument && (node.mimetype = "image/gif" || node.mimetype = "image/jpeg" || node.mimetype = "image/png")>
 <#assign isVideo=node.isDocument && node.mimetype?starts_with("video/")>
+<#setting locale="${locale}">
+
 <div class="summaryPopupPanel">
 	<table cellpadding='3' cellspacing='0'>
 	   <tr>
@@ -13,8 +15,8 @@
 	                  <#assign navurl="/navigate/showSpaceDetails/">
 	               </#if>
 	               <#assign navurl=navurl + node.nodeRef.storeRef.protocol + '/' + node.nodeRef.storeRef.identifier + '/' + node.nodeRef.id>
-	               <td width=24><center><a href='${url.context}${navurl}'><img src='${url.context}/images/icons/View_details.gif' style='cursor:pointer' width=12 height=16 border=0 title="Details" alt="Details"></a></center></td>
-	               <td width=14 align=right><img src='${url.context}/images/icons/close_panel.gif' onclick="<#if isVideo>if (document.all) document.getElementById('${node.id}_player').controls.stop();</#if>AlfNodeInfoMgr.close('${node.nodeRef}');" style='cursor:pointer' width=14 height=14 border=0 title="Close" alt="Close"></td>
+	               <td width=24><center><a href='${url.context}${navurl}'><img src='${url.context}/images/icons/View_details.gif' style='cursor:pointer' width=12 height=16 border=0 title='${msg("details")}' alt='${msg("details")}'></a></center></td>
+	               <td width=14 align=right><img src='${url.context}/images/icons/close_panel.gif' onclick="<#if isVideo>if (document.all) document.getElementById('${node.id}_player').controls.stop();</#if>AlfNodeInfoMgr.close('${node.nodeRef}');" style='cursor:pointer' width=14 height=14 border=0 title='${msg("close")}' alt='${msg("close")}'></td>
 	            </tr>
 	         </table>
 	      </td>
@@ -57,9 +59,9 @@
 	               <tr><td>&nbsp;${msg("description")}:</td><td>${node.properties.description?html}</td></tr>
 	            </#if>
 	            <tr><td>	            	            
-	            &nbsp;${msg("created")}:</td><td>${node.properties.created?datetime}</td></tr>
+	            &nbsp;${msg("created")}:</td><td>${node.properties.created?string(msg("date_time_pattern"))}</td></tr>
 	            <tr><td>&nbsp;${msg("creator")}:</td><td>${node.properties.creator}</td></tr>
-	            <tr><td>&nbsp;${msg("modified")}:</td><td>${node.properties.modified?datetime}</td></tr>
+	            <tr><td>&nbsp;${msg("modified")}:</td><td>${node.properties.modified?string(msg("date_time_pattern"))}</td></tr>
 	            <tr><td>&nbsp;${msg("modifier")}:</td><td>${node.properties.modifier}</td></tr>
 	            <#if node.properties.owner?exists>
 	               <tr><td>&nbsp;${msg("owner")}:</td><td>${node.properties.owner}</td></tr>
@@ -68,7 +70,7 @@
 	               <tr><td>&nbsp;${msg("author")}:</td><td>${node.properties.author?html}</td></tr>
 	            </#if>
 	            <#if node.isDocument>
-	               <tr><td>&nbsp;${msg("size")}:</td><td>${(node.size / 1000)?string("0.##")} KB</td></tr>
+	               <tr><td>&nbsp;${msg("size")}:</td><td>${(node.size / 1000)?string("0.##")} ${msg("kilobyte")}</td></tr>
 	            </#if>
 	         </table>
 	      </td>

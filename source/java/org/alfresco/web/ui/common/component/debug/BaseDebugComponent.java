@@ -31,6 +31,7 @@ import javax.faces.context.FacesContext;
 import javax.faces.context.ResponseWriter;
 import javax.faces.el.ValueBinding;
 
+import org.alfresco.web.app.Application;
 import org.alfresco.web.ui.common.component.SelfRenderingComponent;
 
 /**
@@ -41,6 +42,9 @@ import org.alfresco.web.ui.common.component.SelfRenderingComponent;
 public abstract class BaseDebugComponent extends SelfRenderingComponent
 {
    private String title;
+
+   private static String COMPONENT_PROPERTY = "component_property";
+   private static String COMPONENT_VALUE = "component_value";
 
    /**
     * Retrieves the debug data to show for the component as a Map
@@ -69,7 +73,11 @@ public abstract class BaseDebugComponent extends SelfRenderingComponent
          out.write("</td></tr>");
       }
       
-      out.write("<tr style='border: 1px solid #dddddd;'><th align='left'>Property</th><th align='left'>Value</th></tr>");
+      out.write("<tr style='border: 1px solid #dddddd;'><th align='left'>");
+      out.write(Application.getMessage(context, COMPONENT_PROPERTY));
+      out.write("</th><th align='left'>");
+      out.write(Application.getMessage(context, COMPONENT_VALUE));
+      out.write("</th></tr>");
       
       Map session = getDebugData();
       for (Object key : session.keySet())

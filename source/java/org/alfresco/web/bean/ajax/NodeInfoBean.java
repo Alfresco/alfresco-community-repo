@@ -152,6 +152,7 @@ public class NodeInfoBean implements Serializable
       model.put("date", new Date());
       model.put("msg", new I18NMessageMethod());
       model.put("url", new BaseTemplateContentServlet.URLHelper(context));
+      model.put("locale", I18NUtil.getLocale());
       if (nodeRef != null)
       {
          model.put("node", new TemplateNode(

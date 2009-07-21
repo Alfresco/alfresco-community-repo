@@ -35,27 +35,26 @@
 <script language="javascript" type="text/javascript">
 <%-- Init the Tiny MCE in-line HTML editor --%>
 tinyMCE.init({
-theme : "advanced",
-language : "<%=request.getLocale().getLanguage()%>",
-mode : "exact",
-relative_urls: false,
-elements : "editor",
-save_callback : "saveContent",
-plugins : "table",
-theme_advanced_toolbar_location : "top",
-theme_advanced_toolbar_align : "left",
-theme_advanced_buttons1_add : "fontselect,fontsizeselect",
-theme_advanced_buttons2_add : "separator,forecolor,backcolor",
-theme_advanced_buttons3_add_before : "tablecontrols,separator",
-theme_advanced_disable: "styleselect",
-extended_valid_elements : "a[href|target|name],font[face|size|color|style],span[class|align|style]"
+   theme : "advanced",
+   language : "${pageContext.request.locale.language}",
+   mode : "exact",
+   relative_urls: false,
+   elements : "editor",
+   save_callback : "saveContent",
+   plugins : "table",
+   theme_advanced_toolbar_location : "top",
+   theme_advanced_toolbar_align : "left",
+   theme_advanced_buttons1_add : "fontselect,fontsizeselect",
+   theme_advanced_buttons2_add : "separator,forecolor,backcolor",
+   theme_advanced_buttons3_add_before : "tablecontrols,separator",
+   theme_advanced_disable: "styleselect",
+   extended_valid_elements : "a[href|target|name],font[face|size|color|style],span[class|align|style]"
 });
 
 function saveContent(id, content)
 {
- //document.forms['edit-file']['edit-file:editorOutput'].value = content;
- document.getElementById("dialog:dialog-body:editorOutput").value=content;
- return content;
+   document.getElementById("dialog:dialog-body:editorOutput").value=content;
+   return content;
 }
 
 </script>

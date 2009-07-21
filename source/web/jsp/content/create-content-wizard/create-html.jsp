@@ -26,6 +26,7 @@
 <%@ taglib uri="http://java.sun.com/jsf/core" prefix="f" %>
 <%@ taglib uri="/WEB-INF/alfresco.tld" prefix="a" %>
 <%@ taglib uri="/WEB-INF/repo.tld" prefix="r" %>
+<%@ page isELIgnored="false" %>
 
 <f:verbatim>
 <script language="javascript" type="text/javascript" src="<%=request.getContextPath()%>/scripts/tiny_mce/tiny_mce.js"></script>
@@ -33,7 +34,7 @@
    <%-- Init the Tiny MCE in-line HTML editor --%>
    tinyMCE.init({
       theme : "advanced",
-      language : "<%=request.getLocale().getLanguage()%>",
+      language : "${pageContext.request.locale.language}",
       mode : "exact",
       relative_urls: false,
       elements : "editor",

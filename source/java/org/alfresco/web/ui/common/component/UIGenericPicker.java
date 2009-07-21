@@ -76,7 +76,8 @@ public class UIGenericPicker extends UICommand
    private Boolean showAddButton = null;
    private Boolean filterRefresh = null;
    private Boolean multiSelect = null;
-   private String addButtonLabel;
+   private String addButtonLabel = null;
+   private String searchButtonLabel = null;
    private Integer width = null;
    private Integer height = null;
    
@@ -128,6 +129,7 @@ public class UIGenericPicker extends UICommand
       filters = (SelectItem[])values[12];
       filterRefresh = (Boolean)values[13];
       multiSelect = (Boolean)values[14];
+      searchButtonLabel = (String)values[15];
    }
    
    /**
@@ -135,7 +137,7 @@ public class UIGenericPicker extends UICommand
     */
    public Object saveState(FacesContext context)
    {
-      Object values[] = new Object[15];
+      Object values[] = new Object[16];
       // standard component attributes are saved by the super class
       values[0] = super.saveState(context);
       values[1] = showFilter;
@@ -152,6 +154,7 @@ public class UIGenericPicker extends UICommand
       values[12] = filters;
       values[13] = filterRefresh;
       values[14] = multiSelect;
+      values[15] = searchButtonLabel;
       return (values);
    }
    
@@ -321,14 +324,21 @@ public class UIGenericPicker extends UICommand
       {
          out.write("<input name='");
          out.write(clientId + FIELD_CONTAINS);
-         out.write("' type='text' maxlength='256' style='width:120px' value=\"");
+         out.write("' type='text' maxlength='256' style='width:");
+         out.write(getShowFilter() ? "120" : "180");
+         out.write("px' value=\"");
          out.write(Utils.encode(this.contains));
          out.write("\">&nbsp;");
       }
       
       // Search button
       out.write("<input type='submit' value='");
-      out.write(Utils.encode(bundle.getString(MSG_SEARCH)));
+      String msg = getSearchButtonLabel();
+      if (msg == null || msg.length() == 0)
+      {
+         msg = bundle.getString(MSG_SEARCH);
+      }
+      out.write(Utils.encode(msg));
       out.write("' onclick=\"");
       out.write(generateFormSubmit(context, ACTION_SEARCH));
       out.write("\">");
@@ -361,7 +371,7 @@ public class UIGenericPicker extends UICommand
       
       // results list row
       out.write("<tr><td colspan=2>");
-      out.write("<select size='8' style='width:");
+      out.write("<select size='8' style='min-width:");
       out.write(Integer.toString(getWidth()));
       out.write("px;height:");
       out.write(Integer.toString(getHeight()));
@@ -399,7 +409,7 @@ public class UIGenericPicker extends UICommand
       {
          out.write("<tr><td colspan=2>");
          out.write("<input type='submit' value='");
-         String msg = getAddButtonLabel();
+         msg = getAddButtonLabel();
          if (msg == null || msg.length() == 0)
          {
             msg = bundle.getString(MSG_ADD);
@@ -440,6 +450,28 @@ public class UIGenericPicker extends UICommand
       return this.filterIndex;
    }
 
+   /**
+    * @return Returns the searchButtonLabel.
+    */
+   public String getSearchButtonLabel()
+   {
+      ValueBinding vb = getValueBinding("searchButtonLabel");
+      if (vb != null)
+      {
+         this.searchButtonLabel = (String)vb.getValue(getFacesContext());
+      }
+      
+      return this.searchButtonLabel;
+   }
+
+   /**
+    * @param searchButtonLabel The searchButtonLabel to set.
+    */
+   public void setSearchButtonLabel(String searchButtonLabel)
+   {
+      this.searchButtonLabel = searchButtonLabel;
+   }
+   
    /**
     * @return Returns the addButtonLabel.
     */

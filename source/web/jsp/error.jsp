@@ -37,12 +37,12 @@
       <td width=100%>
          <table cellspacing="0" cellpadding="0" width="100%">
             <tr>
-               <td><a href="http://www.alfresco.org" target="new"><img src="<%=request.getContextPath()%>/images/logo/AlfrescoLogo32.png" width=32 height=30 alt="Alfresco" title="Alfresco" border=0 style="padding-right:4px"></a></td>
-               <td><img src="<%=request.getContextPath()%>/images/parts/titlebar_begin.gif" width="10" height="30"></td>
-               <td width=100% style="background-image: url(<%=request.getContextPath()%>/images/parts/titlebar_bg.gif)">
+               <td><a href="${pageContext.request.contextPath}/faces/jsp/dialog/about.jsp"><img src="${pageContext.request.contextPath}/images/logo/AlfrescoLogo32.png" width=32 height=30 alt="<%=Application.getMessage(session, "title_about")%>" title="<%=Application.getMessage(session, "title_about")%>" border=0 style="padding-right:4px"></a></td>
+               <td><img src="${pageContext.request.contextPath}/images/parts/titlebar_begin.gif" width="10" height="30"></td>
+               <td width=100% style="background-image: url(${pageContext.request.contextPath}/images/parts/titlebar_bg.gif)">
                   <span class="topToolbarTitle"><%=Application.getMessage(session, "system_error")%></span>
                </td>
-               <td><img src="<%=request.getContextPath()%>/images/parts/titlebar_end.gif" width="8" height="30"></td>
+               <td><img src="${pageContext.request.contextPath}/images/parts/titlebar_end.gif" width="8" height="30"></td>
             </tr>
          </table>
       </td>

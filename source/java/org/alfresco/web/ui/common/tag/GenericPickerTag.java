@@ -66,6 +66,7 @@ public class GenericPickerTag extends BaseComponentTag
       setBooleanProperty(component, "filterRefresh", this.filterRefresh);
       setBooleanProperty(component, "multiSelect", this.multiSelect);
       setStringProperty(component, "addButtonLabel", this.addButtonLabel);
+      setStringProperty(component, "searchButtonLabel", this.searchButtonLabel);
       setActionProperty((UICommand)component, this.action);
       setActionListenerProperty((UICommand)component, this.actionListener);
       setIntProperty(component, "width", this.width);
@@ -95,6 +96,7 @@ public class GenericPickerTag extends BaseComponentTag
       this.showContains = null;
       this.showAddButton = null;
       this.addButtonLabel = null;
+      this.searchButtonLabel = null;
       this.action = null;
       this.actionListener = null;
       this.width = null;
@@ -224,6 +226,20 @@ public class GenericPickerTag extends BaseComponentTag
    {
       this.multiSelect = multiSelect;
    }
+   
+   /**
+    * Set the searchButtonLabel
+    *
+    * @param searchButtonLabel     the searchButtonLabel
+    */
+   public void setSearchButtonLabel(String searchButtonLabel)
+   {
+      this.searchButtonLabel = searchButtonLabel;
+   }
+
+
+   /** the searchButtonLabel */
+   private String searchButtonLabel;
 
    /** the multiSelect */
    private String multiSelect;

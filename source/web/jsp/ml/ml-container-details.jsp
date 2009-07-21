@@ -107,11 +107,8 @@
                   <f:facet name="header">
                      <h:outputText id="outT2" value="#{msg.actions}" />
                   </f:facet>
-                  <a:actionLink id="view-link" value="#{msg.view}" href="#{r.url}" target="new" />
-                  <%--
-                                                Start the new edition wizard from this translation
-                                          --%>
-                  <h:outputText id="space" value=" " />
+                  <a:actionLink id="view-link" value="#{msg.view}" href="#{r.url}" target="new" style="margin-right:6px" />
+                  <%-- Start the new edition wizard from this translation --%>
                   <a:actionLink id="new-edition-from" value="#{msg.new_edition}" action="wizard:newEditionFrom" actionListener="#{NewEditionWizard.skipFirstStep}" rendered="#{r.userHasRight}">
                      <f:param id="par1" name="lang" value="#{r.language}" />
                   </a:actionLink>

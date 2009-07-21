@@ -145,6 +145,7 @@
             <extension display="DTD">dtd</extension>
             <extension display="XSLT">xslt</extension>
             <extension display="XSLT">xsl</extension>
+            <extension display="XSD">xsd</extension>
          </mimetype>
          <mimetype mimetype="application/x-dvi" display="">
             <extension>dvi</extension>

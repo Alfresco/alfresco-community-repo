@@ -296,7 +296,7 @@ public class Search extends BaseScopableProcessorExtension
     
     public Scriptable luceneSearch(String store, String search, String sortColumn, boolean asc)
     {
-       return luceneSearch(null, search, sortColumn, asc, 0);
+       return luceneSearch(store, search, sortColumn, asc, 0);
     }
     
     /**

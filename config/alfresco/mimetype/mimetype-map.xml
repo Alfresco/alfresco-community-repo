@@ -3,6 +3,10 @@
    <config evaluator="string-compare" condition="Mimetype Map">
       <mimetypes>
 
+         <mimetype mimetype="application/json" display="JSON">
+            <extension default="true">json</extension>
+         </mimetype>
+
          <mimetype mimetype="application/eps" display="EPS Type PostScript">
             <extension default="true">eps</extension>
          </mimetype>

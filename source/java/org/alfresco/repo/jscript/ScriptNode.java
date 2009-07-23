@@ -47,6 +47,7 @@ import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.executer.TransformActionExecuter;
 import org.alfresco.repo.content.transform.magick.ImageTransformationOptions;
+import org.alfresco.repo.search.QueryParameterDefImpl;
 import org.alfresco.repo.tagging.script.TagScope;
 import org.alfresco.repo.thumbnail.CreateThumbnailActionExecuter;
 import org.alfresco.repo.thumbnail.ThumbnailDefinition;
@@ -57,6 +58,7 @@ import org.alfresco.repo.workflow.jscript.JscriptWorkflowInstance;
 import org.alfresco.scripts.ScriptException;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.action.Action;
+import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.lock.LockStatus;
 import org.alfresco.service.cmr.model.FileInfo;
@@ -398,25 +400,62 @@ public class ScriptNode implements Serializable, Scopeable, NamespacePrefixResol
      */
     public ScriptNode childByNamePath(String path)
     {
-        NodeRef result = null;
+        ScriptNode child = null;
         
-        // convert the name based path to a valid XPath query
-        StringTokenizer t = new StringTokenizer(path, "/");
-        if (t.hasMoreTokens())
+        if (this.services.getDictionaryService().isSubClass(getQNameType(), ContentModel.TYPE_FOLDER))
         {
-            List<String> names = new ArrayList<String>(1);
-            names.add(null);        // ensure first element is set
-            result = this.nodeRef;
-            while (t.hasMoreTokens() && result != null)
+            // optimized code path for cm:folder and sub-types supporting getChildrenByName() method
+            NodeRef result = null;
+            StringTokenizer t = new StringTokenizer(path, "/");
+            if (t.hasMoreTokens())
             {
-                names.set(0, t.nextToken());
-                List<ChildAssociationRef> children = this.nodeService.getChildrenByName(
-                        result, ContentModel.ASSOC_CONTAINS, names);
-                result = (children.size() == 1 ? children.get(0).getChildRef() : null);
+                List<String> names = new ArrayList<String>(1);
+                names.add(null);        // ensure first element is set
+                result = this.nodeRef;
+                while (t.hasMoreTokens() && result != null)
+                {
+                    names.set(0, t.nextToken());
+                    List<ChildAssociationRef> children = this.nodeService.getChildrenByName(
+                            result, ContentModel.ASSOC_CONTAINS, names);
+                    result = (children.size() == 1 ? children.get(0).getChildRef() : null);
+                }
             }
+            
+            child = (result != null ? newInstance(result, this.services, this.scope) : null);
+        }
+        else
+        {
+            // convert the name based path to a valid XPath query
+            StringBuilder xpath = new StringBuilder(path.length() << 1);
+            StringTokenizer t = new StringTokenizer(path, "/");
+            int count = 0;
+            QueryParameterDefinition[] params = new QueryParameterDefinition[t.countTokens()];
+            DataTypeDefinition ddText =
+                this.services.getDictionaryService().getDataType(DataTypeDefinition.TEXT);
+            NamespaceService ns = this.services.getNamespaceService();
+            while (t.hasMoreTokens())
+            {
+                if (xpath.length() != 0)
+                {
+                    xpath.append('/');
+                }
+                String strCount = Integer.toString(count);
+                xpath.append("*[@cm:name=$cm:name")
+                     .append(strCount)
+                     .append(']');
+                params[count++] = new QueryParameterDefImpl(
+                        QName.createQName(NamespaceService.CONTENT_MODEL_PREFIX, "name" + strCount, ns),
+                        ddText,
+                        true,
+                        t.nextToken());
+            }
+            
+            Object[] nodes = getChildrenByXPath(xpath.toString(), params, true);
+            
+            child = (nodes.length != 0) ? (ScriptNode)nodes[0] : null;
         }
         
-        return (result != null ? newInstance(result, this.services, this.scope) : null);
+        return child;
     }
     
     /**

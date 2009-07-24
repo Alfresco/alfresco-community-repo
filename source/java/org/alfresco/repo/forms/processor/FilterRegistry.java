@@ -72,7 +72,7 @@ public class FilterRegistry
             this.filters.add(filter);
             
             if (logger.isDebugEnabled())
-                logger.debug("Registered filter: " + filter + " in register: " + this);
+                logger.debug("Registered filter: " + filter + " in registry: " + this);
         }
         else if (logger.isWarnEnabled())
         {

@@ -29,6 +29,8 @@ import java.util.List;
 import org.alfresco.repo.forms.Form;
 import org.alfresco.repo.forms.FormData;
 import org.alfresco.repo.forms.Item;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * Abstract base class for all FormProcessor implementations that wish to use the 
@@ -38,6 +40,8 @@ import org.alfresco.repo.forms.Item;
  */
 public abstract class FilteredFormProcessor extends AbstractFormProcessor
 {
+    private static final Log logger = LogFactory.getLog(FilteredFormProcessor.class);
+    
     protected FilterRegistry filterRegistry;
     
     /**
@@ -48,6 +52,9 @@ public abstract class FilteredFormProcessor extends AbstractFormProcessor
     public void setFilterRegistry(FilterRegistry filterRegistry)
     {
         this.filterRegistry = filterRegistry;
+        
+        if (logger.isDebugEnabled())
+            logger.debug("Set filter registry: " + this.filterRegistry + " for processor: " + this);
     }
         
     /**

@@ -100,7 +100,7 @@
     
     <!-- 
     <bean id="imageAspectFormFilter"
-          class="org.alfresco.repo.forms.processor.node.ImageAspectHandler"
+          class="org.alfresco.repo.forms.processor.node.ImageAspectFilter"
           parent="baseFormFilter">
        <property name="filterRegistry" ref="nodeFilterRegistry" />
     </bean>

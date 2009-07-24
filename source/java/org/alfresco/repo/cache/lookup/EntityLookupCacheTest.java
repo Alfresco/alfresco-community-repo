@@ -150,7 +150,6 @@ public class EntityLookupCacheTest extends TestCase implements EntityLookup<Long
         
     }
     
-    @Override
     public String getValueKey(Object value)
     {
         assertNotNull(value);
@@ -162,7 +161,6 @@ public class EntityLookupCacheTest extends TestCase implements EntityLookup<Long
     /**
      * Simulate creation of a new database entry
      */
-    @Override
     public Pair<Long, Object> createValue(Object value)
     {
         assertNotNull(value);
@@ -184,7 +182,6 @@ public class EntityLookupCacheTest extends TestCase implements EntityLookup<Long
         return new Pair<Long, Object>(newKey, value);
     }
 
-    @Override
     public Pair<Long, Object> findByKey(Long key)
     {
         assertNotNull(key);
@@ -199,7 +196,6 @@ public class EntityLookupCacheTest extends TestCase implements EntityLookup<Long
         return new Pair<Long, Object>(key, value);
     }
 
-    @Override
     public Pair<Long, Object> findByValue(Object value)
     {
         assertNotNull(value);

@@ -43,7 +43,6 @@ import org.alfresco.util.ParameterCheck;
 public abstract class AbstractEncodingDAOImpl implements EncodingDAO
 {
     private static final Long CACHE_NULL_LONG = Long.MIN_VALUE;
-    private static final String NULL_SAFE_STRING = ".null";
     private SimpleCache<Serializable, Serializable> encodingEntityCache;
 
     /**

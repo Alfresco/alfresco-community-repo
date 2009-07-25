@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE sqlMap      
+    PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"      
+    "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="alfresco.propval">
+
+    <!--                -->
+    <!-- Type Defs      -->
+    <!--                -->
+    
+    <typeAlias alias="PropertyClass" type="org.alfresco.repo.domain.propval.PropertyClassEntity"/>
+
+    <!--                -->
+    <!-- Result Maps    -->
+    <!--                -->
+
+    <resultMap id="result.PropertyClass" class="PropertyClass">
+        <result property="id" column="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="version" column="version" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="javaClassName" column="java_class_name" jdbcType="VARCHAR" javaType="java.lang.String"/>
+        <result property="javaClassNameShort" column="java_class_name_short" jdbcType="VARCHAR" javaType="java.lang.String"/>
+        <result property="javaClassNameCrc" column="java_class_name_crc" jdbcType="BIGINT" javaType="java.lang.Long"/>
+    </resultMap>
+  
+    <!--                -->
+    <!-- Parameter Maps -->
+    <!--                -->
+
+<!-- 
+    <parameterMap id="parameter.ExclusiveLockUpdateMap" class="map">
+        <parameter property="newLockToken" jdbcType="VARCHAR" javaType="java.lang.String"/>
+        <parameter property="newStartTime" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <parameter property="newExpiryTime" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <parameter property="exclusiveLockResourceId" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <parameter property="oldLockToken" jdbcType="VARCHAR" javaType="java.lang.String"/>
+    </parameterMap>
+ -->
+  
+    <!--                -->
+    <!-- SQL Snippets   -->
+    <!--                -->
+    
+    <sql id="insert.PropertyClass.AutoIncrement">
+        insert into alf_prop_class (version, java_class_name, java_class_name_short, java_class_name_crc) 
+        values (#version#, #javaClassName#, #javaClassNameShort#, #javaClassNameCrc#)
+    </sql>
+    
+    <!--                -->
+    <!-- Statements     -->
+    <!--                -->
+    
+    <!-- Get a property class by ID -->
+    <select id="select.PropertyClassByID" parameterClass="PropertyClass" resultMap="result.PropertyClass">
+        select
+            *
+        from
+            alf_prop_class
+        where
+            id = #id#
+    </select>
+
+    <!-- Get the property class by class name -->
+    <select id="select.PropertyClassByName" parameterClass="PropertyClass" resultMap="result.PropertyClass">
+        select
+            *
+        from
+            alf_prop_class
+        where
+            java_class_name_crc = #javaClassNameCrc# and
+            java_class_name_short = #javaClassNameShort#
+    </select>
+
+</sqlMap>

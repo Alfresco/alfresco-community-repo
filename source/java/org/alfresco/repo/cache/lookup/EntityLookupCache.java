@@ -35,28 +35,19 @@ import org.alfresco.util.Pair;
  * <p>
  * The keys must have good <code>equals</code> and </code>hashCode</code> implementations and
  * must respect the case-sensitivity of the use-case.
+ * <p>
+ * All keys will be unique to the given cache region, allowing the cache to be shared
+ * between instances of this class.
  * 
  * @author Derek Hulley
  * @since 3.3
  */
 public class EntityLookupCache<K extends Serializable, V extends Object, VK extends Serializable>
 {
-    private static final String NULL_VALUE = "@@NULL_VALUE@@";
-    
-    private final SimpleCache<Serializable, Object> cache;
-    private final EntityLookup<K, V, VK> entityLookup;
-    
-    @SuppressWarnings("unchecked")
-    public EntityLookupCache(SimpleCache cache, EntityLookup<K, V, VK> entityLookup)
-    {
-        this.cache = cache;
-        this.entityLookup = entityLookup;
-    }
-    
     /**
      * Interface to support lookups of the entities using keys and values.
      */
-    public static interface EntityLookup<K1 extends Serializable, V1 extends Object, VK1 extends Serializable>
+    public static interface EntityLookupCallbackDAO<K1 extends Serializable, V1 extends Object, VK1 extends Serializable>
     {
         /**
          * Resolve the given value into a unique value key that can be used to find the entity's ID.
@@ -92,11 +83,49 @@ public class EntityLookupCache<K extends Serializable, V extends Object, VK exte
         Pair<K1, V1> createValue(V1 value);
     }
     
+    private static final String NULL_VALUE = "@@NULL_VALUE@@";
+    private static final String CACHE_REGION_DEFAULT = "DEFAULT";
+    
+    private final SimpleCache<Serializable, Object> cache;
+    private final EntityLookupCallbackDAO<K, V, VK> entityLookup;
+    private final String cacheRegion;
+
+    /**
+     * Construct the lookup cache, using the {@link #CACHE_REGION_DEFAULT default cache region}.
+     * 
+     * @param cache                 the cache that will back the two-way lookups
+     * @param entityLookup          the instance that is able to find and persist entities
+     */
     @SuppressWarnings("unchecked")
-    Pair<K, V> getByKey(K key)
+    public EntityLookupCache(SimpleCache cache, EntityLookupCallbackDAO<K, V, VK> entityLookup)
     {
+        this(cache, CACHE_REGION_DEFAULT, entityLookup);
+    }
+    
+    /**
+     * Construct the lookup cache, using the given cache region.
+     * <p>
+     * All keys will be unique to the given cache region, allowing the cache to be shared
+     * between instances of this class.
+     * 
+     * @param cache                 the cache that will back the two-way lookups
+     * @param cacheRegion           the region within the cache to use.
+     * @param entityLookup          the instance that is able to find and persist entities
+     */
+    @SuppressWarnings("unchecked")
+    public EntityLookupCache(SimpleCache cache, String cacheRegion, EntityLookupCallbackDAO<K, V, VK> entityLookup)
+    {
+        this.cache = cache;
+        this.entityLookup = entityLookup;
+        this.cacheRegion = cacheRegion;
+    }
+    
+    @SuppressWarnings("unchecked")
+    public Pair<K, V> getByKey(K key)
+    {
+        CacheRegionKey cacheKey = new CacheRegionKey(cacheRegion, key);
         // Look in the cache
-        V value = (V) cache.get(key);
+        V value = (V) cache.get(cacheKey);
         if (value != null && value.equals(NULL_VALUE))
         {
             // We checked before
@@ -111,24 +140,25 @@ public class EntityLookupCache<K extends Serializable, V extends Object, VK exte
         if (entityPair == null)
         {
             // Cache nulls
-            cache.put(key, NULL_VALUE);
+            cache.put(cacheKey, NULL_VALUE);
         }
         else
         {
             // Cache the value
-            cache.put(key, entityPair.getSecond());
+            cache.put(cacheKey, entityPair.getSecond());
         }
         // Done
         return entityPair;
     }
     
     @SuppressWarnings("unchecked")
-    Pair<K, V> getByValue(V value)
+    public Pair<K, V> getByValue(V value)
     {
         // Get the value key
         VK valueKey = entityLookup.getValueKey(value);
+        CacheRegionKey cacheKey = new CacheRegionKey(cacheRegion, valueKey);
         // Look in the cache
-        K key = (K) cache.get(valueKey);
+        K key = (K) cache.get(cacheKey);
         // Check if we have looked this up already
         if (key != null && key.equals(NULL_VALUE))
         {
@@ -144,24 +174,26 @@ public class EntityLookupCache<K extends Serializable, V extends Object, VK exte
         if (entityPair == null)
         {
             // Cache a null
-            cache.put(valueKey, NULL_VALUE);
+            cache.put(cacheKey, NULL_VALUE);
         }
         else
         {
+            key = entityPair.getFirst();
             // Cache the key
-            cache.put(valueKey, key);
+            cache.put(cacheKey, key);
         }
         // Done
         return entityPair;
     }
     
     @SuppressWarnings("unchecked")
-    Pair<K, V> getOrCreateByValue(V value)
+    public Pair<K, V> getOrCreateByValue(V value)
     {
         // Get the value key
         VK valueKey = entityLookup.getValueKey(value);
+        CacheRegionKey cacheKey = new CacheRegionKey(cacheRegion, valueKey);
         // Look in the cache
-        K key = (K) cache.get(valueKey);
+        K key = (K) cache.get(cacheKey);
         // Check if the value is already mapped to a key
         if (key != null && !key.equals(NULL_VALUE))
         {
@@ -176,9 +208,67 @@ public class EntityLookupCache<K extends Serializable, V extends Object, VK exte
         }
         key = entityPair.getFirst();
         // Cache the key and value
-        cache.put(valueKey, key);
-        cache.put(key, value);
+        cache.put(cacheKey, key);
+        cache.put(new CacheRegionKey(cacheRegion, key), value);
         // Done
         return entityPair;
+    }
+    
+    @SuppressWarnings("unchecked")
+    public void remove(K key)
+    {
+        CacheRegionKey keyCacheKey = new CacheRegionKey(cacheRegion, key);
+        V value = (V) cache.get(keyCacheKey);
+        if (value != null && !value.equals(NULL_VALUE))
+        {
+            // Get the value key and remove it
+            VK valueKey = entityLookup.getValueKey(value);
+            CacheRegionKey valueCacheKey = new CacheRegionKey(cacheRegion, valueKey);
+            cache.remove(valueCacheKey);
+        }
+        cache.remove(keyCacheKey);
+    }
+    
+    /**
+     * Key-wrapper used to separate cache regions, allowing a single cache to be used for different
+     * purposes.
+     */
+    private static class CacheRegionKey implements Serializable
+    {
+        private static final long serialVersionUID = -213050301938804468L;
+
+        private final String cacheRegion;
+        private final Serializable cacheKey;
+        private final int hashCode;
+        private CacheRegionKey(String cacheRegion, Serializable cacheKey)
+        {
+            this.cacheRegion = cacheRegion;
+            this.cacheKey = cacheKey;
+            this.hashCode = cacheRegion.hashCode() + cacheKey.hashCode();
+        }
+        @Override
+        public String toString()
+        {
+            return cacheRegion + "." + cacheKey.toString();
+        }
+        @Override
+        public boolean equals(Object obj)
+        {
+            if (this == obj)
+            {
+                return true;
+            }
+            else if (!(obj instanceof CacheRegionKey))
+            {
+                return false;
+            }
+            CacheRegionKey that = (CacheRegionKey) obj;
+            return this.cacheRegion.equals(that.cacheRegion) && this.cacheKey.equals(that.cacheKey);
+        }
+        @Override
+        public int hashCode()
+        {
+            return hashCode;
+        }
     }
 }

@@ -32,7 +32,7 @@ import junit.framework.TestCase;
 
 import org.alfresco.repo.cache.MemoryCache;
 import org.alfresco.repo.cache.SimpleCache;
-import org.alfresco.repo.cache.lookup.EntityLookupCache.EntityLookup;
+import org.alfresco.repo.cache.lookup.EntityLookupCache.EntityLookupCallbackDAO;
 import org.alfresco.util.Pair;
 
 /**
@@ -45,16 +45,19 @@ import org.alfresco.util.Pair;
  * @author Derek Hulley
  * @since 3.3
  */
-public class EntityLookupCacheTest extends TestCase implements EntityLookup<Long, Object, String>
+public class EntityLookupCacheTest extends TestCase implements EntityLookupCallbackDAO<Long, Object, String>
 {
-    private EntityLookupCache<Long, Object, String> entityLookupCache;
+    SimpleCache<Long, Object> cache;
+    private EntityLookupCache<Long, Object, String> entityLookupCacheA;
+    private EntityLookupCache<Long, Object, String> entityLookupCacheB;
     private TreeMap<Long, String> database;
 
     @Override
     protected void setUp() throws Exception
     {
-        SimpleCache<Long, Object> cache = new MemoryCache<Long, Object>();
-        entityLookupCache = new EntityLookupCache<Long, Object, String>(cache, this);
+        cache = new MemoryCache<Long, Object>();
+        entityLookupCacheA = new EntityLookupCache<Long, Object, String>(cache, "A", this);
+        entityLookupCacheB = new EntityLookupCache<Long, Object, String>(cache, "B", this);
         database = new TreeMap<Long, String>();
     }
     
@@ -63,7 +66,7 @@ public class EntityLookupCacheTest extends TestCase implements EntityLookup<Long
         try
         {
             // Keep the "database" empty
-            entityLookupCache.getByValue(this);
+            entityLookupCacheA.getByValue(this);
         }
         catch (AssertionFailedError e)
         {
@@ -74,28 +77,28 @@ public class EntityLookupCacheTest extends TestCase implements EntityLookup<Long
     public void testLookupAgainstEmpty() throws Exception
     {
         TestValue value = new TestValue("AAA");
-        Pair<Long, Object> entityPair = entityLookupCache.getByValue(value);
+        Pair<Long, Object> entityPair = entityLookupCacheA.getByValue(value);
         assertNull(entityPair);
         assertTrue(database.isEmpty());
         
         // Now do lookup or create
-        entityPair = entityLookupCache.getOrCreateByValue(value);
+        entityPair = entityLookupCacheA.getOrCreateByValue(value);
         assertNotNull("Expected a value to be found", entityPair);
         Long entityId = entityPair.getFirst();
         assertTrue("Database ID should have been created", database.containsKey(entityId));
         assertEquals("Database value incorrect", value.val, database.get(entityId));
         
         // Do lookup or create again
-        entityPair = entityLookupCache.getOrCreateByValue(value);
+        entityPair = entityLookupCacheA.getOrCreateByValue(value);
         assertNotNull("Expected a value to be found", entityPair);
         assertEquals("Expected same entity ID", entityId, entityPair.getFirst());
         
         // Look it up using the value
-        entityPair = entityLookupCache.getByValue(value);
+        entityPair = entityLookupCacheA.getByValue(value);
         assertNotNull("Lookup after create should work", entityPair);
         
         // Look it up using the ID
-        entityPair = entityLookupCache.getByKey(entityId);
+        entityPair = entityLookupCacheA.getByKey(entityId);
         assertNotNull("Lookup by key should work after create", entityPair);
         assertTrue("Looked-up type incorrect", entityPair.getSecond() instanceof TestValue);
         assertEquals("Looked-up type value incorrect", value, entityPair.getSecond());
@@ -109,18 +112,39 @@ public class EntityLookupCacheTest extends TestCase implements EntityLookup<Long
         createValue(new TestValue("CCC"));
         
         // Look up by value
-        Pair<Long, Object> entityPair = entityLookupCache.getByValue(new TestValue("AAA"));
+        Pair<Long, Object> entityPair = entityLookupCacheA.getByValue(new TestValue("AAA"));
         assertNotNull("Expected value to be found", entityPair);
         assertEquals("ID is incorrect", new Long(1), entityPair.getFirst());
         
         // Look up by ID
-        entityPair = entityLookupCache.getByKey(new Long(2));
+        entityPair = entityLookupCacheA.getByKey(new Long(2));
         assertNotNull("Expected value to be found", entityPair);
         
         // Do lookup or create
-        entityPair = entityLookupCache.getByValue(new TestValue("CCC"));
+        entityPair = entityLookupCacheA.getByValue(new TestValue("CCC"));
         assertNotNull("Expected value to be found", entityPair);
         assertEquals("ID is incorrect", new Long(3), entityPair.getFirst());
+    }
+
+    public void testRegions() throws Exception
+    {
+        TestValue valueAAA = new TestValue("AAA");
+        Pair<Long, Object> entityPairAAA = entityLookupCacheA.getOrCreateByValue(valueAAA);
+        assertNotNull(entityPairAAA);
+        assertEquals("AAA", database.get(entityPairAAA.getFirst()));
+        assertEquals(2, cache.getKeys().size());
+        
+        TestValue valueBBB = new TestValue("BBB");
+        Pair<Long, Object> entityPairBBB = entityLookupCacheB.getOrCreateByValue(valueBBB);
+        assertNotNull(entityPairBBB);
+        assertEquals("BBB", database.get(entityPairBBB.getFirst()));
+        assertEquals(4, cache.getKeys().size());
+        
+        // Now cross-check against the caches and make sure that the cache 
+        entityPairBBB = entityLookupCacheA.getByValue(valueBBB);
+        assertEquals(5, cache.getKeys().size());
+        entityPairBBB = entityLookupCacheB.getByValue(valueAAA);
+        assertEquals(6, cache.getKeys().size());
     }
 
     /**

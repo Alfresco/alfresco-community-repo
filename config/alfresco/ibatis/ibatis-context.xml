@@ -74,4 +74,16 @@
         <property name="sqlMapClient" ref="contentSqlMapClient"/>
     </bean>
 
+    <!-- iBatis config for PropertyValue domain -->
+   	<bean id="propertyValueSqlMapClient" class="org.alfresco.ibatis.HierarchicalSqlMapClientFactoryBean">
+        <property name="dataSource" ref="dataSource"/>
+        <property name="resourceLoader" ref="dialectResourceLoader" />
+        <property name="configLocation">
+            <value>classpath:alfresco/ibatis/propval-SqlMapConfig.xml</value>
+        </property> 
+    </bean>
+   	<bean id="propertyValueSqlMapClientTemplate" class="org.springframework.orm.ibatis.SqlMapClientTemplate">
+        <property name="sqlMapClient" ref="propertyValueSqlMapClient"/>
+    </bean>
+
 </beans>

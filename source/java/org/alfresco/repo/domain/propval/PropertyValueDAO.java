@@ -22,38 +22,21 @@
  * the FLOSS exception, and it is also available here: 
  * http://www.alfresco.com/legal/licensing"
  */
-package org.alfresco.repo.domain;
+package org.alfresco.repo.domain.propval;
 
-import junit.framework.Test;
-import junit.framework.TestSuite;
-
-import org.alfresco.repo.domain.contentdata.ContentDataDAOTest;
-import org.alfresco.repo.domain.encoding.EncodingDAOTest;
-import org.alfresco.repo.domain.hibernate.HibernateSessionHelperTest;
-import org.alfresco.repo.domain.locks.LockDAOTest;
-import org.alfresco.repo.domain.mimetype.MimetypeDAOTest;
+import org.alfresco.util.Pair;
 
 /**
- * Suite for domain-related tests.
+ * DAO services for <b>alf_prop_XXX</b> tables.
  * 
  * @author Derek Hulley
+ * @since 3.3
  */
-public class DomainTestSuite extends TestSuite
+public interface PropertyValueDAO
 {
-    public static Test suite() 
-    {
-        TestSuite suite = new TestSuite();
-        
-        suite.addTestSuite(ContentDataDAOTest.class);
-        suite.addTestSuite(EncodingDAOTest.class);
-        suite.addTestSuite(HibernateSessionHelperTest.class);
-        suite.addTestSuite(LockDAOTest.class);
-        suite.addTestSuite(MimetypeDAOTest.class);
-        suite.addTestSuite(LocaleDAOTest.class);
-        suite.addTestSuite(PropertyValueTest.class);
-        suite.addTestSuite(QNameDAOTest.class);
-        suite.addTestSuite(PropertyValueTest.class);
-                
-        return suite;
-    }
+    Pair<Long, Class<?>> getPropertyClass(Class<?> clazz);
+    
+    Pair<Long, Class<?>> getPropertyClass(Long id);
+    
+    Pair<Long, Class<?>> getOrCreatePropertyClass(Class<?> clazz);
 }

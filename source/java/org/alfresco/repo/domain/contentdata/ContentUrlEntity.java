@@ -24,9 +24,7 @@
  */
 package org.alfresco.repo.domain.contentdata;
 
-import java.io.UnsupportedEncodingException;
-import java.util.zip.CRC32;
-
+import org.alfresco.repo.domain.CrcHelper;
 import org.alfresco.util.EqualsHelper;
 import org.alfresco.util.Pair;
 
@@ -98,53 +96,9 @@ public class ContentUrlEntity
      */
     private static Pair<String, Long> getContentUrlCrcPair(String internalContentUrl)
     {
-        if (internalContentUrl == null)
-        {
-            return new Pair<String, Long>(null, null);
-        }
-        
-        // Calculate the CRC value
-        CRC32 crc = new CRC32();
-        try
-        {
-            crc.update(internalContentUrl.getBytes("UTF-8"));
-        }
-        catch (UnsupportedEncodingException e)
-        {
-            throw new RuntimeException("UTF-8 encoding is not supported");
-        }
-        // Get the short name (case-insensitive)
-        String contentUrlShort = null;
-        int contentUrlLen = internalContentUrl.length();
-        if (contentUrlLen < 12)
-        {
-            contentUrlShort = internalContentUrl.toLowerCase();
-        }
-        else
-        {
-            contentUrlShort = internalContentUrl.toLowerCase().substring(contentUrlLen - 12);
-        }
-        // Done
-        return new Pair<String, Long>(contentUrlShort, crc.getValue());
+        return CrcHelper.getStringCrcPair(internalContentUrl, 12, false, true);
     }
     
-    private static String getInternalUrl(String contentUrl)
-    {
-        if (contentUrl == null)
-        {
-            return null;
-        }
-        // Deal with Oracle's NULL-EMPTY confusion
-        if (contentUrl.length() == 0)
-        {
-            return EMPTY_URL;
-        }
-        else
-        {
-            return contentUrl;
-        }
-    }
-
     /**
      * @return              Returns the originally-set content URL
      */
@@ -195,8 +149,7 @@ public class ContentUrlEntity
     {
         this.contentUrl = contentUrl;
         // Convert the URL to a persistable value
-        String internalContentUrl = ContentUrlEntity.getInternalUrl(contentUrl);
-        Pair<String, Long> contentUrlPair = ContentUrlEntity.getContentUrlCrcPair(internalContentUrl);
+        Pair<String, Long> contentUrlPair = ContentUrlEntity.getContentUrlCrcPair(contentUrl);
         this.contentUrlShort = contentUrlPair.getFirst();
         this.contentUrlCrc = contentUrlPair.getSecond();
     }

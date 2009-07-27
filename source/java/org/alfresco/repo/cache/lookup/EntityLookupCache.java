@@ -28,10 +28,12 @@ import java.io.Serializable;
 
 import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.util.Pair;
+import org.alfresco.util.ParameterCheck;
 
 /**
  * A cache for two-way lookups of database entities.  These are characterized by having a unique
- * key (perhaps a database ID) and a separate unique key that identifies the object.
+ * key (perhaps a database ID) and a separate unique key that identifies the object.  If no cache
+ * is given, then all calls are passed through to the backing DAO.
  * <p>
  * The keys must have good <code>equals</code> and </code>hashCode</code> implementations and
  * must respect the case-sensitivity of the use-case.
@@ -91,6 +93,17 @@ public class EntityLookupCache<K extends Serializable, V extends Object, VK exte
     private final String cacheRegion;
 
     /**
+     * Construct the lookup cache <b>without any cache</b>.  All calls are passed directly to the
+     * underlying DAO entity lookup.
+     * 
+     * @param entityLookup          the instance that is able to find and persist entities
+     */
+    public EntityLookupCache(EntityLookupCallbackDAO<K, V, VK> entityLookup)
+    {
+        this(null, CACHE_REGION_DEFAULT, entityLookup);
+    }
+    
+    /**
      * Construct the lookup cache, using the {@link #CACHE_REGION_DEFAULT default cache region}.
      * 
      * @param cache                 the cache that will back the two-way lookups
@@ -108,21 +121,30 @@ public class EntityLookupCache<K extends Serializable, V extends Object, VK exte
      * All keys will be unique to the given cache region, allowing the cache to be shared
      * between instances of this class.
      * 
-     * @param cache                 the cache that will back the two-way lookups
+     * @param cache                 the cache that will back the two-way lookups; <tt>null</tt> to have no backing
+     *                              in a cache.
      * @param cacheRegion           the region within the cache to use.
      * @param entityLookup          the instance that is able to find and persist entities
      */
     @SuppressWarnings("unchecked")
     public EntityLookupCache(SimpleCache cache, String cacheRegion, EntityLookupCallbackDAO<K, V, VK> entityLookup)
     {
+        ParameterCheck.mandatory("cacheRegion", cacheRegion);
+        ParameterCheck.mandatory("entityLookup", entityLookup);
         this.cache = cache;
-        this.entityLookup = entityLookup;
         this.cacheRegion = cacheRegion;
+        this.entityLookup = entityLookup;
     }
     
     @SuppressWarnings("unchecked")
     public Pair<K, V> getByKey(K key)
     {
+        // Handle missing cache
+        if (cache == null)
+        {
+            return entityLookup.findByKey(key);
+        }
+        
         CacheRegionKey cacheKey = new CacheRegionKey(cacheRegion, key);
         // Look in the cache
         V value = (V) cache.get(cacheKey);
@@ -154,6 +176,12 @@ public class EntityLookupCache<K extends Serializable, V extends Object, VK exte
     @SuppressWarnings("unchecked")
     public Pair<K, V> getByValue(V value)
     {
+        // Handle missing cache
+        if (cache == null)
+        {
+            return entityLookup.findByValue(value);
+        }
+        
         // Get the value key
         VK valueKey = entityLookup.getValueKey(value);
         CacheRegionKey cacheKey = new CacheRegionKey(cacheRegion, valueKey);
@@ -189,6 +217,17 @@ public class EntityLookupCache<K extends Serializable, V extends Object, VK exte
     @SuppressWarnings("unchecked")
     public Pair<K, V> getOrCreateByValue(V value)
     {
+        // Handle missing cache
+        if (cache == null)
+        {
+            Pair<K, V> entityPair = entityLookup.findByValue(value);
+            if (entityPair == null)
+            {
+                entityPair = entityLookup.createValue(value);
+            }
+            return entityPair;
+        }
+        
         // Get the value key
         VK valueKey = entityLookup.getValueKey(value);
         CacheRegionKey cacheKey = new CacheRegionKey(cacheRegion, valueKey);

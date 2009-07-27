@@ -37,11 +37,7 @@ import org.alfresco.util.Pair;
  */
 public class PropertyClassEntity
 {
-    public static final Long CONST_LONG_ZERO = new Long(0L);
-    public static final String EMPTY_URL = "empty";
-    
     private Long id;
-    private Long version;
     private Class<?> javaClass;
     private String javaClassName;
     private String javaClassNameShort;
@@ -119,16 +115,6 @@ public class PropertyClassEntity
     public void setId(Long id)
     {
         this.id = id;
-    }
-
-    public Long getVersion()
-    {
-        return version;
-    }
-
-    public void setVersion(Long version)
-    {
-        this.version = version;
     }
 
     public void setJavaClass(Class<?> javaClass)

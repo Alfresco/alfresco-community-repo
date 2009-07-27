@@ -34,9 +34,33 @@ import org.alfresco.util.Pair;
  */
 public interface PropertyValueDAO
 {
-    Pair<Long, Class<?>> getPropertyClass(Class<?> clazz);
-    
+    /**
+     * <b>alf_prop_class</b> accessor
+     */
     Pair<Long, Class<?>> getPropertyClass(Long id);
     
-    Pair<Long, Class<?>> getOrCreatePropertyClass(Class<?> clazz);
+    /**
+     * <b>alf_prop_class</b> accessor
+     */
+    Pair<Long, Class<?>> getPropertyClass(Class<?> value);
+    
+    /**
+     * <b>alf_prop_class</b> accessor
+     */
+    Pair<Long, Class<?>> getOrCreatePropertyClass(Class<?> value);
+
+    /**
+     * <b>alf_prop_string_value</b> accessor
+     */
+    Pair<Long, String> getPropertyStringValue(Long id);
+
+    /**
+     * <b>alf_prop_string_value</b> accessor
+     */
+    Pair<Long, String> getPropertyStringValue(String value);
+
+    /**
+     * <b>alf_prop_string_value</b> accessor
+     */
+    Pair<Long, String> getOrCreatePropertyStringValue(String value);
 }

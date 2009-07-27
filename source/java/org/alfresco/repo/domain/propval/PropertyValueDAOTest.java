@@ -118,4 +118,54 @@ public class PropertyValueDAOTest extends TestCase
         };
         txnHelper.doInTransaction(noHitCallback, false);
     }
+    
+    public void testPropertyStringValue() throws Exception
+    {
+        final String stringValue = "One Two Three";
+        final String stringValueUpper = stringValue.toUpperCase();
+        final String stringValueLower = stringValue.toLowerCase();
+        RetryingTransactionCallback<Pair<Long, String>> createStringCallback = new RetryingTransactionCallback<Pair<Long, String>>()
+        {
+            public Pair<Long, String> execute() throws Throwable
+            {
+                // Get the classes
+                return propertyValueDAO.getOrCreatePropertyStringValue(stringValue);
+            }
+        };
+        final Pair<Long, String> stringEntityPair = txnHelper.doInTransaction(createStringCallback, false);
+        assertNotNull(stringEntityPair);
+        assertNotNull(stringEntityPair.getFirst());
+        assertEquals(stringValue, stringEntityPair.getSecond());
+        
+        // Check that the uppercase and lowercase strings don't have entries
+        RetryingTransactionCallback<Void> getClassCallback = new RetryingTransactionCallback<Void>()
+        {
+            public Void execute() throws Throwable
+            {
+                Pair<Long, String> checkPair1 = propertyValueDAO.getPropertyStringValue(stringValue);
+                assertNotNull(checkPair1);
+                assertEquals(stringValue, checkPair1.getSecond());
+                Pair<Long, String> checkPair2 = propertyValueDAO.getPropertyStringValue(stringValueUpper);
+                assertNull(checkPair2);
+                Pair<Long, String> checkPair3 = propertyValueDAO.getPropertyStringValue(stringValueLower);
+                assertNull(checkPair3);
+                return null;
+            }
+        };
+        txnHelper.doInTransaction(getClassCallback, true);
+
+        RetryingTransactionCallback<Pair<Long, String>> createStringUpperCallback = new RetryingTransactionCallback<Pair<Long, String>>()
+        {
+            public Pair<Long, String> execute() throws Throwable
+            {
+                // Get the classes
+                return propertyValueDAO.getOrCreatePropertyStringValue(stringValueUpper);
+            }
+        };
+        final Pair<Long, String> stringUpperEntityPair = txnHelper.doInTransaction(createStringUpperCallback, false);
+        assertNotNull(stringUpperEntityPair);
+        assertNotNull(stringUpperEntityPair.getFirst());
+        assertEquals(stringValueUpper, stringUpperEntityPair.getSecond());
+        assertNotSame("String IDs were not different", stringEntityPair.getFirst(), stringUpperEntityPair.getFirst());
+    }
 }

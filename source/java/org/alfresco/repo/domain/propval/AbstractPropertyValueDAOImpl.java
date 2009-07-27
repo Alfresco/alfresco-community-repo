@@ -30,6 +30,7 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.cache.lookup.EntityLookupCache;
 import org.alfresco.repo.cache.lookup.EntityLookupCache.EntityLookupCallbackDAO;
+import org.alfresco.repo.domain.CrcHelper;
 import org.alfresco.util.Pair;
 
 /**
@@ -44,20 +45,69 @@ import org.alfresco.util.Pair;
 public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
 {
     private static final String CACHE_REGION_PROPERTY_CLASS = "PropertyClass";
+    private static final String CACHE_REGION_PROPERTY_STRING_VALUE = "PropertyStringValue";
+    
+    private final PropertyClassCallbackDAO propertyClassDaoCallback;
+    private final PropertyStringValueCallbackDAO propertyStringValueCallback;
+    /**
+     * Cache for the property class:<br/>
+     * KEY: ID<br/>
+     * VALUE: Java class<br/>
+     * VALUE KEY: Java class name<br/>
+     */
     private EntityLookupCache<Long, Class<?>, String> propertyClassCache;
+    /**
+     * Cache for the property string value:<br/>
+     * KEY: ID<br/>
+     * VALUE: The full string<br/>
+     * VALUE KEY: Short string-crc pair ({@link CrcHelper#getStringCrcPair(String, int, boolean, boolean)})<br/>
+     */
+    private EntityLookupCache<Long, String, Pair<String, Long>> propertyStringValueCache;
     
     /**
+     * Default constructor.
+     * <p>
+     * This sets up the DAO accessors to bypass any caching to handle the case where the caches are not
+     * supplied in the setters.
+     */
+    public AbstractPropertyValueDAOImpl()
+    {
+        this.propertyClassDaoCallback = new PropertyClassCallbackDAO();
+        this.propertyStringValueCallback = new PropertyStringValueCallbackDAO();
+        
+        this.propertyClassCache = new EntityLookupCache<Long, Class<?>, String>(propertyClassDaoCallback);
+        this.propertyStringValueCache = new EntityLookupCache<Long, String, Pair<String, Long>>(propertyStringValueCallback);
+    }
+    
+    /**
+     * Set the cache to use for <b>alf_prop_class</b> lookups (optional).
      * 
      * @param propertyClassCache            the cache of IDs to property classes
      */
     public void setPropertyClassCache(SimpleCache<Serializable, Object> propertyClassCache)
     {
-        PropertyValueCallbackDAO daoCallback = new PropertyValueCallbackDAO();
         this.propertyClassCache = new EntityLookupCache<Long, Class<?>, String>(
                 propertyClassCache,
                 CACHE_REGION_PROPERTY_CLASS,
-                daoCallback);
+                propertyClassDaoCallback);
     }
+    
+    /**
+     * Set the cache to use for <b>alf_prop_string_value</b> lookups (optional).
+     * 
+     * @param propertyStringValueCache      the cache of IDs to property string values
+     */
+    public void setPropertyStringValueCache(SimpleCache<Serializable, Object> propertyStringValueCache)
+    {
+        this.propertyStringValueCache = new EntityLookupCache<Long, String, Pair<String, Long>>(
+                propertyStringValueCache,
+                CACHE_REGION_PROPERTY_STRING_VALUE,
+                propertyStringValueCallback);
+    }
+    
+    //================================
+    // 'alf_prop_class' accessors
+    //================================
 
     public Pair<Long, Class<?>> getPropertyClass(Long id)
     {
@@ -69,22 +119,22 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
         return entityPair;
     }
 
-    public Pair<Long, Class<?>> getPropertyClass(Class<?> clazz)
+    public Pair<Long, Class<?>> getPropertyClass(Class<?> value)
     {
-        Pair<Long, Class<?>> entityPair = propertyClassCache.getByValue(clazz);
+        Pair<Long, Class<?>> entityPair = propertyClassCache.getByValue(value);
         return entityPair;
     }
 
-    public Pair<Long, Class<?>> getOrCreatePropertyClass(Class<?> clazz)
+    public Pair<Long, Class<?>> getOrCreatePropertyClass(Class<?> value)
     {
-        Pair<Long, Class<?>> entityPair = propertyClassCache.getOrCreateByValue(clazz);
+        Pair<Long, Class<?>> entityPair = propertyClassCache.getOrCreateByValue(value);
         return entityPair;
     }
 
     /**
-     * Callback for <b>alf_prop_type</b> DAO.
+     * Callback for <b>alf_prop_class</b> DAO.
      */
-    private class PropertyValueCallbackDAO implements EntityLookupCallbackDAO<Long, Class<?>, String>
+    private class PropertyClassCallbackDAO implements EntityLookupCallbackDAO<Long, Class<?>, String>
     {
         private final Pair<Long, Class<?>> convertEntityToPair(PropertyClassEntity propertyClassEntity)
         {
@@ -105,24 +155,96 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
 
         public Pair<Long, Class<?>> createValue(Class<?> value)
         {
-            PropertyClassEntity propertyClassEntity = createClass(value);
-            return convertEntityToPair(propertyClassEntity);
+            PropertyClassEntity entity = createClass(value);
+            return convertEntityToPair(entity);
         }
 
         public Pair<Long, Class<?>> findByKey(Long key)
         {
-            PropertyClassEntity propertyClassEntity = findClassById(key);
-            return convertEntityToPair(propertyClassEntity);
+            PropertyClassEntity entity = findClassById(key);
+            return convertEntityToPair(entity);
         }
 
         public Pair<Long, Class<?>> findByValue(Class<?> value)
         {
-            PropertyClassEntity propertyClassEntity = findClassByValue(value);
-            return convertEntityToPair(propertyClassEntity);
+            PropertyClassEntity entity = findClassByValue(value);
+            return convertEntityToPair(entity);
         }
     }
     
-    protected abstract PropertyClassEntity createClass(Class<?> value);
     protected abstract PropertyClassEntity findClassById(Long id);
     protected abstract PropertyClassEntity findClassByValue(Class<?> value);
+    protected abstract PropertyClassEntity createClass(Class<?> value);
+    
+    //================================
+    // 'alf_prop_string_value' accessors
+    //================================
+
+    public Pair<Long, String> getPropertyStringValue(Long id)
+    {
+        Pair<Long, String> entityPair = propertyStringValueCache.getByKey(id);
+        if (entityPair == null)
+        {
+            throw new AlfrescoRuntimeException("No property class exists for ID " + id);
+        }
+        return entityPair;
+    }
+
+    public Pair<Long, String> getPropertyStringValue(String value)
+    {
+        Pair<Long, String> entityPair = propertyStringValueCache.getByValue(value);
+        return entityPair;
+    }
+
+    public Pair<Long, String> getOrCreatePropertyStringValue(String value)
+    {
+        Pair<Long, String> entityPair = propertyStringValueCache.getOrCreateByValue(value);
+        return entityPair;
+    }
+
+    /**
+     * Callback for <b>alf_prop_string_value</b> DAO.
+     */
+    private class PropertyStringValueCallbackDAO implements EntityLookupCallbackDAO<Long, String, Pair<String, Long>>
+    {
+        private final Pair<Long, String> convertEntityToPair(PropertyStringValueEntity propertyStringValueEntity)
+        {
+            if (propertyStringValueEntity == null)
+            {
+                return null;
+            }
+            else
+            {
+                return propertyStringValueEntity.getEntityPair();
+            }
+        }
+        
+        public Pair<String, Long> getValueKey(String value)
+        {
+            return CrcHelper.getStringCrcPair(value, 128, true, true);
+        }
+
+        public Pair<Long, String> createValue(String value)
+        {
+            PropertyStringValueEntity entity = createStringValue(value);
+            return convertEntityToPair(entity);
+        }
+
+        public Pair<Long, String> findByKey(Long key)
+        {
+            PropertyStringValueEntity entity = findStringValueById(key);
+            return convertEntityToPair(entity);
+        }
+
+        public Pair<Long, String> findByValue(String value)
+        {
+            PropertyStringValueEntity entity = findStringValueByValue(value);
+            return convertEntityToPair(entity);
+        }
+    }
+    
+    protected abstract PropertyStringValueEntity findStringValueById(Long id);
+    protected abstract PropertyStringValueEntity findStringValueByValue(String value);
+    protected abstract PropertyStringValueEntity createStringValue(String value);
+
 }

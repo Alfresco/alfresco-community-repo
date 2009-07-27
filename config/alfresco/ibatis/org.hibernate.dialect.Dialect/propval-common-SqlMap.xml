@@ -11,6 +11,7 @@
     <!--                -->
     
     <typeAlias alias="PropertyClass" type="org.alfresco.repo.domain.propval.PropertyClassEntity"/>
+    <typeAlias alias="PropertyStringValue" type="org.alfresco.repo.domain.propval.PropertyStringValueEntity"/>
 
     <!--                -->
     <!-- Result Maps    -->
@@ -18,10 +19,13 @@
 
     <resultMap id="result.PropertyClass" class="PropertyClass">
         <result property="id" column="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
-        <result property="version" column="version" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <result property="javaClassName" column="java_class_name" jdbcType="VARCHAR" javaType="java.lang.String"/>
         <result property="javaClassNameShort" column="java_class_name_short" jdbcType="VARCHAR" javaType="java.lang.String"/>
         <result property="javaClassNameCrc" column="java_class_name_crc" jdbcType="BIGINT" javaType="java.lang.Long"/>
+    </resultMap>
+    <resultMap id="result.PropertyStringValue" class="PropertyStringValue">
+        <result property="id" column="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="stringValue" column="string_value" jdbcType="VARCHAR" javaType="java.lang.String"/>
     </resultMap>
   
     <!--                -->
@@ -43,8 +47,13 @@
     <!--                -->
     
     <sql id="insert.PropertyClass.AutoIncrement">
-        insert into alf_prop_class (version, java_class_name, java_class_name_short, java_class_name_crc) 
-        values (#version#, #javaClassName#, #javaClassNameShort#, #javaClassNameCrc#)
+        insert into alf_prop_class (java_class_name, java_class_name_short, java_class_name_crc) 
+        values (#javaClassName#, #javaClassNameShort#, #javaClassNameCrc#)
+    </sql>
+    
+    <sql id="insert.PropertyStringValue.AutoIncrement">
+        insert into alf_prop_string_value (string_value) 
+        values (#stringValue#)
     </sql>
     
     <!--                -->
@@ -70,6 +79,26 @@
         where
             java_class_name_crc = #javaClassNameCrc# and
             java_class_name_short = #javaClassNameShort#
+    </select>
+
+    <!-- Get a property string value by ID -->
+    <select id="select.PropertyStringValueByID" parameterClass="PropertyStringValue" resultMap="result.PropertyStringValue">
+        select
+            *
+        from
+            alf_prop_string_value
+        where
+            id = #id#
+    </select>
+
+    <!-- Get the property string value by string -->
+    <select id="select.PropertyStringValueByString" parameterClass="PropertyStringValue" resultMap="result.PropertyStringValue">
+        select
+            *
+        from
+            alf_prop_string_value
+        where
+            string_value = #stringValue#
     </select>
 
 </sqlMap>

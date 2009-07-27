@@ -305,7 +305,15 @@ public class RhinoScriptProcessor extends BaseProcessor implements ScriptProcess
             {
                 // load from classpath
                 String scriptClasspath = resource.substring(PATH_CLASSPATH.length());
-                InputStream stream = getClass().getClassLoader().getResourceAsStream(scriptClasspath);
+                InputStream stream;
+                if (logger.isDebugEnabled())
+                {
+                    stream = getClass().getClassLoader().getResource(scriptClasspath).openStream();
+                }
+                else
+                {
+                    stream = getClass().getClassLoader().getResourceAsStream(scriptClasspath);
+                }
                 if (stream == null)
                 {
                     throw new AlfrescoRuntimeException("Unable to load included script classpath resource: " + resource);

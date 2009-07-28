@@ -31,7 +31,7 @@ package org.alfresco.repo.security.sync;
  * @author dward
  */
 public interface UserRegistrySynchronizer
-{    
+{
     /**
      * Creates a person object for a successfully authenticated user who does not yet have a person object, if allowed
      * to by configuration. Depending on configuration, may trigger a partial synchronize and/or create a new person
@@ -42,7 +42,7 @@ public interface UserRegistrySynchronizer
      * @return true, if a person is created
      */
     public boolean createMissingPerson(String username);
-    
+
     /**
      * Retrieves timestamped user and group information from configured external sources and compares it with the local
      * users and groups last retrieved from the same sources. Any updates and additions made to those users and groups
@@ -56,6 +56,11 @@ public interface UserRegistrySynchronizer
      *            queried for those users and groups modified since the most recent modification date of all the objects
      *            last queried from that same source. In this mode, local users and groups are created and updated, but
      *            not deleted.
+     * @param splitTxns
+     *            Can the modifications to Alfresco be split across multiple transactions for maximum performance? If
+     *            <code>true</code>, users and groups are created/updated in batches of 10 for increased performance. If
+     *            <code>false</code>, all users and groups are processed in the current transaction. This is required if
+     *            calling synchronously (e.g. in response to an authentication event in the same transaction).
      */
-    public void synchronize(boolean force);
+    public void synchronize(boolean force, boolean splitTxns);
 }

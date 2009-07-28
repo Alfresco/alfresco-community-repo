@@ -83,11 +83,11 @@ public interface AccessControlListDAO
      * Update inheritance
      * 
      * @param parent
-     * @param mergeFrom
+     * @param inheritFrom
      * @param previousId
      * @return
      */
-    public List<AclChange> setInheritanceForChildren(NodeRef parent, Long mergeFrom);
+    public List<AclChange> setInheritanceForChildren(NodeRef parent, Long inheritFrom);
 
     public Long getIndirectAcl(NodeRef nodeRef);
 

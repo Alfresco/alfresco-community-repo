@@ -26,6 +26,7 @@ package org.alfresco.repo.security.sync;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -33,18 +34,21 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
+import junit.framework.TestCase;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.management.subsystems.ChildApplicationContextManager;
+import org.alfresco.repo.security.authentication.AuthenticationContext;
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.PersonService;
-import org.alfresco.util.BaseSpringTest;
 import org.alfresco.util.PropertyMap;
-import org.hibernate.SessionFactory;
-import org.hibernate.engine.SessionFactoryImplementor;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.context.support.StaticApplicationContext;
 
 /**
@@ -52,7 +56,7 @@ import org.springframework.context.support.StaticApplicationContext;
  * 
  * @author dward
  */
-public class ChainingUserRegistrySynchronizerTest extends BaseSpringTest
+public class ChainingUserRegistrySynchronizerTest extends TestCase
 {
 
     /** The context locations, in reverse priority order. */
@@ -60,6 +64,10 @@ public class ChainingUserRegistrySynchronizerTest extends BaseSpringTest
     {
         "classpath:alfresco/application-context.xml", "classpath:sync-test-context.xml"
     };
+
+    /** The Spring application context */
+    private static ApplicationContext context = new ClassPathXmlApplicationContext(
+            ChainingUserRegistrySynchronizerTest.CONFIG_LOCATIONS);
 
     /** The synchronizer we are testing. */
     private UserRegistrySynchronizer synchronizer;
@@ -76,47 +84,36 @@ public class ChainingUserRegistrySynchronizerTest extends BaseSpringTest
     /** The node service. */
     private NodeService nodeService;
 
-    /*
-     * (non-Javadoc)
-     * @see org.springframework.test.AbstractTransactionalSpringContextTests#onSetUpInTransaction()
-     */
+    /** The authentication context. */
+    private AuthenticationContext authenticationContext;
+
+    /** The retrying transaction helper. */
+    private RetryingTransactionHelper retryingTransactionHelper;
+
     @Override
-    protected void onSetUpInTransaction() throws Exception
+    protected void setUp() throws Exception
     {
-        ApplicationContext context = getApplicationContext();
-        this.synchronizer = (UserRegistrySynchronizer) context.getBean("testUserRegistrySynchronizer");
-        this.applicationContextManager = (MockApplicationContextManager) context
+        this.synchronizer = (UserRegistrySynchronizer) ChainingUserRegistrySynchronizerTest.context
+                .getBean("testUserRegistrySynchronizer");
+        this.applicationContextManager = (MockApplicationContextManager) ChainingUserRegistrySynchronizerTest.context
                 .getBean("testApplicationContextManager");
-        this.personService = (PersonService) context.getBean("personService");
-        this.authorityService = (AuthorityService) context.getBean("authorityService");
-        this.nodeService = (NodeService) context.getBean("nodeService");
+        this.personService = (PersonService) ChainingUserRegistrySynchronizerTest.context.getBean("personService");
+        this.authorityService = (AuthorityService) ChainingUserRegistrySynchronizerTest.context
+                .getBean("authorityService");
+        this.nodeService = (NodeService) ChainingUserRegistrySynchronizerTest.context.getBean("nodeService");
+
+        this.authenticationContext = (AuthenticationContext) ChainingUserRegistrySynchronizerTest.context
+                .getBean("authenticationContext");
+        this.authenticationContext.setSystemUserAsCurrentUser();
+
+        this.retryingTransactionHelper = (RetryingTransactionHelper) ChainingUserRegistrySynchronizerTest.context
+                .getBean("retryingTransactionHelper");
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.springframework.test.AbstractTransactionalSpringContextTests#onTearDownInTransaction()
-     */
-    protected void onTearDownInTransaction() throws Exception
-    {
-        flushAndClear();
-
-        // Try to clear the Hibernate L2 cache so we have consistency after a rollback
-        SessionFactory sessionFactory = getSession().getSessionFactory();
-        String[] persistentClasses = ((SessionFactoryImplementor) sessionFactory).getImplementors("java.lang.Object");
-        for (String persistentClass : persistentClasses)
-        {
-            sessionFactory.evictEntity(persistentClass);
-        }
-    }
-
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.util.BaseSpringTest#getConfigLocations()
-     */
     @Override
-    protected String[] getConfigLocations()
+    protected void tearDown() throws Exception
     {
-        return ChainingUserRegistrySynchronizerTest.CONFIG_LOCATIONS;
+        this.authenticationContext.clearCurrentSecurityContext();
     }
 
     /**
@@ -136,7 +133,7 @@ public class ChainingUserRegistrySynchronizerTest extends BaseSpringTest
      * @throws Exception
      *             the exception
      */
-    public void setUpTestUsersAndGroups() throws Exception
+    private void setUpTestUsersAndGroups() throws Exception
     {
         this.applicationContextManager.setUserRegistries(new MockUserRegistry("Z1", new NodeDescription[]
         {
@@ -152,19 +149,73 @@ public class ChainingUserRegistrySynchronizerTest extends BaseSpringTest
         {
             newGroup("G2", "U1", "U3", "U4"), newGroup("G6", "U3", "U4", "G7"), newGroup("G7", "U5")
         }));
-        this.synchronizer.synchronize(true);
-        assertExists("Z1", "U1");
-        assertExists("Z1", "U2");
-        assertExists("Z1", "G1");
-        assertExists("Z1", "G2", "U1", "G3");
-        assertExists("Z1", "G3", "U2", "G4", "G5");
-        assertExists("Z1", "G4");
-        assertExists("Z1", "G5");
-        assertExists("Z2", "U3");
-        assertExists("Z2", "U4");
-        assertExists("Z2", "U5");
-        assertExists("Z2", "G6", "U3", "U4", "G7");
-        assertExists("Z2", "G7", "U5");
+        this.retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Object>()
+        {
+
+            public Object execute() throws Throwable
+            {
+                ChainingUserRegistrySynchronizerTest.this.synchronizer.synchronize(true, true);
+                return null;
+            }
+        });
+        this.retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Object>()
+        {
+
+            public Object execute() throws Throwable
+            {
+                assertExists("Z1", "U1");
+                assertExists("Z1", "U2");
+                assertExists("Z1", "G1");
+                assertExists("Z1", "G2", "U1", "G3");
+                assertExists("Z1", "G3", "U2", "G4", "G5");
+                assertExists("Z1", "G4");
+                assertExists("Z1", "G5");
+                assertExists("Z2", "U3");
+                assertExists("Z2", "U4");
+                assertExists("Z2", "U5");
+                assertExists("Z2", "G6", "U3", "U4", "G7");
+                assertExists("Z2", "G7", "U5");
+                return null;
+            }
+        });
+    }
+
+    private void tearDownTestUsersAndGroups() throws Exception
+    {
+        // Wipe out everything that was in Z1 and Z2
+        this.applicationContextManager.setUserRegistries(new MockUserRegistry("Z1", new NodeDescription[] {},
+                new NodeDescription[] {}), new MockUserRegistry("Z2", new NodeDescription[] {},
+                new NodeDescription[] {}));
+        this.retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Object>()
+        {
+
+            public Object execute() throws Throwable
+            {
+                ChainingUserRegistrySynchronizerTest.this.synchronizer.synchronize(true, true);
+                return null;
+            }
+        });
+        this.retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Object>()
+        {
+
+            public Object execute() throws Throwable
+            {
+                assertNotExists("U1");
+                assertNotExists("U2");
+                assertNotExists("U3");
+                assertNotExists("U4");
+                assertNotExists("U5");
+                assertNotExists("U6");
+                assertNotExists("G1");
+                assertNotExists("G2");
+                assertNotExists("G3");
+                assertNotExists("G4");
+                assertNotExists("G5");
+                assertNotExists("G6");
+                assertNotExists("G7");
+                return null;
+            }
+        });
     }
 
     /**
@@ -200,22 +251,33 @@ public class ChainingUserRegistrySynchronizerTest extends BaseSpringTest
         {
             newGroup("G2", "U1", "U3", "U4", "U6"), newGroup("G7")
         }));
-        this.synchronizer.synchronize(false);
-        assertExists("Z1", "U1");
-        assertEmailEquals("U1", "changeofemail@alfresco.com");
-        assertExists("Z1", "U2");
-        assertExists("Z1", "U6");
-        assertExists("Z1", "G1", "U1", "U6");
-        assertExists("Z1", "G2", "U1");
-        assertExists("Z1", "G3", "U2", "G4", "G5");
-        assertExists("Z1", "G4");
-        assertExists("Z1", "G5", "U6");
-        assertExists("Z2", "U3");
-        assertExists("Z2", "U4");
-        assertExists("Z2", "U5");
-        assertEmailEquals("U5", "u5email@alfresco.com");
-        assertExists("Z2", "G6", "U3", "U4", "G7");
-        assertExists("Z2", "G7");
+        this.retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Object>()
+        {
+
+            public Object execute() throws Throwable
+            {
+
+                ChainingUserRegistrySynchronizerTest.this.synchronizer.synchronize(false, false);
+                // Stay in the same transaction
+                assertExists("Z1", "U1");
+                assertEmailEquals("U1", "changeofemail@alfresco.com");
+                assertExists("Z1", "U2");
+                assertExists("Z1", "U6");
+                assertExists("Z1", "G1", "U1", "U6");
+                assertExists("Z1", "G2", "U1");
+                assertExists("Z1", "G3", "U2", "G4", "G5");
+                assertExists("Z1", "G4");
+                assertExists("Z1", "G5", "U6");
+                assertExists("Z2", "U3");
+                assertExists("Z2", "U4");
+                assertExists("Z2", "U5");
+                assertEmailEquals("U5", "u5email@alfresco.com");
+                assertExists("Z2", "G6", "U3", "U4", "G7");
+                assertExists("Z2", "G7");
+                return null;
+            }
+        });
+        tearDownTestUsersAndGroups();
     }
 
     /**
@@ -255,21 +317,38 @@ public class ChainingUserRegistrySynchronizerTest extends BaseSpringTest
         {
             newGroup("G2", "U1", "U3", "U4", "U6"), newGroup("G6", "U3", "U4", "G7"), newGroup("G7", "U4", "U5")
         }));
-        this.synchronizer.synchronize(true);
-        assertExists("Z1", "U2");
-        assertExists("Z1", "U3");
-        assertExists("Z1", "U6");
-        assertExists("Z1", "G1", "U6");
-        assertExists("Z1", "G2");
-        assertExists("Z1", "G3", "U2", "G5");
-        assertNotExists("G4");
-        assertExists("Z1", "G5", "U6");
-        assertExists("Z1", "G6", "U3");
-        assertExists("Z2", "U1");
-        assertEmailEquals("U1", "somenewemail@alfresco.com");
-        assertNotExists("U4");
-        assertNotExists("U5");
-        assertExists("Z2", "G7");
+        this.retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Object>()
+        {
+
+            public Object execute() throws Throwable
+            {
+                ChainingUserRegistrySynchronizerTest.this.synchronizer.synchronize(true, true);
+                return null;
+            }
+        });
+        this.retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Object>()
+        {
+
+            public Object execute() throws Throwable
+            {
+                assertExists("Z1", "U2");
+                assertExists("Z1", "U3");
+                assertExists("Z1", "U6");
+                assertExists("Z1", "G1", "U6");
+                assertExists("Z1", "G2");
+                assertExists("Z1", "G3", "U2", "G5");
+                assertNotExists("G4");
+                assertExists("Z1", "G5", "U6");
+                assertExists("Z1", "G6", "U3");
+                assertExists("Z2", "U1");
+                assertEmailEquals("U1", "somenewemail@alfresco.com");
+                assertNotExists("U4");
+                assertNotExists("U5");
+                assertExists("Z2", "G7");
+                return null;
+            }
+        });
+        tearDownTestUsersAndGroups();
     }
 
     /**
@@ -348,7 +427,8 @@ public class ChainingUserRegistrySynchronizerTest extends BaseSpringTest
         assertTrue(this.authorityService.authorityExists(longName));
 
         // Check in correct zone
-        assertTrue(this.authorityService.getAuthorityZones(longName).contains(AuthorityService.ZONE_AUTH_EXT_PREFIX+zone));
+        assertTrue(this.authorityService.getAuthorityZones(longName).contains(
+                AuthorityService.ZONE_AUTH_EXT_PREFIX + zone));
         if (AuthorityType.getAuthorityType(longName).equals(AuthorityType.GROUP))
         {
             // Check groups have expected members
@@ -483,7 +563,7 @@ public class ChainingUserRegistrySynchronizerTest extends BaseSpringTest
     {
 
         /** The contexts. */
-        private Map<String, ApplicationContext> contexts;
+        private Map<String, ApplicationContext> contexts = Collections.emptyMap();
 
         /**
          * Sets the user registries.

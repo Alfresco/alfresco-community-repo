@@ -62,7 +62,7 @@ public class DMPermissionsDaoComponentImpl extends AbstractPermissionsDaoCompone
             List<AclChange> changes = new ArrayList<AclChange>();
             DbAccessControlList acl = aclDaoComponent.getDbAccessControlList(id);
             changes.add(new AclDaoComponentImpl.AclChangeImpl(null, id, null, acl.getAclType()));
-            changes.addAll(getACLDAO(nodeRef).setInheritanceForChildren(nodeRef, aclDaoComponent.getInheritedAccessControlList(id)));
+            changes.addAll(getACLDAO(nodeRef).setInheritanceForChildren(nodeRef, id));
             getACLDAO(nodeRef).setAccessControlList(nodeRef, acl);
             return new CreationReport(acl, changes);
         }
@@ -90,7 +90,7 @@ public class DMPermissionsDaoComponentImpl extends AbstractPermissionsDaoCompone
             changes.add(new AclDaoComponentImpl.AclChangeImpl(existing.getId(), id, existing.getAclType(), acl.getAclType()));
             changes.addAll(aclDaoComponent.mergeInheritedAccessControlList(existing.getId(), id));
             // set this to inherit to children
-            changes.addAll(getACLDAO(nodeRef).setInheritanceForChildren(nodeRef, aclDaoComponent.getInheritedAccessControlList(id)));
+            changes.addAll(getACLDAO(nodeRef).setInheritanceForChildren(nodeRef, id));
 
             getACLDAO(nodeRef).setAccessControlList(nodeRef, acl);
             return new CreationReport(acl, changes);
@@ -123,7 +123,6 @@ public class DMPermissionsDaoComponentImpl extends AbstractPermissionsDaoCompone
             case DEFINING:
                 if (acl.getInheritsFrom() != null)
                 {
-                    @SuppressWarnings("unused")
                     Long deleted = acl.getId();
                     Long inheritsFrom = acl.getInheritsFrom();
                     getACLDAO(nodeRef).setAccessControlList(nodeRef, aclDaoComponent.getDbAccessControlList(inheritsFrom));
@@ -135,7 +134,6 @@ public class DMPermissionsDaoComponentImpl extends AbstractPermissionsDaoCompone
                 else
                 {
                     // TODO: could just cear out existing
-                    @SuppressWarnings("unused")
                     Long deleted = acl.getId();
                     SimpleAccessControlListProperties properties = new SimpleAccessControlListProperties();
                     properties = new SimpleAccessControlListProperties();
@@ -146,7 +144,7 @@ public class DMPermissionsDaoComponentImpl extends AbstractPermissionsDaoCompone
                     Long id = aclDaoComponent.createAccessControlList(properties);
                     getACLDAO(nodeRef).setAccessControlList(nodeRef, aclDaoComponent.getDbAccessControlList(id));
                     List<AclChange> changes = new ArrayList<AclChange>();
-                    changes.addAll(getACLDAO(nodeRef).setInheritanceForChildren(nodeRef, aclDaoComponent.getInheritedAccessControlList(id)));
+                    changes.addAll(getACLDAO(nodeRef).setInheritanceForChildren(nodeRef, id));
                     getACLDAO(nodeRef).updateChangedAcls(nodeRef, changes);
                     aclDaoComponent.deleteAccessControlList(acl.getId());
                 }

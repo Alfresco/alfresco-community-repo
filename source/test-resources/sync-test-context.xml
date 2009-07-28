@@ -15,6 +15,9 @@
         <property name="applicationContextManager">
             <ref bean="testApplicationContextManager" />
         </property>
+        <property name="retryingTransactionHelper">
+            <ref bean="retryingTransactionHelper"/>
+        </property>
         <property name="sourceBeanName">
             <value>userRegistry</value>
         </property>

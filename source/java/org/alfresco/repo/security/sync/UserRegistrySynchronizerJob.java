@@ -55,7 +55,7 @@ public class UserRegistrySynchronizerJob implements Job
             public Object doWork() throws Exception
             {
                 userRegistrySynchronizer.synchronize(synchronizeChangesOnly == null
-                        || !Boolean.parseBoolean(synchronizeChangesOnly));
+                        || !Boolean.parseBoolean(synchronizeChangesOnly), true);
                 return null;
             }
         }, AuthenticationUtil.getSystemUserName());

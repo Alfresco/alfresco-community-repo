@@ -102,7 +102,7 @@ public class NodeAccessControlListDAO extends HibernateDaoSupport implements Acc
         // Nothing to do here
     }
 
-    public List<AclChange> setInheritanceForChildren(NodeRef parent, Long mergeFrom)
+    public List<AclChange> setInheritanceForChildren(NodeRef parent, Long inheritFrom)
     {
         // Nothing to do here
         return Collections.<AclChange> emptyList();

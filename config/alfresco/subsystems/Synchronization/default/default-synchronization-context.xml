@@ -35,6 +35,9 @@
        <property name="syncWhenMissingPeopleLogIn">
             <value>${synchronization.syncWhenMissingPeopleLogIn}</value>
         </property>
+       <property name="syncOnStartup">
+            <value>${synchronization.syncOnStartup}</value>
+        </property>
        <property name="autoCreatePeopleOnLogin">
             <value>${synchronization.autoCreatePeopleOnLogin}</value>
         </property>
@@ -49,6 +52,9 @@
         </property>
         <property name="applicationContextManager">
             <ref bean="Authentication" />
+        </property>
+        <property name="retryingTransactionHelper">
+            <ref bean="retryingTransactionHelper"/>
         </property>
         <property name="sourceBeanName">
             <value>userRegistry</value>

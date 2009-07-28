@@ -170,7 +170,6 @@ public class DMAccessControlListDAO implements AccessControlListDAO
         {
             if (!store.getProtocol().equals(StoreRef.PROTOCOL_AVM))
             {
-                @SuppressWarnings("unused")
                 CounterSet update;
                 update = fixOldDmAcls(nodeService.getRootNode(store), null, true);
                 result.add(update);
@@ -316,10 +315,10 @@ public class DMAccessControlListDAO implements AccessControlListDAO
         throw new UnsupportedOperationException();
     }
 
-    public List<AclChange> setInheritanceForChildren(NodeRef parent, Long mergeFrom)
+    public List<AclChange> setInheritanceForChildren(NodeRef parent, Long inheritFrom)
     {
         List<AclChange> changes = new ArrayList<AclChange>();
-        setFixedAcls(parent, mergeFrom, changes, false);
+        setFixedAcls(parent, inheritFrom, null, changes, false);
         return changes;
     }
 
@@ -329,14 +328,20 @@ public class DMAccessControlListDAO implements AccessControlListDAO
     }
 
     /**
-     * Support to set ACLs and cascade fo required
+     * Support to set a shared ACL on a node and all of its children
      * 
      * @param nodeRef
+     *            the parent node
+     * @param inheritFrom
+     *            the parent node's ACL
      * @param mergeFrom
+     *            the shared ACL, if already known. If <code>null</code>, will be retrieved / created lazily
      * @param changes
+     *            the list in which to record changes
      * @param set
+     *            set the shared ACL on the parent ?
      */
-    public void setFixedAcls(NodeRef nodeRef, Long mergeFrom, List<AclChange> changes, boolean set)
+    public void setFixedAcls(NodeRef nodeRef, Long inheritFrom, Long mergeFrom, List<AclChange> changes, boolean set)
     {
         if (nodeRef == null)
         {
@@ -346,6 +351,11 @@ public class DMAccessControlListDAO implements AccessControlListDAO
         {
             if (set)
             {
+                // Lazily retrieve/create the shared ACL
+                if (mergeFrom == null)
+                {
+                    mergeFrom = aclDaoComponent.getInheritedAccessControlList(inheritFrom);
+                }
                 setAccessControlList(nodeRef, aclDaoComponent.getDbAccessControlList(mergeFrom));
             }
 
@@ -355,6 +365,12 @@ public class DMAccessControlListDAO implements AccessControlListDAO
             {
                 if (child.isPrimary())
                 {
+                    // Lazily retrieve/create the shared ACL
+                    if (mergeFrom == null)
+                    {
+                        mergeFrom = aclDaoComponent.getInheritedAccessControlList(inheritFrom);
+                    }
+
                     DbAccessControlList acl = getAccessControlList(child.getChildRef());
 
                     if (acl == null)
@@ -362,7 +378,7 @@ public class DMAccessControlListDAO implements AccessControlListDAO
                         hibernateSessionHelper.mark();
                         try
                         {
-                            setFixedAcls(child.getChildRef(), mergeFrom, changes, true);
+                            setFixedAcls(child.getChildRef(), inheritFrom, mergeFrom, changes, true);
                         }
                         finally
                         {
@@ -386,7 +402,7 @@ public class DMAccessControlListDAO implements AccessControlListDAO
                         hibernateSessionHelper.mark();
                         try
                         {
-                            setFixedAcls(child.getChildRef(), mergeFrom, changes, true);
+                            setFixedAcls(child.getChildRef(), inheritFrom, mergeFrom, changes, true);
                         }
                         finally
                         {

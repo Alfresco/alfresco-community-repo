@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -14,12 +14,14 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
- * As a special exception to the terms and conditions of version 2.0 of
- * the GPL, you may redistribute this Program in connection with Free/Libre
- * and Open Source Software ("FLOSS") applications as described in Alfresco's
- * FLOSS exception.  You should have recieved a copy of the text describing
- * the FLOSS exception, and it is also available here:
- * http://www.alfresco.com/legal/licensing" */
+
+ * As a special exception to the terms and conditions of version 2.0 of 
+ * the GPL, you may redistribute this Program in connection with Free/Libre 
+ * and Open Source Software ("FLOSS") applications as described in Alfresco's 
+ * FLOSS exception.  You should have received a copy of the text describing 
+ * the FLOSS exception, and it is also available here: 
+ * http://www.alfresco.com/legal/licensing"
+ */
 
 package org.alfresco.repo.domain.hibernate;
 
@@ -38,7 +40,6 @@ import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.repo.domain.hibernate.AclDaoComponentImpl.Indirection;
 import org.alfresco.repo.search.AVMSnapShotTriggeredIndexingMethodInterceptor;
 import org.alfresco.repo.search.AVMSnapShotTriggeredIndexingMethodInterceptor.StoreType;
-import org.alfresco.repo.search.impl.lucene.index.IndexInfo;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.security.permissions.ACLType;
@@ -509,7 +510,7 @@ public class AVMAccessControlListDAO implements AccessControlListDAO
 
                 if (descriptor.isLayeredDirectory())
                 {
-                    setInheritanceForDirectChildren(descriptor, changeMap, aclDaoComponent.getInheritedAccessControlList(getAclAsSystem(-1, descriptor.getPath()).getId()),
+                    setInheritanceForDirectChildren(descriptor, changeMap, getAclAsSystem(-1, descriptor.getPath()).getId(),
                             indirections);
                 }
                 fixUpAcls(descriptor, changeMap, unchanged, unsetAcl, mode, indirections);
@@ -586,10 +587,10 @@ public class AVMAccessControlListDAO implements AccessControlListDAO
 
     }
 
-    private void setInheritanceForDirectChildren(AVMNodeDescriptor descriptor, Map<Long, Long> changeMap, Long mergeFrom, Map<Long, Set<Long>> indirections)
+    private void setInheritanceForDirectChildren(AVMNodeDescriptor descriptor, Map<Long, Long> changeMap, Long inheritFrom, Map<Long, Set<Long>> indirections)
     {
         List<AclChange> changes = new ArrayList<AclChange>();
-        setFixedAcls(descriptor, mergeFrom, changes, SetMode.DIRECT_ONLY, false, indirections);
+        setFixedAcls(descriptor, inheritFrom, null, changes, SetMode.DIRECT_ONLY, false, indirections);
         for (AclChange change : changes)
         {
             if (!change.getBefore().equals(change.getAfter()))
@@ -599,7 +600,7 @@ public class AVMAccessControlListDAO implements AccessControlListDAO
         }
     }
 
-    public List<AclChange> setInheritanceForChildren(NodeRef parent, Long mergeFrom)
+    public List<AclChange> setInheritanceForChildren(NodeRef parent, Long inheritFrom)
     {
         // Walk children and fix up any that reference the given list ..
         // If previous is null we need to visit all descendants with a null acl and set
@@ -615,7 +616,7 @@ public class AVMAccessControlListDAO implements AccessControlListDAO
             Map<Long, Set<Long>> indirections = buildIndirections();
             List<AclChange> changes = new ArrayList<AclChange>();
             AVMNodeDescriptor descriptor = fAVMService.lookup(version, path);
-            setFixedAcls(descriptor, mergeFrom, changes, SetMode.ALL, false, indirections);
+            setFixedAcls(descriptor, inheritFrom, null, changes, SetMode.ALL, false, indirections);
             return changes;
 
         }
@@ -626,16 +627,24 @@ public class AVMAccessControlListDAO implements AccessControlListDAO
     }
 
     /**
-     * Set and cascade ACls
+     * Support to set a shared ACL on a node and all of its children.
      * 
      * @param descriptor
+     *            the descriptor
+     * @param inheritFrom
+     *            the parent node's ACL
      * @param mergeFrom
+     *            the shared ACL, if already known. If <code>null</code>, will be retrieved / created lazily
      * @param changes
+     *            the list in which to record changes
      * @param mode
+     *            the mode
      * @param set
+     *            set the shared ACL on the parent ?
      * @param indirections
+     *            the indirections
      */
-    public void setFixedAcls(AVMNodeDescriptor descriptor, Long mergeFrom, List<AclChange> changes, SetMode mode, boolean set, Map<Long, Set<Long>> indirections)
+    public void setFixedAcls(AVMNodeDescriptor descriptor, Long inheritFrom, Long mergeFrom, List<AclChange> changes, SetMode mode, boolean set, Map<Long, Set<Long>> indirections)
     {
         if (descriptor == null)
         {
@@ -645,6 +654,12 @@ public class AVMAccessControlListDAO implements AccessControlListDAO
         {
             if (set)
             {
+                // Lazily retrieve/create the shared ACL
+                if (mergeFrom == null)
+                {
+                    mergeFrom = aclDaoComponent.getInheritedAccessControlList(inheritFrom);
+                }
+
                 // Simple set does not require any special COW wire up
                 // The AVM node will COW as required
                 DbAccessControlList previous = getAclAsSystem(-1, descriptor.getPath());
@@ -673,6 +688,12 @@ public class AVMAccessControlListDAO implements AccessControlListDAO
 
                 for (String key : children.keySet())
                 {
+                    // Lazily retrieve/create the shared ACL
+                    if (mergeFrom == null)
+                    {
+                        mergeFrom = aclDaoComponent.getInheritedAccessControlList(inheritFrom);
+                    }
+
                     AVMNodeDescriptor child = children.get(key);
 
                     DbAccessControlList acl = getAclAsSystem(-1, child.getPath());
@@ -682,7 +703,7 @@ public class AVMAccessControlListDAO implements AccessControlListDAO
                         hibernateSessionHelper.mark();
                         try
                         {
-                            setFixedAcls(child, mergeFrom, changes, mode, true, indirections);
+                            setFixedAcls(child, inheritFrom, mergeFrom, changes, mode, true, indirections);
                         }
                         finally
                         {
@@ -709,7 +730,7 @@ public class AVMAccessControlListDAO implements AccessControlListDAO
                                 try
                                 {
                                     setAclAsSystem(child.getPath(), aclDaoComponent.getDbAccessControlList(change.getAfter()));
-                                    setFixedAcls(child, aclDaoComponent.getInheritedAccessControlList(change.getAfter()), newChanges, SetMode.DIRECT_ONLY, false, indirections);
+                                    setFixedAcls(child, change.getAfter(), null, newChanges, SetMode.DIRECT_ONLY, false, indirections);
                                     changes.addAll(newChanges);
                                     break;
                                 }
@@ -725,7 +746,7 @@ public class AVMAccessControlListDAO implements AccessControlListDAO
                         hibernateSessionHelper.mark();
                         try
                         {
-                            setFixedAcls(child, mergeFrom, changes, mode, true, indirections);
+                            setFixedAcls(child, inheritFrom, mergeFrom, changes, mode, true, indirections);
                         }
                         finally
                         {
@@ -863,7 +884,7 @@ public class AVMAccessControlListDAO implements AccessControlListDAO
 
                 List<AclChange> changes = new ArrayList<AclChange>();
 
-                setFixedAcls(node, aclDaoComponent.getInheritedAccessControlList(id), changes, SetMode.DIRECT_ONLY, false, indirections);
+                setFixedAcls(node, id, null, changes, SetMode.DIRECT_ONLY, false, indirections);
 
                 for (AclChange change : changes)
                 {
@@ -909,7 +930,7 @@ public class AVMAccessControlListDAO implements AccessControlListDAO
             }
             List<AclChange> changes = new ArrayList<AclChange>();
 
-            setFixedAcls(node, aclDaoComponent.getInheritedAccessControlList(getAclAsSystem(-1, node.getPath()).getId()), changes, SetMode.DIRECT_ONLY, false, indirections);
+            setFixedAcls(node, getAclAsSystem(-1, node.getPath()).getId(), null, changes, SetMode.DIRECT_ONLY, false, indirections);
 
             for (AclChange change : changes)
             {
@@ -949,7 +970,7 @@ public class AVMAccessControlListDAO implements AccessControlListDAO
             }
             List<AclChange> changes = new ArrayList<AclChange>();
 
-            setFixedAcls(node, aclDaoComponent.getInheritedAccessControlList(getAclAsSystem(-1, node.getPath()).getId()), changes, SetMode.DIRECT_ONLY, false, indirections);
+            setFixedAcls(node, getAclAsSystem(-1, node.getPath()).getId(), null, changes, SetMode.DIRECT_ONLY, false, indirections);
 
             for (AclChange change : changes)
             {

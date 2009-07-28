@@ -46,6 +46,8 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.transaction.TransactionService;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * This class abstract the support required to set up and query the Acegi context for security enforcement. There are
@@ -71,6 +73,8 @@ public abstract class AbstractAuthenticationComponent implements AuthenticationC
     private TransactionService transactionService;
     
     private UserRegistrySynchronizer userRegistrySynchronizer;
+    
+    private final Log logger = LogFactory.getLog(getClass());    
 
     public AbstractAuthenticationComponent()
     {
@@ -134,14 +138,37 @@ public abstract class AbstractAuthenticationComponent implements AuthenticationC
 
     public void authenticate(String userName, char[] password) throws AuthenticationException
     {
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Authenticating user \"" + userName + '"');
+        }
         // Support guest login from the login screen
         if (isGuestUserName(userName))
         {
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("User \"" + userName + "\" recognized as a guest user");
+            }
             setGuestUserAsCurrentUser(getUserDomain(userName));
         }
         else
         {
-            authenticateImpl(userName, password);
+            try
+            {
+                authenticateImpl(userName, password);
+            }
+            catch (RuntimeException e)
+            {
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("Failed to authenticate user \"" + userName + '"', e);
+                }
+                throw e;
+            }
+        }
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("User \"" + userName + "\" authenticated successfully");
         }
     }
 
@@ -225,11 +252,20 @@ public abstract class AbstractAuthenticationComponent implements AuthenticationC
             UserDetails ud = null;
             if (isGuestUserName(userName))
             {
+                String tenantDomain = getUserDomain(userName);
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("Setting the current user to the guest user of tenant domain \"" + tenantDomain + '"');
+                }
                 GrantedAuthority[] gas = new GrantedAuthority[0];
-                ud = new User(getGuestUserName(getUserDomain(userName)), "", true, true, true, true, gas);
+                ud = new User(getGuestUserName(tenantDomain), "", true, true, true, true, gas);
             }
             else
             {
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("Setting the current user to \"" + userName + '"');
+                }
                 ud = getUserDetails(userName);
             }
             return setUserDetails(ud);
@@ -428,17 +464,27 @@ public abstract class AbstractAuthenticationComponent implements AuthenticationC
                 {
                     public String doWork() throws Exception
                     {
-                        if (personService.personExists(userName)|| userRegistrySynchronizer.createMissingPerson(userName))
+                        if (!personService.personExists(userName))
                         {
-                            NodeRef userNode = personService.getPerson(userName);
-                            if (userNode != null)
+                            if (logger.isDebugEnabled())
                             {
-                                // Get the person name and use that as the current user to line up with permission
-                                // checks
-                                return (String) nodeService.getProperty(userNode, ContentModel.PROP_USERNAME);
+                                logger.debug("User \"" + userName
+                                        + "\" does not exist in Alfresco. Attempting to import / create the user.");
+                            }
+                            if (!userRegistrySynchronizer.createMissingPerson(userName))
+                            {
+                                if (logger.isDebugEnabled())
+                                {
+                                    logger.debug("Failed to import / create user \"" + userName + '"');
+                                }
+                                throw new AuthenticationException("User \"" + userName
+                                        + "\" does not exist in Alfresco");
                             }
                         }
-                        throw new AuthenticationException("Person does not exist in Alfresco");
+                        NodeRef userNode = personService.getPerson(userName);
+                        // Get the person name and use that as the current user to line up with permission
+                        // checks
+                        return (String) nodeService.getProperty(userNode, ContentModel.PROP_USERNAME);
                     }
                 }, getSystemUserName(getUserDomain(userName)));
 
@@ -499,6 +545,10 @@ public abstract class AbstractAuthenticationComponent implements AuthenticationC
 
     public Authentication setSystemUserAsCurrentUser(String tenantDomain)
     {
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Setting the current user to the system user of tenant domain \"" + tenantDomain + '"');
+        }
         return authenticationContext.setSystemUserAsCurrentUser(tenantDomain);
     }
 

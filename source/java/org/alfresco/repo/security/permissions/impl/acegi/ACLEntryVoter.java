@@ -256,7 +256,7 @@ public class ACLEntryVoter implements AccessDecisionVoter, InitializingBean
 
         if (supportedDefinitions.size() == 0)
         {
-            return AccessDecisionVoter.ACCESS_GRANTED;
+            return AccessDecisionVoter.ACCESS_ABSTAIN;
         }
 
         MethodInvocation invocation = (MethodInvocation) object;

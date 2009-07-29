@@ -283,14 +283,15 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
     /**
      * Tests a forced update of the test users and groups. Also tests that groups and users that previously existed in
      * Z2 get moved when they appear in Z1. Also tests that 'dangling references' to removed users (U4, U5) do not cause
-     * any problems. The layout is as follows
+     * any problems. Also tests that case-sensitivity is not a problem when an occluded user is recreated with different
+     * case. The layout is as follows
      * 
      * <pre>
      * Z1
      * G1 - U6
      * G2 - 
      * G3 - U2, G5 - U6
-     * G6 - U3
+     * G6 - u3
      * 
      * Z2
      * G2 - U1, U3, U6
@@ -305,11 +306,11 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
         setUpTestUsersAndGroups();
         this.applicationContextManager.setUserRegistries(new MockUserRegistry("Z1", new NodeDescription[]
         {
-            newPerson("U2"), newPerson("U3"), newPerson("U6")
+            newPerson("U2"), newPerson("u3"), newPerson("U6")
         }, new NodeDescription[]
         {
             newGroup("G1", "U6"), newGroup("G2"), newGroup("G3", "U2", "G5"), newGroup("G5", "U6"),
-            newGroup("G6", "U3")
+            newGroup("G6", "u3")
         }), new MockUserRegistry("Z2", new NodeDescription[]
         {
             newPerson("U1", "somenewemail@alfresco.com"), newPerson("U3"), newPerson("U6")
@@ -332,14 +333,14 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
             public Object execute() throws Throwable
             {
                 assertExists("Z1", "U2");
-                assertExists("Z1", "U3");
+                assertExists("Z1", "u3");
                 assertExists("Z1", "U6");
                 assertExists("Z1", "G1", "U6");
                 assertExists("Z1", "G2");
                 assertExists("Z1", "G3", "U2", "G5");
                 assertNotExists("G4");
                 assertExists("Z1", "G5", "U6");
-                assertExists("Z1", "G6", "U3");
+                assertExists("Z1", "G6", "u3");
                 assertExists("Z2", "U1");
                 assertEmailEquals("U1", "somenewemail@alfresco.com");
                 assertNotExists("U4");

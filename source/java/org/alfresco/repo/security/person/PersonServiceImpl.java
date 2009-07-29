@@ -641,6 +641,13 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
 
     public void deletePerson(String userName)
     {
+        // Normalize the username to avoid case sensitivity issues
+        userName = getUserIdentifier(userName);
+        if (userName == null)
+        {
+            return;
+        }
+        
         // remove user from any containing authorities
         Set<String> containerAuthorities = authorityService.getContainingAuthorities(null, userName, true);
         for (String containerAuthority : containerAuthorities)

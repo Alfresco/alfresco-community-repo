@@ -39,6 +39,8 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.transaction.UserTransaction;
 
+import net.sf.acegisecurity.BadCredentialsException;
+
 import org.alfresco.jlan.server.auth.PasswordEncryptor;
 import org.alfresco.jlan.server.auth.ntlm.NTLM;
 import org.alfresco.jlan.server.auth.ntlm.NTLMLogonDetails;
@@ -55,8 +57,10 @@ import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.MD4PasswordEncoder;
 import org.alfresco.repo.security.authentication.MD4PasswordEncoderImpl;
+import org.alfresco.repo.security.authentication.NTLMMode;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.security.authentication.ntlm.NLTMAuthenticator;
+import org.alfresco.repo.security.authentication.ntlm.NTLMPassthruToken;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.transaction.TransactionService;
@@ -65,13 +69,14 @@ import org.alfresco.web.sharepoint.auth.AbstractAuthenticationHandler;
 import org.alfresco.web.sharepoint.auth.SiteMemberMapper;
 import org.alfresco.web.sharepoint.auth.SiteMemberMappingException;
 import org.apache.commons.codec.binary.Base64;
+import org.springframework.beans.factory.InitializingBean;
 
 /**
  * <p>
  * NTLM SSO web authentication implementation.
  * </p>
  */
-public class NtlmAuthenticationHandler extends AbstractAuthenticationHandler
+public class NtlmAuthenticationHandler extends AbstractAuthenticationHandler implements InitializingBean
 {
     // NTLM authentication session object names
     private static final String NTLM_AUTH_DETAILS = "_alfNTLMDetails";
@@ -84,12 +89,24 @@ public class NtlmAuthenticationHandler extends AbstractAuthenticationHandler
     private TransactionService transactionService;
     private NodeService nodeService;
    
-    private static final int ntlmFlags = NTLM.Flag56Bit +
+    // NTLM flags mask for use with an authentication component that supports MD4 hashed password
+    // Enable NTLMv1 and NTLMv2
+    private static final int NTLM_FLAGS_NTLM2 = NTLM.Flag56Bit +
                                          NTLM.Flag128Bit +
                                          NTLM.FlagLanManKey +
                                          NTLM.FlagNegotiateNTLM +
                                          NTLM.FlagNTLM2Key +
                                          NTLM.FlagNegotiateUnicode;
+    
+    // NTLM flags mask for use with an authentication component that uses passthru auth
+    // Enable NTLMv1 only
+    private static final int NTLM_FLAGS_NTLM1 = NTLM.Flag56Bit +
+                                                NTLM.FlagLanManKey +
+                                                NTLM.FlagNegotiateNTLM +
+                                                NTLM.FlagNegotiateOEM +
+                                                NTLM.FlagNegotiateUnicode;
+   
+    private static int ntlmFlags;
     
     public void setAuthenticationComponent(NLTMAuthenticator authenticationComponent)
     {
@@ -104,6 +121,18 @@ public class NtlmAuthenticationHandler extends AbstractAuthenticationHandler
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
+    }
+
+    public void afterPropertiesSet() throws Exception
+    {
+        if (authenticationComponent.getNTLMMode() == NTLMMode.MD4_PROVIDER)
+        {
+            ntlmFlags = NTLM_FLAGS_NTLM2;
+        }        
+        else
+        {
+            ntlmFlags = NTLM_FLAGS_NTLM1;
+        }
     }
 
     public SessionUser authenticateRequest(HttpServletRequest request, HttpServletResponse response,
@@ -261,8 +290,30 @@ public class NtlmAuthenticationHandler extends AbstractAuthenticationHandler
         byte[] challenge = null;
 
         // Generate a random 8 byte challenge
-        challenge = new byte[8];
-        DataPacker.putIntelLong(random.nextLong(), challenge, 0);
+        NTLMPassthruToken authToken = null;
+        
+        if (authenticationComponent.getNTLMMode() == NTLMMode.MD4_PROVIDER)
+        {
+            challenge = new byte[8];
+            DataPacker.putIntelLong(random.nextLong(), challenge, 0);
+        }
+        else
+        {
+            // Get the client domain
+            String domain = type1Msg.getDomain();
+            
+            // Create an authentication token for the new logon
+            authToken = new NTLMPassthruToken(domain);
+            
+            // Run the first stage of the passthru authentication to get the challenge
+            authenticationComponent.authenticate(authToken);
+            
+            // Get the challenge from the token
+            if (authToken.getChallenge() != null)
+            {
+                challenge = authToken.getChallenge().getBytes();
+            }
+        }
 
         // Get the flags from the client request and mask out unsupported features
         int flags = type1Msg.getFlags() & ntlmFlags;
@@ -277,7 +328,7 @@ public class NtlmAuthenticationHandler extends AbstractAuthenticationHandler
 
         // Store the NTLM logon details, cache the type2 message, and token if using passthru
         ntlmDetails.setType2Message(type2Msg);
-        ntlmDetails.setAuthenticationToken(null);
+        ntlmDetails.setAuthenticationToken(authToken);
 
         putNtlmLogonDetailsToSession(request, ntlmDetails);
 
@@ -314,20 +365,65 @@ public class NtlmAuthenticationHandler extends AbstractAuthenticationHandler
 
         boolean authenticated = false;
 
-        // Get the stored MD4 hashed password for the user, or null if the user does not exist
-        String md4hash = getMD4Hash(userName);
+        if (authenticationComponent.getNTLMMode() == NTLMMode.MD4_PROVIDER)
+        {
+            // Get the stored MD4 hashed password for the user, or null if the user does not exist
+            String md4hash = getMD4Hash(userName);
 
-        if (md4hash != null)
-        {
-            authenticated = validateLocalHashedPassword(type3Msg, ntlmDetails, authenticated, md4hash);
+            if (md4hash != null)
+            {
+                authenticated = validateLocalHashedPassword(type3Msg, ntlmDetails, authenticated, md4hash);
+            }
+            else
+            {
+                authenticated = false;
+            }
         }
-        else
-        {
-            authenticated = false;
+        else        
+        {            
+            //  Determine if the client sent us NTLMv1 or NTLMv2
+            if (type3Msg.hasFlag(NTLM.Flag128Bit) && type3Msg.hasFlag(NTLM.FlagNTLM2Key) ||
+                (type3Msg.getNTLMHash() != null && type3Msg.getNTLMHash().length > 24))
+            {
+                // Cannot accept NTLMv2 if we are using passthru auth
+                if (logger.isErrorEnabled())
+                    logger.error("Client " + workstation + " using NTLMv2 logon, not valid with passthru authentication");
+            }
+            else
+            {
+                // Passthru mode, send the hashed password details to the passthru authentication server
+                NTLMPassthruToken authToken = (NTLMPassthruToken) ntlmDetails.getAuthenticationToken();
+                authToken.setUserAndPassword(type3Msg.getUserName(), type3Msg.getNTLMHash(), PasswordEncryptor.NTLM1);
+                
+                try
+                {
+                    // Run the second stage of the passthru authentication
+                    authenticationComponent.authenticate(authToken);
+                    authenticated = true;                
+                    
+                    // Set the authentication context
+                    authenticationComponent.setCurrentUser(userName);
+                }
+                catch (BadCredentialsException ex)
+                {
+                    if (logger.isDebugEnabled())
+                        logger.debug("Authentication failed, " + ex.getMessage());
+                }
+                catch (AuthenticationException ex)
+                {
+                    if (logger.isDebugEnabled())
+                        logger.debug("Authentication failed, " + ex.getMessage());
+                }
+                finally
+                {
+                    // Clear the authentication token from the NTLM details
+                    ntlmDetails.setAuthenticationToken(null);
+                }
+            }
         }
 
         // Check if the user has been authenticated, if so then setup the user environment
-        if (authenticated == true && callback.isSiteMember(request, alfrescoContext, userName))
+        if (authenticated == true && callback.isSiteMember(request, alfrescoContext, userName.toLowerCase()))
         {
             String uri = request.getRequestURI();
 

@@ -572,7 +572,7 @@ function getSearchResults(term, maxResults, siteId, containerId)
    {
       luceneQuery = "+PATH:\"" + path + "/*\" +(" + luceneQuery + ")";
       luceneQuery += " -TYPE:\"{http://www.alfresco.org/model/content/1.0}thumbnail\"";
-      nodes = search.luceneSearch(luceneQuery);
+      nodes = search.luceneSearch(luceneQuery, null, true, maxResults);
    }
    else
    {

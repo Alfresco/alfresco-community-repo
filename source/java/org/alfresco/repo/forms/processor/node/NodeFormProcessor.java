@@ -86,25 +86,26 @@ public class NodeFormProcessor extends FilteredFormProcessor
     /** Logger */
     private static Log logger = LogFactory.getLog(NodeFormProcessor.class);
     
-    protected static final String ON = "on";
-    protected static final String PROP = "prop";
-    protected static final String ASSOC = "assoc";
-    protected static final String DATA_KEY_SEPARATOR = "_";
-    protected static final String PROP_DATA_PREFIX = PROP + DATA_KEY_SEPARATOR;
-    protected static final String ASSOC_DATA_PREFIX = ASSOC + DATA_KEY_SEPARATOR;
-    protected static final String ASSOC_DATA_ADDED_SUFFIX = DATA_KEY_SEPARATOR + "added";
-    protected static final String ASSOC_DATA_REMOVED_SUFFIX = DATA_KEY_SEPARATOR + "removed";
-    
-    protected static final String TRANSIENT_MIMETYPE = "mimetype";
-    protected static final String TRANSIENT_SIZE = "size";
-    protected static final String TRANSIENT_ENCODING = "encoding";
-    
     protected static final String MSG_MIMETYPE_LABEL = "form_service.mimetype.label";
     protected static final String MSG_MIMETYPE_DESC = "form_service.mimetype.description";
     protected static final String MSG_ENCODING_LABEL = "form_service.encoding.label";
     protected static final String MSG_ENCODING_DESC = "form_service.encoding.description";
     protected static final String MSG_SIZE_LABEL = "form_service.size.label";
     protected static final String MSG_SIZE_DESC = "form_service.size.description";
+    
+    /** Public constants */
+    public static final String ON = "on";
+    public static final String PROP = "prop";
+    public static final String ASSOC = "assoc";
+    public static final String DATA_KEY_SEPARATOR = "_";
+    public static final String PROP_DATA_PREFIX = PROP + DATA_KEY_SEPARATOR;
+    public static final String ASSOC_DATA_PREFIX = ASSOC + DATA_KEY_SEPARATOR;
+    public static final String ASSOC_DATA_ADDED_SUFFIX = DATA_KEY_SEPARATOR + "added";
+    public static final String ASSOC_DATA_REMOVED_SUFFIX = DATA_KEY_SEPARATOR + "removed";
+    
+    public static final String TRANSIENT_MIMETYPE = "mimetype";
+    public static final String TRANSIENT_SIZE = "size";
+    public static final String TRANSIENT_ENCODING = "encoding";
     
     /** Services */
     protected NodeService nodeService;

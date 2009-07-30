@@ -315,13 +315,13 @@ public class Search extends BaseScopableProcessorExtension
         {
             return Context.getCurrentContext().newArray(getScope(), 0);
         }
-        if (sortColumn == null || sortColumn.length() == 0)
-        {
-            return luceneSearch(store, search);
-        }
         
-        SortColumn[] sort = new SortColumn[1];
-        sort[0] = new SortColumn(sortColumn, asc);
+        SortColumn[] sort = null;
+        if (sortColumn != null && sortColumn.length() != 0)
+        {
+            sort = new SortColumn[1];
+            sort[0] = new SortColumn(sortColumn, asc);
+        }
         Object[] results = query(store, search, sort, SearchService.LANGUAGE_LUCENE, max, 0);
         return Context.getCurrentContext().newArray(getScope(), results);
     }

@@ -565,6 +565,32 @@ public class LuceneQueryParser extends QueryParser
                 reader.parse("//" + queryText);
                 return handler.getQuery();
             }
+            else if (field.equals("PRIMARYASSOCTYPEQNAME"))
+            {
+                XPathReader reader = new XPathReader();
+                LuceneXPathHandler handler = new LuceneXPathHandler();
+                handler.setNamespacePrefixResolver(namespacePrefixResolver);
+                handler.setDictionaryService(dictionaryService);
+                reader.setXPathHandler(handler);
+                reader.parse("//" + queryText);
+                PathQuery query = handler.getQuery();
+                query.setPathField("PATH");
+                query.setQnameField("PRIMARYASSOCTYPEQNAME");
+                return query;
+            }
+            else if (field.equals("ASSOCTYPEQNAME"))
+            {
+                XPathReader reader = new XPathReader();
+                LuceneXPathHandler handler = new LuceneXPathHandler();
+                handler.setNamespacePrefixResolver(namespacePrefixResolver);
+                handler.setDictionaryService(dictionaryService);
+                reader.setXPathHandler(handler);
+                reader.parse("//" + queryText);
+                PathQuery query = handler.getQuery();
+                query.setPathField("PATH");
+                query.setQnameField("PRIMARYASSOCTYPEQNAME");
+                return query;
+            }
             else if (field.equals("CLASS"))
             {
                 ClassDefinition target;

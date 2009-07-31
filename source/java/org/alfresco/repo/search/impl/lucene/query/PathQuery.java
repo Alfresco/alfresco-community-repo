@@ -175,7 +175,7 @@ public class PathQuery extends Query
     public String toString()
     {
         StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append("PATH:");
+        stringBuilder.append("<PATH>:");
         int i = 0;
         for(StructuredFieldPosition sfp : pathStructuredFieldPositions)
         {

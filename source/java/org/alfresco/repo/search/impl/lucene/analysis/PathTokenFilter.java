@@ -282,10 +282,11 @@ public class PathTokenFilter extends Tokenizer
 
             buffer.append(c);
         }
+        int end = readerPosition - 1;
         readerPosition = -1;
         if (!inNameSpace)
         {
-            return new Token(buffer.toString(), start, readerPosition - 1, "QNAME");
+            return new Token(buffer.toString(), start, end, "QNAME");
         }
         else
         {

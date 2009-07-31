@@ -142,6 +142,14 @@ public class LuceneAnalyser extends Analyzer
         {
             analyser = new PathAnalyser();
         }
+        else if (fieldName.equals("PRIMARYASSOCTYPEQNAME"))
+        {
+            analyser = new PathAnalyser();
+        }
+        else if (fieldName.equals("ASSOCTYPEQNAME"))
+        {
+            analyser = new PathAnalyser();
+        }
         else if (fieldName.equals("TYPE"))
         {
             throw new UnsupportedOperationException("TYPE must not be tokenised");

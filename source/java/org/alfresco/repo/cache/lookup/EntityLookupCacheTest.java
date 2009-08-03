@@ -33,6 +33,7 @@ import junit.framework.TestCase;
 import org.alfresco.repo.cache.MemoryCache;
 import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.cache.lookup.EntityLookupCache.EntityLookupCallbackDAO;
+import org.alfresco.util.EqualsHelper;
 import org.alfresco.util.Pair;
 
 /**
@@ -142,10 +143,27 @@ public class EntityLookupCacheTest extends TestCase implements EntityLookupCallb
         
         // Now cross-check against the caches and make sure that the cache 
         entityPairBBB = entityLookupCacheA.getByValue(valueBBB);
-        assertEquals(5, cache.getKeys().size());
-        entityPairBBB = entityLookupCacheB.getByValue(valueAAA);
         assertEquals(6, cache.getKeys().size());
+        entityPairBBB = entityLookupCacheB.getByValue(valueAAA);
+        assertEquals(8, cache.getKeys().size());
     }
+
+    public void testNullLookups() throws Exception
+    {
+        TestValue valueNull = null;
+        Pair<Long, Object> entityPairNull = entityLookupCacheA.getOrCreateByValue(valueNull);
+        assertNotNull(entityPairNull);
+        assertTrue(database.containsKey(entityPairNull.getFirst()));
+        assertNull(database.get(entityPairNull.getFirst()));
+        assertEquals(2, cache.getKeys().size());
+        
+        // Look it up again
+        Pair<Long, Object> entityPairCheck = entityLookupCacheA.getOrCreateByValue(valueNull);
+        assertNotNull(entityPairNull);
+        assertTrue(database.containsKey(entityPairNull.getFirst()));
+        assertNull(database.get(entityPairNull.getFirst()));
+        assertEquals(entityPairNull, entityPairCheck);
+    }        
 
     /**
      * Helper class to represent business object
@@ -182,30 +200,6 @@ public class EntityLookupCacheTest extends TestCase implements EntityLookupCallb
         return dbValue;
     }
 
-    /**
-     * Simulate creation of a new database entry
-     */
-    public Pair<Long, Object> createValue(Object value)
-    {
-        assertNotNull(value);
-        assertTrue(value instanceof TestValue);
-        String dbValue = ((TestValue)value).val;
-        
-        // Get the last key
-        Long lastKey = database.isEmpty() ? null : database.lastKey();
-        Long newKey = null;
-        if (lastKey == null)
-        {
-            newKey = new Long(1);
-        }
-        else
-        {
-            newKey = new Long(lastKey.longValue() + 1);
-        }
-        database.put(newKey, dbValue);
-        return new Pair<Long, Object>(newKey, value);
-    }
-
     public Pair<Long, Object> findByKey(Long key)
     {
         assertNotNull(key);
@@ -222,17 +216,39 @@ public class EntityLookupCacheTest extends TestCase implements EntityLookupCallb
 
     public Pair<Long, Object> findByValue(Object value)
     {
-        assertNotNull(value);
-        assertTrue(value instanceof TestValue);
-        String dbValue = ((TestValue)value).val;
+        assertTrue(value == null || value instanceof TestValue);
+        String dbValue = (value == null) ? null : ((TestValue)value).val;
 
         for (Map.Entry<Long, String> entry : database.entrySet())
         {
-            if (entry.getValue().equals(dbValue))
+            if (EqualsHelper.nullSafeEquals(entry.getValue(), dbValue))
             {
                 return new Pair<Long, Object>(entry.getKey(), entry.getValue());
             }
         }
         return null;
+    }
+
+    /**
+     * Simulate creation of a new database entry
+     */
+    public Pair<Long, Object> createValue(Object value)
+    {
+        assertTrue(value == null || value instanceof TestValue);
+        String dbValue = (value == null) ? null : ((TestValue)value).val;
+        
+        // Get the last key
+        Long lastKey = database.isEmpty() ? null : database.lastKey();
+        Long newKey = null;
+        if (lastKey == null)
+        {
+            newKey = new Long(1);
+        }
+        else
+        {
+            newKey = new Long(lastKey.longValue() + 1);
+        }
+        database.put(newKey, dbValue);
+        return new Pair<Long, Object>(newKey, value);
     }
 }

@@ -40,6 +40,14 @@ import org.alfresco.util.ParameterCheck;
  * <p>
  * All keys will be unique to the given cache region, allowing the cache to be shared
  * between instances of this class.
+ * <p>
+ * Generics:
+ * <ul>
+ *   <li>K:  The database unique identifier.</li>
+ *   <li>V:  The value stored against K.</li>
+ *   <li>VK: The a value-derived key that will be used as a cache key when caching K for lookups by V.
+ *           This can be the value itself if it is itself a good key.</li>
+ * </ul>
  * 
  * @author Derek Hulley
  * @since 3.3
@@ -53,19 +61,27 @@ public class EntityLookupCache<K extends Serializable, V extends Object, VK exte
     {
         /**
          * Resolve the given value into a unique value key that can be used to find the entity's ID.
-         * <p>
+         * A return value should be small and efficient; don't return a value if this is not possible.
+         * <p/>
          * Implementations will often return the value itself, provided that the value is both
          * serializable and has a good <code>equals</code> and <code>hashCode</code>.
+         * <p/>
+         * Were no adequate key can be generated for the value, then <tt>null</tt> can be returned.
+         * In this case, the {@link #findByValue(Object) findByValue} method might not even do a search
+         * and just return <tt>null</tt> itself  i.e. if it is difficult to look the value up in storage
+         * then it is probably difficult to generate a cache key from it, too..  In this scenario, the
+         * cache will be purely for key-based lookups 
          * 
-         * @param value         the full value being keyed
-         * @return              Returns the business key representing the entity
+         * @param value         the full value being keyed (never <tt>null</tt>)
+         * @return              Returns the business key representing the entity, or <tt>null</tt>
+         *                      if an economical key cannot be generated.
          */
         VK1 getValueKey(V1 value);
         
         /**
          * Find an entity for a given key.
          * 
-         * @param key           the key (ID) used to identify the entity
+         * @param key           the key (ID) used to identify the entity (never <tt>null</tt>)
          * @return              Return the entity or <tt>null</tt> if no entity is exists for the ID
          */
         Pair<K1, V1> findByKey(K1 key);
@@ -74,18 +90,46 @@ public class EntityLookupCache<K extends Serializable, V extends Object, VK exte
          * Find and entity using the given value key.  The <code>equals</code> and <code>hashCode</code>
          * methods of the value object should respect case-sensitivity in the same way that this
          * lookup treats case-sensitivity i.e. if the <code>equals</code> method is <b>case-sensitive</b>
-         * then this method should look the entity up using a <b>case-sensitive</b> search.  Where the
-         * behaviour is configurable, 
+         * then this method should look the entity up using a <b>case-sensitive</b> search.
+         * <p/>
+         * Since this is a cache backed by some sort of database, <tt>null</tt> values are allowed by the
+         * cache.  The implementation of this method can throw an exception if <tt>null</tt> is not
+         * appropriate for the use-case.
+         * <p/>
+         * If the search is impossible or expensive, this method should just return <tt>null</tt>.  This
+         * would usually be the case if the {@link #getValueKey(Object) getValueKey} method also returned
+         * <tt>null</tt> i.e. if it is difficult to look the value up in storage then it is probably
+         * difficult to generate a cache key from it, too.
          * 
-         * @param value         the value (business object) used to identify the entity
+         * @param value         the value (business object) used to identify the entity (<tt>null</tt> allowed).
          * @return              Return the entity or <tt>null</tt> if no entity matches the given value
          */
         Pair<K1, V1> findByValue(V1 value);
         
+        /**
+         * Create an entity using the given values.  It is valid to assume that the entity does not exist
+         * within the current transaction at least.
+         * <p/>
+         * Since persistence mechanisms often allow <tt>null</tt> values, these can be expected here.  The
+         * implementation  must throw an exception if <tt>null</tt> is not allowed for the specific use-case.
+         * 
+         * @param value         the value (business object) used to identify the entity (<tt>null</tt> allowed).
+         * @return              Return the newly-created entity ID-value pair
+         */
         Pair<K1, V1> createValue(V1 value);
     }
     
-    private static final String NULL_VALUE = "@@NULL_VALUE@@";
+    /**
+     * A valid <code>null</code> value i.e. a value that has been <u>persisted</u> as null.
+     */
+    private static final Serializable VALUE_NULL = "@@VALUE_NULL@@";
+    /**
+     * A value that was not found or persisted.
+     */
+    private static final Serializable VALUE_NOT_FOUND = "@@VALUE_NOT_FOUND@@";
+    /**
+     * The cache region that will be used (see {@link CacheRegionKey}) in all the cache keys
+     */
     private static final String CACHE_REGION_DEFAULT = "DEFAULT";
     
     private final SimpleCache<Serializable, Object> cache;
@@ -139,6 +183,10 @@ public class EntityLookupCache<K extends Serializable, V extends Object, VK exte
     @SuppressWarnings("unchecked")
     public Pair<K, V> getByKey(K key)
     {
+        if (key == null)
+        {
+            throw new IllegalArgumentException("An entity lookup key may not be null");
+        }
         // Handle missing cache
         if (cache == null)
         {
@@ -148,26 +196,36 @@ public class EntityLookupCache<K extends Serializable, V extends Object, VK exte
         CacheRegionKey cacheKey = new CacheRegionKey(cacheRegion, key);
         // Look in the cache
         V value = (V) cache.get(cacheKey);
-        if (value != null && value.equals(NULL_VALUE))
+        if (value != null)
         {
-            // We checked before
-            return null;
-        }
-        else if (value != null)
-        {
-            return new Pair<K, V>(key, value);
+            if (value.equals(VALUE_NOT_FOUND))
+            {
+                // We checked before
+                return null;
+            }
+            else if (value.equals(VALUE_NULL))
+            {
+                return new Pair<K, V>(key, null);
+            }
+            else
+            {
+                return new Pair<K, V>(key, value);
+            }
         }
         // Resolve it
         Pair<K, V> entityPair = entityLookup.findByKey(key);
         if (entityPair == null)
         {
-            // Cache nulls
-            cache.put(cacheKey, NULL_VALUE);
+            // Cache "not found"
+            cache.put(cacheKey, VALUE_NOT_FOUND);
         }
         else
         {
+            value = entityPair.getSecond();
             // Cache the value
-            cache.put(cacheKey, entityPair.getSecond());
+            cache.put(
+                    cacheKey,
+                    (value == null ? VALUE_NULL : value));
         }
         // Done
         return entityPair;
@@ -182,33 +240,49 @@ public class EntityLookupCache<K extends Serializable, V extends Object, VK exte
             return entityLookup.findByValue(value);
         }
         
-        // Get the value key
-        VK valueKey = entityLookup.getValueKey(value);
-        CacheRegionKey cacheKey = new CacheRegionKey(cacheRegion, valueKey);
-        // Look in the cache
-        K key = (K) cache.get(cacheKey);
-        // Check if we have looked this up already
-        if (key != null && key.equals(NULL_VALUE))
+        // Get the value key.
+        // The cast to (VK) is counter-intuitive, but works because they're all just Serializable
+        // It's nasty, but hidden from the cache client code.
+        VK valueKey = (value == null) ? (VK)VALUE_NULL : entityLookup.getValueKey(value);
+        // Check if the value has a good key
+        if (valueKey == null)
         {
-            // We checked before
-            return null;
+            return entityLookup.findByValue(value);
         }
-        else if (key != null)
+        
+        // Look in the cache
+        CacheRegionKey valueCacheKey = new CacheRegionKey(cacheRegion, valueKey);
+        K key = (K) cache.get(valueCacheKey);
+        // Check if we have looked this up already
+        if (key != null)
         {
-            return new Pair<K, V>(key, value);
+            // We checked before and ...
+            if (key.equals(VALUE_NOT_FOUND))
+            {
+                // ... it didn't exist
+                return null;
+            }
+            else
+            {
+                // ... it did exist
+                return new Pair<K, V>(key, value);
+            }
         }
         // Resolve it
         Pair<K, V> entityPair = entityLookup.findByValue(value);
         if (entityPair == null)
         {
-            // Cache a null
-            cache.put(cacheKey, NULL_VALUE);
+            // Cache "not found"
+            cache.put(valueCacheKey, VALUE_NOT_FOUND);
         }
         else
         {
             key = entityPair.getFirst();
             // Cache the key
-            cache.put(cacheKey, key);
+            cache.put(valueCacheKey, key);
+            cache.put(
+                    new CacheRegionKey(cacheRegion, key),
+                    (value == null ? VALUE_NULL : value));
         }
         // Done
         return entityPair;
@@ -229,12 +303,25 @@ public class EntityLookupCache<K extends Serializable, V extends Object, VK exte
         }
         
         // Get the value key
-        VK valueKey = entityLookup.getValueKey(value);
-        CacheRegionKey cacheKey = new CacheRegionKey(cacheRegion, valueKey);
+        // The cast to (VK) is counter-intuitive, but works because they're all just Serializable.
+        // It's nasty, but hidden from the cache client code.
+        VK valueKey = (value == null) ? (VK)VALUE_NULL : entityLookup.getValueKey(value);
+        // Check if the value has a good key
+        if (valueKey == null)
+        {
+            Pair<K, V> entityPair = entityLookup.findByValue(value);
+            if (entityPair == null)
+            {
+                entityPair = entityLookup.createValue(value);
+            }
+            return entityPair;
+        }
+        
         // Look in the cache
-        K key = (K) cache.get(cacheKey);
+        CacheRegionKey valueCacheKey = new CacheRegionKey(cacheRegion, valueKey);
+        K key = (K) cache.get(valueCacheKey);
         // Check if the value is already mapped to a key
-        if (key != null && !key.equals(NULL_VALUE))
+        if (key != null && !key.equals(VALUE_NOT_FOUND))
         {
             return new Pair<K, V>(key, value);
         }
@@ -247,8 +334,10 @@ public class EntityLookupCache<K extends Serializable, V extends Object, VK exte
         }
         key = entityPair.getFirst();
         // Cache the key and value
-        cache.put(cacheKey, key);
-        cache.put(new CacheRegionKey(cacheRegion, key), value);
+        cache.put(valueCacheKey, key);
+        cache.put(
+                new CacheRegionKey(cacheRegion, key),
+                (value == null ? VALUE_NULL : value));
         // Done
         return entityPair;
     }
@@ -258,7 +347,7 @@ public class EntityLookupCache<K extends Serializable, V extends Object, VK exte
     {
         CacheRegionKey keyCacheKey = new CacheRegionKey(cacheRegion, key);
         V value = (V) cache.get(keyCacheKey);
-        if (value != null && !value.equals(NULL_VALUE))
+        if (value != null && !value.equals(VALUE_NOT_FOUND))
         {
             // Get the value key and remove it
             VK valueKey = entityLookup.getValueKey(value);

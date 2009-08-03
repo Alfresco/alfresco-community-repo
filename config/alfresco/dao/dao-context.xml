@@ -45,7 +45,12 @@
    
    <bean id="propertyValueDAO" class="org.alfresco.repo.domain.propval.ibatis.PropertyValueDAOImpl">
       <property name="sqlMapClientTemplate" ref="propertyValueSqlMapClientTemplate"/>
+      <property name="converter">
+         <bean class="org.alfresco.repo.domain.propval.DefaultPropertyTypeConverter"/>
+      </property>
       <property name="propertyClassCache" ref="immutableEntityCache"/>
+      <property name="propertyStringValueCache" ref="immutableEntityCache"/>
+      <property name="propertyDoubleValueCache" ref="immutableEntityCache"/>
    </bean>
    
 </beans>

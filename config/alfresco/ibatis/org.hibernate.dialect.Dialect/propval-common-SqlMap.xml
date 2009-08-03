@@ -12,6 +12,8 @@
     
     <typeAlias alias="PropertyClass" type="org.alfresco.repo.domain.propval.PropertyClassEntity"/>
     <typeAlias alias="PropertyStringValue" type="org.alfresco.repo.domain.propval.PropertyStringValueEntity"/>
+    <typeAlias alias="PropertyDoubleValue" type="org.alfresco.repo.domain.propval.PropertyDoubleValueEntity"/>
+    <typeAlias alias="PropertyValue" type="org.alfresco.repo.domain.propval.PropertyValueEntity"/>
 
     <!--                -->
     <!-- Result Maps    -->
@@ -26,6 +28,14 @@
     <resultMap id="result.PropertyStringValue" class="PropertyStringValue">
         <result property="id" column="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <result property="stringValue" column="string_value" jdbcType="VARCHAR" javaType="java.lang.String"/>
+    </resultMap>
+    <resultMap id="result.PropertyDoubleValue" class="PropertyDoubleValue">
+        <result property="id" column="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="doubleValue" column="double_value" jdbcType="DOUBLE" javaType="java.lang.Double"/>
+    </resultMap>
+    <resultMap id="result.PropertyValue" class="PropertyValue">
+        <result property="id" column="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="longValue" column="long_value" jdbcType="BIGINT" javaType="java.lang.Long"/>
     </resultMap>
   
     <!--                -->
@@ -54,6 +64,16 @@
     <sql id="insert.PropertyStringValue.AutoIncrement">
         insert into alf_prop_string_value (string_value) 
         values (#stringValue#)
+    </sql>
+    
+    <sql id="insert.PropertyDoubleValue.AutoIncrement">
+        insert into alf_prop_double_value (double_value) 
+        values (#doubleValue#)
+    </sql>
+    
+    <sql id="insert.PropertyValue.AutoIncrement">
+        insert into alf_prop_value (persisted_type, long_value) 
+        values (#persistedType#, #longValue#)
     </sql>
     
     <!--                -->
@@ -99,6 +119,26 @@
             alf_prop_string_value
         where
             string_value = #stringValue#
+    </select>
+
+    <!-- Get a property simple value by ID -->
+    <select id="select.PropertyDoubleValueByID" parameterClass="PropertyDoubleValue" resultMap="result.PropertyDoubleValue">
+        select
+            *
+        from
+            alf_prop_double_value
+        where
+            id = #id#
+    </select>
+
+    <!-- Get the property string value by string -->
+    <select id="select.PropertyDoubleValueByValue" parameterClass="PropertyDoubleValue" resultMap="result.PropertyDoubleValue">
+        select
+            *
+        from
+            alf_prop_double_value
+        where
+            double_value = #doubleValue#
     </select>
 
 </sqlMap>

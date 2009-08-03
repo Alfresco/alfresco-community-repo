@@ -8,5 +8,5 @@
 
     <sqlMap resource="alfresco/ibatis/#resource.dialect#/propval-common-SqlMap.xml"/>
     <sqlMap resource="alfresco/ibatis/#resource.dialect#/propval-insert-SqlMap.xml"/>
-
+    
 </sqlMapConfig>

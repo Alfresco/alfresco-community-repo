@@ -78,7 +78,7 @@ public class PropertyValueDAOTest extends TestCase
         {
             public Void execute() throws Throwable
             {
-                Pair<Long, Class<?>> checkPair1 = propertyValueDAO.getPropertyClass(clazzEntityPair.getFirst());
+                Pair<Long, Class<?>> checkPair1 = propertyValueDAO.getPropertyClassById(clazzEntityPair.getFirst());
                 assertEquals(clazzEntityPair, checkPair1);
                 Pair<Long, Class<?>> checkPair2 = propertyValueDAO.getPropertyClass(clazzEntityPair.getSecond());
                 assertEquals(clazzEntityPair, checkPair2);
@@ -92,7 +92,7 @@ public class PropertyValueDAOTest extends TestCase
         {
             public Void execute() throws Throwable
             {
-                propertyValueDAO.getPropertyClass(Long.MIN_VALUE);
+                propertyValueDAO.getPropertyClassById(Long.MIN_VALUE);
                 return null;
             }
         };
@@ -121,7 +121,7 @@ public class PropertyValueDAOTest extends TestCase
     
     public void testPropertyStringValue() throws Exception
     {
-        final String stringValue = "One Two Three";
+        final String stringValue = "One Two Three - " + System.currentTimeMillis();
         final String stringValueUpper = stringValue.toUpperCase();
         final String stringValueLower = stringValue.toLowerCase();
         RetryingTransactionCallback<Pair<Long, String>> createStringCallback = new RetryingTransactionCallback<Pair<Long, String>>()
@@ -167,5 +167,88 @@ public class PropertyValueDAOTest extends TestCase
         assertNotNull(stringUpperEntityPair.getFirst());
         assertEquals(stringValueUpper, stringUpperEntityPair.getSecond());
         assertNotSame("String IDs were not different", stringEntityPair.getFirst(), stringUpperEntityPair.getFirst());
+    }
+
+//    public void testPropertyNumericValue_Boolean() throws Exception
+//    {
+//        RetryingTransactionCallback<Pair<Long, Boolean>> createValueCallback = new RetryingTransactionCallback<Pair<Long, Boolean>>()
+//        {
+//            public Pair<Long, Boolean> execute() throws Throwable
+//            {
+//                // Get the classes
+//                return propertyValueDAO.getOrCreatePropertyNumericValue(Boolean.TRUE);
+//            }
+//        };
+//        final Pair<Long, Boolean> entityPair = txnHelper.doInTransaction(createValueCallback, false);
+//        assertNotNull(entityPair);
+//        assertEquals(Boolean.TRUE, entityPair.getSecond());
+//        
+//        RetryingTransactionCallback<Pair<Long, Boolean>> getValueCallback = new RetryingTransactionCallback<Pair<Long, Boolean>>()
+//        {
+//            public Pair<Long, Boolean> execute() throws Throwable
+//            {
+//                // Get the classes
+//                return propertyValueDAO.getPropertyDoubleValue(Boolean.TRUE);
+//            }
+//        };
+//        final Pair<Long, Boolean> entityPairCheck = txnHelper.doInTransaction(getValueCallback, false);
+//        assertNotNull(entityPairCheck);
+//        assertEquals(entityPair, entityPairCheck);
+//    }
+//
+//    public void testPropertyNumericValue_Long() throws Exception
+//    {
+//        final Long longValue = Long.valueOf(Long.MAX_VALUE);
+//        RetryingTransactionCallback<Pair<Long, Long>> createValueCallback = new RetryingTransactionCallback<Pair<Long, Long>>()
+//        {
+//            public Pair<Long, Long> execute() throws Throwable
+//            {
+//                // Get the classes
+//                return propertyValueDAO.getOrCreatePropertyNumericValue(longValue);
+//            }
+//        };
+//        final Pair<Long, Long> entityPair = txnHelper.doInTransaction(createValueCallback, false);
+//        assertNotNull(entityPair);
+//        assertEquals(longValue, entityPair.getSecond());
+//        
+//        RetryingTransactionCallback<Pair<Long, Long>> getValueCallback = new RetryingTransactionCallback<Pair<Long, Long>>()
+//        {
+//            public Pair<Long, Long> execute() throws Throwable
+//            {
+//                // Get the classes
+//                return propertyValueDAO.getPropertyDoubleValue(longValue);
+//            }
+//        };
+//        final Pair<Long, Long> entityPairCheck = txnHelper.doInTransaction(getValueCallback, false);
+//        assertNotNull(entityPairCheck);
+//        assertEquals(entityPair, entityPairCheck);
+//    }
+
+    public void testPropertyDoubleValue() throws Exception
+    {
+        final Double doubleValue = Double.valueOf(1.7976931348623E+308);
+        RetryingTransactionCallback<Pair<Long, Double>> createValueCallback = new RetryingTransactionCallback<Pair<Long, Double>>()
+        {
+            public Pair<Long, Double> execute() throws Throwable
+            {
+                // Get the classes
+                return propertyValueDAO.getOrCreatePropertyDoubleValue(doubleValue);
+            }
+        };
+        final Pair<Long, Double> entityPair = txnHelper.doInTransaction(createValueCallback, false);
+        assertNotNull(entityPair);
+        assertEquals(doubleValue, entityPair.getSecond());
+        
+        RetryingTransactionCallback<Pair<Long, Double>> getValueCallback = new RetryingTransactionCallback<Pair<Long, Double>>()
+        {
+            public Pair<Long, Double> execute() throws Throwable
+            {
+                // Get the classes
+                return propertyValueDAO.getPropertyDoubleValue(doubleValue);
+            }
+        };
+        final Pair<Long, Double> entityPairCheck = txnHelper.doInTransaction(getValueCallback, false);
+        assertNotNull(entityPairCheck);
+        assertEquals(entityPair, entityPairCheck);
     }
 }

@@ -24,6 +24,8 @@
  */
 package org.alfresco.repo.domain.propval;
 
+import java.io.Serializable;
+
 import org.alfresco.util.Pair;
 
 /**
@@ -36,31 +38,77 @@ public interface PropertyValueDAO
 {
     /**
      * <b>alf_prop_class</b> accessor
+     * 
+     * @param id                the ID (may not be <tt>null</tt>)
      */
-    Pair<Long, Class<?>> getPropertyClass(Long id);
-    
+    Pair<Long, Class<?>> getPropertyClassById(Long id);
     /**
      * <b>alf_prop_class</b> accessor
+     * 
+     * @param value             the value to find the ID for (may not be <tt>null</tt>)
      */
     Pair<Long, Class<?>> getPropertyClass(Class<?> value);
-    
     /**
      * <b>alf_prop_class</b> accessor
+     * 
+     * @param value             the value to find the ID for (may not be <tt>null</tt>)
      */
     Pair<Long, Class<?>> getOrCreatePropertyClass(Class<?> value);
 
     /**
      * <b>alf_prop_string_value</b> accessor
+     * 
+     * @param id                the ID (may not be <tt>null</tt>)
      */
-    Pair<Long, String> getPropertyStringValue(Long id);
-
+    Pair<Long, String> getPropertyStringValueById(Long id);
     /**
      * <b>alf_prop_string_value</b> accessor
+     * 
+     * @param value             the value to find the ID for (may not be <tt>null</tt>)
      */
     Pair<Long, String> getPropertyStringValue(String value);
-
     /**
      * <b>alf_prop_string_value</b> accessor
+     * 
+     * @param value             the value to find the ID for (may not be <tt>null</tt>)
      */
     Pair<Long, String> getOrCreatePropertyStringValue(String value);
+
+    /**
+     * <b>alf_prop_double_value</b> accessor
+     * 
+     * @param id                the ID (may not be <tt>null</tt>)
+     */
+    Pair<Long, Double> getPropertyDoubleValueById(Long id);
+    /**
+     * <b>alf_prop_double_value</b> accessor
+     * 
+     * @param value             the value to find the ID for (may not be <tt>null</tt>)
+     */
+    Pair<Long, Double> getPropertyDoubleValue(Double value);
+    /**
+     * <b>alf_prop_double_value</b> accessor
+     * 
+     * @param value             the value to find the ID for (may not be <tt>null</tt>)
+     */
+    Pair<Long, Double> getOrCreatePropertyDoubleValue(Double value);
+    
+    /**
+     * <b>alf_prop_value</b> accessor
+     * 
+     * @param id                the ID (may not be <tt>null</tt>)
+     */
+    Pair<Long, Serializable> getPropertyValueById(Long id);
+    /**
+     * <b>alf_prop_value</b> accessor
+     * 
+     * @param value             the value to find the ID for (may be <tt>null</tt>)
+     */
+    Pair<Long, Serializable> getPropertyValue(Serializable value);
+    /**
+     * <b>alf_prop_value</b> accessor
+     * 
+     * @param value             the value to find the ID for (may be <tt>null</tt>)
+     */
+    Pair<Long, Serializable> getOrCreatePropertyValue(Serializable value);
 }

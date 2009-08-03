@@ -13,8 +13,16 @@ CREATE TABLE alf_prop_class
    java_class_name VARCHAR(255) NOT NULL,
    java_class_name_short VARCHAR(32) NOT NULL,
    java_class_name_crc BIGINT NOT NULL,
-   UNIQUE INDEX idx_prop_class_crc (java_class_name_crc, java_class_name_short),
-   INDEX idx_prop_class_class (java_class_name),
+   UNIQUE INDEX idx_alf_prop_class_crc (java_class_name_crc, java_class_name_short),
+   INDEX idx_alf_prop_class_class (java_class_name),
+   PRIMARY KEY (id)
+) ENGINE=InnoDB;
+
+CREATE TABLE alf_prop_double_value
+(
+   id BIGINT NOT NULL AUTO_INCREMENT,
+   double_value DOUBLE NOT NULL,
+   INDEX idx_alf_prop_dbl_val (double_value),
    PRIMARY KEY (id)
 ) ENGINE=InnoDB;
 
@@ -22,19 +30,25 @@ CREATE TABLE alf_prop_string_value
 (
    id BIGINT NOT NULL AUTO_INCREMENT,
    string_value text NOT NULL,
-   INDEX idx_prop_str_val (string_value(64)),
+   INDEX idx_alf_prop_str_val (string_value(64)),
    PRIMARY KEY (id)
 ) ENGINE=InnoDB;
 
---CREATE TABLE alf_prop_string_value
---(
---   id BIGINT NOT NULL AUTO_INCREMENT,
---   string_value text NOT NULL,
---   prop_class_id BIGINT NOT NULL,
---   INDEX idx_prop_str_val (string_value(64)),
---   CONSTRAINT fk_prop_str_classid FOREIGN KEY (prop_class_id) REFERENCES alf_prop_class (id),
---   PRIMARY KEY (id)
---) ENGINE=InnoDB;
+CREATE TABLE alf_prop_serializable_value
+(
+   id BIGINT NOT NULL AUTO_INCREMENT,
+   serializable_value BLOB NOT NULL,
+   PRIMARY KEY (id)
+) ENGINE=InnoDB;
+
+CREATE TABLE alf_prop_value
+(
+   id BIGINT NOT NULL AUTO_INCREMENT,
+   persisted_type TINYINT NOT NULL,
+   long_value BIGINT NOT NULL,
+   INDEX idx_alf_prop_val (persisted_type, long_value),
+   PRIMARY KEY (id)
+) ENGINE=InnoDB;
 
 --
 -- Record script finish

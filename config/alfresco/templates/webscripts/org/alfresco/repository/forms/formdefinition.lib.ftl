@@ -17,7 +17,7 @@
                     <#if field.description??>"description": "${field.description}",</#if>
                     "protectedField": ${field.protectedField?string},
                     <#if field.defaultValue??>"defaultValue": "${field.defaultValue}",</#if>
-                    <#if field.group??>"group": "${field.group}",</#if>
+                    <#if field.group??>"group": "${field.group.id}",</#if>
                     <#if field.binding??>"binding": "${field.binding}",</#if>
                     "dataKeyName": "${field.dataKeyName}",
                     <#if field.dataType??>

@@ -54,7 +54,7 @@ import org.apache.commons.logging.LogFactory;
  *
  * @author Gavin Cornwell
  */
-public class TypeFormProcessor extends NodeFormProcessor
+public class TypeFormProcessor extends ContentModelFormProcessor
 {
     /** Logger */
     private static Log logger = LogFactory.getLog(TypeFormProcessor.class);
@@ -62,6 +62,15 @@ public class TypeFormProcessor extends NodeFormProcessor
     protected static final String NAME_PROP_DATA = PROP + DATA_KEY_SEPARATOR + "cm" + DATA_KEY_SEPARATOR + "name";
     
     public static final String DESTINATION = "alf_destination";
+    
+    /*
+     * @see org.alfresco.repo.forms.processor.node.ContentModelFormProcessor#getLogger()
+     */
+    @Override
+    protected Log getLogger()
+    {
+        return logger;
+    }
     
     /*
      * @see org.alfresco.repo.forms.processor.node.NodeFormProcessor#getTypedItem(org.alfresco.repo.forms.Item)
@@ -158,6 +167,8 @@ public class TypeFormProcessor extends NodeFormProcessor
             // setup field definitions and data
             generateAllPropertyFields(typeDef, form);
             generateAllAssociationFields(typeDef, form);
+            
+            // TODO: generate transient properties for content types?
         }
     }
     
@@ -173,7 +184,7 @@ public class TypeFormProcessor extends NodeFormProcessor
         Map<QName, PropertyDefinition> propDefs = typeDef.getProperties();
         for (PropertyDefinition propDef : propDefs.values())
         {
-            generatePropertyField(propDef, null, form);
+            generatePropertyField(propDef, null, form, this.namespaceService);
         }
         
         // get all default aspects for the type and iterate round their 
@@ -184,7 +195,7 @@ public class TypeFormProcessor extends NodeFormProcessor
             propDefs = aspect.getProperties();
             for (PropertyDefinition propDef : propDefs.values())
             {
-                generatePropertyField(propDef, null, form);
+                generatePropertyField(propDef, null, form, this.namespaceService);
             }
         }
     }
@@ -201,7 +212,7 @@ public class TypeFormProcessor extends NodeFormProcessor
         Map<QName, AssociationDefinition> assocDefs = typeDef.getAssociations();
         for (AssociationDefinition assocDef : assocDefs.values())
         {
-            this.generateAssociationField(assocDef, null, form);
+            generateAssociationField(assocDef, null, form, this.namespaceService);
         }
         
         // get all default aspects for the type and iterate round their 
@@ -212,7 +223,7 @@ public class TypeFormProcessor extends NodeFormProcessor
             assocDefs = aspect.getAssociations();
             for (AssociationDefinition assocDef : assocDefs.values())
             {
-                this.generateAssociationField(assocDef, null, form);
+                generateAssociationField(assocDef, null, form, this.namespaceService);
             }
         }
     }

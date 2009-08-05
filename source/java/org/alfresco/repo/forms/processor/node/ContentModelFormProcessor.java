@@ -14,6 +14,7 @@ import java.util.regex.Pattern;
 import org.alfresco.i18n.I18NUtil;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.forms.AssociationFieldDefinition;
+import org.alfresco.repo.forms.FieldGroup;
 import org.alfresco.repo.forms.Form;
 import org.alfresco.repo.forms.FormData;
 import org.alfresco.repo.forms.FormException;
@@ -155,13 +156,52 @@ public abstract class ContentModelFormProcessor extends FilteredFormProcessor
      * </p>
      * 
      * @param propDef The PropertyDefinition of the field to generate
-     * @param propValue The value of the property field
      * @param form The Form instance to populate
      * @param namespaceService NamespaceService instance
      */
+    public static void generatePropertyField(PropertyDefinition propDef, Form form,
+                NamespaceService namespaceService)
+    {
+        generatePropertyField(propDef, form, null, null, namespaceService);
+    }
+    
+    /**
+     * Sets up a field definition for the given property.
+     * <p>
+     * NOTE: This method is static so that it can serve as a helper
+     * method for FormFilter implementations as adding additional
+     * property fields is likely to be a common extension.
+     * </p>
+     * 
+     * @param propDef The PropertyDefinition of the field to generate
+     * @param form The Form instance to populate
+     * @param propValue The value of the property field
+     * @param namespaceService NamespaceService instance
+     */
+    public static void generatePropertyField(PropertyDefinition propDef, Form form,
+                Serializable propValue, NamespaceService namespaceService)
+    {
+        generatePropertyField(propDef, form, propValue, null, namespaceService);
+    }
+    
+    /**
+     * Sets up a field definition for the given property.
+     * <p>
+     * NOTE: This method is static so that it can serve as a helper
+     * method for FormFilter implementations as adding additional
+     * property fields is likely to be a common extension.
+     * </p>
+     * 
+     * @param propDef The PropertyDefinition of the field to generate
+     * @param form The Form instance to populate
+     * @param propValue The value of the property field
+     * @param group The FieldGroup the property field belongs to, can be null
+     * @param namespaceService NamespaceService instance
+     */
     @SuppressWarnings("unchecked")
-    public static void generatePropertyField(PropertyDefinition propDef, Serializable propValue, 
-                Form form, NamespaceService namespaceService)
+    public static void generatePropertyField(PropertyDefinition propDef, Form form,
+                Serializable propValue, FieldGroup group,
+                NamespaceService namespaceService)
     {
         String propName = propDef.getName().toPrefixString(namespaceService);
         String[] nameParts = QName.splitPrefixedQName(propName);
@@ -180,6 +220,7 @@ public abstract class ContentModelFormProcessor extends FilteredFormProcessor
         fieldDef.setMandatory(propDef.isMandatory());
         fieldDef.setProtectedField(propDef.isProtected());
         fieldDef.setRepeating(propDef.isMultiValued());
+        fieldDef.setGroup(group);
         
         // any property from the system model (sys prefix) should be protected
         // the model doesn't currently enforce this so make sure they are not editable
@@ -252,13 +293,53 @@ public abstract class ContentModelFormProcessor extends FilteredFormProcessor
      * </p>
      * 
      * @param assocDef The AssociationDefinition of the field to generate
-     * @param assocValues The values of the association field
      * @param form The Form instance to populate
+     * @param namespaceService NamespaceService instance
+     */
+    public static void generateAssociationField(AssociationDefinition assocDef, 
+                Form form, NamespaceService namespaceService)
+    {
+        generateAssociationField(assocDef, form, null, null, namespaceService);
+    }
+    
+    /**
+     * Sets up a field definition for the given association.
+     * <p>
+     * NOTE: This method is static so that it can serve as a helper
+     * method for FormFilter implementations as adding additional
+     * association fields is likely to be a common extension.
+     * </p>
+     * 
+     * @param assocDef The AssociationDefinition of the field to generate
+     * @param form The Form instance to populate
+     * @param assocValues The values of the association field, can be null
      * @param namespaceService NamespaceService instance
      */
     @SuppressWarnings("unchecked")
     public static void generateAssociationField(AssociationDefinition assocDef, 
-                List assocValues, Form form, NamespaceService namespaceService)
+                Form form, List assocValues, NamespaceService namespaceService)
+    {
+        generateAssociationField(assocDef, form, assocValues, null, namespaceService);
+    }
+    
+    /**
+     * Sets up a field definition for the given association.
+     * <p>
+     * NOTE: This method is static so that it can serve as a helper
+     * method for FormFilter implementations as adding additional
+     * association fields is likely to be a common extension.
+     * </p>
+     * 
+     * @param assocDef The AssociationDefinition of the field to generate
+     * @param form The Form instance to populate
+     * @param assocValues The values of the association field, can be null
+     * @param group The FieldGroup the association field belongs to, can be null
+     * @param namespaceService NamespaceService instance
+     */
+    @SuppressWarnings("unchecked")
+    public static void generateAssociationField(AssociationDefinition assocDef, 
+                Form form, List assocValues, FieldGroup group,
+                NamespaceService namespaceService)
     {
         String assocName = assocDef.getName().toPrefixString(namespaceService);
         String[] nameParts = QName.splitPrefixedQName(assocName);
@@ -275,6 +356,7 @@ public abstract class ContentModelFormProcessor extends FilteredFormProcessor
         fieldDef.setProtectedField(assocDef.isProtected());
         fieldDef.setEndpointMandatory(assocDef.isTargetMandatory());
         fieldDef.setEndpointMany(assocDef.isTargetMany());
+        fieldDef.setGroup(group);
         
         // define the data key name and set
         String dataKeyName = ASSOC_DATA_PREFIX + nameParts[0] + DATA_KEY_SEPARATOR + nameParts[1];
@@ -437,7 +519,7 @@ public abstract class ContentModelFormProcessor extends FilteredFormProcessor
                     if (propDef != null)
                     {
                         // generate the property field
-                        generatePropertyField(propDef, propValues.get(fullQName), form, this.namespaceService);
+                        generatePropertyField(propDef, form, propValues.get(fullQName), this.namespaceService);
                         
                         // no need to try and find an association
                         tryAssociation = false;
@@ -452,9 +534,9 @@ public abstract class ContentModelFormProcessor extends FilteredFormProcessor
                     if (assocDef != null)
                     {
                         // generate the association field
-                        generateAssociationField(assocDef, 
+                        generateAssociationField(assocDef, form,
                                     (nodeRef != null) ? retrieveAssociationValues(nodeRef, assocDef) : null, 
-                                    form, this.namespaceService);
+                                    this.namespaceService);
                         
                         foundField = true;
                     }
@@ -572,7 +654,7 @@ public abstract class ContentModelFormProcessor extends FilteredFormProcessor
                 if (propDef != null)
                 {
                     // generate the property field
-                    generatePropertyField(propDef, null, form, this.namespaceService);
+                    generatePropertyField(propDef, form, this.namespaceService);
                     
                     // no need to try and find an association
                     tryAssociation = false;
@@ -587,7 +669,7 @@ public abstract class ContentModelFormProcessor extends FilteredFormProcessor
                 if (assocDef != null)
                 {
                     // generate the association field
-                    generateAssociationField(assocDef, null, form, this.namespaceService);
+                    generateAssociationField(assocDef, form, this.namespaceService);
                     
                     foundField = true;
                 }

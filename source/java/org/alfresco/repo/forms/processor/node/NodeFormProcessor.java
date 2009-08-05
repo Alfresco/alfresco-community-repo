@@ -186,8 +186,8 @@ public class NodeFormProcessor extends ContentModelFormProcessor
         Map<QName, Serializable> propValues = this.nodeService.getProperties(nodeRef);
         for (PropertyDefinition propDef : propDefs.values())
         {
-            generatePropertyField(propDef, propValues.get(propDef.getName()), 
-                        form, this.namespaceService);
+            generatePropertyField(propDef, form, propValues.get(propDef.getName()), 
+                        this.namespaceService);
         }
     }
     
@@ -208,8 +208,9 @@ public class NodeFormProcessor extends ContentModelFormProcessor
         Map<QName, AssociationDefinition> assocDefs = typeDef.getAssociations();
         for (AssociationDefinition assocDef : assocDefs.values())
         {
-            generateAssociationField(assocDef, retrieveAssociationValues(nodeRef, assocDef), 
-                        form, this.namespaceService);
+            generateAssociationField(assocDef, form, 
+                        retrieveAssociationValues(nodeRef, assocDef), 
+                        this.namespaceService);
         }
     }
     

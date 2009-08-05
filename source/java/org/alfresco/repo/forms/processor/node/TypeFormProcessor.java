@@ -184,7 +184,7 @@ public class TypeFormProcessor extends ContentModelFormProcessor
         Map<QName, PropertyDefinition> propDefs = typeDef.getProperties();
         for (PropertyDefinition propDef : propDefs.values())
         {
-            generatePropertyField(propDef, null, form, this.namespaceService);
+            generatePropertyField(propDef, form, this.namespaceService);
         }
         
         // get all default aspects for the type and iterate round their 
@@ -195,7 +195,7 @@ public class TypeFormProcessor extends ContentModelFormProcessor
             propDefs = aspect.getProperties();
             for (PropertyDefinition propDef : propDefs.values())
             {
-                generatePropertyField(propDef, null, form, this.namespaceService);
+                generatePropertyField(propDef, form, this.namespaceService);
             }
         }
     }
@@ -212,7 +212,7 @@ public class TypeFormProcessor extends ContentModelFormProcessor
         Map<QName, AssociationDefinition> assocDefs = typeDef.getAssociations();
         for (AssociationDefinition assocDef : assocDefs.values())
         {
-            generateAssociationField(assocDef, null, form, this.namespaceService);
+            generateAssociationField(assocDef, form, this.namespaceService);
         }
         
         // get all default aspects for the type and iterate round their 
@@ -223,7 +223,7 @@ public class TypeFormProcessor extends ContentModelFormProcessor
             assocDefs = aspect.getAssociations();
             for (AssociationDefinition assocDef : assocDefs.values())
             {
-                generateAssociationField(assocDef, null, form, this.namespaceService);
+                generateAssociationField(assocDef, form, this.namespaceService);
             }
         }
     }

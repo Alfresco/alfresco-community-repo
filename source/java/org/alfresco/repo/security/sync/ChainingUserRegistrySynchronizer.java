@@ -25,6 +25,7 @@
 package org.alfresco.repo.security.sync;
 
 import java.text.DateFormat;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -231,7 +232,16 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean impl
     public void synchronize(boolean force, boolean splitTxns)
     {
         Set<String> visitedZoneIds = new TreeSet<String>();
-        for (String id : this.applicationContextManager.getInstanceIds())
+        Collection<String> instanceIds = this.applicationContextManager.getInstanceIds();
+
+        // Work out the set of all zone IDs in the authentication chain so that we can decide which users / groups need
+        // 're-zoning'
+        Set<String> allZoneIds = new TreeSet<String>();
+        for (String id : instanceIds)
+        {
+            allZoneIds.add(AuthorityService.ZONE_AUTH_EXT_PREFIX + id);
+        }
+        for (String id : instanceIds)
         {
             ApplicationContext context = this.applicationContextManager.getApplicationContext(id);
             try
@@ -257,8 +267,10 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean impl
                     boolean requiresNew = splitTxns
                             || AlfrescoTransactionSupport.getTransactionReadState() == TxnReadState.TXN_READ_ONLY;
 
-                    int personsProcessed = syncPersonsWithPlugin(id, plugin, force, requiresNew, visitedZoneIds);
-                    int groupsProcessed = syncGroupsWithPlugin(id, plugin, force, requiresNew, visitedZoneIds);
+                    int personsProcessed = syncPersonsWithPlugin(id, plugin, force, requiresNew, visitedZoneIds,
+                            allZoneIds);
+                    int groupsProcessed = syncGroupsWithPlugin(id, plugin, force, requiresNew, visitedZoneIds,
+                            allZoneIds);
                     if (ChainingUserRegistrySynchronizer.logger.isInfoEnabled())
                     {
                         ChainingUserRegistrySynchronizer.logger
@@ -334,10 +346,14 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean impl
      *            the set of zone ids already processed. These zones have precedence over the current zone when it comes
      *            to user name 'collisions'. If a user is queried that already exists locally but is tagged with one of
      *            the zones in this set, then it will be ignored as this zone has lower priority.
+     * @param allZoneIds
+     *            the set of all zone ids in the authentication chain. Helps us work out whether the zone information
+     *            recorded against a user is invalid for the current authentication chain and whether the user needs to
+     *            be 're-zoned'.
      * @return the number of users processed
      */
-    private int syncPersonsWithPlugin(String zone, UserRegistry userRegistry, boolean force, boolean splitTxns,
-            final Set<String> visitedZoneIds)
+    private int syncPersonsWithPlugin(final String zone, UserRegistry userRegistry, boolean force, boolean splitTxns,
+            final Set<String> visitedZoneIds, final Set<String> allZoneIds)
     {
         // Create a prefixed zone ID for use with the authority service
         final String zoneId = AuthorityService.ZONE_AUTH_EXT_PREFIX + zone;
@@ -408,23 +424,47 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean impl
                     }
                     else
                     {
-                        // The person does not exist in this zone, but may exist in another zone
-                        zones.retainAll(visitedZoneIds);
-                        if (zones.size() > 0)
+                        // Check whether the user is in any of the authentication chain zones
+                        Set<String> intersection = new TreeSet<String>(zones);
+                        intersection.retainAll(allZoneIds);
+                        if (intersection.size() == 0)
                         {
-                            // A person that exists in a different zone with higher precedence
-                            continue;
+                            // The person exists, but not in a zone that's in the authentication chain. May be due to
+                            // upgrade or zone changes. Let's re-zone them
+                            if (ChainingUserRegistrySynchronizer.logger.isWarnEnabled())
+                            {
+                                ChainingUserRegistrySynchronizer.logger.warn("Updating user '" + personName
+                                        + "'. This user will in future be assumed to originate from user registry '"
+                                        + zone + "'.");
+                            }
+                            ChainingUserRegistrySynchronizer.this.authorityService.removeAuthorityFromZones(personName,
+                                    zones);
+                            ChainingUserRegistrySynchronizer.this.authorityService.addAuthorityToZones(personName,
+                                    zoneSet);
+                            ChainingUserRegistrySynchronizer.this.personService.setPersonProperties(personName,
+                                    personProperties);
                         }
-                        // The person existed, but in a zone with lower precedence
-                        if (ChainingUserRegistrySynchronizer.logger.isWarnEnabled())
+                        else
                         {
-                            ChainingUserRegistrySynchronizer.logger
-                                    .warn("Recreating occluded user '"
-                                            + personName
-                                            + "'. This user was previously created manually or through synchronization with a lower priority user registry.");
+                            // Check whether the user is in any of the higher priority authentication chain zones
+                            intersection.retainAll(visitedZoneIds);
+                            if (intersection.size() > 0)
+                            {
+                                // A person that exists in a different zone with higher precedence - ignore
+                                continue;
+                            }
+
+                            // The person existed, but in a zone with lower precedence
+                            if (ChainingUserRegistrySynchronizer.logger.isWarnEnabled())
+                            {
+                                ChainingUserRegistrySynchronizer.logger
+                                        .warn("Recreating occluded user '"
+                                                + personName
+                                                + "'. This user was previously created through synchronization with a lower priority user registry.");
+                            }
+                            ChainingUserRegistrySynchronizer.this.personService.deletePerson(personName);
+                            ChainingUserRegistrySynchronizer.this.personService.createPerson(personProperties, zoneSet);
                         }
-                        ChainingUserRegistrySynchronizer.this.personService.deletePerson(personName);
-                        ChainingUserRegistrySynchronizer.this.personService.createPerson(personProperties, zoneSet);
                     }
                     // Increment the count of processed people
                     personsCreated.add(personName);
@@ -513,10 +553,14 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean impl
      *            the set of zone ids already processed. These zones have precedence over the current zone when it comes
      *            to group name 'collisions'. If a group is queried that already exists locally but is tagged with one
      *            of the zones in this set, then it will be ignored as this zone has lower priority.
+     * @param allZoneIds
+     *            the set of all zone ids in the authentication chain. Helps us work out whether the zone information
+     *            recorded against a group is invalid for the current authentication chain and whether the group needs
+     *            to be 're-zoned'.
      * @return the number of groups processed
      */
-    private int syncGroupsWithPlugin(String zone, UserRegistry userRegistry, boolean force, boolean splitTxns,
-            final Set<String> visitedZoneIds)
+    private int syncGroupsWithPlugin(final String zone, UserRegistry userRegistry, boolean force, boolean splitTxns,
+            final Set<String> visitedZoneIds, final Set<String> allZoneIds)
     {
         // Create a prefixed zone ID for use with the authority service
         final String zoneId = AuthorityService.ZONE_AUTH_EXT_PREFIX + zone;
@@ -566,14 +610,14 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean impl
                     NodeDescription group = groups.next();
                     PropertyMap groupProperties = group.getProperties();
                     String groupName = (String) groupProperties.get(ContentModel.PROP_AUTHORITY_NAME);
+                    String groupShortName = ChainingUserRegistrySynchronizer.this.authorityService
+                            .getShortName(groupName);
                     Set<String> groupZones = ChainingUserRegistrySynchronizer.this.authorityService
                             .getAuthorityZones(groupName);
 
                     if (groupZones == null)
                     {
                         // The group did not exist at all
-                        String groupShortName = ChainingUserRegistrySynchronizer.this.authorityService
-                                .getShortName(groupName);
                         if (ChainingUserRegistrySynchronizer.logger.isInfoEnabled())
                         {
                             ChainingUserRegistrySynchronizer.logger.info("Creating group '" + groupShortName + "'");
@@ -588,64 +632,81 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean impl
                             groupAssocsToCreate.put(groupName, children);
                         }
                     }
-                    else if (groupZones.contains(zoneId))
-                    {
-                        // The group already existed in this zone: update the group
-                        Set<String> oldChildren = ChainingUserRegistrySynchronizer.this.authorityService
-                                .getContainedAuthorities(null, groupName, true);
-                        Set<String> newChildren = group.getChildAssociations();
-                        Set<String> toDelete = new TreeSet<String>(oldChildren);
-                        Set<String> toAdd = new TreeSet<String>(newChildren);
-                        toDelete.removeAll(newChildren);
-                        toAdd.removeAll(oldChildren);
-                        if (!toAdd.isEmpty())
-                        {
-                            groupAssocsToCreate.put(groupName, toAdd);
-                        }
-                        for (String child : toDelete)
-                        {
-                            if (ChainingUserRegistrySynchronizer.logger.isInfoEnabled())
-                            {
-                                ChainingUserRegistrySynchronizer.logger.info("Removing '"
-                                        + ChainingUserRegistrySynchronizer.this.authorityService.getShortName(child)
-                                        + "' from group '"
-                                        + ChainingUserRegistrySynchronizer.this.authorityService
-                                                .getShortName(groupName) + "'");
-                            }
-                            ChainingUserRegistrySynchronizer.this.authorityService.removeAuthority(groupName, child);
-                        }
-                    }
                     else
                     {
-                        // The group does not exist in this zone, but may exist in another zone
-                        groupZones.retainAll(visitedZoneIds);
-                        if (groupZones.size() > 0)
+                        // Check whether the group is in any of the authentication chain zones
+                        Set<String> intersection = new TreeSet<String>(groupZones);
+                        intersection.retainAll(allZoneIds);
+                        if (intersection.isEmpty())
                         {
-                            // A group that exists in a different zone with higher precedence
-                            continue;
+                            // The group exists, but not in a zone that's in the authentication chain. May be due to
+                            // upgrade or zone changes. Let's re-zone them
+                            if (ChainingUserRegistrySynchronizer.logger.isWarnEnabled())
+                            {
+                                ChainingUserRegistrySynchronizer.logger.warn("Updating group '" + groupShortName
+                                        + "'. This group will in future be assumed to originate from user registry '"
+                                        + zone + "'.");
+                            }
+                            ChainingUserRegistrySynchronizer.this.authorityService.removeAuthorityFromZones(groupName,
+                                    groupZones);
+                            ChainingUserRegistrySynchronizer.this.authorityService.addAuthorityToZones(groupName,
+                                    zoneSet);
                         }
-                        String groupShortName = ChainingUserRegistrySynchronizer.this.authorityService
-                                .getShortName(groupName);
-                        // The group existed, but in a zone with lower precedence
-                        if (ChainingUserRegistrySynchronizer.logger.isWarnEnabled())
+                        if (groupZones.contains(zoneId) || intersection.isEmpty())
                         {
-                            ChainingUserRegistrySynchronizer.logger
-                                    .warn("Recreating occluded group '"
-                                            + groupShortName
-                                            + "'. This group was previously created manually or through synchronization with a lower priority user registry.");
+                            // The group already existed in this zone or no valid zone: update the group
+                            Set<String> oldChildren = ChainingUserRegistrySynchronizer.this.authorityService
+                                    .getContainedAuthorities(null, groupName, true);
+                            Set<String> newChildren = group.getChildAssociations();
+                            Set<String> toDelete = new TreeSet<String>(oldChildren);
+                            Set<String> toAdd = new TreeSet<String>(newChildren);
+                            toDelete.removeAll(newChildren);
+                            toAdd.removeAll(oldChildren);
+                            if (!toAdd.isEmpty())
+                            {
+                                groupAssocsToCreate.put(groupName, toAdd);
+                            }
+                            for (String child : toDelete)
+                            {
+                                if (ChainingUserRegistrySynchronizer.logger.isInfoEnabled())
+                                {
+                                    ChainingUserRegistrySynchronizer.logger.info("Removing '"
+                                            + ChainingUserRegistrySynchronizer.this.authorityService
+                                                    .getShortName(child) + "' from group '" + groupShortName + "'");
+                                }
+                                ChainingUserRegistrySynchronizer.this.authorityService
+                                        .removeAuthority(groupName, child);
+                            }
                         }
-                        ChainingUserRegistrySynchronizer.this.authorityService.deleteAuthority(groupName);
-                        // create the group
-                        ChainingUserRegistrySynchronizer.this.authorityService.createAuthority(AuthorityType
-                                .getAuthorityType(groupName), groupShortName, (String) groupProperties
-                                .get(ContentModel.PROP_AUTHORITY_DISPLAY_NAME), zoneSet);
-                        Set<String> children = group.getChildAssociations();
-                        if (!children.isEmpty())
+                        else
                         {
-                            groupAssocsToCreate.put(groupName, children);
+                            // Check whether the group is in any of the higher priority authentication chain zones
+                            intersection.retainAll(visitedZoneIds);
+                            if (!intersection.isEmpty())
+                            {
+                                // A group that exists in a different zone with higher precedence
+                                continue;
+                            }
+                            // The group existed, but in a zone with lower precedence
+                            if (ChainingUserRegistrySynchronizer.logger.isWarnEnabled())
+                            {
+                                ChainingUserRegistrySynchronizer.logger
+                                        .warn("Recreating occluded group '"
+                                                + groupShortName
+                                                + "'. This group was previously created through synchronization with a lower priority user registry.");
+                            }
+                            ChainingUserRegistrySynchronizer.this.authorityService.deleteAuthority(groupName);
+                            // create the group
+                            ChainingUserRegistrySynchronizer.this.authorityService.createAuthority(AuthorityType
+                                    .getAuthorityType(groupName), groupShortName, (String) groupProperties
+                                    .get(ContentModel.PROP_AUTHORITY_DISPLAY_NAME), zoneSet);
+                            Set<String> children = group.getChildAssociations();
+                            if (!children.isEmpty())
+                            {
+                                groupAssocsToCreate.put(groupName, children);
+                            }
                         }
                     }
-
                     // Increment the count of processed groups
                     processedCount++;
                     groupsCreated.add(groupName);

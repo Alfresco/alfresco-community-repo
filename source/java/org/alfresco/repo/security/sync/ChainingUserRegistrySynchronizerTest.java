@@ -117,12 +117,17 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
     }
 
     /**
-     * Sets up the test users and groups in two zones, "Z1" and "Z2", by doing a forced synchronize with a Mock user
-     * registry. Note that the zones have some overlapping entries. The layout is as follows
+     * Sets up the test users and groups in three zones, "Z0", "Z1" and "Z2", by doing a forced synchronize with a Mock
+     * user registry. Note that the zones have some overlapping entries. "Z0" is not used in subsequent synchronizations
+     * and is used to test that users and groups in zones that aren't in the authentication chain get 're-zoned'
+     * appropriately. The layout is as follows
      * 
      * <pre>
-     * Z1
+     * Z0
      * G1
+     * U6
+     * 
+     * Z1
      * G2 - U1, G3 - U2, G4, G5
      * 
      * Z2
@@ -135,13 +140,18 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
      */
     private void setUpTestUsersAndGroups() throws Exception
     {
-        this.applicationContextManager.setUserRegistries(new MockUserRegistry("Z1", new NodeDescription[]
+        this.applicationContextManager.setUserRegistries(new MockUserRegistry("Z0", new NodeDescription[]
+        {
+            newPerson("U6")
+        }, new NodeDescription[]
+        {
+            newGroup("G1")
+        }), new MockUserRegistry("Z1", new NodeDescription[]
         {
             newPerson("U1"), newPerson("U2")
         }, new NodeDescription[]
         {
-            newGroup("G1"), newGroup("G2", "U1", "G3"), newGroup("G3", "U2", "G4", "G5"), newGroup("G4"),
-            newGroup("G5")
+            newGroup("G2", "U1", "G3"), newGroup("G3", "U2", "G4", "G5"), newGroup("G4"), newGroup("G5")
         }), new MockUserRegistry("Z2", new NodeDescription[]
         {
             newPerson("U1"), newPerson("U3"), newPerson("U4"), newPerson("U5")
@@ -163,9 +173,10 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
 
             public Object execute() throws Throwable
             {
+                assertExists("Z0", "U6");
+                assertExists("Z0", "G1");
                 assertExists("Z1", "U1");
                 assertExists("Z1", "U2");
-                assertExists("Z1", "G1");
                 assertExists("Z1", "G2", "U1", "G3");
                 assertExists("Z1", "G3", "U2", "G4", "G5");
                 assertExists("Z1", "G4");
@@ -183,7 +194,8 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
     private void tearDownTestUsersAndGroups() throws Exception
     {
         // Wipe out everything that was in Z1 and Z2
-        this.applicationContextManager.setUserRegistries(new MockUserRegistry("Z1", new NodeDescription[] {},
+        this.applicationContextManager.setUserRegistries(new MockUserRegistry("Z0", new NodeDescription[] {},
+                new NodeDescription[] {}), new MockUserRegistry("Z1", new NodeDescription[] {},
                 new NodeDescription[] {}), new MockUserRegistry("Z2", new NodeDescription[] {},
                 new NodeDescription[] {}));
         this.retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Object>()

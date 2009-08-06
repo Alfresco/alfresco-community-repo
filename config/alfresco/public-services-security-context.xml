@@ -374,10 +374,10 @@
                org.alfresco.service.cmr.repository.NodeService.getChildByName=ACL_NODE.0.sys:base.ReadChildren,AFTER_ACL_NODE.sys:base.ReadProperties
                org.alfresco.service.cmr.repository.NodeService.getChildrenByName=ACL_NODE.0.sys:base.ReadChildren,AFTER_ACL_NODE.sys:base.ReadProperties
                org.alfresco.service.cmr.repository.NodeService.getPrimaryParent=ACL_NODE.0.sys:base.ReadProperties
-               org.alfresco.service.cmr.repository.NodeService.createAssociation=ROLE_AUTHENTICATED
-               org.alfresco.service.cmr.repository.NodeService.removeAssociation=ROLE_AUTHENTICATED
-               org.alfresco.service.cmr.repository.NodeService.getTargetAssocs=ROLE_AUTHENTICATED
-               org.alfresco.service.cmr.repository.NodeService.getSourceAssocs=ROLE_AUTHENTICATED
+               org.alfresco.service.cmr.repository.NodeService.createAssociation=ACL_ALLOW
+               org.alfresco.service.cmr.repository.NodeService.removeAssociation=ACL_ALLOW
+               org.alfresco.service.cmr.repository.NodeService.getTargetAssocs=ACL_ALLOW
+               org.alfresco.service.cmr.repository.NodeService.getSourceAssocs=ACL_ALLOW
                org.alfresco.service.cmr.repository.NodeService.getPath=ACL_NODE.0.sys:base.ReadProperties
                org.alfresco.service.cmr.repository.NodeService.getPaths=ACL_NODE.0.sys:base.ReadProperties
                org.alfresco.service.cmr.repository.NodeService.getStoreArchiveNode=ACL_NODE.0.sys:base.Read

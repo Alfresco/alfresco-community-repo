@@ -41,6 +41,42 @@ CREATE TABLE alf_prop_serializable_value
    PRIMARY KEY (id)
 ) ENGINE=InnoDB;
 
+CREATE TABLE alf_prop_date_value
+(
+   date_value BIGINT NOT NULL,
+   full_year SMALLINT NOT NULL,
+   half_of_year TINYINT NOT NULL,
+   quarter_of_year TINYINT NOT NULL,
+   month_of_year TINYINT NOT NULL,
+   week_of_year TINYINT NOT NULL,
+   week_of_month TINYINT NOT NULL,
+   day_of_year SMALLINT NOT NULL,
+   day_of_month TINYINT NOT NULL,
+   day_of_week TINYINT NOT NULL,
+   INDEX idx_alf_prop_date_val (date_value),
+   INDEX idx_alf_prop_date_fy (full_year),
+   INDEX idx_alf_prop_date_moy (month_of_year),
+   INDEX idx_alf_prop_date_doy (day_of_year),
+   INDEX idx_alf_prop_date_dom (day_of_month),
+   INDEX idx_alf_prop_date_dow (day_of_week),
+   PRIMARY KEY (date_value)
+) ENGINE=InnoDB;
+
+CREATE TABLE alf_prop_time_value
+(
+   time_value BIGINT NOT NULL,
+   hour_of_day TINYINT NOT NULL,
+   minute_of_hour TINYINT NOT NULL,
+   second_of_minute TINYINT NOT NULL,
+   ms_of_second TINYINT NOT NULL,
+   INDEX idx_alf_prop_time_val (time_value),
+   INDEX idx_alf_prop_time_hod (hour_of_day),
+   INDEX idx_alf_prop_time_moh (minute_of_hour),
+   INDEX idx_alf_prop_time_som (second_of_minute),
+   INDEX idx_alf_prop_time_msos (ms_of_second),
+   PRIMARY KEY (time_value)
+) ENGINE=InnoDB;
+
 CREATE TABLE alf_prop_value
 (
    id BIGINT NOT NULL AUTO_INCREMENT,
@@ -51,6 +87,7 @@ CREATE TABLE alf_prop_value
    INDEX idx_alf_prop_act (actual_type_id, long_value),
    PRIMARY KEY (id)
 ) ENGINE=InnoDB;
+
 --
 -- Record script finish
 --

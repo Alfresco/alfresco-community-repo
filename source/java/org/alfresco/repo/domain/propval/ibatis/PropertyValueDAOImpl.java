@@ -25,10 +25,12 @@
 package org.alfresco.repo.domain.propval.ibatis;
 
 import java.io.Serializable;
+import java.util.Date;
 import java.util.List;
 
 import org.alfresco.repo.domain.propval.AbstractPropertyValueDAOImpl;
 import org.alfresco.repo.domain.propval.PropertyClassEntity;
+import org.alfresco.repo.domain.propval.PropertyDateValueEntity;
 import org.alfresco.repo.domain.propval.PropertyDoubleValueEntity;
 import org.alfresco.repo.domain.propval.PropertyStringValueEntity;
 import org.alfresco.repo.domain.propval.PropertyValueEntity;
@@ -55,6 +57,10 @@ public class PropertyValueDAOImpl extends AbstractPropertyValueDAOImpl
     private static final String SELECT_PROPERTY_DOUBLE_VALUE_BY_ID = "select.PropertyDoubleValueByID";
     private static final String SELECT_PROPERTY_DOUBLE_VALUE_BY_VALUE = "select.PropertyDoubleValueByValue";
     private static final String INSERT_PROPERTY_DOUBLE_VALUE = "insert.PropertyDoubleValue";
+    
+    private static final String SELECT_PROPERTY_DATE_VALUE_BY_ID = "select.PropertyDateValueByID";
+    private static final String SELECT_PROPERTY_DATE_VALUE_BY_VALUE = "select.PropertyDateValueByValue";
+    private static final String INSERT_PROPERTY_DATE_VALUE = "insert.PropertyDateValue";
     
     private static final String SELECT_PROPERTY_VALUE_BY_ID = "select.PropertyValueById";
     private static final String SELECT_PROPERTY_VALUE_BY_LOCAL_VALUE = "select.PropertyValueByLocalValue";
@@ -202,6 +208,40 @@ public class PropertyValueDAOImpl extends AbstractPropertyValueDAOImpl
         entity.setDoubleValue(value);
         Long id = (Long) template.insert(INSERT_PROPERTY_DOUBLE_VALUE, entity);
         entity.setId(id);
+        // Done
+        return entity;
+    }
+
+    //================================
+    // 'alf_prop_date_value' accessors
+    //================================
+
+    @Override
+    protected PropertyDateValueEntity findDateValueById(Long id)
+    {
+        PropertyDateValueEntity entity = (PropertyDateValueEntity) template.queryForObject(
+                SELECT_PROPERTY_DATE_VALUE_BY_ID,
+                id);
+        // Done
+        return entity;
+    }
+
+    @Override
+    protected PropertyDateValueEntity findDateValueByValue(Date value)
+    {
+        PropertyDateValueEntity result = (PropertyDateValueEntity) template.queryForObject(
+                SELECT_PROPERTY_DATE_VALUE_BY_VALUE,
+                new Long(value.getTime()));
+        // The ID is the actual time in ms (GMT)
+        return result;
+    }
+
+    @Override
+    protected PropertyDateValueEntity createDateValue(Date value)
+    {
+        PropertyDateValueEntity entity = new PropertyDateValueEntity();
+        entity.setValue(value);
+        template.insert(INSERT_PROPERTY_DATE_VALUE, entity);
         // Done
         return entity;
     }

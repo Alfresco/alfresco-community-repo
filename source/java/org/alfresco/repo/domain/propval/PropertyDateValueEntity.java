@@ -1,0 +1,244 @@
+/*
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+
+ * As a special exception to the terms and conditions of version 2.0 of 
+ * the GPL, you may redistribute this Program in connection with Free/Libre 
+ * and Open Source Software ("FLOSS") applications as described in Alfresco's 
+ * FLOSS exception.  You should have recieved a copy of the text describing 
+ * the FLOSS exception, and it is also available here: 
+ * http://www.alfresco.com/legal/licensing"
+ */
+package org.alfresco.repo.domain.propval;
+
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
+import java.util.TimeZone;
+
+import org.alfresco.util.EqualsHelper;
+import org.alfresco.util.ISO8601DateFormat;
+import org.alfresco.util.Pair;
+
+/**
+ * Entity bean for <b>alf_prop_date_value</b> table.
+ * 
+ * @author Derek Hulley
+ * @since 3.3
+ */
+public class PropertyDateValueEntity
+{
+    /**
+     * Converts the given date (with arbitrary time values) to a date-only (no time or milliseconds)
+     * 
+     * @param value                 the Java date, possibly containing hours, minutes, seconds and milliseconds
+     * @return                      the Java date truncated to day-accuracy in GMT
+     */
+    public static Date truncateDate(java.util.Date value)
+    {
+        Calendar cal = GregorianCalendar.getInstance();
+        cal.setTimeZone(TimeZone.getTimeZone("GMT"));
+        cal.setTimeInMillis(value.getTime());
+        cal.set(Calendar.MILLISECOND, 0);
+        cal.set(Calendar.SECOND, 0);
+        cal.set(Calendar.MINUTE, 0);
+        cal.set(Calendar.HOUR_OF_DAY, 0);
+
+        Date dayOnlyDate = cal.getTime();
+        // Done
+        return dayOnlyDate;
+    }
+    
+    private Long dateValue;
+    private short fullYear;
+    private short halfOfYear;
+    private short quarterOfYear;
+    private short monthOfYear;
+    private short weekOfYear;
+    private short weekOfMonth;
+    private short dayOfYear;
+    private short dayOfMonth;
+    private short dayOfWeek;
+    
+    public PropertyDateValueEntity()
+    {
+    }
+    
+    @Override
+    public int hashCode()
+    {
+        return (dateValue == null ? 0 : dateValue.hashCode()); 
+    }
+    
+    @Override
+    public boolean equals(Object obj)
+    {
+        if (this == obj)
+        {
+            return true;
+        }
+        else if (obj != null && obj instanceof PropertyDateValueEntity)
+        {
+            PropertyDateValueEntity that = (PropertyDateValueEntity) obj;
+            return EqualsHelper.nullSafeEquals(this.dateValue, that.dateValue);
+        }
+        else
+        {
+            return false;
+        }
+    }
+    
+    @Override
+    public String toString()
+    {
+        StringBuilder sb = new StringBuilder(512);
+        sb.append("PropertyDateValueEntity")
+          .append("[ value=").append(dateValue)
+          .append(" (").append(ISO8601DateFormat.format(new Date(dateValue.longValue()))).append(")")
+          .append("]");
+        return sb.toString();
+    }
+    
+    /**
+     * @return          Returns the ID-value pair
+     */
+    public Pair<Long, Date> getEntityPair()
+    {
+        return new Pair<Long, Date>(dateValue, new Date(dateValue.longValue()));
+    }
+    
+    public void setValue(Date value)
+    {
+        long valueInMs = value.getTime();
+        this.dateValue = new Long(valueInMs);
+        
+        Calendar cal = GregorianCalendar.getInstance();
+        cal.setTimeZone(TimeZone.getTimeZone("GMT"));
+        cal.setTimeInMillis(valueInMs);
+        
+        // We need month_of_year for further calculations
+        this.monthOfYear = (short) cal.get(Calendar.MONTH);
+        
+        this.fullYear = (short) cal.get(Calendar.YEAR);
+        this.halfOfYear = (short) monthOfYear < Calendar.JUNE ? (short)0 : (short)1;
+        this.quarterOfYear = (short) (monthOfYear / (short)3);
+        this.weekOfYear = (short) cal.get(Calendar.WEEK_OF_YEAR);
+        this.weekOfMonth = (short) cal.get(Calendar.WEEK_OF_MONTH);
+        this.dayOfYear = (short) cal.get(Calendar.DAY_OF_YEAR);
+        this.dayOfMonth = (short) cal.get(Calendar.DAY_OF_MONTH);
+        this.dayOfWeek = (short) cal.get(Calendar.DAY_OF_MONTH);
+    }
+    
+    public Long getDateValue()
+    {
+        return dateValue;
+    }
+
+    public void setDateValue(Long dateValue)
+    {
+        this.dateValue = dateValue;
+    }
+
+    public short getFullYear()
+    {
+        return fullYear;
+    }
+
+    public void setFullYear(short fullYear)
+    {
+        this.fullYear = fullYear;
+    }
+
+    public short getHalfOfYear()
+    {
+        return halfOfYear;
+    }
+
+    public void setHalfOfYear(short halfOfYear)
+    {
+        this.halfOfYear = halfOfYear;
+    }
+
+    public short getQuarterOfYear()
+    {
+        return quarterOfYear;
+    }
+
+    public void setQuarterOfYear(short quarterOfYear)
+    {
+        this.quarterOfYear = quarterOfYear;
+    }
+
+    public short getMonthOfYear()
+    {
+        return monthOfYear;
+    }
+
+    public void setMonthOfYear(short monthOfYear)
+    {
+        this.monthOfYear = monthOfYear;
+    }
+
+    public short getWeekOfYear()
+    {
+        return weekOfYear;
+    }
+
+    public void setWeekOfYear(short weekOfYear)
+    {
+        this.weekOfYear = weekOfYear;
+    }
+
+    public short getWeekOfMonth()
+    {
+        return weekOfMonth;
+    }
+
+    public void setWeekOfMonth(short weekOfMonth)
+    {
+        this.weekOfMonth = weekOfMonth;
+    }
+
+    public short getDayOfYear()
+    {
+        return dayOfYear;
+    }
+
+    public void setDayOfYear(short dayOfYear)
+    {
+        this.dayOfYear = dayOfYear;
+    }
+
+    public short getDayOfMonth()
+    {
+        return dayOfMonth;
+    }
+
+    public void setDayOfMonth(short dayOfMonth)
+    {
+        this.dayOfMonth = dayOfMonth;
+    }
+
+    public short getDayOfWeek()
+    {
+        return dayOfWeek;
+    }
+
+    public void setDayOfWeek(short dayOfWeek)
+    {
+        this.dayOfWeek = dayOfWeek;
+    }
+}

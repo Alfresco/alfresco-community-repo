@@ -25,6 +25,7 @@
 package org.alfresco.repo.domain.propval;
 
 import java.io.Serializable;
+import java.util.Date;
 
 import junit.framework.TestCase;
 
@@ -33,6 +34,7 @@ import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransacti
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
+import org.alfresco.util.ISO8601DateFormat;
 import org.alfresco.util.Pair;
 import org.springframework.context.ApplicationContext;
 
@@ -171,34 +173,6 @@ public class PropertyValueDAOTest extends TestCase
         assertNotSame("String IDs were not different", stringEntityPair.getFirst(), stringUpperEntityPair.getFirst());
     }
 
-//    public void testPropertyNumericValue_Long() throws Exception
-//    {
-//        final Long longValue = Long.valueOf(Long.MAX_VALUE);
-//        RetryingTransactionCallback<Pair<Long, Long>> createValueCallback = new RetryingTransactionCallback<Pair<Long, Long>>()
-//        {
-//            public Pair<Long, Long> execute() throws Throwable
-//            {
-//                // Get the classes
-//                return propertyValueDAO.getOrCreatePropertyNumericValue(longValue);
-//            }
-//        };
-//        final Pair<Long, Long> entityPair = txnHelper.doInTransaction(createValueCallback, false);
-//        assertNotNull(entityPair);
-//        assertEquals(longValue, entityPair.getSecond());
-//        
-//        RetryingTransactionCallback<Pair<Long, Long>> getValueCallback = new RetryingTransactionCallback<Pair<Long, Long>>()
-//        {
-//            public Pair<Long, Long> execute() throws Throwable
-//            {
-//                // Get the classes
-//                return propertyValueDAO.getPropertyDoubleValue(longValue);
-//            }
-//        };
-//        final Pair<Long, Long> entityPairCheck = txnHelper.doInTransaction(getValueCallback, false);
-//        assertNotNull(entityPairCheck);
-//        assertEquals(entityPair, entityPairCheck);
-//    }
-
     public void testPropertyDoubleValue() throws Exception
     {
         final Double doubleValue = Double.valueOf(1.7976931348623E+308);
@@ -223,6 +197,35 @@ public class PropertyValueDAOTest extends TestCase
             }
         };
         final Pair<Long, Double> entityPairCheck = txnHelper.doInTransaction(getValueCallback, false);
+        assertNotNull(entityPairCheck);
+        assertEquals(entityPair, entityPairCheck);
+    }
+
+    public void testPropertyDateValue() throws Exception
+    {
+        final Date dateValue = ISO8601DateFormat.parse("1936-08-04T23:37:25.793Z");
+        final Date dateValueBack = ISO8601DateFormat.parse("1936-08-04T00:00:00.000Z");
+        RetryingTransactionCallback<Pair<Long, Date>> createValueCallback = new RetryingTransactionCallback<Pair<Long, Date>>()
+        {
+            public Pair<Long, Date> execute() throws Throwable
+            {
+                // Get the classes
+                return propertyValueDAO.getOrCreatePropertyDateValue(dateValue);
+            }
+        };
+        final Pair<Long, Date> entityPair = txnHelper.doInTransaction(createValueCallback, false);
+        assertNotNull(entityPair);
+        assertEquals(dateValueBack, entityPair.getSecond());
+        
+        RetryingTransactionCallback<Pair<Long, Date>> getValueCallback = new RetryingTransactionCallback<Pair<Long, Date>>()
+        {
+            public Pair<Long, Date> execute() throws Throwable
+            {
+                // Get the classes
+                return propertyValueDAO.getPropertyDateValue(dateValue);
+            }
+        };
+        final Pair<Long, Date> entityPairCheck = txnHelper.doInTransaction(getValueCallback, false);
         assertNotNull(entityPairCheck);
         assertEquals(entityPair, entityPairCheck);
     }
@@ -285,7 +288,7 @@ public class PropertyValueDAOTest extends TestCase
     
     public void testPropertyValue_Short() throws Exception
     {
-        for (short i = 0; i < 1000; i++)
+        for (short i = 0; i < 100; i++)
         {
             runPropertyValueTest(new Short(i));
         }
@@ -293,7 +296,7 @@ public class PropertyValueDAOTest extends TestCase
     
     public void testPropertyValue_Integer() throws Exception
     {
-        for (int i = 0; i < 1000; i++)
+        for (int i = 0; i < 100; i++)
         {
             runPropertyValueTest(new Integer(i));
         }
@@ -301,7 +304,7 @@ public class PropertyValueDAOTest extends TestCase
     
     public void testPropertyValue_Long() throws Exception
     {
-        for (long i = 0; i < 1000; i++)
+        for (long i = 0; i < 100; i++)
         {
             runPropertyValueTest(new Long(i));
         }
@@ -309,7 +312,7 @@ public class PropertyValueDAOTest extends TestCase
     
     public void testPropertyValue_Float() throws Exception
     {
-        for (long i = 0; i < 1000; i++)
+        for (long i = 0; i < 100; i++)
         {
             runPropertyValueTest(new Float((float)i + 0.01F));
         }
@@ -317,15 +320,24 @@ public class PropertyValueDAOTest extends TestCase
     
     public void testPropertyValue_Double() throws Exception
     {
-        for (long i = 0; i < 1000; i++)
+        for (long i = 0; i < 100; i++)
         {
             runPropertyValueTest(new Double((double)i + 0.01D));
         }
     }
     
+    public void testPropertyValue_Date() throws Exception
+    {
+        long now = System.currentTimeMillis();
+        for (long i = 0; i < 100; i++)
+        {
+            runPropertyValueTest(new Date(now + i));
+        }
+    }
+    
     public void testPropertyValue_String() throws Exception
     {
-        for (long i = 0; i < 1000; i++)
+        for (long i = 0; i < 100; i++)
         {
             runPropertyValueTest(new String("Value-" + i + ".xyz"));
         }

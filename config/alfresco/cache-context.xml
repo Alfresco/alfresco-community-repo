@@ -239,7 +239,7 @@
          <value>org.alfresco.cache.immutableEntityTransactionalCache</value>
       </property>
       <property name="maxCacheSize">
-         <value>100</value>
+         <value>1000</value>
       </property>
    </bean>
    

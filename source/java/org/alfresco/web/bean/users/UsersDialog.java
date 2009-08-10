@@ -238,8 +238,7 @@ public class UsersDialog extends BaseDialogBean implements IContextListener, Cha
             }
             catch (AuthenticationException authErr)
             {
-               Utils.addErrorMessage(Application.getMessage(context, ERROR_USER_DELETE));
-               ReportedException.throwIfNecessary(authErr);
+                // Let's not worry if authentication details don't exist
             }
          }
          

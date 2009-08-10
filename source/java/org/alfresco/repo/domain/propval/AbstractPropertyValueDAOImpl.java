@@ -29,7 +29,7 @@ import java.io.Serializable;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.cache.lookup.EntityLookupCache;
-import org.alfresco.repo.cache.lookup.EntityLookupCache.EntityLookupCallbackDAO;
+import org.alfresco.repo.cache.lookup.EntityLookupCache.EntityLookupCallbackDAOAdaptor;
 import org.alfresco.repo.domain.CrcHelper;
 import org.alfresco.repo.domain.propval.PropertyValueEntity.PersistedType;
 import org.alfresco.util.Pair;
@@ -205,7 +205,7 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
     /**
      * Callback for <b>alf_prop_class</b> DAO.
      */
-    private class PropertyClassCallbackDAO implements EntityLookupCallbackDAO<Long, Class<?>, String>
+    private class PropertyClassCallbackDAO extends EntityLookupCallbackDAOAdaptor<Long, Class<?>, String>
     {
         private final Pair<Long, Class<?>> convertEntityToPair(PropertyClassEntity entity)
         {
@@ -288,7 +288,7 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
     /**
      * Callback for <b>alf_prop_string_value</b> DAO.
      */
-    private class PropertyStringValueCallbackDAO implements EntityLookupCallbackDAO<Long, String, Pair<String, Long>>
+    private class PropertyStringValueCallbackDAO extends EntityLookupCallbackDAOAdaptor<Long, String, Pair<String, Long>>
     {
         private final Pair<Long, String> convertEntityToPair(PropertyStringValueEntity entity)
         {
@@ -371,7 +371,7 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
     /**
      * Callback for <b>alf_prop_double_value</b> DAO.
      */
-    private class PropertyDoubleValueCallbackDAO implements EntityLookupCallbackDAO<Long, Double, Double>
+    private class PropertyDoubleValueCallbackDAO extends EntityLookupCallbackDAOAdaptor<Long, Double, Double>
     {
         private final Pair<Long, Double> convertEntityToPair(PropertyDoubleValueEntity entity)
         {
@@ -446,7 +446,7 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
     /**
      * Callback for <b>alf_prop_value</b> DAO.
      */
-    private class PropertyValueCallbackDAO implements EntityLookupCallbackDAO<Long, Serializable, Serializable>
+    private class PropertyValueCallbackDAO extends EntityLookupCallbackDAOAdaptor<Long, Serializable, Serializable>
     {
         private final Pair<Long, Serializable> convertEntityToPair(PropertyValueEntity entity)
         {
@@ -454,18 +454,23 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
             {
                 return null;
             }
-            else
-            {
-                return entity.getEntityPair();
-            }
+            Long entityId = entity.getId();
+            Serializable entityValue = entity.getPersistedValue();
+            
+            // Dig out the class to convert the value to i.e. the actual type of the value
+            Long actualTypeId = entity.getActualTypeId();
+            Class<?> actualType = getPropertyClassById(actualTypeId).getSecond();
+            // Convert it
+            Serializable actualValue = (Serializable) converter.convert(actualType, entityValue);
+            // Done
+            return new Pair<Long, Serializable>(entityId, actualValue);
         }
         
         public Serializable getValueKey(Serializable value)
         {
-            // Find out how it would be persisted
-            Pair<Short, Serializable> persistedValuePair = converter.convertToPersistedType(value);
+            PersistedType persistedType = PropertyValueEntity.getPersistedTypeEnum(value);
             // We don't return keys for pure Serializable instances
-            if (persistedValuePair.getFirst().equals(PersistedType.SERIALIZABLE.getOrdinalNumber()))
+            if (persistedType == PersistedType.SERIALIZABLE)
             {
                 // It will be Serialized, so no key
                 return null;
@@ -477,7 +482,7 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
             else
             {
                 // We've dodged Serializable and String; everything else is OK as a key.
-                return persistedValuePair;
+                return value;
             }
         }
 
@@ -495,14 +500,6 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
 
         public Pair<Long, Serializable> findByValue(Serializable value)
         {
-//            // Find out how it would be persisted
-//            Pair<Short, Serializable> persistedValuePair = converter.convertToPersistedType(value);
-//            // We don't do lookups for serializable values
-//            if (persistedValuePair.getFirst().equals(PersistedType.SERIALIZABLE.getOrdinalNumber()))
-//            {
-//                // It will be Serialized, so no we don't look it up
-//                return null;
-//            }
             PropertyValueEntity entity = findPropertyValueByValue(value);
             return convertEntityToPair(entity);
         }

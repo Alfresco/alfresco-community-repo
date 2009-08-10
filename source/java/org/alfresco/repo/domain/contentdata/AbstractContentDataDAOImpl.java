@@ -60,7 +60,6 @@ public abstract class AbstractContentDataDAOImpl implements ContentDataDAO
      * Content URL IDs to delete before final commit.
      */
     private static final String KEY_PRE_COMMIT_CONTENT_URL_DELETIONS = "AbstractContentDataDAOImpl.PreCommitContentUrlDeletions";
-    private static final Long CACHE_NULL_LONG = Long.MIN_VALUE;
 
     private static Log logger = LogFactory.getLog(AbstractContentDataDAOImpl.class);
     

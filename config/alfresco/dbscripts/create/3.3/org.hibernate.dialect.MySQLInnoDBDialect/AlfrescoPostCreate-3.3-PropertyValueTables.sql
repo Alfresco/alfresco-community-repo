@@ -44,12 +44,13 @@ CREATE TABLE alf_prop_serializable_value
 CREATE TABLE alf_prop_value
 (
    id BIGINT NOT NULL AUTO_INCREMENT,
+   actual_type_id BIGINT NOT NULL,
    persisted_type TINYINT NOT NULL,
    long_value BIGINT NOT NULL,
-   INDEX idx_alf_prop_val (persisted_type, long_value),
+   INDEX idx_alf_prop_per (persisted_type, long_value),
+   INDEX idx_alf_prop_act (actual_type_id, long_value),
    PRIMARY KEY (id)
 ) ENGINE=InnoDB;
-
 --
 -- Record script finish
 --

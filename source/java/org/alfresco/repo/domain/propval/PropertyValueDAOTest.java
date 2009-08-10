@@ -24,6 +24,8 @@
  */
 package org.alfresco.repo.domain.propval;
 
+import java.io.Serializable;
+
 import junit.framework.TestCase;
 
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
@@ -169,33 +171,6 @@ public class PropertyValueDAOTest extends TestCase
         assertNotSame("String IDs were not different", stringEntityPair.getFirst(), stringUpperEntityPair.getFirst());
     }
 
-//    public void testPropertyNumericValue_Boolean() throws Exception
-//    {
-//        RetryingTransactionCallback<Pair<Long, Boolean>> createValueCallback = new RetryingTransactionCallback<Pair<Long, Boolean>>()
-//        {
-//            public Pair<Long, Boolean> execute() throws Throwable
-//            {
-//                // Get the classes
-//                return propertyValueDAO.getOrCreatePropertyNumericValue(Boolean.TRUE);
-//            }
-//        };
-//        final Pair<Long, Boolean> entityPair = txnHelper.doInTransaction(createValueCallback, false);
-//        assertNotNull(entityPair);
-//        assertEquals(Boolean.TRUE, entityPair.getSecond());
-//        
-//        RetryingTransactionCallback<Pair<Long, Boolean>> getValueCallback = new RetryingTransactionCallback<Pair<Long, Boolean>>()
-//        {
-//            public Pair<Long, Boolean> execute() throws Throwable
-//            {
-//                // Get the classes
-//                return propertyValueDAO.getPropertyDoubleValue(Boolean.TRUE);
-//            }
-//        };
-//        final Pair<Long, Boolean> entityPairCheck = txnHelper.doInTransaction(getValueCallback, false);
-//        assertNotNull(entityPairCheck);
-//        assertEquals(entityPair, entityPairCheck);
-//    }
-//
 //    public void testPropertyNumericValue_Long() throws Exception
 //    {
 //        final Long longValue = Long.valueOf(Long.MAX_VALUE);
@@ -250,5 +225,109 @@ public class PropertyValueDAOTest extends TestCase
         final Pair<Long, Double> entityPairCheck = txnHelper.doInTransaction(getValueCallback, false);
         assertNotNull(entityPairCheck);
         assertEquals(entityPair, entityPairCheck);
+    }
+
+    /**
+     * Tests that the given value can be persisted and retrieved with the same resulting ID
+     */
+    private void runPropertyValueTest(final Serializable value) throws Exception
+    {
+        // Create it (if it doesn't exist)
+        RetryingTransactionCallback<Pair<Long, Serializable>> createValueCallback = new RetryingTransactionCallback<Pair<Long, Serializable>>()
+        {
+            public Pair<Long, Serializable> execute() throws Throwable
+            {
+                // Get the classes
+                return propertyValueDAO.getOrCreatePropertyValue(value);
+            }
+        };
+        final Pair<Long, Serializable> entityPair = txnHelper.doInTransaction(createValueCallback, false);
+        assertNotNull(entityPair);
+        assertEquals(value, entityPair.getSecond());
+        
+        // Retrieve it by value
+        RetryingTransactionCallback<Pair<Long, Serializable>> getValueCallback = new RetryingTransactionCallback<Pair<Long, Serializable>>()
+        {
+            public Pair<Long, Serializable> execute() throws Throwable
+            {
+                // Get the classes
+                return propertyValueDAO.getPropertyValue(value);
+            }
+        };
+        final Pair<Long, Serializable> entityPairCheck = txnHelper.doInTransaction(getValueCallback, false);
+        assertNotNull(entityPairCheck);
+        assertEquals(entityPair, entityPairCheck);
+        
+        // Retrieve it by ID
+        RetryingTransactionCallback<Pair<Long, Serializable>> getByIdCallback = new RetryingTransactionCallback<Pair<Long, Serializable>>()
+        {
+            public Pair<Long, Serializable> execute() throws Throwable
+            {
+                // Get the classes
+                return propertyValueDAO.getPropertyValueById(entityPair.getFirst());
+            }
+        };
+        final Pair<Long, Serializable> entityPairCheck2 = txnHelper.doInTransaction(getByIdCallback, false);
+        assertNotNull(entityPairCheck2);
+        assertEquals(entityPair, entityPairCheck2);
+    }
+    
+    public void testPropertyValue_Null() throws Exception
+    {
+        runPropertyValueTest(null);
+    }
+    
+    public void testPropertyValue_Boolean() throws Exception
+    {
+        runPropertyValueTest(Boolean.TRUE);
+        runPropertyValueTest(Boolean.FALSE);
+    }
+    
+    public void testPropertyValue_Short() throws Exception
+    {
+        for (short i = 0; i < 1000; i++)
+        {
+            runPropertyValueTest(new Short(i));
+        }
+    }
+    
+    public void testPropertyValue_Integer() throws Exception
+    {
+        for (int i = 0; i < 1000; i++)
+        {
+            runPropertyValueTest(new Integer(i));
+        }
+    }
+    
+    public void testPropertyValue_Long() throws Exception
+    {
+        for (long i = 0; i < 1000; i++)
+        {
+            runPropertyValueTest(new Long(i));
+        }
+    }
+    
+    public void testPropertyValue_Float() throws Exception
+    {
+        for (long i = 0; i < 1000; i++)
+        {
+            runPropertyValueTest(new Float((float)i + 0.01F));
+        }
+    }
+    
+    public void testPropertyValue_Double() throws Exception
+    {
+        for (long i = 0; i < 1000; i++)
+        {
+            runPropertyValueTest(new Double((double)i + 0.01D));
+        }
+    }
+    
+    public void testPropertyValue_String() throws Exception
+    {
+        for (long i = 0; i < 1000; i++)
+        {
+            runPropertyValueTest(new String("Value-" + i + ".xyz"));
+        }
     }
 }

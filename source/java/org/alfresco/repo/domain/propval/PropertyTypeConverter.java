@@ -24,12 +24,11 @@
  */
 package org.alfresco.repo.domain.propval;
 
-import java.io.Serializable;
-
-import org.alfresco.util.Pair;
-
 /**
- * Interface for converters that
+ * Interface for converters that to translate between persisted values and external values.
+ * <p/>
+ * Implementations must be able to convert between values being stored and Long, Double, String -
+ * and back again.
  * 
  * @author Derek Hulley
  * @since 3.3
@@ -37,19 +36,10 @@ import org.alfresco.util.Pair;
 public interface PropertyTypeConverter
 {
     /**
-     * Convert an external value into a persisted type and persistable value.
+     * Convert a value to a given type.
      * 
      * @param value             the value to convert
      * @return                  Returns the persisted type and value to persist
      */
-    Pair<Short, Serializable> convertToPersistedType(Serializable value);
-    
-    /**
-     * Convert a persisted type-value pair into an external value
-     * 
-     * @param persistedType     the type that the value was persisted as
-     * @param actualType        the original Java type to convert to
-     * @param persistedValue    the persisted value, which must be one of the {@link PersistedType} values 
-     */
-    Serializable convertFromPersistedType(Short persistedType, Class<?> actualType, Serializable persistedValue);
+    <T> T convert(Class<T> targetClass, Object value);
 }

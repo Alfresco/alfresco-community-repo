@@ -50,12 +50,11 @@ public class PropertyValueEntity
     public static final Long LONG_ZERO = new Long(0L);
     public static final Long LONG_ONE = new Long(1L);
 
-    public static final Short ORDINAL_NULL = new Short((short)0);
-    public static final Short ORDINAL_BOOLEAN = new Short((short)1);
-    public static final Short ORDINAL_LONG = new Short((short)2);
-    public static final Short ORDINAL_DOUBLE = new Short((short)3);
-    public static final Short ORDINAL_STRING = new Short((short)4);
-    public static final Short ORDINAL_SERIALIZABLE = new Short((short)5);
+    public static final Short ORDINAL_NULL = 0;
+    public static final Short ORDINAL_LONG = 1;
+    public static final Short ORDINAL_DOUBLE = 2;
+    public static final Short ORDINAL_STRING = 3;
+    public static final Short ORDINAL_SERIALIZABLE = 4;
     
     /**
      * Enumeration of persisted types for <b>alf_prop_value.persisted_type</b>.
@@ -79,19 +78,6 @@ public class PropertyValueEntity
             public Class<?> getAssociatedClass()
             {
                 throw new UnsupportedOperationException("NULL is a special case and has no associated class.");
-            }
-        },
-        BOOLEAN
-        {
-            @Override
-            public Short getOrdinalNumber()
-            {
-                return ORDINAL_BOOLEAN;
-            }
-            @Override
-            public Class<?> getAssociatedClass()
-            {
-                return Boolean.class;
             }
         },
         LONG
@@ -188,7 +174,7 @@ public class PropertyValueEntity
         persistedTypesByOrdinal = Collections.unmodifiableMap(mapOrdinal);
         // Create the map of class-type
         Map<Class<?>, PersistedType> mapClass = new HashMap<Class<?>, PersistedType>(29);
-        mapClass.put(Boolean.class, PersistedType.BOOLEAN);
+        mapClass.put(Boolean.class, PersistedType.LONG);
         mapClass.put(Short.class, PersistedType.LONG);
         mapClass.put(Integer.class, PersistedType.LONG);
         mapClass.put(Long.class, PersistedType.LONG);
@@ -202,7 +188,9 @@ public class PropertyValueEntity
     private static final Log logger = LogFactory.getLog(PropertyValueEntity.class);
     
     private Long id;
+    private Long actualTypeId;
     private Short persistedType;
+    private PersistedType persistedTypeEnum;            // Derived
     private Long longValue;
     private String stringValue;
     private Double doubleValue;
@@ -217,7 +205,7 @@ public class PropertyValueEntity
     @Override
     public int hashCode()
     {
-        return (persistedType == null ? 0 : persistedType.intValue()) + (longValue == null ? 0 : longValue.intValue());
+        return (actualTypeId == null ? 0 : actualTypeId.intValue()) + (longValue == null ? 0 : longValue.intValue());
     }
     
     @Override
@@ -230,7 +218,7 @@ public class PropertyValueEntity
         else if (obj != null && obj instanceof PropertyValueEntity)
         {
             PropertyValueEntity that = (PropertyValueEntity) obj;
-            return EqualsHelper.nullSafeEquals(this.persistedType, that.persistedType) &&
+            return EqualsHelper.nullSafeEquals(this.actualTypeId, that.actualTypeId) &&
                    EqualsHelper.nullSafeEquals(this.longValue, that.longValue);
         }
         else
@@ -245,19 +233,11 @@ public class PropertyValueEntity
         StringBuilder sb = new StringBuilder(512);
         sb.append("PropertyValueEntity")
           .append("[ ID=").append(id)
-          .append(", type=").append(persistedType)
+          .append(", actualTypeId=").append(actualTypeId)
+          .append(", persistedType=").append(persistedType)
           .append(", value=").append(longValue)
           .append("]");
         return sb.toString();
-    }
-    
-    /**
-     * @return          Returns the ID-value pair
-     */
-    public Pair<Long, Serializable> getEntityPair()
-    {
-        Serializable value = getValue();
-        return new Pair<Long, Serializable>(id, value);
     }
     
     /**
@@ -266,53 +246,100 @@ public class PropertyValueEntity
      * value.
      * @return          Returns the persisted value
      */
-    public Serializable getValue()
+    public Serializable getPersistedValue()
     {
-        if (persistedType.equals(PersistedType.NULL.getOrdinalNumber()))
+        switch (persistedTypeEnum)
         {
-            return null;
+            case NULL:
+                return null;
+            case LONG:
+                return longValue;
+            case DOUBLE:
+                return doubleValue;
+            case STRING:
+                return stringValue;
+            case SERIALIZABLE:
+                return serializableValue;
+            default:
+                throw new IllegalStateException("Should not be able to get through switch");
         }
-        else if (persistedType.equals(PersistedType.BOOLEAN.getOrdinalNumber()))
+    }
+    
+    /**
+     * Shortcut method to set the value.  It will be converted as required and the necessary fields
+     * will be populated.
+     * 
+     * @param value         the value to persist (may be <tt>null</tt>)
+     * @param converter     the converter that will perform and type conversion
+     * @return              Returns the persisted type value
+     */
+    public Serializable setValue(Serializable value, PropertyTypeConverter converter)
+    {
+        if (value == null)
         {
-            return (longValue.longValue() > 0 ? Boolean.TRUE : Boolean.FALSE);
-        }
-        else if (persistedType.equals(PersistedType.LONG.getOrdinalNumber()))
-        {
+            this.persistedType = ORDINAL_NULL;
+            this.persistedTypeEnum = PersistedType.NULL;
+            this.longValue = LONG_ZERO;
             return longValue;
-        }
-        else if (persistedType.equals(PersistedType.DOUBLE.getOrdinalNumber()))
-        {
-            return doubleValue;
-        }
-        else if (persistedType.equals(PersistedType.STRING.getOrdinalNumber()))
-        {
-            return stringValue;
-        }
-        else if (persistedType.equals(PersistedType.SERIALIZABLE.getOrdinalNumber()))
-        {
-            return serializableValue;
         }
         else
         {
-            logger.warn("Persisted type code not recognised: " + this.persistedType);
-            // Return any non-null value and hope it works
-            if (serializableValue != null)
+            Class<?> valueClazz = value.getClass();
+            persistedTypeEnum = persistedTypesByClass.get(valueClazz);
+            if (persistedTypeEnum == null)
             {
-                return serializableValue;
+                persistedTypeEnum = PersistedType.SERIALIZABLE;
             }
-            else if (doubleValue != null)
+            persistedType = persistedTypeEnum.getOrdinalNumber();
+            // Get the class to persist as
+            switch (persistedTypeEnum)
             {
-                return doubleValue;
-            }
-            else if (stringValue != null)
-            {
-                return stringValue;
-            }
-            else
-            {
-                return longValue;
+                case LONG:
+                    longValue = converter.convert(Long.class, value);
+                    return longValue;
+                case DOUBLE:
+                    doubleValue = converter.convert(Double.class, value);
+                    return doubleValue;
+                case STRING:
+                    stringValue = converter.convert(String.class, value);
+                    return stringValue;
+                case SERIALIZABLE:
+                    serializableValue = value;
+                    return serializableValue;
+                default:
+                    throw new IllegalStateException("Should not be able to get through switch");
             }
         }
+    }
+    
+    /**
+     * Helper method to determine how the given value will be stored.
+     * 
+     * @param value         the value to check
+     * @return              Returns the persisted type
+     */
+    public static PersistedType getPersistedTypeEnum(Serializable value)
+    {
+        PersistedType persistedTypeEnum;
+        if (value == null)
+        {
+            persistedTypeEnum = PersistedType.NULL;
+        }
+        else
+        {
+            Class<?> valueClazz = value.getClass();
+            persistedTypeEnum = persistedTypesByClass.get(valueClazz);
+            if (persistedTypeEnum == null)
+            {
+                persistedTypeEnum = PersistedType.SERIALIZABLE;
+            }
+        }
+        return persistedTypeEnum;
+    }
+    
+    public PersistedType getPersistedTypeEnum()
+    {
+        return persistedTypeEnum;
     }
     
     public Long getId()
@@ -325,6 +352,16 @@ public class PropertyValueEntity
         this.id = id;
     }
 
+    public Long getActualTypeId()
+    {
+        return actualTypeId;
+    }
+
+    public void setActualTypeId(Long actualTypeId)
+    {
+        this.actualTypeId = actualTypeId;
+    }
+
     public Short getPersistedType()
     {
         return persistedType;
@@ -333,6 +370,12 @@ public class PropertyValueEntity
     public void setPersistedType(Short persistedType)
     {
         this.persistedType = persistedType;
+        this.persistedTypeEnum = persistedTypesByOrdinal.get(persistedType);
+        if (persistedTypeEnum == null)
+        {
+            logger.error("Persisted type '" + persistedType + "' is not recognised.");
+            this.persistedTypeEnum = PersistedType.LONG;
+        }
     }
 
     public Long getLongValue()

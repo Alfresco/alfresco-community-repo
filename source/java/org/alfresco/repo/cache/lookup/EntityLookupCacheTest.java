@@ -163,7 +163,56 @@ public class EntityLookupCacheTest extends TestCase implements EntityLookupCallb
         assertTrue(database.containsKey(entityPairNull.getFirst()));
         assertNull(database.get(entityPairNull.getFirst()));
         assertEquals(entityPairNull, entityPairCheck);
-    }        
+    }
+    
+    public void testUpdate() throws Exception
+    {
+        TestValue valueOne = new TestValue(getName() + "-ONE");
+        TestValue valueTwo = new TestValue(getName() + "-TWO");
+        Pair<Long, Object> entityPairOne = entityLookupCacheA.getOrCreateByValue(valueOne);
+        assertNotNull(entityPairOne);
+        Long id = entityPairOne.getFirst();
+        assertEquals(valueOne.val, database.get(id));
+        assertEquals(2, cache.getKeys().size());
+        
+        // Update
+        int updateCount = entityLookupCacheA.updateValue(id, valueTwo);
+        assertEquals("Update count was incorrect.", 1, updateCount);
+        assertEquals(valueTwo.val, database.get(id));
+        assertEquals(2, cache.getKeys().size());
+    }
+    
+    public void testDeleteByKey() throws Exception
+    {
+        TestValue valueOne = new TestValue(getName() + "-ONE");
+        Pair<Long, Object> entityPairOne = entityLookupCacheA.getOrCreateByValue(valueOne);
+        assertNotNull(entityPairOne);
+        Long id = entityPairOne.getFirst();
+        assertEquals(valueOne.val, database.get(id));
+        assertEquals(2, cache.getKeys().size());
+        
+        // Delete
+        int deleteCount = entityLookupCacheA.deleteByKey(id);
+        assertEquals("Delete count was incorrect.", 1, deleteCount);
+        assertNull(database.get(id));
+        assertEquals(0, cache.getKeys().size());
+    }
+    
+    public void testDeleteByValue() throws Exception
+    {
+        TestValue valueOne = new TestValue(getName() + "-ONE");
+        Pair<Long, Object> entityPairOne = entityLookupCacheA.getOrCreateByValue(valueOne);
+        assertNotNull(entityPairOne);
+        Long id = entityPairOne.getFirst();
+        assertEquals(valueOne.val, database.get(id));
+        assertEquals(2, cache.getKeys().size());
+        
+        // Delete
+        int deleteCount = entityLookupCacheA.deleteByValue(valueOne);
+        assertEquals("Delete count was incorrect.", 1, deleteCount);
+        assertNull(database.get(id));
+        assertEquals(0, cache.getKeys().size());
+    }
 
     /**
      * Helper class to represent business object
@@ -250,5 +299,55 @@ public class EntityLookupCacheTest extends TestCase implements EntityLookupCallb
         }
         database.put(newKey, dbValue);
         return new Pair<Long, Object>(newKey, value);
+    }
+
+    public int updateValue(Long key, Object value)
+    {
+        assertNotNull(key);
+        assertTrue(value == null || value instanceof TestValue);
+        
+        // Find it
+        Pair<Long, Object> entityPair = findByKey(key);
+        if (entityPair == null)
+        {
+            return 0;
+        }
+        else
+        {
+            database.put(key, ((TestValue)value).val);
+            return 1;
+        }
+    }
+
+    public int deleteByKey(Long key)
+    {
+        assertNotNull(key);
+        
+        if (database.containsKey(key))
+        {
+            database.remove(key);
+            return 1;
+        }
+        else
+        {
+            return 0;
+        }
+    }
+
+    public int deleteByValue(Object value)
+    {
+        assertTrue(value == null || value instanceof TestValue);
+        
+        // Find it
+        Pair<Long, Object> entityPair = findByValue(value);
+        if (entityPair == null)
+        {
+            return 0;
+        }
+        else
+        {
+            database.remove(entityPair.getFirst());
+            return 1;
+        }
     }
 }

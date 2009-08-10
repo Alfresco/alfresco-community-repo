@@ -27,8 +27,10 @@ package org.alfresco.repo.cache.lookup;
 import java.io.Serializable;
 
 import org.alfresco.repo.cache.SimpleCache;
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.util.Pair;
 import org.alfresco.util.ParameterCheck;
+import org.springframework.dao.ConcurrencyFailureException;
 
 /**
  * A cache for two-way lookups of database entities.  These are characterized by having a unique
@@ -117,6 +119,84 @@ public class EntityLookupCache<K extends Serializable, V extends Object, VK exte
          * @return              Return the newly-created entity ID-value pair
          */
         Pair<K1, V1> createValue(V1 value);
+        
+        /**
+         * Update the entity identified by the given key.
+         * <p/>
+         * It is up to the client code to decide if a <tt>0</tt> return value indicates a concurrency violation
+         * or not.
+         * 
+         * @param key           the existing key (ID) used to identify the entity (never <tt>null</tt>)
+         * @param value         the new value
+         * @return              Returns the row update count.
+         * @throws UnsupportedOperationException if entity updates are not supported
+         */
+        int updateValue(K1 key, V1 value);
+        
+        /**
+         * Delete an entity for the given key.
+         * <p/>
+         * It is up to the client code to decide if a <tt>0</tt> return value indicates a concurrency violation
+         * or not.
+         *  
+         * @param key           the key (ID) used to identify the entity (never <tt>null</tt>)
+         * @return              Returns the row deletion count.
+         * @throws UnsupportedOperationException if entity deletion is not supported
+         */
+        int deleteByKey(K1 key);
+        
+        /**
+         * Delete an entity for the given value.
+         * <p/>
+         * It is up to the client code to decide if a <tt>0</tt> return value indicates a concurrency violation
+         * or not.
+         * 
+         * @param value         the value (business object) used to identify the enitity (<tt>null</tt> allowed)
+         * @return              Returns the row deletion count.
+         * @throws UnsupportedOperationException if entity deletion is not supported
+         */
+        int deleteByValue(V1 value);
+    }
+    
+    /**
+     * Adaptor for implementations that support immutable entities.  The update and delete operations
+     * throw {@link UnsupportedOperationException}.
+     * 
+     * @author Derek Hulley
+     * @since 3.3
+     */
+    public static abstract class EntityLookupCallbackDAOAdaptor<K2 extends Serializable, V2 extends Object, VK2 extends Serializable>
+            implements EntityLookupCallbackDAO<K2, V2, VK2>
+    {
+        /**
+         * Disallows the operation.
+         * 
+         * @throws UnsupportedOperationException        always
+         */
+        public int updateValue(K2 key, V2 value)
+        {
+            throw new UnsupportedOperationException();
+        }
+
+        /**
+         * Disallows the operation.
+         * 
+         * @throws UnsupportedOperationException        always
+         */
+        public int deleteByKey(K2 key)
+        {
+            throw new UnsupportedOperationException("Entity deletion by key is not supported");
+        }
+        
+        /**
+         * Disallows the operation.
+         * 
+         * @throws UnsupportedOperationException        always
+         */
+        public int deleteByValue(V2 value)
+        {
+            throw new UnsupportedOperationException("Entity deletion by value is not supported");
+        }
     }
     
     /**
@@ -180,6 +260,17 @@ public class EntityLookupCache<K extends Serializable, V extends Object, VK exte
         this.entityLookup = entityLookup;
     }
     
+    /**
+     * Find the entity associated with the given key.
+     * The {@link EntityLookupCallbackDAO#findByKey(Serializable) entity callback} will be used if necessary.
+     * <p/>
+     * It is up to the client code to decide if a <tt>null</tt> return value indicates a concurrency violation
+     * or not; the former would normally result in a concurrency-related exception such as
+     * {@link ConcurrencyFailureException}.
+     * 
+     * @param key                   The entity key, which may be valid or invalid (<tt>null</tt> not allowed)
+     * @return                      Returns the key-value pair or <tt>null</tt> if the key doesn't reference an entity
+     */
     @SuppressWarnings("unchecked")
     public Pair<K, V> getByKey(K key)
     {
@@ -193,9 +284,9 @@ public class EntityLookupCache<K extends Serializable, V extends Object, VK exte
             return entityLookup.findByKey(key);
         }
         
-        CacheRegionKey cacheKey = new CacheRegionKey(cacheRegion, key);
+        CacheRegionKey keyCacheKey = new CacheRegionKey(cacheRegion, key);
         // Look in the cache
-        V value = (V) cache.get(cacheKey);
+        V value = (V) cache.get(keyCacheKey);
         if (value != null)
         {
             if (value.equals(VALUE_NOT_FOUND))
@@ -217,20 +308,39 @@ public class EntityLookupCache<K extends Serializable, V extends Object, VK exte
         if (entityPair == null)
         {
             // Cache "not found"
-            cache.put(cacheKey, VALUE_NOT_FOUND);
+            cache.put(keyCacheKey, VALUE_NOT_FOUND);
         }
         else
         {
             value = entityPair.getSecond();
-            // Cache the value
-            cache.put(
-                    cacheKey,
-                    (value == null ? VALUE_NULL : value));
+            // Get the value key
+            VK valueKey = (value == null) ? (VK)VALUE_NULL : entityLookup.getValueKey(value);
+            // Check if the value has a good key
+            if (valueKey != null)
+            {
+                CacheRegionKey valueCacheKey = new CacheRegionKey(cacheRegion, valueKey);
+                // The key is good, so we can cache the value
+                cache.put(valueCacheKey, key);
+                cache.put(
+                        keyCacheKey,
+                        (value == null ? VALUE_NULL : value));
+            }
         }
         // Done
         return entityPair;
     }
     
+    /**
+     * Find the entity associated with the given value.
+     * The {@link EntityLookupCallbackDAO#findByValue(Object) entity callback} will be used if no entry exists in the cache.
+     * <p/>
+     * It is up to the client code to decide if a <tt>null</tt> return value indicates a concurrency violation
+     * or not; the former would normally result in a concurrency-related exception such as
+     * {@link ConcurrencyFailureException}.
+     * 
+     * @param value                 The entity value, which may be valid or invalid (<tt>null</tt> is allowed)
+     * @return                      Returns the key-value pair or <tt>null</tt> if the value doesn't reference an entity
+     */
     @SuppressWarnings("unchecked")
     public Pair<K, V> getByValue(V value)
     {
@@ -288,6 +398,14 @@ public class EntityLookupCache<K extends Serializable, V extends Object, VK exte
         return entityPair;
     }
     
+    /**
+     * Find the entity associated with the given value and create it if it doesn't exist.
+     * The {@link EntityLookupCallbackDAO#findByValue(Object)} and {@link EntityLookupCallbackDAO#createValue(Object)}
+     * will be used if necessary.
+     * 
+     * @param value                 The entity value (<tt>null</tt> is allowed)
+     * @return                      Returns the key-value pair (new or existing and never <tt>null</tt>)
+     */
     @SuppressWarnings("unchecked")
     public Pair<K, V> getOrCreateByValue(V value)
     {
@@ -342,9 +460,122 @@ public class EntityLookupCache<K extends Serializable, V extends Object, VK exte
         return entityPair;
     }
     
+    /**
+     * Update the entity associated with the given key.
+     * The {@link EntityLookupCallbackDAO#updateValue(Serializable, Object)} callback
+     * will be used if necessary.
+     * <p/>
+     * It is up to the client code to decide if a <tt>0</tt> return value indicates a concurrency violation
+     * or not; usually the former will generate {@link ConcurrencyFailureException} or something recognised
+     * by the {@link RetryingTransactionHelper#RETRY_EXCEPTIONS RetryingTransactionHelper}.
+     * 
+     * @param key                   The entity key, which may be valid or invalid (<tt>null</tt> not allowed)
+     * @param value                 The new entity value (may be null <tt>null</tt>)
+     * @return                      Returns the row update count.
+     */
     @SuppressWarnings("unchecked")
-    public void remove(K key)
+    public int updateValue(K key, V value)
     {
+        // Handle missing cache
+        if (cache == null)
+        {
+            return entityLookup.updateValue(key, value);
+        }
+        
+        // Remove entries for the key (bidirectional removal removes the old value as well)
+        removeByKey(key);
+        
+        // Do the update
+        int updateCount = entityLookup.updateValue(key, value);
+        if (updateCount == 0)
+        {
+            // Nothing was done
+            return updateCount;
+        }
+        
+        // Get the value key.
+        VK valueKey = (value == null) ? (VK)VALUE_NULL : entityLookup.getValueKey(value);
+        // Check if the value has a good key
+        if (valueKey == null)
+        {
+            // No good key, so no caching
+            return updateCount;
+        }
+        
+        // Cache the key and value
+        CacheRegionKey valueCacheKey = new CacheRegionKey(cacheRegion, valueKey);
+        cache.put(valueCacheKey, key);
+        cache.put(
+                new CacheRegionKey(cacheRegion, key),
+                (value == null ? VALUE_NULL : value));
+        // Done
+        return updateCount;
+    }
+    
+    /**
+     * Delete the entity associated with the given key.
+     * The {@link EntityLookupCallbackDAO#deleteByKey(Serializable)} callback will be used if necessary.
+     * <p/>
+     * It is up to the client code to decide if a <tt>0</tt> return value indicates a concurrency violation
+     * or not; usually the former will generate {@link ConcurrencyFailureException} or something recognised
+     * by the {@link RetryingTransactionHelper#RETRY_EXCEPTIONS RetryingTransactionHelper}.
+     * 
+     * @param key                   the entity key, which may be valid or invalid (<tt>null</tt> not allowed)
+     * @return                      Returns the row deletion count
+     */
+    public int deleteByKey(K key)
+    {
+        // Handle missing cache
+        if (cache == null)
+        {
+            return entityLookup.deleteByKey(key);
+        }
+        
+        // Remove entries for the key (bidirectional removal removes the old value as well)
+        removeByKey(key);
+        
+        // Do the delete
+        return entityLookup.deleteByKey(key);
+    }
+    
+    /**
+     * Delete the entity having the given value..
+     * The {@link EntityLookupCallbackDAO#deleteByValue(Object)} callback will be used if necessary.
+     * <p/>
+     * It is up to the client code to decide if a <tt>0</tt> return value indicates a concurrency violation
+     * or not; usually the former will generate {@link ConcurrencyFailureException} or something recognised
+     * by the {@link RetryingTransactionHelper#RETRY_EXCEPTIONS RetryingTransactionHelper}.
+     * 
+     * @param key                   the entity value, which may be valid or invalid (<tt>null</tt> allowed)
+     * @return                      Returns the row deletion count
+     */
+    public int deleteByValue(V value)
+    {
+        // Handle missing cache
+        if (cache == null)
+        {
+            return entityLookup.deleteByValue(value);
+        }
+        
+        // Remove entries for the value
+        removeByValue(value);
+        
+        // Do the delete
+        return entityLookup.deleteByValue(value);
+    }
+    
+    /**
+     * Cache-only operation: Remove all cache values associated with the given key.
+     */
+    @SuppressWarnings("unchecked")
+    public void removeByKey(K key)
+    {
+        // Handle missing cache
+        if (cache == null)
+        {
+            return;
+        }
+        
         CacheRegionKey keyCacheKey = new CacheRegionKey(cacheRegion, key);
         V value = (V) cache.get(keyCacheKey);
         if (value != null && !value.equals(VALUE_NOT_FOUND))
@@ -355,6 +586,39 @@ public class EntityLookupCache<K extends Serializable, V extends Object, VK exte
             cache.remove(valueCacheKey);
         }
         cache.remove(keyCacheKey);
+    }
+    
+    /**
+     * Cache-only operation: Remove all cache values associated with the given value
+     * 
+     * @param value                 The entity value (<tt>null</tt> is allowed)
+     */
+    @SuppressWarnings("unchecked")
+    public void removeByValue(V value)
+    {
+        // Handle missing cache
+        if (cache == null)
+        {
+            return;
+        }
+        
+        // Get the value key
+        VK valueKey = (value == null) ? (VK)VALUE_NULL : entityLookup.getValueKey(value);
+        if (valueKey == null)
+        {
+            // No key generated for the value.  There is nothing that can be done.
+            return;
+        }
+        // Look in the cache
+        CacheRegionKey valueCacheKey = new CacheRegionKey(cacheRegion, valueKey);
+        K key = (K) cache.get(valueCacheKey);
+        // Check if the value is already mapped to a key
+        if (key != null && !key.equals(VALUE_NOT_FOUND))
+        {
+            CacheRegionKey keyCacheKey = new CacheRegionKey(cacheRegion, key);
+            cache.remove(keyCacheKey);
+        }
+        cache.remove(valueCacheKey);
     }
     
     /**

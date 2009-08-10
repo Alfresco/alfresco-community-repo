@@ -512,6 +512,11 @@
                 </props>
                 
                 <props>
+                    <prop key="path">/${system.system_container.childname}</prop>
+                    <prop key="location">alfresco/bootstrap/alfrescoAuthorityStoreDefaultMembers.xml</prop>
+                </props>
+
+                <props>
                     <prop key="path">/${spaces.company_home.childname}/${spaces.dictionary.childname}/${spaces.scripts.childname}</prop>
                     <prop key="location">alfresco/bootstrap/imapScripts.xml</prop>
                     <prop key="messages">alfresco/messages/bootstrap-imapScripts</prop>

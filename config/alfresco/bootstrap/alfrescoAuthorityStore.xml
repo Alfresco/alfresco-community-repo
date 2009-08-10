@@ -22,13 +22,6 @@
                         <cm:name>GROUP_ALFRESCO_ADMINISTRATORS</cm:name>
                         <cm:authorityName>GROUP_ALFRESCO_ADMINISTRATORS</cm:authorityName>
                     </view:properties>
-                    <view:associations>
-                        <cm:member>
-                            <view:reference
-                                view:pathref="${system.people_container.childname}/cm:${alfresco_user_store.adminusername}"
-                                view:childName="cm:${alfresco_user_store.adminusername}" />
-                        </cm:member>
-                    </view:associations>
                 </cm:authorityContainer>
                 <cm:authorityContainer view:childName="cm:GROUP_EMAIL_CONTRIBUTORS">
                     <view:aspects>
@@ -39,13 +32,6 @@
                         <sys:node-uuid>GROUP_EMAIL_CONTRIBUTORS</sys:node-uuid>
                         <cm:authorityName>GROUP_EMAIL_CONTRIBUTORS</cm:authorityName>
                     </view:properties>
-                    <view:associations>
-                        <cm:member>
-                            <view:reference
-                                view:pathref="${system.people_container.childname}/cm:${alfresco_user_store.adminusername}"
-                                view:childName="cm:${alfresco_user_store.adminusername}" />
-                        </cm:member>
-                    </view:associations>
                 </cm:authorityContainer>
             </sys:children>
         </view:associations>
@@ -69,16 +55,6 @@
                         <cm:name>AUTH.ALF</cm:name>
                     </view:properties>
                     <view:associations>
-                        <cm:inZone>
-                            <view:reference
-                                view:pathref="${system.people_container.childname}/cm:${alfresco_user_store.adminusername}"
-                                view:childName="cm:${alfresco_user_store.adminusername}" />
-                        </cm:inZone>
-						<cm:inZone>
-                            <view:reference
-                                view:pathref="${system.people_container.childname}/cm:${alfresco_user_store.guestusername}"
-                                view:childName="cm:${alfresco_user_store.guestusername}" />
-                        </cm:inZone>
 						<cm:inZone>
                             <view:reference
                                 view:pathref="${system.authorities_container.childname}/cm:GROUP_ALFRESCO_ADMINISTRATORS"
@@ -100,16 +76,6 @@
                         <cm:name>APP.DEFAULT</cm:name>
                     </view:properties>
                     <view:associations>
-                        <cm:inZone>
-                            <view:reference
-                                view:pathref="${system.people_container.childname}/cm:${alfresco_user_store.adminusername}"
-                                view:childName="cm:${alfresco_user_store.adminusername}" />
-                        </cm:inZone>
-						<cm:inZone>
-                            <view:reference
-                                view:pathref="${system.people_container.childname}/cm:${alfresco_user_store.guestusername}"
-                                view:childName="cm:${alfresco_user_store.guestusername}" />
-                        </cm:inZone>
 						<cm:inZone>
                             <view:reference
                                 view:pathref="${system.authorities_container.childname}/cm:GROUP_ALFRESCO_ADMINISTRATORS"

@@ -1,0 +1,45 @@
+<view:view xmlns:view="http://www.alfresco.org/view/repository/1.0" xmlns:cm="http://www.alfresco.org/model/content/1.0"
+   xmlns:sys="http://www.alfresco.org/model/system/1.0" xmlns:usr="http://www.alfresco.org/model/user/1.0" xmlns:app="http://www.alfresco.org/model/application/1.0">
+
+   <view:reference view:pathref="${system.authorities_container.childname}/cm:GROUP_ALFRESCO_ADMINISTRATORS">
+      <view:associations>
+         <cm:member>
+            <view:reference view:pathref="${system.people_container.childname}/cm:${alfresco_user_store.adminusername}"
+               view:childName="cm:${alfresco_user_store.adminusername}" />
+         </cm:member>
+      </view:associations>
+   </view:reference>
+   <view:reference view:pathref="${system.authorities_container.childname}/cm:GROUP_EMAIL_CONTRIBUTORS">
+      <view:associations>
+         <cm:member>
+            <view:reference view:pathref="${system.people_container.childname}/cm:${alfresco_user_store.adminusername}"
+               view:childName="cm:${alfresco_user_store.adminusername}" />
+         </cm:member>
+      </view:associations>
+   </view:reference>
+   <view:reference view:pathref="${system.zones_container.childname}/cm:AUTH.ALF">
+      <view:associations>
+         <cm:inZone>
+            <view:reference view:pathref="${system.people_container.childname}/cm:${alfresco_user_store.adminusername}"
+               view:childName="cm:${alfresco_user_store.adminusername}" />
+         </cm:inZone>
+         <cm:inZone>
+            <view:reference view:pathref="${system.people_container.childname}/cm:${alfresco_user_store.guestusername}"
+               view:childName="cm:${alfresco_user_store.guestusername}" />
+         </cm:inZone>
+      </view:associations>
+   </view:reference>
+   <view:reference view:pathref="${system.zones_container.childname}/cm:APP.DEFAULT">
+      <view:associations>
+         <cm:inZone>
+            <view:reference view:pathref="${system.people_container.childname}/cm:${alfresco_user_store.adminusername}"
+               view:childName="cm:${alfresco_user_store.adminusername}" />
+         </cm:inZone>
+         <cm:inZone>
+            <view:reference view:pathref="${system.people_container.childname}/cm:${alfresco_user_store.guestusername}"
+               view:childName="cm:${alfresco_user_store.guestusername}" />
+         </cm:inZone>
+      </view:associations>
+   </view:reference>
+
+</view:view>

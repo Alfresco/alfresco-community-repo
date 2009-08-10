@@ -189,7 +189,14 @@ public final class People extends BaseScopableProcessorExtension
     public void deletePerson(String username)
     {
         personService.deletePerson(username);
-        mutableAuthenticationDao.deleteUser(username);
+        try
+        {
+            mutableAuthenticationDao.deleteUser(username);
+        }
+        catch (AuthenticationException e)
+        {
+            // Let's not worry if authentication details don't exist
+        }
     }
     
     /**

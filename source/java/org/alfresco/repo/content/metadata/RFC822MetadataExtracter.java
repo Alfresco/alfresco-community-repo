@@ -43,6 +43,20 @@ import javax.mail.internet.MimeMessage.RecipientType;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.service.cmr.repository.ContentReader;
 
+/**
+ * Metadata extractor for the PDF documents.
+ * <pre>
+ *   <b>messageFrom:</b>              --      imap:messageFrom
+ *   <b>messageTo:</b>                --      imap:messageTo
+ *   <b>messageCc:</b>                --      imap:messageCc
+ *   <b>messageSubject:</b>           --      imap:messageSubject, cm:title, cm:description
+ *   <b>All <code>{@link Header#getName() header names}:</b>
+ *      <b>Thread-Index:</b>          --      imap:threadIndex
+ *      <b>Message-ID:</b>            --      imap:messageId
+ * 
+ * @author Derek Hulley
+ * @since 3.2
+ */
 public class RFC822MetadataExtracter extends AbstractMappingMetadataExtracter
 {
 

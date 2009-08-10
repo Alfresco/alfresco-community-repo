@@ -422,6 +422,14 @@ public class DefaultTypeConverter
         // Number to Subtypes and Date
         //
 
+        INSTANCE.addConverter(Number.class, Boolean.class, new TypeConverter.Converter<Number, Boolean>()
+                {
+                    public Boolean convert(Number source)
+                    {
+                        return new Boolean(source.longValue() > 0);
+                    }
+                });
+
         INSTANCE.addConverter(Number.class, Byte.class, new TypeConverter.Converter<Number, Byte>()
         {
             public Byte convert(Number source)
@@ -561,6 +569,16 @@ public class DefaultTypeConverter
         //
         // Boolean ->
         //
+
+        final Long LONG_FALSE = new Long(0L);
+        final Long LONG_TRUE = new Long(1L);
+        INSTANCE.addConverter(Boolean.class, Long.class, new TypeConverter.Converter<Boolean, Long>()
+                {
+                    public Long convert(Boolean source)
+                    {
+                        return source.booleanValue() ? LONG_TRUE : LONG_FALSE;
+                    }
+                });
 
         INSTANCE.addConverter(Boolean.class, String.class, new TypeConverter.Converter<Boolean, String>()
         {

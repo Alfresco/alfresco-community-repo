@@ -357,24 +357,54 @@ public class StreamContent extends AbstractWebScript
     }
 
     /**
-     * Streams content back to client from a given resource path
+     * Streams content back to client from a given resource path.
      * 
-     * @param req
-     * @param res
-     * @param resourcePath
-     * @param attach
+     * @param req           The request
+     * @param res           The response
+     * @param resourcePath  The resource path the content is required for
+     * @param attach        Indicates whether the content should be streamed as an attachment or not
      * @throws IOException
      */
     protected void streamContent(WebScriptRequest req, WebScriptResponse res, String resourcePath, boolean attach)
         throws IOException
     {
+        // get extension of resource
         String ext = "";
-        String mimetype = MimetypeMap.MIMETYPE_BINARY;
         int extIndex = resourcePath.lastIndexOf('.');
         if (extIndex != -1)
         {
-            ext = resourcePath.substring(extIndex + 1);
-            String mt = mimetypeService.getMimetypesByExtension().get(ext);
+            ext = resourcePath.substring(extIndex);
+        }
+        
+        // create temporary file 
+        File file = TempFileProvider.createTempFile("streamContent-", ext);
+        InputStream is = this.getClass().getClassLoader().getResourceAsStream(resourcePath);
+        OutputStream os = new FileOutputStream(file);        
+        FileCopyUtils.copy(is, os);        
+        
+        // stream the contents of the file
+        streamContent(req, res, file, attach);
+    }
+    
+    /**
+     * Streams content back to client from a given resource path.
+     * 
+     * @param req           The request
+     * @param res           The response
+     * @param resourcePath  The resource path the content is required for
+     * @param attach        Indicates whether the content should be streamed as an attachment or not
+     * @throws IOException
+     */
+    protected void streamContent(WebScriptRequest req, WebScriptResponse res, File file, boolean attach)
+        throws IOException
+    {
+        // determine mimetype from file extension
+        String filePath = file.getAbsolutePath();
+        String mimetype = MimetypeMap.MIMETYPE_BINARY;
+        int extIndex = filePath.lastIndexOf('.');
+        if (extIndex != -1)
+        {
+            String mt = mimetypeService.getMimetypesByExtension().get(filePath.substring(extIndex + 1));
             if (mt != null)
             {
                 mimetype = mt;
@@ -387,13 +417,9 @@ public class StreamContent extends AbstractWebScript
             Calendar calendar = Calendar.getInstance();
             calendar.set(1975, 3, 26);
             this.resouceFileModifiedDate = calendar.getTime();
-        }
+        }      
         
-        File file = TempFileProvider.createTempFile("streamContent-", ext);        
-        InputStream is = this.getClass().getClassLoader().getResourceAsStream(resourcePath);
-        OutputStream os = new FileOutputStream(file);        
-        FileCopyUtils.copy(is, os);        
-        
+        // setup file reader and stream
         FileContentReader reader = new FileContentReader(file);
         reader.setMimetype(mimetype);
         reader.setEncoding("UTF-8");

@@ -29,7 +29,6 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.TimeZone;
 
-import org.alfresco.util.EqualsHelper;
 import org.alfresco.util.ISO8601DateFormat;
 import org.alfresco.util.Pair;
 
@@ -62,7 +61,7 @@ public class PropertyDateValueEntity
         return dayOnlyDate;
     }
     
-    private Long dateValue;
+    private long dateValue;
     private short fullYear;
     private short halfOfYear;
     private short quarterOfYear;
@@ -80,7 +79,7 @@ public class PropertyDateValueEntity
     @Override
     public int hashCode()
     {
-        return (dateValue == null ? 0 : dateValue.hashCode()); 
+        return (int) dateValue; 
     }
     
     @Override
@@ -93,7 +92,7 @@ public class PropertyDateValueEntity
         else if (obj != null && obj instanceof PropertyDateValueEntity)
         {
             PropertyDateValueEntity that = (PropertyDateValueEntity) obj;
-            return EqualsHelper.nullSafeEquals(this.dateValue, that.dateValue);
+            return this.dateValue == that.dateValue;
         }
         else
         {
@@ -107,7 +106,7 @@ public class PropertyDateValueEntity
         StringBuilder sb = new StringBuilder(512);
         sb.append("PropertyDateValueEntity")
           .append("[ value=").append(dateValue)
-          .append(" (").append(ISO8601DateFormat.format(new Date(dateValue.longValue()))).append(")")
+          .append(" (").append(ISO8601DateFormat.format(new Date(dateValue))).append(")")
           .append("]");
         return sb.toString();
     }
@@ -117,13 +116,13 @@ public class PropertyDateValueEntity
      */
     public Pair<Long, Date> getEntityPair()
     {
-        return new Pair<Long, Date>(dateValue, new Date(dateValue.longValue()));
+        return new Pair<Long, Date>(dateValue, new Date(dateValue));
     }
     
     public void setValue(Date value)
     {
         long valueInMs = value.getTime();
-        this.dateValue = new Long(valueInMs);
+        this.dateValue = valueInMs;
         
         Calendar cal = GregorianCalendar.getInstance();
         cal.setTimeZone(TimeZone.getTimeZone("GMT"));
@@ -142,12 +141,12 @@ public class PropertyDateValueEntity
         this.dayOfWeek = (short) cal.get(Calendar.DAY_OF_MONTH);
     }
     
-    public Long getDateValue()
+    public long getDateValue()
     {
         return dateValue;
     }
 
-    public void setDateValue(Long dateValue)
+    public void setDateValue(long dateValue)
     {
         this.dateValue = dateValue;
     }

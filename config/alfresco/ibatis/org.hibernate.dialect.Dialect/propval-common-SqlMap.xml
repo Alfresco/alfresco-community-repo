@@ -11,9 +11,9 @@
     <!--                -->
     
     <typeAlias alias="PropertyClass" type="org.alfresco.repo.domain.propval.PropertyClassEntity"/>
+    <typeAlias alias="PropertyDateValue" type="org.alfresco.repo.domain.propval.PropertyDateValueEntity"/>
     <typeAlias alias="PropertyStringValue" type="org.alfresco.repo.domain.propval.PropertyStringValueEntity"/>
     <typeAlias alias="PropertyDoubleValue" type="org.alfresco.repo.domain.propval.PropertyDoubleValueEntity"/>
-    <typeAlias alias="PropertyDateValue" type="org.alfresco.repo.domain.propval.PropertyDateValueEntity"/>
     <typeAlias alias="PropertyValue" type="org.alfresco.repo.domain.propval.PropertyValueEntity"/>
 
     <!--                -->
@@ -26,6 +26,19 @@
         <result property="javaClassNameShort" column="java_class_name_short" jdbcType="VARCHAR" javaType="java.lang.String"/>
         <result property="javaClassNameCrc" column="java_class_name_crc" jdbcType="BIGINT" javaType="java.lang.Long"/>
     </resultMap>
+    <resultMap id="result.PropertyDateValue" class="PropertyDateValue">
+        <!--  date_value is the PK as well -->
+        <result property="dateValue" column="date_value" jdbcType="BIGINT" javaType="long"/>
+        <result property="fullYear" column="full_year" jdbcType="SMALLINT" javaType="short"/>
+        <result property="halfOfYear" column="half_of_year" jdbcType="TINYINT" javaType="short"/>
+        <result property="quarterOfYear" column="quarter_of_year" jdbcType="TINYINT" javaType="short"/>
+        <result property="monthOfYear" column="month_of_year" jdbcType="TINYINT" javaType="short"/>
+        <result property="weekOfYear" column="week_of_year" jdbcType="TINYINT" javaType="short"/>
+        <result property="weekOfMonth" column="week_of_month" jdbcType="TINYINT" javaType="short"/>
+        <result property="dayOfYear" column="day_of_year" jdbcType="SMALLINT" javaType="short"/>
+        <result property="dayOfMonth" column="day_of_month" jdbcType="TINYINT" javaType="short"/>
+        <result property="dayOfWeek" column="day_of_week" jdbcType="TINYINT" javaType="short"/>
+    </resultMap>
     <resultMap id="result.PropertyStringValue" class="PropertyStringValue">
         <result property="id" column="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <result property="stringValue" column="string_value" jdbcType="VARCHAR" javaType="java.lang.String"/>
@@ -33,19 +46,6 @@
     <resultMap id="result.PropertyDoubleValue" class="PropertyDoubleValue">
         <result property="id" column="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <result property="doubleValue" column="double_value" jdbcType="DOUBLE" javaType="java.lang.Double"/>
-    </resultMap>
-    <resultMap id="result.PropertyDateValue" class="PropertyDateValue">
-        <!--  date_value is the PK as well -->
-        <result property="dateValue" column="date_value" jdbcType="BIGINT" javaType="long"/>
-        <result property="fullYear" column="full_year" jdbcType="TINYINT" javaType="short"/>
-        <result property="halfOfYear" column="half_of_year" jdbcType="TINYINT" javaType="short"/>
-        <result property="quarterOfYear" column="quarter_of_year" jdbcType="TINYINT" javaType="short"/>
-        <result property="monthOfYear" column="month_of_year" jdbcType="TINYINT" javaType="short"/>
-        <result property="weekOfYear" column="week_of_year" jdbcType="TINYINT" javaType="short"/>
-        <result property="weekOfMonth" column="week_of_month" jdbcType="TINYINT" javaType="short"/>
-        <result property="dayOfYear" column="day_of_year" jdbcType="TINYINT" javaType="short"/>
-        <result property="dayOfMonth" column="day_of_month" jdbcType="TINYINT" javaType="short"/>
-        <result property="dayOfWeek" column="day_of_week" jdbcType="TINYINT" javaType="short"/>
     </resultMap>
     <resultMap id="result.PropertyValue" class="PropertyValue">
         <result property="id" column="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
@@ -90,25 +90,6 @@
         values (#doubleValue#)
     </sql>
     
-    <sql id="insert.PropertyDateValue">
-        insert into alf_prop_date_value
-        (
-           date_value,
-           full_year, half_of_year, quarter_of_year,
-           month_of_year,
-           week_of_year, week_of_month,
-           day_of_year, day_of_month, day_of_week
-        ) 
-        values
-        (
-           #dateValue#,
-           #fullYear#, #halfOfYear#, #quarterOfYear#,
-           #monthOfYear#,
-           #weekOfYear#, #weekOfMonth#,
-           #dayOfYear#, #dayOfMonth#, #dayOfWeek#
-        )
-    </sql>
-    
     <sql id="insert.PropertyValue.AutoIncrement">
         insert into alf_prop_value (actual_type_id, persisted_type, long_value) 
         values (#actualTypeId#, #persistedType#, #longValue#)
@@ -137,6 +118,45 @@
         where
             java_class_name_crc = #javaClassNameCrc# and
             java_class_name_short = #javaClassNameShort#
+    </select>
+
+    <insert id="insert.PropertyDateValue" parameterClass="PropertyDateValue" >
+        insert into alf_prop_date_value
+        (
+           date_value,
+           full_year, half_of_year, quarter_of_year,
+           month_of_year,
+           week_of_year, week_of_month,
+           day_of_year, day_of_month, day_of_week
+        ) 
+        values
+        (
+           #dateValue#,
+           #fullYear#, #halfOfYear#, #quarterOfYear#,
+           #monthOfYear#,
+           #weekOfYear#, #weekOfMonth#,
+           #dayOfYear#, #dayOfMonth#, #dayOfWeek#
+        )
+    </insert>
+
+    <!-- Get a property date value by ID -->
+    <select id="select.PropertyDateValueByID" parameterClass="java.lang.Long" resultMap="result.PropertyDateValue">
+        select
+            *
+        from
+            alf_prop_date_value
+        where
+            date_value = #dateValue#
+    </select>
+
+    <!-- Get the property date value by value -->
+    <select id="select.PropertyDateValueByValue" parameterClass="java.lang.Long" resultMap="result.PropertyDateValue">
+        select
+            *
+        from
+            alf_prop_date_value
+        where
+            date_value = #dateValue#
     </select>
 
     <!-- Get a property string value by ID -->
@@ -177,45 +197,6 @@
             alf_prop_double_value
         where
             double_value = #doubleValue#
-    </select>
-
-    <insert id="insert.PropertyDateValue" parameterClass="PropertyDateValue" >
-        insert into alf_prop_date_value
-        (
-           date_value,
-           full_year, half_of_year, quarter_of_year,
-           month_of_year,
-           week_of_year, week_of_month,
-           day_of_year, day_of_month, day_of_week
-        ) 
-        values
-        (
-           #dateValue#,
-           #fullYear#, #halfOfYear#, #quarterOfYear#,
-           #monthOfYear#,
-           #weekOfYear#, #weekOfMonth#,
-           #dayOfYear#, #dayOfMonth#, #dayOfWeek#
-        )
-    </insert>
-
-    <!-- Get a property date value by ID -->
-    <select id="select.PropertyDateValueByID" parameterClass="java.lang.Long" resultMap="result.PropertyDateValue">
-        select
-            *
-        from
-            alf_prop_date_value
-        where
-            id = #dateValue#
-    </select>
-
-    <!-- Get the property date value by value -->
-    <select id="select.PropertyDateValueByValue" parameterClass="java.lang.Long" resultMap="result.PropertyDateValue">
-        select
-            *
-        from
-            alf_prop_date_value
-        where
-            date_value = #dateValue#
     </select>
 
     <!-- Get the property value by value in alf_prop_value -->

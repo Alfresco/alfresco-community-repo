@@ -26,6 +26,7 @@ package org.alfresco.repo.domain.propval;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.Random;
 
 import junit.framework.TestCase;
 
@@ -123,6 +124,35 @@ public class PropertyValueDAOTest extends TestCase
         txnHelper.doInTransaction(noHitCallback, false);
     }
     
+    public void testPropertyDateValue() throws Exception
+    {
+        final Date dateValue = ISO8601DateFormat.parse("1936-08-04T23:37:25.793Z");
+        final Date dateValueBack = ISO8601DateFormat.parse("1936-08-04T00:00:00.000Z");
+        RetryingTransactionCallback<Pair<Long, Date>> createValueCallback = new RetryingTransactionCallback<Pair<Long, Date>>()
+        {
+            public Pair<Long, Date> execute() throws Throwable
+            {
+                // Get the classes
+                return propertyValueDAO.getOrCreatePropertyDateValue(dateValue);
+            }
+        };
+        final Pair<Long, Date> entityPair = txnHelper.doInTransaction(createValueCallback, false);
+        assertNotNull(entityPair);
+        assertEquals(dateValueBack, entityPair.getSecond());
+        
+        RetryingTransactionCallback<Pair<Long, Date>> getValueCallback = new RetryingTransactionCallback<Pair<Long, Date>>()
+        {
+            public Pair<Long, Date> execute() throws Throwable
+            {
+                // Get the classes
+                return propertyValueDAO.getPropertyDateValue(dateValue);
+            }
+        };
+        final Pair<Long, Date> entityPairCheck = txnHelper.doInTransaction(getValueCallback, false);
+        assertNotNull(entityPairCheck);
+        assertEquals(entityPair, entityPairCheck);
+    }
+    
     public void testPropertyStringValue() throws Exception
     {
         final String stringValue = "One Two Three - " + System.currentTimeMillis();
@@ -172,7 +202,7 @@ public class PropertyValueDAOTest extends TestCase
         assertEquals(stringValueUpper, stringUpperEntityPair.getSecond());
         assertNotSame("String IDs were not different", stringEntityPair.getFirst(), stringUpperEntityPair.getFirst());
     }
-
+    
     public void testPropertyDoubleValue() throws Exception
     {
         final Double doubleValue = Double.valueOf(1.7976931348623E+308);
@@ -200,36 +230,7 @@ public class PropertyValueDAOTest extends TestCase
         assertNotNull(entityPairCheck);
         assertEquals(entityPair, entityPairCheck);
     }
-
-    public void testPropertyDateValue() throws Exception
-    {
-        final Date dateValue = ISO8601DateFormat.parse("1936-08-04T23:37:25.793Z");
-        final Date dateValueBack = ISO8601DateFormat.parse("1936-08-04T00:00:00.000Z");
-        RetryingTransactionCallback<Pair<Long, Date>> createValueCallback = new RetryingTransactionCallback<Pair<Long, Date>>()
-        {
-            public Pair<Long, Date> execute() throws Throwable
-            {
-                // Get the classes
-                return propertyValueDAO.getOrCreatePropertyDateValue(dateValue);
-            }
-        };
-        final Pair<Long, Date> entityPair = txnHelper.doInTransaction(createValueCallback, false);
-        assertNotNull(entityPair);
-        assertEquals(dateValueBack, entityPair.getSecond());
-        
-        RetryingTransactionCallback<Pair<Long, Date>> getValueCallback = new RetryingTransactionCallback<Pair<Long, Date>>()
-        {
-            public Pair<Long, Date> execute() throws Throwable
-            {
-                // Get the classes
-                return propertyValueDAO.getPropertyDateValue(dateValue);
-            }
-        };
-        final Pair<Long, Date> entityPairCheck = txnHelper.doInTransaction(getValueCallback, false);
-        assertNotNull(entityPairCheck);
-        assertEquals(entityPair, entityPairCheck);
-    }
-
+    
     /**
      * Tests that the given value can be persisted and retrieved with the same resulting ID
      */
@@ -328,10 +329,10 @@ public class PropertyValueDAOTest extends TestCase
     
     public void testPropertyValue_Date() throws Exception
     {
-        long now = System.currentTimeMillis();
-        for (long i = 0; i < 100; i++)
+        Random rand = new Random();
+        for (long i = 0; i < 1000; i++)
         {
-            runPropertyValueTest(new Date(now + i));
+            runPropertyValueTest(new Date(rand.nextLong()));
         }
     }
     
@@ -341,5 +342,38 @@ public class PropertyValueDAOTest extends TestCase
         {
             runPropertyValueTest(new String("Value-" + i + ".xyz"));
         }
+    }
+    
+    private void removeCaches()
+    {
+        ((AbstractPropertyValueDAOImpl)propertyValueDAO).setPropertyClassCache(null);
+        ((AbstractPropertyValueDAOImpl)propertyValueDAO).setPropertyDateValueCache(null);
+        ((AbstractPropertyValueDAOImpl)propertyValueDAO).setPropertyDoubleValueCache(null);
+        ((AbstractPropertyValueDAOImpl)propertyValueDAO).setPropertyStringValueCache(null);
+        ((AbstractPropertyValueDAOImpl)propertyValueDAO).setPropertyValueCache(null);
+    }
+    
+    public void testPropertyClass_NoCache() throws Exception
+    {
+        removeCaches();
+        testPropertyClass();
+    }
+
+    public void testPropertyDateValue_NoCache() throws Exception
+    {
+        removeCaches();
+        testPropertyDateValue();
+    }
+    
+    public void testPropertyStringValue_NoCache() throws Exception
+    {
+        removeCaches();
+        testPropertyStringValue();
+    }
+
+    public void testPropertyDoubleValue_NoCache() throws Exception
+    {
+        removeCaches();
+        testPropertyDoubleValue();
     }
 }

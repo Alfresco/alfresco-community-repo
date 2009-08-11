@@ -57,6 +57,25 @@ public interface PropertyValueDAO
     Pair<Long, Class<?>> getOrCreatePropertyClass(Class<?> value);
 
     /**
+     * <b>alf_prop_date_value</b> accessor
+     * 
+     * @param id                the ID (may not be <tt>null</tt>)
+     */
+    Pair<Long, Date> getPropertyDateValueById(Long id);
+    /**
+     * <b>alf_prop_date_value</b> accessor
+     * 
+     * @param value             the value to find the ID for (may not be <tt>null</tt>)
+     */
+    Pair<Long, Date> getPropertyDateValue(Date value);
+    /**
+     * <b>alf_prop_date_value</b> accessor
+     * 
+     * @param value             the value to find the ID for (may not be <tt>null</tt>)
+     */
+    Pair<Long, Date> getOrCreatePropertyDateValue(Date value);
+    
+    /**
      * <b>alf_prop_string_value</b> accessor
      * 
      * @param id                the ID (may not be <tt>null</tt>)
@@ -93,25 +112,6 @@ public interface PropertyValueDAO
      * @param value             the value to find the ID for (may not be <tt>null</tt>)
      */
     Pair<Long, Double> getOrCreatePropertyDoubleValue(Double value);
-    
-    /**
-     * <b>alf_prop_date_value</b> accessor
-     * 
-     * @param id                the ID (may not be <tt>null</tt>)
-     */
-    Pair<Long, Date> getPropertyDateValueById(Long id);
-    /**
-     * <b>alf_prop_date_value</b> accessor
-     * 
-     * @param value             the value to find the ID for (may not be <tt>null</tt>)
-     */
-    Pair<Long, Date> getPropertyDateValue(Date value);
-    /**
-     * <b>alf_prop_date_value</b> accessor
-     * 
-     * @param value             the value to find the ID for (may not be <tt>null</tt>)
-     */
-    Pair<Long, Date> getOrCreatePropertyDateValue(Date value);
     
     /**
      * <b>alf_prop_value</b> accessor

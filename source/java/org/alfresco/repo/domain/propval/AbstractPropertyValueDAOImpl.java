@@ -47,17 +47,17 @@ import org.alfresco.util.Pair;
 public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
 {
     private static final String CACHE_REGION_PROPERTY_CLASS = "PropertyClass";
+    private static final String CACHE_REGION_PROPERTY_DATE_VALUE = "PropertyDateValue";
     private static final String CACHE_REGION_PROPERTY_STRING_VALUE = "PropertyStringValue";
     private static final String CACHE_REGION_PROPERTY_DOUBLE_VALUE = "PropertyDoubleValue";
-    private static final String CACHE_REGION_PROPERTY_DATE_VALUE = "PropertyDateValue";
     private static final String CACHE_REGION_PROPERTY_VALUE = "PropertyValue";
     
     protected PropertyTypeConverter converter;
     
     private final PropertyClassCallbackDAO propertyClassDaoCallback;
+    private final PropertyDateValueCallbackDAO propertyDateValueCallback;
     private final PropertyStringValueCallbackDAO propertyStringValueCallback;
     private final PropertyDoubleValueCallbackDAO propertyDoubleValueCallback;
-    private final PropertyDateValueCallbackDAO propertyDateValueCallback;
     private final PropertyValueCallbackDAO propertyValueCallback;
     /**
      * Cache for the property class:<br/>
@@ -66,6 +66,13 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
      * VALUE KEY: Java class name<br/>
      */
     private EntityLookupCache<Long, Class<?>, String> propertyClassCache;
+    /**
+     * Cache for the property date value:<br/>
+     * KEY: ID<br/>
+     * VALUE: The Date instance<br/>
+     * VALUE KEY: The date-only date (i.e. everything below day is zeroed)<br/>
+     */
+    private EntityLookupCache<Long, Date, Date> propertyDateValueCache;
     /**
      * Cache for the property string value:<br/>
      * KEY: ID<br/>
@@ -80,13 +87,6 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
      * VALUE KEY: The value itself<br/>
      */
     private EntityLookupCache<Long, Double, Double> propertyDoubleValueCache;
-    /**
-     * Cache for the property date value:<br/>
-     * KEY: ID<br/>
-     * VALUE: The Date instance<br/>
-     * VALUE KEY: The date-only date (i.e. everything below day is zeroed)<br/>
-     */
-    private EntityLookupCache<Long, Date, Date> propertyDateValueCache;
     /**
      * Cache for the property value:<br/>
      * KEY: ID<br/>
@@ -104,15 +104,15 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
     public AbstractPropertyValueDAOImpl()
     {
         this.propertyClassDaoCallback = new PropertyClassCallbackDAO();
+        this.propertyDateValueCallback = new PropertyDateValueCallbackDAO();
         this.propertyStringValueCallback = new PropertyStringValueCallbackDAO();
         this.propertyDoubleValueCallback = new PropertyDoubleValueCallbackDAO();
-        this.propertyDateValueCallback = new PropertyDateValueCallbackDAO();
         this.propertyValueCallback = new PropertyValueCallbackDAO();
         
         this.propertyClassCache = new EntityLookupCache<Long, Class<?>, String>(propertyClassDaoCallback);
+        this.propertyDateValueCache = new EntityLookupCache<Long, Date, Date>(propertyDateValueCallback);
         this.propertyStringValueCache = new EntityLookupCache<Long, String, Pair<String, Long>>(propertyStringValueCallback);
         this.propertyDoubleValueCache = new EntityLookupCache<Long, Double, Double>(propertyDoubleValueCallback);
-        this.propertyDateValueCache = new EntityLookupCache<Long, Date, Date>(propertyDateValueCallback);
         this.propertyValueCache = new EntityLookupCache<Long, Serializable, Serializable>(propertyValueCallback);
     }
 
@@ -135,6 +135,19 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
                 propertyClassCache,
                 CACHE_REGION_PROPERTY_CLASS,
                 propertyClassDaoCallback);
+    }
+    
+    /**
+     * Set the cache to use for <b>alf_prop_date_value</b> lookups (optional).
+     * 
+     * @param propertyDateValueCache        the cache of IDs to property values
+     */
+    public void setPropertyDateValueCache(SimpleCache<Serializable, Object> propertyDateValueCache)
+    {
+        this.propertyDateValueCache = new EntityLookupCache<Long, Date, Date>(
+                propertyDateValueCache,
+                CACHE_REGION_PROPERTY_DATE_VALUE,
+                propertyDateValueCallback);
     }
     
     /**
@@ -161,19 +174,6 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
                 propertyDoubleValueCache,
                 CACHE_REGION_PROPERTY_DOUBLE_VALUE,
                 propertyDoubleValueCallback);
-    }
-    
-    /**
-     * Set the cache to use for <b>alf_prop_date_value</b> lookups (optional).
-     * 
-     * @param propertyDateValueCache        the cache of IDs to property values
-     */
-    public void setPropertyDateValueCache(SimpleCache<Serializable, Object> propertyDateValueCache)
-    {
-        this.propertyDateValueCache = new EntityLookupCache<Long, Date, Date>(
-                propertyDateValueCache,
-                CACHE_REGION_PROPERTY_DATE_VALUE,
-                propertyDateValueCallback);
     }
     
     /**
@@ -272,6 +272,102 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
     protected abstract PropertyClassEntity findClassByValue(Class<?> value);
     protected abstract PropertyClassEntity createClass(Class<?> value);
     
+    //================================
+    // 'alf_prop_date_value' accessors
+    //================================
+
+    public Pair<Long, Date> getPropertyDateValueById(Long id)
+    {
+        if (id == null)
+        {
+            throw new IllegalArgumentException("Cannot look up entity by null ID.");
+        }
+        Pair<Long, Date> entityPair = propertyDateValueCache.getByKey(id);
+        if (entityPair == null)
+        {
+            throw new AlfrescoRuntimeException("No property date value exists for ID " + id);
+        }
+        return entityPair;
+    }
+
+    public Pair<Long, Date> getPropertyDateValue(Date value)
+    {
+        if (value == null)
+        {
+            throw new IllegalArgumentException("Persisted date values cannot be null");
+        }
+        value = PropertyDateValueEntity.truncateDate(value);
+        Pair<Long, Date> entityPair = propertyDateValueCache.getByValue(value);
+        return entityPair;
+    }
+
+    public Pair<Long, Date> getOrCreatePropertyDateValue(Date value)
+    {
+        if (value == null)
+        {
+            throw new IllegalArgumentException("Persisted date values cannot be null");
+        }
+        value = PropertyDateValueEntity.truncateDate(value);
+        Pair<Long, Date> entityPair = propertyDateValueCache.getOrCreateByValue(value);
+        return (Pair<Long, Date>) entityPair;
+    }
+
+    /**
+     * Callback for <b>alf_prop_date_value</b> DAO.
+     */
+    private class PropertyDateValueCallbackDAO extends EntityLookupCallbackDAOAdaptor<Long, Date, Date>
+    {
+        private final Pair<Long, Date> convertEntityToPair(PropertyDateValueEntity entity)
+        {
+            if (entity == null)
+            {
+                return null;
+            }
+            else
+            {
+                return entity.getEntityPair();
+            }
+        }
+        
+        /**
+         * {@inheritDoc}
+         * <p/>
+         * The value will already have been truncated to be accurate to the last day
+         */
+        public Date getValueKey(Date value)
+        {
+            return PropertyDateValueEntity.truncateDate(value);
+        }
+
+        public Pair<Long, Date> createValue(Date value)
+        {
+            PropertyDateValueEntity entity = createDateValue(value);
+            return convertEntityToPair(entity);
+        }
+
+        public Pair<Long, Date> findByKey(Long key)
+        {
+            PropertyDateValueEntity entity = findDateValueById(key);
+            return convertEntityToPair(entity);
+        }
+
+        public Pair<Long, Date> findByValue(Date value)
+        {
+            PropertyDateValueEntity entity = findDateValueByValue(value);
+            return convertEntityToPair(entity);
+        }
+    }
+    
+    protected abstract PropertyDateValueEntity findDateValueById(Long id);
+    /**
+     * @param value             a date, accurate to the day
+     */
+    protected abstract PropertyDateValueEntity findDateValueByValue(Date value);
+    /**
+     * @param value             a date, accurate to the day
+     */
+    protected abstract PropertyDateValueEntity createDateValue(Date value);
+
     //================================
     // 'alf_prop_string_value' accessors
     //================================
@@ -438,102 +534,6 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
     protected abstract PropertyDoubleValueEntity findDoubleValueById(Long id);
     protected abstract PropertyDoubleValueEntity findDoubleValueByValue(Double value);
     protected abstract PropertyDoubleValueEntity createDoubleValue(Double value);
-
-    //================================
-    // 'alf_prop_date_value' accessors
-    //================================
-
-    public Pair<Long, Date> getPropertyDateValueById(Long id)
-    {
-        if (id == null)
-        {
-            throw new IllegalArgumentException("Cannot look up entity by null ID.");
-        }
-        Pair<Long, Date> entityPair = propertyDateValueCache.getByKey(id);
-        if (entityPair == null)
-        {
-            throw new AlfrescoRuntimeException("No property date value exists for ID " + id);
-        }
-        return entityPair;
-    }
-
-    public Pair<Long, Date> getPropertyDateValue(Date value)
-    {
-        if (value == null)
-        {
-            throw new IllegalArgumentException("Persisted date values cannot be null");
-        }
-        value = PropertyDateValueEntity.truncateDate(value);
-        Pair<Long, Date> entityPair = propertyDateValueCache.getByValue(value);
-        return entityPair;
-    }
-
-    public Pair<Long, Date> getOrCreatePropertyDateValue(Date value)
-    {
-        if (value == null)
-        {
-            throw new IllegalArgumentException("Persisted double values cannot be null");
-        }
-        value = PropertyDateValueEntity.truncateDate(value);
-        Pair<Long, Date> entityPair = propertyDateValueCache.getOrCreateByValue(value);
-        return (Pair<Long, Date>) entityPair;
-    }
-
-    /**
-     * Callback for <b>alf_prop_date_value</b> DAO.
-     */
-    private class PropertyDateValueCallbackDAO extends EntityLookupCallbackDAOAdaptor<Long, Date, Date>
-    {
-        private final Pair<Long, Date> convertEntityToPair(PropertyDateValueEntity entity)
-        {
-            if (entity == null)
-            {
-                return null;
-            }
-            else
-            {
-                return entity.getEntityPair();
-            }
-        }
-        
-        /**
-         * {@inheritDoc}
-         * <p/>
-         * The value will already have been truncated to have day-accuracy.
-         */
-        public Date getValueKey(Date value)
-        {
-            return PropertyDateValueEntity.truncateDate(value);
-        }
-
-        public Pair<Long, Date> createValue(Date value)
-        {
-            PropertyDateValueEntity entity = createDateValue(value);
-            return convertEntityToPair(entity);
-        }
-
-        public Pair<Long, Date> findByKey(Long key)
-        {
-            PropertyDateValueEntity entity = findDateValueById(key);
-            return convertEntityToPair(entity);
-        }
-
-        public Pair<Long, Date> findByValue(Date value)
-        {
-            PropertyDateValueEntity entity = findDateValueByValue(value);
-            return convertEntityToPair(entity);
-        }
-    }
-    
-    protected abstract PropertyDateValueEntity findDateValueById(Long id);
-    /**
-     * @param value             a date with day-accuracy
-     */
-    protected abstract PropertyDateValueEntity findDateValueByValue(Date value);
-    /**
-     * @param value             a date with day-accuracy
-     */
-    protected abstract PropertyDateValueEntity createDateValue(Date value);
 
     //================================
     // 'alf_prop_value' accessors

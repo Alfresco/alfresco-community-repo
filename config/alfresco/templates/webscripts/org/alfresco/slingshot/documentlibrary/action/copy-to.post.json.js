@@ -14,9 +14,9 @@
  */
 function runAction(p_params)
 {
-   var results = [];
-   var files = p_params.files;
-   var file, fileNode, result, nodeRef;
+   var results = [],
+      files = p_params.files,
+      file, fileNode, result, nodeRef;
 
    // Find destination node
    var destNode = p_params.node || getAssetNode(p_params.rootNode, p_params.path);
@@ -29,7 +29,7 @@ function runAction(p_params)
    }
 
    // Must have array of files
-   if (!files || files.length == 0)
+   if (!files || files.length === 0)
    {
       status.setCode(status.STATUS_BAD_REQUEST, "No files.");
       return;
@@ -43,7 +43,7 @@ function runAction(p_params)
          nodeRef: nodeRef,
          action: "copyFile",
          success: false
-      }
+      };
       
       try
       {
@@ -61,11 +61,11 @@ function runAction(p_params)
             // copy the node (deep copy for containers)
             if (fileNode.isContainer)
             {
-               result.nodeRef = fileNode.copy(destNode, true).toString();
+               result.nodeRef = fileNode.copy(destNode, true).nodeRef.toString();
             }
             else
             {
-               result.nodeRef = fileNode.copy(destNode).toString();
+               result.nodeRef = fileNode.copy(destNode).nodeRef.toString();
             }
             result.success = (result.nodeRef !== null);
          }

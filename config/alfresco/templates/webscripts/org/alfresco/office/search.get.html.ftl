@@ -5,7 +5,7 @@
 <#if (args.searchagain??)><#assign searchText=args.searchagain><#else><#assign searchText=""></#if>
 <#if (args.maxresults??)><#assign maxResults=args.maxresults><#else><#assign maxResults="5"></#if>
 <#assign defaultQuery="?p=" + path?url + "&e=" + extn + "&n=" + nav>
-<#assign searchCommand="OfficeSearch.runSearch('${url.serviceContext}/office/searchResults', '${defaultQuery}')" >
+<#assign searchCommand="OfficeSearch.runSearch('${url.serviceContext}/office/searchResults', '${defaultQuery?js_string}')" >
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
@@ -20,7 +20,7 @@
    <script type="text/javascript" src="${url.context}/scripts/office/search.js"></script>
    <script type="text/javascript" src="${url.context}/scripts/office/external_component.js"></script>
    <script type="text/javascript">//<![CDATA[
-      OfficeAddin.defaultQuery = '${defaultQuery}';
+      OfficeAddin.defaultQuery = "${defaultQuery}";
       ExternalComponent.init(
       {
          fullUrl: "${url.full}",
@@ -39,9 +39,9 @@
       <li><a title="${message("office.title.my_tasks")}" href="${url.serviceContext}/office/myTasks${defaultQuery?html}"><span><img src="${url.context}/images/office/my_tasks.gif" alt="${message("office.title.my_tasks")}" /></span></a></li>
       <li><a title="${message("office.title.document_tags")}" href="${url.serviceContext}/office/tags${defaultQuery?html}"><span><img src="${url.context}/images/office/tag.gif" alt="${message("office.title.document_tags")}" /></span></a></li>
    </ul>
-   <div class="help">
+   <span class="help">
       <a title="${message("office.help.title")}" href="${message("office.help.url")}" target="alfrescoHelp"><img src="${url.context}/images/office/help.gif" alt="${message("office.help.title")}" /></a>
-   </div>
+   </span>
 </div>
 
 <div class="headerRow">

@@ -285,6 +285,10 @@ public class TypeFormProcessor extends ContentModelFormProcessor
             // create the parent NodeRef
             parentRef = new NodeRef((String)destination.getValue());
             
+            // remove the destination data to avoid warning during persistence, this can
+            // always be retrieved by looking up the created node's parent
+            data.removeFieldData(DESTINATION);
+            
             // TODO: determine what association to use when creating the node in the destination,
             // defaults to ContentModel.ASSOC_CONTAINS
             

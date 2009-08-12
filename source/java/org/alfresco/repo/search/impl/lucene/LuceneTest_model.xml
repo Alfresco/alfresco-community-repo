@@ -19,6 +19,12 @@
             <title>Test Super Type</title>
             <parent>sys:container</parent>
             <properties>
+                <property name="test:neverIndexed">
+                    <type>d:any</type>
+                    <mandatory>false</mandatory>
+                    <multiple>false</multiple>
+                    <index enabled="false"/>
+                </property>
                 <property name="test:createdDate">
                     <type>d:date</type>
                     <mandatory>true</mandatory>

@@ -502,7 +502,7 @@ public class ADMLuceneSearcherImpl extends AbstractLuceneBase implements LuceneS
         }
     }
 
-    private static boolean fieldHasTerm(IndexReader indexReader, String field)
+    public static boolean fieldHasTerm(IndexReader indexReader, String field)
     {
         try
         {

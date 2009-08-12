@@ -27,6 +27,7 @@ package org.alfresco.repo.search.impl.querymodel.impl.lucene;
 import java.util.List;
 import java.util.Set;
 
+import org.alfresco.repo.search.impl.lucene.ADMLuceneSearcherImpl;
 import org.alfresco.repo.search.impl.querymodel.Column;
 import org.alfresco.repo.search.impl.querymodel.Constraint;
 import org.alfresco.repo.search.impl.querymodel.FunctionEvaluationContext;
@@ -79,7 +80,7 @@ public class LuceneQuery extends BaseQuery implements LuceneQueryBuilder
         @SuppressWarnings("unused")
         boolean should = false;
         boolean must_not = false;
-        
+
         if (selectors != null)
         {
             for (String selector : selectors)
@@ -111,7 +112,7 @@ public class LuceneQuery extends BaseQuery implements LuceneQueryBuilder
                 Query constraintQuery = luceneQueryBuilderComponent.addComponent(selectors, null, luceneContext, functionContext);
                 if (constraintQuery != null)
                 {
-                    switch(constraint.getOccur())
+                    switch (constraint.getOccur())
                     {
                     case DEFAULT:
                     case MANDATORY:
@@ -138,10 +139,10 @@ public class LuceneQuery extends BaseQuery implements LuceneQueryBuilder
                 throw new UnsupportedOperationException();
             }
         }
-        
-        if(!must &&  must_not)
+
+        if (!must && must_not)
         {
-            luceneQuery.add(new TermQuery(new Term("ISNODE", "T")),  BooleanClause.Occur.MUST);
+            luceneQuery.add(new TermQuery(new Term("ISNODE", "T")), BooleanClause.Occur.MUST);
         }
 
         return luceneQuery;
@@ -182,7 +183,14 @@ public class LuceneQuery extends BaseQuery implements LuceneQueryBuilder
 
                 if (luceneField != null)
                 {
-                    fields[index++] = new SortField(luceneField, (ordering.getOrder() == Order.DESCENDING));
+                    if (ADMLuceneSearcherImpl.fieldHasTerm(luceneContext.getLuceneQueryParser().getIndexReader(), luceneField))
+                    {
+                        fields[index++] = new SortField(luceneField, (ordering.getOrder() == Order.DESCENDING));
+                    }
+                    else
+                    {
+                        fields[index++] = new SortField(null, SortField.DOC, (ordering.getOrder() == Order.DESCENDING));
+                    }
                 }
                 else
                 {

@@ -958,6 +958,18 @@ public class ADMLuceneTest extends TestCase
         
         results.close();
         
+        sp = new SearchParameters();
+        sp.setLanguage(SearchService.LANGUAGE_FTS_ALFRESCO);
+        sp.addStore(rootNodeRef.getStoreRef());
+        sp.setQuery("-eager or -dog");
+        sp.addQueryTemplate("ANDY", "%cm:content");
+        sp.setNamespace(NamespaceService.CONTENT_MODEL_1_0_URI);
+        sp.excludeDataInTheCurrentTransaction(true);
+        sp.addSort("test:neverIndexed", false);
+        results = searcher.query(sp);
+        assertEquals(15, results.length());
+        results.close();
+        
        
     }
     

@@ -33,7 +33,6 @@ import java.util.List;
 import javax.servlet.http.HttpServletResponse;
 
 import org.alfresco.repo.exporter.ACPExportPackageHandler;
-import org.alfresco.repo.web.scripts.content.StreamContent;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.view.ExporterCrawlerParameters;
 import org.alfresco.service.cmr.view.ExporterService;
@@ -47,7 +46,6 @@ import org.alfresco.web.scripts.WebScriptResponse;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
@@ -111,7 +109,7 @@ public class StreamArchive extends StreamContent
                 tempArchiveFile = createArchive(nodeRefs);
                 
                 // stream the archive back to the client as an attachment (forcing save as)
-                streamContent(req, res, tempArchiveFile, true);
+                streamContent(req, res, tempArchiveFile, true, tempArchiveFile.getName());
             }
         } 
         catch (IOException iox)

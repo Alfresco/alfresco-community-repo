@@ -293,15 +293,32 @@ public class StreamContent extends AbstractWebScript
     /**
      * Streams the content on a given node's content property to the response of the web script.
      * 
-     * @param req           request
-     * @param res           response
-     * @param nodeRef       the node reference
-     * @param propertyQName the content property name
-     * @param attach        indicates whether the content should be streamed as an attachment or not
+     * @param req               Request
+     * @param res               Response
+     * @param nodeRef           The node reference
+     * @param propertyQName     The content property name
+     * @param attach            Indicates whether the content should be streamed as an attachment or not
      * @throws IOException 
      */
-    protected void streamContent(WebScriptRequest req, WebScriptResponse res, NodeRef nodeRef, QName propertyQName, boolean attach)
-        throws IOException
+    protected void streamContent(WebScriptRequest req, WebScriptResponse res, NodeRef nodeRef, QName propertyQName, 
+                boolean attach) throws IOException
+    {
+        streamContent(req, res, nodeRef, propertyQName, attach, null);
+    }
+    
+    /**
+     * Streams the content on a given node's content property to the response of the web script.
+     * 
+     * @param req               Request
+     * @param res               Response
+     * @param nodeRef           The node reference
+     * @param propertyQName     The content property name
+     * @param attach            Indicates whether the content should be streamed as an attachment or not
+     * @param attachFileName    Optional file name to use when attach is <code>true</code>
+     * @throws IOException 
+     */
+    protected void streamContent(WebScriptRequest req, WebScriptResponse res, NodeRef nodeRef, QName propertyQName, 
+                boolean attach, String attachFileName) throws IOException
     {
         if (logger.isDebugEnabled())
             logger.debug("Retrieving content from node ref " + nodeRef.toString() + " (property: " + propertyQName.toString() + ") (attach: " + attach + ")");
@@ -353,21 +370,40 @@ public class StreamContent extends AbstractWebScript
         }
         
         // Stream the cotent
-        streamContentImpl(req, res, reader, attach, modified, String.valueOf(modifiedSince));
+        streamContentImpl(req, res, reader, attach, modified, String.valueOf(modifiedSince), attachFileName);
     }
 
     /**
      * Streams content back to client from a given resource path.
      * 
-     * @param req           The request
-     * @param res           The response
-     * @param resourcePath  The resource path the content is required for
-     * @param attach        Indicates whether the content should be streamed as an attachment or not
+     * @param req               The request
+     * @param res               The response
+     * @param resourcePath      The resource path the content is required for
+     * @param attach            Indicates whether the content should be streamed as an attachment or not
      * @throws IOException
      */
-    protected void streamContent(WebScriptRequest req, WebScriptResponse res, String resourcePath, boolean attach)
-        throws IOException
+    protected void streamContent(WebScriptRequest req, WebScriptResponse res, String resourcePath, 
+                boolean attach) throws IOException
     {
+        streamContent(req, res, resourcePath, attach, null);
+    }
+    
+    /**
+     * Streams content back to client from a given resource path.
+     * 
+     * @param req               The request
+     * @param res               The response
+     * @param resourcePath      The resource path the content is required for
+     * @param attach            Indicates whether the content should be streamed as an attachment or not
+     * @param attachFileName    Optional file name to use when attach is <code>true</code>
+     * @throws IOException
+     */
+    protected void streamContent(WebScriptRequest req, WebScriptResponse res, String resourcePath, 
+                boolean attach, String attachFileName) throws IOException
+    {
+        if (logger.isDebugEnabled())
+            logger.debug("Retrieving content from resource path " + resourcePath + " (attach: " + attach + ")");
+        
         // get extension of resource
         String ext = "";
         int extIndex = resourcePath.lastIndexOf('.');
@@ -383,21 +419,40 @@ public class StreamContent extends AbstractWebScript
         FileCopyUtils.copy(is, os);        
         
         // stream the contents of the file
-        streamContent(req, res, file, attach);
+        streamContent(req, res, file, attach, attachFileName);
     }
     
     /**
      * Streams content back to client from a given resource path.
      * 
-     * @param req           The request
-     * @param res           The response
-     * @param resourcePath  The resource path the content is required for
-     * @param attach        Indicates whether the content should be streamed as an attachment or not
+     * @param req               The request
+     * @param res               The response
+     * @param resourcePath      The resource path the content is required for
+     * @param attach            Indicates whether the content should be streamed as an attachment or not
      * @throws IOException
      */
-    protected void streamContent(WebScriptRequest req, WebScriptResponse res, File file, boolean attach)
-        throws IOException
+    protected void streamContent(WebScriptRequest req, WebScriptResponse res, File file, boolean attach) 
+                throws IOException
     {
+        streamContent(req, res, file, attach, null);
+    }
+    
+    /**
+     * Streams content back to client from a given resource path.
+     * 
+     * @param req               The request
+     * @param res               The response
+     * @param resourcePath      The resource path the content is required for
+     * @param attach            Indicates whether the content should be streamed as an attachment or not
+     * @param attachFileName    Optional file name to use when attach is <code>true</code>
+     * @throws IOException
+     */
+    protected void streamContent(WebScriptRequest req, WebScriptResponse res, File file, boolean attach, 
+                String attachFileName) throws IOException
+    {
+        if (logger.isDebugEnabled())
+            logger.debug("Retrieving content from file " + file.getAbsolutePath() + " (attach: " + attach + ")");
+        
         // determine mimetype from file extension
         String filePath = file.getAbsolutePath();
         String mimetype = MimetypeMap.MIMETYPE_BINARY;
@@ -424,28 +479,40 @@ public class StreamContent extends AbstractWebScript
         reader.setMimetype(mimetype);
         reader.setEncoding("UTF-8");
         
-        streamContentImpl(req, res, reader, attach, this.resouceFileModifiedDate, String.valueOf(this.resouceFileModifiedDate.getTime()));
+        streamContentImpl(req, res, reader, attach, this.resouceFileModifiedDate, 
+                    String.valueOf(this.resouceFileModifiedDate.getTime()), attachFileName);
     }
     
     /**
      * Stream content implementation
      * 
-     * @param req
-     * @param res
-     * @param reader
-     * @param attach
-     * @param modified
+     * @param req               The request
+     * @param res               The response
+     * @param reader            The reader
+     * @param attach            Indicates whether the content should be streamed as an attachment or not
+     * @param modified          Modified date of content
+     * @param eTag              ETag to use
+     * @param attachFileName    Optional file name to use when attach is <code>true</code>
      * @throws IOException
      */
-    protected void streamContentImpl(WebScriptRequest req, WebScriptResponse res, ContentReader reader, boolean attach, Date modified, String eTag)
-        throws IOException
+    protected void streamContentImpl(WebScriptRequest req, WebScriptResponse res, ContentReader reader, boolean attach, 
+                Date modified, String eTag, String attachFileName) throws IOException
     {
         // handle attachment
         if (attach == true)
         {
+            String headerValue = "attachment";
+            if (attachFileName != null && attachFileName.length() > 0)
+            {
+                if (logger.isDebugEnabled())
+                    logger.debug("Attaching content using filename: " + attachFileName);
+                
+                headerValue += "; filename=" + attachFileName;
+            }
+            
             // set header based on filename - will force a Save As from the browse if it doesn't recognize it
             // this is better than the default response of the browser trying to display the contents
-            res.setHeader("Content-Disposition", "attachment");
+            res.setHeader("Content-Disposition", headerValue);
         }
 
         // establish mimetype

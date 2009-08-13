@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -18,7 +18,7 @@
  * As a special exception to the terms and conditions of version 2.0 of 
  * the GPL, you may redistribute this Program in connection with Free/Libre 
  * and Open Source Software ("FLOSS") applications as described in Alfresco's 
- * FLOSS exception.  You should have recieved a copy of the text describing 
+ * FLOSS exception.  You should have received a copy of the text describing 
  * the FLOSS exception, and it is also available here: 
  * http://www.alfresco.com/legal/licensing"
  */
@@ -51,7 +51,7 @@ import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.LoginBean;
 import org.alfresco.web.bean.repository.User;
-import org.alfresco.web.config.ClientConfigElement;
+import org.alfresco.web.bean.users.UserPreferencesBean;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.web.context.WebApplicationContext;
@@ -91,6 +91,52 @@ public final class AuthenticationHelper
    private static Log logger = LogFactory.getLog(AuthenticationHelper.class);
    
    
+   /**
+    * Does all the stuff you need to do after successfully authenticating/validating a user ticket to set up the request
+    * thread. A useful utility method for an authentication filter.
+    * 
+    * @param sc
+    *           the servlet context
+    * @param req
+    *           the request
+    * @param res
+    *           the response
+    */
+   public static void setupThread(ServletContext sc, HttpServletRequest req, HttpServletResponse res)
+   {
+      // setup faces context
+      FacesContext fc = FacesHelper.getFacesContext(req, res, sc);
+   
+      // Set the current locale and language
+      if (Application.getClientConfig(fc).isLanguageSelect())
+      {
+         I18NUtil.setLocale(Application.getLanguage(req.getSession()));
+      }
+      else
+      {
+         // Set the current thread locale (also for JSF context)
+         fc.getViewRoot().setLocale(BaseServlet.setLanguageFromRequestHeader(req, sc));
+      }
+   
+      // Programatically retrieve the UserPreferencesBean from JSF
+      UserPreferencesBean userPreferencesBean = (UserPreferencesBean) fc.getApplication().createValueBinding(
+            "#{UserPreferencesBean}").getValue(fc);
+      if (userPreferencesBean != null)
+      {
+         String contentFilterLanguageStr = userPreferencesBean.getContentFilterLanguage();
+         if (contentFilterLanguageStr != null)
+         {
+            // Set the locale for the method interceptor for MLText properties
+            I18NUtil.setContentLocale(I18NUtil.parseLocale(contentFilterLanguageStr));
+         }
+         else
+         {
+            // Nothing has been selected, so remove the content filter
+            I18NUtil.setContentLocale(null);
+         }
+      }
+   }
+
    /**
     * Helper to authenticate the current user using session based Ticket information.
     * <p>
@@ -151,48 +197,15 @@ public final class AuthenticationHelper
             if (allowGuest == true && (authCookie == null || forceGuest))
             {
                // no previous authentication or forced Guest - attempt Guest access
-               UserTransaction tx = null;
                try
                {
                   auth.authenticateAsGuest();
                   
                   // if we get here then Guest access was allowed and successful
-                  ServiceRegistry services = BaseServlet.getServiceRegistry(sc);
-                  tx = services.getTransactionService().getUserTransaction();
-                  tx.begin();
+                  setUser(sc, req, PermissionService.GUEST_AUTHORITY, false);
                   
-                  NodeService nodeService = services.getNodeService();
-                  PersonService personService = (PersonService)wc.getBean(PERSON_SERVICE);
-                  NodeRef guestRef = personService.getPerson(PermissionService.GUEST_AUTHORITY);
-                  user = new User(PermissionService.GUEST_AUTHORITY, auth.getCurrentTicket(), guestRef);
-                  NodeRef guestHomeRef = (NodeRef)nodeService.getProperty(guestRef, ContentModel.PROP_HOMEFOLDER);
-                  
-                  // check that the home space node exists - else Guest cannot proceed
-                  if (guestHomeRef == null || nodeService.exists(guestHomeRef) == false)
-                  {
-                     // cannot login as Guest as Home is missing - return to login screen
-                     logger.warn("Unable to locate Guest Home space - may have been deleted?");
-                     throw new AuthenticationException("");
-                  }
-                  user.setHomeSpaceId(guestHomeRef.getId());
-                  
-                  tx.commit();
-                  tx = null;     // clear this so we know not to rollback 
-                  
-                  // store the User object in the Session - the authentication servlet will then proceed
-                  session.setAttribute(AuthenticationHelper.AUTHENTICATION_USER, user);
-                  
-                  // Set the current locale and language
-                  FacesContext fc = FacesHelper.getFacesContext(req, res, sc);
-                  if (Application.getClientConfig(fc).isLanguageSelect())
-                  {
-                     I18NUtil.setLocale(Application.getLanguage(req.getSession()));
-                  }
-                  else
-                  {
-                     // Set the current thread locale (also for JSF context)
-                     fc.getViewRoot().setLocale(BaseServlet.setLanguageFromRequestHeader(req, sc));
-                  }
+                  // Set up the thread context
+                  setupThread(sc, req, res);
                   
                   // remove the session invalidated flag
                   session.removeAttribute(AuthenticationHelper.SESSION_INVALIDATED);
@@ -220,10 +233,6 @@ public final class AuthenticationHelper
                   unprotAuthService.clearCurrentSecurityContext();
                   throw new AlfrescoRuntimeException("Failed to authenticate as Guest user.", e);
                }
-               finally
-               {
-                  try { if (tx != null) {tx.rollback();} } catch (Exception tex) {}
-               }
             }
          }
          
@@ -248,35 +257,9 @@ public final class AuthenticationHelper
          {
             setUsernameCookie(req, res, loginBean.getUsernameInternal());
          }
-         
-         // setup faces context
-         FacesContext fc = FacesHelper.getFacesContext(req, res, sc);
-         
-         // Set the current locale and language
-         if (Application.getClientConfig(fc).isLanguageSelect())
-         {
-            I18NUtil.setLocale(Application.getLanguage(req.getSession()));
-         }
-         else
-         {
-            // Set the current thread locale (also for JSF context)
-            fc.getViewRoot().setLocale(BaseServlet.setLanguageFromRequestHeader(req, sc));
-         }
-         
-         if (loginBean != null && (loginBean.getUserPreferencesBean() != null))
-         {
-            String contentFilterLanguageStr = loginBean.getUserPreferencesBean().getContentFilterLanguage();
-            if (contentFilterLanguageStr != null)
-            {
-               // Set the locale for the method interceptor for MLText properties
-               I18NUtil.setContentLocale(I18NUtil.parseLocale(contentFilterLanguageStr));
-            }
-            else
-            {
-               // Nothing has been selected, so remove the content filter
-               I18NUtil.setContentLocale(null);
-            }
-         }
+
+         // Set up the thread context
+         setupThread(sc, req, res);
 
          return AuthenticationStatus.Success;
       }
@@ -294,7 +277,6 @@ public final class AuthenticationHelper
       // setup the authentication context
       WebApplicationContext wc = WebApplicationContextUtils.getRequiredWebApplicationContext(context);
       AuthenticationService auth = (AuthenticationService)wc.getBean(AUTHENTICATION_SERVICE);
-      UserTransaction tx = null;
       HttpSession session = httpRequest.getSession();
       try
       {
@@ -306,28 +288,7 @@ public final class AuthenticationHelper
             // need to create the User instance if not already available
             String currentUsername = auth.getCurrentUserName();
             
-            ServiceRegistry services = BaseServlet.getServiceRegistry(context);
-            tx = services.getTransactionService().getUserTransaction();
-            tx.begin();
-            
-            NodeService nodeService = services.getNodeService();
-            PersonService personService = (PersonService)wc.getBean(PERSON_SERVICE);
-            NodeRef personRef = personService.getPerson(currentUsername);
-            user = new User(currentUsername, auth.getCurrentTicket(), personRef);
-            NodeRef homeRef = (NodeRef)nodeService.getProperty(personRef, ContentModel.PROP_HOMEFOLDER);
-            
-            // check that the home space node exists - else Login cannot proceed
-            if (nodeService.exists(homeRef) == false)
-            {
-               throw new InvalidNodeRefException(homeRef);
-            }
-            user.setHomeSpaceId(homeRef.getId());
-            
-            tx.commit();
-            tx = null;     // clear this so we know not to rollback 
-            
-            // store the User object in the Session - the authentication servlet will then proceed
-            session.setAttribute(AuthenticationHelper.AUTHENTICATION_USER, user);
+            setUser(context, httpRequest, currentUsername, false);
          }
       }
       catch (AuthenticationException authErr)
@@ -343,28 +304,107 @@ public final class AuthenticationHelper
          unprotAuthService.clearCurrentSecurityContext();
          return AuthenticationStatus.Failure;
       }
-      finally
-      {
-         try { if (tx != null) {tx.rollback();} } catch (Exception tex) {}
-      }
       
-      // Set the current locale
-      FacesContext fc = FacesHelper.getFacesContext(httpRequest, httpResponse, context);
-      
-      // Set the current locale and language
-      if (Application.getClientConfig(fc).isLanguageSelect())
-      {
-         I18NUtil.setLocale(Application.getLanguage(httpRequest.getSession()));
-      }
-      else
-      {
-         // Set the current thread locale (also for JSF context)
-         fc.getViewRoot().setLocale(BaseServlet.setLanguageFromRequestHeader(httpRequest, context));
-      }
+      // Set up the thread context
+      setupThread(context, httpRequest, httpResponse);
       
       return AuthenticationStatus.Success;
    }
-   
+
+    /**
+     * Creates an object for an authenticated user and stores it in the session.
+     * 
+     * @param context
+     *            the servlet context
+     * @param req
+     *            the request
+     * @param currentUsername
+     *            the current user name
+     * @param externalAuth
+     *            was this user authenticated externally?
+     * @return the user object
+     */
+    public static User setUser(ServletContext context, HttpServletRequest req, String currentUsername,
+            boolean externalAuth)
+    {
+        WebApplicationContext wc = WebApplicationContextUtils.getRequiredWebApplicationContext(context);
+        AuthenticationService auth = (AuthenticationService) wc.getBean(AUTHENTICATION_SERVICE);
+
+        User user = createUser(wc, auth, currentUsername, externalAuth);
+        // store the User object in the Session - the authentication servlet will then proceed
+        HttpSession session = req.getSession(true);
+        session.setAttribute(AuthenticationHelper.AUTHENTICATION_USER, user);
+        if (externalAuth)
+        {
+            session.setAttribute(LoginBean.LOGIN_EXTERNAL_AUTH, Boolean.TRUE);
+        }
+        return user;
+    }
+
+    /**
+     * Creates an object for an authentication user.
+     * 
+     * @param wc
+     *            the web application context
+     * @param auth
+     *            the authentication service
+     * @param currentUsername
+     *            the current user name
+     * @param externalAuth
+     *            was this user authenticated externally?
+     * @return the user object
+     */
+    private static User createUser(WebApplicationContext wc, AuthenticationService auth, String currentUsername,
+            boolean externalAuth)
+    {
+        UserTransaction tx = null;
+        ServiceRegistry services = (ServiceRegistry) wc.getBean(ServiceRegistry.SERVICE_REGISTRY);
+        try
+        {
+            tx = services.getTransactionService().getUserTransaction();
+            tx.begin();
+
+            NodeService nodeService = services.getNodeService();
+            PersonService personService = (PersonService) wc.getBean(PERSON_SERVICE);
+            NodeRef personRef = personService.getPerson(currentUsername);
+            User user = new User(currentUsername, auth.getCurrentTicket(), personRef);
+            NodeRef homeRef = (NodeRef) nodeService.getProperty(personRef, ContentModel.PROP_HOMEFOLDER);
+
+            // check that the home space node exists - else Login cannot proceed
+            if (nodeService.exists(homeRef) == false)
+            {
+                throw new InvalidNodeRefException(homeRef);
+            }
+            user.setHomeSpaceId(homeRef.getId());
+
+            tx.commit();
+
+            return user;
+        }
+        catch (Exception ex)
+        {
+            logger.error(ex);
+
+            try
+            {
+                tx.rollback();
+            }
+            catch (Exception ex2)
+            {
+                logger.error("Failed to rollback transaction", ex2);
+            }
+
+            if (ex instanceof RuntimeException)
+            {
+                throw (RuntimeException) ex;
+            }
+            else
+            {
+                throw new RuntimeException("Failed to set authenticated user", ex);
+            }
+        }
+    }
+    
    /**
     * For no previous authentication or forced Guest - attempt Guest access
     * 
@@ -373,31 +413,11 @@ public final class AuthenticationHelper
     */
    public static AuthenticationStatus portalGuestAuthenticate(WebApplicationContext ctx, PortletSession session, AuthenticationService auth)
    {
-      UserTransaction tx = null;
       try
       {
          auth.authenticateAsGuest();
          
-         // if we get here then Guest access was allowed and successful
-         ServiceRegistry services = (ServiceRegistry)ctx.getBean(ServiceRegistry.SERVICE_REGISTRY);
-         tx = services.getTransactionService().getUserTransaction();
-         tx.begin();
-         
-         NodeService nodeService = services.getNodeService();
-         PersonService personService = (PersonService)ctx.getBean(PERSON_SERVICE);
-         NodeRef guestRef = personService.getPerson(PermissionService.GUEST_AUTHORITY);
-         User user = new User(PermissionService.GUEST_AUTHORITY, auth.getCurrentTicket(), guestRef);
-         NodeRef guestHomeRef = (NodeRef)nodeService.getProperty(guestRef, ContentModel.PROP_HOMEFOLDER);
-         
-         // check that the home space node exists - else Guest cannot proceed
-         if (nodeService.exists(guestHomeRef) == false)
-         {
-            throw new InvalidNodeRefException(guestHomeRef);
-         }
-         user.setHomeSpaceId(guestHomeRef.getId());
-         
-         tx.commit();
-         tx = null;     // clear this so we know not to rollback 
+         User user = createUser(ctx, auth, PermissionService.GUEST_AUTHORITY, false);
          
          // store the User object in the Session - the authentication servlet will then proceed
          session.setAttribute(AuthenticationHelper.AUTHENTICATION_USER, user);
@@ -431,10 +451,6 @@ public final class AuthenticationHelper
          unprotAuthService.clearCurrentSecurityContext();
          throw new AlfrescoRuntimeException("Failed to authenticate as Guest user.", e);
       }
-      finally
-      {
-         try { if (tx != null) {tx.rollback();} } catch (Exception tex) {}
-      }
       
       return AuthenticationStatus.Failure;
    }
@@ -461,7 +477,7 @@ public final class AuthenticationHelper
          // naff solution as we need to enumerate all session keys until we find the one that
          // should match our User objects - this is weak but we don't know how the underlying
          // Portal vendor has decided to encode the objects in the session
-         Enumeration enumNames = session.getAttributeNames();
+         Enumeration<?> enumNames = session.getAttributeNames();
          while (enumNames.hasMoreElements())
          {
             String name = (String)enumNames.nextElement();

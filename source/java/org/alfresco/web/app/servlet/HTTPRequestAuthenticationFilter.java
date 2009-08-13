@@ -1,24 +1,30 @@
 /*
- * Copyright (C) 2005-2006 Alfresco, Inc.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
- * Licensed under the Mozilla Public License version 1.1 
- * with a permitted attribution clause. You may obtain a
- * copy of the License at
- *
- *   http://www.alfresco.org/legal/license.txt
- *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
- * either express or implied. See the License for the specific
- * language governing permissions and limitations under the
- * License.
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+
+ * As a special exception to the terms and conditions of version 2.0 of 
+ * the GPL, you may redistribute this Program in connection with Free/Libre 
+ * and Open Source Software ("FLOSS") applications as described in Alfresco's 
+ * FLOSS exception.  You should have received a copy of the text describing 
+ * the FLOSS exception, and it is also available here: 
+ * http://www.alfresco.com/legal/licensing"
  */
 package org.alfresco.web.app.servlet;
 
 import java.io.IOException;
-import java.util.List;
-import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
@@ -33,23 +39,11 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
-import javax.transaction.UserTransaction;
 
-import org.alfresco.config.ConfigService;
-import org.alfresco.i18n.I18NUtil;
-import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationException;
-import org.alfresco.service.ServiceRegistry;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.security.AuthenticationService;
-import org.alfresco.service.cmr.security.PersonService;
-import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.web.app.Application;
-import org.alfresco.web.bean.LoginBean;
 import org.alfresco.web.bean.repository.User;
-import org.alfresco.web.config.LanguagesConfigElement;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.web.context.WebApplicationContext;
@@ -61,12 +55,8 @@ import org.springframework.web.context.support.WebApplicationContextUtils;
  * 
  * @author Andy Hind
  */
-public class HTTPRequestAuthenticationFilter extends AbstractAuthenticationFilter implements Filter
+public class HTTPRequestAuthenticationFilter implements Filter
 {
-    private static final String LOCALE = "locale";
-
-    public static final String MESSAGE_BUNDLE = "alfresco.messages.webclient";
-
     private static Log logger = LogFactory.getLog(HTTPRequestAuthenticationFilter.class);
 
     private ServletContext context;
@@ -74,16 +64,6 @@ public class HTTPRequestAuthenticationFilter extends AbstractAuthenticationFilte
     private String loginPage;
 
     private AuthenticationComponent authComponent;
-
-    private AuthenticationService authService;
-
-    private TransactionService transactionService;
-
-    private PersonService personService;
-
-    private NodeService nodeService;
-
-    private List<String> m_languages;
 
     private String httpServletRequestAuthHeaderName;
 
@@ -203,14 +183,14 @@ public class HTTPRequestAuthenticationFilter extends AbstractAuthenticationFilte
                     // Set the current locale
                     authComponent.clearCurrentSecurityContext();
                     authComponent.setCurrentUser(user.getUserName());
-                    I18NUtil.setLocale(Application.getLanguage(httpSess));
+                    AuthenticationHelper.setupThread(this.context, req, resp);
                     chain.doFilter(sreq, sresp);
                     return;
                 }
                 else
                 {
                     // No match
-                    setAuthenticatedUser(req, httpSess, userName);
+                    setAuthenticatedUser(req, resp, userName);
                 }
             }
             catch (AuthenticationException ex)
@@ -220,7 +200,7 @@ public class HTTPRequestAuthenticationFilter extends AbstractAuthenticationFilte
             }
         }
 
-        setAuthenticatedUser(req, httpSess, userName);
+        setAuthenticatedUser(req, resp, userName);
 
         // Redirect the login page as it is never seen as we always login by name
         if (req.getRequestURI().endsWith(getLoginPage()) == true)
@@ -242,69 +222,24 @@ public class HTTPRequestAuthenticationFilter extends AbstractAuthenticationFilte
      * Set the authenticated user. It does not check that the user exists at the moment.
      * 
      * @param req
-     * @param httpSess
+     *            the request
+     * @param res
+     *            the response
      * @param userName
+     *            the user name
      */
-    private void setAuthenticatedUser(HttpServletRequest req, HttpSession httpSess, String userName)
+    private void setAuthenticatedUser(HttpServletRequest req, HttpServletResponse res,
+            String userName)
     {
         // Set the authentication
         authComponent.clearCurrentSecurityContext();
         authComponent.setCurrentUser(userName);
-
+        
         // Set up the user information
-        UserTransaction tx = transactionService.getUserTransaction();
-        NodeRef homeSpaceRef = null;
-        User user;
-        try
-        {
-            tx.begin();
-            user = new User(userName, authService.getCurrentTicket(), personService.getPerson(userName));
-            homeSpaceRef = (NodeRef) nodeService.getProperty(personService.getPerson(userName),
-                    ContentModel.PROP_HOMEFOLDER);
-            user.setHomeSpaceId(homeSpaceRef.getId());
-            tx.commit();
-        }
-        catch (Throwable ex)
-        {
-            logger.error(ex);
-
-            try
-            {
-                tx.rollback();
-            }
-            catch (Exception ex2)
-            {
-                logger.error("Failed to rollback transaction", ex2);
-            }
-
-            if (ex instanceof RuntimeException)
-            {
-                throw (RuntimeException) ex;
-            }
-            else
-            {
-                throw new RuntimeException("Failed to set authenticated user", ex);
-            }
-        }
-
-        // Store the user
-
-        httpSess.setAttribute(AuthenticationHelper.AUTHENTICATION_USER, user);
-        httpSess.setAttribute(LoginBean.LOGIN_EXTERNAL_AUTH, Boolean.TRUE);
-
-        // Set the current locale from the Accept-Lanaguage header if available
-
-        Locale userLocale = parseAcceptLanguageHeader(req, m_languages);
-
-        if (userLocale != null)
-        {
-            httpSess.setAttribute(LOCALE, userLocale);
-            httpSess.removeAttribute(MESSAGE_BUNDLE);
-        }
+        AuthenticationHelper.setUser(context, req, userName, true);
 
         // Set the locale using the session
-
-        I18NUtil.setLocale(Application.getLanguage(httpSess));
+        AuthenticationHelper.setupThread(this.context, req, res);
     }
 
     
@@ -317,22 +252,8 @@ public class HTTPRequestAuthenticationFilter extends AbstractAuthenticationFilte
         // Setup the authentication context
 
         WebApplicationContext ctx = WebApplicationContextUtils.getRequiredWebApplicationContext(context);
-
-        ServiceRegistry serviceRegistry = (ServiceRegistry) ctx.getBean(ServiceRegistry.SERVICE_REGISTRY);
-        nodeService = serviceRegistry.getNodeService();
-        authService = serviceRegistry.getAuthenticationService();
-        transactionService = serviceRegistry.getTransactionService();
-        personService = (PersonService) ctx.getBean("PersonService"); // transactional and permission-checked
         authComponent = (AuthenticationComponent) ctx.getBean("authenticationComponent");
-        
-        
-        ConfigService configServiceService = (ConfigService) ctx.getBean("webClientConfigService");
-        LanguagesConfigElement configElement = (LanguagesConfigElement) configServiceService.getConfig("Languages")
-                .getConfigElement(LanguagesConfigElement.CONFIG_ELEMENT_ID);
-
-        m_languages = configElement.getLanguages();
-
-        
+                
         httpServletRequestAuthHeaderName = config.getInitParameter("httpServletRequestAuthHeaderName");
         if(httpServletRequestAuthHeaderName == null)
         {

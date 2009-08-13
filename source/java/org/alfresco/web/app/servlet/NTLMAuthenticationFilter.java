@@ -25,20 +25,17 @@
 package org.alfresco.web.app.servlet;
 
 import java.io.IOException;
-import java.util.List;
-import java.util.Locale;
 
+import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import org.alfresco.config.ConfigService;
-import org.alfresco.i18n.I18NUtil;
 import org.alfresco.repo.SessionUser;
 import org.alfresco.repo.webdav.auth.BaseNTLMAuthenticationFilter;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.repository.User;
 import org.alfresco.web.config.ClientConfigElement;
 import org.apache.commons.logging.Log;
@@ -51,18 +48,11 @@ import org.apache.commons.logging.LogFactory;
  */
 public class NTLMAuthenticationFilter extends BaseNTLMAuthenticationFilter
 {
-    // Locale object stored in the session
-    private static final String LOCALE = "locale";
-    private static final String MESSAGE_BUNDLE = "alfresco.messages.webclient";
-    
     // Debug logging
     private static Log logger = LogFactory.getLog(NTLMAuthenticationFilter.class);
     
     protected ConfigService m_configService;
     
-    // List of available locales (from the web-client configuration)
-    private List<String> m_languages;
-        
     /**
      * @param configService the configService to set
      */
@@ -81,7 +71,6 @@ public class NTLMAuthenticationFilter extends BaseNTLMAuthenticationFilter
         // Call the base NTLM filter initialization
         super.init();
 
-        m_languages = config.getLanguages();
         ClientConfigElement clientConfig = (ClientConfigElement) m_configService.getGlobalConfig().getConfigElement(
                 ClientConfigElement.CONFIG_ELEMENT_ID);
         if (clientConfig != null)
@@ -103,25 +92,15 @@ public class NTLMAuthenticationFilter extends BaseNTLMAuthenticationFilter
 		
 		return user;
 	}
-
+	
     /* (non-Javadoc)
-     * @see org.alfresco.repo.webdav.auth.BaseNTLMAuthenticationFilter#onValidate(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpSession)
+     * @see org.alfresco.repo.webdav.auth.BaseSSOAuthenticationFilter#onValidate(javax.servlet.ServletContext, javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
      */
     @Override
-    protected void onValidate(HttpServletRequest req, HttpSession session)
+    protected void onValidate(ServletContext sc, HttpServletRequest req, HttpServletResponse res)
     {
-        // Set the current locale from the Accept-Lanaguage header if available
-
-    	Locale userLocale = AbstractAuthenticationFilter.parseAcceptLanguageHeader(req, m_languages);
-        if (userLocale != null)
-        {
-            session.setAttribute(LOCALE, userLocale);
-            session.removeAttribute(MESSAGE_BUNDLE);
-        }
-
         // Set the locale using the session
-
-        I18NUtil.setLocale(Application.getLanguage(session));
+        AuthenticationHelper.setupThread(sc, req, res);
     }
     
     /* (non-Javadoc)

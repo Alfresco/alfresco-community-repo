@@ -105,7 +105,15 @@
 
       <!-- For Novell IChain support use the following filter -->
       <!--
-      <filter-class>org.alfresco.web.app.servlet.NovellIChainsHTTPRequestAuthenticationFilter</filter-class>
+      <filter-class>org.alfresco.web.app.servlet.HTTPRequestAuthenticationFilter</filter-class>
+      <init-param>
+         <param-name>httpServletRequestAuthHeaderName</param-name>
+         <param-value>x-user</param-value>
+      </init-param>
+      <init-param>
+         <param-name>authPatternString</param-name>
+         <param-value>.*</param-value>
+      </init-param>
       -->
    </filter>
    

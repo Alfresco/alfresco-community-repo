@@ -18,9 +18,9 @@
  * As a special exception to the terms and conditions of version 2.0 of 
  * the GPL, you may redistribute this Program in connection with Free/Libre 
  * and Open Source Software ("FLOSS") applications as described in Alfresco's 
- * FLOSS exception.  You should have recieved a copy of the text describing 
+ * FLOSS exception.  You should have received a copy of the text describing 
  * the FLOSS exception, and it is also available here: 
- * http://www.alfresco.com/legal/licensing
+ * http://www.alfresco.com/legal/licensing"
  */
 package org.alfresco.repo.webdav.auth;
 
@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
+import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -336,12 +337,16 @@ public abstract class BaseSSOAuthenticationFilter implements DependencyInjectedF
     }
     
     /**
-     * Callback executed on successful ticket validation during Type3 Message processing
+     * Callback executed on successful ticket validation during Type3 Message processing.
      * 
-     * @param req HttpServletReqeust
-     * @param session HttpSession
+     * @param sc
+     *           the servlet context
+     * @param req
+     *           the request
+     * @param res
+     *           the response
      */
-    protected void onValidate(HttpServletRequest req, HttpSession session)
+    protected void onValidate(ServletContext sc, HttpServletRequest req, HttpServletResponse res)
     {
     }
     

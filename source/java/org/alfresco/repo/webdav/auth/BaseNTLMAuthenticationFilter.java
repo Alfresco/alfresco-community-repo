@@ -241,7 +241,7 @@ public abstract class BaseNTLMAuthenticationFilter extends BaseSSOAuthentication
                 reqAuth = false;
                 
                 // Filter validate hook
-                onValidate( req, httpSess);
+                onValidate( context, req, resp);
             }
             catch (AuthenticationException ex)
             {
@@ -336,7 +336,7 @@ public abstract class BaseNTLMAuthenticationFilter extends BaseSSOAuthentication
             {
                 // Process the type 3 NTLM message
                 Type3NTLMMessage type3Msg = new Type3NTLMMessage(ntlmByts);
-                processType3(type3Msg, req, resp, httpSess, chain);
+                processType3(type3Msg, context, req, resp, httpSess, chain);
             }
             else
             {
@@ -473,7 +473,7 @@ public abstract class BaseNTLMAuthenticationFilter extends BaseSSOAuthentication
      * @exception IOException
      * @exception ServletException
      */
-    protected void processType3(Type3NTLMMessage type3Msg, HttpServletRequest req, HttpServletResponse res,
+    protected void processType3(Type3NTLMMessage type3Msg, ServletContext context, HttpServletRequest req, HttpServletResponse res,
             HttpSession session, FilterChain chain) throws IOException, ServletException
     {
         Log logger = getLogger();
@@ -521,7 +521,7 @@ public abstract class BaseNTLMAuthenticationFilter extends BaseSSOAuthentication
                 // Validate the user ticket
                 authenticationService.validate(user.getTicket());
                 
-                onValidate(req, session);
+                onValidate(context, req, res);
             }
             catch (AuthenticationException ex)
             {
@@ -660,7 +660,7 @@ public abstract class BaseNTLMAuthenticationFilter extends BaseSSOAuthentication
                     }
                 }
                 
-                onValidate(req, session);
+                onValidate(context, req, res);
                 
                 // Update the NTLM logon details in the session
                 String srvName = getServerName();

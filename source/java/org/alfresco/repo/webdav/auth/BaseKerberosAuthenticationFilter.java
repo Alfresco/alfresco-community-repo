@@ -313,7 +313,7 @@ public abstract class BaseKerberosAuthenticationFilter extends BaseSSOAuthentica
                 reqAuth = false;
                 
                 // Filter validate hook
-                onValidate( req, httpSess);
+                onValidate( context, req, resp);
             }
             catch (AuthenticationException ex)
             {

@@ -206,8 +206,7 @@ public abstract class ContentModelFormProcessor extends FilteredFormProcessor
         String propName = propDef.getName().toPrefixString(namespaceService);
         String[] nameParts = QName.splitPrefixedQName(propName);
         PropertyFieldDefinition fieldDef = new PropertyFieldDefinition(
-                    propName, propDef.getDataType().getName().toPrefixString(
-                    namespaceService));
+                    propName, propDef.getDataType().getName().getLocalName());
         
         String title = propDef.getTitle();
         if (title == null)
@@ -697,8 +696,7 @@ public abstract class ContentModelFormProcessor extends FilteredFormProcessor
     {
         String dataKeyName = PROP_DATA_PREFIX + TRANSIENT_MIMETYPE;
         PropertyFieldDefinition mimetypeField = new PropertyFieldDefinition(
-                    TRANSIENT_MIMETYPE, DataTypeDefinition.TEXT.toPrefixString(
-                    this.namespaceService));
+                    TRANSIENT_MIMETYPE, DataTypeDefinition.TEXT.getLocalName());
         mimetypeField.setLabel(I18NUtil.getMessage(MSG_MIMETYPE_LABEL));
         mimetypeField.setDescription(I18NUtil.getMessage(MSG_MIMETYPE_DESC));
         mimetypeField.setDataKeyName(dataKeyName);
@@ -720,8 +718,7 @@ public abstract class ContentModelFormProcessor extends FilteredFormProcessor
     {
         String dataKeyName = PROP_DATA_PREFIX + TRANSIENT_ENCODING;
         PropertyFieldDefinition encodingField = new PropertyFieldDefinition(
-                    TRANSIENT_ENCODING, DataTypeDefinition.TEXT.toPrefixString(
-                    this.namespaceService));
+                    TRANSIENT_ENCODING, DataTypeDefinition.TEXT.getLocalName());
         encodingField.setLabel(I18NUtil.getMessage(MSG_ENCODING_LABEL));
         encodingField.setDescription(I18NUtil.getMessage(MSG_ENCODING_DESC));
         encodingField.setDataKeyName(dataKeyName);
@@ -743,8 +740,7 @@ public abstract class ContentModelFormProcessor extends FilteredFormProcessor
     {
         String dataKeyName = PROP_DATA_PREFIX + TRANSIENT_SIZE;
         PropertyFieldDefinition sizeField = new PropertyFieldDefinition(
-                    TRANSIENT_SIZE, DataTypeDefinition.LONG.toPrefixString(
-                    this.namespaceService));
+                    TRANSIENT_SIZE, DataTypeDefinition.LONG.getLocalName());
         sizeField.setLabel(I18NUtil.getMessage(MSG_SIZE_LABEL));
         sizeField.setDescription(I18NUtil.getMessage(MSG_SIZE_DESC));
         sizeField.setDataKeyName(dataKeyName);

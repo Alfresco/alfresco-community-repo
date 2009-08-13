@@ -28,7 +28,9 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.StringTokenizer;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -63,6 +65,7 @@ public class StreamArchive extends StreamContent
     
     protected static final String TEMP_FILE_PREFIX = "export_";
     protected static final String PARAM_NODE_REFS = "nodeRefs";
+    protected static final String MULTIPART_FORMDATA = "multipart/form-data";
     
     protected ExporterService exporterService;
     
@@ -85,33 +88,60 @@ public class StreamArchive extends StreamContent
         File tempArchiveFile = null;
         try
         {
-            // get JSON body
-            json = new JSONObject(new JSONTokener(req.getContent().getContent()));
-            
-            // check the list of NodeRefs is present
-            if (!json.has(PARAM_NODE_REFS))
+            NodeRef[] nodeRefs = null;
+            String contentType = req.getContentType();
+            if (MULTIPART_FORMDATA.equals(contentType))
             {
-                throw new WebScriptException(Status.STATUS_BAD_REQUEST,
-                    "Mandatory 'nodeRefs' parameter was not provided in request body");
-            }
-
-            JSONArray jsonArray = json.getJSONArray(PARAM_NODE_REFS);
-            if (jsonArray.length() != 0)
-            {
-                // build the list of NodeRefs
-                NodeRef[] nodeRefs = new NodeRef[jsonArray.length()];
-                for (int i = 0; i < jsonArray.length(); i++)
+                // get nodeRefs parameter from form
+                String nodeRefsParam = req.getParameter(PARAM_NODE_REFS);
+             
+                // check the list of NodeRefs is present
+                if (nodeRefsParam == null)
                 {
-                    NodeRef nodeRef = new NodeRef(jsonArray.getString(i));
-                    nodeRefs[i] = nodeRef;
+                    throw new WebScriptException(Status.STATUS_BAD_REQUEST,
+                        "Mandatory 'nodeRefs' parameter was not provided in form data");
                 }
                 
-                // create an archive of the nodes
-                tempArchiveFile = createArchive(nodeRefs);
+                List<NodeRef> listNodeRefs = new ArrayList<NodeRef>(8);
+                StringTokenizer tokenizer = new StringTokenizer(nodeRefsParam, ",");
+                while (tokenizer.hasMoreTokens())
+                {
+                    listNodeRefs.add(new NodeRef(tokenizer.nextToken().trim()));
+                }
                 
-                // stream the archive back to the client as an attachment (forcing save as)
-                streamContent(req, res, tempArchiveFile, true, tempArchiveFile.getName());
+                nodeRefs = new NodeRef[listNodeRefs.size()];
+                nodeRefs = listNodeRefs.toArray(nodeRefs);
             }
+            else
+            {
+                // presume the request is a JSON request so get JSON body
+                json = new JSONObject(new JSONTokener(req.getContent().getContent()));
+                
+                // check the list of NodeRefs is present
+                if (!json.has(PARAM_NODE_REFS))
+                {
+                    throw new WebScriptException(Status.STATUS_BAD_REQUEST,
+                        "Mandatory 'nodeRefs' parameter was not provided in request body");
+                }
+    
+                JSONArray jsonArray = json.getJSONArray(PARAM_NODE_REFS);
+                if (jsonArray.length() != 0)
+                {
+                    // build the list of NodeRefs
+                    nodeRefs = new NodeRef[jsonArray.length()];
+                    for (int i = 0; i < jsonArray.length(); i++)
+                    {
+                        NodeRef nodeRef = new NodeRef(jsonArray.getString(i));
+                        nodeRefs[i] = nodeRef;
+                    }
+                }                
+            }
+            
+            // create an archive of the nodes
+            tempArchiveFile = createArchive(nodeRefs);
+                
+            // stream the archive back to the client as an attachment (forcing save as)
+            streamContent(req, res, tempArchiveFile, true, tempArchiveFile.getName());
         } 
         catch (IOException iox)
         {

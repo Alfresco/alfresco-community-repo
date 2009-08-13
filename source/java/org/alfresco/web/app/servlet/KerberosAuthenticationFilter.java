@@ -18,7 +18,7 @@
  * As a special exception to the terms and conditions of version 2.0 of 
  * the GPL, you may redistribute this Program in connection with Free/Libre 
  * and Open Source Software ("FLOSS") applications as described in Alfresco's 
- * FLOSS exception.  You should have recieved a copy of the text describing 
+ * FLOSS exception.  You should have received a copy of the text describing 
  * the FLOSS exception, and it is also available here: 
  * http://www.alfresco.com/legal/licensing"
  */
@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Locale;
 
+import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
@@ -79,13 +80,13 @@ public class KerberosAuthenticationFilter extends BaseKerberosAuthenticationFilt
 
     
     /* (non-Javadoc)
-     * @see org.alfresco.repo.webdav.auth.BaseKerberosAuthenticationFilter#afterPropertiesSet()
+     * @see org.alfresco.repo.webdav.auth.BaseKerberosAuthenticationFilter#init()
      */
     @Override
-    public void afterPropertiesSet() throws Exception
+    protected void init() throws ServletException
     {
         // Call the base Kerberos filter initialization
-        super.afterPropertiesSet();
+        super.init();
 
         // Get a list of the available locales
         LanguagesConfigElement config = (LanguagesConfigElement) m_configService.getConfig("Languages")

@@ -170,7 +170,7 @@ public abstract class BaseSSOAuthenticationFilter implements DependencyInjectedF
      * @param active
      *            <code>true</code> if the bean is active and initialization should complete
      */
-    public void setActive(boolean active)
+    public final void setActive(boolean active)
     {
         this.m_isActive = active;
     }
@@ -179,15 +179,29 @@ public abstract class BaseSSOAuthenticationFilter implements DependencyInjectedF
      * (non-Javadoc)
      * @see org.alfresco.repo.management.subsystems.ActivateableBean#isActive()
      */
-    public boolean isActive()
+    public final boolean isActive()
     {
         return m_isActive;
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
      * @see org.springframework.beans.factory.InitializingBean#afterPropertiesSet()
      */
-    public void afterPropertiesSet() throws Exception
+    public final void afterPropertiesSet() throws ServletException
+    {
+        // Don't trigger initialization if this component has been disabled
+        if (isActive())
+        {
+            init();
+        }
+    }
+
+    /**
+     * Initializes the filter. Only called if the filter is active, as indicated by {@link #isActive()}. Subclasses
+     * should override.
+     */
+    protected void init() throws ServletException
     {
     }
     

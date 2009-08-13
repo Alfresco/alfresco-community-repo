@@ -20,7 +20,7 @@ function getTreenode(siteId, path)
          };
    
       // Use helper function to get the arguments
-      var parsedArgs = getParsedArgs();
+      var parsedArgs = ParseArgs.getParsedArgs();
       if (parsedArgs === null)
       {
          return;

@@ -1,12 +1,18 @@
 <import resource="classpath:/alfresco/templates/webscripts/org/alfresco/slingshot/documentlibrary/action-sets.lib.js">
 <import resource="classpath:/alfresco/templates/webscripts/org/alfresco/slingshot/documentlibrary/filters.lib.js">
 <import resource="classpath:/alfresco/templates/webscripts/org/alfresco/slingshot/documentlibrary/parse-args.lib.js">
+
 const THUMBNAIL_NAME = "doclib",
    PREF_FAVOURITES = "org.alfresco.share.documents.favourites";
 
 var PeopleCache = {},
    SiteCache = {};
 
+/**
+ * Gets / caches a person object
+ * @method getPerson
+ * @param username {string} User name
+ */
 function getPerson(username)
 {
    if (typeof PeopleCache[username] == "undefined")
@@ -16,6 +22,11 @@ function getPerson(username)
    return PeopleCache[username];
 }
 
+/**
+ * Gets / caches a site object
+ * @method getSite
+ * @param siteId {string} Site ID
+ */
 function getSite(siteId)
 {
    if (typeof SiteCache[siteId] == "undefined")
@@ -26,28 +37,27 @@ function getSite(siteId)
 }
 
 /**
- * Document List Component: doclist
+ * Main entry point: Create collection of documents and folders in the given space
+ * @method main
  */
-model.doclist = getDocList(args["filter"]);
-
-/* Create collection of documents and folders in the given space */
-function getDocList(filter)
+function main()
 {
-   var items = new Array(),
+   var filter = args.filter,
+      items = [],
       assets;
    
    // Is our thumbnail type registered?
    var haveThumbnails = thumbnailService.isThumbnailNameRegistered(THUMBNAIL_NAME);
 
    // Use helper function to get the arguments
-   var parsedArgs = getParsedArgs();
+   var parsedArgs = ParseArgs.getParsedArgs();
    if (parsedArgs === null)
    {
       return;
    }
 
-   // Type missing implies single nodeRef requested
-   if (url.templateArgs.type === null)
+   // "node" Type implies single nodeRef requested
+   if (parsedArgs.type === "node")
    {
       filter = "node";
    }
@@ -80,21 +90,20 @@ function getDocList(filter)
    }
 
    // Try to find a filter query based on the passed-in arguments
-   var allAssets, filterQuery,
-      filterParams = getFilterParams(filter, parsedArgs, favourites),
+   var allAssets,
+      filterParams = Filters.getFilterParams(filter, parsedArgs,
+      {
+         favourites: favourites
+      }),
       query = filterParams.query;
-
-   // Specialise by passed-in type
-   var typeQuery = getTypeFilterQuery(url.templateArgs.type);
-   query += " " + typeQuery;
 
    // Query and sort the list before trimming to page chunks below
    allAssets = search.luceneSearch(query, filterParams.sortBy, filterParams.sortByAscending, filterParams.limitResults ? filterParams.limitResults : 0);
 
    // Ensure folders and folderlinks appear at the top of the list
-   folderAssets = new Array();
-   documentAssets = new Array();
-   for each(asset in allAssets)
+   folderAssets = [];
+   documentAssets = [];
+   for each (asset in allAssets)
    {
       try
       {
@@ -116,7 +125,7 @@ function getDocList(filter)
    var folderAssetsCount = folderAssets.length,
       documentAssetsCount = documentAssets.length;
    
-   if (url.templateArgs.type === "documents")
+   if (parsedArgs.type === "documents")
    {
       assets = documentAssets;
    }
@@ -129,8 +138,8 @@ function getDocList(filter)
    var totalRecords = assets.length;
 
    // Pagination
-   var pageSize = args["size"] || assets.length,
-      pagePos = args["pos"] || "1",
+   var pageSize = args.size || assets.length,
+      pagePos = args.pos || "1",
       startIndex = (pagePos - 1) * pageSize;
    
    assets = assets.slice(startIndex, pagePos * pageSize);
@@ -146,7 +155,7 @@ function getDocList(filter)
       container: parsedArgs.location.container,
       path: parsedArgs.location.path,
       file: null
-   }
+   };
    
    // User permissions and role
    var user =
@@ -160,7 +169,7 @@ function getDocList(filter)
    };
    if (defaultLocation.site !== null)
    {
-      user.role = parsedArgs.location.siteNode.getMembersRole(person.properties["userName"]);
+      user.role = parsedArgs.location.siteNode.getMembersRole(person.properties.userName);
    }
    
    // Locked/working copy status defines action set
@@ -254,7 +263,7 @@ function getDocList(filter)
                container: null,
                path: null,
                file: locationAsset.name
-            }
+            };
          }
       }
       else
@@ -266,7 +275,7 @@ function getDocList(filter)
             container: defaultLocation.container,
             path: defaultLocation.path,
             file: asset.name
-         }
+         };
       }
 
       // Make sure we have a thumbnail
@@ -309,7 +318,7 @@ function getDocList(filter)
          tags: asset.tags,
          activeWorkflows: activeWorkflows,
          location: location,
-         isFavourite: (favourites[asset.nodeRef] == true)
+         isFavourite: (favourites[asset.nodeRef] === true)
       });
    }
 
@@ -331,3 +340,8 @@ function getDocList(filter)
       items: items
    });
 }
+
+/**
+ * Document List Component: doclist
+ */
+model.doclist = main();

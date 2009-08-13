@@ -2,30 +2,29 @@
 <import resource="classpath:/alfresco/templates/webscripts/org/alfresco/slingshot/documentlibrary/parse-args.lib.js">
 
 /**
- * Images List Component: images
+ * Main entry point: Create collection of images in the given space (and its subspaces)
+ * @method main
  */
-model.images = getImageList();
-
-/* Create collection of images in the given space (and its subspaces) */
-function getImageList()
+function main()
 {
-   var items = new Array(), assets, filterParams, query;
+   var items = [],
+      assets,
+      filterParams,
+      query;
    
    // Use helper function to get the arguments
-   var parsedArgs = getParsedArgs();
+   var parsedArgs = ParseArgs.getParsedArgs();
    if (parsedArgs === null)
    {
       return;
    }
    
-   // Use the "all" filter
-   filterParams = getFilterParams("all", parsedArgs);
-   query = filterParams.query;
-   // Specialise by image type
-   query += " " + getTypeFilterQuery("images");
+   // Use the "all" filter and an "images" type
+   parsedArgs.type = "images";
+   filterParams = Filters.getFilterParams("all", parsedArgs);
    
    // Sort the list before trimming to page chunks 
-   assets = search.luceneSearch(query, filterParams.sortBy, filterParams.sortByAscending, filterParams.limitResults ? filterParams.limitResults : 0);
+   assets = search.luceneSearch(filterParams.query, filterParams.sortBy, filterParams.sortByAscending, filterParams.limitResults ? filterParams.limitResults : 0);
    
    return (
    {
@@ -33,3 +32,8 @@ function getImageList()
       items: assets
    });
 }
+
+/**
+ * Images List Component: images
+ */
+model.images = main();

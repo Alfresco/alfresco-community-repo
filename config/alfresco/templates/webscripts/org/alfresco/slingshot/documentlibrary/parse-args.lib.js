@@ -1,194 +1,204 @@
-/**
- * Get multiple input files
- *
- * @method getMultipleInputValues
- * @param param {string} Property name containing the files array
- * @return {array|string} Array containing the files, or string error
- */
-function getMultipleInputValues(param)
+var ParseArgs =
 {
-   var values = [];
-   var error = null;
-   
-   try
+   /**
+    * Get multiple input files
+    *
+    * @method getMultipleInputValues
+    * @param param {string} Property name containing the files array
+    * @return {array|string} Array containing the files, or string error
+    */
+   getMultipleInputValues: function ParseArgs_getMultipleInputValues(param)
    {
-      // Was a JSON parameter list supplied?
-      if (typeof json == "object")
+      var values = [];
+      var error = null;
+
+      try
       {
-         if (!json.isNull(param))
+         // Was a JSON parameter list supplied?
+         if (typeof json == "object")
          {
-            var jsonValues = json.get(param);
-            // Convert from JSONArray to JavaScript array
-            for (var i = 0, j = jsonValues.length(); i < j; i++)
+            if (!json.isNull(param))
             {
-               values.push(jsonValues.get(i));
+               var jsonValues = json.get(param);
+               // Convert from JSONArray to JavaScript array
+               for (var i = 0, j = jsonValues.length(); i < j; i++)
+               {
+                  values.push(jsonValues.get(i));
+               }
             }
          }
       }
-   }
-   catch(e)
+      catch(e)
+      {
+         error = e.toString();
+      }
+
+      // Return the values array, or the error string if it was set
+      return (error !== null ? error : values);
+   },
+
+   /**
+    * Get and parse arguments
+    *
+    * @method getParsedArgs
+    * @return {array|null} Array containing the validated input parameters
+    */
+   getParsedArgs: function ParseArgs_getParsedArgs(containerType)
    {
-      error = e.toString();
-   }
-   
-   // Return the values array, or the error string if it was set
-   return (error !== null ? error : values);
-}
+      var rootNode = null,
+         parentNode = null,
+         nodeRef = null,
+         siteId, siteNode, containerId, type;
 
-/**
- * Get and parse arguments
- *
- * @method getParsedArgs
- * @return {array|null} Array containing the validated input parameters
- */
-function getParsedArgs(containerType)
-{
-   var rootNode = null,
-      parentNode = null,
-      nodeRef = null,
-      siteId, siteNode, containerId;
+      if (url.templateArgs.store_type !== null)
+      {
+         /**
+          * nodeRef input
+          */
+         var storeType = url.templateArgs.store_type,
+            storeId = url.templateArgs.store_id,
+            id = url.templateArgs.id,
+            type = "node";
 
-   if (url.templateArgs.store_type !== null)
-   {
-      // nodeRef input
-      var storeType = url.templateArgs.store_type,
-         storeId = url.templateArgs.store_id,
-         id = url.templateArgs.id;
+         nodeRef = storeType + "://" + storeId + "/" + id;
 
-      nodeRef = storeType + "://" + storeId + "/" + id;
-      
-      if (nodeRef == "alfresco://company/home")
-      {
-         rootNode = companyhome;
-      }
-      else if (nodeRef == "alfresco://user/home")
-      {
-         rootNode = userhome;
-      }
-      else if (nodeRef == "alfresco://sites/home")
-      {
-         rootNode = companyhome.childrenByXPath("st:sites")[0];
-      }
-      else
-      {
-         rootNode = search.findNode(nodeRef);
-         if (rootNode === null)
+         if (nodeRef == "alfresco://company/home")
          {
-            status.setCode(status.STATUS_NOT_FOUND, "Not a valid nodeRef: '" + nodeRef + "'");
-            return null;
+            rootNode = companyhome;
          }
-      }
-   }
-   else
-   {
-      // site, component container input
-      siteId = url.templateArgs.site;
-      containerId = url.templateArgs.container;
-
-      siteNode = siteService.getSite(siteId);
-      if (siteNode === null)
-      {
-         status.setCode(status.STATUS_NOT_FOUND, "Site not found: '" + siteId + "'");
-         return null;
-      }
-
-      rootNode = siteNode.getContainer(containerId);
-      if (rootNode === null)
-      {
-         if (containerType !== undefined)
+         else if (nodeRef == "alfresco://user/home")
          {
-            rootNode = siteNode.createContainer(containerId, containerType);
+            rootNode = userhome;
+         }
+         else if (nodeRef == "alfresco://sites/home")
+         {
+            rootNode = companyhome.childrenByXPath("st:sites")[0];
          }
          else
          {
-            rootNode = siteNode.createContainer(containerId);
+            rootNode = search.findNode(nodeRef);
+            if (rootNode === null)
+            {
+               status.setCode(status.STATUS_NOT_FOUND, "Not a valid nodeRef: '" + nodeRef + "'");
+               return null;
+            }
          }
-         if (rootNode === null)
+      }
+      else
+      {
+         /**
+          * Site, component container input
+          */
+         siteId = url.templateArgs.site;
+         containerId = url.templateArgs.container;
+         type = url.templateArgs.type;
+
+         siteNode = siteService.getSite(siteId);
+         if (siteNode === null)
          {
-            status.setCode(status.STATUS_NOT_FOUND, "Document Library container '" + containerId + "' not found in '" + siteId + "'. (No permission?)");
+            status.setCode(status.STATUS_NOT_FOUND, "Site not found: '" + siteId + "'");
             return null;
          }
 
-         /**
-          * MOB-593: Add email alias on documentLibrary container creation
-          *
-         rootNode.addAspect("emailserver:aliasable");
-         var emailAlias = siteId;
-         if (containerId != "documentLibrary")
+         rootNode = siteNode.getContainer(containerId);
+         if (rootNode === null)
          {
-            emailAlias += "-" + containerId;
+            if (containerType !== undefined)
+            {
+               rootNode = siteNode.createContainer(containerId, containerType);
+            }
+            else
+            {
+               rootNode = siteNode.createContainer(containerId);
+            }
+            if (rootNode === null)
+            {
+               status.setCode(status.STATUS_NOT_FOUND, "Document Library container '" + containerId + "' not found in '" + siteId + "'. (No permission?)");
+               return null;
+            }
+
+            /**
+             * MOB-593: Add email alias on documentLibrary container creation
+             *
+            rootNode.addAspect("emailserver:aliasable");
+            var emailAlias = siteId;
+            if (containerId != "documentLibrary")
+            {
+               emailAlias += "-" + containerId;
+            }
+            rootNode.properties["emailserver:alias"] = emailAlias;
+            rootNode.save();
+            */
          }
-         rootNode.properties["emailserver:alias"] = emailAlias;
-         rootNode.save();
-         */
       }
-   }
 
-   // path input
-   var path = url.templateArgs.path;
-   if ((path !== null) && (path !== ""))
-   {
-      parentNode = rootNode.childByNamePath(path);
-   }
-   else
-   {
-      parentNode = rootNode;
-      path = "";
-   }
-   if (parentNode === null)
-   {
-      parentNode = rootNode;
-   }
-
-   // Resolve site, container and path for parentNode
-   var location =
-   {
-      site: null,
-      siteTitle: null,
-      container: null,
-      path: "/" + path
-   };
-
-   var qnamePaths = search.ISO9075Decode(parentNode.qnamePath).split("/"),
-      displayPaths = parentNode.displayPath.split("/");
-   
-   if (parentNode.isContainer)
-   {
-      displayPaths = displayPaths.concat([parentNode.name]);
-   }
-      
-   if ((qnamePaths.length > 4) && (qnamePaths[2] == "st:sites"))
-   {
-      siteId = displayPaths[3];
-      siteNode = siteService.getSite(siteId);
-      containerId = displayPaths[4];
-      
-      location = 
+      // Path input
+      var path = url.templateArgs.path;
+      if ((path !== null) && (path !== ""))
       {
-         site: siteId,
-         siteTitle: siteNode.title,
-         siteNode: siteNode,
-         container: containerId,
-         containerNode: siteNode.getContainer(containerId),
-         path: "/" + displayPaths.slice(5, displayPaths.length).join("/")
+         parentNode = rootNode.childByNamePath(path);
+      }
+      else
+      {
+         parentNode = rootNode;
+         path = "";
+      }
+      if (parentNode === null)
+      {
+         parentNode = rootNode;
+      }
+
+      // Resolve site, container and path for parentNode
+      var location =
+      {
+         site: null,
+         siteTitle: null,
+         container: null,
+         path: "/" + path
       };
+
+      var qnamePaths = search.ISO9075Decode(parentNode.qnamePath).split("/"),
+         displayPaths = parentNode.displayPath.split("/");
+
+      if (parentNode.isContainer)
+      {
+         displayPaths = displayPaths.concat([parentNode.name]);
+      }
+
+      if ((qnamePaths.length > 4) && (qnamePaths[2] == "st:sites"))
+      {
+         siteId = displayPaths[3];
+         siteNode = siteService.getSite(siteId);
+         containerId = displayPaths[4];
+
+         location = 
+         {
+            site: siteId,
+            siteTitle: siteNode.title,
+            siteNode: siteNode,
+            container: containerId,
+            containerNode: siteNode.getContainer(containerId),
+            path: "/" + displayPaths.slice(5, displayPaths.length).join("/")
+         };
+      }
+
+      var objRet =
+      {
+         rootNode: rootNode,
+         parentNode: parentNode,
+         path: path,
+         location: location,
+         nodeRef: nodeRef,
+         type: type
+      };
+
+      // Multiple input files in the JSON body?
+      var files = ParseArgs.getMultipleInputValues("nodeRefs");
+      if (typeof files != "string")
+      {
+         objRet.files = files;
+      }
+
+      return objRet;
    }
-
-   var objRet =
-   {
-      rootNode: rootNode,
-      parentNode: parentNode,
-      path: path,
-      location: location,
-      nodeRef: nodeRef
-   };
-
-   // Multiple input files in the JSON body?
-   var files = getMultipleInputValues("nodeRefs");
-   if (typeof files != "string")
-   {
-      objRet.files = files;
-   }
-
-   return objRet;
-}
+};

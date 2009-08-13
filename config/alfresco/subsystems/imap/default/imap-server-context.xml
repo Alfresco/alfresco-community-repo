@@ -29,6 +29,7 @@
             <ref local="imapUserManager" />
         </property>
     </bean>
+    
 
     <bean id="imapResourceBundles" class="org.alfresco.i18n.ResourceBundleBootstrapComponent">
         <property name="resourceBundles">
@@ -37,7 +38,16 @@
             </list>
         </property>
     </bean>
-
+    
+    <bean id="imapContentPolicy" class="org.alfresco.repo.imap.ImapContentPolicy" init-method="init">
+        <property name="actionService">
+            <ref bean="actionService"/>
+        </property>       
+        <property name="policyComponent">
+            <ref bean="policyComponent"/>
+        </property>
+    </bean>
+    
     <!--The configurable list of mount points -->
     <bean id="imap.config.server.mountPoints" class="org.springframework.beans.factory.config.ListFactoryBean" >
         <!-- Uses ImapConfigMountPointsBean with:

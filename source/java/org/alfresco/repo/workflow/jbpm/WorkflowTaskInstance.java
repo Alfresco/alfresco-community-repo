@@ -22,6 +22,7 @@
  * the FLOSS exception, and it is also available here: 
  * http://www.alfresco.com/legal/licensing"
  */
+
 package org.alfresco.repo.workflow.jbpm;
 
 import java.io.Serializable;
@@ -39,7 +40,6 @@ import org.springframework.beans.factory.access.BeanFactoryLocator;
 import org.springframework.beans.factory.access.BeanFactoryReference;
 import org.springmodules.workflow.jbpm31.JbpmFactoryLocator;
 
-
 /**
  * Alfresco specific implementation of a jBPM task instance
  * 
@@ -49,29 +49,11 @@ public class WorkflowTaskInstance extends TaskInstance
 {
     private static final long serialVersionUID = 6824116036569411964L;
 
-    /** Alfresco JBPM Engine */ 
+    private String jbpmEngineName = null;
+
+    /** Alfresco JBPM Engine */
     private static JBPMEngine jbpmEngine = null;
 
-    /**
-     * Gets the JBPM Engine instance
-     * 
-     * @return  JBPM Engine
-     */
-    private JBPMEngine getJBPMEngine()
-    {
-        if (jbpmEngine == null)
-        {
-            BeanFactoryLocator factoryLocator = new JbpmFactoryLocator();
-            BeanFactoryReference factory = factoryLocator.useBeanFactory(null);
-            jbpmEngine = (JBPMEngine)factory.getFactory().getBean("jbpm_engine");
-            if (jbpmEngine == null)
-            {
-                throw new WorkflowException("Failed to retrieve JBPMEngine component");
-            }
-        }
-        return jbpmEngine;
-    }
-    
     /**
      * Construct
      */
@@ -92,13 +74,33 @@ public class WorkflowTaskInstance extends TaskInstance
     }
 
     /**
-     * Construct
+     * Sets jbpmEngineName which is used to get the JBPMEngine instance from a
+     * BeanFactory
      * 
-     * @param taskName
+     * @param jbpmEngineName the jbpmEngineName to set
      */
-    public WorkflowTaskInstance(String taskName)
+    public void setJbpmEngineName(String jbpmEngineName)
     {
-        super(taskName);
+        this.jbpmEngineName = jbpmEngineName;
+    }
+
+    /**
+     * Gets the JBPM Engine instance
+     * 
+     * @return JBPM Engine
+     */
+    private JBPMEngine getJBPMEngine()
+    {
+        if (jbpmEngine == null)
+        {
+            BeanFactoryLocator factoryLocator = new JbpmFactoryLocator();
+            BeanFactoryReference factory = factoryLocator.useBeanFactory(null);
+            if (jbpmEngineName == null) jbpmEngineName = "jbpm_engine";
+            jbpmEngine = (JBPMEngine) factory.getFactory().getBean(jbpmEngineName);
+            if (jbpmEngine == null) { throw new WorkflowException(
+                        "Failed to retrieve JBPMEngine component"); }
+        }
+        return jbpmEngine;
     }
 
     @Override
@@ -111,30 +113,34 @@ public class WorkflowTaskInstance extends TaskInstance
     @Override
     public void end(Transition transition)
     {
-        // Force assignment of task if transition is taken, but no owner has yet been assigned
+        // Force assignment of task if transition is taken, but no owner has yet
+        // been assigned
         if (actorId == null)
         {
             actorId = AuthenticationUtil.getFullyAuthenticatedUser();
         }
-        
+
         // Set task properties on completion of task
-        // NOTE: Set properties first, so they're available during the submission of
-        //       task variables to the process context
+        // NOTE: Set properties first, so they're available during the
+        // submission of
+        // task variables to the process context
         Map<QName, Serializable> taskProperties = new HashMap<QName, Serializable>();
-        Transition outcome = (transition == null) ? token.getNode().getDefaultLeavingTransition() : transition; 
+        Transition outcome = (transition == null) ? token.getNode().getDefaultLeavingTransition()
+                    : transition;
         if (outcome != null)
         {
             taskProperties.put(WorkflowModel.PROP_OUTCOME, outcome.getName());
         }
         taskProperties.put(WorkflowModel.PROP_STATUS, "Completed");
         getJBPMEngine().setTaskProperties(this, taskProperties);
-        
+
         // perform transition
         super.end(transition);
-        
+
         if (getTask().getStartState() != null)
         {
-            // if ending a start task, push start task properties to process context, if not
+            // if ending a start task, push start task properties to process
+            // context, if not
             // already done
             getJBPMEngine().setDefaultWorkflowProperties(this);
 

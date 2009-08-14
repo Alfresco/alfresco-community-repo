@@ -6,8 +6,10 @@
 
 <hibernate-mapping default-access="field">
 
-  <subclass name="org.alfresco.repo.workflow.jbpm.WorkflowTaskInstance" 
-            extends="org.jbpm.taskmgmt.exe.TaskInstance"
-            discriminator-value="W"/>
+   <subclass name="org.alfresco.repo.workflow.jbpm.WorkflowTaskInstance"
+      extends="org.jbpm.taskmgmt.exe.TaskInstance" discriminator-value="W">
+      <property name="jbpmEngineName" type="string" length="50"
+         column="JBPM_ENGINE_NAME" />
+   </subclass>
 
 </hibernate-mapping>

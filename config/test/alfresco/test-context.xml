@@ -1,0 +1,24 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+
+   <!-- Overriding test properties to point to custom properties -->
+   <bean id="test-properties"
+      class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+      <property name="ignoreUnresolvablePlaceholders">
+         <value>true</value>
+      </property>
+      <property name="locations">
+         <list>
+            <value>classpath:alfresco/repository.properties</value>
+            <value>classpath:alfresco/version.properties</value>
+            <value>classpath:alfresco/domain/transaction.properties</value>
+            <value>classpath:alfresco/alfresco-shared.properties</value>
+            <value>file:D:\workspaces/projects/head/data/repository.properties</value>  <!-- override core properties -->
+            <value>classpath:test/alfresco/test.properties</value>  
+         </list>
+      </property>
+   </bean>
+
+</beans>

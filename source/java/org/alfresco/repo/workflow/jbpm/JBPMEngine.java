@@ -2667,7 +2667,7 @@ public class JBPMEngine extends BPMEngine
            }
            catch (RuntimeException re)
            {
-               throw new IllegalStateException("Invalid company home path: " + companyHomePath + ": " + re.getMessage());
+               throw new IllegalStateException("Invalid company home path: " + companyHomePath + ": " + re.getMessage(), re);
            }
         }
         else

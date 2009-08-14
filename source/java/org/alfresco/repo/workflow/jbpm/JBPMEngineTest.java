@@ -73,7 +73,6 @@ public class JBPMEngineTest extends BaseSpringTest
     WorkflowPackageComponent packageComponent;
     WorkflowDefinition testWorkflowDef;
     NodeRef testNodeRef;
-
         
     @Override
     protected void onSetUpInTransaction() throws Exception

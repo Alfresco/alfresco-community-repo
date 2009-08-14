@@ -1,0 +1,33 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+
+   <!--                       -->
+   <!-- Alfresco BPM Registry -->
+   <!--                       -->
+
+   <bean id="test_bpm_engineRegistry" class="org.alfresco.repo.workflow.BPMEngineRegistry" />
+
+   <bean id="test_bpm_engine" class="org.alfresco.repo.workflow.BPMEngine"
+      abstract="true">
+      <property name="BPMEngineRegistry" ref="test_bpm_engineRegistry" />
+   </bean>
+
+   <!--                     -->
+   <!-- jBPM Implementation -->
+   <!--                     -->
+
+   <bean id="test_jbpm_configuration"
+      class="org.alfresco.repo.workflow.jbpm.AlfrescoJbpmConfigurationFactoryBean">
+      <property name="sessionFactory" ref="testSessionFactory" />
+      <property name="configuration"
+         value="classpath:test/alfresco/jbpm.cfg.xml" />
+   </bean>
+
+   <bean id="test_jbpm_template"
+      class="org.alfresco.repo.workflow.jbpm.JBPMTransactionTemplate">
+      <constructor-arg index="0" ref="test_jbpm_configuration" />
+   </bean>
+
+</beans>

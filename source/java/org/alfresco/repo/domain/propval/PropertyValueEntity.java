@@ -25,6 +25,7 @@
 package org.alfresco.repo.domain.propval;
 
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -55,6 +56,8 @@ public class PropertyValueEntity
     public static final Short ORDINAL_DOUBLE = 2;
     public static final Short ORDINAL_STRING = 3;
     public static final Short ORDINAL_SERIALIZABLE = 4;
+    public static final Short ORDINAL_MAP = 5;
+    public static final Short ORDINAL_COLLECTION = 6;
     
     /**
      * Enumeration of persisted types for <b>alf_prop_value.persisted_type</b>.
@@ -131,6 +134,32 @@ public class PropertyValueEntity
             {
                 return Serializable.class;
             }
+        },
+        MAP
+        {
+            @Override
+            public Short getOrdinalNumber()
+            {
+                return ORDINAL_MAP;
+            }
+            @Override
+            public Class<?> getAssociatedClass()
+            {
+                return Map.class;
+            }
+        },
+        COLLECTION
+        {
+            @Override
+            public Short getOrdinalNumber()
+            {
+                return ORDINAL_COLLECTION;
+            }
+            @Override
+            public Class<?> getAssociatedClass()
+            {
+                return Collection.class;
+            }
         };
         
         /**
@@ -182,6 +211,8 @@ public class PropertyValueEntity
         mapClass.put(Double.class, PersistedType.DOUBLE);
         mapClass.put(String.class, PersistedType.STRING);
         mapClass.put(Date.class, PersistedType.LONG);
+        mapClass.put(Map.class, PersistedType.SERIALIZABLE);            // Will be serialized if encountered
+        mapClass.put(Collection.class, PersistedType.SERIALIZABLE);     // Will be serialized if encountered
         persistedTypesByClass = Collections.unmodifiableMap(mapClass);
     }
 
@@ -250,18 +281,20 @@ public class PropertyValueEntity
     {
         switch (persistedTypeEnum)
         {
-            case NULL:
-                return null;
-            case LONG:
-                return longValue;
-            case DOUBLE:
-                return doubleValue;
-            case STRING:
-                return stringValue;
-            case SERIALIZABLE:
-                return serializableValue;
-            default:
-                throw new IllegalStateException("Should not be able to get through switch");
+        case MAP:
+        case COLLECTION:
+        case NULL:
+            return null;
+        case LONG:
+            return longValue;
+        case DOUBLE:
+            return doubleValue;
+        case STRING:
+            return stringValue;
+        case SERIALIZABLE:
+            return serializableValue;
+        default:
+            throw new IllegalStateException("Should not be able to get through switch");
         }
     }
     

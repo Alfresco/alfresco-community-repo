@@ -32,7 +32,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -94,6 +93,8 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
     private static Log loggerPaths = LogFactory.getLog(DbNodeServiceImpl.class.getName() + ".paths");
     
     private NodeDaoService nodeDaoService;
+    /** A set of aspects, the presence of which indicate that nodes must not be archived */
+    private Set<QName> ignoreArchiveAspects;
     private StoreArchiveMap storeArchiveMap;
     private NodeService avmNodeService;
     private NodeIndexer nodeIndexer;

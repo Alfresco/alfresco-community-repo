@@ -68,6 +68,16 @@ CREATE TABLE alf_prop_value
    PRIMARY KEY (id)
 ) ENGINE=InnoDB;
 
+CREATE TABLE alf_prop_collection_link
+(
+   root_coll_prop_id BIGINT NOT NULL,
+   curr_coll_prop_id BIGINT NOT NULL,
+   key_prop_id BIGINT NOT NULL,
+   value_prop_id BIGINT NOT NULL,
+   INDEX idx_alf_prop_coll_rev (value_prop_id, root_coll_prop_id),
+   PRIMARY KEY (root_coll_prop_id, curr_coll_prop_id, key_prop_id, value_prop_id)
+) ENGINE=InnoDB;
+
 --
 -- Record script finish
 --

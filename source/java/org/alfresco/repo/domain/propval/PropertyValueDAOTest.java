@@ -25,7 +25,10 @@
 package org.alfresco.repo.domain.propval;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Random;
 
 import junit.framework.TestCase;
@@ -342,6 +345,71 @@ public class PropertyValueDAOTest extends TestCase
         {
             runPropertyValueTest(new String("Value-" + i + ".xyz"));
         }
+    }
+    
+    public void testPropertyValue_MapOfStrings() throws Exception
+    {
+        final HashMap<String, String> map = new HashMap<String, String>(15);
+        for (int i = 0; i < 20; i++)
+        {
+            String key = "MAP-KEY-" + i;
+            String value = "MAP-VALUE-" + i;
+            map.put(key, value);
+        }
+        RetryingTransactionCallback<Void> createCallback = new RetryingTransactionCallback<Void>()
+        {
+            public Void execute() throws Throwable
+            {
+                propertyValueDAO.getOrCreatePropertyValue(map);
+                return null;
+            }
+        };
+        transactionService.getRetryingTransactionHelper().doInTransaction(createCallback);
+    }
+    
+    public void testPropertyValue_MapOfMapOfStrings() throws Exception
+    {
+        final HashMap<String, String> mapInner = new HashMap<String, String>(15);
+        for (int i = 0; i < 20; i++)
+        {
+            String key = "INNERMAP-KEY-" + i;
+            String value = "INNERMAP-VALUE-" + i;
+            mapInner.put(key, value);
+        }
+        final HashMap<String, Map<?, ?>> mapOuter = new HashMap<String, Map<?, ?>>(37);
+        for (int i = 0; i < 2; i++)
+        {
+            String key = "OUTERMAP-KEY-" + i;
+            mapOuter.put(key, mapInner);
+        }
+        RetryingTransactionCallback<Void> createCallback = new RetryingTransactionCallback<Void>()
+        {
+            public Void execute() throws Throwable
+            {
+                propertyValueDAO.getOrCreatePropertyValue(mapOuter);
+                return null;
+            }
+        };
+        transactionService.getRetryingTransactionHelper().doInTransaction(createCallback);
+    }
+    
+    public void testPropertyValue_CollectionOfStrings() throws Exception
+    {
+        final ArrayList<String> list = new ArrayList<String>(20);
+        for (int i = 0; i < 20; i++)
+        {
+            String value = "COLL-VALUE-" + i;
+            list.add(value);
+        }
+        RetryingTransactionCallback<Void> createCallback = new RetryingTransactionCallback<Void>()
+        {
+            public Void execute() throws Throwable
+            {
+                propertyValueDAO.getOrCreatePropertyValue(list);
+                return null;
+            }
+        };
+        transactionService.getRetryingTransactionHelper().doInTransaction(createCallback);
     }
     
     private void removeCaches()

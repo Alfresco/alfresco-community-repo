@@ -15,6 +15,7 @@
     <typeAlias alias="PropertyStringValue" type="org.alfresco.repo.domain.propval.PropertyStringValueEntity"/>
     <typeAlias alias="PropertyDoubleValue" type="org.alfresco.repo.domain.propval.PropertyDoubleValueEntity"/>
     <typeAlias alias="PropertyValue" type="org.alfresco.repo.domain.propval.PropertyValueEntity"/>
+    <typeAlias alias="PropertyCollectionLink" type="org.alfresco.repo.domain.propval.PropertyCollectionLinkEntity"/>
 
     <!--                -->
     <!-- Result Maps    -->
@@ -55,6 +56,12 @@
         <result property="doubleValue" column="double_value" jdbcType="DOUBLE" javaType="java.lang.Double"/>
         <result property="stringValue" column="string_value" jdbcType="VARCHAR" javaType="java.lang.String"/>
         <result property="serializableValue" column="serializable_value" jdbcType="BLOB" javaType="java.lang.Object"/>
+    </resultMap>
+    <resultMap id="result.PropertyCollectionLink" class="PropertyCollectionLink">
+        <result property="rootCollectionPropId" column="root_coll_prop_id" jdbcType="BIGINT" javaType="long"/>
+        <result property="currentCollectionPropId" column="persisted_type" jdbcType="BIGINT" javaType="long"/>
+        <result property="keyPropId" column="key_prop_id" jdbcType="BIGINT" javaType="long"/>
+        <result property="valuePropId" column="value_prop_id" jdbcType="BIGINT" javaType="long"/>
     </resultMap>
   
     <!--                -->
@@ -270,5 +277,16 @@
         where
             pv.id = #id#
     </select>
+
+    <insert id="insert.PropertyCollectionLink" parameterClass="PropertyCollectionLink" >
+        insert into alf_prop_collection_link
+        (
+           root_coll_prop_id, curr_coll_prop_id, key_prop_id, value_prop_id
+        )
+        values
+        (
+           #rootCollectionPropId#, #currentCollectionPropId#, #keyPropId#, #valuePropId#
+        )
+    </insert>
 
 </sqlMap>

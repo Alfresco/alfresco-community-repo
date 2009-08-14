@@ -26,7 +26,9 @@ package org.alfresco.repo.domain.propval;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.Map;
 
+import org.alfresco.repo.action.evaluator.compare.PropertyValueComparator;
 import org.alfresco.util.Pair;
 
 /**
@@ -37,6 +39,9 @@ import org.alfresco.util.Pair;
  */
 public interface PropertyValueDAO
 {
+    //================================
+    // 'alf_prop_class' accessors
+    //================================
     /**
      * <b>alf_prop_class</b> accessor
      * 
@@ -56,6 +61,9 @@ public interface PropertyValueDAO
      */
     Pair<Long, Class<?>> getOrCreatePropertyClass(Class<?> value);
 
+    //================================
+    // 'alf_prop_date_value' accessors
+    //================================
     /**
      * <b>alf_prop_date_value</b> accessor
      * 
@@ -75,6 +83,9 @@ public interface PropertyValueDAO
      */
     Pair<Long, Date> getOrCreatePropertyDateValue(Date value);
     
+    //================================
+    // 'alf_prop_string_value' accessors
+    //================================
     /**
      * <b>alf_prop_string_value</b> accessor
      * 
@@ -94,6 +105,9 @@ public interface PropertyValueDAO
      */
     Pair<Long, String> getOrCreatePropertyStringValue(String value);
 
+    //================================
+    // 'alf_prop_double_value' accessors
+    //================================
     /**
      * <b>alf_prop_double_value</b> accessor
      * 
@@ -113,22 +127,52 @@ public interface PropertyValueDAO
      */
     Pair<Long, Double> getOrCreatePropertyDoubleValue(Double value);
     
+    //================================
+    // 'alf_prop_value' accessors
+    //================================
     /**
-     * <b>alf_prop_value</b> accessor
+     * <b>alf_prop_value</b> accessor: get a property based on the database ID
      * 
      * @param id                the ID (may not be <tt>null</tt>)
      */
     Pair<Long, Serializable> getPropertyValueById(Long id);
     /**
-     * <b>alf_prop_value</b> accessor
+     * <b>alf_prop_value</b> accessor: find a property based on the value
      * 
      * @param value             the value to find the ID for (may be <tt>null</tt>)
      */
     Pair<Long, Serializable> getPropertyValue(Serializable value);
     /**
-     * <b>alf_prop_value</b> accessor
+     * <b>alf_prop_value</b> accessor: find or create a property based on the value.
+     * <b>Note:</b> This method will not recurse into maps or collections.  Use the
+     * dedicated methods if you want recursion; otherwise maps and collections will
+     * be serialized and probably stored as BLOB values.
+     * <p/>
+     * All collections and maps will be opened up to any depth.  To limit this behaviour,
+     * use {@link #getOrCreatePropertyValue(Serializable, int)}.
      * 
      * @param value             the value to find the ID for (may be <tt>null</tt>)
      */
     Pair<Long, Serializable> getOrCreatePropertyValue(Serializable value);
+    /**
+     * <b>alf_prop_value</b> accessor: find or create a property based on the value.
+     * <b>Note:</b> This method will not recurse into maps or collections.  Use the
+     * dedicated methods if you want recursion; otherwise maps and collections will
+     * be serialized and probably stored as BLOB values.
+     * <p>
+     * <u>Max depth examples</u> (there is no upper limit):
+     * <ul>
+     *   <li>0: don't expand the value if it's a map or collection</li>
+     *   <li>1: open the value up if it is a map or collection but don't do any more</li>
+     *   <li>...</li>
+     *   <li>10: open up 10 levels of maps or collections</li>
+     * </ul>
+     * All collections that are not opened up will be serialized unless there is a
+     * custom {@link PropertyTypeConverter converter} which can serialize it in an
+     * alternative format.
+     * 
+     * @param value             the value to find the ID for (may be <tt>null</tt>)
+     * @param maxDepth          the maximum depth of collections and maps to iterate into
+     */
+    Pair<Long, Serializable> getOrCreatePropertyValue(Serializable value, int maxDepth);
 }

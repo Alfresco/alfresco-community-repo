@@ -39,7 +39,7 @@
       class="org.alfresco.repo.workflow.jbpm.WorkflowTaskInstanceFactory"
       singleton="true">
       <field name="jbpmEngineName">
-         <string value="test_jbpm_engine" />
+         <string value="jbpm_engine" />
       </field>
    </bean>
    <bean name="jbpm.variable.resolver" class="org.jbpm.jpdl.el.impl.JbpmVariableResolver"

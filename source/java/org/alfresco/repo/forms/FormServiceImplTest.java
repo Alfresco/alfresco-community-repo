@@ -316,7 +316,7 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
                     LABEL_REFERENCES, referencesField.getLabel());
         
         // check details of name field
-        assertEquals("Expecting cm:name type to be d:text", "d:text", nameField.getDataType());
+        assertEquals("Expecting cm:name type to be text", "text", nameField.getDataType());
         assertTrue("Expecting cm:name to be mandatory", nameField.isMandatory());
         assertFalse("Expecting cm:name to be single valued", nameField.isRepeating());
         
@@ -332,7 +332,7 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
         assertNotNull("Expecting an 'requiresMatch' constraint parameter", params.get("requiresMatch"));
         
         // check details of the addressees field
-        assertEquals("Expecting cm:addressees type to be d:text", "d:text", addresseesField.getDataType());
+        assertEquals("Expecting cm:addressees type to be text", "text", addresseesField.getDataType());
         assertFalse("Expecting cm:addressees to be mandatory", addresseesField.isMandatory());
         assertTrue("Expecting cm:addressees to be multi valued", addresseesField.isRepeating());
         assertNull("Expecting constraints for cm:addressees to be null", addresseesField.getConstraints());
@@ -462,7 +462,7 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
                     LABEL_REFERENCES, referencesField.getLabel());
         
         // check the details of the modified field
-        assertEquals("Expecting cm:modified type to be d:datetime", "d:datetime", modifiedField.getDataType());
+        assertEquals("Expecting cm:modified type to be datetime", "datetime", modifiedField.getDataType());
         assertTrue("Expecting cm:modified to be mandatory", modifiedField.isMandatory());
         assertFalse("Expecting cm:modified to be single valued", modifiedField.isRepeating());
         
@@ -669,7 +669,7 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
                     LABEL_CONTAINS, containsField.getLabel());
         
         // check details of name field
-        assertEquals("Expecting cm:name type to be d:text", "d:text", nameField.getDataType());
+        assertEquals("Expecting cm:name type to be text", "text", nameField.getDataType());
         assertTrue("Expecting cm:name to be mandatory", nameField.isMandatory());
         assertFalse("Expecting cm:name to be single valued", nameField.isRepeating());
         
@@ -939,9 +939,11 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
                     this.nodeService.hasAspect(this.document, ContentModel.ASPECT_TITLED));
         
         // test different forms of itemId's
+        data.addFieldData(TypeFormProcessor.DESTINATION, this.folder.toString());
         newNode = (NodeRef)this.formService.saveForm(new Item(TYPE_FORM_ITEM_KIND, "cm_content"), data);
         assertNotNull("Expected new node to be created using itemId cm_content", newNode);
         
+        data.addFieldData(TypeFormProcessor.DESTINATION, this.folder.toString());
         newNode = (NodeRef)this.formService.saveForm(new Item(TYPE_FORM_ITEM_KIND, ContentModel.TYPE_CONTENT.toString()), data);
         assertNotNull("Expected new node to be created using itemId " + ContentModel.TYPE_CONTENT.toString(), newNode);
     }

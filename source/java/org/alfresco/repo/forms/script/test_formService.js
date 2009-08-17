@@ -76,7 +76,7 @@ function testGetFormForContentNode()
     test.assertEquals("References", referencesField.label);
     
     // check details of name field
-    test.assertEquals("d:text", nameField.dataType);
+    test.assertEquals("text", nameField.dataType);
     test.assertTrue(nameField.mandatory);
     // Expecting cm:name to be single-valued.
     test.assertFalse(nameField.repeating, "nameField.repeating was not false.");
@@ -93,7 +93,7 @@ function testGetFormForContentNode()
     test.assertNotNull(params["requiresMatch"], "params['requiresMatch'] should not be null.");
     
     // check details of the addressees field
-    test.assertEquals("d:text", addresseesField.dataType);
+    test.assertEquals("text", addresseesField.dataType);
     test.assertFalse(addresseesField.mandatory, "addresseesField.mandatory was not false.");
     // Expecting cm:addressees to be multi-valued.
     test.assertTrue(addresseesField.repeating);
@@ -177,7 +177,7 @@ function testGetFormForFolderNode()
     test.assertEquals("Contains", containsField.label);
  
     // check details of name field
-    test.assertEquals("d:text", nameField.dataType);
+    test.assertEquals("text", nameField.dataType);
     test.assertTrue(nameField.mandatory);
     // Expecting cm:name to be single-valued.
     test.assertFalse(nameField.repeating, "nameField.repeating was not false.");

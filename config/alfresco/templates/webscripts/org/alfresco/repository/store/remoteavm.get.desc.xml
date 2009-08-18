@@ -7,7 +7,7 @@
   <url>/remotestore/{method}/s/{store}/{path}</url>  
   <url>/remotestore/{method}/s/{store}/w/{webapp}</url>
   <url>/remotestore/{method}/s/{store}/w/{webapp}/{path}</url>  
-  <authentication>guest</authentication>
+  <authentication>none</authentication>
   <transaction>required</transaction>
   <format default="">argument</format>
 </webscript>

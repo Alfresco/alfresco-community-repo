@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2008 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -70,6 +70,9 @@ import org.alfresco.web.scripts.Description.TransactionCapability;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.ObjectFactory;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationEvent;
+import org.springframework.context.event.ContextRefreshedEvent;
 
 
 /**
@@ -239,17 +242,22 @@ public class RepositoryContainer extends AbstractRuntimeContainer implements Ten
     {
         WebScript script = scriptReq.getServiceMatch().getWebScript();
         Description desc = script.getDescription();
+        
+        // Escalate the webscript declared level of authentication to the container required authentication (must be
+        // guest if MT is enabled)
         RequiredAuthentication required = desc.getRequiredAuthentication();
+        RequiredAuthentication containerRequiredAuthentication = getRequiredAuthentication();
+        if (required.compareTo(containerRequiredAuthentication) < 0)
+        {
+            required = containerRequiredAuthentication;
+        }
         boolean isGuest = scriptReq.isGuest();
         
         if (required == RequiredAuthentication.none)
         {
-            // MT-context will pre-authenticate (see MTWebScriptAuthenticationFilter)
-            if (! AuthenticationUtil.isMtEnabled())
-            {
                 // TODO revisit - cleared here, in-lieu of WebClient clear
-                AuthenticationUtil.clearCurrentSecurityContext();
-            }
+            AuthenticationUtil.clearCurrentSecurityContext();
+
             transactionedExecuteAs(script, scriptReq, scriptRes);
         }
         else if ((required == RequiredAuthentication.user || required == RequiredAuthentication.admin) && isGuest)
@@ -282,6 +290,12 @@ public class RepositoryContainer extends AbstractRuntimeContainer implements Ten
                     if (required == RequiredAuthentication.admin && !(authorityService.hasAdminAuthority() || AuthenticationUtil.getFullyAuthenticatedUser().equals(AuthenticationUtil.getSystemUserName())))
                     {
                         throw new WebScriptException(HttpServletResponse.SC_UNAUTHORIZED, "Web Script " + desc.getId() + " requires admin authentication; however, a non-admin has attempted access.");
+                    }
+                    
+                    if (logger.isDebugEnabled())
+                    {
+                    	currentUser = AuthenticationUtil.getFullyAuthenticatedUser();
+                        logger.debug("Authentication: " + (currentUser == null ? "unauthenticated" : "authenticated as " + currentUser));
                     }
                     
                     // Execute Web Script
@@ -443,6 +457,15 @@ public class RepositoryContainer extends AbstractRuntimeContainer implements Ten
     @Override
     public Registry getRegistry()
     {
+        if (AuthenticationUtil.isMtEnabled())
+        {
+            String user = AuthenticationUtil.getRunAsUser();
+            if (user == null)
+            {
+                throw new RuntimeException("Failed to getRegistry: need to pre-authenticate in MT environment");
+            }
+        }
+        
         String tenantDomain = tenantAdminService.getCurrentUserDomain();
         Registry registry = webScriptsRegistryCache.get(tenantDomain);
         if (registry == null)
@@ -451,6 +474,61 @@ public class RepositoryContainer extends AbstractRuntimeContainer implements Ten
             registry = webScriptsRegistryCache.get(tenantDomain);
         }
         return registry;
+    }
+    
+    /* (non-Javadoc)
+     * @see org.alfresco.web.scripts.AbstractRuntimeContainer#onApplicationEvent(org.springframework.context.ApplicationEvent)
+     */
+    @Override
+    public void onApplicationEvent(ApplicationEvent event)
+    {
+        if (event instanceof ContextRefreshedEvent)
+        {
+            ContextRefreshedEvent refreshEvent = (ContextRefreshedEvent)event;
+            ApplicationContext refreshContext = refreshEvent.getApplicationContext();
+            if (refreshContext != null && refreshContext.equals(applicationContext))
+            {
+                RunAsWork<Object> work = new RunAsWork<Object>()
+                {
+                    public Object doWork() throws Exception
+                    {
+                        reset();
+                        return null;
+                    }
+                };
+                AuthenticationUtil.runAs(work, AuthenticationUtil.getSystemUserName());
+            }
+        }
+    }
+    
+    /* (non-Javadoc)
+     * @see org.alfresco.web.scripts.AbstractRuntimeContainer#getRequiredAuthentication()
+     */
+    @Override
+    public RequiredAuthentication getRequiredAuthentication()
+    {
+        if (AuthenticationUtil.isMtEnabled())
+        {
+            return RequiredAuthentication.guest; // user or guest (ie. at least guest)
+        }
+        
+        return RequiredAuthentication.none;
+    }
+    
+    /* (non-Javadoc)
+     * @see org.alfresco.web.scripts.RuntimeContainer#authenticate(org.alfresco.web.scripts.Authenticator, org.alfresco.web.scripts.Description.RequiredAuthentication)
+     */
+    @Override
+    public boolean authenticate(Authenticator auth, RequiredAuthentication required)
+    {
+        if (auth != null)
+        {
+            AuthenticationUtil.clearCurrentSecurityContext();
+            
+            return auth.authenticate(required, false);
+        }
+        
+        return false;
     }
 
     /* (non-Javadoc)

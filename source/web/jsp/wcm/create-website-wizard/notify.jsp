@@ -80,7 +80,7 @@
    <h:panelGrid columns="4" cellspacing="1" cellpadding="1" border="0">
       <h:outputText value="#{msg.action_mail_template}:" />
       <h:selectOneMenu value="#{InviteWebsiteUsersWizard.mailHelper.template}">
-         <f:selectItems value="#{TemplateSupportBean.emailTemplates}" />
+<f:selectItems value="#{InviteWebsiteUsersWizard.emailTemplates}" />
       </h:selectOneMenu>
       <h:commandButton value="#{msg.insert_template}" actionListener="#{InviteWebsiteUsersWizard.mailHelper.insertTemplate}" styleClass="wizardButton" />
       <h:commandButton value="#{msg.discard_template}" actionListener="#{InviteWebsiteUsersWizard.mailHelper.discardTemplate}" styleClass="wizardButton" disabled="#{InviteWebsiteUsersWizard.mailHelper.usingTemplate == null}" />

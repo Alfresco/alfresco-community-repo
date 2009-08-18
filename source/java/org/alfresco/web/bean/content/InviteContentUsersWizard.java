@@ -26,6 +26,9 @@ package org.alfresco.web.bean.content;
 
 import java.util.Set;
 
+import javax.faces.context.FacesContext;
+
+import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.wizard.BaseInviteUsersWizard;
 
@@ -57,4 +60,15 @@ public class InviteContentUsersWizard extends BaseInviteUsersWizard
    {
       return this.browseBean.getDocument();
    }
+
+    @Override
+    protected String getEmailTemplateXPath()
+    {
+        FacesContext fc = FacesContext.getCurrentInstance();
+        String xpath = Application.getRootPath(fc) + "/" + 
+              Application.getGlossaryFolderName(fc) + "/" +
+              Application.getEmailTemplatesFolderName(fc) + "/" + 
+              Application.getNotifyEmailTemplatesFolderName(fc) + "//*";
+        return xpath;
+    }
 }

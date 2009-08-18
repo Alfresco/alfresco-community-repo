@@ -215,4 +215,15 @@ public class InviteWebsiteUsersWizard extends BaseInviteUsersWizard
    {
       this.standalone = editMode;
    }
+
+    @Override
+    protected String getEmailTemplateXPath()
+    {
+        FacesContext fc = FacesContext.getCurrentInstance();
+        String xpath = Application.getRootPath(fc) + "/" + 
+              Application.getGlossaryFolderName(fc) + "/" +
+              Application.getEmailTemplatesFolderName(fc) + "/" + 
+              Application.getInviteEmailTemplatesFolderName(fc) + "//*";
+        return xpath;
+    }
 }

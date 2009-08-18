@@ -45,6 +45,8 @@ import javax.transaction.UserTransaction;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
+import org.alfresco.repo.security.permissions.AccessDeniedException;
+import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.search.LimitBy;
 import org.alfresco.service.cmr.search.ResultSet;
@@ -60,6 +62,8 @@ import org.alfresco.web.bean.TemplateMailHelperBean;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.bean.repository.User;
+import org.alfresco.web.data.IDataContainer;
+import org.alfresco.web.data.QuickSort;
 import org.alfresco.web.ui.common.SortableSelectItem;
 import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.common.component.UIGenericPicker;
@@ -138,6 +142,58 @@ public abstract class BaseInviteUsersWizard extends BaseWizardBean
    protected abstract Node getNode();
    
    /**
+     * @return Returns the list of email templates for user notification
+     */
+    public List<SelectItem> getEmailTemplates()
+    {
+        List<SelectItem> wrappers = null;
+
+        try
+        {
+            FacesContext fc = FacesContext.getCurrentInstance();
+            NodeRef rootNodeRef = this.getNodeService().getRootNode(Repository.getStoreRef());
+            NamespaceService resolver = Repository.getServiceRegistry(fc).getNamespaceService();
+            List<NodeRef> results = this.getSearchService().selectNodes(rootNodeRef, getEmailTemplateXPath(), null, resolver, false);
+
+            wrappers = new ArrayList<SelectItem>(results.size() + 1);
+            if (results.size() != 0)
+            {
+                DictionaryService dd = Repository.getServiceRegistry(fc).getDictionaryService();
+                for (NodeRef ref : results)
+                {
+                    if (this.getNodeService().exists(ref) == true)
+                    {
+                        Node childNode = new Node(ref);
+                        if (dd.isSubClass(childNode.getType(), ContentModel.TYPE_CONTENT))
+                        {
+                            wrappers.add(new SelectItem(childNode.getId(), childNode.getName()));
+                        }
+                    }
+                }
+
+                // make sure the list is sorted by the label
+                QuickSort sorter = new QuickSort(wrappers, "label", true, IDataContainer.SORT_CASEINSENSITIVE);
+                sorter.sort();
+            }
+        }
+        catch (AccessDeniedException accessErr)
+        {
+            // ignore the result if we cannot access the root
+        }
+
+        // add an entry (at the start) to instruct the user to select an item
+        if (wrappers == null)
+        {
+            wrappers = new ArrayList<SelectItem>(1);
+        }
+        wrappers.add(0, new SelectItem("none", Application.getMessage(FacesContext.getCurrentInstance(), "select_a_template")));
+
+        return wrappers;
+    }
+
+    protected abstract String getEmailTemplateXPath();
+
+    /**
     * @param namespaceService   The NamespaceService to set.
     */
    public void setNamespaceService(NamespaceService namespaceService)

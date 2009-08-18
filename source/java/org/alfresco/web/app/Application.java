@@ -86,6 +86,8 @@ public class Application
    private static String spaceTemplatesFolderName;
    private static String contentTemplatesFolderName;
    private static String emailTemplatesFolderName;
+    private static String inviteEmailTemplatesFolderName;
+    private static String notifyEmailTemplatesFolderName;
    private static String rssTemplatesFolderName;
    private static String savedSearchesFolderName;
    private static String scriptsFolderName;
@@ -432,6 +434,38 @@ public class Application
    }
    
    /**
+     * @return Returns the Invite Email Templates folder name
+     */
+    public static String getInviteEmailTemplatesFolderName(ServletContext context)
+    {
+        return getInviteEmailTemplatesFolderName(WebApplicationContextUtils.getRequiredWebApplicationContext(context));
+    }
+
+    /**
+     * @return Returns the Invite Email Templates folder name
+     */
+    public static String getInviteEmailTemplatesFolderName(FacesContext context)
+    {
+        return getInviteEmailTemplatesFolderName(FacesContextUtils.getRequiredWebApplicationContext(context));
+    }
+
+    /**
+     * @return Returns the Notify Email Templates folder name
+     */
+    public static String getNotifyEmailTemplatesFolderName(ServletContext context)
+    {
+        return getNotifyEmailTemplatesFolderName(WebApplicationContextUtils.getRequiredWebApplicationContext(context));
+    }
+
+    /**
+     * @return Returns the Notify Email Templates folder name
+     */
+    public static String getNotifyEmailTemplatesFolderName(FacesContext context)
+    {
+        return getNotifyEmailTemplatesFolderName(FacesContextUtils.getRequiredWebApplicationContext(context));
+    }
+
+    /**
     * @return Returns the Email templates folder name
     */
    public static String getEmailTemplatesFolderName(ServletContext context)
@@ -995,6 +1029,42 @@ public class Application
    }
    
    /**
+     * Returns the Invite Email Templates folder name
+     * 
+     * @param context The spring context
+     * @return The invite email folder name
+     */
+    private static String getInviteEmailTemplatesFolderName(WebApplicationContext context)
+    {
+        if (inviteEmailTemplatesFolderName == null)
+        {
+            ImporterBootstrap bootstrap = (ImporterBootstrap) context.getBean(BEAN_IMPORTER_BOOTSTRAP);
+            Properties configuration = bootstrap.getConfiguration();
+            inviteEmailTemplatesFolderName = configuration.getProperty("spaces.templates.email.invite1.childname");
+        }
+
+        return inviteEmailTemplatesFolderName;
+    }
+
+    /**
+     * Returns the Notify Email Templates folder name
+     * 
+     * @param context The spring context
+     * @return The notify email folder name
+     */
+    private static String getNotifyEmailTemplatesFolderName(WebApplicationContext context)
+    {
+        if (notifyEmailTemplatesFolderName == null)
+        {
+            ImporterBootstrap bootstrap = (ImporterBootstrap) context.getBean(BEAN_IMPORTER_BOOTSTRAP);
+            Properties configuration = bootstrap.getConfiguration();
+            notifyEmailTemplatesFolderName = configuration.getProperty("spaces.templates.email.notify.childname");
+        }
+
+        return notifyEmailTemplatesFolderName;
+    }
+
+    /**
     * Returns the RSS Templates folder name
     * 
     * @param context The spring context

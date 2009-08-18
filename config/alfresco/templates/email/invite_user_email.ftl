@@ -6,7 +6,7 @@ You can view the space through the Alfresco client:
 <#assign ref=space.nodeRef>
 <#assign workspace=ref[0..ref?index_of("://")-1]>
 <#assign storenode=ref[ref?index_of("://")+3..]>
-http://${url.context}/alfresco/navigate/browse/${workspace}/${storenode}
+${url.serverPath}/alfresco/navigate/browse/${workspace}/${storenode}
 
 Regards
 

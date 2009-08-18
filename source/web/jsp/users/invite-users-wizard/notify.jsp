@@ -80,7 +80,7 @@
    <h:panelGrid columns="4" cellspacing="1" cellpadding="1" border="0">
       <h:outputText value="#{msg.action_mail_template}:" />
       <h:selectOneMenu value="#{WizardManager.bean.mailHelper.template}">
-         <f:selectItems value="#{TemplateSupportBean.emailTemplates}" />
+<f:selectItems value="#{WizardManager.bean.emailTemplates}" />
       </h:selectOneMenu>
       <h:commandButton value="#{msg.insert_template}" actionListener="#{WizardManager.bean.mailHelper.insertTemplate}" styleClass="wizardButton" />
       <h:commandButton value="#{msg.discard_template}" actionListener="#{WizardManager.bean.mailHelper.discardTemplate}" styleClass="wizardButton" disabled="#{WizardManager.bean.mailHelper.usingTemplate == null}" />

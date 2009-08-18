@@ -622,6 +622,21 @@ public class EntityLookupCache<K extends Serializable, V extends Object, VK exte
     }
     
     /**
+     * Cache-only operation: Remove all cache entries
+     * <p/>
+     * <b>NOTE:</b> This operation removes ALL entries for ALL cache regions.
+     */
+    public void clear()
+    {
+        // Handle missing cache
+        if (cache == null)
+        {
+            return;
+        }
+        cache.clear();
+    }
+    
+    /**
      * Key-wrapper used to separate cache regions, allowing a single cache to be used for different
      * purposes.<b/>
      * This class is distinct from the ID key so that ID-based lookups don't class with value-based lookups. 

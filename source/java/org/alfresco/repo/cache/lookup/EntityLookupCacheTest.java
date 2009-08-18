@@ -213,6 +213,21 @@ public class EntityLookupCacheTest extends TestCase implements EntityLookupCallb
         assertNull(database.get(id));
         assertEquals(0, cache.getKeys().size());
     }
+    
+    public void testClear() throws Exception
+    {
+        TestValue valueOne = new TestValue(getName() + "-ONE");
+        Pair<Long, Object> entityPairOne = entityLookupCacheA.getOrCreateByValue(valueOne);
+        assertNotNull(entityPairOne);
+        Long id = entityPairOne.getFirst();
+        assertEquals(valueOne.val, database.get(id));
+        assertEquals(2, cache.getKeys().size());
+        
+        // Clear it
+        entityLookupCacheA.clear();
+        assertEquals(valueOne.val, database.get(id));               // Must still be in database
+        assertEquals(0, cache.getKeys().size());                    // ... but cache must be empty
+    }
 
     /**
      * Helper class to represent business object

@@ -1,6 +1,6 @@
 <html>
   <head profile="http://a9.com/-/spec/opensearch/1.1/"> 
-    <title>Alfresco Person Search: ${search.searchTerms}</title>
+    <title>Alfresco Person Search: ${search.searchTerms?html}</title>
     <link rel="stylesheet" href="/alfresco/css/main.css" TYPE="text/css">
     <link rel="search" type="application/opensearchdescription+xml" href="${url.serviceContext}/api/search/person/description.xml" title="Alfresco Person Search"/>
     <meta name="totalResults" content="${search.totalResults}"/>
@@ -30,15 +30,15 @@
       		<#assign avatarURL = "/images/icons/default_avatar.png">
    	  </#if>
       <td><img src="${absurl(url.context)}${avatarURL}"/></td>
-      <td><a href="${absurl(url.context)}/c/ui/userprofile?id=${row.id}"><#if row.properties.firstName??>${row.properties.firstName}</#if><#if row.properties.lastName??> ${row.properties.lastName} </#if></a></td>
+      <td><a href="${absurl(url.context)}/c/ui/userprofile?id=${row.id}"><#if row.properties.firstName??>${row.properties.firstName?html}</#if><#if row.properties.lastName??> ${row.properties.lastName?html}</#if></a></td>
       </tr>
       <tr>
       <td></td>
       <td>
-         <#if row.properties.jobtitle??>${row.properties.jobtitle},</#if>
-         <#if row.properties.organization??>${row.properties.organization},</#if>
-         <#if row.properties.location??>${row.properties.location},</#if>
-         <#if row.properties.persondescription??>${row.properties.persondescription.content}</#if>
+         <#if row.properties.jobtitle??>${row.properties.jobtitle?html},</#if>
+         <#if row.properties.organization??>${row.properties.organization?html},</#if>
+         <#if row.properties.location??>${row.properties.location?html},</#if>
+         <#if row.properties.persondescription??>${row.properties.persondescription.content?html}</#if>
       </td>
       </tr>
 </#list>

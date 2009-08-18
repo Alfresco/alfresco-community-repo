@@ -2,7 +2,7 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head profile="http://a9.com/-/spec/opensearch/1.1/"> 
-    <title>Alfresco Keyword Search: ${search.searchTerms}</title> 
+    <title>Alfresco Keyword Search: ${search.searchTerms?html}</title> 
     <link rel="stylesheet" href="/alfresco/css/main.css" TYPE="text/css">
     <link rel="search" type="application/opensearchdescription+xml" href="${url.serviceContext}/api/search/keyword/description.xml" title="Alfresco Keyword Search"/>
     <meta name="totalResults" content="${search.totalResults}"/>
@@ -31,7 +31,7 @@
       <#if row.properties.description?? == true>
       <tr>
       <td></td>
-      <td>${row.properties.description}</td>
+      <td>${row.properties.description?html}</td>
       </tr>
       </#if>
 </#list>

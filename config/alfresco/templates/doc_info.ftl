@@ -1,22 +1,22 @@
 <#-- Shows some general info about the current document, including NodeRef and aspects applied -->
 <#if document?exists>
-   <h4>Current Document Info:</h4>
-   <b>Name:</b> ${document.name}<br>
-   <b>Ref:</b> ${document.nodeRef}<br>
-   <b>Type:</b> ${document.type}<br>
-   <b>DBID:</b> ${document.properties["sys:node-dbid"]}<br>
-   <b>Content URL:</b> <a href="${url.context}${document.url}">${url.context}${document.url}</a><br>
-   <b>Locked:</b> <#if document.isLocked>Yes<#else>No</#if><br>
+   <h4>${message("templates.doc_info.current_document_info")}</h4>
+   <b>${message("templates.doc_info.name")}</b> ${document.name}<br>
+   <b>${message("templates.doc_info.ref")}</b> ${document.nodeRef}<br>
+   <b>${message("templates.doc_info.type")}</b> ${document.type}<br>
+   <b>${message("templates.doc_info.dbid")}</b> ${document.properties["sys:node-dbid"]}<br>
+   <b>${message("templates.doc_info.content_url")}</b> <a href="${url.context}${document.url}">${url.context}${document.url}</a><br>
+   <b>${message("templates.doc_info.locked")}</b> <#if document.isLocked>Yes<#else>No</#if><br>
    <#if hasAspect(document, "cm:countable") == 1 && document.properties['cm:counter']?exists>
-   <b>Counter:</b> ${document.properties['cm:counter']}<br>
+   <b>${message("templates.doc_info.counter")}</b> ${document.properties['cm:counter']}<br>
    </#if>
-   <b>Aspects:</b>
+   <b>${message("templates.doc_info.aspects")}</b>
    <table>
       <#list document.aspects as aspect>
          <tr><td>${aspect}</td></tr>
       </#list>
    </table>
-   <b>Assocs:</b>
+   <b>${message("templates.doc_info.assocs")}</b>
    <table>
       <#list document.assocs?keys as key>
          <tr><td>${key}</td><td>
@@ -26,7 +26,7 @@
          </td></tr>
       </#list>
    </table>
-   <b>Properties:</b>
+   <b>${message("templates.doc_info.properties")}</b>
    <table>
       <#-- Get a list of all the property names for the document -->
       <#assign props = document.properties?keys>
@@ -53,5 +53,5 @@
       </#list>
    </table>
 <#else>
-   No document found!
+   ${message("templates.doc_info.no_document_found")}
 </#if>

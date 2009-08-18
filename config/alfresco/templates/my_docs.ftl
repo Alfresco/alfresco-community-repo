@@ -4,10 +4,11 @@
 <table>
    <tr style='background-color: #C6D8EB'>
       <td></td>
-      <td><b>Name</b></td>
-      <td><b>Size</b></td>
-      <td><b>Modified Date</b></td>
-      <td><b>Locked By</b></td>
+      <td><b>${message("templates.my_docs.name")}</b></td>
+      <td><b>${message("templates.my_docs.size")}</b></td>
+      <td><b>${message("templates.my_docs.modified.date")}</b></td>
+      <td><b>${message("templates.my_docs.locked")}</b></td>
+      
    </tr>
    <#list userhome.children as child>
       <#if child.isDocument>

@@ -36,10 +36,10 @@
 
 <h:panelGrid columns="2" cellpadding="2" cellspacing="2" width="100%">
    <h:outputText value="#{msg.username}:"/>
-   <h:inputText id="userName" disabled="true" value="#{WizardManager.bean.userName}" size="35" maxlength="255" />
+   <h:inputText id="userName" disabled="true" value="#{WizardManager.bean.userName}" size="35" maxlength="100" />
    
    <h:outputText value="#{msg.password}:"/>
-   <h:inputSecret id="password" disabled="true" value="#{WizardManager.bean.password}" size="35" maxlength="255" redisplay="true" />
+   <h:inputSecret id="password" disabled="true" value="#{WizardManager.bean.password}" size="35" maxlength="100" redisplay="true" />
 </h:panelGrid>
 
 <h:panelGrid columns="1" cellpadding="2" style="padding-top: 4px; padding-bottom: 4px;"

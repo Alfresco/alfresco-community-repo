@@ -59,8 +59,8 @@ public final class ResourceBundleWrapper extends ResourceBundle implements Seria
    private static List<String> addedBundleNames = new ArrayList<String>(10);
    
    /** Serializable details of the resource bundles being wrapped */
-   private Locale locale;
-   private String bundleName;
+   final private Locale locale;
+   final private String bundleName;
 
    /** List of delegate resource bundles */
    transient private List<ResourceBundle> delegates;
@@ -255,7 +255,7 @@ public final class ResourceBundleWrapper extends ResourceBundle implements Seria
       {
          if (logger.isWarnEnabled() == true)
          {
-            logger.warn("Failed to find I18N message string key: " + key);
+            logger.warn("Failed to find I18N message key: " + key + " for locale: " + locale.toString());
          }
       
          result = "$$" + key + "$$";
@@ -313,5 +313,4 @@ public final class ResourceBundleWrapper extends ResourceBundle implements Seria
       
       return customBundleName;
    }
-   
 }

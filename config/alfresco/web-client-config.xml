@@ -254,24 +254,24 @@
             <dashlet id="tasks-todo" label-id="my_tasks_todo_title" description-id="my_tasks_todo_desc"
                   jsp="/jsp/workflow/tasks-todo-dashlet.jsp" allow-narrow="false" />
             <!-- Not enabled by default
-			<dashlet id="tasks-active" label-id="tasks_active_title" description-id="tasks_active_desc"
-                  jsp="/jsp/workflow/tasks-active-dashlet.jsp" allow-narrow="false" />
-			-->
+   			<dashlet id="tasks-active" label-id="tasks_active_title" description-id="tasks_active_desc"
+                     jsp="/jsp/workflow/tasks-active-dashlet.jsp" allow-narrow="false" />
+   			-->
             <dashlet id="pooled-tasks" label-id="pooled_tasks_title" description-id="pooled_tasks_desc"
                   jsp="/jsp/workflow/pooled-tasks-todo-dashlet.jsp" allow-narrow="false" />
             <dashlet id="tasks-completed" label-id="my_tasks_completed_title" description-id="my_tasks_completed_desc"
                   jsp="/jsp/workflow/tasks-completed-dashlet.jsp" allow-narrow="false" />
             <dashlet id="opensearch" label-id="opensearch" description-id="opensearch_desc"
                   jsp="/jsp/dashboards/dashlets/opensearch.jsp" />
-            <dashlet id="doclist-webscript" label="Document List" description="Document List WebScript"
+            <dashlet id="doclist-webscript" label-id="doclist-webscript_title" description-id="doclist-webscript_desc"
                   jsp="/jsp/dashboards/dashlets/doclist-webscript.jsp" />
-            <dashlet id="myspaces-webscript" label="My Spaces List" description="My Spaces WebScript"
+            <dashlet id="myspaces-webscript" label-id="myspaces-webscript_title" description-id="myspaces-webscript_desc"
                   jsp="/jsp/dashboards/dashlets/myspaces-webscript.jsp" />
-            <dashlet id="mytasks-webscript" label="My Tasks" description="My Tasks WebScript"
+            <dashlet id="mytasks-webscript" label-id="mytasks-webscript_title" description-id="mytasks-webscript_desc"
                   jsp="/jsp/dashboards/dashlets/mytasks-webscript.jsp" />
-            <dashlet id="mywebforms-webscript" label="My Web Forms" description="My Web Forms WebScript"
+            <dashlet id="mywebforms-webscript" label-id="mywebforms-webscript_title" description-id="mywebforms-webscript_desc"
                   jsp="/jsp/dashboards/dashlets/mywebforms-webscript.jsp" />
-            <dashlet id="mywebfiles-webscript" label="My Web Files" description="My Web Files WebScript"
+            <dashlet id="mywebfiles-webscript" label-id="mywebfiles-webscript_title" description-id="mywebfiles-webscript_desc"
                   jsp="/jsp/dashboards/dashlets/mywebfiles-webscript.jsp" />
          </dashlets>
          

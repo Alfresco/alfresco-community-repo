@@ -160,7 +160,7 @@
                                     </td>
                                  </tr>
                                  <tr><td colspan="2" class="paddingRow"></td></tr>
-                                 <tr><td colspan="2"><h:outputText value="#{msg.move_or_copy}"/></td>
+                                 <tr><td colspan="2"><h:outputText value="#{msg.move_or_copy}"/></td></tr>
                                  <tr>
                                     <td colspan="2">
                                        <table cellpadding="2" cellspacing="2" border="0">
@@ -193,12 +193,18 @@
                                     <td colspan="2"><h:outputText value="#{msg.want_reject_step}"/></td>
                                  </tr>
                                  <tr>
-                                    <td>
-                                       <h:selectOneRadio id="reject-step-present" value="#{WizardManager.bean.actionProperties.rejectStepPresent}"
-                                                         onclick="javascript:checkButtonState();" >
-                                          <f:selectItem itemValue="yes" itemLabel="#{msg.yes}" />
-                                          <f:selectItem itemValue="no" itemLabel="#{msg.no}" />
-                                       </h:selectOneRadio>
+                                    <td colspan="2">
+                                       <table cellpadding="2" cellspacing="2" border="0">                                 
+                                          <tr>
+                                          <td valign="top">
+                                                <h:selectOneRadio id="reject-step-present" value="#{WizardManager.bean.actionProperties.rejectStepPresent}"
+                                                                  onclick="javascript:checkButtonState();" >
+                                                   <f:selectItem itemValue="yes" itemLabel="#{msg.yes}" />
+                                                   <f:selectItem itemValue="no" itemLabel="#{msg.no}" />
+                                                </h:selectOneRadio>
+                                             </td>
+                                          </tr>
+                                        </table>
                                     </td>
                                  </tr>
                                  <tr>
@@ -216,7 +222,7 @@
                                                       </td>
                                                    </tr>
                                                    <tr><td class="paddingRow"></td></tr>
-                                                   <tr><td><h:outputText value="#{msg.move_or_copy}"/></td>
+                                                   <tr><td><h:outputText value="#{msg.move_or_copy}"/></td></tr>
                                                    <tr>
                                                       <td>
                                                          <table cellpadding="2" cellspacing="2" border="0">

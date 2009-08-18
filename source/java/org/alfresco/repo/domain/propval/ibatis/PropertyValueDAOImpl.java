@@ -25,16 +25,15 @@
 package org.alfresco.repo.domain.propval.ibatis;
 
 import java.io.Serializable;
-import java.util.Collection;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 
 import org.alfresco.repo.domain.propval.AbstractPropertyValueDAOImpl;
 import org.alfresco.repo.domain.propval.PropertyClassEntity;
-import org.alfresco.repo.domain.propval.PropertyCollectionLinkEntity;
 import org.alfresco.repo.domain.propval.PropertyDateValueEntity;
 import org.alfresco.repo.domain.propval.PropertyDoubleValueEntity;
+import org.alfresco.repo.domain.propval.PropertyIdSearchRow;
+import org.alfresco.repo.domain.propval.PropertyLinkEntity;
 import org.alfresco.repo.domain.propval.PropertyStringValueEntity;
 import org.alfresco.repo.domain.propval.PropertyValueEntity;
 import org.alfresco.repo.domain.propval.PropertyValueEntity.PersistedType;
@@ -71,7 +70,7 @@ public class PropertyValueDAOImpl extends AbstractPropertyValueDAOImpl
     private static final String SELECT_PROPERTY_VALUE_BY_STRING_VALUE = "select.PropertyValueByStringValue";
     private static final String INSERT_PROPERTY_VALUE = "insert.PropertyValue";
     
-    private static final String INSERT_PROPERTY_COLLECTION_LINK = "insert.PropertyCollectionLink";
+    private static final String INSERT_PROPERTY_LINK = "insert.PropertyLink";
     
     private SqlMapClientTemplate template;
 
@@ -255,16 +254,17 @@ public class PropertyValueDAOImpl extends AbstractPropertyValueDAOImpl
     // 'alf_prop_value' accessors
     //================================
 
+    @SuppressWarnings("unchecked")
     @Override
-    protected PropertyValueEntity findPropertyValueById(Long id)
+    protected List<PropertyIdSearchRow> findPropertyValueById(Long id)
     {
         PropertyValueEntity entity = new PropertyValueEntity();
         entity.setId(id);
-        entity = (PropertyValueEntity) template.queryForObject(
+        List<PropertyIdSearchRow> results = (List<PropertyIdSearchRow>) template.queryForList(
                 SELECT_PROPERTY_VALUE_BY_ID,
                 entity);
         // Done
-        return entity;
+        return results;
     }
 
     @SuppressWarnings("unchecked")
@@ -367,6 +367,7 @@ public class PropertyValueDAOImpl extends AbstractPropertyValueDAOImpl
             insertEntity.setLongValue(insertDoublePair.getFirst());
             break;
         case STRING:
+        case CONSTRUCTABLE:
             String stringValue = insertEntity.getStringValue();
             Pair<Long, String> insertStringPair = getOrCreatePropertyStringValue(stringValue);
             insertEntity.setLongValue(insertStringPair.getFirst());
@@ -392,60 +393,18 @@ public class PropertyValueDAOImpl extends AbstractPropertyValueDAOImpl
     }
 
     @Override
-    protected Long createPropertyMapRoot(Class<?> clazz)
-    {
-        if (!Map.class.isAssignableFrom(clazz))
-        {
-            throw new IllegalArgumentException("Map root must be a Map instance");
-        }
-        final Pair<Long, Class<?>> clazzPair = getOrCreatePropertyClass(clazz);
-        final Long actualTypeId = clazzPair.getFirst();
-        
-        // Construct a property value to represent the collection
-        PropertyValueEntity insertEntity = new PropertyValueEntity();
-        // We have to set the persisted type manually
-        insertEntity.setPersistedType(PersistedType.MAP.getOrdinalNumber());
-        insertEntity.setLongValue(PropertyValueEntity.LONG_ZERO);
-        insertEntity.setActualTypeId(actualTypeId);
-        Long collectionId = (Long) template.insert(INSERT_PROPERTY_VALUE, insertEntity);
-        // Done
-        return collectionId;
-    }
-
-    @Override
-    protected Long createPropertyCollectionRoot(Class<?> clazz)
-    {
-        if (!Collection.class.isAssignableFrom(clazz))
-        {
-            throw new IllegalArgumentException("Collection root must be a Collection instance");
-        }
-        final Pair<Long, Class<?>> clazzPair = getOrCreatePropertyClass(clazz);
-        final Long actualTypeId = clazzPair.getFirst();
-        
-        // Construct a property value to represent the collection
-        PropertyValueEntity insertEntity = new PropertyValueEntity();
-        // We have to set the persisted type manually
-        insertEntity.setPersistedType(PersistedType.COLLECTION.getOrdinalNumber());
-        insertEntity.setLongValue(PropertyValueEntity.LONG_ZERO);
-        insertEntity.setActualTypeId(actualTypeId);
-        Long collectionId = (Long) template.insert(INSERT_PROPERTY_VALUE, insertEntity);
-        // Done
-        return collectionId;
-    }
-
-    @Override
     protected void createPropertyLink(
-            Long rootCollectionId,
-            Long currentCollectionId,
-            Long keyId,
-            Long valueId)
+            Long rootPropId,
+            Long currentPropId,
+            Long valueId,
+            Long keyId)
     {
-        PropertyCollectionLinkEntity insertEntity = new PropertyCollectionLinkEntity();
-        insertEntity.setRootCollectionPropId(rootCollectionId);
-        insertEntity.setCurrentCollectionPropId(currentCollectionId);
-        insertEntity.setKeyPropId(keyId);
+        PropertyLinkEntity insertEntity = new PropertyLinkEntity();
+        insertEntity.setRootPropId(rootPropId);
+        insertEntity.setCurrentPropId(currentPropId);
         insertEntity.setValuePropId(valueId);
-        template.insert(INSERT_PROPERTY_COLLECTION_LINK, insertEntity);
+        insertEntity.setKeyPropId(keyId);
+        template.insert(INSERT_PROPERTY_LINK, insertEntity);
         // Done
     }
 }

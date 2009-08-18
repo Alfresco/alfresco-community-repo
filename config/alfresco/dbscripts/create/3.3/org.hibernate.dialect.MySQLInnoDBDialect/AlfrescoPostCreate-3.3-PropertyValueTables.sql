@@ -68,24 +68,24 @@ CREATE TABLE alf_prop_value
    PRIMARY KEY (id)
 ) ENGINE=InnoDB;
 
-CREATE TABLE alf_prop_collection_link
+CREATE TABLE alf_prop_link
 (
-   root_coll_prop_id BIGINT NOT NULL,
-   curr_coll_prop_id BIGINT NOT NULL,
-   key_prop_id BIGINT NOT NULL,
+   root_prop_id BIGINT NOT NULL,
+   current_prop_id BIGINT NOT NULL,
    value_prop_id BIGINT NOT NULL,
-   INDEX idx_alf_prop_coll_rev (value_prop_id, root_coll_prop_id),
-   PRIMARY KEY (root_coll_prop_id, curr_coll_prop_id, key_prop_id, value_prop_id)
+   key_prop_id BIGINT NOT NULL,
+   INDEX idx_alf_prop_coll_rev (value_prop_id, root_prop_id),
+   PRIMARY KEY (root_prop_id, current_prop_id, value_prop_id, key_prop_id)
 ) ENGINE=InnoDB;
 
 --
 -- Record script finish
 --
-DELETE FROM alf_applied_patch WHERE id = 'patch.db-V3.3-PropertyValueTables';
-INSERT INTO alf_applied_patch
-  (id, description, fixes_from_schema, fixes_to_schema, applied_to_schema, target_schema, applied_on_date, applied_to_server, was_executed, succeeded, report)
-  VALUES
-  (
-    'patch.db-V3.3-PropertyValueTables', 'Manually executed script upgrade V3.3: PropertyValue Tables',
-    0, 3000, -1, 3001, null, 'UNKOWN', 1, 1, 'Script completed'
-  );
+--  DELETE FROM alf_applied_patch WHERE id = 'patch.db-V3.3-PropertyValueTables';
+-- INSERT INTO alf_applied_patch
+--   (id, description, fixes_from_schema, fixes_to_schema, applied_to_schema, target_schema, applied_on_date, applied_to_server, was_executed, succeeded, report)
+--   VALUES
+--   (
+--     'patch.db-V3.3-PropertyValueTables', 'Manually executed script upgrade V3.3: PropertyValue Tables',
+--     0, 3000, -1, 3001, null, 'UNKOWN', 1, 1, 'Script completed'
+--   );

@@ -56,8 +56,7 @@ public class PropertyValueEntity
     public static final Short ORDINAL_DOUBLE = 2;
     public static final Short ORDINAL_STRING = 3;
     public static final Short ORDINAL_SERIALIZABLE = 4;
-    public static final Short ORDINAL_MAP = 5;
-    public static final Short ORDINAL_COLLECTION = 6;
+    public static final Short ORDINAL_CONSTRUCTABLE = 5;
     
     /**
      * Enumeration of persisted types for <b>alf_prop_value.persisted_type</b>.
@@ -135,30 +134,17 @@ public class PropertyValueEntity
                 return Serializable.class;
             }
         },
-        MAP
+        CONSTRUCTABLE
         {
             @Override
             public Short getOrdinalNumber()
             {
-                return ORDINAL_MAP;
+                return ORDINAL_CONSTRUCTABLE;
             }
             @Override
             public Class<?> getAssociatedClass()
             {
-                return Map.class;
-            }
-        },
-        COLLECTION
-        {
-            @Override
-            public Short getOrdinalNumber()
-            {
-                return ORDINAL_COLLECTION;
-            }
-            @Override
-            public Class<?> getAssociatedClass()
-            {
-                return Collection.class;
+                return Class.class;
             }
         };
         
@@ -213,6 +199,7 @@ public class PropertyValueEntity
         mapClass.put(Date.class, PersistedType.LONG);
         mapClass.put(Map.class, PersistedType.SERIALIZABLE);            // Will be serialized if encountered
         mapClass.put(Collection.class, PersistedType.SERIALIZABLE);     // Will be serialized if encountered
+        mapClass.put(Class.class, PersistedType.CONSTRUCTABLE);         // Will construct a new instance
         persistedTypesByClass = Collections.unmodifiableMap(mapClass);
     }
 
@@ -281,8 +268,6 @@ public class PropertyValueEntity
     {
         switch (persistedTypeEnum)
         {
-        case MAP:
-        case COLLECTION:
         case NULL:
             return null;
         case LONG:
@@ -293,6 +278,21 @@ public class PropertyValueEntity
             return stringValue;
         case SERIALIZABLE:
             return serializableValue;
+        case CONSTRUCTABLE:
+            // Construct an instance
+            try
+            {
+                Class<?> clazz = Class.forName(stringValue);
+                return (Serializable) clazz.newInstance();
+            }
+            catch (ClassNotFoundException e)
+            {
+                throw new RuntimeException("Unable to construct instance of class " + stringValue, e);
+            }
+            catch (Throwable e)
+            {
+                throw new RuntimeException("Unable to create new instance of " + stringValue, e);
+            }
         default:
             throw new IllegalStateException("Should not be able to get through switch");
         }
@@ -304,16 +304,21 @@ public class PropertyValueEntity
      * 
      * @param value         the value to persist (may be <tt>null</tt>)
      * @param converter     the converter that will perform and type conversion
-     * @return              Returns the persisted type value
      */
-    public Serializable setValue(Serializable value, PropertyTypeConverter converter)
+    public void setValue(Serializable value, PropertyTypeConverter converter)
     {
         if (value == null)
         {
             this.persistedType = ORDINAL_NULL;
             this.persistedTypeEnum = PersistedType.NULL;
             this.longValue = LONG_ZERO;
-            return longValue;
+        }
+        else if (value instanceof Class<?>)
+        {
+            Class<?> clazz = (Class<?>) value;
+            stringValue = clazz.getName();
+            persistedTypeEnum = PersistedType.CONSTRUCTABLE;
+            persistedType = persistedTypeEnum.getOrdinalNumber();
         }
         else
         {
@@ -329,16 +334,16 @@ public class PropertyValueEntity
             {
                 case LONG:
                     longValue = converter.convert(Long.class, value);
-                    return longValue;
+                    break;
                 case DOUBLE:
                     doubleValue = converter.convert(Double.class, value);
-                    return doubleValue;
+                    break;
                 case STRING:
                     stringValue = converter.convert(String.class, value);
-                    return stringValue;
+                    break;
                 case SERIALIZABLE:
                     serializableValue = value;
-                    return serializableValue;
+                    break;
                 default:
                     throw new IllegalStateException("Should not be able to get through switch");
             }

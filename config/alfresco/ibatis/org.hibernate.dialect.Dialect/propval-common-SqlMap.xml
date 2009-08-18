@@ -15,7 +15,8 @@
     <typeAlias alias="PropertyStringValue" type="org.alfresco.repo.domain.propval.PropertyStringValueEntity"/>
     <typeAlias alias="PropertyDoubleValue" type="org.alfresco.repo.domain.propval.PropertyDoubleValueEntity"/>
     <typeAlias alias="PropertyValue" type="org.alfresco.repo.domain.propval.PropertyValueEntity"/>
-    <typeAlias alias="PropertyCollectionLink" type="org.alfresco.repo.domain.propval.PropertyCollectionLinkEntity"/>
+    <typeAlias alias="PropertyLink" type="org.alfresco.repo.domain.propval.PropertyLinkEntity"/>
+    <typeAlias alias="PropertyIdSearchRow" type="org.alfresco.repo.domain.propval.PropertyIdSearchRow"/>
 
     <!--                -->
     <!-- Result Maps    -->
@@ -57,27 +58,29 @@
         <result property="stringValue" column="string_value" jdbcType="VARCHAR" javaType="java.lang.String"/>
         <result property="serializableValue" column="serializable_value" jdbcType="BLOB" javaType="java.lang.Object"/>
     </resultMap>
-    <resultMap id="result.PropertyCollectionLink" class="PropertyCollectionLink">
-        <result property="rootCollectionPropId" column="root_coll_prop_id" jdbcType="BIGINT" javaType="long"/>
-        <result property="currentCollectionPropId" column="persisted_type" jdbcType="BIGINT" javaType="long"/>
-        <result property="keyPropId" column="key_prop_id" jdbcType="BIGINT" javaType="long"/>
+    <resultMap id="result.PropertyLink" class="PropertyLink">
+        <result property="rootPropId" column="root_prop_id" jdbcType="BIGINT" javaType="long"/>
+        <result property="currentPropId" column="current_prop_id" jdbcType="BIGINT" javaType="long"/>
         <result property="valuePropId" column="value_prop_id" jdbcType="BIGINT" javaType="long"/>
+        <result property="keyPropId" column="key_prop_id" jdbcType="BIGINT" javaType="long"/>
+    </resultMap>
+    <resultMap id="result.PropertyIdSearchRow" class="PropertyIdSearchRow">
+        <result property="rootPropId" column="root_prop_id" jdbcType="BIGINT" javaType="long"/>
+        <result property="currentPropId" column="current_prop_id" jdbcType="BIGINT" javaType="long"/>
+        <result property="valuePropId" column="value_prop_id" jdbcType="BIGINT" javaType="long"/>
+        <result property="keyPropId" column="key_prop_id" jdbcType="BIGINT" javaType="long"/>
+        <result property="actualTypeId" column="actual_type_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="persistedType" column="persisted_type" jdbcType="TINYINT" javaType="java.lang.Short"/>
+        <result property="longValue" column="long_value" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="doubleValue" column="double_value" jdbcType="DOUBLE" javaType="java.lang.Double"/>
+        <result property="stringValue" column="string_value" jdbcType="VARCHAR" javaType="java.lang.String"/>
+        <result property="serializableValue" column="serializable_value" jdbcType="BLOB" javaType="java.lang.Object"/>
     </resultMap>
   
     <!--                -->
     <!-- Parameter Maps -->
     <!--                -->
 
-<!-- 
-    <parameterMap id="parameter.ExclusiveLockUpdateMap" class="map">
-        <parameter property="newLockToken" jdbcType="VARCHAR" javaType="java.lang.String"/>
-        <parameter property="newStartTime" jdbcType="BIGINT" javaType="java.lang.Long"/>
-        <parameter property="newExpiryTime" jdbcType="BIGINT" javaType="java.lang.Long"/>
-        <parameter property="exclusiveLockResourceId" jdbcType="BIGINT" javaType="java.lang.Long"/>
-        <parameter property="oldLockToken" jdbcType="VARCHAR" javaType="java.lang.String"/>
-    </parameterMap>
- -->
-  
     <!--                -->
     <!-- SQL Snippets   -->
     <!--                -->
@@ -260,32 +263,29 @@
     </select>
 
     <!-- Get the property value by ID -->
-    <select id="select.PropertyValueById" parameterClass="PropertyValue" resultMap="result.PropertyValue">
-        select
-            pv.id as id,
-            pv.actual_type_id as actual_type_id,
-            pv.persisted_type as persisted_type,
-            pv.long_value as long_value,
-            dv.double_value as double_value,
-            sv.string_value as string_value,
-            serv.serializable_value as serializable_value
-        from
-            alf_prop_value pv
-            left join alf_prop_double_value dv on (dv.id = pv.long_value and pv.persisted_type = 2)
-            left join alf_prop_string_value sv on (sv.id = pv.long_value and pv.persisted_type = 3)
-            left join alf_prop_serializable_value serv on (serv.id = pv.long_value and pv.persisted_type = 4)
-        where
-            pv.id = #id#
+    <select id="select.PropertyValueById" parameterClass="PropertyValue" resultMap="result.PropertyIdSearchRow">
+		select
+		   cl.root_prop_id, cl.current_prop_id, cl.value_prop_id, cl.key_prop_id,
+		   v.actual_type_id, v.persisted_type,
+		   v.long_value, dv.double_value, sv.string_value, serv.serializable_value
+		from
+		   alf_prop_link cl
+		   join alf_prop_value v on (cl.value_prop_id = v.id)
+		   left join alf_prop_double_value dv on (dv.id = v.long_value and v.persisted_type = 2)
+		   left join alf_prop_string_value sv on (sv.id = v.long_value and (v.persisted_type = 3 || v.persisted_type = 5))
+		   left join alf_prop_serializable_value serv on (serv.id = v.long_value and v.persisted_type = 4)
+		where cl.root_prop_id = #id#
+		order by current_prop_id, value_prop_id, key_prop_id
     </select>
 
-    <insert id="insert.PropertyCollectionLink" parameterClass="PropertyCollectionLink" >
-        insert into alf_prop_collection_link
+    <insert id="insert.PropertyLink" parameterClass="PropertyLink" >
+        insert into alf_prop_link
         (
-           root_coll_prop_id, curr_coll_prop_id, key_prop_id, value_prop_id
+           root_prop_id, current_prop_id, value_prop_id, key_prop_id
         )
         values
         (
-           #rootCollectionPropId#, #currentCollectionPropId#, #keyPropId#, #valuePropId#
+           #rootPropId#, #currentPropId#, #valuePropId#, #keyPropId#
         )
     </insert>
 

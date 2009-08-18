@@ -30,6 +30,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -41,6 +42,8 @@ import org.alfresco.repo.domain.CrcHelper;
 import org.alfresco.repo.domain.propval.PropertyValueEntity.PersistedType;
 import org.alfresco.service.cmr.repository.MLText;
 import org.alfresco.util.Pair;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * Abstract implementation for Property Value DAO.
@@ -58,6 +61,8 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
     private static final String CACHE_REGION_PROPERTY_STRING_VALUE = "PropertyStringValue";
     private static final String CACHE_REGION_PROPERTY_DOUBLE_VALUE = "PropertyDoubleValue";
     private static final String CACHE_REGION_PROPERTY_VALUE = "PropertyValue";
+    
+    private static final Log logger = LogFactory.getLog(AbstractPropertyValueDAOImpl.class);
     
     protected PropertyTypeConverter converter;
     
@@ -626,6 +631,29 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
      */
     private class PropertyValueCallbackDAO extends EntityLookupCallbackDAOAdaptor<Long, Serializable, Serializable>
     {
+        private final Serializable convertToValue(PropertyValueEntity entity)
+        {
+            if (entity == null)
+            {
+                return null;
+            }
+            final Serializable actualValue;
+            if (entity.getPersistedTypeEnum() == PersistedType.CONSTRUCTABLE)
+            {
+                actualValue = entity.getPersistedValue();
+            }
+            else
+            {
+                Long actualTypeId = entity.getActualTypeId();
+                Class<?> actualType = getPropertyClassById(actualTypeId).getSecond();
+                
+                Serializable entityValue = entity.getPersistedValue();
+                actualValue = (Serializable) converter.convert(actualType, entityValue);
+            }
+            // Done
+            return actualValue;
+        }
+        
         private final Pair<Long, Serializable> convertEntityToPair(PropertyValueEntity entity)
         {
             if (entity == null)
@@ -633,13 +661,7 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
                 return null;
             }
             Long entityId = entity.getId();
-            Serializable entityValue = entity.getPersistedValue();
-            
-            // Dig out the class to convert the value to i.e. the actual type of the value
-            Long actualTypeId = entity.getActualTypeId();
-            Class<?> actualType = getPropertyClassById(actualTypeId).getSecond();
-            // Convert it
-            Serializable actualValue = (Serializable) converter.convert(actualType, entityValue);
+            Serializable actualValue = convertToValue(entity);
             // Done
             return new Pair<Long, Serializable>(entityId, actualValue);
         }
@@ -669,15 +691,21 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
             PropertyValueEntity entity = createPropertyValue(value);
             Long entityId = entity.getId();
             // Create the link entry for the property
-            createPropertyLink(entityId, entityId, 0L, entityId);
+            createPropertyLink(entityId, entityId, entityId, 0L);
             // Done
             return new Pair<Long, Serializable>(entity.getId(), value);
         }
 
         public Pair<Long, Serializable> findByKey(Long key)
         {
-            PropertyValueEntity entity = findPropertyValueById(key);
-            return convertEntityToPair(entity);
+            List<PropertyIdSearchRow> rows = findPropertyValueById(key);
+            if (rows.size() == 0)
+            {
+                // No results
+                return null;
+            }
+            Serializable value = convertPropertyIdSearchRows(rows);
+            return new Pair<Long, Serializable>(key, value);
         }
 
         public Pair<Long, Serializable> findByValue(Serializable value)
@@ -694,10 +722,102 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
         }
     }
     
-    protected abstract PropertyValueEntity findPropertyValueById(Long id);
+    protected abstract List<PropertyIdSearchRow> findPropertyValueById(Long id);
     protected abstract PropertyValueEntity findPropertyValueByValue(Serializable value);
     protected abstract PropertyValueEntity createPropertyValue(Serializable value);
 
+    @SuppressWarnings("unchecked")
+    protected Serializable convertPropertyIdSearchRows(List<PropertyIdSearchRow> rows)
+    {
+        /*
+         * The results are ordered by the root_prop_id, current_prop_id and value_prop_id.
+         * However, for safety (data patching, etc) we take a first pass to create the
+         * basic properties before hooking them all together in a second pass.
+         */
+        final Map<Long, Serializable> values = new HashMap<Long, Serializable>(rows.size());
+        List<PropertyLinkEntity> keyRows = new ArrayList<PropertyLinkEntity>(5);
+        Serializable result = null;
+        for (PropertyIdSearchRow row : rows)
+        {
+            PropertyLinkEntity linkEntity = row.getLinkEntity();
+            PropertyValueEntity valueEntity = row.getValueEntity();
+            // Construct the value (Maps and Collections should be CONSTRUCTABLE)
+            Serializable value = propertyValueCallback.convertToValue(valueEntity);
+            // Keep it
+            values.put(new Long(linkEntity.getValuePropId()), value);
+            
+            // If this row is a mapping row (the property value ID does not match the current property ID)
+            // then store it for quicker use later
+            if (linkEntity.getCurrentPropId() != linkEntity.getValuePropId())
+            {
+                keyRows.add(linkEntity);
+            }
+            if (linkEntity.getRootPropId() == linkEntity.getValuePropId())
+            {
+                // We found the root
+                result = value;
+            }
+        }
+        
+        // We expect a value to be found unless the results are empty
+        if (result == null)
+        {
+            return null;
+        }
+        
+        // Now we have all our constructed values and the mapping rows: build the collections
+        for (PropertyLinkEntity propertyLinkEntity : keyRows)
+        {
+            Serializable value = values.get(propertyLinkEntity.getValuePropId());
+            Serializable currentProp = values.get(propertyLinkEntity.getCurrentPropId());
+            if (value == null)
+            {
+                logger.error("No value found for link property: " + propertyLinkEntity);
+                continue;
+            }
+            if (currentProp == null)
+            {
+                logger.error("No current property found for link property: " + propertyLinkEntity);
+                continue;
+            }
+            Long keyId = propertyLinkEntity.getKeyPropId();
+            // put the value into the container
+            if (currentProp instanceof Map<?, ?>)
+            {
+                Pair<Long, Serializable> keyPair = getPropertyValueById(keyId);
+                if (keyPair == null)
+                {
+                    logger.error("Current property (map) has key without a value: " + propertyLinkEntity);
+                    continue;
+                }
+                Serializable key = keyPair.getSecond();
+                Map<Serializable, Serializable> map = (Map<Serializable, Serializable>) currentProp;
+                map.put(key, value);
+            }
+            else if (currentProp instanceof Set<?>)
+            {
+                // We can ignore the key - it won't make a difference
+                Set<Serializable> set = (Set<Serializable>) currentProp;
+                set.add(value);
+            }
+// Results 'should' be ordered by key
+//            else if (currentProp instanceof List<?>)
+//            {
+//                // The order is important
+//                List<Serializable> collection = (List<Serializable>) currentProp;
+//                collection.add(keyId.intValue(), value);
+//            }
+            else if (currentProp instanceof Collection<?>)
+            {
+                // The order is important
+                Collection<Serializable> collection = (Collection<Serializable>) currentProp;
+                collection.add(value);
+            }
+        }
+        // This will have put the values into the correct containers
+        return result;
+    }
+    
     //================================
     // Special handling of maps and collections
     //================================
@@ -726,7 +846,10 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
         {
             clazz = HashMap.class;
         }
-        Long entityId = createPropertyMapRoot(clazz);
+        
+        // Can't use a cached instance as each map is unique.  Go direct to entity creation.
+        Long entityId = createPropertyValue(clazz).getId();
+        
         // Use this as the root if this is the first entry into this method
         if (rootId == null)
         {
@@ -734,7 +857,7 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
         }
 
         // Create the link entry for the root
-        createPropertyLink(rootId, entityId, 0L, entityId);
+        createPropertyLink(rootId, entityId, entityId, 0L);
         
         // Now iterate over the entries and create properties for the keys and values
         for (Map.Entry<K, V> entry : map.entrySet())
@@ -752,7 +875,7 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
             Long valueId = valuePair.getFirst();
             
             // Now write the mapping entry
-            createPropertyLink(rootId, entityId, keyId, valueId);
+            createPropertyLink(rootId, entityId, valueId, keyId);
         }
         
         // Done
@@ -783,7 +906,10 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
         {
             clazz = ArrayList.class;
         }
-        Long entityId = createPropertyCollectionRoot(clazz);
+        
+        // Can't use a cached instance as each collection is unique.  Go direct to entity creation.
+        Long entityId = createPropertyValue(clazz).getId();
+        
         // Use this as the root if this is the first entry into this method
         if (rootId == null)
         {
@@ -791,7 +917,7 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
         }
         
         // Create the link entry for the root
-        createPropertyLink(rootId, entityId, 0L, entityId);
+        createPropertyLink(rootId, entityId, entityId, 0L);
         
         // Now iterate over the entries and create properties for the keys and values
         long index = 0L;
@@ -806,7 +932,7 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
             Long valueId = valuePair.getFirst();
             // Now write the mapping entry
             Long keyId = new Long(index);
-            createPropertyLink(rootId, entityId, keyId, valueId);
+            createPropertyLink(rootId, entityId, valueId, keyId);
             // Keep iterating
             index++;
         }
@@ -814,40 +940,16 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
     }
 
     /**
-     * Create a property value entry for <b>maps</b>.  The class is assumed to
-     * be correct with a default constructor for later reconstruction.
-     * <p/>
-     * This method must not create the associated link property.
-     * 
-     * @param clazz                 The map instance that must be used for re-instantiation.
-     *                              This must be an instance derived from {@link Map} with a default constructor.
-     * @return                      Returns the newly-created property ID
-     */
-    protected abstract Long createPropertyMapRoot(Class<?> clazz);
-
-    /**
-     * Create a property value entry for <b>collections</b>.  The class is assumed to
-     * be correct with a default constructor for later reconstruction.
-     * <p/>
-     * This method must not create the associated link property.
-     * 
-     * @param clazz                 The collection instance that must be used for re-instantiation.
-     *                              This must be an instance derived from {@link Collection} with a default constructor.
-     * @return                      Returns the newly-created property ID
-     */
-    protected abstract Long createPropertyCollectionRoot(Class<?> clazz);
-
-    /**
      * Create an entry for the map or collection link
      * 
-     * @param rootCollectionId      the root (entry-point) map or collection ID
-     * @param currentCollectionId   the current map or collection ID
-     * @param keyId                 the map key entity ID or collection position count
+     * @param rootPropId            the root (entry-point) map or collection ID
+     * @param currentPropId         the current map or collection ID
      * @param valueId               the ID of the entity storing the value (may be another map or collection)
+     * @param keyId                 the map key entity ID or collection position count
      */
     protected abstract void createPropertyLink(
-            Long rootCollectionId,
-            Long currentCollectionId,
-            Long keyId,
-            Long valueId);
+            Long rootPropId,
+            Long currentPropId,
+            Long valueId,
+            Long keyId);
 }

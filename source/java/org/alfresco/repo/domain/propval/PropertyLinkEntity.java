@@ -25,26 +25,26 @@
 package org.alfresco.repo.domain.propval;
 
 /**
- * Entity bean for <b>alf_prop_collections_link</b> table.
+ * Entity bean for <b>alf_prop_link</b> table.
  * 
  * @author Derek Hulley
  * @since 3.3
  */
-public class PropertyCollectionLinkEntity
+public class PropertyLinkEntity
 {
-    private long rootCollectionPropId;
-    private long currentCollectionPropId;
-    private long keyPropId;
+    private long rootPropId;
+    private long currentPropId;
     private long valuePropId;
+    private long keyPropId;
     
-    public PropertyCollectionLinkEntity()
+    public PropertyLinkEntity()
     {
     }
     
     @Override
     public int hashCode()
     {
-        return (int) rootCollectionPropId + (int) valuePropId;
+        return (int) rootPropId + (int) valuePropId;
     }
     
     @Override
@@ -54,14 +54,14 @@ public class PropertyCollectionLinkEntity
         {
             return true;
         }
-        else if (obj instanceof PropertyCollectionLinkEntity)
+        else if (obj instanceof PropertyLinkEntity)
         {
-            PropertyCollectionLinkEntity that = (PropertyCollectionLinkEntity) obj;
+            PropertyLinkEntity that = (PropertyLinkEntity) obj;
             return
-                    this.rootCollectionPropId == that.rootCollectionPropId &&
-                    this.currentCollectionPropId == that.currentCollectionPropId &&
-                    this.keyPropId == that.keyPropId &&
-                    this.valuePropId == that.valuePropId;
+                    this.rootPropId == that.rootPropId &&
+                    this.currentPropId == that.currentPropId &&
+                    this.valuePropId == that.valuePropId &&
+                    this.keyPropId == that.keyPropId;
         }
         else
         {
@@ -73,42 +73,33 @@ public class PropertyCollectionLinkEntity
     public String toString()
     {
         StringBuilder sb = new StringBuilder(512);
-        sb.append("PropertyCollectionsLinkEntity")
-          .append("[ currentCollectionPropId=").append(currentCollectionPropId)
-          .append(", keyPropId=").append(keyPropId)
+        sb.append("PropertyLinkEntity")
+          .append("[ rootPropId=").append(rootPropId)
+          .append(", currentPropId=").append(currentPropId)
           .append(", valuePropId=").append(valuePropId)
+          .append(", keyPropId=").append(keyPropId)
           .append("]");
         return sb.toString();
     }
 
-    public long getRootCollectionPropId()
+    public long getRootPropId()
     {
-        return rootCollectionPropId;
+        return rootPropId;
     }
 
-    public void setRootCollectionPropId(long rootCollectionPropId)
+    public void setRootPropId(long rootPropId)
     {
-        this.rootCollectionPropId = rootCollectionPropId;
+        this.rootPropId = rootPropId;
     }
 
-    public long getCurrentCollectionPropId()
+    public long getCurrentPropId()
     {
-        return currentCollectionPropId;
+        return currentPropId;
     }
 
-    public void setCurrentCollectionPropId(long currentCollectionPropId)
+    public void setCurrentPropId(long currentPropId)
     {
-        this.currentCollectionPropId = currentCollectionPropId;
-    }
-
-    public long getKeyPropId()
-    {
-        return keyPropId;
-    }
-
-    public void setKeyPropId(long keyPropId)
-    {
-        this.keyPropId = keyPropId;
+        this.currentPropId = currentPropId;
     }
 
     public long getValuePropId()
@@ -119,5 +110,15 @@ public class PropertyCollectionLinkEntity
     public void setValuePropId(long valuePropId)
     {
         this.valuePropId = valuePropId;
+    }
+
+    public long getKeyPropId()
+    {
+        return keyPropId;
+    }
+
+    public void setKeyPropId(long keyPropId)
+    {
+        this.keyPropId = keyPropId;
     }
 }

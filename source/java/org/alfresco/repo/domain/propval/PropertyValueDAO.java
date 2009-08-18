@@ -26,9 +26,7 @@ package org.alfresco.repo.domain.propval;
 
 import java.io.Serializable;
 import java.util.Date;
-import java.util.Map;
 
-import org.alfresco.repo.action.evaluator.compare.PropertyValueComparator;
 import org.alfresco.util.Pair;
 
 /**

@@ -25,6 +25,7 @@
 package org.alfresco.repo.forms.processor;
 
 import java.util.List;
+import java.util.Map;
 
 import org.alfresco.repo.forms.Form;
 import org.alfresco.repo.forms.FormData;
@@ -67,9 +68,12 @@ public interface FormProcessor
      *                     that should be forcibly included, it is
      *                     up to the form processor implementation
      *                     to determine how to enforce this 
+     * @param context Map representing optional context that
+     *                can be used during retrieval of the form
      * @return The Form representation
      */
-    public Form generate(Item item, List<String> fields, List<String> forcedFields);
+    public Form generate(Item item, List<String> fields, List<String> forcedFields, 
+                Map<String, Object> context);
     
     /**
      * Persists the given object representing the form data

@@ -124,12 +124,13 @@ public class TypeFormProcessor extends ContentModelFormProcessor
         // return the type definition object for the requested type
         return typeDef;
     }
-
+    
     /*
-     * @see org.alfresco.repo.forms.processor.node.NodeFormProcessor#internalGenerate(java.lang.Object, java.util.List, java.util.List, org.alfresco.repo.forms.Form)
+     * @see org.alfresco.repo.forms.processor.FilteredFormProcessor#internalGenerate(java.lang.Object, java.util.List, java.util.List, org.alfresco.repo.forms.Form, java.util.Map)
      */
     @Override
-    protected void internalGenerate(Object item, List<String> fields, List<String> forcedFields, Form form)
+    protected void internalGenerate(Object item, List<String> fields, List<String> forcedFields, 
+                Form form, Map<String, Object> context)
     {
         if (logger.isDebugEnabled())
             logger.debug("Generating form for item: " + item);

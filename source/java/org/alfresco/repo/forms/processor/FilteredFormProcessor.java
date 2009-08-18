@@ -25,6 +25,7 @@
 package org.alfresco.repo.forms.processor;
 
 import java.util.List;
+import java.util.Map;
 
 import org.alfresco.repo.forms.Form;
 import org.alfresco.repo.forms.FormData;
@@ -56,17 +57,12 @@ public abstract class FilteredFormProcessor extends AbstractFormProcessor
         if (logger.isDebugEnabled())
             logger.debug("Set filter registry: " + this.filterRegistry + " for processor: " + this);
     }
-        
-    /**
-     * Generates a Form for the given item.
-     * 
-     * @see org.alfresco.repo.forms.processor.FormProcessor#generate(org.alfresco.repo.forms.Item, java.util.List, java.util.List)
-     * @param item The item to generate a form for
-     * @param fields Restricted list of fields to include
-     * @param forcedFields List of fields to forcibly include
-     * @return The generated Form
+
+    /*
+     * @see org.alfresco.repo.forms.processor.FormProcessor#generate(org.alfresco.repo.forms.Item, java.util.List, java.util.List, java.util.Map)
      */
-    public Form generate(Item item, List<String> fields, List<String> forcedFields)
+    public Form generate(Item item, List<String> fields, List<String> forcedFields,
+                Map<String, Object> context)
     {
         // get the typed object representing the item
         Object typedItem = getTypedItem(item);
@@ -79,19 +75,19 @@ public abstract class FilteredFormProcessor extends AbstractFormProcessor
         {
             for (Filter filter: this.filterRegistry.getFilters())
             {
-                filter.beforeGenerate(typedItem, fields, forcedFields, form);
+                filter.beforeGenerate(typedItem, fields, forcedFields, form, context);
             }
         }
         
         // perform the actual generation of the form
-        internalGenerate(typedItem, fields, forcedFields, form);
+        internalGenerate(typedItem, fields, forcedFields, form, context);
         
         // inform all regsitered filters the form has been generated
         if (this.filterRegistry != null)
         {
             for (Filter filter: this.filterRegistry.getFilters())
             {
-                filter.afterGenerate(typedItem, fields, forcedFields, form);
+                filter.afterGenerate(typedItem, fields, forcedFields, form, context);
             }
         }
         
@@ -155,8 +151,11 @@ public abstract class FilteredFormProcessor extends AbstractFormProcessor
      * @param fields Restricted list of fields to include
      * @param forcedFields List of fields to forcibly include
      * @param form The form object being generated
+     * @param context Map representing optional context that
+     *                can be used during retrieval of the form
      */
-    protected abstract void internalGenerate(Object item, List<String> fields, List<String> forcedFields, Form form);
+    protected abstract void internalGenerate(Object item, List<String> fields, List<String> forcedFields, 
+                Form form, Map<String, Object> context);
     
     /**
      * Persists the form data.

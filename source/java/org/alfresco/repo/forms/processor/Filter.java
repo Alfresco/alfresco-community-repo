@@ -25,6 +25,7 @@
 package org.alfresco.repo.forms.processor;
 
 import java.util.List;
+import java.util.Map;
 
 import org.alfresco.repo.forms.Form;
 import org.alfresco.repo.forms.FormData;
@@ -57,8 +58,11 @@ public interface Filter
      * @param fields Restricted list of fields to include
      * @param forcedFields List of fields to forcibly include
      * @param form The Form object
+     * @param @param context Map representing optional context that
+     *                can be used during retrieval of the form
      */
-    public void beforeGenerate(Object item, List<String> fields, List<String> forcedFields, Form form);
+    public void beforeGenerate(Object item, List<String> fields, List<String> forcedFields, 
+                Form form, Map<String, Object> context);
     
     /**
      * Callback used to indicate that a form has just been generated for
@@ -73,8 +77,11 @@ public interface Filter
      * @param fields Restricted list of fields to include
      * @param forcedFields List of fields to forcibly include
      * @param form The Form object
+     * @param context Map representing optional context that
+     *                can be used during retrieval of the form
      */
-    public void afterGenerate(Object item, List<String> fields, List<String> forcedFields, Form form);
+    public void afterGenerate(Object item, List<String> fields, List<String> forcedFields, 
+                Form form, Map<String, Object> context);
     
     /**
      * Callback used to indicate that the given form data is about to be 

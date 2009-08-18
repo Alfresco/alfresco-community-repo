@@ -25,6 +25,7 @@
 package org.alfresco.repo.forms;
 
 import java.util.List;
+import java.util.Map;
 
 import org.alfresco.repo.forms.processor.FormProcessor;
 import org.alfresco.repo.forms.processor.FormProcessorRegistry;
@@ -59,7 +60,15 @@ public class FormServiceImpl implements FormService
      */
     public Form getForm(Item item)
     {
-        return getForm(item, null, null);
+        return getForm(item, null, null, null);
+    }
+    
+    /*
+     * @see org.alfresco.repo.forms.FormService#getForm(org.alfresco.repo.forms.Item, java.util.Map)
+     */
+    public Form getForm(Item item, Map<String, Object> context)
+    {
+        return getForm(item, null, null, context);
     }
 
     /*
@@ -67,13 +76,29 @@ public class FormServiceImpl implements FormService
      */
     public Form getForm(Item item, List<String> fields)
     {
-        return getForm(item, fields, null);
+        return getForm(item, fields, null, null);
+    }
+    
+    /*
+     * @see org.alfresco.repo.forms.FormService#getForm(org.alfresco.repo.forms.Item, java.util.List, java.util.Map)
+     */
+    public Form getForm(Item item, List<String> fields, Map<String, Object> context)
+    {
+        return getForm(item, fields, null, context);
     }
 
     /*
      * @see org.alfresco.repo.forms.FormService#getForm(org.alfresco.repo.forms.Item, java.util.List, java.util.List)
      */
     public Form getForm(Item item, List<String> fields, List<String> forcedFields)
+    {
+        return getForm(item, fields, forcedFields, null);
+    }
+    
+    /*
+     * @see org.alfresco.repo.forms.FormService#getForm(org.alfresco.repo.forms.Item, java.util.List, java.util.List, java.util.Map)
+     */
+    public Form getForm(Item item, List<String> fields, List<String> forcedFields, Map<String, Object> context)
     {
         if (this.processorRegistry == null)
         {
@@ -91,7 +116,7 @@ public class FormServiceImpl implements FormService
         }
         else
         {
-            return processor.generate(item, fields, forcedFields);
+            return processor.generate(item, fields, forcedFields, context);
         }
     }
     

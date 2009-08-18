@@ -1034,6 +1034,16 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
         assertEquals("Expecting 'overwritten' value to be 'three'", "three", value);
     }
     
+    public void testFormContext() throws Exception
+    {
+        Map<String, Object> context = new HashMap<String, Object>(2);
+        context.put("nodeRef", this.folder);
+        context.put("name", "Gavin Cornwell");
+        
+        Form form = this.formService.getForm(new Item(NODE_FORM_ITEM_KIND, this.document.toString()), context);
+        assertNotNull(form);
+    }
+    
     public void testJavascriptAPI() throws Exception
     {
     	Map<String, Object> model = new HashMap<String, Object>();

@@ -8,9 +8,9 @@
     </view:aspects>
     <view:properties>
       <app:editInline>true</app:editInline>
-      <cm:description>Display the contents of a readme file (named readme.html or readme.ftl)</cm:description>
+      <cm:description>${readme.template.description}</cm:description>
       <cm:content>contentUrl=/alfresco/templates/readme.ftl|mimetype=text/plain|size=|encoding=UTF-8|locale=en_US_</cm:content>
-      <cm:title>readme.ftl</cm:title>
+      <cm:title>${readme.template.title}</cm:title>
       <cm:author>Mike Farman</cm:author>
       <cm:name>readme.ftl</cm:name>
     </view:properties>

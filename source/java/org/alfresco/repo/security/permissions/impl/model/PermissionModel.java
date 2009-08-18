@@ -491,26 +491,19 @@ public class PermissionModel implements ModelDAO, InitializingBean
 
     private Set<PermissionReference> getAllPermissionsImpl(QName typeName, Set<QName> aspects, boolean exposedOnly)
     {
-        Set<PermissionReference> permissions = new LinkedHashSet<PermissionReference>(256, 1.0f);
+        Set<PermissionReference> permissions = new LinkedHashSet<PermissionReference>(128, 1.0f);
 
         ClassDefinition cd = dictionaryService.getClass(typeName);
         permissions.addAll(getAllPermissionsImpl(typeName, exposedOnly));
 
-        if (cd != null)
+        if (cd != null && aspects != null)
         {
-            Set<QName> defaultAspects = new HashSet<QName>();
-            for (AspectDefinition aspDef : cd.getDefaultAspects())
+            Set<QName> defaultAspects = cd.getDefaultAspectNames();
+            for (QName aspect : aspects)
             {
-                defaultAspects.add(aspDef.getName());
-            }
-            if (aspects != null)
-            {
-                for (QName aspect : aspects)
+                if (!defaultAspects.contains(aspect))
                 {
-                    if (!defaultAspects.contains(aspect))
-                    {
-                        addAspectPermissions(aspect, permissions, exposedOnly);
-                    }
+                    addAspectPermissions(aspect, permissions, exposedOnly);
                 }
             }
         }

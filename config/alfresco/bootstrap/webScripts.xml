@@ -28,6 +28,54 @@
           </view:properties>
           <view:associations></view:associations>
         </cm:content>
+        <cm:content view:childName="cm:readme_ja.html">
+          <view:aspects>
+            <cm:titled></cm:titled>
+            <cm:author></cm:author>
+            <app:inlineeditable></app:inlineeditable>
+          </view:aspects>
+          <view:properties>
+            <app:editInline>true</app:editInline>
+            <cm:description>${webscripts.what_are_web_scripts}</cm:description>
+            <cm:content>contentUrl=classpath:alfresco/bootstrap/webscripts/readme_ja.html|mimetype=text/html|size=|encoding=UTF-8|locale=ja</cm:content>
+            <cm:title></cm:title>
+            <cm:author></cm:author>
+            <cm:name>readme_ja.html</cm:name>
+          </view:properties>
+          <view:associations></view:associations>
+        </cm:content>
+        <cm:content view:childName="cm:readme_de.html">
+          <view:aspects>
+            <cm:titled></cm:titled>
+            <cm:author></cm:author>
+            <app:inlineeditable></app:inlineeditable>
+          </view:aspects>
+          <view:properties>
+            <app:editInline>true</app:editInline>
+            <cm:description>${webscripts.what_are_web_scripts}</cm:description>
+            <cm:content>contentUrl=classpath:alfresco/bootstrap/webscripts/readme_de.html|mimetype=text/html|size=|encoding=UTF-8|locale=de</cm:content>
+            <cm:title></cm:title>
+            <cm:author></cm:author>
+            <cm:name>readme_de.html</cm:name>
+          </view:properties>
+          <view:associations></view:associations>
+        </cm:content>
+        <cm:content view:childName="cm:readme_fr.html">
+          <view:aspects>
+            <cm:titled></cm:titled>
+            <cm:author></cm:author>
+            <app:inlineeditable></app:inlineeditable>
+          </view:aspects>
+          <view:properties>
+            <app:editInline>true</app:editInline>
+            <cm:description>${webscripts.what_are_web_scripts}</cm:description>
+            <cm:content>contentUrl=classpath:alfresco/bootstrap/webscripts/readme_fr.html|mimetype=text/html|size=|encoding=UTF-8|locale=fr</cm:content>
+            <cm:title></cm:title>
+            <cm:author></cm:author>
+            <cm:name>readme_fr.html</cm:name>
+          </view:properties>
+          <view:associations></view:associations>
+        </cm:content>
         <cm:folder view:childName="cm:org">
           <view:aspects>
             <app:uifacets></app:uifacets>

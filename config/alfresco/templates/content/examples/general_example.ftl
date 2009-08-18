@@ -1,33 +1,33 @@
-<h3>=====Example Template Start=====</h3>
+<h3>${message("templates.general_example.example_template_start")}</h3>
 
-<b>Company Home Space:</b> ${companyhome.properties.name}
+<b>${message("templates.general_example.company_home_space")}</b> ${companyhome.properties.name}
 <br>
-<b>My Home Space:</b> ${userhome.properties.name}
+<b>${message("templates.general_example.my_home_space")}</b> ${userhome.properties.name}
 <br>
-<b>Company Home children count:</b> ${companyhome.children?size}
+<b>${message("templates.general_example.company_home_children_count")}</b> ${companyhome.children?size}
 <br>
-<b>Company Home first child node name:</b> ${companyhome.children[0].properties.name}
+<b>${message("templates.general_example.company_home_first_child_node_name")}</b> ${companyhome.children[0].properties.name}
 <br>
 <#if document?exists>
-<b>Current Document Name:</b> ${document.name}
+<b>${message("templates.general_example.current_document_name")}</b> ${document.name}
 <br>
 </#if>
-<b>Current Space Name:</b> ${space.name}
+<b>${message("templates.general_example.current_space_name")}</b> ${space.name}
 
-<h4>List of child spaces in my Home Space:</h4>
+<h4>${message("templates.general_example.list_of_child_spaces_in_my_home_space")}</h4>
 <table>
 <#list userhome.children as child>
    <#if child.isContainer>
       <tr>
          <td><img src="${url.context}${child.icon32}"></td>
          <td><b>${child.properties.name}</b> (${child.children?size})</td>
-         <td><b>Path:</b> ${child.displayPath}</td>
+         <td><b>${message("templates.general_example.path")}</b> ${child.displayPath}</td>
       </tr>
    </#if>
 </#list>
 </table>
 
-<h4>List of docs in my Home Space (text only content shown inline, JPG images shown as thumbnails):</h4>
+<h4>${message("templates.general_example.list_of_docs_in_my_home_space")}</h4>
 <table>
 <#list userhome.children as child>
    <#if child.isDocument>
@@ -41,9 +41,9 @@
 </#list>
 </table>
 
-<h4>Assoc example:</h4>
+<h4>${message("templates.general_example.assoc_example")}</h4>
 <#if userhome.children[0].assocs["cm:contains"]?exists>
    ${userhome.children[0].assocs["cm:contains"][0].name}
 </#if>
 
-<h3>=====Example Template End=====</h3>
+<h3>${message("templates.general_example.example_template_end")}</h3>

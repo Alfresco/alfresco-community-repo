@@ -29,8 +29,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.AssociationDefinition;
@@ -65,6 +67,7 @@ import org.alfresco.service.namespace.QName;
     private List<AspectDefinition> defaultAspects = new ArrayList<AspectDefinition>();
     private List<QName> defaultAspectNames = new ArrayList<QName>();
     private List<AspectDefinition> inheritedDefaultAspects = new ArrayList<AspectDefinition>();
+    private Set<QName> inheritedDefaultAspectNames = new HashSet<QName>();
     private Boolean archive = null;
     private Boolean inheritedArchive = null;
     
@@ -299,6 +302,12 @@ import org.alfresco.service.namespace.QName;
             }
         }
         
+        // Convert to set of names
+        for (AspectDefinition aspDef : inheritedDefaultAspects)
+        {
+            inheritedDefaultAspectNames.add(aspDef.getName());
+        }
+        
         // resolve archive inheritance
         if (parentClass != null && archive == null)
         {
@@ -435,6 +444,14 @@ import org.alfresco.service.namespace.QName;
     public List<AspectDefinition> getDefaultAspects(boolean inherited)
     {
         return inherited ? getDefaultAspects() : defaultAspects;
+    }
+    
+    /**
+     * @see org.alfresco.service.cmr.dictionary.ClassDefinition#getDefaultAspectNames()
+     */
+    public Set<QName> getDefaultAspectNames()
+    {
+        return inheritedDefaultAspectNames;
     }
 
     /* (non-Javadoc)

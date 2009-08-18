@@ -767,6 +767,7 @@
             <props>
                 <prop key="path">/${spaces.company_home.childname}/${spaces.dictionary.childname}/${spaces.templates.content.childname}</prop>
                 <prop key="location">alfresco/templates/readme_template.xml</prop>
+                <prop key="messages">alfresco/messages/bootstrap-readme-template</prop>
             </props>
         </property>
     </bean>
@@ -845,6 +846,7 @@
             <props>
                 <prop key="path">/${spaces.company_home.childname}/${spaces.dictionary.childname}</prop>
                 <prop key="location">alfresco/bootstrap/customModelsSpace.acp</prop>
+                <prop key="messages">alfresco/messages/bootstrap-spaces</prop>
             </props>
         </property>
     </bean>
@@ -866,6 +868,7 @@
             <props>
                 <prop key="path">/${spaces.company_home.childname}/${spaces.dictionary.childname}</prop>
                 <prop key="location">alfresco/bootstrap/customMessagesSpace.xml</prop>
+                <prop key="messages">alfresco/messages/bootstrap-spaces</prop>
             </props>
         </property>
     </bean>
@@ -887,6 +890,7 @@
             <props>
                 <prop key="path">/${spaces.company_home.childname}/${spaces.dictionary.childname}</prop>
                 <prop key="location">alfresco/bootstrap/customWebClientExtensionSpace.xml</prop>
+                <prop key="messages">alfresco/messages/bootstrap-spaces</prop>
             </props>
         </property>
     </bean>
@@ -954,6 +958,7 @@
             <props>
                 <prop key="path">/${spaces.company_home.childname}/${spaces.dictionary.childname}</prop>
                 <prop key="location">alfresco/bootstrap/customWorkflowDefsSpace.acp</prop>
+                <prop key="messages">alfresco/messages/bootstrap-spaces</prop>
             </props>
         </property>
     </bean>

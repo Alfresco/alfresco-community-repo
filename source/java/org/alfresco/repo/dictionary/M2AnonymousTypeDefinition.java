@@ -30,6 +30,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.AssociationDefinition;
@@ -99,6 +100,14 @@ import org.alfresco.service.namespace.QName;
     public List<AspectDefinition> getDefaultAspects(boolean inherited)
     {
         return type.getDefaultAspects(inherited);
+    }
+    
+    /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.dictionary.ClassDefinition#getDefaultAspectNames()
+     */
+    public Set<QName> getDefaultAspectNames()
+    {
+        return type.getDefaultAspectNames();
     }
     
     /* (non-Javadoc)

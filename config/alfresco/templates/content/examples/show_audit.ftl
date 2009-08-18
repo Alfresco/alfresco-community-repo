@@ -1,24 +1,24 @@
  <#-- Shows some general audit info about the current document -->
  <#if document?exists>
-   <h4>Current Document Audit Info</h4>
-   <b>Name:</b> ${document.name}<br>
+   <h4>${message("templates.show_audit.current_document_audit_info")}</h4>
+   <b>${message("templates.show_audit.name")}</b> ${document.name}<br>
    <table border="1" cellspacing="0" cellpadding="4">
    <tr>
-          <th>User Name</th>
-          <th>Application</th>
-          <th>Service</th>
-          <th>Method</th>
-          <th>Timestamp</th>
-          <th>Failed</th>
-          <th>Message</th>
-          <th>Arg 1</th>
-          <th>Arg 2</th>
-          <th>Arg 3</th>
-          <th>Arg 4</th>
-          <th>Arg 5</th>
-          <th>Return</th>
-          <th>Thowable</th> 
-          <th>TX</th>
+          <th>${message("templates.show_audit.user_name")}</th>
+          <th>${message("templates.show_audit.application")}</th>
+          <th>${message("templates.show_audit.service")}</th>
+          <th>${message("templates.show_audit.method")}</th>
+          <th>${message("templates.show_audit.timestamp")}</th>
+          <th>${message("templates.show_audit.failed")}</th>
+          <th>${message("templates.show_audit.message")}</th>
+          <th>${message("templates.show_audit.arg_1")}</th>
+          <th>${message("templates.show_audit.arg_2")}</th>
+          <th>${message("templates.show_audit.arg_3")}</th>
+          <th>${message("templates.show_audit.arg_4")}</th>
+          <th>${message("templates.show_audit.arg_5")}</th>
+          <th>${message("templates.show_audit.return")}</th>
+          <th>${message("templates.show_audit.thowable")}</th> 
+          <th>${message("templates.show_audit.tx")}</th>
    </tr>
    <#list document.auditTrail as t>
            <tr>
@@ -85,25 +85,25 @@
    </#list>
    </table>
  <#elseif space?exists>
-   <h4>Current Space Audit Info:</h4>
-   <b>Name:</b> ${space.name}<br>
+   <h4>${message("templates.show_audit.current_space_audit_info")}</h4>
+   <b>${message("templates.show_audit.name")}</b> ${space.name}<br>
    <table border="1" cellspacing="0" cellpadding="4">
    <tr>
-          <th>User Name</th>
-          <th>Application</th>
-          <th>Service</th>
-          <th>Method</th>
-          <th>Timestamp</th>
-          <th>Failed</th>
-          <th>Message</th>
-          <th>Arg 1</th>
-          <th>Arg 2</th>
-          <th>Arg 3</th>
-          <th>Arg 4</th>
-          <th>Arg 5</th>
-          <th>Return</th>
-          <th>Thowable</th> 
-          <th>TX</th>
+          <th>${message("templates.show_audit.user_name")}</th>
+          <th>${message("templates.show_audit.application")}</th>
+          <th>${message("templates.show_audit.service")}</th>
+          <th>${message("templates.show_audit.method")}</th>
+          <th>${message("templates.show_audit.timestamp")}</th>
+          <th>${message("templates.show_audit.failed")}</th>
+          <th>${message("templates.show_audit.message")}</th>
+          <th>${message("templates.show_audit.arg_1")}</th>
+          <th>${message("templates.show_audit.arg_2")}</th>
+          <th>${message("templates.show_audit.arg_3")}</th>
+          <th>${message("templates.show_audit.arg_4")}</th>
+          <th>${message("templates.show_audit.arg_5")}</th>
+          <th>${message("templates.show_audit.return")}</th>
+          <th>${message("templates.show_audit.thowable")}</th> 
+          <th>${message("templates.show_audit.tx")}</th>
    </tr>
  
    <#list space.auditTrail as t>

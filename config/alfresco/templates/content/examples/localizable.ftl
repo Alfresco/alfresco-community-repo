@@ -1,14 +1,14 @@
 <#-- Shows if a document is localizable and the locale if set -->
-<b>Localisable:</b>
+<b>${message("templates.localizable.localisable")}</b>
 <#if document?exists>
    <#if hasAspect(document, "cm:localizable") = 1>
-      Yes<br>
+      ${message("templates.localizable.yes")}<br>
       <#if document.properties.locale?exists>
-         Locale: ${document.properties.locale.properties.name}
+         ${message("templates.localizable.locale")} ${document.properties.locale.properties.name}
       </#if>
    <#else>
-      No<br>
+      ${message("templates.localizable.no")}<br>
    </#if>
 <#else>
-   No document found!
+   ${message("templates.localizable.no_document_found")}
 </#if>

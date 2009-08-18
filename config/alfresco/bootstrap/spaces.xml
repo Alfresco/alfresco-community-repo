@@ -70,7 +70,7 @@
                                         </view:aspects>
                                         <view:properties>
                                             <app:editInline>true</app:editInline>
-                                            <cm:description>Email template used to generate the invite email for Alfresco Share</cm:description>
+                                            <cm:description>${spaces.templates.email.generate_the_invite_email.description}</cm:description>
                                             <cm:content>contentUrl=classpath:alfresco/bootstrap/invite/invite-email.ftl|mimetype=text/plain|size=|encoding=UTF-8|locale=en_US_</cm:content>
                                             <cm:title>invite-email.ftl</cm:title>
                                             <cm:author></cm:author>

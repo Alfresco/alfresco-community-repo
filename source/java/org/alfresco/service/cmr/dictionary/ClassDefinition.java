@@ -27,6 +27,7 @@ package org.alfresco.service.cmr.dictionary;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.alfresco.service.namespace.QName;
 
@@ -114,6 +115,11 @@ public interface ClassDefinition
      * @return  the default aspects associated with this type
      */
     public List<AspectDefinition> getDefaultAspects();
+    
+    /**
+     * @return  the set of default aspects names associated with this type
+     */
+    public Set<QName> getDefaultAspectNames();
     
     /**
      * @param inherited include default aspects inherited from super types

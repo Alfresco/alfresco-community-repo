@@ -6,10 +6,10 @@
       <app:uifacets></app:uifacets>
     </view:aspects>
     <view:properties>
-      <cm:description>Customized Web Client</cm:description>
+      <cm:description>${spaces.web.client.extension.description}</cm:description>
       <app:icon>space-icon-default</app:icon>
-      <cm:title>Customized Web Client</cm:title>
-      <cm:name>Web Client Extension</cm:name>
+      <cm:title>${spaces.web.client.extension.title}</cm:title>
+      <cm:name>${spaces.web.client.extension.name}</cm:name>
     </view:properties>
   </cm:folder>
 </view:view>

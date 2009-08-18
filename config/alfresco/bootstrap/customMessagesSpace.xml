@@ -6,10 +6,10 @@
       <app:uifacets></app:uifacets>
     </view:aspects>
     <view:properties>
-      <cm:description>Customized Messages</cm:description>
+      <cm:description>${spaces.messages.description}</cm:description>
       <app:icon>space-icon-default</app:icon>
-      <cm:title>Customized Messages</cm:title>
-      <cm:name>Messages</cm:name>
+      <cm:title>${spaces.messages.title}</cm:title>
+      <cm:name>${spaces.messages.name}</cm:name>
     </view:properties>
   </cm:folder>
 </view:view>

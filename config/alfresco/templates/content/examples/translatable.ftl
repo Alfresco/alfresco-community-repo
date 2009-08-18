@@ -1,8 +1,8 @@
 <#-- Shows the translations applied to a doc through the translatable aspect -->
-<b>Translatable:</b>
+<b>${message("templates.translatable.translatable")}</b>
 <#if document?exists>
    <#if hasAspect(document, "cm:translatable") = 1>
-      Yes<br>
+      ${message("templates.translatable.yes")}<br>
       <table>
       <#if document.assocs["cm:translations"]?exists>
          <#list document.assocs["cm:translations"] as t>
@@ -11,8 +11,8 @@
       </#if>
       </table>
    <#else>
-      No<br>
+      ${message("templates.translatable.no")}<br>
    </#if>
 <#else>
-   No document found!
+   ${message("templates.translatable.no_document_found")}<br>
 </#if>

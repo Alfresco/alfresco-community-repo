@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2008 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -256,7 +256,6 @@ public class Repository implements ApplicationContextAware, ApplicationListener,
                         }, true);
                     }
                 }, AuthenticationUtil.getSystemUserName());
-                
         	companyHomeRefs.put(tenantDomain, companyHomeRef);
         }
         return companyHomeRef;

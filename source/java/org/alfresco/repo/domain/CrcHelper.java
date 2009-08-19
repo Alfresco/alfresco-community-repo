@@ -32,7 +32,7 @@ import org.alfresco.util.Pair;
  * Helper class to calculate CRC values for string persistence.
  * 
  * @author Derek Hulley
- * @since 3.3
+ * @since 3.2
  */
 public class CrcHelper
 {

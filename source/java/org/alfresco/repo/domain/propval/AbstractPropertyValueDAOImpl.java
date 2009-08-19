@@ -52,7 +52,7 @@ import org.apache.commons.logging.LogFactory;
  * for CRUD operations. 
  * 
  * @author Derek Hulley
- * @since 3.3
+ * @since 3.2
  */
 public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
 {

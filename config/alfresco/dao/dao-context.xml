@@ -55,4 +55,10 @@
       <property name="propertyValueCache" ref="immutableEntityCache"/>
    </bean>
    
+   <bean id="auditDAO" class="org.alfresco.repo.domain.audit.ibatis.AuditDAOImpl">
+      <property name="sqlMapClientTemplate" ref="auditSqlMapClientTemplate"/>
+      <property name="contentService" ref="contentService"/>
+      <property name="contentDataDAO" ref="contentDataDAO"/>
+   </bean>
+   
 </beans>

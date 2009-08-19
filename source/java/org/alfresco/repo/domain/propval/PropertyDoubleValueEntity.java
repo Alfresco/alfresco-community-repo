@@ -31,7 +31,7 @@ import org.alfresco.util.Pair;
  * Entity bean for <b>alf_prop_numeric_value</b> table.
  * 
  * @author Derek Hulley
- * @since 3.3
+ * @since 3.2
  */
 public class PropertyDoubleValueEntity
 {

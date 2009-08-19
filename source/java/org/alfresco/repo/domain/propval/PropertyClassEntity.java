@@ -33,7 +33,7 @@ import org.alfresco.util.Pair;
  * Entity bean for <b>alf_prop_class</b> table.
  * 
  * @author Derek Hulley
- * @since 3.3
+ * @since 3.2
  */
 public class PropertyClassEntity
 {

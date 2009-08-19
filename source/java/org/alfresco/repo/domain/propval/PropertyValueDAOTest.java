@@ -46,7 +46,7 @@ import org.springframework.context.ApplicationContext;
  * @see PropertyValueDAO
  * 
  * @author Derek Hulley
- * @since 3.3
+ * @since 3.2
  */
 public class PropertyValueDAOTest extends TestCase
 {

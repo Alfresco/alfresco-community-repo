@@ -44,7 +44,7 @@ import org.springframework.orm.ibatis.SqlMapClientTemplate;
  * iBatis-specific implementation of the PropertyValue DAO.
  * 
  * @author Derek Hulley
- * @since 3.3
+ * @since 3.2
  */
 public class PropertyValueDAOImpl extends AbstractPropertyValueDAOImpl
 {

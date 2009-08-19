@@ -30,7 +30,7 @@ import java.io.Serializable;
  * Entity bean search results from <b>alf_prop_collections_link</b> and <b>alf_prop_value</b> tables.
  * 
  * @author Derek Hulley
- * @since 3.3
+ * @since 3.2
  */
 public class PropertyIdSearchRow
 {

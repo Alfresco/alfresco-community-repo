@@ -28,7 +28,7 @@ package org.alfresco.repo.domain.propval;
  * Entity bean for <b>alf_prop_link</b> table.
  * 
  * @author Derek Hulley
- * @since 3.3
+ * @since 3.2
  */
 public class PropertyLinkEntity
 {

@@ -22,24 +22,27 @@
  * the FLOSS exception, and it is also available here: 
  * http://www.alfresco.com/legal/licensing"
  */
-package org.alfresco.repo.domain.propval;
+package org.alfresco.repo.domain.audit;
+
+import java.net.URL;
+
+import org.alfresco.service.cmr.repository.ContentData;
+import org.alfresco.util.Pair;
 
 /**
- * Interface for converters that to translate between persisted values and external values.
- * <p/>
- * Implementations must be able to convert between values being stored and Long, Double, String -
- * and back again.
+ * DAO services for <b>alf_audit_XXX</b> tables.
  * 
  * @author Derek Hulley
  * @since 3.2
  */
-public interface PropertyTypeConverter
+public interface AuditDAO
 {
     /**
-     * Convert a value to a given type.
+     * Creates a new audit config entry or finds an existing one
      * 
-     * @param value             the value to convert
-     * @return                  Returns the persisted type and value to persist
+     * @param               the URL of the configuration
+     * @return              Returns the ID of the config matching the input stream and the
+     *                      content storage details
      */
-    <T> T convert(Class<T> targetClass, Object value);
+    Pair<Long, ContentData> getOrCreateAuditConfig(URL url);
 }

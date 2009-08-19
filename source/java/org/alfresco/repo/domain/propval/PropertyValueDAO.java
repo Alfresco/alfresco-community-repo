@@ -33,7 +33,7 @@ import org.alfresco.util.Pair;
  * DAO services for <b>alf_prop_XXX</b> tables.
  * 
  * @author Derek Hulley
- * @since 3.3
+ * @since 3.2
  */
 public interface PropertyValueDAO
 {

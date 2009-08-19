@@ -33,7 +33,7 @@ import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
  * the {@link DefaultTypeConverter} is used.
  * 
  * @author Derek Hulley
- * @since 3.3
+ * @since 3.2
  */
 public class DefaultPropertyTypeConverter implements PropertyTypeConverter
 {

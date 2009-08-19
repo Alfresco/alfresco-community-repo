@@ -44,7 +44,7 @@ import org.apache.commons.logging.LogFactory;
  * or will be references to data in other tables.
  * 
  * @author Derek Hulley
- * @since 3.3
+ * @since 3.2
  */
 public class PropertyValueEntity
 {
@@ -65,7 +65,7 @@ public class PropertyValueEntity
      * and should not be used in public interfaces.
      * 
      * @author Derek Hulley
-     * @since 3.3
+     * @since 3.2
      */
     public static enum PersistedType
     {

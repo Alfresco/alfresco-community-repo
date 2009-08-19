@@ -78,7 +78,8 @@
              <value>classpath:alfresco/dbscripts/create/3.0/${db.script.dialect}/create-activities-extras.sql</value>
              <value>classpath:alfresco/dbscripts/create/3.2/${db.script.dialect}/AlfrescoPostCreate-3.2-LockTables.sql</value>
              <value>classpath:alfresco/dbscripts/create/3.2/${db.script.dialect}/AlfrescoPostCreate-3.2-ContentTables.sql</value>
-             <value>classpath:alfresco/dbscripts/create/3.3/${db.script.dialect}/AlfrescoPostCreate-3.3-PropertyValueTables.sql</value>
+             <value>classpath:alfresco/dbscripts/create/3.2/${db.script.dialect}/AlfrescoPostCreate-3.2-PropertyValueTables.sql</value>
+             <value>classpath:alfresco/dbscripts/create/3.2/${db.script.dialect}/AlfrescoPostCreate-3.2-AuditTables.sql</value>
           </list>
        </property>
        <property name="validateUpdateScriptPatches">
@@ -98,7 +99,8 @@
              <ref bean="patch.db-V2.2-Person-2" />
              <ref bean="patch.db-V3.2-LockTables" />
              <ref bean="patch.db-V3.2-ContentTables" />
-             <ref bean="patch.db-V3.3-PropertyValueTables" />
+             <ref bean="patch.db-V3.2-PropertyValueTables" />
+             <ref bean="patch.db-V3.2-AuditTables" />
           </list>
        </property>
        <property name="postUpdateScriptPatches">

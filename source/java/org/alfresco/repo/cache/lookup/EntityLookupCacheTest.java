@@ -44,7 +44,7 @@ import org.alfresco.util.Pair;
  * must respect the case-sensitivity of the use-case.
  * 
  * @author Derek Hulley
- * @since 3.3
+ * @since 3.2
  */
 public class EntityLookupCacheTest extends TestCase implements EntityLookupCallbackDAO<Long, Object, String>
 {

@@ -52,7 +52,7 @@ import org.springframework.dao.ConcurrencyFailureException;
  * </ul>
  * 
  * @author Derek Hulley
- * @since 3.3
+ * @since 3.2
  */
 public class EntityLookupCache<K extends Serializable, V extends Object, VK extends Serializable>
 {
@@ -163,7 +163,7 @@ public class EntityLookupCache<K extends Serializable, V extends Object, VK exte
      * throw {@link UnsupportedOperationException}.
      * 
      * @author Derek Hulley
-     * @since 3.3
+     * @since 3.2
      */
     public static abstract class EntityLookupCallbackDAOAdaptor<K2 extends Serializable, V2 extends Object, VK2 extends Serializable>
             implements EntityLookupCallbackDAO<K2, V2, VK2>

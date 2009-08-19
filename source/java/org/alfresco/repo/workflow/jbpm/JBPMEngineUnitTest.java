@@ -32,7 +32,9 @@ import static org.springframework.transaction.TransactionDefinition.*;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.transaction.NotSupportedException;
@@ -40,9 +42,11 @@ import javax.transaction.SystemException;
 
 import junit.framework.TestCase;
 
+import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.i18n.MessageService;
 import org.alfresco.repo.tenant.TenantService;
+import org.alfresco.repo.workflow.WorkflowModel;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
@@ -51,6 +55,10 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.workflow.WorkflowDefinition;
 import org.alfresco.service.cmr.workflow.WorkflowDeployment;
+import org.alfresco.service.cmr.workflow.WorkflowException;
+import org.alfresco.service.cmr.workflow.WorkflowInstance;
+import org.alfresco.service.cmr.workflow.WorkflowPath;
+import org.alfresco.service.cmr.workflow.WorkflowTask;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.NamespaceServiceMemoryImpl;
 import org.alfresco.service.namespace.QName;
@@ -69,6 +77,8 @@ import org.springmodules.workflow.jbpm31.JbpmTemplate;
  */
 public class JBPMEngineUnitTest extends TestCase
 {
+    private static final String TEST_JBPM_ENGINE = "test_jbpm_engine";
+
     private static final NodeRef companyHome = new NodeRef("for://test/home");
 
     private static final ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext(
@@ -81,10 +91,115 @@ public class JBPMEngineUnitTest extends TestCase
 
     private SpringAwareUserTransaction transaction;
 
+    public void testDeployWorkflow() throws Exception
+    {
+        ClassPathResource processDef = new ClassPathResource(
+                    "jbpmresources/test_processdefinition.xml");
+        List<WorkflowDefinition> workflowDefs = engine.getDefinitions();
+        assertFalse(engine.isDefinitionDeployed(processDef.getInputStream(),
+                    MimetypeMap.MIMETYPE_XML));
+        assertNotNull(workflowDefs);
+        assertTrue(workflowDefs.size() == 0);
+
+        deployTestDefinition();
+        assertTrue(engine.isDefinitionDeployed(processDef.getInputStream(),
+                    MimetypeMap.MIMETYPE_XML));
+        workflowDefs = engine.getDefinitions();
+        assertNotNull(workflowDefs);
+        assertTrue(workflowDefs.size() == 1);
+
+        assertNotNull(testWorkflowDef);
+        assertEquals("jbpm_test$test", testWorkflowDef.name);
+        assertEquals("1", testWorkflowDef.version);
+
+        deployTestDefinition();
+        assertTrue(engine.isDefinitionDeployed(processDef.getInputStream(),
+                    MimetypeMap.MIMETYPE_XML));
+        assertEquals("2", testWorkflowDef.version);
+    }
+
+    public void testGetWorkflowInstance() throws Exception
+    {
+        deployTestDefinition();
+        WorkflowPath path = engine.startWorkflow(testWorkflowDef.getId(), null);
+        assertNotNull(path);
+        assertTrue(path.id.endsWith("-@"));
+        assertNotNull(path.node);
+        assertNotNull(path.instance);
+        assertEquals(testWorkflowDef.id, path.instance.definition.id);
+        WorkflowInstance instance = engine.getWorkflowById(path.instance.id);
+        assertNotNull(instance);
+        assertEquals(path.instance.id, instance.id);
+    }
+
     public void testStartWorkflowWithoutPackage() throws Exception
     {
+        try
+        {
+            engine.startWorkflow("norfolknchance", null);
+            fail("Failed to catch invalid definition id");
+        }
+        catch (WorkflowException e)
+        {
+        }
+
+        deployTestDefinition();
+        WorkflowPath path = engine.startWorkflow(testWorkflowDef.getId(), null);
+        assertNotNull(path);
+        assertTrue(path.id.endsWith("-@"));
+        assertNotNull(path.node);
+        assertNotNull(path.instance);
+        assertEquals(testWorkflowDef.getId(), path.instance.definition.id);
+    }
+
+    public void testStartWorkflowParameters() throws Exception
+    {
         Map<QName, Serializable> params = new HashMap<QName, Serializable>();
-        engine.startWorkflow(testWorkflowDef.getId(), params);
+
+        // protected - shouldn't be written
+        params.put(WorkflowModel.PROP_TASK_ID, 3);
+
+        // task instance field
+        params.put(WorkflowModel.PROP_DUE_DATE, new Date());
+
+        params.put(WorkflowModel.PROP_PRIORITY, 1); // task instance field
+        params.put(WorkflowModel.PROP_PERCENT_COMPLETE, 10); // context variable
+
+        // context variable outside of task definition
+        params.put(QName.createQName("", "Message"), "Hello World");
+
+        // context variable outside of task definition
+        params.put(QName.createQName("", "Array"), new String[] { "one", "two" });
+
+        // context variable outside of task definition
+        params.put(QName.createQName("", "NodeRef"), new NodeRef("workspace://1/1001"));
+
+        params.put(ContentModel.PROP_OWNER, "Owner"); // task assignment
+
+        deployTestDefinition();
+        WorkflowPath path = engine.startWorkflow(testWorkflowDef.id, params);
+        assertNotNull(path);
+        assertTrue(path.id.endsWith("-@"));
+        assertNotNull(path.node);
+        assertNotNull(path.instance);
+        assertEquals(testWorkflowDef.id, path.instance.definition.id);
+        List<WorkflowTask> tasks1 = engine.getTasksForWorkflowPath(path.id);
+        assertNotNull(tasks1);
+        assertEquals(1, tasks1.size());
+
+        WorkflowTask task = tasks1.get(0);
+        assertTrue(task.properties.containsKey(WorkflowModel.PROP_TASK_ID));
+        assertTrue(task.properties.containsKey(WorkflowModel.PROP_DUE_DATE));
+        assertTrue(task.properties.containsKey(WorkflowModel.PROP_PRIORITY));
+        assertTrue(task.properties.containsKey(WorkflowModel.PROP_PERCENT_COMPLETE));
+        assertTrue(task.properties.containsKey(ContentModel.PROP_OWNER));
+
+        // NodeRef initiator = path.instance.initiator;
+        // String initiatorUsername = (String)
+        // nodeService.getProperty(initiator,
+        // ContentModel.PROP_USERNAME);
+        // assertEquals(AuthenticationUtil.getAdminUserName(),
+        // initiatorUsername);
     }
 
     @Override
@@ -116,11 +231,11 @@ public class JBPMEngineUnitTest extends TestCase
 
         // Need to register JBPMEngine with bean factory so WorflowTaskInstance
         // can load it.
-        ctx.getBeanFactory().registerSingleton("test_jbpm_engine", engine);
+        if (!ctx.containsBean(TEST_JBPM_ENGINE))
+            ctx.getBeanFactory().registerSingleton(TEST_JBPM_ENGINE, engine);
 
         // Deploy test workflow process definition to JBPM.
         startTransaction();
-        deployTestDefinition();
     }
 
     @SuppressWarnings("unchecked")
@@ -155,16 +270,11 @@ public class JBPMEngineUnitTest extends TestCase
     {
         ClassPathResource processDef = new ClassPathResource(
                     "jbpmresources/test_processdefinition.xml");
-        assertFalse(engine.isDefinitionDeployed(processDef.getInputStream(),
-                    MimetypeMap.MIMETYPE_XML));
         WorkflowDeployment deployment = engine.deployDefinition(processDef.getInputStream(),
                     MimetypeMap.MIMETYPE_XML);
         testWorkflowDef = deployment.definition;
         assertNotNull(testWorkflowDef);
         assertEquals("jbpm_test$test", testWorkflowDef.name);
-        assertEquals("1", testWorkflowDef.version);
-        assertTrue(engine.isDefinitionDeployed(processDef.getInputStream(),
-                    MimetypeMap.MIMETYPE_XML));
     }
 
     private NamespaceService makeNamespaceService()
@@ -172,6 +282,7 @@ public class JBPMEngineUnitTest extends TestCase
         NamespaceServiceMemoryImpl namespace = new NamespaceServiceMemoryImpl();
         namespace.registerNamespace(NamespaceService.DEFAULT_PREFIX, NamespaceService.DEFAULT_URI);
         namespace.registerNamespace("wf", "http://www.alfresco.org/model/bpm/1.0");
+        namespace.registerNamespace("cm", "http://www.alfresco.org/model/content/1.0");
         return namespace;
     }
 

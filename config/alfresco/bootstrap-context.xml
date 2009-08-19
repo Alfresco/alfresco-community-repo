@@ -414,6 +414,20 @@
         </property>
     </bean>
 
+   <bean id="fileServerConfiguration" class="org.alfresco.repo.management.subsystems.SubsystemProxyFactory">
+      <property name="sourceApplicationContextFactory">
+         <ref bean="fileServers" />
+      </property>
+      <property name="interfaces">
+         <list>
+            <!--  Allow authentication subsystem to see file server config at runtime -->
+            <value>org.alfresco.filesys.ExtendedServerConfigurationAccessor</value>
+            <!-- Allow export as MBean -->
+            <value>org.alfresco.filesys.FileServerConfigMBean</value>
+         </list>
+      </property>
+   </bean>
+
     <!-- IMAP Subsystem -->
     <bean id="imap" class="org.alfresco.repo.management.subsystems.ChildApplicationContextFactory" parent="abstractPropertyBackedBean">
         <property name="autoStart">
@@ -430,20 +444,6 @@
             </map>
         </property>
     </bean>
-
-   <bean id="fileServerConfiguration" class="org.alfresco.repo.management.subsystems.SubsystemProxyFactory">
-      <property name="sourceApplicationContextFactory">
-         <ref bean="fileServers" />
-      </property>
-      <property name="interfaces">
-         <list>
-            <!--  Allow authentication subsystem to see file server config at runtime -->
-            <value>org.alfresco.filesys.ExtendedServerConfigurationAccessor</value>
-            <!-- Allow export as MBean -->
-            <value>org.alfresco.filesys.FileServerConfigMBean</value>
-         </list>
-      </property>
-   </bean>
 
     <!-- Start the quartz scheduler -->
 

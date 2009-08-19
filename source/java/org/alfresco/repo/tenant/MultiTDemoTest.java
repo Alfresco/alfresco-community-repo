@@ -719,7 +719,7 @@ public class MultiTDemoTest extends TestCase
                 {
                     // search for local copy of bootstrapped file 'invite_user_email.ftl' (see email_templates.acp)
                     String origText = "You have been invited to";
-                    String query = "+PATH:\"/app:company_home/app:dictionary/app:email_templates/*\" +TEXT:\""+origText+"\"";
+                    String query = "+PATH:\"/app:company_home/app:dictionary/app:email_templates/app:invite_email_templates/*\" +TEXT:\""+origText+"\"";
                     ResultSet resultSet = searchService.query(SPACES_STORE, SearchService.LANGUAGE_LUCENE, query);
                     assertEquals(1, resultSet.length());
                     
@@ -739,11 +739,11 @@ public class MultiTDemoTest extends TestCase
                     
                     cociService.checkin(workingCopyNodeRef, null);
                     
-                    query = "+PATH:\"/app:company_home/app:dictionary/app:email_templates/*\" +TEXT:\""+origText+"\"";
+                    query = "+PATH:\"/app:company_home/app:dictionary/app:email_templates/app:invite_email_templates/*\" +TEXT:\""+origText+"\"";
                     resultSet = searchService.query(SPACES_STORE, SearchService.LANGUAGE_LUCENE, query);
                     assertEquals(0, resultSet.length());
                     
-                    query = "+PATH:\"/app:company_home/app:dictionary/app:email_templates/*\" +TEXT:\""+updateText+"\"";
+                    query = "+PATH:\"/app:company_home/app:dictionary/app:email_templates/app:invite_email_templates/*\" +TEXT:\""+updateText+"\"";
                     resultSet = searchService.query(SPACES_STORE, SearchService.LANGUAGE_LUCENE, query);
                     assertEquals(1, resultSet.length());
                     

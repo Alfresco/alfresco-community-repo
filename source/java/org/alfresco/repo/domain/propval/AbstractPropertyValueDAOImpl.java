@@ -423,18 +423,6 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
      */
     private class PropertyStringValueCallbackDAO extends EntityLookupCallbackDAOAdaptor<Long, String, Pair<String, Long>>
     {
-        private final Pair<Long, String> convertEntityToPair(PropertyStringValueEntity entity)
-        {
-            if (entity == null)
-            {
-                return null;
-            }
-            else
-            {
-                return entity.getEntityPair();
-            }
-        }
-        
         public Pair<String, Long> getValueKey(String value)
         {
             return CrcHelper.getStringCrcPair(value, 128, true, true);
@@ -442,26 +430,40 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
 
         public Pair<Long, String> createValue(String value)
         {
-            PropertyStringValueEntity entity = createStringValue(value);
-            return convertEntityToPair(entity);
+            Long key = createStringValue(value);
+            return new Pair<Long, String>(key, value);
         }
 
         public Pair<Long, String> findByKey(Long key)
         {
-            PropertyStringValueEntity entity = findStringValueById(key);
-            return convertEntityToPair(entity);
+            String value = findStringValueById(key);
+            if (value == null)
+            {
+                return null;
+            }
+            else
+            {
+                return new Pair<Long, String>(key, value);
+            }
         }
 
         public Pair<Long, String> findByValue(String value)
         {
-            PropertyStringValueEntity entity = findStringValueByValue(value);
-            return convertEntityToPair(entity);
+            Long key = findStringValueByValue(value);
+            if (key == null)
+            {
+                return null;
+            }
+            else
+            {
+                return new Pair<Long, String>(key, value);
+            }
         }
     }
     
-    protected abstract PropertyStringValueEntity findStringValueById(Long id);
-    protected abstract PropertyStringValueEntity findStringValueByValue(String value);
-    protected abstract PropertyStringValueEntity createStringValue(String value);
+    protected abstract String findStringValueById(Long id);
+    protected abstract Long findStringValueByValue(String value);
+    protected abstract Long createStringValue(String value);
 
     //================================
     // 'alf_prop_double_value' accessors

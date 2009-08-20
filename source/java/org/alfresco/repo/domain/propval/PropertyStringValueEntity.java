@@ -37,6 +37,7 @@ public class PropertyStringValueEntity
 {
     private Long id;
     private String stringValue;
+    private String stringEnd;
     
     public PropertyStringValueEntity()
     {
@@ -81,6 +82,23 @@ public class PropertyStringValueEntity
     {
         return new Pair<Long, String>(id, stringValue);
     }
+    
+    /**
+     * Set the string and string-end values
+     */
+    public void setValue(String value)
+    {
+        this.stringValue = value;
+        int len = stringValue.length();
+        if (len > 16)
+        {
+            stringEnd = stringValue.substring(len - 16);
+        }
+        else
+        {
+            stringEnd = stringValue;
+        }
+    }
 
     public Long getId()
     {
@@ -100,5 +118,15 @@ public class PropertyStringValueEntity
     public void setStringValue(String stringValue)
     {
         this.stringValue = stringValue;
+    }
+    
+    public String getStringEnd()
+    {
+        return stringEnd;
+    }
+
+    public void setStringEnd(String stringEnd)
+    {
+        this.stringEnd = stringEnd;
     }
 }

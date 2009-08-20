@@ -44,6 +44,7 @@
     <resultMap id="result.PropertyStringValue" class="PropertyStringValue">
         <result property="id" column="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <result property="stringValue" column="string_value" jdbcType="VARCHAR" javaType="java.lang.String"/>
+        <result property="stringEnd" column="string_end" jdbcType="VARCHAR" javaType="java.lang.String"/>
     </resultMap>
     <resultMap id="result.PropertyDoubleValue" class="PropertyDoubleValue">
         <result property="id" column="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
@@ -91,8 +92,8 @@
     </sql>
     
     <sql id="insert.PropertyStringValue.AutoIncrement">
-        insert into alf_prop_string_value (string_value) 
-        values (#stringValue#)
+        insert into alf_prop_string_value (string_value, string_end) 
+        values (#stringValue#, #stringEnd#)
     </sql>
     
     <sql id="insert.PropertyDoubleValue.AutoIncrement">
@@ -170,23 +171,41 @@
     </select>
 
     <!-- Get a property string value by ID -->
-    <select id="select.PropertyStringValueByID" parameterClass="PropertyStringValue" resultMap="result.PropertyStringValue">
+    <select id="select.PropertyStringValueByID" parameterClass="PropertyStringValue" resultClass="string">
         select
-            *
+            string_value
         from
             alf_prop_string_value
         where
             id = #id#
     </select>
 
-    <!-- Get the property string value by value -->
+    <!-- Get the property string value by value.
+         Short strings are be pulled back from the index on the 'string_end' column 
+    -->
     <select id="select.PropertyStringValueByValue" parameterClass="PropertyStringValue" resultMap="result.PropertyStringValue">
         select
-            *
+            id,
+            <dynamic>
+                <!-- Pulling back the string from the string_end column (if possible) more efficient -->
+                <isEqual property="stringEnd" compareProperty="stringValue">
+                     string_end as string_value,
+                     string_end
+                </isEqual>
+                <isNotEqual property="stringEnd" compareProperty="stringValue">
+                     string_value,
+                     string_end
+                </isNotEqual>
+            </dynamic>
         from
             alf_prop_string_value
         where
-            string_value = #stringValue#
+            string_end = #stringEnd#
+            <dynamic>
+                <isNotEqual property="stringEnd" compareProperty="stringValue">
+                     and string_value = #stringValue#
+                </isNotEqual>
+            </dynamic>
     </select>
 
     <!-- Get a property double value by ID -->

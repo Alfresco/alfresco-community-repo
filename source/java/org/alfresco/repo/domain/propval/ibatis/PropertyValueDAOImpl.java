@@ -157,34 +157,34 @@ public class PropertyValueDAOImpl extends AbstractPropertyValueDAOImpl
     //================================
 
     @Override
-    protected PropertyStringValueEntity findStringValueById(Long id)
+    protected String findStringValueById(Long id)
     {
         PropertyStringValueEntity entity = new PropertyStringValueEntity();
         entity.setId(id);
-        entity = (PropertyStringValueEntity) template.queryForObject(
+        String value = (String) template.queryForObject(
                 SELECT_PROPERTY_STRING_VALUE_BY_ID,
                 entity);
         // Done
-        return entity;
+        return value;
     }
 
     @SuppressWarnings("unchecked")
     @Override
-    protected PropertyStringValueEntity findStringValueByValue(String value)
+    protected Long findStringValueByValue(String value)
     {
         PropertyStringValueEntity entity = new PropertyStringValueEntity();
-        entity.setStringValue(value);
+        entity.setValue(value);
         List<PropertyStringValueEntity> results = (List<PropertyStringValueEntity>) template.queryForList(
                 SELECT_PROPERTY_STRING_VALUE_BY_VALUE,
                 entity);
-        // There double be several matches (if the database is case-insensitive), so find the first
+        // There could be several matches (if the database is case-insensitive), so find the first
         // value that matches exactly.
         for (PropertyStringValueEntity resultEntity : results)
         {
             if (value.equals(resultEntity.getStringValue()))
             {
                 // Found a match
-                return resultEntity;
+                return resultEntity.getId();
             }
         }
         // No real match
@@ -192,14 +192,13 @@ public class PropertyValueDAOImpl extends AbstractPropertyValueDAOImpl
     }
 
     @Override
-    protected PropertyStringValueEntity createStringValue(String value)
+    protected Long createStringValue(String value)
     {
         PropertyStringValueEntity entity = new PropertyStringValueEntity();
-        entity.setStringValue(value);
+        entity.setValue(value);
         Long id = (Long) template.insert(INSERT_PROPERTY_STRING_VALUE, entity);
-        entity.setId(id);
         // Done
-        return entity;
+        return id;
     }
 
     //================================

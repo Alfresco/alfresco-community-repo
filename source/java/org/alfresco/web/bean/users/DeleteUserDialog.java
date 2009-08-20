@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -18,7 +18,7 @@
  * As a special exception to the terms and conditions of version 2.0 of 
  * the GPL, you may redistribute this Program in connection with Free/Libre 
  * and Open Source Software ("FLOSS") applications as described in Alfresco's 
- * FLOSS exception.  You should have recieved a copy of the text describing 
+ * FLOSS exception.  You should have received a copy of the text describing 
  * the FLOSS exception, and it is also available here: 
  * http://www.alfresco.com/legal/licensing"
  */
@@ -34,7 +34,6 @@ import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
 import javax.transaction.UserTransaction;
 
-import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.search.ResultSet;
@@ -44,7 +43,6 @@ import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.util.ISO9075;
 import org.alfresco.web.app.Application;
-import org.alfresco.web.bean.LoginBean;
 import org.alfresco.web.bean.dialog.BaseDialogBean;
 import org.alfresco.web.bean.repository.MapNode;
 import org.alfresco.web.bean.repository.Node;
@@ -63,8 +61,6 @@ public class DeleteUserDialog extends BaseDialogBean
    private static Log logger = LogFactory.getLog(DeleteUserDialog.class);
 
    private static final String ERROR_DELETE = "error_delete_user";
-
-   private static final String ERROR_USER_DELETE = "error_delete_user_object";
 
    private static final String BUTTON_YES = "yes";
 
@@ -94,22 +90,6 @@ public class DeleteUserDialog extends BaseDialogBean
       try
       {
          String userName = (String) getPerson().getProperties().get("userName");
-
-         // we only delete the user auth if Alfresco is managing the authentication
-         Map session = context.getExternalContext().getSessionMap();
-         if (session.get(LoginBean.LOGIN_EXTERNAL_AUTH) == null)
-         {
-            // delete the User authentication
-            try
-            {
-               getAuthenticationService().deleteAuthentication(userName);
-            }
-            catch (AuthenticationException authErr)
-            {
-               Utils.addErrorMessage(Application.getMessage(context, ERROR_USER_DELETE));
-               ReportedException.throwIfNecessary(authErr);
-            }
-         }
 
          // delete the associated Person
          getPersonService().deletePerson(userName);

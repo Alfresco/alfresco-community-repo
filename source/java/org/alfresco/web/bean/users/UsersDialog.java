@@ -38,7 +38,6 @@ import javax.transaction.UserTransaction;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
-import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.search.ResultSet;
@@ -49,7 +48,6 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.context.IContextListener;
 import org.alfresco.web.app.context.UIContextService;
-import org.alfresco.web.bean.LoginBean;
 import org.alfresco.web.bean.dialog.BaseDialogBean;
 import org.alfresco.web.bean.dialog.ChangeViewSupport;
 import org.alfresco.web.bean.repository.MapNode;
@@ -78,9 +76,7 @@ public class UsersDialog extends BaseDialogBean implements IContextListener, Cha
    public static final String ERROR_PASSWORD_MATCH = "error_password_match";
    public static final String ERROR_NEGATIVE_QUOTA = "error_negative_quota";
    private static final String ERROR_DELETE = "error_delete_user";
-   private static final String ERROR_USER_DELETE = "error_delete_user_object";
    
-   private static final String DEFAULT_OUTCOME = "dialog:manageUsers";
    private static final String DIALOG_CLOSE = "dialog:close";
    
    private static final String VIEW_DETAILS = "user_details";
@@ -226,22 +222,7 @@ public class UsersDialog extends BaseDialogBean implements IContextListener, Cha
       try
       {
          String userName = (String) properties.getPerson().getProperties().get("userName");
-         
-         // we only delete the user auth if Alfresco is managing the authentication 
-         Map session = context.getExternalContext().getSessionMap();
-         if (session.get(LoginBean.LOGIN_EXTERNAL_AUTH) == null)
-         {
-            // delete the User authentication
-            try
-            {
-               properties.getAuthenticationService().deleteAuthentication(userName);
-            }
-            catch (AuthenticationException authErr)
-            {
-                // Let's not worry if authentication details don't exist
-            }
-         }
-         
+                  
          // delete the associated Person
          properties.getPersonService().deletePerson(userName);
          

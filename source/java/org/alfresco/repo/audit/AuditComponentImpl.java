@@ -30,6 +30,7 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import org.alfresco.repo.audit.model.AuditEntry;
 import org.alfresco.repo.audit.model.TrueFalseUnset;
@@ -56,8 +57,12 @@ import org.apache.commons.logging.LogFactory;
 /**
  * The default audit component implementation. TODO: Implement before, after and exception filtering. At the moment
  * these filters are ignored. TODO: Respect audit internal - at the moment audit internal is fixed to false.
+ * <p/>
+ * The V3.2 audit functionality is contained within the same component.  When the newer audit
+ * implementation has been tested and approved, then older ones will be deprecated as necessary.
  * 
  * @author Andy Hind
+ * @author Derek Hulley
  */
 public class AuditComponentImpl implements AuditComponent
 {
@@ -752,4 +757,17 @@ public class AuditComponentImpl implements AuditComponent
         return result;
     }
 
+    /*
+     * V3.2 from here on.  Put all fixes to the older audit code before this point, please.
+     */
+
+    public Long startAuditSession(String rootPath)
+    {
+        throw new UnsupportedOperationException();
+    }
+
+    public void audit(Long sessionId, Map<String, Object> values)
+    {
+        throw new UnsupportedOperationException();
+    }
 }

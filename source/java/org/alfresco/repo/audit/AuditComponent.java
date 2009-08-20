@@ -25,24 +25,30 @@
 package org.alfresco.repo.audit;
 
 import java.util.List;
+import java.util.Map;
 
+import org.alfresco.repo.audit.model._3.AuditPath;
 import org.alfresco.service.cmr.audit.AuditInfo;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.aopalliance.intercept.MethodInvocation;
 
 /**
  * The audit component. Used by the AuditService and AuditMethodInterceptor to insert audit entries.
+ * <p/>
+ * The V3.2 audit functionality is contained within the same component.  When the newer audit
+ * implementation has been tested and approved, then older ones will be deprecated as necessary.
  * 
  * @author Andy Hind
+ * @author Derek Hulley
  */
 public interface AuditComponent
 {
     /**
      * Audit entry point for method interceptors.
      * 
-     * @param methodInvocation
      * @return - the return onbject from the normal invocation of the audited method.
-     * @throws Throwable
+     * 
+     * @since 2.1
      */
     public Object audit(MethodInvocation methodInvocation) throws Throwable;
 
@@ -55,6 +61,8 @@ public interface AuditComponent
      *            a node ref to use as the key for filtering etc
      * @param args -
      *            an arbitrary list of parameters
+     * 
+     * @since 2.1
      */
     public void audit(String source, String description, NodeRef key, Object... args);
 
@@ -64,7 +72,30 @@ public interface AuditComponent
      * @param nodeRef -
      *            the node ref for which we want the audit trail
      * @return - a list of AuditInfo objects that represent the audit trail for the given node reference.
+     * 
+     * @since 2.1
      */
     public List<AuditInfo> getAuditTrail(NodeRef nodeRef);
 
+    /**
+     * Start an audit session for the given root path.  All later audit operations on the resulting
+     * session will be relative to this root path.
+     * 
+     * @param rootPath          a base path of {@link AuditPath} key entries concatenated with <b>.</b> (period)
+     * @return                  Returns the unique session identifier
+     */
+    public Long startAuditSession(String rootPath);
+    
+    /**
+     * Record a set of values against the given session.
+     * 
+     * @param sessionId         a pre-existing audit session to continue with
+     * @param values            the values to audit mapped by {@link AuditPath} key relative to the session
+     *                          root path
+     * 
+     * @see #startAuditSession()
+     * 
+     * @since 3.2
+     */
+    public void audit(Long sessionId, Map<String, Object> values);
 }

@@ -72,5 +72,18 @@
         </property>
     </bean>
     
+    <!--                           -->
+    <!-- Audit V3.2 implementation -->
+    <!--                           -->
+    
+    <bean id="auditConfiguration.registry" class="org.alfresco.repo.audit.model.AuditModelRegistry">
+    </bean>
+  
+    <bean id="auditConfiguration.repository" class="org.alfresco.repo.audit.model.AuditModelReader">
+        <property name="configUrl">
+           <value>classpath:alfresco/audit/alfresco-audit-repository.xml</value>
+        </property>
+        <property name="auditModelRegistry" ref="auditConfiguration.registry"/>
+    </bean>
   
 </beans>

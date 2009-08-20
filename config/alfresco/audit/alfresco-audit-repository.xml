@@ -1,0 +1,52 @@
+<?xml version='1.0' encoding='UTF-8'?>
+
+<!-- Default Audit Configuration -->
+
+<Audit
+    xmlns="http://www.alfresco.org/repo/audit/model/3.2"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.alfresco.org/repo/audit/model/3.2 alfresco-audit-3.2.xsd"
+    >
+
+    <DataExtractors>
+       <DataExtractor name="simpleValue" class="org.alfresco.repo.audit.extractor.SimpleValueDataExtractor"/>
+       <!--
+       <DataExtractor name="stackTrace" class="org.alfresco.repo.audit.extractor.StackTraceDataExtractor"/>
+       <DataExtractor name="storeRootNode" class="org.alfresco.repo.audit.extractor.StoreRootNodeDataExtractor"/>
+       -->
+    </DataExtractors>
+
+    <DataGenerators>
+       <DataGenerator name="authenticatedUser" class="org.alfresco.repo.audit.generator.AuthenticatedUserDataGenerator"/>
+       <DataGenerator name="systemTime" class="org.alfresco.repo.audit.generator.SystemTimeDataGenerator"/>
+       <DataGenerator name="transactionId" class="org.alfresco.repo.audit.generator.TransactionIdDataGenerator"/>
+    </DataGenerators>
+
+    <Application name="Alfresco Repository" key="repository">
+        <AuditSession>
+            <GenerateValue key="user" dataGenerator="authenticatedUser"/>
+            <GenerateValue key="time" dataGenerator="systemTime"/>
+        </AuditSession>
+        <AuditPath key="services">
+            <GenerateValue key="txn" dataGenerator="transactionId"/>
+            <AuditPath key="nodeservice">
+                <AuditPath key="createstore">
+                    <AuditPath key="protocol">
+                        <RecordValue key="value" dataExtractor="simpleValue"/>
+                    </AuditPath>
+                    <AuditPath key="identifier">
+                        <RecordValue key="value" dataExtractor="simpleValue"/>
+                    </AuditPath>
+                    <AuditPath key="return">
+                        <RecordValue key="value" dataExtractor="simpleValue"/>
+                        <RecordValue key="root-node" dataExtractor="storeRootNode"/>
+                    </AuditPath>
+                    <AuditPath key="error">
+                        <RecordValue key="value" dataExtractor="stackTrace"/>
+                    </AuditPath>
+                </AuditPath>
+            </AuditPath>
+        </AuditPath>
+    </Application>
+
+</Audit>

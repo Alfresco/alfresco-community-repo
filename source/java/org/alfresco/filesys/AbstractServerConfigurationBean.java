@@ -431,8 +431,6 @@ public abstract class AbstractServerConfigurationBean extends ServerConfiguratio
       ClientInfo.setFactory( new AlfrescoClientInfoFactory());
       
       // Initialize the filesystems
-
-      boolean filesysInitOK = false;
       
       try
       {
@@ -444,95 +442,82 @@ public abstract class AbstractServerConfigurationBean extends ServerConfiguratio
 
           // Process the filesystems configuration
           processFilesystemsConfig();
-          
-          // Indicate that the filesystems were initialized          
-          filesysInitOK = true;
       }
       catch (Exception ex)
       {
           // Configuration error
-
-          logger.error("File server configuration error, " + ex.getMessage(), ex);
+          throw new AlfrescoRuntimeException("File server configuration error, " + ex.getMessage(), ex);
       }
 
       // Initialize the CIFS and FTP servers, if the filesystem(s) initialized successfully
       
-      if ( filesysInitOK == true)
+      // Initialize the CIFS server
+
+      try
       {
-        // Initialize the CIFS server
 
-        try
-        {
+          // Process the CIFS server configuration
+          processCIFSServerConfig();
 
-            // Process the CIFS server configuration
-            processCIFSServerConfig();
-
-            // Log the successful startup
-            logger.info("CIFS server " + (isSMBServerEnabled() ? "" : "NOT ") + "started");
-        }
-        catch (UnsatisfiedLinkError ex)
-        {
-            // Error accessing the Win32NetBIOS DLL code
-
-            logger.error("Error accessing Win32 NetBIOS, check DLL is on the path");
-
-            // Disable the CIFS server
-
-            removeConfigSection( CIFSConfigSection.SectionName);
-        }
-        catch (Throwable ex)
-        {
-            // Configuration error
-
-            logger.error("CIFS server configuration error, " + ex.getMessage(), ex);
-
-            // Disable the CIFS server
-
-            removeConfigSection( CIFSConfigSection.SectionName);
-        }
-
-        // Initialize the FTP server
-
-        try
-        {
-            // Process the FTP server configuration
-            processFTPServerConfig();
-            
-            // Log the successful startup
-            
-            logger.info("FTP server " + (isFTPServerEnabled() ? "" : "NOT ") + "started");
-        }
-        catch (Exception ex)
-        {
-            // Configuration error
-          
-            logger.error("FTP server configuration error, " + ex.getMessage(), ex);
-        }           
-
-        // Initialize the NFS server
-
-        try
-        {
-            // Process the NFS server configuration
-            processNFSServerConfig();
-            
-            // Log the successful startup
-            
-            logger.info("NFS server " + (isNFSServerEnabled() ? "" : "NOT ") + "started");
-        }
-        catch (Exception ex)
-        {
-            // Configuration error
-          
-            logger.error("NFS server configuration error, " + ex.getMessage(), ex);
-        }           
-    }
-      else
-      {
-        // Log the error
-        
-        logger.error("CIFS and FTP servers not started due to filesystem initialization error");
+          // Log the successful startup
+          logger.info("CIFS server " + (isSMBServerEnabled() ? "" : "NOT ") + "started");
       }
+      catch (UnsatisfiedLinkError ex)
+      {
+          // Error accessing the Win32NetBIOS DLL code
+
+          logger.error("Error accessing Win32 NetBIOS, check DLL is on the path");
+
+          // Disable the CIFS server
+
+          removeConfigSection( CIFSConfigSection.SectionName);
+      }
+      catch (Throwable ex)
+      {
+          // Configuration error
+
+          logger.error("CIFS server configuration error, " + ex.getMessage(), ex);
+
+          // Disable the CIFS server
+
+          removeConfigSection( CIFSConfigSection.SectionName);
+      }
+
+      // Initialize the FTP server
+
+      try
+      {
+          // Process the FTP server configuration
+          processFTPServerConfig();
+          
+          // Log the successful startup
+          
+          logger.info("FTP server " + (isFTPServerEnabled() ? "" : "NOT ") + "started");
+      }
+      catch (Exception ex)
+      {
+          // Configuration error
+        
+          logger.error("FTP server configuration error, " + ex.getMessage(), ex);
+      }           
+
+      // Initialize the NFS server
+
+      try
+      {
+          // Process the NFS server configuration
+          processNFSServerConfig();
+          
+          // Log the successful startup
+          
+          logger.info("NFS server " + (isNFSServerEnabled() ? "" : "NOT ") + "started");
+      }
+      catch (Exception ex)
+      {
+          // Configuration error
+        
+          logger.error("NFS server configuration error, " + ex.getMessage(), ex);
+      }           
   }
 
   protected abstract void processCoreServerConfig() throws InvalidConfigurationException;

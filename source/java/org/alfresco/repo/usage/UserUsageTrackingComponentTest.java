@@ -333,7 +333,6 @@ public class UserUsageTrackingComponentTest extends TestCase
                     NodeRef homeFolder = getHomeSpaceFolderNode(userName);
                     nodeService.deleteNode(homeFolder);
                     
-                    authenticationService.deleteAuthentication(userName);
                     personService.deletePerson(userName);
                     deleteCount++;
                 }

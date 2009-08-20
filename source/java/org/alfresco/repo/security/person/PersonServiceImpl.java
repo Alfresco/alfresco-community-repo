@@ -41,6 +41,7 @@ import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
+import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.permissions.PermissionServiceSPI;
 import org.alfresco.repo.tenant.TenantService;
@@ -58,6 +59,7 @@ import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.ResultSetRow;
 import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
+import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.NoSuchPersonException;
@@ -99,6 +101,8 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
     private SearchService searchService;
 
     private AuthorityService authorityService;
+    
+    private AuthenticationService authenticationService;
 
     private DictionaryService dictionaryService;
 
@@ -168,6 +172,7 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
         PropertyCheck.mandatory(this, "searchService", searchService);
         PropertyCheck.mandatory(this, "permissionServiceSPI", permissionServiceSPI);
         PropertyCheck.mandatory(this, "authorityService", authorityService);
+        PropertyCheck.mandatory(this, "authenticationService", authenticationService);
         PropertyCheck.mandatory(this, "namespacePrefixResolver", namespacePrefixResolver);
         PropertyCheck.mandatory(this, "policyComponent", policyComponent);
         PropertyCheck.mandatory(this, "personCache", personCache);
@@ -648,6 +653,16 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
             return;
         }
         
+        // Remove internally-stored password information, if any
+        try
+        {
+            authenticationService.deleteAuthentication(userName);
+        }
+        catch (AuthenticationException e)
+        {
+            // Ignore this - externally authenticated user
+        }
+
         // remove user from any containing authorities
         Set<String> containerAuthorities = authorityService.getContainingAuthorities(null, userName, true);
         for (String containerAuthority : containerAuthorities)
@@ -759,6 +774,11 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
     public void setAuthorityService(AuthorityService authorityService)
     {
         this.authorityService = authorityService;
+    }
+    
+    public void setAuthenticationService(AuthenticationService authenticationService)
+    {
+        this.authenticationService = authenticationService;
     }
 
     public void setDictionaryService(DictionaryService dictionaryService)

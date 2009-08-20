@@ -29,12 +29,10 @@ import java.util.List;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
-import org.alfresco.repo.security.authentication.MutableAuthenticationDao;
 import org.alfresco.repo.site.SiteModel;
-import org.alfresco.service.cmr.invitation.InvitationExceptionUserError;
+import org.alfresco.service.cmr.invitation.Invitation;
 import org.alfresco.service.cmr.invitation.InvitationSearchCriteria;
 import org.alfresco.service.cmr.invitation.InvitationService;
-import org.alfresco.service.cmr.invitation.Invitation;
 import org.alfresco.service.cmr.invitation.ModeratedInvitation;
 import org.alfresco.service.cmr.invitation.NominatedInvitation;
 import org.alfresco.service.cmr.invitation.Invitation.ResourceType;
@@ -56,7 +54,6 @@ public class InvitationServiceImplTest extends BaseAlfrescoSpringTest
     private AuthenticationComponent authenticationComponent;
     private PersonService personService;
     private InvitationService invitationService;
-    private MutableAuthenticationDao mutableAuthenticationDao;
     
     private final String SITE_SHORT_NAME_INVITE = "InvitationTest";
     private final String SITE_SHORT_NAME_RED = "InvitationTestRed";
@@ -85,7 +82,6 @@ public class InvitationServiceImplTest extends BaseAlfrescoSpringTest
         this.siteService = (SiteService)this.applicationContext.getBean("SiteService");
         this.personService = (PersonService)this.applicationContext.getBean("PersonService");
         this.authenticationComponent = (AuthenticationComponent)this.applicationContext.getBean("authenticationComponent");
-        this.mutableAuthenticationDao = (MutableAuthenticationDao)this.applicationContext.getBean("authenticationDao");
         
         createPerson(USER_MANAGER, USER_MANAGER + "@alfrescotesting.com", PERSON_FIRSTNAME, PERSON_LASTNAME);
         createPerson(USER_ONE, USER_ONE_EMAIL,USER_ONE_FIRSTNAME, USER_ONE_LASTNAME);
@@ -365,8 +361,6 @@ public class InvitationServiceImplTest extends BaseAlfrescoSpringTest
      */
     public void testNominatedInvitationNewUserSameEmails() throws Exception
     {
-    	Date startDate = new java.util.Date();
-    	
     	String inviteeAFirstName = "John";
     	String inviteeALastName = "Smith"; 
     	
@@ -868,9 +862,6 @@ public class InvitationServiceImplTest extends BaseAlfrescoSpringTest
     	Invitation.ResourceType resourceType = Invitation.ResourceType.WEB_SITE; 
     	String inviteeRole = SiteModel.SITE_COLLABORATOR;
     	String comments = "please sir, let me in!";
-    	String inviteeFirstName = PERSON_FIRSTNAME;
-    	String inviteeLastName = PERSON_LASTNAME; 
-    	String inviteeEmail = "123";
     	String serverPath = "wibble";
     	String acceptUrl = "froob";
     	String rejectUrl = "marshmallow";
@@ -1005,19 +996,7 @@ public class InvitationServiceImplTest extends BaseAlfrescoSpringTest
     }
 
     private void deletePersonByUserName(String userName)
-    {
-        // delete authentication if authentication exists for given user name
-        if (this.authenticationService.authenticationExists(userName))
-        {
-            this.authenticationService.deleteAuthentication(userName);
-        }
-        
-        // delete user account
-        if (this.mutableAuthenticationDao.userExists(userName))
-        {
-            this.mutableAuthenticationDao.deleteUser(userName);
-        }
-        
+    {    
         // delete person node associated with given user name
         // if one exists
         if (this.personService.personExists(userName))

@@ -304,6 +304,9 @@
         <property name="authorityService">
            <ref bean="authorityService" />
         </property>
+        <property name="authenticationService">
+           <ref bean="authenticationService" />
+        </property>
         <property name="dictionaryService">
            <ref bean="dictionaryService" />
         </property>

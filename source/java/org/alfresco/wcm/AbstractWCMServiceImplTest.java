@@ -169,10 +169,6 @@ public class AbstractWCMServiceImplTest extends TestCase
     
     protected void deleteUser(String userName)
     {
-        if (authenticationService.authenticationExists(userName) == true)
-        {
-            personService.deletePerson(userName);
-            authenticationService.deleteAuthentication(userName);
-        }
+        personService.deletePerson(userName);
     }
 }

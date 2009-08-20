@@ -345,18 +345,6 @@ public class InviteServiceTest extends BaseWebScriptTest
 
     private void deletePersonByUserName(String userName)
     {
-        // delete authentication if authentication exists for given user name
-        if (this.authenticationService.authenticationExists(userName))
-        {
-            this.authenticationService.deleteAuthentication(userName);
-        }
-        
-        // delete user account
-        if (this.mutableAuthenticationDao.userExists(userName))
-        {
-            this.mutableAuthenticationDao.deleteUser(userName);
-        }
-        
         // delete person node associated with given user name
         // if one exists
         if (this.personService.personExists(userName))

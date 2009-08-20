@@ -152,22 +152,6 @@ public class RuleServiceTest extends BaseWebScriptTest
         // ;
         // AuthenticationUtil.runAs(runAsWork, AuthenticationUtil.getSystemUserName());
     }
-
-    private void deleteUserAndAssocPerson(String userName)
-    {
-        // delete authentication if authentication exists for given user name
-        if (this.authenticationService.authenticationExists(userName))
-        {
-            this.authenticationService.deleteAuthentication(userName);
-        }
-        
-        // delete person node associated with given user name
-        // if one exists
-        if (this.personService.personExists(userName))
-        {
-            this.personService.deletePerson(userName);
-        }
-    }
     
     /**
      * Get a URL to the Rule Collection associated with the given rule owning

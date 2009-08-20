@@ -600,10 +600,6 @@ public class AdministrationWebService extends AbstractWebService implements
     {
         for (String userName : userNames)
         {
-        	if (this.manageAuthenticationDetails == true)
-        	{
-        		this.authenticationService.deleteAuthentication(userName);
-        	}
             this.personService.deletePerson(userName);
         }        
     }

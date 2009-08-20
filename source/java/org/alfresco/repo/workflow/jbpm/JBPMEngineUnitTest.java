@@ -31,9 +31,11 @@ import static org.springframework.transaction.TransactionDefinition.*;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -77,6 +79,8 @@ import org.springmodules.workflow.jbpm31.JbpmTemplate;
  */
 public class JBPMEngineUnitTest extends TestCase
 {
+    private static final String USER_NAME = "admin";
+
     private static final String TEST_JBPM_ENGINE = "test_jbpm_engine";
 
     private static final NodeRef companyHome = new NodeRef("for://test/home");
@@ -87,7 +91,7 @@ public class JBPMEngineUnitTest extends TestCase
 
     private JBPMEngine engine = new JBPMEngine();
 
-    private WorkflowDefinition testWorkflowDef;
+    private WorkflowDefinition workflowDef;
 
     private SpringAwareUserTransaction transaction;
 
@@ -108,25 +112,21 @@ public class JBPMEngineUnitTest extends TestCase
         assertNotNull(workflowDefs);
         assertTrue(workflowDefs.size() == 1);
 
-        assertNotNull(testWorkflowDef);
-        assertEquals("jbpm_test$test", testWorkflowDef.name);
-        assertEquals("1", testWorkflowDef.version);
+        assertNotNull(workflowDef);
+        assertEquals("jbpm_test$test", workflowDef.name);
+        assertEquals("1", workflowDef.version);
 
         deployTestDefinition();
         assertTrue(engine.isDefinitionDeployed(processDef.getInputStream(),
                     MimetypeMap.MIMETYPE_XML));
-        assertEquals("2", testWorkflowDef.version);
+        assertEquals("2", workflowDef.version);
     }
 
     public void testGetWorkflowInstance() throws Exception
     {
         deployTestDefinition();
-        WorkflowPath path = engine.startWorkflow(testWorkflowDef.getId(), null);
-        assertNotNull(path);
-        assertTrue(path.id.endsWith("-@"));
-        assertNotNull(path.node);
-        assertNotNull(path.instance);
-        assertEquals(testWorkflowDef.id, path.instance.definition.id);
+        WorkflowPath path = engine.startWorkflow(workflowDef.getId(), null);
+        checkPath(path);
         WorkflowInstance instance = engine.getWorkflowById(path.instance.id);
         assertNotNull(instance);
         assertEquals(path.instance.id, instance.id);
@@ -144,12 +144,12 @@ public class JBPMEngineUnitTest extends TestCase
         }
 
         deployTestDefinition();
-        WorkflowPath path = engine.startWorkflow(testWorkflowDef.getId(), null);
+        WorkflowPath path = engine.startWorkflow(workflowDef.getId(), null);
         assertNotNull(path);
         assertTrue(path.id.endsWith("-@"));
         assertNotNull(path.node);
         assertNotNull(path.instance);
-        assertEquals(testWorkflowDef.getId(), path.instance.definition.id);
+        assertEquals(workflowDef.getId(), path.instance.definition.id);
     }
 
     public void testStartWorkflowParameters() throws Exception
@@ -177,12 +177,8 @@ public class JBPMEngineUnitTest extends TestCase
         params.put(ContentModel.PROP_OWNER, "Owner"); // task assignment
 
         deployTestDefinition();
-        WorkflowPath path = engine.startWorkflow(testWorkflowDef.id, params);
-        assertNotNull(path);
-        assertTrue(path.id.endsWith("-@"));
-        assertNotNull(path.node);
-        assertNotNull(path.instance);
-        assertEquals(testWorkflowDef.id, path.instance.definition.id);
+        WorkflowPath path = engine.startWorkflow(workflowDef.id, params);
+        checkPath(path);
         List<WorkflowTask> tasks1 = engine.getTasksForWorkflowPath(path.id);
         assertNotNull(tasks1);
         assertEquals(1, tasks1.size());
@@ -200,6 +196,170 @@ public class JBPMEngineUnitTest extends TestCase
         // ContentModel.PROP_USERNAME);
         // assertEquals(AuthenticationUtil.getAdminUserName(),
         // initiatorUsername);
+    }
+
+    public void testUpdateTask() throws Exception
+    {
+        Map<QName, Serializable> params = new HashMap<QName, Serializable>();
+        // protected - shouldn't be written
+        params.put(WorkflowModel.PROP_TASK_ID, 3);
+
+        // task instance field
+        params.put(WorkflowModel.PROP_DUE_DATE, new Date());
+
+        params.put(WorkflowModel.PROP_PRIORITY, 1); // task instance field
+        params.put(WorkflowModel.PROP_PERCENT_COMPLETE, 10); // context variable
+
+        // context variable outside of task definition
+        params.put(QName.createQName("", "Message"), "Hello World");
+
+        // context variable outside of task definition
+        params.put(QName.createQName("", "Array"), new String[] { "one", "two" });
+
+        // context task assignment
+        params.put(QName.createQName("", "NodeRef"), new NodeRef("workspace://1/1001"));
+
+        params.put(ContentModel.PROP_OWNER, USER_NAME);
+
+        deployTestDefinition();
+        WorkflowPath path = engine.startWorkflow(workflowDef.id, params);
+        checkPath(path);
+        List<WorkflowTask> tasks1 = engine.getTasksForWorkflowPath(path.id);
+        assertNotNull(tasks1);
+        assertEquals(1, tasks1.size());
+
+        WorkflowTask task = tasks1.get(0);
+        assertTrue(task.properties.containsKey(WorkflowModel.PROP_TASK_ID));
+        assertTrue(task.properties.containsKey(WorkflowModel.PROP_DUE_DATE));
+        assertTrue(task.properties.containsKey(WorkflowModel.PROP_PRIORITY));
+        assertTrue(task.properties.containsKey(WorkflowModel.PROP_PERCENT_COMPLETE));
+        assertTrue(task.properties.containsKey(ContentModel.PROP_OWNER));
+
+        // update with null parameters
+        try
+        {
+            WorkflowTask taskU1 = engine.updateTask(task.id, null, null, null);
+            assertNotNull(taskU1);
+        }
+        catch (Throwable e)
+        {
+            fail("Task update failed with null parameters");
+        }
+
+        // update property value
+        Map<QName, Serializable> updateProperties2 = new HashMap<QName, Serializable>();
+        updateProperties2.put(WorkflowModel.PROP_PERCENT_COMPLETE, 100);
+        WorkflowTask taskU2 = engine.updateTask(task.id, updateProperties2, null, null);
+        assertEquals(100, taskU2.properties.get(WorkflowModel.PROP_PERCENT_COMPLETE));
+
+        // add to assocation
+        QName assocName = QName.createQName("", "TestAssoc");
+        List<NodeRef> toAdd = new ArrayList<NodeRef>();
+        toAdd.add(new NodeRef("workspace://1/1001"));
+        toAdd.add(new NodeRef("workspace://1/1002"));
+        toAdd.add(new NodeRef("workspace://1/1003"));
+        Map<QName, List<NodeRef>> addAssocs = new HashMap<QName, List<NodeRef>>();
+        addAssocs.put(assocName, toAdd);
+        WorkflowTask taskU3 = engine.updateTask(task.id, null, addAssocs, null);
+        assertNotNull(taskU3.properties.get(assocName));
+        Object assoc = taskU3.properties.get(assocName);
+        assertNotNull(assoc);
+        assertEquals(3, ((List<?>) assoc).size());
+
+        // add to assocation again
+        List<NodeRef> toAddAgain = new ArrayList<NodeRef>();
+        toAddAgain.add(new NodeRef("workspace://1/1004"));
+        toAddAgain.add(new NodeRef("workspace://1/1005"));
+        Map<QName, List<NodeRef>> addAssocsAgain = new HashMap<QName, List<NodeRef>>();
+        addAssocsAgain.put(assocName, toAddAgain);
+        WorkflowTask taskU4 = engine.updateTask(task.id, null, addAssocsAgain, null);
+        assertNotNull(taskU4.properties.get(assocName));
+        assoc = taskU4.properties.get(assocName);
+        assertEquals(5, ((List<?>) assoc).size());
+
+        // remove assocation
+        List<NodeRef> toRemove = new ArrayList<NodeRef>();
+        toRemove.add(new NodeRef("workspace://1/1002"));
+        toRemove.add(new NodeRef("workspace://1/1003"));
+        Map<QName, List<NodeRef>> removeAssocs = new HashMap<QName, List<NodeRef>>();
+        removeAssocs.put(assocName, toRemove);
+        WorkflowTask taskU5 = engine.updateTask(task.id, null, null, removeAssocs);
+        assertNotNull(taskU5.properties.get(assocName));
+        assoc = taskU5.properties.get(assocName);
+        assertEquals(3, ((List<?>) assoc).size());
+    }
+
+    public void testGetWorkflowInstances() throws Exception
+    {
+        deployTestDefinition();
+        WorkflowPath path1 = engine.startWorkflow(workflowDef.id, null);
+        WorkflowPath path2 = engine.startWorkflow(workflowDef.id, null);
+        List<WorkflowInstance> instances = engine.getActiveWorkflows(workflowDef.id);
+        assertNotNull(instances);
+        assertEquals(2, instances.size());
+
+        HashSet<String> ids = new HashSet<String>(2);
+        ids.add(path1.instance.id);
+        ids.add(path2.instance.id);
+
+        for (WorkflowInstance instance : instances)
+        {
+            assertEquals(workflowDef.id, instance.definition.id);
+            assertTrue(ids.contains(instance.id));
+        }
+    }
+
+    public void testGetPositions() throws Exception
+    {
+        deployTestDefinition();
+        engine.startWorkflow(workflowDef.id, null);
+        List<WorkflowInstance> instances = engine.getActiveWorkflows(workflowDef.id);
+        assertNotNull(instances);
+        assertEquals(1, instances.size());
+        List<WorkflowPath> paths = engine.getWorkflowPaths(instances.get(0).id);
+        assertNotNull(paths);
+        assertEquals(1, paths.size());
+        assertEquals(instances.get(0).id, paths.get(0).instance.id);
+        assertTrue(paths.get(0).id.endsWith("-@"));
+    }
+
+    // TODO: Need to strip AuthenticationUtil out of JBPMEngine to get this
+    // test passing. Also need to stop the hard-wired bean look-up for the
+    // TransactionService in AlfrescoJobExecutor.
+    // public void testCancelWorkflowInstance() throws Exception
+    // {
+    // deployTestDefinition();
+    // engine.startWorkflow(workflowDef.id, null);
+    // List<WorkflowInstance> instances1 =
+    // engine.getActiveWorkflows(workflowDef.id);
+    // assertNotNull(instances1);
+    // assertEquals(1, instances1.size());
+    // List<WorkflowTask> tasks = engine
+    // .getAssignedTasks(USER_NAME, WorkflowTaskState.IN_PROGRESS);
+    // assertNotNull(tasks);
+    //
+    // assertEquals(1, tasks.size());
+    // WorkflowInstance cancelledInstance =
+    // engine.cancelWorkflow(instances1.get(0).id);
+    // assertNotNull(cancelledInstance);
+    // assertFalse(cancelledInstance.active);
+    // List<WorkflowInstance> instances2 =
+    // engine.getActiveWorkflows(workflowDef.id);
+    // assertNotNull(instances2);
+    // assertEquals(0, instances2.size());
+    // List<WorkflowTask> tasks1 = engine.getAssignedTasks(USER_NAME,
+    // WorkflowTaskState.IN_PROGRESS);
+    // assertNotNull(tasks1);
+    // assertEquals(0, tasks1.size());
+    // }
+
+    private void checkPath(WorkflowPath path)
+    {
+        assertNotNull(path);
+        assertTrue(path.id.endsWith("-@"));
+        assertNotNull(path.node);
+        assertNotNull(path.instance);
+        assertEquals(workflowDef.id, path.instance.definition.id);
     }
 
     @Override
@@ -272,9 +432,9 @@ public class JBPMEngineUnitTest extends TestCase
                     "jbpmresources/test_processdefinition.xml");
         WorkflowDeployment deployment = engine.deployDefinition(processDef.getInputStream(),
                     MimetypeMap.MIMETYPE_XML);
-        testWorkflowDef = deployment.definition;
-        assertNotNull(testWorkflowDef);
-        assertEquals("jbpm_test$test", testWorkflowDef.name);
+        workflowDef = deployment.definition;
+        assertNotNull(workflowDef);
+        assertEquals("jbpm_test$test", workflowDef.name);
     }
 
     private NamespaceService makeNamespaceService()

@@ -123,6 +123,12 @@ import org.alfresco.service.namespace.QName;
         BehaviourBinding generalisedBinding = null;
         ClassDefinition classDefinition = getDictionary().getClass(getClassQName());
         
+        if (classDefinition == null)
+        {
+            // The class definition doesn't exist so there can be no behaviour bound
+            return null;
+        }
+        
         if (activeFeatureQName.equals(ALL_FEATURES))
         {
             QName parentClassName = classDefinition.getParentName();

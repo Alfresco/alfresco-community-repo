@@ -48,6 +48,7 @@ var ParseArgs =
       var rootNode = null,
          parentNode = null,
          nodeRef = null,
+         path = "",
          siteId, siteNode, containerId, type;
 
       if (url.templateArgs.store_type !== null)
@@ -83,6 +84,8 @@ var ParseArgs =
                return null;
             }
          }
+
+         parentNode = rootNode.parent;
       }
       else
       {
@@ -130,19 +133,20 @@ var ParseArgs =
             rootNode.save();
             */
          }
+
+         // Path input
+         path = url.templateArgs.path;
+         if ((path !== null) && (path !== ""))
+         {
+            parentNode = rootNode.childByNamePath(path);
+         }
+         else
+         {
+            parentNode = rootNode;
+            path = "";
+         }
       }
 
-      // Path input
-      var path = url.templateArgs.path;
-      if ((path !== null) && (path !== ""))
-      {
-         parentNode = rootNode.childByNamePath(path);
-      }
-      else
-      {
-         parentNode = rootNode;
-         path = "";
-      }
       if (parentNode === null)
       {
          parentNode = rootNode;

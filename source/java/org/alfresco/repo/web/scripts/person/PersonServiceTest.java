@@ -120,11 +120,6 @@ public class PersonServiceTest extends BaseWebScriptTest
             personService.deletePerson(userName);
         }
         
-        // delete authentications for users created in setUp()
-        this.authenticationService.deleteAuthentication(USER_ONE);
-        this.authenticationService.deleteAuthentication(USER_TWO);
-        this.authenticationService.deleteAuthentication(USER_THREE);
-        
         // Clear the list
         this.createdPeople.clear();
     }

@@ -86,8 +86,8 @@ public class JBPMEngineUnitTest extends TestCase
     private static final NodeRef companyHome = new NodeRef("for://test/home");
 
     private static final ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext(
-                new String[] { "classpath:test/alfresco/test-database-context.xml",
-                            "classpath:test/alfresco/test-workflow-context.xml", });
+                new String[] { "classpath:jbpm-test/test-database-context.xml",
+                            "classpath:jbpm-test/test-workflow-context.xml", });
 
     private JBPMEngine engine = new JBPMEngine();
 

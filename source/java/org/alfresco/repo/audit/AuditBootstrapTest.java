@@ -22,53 +22,44 @@
  * the FLOSS exception, and it is also available here: 
  * http://www.alfresco.com/legal/licensing
  */
-package org.alfresco.repo.audit.model;
+package org.alfresco.repo.audit;
 
-import java.net.URL;
+import junit.framework.TestCase;
 
-import org.alfresco.util.PropertyCheck;
-import org.springframework.beans.factory.InitializingBean;
-import org.springframework.util.ResourceUtils;
+import org.alfresco.repo.audit.model.AuditModelRegistry;
+import org.alfresco.util.ApplicationContextHelper;
+import org.springframework.context.ApplicationContext;
 
 /**
- * A component used to load Audit model XML documents.
+ * Tests that auditing is loaded properly on repository startup.
+ * 
+ * @see AuditBootstrap
  * 
  * @author Derek Hulley
  * @since 3.2
  */
-public class AuditModelReader implements InitializingBean
+public class AuditBootstrapTest extends TestCase
 {
-    private URL auditModelUrl;
+    private static final String APPLICATION_REPOSITORY = "Alfresco Repository";
+    
+    private static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
+    
     private AuditModelRegistry auditModelRegistry;
     
-    /**
-     * Set the XML location using <b>file:</b>, <b>classpath:</b> or any of the
-     * {@link ResourceUtils Spring-supported} formats.
-     * 
-     * @param auditModelUrl         the location of the XML file
-     */
-    public void setAuditModelUrl(URL auditModelUrl)
+    @Override
+    public void setUp() throws Exception
     {
-        this.auditModelUrl = auditModelUrl;
+        auditModelRegistry = (AuditModelRegistry) ctx.getBean("auditModel.registry");
     }
-
-    /**
-     * 
-     * @param auditModelRegistry    the registry that combines all loaded models
-     */
-    public void setAuditModelRegistry(AuditModelRegistry auditModelRegistry)
+    
+    public void testSetUp()
     {
-        this.auditModelRegistry = auditModelRegistry;
+        // Just here to fail if the basic startup fails
     }
-
-    /**
-     * Pulls in the configuration and registers it
-     */
-    public void afterPropertiesSet() throws Exception
+    
+    public void testGetModelId()
     {
-        PropertyCheck.mandatory(this, "configUrl", auditModelUrl);
-        PropertyCheck.mandatory(this, "auditModelRegistry", auditModelRegistry);
-        
-        auditModelRegistry.registerModel(auditModelUrl);
+        Long repoId = auditModelRegistry.getAuditModelId(APPLICATION_REPOSITORY);
+        assertNotNull("No audit model ID for " + APPLICATION_REPOSITORY, repoId);
     }
 }

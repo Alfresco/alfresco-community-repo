@@ -25,7 +25,8 @@
 package org.alfresco.repo.domain.audit.ibatis;
 
 import org.alfresco.repo.domain.audit.AbstractAuditDAOImpl;
-import org.alfresco.repo.domain.audit.AuditConfigEntity;
+import org.alfresco.repo.domain.audit.AuditModelEntity;
+import org.alfresco.repo.domain.audit.AuditSessionEntity;
 import org.springframework.orm.ibatis.SqlMapClientTemplate;
 
 /**
@@ -36,8 +37,10 @@ import org.springframework.orm.ibatis.SqlMapClientTemplate;
  */
 public class AuditDAOImpl extends AbstractAuditDAOImpl
 {
-    private static final String SELECT_CONFIG_BY_CRC = "select.AuditConfigByCrc";
-    private static final String INSERT_CONFIG = "insert.AuditConfig";
+    private static final String SELECT_MODEL_BY_CRC = "select.AuditModelByCrc";
+    private static final String INSERT_MODEL = "insert.AuditModel";
+    
+    private static final String INSERT_SESSION = "insert.AuditSession";
     
     private SqlMapClientTemplate template;
 
@@ -47,24 +50,35 @@ public class AuditDAOImpl extends AbstractAuditDAOImpl
     }
 
     @Override
-    protected AuditConfigEntity getAuditConfigByCrc(long crc)
+    protected AuditModelEntity getAuditModelByCrc(long crc)
     {
-        AuditConfigEntity entity = new AuditConfigEntity();
+        AuditModelEntity entity = new AuditModelEntity();
         entity.setContentCrc(crc);
-        entity = (AuditConfigEntity) template.queryForObject(
-                SELECT_CONFIG_BY_CRC,
+        entity = (AuditModelEntity) template.queryForObject(
+                SELECT_MODEL_BY_CRC,
                 entity);
         // Done
         return entity;
     }
 
     @Override
-    protected AuditConfigEntity createAuditConfig(Long contentDataId, long crc)
+    protected AuditModelEntity createAuditModel(Long contentDataId, long crc)
     {
-        AuditConfigEntity entity = new AuditConfigEntity();
+        AuditModelEntity entity = new AuditModelEntity();
         entity.setContentDataId(contentDataId);
         entity.setContentCrc(crc);
-        Long id = (Long) template.insert(INSERT_CONFIG, entity);
+        Long id = (Long) template.insert(INSERT_MODEL, entity);
+        entity.setId(id);
+        return entity;
+    }
+
+    @Override
+    protected AuditSessionEntity createAuditSession(Long appNameId, Long modelId)
+    {
+        AuditSessionEntity entity = new AuditSessionEntity();
+        entity.setApplicationNameId(appNameId);
+        entity.setAuditModelId(modelId);
+        Long id = (Long) template.insert(INSERT_SESSION, entity);
         entity.setId(id);
         return entity;
     }

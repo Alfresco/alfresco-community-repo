@@ -7,13 +7,23 @@
 -- Please contact support@alfresco.com if you need assistance with the upgrade.
 --
 
-CREATE TABLE alf_audit_cfg
+CREATE TABLE alf_audit_model
 (
    id BIGINT NOT NULL AUTO_INCREMENT,
    content_data_id BIGINT NOT NULL,
    content_crc BIGINT NOT NULL,
    UNIQUE INDEX idx_alf_audit_cfg_crc (content_crc),
-   CONSTRAINT fk_alf_audit_cfg_cd FOREIGN KEY (content_data_id) REFERENCES alf_content_data (id),
+   CONSTRAINT fk_alf_audit_model_cd FOREIGN KEY (content_data_id) REFERENCES alf_content_data (id),
+   PRIMARY KEY (id)
+) ENGINE=InnoDB;
+
+CREATE TABLE alf_audit_session
+(
+   id BIGINT NOT NULL AUTO_INCREMENT,
+   audit_model_id BIGINT NOT NULL,
+   app_name_id BIGINT NOT NULL,
+   CONSTRAINT fk_alf_audit_sess_model FOREIGN KEY (audit_model_id) REFERENCES alf_audit_model (id),
+   CONSTRAINT fk_alf_audit_sess_app FOREIGN KEY (app_name_id) REFERENCES alf_prop_value (id),
    PRIMARY KEY (id)
 ) ENGINE=InnoDB;
 

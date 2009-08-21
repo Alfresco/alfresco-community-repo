@@ -761,7 +761,7 @@ public class AuditComponentImpl implements AuditComponent
      * V3.2 from here on.  Put all fixes to the older audit code before this point, please.
      */
 
-    public Long startAuditSession(String rootPath)
+    public Long startAuditSession(String application, String rootPath)
     {
         throw new UnsupportedOperationException();
     }

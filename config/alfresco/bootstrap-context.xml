@@ -494,6 +494,12 @@
         </property>
     </bean>
 
+    <!--  Start Auditing -->
+    <bean id="audit.bootstrap" class="org.alfresco.repo.audit.AuditBootstrap">
+        <property name="transactionService" ref="transactionService"/>
+        <property name="auditModelRegistry" ref="auditModel.registry"/>
+    </bean>
+
    <!-- Repository helper class -->
    <bean id="repositoryHelper" class="org.alfresco.repo.model.Repository">
       <property name="transactionHelper" ref="retryingTransactionHelper" />

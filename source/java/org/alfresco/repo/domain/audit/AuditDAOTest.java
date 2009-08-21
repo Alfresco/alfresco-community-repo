@@ -64,7 +64,7 @@ public class AuditDAOTest extends TestCase
         auditDAO = (AuditDAO) ctx.getBean("auditDAO");
     }
     
-    public void testAuditConfig() throws Exception
+    public void testAuditModel() throws Exception
     {
         final File file = AbstractContentTransformerTest.loadQuickTestFile("pdf");
         assertNotNull(file);
@@ -73,8 +73,8 @@ public class AuditDAOTest extends TestCase
         {
             public Pair<Long, ContentData> execute() throws Throwable
             {
-                Pair<Long, ContentData> contentDataPair = auditDAO.getOrCreateAuditConfig(url);
-                return contentDataPair;
+                Pair<Long, ContentData> auditModelPair = auditDAO.getOrCreateAuditModel(url);
+                return auditModelPair;
             }
         };
         Pair<Long, ContentData> configPair = txnHelper.doInTransaction(callback);
@@ -83,5 +83,40 @@ public class AuditDAOTest extends TestCase
         Pair<Long, ContentData> configPairCheck = txnHelper.doInTransaction(callback);
         assertNotNull(configPairCheck);
         assertEquals(configPair, configPairCheck);
+    }
+    
+    public void testAuditSession() throws Exception
+    {
+        final File file = AbstractContentTransformerTest.loadQuickTestFile("pdf");
+        assertNotNull(file);
+        final URL url = new URL("file:" + file.getAbsolutePath());
+        RetryingTransactionCallback<Long> createModelCallback = new RetryingTransactionCallback<Long>()
+        {
+            public Long execute() throws Throwable
+            {
+                return auditDAO.getOrCreateAuditModel(url).getFirst();
+            }
+        };
+        final Long modelId = txnHelper.doInTransaction(createModelCallback);
+        
+        final String appName = getName() + "." + System.currentTimeMillis();
+        final int count = 1000;
+        RetryingTransactionCallback<Void> createSessionCallback = new RetryingTransactionCallback<Void>()
+        {
+            public Void execute() throws Throwable
+            {
+                for (int i = 0; i < count; i++)
+                {
+                    auditDAO.createAuditSession(modelId, appName);
+                }
+                return null;
+            }
+        };
+        long before = System.nanoTime();
+        txnHelper.doInTransaction(createSessionCallback);
+        long after = System.nanoTime();
+        System.out.println(
+                "Time for " + count + " session creations was " +
+                ((double)(after - before)/(10E6)) + "ms");
     }
 }

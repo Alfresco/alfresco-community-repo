@@ -24,27 +24,61 @@
  */
 package org.alfresco.repo.domain.audit;
 
-import java.net.URL;
-
-import org.alfresco.service.cmr.repository.ContentData;
-import org.alfresco.util.Pair;
-
 /**
- * DAO services for <b>alf_audit_XXX</b> tables.
+ * Entity bean for <b>alf_audit_session</b> table.
  * 
  * @author Derek Hulley
  * @since 3.2
  */
-public interface AuditDAO
+public class AuditSessionEntity
 {
-    /**
-     * Creates a new audit model entry or finds an existing one
-     * 
-     * @param               the URL of the configuration
-     * @return              Returns the ID of the config matching the input stream and the
-     *                      content storage details
-     */
-    Pair<Long, ContentData> getOrCreateAuditModel(URL url);
+    private Long id;
+    private Long applicationNameId;
+    private Long auditModelId;
     
-    Long createAuditSession(Long modelId, String application);
+    public AuditSessionEntity()
+    {
+    }
+    
+    @Override
+    public String toString()
+    {
+        StringBuilder sb = new StringBuilder(512);
+        sb.append("AuditSessionEntity")
+          .append("[ ID=").append(id)
+          .append(", applicationNameId=").append(applicationNameId)
+          .append(", auditModelId=").append(auditModelId)
+          .append("]");
+        return sb.toString();
+    }
+    
+    public Long getId()
+    {
+        return id;
+    }
+
+    public void setId(Long id)
+    {
+        this.id = id;
+    }
+
+    public Long getAuditModelId()
+    {
+        return auditModelId;
+    }
+
+    public void setAuditModelId(Long auditModelId)
+    {
+        this.auditModelId = auditModelId;
+    }
+
+    public Long getApplicationNameId()
+    {
+        return applicationNameId;
+    }
+
+    public void setApplicationNameId(Long applicationNameId)
+    {
+        this.applicationNameId = applicationNameId;
+    }
 }

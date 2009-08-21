@@ -32,6 +32,7 @@ import java.util.zip.CRC32;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.domain.contentdata.ContentDataDAO;
+import org.alfresco.repo.domain.propval.PropertyValueDAO;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
@@ -51,6 +52,7 @@ public abstract class AbstractAuditDAOImpl implements AuditDAO
     
     private ContentService contentService;
     private ContentDataDAO contentDataDAO;
+    private PropertyValueDAO propertyValueDAO;
     
     public void setContentService(ContentService contentService)
     {
@@ -61,11 +63,21 @@ public abstract class AbstractAuditDAOImpl implements AuditDAO
     {
         this.contentDataDAO = contentDataDAO;
     }
+    
+    public void setPropertyValueDAO(PropertyValueDAO propertyValueDAO)
+    {
+        this.propertyValueDAO = propertyValueDAO;
+    }
+
+    
+    /*
+     * alf_audit_model
+     */
 
     /**
      * {@inheritDoc}
      */
-    public Pair<Long, ContentData> getOrCreateAuditConfig(URL url)
+    public Pair<Long, ContentData> getOrCreateAuditModel(URL url)
     {
         InputStream is = null;
         try
@@ -87,7 +99,7 @@ public abstract class AbstractAuditDAOImpl implements AuditDAO
             while (true);
             long crc = crcCalc.getValue();
             // Find an existing entry
-            AuditConfigEntity existingEntity = getAuditConfigByCrc(crc);
+            AuditModelEntity existingEntity = getAuditModelByCrc(crc);
             if (existingEntity != null)
             {
                 Long existingEntityId = existingEntity.getId();
@@ -100,7 +112,7 @@ public abstract class AbstractAuditDAOImpl implements AuditDAO
                 if (logger.isDebugEnabled())
                 {
                     logger.debug(
-                            "Found existing configuration with same CRC: \n" +
+                            "Found existing model with same CRC: \n" +
                             "   URL:    " + url + "\n" +
                             "   CRC:    " + crc + "\n" +
                             "   Result: " + result);
@@ -118,13 +130,13 @@ public abstract class AbstractAuditDAOImpl implements AuditDAO
                 writer.putContent(is);
                 ContentData newContentData = writer.getContentData();
                 Long newContentDataId = contentDataDAO.createContentData(newContentData).getFirst();
-                AuditConfigEntity newEntity = createAuditConfig(newContentDataId, crc);
+                AuditModelEntity newEntity = createAuditModel(newContentDataId, crc);
                 Pair<Long, ContentData> result = new Pair<Long, ContentData>(newEntity.getId(), newContentData);
                 // Done
                 if (logger.isDebugEnabled())
                 {
                     logger.debug(
-                            "Created new audit config: \n" +
+                            "Created new audit model: \n" +
                             "   URL:    " + url + "\n" +
                             "   CRC:    " + crc + "\n" +
                             "   Result: " + result);
@@ -134,7 +146,7 @@ public abstract class AbstractAuditDAOImpl implements AuditDAO
         }
         catch (IOException e)
         {
-            throw new AlfrescoRuntimeException("Failed to read Audit configuration: " + url);
+            throw new AlfrescoRuntimeException("Failed to read Audit model: " + url);
         }
         finally
         {
@@ -145,6 +157,22 @@ public abstract class AbstractAuditDAOImpl implements AuditDAO
         }
     }
     
-    protected abstract AuditConfigEntity getAuditConfigByCrc(long crc);
-    protected abstract AuditConfigEntity createAuditConfig(Long contentDataId, long crc);
+    protected abstract AuditModelEntity getAuditModelByCrc(long crc);
+    protected abstract AuditModelEntity createAuditModel(Long contentDataId, long crc);
+    
+    /*
+     * alf_audit_model
+     */
+
+    public Long createAuditSession(Long modelId, String application)
+    {
+        // Persist the string
+        Long appNameId = propertyValueDAO.getOrCreatePropertyValue(application).getFirst();
+        // Create the audit session
+        AuditSessionEntity entity = createAuditSession(appNameId, modelId);
+        // Done
+        return entity.getId();
+    }
+    
+    protected abstract AuditSessionEntity createAuditSession(Long appNameId, Long modelId);
 }

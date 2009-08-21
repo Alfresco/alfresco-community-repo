@@ -10,16 +10,22 @@
     <!-- Type Defs      -->
     <!--                -->
     
-    <typeAlias alias="AuditConfig" type="org.alfresco.repo.domain.audit.AuditConfigEntity"/>
+    <typeAlias alias="AuditModel" type="org.alfresco.repo.domain.audit.AuditModelEntity"/>
+    <typeAlias alias="AuditSession" type="org.alfresco.repo.domain.audit.AuditSessionEntity"/>
 
     <!--                -->
     <!-- Result Maps    -->
     <!--                -->
 
-    <resultMap id="result.AuditConfig" class="AuditConfig">
+    <resultMap id="result.AuditModel" class="AuditModel">
         <result property="id" column="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <result property="contentDataId" column="content_data_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <result property="contentCrc" column="content_crc" jdbcType="BIGINT" javaType="long"/>
+    </resultMap>
+    <resultMap id="result.AuditSession" class="AuditSession">
+        <result property="id" column="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="auditModelId" column="audit_model_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="applicationNameId" column="app_name_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
     </resultMap>
   
     <!--                -->
@@ -34,21 +40,26 @@
     <!-- SQL Snippets   -->
     <!--                -->
     
-    <sql id="insert.AuditConfig.AutoIncrement">
-        insert into alf_audit_cfg (content_data_id, content_crc) 
+    <sql id="insert.AuditModel.AutoIncrement">
+        insert into alf_audit_model (content_data_id, content_crc) 
         values (#contentDataId#, #contentCrc#)
+    </sql>
+    
+    <sql id="insert.AuditSession.AutoIncrement">
+        insert into alf_audit_session (audit_model_id, app_name_id) 
+        values (#auditModelId#, #applicationNameId#)
     </sql>
     
     <!--                -->
     <!-- Statements     -->
     <!--                -->
     
-    <!-- Get the mimetype entity by mimetype -->
-    <select id="select.AuditConfigByCrc" parameterClass="AuditConfig" resultMap="result.AuditConfig">
+    <!-- Get the audit model by the CRC value -->
+    <select id="select.AuditModelByCrc" parameterClass="AuditModel" resultMap="result.AuditModel">
         select
             *
         from
-            alf_audit_cfg
+            alf_audit_model
         where
             content_crc = #contentCrc#
     </select>

@@ -59,6 +59,7 @@
       <property name="sqlMapClientTemplate" ref="auditSqlMapClientTemplate"/>
       <property name="contentService" ref="contentService"/>
       <property name="contentDataDAO" ref="contentDataDAO"/>
+      <property name="propertyValueDAO" ref="propertyValueDAO"/>
    </bean>
    
 </beans>

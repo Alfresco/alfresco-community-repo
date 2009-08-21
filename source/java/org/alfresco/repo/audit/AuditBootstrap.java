@@ -22,53 +22,57 @@
  * the FLOSS exception, and it is also available here: 
  * http://www.alfresco.com/legal/licensing
  */
-package org.alfresco.repo.audit.model;
+package org.alfresco.repo.audit;
 
-import java.net.URL;
-
-import org.alfresco.util.PropertyCheck;
-import org.springframework.beans.factory.InitializingBean;
-import org.springframework.util.ResourceUtils;
+import org.alfresco.repo.audit.model.AuditModelRegistry;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
+import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.util.AbstractLifecycleBean;
+import org.springframework.context.ApplicationEvent;
 
 /**
- * A component used to load Audit model XML documents.
+ * Starts all the necessary audit functionality once the repository has started.
  * 
  * @author Derek Hulley
  * @since 3.2
  */
-public class AuditModelReader implements InitializingBean
+public class AuditBootstrap extends AbstractLifecycleBean
 {
-    private URL auditModelUrl;
+    private TransactionService transactionService;
     private AuditModelRegistry auditModelRegistry;
     
-    /**
-     * Set the XML location using <b>file:</b>, <b>classpath:</b> or any of the
-     * {@link ResourceUtils Spring-supported} formats.
-     * 
-     * @param auditModelUrl         the location of the XML file
-     */
-    public void setAuditModelUrl(URL auditModelUrl)
+    public void setTransactionService(TransactionService transactionService)
     {
-        this.auditModelUrl = auditModelUrl;
+        this.transactionService = transactionService;
+    }
+
+    public void setAuditModelRegistry(AuditModelRegistry registry)
+    {
+        this.auditModelRegistry = registry;
     }
 
     /**
-     * 
-     * @param auditModelRegistry    the registry that combines all loaded models
+     * @see AuditModelRegistry#loadAuditModels()
      */
-    public void setAuditModelRegistry(AuditModelRegistry auditModelRegistry)
+    @Override
+    protected void onBootstrap(ApplicationEvent event)
     {
-        this.auditModelRegistry = auditModelRegistry;
+        RetryingTransactionCallback<Void> callback = new RetryingTransactionCallback<Void>()
+        {
+            public Void execute() throws Throwable
+            {
+                auditModelRegistry.loadAuditModels();
+                return null;
+            }
+        };
+        transactionService.getRetryingTransactionHelper().doInTransaction(callback);
     }
 
     /**
-     * Pulls in the configuration and registers it
+     * No-op
      */
-    public void afterPropertiesSet() throws Exception
+    @Override
+    protected void onShutdown(ApplicationEvent event)
     {
-        PropertyCheck.mandatory(this, "configUrl", auditModelUrl);
-        PropertyCheck.mandatory(this, "auditModelRegistry", auditModelRegistry);
-        
-        auditModelRegistry.registerModel(auditModelUrl);
     }
 }

@@ -76,14 +76,15 @@
     <!-- Audit V3.2 implementation -->
     <!--                           -->
     
-    <bean id="auditConfiguration.registry" class="org.alfresco.repo.audit.model.AuditModelRegistry">
+    <bean id="auditModel.registry" class="org.alfresco.repo.audit.model.AuditModelRegistry">
+        <property name="auditDAO" ref="auditDAO"/>
     </bean>
   
-    <bean id="auditConfiguration.repository" class="org.alfresco.repo.audit.model.AuditModelReader">
-        <property name="configUrl">
+    <bean id="auditModel.repository" class="org.alfresco.repo.audit.model.AuditModelReader">
+        <property name="auditModelUrl">
            <value>classpath:alfresco/audit/alfresco-audit-repository.xml</value>
         </property>
-        <property name="auditModelRegistry" ref="auditConfiguration.registry"/>
+        <property name="auditModelRegistry" ref="auditModel.registry"/>
     </bean>
   
 </beans>

@@ -77,14 +77,23 @@ public interface AuditComponent
      */
     public List<AuditInfo> getAuditTrail(NodeRef nodeRef);
 
+    /*
+     * V3.2 from here on.  Put all fixes to the older audit code before this point, please.
+     */
+
     /**
      * Start an audit session for the given root path.  All later audit operations on the resulting
      * session will be relative to this root path.
+     * <p/>
+     * The name of the application controls part of the audit model will be used.  The root path must
+     * start with the matching <b>key</b> attribute that was declared for the matching
+     * <b>Application</b> element in the audit configuration.
      * 
+     * @param application       the name of the application to log against
      * @param rootPath          a base path of {@link AuditPath} key entries concatenated with <b>.</b> (period)
      * @return                  Returns the unique session identifier
      */
-    public Long startAuditSession(String rootPath);
+    public Long startAuditSession(String application, String rootPath);
     
     /**
      * Record a set of values against the given session.

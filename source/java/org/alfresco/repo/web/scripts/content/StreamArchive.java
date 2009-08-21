@@ -217,6 +217,7 @@ public class StreamArchive extends StreamContent
             ExporterCrawlerParameters params = new ExporterCrawlerParameters();
             params.setCrawlSelf(true);
             params.setCrawlChildNodes(true);
+            params.setCrawlAssociations(false);
             params.setExportFrom(new Location(nodeRefs));
             
             // perform the actual export

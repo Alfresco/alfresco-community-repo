@@ -67,7 +67,6 @@ public abstract class AbstractMimeMessage extends MimeMessage
     /** Used if imapHelper.getDefaultFromAddress is not set */
     protected static final String DEFAULT_EMAIL_FROM = "alfresco@alfresco.org";
     protected static final String DEFAULT_EMAIL_TO = DEFAULT_EMAIL_FROM;
-    protected static final String KOI8R_CHARSET = "koi8-r";
     
     protected static int MAX_RETRIES = 1;
 

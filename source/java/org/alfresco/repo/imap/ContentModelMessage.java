@@ -1,9 +1,5 @@
 package org.alfresco.repo.imap;
 
-import static org.alfresco.repo.imap.AlfrescoImapConst.BASE_64_ENCODING;
-import static org.alfresco.repo.imap.AlfrescoImapConst.CONTENT_TRANSFER_ENCODING;
-import static org.alfresco.repo.imap.AlfrescoImapConst.UTF_8;
-
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.util.Map;
@@ -59,8 +55,8 @@ public class ContentModelMessage extends AbstractMimeMessage
         prop = (String) properties.get(ContentModel.PROP_TITLE);
         try
         {
-            prop = (prop == null) ? messageFileInfo.getName() : prop;
-            prop = MimeUtility.encodeText(prop, KOI8R_CHARSET, null);
+            prop = (prop == null || prop.equals("")) ? messageFileInfo.getName() : prop;
+            prop = MimeUtility.encodeText(prop, AlfrescoImapConst.UTF_8, null);
         }
         catch (UnsupportedEncodingException e)
         {
@@ -83,17 +79,18 @@ public class ContentModelMessage extends AbstractMimeMessage
         // detect an email agent so we use a default template for all messages.
         // See AlfrescoImapConst to see the possible templates to use.
         String bodyTxt = getEmailBodyText(EmailBodyType.TEXT_PLAIN);
-        rootMultipart.addBodyPart(getTextBodyPart(bodyTxt, EmailBodyType.TEXT_PLAIN.getSubtype()));
+        rootMultipart.addBodyPart(getTextBodyPart(bodyTxt, EmailBodyType.TEXT_PLAIN.getSubtype(), EmailBodyType.TEXT_PLAIN.getMimeType()));
         String bodyHtml = getEmailBodyText(EmailBodyType.TEXT_HTML);
-        rootMultipart.addBodyPart(getTextBodyPart(bodyHtml, EmailBodyType.TEXT_HTML.getSubtype()));
+        rootMultipart.addBodyPart(getTextBodyPart(bodyHtml, EmailBodyType.TEXT_HTML.getSubtype(), EmailBodyType.TEXT_HTML.getMimeType()));
         return rootMultipart;
     }
 
-    private MimeBodyPart getTextBodyPart(String bodyText, String subtype) throws MessagingException
+    private MimeBodyPart getTextBodyPart(String bodyText, String subtype, String mimeType) throws MessagingException
     {
         MimeBodyPart result = new MimeBodyPart();
-        result.setText(bodyText, UTF_8, subtype);
-        result.addHeader(CONTENT_TRANSFER_ENCODING, BASE_64_ENCODING);
+        result.setText(bodyText, AlfrescoImapConst.UTF_8, subtype);
+        result.addHeader(AlfrescoImapConst.CONTENT_TYPE, mimeType + AlfrescoImapConst.CHARSET_UTF8);
+        result.addHeader(AlfrescoImapConst.CONTENT_TRANSFER_ENCODING, AlfrescoImapConst.BASE_64_ENCODING);
         return result;
     }
 

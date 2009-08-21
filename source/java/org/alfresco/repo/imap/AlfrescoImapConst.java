@@ -80,5 +80,6 @@ public interface AlfrescoImapConst
     public static final String EIGHT_BIT_ENCODING = "8bit";
     public static final String BASE_64_ENCODING = "base64";
     public static final String UTF_8 = "UTF-8";
+    public static final String CHARSET_UTF8 = ";charset=utf-8";
 
 }

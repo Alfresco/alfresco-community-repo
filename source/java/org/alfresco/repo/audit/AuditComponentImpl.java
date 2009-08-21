@@ -33,9 +33,13 @@ import java.util.List;
 import java.util.Map;
 
 import org.alfresco.repo.audit.model.AuditEntry;
+import org.alfresco.repo.audit.model.AuditModelRegistry;
 import org.alfresco.repo.audit.model.TrueFalseUnset;
+import org.alfresco.repo.audit.model._3.Application;
+import org.alfresco.repo.domain.audit.AuditDAO;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
+import org.alfresco.repo.transaction.TransactionalResourceHelper;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport.TxnReadState;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.Auditable;
@@ -74,7 +78,7 @@ public class AuditComponentImpl implements AuditComponent
     /**
      * Logging
      */
-    private static Log s_logger = LogFactory.getLog(AuditComponentImpl.class);
+    private static Log logger = LogFactory.getLog(AuditComponentImpl.class);
 
     /**
      * Suspend resume auditing
@@ -119,7 +123,7 @@ public class AuditComponentImpl implements AuditComponent
         }
         catch (UnknownHostException e)
         {
-            s_logger.error("Failed to get local host address", e);
+            logger.error("Failed to get local host address", e);
         }
     }
 
@@ -129,8 +133,6 @@ public class AuditComponentImpl implements AuditComponent
 
     /**
      * Set the DAO for recording auditable information when no exception occurs.
-     * 
-     * @param auditDAO
      */
     public void setAuditDAO(AuditDAO auditDAO)
     {
@@ -139,8 +141,6 @@ public class AuditComponentImpl implements AuditComponent
 
     /**
      * Set the DAO for recording failed actions - this is done in another transaction.
-     * 
-     * @param auditFailedDAO
      */
     public void setTransactionService(TransactionService transactionService)
     {
@@ -149,8 +149,6 @@ public class AuditComponentImpl implements AuditComponent
     
     /**
      * Set the NodeService for path extracting.
-     * 
-     * @param nodeService
      */
     public void setNodeService(NodeService nodeService)
     {
@@ -159,8 +157,6 @@ public class AuditComponentImpl implements AuditComponent
 
     /**
      * Set the audit configuration.
-     * 
-     * @param auditConfiguration
      */
     public void setAuditConfiguration(AuditConfiguration auditConfiguration)
     {
@@ -169,8 +165,6 @@ public class AuditComponentImpl implements AuditComponent
 
     /**
      * Set the helper used to identify public services
-     * 
-     * @param publicServiceIdentifier
      */
     public void setPublicServiceIdentifier(PublicServiceIdentifier publicServiceIdentifier)
     {
@@ -179,8 +173,6 @@ public class AuditComponentImpl implements AuditComponent
 
     /**
      * Set the audit model.
-     * 
-     * @param auditModel
      */
     public void setAuditModel(AuditModel auditModel)
     {
@@ -190,7 +182,6 @@ public class AuditComponentImpl implements AuditComponent
     
     /**
      * Set the namespacePrefixResolver.
-     * @param namespacePrefixResolver
      */
     public void setNamespacePrefixResolver(NamespacePrefixResolver namespacePrefixResolver)
     {
@@ -216,9 +207,9 @@ public class AuditComponentImpl implements AuditComponent
                     }
                     else
                     {
-                        if (s_logger.isDebugEnabled())
+                        if (logger.isDebugEnabled())
                         {
-                            s_logger.debug("Auditing internal service use for  - " + serviceName + "." + methodName);
+                            logger.debug("Auditing internal service use for  - " + serviceName + "." + methodName);
                         }
                     }
 
@@ -227,17 +218,17 @@ public class AuditComponentImpl implements AuditComponent
 
                         if (serviceName != null)
                         {
-                            if (s_logger.isDebugEnabled())
+                            if (logger.isDebugEnabled())
                             {
-                                s_logger.debug("Auditing - " + serviceName + "." + methodName);
+                                logger.debug("Auditing - " + serviceName + "." + methodName);
                             }
                             return auditImpl(mi);
                         }
                         else
                         {
-                            if (s_logger.isDebugEnabled())
+                            if (logger.isDebugEnabled())
                             {
-                                s_logger.debug("UnknownService." + methodName);
+                                logger.debug("UnknownService." + methodName);
                             }
                             return auditImpl(mi);
                         }
@@ -245,17 +236,17 @@ public class AuditComponentImpl implements AuditComponent
                     }
                     else if (method.isAnnotationPresent(NotAuditable.class))
                     {
-                        if (s_logger.isDebugEnabled())
+                        if (logger.isDebugEnabled())
                         {
-                            s_logger.debug("Not Audited. " + serviceName + "." + methodName);
+                            logger.debug("Not Audited. " + serviceName + "." + methodName);
                         }
                         return mi.proceed();
                     }
                     else
                     {
-                        if (s_logger.isDebugEnabled())
+                        if (logger.isDebugEnabled())
                         {
-                            s_logger.debug("Unannotated service method " + serviceName + "." + methodName);
+                            logger.debug("Unannotated service method " + serviceName + "." + methodName);
                         }
                         if (method.getDeclaringClass().isInterface() && method.getDeclaringClass().isAnnotationPresent(PublicService.class))
                         {
@@ -426,7 +417,7 @@ public class AuditComponentImpl implements AuditComponent
                 }
                 else
                 {
-                    s_logger.warn("Key argument is not a node, store or child assoc ref for return object on "
+                    logger.warn("Key argument is not a node, store or child assoc ref for return object on "
                             + publicServiceIdentifier.getPublicServiceName(mi) + "." + mi.getMethod().getName() + " it is " + returnObject.getClass().getName());
                 }
             }
@@ -556,7 +547,7 @@ public class AuditComponentImpl implements AuditComponent
                 }
                 else
                 {
-                    s_logger.warn("Key argument is not a node, store or child assoc reference or search parameters on "
+                    logger.warn("Key argument is not a node, store or child assoc reference or search parameters on "
                             + serviceName + "." + methodName + " it is " + key.getClass().getName());
                 }
             }
@@ -604,7 +595,7 @@ public class AuditComponentImpl implements AuditComponent
     {
         if (mi.getArguments().length <= position)
         {
-            s_logger.warn("Auditable annotation on " + serviceName + "." + methodName + " references non existant argument");
+            logger.warn("Auditable annotation on " + serviceName + "." + methodName + " references non existant argument");
         }
     }
 
@@ -760,14 +751,66 @@ public class AuditComponentImpl implements AuditComponent
     /*
      * V3.2 from here on.  Put all fixes to the older audit code before this point, please.
      */
+    
+    private static final Long NO_AUDIT_SESSION = new Long(-1);
+    private static final String KEY_AUDIT_SESSION = "Audit.Sessions";
+    
+    private AuditModelRegistry auditModelRegistry;
 
-    public Long startAuditSession(String application, String rootPath)
+    /**
+     * Set the registry holding the audit models
+     * @since 3.2
+     */
+    public void setAuditModelRegistry(AuditModelRegistry auditModelRegistry)
     {
-        throw new UnsupportedOperationException();
+        this.auditModelRegistry = auditModelRegistry;
+    }
+
+    public Long startAuditSession(String applicationName, String rootPath)
+    {
+        // First check that we can store a session on the transaction
+        Map<Long, AuditSession> sessionsById = TransactionalResourceHelper.getMap(KEY_AUDIT_SESSION);
+        
+        // Get the application
+        Application application = auditModelRegistry.getAuditApplication(applicationName);
+        if (application == null)
+        {
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("No audit application named '" + applicationName + "' has been registered.");
+            }
+            return NO_AUDIT_SESSION;
+        }
+        // Get the model ID for the application
+        Long modelId = auditModelRegistry.getAuditModelId(applicationName);
+        if (modelId == null)
+        {
+            throw new AuditException("No model exists for audit application: " + applicationName);
+        }
+        
+        // TODO: Validate root path against application
+        // TODO: Pull out session properties and persist
+        
+        // Now create the session
+        Long sessionId = auditDAO.createAuditSession(modelId, applicationName);
+        // Create the session info and store it on the transaction
+        AuditSession session = new AuditSession(application, rootPath, sessionId);
+        sessionsById.put(sessionId, session);
+        // Done
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("New audit session: " + session);
+        }
+        return sessionId;
     }
 
     public void audit(Long sessionId, Map<String, Object> values)
     {
+        if (sessionId == NO_AUDIT_SESSION)
+        {
+            // For some reason, the session was not to be used
+            return;
+        }
         throw new UnsupportedOperationException();
     }
 }

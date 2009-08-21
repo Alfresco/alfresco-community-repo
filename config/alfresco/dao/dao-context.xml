@@ -56,6 +56,7 @@
    </bean>
    
    <bean id="auditDAO" class="org.alfresco.repo.domain.audit.ibatis.AuditDAOImpl">
+      <property name="oldDAO" ref="auditDaoHibernate"/>
       <property name="sqlMapClientTemplate" ref="auditSqlMapClientTemplate"/>
       <property name="contentService" ref="contentService"/>
       <property name="contentDataDAO" ref="contentDataDAO"/>

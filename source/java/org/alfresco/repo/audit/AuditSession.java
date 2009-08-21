@@ -28,7 +28,7 @@ import org.alfresco.repo.audit.model._3.Application;
 import org.alfresco.util.ParameterCheck;
 
 /**
- * Entity bean for <b>alf_audit_session</b> table.
+ * Bean to hold session information for repeated use.
  * 
  * @author Derek Hulley
  * @since 3.2
@@ -37,14 +37,22 @@ public class AuditSession
 {
     private final Application application;
     private final String rootPath;
+    private final Long sessionId;
     
-    public AuditSession(Application application, String rootPath)
+    /**
+     * @param application               the audit application config being used
+     * @param rootPath                  the root path being used for the session
+     * @param sessionId                 the ID produced for the persisted session
+     */
+    public AuditSession(Application application, String rootPath, Long sessionId)
     {
         ParameterCheck.mandatory("application", application);
         ParameterCheck.mandatoryString("rootPath", rootPath);
+        ParameterCheck.mandatory("sessionId", sessionId);
         
         this.application = application;
         this.rootPath = rootPath;
+        this.sessionId = sessionId;
     }
     
     @Override
@@ -79,6 +87,7 @@ public class AuditSession
         sb.append("AuditSession")
           .append("[ application=").append(application.getName())
           .append(", rootPath=").append(rootPath)
+          .append(", sessionId=").append(sessionId)
           .append("]");
         return sb.toString();
     }
@@ -91,5 +100,10 @@ public class AuditSession
     public String getRootPath()
     {
         return rootPath;
+    }
+
+    public Long getSessionId()
+    {
+        return sessionId;
     }
 }

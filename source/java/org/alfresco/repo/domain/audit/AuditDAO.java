@@ -25,18 +25,44 @@
 package org.alfresco.repo.domain.audit;
 
 import java.net.URL;
+import java.util.List;
 
+import org.alfresco.repo.audit.AuditState;
+import org.alfresco.service.cmr.audit.AuditInfo;
 import org.alfresco.service.cmr.repository.ContentData;
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.util.Pair;
 
 /**
  * DAO services for <b>alf_audit_XXX</b> tables.
+ * <p>
+ * The older methods are supported by a different implementation and will eventually
+ * be deprecated and phased out.
  * 
  * @author Derek Hulley
  * @since 3.2
  */
 public interface AuditDAO
 {
+    /**
+     * Create an audit entry.
+     * 
+     * @param auditInfo
+     * @since 2.1
+     */
+    public void audit(AuditState auditInfo);
+
+    /**
+     * Get the audit trail for a node.
+     * 
+     * @since 2.1
+     */
+    public List<AuditInfo> getAuditTrail(NodeRef nodeRef);
+    
+    /*
+     * V3.2 methods after here only, please
+     */
+
     /**
      * Creates a new audit model entry or finds an existing one
      * 
@@ -46,5 +72,12 @@ public interface AuditDAO
      */
     Pair<Long, ContentData> getOrCreateAuditModel(URL url);
     
+    /**
+     * Creates a new audit session entry - there is no session re-use.
+     * 
+     * @param modelId       a pre-existing model's ID
+     * @param application   the name of the application
+     * @return              Returns the unique session ID
+     */
     Long createAuditSession(Long modelId, String application);
 }

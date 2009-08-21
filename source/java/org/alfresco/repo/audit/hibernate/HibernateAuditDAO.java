@@ -28,6 +28,7 @@ import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
+import java.net.URL;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -41,15 +42,16 @@ import java.util.List;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.audit.AuditComponentImpl;
 import org.alfresco.repo.audit.AuditConfiguration;
-import org.alfresco.repo.audit.AuditDAO;
 import org.alfresco.repo.audit.AuditState;
 import org.alfresco.repo.content.ContentContext;
 import org.alfresco.repo.content.ContentStore;
 import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.repo.domain.audit.AuditDAO;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.TransactionalDao;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.audit.AuditInfo;
+import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -57,6 +59,7 @@ import org.alfresco.service.cmr.repository.datatype.Duration;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.EqualsHelper;
 import org.alfresco.util.GUID;
+import org.alfresco.util.Pair;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.HibernateException;
@@ -134,6 +137,28 @@ public class HibernateAuditDAO extends HibernateDaoSupport implements AuditDAO, 
     public void setLocalSessionFactory(LocalSessionFactoryBean localSessionFactory)
     {
         this.localSessionFactory = localSessionFactory;
+    }
+
+    /**
+     * Fallout implementation from new audit DAO
+     * 
+     * @throws UnsupportedOperationException always
+     * @since 3.2
+     */
+    public Long createAuditSession(Long modelId, String application)
+    {
+        throw new UnsupportedOperationException();
+    }
+
+    /**
+     * Fallout implementation from new audit DAO
+     * 
+     * @throws UnsupportedOperationException always
+     * @since 3.2
+     */
+    public Pair<Long, ContentData> getOrCreateAuditModel(URL url)
+    {
+        throw new UnsupportedOperationException();
     }
 
     public void audit(AuditState auditInfo)

@@ -192,6 +192,25 @@ public class AuditModelRegistry
     }
     
     /**
+     * Get the application model for the given application name
+     * 
+     * @param application           the name of the audited application
+     * @return                      the java model (<tt>null</tt> if not found)
+     */
+    public Application getAuditApplication(String application)
+    {
+        readLock.lock();
+        try
+        {
+            return auditApplicationsByName.get(application);
+        }
+        finally
+        {
+            readLock.unlock();
+        }
+    }
+    
+    /**
      * Unmarshalls the Audit model from the URL.
      * 
      * @throws AlfrescoRuntimeException         if an IOException occurs

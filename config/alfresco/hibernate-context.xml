@@ -442,7 +442,7 @@
       </property>
    </bean>
     
-    <bean id="auditDao" class="org.alfresco.repo.audit.hibernate.HibernateAuditDAO">
+    <bean id="auditDaoHibernate" class="org.alfresco.repo.audit.hibernate.HibernateAuditDAO">
         <property name="sessionFactory">
             <ref bean="sessionFactory"/>
         </property>

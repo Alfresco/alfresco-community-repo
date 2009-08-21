@@ -19,7 +19,7 @@
             <ref bean="publicServiceIdentifier"/>
         </property>
         <property name="auditDAO">
-            <ref bean="auditDao"/>
+            <ref bean="auditDAO"/>
         </property>
         <property name="transactionService">
             <ref bean="transactionService"/>
@@ -36,6 +36,8 @@
         <property name="auditModel">
             <ref bean="auditModel"/>
         </property>
+        <!-- V3.2 specific -->
+        <property name="auditModelRegistry" ref="auditModel.registry"/>
     </bean>
     
     <!-- Public service idntifier -->

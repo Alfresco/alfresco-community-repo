@@ -32,7 +32,7 @@ import java.util.Date;
  * @author Derek Hulley
  * @since 3.2
  */
-public class SystemTimeDataGenerator implements DataGenerator
+public class SystemTimeDataGenerator extends AbstractDataGenerator
 {
     /**
      * @return              Returns the current time

@@ -79,6 +79,7 @@
     <!--                           -->
     
     <bean id="auditModel.registry" class="org.alfresco.repo.audit.model.AuditModelRegistry">
+        <property name="transactionService" ref="transactionService"/>
         <property name="auditDAO" ref="auditDAO"/>
     </bean>
   

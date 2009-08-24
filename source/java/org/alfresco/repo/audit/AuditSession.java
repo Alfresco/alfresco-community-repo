@@ -24,7 +24,7 @@
  */
 package org.alfresco.repo.audit;
 
-import org.alfresco.repo.audit.model._3.Application;
+import org.alfresco.repo.audit.model.AuditApplication;
 import org.alfresco.util.ParameterCheck;
 
 /**
@@ -35,16 +35,26 @@ import org.alfresco.util.ParameterCheck;
  */
 public class AuditSession
 {
-    private final Application application;
+    private final AuditApplication application;
     private final String rootPath;
     private final Long sessionId;
+    
+    /**
+     * Constructor used to denote a dummy (no-audit) session
+     */
+    /* package */ AuditSession()
+    {
+        application = null;
+        rootPath = null;
+        sessionId = null;
+    }
     
     /**
      * @param application               the audit application config being used
      * @param rootPath                  the root path being used for the session
      * @param sessionId                 the ID produced for the persisted session
      */
-    public AuditSession(Application application, String rootPath, Long sessionId)
+    public AuditSession(AuditApplication application, String rootPath, Long sessionId)
     {
         ParameterCheck.mandatory("application", application);
         ParameterCheck.mandatoryString("rootPath", rootPath);
@@ -58,7 +68,7 @@ public class AuditSession
     @Override
     public int hashCode()
     {
-        return (application.getName().hashCode() + rootPath.hashCode());
+        return (application.hashCode() + rootPath.hashCode());
     }
     
     @Override
@@ -71,7 +81,7 @@ public class AuditSession
         else if (obj instanceof AuditSession)
         {
             AuditSession that = (AuditSession) obj;
-            return this.application.getName().equals(that.application.getName()) &&
+            return this.application.equals(that.application) &&
                    this.rootPath.equals(that.rootPath);
         }
         else
@@ -85,14 +95,14 @@ public class AuditSession
     {
         StringBuilder sb = new StringBuilder(512);
         sb.append("AuditSession")
-          .append("[ application=").append(application.getName())
+          .append("[ application=").append(application)
           .append(", rootPath=").append(rootPath)
           .append(", sessionId=").append(sessionId)
           .append("]");
         return sb.toString();
     }
 
-    public Application getApplication()
+    public AuditApplication getApplication()
     {
         return application;
     }

@@ -32,7 +32,7 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
  * @author Derek Hulley
  * @since 3.2
  */
-public class AuthenticatedUserDataGenerator implements DataGenerator
+public class AuthenticatedUserDataGenerator extends AbstractDataGenerator
 {
     /**
      * @return              Returns the currently-authenticated user

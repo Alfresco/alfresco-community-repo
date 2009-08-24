@@ -57,19 +57,12 @@
         <xs:complexContent>
             <xs:extension base="a:KeyedAuditDefinition">
                 <xs:sequence>
-                    <xs:element name="AuditSession" type="a:AuditSession" minOccurs="0" maxOccurs="1"/>
                     <xs:element name="RecordValue" type="a:RecordValue" minOccurs="0" maxOccurs="unbounded"/>
                     <xs:element name="GenerateValue" type="a:GenerateValue" minOccurs="0" maxOccurs="unbounded"/>
                     <xs:element name="AuditPath" type="a:AuditPath" minOccurs="0" maxOccurs="unbounded"/>
                 </xs:sequence>
             </xs:extension>
         </xs:complexContent>
-    </xs:complexType>
-    
-    <xs:complexType name="AuditSession">
-        <xs:sequence>
-            <xs:element name="GenerateValue" type="a:GenerateValue" minOccurs="0" maxOccurs="unbounded"/>
-        </xs:sequence>
     </xs:complexType>
     
     <xs:complexType name="RecordValue">
@@ -84,6 +77,7 @@
         <xs:complexContent>
             <xs:extension base="a:KeyedAuditDefinition">
                 <xs:attribute name="dataGenerator" type="a:NameAttribute" use="required" />
+                <xs:attribute name="scope" type="a:ScopeAttribute" use="required" />
             </xs:extension>
         </xs:complexContent>
     </xs:complexType>
@@ -108,13 +102,21 @@
         <xs:restriction base="xs:string">
             <xs:minLength value="1"/>
             <xs:maxLength value="128"/>
-            <xs:pattern value="([a-z]|\-)*"/>
+            <xs:pattern value="([a-z]|[0-9]|\-|\.)*"/>
         </xs:restriction>
     </xs:simpleType>
 
     <xs:simpleType name="ClassAttribute">
         <xs:restriction base="xs:string">
             <xs:minLength value="1"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="ScopeAttribute">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="SESSION"/>
+            <xs:enumeration value="AUDIT"/>
+            <xs:enumeration value="ALL"/>
         </xs:restriction>
     </xs:simpleType>
 

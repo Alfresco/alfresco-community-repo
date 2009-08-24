@@ -32,7 +32,7 @@ import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
  * @author Derek Hulley
  * @since 3.2
  */
-public class TransactionIdDataGenerator implements DataGenerator
+public class TransactionIdDataGenerator extends AbstractDataGenerator
 {
     /**
      * @return              Returns the current transaction ID (<tt>null</tt> if not in a transction)

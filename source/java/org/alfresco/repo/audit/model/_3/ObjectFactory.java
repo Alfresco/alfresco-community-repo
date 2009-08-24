@@ -34,6 +34,30 @@ public class ObjectFactory {
     }
 
     /**
+     * Create an instance of {@link KeyedAuditDefinition }
+     * 
+     */
+    public KeyedAuditDefinition createKeyedAuditDefinition() {
+        return new KeyedAuditDefinition();
+    }
+
+    /**
+     * Create an instance of {@link DataExtractor }
+     * 
+     */
+    public DataExtractor createDataExtractor() {
+        return new DataExtractor();
+    }
+
+    /**
+     * Create an instance of {@link Audit }
+     * 
+     */
+    public Audit createAudit() {
+        return new Audit();
+    }
+
+    /**
      * Create an instance of {@link DataExtractors }
      * 
      */
@@ -50,19 +74,19 @@ public class ObjectFactory {
     }
 
     /**
+     * Create an instance of {@link DataGenerator }
+     * 
+     */
+    public DataGenerator createDataGenerator() {
+        return new DataGenerator();
+    }
+
+    /**
      * Create an instance of {@link DataGenerators }
      * 
      */
     public DataGenerators createDataGenerators() {
         return new DataGenerators();
-    }
-
-    /**
-     * Create an instance of {@link KeyedAuditDefinition }
-     * 
-     */
-    public KeyedAuditDefinition createKeyedAuditDefinition() {
-        return new KeyedAuditDefinition();
     }
 
     /**
@@ -74,38 +98,6 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link DataGenerator }
-     * 
-     */
-    public DataGenerator createDataGenerator() {
-        return new DataGenerator();
-    }
-
-    /**
-     * Create an instance of {@link AuditSession }
-     * 
-     */
-    public AuditSession createAuditSession() {
-        return new AuditSession();
-    }
-
-    /**
-     * Create an instance of {@link GenerateValue }
-     * 
-     */
-    public GenerateValue createGenerateValue() {
-        return new GenerateValue();
-    }
-
-    /**
-     * Create an instance of {@link DataExtractor }
-     * 
-     */
-    public DataExtractor createDataExtractor() {
-        return new DataExtractor();
-    }
-
-    /**
      * Create an instance of {@link Application }
      * 
      */
@@ -114,11 +106,11 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link Audit }
+     * Create an instance of {@link GenerateValue }
      * 
      */
-    public Audit createAudit() {
-        return new Audit();
+    public GenerateValue createGenerateValue() {
+        return new GenerateValue();
     }
 
     /**

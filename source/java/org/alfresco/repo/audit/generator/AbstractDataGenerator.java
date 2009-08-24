@@ -22,31 +22,30 @@
  * the FLOSS exception, and it is also available here: 
  * http://www.alfresco.com/legal/licensing
  */
-package org.alfresco.repo.audit.extractor;
+package org.alfresco.repo.audit.generator;
 
 /**
- * An extractor that supports all values and does not conversion.
- * This implementation can be used as a base class, although there is little
- * abstraction necessary for the converters in general.
+ * Abstract implementation to provide support.
  * 
  * @author Derek Hulley
  * @since 3.2
  */
-public class SimpleValueDataExtractor extends AbstractDataExtractor
+public abstract class AbstractDataGenerator implements DataGenerator
 {
     /**
-     * @return          Returns <tt>true</tt> always
+     * This implementation assumes all generators are stateless i.e. if the class matches
+     * then the instances are equal.
      */
-    public boolean isSupported(Object data)
+    @Override
+    public boolean equals(Object obj)
     {
-        return true;
-    }
-
-    /**
-     * Just returns the value unchanged
-     */
-    public Object convert(Object in) throws Throwable
-    {
-        return in;
+        if (obj != null && obj.getClass().equals(this.getClass()))
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
     }
 }

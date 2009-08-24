@@ -17,6 +17,7 @@ import javax.xml.bind.annotation.XmlType;
  *   &lt;complexContent>
  *     &lt;extension base="{http://www.alfresco.org/repo/audit/model/3.2}KeyedAuditDefinition">
  *       &lt;attribute name="dataGenerator" use="required" type="{http://www.alfresco.org/repo/audit/model/3.2}NameAttribute" />
+ *       &lt;attribute name="scope" use="required" type="{http://www.alfresco.org/repo/audit/model/3.2}ScopeAttribute" />
  *     &lt;/extension>
  *   &lt;/complexContent>
  * &lt;/complexType>
@@ -32,6 +33,8 @@ public class GenerateValue
 
     @XmlAttribute(required = true)
     protected String dataGenerator;
+    @XmlAttribute(required = true)
+    protected ScopeAttribute scope;
 
     /**
      * Gets the value of the dataGenerator property.
@@ -55,6 +58,30 @@ public class GenerateValue
      */
     public void setDataGenerator(String value) {
         this.dataGenerator = value;
+    }
+
+    /**
+     * Gets the value of the scope property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link ScopeAttribute }
+     *     
+     */
+    public ScopeAttribute getScope() {
+        return scope;
+    }
+
+    /**
+     * Sets the value of the scope property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link ScopeAttribute }
+     *     
+     */
+    public void setScope(ScopeAttribute value) {
+        this.scope = value;
     }
 
 }

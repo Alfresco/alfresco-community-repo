@@ -32,14 +32,13 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import org.alfresco.repo.audit.model.AuditApplication;
 import org.alfresco.repo.audit.model.AuditEntry;
 import org.alfresco.repo.audit.model.AuditModelRegistry;
 import org.alfresco.repo.audit.model.TrueFalseUnset;
-import org.alfresco.repo.audit.model._3.Application;
 import org.alfresco.repo.domain.audit.AuditDAO;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
-import org.alfresco.repo.transaction.TransactionalResourceHelper;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport.TxnReadState;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.Auditable;
@@ -752,8 +751,7 @@ public class AuditComponentImpl implements AuditComponent
      * V3.2 from here on.  Put all fixes to the older audit code before this point, please.
      */
     
-    private static final Long NO_AUDIT_SESSION = new Long(-1);
-    private static final String KEY_AUDIT_SESSION = "Audit.Sessions";
+    private static final AuditSession NO_AUDIT_SESSION = new AuditSession();
     
     private AuditModelRegistry auditModelRegistry;
 
@@ -766,13 +764,10 @@ public class AuditComponentImpl implements AuditComponent
         this.auditModelRegistry = auditModelRegistry;
     }
 
-    public Long startAuditSession(String applicationName, String rootPath)
+    public AuditSession startAuditSession(String applicationName, String rootPath)
     {
-        // First check that we can store a session on the transaction
-        Map<Long, AuditSession> sessionsById = TransactionalResourceHelper.getMap(KEY_AUDIT_SESSION);
-        
         // Get the application
-        Application application = auditModelRegistry.getAuditApplication(applicationName);
+        AuditApplication application = auditModelRegistry.getAuditApplication(applicationName);
         if (application == null)
         {
             if (logger.isDebugEnabled())
@@ -788,25 +783,34 @@ public class AuditComponentImpl implements AuditComponent
             throw new AuditException("No model exists for audit application: " + applicationName);
         }
         
-        // TODO: Validate root path against application
+        // Validate root path against application
+        String appRootKey = application.getApplicationKey() + AuditApplication.AUDIT_PATH_SEPARATOR;
+        if (rootPath == null || !rootPath.startsWith(appRootKey))
+        {
+            throw new AuditException(
+                    "An audit session's root path must start with the application's root key.\n" +
+                    "   Application: " + application.getApplicationName() + "\n" +
+                    "   Root key:    " + application.getApplicationKey() + "\n" +
+                    "   Given root:  " + rootPath);
+        }
+        
         // TODO: Pull out session properties and persist
         
         // Now create the session
         Long sessionId = auditDAO.createAuditSession(modelId, applicationName);
         // Create the session info and store it on the transaction
         AuditSession session = new AuditSession(application, rootPath, sessionId);
-        sessionsById.put(sessionId, session);
         // Done
         if (logger.isDebugEnabled())
         {
             logger.debug("New audit session: " + session);
         }
-        return sessionId;
+        return session;
     }
 
-    public void audit(Long sessionId, Map<String, Object> values)
+    public void audit(AuditSession session, Map<String, Object> values)
     {
-        if (sessionId == NO_AUDIT_SESSION)
+        if (session == NO_AUDIT_SESSION)
         {
             // For some reason, the session was not to be used
             return;

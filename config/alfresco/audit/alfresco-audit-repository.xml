@@ -23,12 +23,10 @@
     </DataGenerators>
 
     <Application name="Alfresco Repository" key="repository">
-        <AuditSession>
-            <GenerateValue key="user" dataGenerator="authenticatedUser"/>
-            <GenerateValue key="time" dataGenerator="systemTime"/>
-        </AuditSession>
+        <GenerateValue key="user" dataGenerator="authenticatedUser" scope="SESSION"/>
+        <GenerateValue key="time" dataGenerator="systemTime" scope="SESSION"/>
         <AuditPath key="services">
-            <GenerateValue key="txn" dataGenerator="transactionId"/>
+            <GenerateValue key="txn" dataGenerator="transactionId" scope="AUDIT"/>
             <AuditPath key="nodeservice">
                 <AuditPath key="createstore">
                     <AuditPath key="protocol">
@@ -39,10 +37,12 @@
                     </AuditPath>
                     <AuditPath key="return">
                         <RecordValue key="value" dataExtractor="simpleValue"/>
+<!--
                         <RecordValue key="root-node" dataExtractor="storeRootNode"/>
                     </AuditPath>
                     <AuditPath key="error">
                         <RecordValue key="value" dataExtractor="stackTrace"/>
+-->
                     </AuditPath>
                 </AuditPath>
             </AuditPath>

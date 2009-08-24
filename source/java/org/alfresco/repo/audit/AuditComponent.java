@@ -91,14 +91,14 @@ public interface AuditComponent
      * 
      * @param application       the name of the application to log against
      * @param rootPath          a base path of {@link AuditPath} key entries concatenated with <b>.</b> (period)
-     * @return                  Returns the unique session identifier
+     * @return                  Returns the unique session
      */
-    public Long startAuditSession(String application, String rootPath);
+    public AuditSession startAuditSession(String application, String rootPath);
     
     /**
      * Record a set of values against the given session.
      * 
-     * @param sessionId         a pre-existing audit session to continue with
+     * @param session           a pre-existing audit session to continue with
      * @param values            the values to audit mapped by {@link AuditPath} key relative to the session
      *                          root path
      * 
@@ -106,5 +106,5 @@ public interface AuditComponent
      * 
      * @since 3.2
      */
-    public void audit(Long sessionId, Map<String, Object> values);
+    public void audit(AuditSession session, Map<String, Object> values);
 }

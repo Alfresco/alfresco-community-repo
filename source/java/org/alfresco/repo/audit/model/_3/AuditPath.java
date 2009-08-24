@@ -20,7 +20,6 @@ import javax.xml.bind.annotation.XmlType;
  *   &lt;complexContent>
  *     &lt;extension base="{http://www.alfresco.org/repo/audit/model/3.2}KeyedAuditDefinition">
  *       &lt;sequence>
- *         &lt;element name="AuditSession" type="{http://www.alfresco.org/repo/audit/model/3.2}AuditSession" minOccurs="0"/>
  *         &lt;element name="RecordValue" type="{http://www.alfresco.org/repo/audit/model/3.2}RecordValue" maxOccurs="unbounded" minOccurs="0"/>
  *         &lt;element name="GenerateValue" type="{http://www.alfresco.org/repo/audit/model/3.2}GenerateValue" maxOccurs="unbounded" minOccurs="0"/>
  *         &lt;element name="AuditPath" type="{http://www.alfresco.org/repo/audit/model/3.2}AuditPath" maxOccurs="unbounded" minOccurs="0"/>
@@ -34,7 +33,6 @@ import javax.xml.bind.annotation.XmlType;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "AuditPath", propOrder = {
-    "auditSession",
     "recordValue",
     "generateValue",
     "auditPath"
@@ -46,38 +44,12 @@ public class AuditPath
     extends KeyedAuditDefinition
 {
 
-    @XmlElement(name = "AuditSession")
-    protected AuditSession auditSession;
     @XmlElement(name = "RecordValue")
     protected List<RecordValue> recordValue;
     @XmlElement(name = "GenerateValue")
     protected List<GenerateValue> generateValue;
     @XmlElement(name = "AuditPath")
     protected List<AuditPath> auditPath;
-
-    /**
-     * Gets the value of the auditSession property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link AuditSession }
-     *     
-     */
-    public AuditSession getAuditSession() {
-        return auditSession;
-    }
-
-    /**
-     * Sets the value of the auditSession property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link AuditSession }
-     *     
-     */
-    public void setAuditSession(AuditSession value) {
-        this.auditSession = value;
-    }
 
     /**
      * Gets the value of the recordValue property.

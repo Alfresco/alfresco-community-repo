@@ -451,7 +451,6 @@ public class RetryingTransactionHelper
      * @param cause     the cause to examine
      * @return          Returns the original cause if it is a valid retry cause, otherwise <tt>null</tt>
      */
-    @SuppressWarnings("unchecked")
     public static Throwable extractRetryCause(Throwable cause)
     {
         Throwable retryCause = ExceptionStackUtil.getCause(cause, RETRY_EXCEPTIONS);

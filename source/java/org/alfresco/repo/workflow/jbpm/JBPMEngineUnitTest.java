@@ -27,7 +27,6 @@ package org.alfresco.repo.workflow.jbpm;
 
 import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;
-import static org.springframework.transaction.TransactionDefinition.*;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -38,11 +37,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-
-import javax.transaction.NotSupportedException;
-import javax.transaction.SystemException;
-
-import junit.framework.TestCase;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
@@ -64,12 +58,11 @@ import org.alfresco.service.cmr.workflow.WorkflowTask;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.NamespaceServiceMemoryImpl;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.util.transaction.SpringAwareUserTransaction;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.core.io.ClassPathResource;
-import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.test.AbstractTransactionalSpringContextTests;
 import org.springmodules.workflow.jbpm31.JbpmTemplate;
 
 /**
@@ -77,7 +70,7 @@ import org.springmodules.workflow.jbpm31.JbpmTemplate;
  * 
  * @author Nick Smith
  */
-public class JBPMEngineUnitTest extends TestCase
+public class JBPMEngineUnitTest extends AbstractTransactionalSpringContextTests
 {
     private static final String USER_NAME = "admin";
 
@@ -85,15 +78,9 @@ public class JBPMEngineUnitTest extends TestCase
 
     private static final NodeRef companyHome = new NodeRef("for://test/home");
 
-    private static final ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext(
-                new String[] { "classpath:jbpm-test/test-database-context.xml",
-                            "classpath:jbpm-test/test-workflow-context.xml", });
-
     private JBPMEngine engine = new JBPMEngine();
 
     private WorkflowDefinition workflowDef;
-
-    private SpringAwareUserTransaction transaction;
 
     public void testDeployWorkflow() throws Exception
     {
@@ -140,7 +127,7 @@ public class JBPMEngineUnitTest extends TestCase
             fail("Failed to catch invalid definition id");
         }
         catch (WorkflowException e)
-        {
+        { //Do nothing here!
         }
 
         deployTestDefinition();
@@ -323,36 +310,6 @@ public class JBPMEngineUnitTest extends TestCase
         assertTrue(paths.get(0).id.endsWith("-@"));
     }
 
-    // TODO: Need to strip AuthenticationUtil out of JBPMEngine to get this
-    // test passing. Also need to stop the hard-wired bean look-up for the
-    // TransactionService in AlfrescoJobExecutor.
-    // public void testCancelWorkflowInstance() throws Exception
-    // {
-    // deployTestDefinition();
-    // engine.startWorkflow(workflowDef.id, null);
-    // List<WorkflowInstance> instances1 =
-    // engine.getActiveWorkflows(workflowDef.id);
-    // assertNotNull(instances1);
-    // assertEquals(1, instances1.size());
-    // List<WorkflowTask> tasks = engine
-    // .getAssignedTasks(USER_NAME, WorkflowTaskState.IN_PROGRESS);
-    // assertNotNull(tasks);
-    //
-    // assertEquals(1, tasks.size());
-    // WorkflowInstance cancelledInstance =
-    // engine.cancelWorkflow(instances1.get(0).id);
-    // assertNotNull(cancelledInstance);
-    // assertFalse(cancelledInstance.active);
-    // List<WorkflowInstance> instances2 =
-    // engine.getActiveWorkflows(workflowDef.id);
-    // assertNotNull(instances2);
-    // assertEquals(0, instances2.size());
-    // List<WorkflowTask> tasks1 = engine.getAssignedTasks(USER_NAME,
-    // WorkflowTaskState.IN_PROGRESS);
-    // assertNotNull(tasks1);
-    // assertEquals(0, tasks1.size());
-    // }
-
     private void checkPath(WorkflowPath path)
     {
         assertNotNull(path);
@@ -362,10 +319,14 @@ public class JBPMEngineUnitTest extends TestCase
         assertEquals(workflowDef.id, path.instance.definition.id);
     }
 
+    /*
+     * @seeorg.springframework.test.AbstractTransactionalSpringContextTests#
+     * onSetUpBeforeTransaction()
+     */
     @Override
-    protected void setUp() throws Exception
+    protected void onSetUpBeforeTransaction() throws Exception
     {
-        super.setUp();
+        super.onSetUpBeforeTransaction();
         // Mock up various services.
         NodeService nodeService = mock(NodeService.class);
         TenantService tenantService = makeTenantService();
@@ -378,6 +339,7 @@ public class JBPMEngineUnitTest extends TestCase
         when(serviceRegistry.getNamespaceService()).thenReturn(namespaceService);
         when(serviceRegistry.getDictionaryService()).thenReturn(dictionaryService);
 
+        ConfigurableApplicationContext ctx = getApplicationContext();
         JbpmTemplate jbpmTemplate = (JbpmTemplate) ctx.getBean("test_jbpm_template");
         // Set up the JBPMEngine.
         engine.setJBPMTemplate(jbpmTemplate);
@@ -391,11 +353,9 @@ public class JBPMEngineUnitTest extends TestCase
 
         // Need to register JBPMEngine with bean factory so WorflowTaskInstance
         // can load it.
-        if (!ctx.containsBean(TEST_JBPM_ENGINE))
-            ctx.getBeanFactory().registerSingleton(TEST_JBPM_ENGINE, engine);
-
-        // Deploy test workflow process definition to JBPM.
-        startTransaction();
+        ConfigurableApplicationContext appContext = getApplicationContext();
+        if (!appContext.containsBean(TEST_JBPM_ENGINE))
+            appContext.getBeanFactory().registerSingleton(TEST_JBPM_ENGINE, engine);
     }
 
     @SuppressWarnings("unchecked")
@@ -414,15 +374,6 @@ public class JBPMEngineUnitTest extends TestCase
                     (Collection<QName>) any()))//
                     .thenReturn(typeDef);
         return service;
-    }
-
-    private void startTransaction() throws NotSupportedException, SystemException
-    {
-        PlatformTransactionManager transactionManager = (PlatformTransactionManager) ctx
-                    .getBean("testTransactionManager");
-        transaction = new SpringAwareUserTransaction(transactionManager, false, ISOLATION_DEFAULT,
-                    PROPAGATION_REQUIRED, 1000);
-        transaction.begin();
     }
 
     // deploy test process definition
@@ -478,19 +429,16 @@ public class JBPMEngineUnitTest extends TestCase
         return tenantService;
     }
 
+    /*
+     * @see
+     * org.springframework.test.AbstractSingleSpringContextTests#getConfigLocations
+     * ()
+     */
     @Override
-    protected void tearDown() throws Exception
+    protected String[] getConfigLocations()
     {
-        super.tearDown();
-        try
-        {
-            transaction.rollback();
-        }
-        // To prevent rollback exceptions hiding other exceptions int he unit
-        // test.
-        catch (Throwable t)
-        {
-            System.out.println(t.getStackTrace());
-        }
+        String[] locations = new String[] { "classpath:jbpm-test/test-database-context.xml",
+                    "classpath:jbpm-test/test-workflow-context.xml", };
+        return locations;
     }
 }

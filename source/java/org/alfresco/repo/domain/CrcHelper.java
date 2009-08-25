@@ -104,7 +104,7 @@ public class CrcHelper
         int valueLen = valueLowerCase.length();
         if (valueLen < dataLength)
         {
-            valueShort = value;
+            valueShort = valueLowerCase;
         }
         else if (useCharsFromStart)
         {

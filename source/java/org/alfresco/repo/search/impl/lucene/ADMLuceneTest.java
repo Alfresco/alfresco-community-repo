@@ -651,7 +651,24 @@ public class ADMLuceneTest extends TestCase
         }
 
     }
+    public void testQuoting() throws Exception
+    {
+        testTX.commit();
+        testTX = transactionService.getUserTransaction();
+        testTX.begin();
 
+        SearchParameters sp = new SearchParameters();
+        sp.setLanguage(SearchService.LANGUAGE_LUCENE);
+        sp.setQuery("TEXT:\"te\\\"thing\\\"st\"");
+        sp.addStore(rootNodeRef.getStoreRef());
+        sp.excludeDataInTheCurrentTransaction(true);
+
+        ResultSet results  = serviceRegistry.getSearchService().query(sp);
+        results.close();
+    }
+    
+    
+    
     public void testPublicServiceSearchServicePaging() throws Exception
     {
         testTX.commit();

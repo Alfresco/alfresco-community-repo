@@ -43,7 +43,7 @@
    </bean>
    
     <!-- CIFS authentication -->
-    <bean id="cifsAuthenticatorBase" abstract="true" init-method="initialize">
+    <bean id="cifsAuthenticatorBase" abstract="true">
         <property name="config">
             <ref bean="fileServerConfiguration" />
         </property>

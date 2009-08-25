@@ -112,6 +112,14 @@ public final class RegisteredConstraint implements Constraint
     /**
      * Defers to the registered constraint
      */
+    public String getTitle()
+    {
+        return getConstraint().getTitle();
+    }
+    
+    /**
+     * Defers to the registered constraint
+     */
     public Map<String, Object> getParameters()
     {
         return getConstraint().getParameters();

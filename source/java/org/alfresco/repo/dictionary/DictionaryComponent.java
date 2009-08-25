@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -33,6 +33,7 @@ import org.alfresco.repo.tenant.TenantDeployer;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.AssociationDefinition;
 import org.alfresco.service.cmr.dictionary.ClassDefinition;
+import org.alfresco.service.cmr.dictionary.ConstraintDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.ModelDefinition;
@@ -395,6 +396,11 @@ public class DictionaryComponent implements DictionaryService, TenantDeployer
             props.add(def.getName());
         }
         return props;
+    }
+    
+    public Collection<ConstraintDefinition> getConstraints(QName model)
+    {
+        return dictionaryDAO.getConstraints(model);
     }
 
     public void init()

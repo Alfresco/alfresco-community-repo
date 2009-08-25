@@ -35,10 +35,10 @@ import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.AssociationDefinition;
 import org.alfresco.service.cmr.dictionary.ClassDefinition;
 import org.alfresco.service.cmr.dictionary.ConstraintDefinition;
+import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryException;
 import org.alfresco.service.cmr.dictionary.ModelDefinition;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
-import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
 import org.alfresco.service.namespace.DynamicNamespacePrefixResolver;
 import org.alfresco.service.namespace.NamespaceException;
@@ -412,6 +412,14 @@ import org.apache.commons.logging.LogFactory;
     public Collection<AssociationDefinition> getAssociations()
     {
         return associations.values();
+    }
+    
+    /**
+     * @return the compiled constraints
+     */
+    public Collection<ConstraintDefinition> getConstraints()
+    {
+        return constraints.values();
     }
     
     

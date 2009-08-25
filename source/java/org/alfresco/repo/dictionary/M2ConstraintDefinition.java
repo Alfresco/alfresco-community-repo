@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -50,6 +50,8 @@ import org.springframework.beans.PropertyAccessException;
 /* package */class M2ConstraintDefinition implements ConstraintDefinition
 {
     private static final String PROP_SHORT_NAME = "shortName";
+    private static final String PROP_TITLE = "title";
+    private static final String PROP_DESCRIPTION = "description";
     
     public static final String ERR_CYCLIC_REF = "d_dictionary.constraint.err.cyclic_ref";
     public static final String ERR_TYPE_AND_REF = "d_dictionary.constraint.err.type_and_ref";
@@ -128,9 +130,14 @@ import org.springframework.beans.PropertyAccessException;
             // already been resolved
             return;
         }
+        
         String shortName = name.toPrefixString();
         String ref = m2Constraint.getRef();
         String type = m2Constraint.getType();
+        
+        String title = m2Constraint.getTitle();
+        String description = m2Constraint.getDescription();
+        
         if (ref != null && type != null)
         {
             throw new DictionaryException(ERR_TYPE_AND_REF, shortName);
@@ -153,6 +160,16 @@ import org.springframework.beans.PropertyAccessException;
             constraintDef.resolveDependencies(query);
             // just use the constraint provided by the referenced definition
             this.constraint = constraintDef.getConstraint();
+            
+            if (m2Constraint.getTitle() == null)
+            {
+                m2Constraint.setTitle(constraintDef.getTitle());
+            }
+            
+            if (m2Constraint.getDescription() == null)
+            {
+                m2Constraint.setDescription(constraintDef.getDescription());
+            }
         }
         else
         {
@@ -184,6 +201,7 @@ import org.springframework.beans.PropertyAccessException;
                     throw new DictionaryException(ERR_CONSTRUCT_FAILURE, type, shortName);
                 }
             }
+            
             // property setters
             BeanWrapper beanWrapper = new BeanWrapperImpl(constraint);
             List<M2NamedValue> constraintNamedValues = m2Constraint.getParameters();
@@ -241,9 +259,19 @@ import org.springframework.beans.PropertyAccessException;
                     {
                         throw new DictionaryException(ERR_PROPERTY_MISMATCH, e, shortName, shortName);
                     }
-                    
+                }
+                
+                if ((title != null) && (beanWrapper.isWritableProperty(PROP_TITLE)))
+                {
+                    beanWrapper.setPropertyValue(PROP_TITLE, title);
+                }
+                
+                if ((title != null) && (beanWrapper.isWritableProperty(PROP_DESCRIPTION)))
+                {
+                    beanWrapper.setPropertyValue(PROP_DESCRIPTION, description);
                 }
             }
+            
             // now initialize
             constraint.initialize();
         }
@@ -266,6 +294,26 @@ import org.springframework.beans.PropertyAccessException;
     public QName getName()
     {
         return name;
+    }
+    
+    public String getTitle()
+    {
+        String value = M2Label.getLabel(model, "constraint", name, "title"); 
+        if (value == null)
+        {
+            value = m2Constraint.getTitle();
+        }
+        return value;
+    }
+    
+    public String getDescription()
+    {
+        String value = M2Label.getLabel(model, "constraint", name, "description"); 
+        if (value == null)
+        {
+            value = m2Constraint.getDescription();
+        }
+        return value;
     }
 
     public Constraint getConstraint()

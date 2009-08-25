@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -113,7 +113,7 @@ public class M2Model
             IBindingFactory factory = BindingDirectory.getFactory(M2Model.class);
             IMarshallingContext context = factory.createMarshallingContext();
             context.setIndent(4);
-            context.marshalDocument(this, "UTF-8", null, xml);    
+            context.marshalDocument(this, "UTF-8", null, xml);
         }
         catch(JiBXException e)
         {
@@ -275,7 +275,7 @@ public class M2Model
     public M2DataType createPropertyType(String name)
     {
         M2DataType type = new M2DataType();
-        type .setName(name);
+        type.setName(name);
         dataTypes.add(type);
         return type;
     }
@@ -390,6 +390,36 @@ public class M2Model
     public List<M2Constraint> getConstraints()
     {
         return Collections.unmodifiableList(constraints);
+    }
+    
+    public M2Constraint getConstraint(String name)
+    {
+        for (M2Constraint candidate : constraints)
+        {
+            if (candidate.getName().equals(name))
+            {
+                return candidate;
+            }
+        }
+        return null;
+    }
+    
+    public M2Constraint createConstraint(String name, String type)
+    {
+        M2Constraint constraint = new M2Constraint();
+        constraint.setName(name);
+        constraint.setType(type);
+        constraints.add(constraint);
+        return constraint;
+    }
+    
+    public void removeConstraint(String name)
+    {
+        M2Constraint constraint = getConstraint(name);
+        if (constraint != null)
+        {
+            constraints.remove(name);
+        }
     }
 
     // Do not delete: referenced by m2binding.xml

@@ -29,6 +29,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -172,7 +173,7 @@ public class DictionaryDAOTest extends TestCase
         bootstrap.setModels(bootstrapModels);
         bootstrap.setDictionaryDAO(dictionaryDAO);
         bootstrap.setTenantService(tenantService);
-        bootstrap.bootstrap();       
+        bootstrap.bootstrap();
     }
 
 
@@ -203,7 +204,36 @@ public class DictionaryDAOTest extends TestCase
         // Check that the registered constraints are correct
         assertNotNull("Constraint reg1 not registered", ConstraintRegistry.getInstance().getConstraint("cm:reg1"));
         assertNotNull("Constraint reg2 not registered", ConstraintRegistry.getInstance().getConstraint("cm:reg2"));
-
+        
+        QName model = QName.createQName(TEST_URL, "dictionarydaotest");
+        Collection<ConstraintDefinition> modelConstraints = service.getConstraints(model);
+        assertEquals(15, modelConstraints.size()); // 8 + 7
+        
+        QName conRegExp1QName = QName.createQName(TEST_URL, "regex1");
+        boolean found1 = false;
+        
+        QName conStrLen1QName = QName.createQName(TEST_URL, "stringLength1");
+        boolean found2 = false;
+        
+        for (ConstraintDefinition constraintDef : modelConstraints)
+        {
+            if (constraintDef.getName().equals(conRegExp1QName))
+            {
+                assertEquals("Regex1 title", constraintDef.getTitle());
+                assertEquals("Regex1 description", constraintDef.getDescription());
+                found1 = true;
+            }
+            
+            if (constraintDef.getName().equals(conStrLen1QName))
+            {
+                assertNull(constraintDef.getTitle());
+                assertNull(constraintDef.getDescription());
+                found2 = true;
+            }
+        }
+        assertTrue(found1);
+        assertTrue(found2);
+        
         // get the constraints for a property without constraints
         QName propNoConstraintsQName = QName.createQName(TEST_URL, "fileprop");
         PropertyDefinition propNoConstraintsDef = service.getProperty(propNoConstraintsQName);
@@ -222,6 +252,17 @@ public class DictionaryDAOTest extends TestCase
         // check the individual constraints
         ConstraintDefinition constraintDef = constraints.get(0);
         assertTrue("Constraint anonymous name incorrect", constraintDef.getName().getLocalName().startsWith("prop1_anon"));
+        
+        // inherit title / description for reference constraint
+        assertTrue("Constraint title incorrect", constraintDef.getTitle().equals("Regex1 title"));
+        assertTrue("Constraint description incorrect", constraintDef.getDescription().equals("Regex1 description"));
+        
+        constraintDef = constraints.get(1);
+        assertTrue("Constraint anonymous name incorrect", constraintDef.getName().getLocalName().startsWith("prop1_anon"));
+        
+        assertTrue("Constraint title incorrect", constraintDef.getTitle().equals("Prop1 Strlen1 title"));
+        assertTrue("Constraint description incorrect", constraintDef.getDescription().equals("Prop1 Strlen1 description"));
+        
         // check that the constraint implementation is valid (it used a reference)
         Constraint constraint = constraintDef.getConstraint();
         assertNotNull("Reference constraint has no implementation", constraint);

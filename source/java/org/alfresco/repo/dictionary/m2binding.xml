@@ -122,8 +122,8 @@
 
    <mapping abstract="true" class="org.alfresco.repo.dictionary.M2NamedValue">
       <value style="attribute" name="name" field="name" />
-      <value name="value" field="simpleValue" usage="optional" />
-      <structure name="list" usage="optional">
+      <value name="value" field="simpleValue" test-method="hasSimpleValue" usage="optional"/>
+      <structure name="list" test-method="hasListValue" usage="optional">
           <collection field="listValue" factory="org.alfresco.repo.dictionary.M2Model.createList" usage="optional">
              <value name="value" style="element" usage="optional" type="java.lang.String"/>
           </collection>
@@ -134,6 +134,7 @@
       <value style="attribute" name="name" field="name" usage="optional"/>
       <value style="attribute" name="type" field="type" usage="optional"/>
       <value style="attribute" name="ref" field="ref" usage="optional"/>
+      <value name="title" field="title" usage="optional"/>
       <value name="description" field="description" usage="optional"/>
       <collection field="parameters" factory="org.alfresco.repo.dictionary.M2Model.createList" usage="optional">
          <structure name="parameter" type="org.alfresco.repo.dictionary.M2NamedValue" />

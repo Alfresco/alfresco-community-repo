@@ -932,6 +932,15 @@ public class DictionaryDAOImpl implements DictionaryDAO
         return namespaces;
     }
     
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.dictionary.DictionaryDAO#getConstraints(org.alfresco.service.namespace.QName)
+     */
+    public Collection<ConstraintDefinition> getConstraints(QName modelName)
+    {
+        CompiledModel model = getCompiledModel(modelName);
+        return model.getConstraints();
+    }
+    
     // re-entrant (eg. via reset)
     private DictionaryRegistry getDictionaryRegistry(String tenantDomain)
     {

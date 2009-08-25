@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -37,6 +37,7 @@ public class M2Constraint
     private String name;
     private String ref;
     private String type;
+    private String title;
     private String description;
     private List<M2NamedValue> parameters = new ArrayList<M2NamedValue>(2);
 
@@ -69,14 +70,64 @@ public class M2Constraint
     {
         return type;
     }
-
+    
+    public void setType(String type)
+    {
+        this.type = type;
+    }
+    
+    public String getTitle()
+    {
+        return title;
+    }
+    
+    public void setTitle(String title)
+    {
+        this.title = title;
+    }
+    
     public String getDescription()
     {
         return description;
     }
     
+    public void setDescription(String description)
+    {
+        this.description = description;
+    }
+    
     public List<M2NamedValue> getParameters()
     {
         return parameters;
+    }
+    
+    public M2NamedValue createParameter(String name, String simpleValue)
+    {
+        M2NamedValue param = new M2NamedValue();
+        param.setName(name);
+        param.setSimpleValue(simpleValue);
+        parameters.add(param);
+        return param;
+    }
+    
+    public M2NamedValue createParameter(String name, List<String> listValue)
+    {
+        M2NamedValue param = new M2NamedValue();
+        param.setName(name);
+        param.setListValue(listValue);
+        parameters.add(param);
+        return param;
+    }
+    
+    public void removeParameter(String name)
+    {
+        List<M2NamedValue> params = getParameters();
+        for (M2NamedValue param : params)
+        {
+            if (param.getName().equals(name))
+            {
+                parameters.remove(param);
+            }
+        }
     }
 }

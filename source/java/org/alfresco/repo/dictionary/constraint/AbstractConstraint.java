@@ -46,6 +46,8 @@ public abstract class AbstractConstraint implements Constraint
     
     /** The constraint name. May be useful in error messages */
     private String shortName;
+    private String title;
+    
     private ConstraintRegistry registry;
 
     /**
@@ -94,7 +96,17 @@ public abstract class AbstractConstraint implements Constraint
     {
         return this.getClass().getName();
     }
-
+    
+    public void setTitle(String title)
+    {
+        this.title = title;
+    }
+    
+    public String getTitle()
+    {
+        return title;
+    }
+    
     public Map<String, Object> getParameters()
     {
         return new HashMap<String, Object>(3);

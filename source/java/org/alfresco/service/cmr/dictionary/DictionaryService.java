@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -25,6 +25,7 @@
 package org.alfresco.service.cmr.dictionary;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 import org.alfresco.service.NotAuditable;
@@ -261,6 +262,14 @@ public interface DictionaryService
      */
     @NotAuditable
     Collection<QName> getAllAssociations();
+    
+    /**
+     * Get constraints for the specified model
+     * 
+     * @param model
+     * @return
+     */
+    public Collection<ConstraintDefinition> getConstraints(QName model);
     
     // TODO: Behaviour definitions
     

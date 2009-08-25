@@ -30,6 +30,8 @@
          <parameter name="registeredName"><value>cm:reg2</value></parameter>
       </constraint>
       <constraint name="test:regex1" type="REGEX">
+         <title>Regex1 title</title>
+         <description>Regex1 description</description>
          <parameter name="expression"><value>[A-Z]*</value></parameter>
          <parameter name="requiresMatch"><value>false</value></parameter>
       </constraint>
@@ -74,7 +76,10 @@
                <default></default>
                <constraints>
                   <constraint ref="test:regex1"/>
-                  <constraint ref="test:stringLength1"/>
+                  <constraint ref="test:stringLength1">
+                      <title>Prop1 Strlen1 title</title>
+                      <description>Prop1 Strlen1 description</description>
+                  </constraint>
                   <constraint ref="test:registered1"/>
                </constraints>
             </property>

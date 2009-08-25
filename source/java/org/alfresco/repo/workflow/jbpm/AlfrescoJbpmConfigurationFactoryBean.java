@@ -22,6 +22,7 @@
  * the FLOSS exception, and it is also available here: 
  * http://www.alfresco.com/legal/licensing"
  */
+
 package org.alfresco.repo.workflow.jbpm;
 
 import java.io.InputStream;
@@ -46,13 +47,17 @@ import org.springmodules.workflow.jbpm31.JbpmFactoryLocator;
  * @author Costin Leau
  * @author davidc
  */
-public class AlfrescoJbpmConfigurationFactoryBean implements InitializingBean, FactoryBean, BeanFactoryAware,
-        BeanNameAware, DisposableBean
+public class AlfrescoJbpmConfigurationFactoryBean implements InitializingBean, FactoryBean,
+            BeanFactoryAware, BeanNameAware, DisposableBean
 {
     private JbpmConfiguration jbpmConfiguration;
+
     private ObjectFactory objectFactory;
+
     private Resource configuration;
+
     private SessionFactory sessionFactory;
+
     private String contextName = JbpmContext.DEFAULT_JBPM_CONTEXT_NAME;
 
     /**
@@ -63,16 +68,23 @@ public class AlfrescoJbpmConfigurationFactoryBean implements InitializingBean, F
     /*
      * (non-Javadoc)
      * @see
-     * org.springframework.beans.factory.BeanFactoryAware#setBeanFactory(org.springframework.beans.factory.BeanFactory)
+     * org.springframework.beans.factory.BeanFactoryAware#setBeanFactory(org
+     * .springframework.beans.factory.BeanFactory)
      */
     public void setBeanFactory(final BeanFactory beanFactory) throws BeansException
     {
+        // TODO Added to get the build working. A better solution is needed
+        // long-term.
+        this.factoryLocator.destroy();
+
         this.factoryLocator.setBeanFactory(beanFactory);
     }
 
     /*
      * (non-Javadoc)
-     * @see org.springframework.beans.factory.BeanNameAware#setBeanName(java.lang.String)
+     * @see
+     * org.springframework.beans.factory.BeanNameAware#setBeanName(java.lang
+     * .String)
      */
     public void setBeanName(final String name)
     {
@@ -81,14 +93,13 @@ public class AlfrescoJbpmConfigurationFactoryBean implements InitializingBean, F
 
     /*
      * (non-Javadoc)
-     * @see org.springframework.beans.factory.InitializingBean#afterPropertiesSet()
+     * @see
+     * org.springframework.beans.factory.InitializingBean#afterPropertiesSet()
      */
     public void afterPropertiesSet() throws Exception
     {
-        if (this.configuration == null)
-        {
-            throw new IllegalArgumentException("configuration or objectFactory property need to be not null");
-        }
+        if (this.configuration == null) { throw new IllegalArgumentException(
+                    "configuration or objectFactory property need to be not null"); }
 
         // 1. Construct Jbpm Configuration
         // NOTE: Jbpm 3.2 adds a JbpmConfiguration value to its context
@@ -146,8 +157,7 @@ public class AlfrescoJbpmConfigurationFactoryBean implements InitializingBean, F
     }
 
     /**
-     * @param configuration
-     *            The configuration to set
+     * @param configuration The configuration to set
      */
     public void setConfiguration(final Resource configuration)
     {
@@ -163,8 +173,7 @@ public class AlfrescoJbpmConfigurationFactoryBean implements InitializingBean, F
     }
 
     /**
-     * @param objectFactory
-     *            The objectFactory to set
+     * @param objectFactory The objectFactory to set
      */
     public void setObjectFactory(final ObjectFactory objectFactory)
     {
@@ -180,8 +189,7 @@ public class AlfrescoJbpmConfigurationFactoryBean implements InitializingBean, F
     }
 
     /**
-     * @param contextName
-     *            The contextName to set
+     * @param contextName The contextName to set
      */
     public void setContextName(final String contextName)
     {
@@ -197,8 +205,7 @@ public class AlfrescoJbpmConfigurationFactoryBean implements InitializingBean, F
     }
 
     /**
-     * @param sessionFactory
-     *            The sessionFactory to set
+     * @param sessionFactory The sessionFactory to set
      */
     public void setSessionFactory(final SessionFactory sessionFactory)
     {

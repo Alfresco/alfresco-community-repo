@@ -103,6 +103,22 @@ public class Period implements Serializable
     }
 
     /**
+     * @return the periodType
+     */
+    public String getPeriodType()
+    {
+        return periodType;
+    }
+
+    /**
+     * @return the expression
+     */
+    public String getExpression()
+    {
+        return expression;
+    }
+
+    /**
      * Calculate the next date for this period given the a start date.
      * 
      * @param date

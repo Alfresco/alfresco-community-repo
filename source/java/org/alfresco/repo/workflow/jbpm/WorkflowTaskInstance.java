@@ -49,6 +49,9 @@ public class WorkflowTaskInstance extends TaskInstance
 {
     private static final long serialVersionUID = 6824116036569411964L;
 
+    /**
+     * Used to look up the Alfresco JBPM Engine.
+     */
     private String jbpmEngineName = null;
 
     /** Alfresco JBPM Engine */

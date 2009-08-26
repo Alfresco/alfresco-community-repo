@@ -34,51 +34,11 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link KeyedAuditDefinition }
+     * Create an instance of {@link Application }
      * 
      */
-    public KeyedAuditDefinition createKeyedAuditDefinition() {
-        return new KeyedAuditDefinition();
-    }
-
-    /**
-     * Create an instance of {@link DataExtractor }
-     * 
-     */
-    public DataExtractor createDataExtractor() {
-        return new DataExtractor();
-    }
-
-    /**
-     * Create an instance of {@link Audit }
-     * 
-     */
-    public Audit createAudit() {
-        return new Audit();
-    }
-
-    /**
-     * Create an instance of {@link DataExtractors }
-     * 
-     */
-    public DataExtractors createDataExtractors() {
-        return new DataExtractors();
-    }
-
-    /**
-     * Create an instance of {@link AuditPath }
-     * 
-     */
-    public AuditPath createAuditPath() {
-        return new AuditPath();
-    }
-
-    /**
-     * Create an instance of {@link DataGenerator }
-     * 
-     */
-    public DataGenerator createDataGenerator() {
-        return new DataGenerator();
+    public Application createApplication() {
+        return new Application();
     }
 
     /**
@@ -90,6 +50,22 @@ public class ObjectFactory {
     }
 
     /**
+     * Create an instance of {@link DataExtractor }
+     * 
+     */
+    public DataExtractor createDataExtractor() {
+        return new DataExtractor();
+    }
+
+    /**
+     * Create an instance of {@link AuditPath }
+     * 
+     */
+    public AuditPath createAuditPath() {
+        return new AuditPath();
+    }
+
+    /**
      * Create an instance of {@link RecordValue }
      * 
      */
@@ -98,19 +74,43 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link Application }
-     * 
-     */
-    public Application createApplication() {
-        return new Application();
-    }
-
-    /**
      * Create an instance of {@link GenerateValue }
      * 
      */
     public GenerateValue createGenerateValue() {
         return new GenerateValue();
+    }
+
+    /**
+     * Create an instance of {@link Audit }
+     * 
+     */
+    public Audit createAudit() {
+        return new Audit();
+    }
+
+    /**
+     * Create an instance of {@link KeyedAuditDefinition }
+     * 
+     */
+    public KeyedAuditDefinition createKeyedAuditDefinition() {
+        return new KeyedAuditDefinition();
+    }
+
+    /**
+     * Create an instance of {@link DataExtractors }
+     * 
+     */
+    public DataExtractors createDataExtractors() {
+        return new DataExtractors();
+    }
+
+    /**
+     * Create an instance of {@link DataGenerator }
+     * 
+     */
+    public DataGenerator createDataGenerator() {
+        return new DataGenerator();
     }
 
     /**

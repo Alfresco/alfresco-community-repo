@@ -30,7 +30,8 @@
     </xs:complexType>
     
     <xs:complexType name="DataExtractor">
-        <xs:attribute name="name" type="a:NameAttribute"/>
+        <xs:attribute name="name" type="a:NameAttribute" use="required"/>
+        <xs:attribute name="registeredName" type="a:NameAttribute"/>
         <xs:attribute name="class" type="a:ClassAttribute"/>
     </xs:complexType>
     
@@ -41,7 +42,8 @@
     </xs:complexType>
     
     <xs:complexType name="DataGenerator">
-        <xs:attribute name="name" type="a:NameAttribute"/>
+        <xs:attribute name="name" type="a:NameAttribute" use="required"/>
+        <xs:attribute name="registeredName" type="a:NameAttribute"/>
         <xs:attribute name="class" type="a:ClassAttribute"/>
     </xs:complexType>
     
@@ -94,7 +96,7 @@
         <xs:restriction base="xs:string">
             <xs:minLength value="1"/>
             <xs:maxLength value="128"/>
-            <xs:pattern value="([a-z]|[A-Z]|[0-9]|\ |\-)*"/>
+            <xs:pattern value="([a-z]|[A-Z]|[0-9]|\-|\.|\ )*"/>
         </xs:restriction>
     </xs:simpleType>
 

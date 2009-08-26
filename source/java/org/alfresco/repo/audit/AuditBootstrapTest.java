@@ -58,7 +58,7 @@ public class AuditBootstrapTest extends TestCase
     @Override
     public void setUp() throws Exception
     {
-        auditModelRegistry = (AuditModelRegistry) ctx.getBean("auditModel.registry");
+        auditModelRegistry = (AuditModelRegistry) ctx.getBean("auditModel.modelRegistry");
         
         // Register a new model
         URL testModelUrl = ResourceUtils.getURL("classpath:alfresco/audit/alfresco-audit-test.xml");

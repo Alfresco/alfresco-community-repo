@@ -26,6 +26,7 @@ package org.alfresco.repo.audit;
 
 import java.io.Serializable;
 import java.net.URL;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -63,7 +64,7 @@ public class AuditComponentTest extends TestCase
     @Override
     public void setUp() throws Exception
     {
-        auditModelRegistry = (AuditModelRegistry) ctx.getBean("auditModel.registry");
+        auditModelRegistry = (AuditModelRegistry) ctx.getBean("auditModel.modelRegistry");
         auditComponent = (AuditComponent) ctx.getBean("auditComponent");
         transactionService = (TransactionService) ctx.getBean("transactionService");
         
@@ -71,6 +72,15 @@ public class AuditComponentTest extends TestCase
         URL testModelUrl = ResourceUtils.getURL("classpath:alfresco/audit/alfresco-audit-test.xml");
         auditModelRegistry.registerModel(testModelUrl);
         auditModelRegistry.loadAuditModels();
+        
+        // Authenticate
+        AuthenticationUtil.setFullyAuthenticatedUser("User-" + getName() + System.currentTimeMillis());
+    }
+    
+    @Override
+    public void tearDown() throws Exception
+    {
+        AuthenticationUtil.clearCurrentSecurityContext();
     }
     
     public void testSetUp()
@@ -126,7 +136,7 @@ public class AuditComponentTest extends TestCase
     /**
      * Start a session and use it within a single txn
      */
-    public void testBasicSession() throws Exception
+    public void testSession_Basic() throws Exception
     {
         final RetryingTransactionCallback<Void> testCallback = new RetryingTransactionCallback<Void>()
         {
@@ -137,6 +147,7 @@ public class AuditComponentTest extends TestCase
                 Map<String, Serializable> values = new HashMap<String, Serializable>(13);
                 values.put("/test/1.1/2.1/3.1/4.1", new Long(41));
                 values.put("/test/1.1/2.1/3.1/4.2", "42");
+                values.put("/test/1.1/2.1/3.1/4.2", new Date());
                 
                 auditComponent.audit(session, values);
                 
@@ -150,6 +161,37 @@ public class AuditComponentTest extends TestCase
                 return transactionService.getRetryingTransactionHelper().doInTransaction(testCallback);
             }
         };
-        AuthenticationUtil.runAs(testRunAs, "Peanut");
+        AuthenticationUtil.runAs(testRunAs, "SomeOtherUser");
+    }
+    
+    /**
+     * Start a session and use it within a single txn
+     */
+    public void testSession_Extended01() throws Exception
+    {
+        final RetryingTransactionCallback<Void> testCallback = new RetryingTransactionCallback<Void>()
+        {
+            public Void execute() throws Throwable
+            {
+                AuditSession session = auditComponent.startAuditSession(APPLICATION_TEST, "/test/1.1");
+                
+                Map<String, Serializable> values = new HashMap<String, Serializable>(13);
+                values.put("/test/1.1/2.1/3.1/4.1", new Long(41));
+                values.put("/test/1.1/2.1/3.1/4.2", "42");
+                values.put("/test/1.1/2.1/3.1/4.2", new Date());
+                
+                auditComponent.audit(session, values);
+                
+                return null;
+            }
+        };
+        RunAsWork<Void> testRunAs = new RunAsWork<Void>()
+        {
+            public Void doWork() throws Exception
+            {
+                return transactionService.getRetryingTransactionHelper().doInTransaction(testCallback);
+            }
+        };
+        AuthenticationUtil.runAs(testRunAs, "SomeOtherUser");
     }
 }

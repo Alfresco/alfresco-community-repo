@@ -16,7 +16,8 @@ import javax.xml.bind.annotation.XmlType;
  * &lt;complexType name="DataExtractor">
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;attribute name="name" type="{http://www.alfresco.org/repo/audit/model/3.2}NameAttribute" />
+ *       &lt;attribute name="name" use="required" type="{http://www.alfresco.org/repo/audit/model/3.2}NameAttribute" />
+ *       &lt;attribute name="registeredName" type="{http://www.alfresco.org/repo/audit/model/3.2}NameAttribute" />
  *       &lt;attribute name="class" type="{http://www.alfresco.org/repo/audit/model/3.2}ClassAttribute" />
  *     &lt;/restriction>
  *   &lt;/complexContent>
@@ -29,8 +30,10 @@ import javax.xml.bind.annotation.XmlType;
 @XmlType(name = "DataExtractor")
 public class DataExtractor {
 
-    @XmlAttribute
+    @XmlAttribute(required = true)
     protected String name;
+    @XmlAttribute
+    protected String registeredName;
     @XmlAttribute(name = "class")
     protected String clazz;
 
@@ -56,6 +59,30 @@ public class DataExtractor {
      */
     public void setName(String value) {
         this.name = value;
+    }
+
+    /**
+     * Gets the value of the registeredName property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getRegisteredName() {
+        return registeredName;
+    }
+
+    /**
+     * Sets the value of the registeredName property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setRegisteredName(String value) {
+        this.registeredName = value;
     }
 
     /**

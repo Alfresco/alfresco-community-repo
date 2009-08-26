@@ -24,14 +24,51 @@
  */
 package org.alfresco.repo.audit.extractor;
 
+import org.alfresco.util.PropertyCheck;
+import org.alfresco.util.registry.NamedObjectRegistry;
+import org.springframework.beans.factory.BeanNameAware;
+import org.springframework.beans.factory.InitializingBean;
+
 /**
  * Abstract implementation to provide support.
  * 
  * @author Derek Hulley
  * @since 3.2
  */
-public abstract class AbstractDataExtractor implements DataExtractor
+public abstract class AbstractDataExtractor implements DataExtractor, InitializingBean, BeanNameAware
 {
+    private String name;
+    private NamedObjectRegistry<DataExtractor> registry;
+
+    /**
+     * Set the name with which to {@link #setRegistry(NamedObjectRegistry) register}
+     * @param name          the name of the bean
+     */
+    public void setBeanName(String name)
+    {
+        this.name = name;
+    }
+
+    /**
+     * Set the registry with which to register
+     * @param registry
+     */
+    public void setRegistry(NamedObjectRegistry<DataExtractor> registry)
+    {
+        this.registry = registry;
+    }
+
+    /**
+     * Registers the instance
+     */
+    public void afterPropertiesSet() throws Exception
+    {
+        PropertyCheck.mandatory(this, "name", name);
+        PropertyCheck.mandatory(this, "registry", registry);
+
+        registry.register(name, this);
+    }
+
     /**
      * This implementation assumes all extractors are stateless i.e. if the class matches
      * then the instances are equal.

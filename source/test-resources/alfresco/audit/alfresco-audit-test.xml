@@ -11,11 +11,12 @@
     <!-- Includes duplicate definitions of the extractors and generators -->
 
     <DataExtractors>
-       <DataExtractor name="simpleValue" class="org.alfresco.repo.audit.extractor.SimpleValueDataExtractor"/>
+       <DataExtractor name="simpleValue" registeredName="auditModel.extractor.simpleValue"/>
     </DataExtractors>
 
     <DataGenerators>
-       <DataGenerator name="systemTime" class="org.alfresco.repo.audit.generator.SystemTimeDataGenerator"/>
+       <DataGenerator name="systemTime" registeredName="auditModel.generator.time"/>
+       <DataGenerator name="user" class="org.alfresco.repo.audit.generator.AuthenticatedUserDataGenerator"/>
     </DataGenerators>
 
     <Application name="Alfresco Test" key="test">
@@ -61,6 +62,11 @@
                         <RecordValue key="value.1" dataExtractor="simpleValue"/>
                     </AuditPath>
                 </AuditPath>
+            </AuditPath>
+        </AuditPath>
+        <AuditPath key="node">
+            <AuditPath key="t1">
+                <RecordValue key="noderef" dataExtractor="simpleValue"/>
             </AuditPath>
         </AuditPath>
     </Application>

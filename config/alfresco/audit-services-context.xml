@@ -37,7 +37,7 @@
             <ref bean="auditModel"/>
         </property>
         <!-- V3.2 specific -->
-        <property name="auditModelRegistry" ref="auditModel.registry"/>
+        <property name="auditModelRegistry" ref="auditModel.modelRegistry"/>
     </bean>
     
     <!-- Public service idntifier -->
@@ -78,16 +78,38 @@
     <!-- Audit V3.2 implementation -->
     <!--                           -->
     
-    <bean id="auditModel.registry" class="org.alfresco.repo.audit.model.AuditModelRegistry">
+    <!-- Data extractors -->
+    <bean id="auditModel.extractorRegistry" class="org.alfresco.util.registry.NamedObjectRegistry">
+        <property name="storageType" value="org.alfresco.repo.audit.extractor.DataExtractor" />
+    </bean>
+    <bean name="auditModel.extractor.simpleValue" class="org.alfresco.repo.audit.extractor.SimpleValueDataExtractor">
+        <property name="registry" ref="auditModel.extractorRegistry" />
+    </bean>
+    
+    <!-- Data Generators -->
+    <bean id="auditModel.generatorRegistry" class="org.alfresco.util.registry.NamedObjectRegistry">
+        <property name="storageType" value="org.alfresco.repo.audit.generator.DataGenerator" />
+    </bean>
+    <bean name="auditModel.generator.time" class="org.alfresco.repo.audit.generator.SystemTimeDataGenerator">
+        <property name="registry" ref="auditModel.generatorRegistry" />
+    </bean>
+    <bean name="auditModel.generator.user" class="org.alfresco.repo.audit.generator.AuthenticatedUserDataGenerator">
+        <property name="registry" ref="auditModel.generatorRegistry" />
+    </bean>
+    
+    <!-- Models -->
+    <bean id="auditModel.modelRegistry" class="org.alfresco.repo.audit.model.AuditModelRegistry">
         <property name="transactionService" ref="transactionService"/>
         <property name="auditDAO" ref="auditDAO"/>
+        <property name="dataExtractors" ref="auditModel.extractorRegistry"/>
+        <property name="dataGenerators" ref="auditModel.generatorRegistry"/>
     </bean>
-  
+    
     <bean id="auditModel.repository" class="org.alfresco.repo.audit.model.AuditModelReader">
         <property name="auditModelUrl">
            <value>classpath:alfresco/audit/alfresco-audit-repository.xml</value>
         </property>
-        <property name="auditModelRegistry" ref="auditModel.registry"/>
+        <property name="auditModelRegistry" ref="auditModel.modelRegistry"/>
     </bean>
   
 </beans>

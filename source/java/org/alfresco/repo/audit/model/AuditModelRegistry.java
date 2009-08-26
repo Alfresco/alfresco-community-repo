@@ -58,6 +58,8 @@ import org.alfresco.repo.domain.audit.AuditDAO;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.util.PropertyCheck;
+import org.alfresco.util.registry.NamedObjectRegistry;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.util.ResourceUtils;
@@ -80,6 +82,8 @@ public class AuditModelRegistry
     
     private TransactionService transactionService;
     private AuditDAO auditDAO;
+    private NamedObjectRegistry<DataExtractor> dataExtractors;
+    private NamedObjectRegistry<DataGenerator> dataGenerators;
     
     private final ReentrantReadWriteLock.ReadLock readLock;
     private final ReentrantReadWriteLock.WriteLock writeLock;
@@ -87,8 +91,6 @@ public class AuditModelRegistry
     
     private final Set<URL> auditModelUrls;
     private final List<Audit> auditModels;
-    private final Map<String, DataExtractor> dataExtractorsByName;
-    private final Map<String, DataGenerator> dataGeneratorsByName;
     /**
      * Used to lookup the audit application java hierarchy 
      */
@@ -111,8 +113,6 @@ public class AuditModelRegistry
         
         auditModelUrls = new HashSet<URL>(7);
         auditModels = new ArrayList<Audit>(7);
-        dataExtractorsByName = new HashMap<String, DataExtractor>(13);
-        dataGeneratorsByName = new HashMap<String, DataGenerator>(13);
         auditApplicationsByName = new HashMap<String, AuditApplication>(7);
         auditModelIdsByApplicationsName = new HashMap<String, Long>(7);
     }
@@ -134,12 +134,40 @@ public class AuditModelRegistry
     }
 
     /**
+     * Set the registry of {@link DataExtractor data extractors}
+     */
+    public void setDataExtractors(NamedObjectRegistry<DataExtractor> dataExtractors)
+    {
+        this.dataExtractors = dataExtractors;
+    }
+
+    /**
+     * Set the registry of {@link DataGenerator data generators}
+     */
+    public void setDataGenerators(NamedObjectRegistry<DataGenerator> dataGenerators)
+    {
+        this.dataGenerators = dataGenerators;
+    }
+
+    /**
+     * Ensures that all properties have been set for use.
+     */
+    private void checkProperties()
+    {
+        PropertyCheck.mandatory(this, "transactionService", transactionService);
+        PropertyCheck.mandatory(this, "auditDAO", auditDAO);
+        PropertyCheck.mandatory(this, "dataExtractors", dataExtractors);
+        PropertyCheck.mandatory(this, "dataGenerators", dataGenerators);
+    }
+
+    /**
      * Register an audit model at a given URL.
      * 
      * @param auditModelUrl             the source of the model
      */
     public void registerModel(URL auditModelUrl)
     {
+        checkProperties();
         writeLock.lock();
         try
         {
@@ -162,6 +190,7 @@ public class AuditModelRegistry
      */
     public void registerModel(NodeRef auditModelNodeRef)
     {
+        checkProperties();
         writeLock.lock();
         try
         {
@@ -179,8 +208,6 @@ public class AuditModelRegistry
     private void clearCaches()
     {
         auditModels.clear();
-        dataExtractorsByName.clear();
-        dataGeneratorsByName.clear();;
         auditApplicationsByName.clear();
         auditModelIdsByApplicationsName.clear();
     }
@@ -194,6 +221,8 @@ public class AuditModelRegistry
      */
     public void loadAuditModels()
     {
+        checkProperties();
+        
         RetryingTransactionCallback<Void> loadModelsCallback = new RetryingTransactionCallback<Void>()
         {
             public Void execute() throws Throwable
@@ -365,42 +394,58 @@ public class AuditModelRegistry
     
     private void cacheAuditElements(Long auditModelId, Audit audit)
     {
+        Map<String, DataExtractor> dataExtractorsByName = new HashMap<String, DataExtractor>(13);
+        Map<String, DataGenerator> dataGeneratorsByName = new HashMap<String, DataGenerator>(13);
+
         // Get the data extractors and check for duplicates
         DataExtractors extractorsElement = audit.getDataExtractors();
         if (extractorsElement == null)
         {
             extractorsElement = objectFactory.createDataExtractors();
         }
-        List<org.alfresco.repo.audit.model._3.DataExtractor> converterElements = extractorsElement.getDataExtractor();
-        for (org.alfresco.repo.audit.model._3.DataExtractor converterElement : converterElements)
+        List<org.alfresco.repo.audit.model._3.DataExtractor> extractorElements = extractorsElement.getDataExtractor();
+        for (org.alfresco.repo.audit.model._3.DataExtractor extractorElement : extractorElements)
         {
-            String name = converterElement.getName();
-            // Construct the converter
-            final DataExtractor dataExtractor;
-            try
-            {
-                Class<?> dataExtractorClazz = Class.forName(converterElement.getClazz());
-                dataExtractor = (DataExtractor) dataExtractorClazz.newInstance();
-            }
-            catch (ClassNotFoundException e)
-            {
-                throw new AuditModelException(
-                        "Audit data extractor '" + name + "' class not found: " + converterElement.getClazz());
-            }
-            catch (Exception e)
-            {
-                throw new AuditModelException(
-                        "Audit data extractor '" + name + "' could not be constructed: " + converterElement.getClazz());
-            }
+            String name = extractorElement.getName();
             // If the name is taken, make sure that they are equal
             if (dataExtractorsByName.containsKey(name))
             {
-                DataExtractor existing = dataExtractorsByName.get(name);
-                if (!existing.equals(dataExtractor))
+                throw new AuditModelException(
+                        "Audit data extractor '" + name + "' has already been defined.");
+            }
+            // Construct the converter
+            final DataExtractor dataExtractor;
+            if (extractorElement.getClazz() != null)
+            {
+                try
+                {
+                    Class<?> dataExtractorClazz = Class.forName(extractorElement.getClazz());
+                    dataExtractor = (DataExtractor) dataExtractorClazz.newInstance();
+                }
+                catch (ClassNotFoundException e)
                 {
                     throw new AuditModelException(
-                            "Audit data extractor '" + name + "' is incompatible with an existing instance.");
+                            "Audit data extractor '" + name + "' class not found: " + extractorElement.getClazz());
                 }
+                catch (Exception e)
+                {
+                    throw new AuditModelException(
+                            "Audit data extractor '" + name + "' could not be constructed: " + extractorElement.getClazz());
+                }
+            }
+            else if (extractorElement.getRegisteredName() != null)
+            {
+                dataExtractor = dataExtractors.getNamedObject(extractorElement.getRegisteredName());
+                if (dataExtractor == null)
+                {
+                    throw new AuditModelException(
+                            "No registered audit data extractor exists for '" + name + "'.");
+                }
+            }
+            else
+            {
+                throw new AuditModelException(
+                        "Audit data extractor has no class or registered name: " + name);
             }
             // Store
             dataExtractorsByName.put(name, dataExtractor);
@@ -415,32 +460,45 @@ public class AuditModelRegistry
         for (org.alfresco.repo.audit.model._3.DataGenerator generatorElement : generatorElements)
         {
             String name = generatorElement.getName();
-            // Construct the converter
-            final DataGenerator dataGenerator;
-            try
-            {
-                Class<?> dataExtractorClazz = Class.forName(generatorElement.getClazz());
-                dataGenerator = (DataGenerator) dataExtractorClazz.newInstance();
-            }
-            catch (ClassNotFoundException e)
-            {
-                throw new AuditModelException(
-                        "Audit data generator '" + name + "' class not found: " + generatorElement.getClazz());
-            }
-            catch (Exception e)
-            {
-                throw new AuditModelException(
-                        "Audit data generator '" + name + "' could not be constructed: " + generatorElement.getClazz());
-            }
             // If the name is taken, make sure that they are equal
             if (dataGeneratorsByName.containsKey(name))
             {
-                DataGenerator existing = dataGeneratorsByName.get(name);
-                if (!existing.equals(dataGenerator))
+                throw new AuditModelException(
+                        "Audit data generator '" + name + "' has already been defined.");
+            }
+            // Construct the generator
+            final DataGenerator dataGenerator;
+            if (generatorElement.getClazz() != null)
+            {
+                try
+                {
+                    Class<?> dataGeneratorClazz = Class.forName(generatorElement.getClazz());
+                    dataGenerator = (DataGenerator) dataGeneratorClazz.newInstance();
+                }
+                catch (ClassNotFoundException e)
                 {
                     throw new AuditModelException(
-                            "Audit data generator '" + name + "' is incompatible with an existing instance.");
+                            "Audit data generator '" + name + "' class not found: " + generatorElement.getClazz());
                 }
+                catch (Exception e)
+                {
+                    throw new AuditModelException(
+                            "Audit data generator '" + name + "' could not be constructed: " + generatorElement.getClazz());
+                }
+            }
+            else if (generatorElement.getRegisteredName() != null)
+            {
+                dataGenerator = dataGenerators.getNamedObject(generatorElement.getRegisteredName());
+                if (dataGenerator == null)
+                {
+                    throw new AuditModelException(
+                            "No registered audit data generator exists for '" + name + "'.");
+                }
+            }
+            else
+            {
+                throw new AuditModelException(
+                        "Audit data generator has no class or registered name: " + name);
             }
             // Store
             dataGeneratorsByName.put(name, dataGenerator);

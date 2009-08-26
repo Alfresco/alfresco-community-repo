@@ -67,8 +67,7 @@ public abstract class BaseWebScriptTest extends TestCase
     private boolean traceReqRes = false;
 
     // Local Server access
-    private static String customContext = null;
-    private static TestWebScriptServer server = null;
+    private String customContext = null;
     
     // Remote Server access
     private String defaultRunAs = null;
@@ -156,9 +155,9 @@ public abstract class BaseWebScriptTest extends TestCase
      * Sets custom context for Test Web Script Server (in-process only)
      * @param customContext
      */
-    public static void setCustomContext(String customContext)
+    protected void setCustomContext(String customContext)
     {
-        BaseWebScriptTest.customContext = customContext;
+        this.customContext = customContext;
     }
     
     /**
@@ -237,20 +236,19 @@ public abstract class BaseWebScriptTest extends TestCase
         }
     }
     
-    protected static TestWebScriptServer getServer()
+    /**
+     * Get the server for the previously-supplied {@link #setCustomContext(String) custom context}
+     */
+    protected TestWebScriptServer getServer()
     {
-        if (BaseWebScriptTest.server == null)
+        if (customContext == null)
         {
-            if (BaseWebScriptTest.customContext == null)
-            {
-                BaseWebScriptTest.server = TestWebScriptRepoServer.getTestServer();
-            }
-            else
-            {
-                BaseWebScriptTest.server = TestWebScriptRepoServer.getTestServer(customContext);
-            }
+            return TestWebScriptRepoServer.getTestServer();
         }
-        return BaseWebScriptTest.server;
+        else
+        {
+            return TestWebScriptRepoServer.getTestServer(customContext);
+        }
     }
     
 
@@ -348,7 +346,7 @@ public abstract class BaseWebScriptTest extends TestCase
         asUser = (asUser == null) ? defaultRunAs : asUser;
         if (asUser == null)
         {
-            return BaseWebScriptTest.getServer().submitRequest(req.getMethod(), req.getFullUri(), req.getHeaders(), req.getBody(), req.getEncoding(), req.getType());
+            return getServer().submitRequest(req.getMethod(), req.getFullUri(), req.getHeaders(), req.getBody(), req.getEncoding(), req.getType());
         }
         else
         {
@@ -358,7 +356,7 @@ public abstract class BaseWebScriptTest extends TestCase
                 @SuppressWarnings("synthetic-access")
                 public Response doWork() throws Exception
                 {
-                    return BaseWebScriptTest.getServer().submitRequest(req.getMethod(), req.getFullUri(), req.getHeaders(), req.getBody(), req.getEncoding(), req.getType());
+                    return getServer().submitRequest(req.getMethod(), req.getFullUri(), req.getHeaders(), req.getBody(), req.getEncoding(), req.getType());
                 }
             }, asUser);
         }

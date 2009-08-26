@@ -1024,7 +1024,7 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory implements LuceneI
      * 
      * @author Derek Hulley
      */
-    public static class LuceneIndexBackupComponent implements InitializingBean
+    public static class LuceneIndexBackupComponent /*implements InitializingBean*/
     {
         ReentrantReadWriteLock rwLock = new ReentrantReadWriteLock();
 
@@ -1443,7 +1443,7 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory implements LuceneI
 
         }
 
-        public void afterPropertiesSet() throws Exception
+        public void afterPropertiesSetXXX() throws Exception
         {
             RetryingTransactionCallback<Object> backupWork = new RetryingTransactionCallback<Object>()
             {

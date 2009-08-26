@@ -41,8 +41,6 @@ import javax.security.auth.callback.UnsupportedCallbackException;
 import javax.security.auth.login.LoginContext;
 import javax.security.auth.login.LoginException;
 import javax.security.sasl.RealmCallback;
-import javax.transaction.Status;
-import javax.transaction.UserTransaction;
 
 import org.alfresco.config.ConfigElement;
 import org.alfresco.error.AlfrescoRuntimeException;
@@ -80,6 +78,7 @@ import org.alfresco.jlan.util.DataPacker;
 import org.alfresco.jlan.util.HexDump;
 import org.alfresco.repo.security.authentication.NTLMMode;
 import org.alfresco.repo.security.authentication.ntlm.NLTMAuthenticator;
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.ietf.jgss.Oid;
 
 /**
@@ -634,7 +633,7 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticatorBase implement
      * @param reqPkt SMBSrvPacket
      * @exception SMBSrvException
      */
-    public void processSessionSetup(SMBSrvSession sess, SMBSrvPacket reqPkt)
+    public void processSessionSetup(final SMBSrvSession sess, final SMBSrvPacket reqPkt)
         throws SMBSrvException
     {
         //  Check that the received packet looks like a valid NT session setup andX request
@@ -646,52 +645,27 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticatorBase implement
         
         if ( reqPkt.getParameterCount() == 13)
         {
-            UserTransaction tx = null;
-            
             try
             {
                 // Start a transaction
-                
-                tx = createTransaction();
-                tx.begin();
 
-                //  Process the hashed password session setup
-                    
-                doHashedPasswordLogon( sess, reqPkt);
+                doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Object>()
+                {
+
+                    public Object execute() throws Throwable
+                    {
+                        // Process the hashed password session setup
+
+                        doHashedPasswordLogon(sess, reqPkt);
+                        return null;
+                    }
+                });
             }
             catch ( Exception ex)
             {
                 //  Convert to an access denied exception
                 
                 throw new SMBSrvException( SMBStatus.NTAccessDenied, SMBStatus.ErrDos, SMBStatus.DOSAccessDenied);
-            }
-            finally
-            {
-                // Commit the transaction
-                
-                if ( tx != null)
-                {
-                    try
-                    {
-                        // Commit or rollback the transaction
-                        
-                        if ( tx.getStatus() == Status.STATUS_MARKED_ROLLBACK)
-                        {
-                            // Transaction is marked for rollback
-                            
-                            tx.rollback();
-                        }
-                        else
-                        {
-                            // Commit the transaction
-                            
-                            tx.commit();
-                        }
-                    }
-                    catch ( Exception ex)
-                    {
-                    }
-                }
             }
             
             // Hashed password processing complete
@@ -704,21 +678,21 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticatorBase implement
         int maxBufSize = reqPkt.getParameter(2);
         int maxMpx     = reqPkt.getParameter(3);
         int vcNum      = reqPkt.getParameter(4);
-        int secBlobLen = reqPkt.getParameter(7);
+        final int secBlobLen = reqPkt.getParameter(7);
         int capabs     = reqPkt.getParameterLong(10);
 
         //  Extract the client details from the session setup request
 
         int dataPos = reqPkt.getByteOffset();
-        byte[] buf = reqPkt.getBuffer();
+        final byte[] buf = reqPkt.getBuffer();
 
         //  Determine if ASCII or unicode strings are being used
             
-        boolean isUni = reqPkt.isUnicode();
+        final boolean isUni = reqPkt.isUnicode();
 
         //  Make a note of the security blob position
         
-        int secBlobPos = dataPos;
+        final int secBlobPos = dataPos;
         
         //  Extract the clients primary domain name string
 
@@ -764,7 +738,7 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticatorBase implement
 
         //  Create the client information and store in the session
 
-        ClientInfo client = new AlfrescoClientInfo();
+        final ClientInfo client = new AlfrescoClientInfo();
         client.setDomain(domain);
         client.setOperatingSystem(clientOS);
         
@@ -786,13 +760,11 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticatorBase implement
         //  Process the security blob
         
         byte[] respBlob = null;
-        boolean isNTLMSSP = false;
-        
-        UserTransaction tx = null;
+        final boolean isNTLMSSP;
         
         try
         {
-        	
+        	           
             // Check if the blob has the NTLMSSP signature
             
             if ( secBlobLen >= NTLM.Signature.length) {
@@ -803,39 +775,36 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticatorBase implement
               while ( idx < NTLM.Signature.length && buf[secBlobPos + idx] == NTLM.Signature[ idx])
                 idx++;
               
-              if ( idx == NTLM.Signature.length)
-                isNTLMSSP = true;
+              isNTLMSSP = ( idx == NTLM.Signature.length);
             }
-            
+            else {
+              isNTLMSSP = false;                
+            }
+
             // Start a transaction
             
-            tx = createTransaction();
-            tx.begin();
-            
-            // Process the security blob
-            
-            if ( isNTLMSSP == true)
+            respBlob = doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<byte[]>()
             {
-                //  Process an NTLMSSP security blob
-    
-                respBlob = doNtlmsspSessionSetup( sess, client, buf, secBlobPos, secBlobLen, isUni);
-            }
-            else
-            {
-                //  Process an SPNEGO security blob
-                
-                respBlob = doSpnegoSessionSetup( sess, client, buf, secBlobPos, secBlobLen, isUni);
-            }
-        }
-        catch (SMBSrvException ex)
-        {
-            //  Cleanup any stored context
+
+                public byte[] execute() throws Throwable
+                {
+                    // Process the security blob
+
+                    if (isNTLMSSP)
+                    {
+                        // Process an NTLMSSP security blob
+
+                        return doNtlmsspSessionSetup(sess, client, buf, secBlobPos, secBlobLen, isUni);
+                    }
+                    else
+                    {
+                        // Process an SPNEGO security blob
+
+                        return doSpnegoSessionSetup(sess, client, buf, secBlobPos, secBlobLen, isUni);
+                    }
+                }
+            });
             
-            sess.removeSetupObject( client.getProcessId());
-            
-            //  Rethrow the exception
-            
-            throw ex;
         }
         catch ( Exception ex)
         {
@@ -846,34 +815,6 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticatorBase implement
             //  Convert to an access denied exception
             
             throw new SMBSrvException( SMBStatus.NTAccessDenied, SMBStatus.ErrDos, SMBStatus.DOSAccessDenied);
-        }
-        finally
-        {
-            // Commit the transaction
-          
-            if ( tx != null)
-            {
-                try
-                {
-                    // Commit or rollback the transaction
-                    
-                    if ( tx.getStatus() == Status.STATUS_MARKED_ROLLBACK)
-                    {
-                        // Transaction is marked for rollback
-                        
-                        tx.rollback();
-                    }
-                    else
-                    {
-                        // Commit the transaction
-                        
-                        tx.commit();
-                    }
-                }
-                catch ( Exception ex)
-                {
-                }
-            }
         }
 
         // Debug
@@ -1046,11 +987,11 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticatorBase implement
         //  Pack the security blob
 
         int pos = respPkt.getByteOffset();
-        buf = respPkt.getBuffer();
+        byte[] buf1 = respPkt.getBuffer();
 
         if ( respBlob != null)
         {
-            System.arraycopy( respBlob, 0, buf, pos, respBlob.length);
+            System.arraycopy( respBlob, 0, buf1, pos, respBlob.length);
             pos += respBlob.length;
         }
         
@@ -1059,9 +1000,9 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticatorBase implement
         if ( isUni)
             pos = DataPacker.wordAlign(pos);
 
-        pos = DataPacker.putString("Java", buf, pos, true, isUni);
-        pos = DataPacker.putString("Alfresco CIFS Server " + sess.getServer().isVersion(), buf, pos, true, isUni);
-        pos = DataPacker.putString(getCIFSConfig().getDomainName(), buf, pos, true, isUni);
+        pos = DataPacker.putString("Java", buf1, pos, true, isUni);
+        pos = DataPacker.putString("Alfresco CIFS Server " + sess.getServer().isVersion(), buf1, pos, true, isUni);
+        pos = DataPacker.putString(getCIFSConfig().getDomainName(), buf1, pos, true, isUni);
         
         respPkt.setByteCount(pos - respPkt.getByteOffset());
     }

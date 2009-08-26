@@ -26,9 +26,6 @@ package org.alfresco.filesys.auth.cifs;
 
 import java.security.NoSuchAlgorithmException;
 
-import javax.transaction.Status;
-import javax.transaction.UserTransaction;
-
 import net.sf.acegisecurity.Authentication;
 
 import org.alfresco.filesys.alfresco.AlfrescoClientInfo;
@@ -42,6 +39,7 @@ import org.alfresco.jlan.smb.server.SMBSrvSession;
 import org.alfresco.jlan.util.HexDump;
 import org.alfresco.repo.security.authentication.NTLMMode;
 import org.alfresco.repo.security.authentication.ntlm.NTLMPassthruToken;
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
 
 /**
  * Alfresco Authenticator Class
@@ -94,7 +92,7 @@ public class AlfrescoCifsAuthenticator extends CifsAuthenticatorBase
      * @param sess Server session
      * @param alg Encryption algorithm
      */
-    public int authenticateUser(ClientInfo client, SrvSession sess, int alg)
+    public int authenticateUser(final ClientInfo client, final SrvSession sess, final int alg)
     {
         // Check that the client is an Alfresco client
       
@@ -138,7 +136,6 @@ public class AlfrescoCifsAuthenticator extends CifsAuthenticatorBase
         // Check if this is a guest logon
         
         int authSts = AUTH_DISALLOW;
-        UserTransaction tx = null;
         
         try
         {
@@ -172,24 +169,30 @@ public class AlfrescoCifsAuthenticator extends CifsAuthenticatorBase
             else if ( getNTLMAuthenticator().getNTLMMode() == NTLMMode.MD4_PROVIDER)
             {
                 // Start a transaction
+                authSts = doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Integer>()
+                {
+
+                    public Integer execute() throws Throwable
+                    {
+                        // Perform local MD4 password check
+                        return doMD4UserAuthentication(client, sess, alg);
+                    }
+                });
               
-                tx = createTransaction();
-                tx.begin();
-                
-                // Perform local MD4 password check
-                
-                authSts = doMD4UserAuthentication(client, sess, alg);
             }
             else
             {
                 // Start a transaction
-                
-                tx = createTransaction();
-                tx.begin();
+                authSts = doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Integer>()
+                {
+
+                    public Integer execute() throws Throwable
+                    {
+                        // Perform passthru authentication password check
+                        return doPassthruUserAuthentication(client, sess, alg);
+                    }
+                });
               
-                // Perform passthru authentication password check
-                
-                authSts = doPassthruUserAuthentication(client, sess, alg);
             }
             
             // Check if the logon status indicates a guest logon
@@ -216,34 +219,6 @@ public class AlfrescoCifsAuthenticator extends CifsAuthenticatorBase
         {
           if ( logger.isDebugEnabled())
             logger.debug( ex);
-        }
-        finally
-        {
-            // Commit the transaction
-            
-            if ( tx != null)
-            {
-                try
-                {
-                    // Commit or rollback the transaction
-                    
-                    if ( tx.getStatus() == Status.STATUS_MARKED_ROLLBACK)
-                    {
-                        // Transaction is marked for rollback
-                        
-                        tx.rollback();
-                    }
-                    else
-                    {
-                        // Commit the transaction
-                        
-                        tx.commit();
-                    }
-                }
-                catch ( Exception ex)
-                {
-                }
-            }
         }
         
         // Check for an administrator logon

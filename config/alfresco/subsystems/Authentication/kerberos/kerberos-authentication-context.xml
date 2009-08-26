@@ -87,6 +87,9 @@
       <property name="jaasConfigEntryName">
          <value>${kerberos.authentication.cifs.configEntryName}</value>
       </property>
+      <property name="disableNTLM">
+         <value>true</value>
+      </property>
    </bean>
 
 </beans>

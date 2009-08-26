@@ -28,9 +28,6 @@ import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
 
-import javax.transaction.Status;
-import javax.transaction.UserTransaction;
-
 import org.alfresco.config.ConfigElement;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.filesys.alfresco.AlfrescoClientInfo;
@@ -68,6 +65,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.NTLMMode;
 import org.alfresco.repo.security.authentication.ntlm.NLTMAuthenticator;
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -158,14 +156,14 @@ public class PassthruCifsAuthenticator extends CifsAuthenticatorBase implements 
      * @param alg int
      * @return int
      */
-    public int authenticateUser(ClientInfo client, SrvSession sess, int alg)
+    public int authenticateUser(final ClientInfo client, final SrvSession sess, int alg)
     {
         // Check that the client is an Alfresco client
       
         if ( client instanceof AlfrescoClientInfo == false)
             return ICifsAuthenticator.AUTH_DISALLOW;
         
-        AlfrescoClientInfo alfClient = (AlfrescoClientInfo) client;
+        final AlfrescoClientInfo alfClient = (AlfrescoClientInfo) client;
         
         // The null session will only be allowed to connect to the IPC$ named pipe share.
 
@@ -181,224 +179,196 @@ public class PassthruCifsAuthenticator extends CifsAuthenticatorBase implements 
 
         // Start a transaction
         
-        UserTransaction tx = createTransaction();
-        int authSts = AUTH_DISALLOW;
-        
-        try
-        {
-            // Start the transaction
-          
-            tx.begin();
-          
-            // Check if the client is already authenticated, and it is not a null logon
-            
-            if ( alfClient.getAuthenticationToken() != null && client.getLogonType() != ClientInfo.LogonNull)
+        return doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Integer>(){
+
+            public Integer execute() throws Throwable
             {
-                // Use the existing authentication token
+                int authSts = AUTH_DISALLOW;
                 
-                getAuthenticationComponent().setCurrentUser( mapUserNameToPerson( client.getUserName()));
-    
-                // Debug
-                
-                if ( logger.isDebugEnabled())
-                    logger.debug("Re-using existing authentication token");
-                
-                // Return the authentication status
-                
-                return client.getLogonType() != ClientInfo.LogonGuest ? AUTH_ALLOW : AUTH_GUEST; 
-            }
-            
-            // Check if this is a guest logon
-            
-            if ( client.isGuest() || client.getUserName().equalsIgnoreCase(getGuestUserName()))
-            {
-                // Check if guest logons are allowed
-                
-                if ( allowGuest() == false)
-                    return AUTH_DISALLOW;
-                
-                //  Get a guest authentication token
-                
-                doGuestLogon( client, sess);
-                
-                // Indicate logged on as guest
-                
-                authSts = AUTH_GUEST;
-                
-                // DEBUG
-                
-                if ( logger.isDebugEnabled())
-                    logger.debug("Authenticated user " + client.getUserName() + " sts=" + getStatusAsString(authSts));
-                
-                // Return the guest status
-                
-                return authSts;
-            }
-    
-            // Find the active authentication session details for the server session
-    
-            PassthruDetails passDetails = m_sessions.get(sess.getUniqueId());
-    
-            if (passDetails != null)
-            {
-    
                 try
                 {
-    
-                    // Authenticate the user by passing the hashed password to the authentication server
-                    // using the session that has already been setup.
-    
-                    AuthenticateSession authSess = passDetails.getAuthenticateSession();
-                    authSess.doSessionSetup(client.getDomain(), client.getUserName(), null, client.getANSIPassword(), client.getPassword(), 0);
-    
-                    // Check if the user has been logged on as a guest
-    
-                    if (authSess.isGuest())
-                    {
-    
-                        // Check if the local server allows guest access
-    
-                        if (allowGuest() == true)
-                        {
-                            //  Get a guest authentication token
-                            
-                            doGuestLogon( client, sess);
-                            
-                            // Allow the user access as a guest
-    
-                            authSts = ICifsAuthenticator.AUTH_GUEST;
-    
-                            // Debug
-    
-                            if (logger.isDebugEnabled())
-                                logger.debug("Passthru authenticate user=" + client.getUserName() + ", GUEST");
-                        }
-                    }
-                    else
-                    {
-                        // Map the passthru username to an Alfresco person
-    
-                        String username = client.getUserName();
-                        String personName = getPersonService().getUserIdentifier( username);
-                        
-                        if ( personName != null)
-                        {
-                            // Use the person name as the current user
-                            
-                            alfClient.setAuthenticationToken( getAuthenticationComponent().setCurrentUser(personName));
-                            
-                            // DEBUG
-                            
-                            if ( logger.isDebugEnabled())
-                                logger.debug("Setting current user using person " + personName + " (username " + username + ")");
-    
-                            // Allow the user full access to the server
-    
-                            authSts = ICifsAuthenticator.AUTH_ALLOW;
-    
-                            // Debug
-    
-                            if (logger.isDebugEnabled())
-                                logger.debug("Passthru authenticate user=" + client.getUserName() + ", FULL");
-                        }
-                        else if ( logger.isDebugEnabled())
-                            logger.debug("Failed to find person matching user " + username);
-                    }
-                }
-                catch (Exception ex)
-                {
-    
-                    // Debug
-    
-                    logger.error(ex);
-                }
-    
-                // Keep the authentication session if the user session is an SMB session, else close the
-                // session now
-    
-                if ((sess instanceof SMBSrvSession) == false)
-                {
-    
-                    // Remove the passthru session from the active list
-    
-                    m_sessions.remove(sess.getUniqueId());
-    
-                    // Close the passthru authentication session
-    
-                    try
-                    {
-    
-                        // Close the authentication session
-    
-                        AuthenticateSession authSess = passDetails.getAuthenticateSession();
-                        authSess.CloseSession();
-    
-                        // DEBUG
-    
-                        if (logger.isDebugEnabled())
-                            logger.debug("Closed auth session, sessId=" + authSess.getSessionId());
-                    }
-                    catch (Exception ex)
-                    {
-    
-                        // Debug
-    
-                        logger.error("Passthru error closing session (auth user)", ex);
-                    }
-                }
-            }
-            else
-            {
-    
-                // DEBUG
-    
-                if (logger.isDebugEnabled())
-                    logger.debug("  No PassthruDetails for " + sess.getUniqueId());
-            }
-        }
-        catch ( Exception ex)
-        {
-            //  DEBUG
-          
-            if ( logger.isDebugEnabled())
-                logger.debug( ex);
-            
-            // Return an access denied status
-            
-            return AUTH_DISALLOW;
-        }
-        finally
-        {
-            // Commit the transaction
-            
-            if ( tx != null)
-            {
-                try
-                {
-                    // Commit or rollback the transaction
+                    // Check if the client is already authenticated, and it is not a null logon
                     
-                    if ( tx.getStatus() == Status.STATUS_MARKED_ROLLBACK)
+                    if ( alfClient.getAuthenticationToken() != null && client.getLogonType() != ClientInfo.LogonNull)
                     {
-                        // Transaction is marked for rollback
+                        // Use the existing authentication token
                         
-                        tx.rollback();
+                        getAuthenticationComponent().setCurrentUser( mapUserNameToPerson( client.getUserName()));
+            
+                        // Debug
+                        
+                        if ( logger.isDebugEnabled())
+                            logger.debug("Re-using existing authentication token");
+                        
+                        // Return the authentication status
+                        
+                        return client.getLogonType() != ClientInfo.LogonGuest ? AUTH_ALLOW : AUTH_GUEST; 
+                    }
+                    
+                    // Check if this is a guest logon
+                    
+                    if ( client.isGuest() || client.getUserName().equalsIgnoreCase(getGuestUserName()))
+                    {
+                        // Check if guest logons are allowed
+                        
+                        if ( allowGuest() == false)
+                            return AUTH_DISALLOW;
+                        
+                        //  Get a guest authentication token
+                        
+                        doGuestLogon( client, sess);
+                        
+                        // Indicate logged on as guest
+                        
+                        authSts = AUTH_GUEST;
+                        
+                        // DEBUG
+                        
+                        if ( logger.isDebugEnabled())
+                            logger.debug("Authenticated user " + client.getUserName() + " sts=" + getStatusAsString(authSts));
+                        
+                        // Return the guest status
+                        
+                        return authSts;
+                    }
+            
+                    // Find the active authentication session details for the server session
+            
+                    PassthruDetails passDetails = m_sessions.get(sess.getUniqueId());
+            
+                    if (passDetails != null)
+                    {
+            
+                        try
+                        {
+            
+                            // Authenticate the user by passing the hashed password to the authentication server
+                            // using the session that has already been setup.
+            
+                            AuthenticateSession authSess = passDetails.getAuthenticateSession();
+                            authSess.doSessionSetup(client.getDomain(), client.getUserName(), null, client.getANSIPassword(), client.getPassword(), 0);
+            
+                            // Check if the user has been logged on as a guest
+            
+                            if (authSess.isGuest())
+                            {
+            
+                                // Check if the local server allows guest access
+            
+                                if (allowGuest() == true)
+                                {
+                                    //  Get a guest authentication token
+                                    
+                                    doGuestLogon( client, sess);
+                                    
+                                    // Allow the user access as a guest
+            
+                                    authSts = ICifsAuthenticator.AUTH_GUEST;
+            
+                                    // Debug
+            
+                                    if (logger.isDebugEnabled())
+                                        logger.debug("Passthru authenticate user=" + client.getUserName() + ", GUEST");
+                                }
+                            }
+                            else
+                            {
+                                // Map the passthru username to an Alfresco person
+            
+                                String username = client.getUserName();
+                                String personName = getPersonService().getUserIdentifier( username);
+                                
+                                if ( personName != null)
+                                {
+                                    // Use the person name as the current user
+                                    
+                                    alfClient.setAuthenticationToken( getAuthenticationComponent().setCurrentUser(personName));
+                                    
+                                    // DEBUG
+                                    
+                                    if ( logger.isDebugEnabled())
+                                        logger.debug("Setting current user using person " + personName + " (username " + username + ")");
+            
+                                    // Allow the user full access to the server
+            
+                                    authSts = ICifsAuthenticator.AUTH_ALLOW;
+            
+                                    // Debug
+            
+                                    if (logger.isDebugEnabled())
+                                        logger.debug("Passthru authenticate user=" + client.getUserName() + ", FULL");
+                                }
+                                else if ( logger.isDebugEnabled())
+                                    logger.debug("Failed to find person matching user " + username);
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+            
+                            // Debug
+            
+                            logger.error(ex);
+                        }
+            
+                        // Keep the authentication session if the user session is an SMB session, else close the
+                        // session now
+            
+                        if ((sess instanceof SMBSrvSession) == false)
+                        {
+            
+                            // Remove the passthru session from the active list
+            
+                            m_sessions.remove(sess.getUniqueId());
+            
+                            // Close the passthru authentication session
+            
+                            try
+                            {
+            
+                                // Close the authentication session
+            
+                                AuthenticateSession authSess = passDetails.getAuthenticateSession();
+                                authSess.CloseSession();
+            
+                                // DEBUG
+            
+                                if (logger.isDebugEnabled())
+                                    logger.debug("Closed auth session, sessId=" + authSess.getSessionId());
+                            }
+                            catch (Exception ex)
+                            {
+            
+                                // Debug
+            
+                                logger.error("Passthru error closing session (auth user)", ex);
+                            }
+                        }
                     }
                     else
                     {
-                        // Commit the transaction
-                        
-                        tx.commit();
+            
+                        // DEBUG
+            
+                        if (logger.isDebugEnabled())
+                            logger.debug("  No PassthruDetails for " + sess.getUniqueId());
                     }
                 }
                 catch ( Exception ex)
                 {
+                    //  DEBUG
+                  
+                    if ( logger.isDebugEnabled())
+                        logger.debug( ex);
+                    
+                    // Return an access denied status
+                    
+                    return AUTH_DISALLOW;
                 }
-            }
-        }
-        
-        // Return the authentication status
+                
+                // Return the authentication status
 
-        return authSts;
+                return authSts;
+            }});
     }
 
     /**
@@ -954,7 +924,7 @@ public class PassthruCifsAuthenticator extends CifsAuthenticatorBase implements 
      * @param type3Msg Type3NTLMMessage
      * @exception SMBSrvException 
      */
-    private final void doNTLMv1Logon(SMBSrvSession sess, ClientInfo client, Type3NTLMMessage type3Msg)
+    private final void doNTLMv1Logon(SMBSrvSession sess, final ClientInfo client, Type3NTLMMessage type3Msg)
         throws SMBSrvException
     {
         //  Get the type 2 message that contains the challenge sent to the client
@@ -963,7 +933,7 @@ public class PassthruCifsAuthenticator extends CifsAuthenticatorBase implements 
         
         // Get the NTLM logon details
         
-        String userName = type3Msg.getUserName();
+        final String userName = type3Msg.getUserName();
         
         //  Check for a null logon
         
@@ -1016,70 +986,59 @@ public class PassthruCifsAuthenticator extends CifsAuthenticatorBase implements 
                 {
                     // Wrap the service calls in a transaction
                     
-                    UserTransaction tx = createTransaction();
-                    
-                    try
+                    doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Object>()
                     {
-                        // Start the transaction
-                        
-                        tx.begin();
 
-                        // Map the passthru username to an Alfresco person
-                        
-                        NodeRef userNode = getPersonService().getPerson(userName);
-                        if ( userNode != null)
+                        public Object execute() throws Throwable
                         {
-                            // Get the person name and use that as the current user to line up with permission checks
-                            
-                            String personName = (String) getNodeService().getProperty(userNode, ContentModel.PROP_USERNAME);
-                            getAuthenticationComponent().setCurrentUser(personName);
-                            
-                            // DEBUG
-                            
-                            if ( logger.isDebugEnabled())
-                                logger.debug("Setting current user using person " + personName + " (username " + userName + ")");
-                        }
-                        else
-                        {
-                            // Set using the user name
-                            
-                            getAuthenticationComponent().setCurrentUser( userName);
+                            // Map the passthru username to an Alfresco person
 
-                            // DEBUG
-                            
-                            if ( logger.isDebugEnabled())
-                                logger.debug("Setting current user using username " + userName);
-                        }
-
-                        // Get the authentication token and store
-
-                        AlfrescoClientInfo alfClient = (AlfrescoClientInfo) client;
-                        alfClient.setAuthenticationToken( getAuthenticationComponent().getCurrentAuthentication());
-                        
-                        // Indicate that the client is logged on
-                        
-                        client.setLogonType( ClientInfo.LogonNormal);
-                        
-                        // Debug
-
-                        if (logger.isDebugEnabled())
-                            logger.debug("Passthru authenticate user=" + userName + ", FULL");
-                    }
-                    finally
-                    {
-                        // Commit the transaction
-                        
-                        if ( tx != null)
-                        {
-                            try {
-                                tx.commit();
-                            }
-                            catch (Exception ex)
+                            NodeRef userNode = getPersonService().getPerson(userName);
+                            if (userNode != null)
                             {
-                                // Sink it
+                                // Get the person name and use that as the current user to line up with permission
+                                // checks
+
+                                String personName = (String) getNodeService().getProperty(userNode,
+                                        ContentModel.PROP_USERNAME);
+                                getAuthenticationComponent().setCurrentUser(personName);
+
+                                // DEBUG
+
+                                if (logger.isDebugEnabled())
+                                    logger.debug("Setting current user using person " + personName + " (username "
+                                            + userName + ")");
                             }
+                            else
+                            {
+                                // Set using the user name
+
+                                getAuthenticationComponent().setCurrentUser(userName);
+
+                                // DEBUG
+
+                                if (logger.isDebugEnabled())
+                                    logger.debug("Setting current user using username " + userName);
+                            }
+
+                            // Get the authentication token and store
+
+                            AlfrescoClientInfo alfClient = (AlfrescoClientInfo) client;
+                            alfClient.setAuthenticationToken(getAuthenticationComponent().getCurrentAuthentication());
+
+                            // Indicate that the client is logged on
+
+                            client.setLogonType(ClientInfo.LogonNormal);
+
+                            // Debug
+
+                            if (logger.isDebugEnabled())
+                                logger.debug("Passthru authenticate user=" + userName + ", FULL");
+
+                            return null;
                         }
-                    }
+                    });
+
                 }
                 
                 // Update the client details

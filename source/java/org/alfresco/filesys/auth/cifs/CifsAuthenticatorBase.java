@@ -24,8 +24,6 @@
  */
 package org.alfresco.filesys.auth.cifs;
 
-import javax.transaction.UserTransaction;
-
 import net.sf.acegisecurity.Authentication;
 
 import org.alfresco.config.ConfigElement;
@@ -48,6 +46,7 @@ import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.MD4PasswordEncoder;
 import org.alfresco.repo.security.authentication.MD4PasswordEncoderImpl;
 import org.alfresco.repo.security.authentication.ntlm.NLTMAuthenticator;
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.AuthenticationService;
@@ -348,49 +347,28 @@ public abstract class CifsAuthenticatorBase extends CifsAuthenticator implements
      * @param client
      *            ClientInfo
      */
-    protected final void getHomeFolderForUser(ClientInfo client)
+    protected final void getHomeFolderForUser(final ClientInfo client)
     {
         // Check if the client is an Alfresco client, and not a null logon
-      
-        if ( client instanceof AlfrescoClientInfo == false ||
-        		client.isNullSession() == true)
-          return;
-        
-        AlfrescoClientInfo alfClient = (AlfrescoClientInfo) client;
-        
+
+        if (client instanceof AlfrescoClientInfo == false || client.isNullSession() == true)
+            return;
+
+        final AlfrescoClientInfo alfClient = (AlfrescoClientInfo) client;
+
         // Get the home folder for the user
-        
-        UserTransaction tx = getTransactionService().getUserTransaction();
-        NodeRef homeSpaceRef = null;
-        
-        try
+
+        doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Object>()
         {
-            tx.begin();
-            homeSpaceRef = (NodeRef) getNodeService().getProperty(getPersonService().getPerson(client.getUserName()), ContentModel.PROP_HOMEFOLDER);
-            alfClient.setHomeFolder( homeSpaceRef);
-            tx.commit();
-        }
-        catch (Throwable ex)
-        {
-            try
+
+            public Object execute() throws Throwable
             {
-                tx.rollback();
+                NodeRef homeSpaceRef = (NodeRef) getNodeService().getProperty(
+                        getPersonService().getPerson(client.getUserName()), ContentModel.PROP_HOMEFOLDER);
+                alfClient.setHomeFolder(homeSpaceRef);
+                return null;
             }
-            catch (Throwable ex2)
-            {
-                logger.error("Failed to rollback transaction", ex2);
-            }
-            
-             //          Re-throw the exception
-            if (ex instanceof RuntimeException)
-            {
-                throw (RuntimeException) ex;
-            }
-            else
-            {
-                throw new RuntimeException("Error during execution of transaction.", ex);
-            }
-        }
+        });
     }
     
     /**
@@ -400,58 +378,29 @@ public abstract class CifsAuthenticatorBase extends CifsAuthenticator implements
      *            String
      * @return String
      */
-    protected final String mapUserNameToPerson(String userName)
+    protected final String mapUserNameToPerson(final String userName)
     {
-        // Get the home folder for the user
-        
-        UserTransaction tx = getTransactionService().getUserTransaction();
-        String personName = null;
-        
-        try
+        return doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<String>()
         {
-            tx.begin();
-            personName = getPersonService().getUserIdentifier( userName);
-            tx.commit();
 
-            // Check if the person exists
-            
-            if (personName == null) {
-                
-                tx = getTransactionService().getNonPropagatingUserTransaction( false);
-                tx.begin();
-                
-                getPersonService().getPerson( userName);
-                personName = getPersonService().getUserIdentifier( userName);
-                
-                tx.commit();
-            }
-        }
-        catch (Throwable ex)
-        {
-            try
+            public String execute() throws Throwable
             {
-                tx.rollback();
+                // Get the home folder for the user
+
+                String personName = getPersonService().getUserIdentifier(userName);
+
+                // Check if the person exists
+
+                if (personName == null)
+                {
+                    // Force creation of a person if possible
+                    getPersonService().getPerson(userName);
+                    personName = getPersonService().getUserIdentifier(userName);
+                    return personName == null ? userName : personName;
+                }
+                return personName;
             }
-            catch (Throwable ex2)
-            {
-                logger.error("Failed to rollback transaction", ex2);
-            }
-            
-            // Re-throw the exception
-            
-            if (ex instanceof RuntimeException)
-            {
-                throw (RuntimeException) ex;
-            }
-            else
-            {
-                throw new RuntimeException("Error during execution of transaction.", ex);
-            }
-        }
-        
-        // Return the person name
-        
-        return personName;
+        });
     }
     
     /**
@@ -545,7 +494,7 @@ public abstract class CifsAuthenticatorBase extends CifsAuthenticator implements
      * 
      * @return TransactionService
      */
-    protected final TransactionService getTransactionService()
+    private final TransactionService getTransactionService()
     {
         return this.transactionService;
     }
@@ -565,62 +514,48 @@ public abstract class CifsAuthenticatorBase extends CifsAuthenticator implements
      * @param cInfo
      *            ClientInfo
      */
-    protected final void checkForAdminUserName(ClientInfo cInfo) {
-        
+    protected final void checkForAdminUserName(final ClientInfo cInfo)
+    {
+
         // Check if the user name is an administrator
 
-        UserTransaction tx = createTransaction();
+        doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Object>()
+        {
 
-        try {
-            tx.begin();
+            public Object execute() throws Throwable
+            {
+                if (cInfo.getLogonType() == ClientInfo.LogonNormal
+                        && getAuthorityService().isAdminAuthority(cInfo.getUserName()))
+                {
 
-            if ( cInfo.getLogonType() == ClientInfo.LogonNormal && getAuthorityService().isAdminAuthority(cInfo.getUserName())) {
-                
-                // Indicate that this is an administrator logon
+                    // Indicate that this is an administrator logon
 
-                cInfo.setLogonType(ClientInfo.LogonAdmin);
+                    cInfo.setLogonType(ClientInfo.LogonAdmin);
+                }
+                return null;
             }
-            tx.commit();
-        }
-        catch (Throwable ex) {
-            try {
-                tx.rollback();
-            }
-            catch (Throwable ex2) {
-                logger.error("Failed to rollback transaction", ex2);
-            }
-
-            // Re-throw the exception
-
-            if ( ex instanceof RuntimeException) {
-                throw (RuntimeException) ex;
-            }
-            else {
-                throw new RuntimeException("Error during execution of transaction.", ex);
-            }
-        }
+        });
     }
     
     /**
-     * Create a transaction, this will be a wrteable transaction unless the system is in read-only mode. return
-     * UserTransaction
+     * Does work in a transaction. This will be a writeable transaction unless the system is in read-only mode.
      * 
-     * @return the user transaction
+     * @param callback
+     *            a callback that does the work
+     * @return the result, or <code>null</code> if not applicable
      */
-    protected final UserTransaction createTransaction()
+    protected <T> T doInTransaction(RetryingTransactionHelper.RetryingTransactionCallback<T> callback)
     {
         // Get the transaction service
-        
+
         TransactionService txService = getTransactionService();
-        
+
         // DEBUG
-        
-        if ( logger.isDebugEnabled())
+
+        if (logger.isDebugEnabled())
             logger.debug("Using " + (txService.isReadOnly() ? "ReadOnly" : "Write") + " transaction");
-        
-        // Create the transaction
-        
-        return txService.getUserTransaction( txService.isReadOnly() ? true : false);
+
+        return txService.getRetryingTransactionHelper().doInTransaction(callback, txService.isReadOnly());
     }
 
     /**

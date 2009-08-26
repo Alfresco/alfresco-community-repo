@@ -603,7 +603,7 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface
 
                 // Rethrow the exception
 
-                throw new DeviceContextException("Driver setup error, " + ex.getMessage());
+                throw new DeviceContextException("Driver setup error, " + ex.getMessage(), ex);
             }
             finally
             {

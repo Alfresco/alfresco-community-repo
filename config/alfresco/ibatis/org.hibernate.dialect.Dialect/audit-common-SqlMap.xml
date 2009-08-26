@@ -12,6 +12,7 @@
     
     <typeAlias alias="AuditModel" type="org.alfresco.repo.domain.audit.AuditModelEntity"/>
     <typeAlias alias="AuditSession" type="org.alfresco.repo.domain.audit.AuditSessionEntity"/>
+    <typeAlias alias="AuditEntry" type="org.alfresco.repo.domain.audit.AuditEntryEntity"/>
 
     <!--                -->
     <!-- Result Maps    -->
@@ -26,6 +27,13 @@
         <result property="id" column="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <result property="auditModelId" column="audit_model_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <result property="applicationNameId" column="app_name_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+    </resultMap>
+    <resultMap id="result.AuditEntry" class="AuditEntry">
+        <result property="id" column="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="auditSessionId" column="audit_session_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="auditUserId" column="audit_user_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="auditTime" column="audit_time" jdbcType="BIGINT" javaType="long"/>
+        <result property="auditValuesId" column="audit_values_id" jdbcType="BIGINT" javaType="long"/>
     </resultMap>
   
     <!--                -->
@@ -48,6 +56,11 @@
     <sql id="insert.AuditSession.AutoIncrement">
         insert into alf_audit_session (audit_model_id, app_name_id) 
         values (#auditModelId#, #applicationNameId#)
+    </sql>
+    
+    <sql id="insert.AuditEntry.AutoIncrement">
+        insert into alf_audit_entry (audit_session_id, audit_user_id, audit_time, audit_values_id) 
+        values (#auditSessionId#, #auditUserId#, #auditTime#, #auditValuesId#)
     </sql>
     
     <!--                -->

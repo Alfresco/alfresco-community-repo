@@ -20,4 +20,11 @@
         </selectKey>
     </insert>
 
+    <insert id="insert.AuditEntry" parameterClass="AuditEntry" >
+        <include refid="insert.AuditEntry.AutoIncrement"/>
+        <selectKey resultClass="long" keyProperty="id" type="post">
+            KEY_COLUMN:GENERATED_KEY
+        </selectKey>
+    </insert>
+
 </sqlMap>

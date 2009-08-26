@@ -180,6 +180,25 @@ public class AuditApplication
     }
     
     /**
+     * Compile a path or part of a path into a single string which always starts with the
+     * {@link #AUDIT_PATH_SEPARATOR}.  This can be a relative path so need not always start with
+     * the application root key.
+     * 
+     * @param pathElements      the elements of the path e.g. <code>"a", "b", "c"</code>.
+     * @return                  Returns the compiled path e.g <code>"/a/b/c"</code>.
+     */
+    public String buildPath(String ... pathComponents)
+    {
+        StringBuilder sb = new StringBuilder(pathComponents.length * 10);
+        for (String pathComponent : pathComponents)
+        {
+            sb.append(AUDIT_PATH_SEPARATOR).append(pathComponent);
+        }
+        // Done
+        return sb.toString();
+    }
+    
+    /**
      * Get all data extractors applicable to a given path and scope.
      * 
      * @param path              the audit path
@@ -325,6 +344,11 @@ public class AuditApplication
         }
         // All the extractors apply to the current path
         dataExtractors.put(currentPath, upperExtractorsByPath);
+//        // Data extractors only apply directly to data in which they appear.
+//        //    TODO: Examine this assumption.  If it is not true, i.e. data extractors apply to
+//        //          data anywhere down the hierarchy, then the followin line of code should be
+//        //          removed and the use-cases tested appropriately.
+//        upperExtractorsByPath.clear();
 
         // Get the data generators declared for this key
         for (GenerateValue element : auditPath.getGenerateValue())

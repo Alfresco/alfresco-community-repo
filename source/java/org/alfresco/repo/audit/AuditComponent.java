@@ -24,6 +24,7 @@
  */
 package org.alfresco.repo.audit;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 
@@ -82,29 +83,44 @@ public interface AuditComponent
      */
 
     /**
-     * Start an audit session for the given root path.  All later audit operations on the resulting
-     * session will be relative to this root path.
+     * Start an audit session for the given root path.  All later audit values must start with
+     * the same root path.
      * <p/>
      * The name of the application controls part of the audit model will be used.  The root path must
      * start with the matching <b>key</b> attribute that was declared for the matching
      * <b>Application</b> element in the audit configuration.
+     * <p/>
+     * This is a read-write method.  Client code must wrap calls in the appropriate transactional wrappers.
      * 
-     * @param application       the name of the application to log against
+     * @param applicationName   the name of the application to log against
      * @param rootPath          a base path of {@link AuditPath} key entries concatenated with <b>.</b> (period)
      * @return                  Returns the unique session
+     * @throws IllegalStateException if there is not a writable transaction present
      */
-    public AuditSession startAuditSession(String application, String rootPath);
+    AuditSession startAuditSession(String applicationName, String rootPath);
+    
+    /**
+     * {@inheritDoc #startAuditSession(String, String)}
+
+     * @param values            values to associate with the session.  These values will override or
+     *                          complement generated session-specific values
+     * @throws IllegalStateException if there is not a writable transaction present
+     */
+    AuditSession startAuditSession(String applicationName, String rootPath, Map<String, Serializable> values);
     
     /**
      * Record a set of values against the given session.
+     * <p/>
+     * This is a read-write method.  Client code must wrap calls in the appropriate transactional wrappers.
      * 
      * @param session           a pre-existing audit session to continue with
      * @param values            the values to audit mapped by {@link AuditPath} key relative to the session
      *                          root path
+     * @throws IllegalStateException if there is not a writable transaction present
      * 
      * @see #startAuditSession()
      * 
      * @since 3.2
      */
-    public void audit(AuditSession session, Map<String, Object> values);
+    void audit(AuditSession session, Map<String, Serializable> values);
 }

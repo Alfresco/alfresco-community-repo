@@ -26,8 +26,11 @@ package org.alfresco.repo.domain.audit;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Serializable;
 import java.net.URL;
+import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.zip.CRC32;
 
 import org.alfresco.error.AlfrescoRuntimeException;
@@ -193,7 +196,7 @@ public abstract class AbstractAuditDAOImpl implements AuditDAO
     protected abstract AuditModelEntity createAuditModel(Long contentDataId, long crc);
     
     /*
-     * alf_audit_model
+     * alf_audit_session
      */
 
     public Long createAuditSession(Long modelId, String application)
@@ -203,8 +206,52 @@ public abstract class AbstractAuditDAOImpl implements AuditDAO
         // Create the audit session
         AuditSessionEntity entity = createAuditSession(appNameId, modelId);
         // Done
+        if (logger.isDebugEnabled())
+        {
+            logger.debug(
+                    "Created new audit session: \n" +
+                    "   Model:  " + modelId + "\n" +
+                    "   App:    " + application + "\n" +
+                    "   Result: " + entity);
+        }
         return entity.getId();
     }
     
     protected abstract AuditSessionEntity createAuditSession(Long appNameId, Long modelId);
+    
+    /*
+     * alf_audit_entry
+     */
+
+    public Long createAuditEntry(Long sessionId, long time, String username, Map<String, Serializable> values)
+    {
+        final Long usernameId;
+        if (username != null)
+        {
+            usernameId = propertyValueDAO.getOrCreatePropertyValue(username).getFirst();
+        }
+        else
+        {
+            usernameId = null;
+        }
+        // Now persist the data values
+        final Long valuesId = propertyValueDAO.getOrCreatePropertyValue((Serializable)values).getFirst();
+
+        // Create the audit entry
+        AuditEntryEntity entity = createAuditEntry(sessionId, time, usernameId, valuesId);
+
+        // Done
+        if (logger.isDebugEnabled())
+        {
+            logger.debug(
+                    "Created new audit entry: \n" +
+                    "   Session: " + sessionId + "\n" +
+                    "   Time:    " + (new Date(time)) + "\n" +
+                    "   User:    " + username + "\n" +
+                    "   Result:  " + entity);
+        }
+        return entity.getId();
+    }
+    
+    protected abstract AuditEntryEntity createAuditEntry(Long sessionId, long time, Long usernameId, Long valuesId);
 }

@@ -17,14 +17,10 @@
     </DataExtractors>
 
     <DataGenerators>
-       <DataGenerator name="authenticatedUser" class="org.alfresco.repo.audit.generator.AuthenticatedUserDataGenerator"/>
-       <DataGenerator name="systemTime" class="org.alfresco.repo.audit.generator.SystemTimeDataGenerator"/>
        <DataGenerator name="transactionId" class="org.alfresco.repo.audit.generator.TransactionIdDataGenerator"/>
     </DataGenerators>
 
     <Application name="Alfresco Repository" key="repository">
-        <GenerateValue key="user" dataGenerator="authenticatedUser" scope="SESSION"/>
-        <GenerateValue key="time" dataGenerator="systemTime" scope="SESSION"/>
         <AuditPath key="services">
             <GenerateValue key="txn" dataGenerator="transactionId" scope="AUDIT"/>
             <AuditPath key="nodeservice">

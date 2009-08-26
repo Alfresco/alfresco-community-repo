@@ -24,6 +24,7 @@
  */
 package org.alfresco.repo.audit.generator;
 
+import java.io.Serializable;
 import java.util.Date;
 
 /**
@@ -37,7 +38,7 @@ public class SystemTimeDataGenerator extends AbstractDataGenerator
     /**
      * @return              Returns the current time
      */
-    public Object getData() throws Throwable
+    public Serializable getData() throws Throwable
     {
         return new Date();
     }

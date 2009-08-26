@@ -29,9 +29,13 @@ import java.lang.reflect.Method;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.alfresco.repo.audit.extractor.DataExtractor;
+import org.alfresco.repo.audit.generator.DataGenerator;
+import org.alfresco.repo.audit.generator.DataGenerator.DataGeneratorScope;
 import org.alfresco.repo.audit.model.AuditApplication;
 import org.alfresco.repo.audit.model.AuditEntry;
 import org.alfresco.repo.audit.model.AuditModelRegistry;
@@ -53,6 +57,7 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.util.ParameterCheck;
 import org.aopalliance.intercept.MethodInvocation;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -751,8 +756,6 @@ public class AuditComponentImpl implements AuditComponent
      * V3.2 from here on.  Put all fixes to the older audit code before this point, please.
      */
     
-    private static final AuditSession NO_AUDIT_SESSION = new AuditSession();
-    
     private AuditModelRegistry auditModelRegistry;
 
     /**
@@ -764,8 +767,27 @@ public class AuditComponentImpl implements AuditComponent
         this.auditModelRegistry = auditModelRegistry;
     }
 
+    /**
+     * @see #startAuditSession(String, String, Map)
+     * @since 3.2
+     */
     public AuditSession startAuditSession(String applicationName, String rootPath)
     {
+        return startAuditSession(applicationName, rootPath, new HashMap<String, Serializable>(11));
+    }
+    /**
+     * {@inheritDoc}
+     * @since 3.2
+     */
+    public AuditSession startAuditSession(String applicationName, String rootPath, Map<String, Serializable> values)
+    {
+        ParameterCheck.mandatory("applicationName", applicationName);
+        ParameterCheck.mandatory("values", values);
+        
+        if (AlfrescoTransactionSupport.getTransactionReadState() != TxnReadState.TXN_READ_WRITE)
+        {
+            throw new IllegalStateException("Auditing requires a read-write transaction.");
+        }
         // Get the application
         AuditApplication application = auditModelRegistry.getAuditApplication(applicationName);
         if (application == null)
@@ -774,8 +796,10 @@ public class AuditComponentImpl implements AuditComponent
             {
                 logger.debug("No audit application named '" + applicationName + "' has been registered.");
             }
-            return NO_AUDIT_SESSION;
+            return null;
         }
+        // Check the path against the application
+        application.checkPath(rootPath);
         // Get the model ID for the application
         Long modelId = auditModelRegistry.getAuditModelId(applicationName);
         if (modelId == null)
@@ -783,23 +807,24 @@ public class AuditComponentImpl implements AuditComponent
             throw new AuditException("No model exists for audit application: " + applicationName);
         }
         
-        // Validate root path against application
-        String appRootKey = application.getApplicationKey() + AuditApplication.AUDIT_PATH_SEPARATOR;
-        if (rootPath == null || !rootPath.startsWith(appRootKey))
-        {
-            throw new AuditException(
-                    "An audit session's root path must start with the application's root key.\n" +
-                    "   Application: " + application.getApplicationName() + "\n" +
-                    "   Root key:    " + application.getApplicationKey() + "\n" +
-                    "   Given root:  " + rootPath);
-        }
-        
-        // TODO: Pull out session properties and persist
-        
         // Now create the session
         Long sessionId = auditDAO.createAuditSession(modelId, applicationName);
-        // Create the session info and store it on the transaction
         AuditSession session = new AuditSession(application, rootPath, sessionId);
+
+        // Generate session data
+        Map<String, DataGenerator> generators = application.getDataGenerators(rootPath, DataGeneratorScope.SESSION);
+        Map<String, Serializable> sessionData = generateData(generators);
+        
+        // Extract data from the values passed in
+        Map<String, Serializable> extractedData = extractData(application, values);
+        
+        // Combine the values
+        Map<String, Serializable> allData = new HashMap<String, Serializable>(sessionData);
+        allData.putAll(extractedData);
+        
+        // Audit it
+        audit(session, allData);
+        
         // Done
         if (logger.isDebugEnabled())
         {
@@ -808,13 +833,159 @@ public class AuditComponentImpl implements AuditComponent
         return session;
     }
 
-    public void audit(AuditSession session, Map<String, Object> values)
+    /**
+     * {@inheritDoc}
+     * @since 3.2
+     */
+    public void audit(AuditSession session, Map<String, Serializable> values)
     {
-        if (session == NO_AUDIT_SESSION)
+        ParameterCheck.mandatory("session", session);
+        ParameterCheck.mandatory("values", values);
+        
+        if (AlfrescoTransactionSupport.getTransactionReadState() != TxnReadState.TXN_READ_WRITE)
         {
-            // For some reason, the session was not to be used
+            throw new IllegalStateException("Auditing requires a read-write transaction.");
+        }
+        
+        // Audit nothing if there are no values (otherwise we're just creating maps for nothing)
+        if (values.size() == 0)
+        {
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("Nothing audited because there are no audit values.");
+            }
             return;
         }
-        throw new UnsupportedOperationException();
+        
+        Long sessionId = session.getSessionId();
+        long time = System.currentTimeMillis();
+        String username = AuthenticationUtil.getFullyAuthenticatedUser();
+        
+        Long entryId = auditDAO.createAuditEntry(sessionId, time, username, values);
+        
+        // Done
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("New audit entry: " + entryId);
+        }
+    }
+    
+    /**
+     * Extracts data from a given map using data extractors from the given application.
+     * 
+     * @param application           the application providing the data extractors
+     * @param values                the data values from which to generate data
+     * @return                      Returns a map of derived data keyed by full path
+     * 
+     * @since 3.2
+     */
+    private Map<String, Serializable> extractData(
+            AuditApplication application,
+            Map<String, Serializable> values)
+    {
+        Map<String, Serializable> newData = new HashMap<String, Serializable>(values.size() + 5);
+        for (Map.Entry<String, Serializable> entry : values.entrySet())
+        {
+            String path = entry.getKey();
+            Serializable value = entry.getValue();
+            // Get the applicable extractor
+            Map<String, DataExtractor> extractors = application.getDataExtractors(path);
+            for (Map.Entry<String, DataExtractor> extractorElement : extractors.entrySet())
+            {
+                String extractorPath = extractorElement.getKey();
+                DataExtractor extractor = extractorElement.getValue();
+                // Check if the extraction is supported
+                if (!extractor.isSupported(value))
+                {
+                    continue;
+                }
+                // Use the extractor to pull the value out
+                final Serializable data;
+                try
+                {
+                    data = extractor.convert(value);
+                }
+                catch (Throwable e)
+                {
+                    Log extractorLogger = LogFactory.getLog(extractor.getClass());
+                    if (extractorLogger.isDebugEnabled())
+                    {
+                        extractorLogger.debug(
+                                "Failed to extract audit data: \n" +
+                                "   Path:      " + path + "\n" +
+                                "   Raw value: " + value + "\n" +
+                                "   Extractor: " + extractor,
+                                e);
+                    }
+                    else
+                    {
+                        extractorLogger.warn(
+                                "Failed to extract audit data (turn on DEBUG for full stack): \n" +
+                                "   Path:      " + path + "\n" +
+                                "   Raw value: " + value + "\n" +
+                                "   Extractor: " + extractor + "\n" +
+                                "   Error:     " + e.getMessage());
+                    }
+                    continue;
+                }
+                // Add it to the map
+                newData.put(extractorPath, data);
+            }
+        }
+        // Done
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Extracted audit data: \n" +
+                    "   Application: " + application + "\n" +
+                    "   Raw values:  " + values + "\n" +
+                    "   Extracted: " + newData);
+        }
+        return newData;
+    }
+    
+    /**
+     * @param generators            the data generators
+     * @return                      Returns a map of generated data keyed by full path
+     * 
+     * @since 3.2
+     */
+    private Map<String, Serializable> generateData(Map<String, DataGenerator> generators)
+    {
+        Map<String, Serializable> newData = new HashMap<String, Serializable>(generators.size() + 5);
+        for (Map.Entry<String, DataGenerator> entry : generators.entrySet())
+        {
+            String path = entry.getKey();
+            DataGenerator generator = entry.getValue();
+            final Serializable data;
+            try
+            {
+                data = generator.getData();
+            }
+            catch (Throwable e)
+            {
+                Log generatorLogger = LogFactory.getLog(generator.getClass());
+                if (generatorLogger.isDebugEnabled())
+                {
+                    generatorLogger.debug(
+                            "Failed to generate audit data: \n" +
+                            "   Path:      " + path + "\n" +
+                            "   Generator: " + generator,
+                            e);
+                }
+                else
+                {
+                    generatorLogger.warn(
+                            "Failed to generate audit data (turn on DEBUG for full stack): \n" +
+                            "   Path:      " + path + "\n" +
+                            "   Generator: " + generator + "\n" +
+                            "   Error:     " + e.getMessage());
+                }
+                continue;
+            }
+            // Add it to the map
+            newData.put(path, data);
+        }
+        // Done
+        return newData;
     }
 }

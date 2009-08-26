@@ -24,8 +24,10 @@
  */
 package org.alfresco.repo.domain.audit;
 
+import java.io.Serializable;
 import java.net.URL;
 import java.util.List;
+import java.util.Map;
 
 import org.alfresco.repo.audit.AuditState;
 import org.alfresco.service.cmr.audit.AuditInfo;
@@ -75,9 +77,20 @@ public interface AuditDAO
     /**
      * Creates a new audit session entry - there is no session re-use.
      * 
-     * @param modelId       a pre-existing model's ID
+     * @param modelId       an existing audit model ID
      * @param application   the name of the application
      * @return              Returns the unique session ID
      */
     Long createAuditSession(Long modelId, String application);
+    
+    /**
+     * Create a new audit entry with the given map of values.
+     * 
+     * @param sessionId     an existing audit session ID
+     * @param time          the time (ms since epoch) to log the entry against
+     * @param username      the authenticated user (<tt>null</tt> if not present)
+     * @param values        the values to record
+     * @return              Returns the unique entry ID
+     */
+    Long createAuditEntry(Long sessionId, long time, String username, Map<String, Serializable> values);
 }

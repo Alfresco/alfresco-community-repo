@@ -27,6 +27,20 @@ CREATE TABLE alf_audit_session
    PRIMARY KEY (id)
 ) ENGINE=InnoDB;
 
+CREATE TABLE alf_audit_entry
+(
+   id BIGINT NOT NULL AUTO_INCREMENT,
+   audit_session_id BIGINT NOT NULL,
+   audit_time BIGINT NOT NULL,
+   audit_user_id BIGINT NULL,
+   audit_values_id BIGINT NOT NULL,
+   CONSTRAINT fk_alf_audit_ent_sess FOREIGN KEY (audit_session_id) REFERENCES alf_audit_session (id),
+   INDEX idx_alf_audit_ent_time (audit_time),
+   CONSTRAINT fk_alf_audit_ent_user FOREIGN KEY (audit_user_id) REFERENCES alf_prop_value (id),
+   CONSTRAINT fk_alf_audit_ent_prop FOREIGN KEY (audit_values_id) REFERENCES alf_prop_value (id),
+   PRIMARY KEY (id)
+) ENGINE=InnoDB;
+
 --
 -- Record script finish
 --

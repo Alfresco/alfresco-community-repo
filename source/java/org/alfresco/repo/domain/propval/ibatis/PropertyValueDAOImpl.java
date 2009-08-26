@@ -168,27 +168,17 @@ public class PropertyValueDAOImpl extends AbstractPropertyValueDAOImpl
         return value;
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     protected Long findStringValueByValue(String value)
     {
         PropertyStringValueEntity entity = new PropertyStringValueEntity();
         entity.setValue(value);
-        List<PropertyStringValueEntity> results = (List<PropertyStringValueEntity>) template.queryForList(
+        Long id = (Long) template.queryForObject(
                 SELECT_PROPERTY_STRING_VALUE_BY_VALUE,
                 entity);
-        // There could be several matches (if the database is case-insensitive), so find the first
-        // value that matches exactly.
-        for (PropertyStringValueEntity resultEntity : results)
-        {
-            if (value.equals(resultEntity.getStringValue()))
-            {
-                // Found a match
-                return resultEntity.getId();
-            }
-        }
-        // No real match
-        return null;
+        // The CRC match prevents incorrect results from coming back.  Although there could be
+        // several matches, we are sure that the matches are case-sensitive.
+        return id;
     }
 
     @Override

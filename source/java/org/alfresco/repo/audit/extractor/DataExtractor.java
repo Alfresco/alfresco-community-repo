@@ -24,6 +24,8 @@
  */
 package org.alfresco.repo.audit.extractor;
 
+import java.io.Serializable;
+
 /**
  * Interface for Audit data value extractors.  These are used to extract auditable values
  * from those arguments, return values, exceptions and any other value passed into the audit
@@ -44,7 +46,7 @@ public interface DataExtractor
      * @param data          the data that might be useful to this extractor (could be <tt>null</tt>)
      * @return              Returns <tt>true</tt> if the data is meaningful to this extractor
      */
-    public boolean isSupported(Object data);
+    public boolean isSupported(Serializable data);
     
     /**
      * Convert an value passed into the audit components into a value to be recorded.
@@ -53,5 +55,5 @@ public interface DataExtractor
      * @return                      the (potentially) converted value
      * @throws Throwable            All errors will be handled by the calling framework
      */
-    public Object convert(Object value) throws Throwable;
+    public Serializable convert(Serializable value) throws Throwable;
 }

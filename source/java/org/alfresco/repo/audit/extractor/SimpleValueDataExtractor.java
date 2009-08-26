@@ -24,6 +24,8 @@
  */
 package org.alfresco.repo.audit.extractor;
 
+import java.io.Serializable;
+
 /**
  * An extractor that supports all values and does not conversion.
  * This implementation can be used as a base class, although there is little
@@ -37,7 +39,7 @@ public class SimpleValueDataExtractor extends AbstractDataExtractor
     /**
      * @return          Returns <tt>true</tt> always
      */
-    public boolean isSupported(Object data)
+    public boolean isSupported(Serializable data)
     {
         return true;
     }
@@ -45,7 +47,7 @@ public class SimpleValueDataExtractor extends AbstractDataExtractor
     /**
      * Just returns the value unchanged
      */
-    public Object convert(Object in) throws Throwable
+    public Serializable convert(Serializable in) throws Throwable
     {
         return in;
     }

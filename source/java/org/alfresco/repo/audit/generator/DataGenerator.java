@@ -24,6 +24,8 @@
  */
 package org.alfresco.repo.audit.generator;
 
+import java.io.Serializable;
+
 /**
  * Interface for Audit data value generators.These are used to produce auditable data values
  * extract auditable values from nothing; typically these values are derived from the system
@@ -52,5 +54,5 @@ public interface DataGenerator
      * @return              Returns the generated data
      * @throws Throwable    All exceptions are handled by the framework
      */
-    public Object getData() throws Throwable;
+    public Serializable getData() throws Throwable;
 }

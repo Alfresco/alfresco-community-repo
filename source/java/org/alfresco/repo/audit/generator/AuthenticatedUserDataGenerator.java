@@ -24,6 +24,8 @@
  */
 package org.alfresco.repo.audit.generator;
 
+import java.io.Serializable;
+
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 
 /**
@@ -37,7 +39,7 @@ public class AuthenticatedUserDataGenerator extends AbstractDataGenerator
     /**
      * @return              Returns the currently-authenticated user
      */
-    public Object getData() throws Throwable
+    public Serializable getData() throws Throwable
     {
         return AuthenticationUtil.getFullyAuthenticatedUser();
     }

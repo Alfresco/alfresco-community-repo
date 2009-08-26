@@ -73,14 +73,17 @@ import org.xml.sax.SAXParseException;
 public class AuditModelRegistry
 {
     public static final String AUDIT_SCHEMA_LOCATION = "classpath:alfresco/audit/alfresco-audit-3.2.xsd";
+    public static final String AUDIT_RESERVED_KEY_USERNAME = "username";
+    public static final String AUDIT_RESERVED_KEY_SYSTEMTIME = "systemTime";
+    
+    private static final Log logger = LogFactory.getLog(AuditModelRegistry.class);
     
     private TransactionService transactionService;
     private AuditDAO auditDAO;
     
-    private static final Log logger = LogFactory.getLog(AuditModelRegistry.class);
-    
     private final ReentrantReadWriteLock.ReadLock readLock;
     private final ReentrantReadWriteLock.WriteLock writeLock;
+    private final ObjectFactory objectFactory;
     
     private final Set<URL> auditModelUrls;
     private final List<Audit> auditModels;
@@ -103,6 +106,8 @@ public class AuditModelRegistry
         ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
         readLock = lock.readLock();
         writeLock = lock.writeLock();
+        
+        objectFactory = new ObjectFactory();
         
         auditModelUrls = new HashSet<URL>(7);
         auditModels = new ArrayList<Audit>(7);
@@ -239,15 +244,15 @@ public class AuditModelRegistry
     /**
      * Get the ID of the persisted audit model for the given application name
      * 
-     * @param application           the name of the audited application
+     * @param applicationName       the name of the audited application
      * @return                      the unique ID of the persisted model (<tt>null</tt> if not found)
      */
-    public Long getAuditModelId(String application)
+    public Long getAuditModelId(String applicationName)
     {
         readLock.lock();
         try
         {
-            return auditModelIdsByApplicationsName.get(application);
+            return auditModelIdsByApplicationsName.get(applicationName);
         }
         finally
         {
@@ -258,15 +263,15 @@ public class AuditModelRegistry
     /**
      * Get the application model for the given application name
      * 
-     * @param application           the name of the audited application
+     * @param applicationName       the name of the audited application
      * @return                      the java model (<tt>null</tt> if not found)
      */
-    public AuditApplication getAuditApplication(String application)
+    public AuditApplication getAuditApplication(String applicationName)
     {
         readLock.lock();
         try
         {
-            return auditApplicationsByName.get(application);
+            return auditApplicationsByName.get(applicationName);
         }
         finally
         {
@@ -364,7 +369,7 @@ public class AuditModelRegistry
         DataExtractors extractorsElement = audit.getDataExtractors();
         if (extractorsElement == null)
         {
-            extractorsElement = new ObjectFactory().createDataExtractors();
+            extractorsElement = objectFactory.createDataExtractors();
         }
         List<org.alfresco.repo.audit.model._3.DataExtractor> converterElements = extractorsElement.getDataExtractor();
         for (org.alfresco.repo.audit.model._3.DataExtractor converterElement : converterElements)
@@ -404,7 +409,7 @@ public class AuditModelRegistry
         DataGenerators generatorsElement = audit.getDataGenerators();
         if (generatorsElement == null)
         {
-            generatorsElement = new ObjectFactory().createDataGenerators();
+            generatorsElement = objectFactory.createDataGenerators();
         }
         List<org.alfresco.repo.audit.model._3.DataGenerator> generatorElements = generatorsElement.getDataGenerator();
         for (org.alfresco.repo.audit.model._3.DataGenerator generatorElement : generatorElements)

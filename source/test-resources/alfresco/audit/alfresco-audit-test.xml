@@ -28,7 +28,9 @@
                         <RecordValue key="value.1" dataExtractor="simpleValue"/>
                     </AuditPath>
                     <AuditPath key="4.2">
+                        <RecordValue key="value.1" dataExtractor="simpleValue"/>
                         <RecordValue key="value.2" dataExtractor="simpleValue"/>
+                        <GenerateValue key="value.3" dataGenerator="systemTime" scope="AUDIT"/>
                     </AuditPath>
                 </AuditPath>
                 <AuditPath key="3.2">
@@ -47,7 +49,7 @@
                         <RecordValue key="value.1" dataExtractor="simpleValue"/>
                     </AuditPath>
                     <AuditPath key="4.2">
-                        <RecordValue key="value.2" dataExtractor="simpleValue"/>
+                        <RecordValue key="value.1" dataExtractor="simpleValue"/>
                     </AuditPath>
                 </AuditPath>
                 <AuditPath key="3.2">

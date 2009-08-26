@@ -46,9 +46,10 @@ CREATE TABLE alf_prop_string_value
 (
    id BIGINT NOT NULL AUTO_INCREMENT,
    string_value TEXT NOT NULL,
-   string_end VARCHAR(16) NOT NULL,
-   INDEX idx_alf_prop_str_start (string_value(32)),
-   INDEX idx_alf_prop_str_end (string_end),
+   string_end_lower VARCHAR(16) NOT NULL,
+   string_crc BIGINT NOT NULL,
+   INDEX idx_alf_prop_str (string_value(32)),
+   INDEX idx_alf_prop_crc (string_end_lower, string_crc),
    PRIMARY KEY (id)
 ) ENGINE=InnoDB;
 

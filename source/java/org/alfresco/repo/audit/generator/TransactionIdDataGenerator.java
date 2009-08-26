@@ -24,6 +24,8 @@
  */
 package org.alfresco.repo.audit.generator;
 
+import java.io.Serializable;
+
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 
 /**
@@ -37,7 +39,7 @@ public class TransactionIdDataGenerator extends AbstractDataGenerator
     /**
      * @return              Returns the current transaction ID (<tt>null</tt> if not in a transction)
      */
-    public Object getData() throws Throwable
+    public Serializable getData() throws Throwable
     {
         return AlfrescoTransactionSupport.getTransactionId();
     }

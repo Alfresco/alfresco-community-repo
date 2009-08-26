@@ -38,6 +38,7 @@ import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.audit.AuditComponentImpl;
@@ -157,6 +158,17 @@ public class HibernateAuditDAO extends HibernateDaoSupport implements AuditDAO, 
      * @since 3.2
      */
     public Pair<Long, ContentData> getOrCreateAuditModel(URL url)
+    {
+        throw new UnsupportedOperationException();
+    }
+
+    /**
+     * Fallout implementation from new audit DAO
+     * 
+     * @throws UnsupportedOperationException always
+     * @since 3.2
+     */
+    public Long createAuditEntry(Long sessionId, long time, String username, Map<String, Serializable> values)
     {
         throw new UnsupportedOperationException();
     }

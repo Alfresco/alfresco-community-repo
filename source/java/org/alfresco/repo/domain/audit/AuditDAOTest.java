@@ -25,7 +25,10 @@
 package org.alfresco.repo.domain.audit;
 
 import java.io.File;
+import java.io.Serializable;
 import java.net.URL;
+import java.util.Collections;
+import java.util.Map;
 
 import junit.framework.TestCase;
 
@@ -117,6 +120,46 @@ public class AuditDAOTest extends TestCase
         long after = System.nanoTime();
         System.out.println(
                 "Time for " + count + " session creations was " +
+                ((double)(after - before)/(10E6)) + "ms");
+    }
+    
+    public void testAuditEntry() throws Exception
+    {
+        final File file = AbstractContentTransformerTest.loadQuickTestFile("pdf");
+        assertNotNull(file);
+        final URL url = new URL("file:" + file.getAbsolutePath());
+        final String appName = getName() + "." + System.currentTimeMillis();
+
+        RetryingTransactionCallback<Long> createSessionCallback = new RetryingTransactionCallback<Long>()
+        {
+            public Long execute() throws Throwable
+            {
+                Long modelId = auditDAO.getOrCreateAuditModel(url).getFirst();
+                return auditDAO.createAuditSession(modelId, appName);
+            }
+        };
+        final Long sessionId = txnHelper.doInTransaction(createSessionCallback);
+        
+        final int count = 1000;
+        final String username = "alexi";
+        RetryingTransactionCallback<Void> createEntryCallback = new RetryingTransactionCallback<Void>()
+        {
+            public Void execute() throws Throwable
+            {
+                for (int i = 0; i < count; i++)
+                {
+                    Map<String, Serializable> values = Collections.singletonMap("/a/b/c", (Serializable) new Integer(i));
+                    long now = System.currentTimeMillis();
+                    auditDAO.createAuditEntry(sessionId, now, username, values);
+                }
+                return null;
+            }
+        };
+        long before = System.nanoTime();
+        txnHelper.doInTransaction(createEntryCallback);
+        long after = System.nanoTime();
+        System.out.println(
+                "Time for " + count + " entry creations was " +
                 ((double)(after - before)/(10E6)) + "ms");
     }
 }

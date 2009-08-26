@@ -40,16 +40,6 @@ public class AuditSession
     private final Long sessionId;
     
     /**
-     * Constructor used to denote a dummy (no-audit) session
-     */
-    /* package */ AuditSession()
-    {
-        application = null;
-        rootPath = null;
-        sessionId = null;
-    }
-    
-    /**
      * @param application               the audit application config being used
      * @param rootPath                  the root path being used for the session
      * @param sessionId                 the ID produced for the persisted session

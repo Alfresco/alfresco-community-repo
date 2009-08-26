@@ -25,6 +25,7 @@
 package org.alfresco.repo.domain.audit.ibatis;
 
 import org.alfresco.repo.domain.audit.AbstractAuditDAOImpl;
+import org.alfresco.repo.domain.audit.AuditEntryEntity;
 import org.alfresco.repo.domain.audit.AuditModelEntity;
 import org.alfresco.repo.domain.audit.AuditSessionEntity;
 import org.springframework.orm.ibatis.SqlMapClientTemplate;
@@ -41,6 +42,8 @@ public class AuditDAOImpl extends AbstractAuditDAOImpl
     private static final String INSERT_MODEL = "insert.AuditModel";
     
     private static final String INSERT_SESSION = "insert.AuditSession";
+    
+    private static final String INSERT_ENTRY = "insert.AuditEntry";
     
     private SqlMapClientTemplate template;
 
@@ -79,6 +82,19 @@ public class AuditDAOImpl extends AbstractAuditDAOImpl
         entity.setApplicationNameId(appNameId);
         entity.setAuditModelId(modelId);
         Long id = (Long) template.insert(INSERT_SESSION, entity);
+        entity.setId(id);
+        return entity;
+    }
+
+    @Override
+    protected AuditEntryEntity createAuditEntry(Long sessionId, long time, Long usernameId, Long valuesId)
+    {
+        AuditEntryEntity entity = new AuditEntryEntity();
+        entity.setAuditSessionId(sessionId);
+        entity.setAuditTime(time);
+        entity.setAuditUserId(usernameId);
+        entity.setAuditValuesId(valuesId);
+        Long id = (Long) template.insert(INSERT_ENTRY, entity);
         entity.setId(id);
         return entity;
     }

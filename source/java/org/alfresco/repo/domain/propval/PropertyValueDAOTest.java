@@ -187,7 +187,7 @@ public class PropertyValueDAOTest extends TestCase
         assertEquals(stringValue, stringEntityPair.getSecond());
         
         // Check that the uppercase and lowercase strings don't have entries
-        RetryingTransactionCallback<Void> getClassCallback = new RetryingTransactionCallback<Void>()
+        RetryingTransactionCallback<Void> getStringCallback = new RetryingTransactionCallback<Void>()
         {
             public Void execute() throws Throwable
             {
@@ -201,7 +201,7 @@ public class PropertyValueDAOTest extends TestCase
                 return null;
             }
         };
-        txnHelper.doInTransaction(getClassCallback, true);
+        txnHelper.doInTransaction(getStringCallback, true);
 
         RetryingTransactionCallback<Pair<Long, String>> createStringUpperCallback = new RetryingTransactionCallback<Pair<Long, String>>()
         {
@@ -216,6 +216,22 @@ public class PropertyValueDAOTest extends TestCase
         assertNotNull(stringUpperEntityPair.getFirst());
         assertEquals(stringValueUpper, stringUpperEntityPair.getSecond());
         assertNotSame("String IDs were not different", stringEntityPair.getFirst(), stringUpperEntityPair.getFirst());
+        
+        // Check empty string
+        RetryingTransactionCallback<Void> emptyStringCallback = new RetryingTransactionCallback<Void>()
+        {
+            public Void execute() throws Throwable
+            {
+                Pair<Long, String> emptyStringPair1 = propertyValueDAO.getOrCreatePropertyStringValue("");
+                assertNotNull(emptyStringPair1);
+                assertEquals("", emptyStringPair1.getSecond());
+                Pair<Long, String> emptyStringPair2 = propertyValueDAO.getOrCreatePropertyStringValue("");
+                assertNotNull(emptyStringPair2);
+                assertEquals(emptyStringPair1, emptyStringPair2);
+                return null;
+            }
+        };
+        txnHelper.doInTransaction(emptyStringCallback, true);
     }
     
     public void testPropertyDoubleValue() throws Exception

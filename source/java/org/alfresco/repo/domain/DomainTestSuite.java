@@ -27,6 +27,7 @@ package org.alfresco.repo.domain;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 
+import org.alfresco.repo.domain.audit.AuditDAOTest;
 import org.alfresco.repo.domain.contentdata.ContentDataDAOTest;
 import org.alfresco.repo.domain.encoding.EncodingDAOTest;
 import org.alfresco.repo.domain.hibernate.HibernateSessionHelperTest;
@@ -53,6 +54,7 @@ public class DomainTestSuite extends TestSuite
         suite.addTestSuite(PropertyValueTest.class);
         suite.addTestSuite(QNameDAOTest.class);
         suite.addTestSuite(PropertyValueTest.class);
+        suite.addTestSuite(AuditDAOTest.class);
                 
         return suite;
     }

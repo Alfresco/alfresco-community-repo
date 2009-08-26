@@ -24,6 +24,7 @@
  */
 package org.alfresco.repo.domain.propval;
 
+import org.alfresco.repo.domain.CrcHelper;
 import org.alfresco.util.EqualsHelper;
 import org.alfresco.util.Pair;
 
@@ -37,7 +38,8 @@ public class PropertyStringValueEntity
 {
     private Long id;
     private String stringValue;
-    private String stringEnd;
+    private String stringEndLower;
+    private Long stringCrc;
     
     public PropertyStringValueEntity()
     {
@@ -88,16 +90,15 @@ public class PropertyStringValueEntity
      */
     public void setValue(String value)
     {
-        this.stringValue = value;
-        int len = stringValue.length();
-        if (len > 16)
+        if (value == null)
         {
-            stringEnd = stringValue.substring(len - 16);
+            throw new IllegalArgumentException("Null strings cannot be persisted");
         }
-        else
-        {
-            stringEnd = stringValue;
-        }
+        stringValue = value;
+        // Calculate the crc value from the original value
+        Pair<String, Long> crcPair = CrcHelper.getStringCrcPair(value, 16, false, true);
+        stringEndLower = crcPair.getFirst();
+        stringCrc = crcPair.getSecond();
     }
 
     public Long getId()
@@ -120,13 +121,23 @@ public class PropertyStringValueEntity
         this.stringValue = stringValue;
     }
     
-    public String getStringEnd()
+    public String getStringEndLower()
     {
-        return stringEnd;
+        return stringEndLower;
     }
 
-    public void setStringEnd(String stringEnd)
+    public void setStringEndLower(String stringEndLower)
     {
-        this.stringEnd = stringEnd;
+        this.stringEndLower = stringEndLower;
+    }
+
+    public Long getStringCrc()
+    {
+        return stringCrc;
+    }
+
+    public void setStringCrc(Long stringCrc)
+    {
+        this.stringCrc = stringCrc;
     }
 }

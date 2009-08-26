@@ -121,7 +121,7 @@ public class M2Constraint
     
     public void removeParameter(String name)
     {
-        List<M2NamedValue> params = getParameters();
+        List<M2NamedValue> params = new ArrayList<M2NamedValue>(getParameters());
         for (M2NamedValue param : params)
         {
             if (param.getName().equals(name))

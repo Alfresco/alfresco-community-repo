@@ -109,6 +109,14 @@ public interface ModelDAO
      * @return
      */
     public Set<PermissionReference> getGranteePermissions(PermissionReference permissionReference);
+    
+    /**
+     * Get the permissions which are granted by the supplied permission.
+     * 
+     * @param permissionReference
+     * @return
+     */
+    public Set<PermissionReference> getImmediateGranteePermissions(PermissionReference permissionReference);
 
     /**
      * Is this permission refernece to a permission and not a permissoinSet?

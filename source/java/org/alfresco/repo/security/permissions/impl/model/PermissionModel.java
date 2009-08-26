@@ -132,7 +132,6 @@ public class PermissionModel implements ModelDAO, InitializingBean
 
     /**
      * Default constructor
-     *
      */
     public PermissionModel()
     {
@@ -143,7 +142,8 @@ public class PermissionModel implements ModelDAO, InitializingBean
 
     /**
      * Set the model
-     * @param model 
+     * 
+     * @param model
      */
     public void setModel(String model)
     {
@@ -152,6 +152,7 @@ public class PermissionModel implements ModelDAO, InitializingBean
 
     /**
      * Set the dictionary service
+     * 
      * @param dictionaryService
      */
     public void setDictionaryService(DictionaryService dictionaryService)
@@ -161,6 +162,7 @@ public class PermissionModel implements ModelDAO, InitializingBean
 
     /**
      * Set the node service
+     * 
      * @param nodeService
      */
     public void setNodeService(NodeService nodeService)
@@ -284,6 +286,7 @@ public class PermissionModel implements ModelDAO, InitializingBean
 
     /**
      * Set the default access status
+     * 
      * @return the default access status
      */
     public AccessStatus getDefaultPermission()
@@ -293,6 +296,7 @@ public class PermissionModel implements ModelDAO, InitializingBean
 
     /**
      * Get the default acces status for the givne permission
+     * 
      * @param pr
      * @return the access status
      */
@@ -316,7 +320,8 @@ public class PermissionModel implements ModelDAO, InitializingBean
 
     /**
      * Get the permission sets by type
-     * @return  the permission sets by type
+     * 
+     * @return the permission sets by type
      */
     public Map<QName, PermissionSet> getPermissionSets()
     {
@@ -606,6 +611,21 @@ public class PermissionModel implements ModelDAO, InitializingBean
         return grantees;
     }
 
+    public synchronized Set<PermissionReference> getImmediateGranteePermissions(PermissionReference permissionReference)
+    {
+        // Cache the results
+
+        Set<PermissionReference> internal = getImmediateGranteePermissionsImpl(permissionReference);
+        Set<PermissionReference> grantees = new HashSet<PermissionReference>();
+        for (PermissionReference grantee : internal)
+        {
+            grantees.add(SimplePermissionReference.getPermissionReference(grantee.getQName(), grantee.getName()));
+        }
+        grantees = Collections.unmodifiableSet(grantees);
+
+        return grantees;
+    }
+
     private Set<PermissionReference> getGranteePermissionsImpl(PermissionReference permissionReference)
     {
         // Query the model
@@ -639,6 +659,69 @@ public class PermissionModel implements ModelDAO, InitializingBean
                                 if (attempt != null)
                                 {
                                     permissions.addAll(getGranteePermissions(attempt));
+                                }
+                            }
+                        }
+                    }
+
+                    if (pg.isAllowFullControl())
+                    {
+                        // add all available
+                        permissions.addAll(getAllPermissions());
+                    }
+                }
+            }
+            PermissionGroup baseGroup = getBasePermissionGroupOrNull(getPermissionGroupOrNull(permissionReference));
+            if (baseGroup != null)
+            {
+                for (Permission p : ps.getPermissions())
+                {
+                    for (PermissionReference grantedTo : p.getGrantedToGroups())
+                    {
+                        PermissionGroup base = getBasePermissionGroupOrNull(getPermissionGroupOrNull(grantedTo));
+                        if (baseGroup.equals(base))
+                        {
+                            permissions.add(p);
+                        }
+                    }
+                }
+            }
+        }
+        return permissions;
+    }
+    
+    private Set<PermissionReference> getImmediateGranteePermissionsImpl(PermissionReference permissionReference)
+    {
+        // Query the model
+        HashSet<PermissionReference> permissions = new HashSet<PermissionReference>(256, 1.0f);
+        for (PermissionSet ps : permissionSets.values())
+        {
+            for (PermissionGroup pg : ps.getPermissionGroups())
+            {
+                if (pg.equals(permissionReference))
+                {
+                    for (PermissionReference included : pg.getIncludedPermissionGroups())
+                    {
+                        permissions.add(included);
+                    }
+
+                    if (pg.isExtends())
+                    {
+                        if (pg.getTypeQName() != null)
+                        {
+                            permissions.addAll(getImmediateGranteePermissions(SimplePermissionReference.getPermissionReference(pg.getTypeQName(), pg.getName())));
+                        }
+                        else
+                        {
+                            ClassDefinition classDefinition = dictionaryService.getClass(pg.getQName());
+                            QName parent = classDefinition.getParentName();
+                            if (parent != null)
+                            {
+                                classDefinition = dictionaryService.getClass(parent);
+                                PermissionGroup attempt = getPermissionGroupOrNull(SimplePermissionReference.getPermissionReference(parent, pg.getName()));
+                                if (attempt != null)
+                                {
+                                    permissions.addAll(getImmediateGranteePermissions(attempt));
                                 }
                             }
                         }
@@ -789,8 +872,8 @@ public class PermissionModel implements ModelDAO, InitializingBean
 
     /**
      * Cache key
+     * 
      * @author andyh
-     *
      */
     public static class RequiredKey
     {
@@ -826,13 +909,13 @@ public class PermissionModel implements ModelDAO, InitializingBean
                 if (byPermRef != null)
                 {
                     HashMap<Set<QName>, EnumMap<RequiredPermission.On, RequiredKey>> byType = byPermRef.get(qName);
-                    if(byType != null)
+                    if (byType != null)
                     {
                         EnumMap<RequiredPermission.On, RequiredKey> byAspects = byType.get(aspectQNames);
-                        if(byAspects != null)
+                        if (byAspects != null)
                         {
                             RequiredKey instance = byAspects.get(on);
-                            if(instance != null)
+                            if (instance != null)
                             {
                                 return instance;
                             }
@@ -855,25 +938,25 @@ public class PermissionModel implements ModelDAO, InitializingBean
                     instances.put(required, byPermRef);
                 }
                 HashMap<Set<QName>, EnumMap<RequiredPermission.On, RequiredKey>> byType = byPermRef.get(qName);
-                if(byType == null)
+                if (byType == null)
                 {
                     byType = new HashMap<Set<QName>, EnumMap<RequiredPermission.On, RequiredKey>>();
                     byPermRef.put(qName, byType);
                 }
                 EnumMap<RequiredPermission.On, RequiredKey> byAspects = byType.get(aspectQNames);
-                if(byAspects == null)
+                if (byAspects == null)
                 {
-                    byAspects = new  EnumMap<RequiredPermission.On, RequiredKey>(RequiredPermission.On.class);
+                    byAspects = new EnumMap<RequiredPermission.On, RequiredKey>(RequiredPermission.On.class);
                     byType.put(aspectQNames, byAspects);
                 }
                 RequiredKey instance = byAspects.get(on);
-                if(instance == null)
+                if (instance == null)
                 {
                     instance = new RequiredKey(required, qName, aspectQNames, on);
                     byAspects.put(on, instance);
                 }
                 return instance;
-                
+
             }
             finally
             {

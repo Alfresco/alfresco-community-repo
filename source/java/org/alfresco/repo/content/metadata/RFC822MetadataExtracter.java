@@ -42,6 +42,7 @@ import javax.mail.internet.MimeMessage.RecipientType;
 
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.service.cmr.repository.ContentReader;
+import org.alfresco.service.namespace.QName;
 
 /**
  * Metadata extractor for the PDF documents.
@@ -136,5 +137,24 @@ public class RFC822MetadataExtracter extends AbstractMappingMetadataExtracter
         // Done
         return rawProperties;
     }
+    
+   /**
+     * Back door for RM
+     * @return
+     */
+    public final Map<String, Set<QName>> getCurrentMapping()
+    {
+         return super.getMapping();
+    }
+    
+//    /**
+//     * Back door for RM
+//     * @return
+//     */
+//    public void setMapping(Map<String, Set<QName>> mapping)
+//    {
+//        super.setMapping(mapping);
+//    }
+
 
 }

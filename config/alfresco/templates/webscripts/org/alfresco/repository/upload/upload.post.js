@@ -73,7 +73,7 @@ function main()
             break;
 
          case "aspects":
-            aspects = field.value !== "-" ? field.value.split(",") : [];
+            aspects = field.value != "-" ? field.value.split(",") : [];
             break;
 
          case "majorversion":

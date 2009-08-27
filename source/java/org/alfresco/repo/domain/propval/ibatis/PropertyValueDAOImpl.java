@@ -34,6 +34,7 @@ import org.alfresco.repo.domain.propval.PropertyDateValueEntity;
 import org.alfresco.repo.domain.propval.PropertyDoubleValueEntity;
 import org.alfresco.repo.domain.propval.PropertyIdSearchRow;
 import org.alfresco.repo.domain.propval.PropertyLinkEntity;
+import org.alfresco.repo.domain.propval.PropertyStringQueryEntity;
 import org.alfresco.repo.domain.propval.PropertyStringValueEntity;
 import org.alfresco.repo.domain.propval.PropertyValueEntity;
 import org.alfresco.repo.domain.propval.PropertyValueEntity.PersistedType;
@@ -168,17 +169,26 @@ public class PropertyValueDAOImpl extends AbstractPropertyValueDAOImpl
         return value;
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     protected Long findStringValueByValue(String value)
     {
         PropertyStringValueEntity entity = new PropertyStringValueEntity();
         entity.setValue(value);
-        Long id = (Long) template.queryForObject(
+        List<Long> rows = (List<Long>) template.queryForList(
                 SELECT_PROPERTY_STRING_VALUE_BY_VALUE,
-                entity);
+                entity,
+                0, 1);
         // The CRC match prevents incorrect results from coming back.  Although there could be
         // several matches, we are sure that the matches are case-sensitive.
-        return id;
+        if (rows.size() > 0)
+        {
+            return rows.get(0);
+        }
+        else
+        {
+            return null;
+        }
     }
 
     @Override
@@ -215,8 +225,9 @@ public class PropertyValueDAOImpl extends AbstractPropertyValueDAOImpl
         entity.setDoubleValue(value);
         List<PropertyDoubleValueEntity> results = (List<PropertyDoubleValueEntity>) template.queryForList(
                 SELECT_PROPERTY_DOUBLE_VALUE_BY_VALUE,
-                entity);
-        // There coult be several matches, so take the first one
+                entity,
+                0, 1);
+        // There could be several matches, so just get one
         if (results.size() > 0)
         {
             return results.get(0);
@@ -277,10 +288,11 @@ public class PropertyValueDAOImpl extends AbstractPropertyValueDAOImpl
         
         // How would it be persisted?
         PersistedType persistedType = queryEntity.getPersistedTypeEnum();
+        Short persistedTypeId = queryEntity.getPersistedType();
         
         // Query based on the the persistable value type
         String query = null;
-        boolean singleResult = true;                // false if multiple query results are possible
+        Object queryObject = queryEntity;
 
         // Handle each persisted type individually
 
@@ -294,8 +306,12 @@ public class PropertyValueDAOImpl extends AbstractPropertyValueDAOImpl
             query = SELECT_PROPERTY_VALUE_BY_DOUBLE_VALUE;
             break;
         case STRING:
+            // It's best to query using the CRC and short end-value
             query = SELECT_PROPERTY_VALUE_BY_STRING_VALUE;
-            singleResult = false;
+            queryObject = new PropertyStringQueryEntity(
+                    persistedTypeId,
+                    actualTypeId,
+                    queryEntity.getStringValue());
             break;
         case SERIALIZABLE:
             // No query
@@ -308,32 +324,21 @@ public class PropertyValueDAOImpl extends AbstractPropertyValueDAOImpl
         PropertyValueEntity result = null;
         if (query != null)
         {
-            if (singleResult)
+            List<PropertyValueEntity> results = (List<PropertyValueEntity>) template.queryForList(
+                    query,
+                    queryObject,
+                    0, 1);                              // Only want one result
+            for (PropertyValueEntity row : results)
             {
-                result = (PropertyValueEntity) template.queryForObject(query, queryEntity);
-            }
-            else
-            {
-                Serializable queryValue = queryEntity.getPersistedValue();
-                List<PropertyValueEntity> results = (List<PropertyValueEntity>) template.queryForList(
-                        query,
-                        queryEntity);
-                for (PropertyValueEntity row : results)
-                {
-                    if (queryValue.equals(row.getPersistedValue()))
-                    {
-                        // We have a match
-                        result = row;
-                        break;
-                    }
-                }
+                result = row;
+                break;
             }
         }
         
         // Done
         return result;
     }
-
+    
     @Override
     protected PropertyValueEntity createPropertyValue(Serializable value)
     {

@@ -13,6 +13,7 @@
     <typeAlias alias="PropertyClass" type="org.alfresco.repo.domain.propval.PropertyClassEntity"/>
     <typeAlias alias="PropertyDateValue" type="org.alfresco.repo.domain.propval.PropertyDateValueEntity"/>
     <typeAlias alias="PropertyStringValue" type="org.alfresco.repo.domain.propval.PropertyStringValueEntity"/>
+    <typeAlias alias="PropertyStringQuery" type="org.alfresco.repo.domain.propval.PropertyStringQueryEntity"/>
     <typeAlias alias="PropertyDoubleValue" type="org.alfresco.repo.domain.propval.PropertyDoubleValueEntity"/>
     <typeAlias alias="PropertyValue" type="org.alfresco.repo.domain.propval.PropertyValueEntity"/>
     <typeAlias alias="PropertyLink" type="org.alfresco.repo.domain.propval.PropertyLinkEntity"/>
@@ -249,7 +250,7 @@
     </select>
 
     <!-- Get the property value by value in alf_prop_string_value -->
-    <select id="select.PropertyValueByStringValue" parameterClass="PropertyValue" resultMap="result.PropertyValue">
+    <select id="select.PropertyValueByStringValue" parameterClass="PropertyStringQuery" resultMap="result.PropertyValue">
         select
             pv.id as id,
             pv.actual_type_id as actual_type_id,
@@ -263,7 +264,8 @@
             join alf_prop_string_value sv on (sv.id = pv.long_value and pv.persisted_type = #persistedType#)
         where
             pv.actual_type_id = #actualTypeId# and
-            sv.string_value = #stringValue#
+            sv.string_end_lower = #stringEndLower# and
+            sv.string_crc = #stringCrc#
     </select>
 
     <!-- Get the property value by ID -->

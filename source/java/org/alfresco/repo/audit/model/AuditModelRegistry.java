@@ -435,11 +435,12 @@ public class AuditModelRegistry
             }
             else if (extractorElement.getRegisteredName() != null)
             {
-                dataExtractor = dataExtractors.getNamedObject(extractorElement.getRegisteredName());
+                String registeredName = extractorElement.getRegisteredName();
+                dataExtractor = dataExtractors.getNamedObject(registeredName);
                 if (dataExtractor == null)
                 {
                     throw new AuditModelException(
-                            "No registered audit data extractor exists for '" + name + "'.");
+                            "No registered audit data extractor exists for '" + registeredName + "'.");
                 }
             }
             else
@@ -488,11 +489,12 @@ public class AuditModelRegistry
             }
             else if (generatorElement.getRegisteredName() != null)
             {
-                dataGenerator = dataGenerators.getNamedObject(generatorElement.getRegisteredName());
+                String registeredName = generatorElement.getRegisteredName();
+                dataGenerator = dataGenerators.getNamedObject(registeredName);
                 if (dataGenerator == null)
                 {
                     throw new AuditModelException(
-                            "No registered audit data generator exists for '" + name + "'.");
+                            "No registered audit data generator exists for '" + registeredName + "'.");
                 }
             }
             else

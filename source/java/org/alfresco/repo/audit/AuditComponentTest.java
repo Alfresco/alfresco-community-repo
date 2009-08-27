@@ -32,13 +32,19 @@ import java.util.Map;
 
 import junit.framework.TestCase;
 
+import org.alfresco.repo.audit.model.AuditApplication;
 import org.alfresco.repo.audit.model.AuditModelException;
 import org.alfresco.repo.audit.model.AuditModelRegistry;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
+import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
+import org.alfresco.util.EqualsHelper;
 import org.springframework.context.ApplicationContext;
 import org.springframework.util.ResourceUtils;
 
@@ -59,22 +65,37 @@ public class AuditComponentTest extends TestCase
     
     private AuditModelRegistry auditModelRegistry;
     private AuditComponent auditComponent;
+    private ServiceRegistry serviceRegistry;
     private TransactionService transactionService;
+    private NodeService nodeService;
+    
+    private NodeRef nodeRef;
     
     @Override
     public void setUp() throws Exception
     {
         auditModelRegistry = (AuditModelRegistry) ctx.getBean("auditModel.modelRegistry");
         auditComponent = (AuditComponent) ctx.getBean("auditComponent");
-        transactionService = (TransactionService) ctx.getBean("transactionService");
+        serviceRegistry = (ServiceRegistry) ctx.getBean(ServiceRegistry.SERVICE_REGISTRY); 
+        transactionService = serviceRegistry.getTransactionService();
+        nodeService = serviceRegistry.getNodeService();
         
         // Register the test model
         URL testModelUrl = ResourceUtils.getURL("classpath:alfresco/audit/alfresco-audit-test.xml");
         auditModelRegistry.registerModel(testModelUrl);
         auditModelRegistry.loadAuditModels();
         
+        RunAsWork<NodeRef> testRunAs = new RunAsWork<NodeRef>()
+        {
+            public NodeRef doWork() throws Exception
+            {
+                return nodeService.getRootNode(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
+            }
+        };
+        nodeRef = AuthenticationUtil.runAs(testRunAs, AuthenticationUtil.getSystemUserName());
+
         // Authenticate
-        AuthenticationUtil.setFullyAuthenticatedUser("User-" + getName() + System.currentTimeMillis());
+        AuthenticationUtil.setFullyAuthenticatedUser("User-" + getName());
     }
     
     @Override
@@ -164,34 +185,102 @@ public class AuditComponentTest extends TestCase
         AuthenticationUtil.runAs(testRunAs, "SomeOtherUser");
     }
     
+    private Map<String, Serializable> auditTestAction(
+            final String action,
+            NodeRef nodeRef,
+            Map<String, Serializable> parameters)
+    {
+        final Map<String, Serializable> adjustedValues = new HashMap<String, Serializable>(parameters.size() * 2);
+        // Add the noderef
+        adjustedValues.put(AuditApplication.buildPath("context-node"), nodeRef);
+        // Compile path-name snippets for the parameters
+        for (Map.Entry<String, Serializable> entry : parameters.entrySet())
+        {
+            String paramName = entry.getKey();
+            String path = AuditApplication.buildPath("params", paramName);
+            adjustedValues.put(path, entry.getValue());
+        }
+        
+        RetryingTransactionCallback<Map<String, Serializable>> auditCallback =
+                new RetryingTransactionCallback<Map<String, Serializable>>()
+        {
+            public Map<String, Serializable> execute() throws Throwable
+            {
+                String actionPath = AuditApplication.buildPath("test/actions", action);
+                AuditSession session = auditComponent.startAuditSession(APPLICATION_TEST, actionPath);
+                
+                return auditComponent.audit(session, adjustedValues);
+            }
+        };
+        return transactionService.getRetryingTransactionHelper().doInTransaction(auditCallback);
+    }
+    
+    private void checkAuditMaps(Map<String, Serializable> result, Map<String, Serializable> expected)
+    {
+        Map<String, Serializable> copyResult = new HashMap<String, Serializable>(result);
+        
+        boolean failure = false;
+
+        StringBuilder sb = new StringBuilder(1024);
+        sb.append("\nValues that don't match the expected values: ");
+        for (Map.Entry<String, Serializable> entry : expected.entrySet())
+        {
+            String key = entry.getKey();
+            Serializable expectedValue = entry.getValue();
+            Serializable resultValue = result.get(key);
+            if (!EqualsHelper.nullSafeEquals(resultValue, expectedValue))
+            {
+                sb.append("\n")
+                  .append("   Key: ").append(key).append("\n")
+                  .append("      Result:   ").append(resultValue).append("\n")
+                  .append("      Expected: ").append(expectedValue);
+                failure = true;
+            }
+            copyResult.remove(key);
+        }
+        sb.append("\nValues that are present but should not be: ");
+        for (Map.Entry<String, Serializable> entry : copyResult.entrySet())
+        {
+            String key = entry.getKey();
+            Serializable resultValue = entry.getValue();
+            sb.append("\n")
+              .append("   Key: ").append(key).append("\n")
+              .append("      Result:   ").append(resultValue);
+          failure = true;
+        }
+        if (failure)
+        {
+            fail(sb.toString());
+        }
+    }
+    
     /**
      * Start a session and use it within a single txn
      */
-    public void testSession_Extended01() throws Exception
+    public void testSession_Action01() throws Exception
     {
-        final RetryingTransactionCallback<Void> testCallback = new RetryingTransactionCallback<Void>()
-        {
-            public Void execute() throws Throwable
-            {
-                AuditSession session = auditComponent.startAuditSession(APPLICATION_TEST, "/test/1.1");
-                
-                Map<String, Serializable> values = new HashMap<String, Serializable>(13);
-                values.put("/test/1.1/2.1/3.1/4.1", new Long(41));
-                values.put("/test/1.1/2.1/3.1/4.2", "42");
-                values.put("/test/1.1/2.1/3.1/4.2", new Date());
-                
-                auditComponent.audit(session, values);
-                
-                return null;
-            }
-        };
-        RunAsWork<Void> testRunAs = new RunAsWork<Void>()
-        {
-            public Void doWork() throws Exception
-            {
-                return transactionService.getRetryingTransactionHelper().doInTransaction(testCallback);
-            }
-        };
-        AuthenticationUtil.runAs(testRunAs, "SomeOtherUser");
+        Serializable valueA = new Date();
+        Serializable valueB = "BBB-value-here";
+        Serializable valueC = new Float(16.0F);
+        // Get a noderef
+        final Map<String, Serializable> parameters = new HashMap<String, Serializable>(13);
+        parameters.put("A", valueA);
+        parameters.put("B", valueB);
+        parameters.put("C", valueC);
+        // lowercase versions are not in the config
+        parameters.put("a", valueA);
+        parameters.put("b", valueB);
+        parameters.put("c", valueC);
+        
+        Map<String, Serializable> result = auditTestAction("action-01", nodeRef, parameters);
+        
+        Map<String, Serializable> expected = new HashMap<String, Serializable>();
+        expected.put("/test/actions/action-01/context-node/noderef", nodeRef);
+        expected.put("/test/actions/action-01/params/A/value", valueA);
+        expected.put("/test/actions/action-01/params/B/value", valueB);
+        expected.put("/test/actions/action-01/params/C/value", valueC);
+        
+        // Check
+        checkAuditMaps(result, expected);
     }
 }

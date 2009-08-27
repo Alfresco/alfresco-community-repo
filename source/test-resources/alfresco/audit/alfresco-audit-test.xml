@@ -64,9 +64,22 @@
                 </AuditPath>
             </AuditPath>
         </AuditPath>
-        <AuditPath key="node">
-            <AuditPath key="t1">
-                <RecordValue key="noderef" dataExtractor="simpleValue"/>
+        <AuditPath key="actions">
+            <AuditPath key="action-01">
+                <AuditPath key="context-node">
+                    <RecordValue key="noderef" dataExtractor="simpleValue"/>
+                </AuditPath>
+                <AuditPath key="params">
+                    <AuditPath key="A">
+                        <RecordValue key="value" dataExtractor="simpleValue"/>
+                    </AuditPath>
+                    <AuditPath key="B">
+                        <RecordValue key="value" dataExtractor="simpleValue"/>
+                    </AuditPath>
+                    <AuditPath key="C">
+                        <RecordValue key="value" dataExtractor="simpleValue"/>
+                    </AuditPath>
+                </AuditPath>
             </AuditPath>
         </AuditPath>
     </Application>

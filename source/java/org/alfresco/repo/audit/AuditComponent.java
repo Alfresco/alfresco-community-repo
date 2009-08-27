@@ -109,18 +109,25 @@ public interface AuditComponent
     AuditSession startAuditSession(String applicationName, String rootPath, Map<String, Serializable> values);
     
     /**
-     * Record a set of values against the given session.
+     * Record a set of values against the given session.  The map is a path (starting with '/') relative
+     * to the root path given when {@link #startAuditSession(String, String) starting the session}.  All
+     * resulting path values (session root path + map entry paths) must have data recorder entries and
+     * be enabled for data to be recorded.
+     * <p/>
+     * The return values reflect what was actually persisted and is controlled by the data extractors
+     * defined in the audit configuration.
      * <p/>
      * This is a read-write method.  Client code must wrap calls in the appropriate transactional wrappers.
      * 
      * @param session           a pre-existing audit session to continue with
      * @param values            the values to audit mapped by {@link AuditPath} key relative to the session
      *                          root path
+     * @return                  Returns the values that were actually persisted, keyed by their full path.
      * @throws IllegalStateException if there is not a writable transaction present
      * 
      * @see #startAuditSession()
      * 
      * @since 3.2
      */
-    void audit(AuditSession session, Map<String, Serializable> values);
+    Map<String, Serializable> audit(AuditSession session, Map<String, Serializable> values);
 }

@@ -8,17 +8,14 @@
     xsi:schemaLocation="http://www.alfresco.org/repo/audit/model/3.2 alfresco-audit-3.2.xsd"
     >
 
-    <DataExtractors>
-       <DataExtractor name="simpleValue" registeredName="auditModel.extractor.simpleValue"/>
-    </DataExtractors>
+    <DataGenerators>
+       <DataGenerator name="systemTime" registeredName="blah"/>
+    </DataGenerators>
 
-    <Application name="Alfresco Test Bad 03" key="test-bad-03">
+    <Application name="Alfresco Test Bad 06" key="test-bad-06">
         <AuditPath key="1.1">
             <AuditPath key="2.1">
-                <RecordValue key="value.1" dataExtractor="simpleValue"/>
-            </AuditPath>
-            <AuditPath key="2.1">
-                <RecordValue key="value.1" dataExtractor="simpleValue"/>
+                <GenerateValue key="time" dataGenerator="systemTime" scope="SESSION"/>
             </AuditPath>
         </AuditPath>
     </Application>

@@ -24,13 +24,24 @@
  */
 package org.alfresco.repo.domain.propval;
 
+import java.io.Serializable;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.Map;
+
+import org.alfresco.repo.domain.propval.PropertyValueEntity.PersistedType;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.Period;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
+import org.alfresco.util.ParameterCheck;
 
 /**
  * Default converter for handling data going to and from the persistence layer.
  * <p/>
- * Apart from converting between <code>Boolean</code> and <code>Long</code> values,
- * the {@link DefaultTypeConverter} is used.
+ * Properties are stored as a set of well-defined types defined by the enumeration
+ * {@link PersistedType}.  Ultimately, data can be persisted as BLOB data, but must
+ * be the last resort.
  * 
  * @author Derek Hulley
  * @since 3.2
@@ -38,12 +49,64 @@ import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 public class DefaultPropertyTypeConverter implements PropertyTypeConverter
 {
     /**
+     * An unmodifiable map of types and how they should be persisted
+     */
+    protected static final Map<Class<?>, PersistedType> defaultPersistedTypesByClass;
+    
+    static
+    {
+        // Create the map of class-type
+        Map<Class<?>, PersistedType> mapClass = new HashMap<Class<?>, PersistedType>(29);
+        mapClass.put(NodeRef.class, PersistedType.STRING);
+        mapClass.put(Period.class, PersistedType.STRING);
+        mapClass.put(Locale.class, PersistedType.STRING);
+        defaultPersistedTypesByClass = Collections.unmodifiableMap(mapClass);
+    }
+    
+    private Map<Class<?>, PersistedType> persistenceMapping;
+    
+    /**
      * Default constructor
      */
     public DefaultPropertyTypeConverter()
     {
+        persistenceMapping = new HashMap<Class<?>, PersistedType>(
+                DefaultPropertyTypeConverter.defaultPersistedTypesByClass);
     }
     
+    /**
+     * Allow subclasses to add further type mappings specific to the implementation
+     * 
+     * @param clazz                 the class to be converted
+     * @param targetType            the target persisted type
+     */
+    protected void addTypeMapping(Class<?> clazz, PersistedType targetType)
+    {
+        this.persistenceMapping.put(clazz, targetType);
+    }
+    
+    /**
+     * {@inheritDoc}
+     */
+    public PersistedType getPersistentType(Serializable value)
+    {
+        ParameterCheck.mandatory("value", value);
+        
+        Class<?> clazz = value.getClass();
+        PersistedType type = persistenceMapping.get(clazz);
+        if (type == null)
+        {
+            return PersistedType.SERIALIZABLE;
+        }
+        else
+        {
+            return type;
+        }
+    }
+    
+    /**
+     * Performs the conversion
+     */
     public <T> T convert(Class<T> targetClass, Object value)
     {
         return DefaultTypeConverter.INSTANCE.convert(targetClass, value);

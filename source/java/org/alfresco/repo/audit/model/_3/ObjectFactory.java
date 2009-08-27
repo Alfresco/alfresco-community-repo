@@ -34,19 +34,11 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link Application }
+     * Create an instance of {@link KeyedAuditDefinition }
      * 
      */
-    public Application createApplication() {
-        return new Application();
-    }
-
-    /**
-     * Create an instance of {@link DataGenerators }
-     * 
-     */
-    public DataGenerators createDataGenerators() {
-        return new DataGenerators();
+    public KeyedAuditDefinition createKeyedAuditDefinition() {
+        return new KeyedAuditDefinition();
     }
 
     /**
@@ -58,43 +50,11 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link AuditPath }
-     * 
-     */
-    public AuditPath createAuditPath() {
-        return new AuditPath();
-    }
-
-    /**
-     * Create an instance of {@link RecordValue }
-     * 
-     */
-    public RecordValue createRecordValue() {
-        return new RecordValue();
-    }
-
-    /**
-     * Create an instance of {@link GenerateValue }
-     * 
-     */
-    public GenerateValue createGenerateValue() {
-        return new GenerateValue();
-    }
-
-    /**
      * Create an instance of {@link Audit }
      * 
      */
     public Audit createAudit() {
         return new Audit();
-    }
-
-    /**
-     * Create an instance of {@link KeyedAuditDefinition }
-     * 
-     */
-    public KeyedAuditDefinition createKeyedAuditDefinition() {
-        return new KeyedAuditDefinition();
     }
 
     /**
@@ -106,11 +66,51 @@ public class ObjectFactory {
     }
 
     /**
+     * Create an instance of {@link AuditPath }
+     * 
+     */
+    public AuditPath createAuditPath() {
+        return new AuditPath();
+    }
+
+    /**
      * Create an instance of {@link DataGenerator }
      * 
      */
     public DataGenerator createDataGenerator() {
         return new DataGenerator();
+    }
+
+    /**
+     * Create an instance of {@link DataGenerators }
+     * 
+     */
+    public DataGenerators createDataGenerators() {
+        return new DataGenerators();
+    }
+
+    /**
+     * Create an instance of {@link RecordValue }
+     * 
+     */
+    public RecordValue createRecordValue() {
+        return new RecordValue();
+    }
+
+    /**
+     * Create an instance of {@link Application }
+     * 
+     */
+    public Application createApplication() {
+        return new Application();
+    }
+
+    /**
+     * Create an instance of {@link GenerateValue }
+     * 
+     */
+    public GenerateValue createGenerateValue() {
+        return new GenerateValue();
     }
 
     /**

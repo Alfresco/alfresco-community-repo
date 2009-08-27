@@ -583,7 +583,7 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
 
     /**
      * {@inheritDoc}
-     * @see #getOrCreatePropertyValueImpl(Serializable, int, int)
+     * @see #getOrCreatePropertyValueImpl(Serializable, Long, int, int)
      */
     public Pair<Long, Serializable> getOrCreatePropertyValue(Serializable value, int maxDepth)
     {
@@ -599,6 +599,7 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
     {
         if (value != null && maxDepth > currentDepth && value instanceof Map<?, ?>)
         {
+            // TODO: Go through cache?
             // The default is to do a deep expansion
             Long mapId = createPropertyMapImpl(
                     (Map<? extends Serializable, ? extends Serializable>)value,
@@ -606,11 +607,13 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
                     maxDepth,
                     currentDepth);
             Pair<Long, Serializable> entityPair = new Pair<Long, Serializable>(mapId, value);
-            // TODO: Go through cache?
+            // Cache instance by ID only
+            propertyValueCache.updateValue(mapId, value);
             return entityPair;
         }
         else if (value != null && maxDepth > currentDepth && value instanceof Collection<?>)
         {
+            // TODO: Go through cache?
             // The default is to do a deep expansion
             Long collectionId = createPropertyCollectionImpl(
                     (Collection<? extends Serializable>)value,
@@ -618,7 +621,8 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
                     maxDepth,
                     currentDepth);
             Pair<Long, Serializable> entityPair = new Pair<Long, Serializable>(collectionId, value);
-            // TODO: Go through cache?
+            // Cache instance by ID only
+            propertyValueCache.updateValue(collectionId, value);
             return entityPair;
         }
         else
@@ -721,6 +725,16 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
             }
             PropertyValueEntity entity = findPropertyValueByValue(value);
             return convertEntityToPair(entity);
+        }
+
+        /**
+         * No-op.  This is implemented as we just want to update the cache.
+         * @return              Returns 0 always
+         */
+        @Override
+        public int updateValue(Long key, Serializable value)
+        {
+            return 0;
         }
     }
     

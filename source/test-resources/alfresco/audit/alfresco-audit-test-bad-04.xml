@@ -8,10 +8,14 @@
     xsi:schemaLocation="http://www.alfresco.org/repo/audit/model/3.2 alfresco-audit-3.2.xsd"
     >
 
+    <DataExtractors>
+       <DataExtractor name="simpleValue" registeredName="auditModel.extractor.simpleValue"/>
+    </DataExtractors>
+
     <Application name="Alfresco Test Bad 04" key="test-bad-04">
         <AuditPath key="1.1">
             <AuditPath key="2.1">
-                <RecordValue key="value.UPPER" dataExtractor="simpleValue"/>
+                <RecordValue key="value.£" dataExtractor="simpleValue"/>
             </AuditPath>
         </AuditPath>
     </Application>

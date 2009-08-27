@@ -24,6 +24,10 @@
  */
 package org.alfresco.repo.domain.propval;
 
+import java.io.Serializable;
+
+import org.alfresco.repo.domain.propval.PropertyValueEntity.PersistedType;
+
 /**
  * Interface for converters that to translate between persisted values and external values.
  * <p/>
@@ -35,6 +39,25 @@ package org.alfresco.repo.domain.propval;
  */
 public interface PropertyTypeConverter
 {
+    /**
+     * When external to persisted type mappings are not obvious, the persistence framework,
+     * before persisting as {@link PersistedType#SERIALIZABLE}, will give the converter
+     * a chance to choose how the value must be persisted:
+     * <ul>
+     *   <li>{@link PersistedType#LONG}</li>
+     *   <li>{@link PersistedType#DOUBLE}</li>
+     *   <li>{@link PersistedType#STRING}</li>
+     *   <li>{@link PersistedType#SERIALIZABLE}</li>
+     * </ul>
+     * The converter should return {@link PersistedType#SERIALIZABLE} if no further conversions
+     * are possible.  Implicit in the return value is the converter's ability to do the
+     * conversion when required.
+     * 
+     * @param value             the value that does not have an obvious persistence slot
+     * @return                  Returns the type of persistence to use
+     */
+    PersistedType getPersistentType(Serializable value);
+
     /**
      * Convert a value to a given type.
      * 

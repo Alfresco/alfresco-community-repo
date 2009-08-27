@@ -33,7 +33,7 @@ CREATE TABLE alf_audit_entry
    audit_session_id BIGINT NOT NULL,
    audit_time BIGINT NOT NULL,
    audit_user_id BIGINT NULL,
-   audit_values_id BIGINT NOT NULL,
+   audit_values_id BIGINT NULL,
    CONSTRAINT fk_alf_audit_ent_sess FOREIGN KEY (audit_session_id) REFERENCES alf_audit_session (id),
    INDEX idx_alf_audit_ent_time (audit_time),
    CONSTRAINT fk_alf_audit_ent_user FOREIGN KEY (audit_user_id) REFERENCES alf_prop_value (id),

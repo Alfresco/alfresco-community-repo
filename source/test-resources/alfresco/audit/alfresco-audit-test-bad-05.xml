@@ -8,6 +8,10 @@
     xsi:schemaLocation="http://www.alfresco.org/repo/audit/model/3.2 alfresco-audit-3.2.xsd"
     >
 
+    <DataGenerators>
+       <DataGenerator name="systemTime" registeredName="auditModel.generator.time"/>
+    </DataGenerators>
+
     <Application name="Alfresco Test Bad 05" key="test-bad-05">
         <AuditPath key="1.1">
             <AuditPath key="2.1">

@@ -36,6 +36,8 @@ import org.alfresco.repo.audit.model.AuditApplication;
 import org.alfresco.repo.audit.model.AuditModelException;
 import org.alfresco.repo.audit.model.AuditModelRegistry;
 import org.alfresco.util.ApplicationContextHelper;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.util.ResourceUtils;
 
@@ -52,6 +54,7 @@ public class AuditBootstrapTest extends TestCase
     private static final String APPLICATION_TEST = "Alfresco Test";
     
     private static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
+    private static final Log logger = LogFactory.getLog(AuditBootstrapTest.class);
     
     private AuditModelRegistry auditModelRegistry;
     
@@ -83,6 +86,7 @@ public class AuditBootstrapTest extends TestCase
         catch (AuditModelException e)
         {
             // Expected
+            logger.error("Expected AuditModelException: " + e.getMessage());
         }
     }
     
@@ -109,6 +113,11 @@ public class AuditBootstrapTest extends TestCase
     public void testModelLoading_InvalidScope() throws Exception
     {
         loadBadModel("classpath:alfresco/audit/alfresco-audit-test-bad-05.xml");
+    }
+    
+    public void testModelLoading_BadGeneratorRegisteredName() throws Exception
+    {
+        loadBadModel("classpath:alfresco/audit/alfresco-audit-test-bad-06.xml");
     }
     
     public void testGetModelId()

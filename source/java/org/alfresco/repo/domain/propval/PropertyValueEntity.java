@@ -326,7 +326,8 @@ public class PropertyValueEntity
             persistedTypeEnum = persistedTypesByClass.get(valueClazz);
             if (persistedTypeEnum == null)
             {
-                persistedTypeEnum = PersistedType.SERIALIZABLE;
+                // Give the converter a chance to change the type it must be persisted as
+                persistedTypeEnum = converter.getPersistentType(value);
             }
             persistedType = persistedTypeEnum.getOrdinalNumber();
             // Get the class to persist as
@@ -345,7 +346,11 @@ public class PropertyValueEntity
                     serializableValue = value;
                     break;
                 default:
-                    throw new IllegalStateException("Should not be able to get through switch");
+                    throw new IllegalStateException(
+                            "PropertyTypeConverter.convertToPersistentType returned illegal type: " +
+                            "   Converter:      " + converter + "\n" +
+                            "   Type Returned:  " + persistedTypeEnum + "\n" +
+                            "   From Value:     " + value);
             }
         }
     }

@@ -53,6 +53,8 @@ import org.apache.commons.logging.LogFactory;
 public class AuditApplication
 {
     public static final String AUDIT_PATH_SEPARATOR = "/";
+    public static final String AUDIT_KEY_REGEX = "[a-zA-Z0-9\\-\\.]+";
+    public static final String AUDIT_PATH_REGEX = "(/[a-zA-Z0-9\\-\\.]+)+";
     
     private static final Log logger = LogFactory.getLog(AuditApplication.class);
 
@@ -145,37 +147,27 @@ public class AuditApplication
      * Helper method to check that a path is correct for this application instance
      * 
      * @param path              the path in format <b>/app-key/x/y/z</b>
-     * @throws AuditModelException      if the path is invalid 
+     * @throws AuditModelException      if the path is invalid
+     * 
+     * @see #AUDIT_PATH_REGEX
      */
     public void checkPath(String path)
     {
         if (path == null || path.length() == 0)
         {
-            generateException(path, "Invalid audit path.");
+            generateException(path, "Empty or null audit path");
         }
-        if (!path.startsWith(AUDIT_PATH_SEPARATOR))
+        else if (!path.matches(AUDIT_PATH_REGEX))
         {
             generateException(
                     path,
-                    "An audit path must always start with the separator '" + AUDIT_PATH_SEPARATOR + "'.");
+                    "An audit must match regular expression: " + AUDIT_PATH_REGEX);
         }
-        if (path.indexOf(applicationKey, 0) != 1)
+        else if (path.indexOf(applicationKey, 0) != 1)
         {
             generateException(
                     path,
                     "An audit path's first element must be the application's key i.e. '" + applicationKey + "'.");
-        }
-        if (path.endsWith(AUDIT_PATH_SEPARATOR))
-        {
-            generateException(
-                    path,
-                    "An audit path may not end with the separator '" + AUDIT_PATH_SEPARATOR + "'.");
-        }
-        if (!path.toLowerCase().equals(path))
-        {
-            generateException(
-                    path,
-                    "An audit path may only contain lowercase letters, '-' and '.' i.e. regex ([a-z]|[0-9]|\\-|\\.)*");
         }
     }
     
@@ -183,19 +175,45 @@ public class AuditApplication
      * Compile a path or part of a path into a single string which always starts with the
      * {@link #AUDIT_PATH_SEPARATOR}.  This can be a relative path so need not always start with
      * the application root key.
+     * <p>
+     * If the path separator is present at the beginning of a path component, then it is not added,
+     * so <code>"/a", "b", "/c"</code> becomes <code>"/a/b/c"</code> allowing path to be appended
+     * to other paths.
+     * <p>
+     * The final result is checked against a {@link #AUDIT_PATH_REGEX regular expression} to ensure
+     * it is valid.
      * 
      * @param pathElements      the elements of the path e.g. <code>"a", "b", "c"</code>.
      * @return                  Returns the compiled path e.g <code>"/a/b/c"</code>.
      */
-    public String buildPath(String ... pathComponents)
+    public static String buildPath(String ... pathComponents)
     {
         StringBuilder sb = new StringBuilder(pathComponents.length * 10);
         for (String pathComponent : pathComponents)
         {
-            sb.append(AUDIT_PATH_SEPARATOR).append(pathComponent);
+            if (!pathComponent.startsWith(AUDIT_PATH_SEPARATOR))
+            {
+                sb.append(AUDIT_PATH_SEPARATOR);
+            }
+            sb.append(pathComponent);
+        }
+        String path = sb.toString();
+        // Check the path format
+        if (!path.matches(AUDIT_PATH_REGEX))
+        {
+            StringBuffer msg = new StringBuffer();
+            msg.append("The audit path is invalid and must be matched by regular expression: ").append(AUDIT_PATH_REGEX).append("\n")
+               .append("   Path elements: ");
+            for (String pathComponent : pathComponents)
+            {
+                msg.append(pathComponent).append(", ");
+            }
+            msg.append("\n")
+               .append("   Result:        ").append(path);
+            throw new AuditModelException(msg.toString());
         }
         // Done
-        return sb.toString();
+        return path;
     }
     
     /**
@@ -292,7 +310,7 @@ public class AuditApplication
     {
         buildAuditPaths(
                 auditPath,
-                "",
+                null,
                 new HashSet<String>(37),
                 new HashMap<String, DataExtractor>(13),
                 new HashMap<String, DataGenerator>(13));
@@ -312,26 +330,29 @@ public class AuditApplication
         upperGeneratorsByPath = new HashMap<String, DataGenerator>(upperGeneratorsByPath);
         
         // Append the current audit path to the current path
-        currentPath = (currentPath + AUDIT_PATH_SEPARATOR + auditPath.getKey());
+        if (currentPath == null)
+        {
+            currentPath = AuditApplication.buildPath(auditPath.getKey());
+        }
+        else
+        {
+            currentPath = AuditApplication.buildPath(currentPath, auditPath.getKey());
+        }
         // Make sure we have not processed it before
         if (!existingPaths.add(currentPath))
         {
             generateException(currentPath, "The audit path already exists.");
         }
-        // Make sure that the path is all lowercase
-        checkPathCase(currentPath);
         
         // Get the data extractors declared for this key
         for (RecordValue element : auditPath.getRecordValue())
         {
             String key = element.getKey();
-            String extractorPath = (currentPath + AUDIT_PATH_SEPARATOR + key);
+            String extractorPath = AuditApplication.buildPath(currentPath, key);
             if (!existingPaths.add(extractorPath))
             {
                 generateException(extractorPath, "The audit path already exists.");
             }
-            // Make sure that the path is all lowercase
-            checkPathCase(extractorPath);
             
             String extractorName = element.getDataExtractor();
             DataExtractor extractor = dataExtractorsByName.get(extractorName);
@@ -354,13 +375,11 @@ public class AuditApplication
         for (GenerateValue element : auditPath.getGenerateValue())
         {
             String key = element.getKey();
-            String generatorPath = (currentPath + AUDIT_PATH_SEPARATOR + key);
+            String generatorPath = AuditApplication.buildPath(currentPath, key);
             if (!existingPaths.add(generatorPath))
             {
                 generateException(generatorPath, "The audit path already exists.");
             }
-            // Make sure that the path is all lowercase
-            checkPathCase(generatorPath);
             
             String generatorName = element.getDataGenerator();
             DataGenerator generator = dataGeneratorsByName.get(generatorName);
@@ -398,14 +417,6 @@ public class AuditApplication
         for (AuditPath element : auditPath.getAuditPath())
         {
             buildAuditPaths(element, currentPath, existingPaths, upperExtractorsByPath, upperGeneratorsByPath);
-        }
-    }
-    
-    private void checkPathCase(String path)
-    {
-        if (!path.equals(path.toLowerCase()))
-        {
-            generateException(path, "Audit key entries may only be in lowercase to ensure case-insensitivity.");
         }
     }
     

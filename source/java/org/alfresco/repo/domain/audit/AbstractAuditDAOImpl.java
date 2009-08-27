@@ -235,7 +235,11 @@ public abstract class AbstractAuditDAOImpl implements AuditDAO
             usernameId = null;
         }
         // Now persist the data values
-        final Long valuesId = propertyValueDAO.getOrCreatePropertyValue((Serializable)values).getFirst();
+        Long valuesId = null;
+        if (values != null && values.size() > 0)
+        {
+            valuesId = propertyValueDAO.getOrCreatePropertyValue((Serializable)values).getFirst();
+        }
 
         // Create the audit entry
         AuditEntryEntity entity = createAuditEntry(sessionId, time, usernameId, valuesId);

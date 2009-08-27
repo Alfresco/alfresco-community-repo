@@ -837,7 +837,7 @@ public class AuditComponentImpl implements AuditComponent
      * {@inheritDoc}
      * @since 3.2
      */
-    public void audit(AuditSession session, Map<String, Serializable> values)
+    public Map<String, Serializable> audit(AuditSession session, Map<String, Serializable> values)
     {
         ParameterCheck.mandatory("session", session);
         ParameterCheck.mandatory("values", values);
@@ -847,27 +847,40 @@ public class AuditComponentImpl implements AuditComponent
             throw new IllegalStateException("Auditing requires a read-write transaction.");
         }
         
-        // Audit nothing if there are no values (otherwise we're just creating maps for nothing)
-        if (values.size() == 0)
+        AuditApplication app = session.getApplication();
+        String rootPath = session.getRootPath();
+        Long sessionId = session.getSessionId();
+
+        // Build the key paths using the session root path
+        Map<String, Serializable> pathedValues = new HashMap<String, Serializable>(values.size() * 2);
+        for (Map.Entry<String, Serializable> entry : values.entrySet())
         {
-            if (logger.isDebugEnabled())
-            {
-                logger.debug("Nothing audited because there are no audit values.");
-            }
-            return;
+            String pathElement = entry.getKey();
+            String path = AuditApplication.buildPath(rootPath, pathElement);
+            pathedValues.put(path, entry.getValue());
         }
         
-        Long sessionId = session.getSessionId();
+        // Now extract values
+        Map<String, Serializable> extractedValues = extractData(app, pathedValues);
+
+        // Time and username are intrinsic
         long time = System.currentTimeMillis();
         String username = AuthenticationUtil.getFullyAuthenticatedUser();
         
-        Long entryId = auditDAO.createAuditEntry(sessionId, time, username, values);
+        // Persist the values
+        Long entryId = auditDAO.createAuditEntry(sessionId, time, username, pathedValues);
         
         // Done
         if (logger.isDebugEnabled())
         {
-            logger.debug("New audit entry: " + entryId);
+            logger.debug(
+                    "New audit entry: \n" +
+                    "   Session ID:        " + sessionId + "\n" +
+                    "   Entry ID:          " + entryId + "\n" +
+                    "   Path Values:       " + pathedValues + "\n" +
+                    "   Extracted Values:  " + extractedValues);
         }
+        return extractedValues;
     }
     
     /**

@@ -2373,40 +2373,47 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface
                             		
                             		NodeRef webNodeRef = new NodeRef( prop.getStringValue());
                             		
-                            		// Create the web project pseudo folder
-                            		
-                            		WebProjectStorePseudoFile webProjFolder = new WebProjectStorePseudoFile( storeDesc, FileName.DOS_SEPERATOR_STR + storeName, webNodeRef);
-                            		fstate.addPseudoFile( webProjFolder);
-
-                            		// DEBUG
-                            		
-                            		if ( logger.isDebugEnabled())
-                            			logger.debug( "Found web project " + webProjFolder.getFileName());
-                            		
-                            		// Get the list of content managers for this web project
-
-                            		List<ChildAssociationRef> mgrAssocs = m_nodeService.getChildAssocs( webNodeRef, WCMAppModel.ASSOC_WEBUSER, RegexQNamePattern.MATCH_ALL);
-                            		
-                            		for ( ChildAssociationRef mgrRef : mgrAssocs)
+                            		if (m_nodeService.exists(webNodeRef))
                             		{
-                            			// Get the child node and see if it is a content manager association
-                            			
-                            			NodeRef childRef = mgrRef.getChildRef();
-                            			
-                            			if ( m_nodeService.getProperty( childRef, WCMAppModel.PROP_WEBUSERROLE).equals(ROLE_CONTENT_MANAGER))
-                            			{
-                            				// Get the user name add it to the web project pseudo folder
-                            				
-                            				String userName = (String) m_nodeService.getProperty( childRef, WCMAppModel.PROP_WEBUSERNAME);
-                            				
-                            				webProjFolder.addUserRole( userName, WebProjectStorePseudoFile.RoleContentManager);
-                            				
-                            				// DEBUG
-                            				
-                            				if ( logger.isDebugEnabled())
-                            					logger.debug("  Added content manager " + userName);
-                            			}
-                            		}
+                                		// Create the web project pseudo folder
+                                		
+                                		WebProjectStorePseudoFile webProjFolder = new WebProjectStorePseudoFile( storeDesc, FileName.DOS_SEPERATOR_STR + storeName, webNodeRef);
+                                		fstate.addPseudoFile( webProjFolder);
+    
+                                		// DEBUG
+                                		
+                                		if ( logger.isDebugEnabled())
+                                			logger.debug( "Found web project " + webProjFolder.getFileName());
+                                		
+                                		// Get the list of content managers for this web project
+    
+                                		List<ChildAssociationRef> mgrAssocs = m_nodeService.getChildAssocs( webNodeRef, WCMAppModel.ASSOC_WEBUSER, RegexQNamePattern.MATCH_ALL);
+                                		
+                                		for ( ChildAssociationRef mgrRef : mgrAssocs)
+                                		{
+                                			// Get the child node and see if it is a content manager association
+                                			
+                                			NodeRef childRef = mgrRef.getChildRef();
+                                			
+                                			if ( m_nodeService.getProperty( childRef, WCMAppModel.PROP_WEBUSERROLE).equals(ROLE_CONTENT_MANAGER))
+                                			{
+                                				// Get the user name add it to the web project pseudo folder
+                                				
+                                				String userName = (String) m_nodeService.getProperty( childRef, WCMAppModel.PROP_WEBUSERNAME);
+                                				
+                                				webProjFolder.addUserRole( userName, WebProjectStorePseudoFile.RoleContentManager);
+                                				
+                                				// DEBUG
+                                				
+                                				if ( logger.isDebugEnabled())
+                                					logger.debug("  Added content manager " + userName);
+                                			}
+                                		}
+                                    }
+                                    else
+                                    {
+                                        logger.warn("AVM Store '"+storeName+"' with webProjectNodeRef that does not exist: "+webNodeRef);
+                                    }
                             	}
                             }
                             else
@@ -2519,21 +2526,28 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface
                     				
                     				WebProjectStorePseudoFile webProj = (WebProjectStorePseudoFile) folderList.findFile( curFile.getWebProject(), true);
                     				
-                    				// Strip the web project name from the sandbox store name and extract the user name.
-                    				// Add the user as a publisher/reviewer to the web project roles list
-                    				
-                    				String userName = curFile.getFileName().substring( webProj.getFileName().length() + 2);
-                    				
-                    				// If the user does not have a content manager role then add as a publisher
-                    				
-                    				if ( webProj.getUserRole( userName) == WebProjectStorePseudoFile.RoleNone)
+                    				if (webProj == null)
                     				{
-                    					webProj.addUserRole( userName, WebProjectStorePseudoFile.RolePublisher);
-                    				
-	                    				// DEBUG
-	                    				
-	                    				if ( logger.isDebugEnabled())
-	                    					logger.debug( "Added publisher " + userName + " to " + webProj.getFileName());
+                    				    logger.warn("Missing web project for: "+curFile.getFileName()+" ("+curFile.getWebProject()+")");
+                    				}
+                    				else
+                    				{
+                        				// Strip the web project name from the sandbox store name and extract the user name.
+                        				// Add the user as a publisher/reviewer to the web project roles list
+                        				
+                        				String userName = curFile.getFileName().substring( webProj.getFileName().length() + 2);
+                        				
+                        				// If the user does not have a content manager role then add as a publisher
+                        				
+                        				if ( webProj.getUserRole( userName) == WebProjectStorePseudoFile.RoleNone)
+                        				{
+                        					webProj.addUserRole( userName, WebProjectStorePseudoFile.RolePublisher);
+                        				
+    	                    				// DEBUG
+    	                    				
+    	                    				if ( logger.isDebugEnabled())
+    	                    					logger.debug( "Added publisher " + userName + " to " + webProj.getFileName());
+                        				}
                     				}
                     			}
                     		}
@@ -3071,39 +3085,46 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface
         		
         		NodeRef webNodeRef = new NodeRef( prop.getStringValue());
         		
-        		// Create the web project pseudo folder
-        		
-        		WebProjectStorePseudoFile webProjFolder = new WebProjectStorePseudoFile( storeDesc, FileName.DOS_SEPERATOR_STR + storeName, webNodeRef);
-        		fstate.addPseudoFile( webProjFolder);
-
-        		// DEBUG
-        		
-        		if ( logger.isDebugEnabled())
-        			logger.debug( " Found web project " + webProjFolder.getFileName());
-        		
-        		// Get the list of content managers for this web project
-
-        		List<ChildAssociationRef> mgrAssocs = m_nodeService.getChildAssocs( webNodeRef, WCMAppModel.ASSOC_WEBUSER, RegexQNamePattern.MATCH_ALL);
-        		
-        		for ( ChildAssociationRef mgrRef : mgrAssocs)
+        		if (m_nodeService.exists(webNodeRef))
+                {
+            		// Create the web project pseudo folder
+            		
+            		WebProjectStorePseudoFile webProjFolder = new WebProjectStorePseudoFile( storeDesc, FileName.DOS_SEPERATOR_STR + storeName, webNodeRef);
+            		fstate.addPseudoFile( webProjFolder);
+    
+            		// DEBUG
+            		
+            		if ( logger.isDebugEnabled())
+            			logger.debug( " Found web project " + webProjFolder.getFileName());
+            		
+            		// Get the list of content managers for this web project
+    
+            		List<ChildAssociationRef> mgrAssocs = m_nodeService.getChildAssocs( webNodeRef, WCMAppModel.ASSOC_WEBUSER, RegexQNamePattern.MATCH_ALL);
+            		
+            		for ( ChildAssociationRef mgrRef : mgrAssocs)
+            		{
+            			// Get the child node and see if it is a content manager association
+            			
+            			NodeRef childRef = mgrRef.getChildRef();
+            			
+            			if ( m_nodeService.getProperty( childRef, WCMAppModel.PROP_WEBUSERROLE).equals(ROLE_CONTENT_MANAGER))
+            			{
+            				// Get the user name add it to the web project pseudo folder
+            				
+            				String userName = (String) m_nodeService.getProperty( childRef, WCMAppModel.PROP_WEBUSERNAME);
+            				
+            				webProjFolder.addUserRole( userName, WebProjectStorePseudoFile.RoleContentManager);
+            				
+            				// DEBUG
+            				
+            				if ( logger.isDebugEnabled())
+            					logger.debug("  Added content manager " + userName);
+            			}
+            		}
+        	    }
+        		else
         		{
-        			// Get the child node and see if it is a content manager association
-        			
-        			NodeRef childRef = mgrRef.getChildRef();
-        			
-        			if ( m_nodeService.getProperty( childRef, WCMAppModel.PROP_WEBUSERROLE).equals(ROLE_CONTENT_MANAGER))
-        			{
-        				// Get the user name add it to the web project pseudo folder
-        				
-        				String userName = (String) m_nodeService.getProperty( childRef, WCMAppModel.PROP_WEBUSERNAME);
-        				
-        				webProjFolder.addUserRole( userName, WebProjectStorePseudoFile.RoleContentManager);
-        				
-        				// DEBUG
-        				
-        				if ( logger.isDebugEnabled())
-        					logger.debug("  Added content manager " + userName);
-        			}
+        		    logger.warn("AVM Store '"+storeName+"' with webProjectNodeRef that does not exist: "+webNodeRef);
         		}
         	}
         }

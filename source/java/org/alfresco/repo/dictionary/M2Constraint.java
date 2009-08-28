@@ -65,6 +65,11 @@ public class M2Constraint
     {
         return ref;
     }
+    
+    public void setRef(String refName)
+    {
+        this.ref = refName;
+    }
 
     public String getType()
     {

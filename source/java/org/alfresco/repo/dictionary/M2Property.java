@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -24,6 +24,7 @@
  */
 package org.alfresco.repo.dictionary;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -50,7 +51,7 @@ public class M2Property
     private boolean isIndexedAtomically = true;
     private boolean isStoredInIndex = false;
     private IndexTokenisationMode indexTokenisationMode = IndexTokenisationMode.TRUE;
-    private List<M2Constraint> constraints;
+    private List<M2Constraint> constraints = new ArrayList<M2Constraint>();
 
     /*package*/ M2Property()
     {
@@ -233,6 +234,32 @@ public class M2Property
         else
         {
             return constraints;
+        }
+    }
+    
+    public boolean hasConstraints()
+    {
+        return ((this.constraints != null) && (constraints.size() > 0));
+    }
+    
+    public M2Constraint addConstraintRef(String refName)
+    {
+        M2Constraint constraint = new M2Constraint();
+        constraint.setRef(refName);
+        constraints.add(constraint);
+        return constraint;
+    }
+    
+    
+    public void removeConstraintRef(String refName)
+    {
+        List<M2Constraint> cons = new ArrayList<M2Constraint>(getConstraints());
+        for (M2Constraint con : cons)
+        {
+            if (con.getRef().equals(refName))
+            {
+                constraints.remove(con);
+            }
         }
     }
 }

@@ -22,6 +22,8 @@
                 <value>classpath:alfresco/repository.properties</value>
                 <value>classpath:alfresco/domain/transaction.properties</value>
                 <!-- <value>classpath:alfresco/jndi.properties</value> -->
+                <!--  Overrides supplied by modules -->
+                <value>classpath*:alfresco/module/*/alfresco-global.properties</value>
                 <!--  Installer or user-provided defaults -->
                 <value>classpath*:alfresco-global.properties</value>
             </list>

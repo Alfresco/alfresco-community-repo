@@ -143,6 +143,8 @@
       <!-- aspect to tag temporary nodes -->
       <aspect name="sys:temporary">
          <title>Temporary</title>
+         <!-- Explicitly turn off archiving for all nodes with this aspect -->
+         <archive>false</archive>
       </aspect>
       
       <!-- details stored on archived nodes -->

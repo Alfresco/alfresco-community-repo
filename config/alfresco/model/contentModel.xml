@@ -792,6 +792,8 @@
       
       <aspect name="cm:workingcopy">
          <title>Working Copy</title>
+         <!-- Explicitly turn off archiving for all nodes with this aspect -->
+         <archive>false</archive>
          <properties>
             <property name="cm:workingCopyOwner">
                <type>d:text</type>

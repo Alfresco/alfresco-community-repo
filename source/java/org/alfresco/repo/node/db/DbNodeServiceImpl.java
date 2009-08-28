@@ -93,8 +93,6 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
     private static Log loggerPaths = LogFactory.getLog(DbNodeServiceImpl.class.getName() + ".paths");
     
     private NodeDaoService nodeDaoService;
-    /** A set of aspects, the presence of which indicate that nodes must not be archived */
-    private Set<QName> ignoreArchiveAspects;
     private StoreArchiveMap storeArchiveMap;
     private NodeService avmNodeService;
     private NodeIndexer nodeIndexer;
@@ -745,24 +743,35 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         Set<QName> nodeAspectQNames = nodeDaoService.getNodeAspects(nodeId);
 
         // check if we need to archive the node
-        StoreRef archiveStoreRef = null;
-        if (nodeAspectQNames.contains(ContentModel.ASPECT_TEMPORARY) ||
-                nodeAspectQNames.contains(ContentModel.ASPECT_WORKING_COPY))
+        StoreRef storeRef = nodeRef.getStoreRef();
+        StoreRef archiveStoreRef = storeArchiveMap.get(storeRef);
+
+        if (archiveStoreRef == null)
         {
-           // The node is either temporary or a working copy.
-           // It can not be archived.
-           requiresDelete = true;
+            requiresDelete = true;
         }
         else
         {
-           StoreRef storeRef = nodeRef.getStoreRef();
-           archiveStoreRef = storeArchiveMap.get(storeRef);
-           // get the type and check if we need archiving
-           TypeDefinition typeDef = dictionaryService.getType(nodeTypeQName);
-           if (typeDef == null || !typeDef.isArchive() || archiveStoreRef == null)
-           {
-              requiresDelete = true;
-           }
+            // get the type and check if we need archiving.
+            TypeDefinition typeDef = dictionaryService.getType(nodeTypeQName);
+            if (typeDef == null || !typeDef.isArchive())
+            {
+                requiresDelete = true;
+            }
+            else
+            {
+                // If the type wants archiving, check whether any applied aspects have explicitly turned off the
+                // archive flag
+                for (QName nodeAspectQName : nodeAspectQNames)
+                {
+                    typeDef = dictionaryService.getType(nodeAspectQName);
+                    if (typeDef != null && !typeDef.isArchive())
+                    {
+                        requiresDelete = true;
+                        break;
+                    }
+                }
+            }
         }
            
         if (requiresDelete)

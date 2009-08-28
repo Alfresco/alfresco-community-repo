@@ -312,7 +312,7 @@ import org.alfresco.service.namespace.QName;
         if (parentClass != null && archive == null)
         {
             // archive not explicitly set on this class and there is a parent class
-            inheritedArchive = ((M2ClassDefinition)parentClass).isArchive();
+            inheritedArchive = ((M2ClassDefinition)parentClass).getArchive();
         }
     }
     
@@ -375,23 +375,17 @@ import org.alfresco.service.namespace.QName;
     }
     
     /**
-     * @return Returns the archive flag, which defaults to <tt>false</tt>
+     * @return Returns the archive flag, which defaults to <tt>true</tt> for aspects and <tt>false</tt> for other classes
      */
     public boolean isArchive()
     {
-        if (archive == null)
-        {
-            if (inheritedArchive != null)
-            {
-                return inheritedArchive.booleanValue();
-            }
-            else
-            {
-                // default to false
-                return false;
-            }
-        }
-        return archive;
+        Boolean isArchive = getArchive();
+        return isArchive == null ? isAspect() : isArchive.booleanValue(); 
+    }
+
+    protected Boolean getArchive()
+    {
+        return archive == null ? inheritedArchive : archive;
     }
 
     /* (non-Javadoc)

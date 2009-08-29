@@ -169,6 +169,26 @@ public class EntityLookupCache<K extends Serializable, V extends Object, VK exte
             implements EntityLookupCallbackDAO<K2, V2, VK2>
     {
         /**
+         * This implementation never finds a value and is backed by {@link #getValueKey(Object)} returning nothing.
+         * 
+         * @return          Returns <tt>null</tt> always
+         */
+        public Pair<K2, V2> findByValue(V2 value)
+        {
+            return null;
+        }
+
+        /**
+         * This implementation does not find by value and is backed by {@link #findByValue(Object)} returning nothing.
+         * 
+         * @return          Returns <tt>null</tt> always
+         */
+        public VK2 getValueKey(V2 value)
+        {
+            return null;
+        }
+
+        /**
          * Disallows the operation.
          * 
          * @throws UnsupportedOperationException        always

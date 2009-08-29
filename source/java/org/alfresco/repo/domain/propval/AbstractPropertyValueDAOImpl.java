@@ -60,6 +60,7 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
     private static final String CACHE_REGION_PROPERTY_DATE_VALUE = "PropertyDateValue";
     private static final String CACHE_REGION_PROPERTY_STRING_VALUE = "PropertyStringValue";
     private static final String CACHE_REGION_PROPERTY_DOUBLE_VALUE = "PropertyDoubleValue";
+    private static final String CACHE_REGION_PROPERTY_SERIALIZABLE_VALUE = "PropertySerializableValue";
     private static final String CACHE_REGION_PROPERTY_VALUE = "PropertyValue";
     
     private static final Log logger = LogFactory.getLog(AbstractPropertyValueDAOImpl.class);
@@ -70,6 +71,7 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
     private final PropertyDateValueCallbackDAO propertyDateValueCallback;
     private final PropertyStringValueCallbackDAO propertyStringValueCallback;
     private final PropertyDoubleValueCallbackDAO propertyDoubleValueCallback;
+    private final PropertySerializableValueCallbackDAO propertySerializableValueCallback;
     private final PropertyValueCallbackDAO propertyValueCallback;
     /**
      * Cache for the property class:<br/>
@@ -100,6 +102,13 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
      */
     private EntityLookupCache<Long, Double, Double> propertyDoubleValueCache;
     /**
+     * Cache for the property Serializable value:<br/>
+     * KEY: ID<br/>
+     * VALUE: The Serializable instance<br/>
+     * VALUE KEY: none<br/>.  The cache is not used for value-based lookups.
+     */
+    private EntityLookupCache<Long, Serializable, Serializable> propertySerializableValueCache;
+    /**
      * Cache for the property value:<br/>
      * KEY: ID<br/>
      * VALUE: The Serializable instance<br/>
@@ -119,12 +128,14 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
         this.propertyDateValueCallback = new PropertyDateValueCallbackDAO();
         this.propertyStringValueCallback = new PropertyStringValueCallbackDAO();
         this.propertyDoubleValueCallback = new PropertyDoubleValueCallbackDAO();
+        this.propertySerializableValueCallback = new PropertySerializableValueCallbackDAO();
         this.propertyValueCallback = new PropertyValueCallbackDAO();
         
         this.propertyClassCache = new EntityLookupCache<Long, Class<?>, String>(propertyClassDaoCallback);
         this.propertyDateValueCache = new EntityLookupCache<Long, Date, Date>(propertyDateValueCallback);
         this.propertyStringValueCache = new EntityLookupCache<Long, String, Pair<String, Long>>(propertyStringValueCallback);
         this.propertyDoubleValueCache = new EntityLookupCache<Long, Double, Double>(propertyDoubleValueCallback);
+        this.propertySerializableValueCache = new EntityLookupCache<Long, Serializable, Serializable>(propertySerializableValueCallback);
         this.propertyValueCache = new EntityLookupCache<Long, Serializable, Serializable>(propertyValueCallback);
     }
 
@@ -186,6 +197,19 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
                 propertyDoubleValueCache,
                 CACHE_REGION_PROPERTY_DOUBLE_VALUE,
                 propertyDoubleValueCallback);
+    }
+    
+    /**
+     * Set the cache to use for <b>alf_prop_serializable_value</b> lookups (optional).
+     * 
+     * @param propertySerializableValueCache     the cache of IDs to property values
+     */
+    public void setPropertySerializableValueCache(SimpleCache<Serializable, Object> propertySerializableValueCache)
+    {
+        this.propertySerializableValueCache = new EntityLookupCache<Long, Serializable, Serializable>(
+                propertySerializableValueCache,
+                CACHE_REGION_PROPERTY_SERIALIZABLE_VALUE,
+                propertySerializableValueCallback);
     }
     
     /**
@@ -547,6 +571,67 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
     protected abstract PropertyDoubleValueEntity findDoubleValueById(Long id);
     protected abstract PropertyDoubleValueEntity findDoubleValueByValue(Double value);
     protected abstract PropertyDoubleValueEntity createDoubleValue(Double value);
+
+    //================================
+    // 'alf_prop_serializable_value' accessors
+    //================================
+
+    public Pair<Long, Serializable> getPropertySerializableValueById(Long id)
+    {
+        if (id == null)
+        {
+            throw new IllegalArgumentException("Cannot look up entity by null ID.");
+        }
+        Pair<Long, Serializable> entityPair = propertySerializableValueCache.getByKey(id);
+        if (entityPair == null)
+        {
+            throw new AlfrescoRuntimeException("No property serializable value exists for ID " + id);
+        }
+        return entityPair;
+    }
+
+    public Pair<Long, Serializable> createPropertySerializableValue(Serializable value)
+    {
+        if (value == null)
+        {
+            throw new IllegalArgumentException("Persisted serializable values cannot be null");
+        }
+        Pair<Long, Serializable> entityPair = propertySerializableValueCache.getOrCreateByValue(value);
+        return (Pair<Long, Serializable>) entityPair;
+    }
+
+    /**
+     * Callback for <b>alf_prop_serializable_value</b> DAO.
+     */
+    private class PropertySerializableValueCallbackDAO extends EntityLookupCallbackDAOAdaptor<Long, Serializable, Serializable>
+    {
+        private final Pair<Long, Serializable> convertEntityToPair(PropertySerializableValueEntity entity)
+        {
+            if (entity == null)
+            {
+                return null;
+            }
+            else
+            {
+                return entity.getEntityPair();
+            }
+        }
+        
+        public Pair<Long, Serializable> createValue(Serializable value)
+        {
+            PropertySerializableValueEntity entity = createSerializableValue(value);
+            return convertEntityToPair(entity);
+        }
+
+        public Pair<Long, Serializable> findByKey(Long key)
+        {
+            PropertySerializableValueEntity entity = findSerializableValueById(key);
+            return convertEntityToPair(entity);
+        }
+    }
+    
+    protected abstract PropertySerializableValueEntity findSerializableValueById(Long id);
+    protected abstract PropertySerializableValueEntity createSerializableValue(Serializable value);
 
     //================================
     // 'alf_prop_value' accessors

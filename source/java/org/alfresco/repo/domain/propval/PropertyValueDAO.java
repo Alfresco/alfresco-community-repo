@@ -126,6 +126,22 @@ public interface PropertyValueDAO
     Pair<Long, Double> getOrCreatePropertyDoubleValue(Double value);
     
     //================================
+    // 'alf_prop_serializable_value' accessors
+    //================================
+    /**
+     * <b>alf_prop_serializable_value</b> accessor
+     * 
+     * @param id                the ID (may not be <tt>null</tt>)
+     */
+    Pair<Long, Serializable> getPropertySerializableValueById(Long id);
+    /**
+     * <b>alf_prop_serializable_value</b> accessor
+     * 
+     * @param value             the value to find the ID for (may not be <tt>null</tt>)
+     */
+    Pair<Long, Serializable> createPropertySerializableValue(Serializable value);
+    
+    //================================
     // 'alf_prop_value' accessors
     //================================
     /**

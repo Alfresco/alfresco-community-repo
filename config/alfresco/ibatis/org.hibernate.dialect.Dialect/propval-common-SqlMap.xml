@@ -15,6 +15,7 @@
     <typeAlias alias="PropertyStringValue" type="org.alfresco.repo.domain.propval.PropertyStringValueEntity"/>
     <typeAlias alias="PropertyStringQuery" type="org.alfresco.repo.domain.propval.PropertyStringQueryEntity"/>
     <typeAlias alias="PropertyDoubleValue" type="org.alfresco.repo.domain.propval.PropertyDoubleValueEntity"/>
+    <typeAlias alias="PropertySerializableValue" type="org.alfresco.repo.domain.propval.PropertySerializableValueEntity"/>
     <typeAlias alias="PropertyValue" type="org.alfresco.repo.domain.propval.PropertyValueEntity"/>
     <typeAlias alias="PropertyLink" type="org.alfresco.repo.domain.propval.PropertyLinkEntity"/>
     <typeAlias alias="PropertyIdSearchRow" type="org.alfresco.repo.domain.propval.PropertyIdSearchRow"/>
@@ -52,6 +53,10 @@
         <result property="id" column="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <result property="doubleValue" column="double_value" jdbcType="DOUBLE" javaType="java.lang.Double"/>
     </resultMap>
+    <resultMap id="result.PropertySerializableValue" class="PropertySerializableValue">
+        <result property="id" column="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="serializableValue" column="serializable_value" jdbcType="BLOB" javaType="java.io.Serializable"/>
+    </resultMap>
     <resultMap id="result.PropertyValue" class="PropertyValue">
         <result property="id" column="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <result property="actualTypeId" column="actual_type_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
@@ -59,7 +64,7 @@
         <result property="longValue" column="long_value" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <result property="doubleValue" column="double_value" jdbcType="DOUBLE" javaType="java.lang.Double"/>
         <result property="stringValue" column="string_value" jdbcType="VARCHAR" javaType="java.lang.String"/>
-        <result property="serializableValue" column="serializable_value" jdbcType="BLOB" javaType="java.lang.Object"/>
+        <result property="serializableValue" column="serializable_value" jdbcType="BLOB" javaType="java.io.Serializable"/>
     </resultMap>
     <resultMap id="result.PropertyLink" class="PropertyLink">
         <result property="rootPropId" column="root_prop_id" jdbcType="BIGINT" javaType="long"/>
@@ -77,12 +82,16 @@
         <result property="longValue" column="long_value" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <result property="doubleValue" column="double_value" jdbcType="DOUBLE" javaType="java.lang.Double"/>
         <result property="stringValue" column="string_value" jdbcType="VARCHAR" javaType="java.lang.String"/>
-        <result property="serializableValue" column="serializable_value" jdbcType="BLOB" javaType="java.lang.Object"/>
+        <result property="serializableValue" column="serializable_value" jdbcType="BLOB" javaType="java.io.Serializable"/>
     </resultMap>
   
     <!--                -->
     <!-- Parameter Maps -->
     <!--                -->
+
+    <parameterMap id="parameter.PropertySerializableValue" class="PropertySerializableValue">
+        <parameter property="serializableValue" jdbcType="BLOB" javaType="java.io.Serializable"/>
+    </parameterMap>
 
     <!--                -->
     <!-- SQL Snippets   -->
@@ -101,6 +110,11 @@
     <sql id="insert.PropertyDoubleValue.AutoIncrement">
         insert into alf_prop_double_value (double_value) 
         values (#doubleValue#)
+    </sql>
+    
+    <sql id="insert.PropertySerializableValue.AutoIncrement">
+        insert into alf_prop_serializable_value (serializable_value) 
+        values (?)
     </sql>
     
     <sql id="insert.PropertyValue.AutoIncrement">
@@ -212,6 +226,16 @@
             alf_prop_double_value
         where
             double_value = #doubleValue#
+    </select>
+
+    <!-- Get a property serializable value by ID -->
+    <select id="select.PropertySerializableValueByID" parameterClass="PropertySerializableValue" resultMap="result.PropertySerializableValue">
+        select
+            *
+        from
+            alf_prop_serializable_value
+        where
+            id = #id#
     </select>
 
     <!-- Get the property value by value in alf_prop_value -->

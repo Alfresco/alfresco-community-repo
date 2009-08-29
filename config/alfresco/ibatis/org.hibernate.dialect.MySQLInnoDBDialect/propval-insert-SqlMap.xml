@@ -27,6 +27,13 @@
         </selectKey>
     </insert>
 
+    <insert id="insert.PropertySerializableValue" parameterMap="parameter.PropertySerializableValue" >
+        <include refid="insert.PropertySerializableValue.AutoIncrement"/>
+        <selectKey resultClass="long" keyProperty="id" type="post">
+            KEY_COLUMN:GENERATED_KEY
+        </selectKey>
+    </insert>
+
     <insert id="insert.PropertyValue" parameterClass="PropertyValue" >
         <include refid="insert.PropertyValue.AutoIncrement"/>
         <selectKey resultClass="long" keyProperty="id" type="post">

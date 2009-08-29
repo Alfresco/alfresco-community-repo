@@ -52,6 +52,7 @@
       <property name="propertyDateValueCache" ref="immutableEntityCache"/>
       <property name="propertyStringValueCache" ref="immutableEntityCache"/>
       <property name="propertyDoubleValueCache" ref="immutableEntityCache"/>
+      <property name="propertySerializableValueCache" ref="immutableEntityCache"/>
       <property name="propertyValueCache" ref="immutableEntityCache"/>
    </bean>
    

@@ -31,6 +31,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
 
+import javax.naming.CompositeName;
+
 import junit.framework.TestCase;
 
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
@@ -40,6 +42,7 @@ import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.ISO8601DateFormat;
 import org.alfresco.util.Pair;
+import org.bouncycastle.util.Arrays;
 import org.springframework.context.ApplicationContext;
 
 /**
@@ -147,7 +150,6 @@ public class PropertyValueDAOTest extends TestCase
         {
             public Pair<Long, Date> execute() throws Throwable
             {
-                // Get the classes
                 return propertyValueDAO.getOrCreatePropertyDateValue(dateValue);
             }
         };
@@ -159,7 +161,6 @@ public class PropertyValueDAOTest extends TestCase
         {
             public Pair<Long, Date> execute() throws Throwable
             {
-                // Get the classes
                 return propertyValueDAO.getPropertyDateValue(dateValue);
             }
         };
@@ -177,7 +178,6 @@ public class PropertyValueDAOTest extends TestCase
         {
             public Pair<Long, String> execute() throws Throwable
             {
-                // Get the classes
                 return propertyValueDAO.getOrCreatePropertyStringValue(stringValue);
             }
         };
@@ -207,7 +207,6 @@ public class PropertyValueDAOTest extends TestCase
         {
             public Pair<Long, String> execute() throws Throwable
             {
-                // Get the classes
                 return propertyValueDAO.getOrCreatePropertyStringValue(stringValueUpper);
             }
         };
@@ -241,7 +240,6 @@ public class PropertyValueDAOTest extends TestCase
         {
             public Pair<Long, Double> execute() throws Throwable
             {
-                // Get the classes
                 return propertyValueDAO.getOrCreatePropertyDoubleValue(doubleValue);
             }
         };
@@ -253,13 +251,55 @@ public class PropertyValueDAOTest extends TestCase
         {
             public Pair<Long, Double> execute() throws Throwable
             {
-                // Get the classes
                 return propertyValueDAO.getPropertyDoubleValue(doubleValue);
             }
         };
         final Pair<Long, Double> entityPairCheck = txnHelper.doInTransaction(getValueCallback, false);
         assertNotNull(entityPairCheck);
         assertEquals(entityPair, entityPairCheck);
+    }
+    
+    public void testPropertySerializableValue() throws Exception
+    {
+        final Serializable serializableValue = new CompositeName("123");
+        RetryingTransactionCallback<Pair<Long, Serializable>> createValueCallback = new RetryingTransactionCallback<Pair<Long, Serializable>>()
+        {
+            public Pair<Long, Serializable> execute() throws Throwable
+            {
+                return propertyValueDAO.createPropertySerializableValue(serializableValue);
+            }
+        };
+        final Pair<Long, Serializable> entityPair = txnHelper.doInTransaction(createValueCallback, false);
+        assertNotNull(entityPair);
+        assertEquals(serializableValue, entityPair.getSecond());
+        
+        RetryingTransactionCallback<Pair<Long, Serializable>> getValueCallback = new RetryingTransactionCallback<Pair<Long, Serializable>>()
+        {
+            public Pair<Long, Serializable> execute() throws Throwable
+            {
+                return propertyValueDAO.getPropertySerializableValueById(entityPair.getFirst());
+            }
+        };
+        final Pair<Long, Serializable> entityPairCheck = txnHelper.doInTransaction(getValueCallback, false);
+        assertNotNull(entityPairCheck);
+        assertEquals(entityPair.getFirst(), entityPairCheck.getFirst());
+        assertEquals(entityPair, entityPairCheck);
+        
+        // Check that we can persist and retrieve byte[] as a Serializable
+        final Serializable bytes = (Serializable) new byte[] {1, 2, 3};
+        RetryingTransactionCallback<Pair<Long, Void>> testBytesCallback = new RetryingTransactionCallback<Pair<Long, Void>>()
+        {
+            public Pair<Long, Void> execute() throws Throwable
+            {
+                Long id = propertyValueDAO.createPropertySerializableValue(bytes).getFirst();
+                Serializable check = propertyValueDAO.getPropertySerializableValueById(id).getSecond();
+                assertNotNull(check);
+                assertTrue(check instanceof byte[]);
+                Arrays.areEqual((byte[])bytes, (byte[])check);
+                return null;
+            }
+        };
+        txnHelper.doInTransaction(testBytesCallback, false);
     }
     
     /**
@@ -371,7 +411,7 @@ public class PropertyValueDAOTest extends TestCase
     public void testPropertyValue_Date() throws Exception
     {
         Random rand = new Random();
-        for (long i = 0; i < 1000; i++)
+        for (long i = 0; i < 100; i++)
         {
             runPropertyValueTest(new Date(rand.nextLong()));
         }
@@ -385,6 +425,15 @@ public class PropertyValueDAOTest extends TestCase
         }
     }
     
+    public void testPropertyValue_Serializable() throws Exception
+    {
+        for (int i = 0; i < 100; i++)
+        {
+            // Choose a type that implements equals and hashCode but will not be recognised
+            runPropertyValueTest(new CompositeName("Name-"+i), false);
+        }
+    }
+    
     public void testPropertyValue_MapOfStrings() throws Exception
     {
         final HashMap<String, String> map = new HashMap<String, String>(15);
@@ -395,6 +444,24 @@ public class PropertyValueDAOTest extends TestCase
             map.put(key, value);
         }
         runPropertyValueTest(map, false);
+    }
+    
+    public void testPropertyValue_MapOfMapOfSerializables() throws Exception
+    {
+        final HashMap<String, Serializable> mapInner = new HashMap<String, Serializable>(15);
+        for (int i = 0; i < 20; i++)
+        {
+            String key = "INNERMAP-KEY-" + i;
+            Serializable value = new CompositeName("INNERMAP-VALUE-" + i);
+            mapInner.put(key, value);
+        }
+        final HashMap<String, Map<?, ?>> mapOuter = new HashMap<String, Map<?, ?>>(37);
+        for (int i = 0; i < 2; i++)
+        {
+            String key = "OUTERMAP-KEY-" + i;
+            mapOuter.put(key, mapInner);
+        }
+        runPropertyValueTest(mapOuter, false);
     }
     
     public void testPropertyValue_MapOfMapOfStrings() throws Exception
@@ -448,5 +515,11 @@ public class PropertyValueDAOTest extends TestCase
     {
         removeCaches();
         testPropertyDoubleValue();
+    }
+
+    public void testPropertySerializableValue_NoCache() throws Exception
+    {
+        removeCaches();
+        testPropertySerializableValue();
     }
 }

@@ -34,6 +34,7 @@ import org.alfresco.repo.domain.propval.PropertyDateValueEntity;
 import org.alfresco.repo.domain.propval.PropertyDoubleValueEntity;
 import org.alfresco.repo.domain.propval.PropertyIdSearchRow;
 import org.alfresco.repo.domain.propval.PropertyLinkEntity;
+import org.alfresco.repo.domain.propval.PropertySerializableValueEntity;
 import org.alfresco.repo.domain.propval.PropertyStringQueryEntity;
 import org.alfresco.repo.domain.propval.PropertyStringValueEntity;
 import org.alfresco.repo.domain.propval.PropertyValueEntity;
@@ -64,6 +65,9 @@ public class PropertyValueDAOImpl extends AbstractPropertyValueDAOImpl
     private static final String SELECT_PROPERTY_DOUBLE_VALUE_BY_ID = "select.PropertyDoubleValueByID";
     private static final String SELECT_PROPERTY_DOUBLE_VALUE_BY_VALUE = "select.PropertyDoubleValueByValue";
     private static final String INSERT_PROPERTY_DOUBLE_VALUE = "insert.PropertyDoubleValue";
+    
+    private static final String SELECT_PROPERTY_SERIALIZABLE_VALUE_BY_ID = "select.PropertySerializableValueByID";
+    private static final String INSERT_PROPERTY_SERIALIZABLE_VALUE = "insert.PropertySerializableValue";
     
     private static final String SELECT_PROPERTY_VALUE_BY_ID = "select.PropertyValueById";
     private static final String SELECT_PROPERTY_VALUE_BY_LOCAL_VALUE = "select.PropertyValueByLocalValue";
@@ -251,6 +255,33 @@ public class PropertyValueDAOImpl extends AbstractPropertyValueDAOImpl
     }
 
     //================================
+    // 'alf_prop_serializable_value' accessors
+    //================================
+
+    @Override
+    protected PropertySerializableValueEntity findSerializableValueById(Long id)
+    {
+        PropertySerializableValueEntity entity = new PropertySerializableValueEntity();
+        entity.setId(id);
+        entity = (PropertySerializableValueEntity) template.queryForObject(
+                SELECT_PROPERTY_SERIALIZABLE_VALUE_BY_ID,
+                entity);
+        // Done
+        return entity;
+    }
+
+    @Override
+    protected PropertySerializableValueEntity createSerializableValue(Serializable value)
+    {
+        PropertySerializableValueEntity entity = new PropertySerializableValueEntity();
+        entity.setSerializableValue(value);
+        Long id = (Long) template.insert(INSERT_PROPERTY_SERIALIZABLE_VALUE, entity);
+        entity.setId(id);
+        // Done
+        return entity;
+    }
+
+    //================================
     // 'alf_prop_value' accessors
     //================================
 
@@ -367,10 +398,9 @@ public class PropertyValueDAOImpl extends AbstractPropertyValueDAOImpl
             insertEntity.setLongValue(insertStringPair.getFirst());
             break;
         case SERIALIZABLE:
-            throw new UnsupportedOperationException("Serializable not supported, yet.");
-//            Pair<Long, Serializable> insertSerializablePair = getOrCreatePropertySerializableValue(value);
-//            insertEntity.setLongValue(insertSerializablePair.getFirst());
-//            break;
+            Pair<Long, Serializable> insertSerializablePair = createPropertySerializableValue(value);
+            insertEntity.setLongValue(insertSerializablePair.getFirst());
+            break;
         case NULL:
         case LONG:
             // Do nothing for these

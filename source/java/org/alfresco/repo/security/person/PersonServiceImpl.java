@@ -278,6 +278,14 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
 
     private NodeRef getPersonImpl(String userName)
     {
+        if(userName == null)
+        {
+            return null;
+        }
+        if(userName.length() == 0)
+        {
+            return null;
+        }
         NodeRef personNode = getPersonOrNull(userName);
         if (personNode == null)
         {

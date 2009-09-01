@@ -24,6 +24,8 @@
  */
 package org.alfresco.util;
 
+import java.util.Arrays;
+
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
@@ -36,23 +38,51 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 public class ApplicationContextHelper
 {
     private static ClassPathXmlApplicationContext instance;
+    private static String[] usedConfiguration;
     
     /** location of required configuration files */
     public static final String[] CONFIG_LOCATIONS = new String[] { "classpath:alfresco/application-context.xml" };
     
     /**
-     * Provides a static, single instance of the application context.  This method can be
+     * Provides a static, single instance of the default Alfresco application context.  This method can be
      * called repeatedly.
+     * <p/>
+     * If the configuration requested differs from one used previously, then the previously-created
+     * context is shut down.
      * 
-     * @return Returns a new application context
+     * @return Returns an application context for the default Alfresco configuration
      */
     public synchronized static ConfigurableApplicationContext getApplicationContext()
     {
-        if (instance != null)
+        return getApplicationContext(CONFIG_LOCATIONS);
+    }
+    
+    /**
+     * Provides a static, single instance of the application context.  This method can be
+     * called repeatedly.
+     * <p/>
+     * If the configuration requested differs from one used previously, then the previously-created
+     * context is shut down.
+     * 
+     * @return Returns an application context for the given configuration
+     */
+    public synchronized static ConfigurableApplicationContext getApplicationContext(String[] configLocations)
+    {
+        if (configLocations == null)
         {
+            throw new IllegalArgumentException("configLocations argument is mandatory.");
+        }
+        if (usedConfiguration != null && Arrays.deepEquals(configLocations, usedConfiguration))
+        {
+            // The configuration was used to create the current context
             return instance;
         }
-        instance = new ClassPathXmlApplicationContext(CONFIG_LOCATIONS);
+        // The config has changed so close the current context (if any)
+        closeApplicationContext();
+        
+        instance = new ClassPathXmlApplicationContext(configLocations);
+        usedConfiguration = configLocations;
+        
         return instance;
     }
     
@@ -69,6 +99,7 @@ public class ApplicationContextHelper
         }
         instance.close();
         instance = null;
+        usedConfiguration = null;
     }
     
     public static void main(String ... args)

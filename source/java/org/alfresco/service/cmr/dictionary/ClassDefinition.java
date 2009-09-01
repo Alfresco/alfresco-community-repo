@@ -69,9 +69,10 @@ public interface ClassDefinition
     public boolean isAspect();
     
     /**
-     * @return Return true if the type should be archived on delete
+     * @return Return <code>true</code> if the type should be archived on delete, <code>false</code> if it should be
+     *         deleted or <code>null</code> if not defined.
      */
-    public boolean isArchive();
+    public Boolean getArchive();
 
     /**
      * @return the properties of the class, including inherited properties

@@ -154,9 +154,9 @@ import org.alfresco.service.namespace.QName;
         return type.isAspect();
     }
 
-    public boolean isArchive()
+    public Boolean getArchive()
     {
-        return type.isArchive();
+        return type.getArchive();
     }
 
     /* (non-Javadoc)

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -18,7 +18,7 @@
  * As a special exception to the terms and conditions of version 2.0 of 
  * the GPL, you may redistribute this Program in connection with Free/Libre 
  * and Open Source Software ("FLOSS") applications as described in Alfresco's 
- * FLOSS exception.  You should have recieved a copy of the text describing 
+ * FLOSS exception.  You should have received a copy of the text describing 
  * the FLOSS exception, and it is also available here: 
  * http://www.alfresco.com/legal/licensing"
  */
@@ -374,16 +374,10 @@ import org.alfresco.service.namespace.QName;
         return (m2Class instanceof M2Aspect);
     }
     
-    /**
-     * @return Returns the archive flag, which defaults to <tt>true</tt> for aspects and <tt>false</tt> for other classes
+    /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.dictionary.ClassDefinition#getArchive()
      */
-    public boolean isArchive()
-    {
-        Boolean isArchive = getArchive();
-        return isArchive == null ? isAspect() : isArchive.booleanValue(); 
-    }
-
-    protected Boolean getArchive()
+    public Boolean getArchive()
     {
         return archive == null ? inheritedArchive : archive;
     }
@@ -597,9 +591,20 @@ import org.alfresco.service.namespace.QName;
         }
         
         // check archive/inheritedArchive
-        if (isArchive() != classDef.isArchive())
+        if (archive == null)
         {
-            isUpdatedIncrementally = true;
+            if (classDef.getArchive() != null)
+            {
+                isUpdatedIncrementally = true;
+            }
+        }
+        else
+        {
+            Boolean classArchive = classDef.getArchive();
+            if (classArchive == null || classArchive.booleanValue() != archive.booleanValue())
+            {
+                isUpdatedIncrementally = true;
+            }
         }
         
         String modelDiffType;

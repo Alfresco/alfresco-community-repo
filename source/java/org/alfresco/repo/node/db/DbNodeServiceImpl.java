@@ -730,11 +730,11 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         Pair<Long, NodeRef> nodePair = getNodePairNotNull(nodeRef);
         Long nodeId = nodePair.getFirst();
 
-        boolean requiresDelete = false;
-        
+        Boolean requiresDelete = null;
+
         // Invoke policy behaviours
         invokeBeforeDeleteNode(nodeRef);
-        
+
         // get the primary parent-child relationship before it is gone
         Pair<Long, ChildAssociationRef> childAssocPair = nodeDaoService.getPrimaryParentAssoc(nodeId);
         ChildAssociationRef childAssocRef = childAssocPair.getSecond();
@@ -754,27 +754,33 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         {
             // get the type and check if we need archiving.
             TypeDefinition typeDef = dictionaryService.getType(nodeTypeQName);
-            if (typeDef == null || !typeDef.isArchive())
+            if (typeDef != null)
             {
-                requiresDelete = true;
-            }
-            else
-            {
-                // If the type wants archiving, check whether any applied aspects have explicitly turned off the
-                // archive flag
-                for (QName nodeAspectQName : nodeAspectQNames)
+                Boolean requiresArchive = typeDef.getArchive();
+                if (requiresArchive != null)
                 {
-                    typeDef = dictionaryService.getType(nodeAspectQName);
-                    if (typeDef != null && !typeDef.isArchive())
+                    requiresDelete = !requiresArchive;
+                }
+            }
+
+            // If the type hasn't asked for deletion, check whether any applied aspects have
+            Iterator<QName> i = nodeAspectQNames.iterator();
+            while ((requiresDelete == null || !requiresDelete) && i.hasNext())
+            {
+                QName nodeAspectQName = i.next();
+                AspectDefinition aspectDef = dictionaryService.getAspect(nodeAspectQName);
+                if (aspectDef != null)
+                {
+                    Boolean requiresArchive = aspectDef.getArchive();
+                    if (requiresArchive != null)
                     {
-                        requiresDelete = true;
-                        break;
+                        requiresDelete = !requiresArchive;
                     }
                 }
             }
         }
-           
-        if (requiresDelete)
+
+        if (requiresDelete == null || requiresDelete)
         {
             // Cascade as required
             if (cascadeInTransaction)

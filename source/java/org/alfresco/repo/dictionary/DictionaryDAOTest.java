@@ -307,20 +307,20 @@ public class DictionaryDAOTest extends TestCase
     {
         QName testFileQName = QName.createQName(TEST_URL, "file");
         ClassDefinition fileClassDef = service.getClass(testFileQName);
-        assertTrue("File type should have the archive flag", fileClassDef.isArchive());
+        assertTrue("File type should have the archive flag", fileClassDef.getArchive());
 
         QName testFileDerivedQName = QName.createQName(TEST_URL, "file-derived");
         ClassDefinition fileDerivedClassDef = service.getClass(testFileDerivedQName);
-        assertTrue("Direct derived File type should have the archive flag", fileDerivedClassDef.isArchive());
+        assertTrue("Direct derived File type should have the archive flag", fileDerivedClassDef.getArchive());
 
         QName testFileDerivedNoArchiveQName = QName.createQName(TEST_URL, "file-derived-no-archive");
         ClassDefinition fileDerivedNoArchiveClassDef = service.getClass(testFileDerivedNoArchiveQName);
         assertFalse("Derived File with archive override type should NOT have the archive flag",
-                fileDerivedNoArchiveClassDef.isArchive());
+                fileDerivedNoArchiveClassDef.getArchive());
 
         QName testFolderQName = QName.createQName(TEST_URL, "folder");
         ClassDefinition folderClassDef = service.getClass(testFolderQName);
-        assertFalse("Folder type should not have the archive flag", folderClassDef.isArchive());
+        assertNull("Folder type should not have the archive flag", folderClassDef.getArchive());
     }
     
     public void testMandatoryEnforced()

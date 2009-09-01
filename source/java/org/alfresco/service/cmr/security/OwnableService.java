@@ -36,6 +36,8 @@ import org.alfresco.service.cmr.repository.NodeRef;
 @PublicService
 public interface OwnableService
 {
+    public static String NO_OWNER = "";
+
     /**
      * Get the username of the owner of the given object.
      *  

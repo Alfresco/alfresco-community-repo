@@ -22,6 +22,7 @@
  * the FLOSS exception, and it is also available here: 
  * http://www.alfresco.com/legal/licensing"
  */
+
 package org.alfresco.repo.forms.processor;
 
 import java.util.List;
@@ -34,71 +35,73 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 /**
- * Abstract base class for all FormProcessor implementations that wish to use the 
- * filter mechanism.
- *
+ * Abstract base class for all FormProcessor implementations that wish to use
+ * the filter mechanism.
+ * 
  * @author Gavin Cornwell
  */
-public abstract class FilteredFormProcessor extends AbstractFormProcessor
+public abstract class FilteredFormProcessor<ItemType, PersistType> extends AbstractFormProcessor
 {
     private static final Log logger = LogFactory.getLog(FilteredFormProcessor.class);
-    
-    protected FilterRegistry filterRegistry;
-    
+
+    protected FilterRegistry<ItemType, PersistType> filterRegistry;
+
     /**
-     * Sets the filter registry 
+     * Sets the filter registry
      * 
      * @param filterRegistry The FilterRegistry instance
      */
-    public void setFilterRegistry(FilterRegistry filterRegistry)
+    public void setFilterRegistry(FilterRegistry<ItemType, PersistType> filterRegistry)
     {
         this.filterRegistry = filterRegistry;
-        
+
         if (logger.isDebugEnabled())
             logger.debug("Set filter registry: " + this.filterRegistry + " for processor: " + this);
     }
 
     /*
-     * @see org.alfresco.repo.forms.processor.FormProcessor#generate(org.alfresco.repo.forms.Item, java.util.List, java.util.List, java.util.Map)
+     * @see
+     * org.alfresco.repo.forms.processor.FormProcessor#generate(org.alfresco
+     * .repo.forms.Item, java.util.List, java.util.List, java.util.Map)
      */
-    public Form generate(Item item, List<String> fields, List<String> forcedFields,
-                Map<String, Object> context)
+    public Form generate(Item item, List<String> fields, List<String> forcedFields, Map<String, Object> context)
     {
         // get the typed object representing the item
-        Object typedItem = getTypedItem(item);
+        ItemType typedItem = getTypedItem(item);
 
         // create an empty Form
         Form form = new Form(item);
-        
+
         // inform all regsitered filters the form is about to be generated
         if (this.filterRegistry != null)
         {
-            for (Filter filter: this.filterRegistry.getFilters())
+            for (Filter filter : this.filterRegistry.getFilters())
             {
                 filter.beforeGenerate(typedItem, fields, forcedFields, form, context);
             }
         }
-        
+
         // perform the actual generation of the form
         internalGenerate(typedItem, fields, forcedFields, form, context);
-        
+
         // inform all regsitered filters the form has been generated
         if (this.filterRegistry != null)
         {
-            for (Filter filter: this.filterRegistry.getFilters())
+            for (Filter filter : this.filterRegistry.getFilters())
             {
                 filter.afterGenerate(typedItem, fields, forcedFields, form, context);
             }
         }
-        
+
         return form;
     }
 
     /**
-     * Persists the given form data for the given item, completed by calling 
+     * Persists the given form data for the given item, completed by calling
      * each applicable registered handler
      * 
-     * @see org.alfresco.repo.forms.processor.FormProcessor#persist(org.alfresco.repo.forms.Item, org.alfresco.repo.forms.FormData)
+     * @see org.alfresco.repo.forms.processor.FormProcessor#persist(org.alfresco.repo.forms.Item,
+     *      org.alfresco.repo.forms.FormData)
      * @param item The item to save the form for
      * @param data The object representing the form data
      * @return The object persisted
@@ -106,44 +109,54 @@ public abstract class FilteredFormProcessor extends AbstractFormProcessor
     public Object persist(Item item, FormData data)
     {
         // get the typed object representing the item
-        Object typedItem = getTypedItem(item);
+        ItemType typedItem = getTypedItem(item);
 
         // inform all regsitered filters the form is about to be persisted
         if (this.filterRegistry != null)
         {
-            for (Filter filter: this.filterRegistry.getFilters())
+            for (Filter filter : this.filterRegistry.getFilters())
             {
                 filter.beforePersist(typedItem, data);
             }
         }
-        
+
         // perform the actual persistence of the form
         Object persistedObject = internalPersist(typedItem, data);
-        
+
         // inform all regsitered filters the form has been persisted
         if (this.filterRegistry != null)
         {
-            for (Filter filter: this.filterRegistry.getFilters())
+            for (Filter filter : this.filterRegistry.getFilters())
             {
                 filter.afterPersist(typedItem, data, persistedObject);
             }
         }
-        
+
         return persistedObject;
     }
-    
+
+    protected void setItemType(Form form, String type)
+    {
+        form.getItem().setType(type);
+    }
+
+    protected void setItemUrl(Form form, String url)
+    {
+        form.getItem().setUrl(url);
+    }
+
     /**
-     * Returns a typed Object representing the given item. 
+     * Returns a typed Object representing the given item.
      * <p>
-     * Subclasses that represent a form type will return a typed object
-     * that is then passed to each of it's handlers, the handlers can 
-     * therefore safely cast the Object to the type they expect.
+     * Subclasses that represent a form type will return a typed object that is
+     * then passed to each of it's handlers, the handlers can therefore safely
+     * cast the Object to the type they expect.
      * 
      * @param item The item to get a typed object for
      * @return The typed object
      */
-    protected abstract Object getTypedItem(Item item);
-    
+    protected abstract ItemType getTypedItem(Item item);
+
     /**
      * Generates the form.
      * 
@@ -151,12 +164,12 @@ public abstract class FilteredFormProcessor extends AbstractFormProcessor
      * @param fields Restricted list of fields to include
      * @param forcedFields List of fields to forcibly include
      * @param form The form object being generated
-     * @param context Map representing optional context that
-     *                can be used during retrieval of the form
+     * @param context Map representing optional context that can be used during
+     *            retrieval of the form
      */
-    protected abstract void internalGenerate(Object item, List<String> fields, List<String> forcedFields, 
-                Form form, Map<String, Object> context);
-    
+    protected abstract void internalGenerate(ItemType item, List<String> fields, List<String> forcedFields, Form form,
+                Map<String, Object> context);
+
     /**
      * Persists the form data.
      * 
@@ -164,5 +177,6 @@ public abstract class FilteredFormProcessor extends AbstractFormProcessor
      * @param data The data to persist
      * @return The object that got created or modified
      */
-    protected abstract Object internalPersist(Object item, FormData data);
+    protected abstract PersistType internalPersist(ItemType item, FormData data);
+
 }

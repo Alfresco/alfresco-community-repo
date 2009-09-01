@@ -22,6 +22,7 @@
  * the FLOSS exception, and it is also available here: 
  * http://www.alfresco.com/legal/licensing"
  */
+
 package org.alfresco.repo.forms.processor.node;
 
 import java.io.Serializable;
@@ -44,18 +45,20 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 /**
- * FormProcessor implementation that can generate and persist Form objects
- * for repository nodes.
- *
+ * FormProcessor implementation that can generate and persist Form objects for
+ * repository nodes.
+ * 
  * @author Gavin Cornwell
  */
-public class NodeFormProcessor extends ContentModelFormProcessor
+public class NodeFormProcessor extends ContentModelFormProcessor<NodeRef, NodeRef>
 {
     /** Logger */
     private static Log logger = LogFactory.getLog(NodeFormProcessor.class);
-    
+
     /*
-     * @see org.alfresco.repo.forms.processor.node.ContentModelFormProcessor#getLogger()
+     * @see
+     * org.alfresco.repo.forms.processor.node.ContentModelFormProcessor#getLogger
+     * ()
      */
     @Override
     protected Log getLogger()
@@ -64,10 +67,12 @@ public class NodeFormProcessor extends ContentModelFormProcessor
     }
 
     /*
-     * @see org.alfresco.repo.forms.processor.FilteredFormProcessor#getTypedItem(org.alfresco.repo.forms.Item)
+     * @see
+     * org.alfresco.repo.forms.processor.FilteredFormProcessor#getTypedItem(
+     * org.alfresco.repo.forms.Item)
      */
     @Override
-    protected Object getTypedItem(Item item)
+    protected NodeRef getTypedItem(Item item)
     {
         // create NodeRef representation, the id could already be in a valid
         // NodeRef format or it may be in a URL friendly format
@@ -89,25 +94,22 @@ public class NodeFormProcessor extends ContentModelFormProcessor
                 catch (IllegalArgumentException iae)
                 {
                     // ignored for now, dealt with below
-                    
+
                     if (logger.isDebugEnabled())
                         logger.debug("NodeRef creation failed for: " + item.getId(), iae);
                 }
             }
-        } 
-        
-        // check we have a valid node ref
-        if (nodeRef == null)
-        {
-            throw new FormNotFoundException(item, 
-                        new IllegalArgumentException(item.getId()));
         }
-        
+
+        // check we have a valid node ref
+        if (nodeRef == null) { throw new FormNotFoundException(item, new IllegalArgumentException(
+                    item.getId())); }
+
         // check the node itself exists
         if (this.nodeService.exists(nodeRef) == false)
         {
-            throw new FormNotFoundException(item, 
-                        new InvalidNodeRefException("Node does not exist: " + nodeRef, nodeRef));
+            throw new FormNotFoundException(item, new InvalidNodeRefException(
+                        "Node does not exist: " + nodeRef, nodeRef));
         }
         else
         {
@@ -115,27 +117,25 @@ public class NodeFormProcessor extends ContentModelFormProcessor
             return nodeRef;
         }
     }
-    
+
     /*
-     * @see org.alfresco.repo.forms.processor.FilteredFormProcessor#internalGenerate(java.lang.Object, java.util.List, java.util.List, org.alfresco.repo.forms.Form, java.util.Map)
+     * @see
+     * org.alfresco.repo.forms.processor.FilteredFormProcessor#internalGenerate
+     * (java.lang.Object, java.util.List, java.util.List,
+     * org.alfresco.repo.forms.Form, java.util.Map)
      */
     @Override
-    protected void internalGenerate(Object item, List<String> fields, List<String> forcedFields, 
+    protected void internalGenerate(NodeRef item, List<String> fields, List<String> forcedFields,
                 Form form, Map<String, Object> context)
     {
-        if (logger.isDebugEnabled())
-            logger.debug("Generating form for: " + item);
-        
-        // cast to the expected NodeRef representation
-        NodeRef nodeRef = (NodeRef)item;
-        
+        if (logger.isDebugEnabled()) logger.debug("Generating form for: " + item);
+
         // generate the form for the node
-        generateNode(nodeRef, fields, forcedFields, form);
-        
-        if (logger.isDebugEnabled())
-            logger.debug("Generated form: " + form);
+        generateNode(item, fields, forcedFields, form);
+
+        if (logger.isDebugEnabled()) logger.debug("Generated form: " + form);
     }
-    
+
     /**
      * Sets up the Form object for the given NodeRef
      * 
@@ -144,7 +144,8 @@ public class NodeFormProcessor extends ContentModelFormProcessor
      * @param forcedFields List of fields to forcibly include
      * @param form The Form instance to populate
      */
-    protected void generateNode(NodeRef nodeRef, List<String> fields, List<String> forcedFields, Form form)
+    protected void generateNode(NodeRef nodeRef, List<String> fields, List<String> forcedFields,
+                Form form)
     {
         // set the type and URL of the item
         QName type = this.nodeService.getType(nodeRef);
@@ -154,7 +155,7 @@ public class NodeFormProcessor extends ContentModelFormProcessor
         builder.append(nodeRef.getStoreRef().getIdentifier()).append("/");
         builder.append(nodeRef.getId());
         form.getItem().setUrl(builder.toString());
-        
+
         if (fields != null && fields.size() > 0)
         {
             generateSelectedFields(nodeRef, null, fields, forcedFields, form);
@@ -167,7 +168,7 @@ public class NodeFormProcessor extends ContentModelFormProcessor
             generateTransientFields(nodeRef, form);
         }
     }
-    
+
     /**
      * Sets up the field definitions for all the node's properties.
      * 
@@ -178,20 +179,20 @@ public class NodeFormProcessor extends ContentModelFormProcessor
     {
         // get data dictionary definition for node
         QName type = this.nodeService.getType(nodeRef);
-        TypeDefinition typeDef = this.dictionaryService.getAnonymousType(type,
-                    this.nodeService.getAspects(nodeRef));
-        
-        // iterate round the property definitions for the node and create 
+        TypeDefinition typeDef = this.dictionaryService.getAnonymousType(type, this.nodeService
+                    .getAspects(nodeRef));
+
+        // iterate round the property definitions for the node and create
         // the equivalent field definition and setup the data for the property
         Map<QName, PropertyDefinition> propDefs = typeDef.getProperties();
         Map<QName, Serializable> propValues = this.nodeService.getProperties(nodeRef);
         for (PropertyDefinition propDef : propDefs.values())
         {
-            generatePropertyField(propDef, form, propValues.get(propDef.getName()), 
+            generatePropertyField(propDef, form, propValues.get(propDef.getName()),
                         this.namespaceService);
         }
     }
-    
+
     /**
      * Sets up the field definitions for all the node's associations.
      * 
@@ -202,19 +203,18 @@ public class NodeFormProcessor extends ContentModelFormProcessor
     {
         // get data dictionary definition for the node
         QName type = this.nodeService.getType(nodeRef);
-        TypeDefinition typeDef = this.dictionaryService.getAnonymousType(type,
-                    this.nodeService.getAspects(nodeRef));
-        
+        TypeDefinition typeDef = this.dictionaryService.getAnonymousType(type, this.nodeService
+                    .getAspects(nodeRef));
+
         // iterate round the association defintions and setup field definition
         Map<QName, AssociationDefinition> assocDefs = typeDef.getAssociations();
         for (AssociationDefinition assocDef : assocDefs.values())
         {
-            generateAssociationField(assocDef, form, 
-                        retrieveAssociationValues(nodeRef, assocDef), 
+            generateAssociationField(assocDef, form, retrieveAssociationValues(nodeRef, assocDef),
                         this.namespaceService);
         }
     }
-    
+
     /**
      * Sets up the field definitions for any transient fields that may be
      * useful, for example, 'mimetype', 'size' and 'encoding'.
@@ -224,41 +224,40 @@ public class NodeFormProcessor extends ContentModelFormProcessor
      */
     protected void generateTransientFields(NodeRef nodeRef, Form form)
     {
-        // if the node is content add the 'mimetype', 'size' and 'encoding' fields.
+        // if the node is content add the 'mimetype', 'size' and 'encoding'
+        // fields.
         QName type = this.nodeService.getType(nodeRef);
         if (this.dictionaryService.isSubClass(type, ContentModel.TYPE_CONTENT))
         {
-            ContentData content = (ContentData)this.nodeService.getProperty(nodeRef, ContentModel.PROP_CONTENT);
+            ContentData content = (ContentData) this.nodeService.getProperty(nodeRef,
+                        ContentModel.PROP_CONTENT);
             if (content != null)
             {
                 // setup mimetype field
                 generateMimetypePropertyField(content, form);
-                
+
                 // setup encoding field
                 generateEncodingPropertyField(content, form);
-                
+
                 // setup size field
                 generateSizePropertyField(content, form);
             }
         }
     }
-    
+
     /*
-     * @see org.alfresco.repo.forms.processor.FilteredFormProcessor#internalPersist(java.lang.Object, org.alfresco.repo.forms.FormData)
+     * @see
+     * org.alfresco.repo.forms.processor.FilteredFormProcessor#internalPersist
+     * (java.lang.Object, org.alfresco.repo.forms.FormData)
      */
     @Override
-    protected Object internalPersist(Object item, FormData data)
+    protected NodeRef internalPersist(NodeRef item, FormData data)
     {
-        if (logger.isDebugEnabled())
-            logger.debug("Persisting form for: " + item);
-        
-        // cast to the expected NodeRef representation
-        NodeRef nodeRef = (NodeRef)item;
-        
+        if (logger.isDebugEnabled()) logger.debug("Persisting form for: " + item);
+
         // persist the node
-        persistNode(nodeRef, data);
-        
+        persistNode(item, data);
+
         return item;
     }
 }
-

@@ -36,7 +36,7 @@ import org.alfresco.repo.forms.FormData;
  *
  * @author Gavin Cornwell
  */
-public interface Filter
+public interface Filter<ItemType, PersistType>
 {
     /**
      * Determines whether the filter is active
@@ -61,7 +61,7 @@ public interface Filter
      * @param @param context Map representing optional context that
      *                can be used during retrieval of the form
      */
-    public void beforeGenerate(Object item, List<String> fields, List<String> forcedFields, 
+    public void beforeGenerate(ItemType item, List<String> fields, List<String> forcedFields, 
                 Form form, Map<String, Object> context);
     
     /**
@@ -80,7 +80,7 @@ public interface Filter
      * @param context Map representing optional context that
      *                can be used during retrieval of the form
      */
-    public void afterGenerate(Object item, List<String> fields, List<String> forcedFields, 
+    public void afterGenerate(ItemType item, List<String> fields, List<String> forcedFields, 
                 Form form, Map<String, Object> context);
     
     /**
@@ -95,7 +95,7 @@ public interface Filter
      * @param item The item to persist the form data for
      * @param data The form data
      */
-    public void beforePersist(Object item, FormData data);
+    public void beforePersist(ItemType item, FormData data);
     
     /**
      * Callback used to indicate that the given form data was just persisted
@@ -112,5 +112,5 @@ public interface Filter
      * @param persistedObject The object created or modified as a result of 
      *        the form persistence
      */
-    public void afterPersist(Object item, FormData data, Object persistedObject);
+    public void afterPersist(ItemType item, FormData data, PersistType persistedObject);
 }

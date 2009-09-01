@@ -32,7 +32,7 @@ import org.apache.commons.logging.LogFactory;
  *
  * @author Gavin Cornwell
  */
-public abstract class AbstractFilter implements Filter
+public abstract class AbstractFilter<ItemType, PersistType> implements Filter<ItemType, PersistType>
 {
     private static final Log logger = LogFactory.getLog(AbstractFilter.class);
     

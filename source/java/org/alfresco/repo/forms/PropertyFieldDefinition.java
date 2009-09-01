@@ -182,7 +182,7 @@ public class PropertyFieldDefinition extends FieldDefinition
     /**
      * Represents a constraint on a property field
      */
-    public class FieldConstraint
+    public static class FieldConstraint
     {
         protected String type;
         protected Map<String, Object> params;

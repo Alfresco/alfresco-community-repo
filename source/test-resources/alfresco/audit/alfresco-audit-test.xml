@@ -64,6 +64,10 @@
                 </AuditPath>
             </AuditPath>
         </AuditPath>
+    </Application>
+
+    <Application name="Actions Test" key="actions-test">
+        <GenerateValue key="time" dataGenerator="systemTime" scope="SESSION"/>
         <AuditPath key="actions">
             <AuditPath key="action-01">
                 <AuditPath key="context-node">

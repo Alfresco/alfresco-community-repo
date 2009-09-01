@@ -60,6 +60,7 @@ import org.springframework.util.ResourceUtils;
 public class AuditComponentTest extends TestCase
 {
     private static final String APPLICATION_TEST = "Alfresco Test";
+    private static final String APPLICATION_ACTIONS_TEST = "Actions Test";
     
     private static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
     
@@ -206,8 +207,8 @@ public class AuditComponentTest extends TestCase
         {
             public Map<String, Serializable> execute() throws Throwable
             {
-                String actionPath = AuditApplication.buildPath("test/actions", action);
-                AuditSession session = auditComponent.startAuditSession(APPLICATION_TEST, actionPath);
+                String actionPath = AuditApplication.buildPath("actions-test/actions", action);
+                AuditSession session = auditComponent.startAuditSession(APPLICATION_ACTIONS_TEST, actionPath);
                 
                 return auditComponent.audit(session, adjustedValues);
             }
@@ -215,6 +216,9 @@ public class AuditComponentTest extends TestCase
         return transactionService.getRetryingTransactionHelper().doInTransaction(auditCallback);
     }
     
+    /**
+     * Utility method to compare a 'results' map with a map of expected values
+     */
     private void checkAuditMaps(Map<String, Serializable> result, Map<String, Serializable> expected)
     {
         Map<String, Serializable> copyResult = new HashMap<String, Serializable>(result);
@@ -275,10 +279,10 @@ public class AuditComponentTest extends TestCase
         Map<String, Serializable> result = auditTestAction("action-01", nodeRef, parameters);
         
         Map<String, Serializable> expected = new HashMap<String, Serializable>();
-        expected.put("/test/actions/action-01/context-node/noderef", nodeRef);
-        expected.put("/test/actions/action-01/params/A/value", valueA);
-        expected.put("/test/actions/action-01/params/B/value", valueB);
-        expected.put("/test/actions/action-01/params/C/value", valueC);
+        expected.put("/actions-test/actions/action-01/context-node/noderef", nodeRef);
+        expected.put("/actions-test/actions/action-01/params/A/value", valueA);
+        expected.put("/actions-test/actions/action-01/params/B/value", valueB);
+        expected.put("/actions-test/actions/action-01/params/C/value", valueC);
         
         // Check
         checkAuditMaps(result, expected);

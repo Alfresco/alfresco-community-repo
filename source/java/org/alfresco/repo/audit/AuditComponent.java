@@ -28,6 +28,7 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 
+import org.alfresco.repo.audit.model.AuditApplication;
 import org.alfresco.repo.audit.model._3.AuditPath;
 import org.alfresco.service.cmr.audit.AuditInfo;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -87,32 +88,38 @@ public interface AuditComponent
      * the same root path.
      * <p/>
      * The name of the application controls part of the audit model will be used.  The root path must
-     * start with the matching <b>key</b> attribute that was declared for the matching
-     * <b>Application</b> element in the audit configuration.
+     * start with the path separator '/' ({@link AuditApplication#AUDIT_PATH_SEPARATOR}) and the matching
+     * <b>key</b> attribute that was declared for the <b>Application</b> element in the audit configuration.
      * <p/>
      * This is a read-write method.  Client code must wrap calls in the appropriate transactional wrappers.
      * 
      * @param applicationName   the name of the application to log against
-     * @param rootPath          a base path of {@link AuditPath} key entries concatenated with <b>.</b> (period)
-     * @return                  Returns the unique session
+     * @param rootPath          a base path of {@link AuditPath} key entries concatenated with
+     *                          {@link AuditApplication#AUDIT_PATH_SEPARATOR}.
+     * @return                  Returns the unique session or <tt>null</tt> if no session was created
      * @throws IllegalStateException if there is not a writable transaction present
      */
     AuditSession startAuditSession(String applicationName, String rootPath);
     
     /**
-     * {@inheritDoc #startAuditSession(String, String)}
+     * {@inheritDoc AuditComponent#startAuditSession(String, String)}
 
+     * @param applicationName   the name of the application to log against
+     * @param rootPath          a base path of {@link AuditPath} key entries concatenated with the path separator
+     *                          '/' ({@link AuditApplication#AUDIT_PATH_SEPARATOR})
      * @param values            values to associate with the session.  These values will override or
      *                          complement generated session-specific values
+     * @param rootPath          a base path of {@link AuditPath} key entries concatenated with
+     *                          {@link AuditApplication#AUDIT_PATH_SEPARATOR}.
      * @throws IllegalStateException if there is not a writable transaction present
      */
     AuditSession startAuditSession(String applicationName, String rootPath, Map<String, Serializable> values);
     
     /**
-     * Record a set of values against the given session.  The map is a path (starting with '/') relative
-     * to the root path given when {@link #startAuditSession(String, String) starting the session}.  All
-     * resulting path values (session root path + map entry paths) must have data recorder entries and
-     * be enabled for data to be recorded.
+     * Record a set of values against the given session.  The map is a path - starting with '/'
+     * ({@link AuditApplication#AUDIT_PATH_SEPARATOR}), relative to the root path given when
+     * {@link #startAuditSession(String, String) starting the session}.  All resulting path values
+     * (session root path + map entry paths) must have data recorder entries and be enabled for data to be recorded.
      * <p/>
      * The return values reflect what was actually persisted and is controlled by the data extractors
      * defined in the audit configuration.

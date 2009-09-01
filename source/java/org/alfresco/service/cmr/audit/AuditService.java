@@ -26,7 +26,6 @@ package org.alfresco.service.cmr.audit;
 
 import java.util.List;
 
-import org.alfresco.repo.audit.AuditState;
 import org.alfresco.service.NotAuditable;
 import org.alfresco.service.PublicService;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -43,7 +42,6 @@ import org.alfresco.service.cmr.repository.NodeRef;
 @PublicService
 public interface AuditService
 {
-
     /**
      * Add an application audit entry.
      * 

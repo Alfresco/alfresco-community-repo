@@ -20,7 +20,7 @@
     </DataGenerators>
 
     <Application name="Alfresco Test" key="test">
-        <GenerateValue key="time" dataGenerator="systemTime" scope="SESSION"/>
+        <GenerateValue key="time" dataGenerator="systemTime"/>
         <AuditPath key="1.1">
             <AuditPath key="2.1">
                 <AuditPath key="3.1">
@@ -56,7 +56,7 @@
                 <AuditPath key="3.2">
                     <AuditPath key="4.1">
                         <RecordValue key="value.1" dataExtractor="simpleValue"/>
-                        <GenerateValue key="time" dataGenerator="systemTime" scope="ALL"/>
+                        <GenerateValue key="time" dataGenerator="systemTime"/>
                     </AuditPath>
                     <AuditPath key="4.2">
                         <RecordValue key="value.1" dataExtractor="simpleValue"/>
@@ -67,12 +67,12 @@
     </Application>
 
     <Application name="Actions Test" key="actions-test">
-        <GenerateValue key="time" dataGenerator="systemTime" scope="SESSION"/>
         <AuditPath key="actions">
+            <GenerateValue key="user" dataGenerator="user"/>
+            <AuditPath key="context-node">
+                <RecordValue key="noderef" dataExtractor="simpleValue"/>
+            </AuditPath>
             <AuditPath key="action-01">
-                <AuditPath key="context-node">
-                    <RecordValue key="noderef" dataExtractor="simpleValue"/>
-                </AuditPath>
                 <AuditPath key="params">
                     <AuditPath key="A">
                         <RecordValue key="value" dataExtractor="simpleValue"/>

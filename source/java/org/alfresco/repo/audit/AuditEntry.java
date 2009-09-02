@@ -22,88 +22,72 @@
  * the FLOSS exception, and it is also available here: 
  * http://www.alfresco.com/legal/licensing"
  */
-package org.alfresco.repo.domain.audit;
+package org.alfresco.repo.audit;
 
+import java.io.Serializable;
 import java.util.Date;
+import java.util.Map;
+
+import org.alfresco.util.ParameterCheck;
 
 /**
- * Entity bean for <b>alf_audit_entry</b> table.
+ * Bean to hold audit entry data.  An audit entry represents a single audit call, but the
+ * data stored may be a large map.
  * 
  * @author Derek Hulley
  * @since 3.2
  */
-public class AuditEntryEntity
+public class AuditEntry
 {
-    private Long id;
-    private Long auditApplicationId;
-    private Long auditUserId;
-    private long auditTime;
-    private Long auditValuesId;
+    private final String user;
+    private final long time;
+    private final Long valuesId;
+    private final Map<String, Serializable> values;
     
-    public AuditEntryEntity()
+    /**
+     * TODO: Comment
+     */
+    public AuditEntry(String user, long time, Long valuesId, Map<String, Serializable> values)
     {
+        ParameterCheck.mandatoryString("user", user);
+        ParameterCheck.mandatory("time", time);
+        
+        this.user = user;
+        this.time = time;
+        this.valuesId = valuesId;
+        this.values = values;
     }
     
     @Override
     public String toString()
     {
         StringBuilder sb = new StringBuilder(512);
-        sb.append("AuditEntryEntity")
-          .append("[ ID=").append(id)
-          .append(", auditApplicationId=").append(auditApplicationId)
-          .append(", auditTime").append(new Date(auditTime))
-          .append(", auditValuesId=").append(auditValuesId)
+        sb.append("AuditEntry")
+          .append("[ user=").append(user)
+          .append(", time=").append(new Date(time))
+          .append(", valuesId=").append(valuesId)
+          .append(", values=").append(values)
           .append("]");
         return sb.toString();
     }
-    
-    public Long getId()
+
+    public String getUser()
     {
-        return id;
+        return user;
     }
 
-    public void setId(Long id)
+    public long getTime()
     {
-        this.id = id;
+        return time;
     }
 
-    public Long getAuditApplicationId()
+    public Long getValuesId()
     {
-        return auditApplicationId;
+        return valuesId;
     }
 
-    public void setAuditApplicationId(Long auditSessionId)
+    public Map<String, Serializable> getValues()
     {
-        this.auditApplicationId = auditSessionId;
-    }
-
-    public Long getAuditUserId()
-    {
-        return auditUserId;
-    }
-
-    public void setAuditUserId(Long auditUserId)
-    {
-        this.auditUserId = auditUserId;
-    }
-
-    public long getAuditTime()
-    {
-        return auditTime;
-    }
-
-    public void setAuditTime(long auditTime)
-    {
-        this.auditTime = auditTime;
-    }
-
-    public Long getAuditValuesId()
-    {
-        return auditValuesId;
-    }
-
-    public void setAuditValuesId(Long auditValuesId)
-    {
-        this.auditValuesId = auditValuesId;
+        return values;
     }
 }

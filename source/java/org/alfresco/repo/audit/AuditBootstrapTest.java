@@ -31,7 +31,6 @@ import junit.framework.TestCase;
 
 import org.alfresco.repo.audit.extractor.DataExtractor;
 import org.alfresco.repo.audit.generator.DataGenerator;
-import org.alfresco.repo.audit.generator.DataGenerator.DataGeneratorScope;
 import org.alfresco.repo.audit.model.AuditApplication;
 import org.alfresco.repo.audit.model.AuditModelException;
 import org.alfresco.repo.audit.model.AuditModelRegistry;
@@ -110,7 +109,7 @@ public class AuditBootstrapTest extends TestCase
         loadBadModel("classpath:alfresco/audit/alfresco-audit-test-bad-04.xml");
     }
     
-    public void testModelLoading_InvalidScope() throws Exception
+    public void testModelLoading_InvalidDataGeneratorName() throws Exception
     {
         loadBadModel("classpath:alfresco/audit/alfresco-audit-test-bad-05.xml");
     }
@@ -120,10 +119,10 @@ public class AuditBootstrapTest extends TestCase
         loadBadModel("classpath:alfresco/audit/alfresco-audit-test-bad-06.xml");
     }
     
-    public void testGetModelId()
+    public void testGetApplicationId()
     {
-        Long repoId = auditModelRegistry.getAuditModelId(APPLICATION_TEST);
-        assertNotNull("No audit model ID for " + APPLICATION_TEST, repoId);
+        Long appId = auditModelRegistry.getAuditApplicationId(APPLICATION_TEST);
+        assertNotNull("No audit application ID for " + APPLICATION_TEST, appId);
     }
     
     private void testBadPath(AuditApplication app, String path)
@@ -162,32 +161,32 @@ public class AuditBootstrapTest extends TestCase
         assertTrue("Expected no extractors", extractors.isEmpty());
 
         extractors = app.getDataExtractors("/test/1.1/2.1/3.1/4.1");
-        assertEquals(2, extractors.size());
-        assertTrue(extractors.containsKey("/test/1.1/2.1/3.1/value.1"));
+        assertEquals(1, extractors.size());
         assertTrue(extractors.containsKey("/test/1.1/2.1/3.1/4.1/value.1"));
+
+        extractors = app.getDataExtractors("/test/1.1/2.1/3.1");
+        assertEquals(1, extractors.size());
+        assertTrue(extractors.containsKey("/test/1.1/2.1/3.1/value.1"));
     }
     
-    public void testAuditApplication_GetDataGenerators_AnyScope()
+    public void testAuditApplication_GetDataGenerators()
     {
         AuditApplication app = auditModelRegistry.getAuditApplication(APPLICATION_TEST);
         assertNotNull(app);
         
-        Map<String, DataGenerator> generators = app.getDataGenerators("/blah", DataGeneratorScope.ALL);
+        Map<String, DataGenerator> generators = app.getDataGenerators("/blah");
         assertNotNull("Should never get a null map", generators);
         assertTrue("Expected no generators", generators.isEmpty());
 
-        generators = app.getDataGenerators("/test/1.1/2.1/3.1/4.1", DataGeneratorScope.ALL);
+        generators = app.getDataGenerators("/test/1.1/2.1/3.1/4.1");
         assertEquals(1, generators.size());
         assertTrue(generators.containsKey("/test/time"));
 
-        generators = app.getDataGenerators("/test/1.1/2.1/3.1/4.1", DataGeneratorScope.SESSION);
+        generators = app.getDataGenerators("/test/1.1/2.1/3.1/4.1");
         assertEquals(1, generators.size());
         assertTrue(generators.containsKey("/test/time"));
 
-        generators = app.getDataGenerators("/test/1.1/2.1/3.1/4.1", DataGeneratorScope.AUDIT);
-        assertEquals(0, generators.size());
-
-        generators = app.getDataGenerators("/test/1.1/2.2/3.2/4.1", DataGeneratorScope.ALL);
+        generators = app.getDataGenerators("/test/1.1/2.2/3.2/4.1");
         assertEquals(2, generators.size());
         assertTrue(generators.containsKey("/test/time"));
         assertTrue(generators.containsKey("/test/1.1/2.2/3.2/4.1/time"));

@@ -22,7 +22,7 @@
 
     <Application name="Alfresco Repository" key="repository">
         <AuditPath key="services">
-            <GenerateValue key="txn" dataGenerator="transactionId" scope="AUDIT"/>
+            <GenerateValue key="txn" dataGenerator="transactionId"/>
             <AuditPath key="nodeservice">
                 <AuditPath key="createstore">
                     <AuditPath key="protocol">

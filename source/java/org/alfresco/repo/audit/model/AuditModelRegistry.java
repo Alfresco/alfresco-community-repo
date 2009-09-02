@@ -96,9 +96,9 @@ public class AuditModelRegistry
      */
     private final Map<String, AuditApplication> auditApplicationsByName;
     /**
-     * Used to lookup a reference to the persisted config binary for an application
+     * Used to lookup a reference to the application
      */
-    private final Map<String, Long> auditModelIdsByApplicationsName;
+    private final Map<String, Long> auditApplicationIdsByApplicationsName;
     
     /**
      * Default constructor
@@ -114,7 +114,7 @@ public class AuditModelRegistry
         auditModelUrls = new HashSet<URL>(7);
         auditModels = new ArrayList<Audit>(7);
         auditApplicationsByName = new HashMap<String, AuditApplication>(7);
-        auditModelIdsByApplicationsName = new HashMap<String, Long>(7);
+        auditApplicationIdsByApplicationsName = new HashMap<String, Long>(7);
     }
 
     /**
@@ -209,7 +209,7 @@ public class AuditModelRegistry
     {
         auditModels.clear();
         auditApplicationsByName.clear();
-        auditModelIdsByApplicationsName.clear();
+        auditApplicationIdsByApplicationsName.clear();
     }
     
     /**
@@ -271,17 +271,17 @@ public class AuditModelRegistry
     }
     
     /**
-     * Get the ID of the persisted audit model for the given application name
+     * Get the ID of the persisted audit application for the given application name
      * 
      * @param applicationName       the name of the audited application
-     * @return                      the unique ID of the persisted model (<tt>null</tt> if not found)
+     * @return                      the unique ID of the persisted application (<tt>null</tt> if not found)
      */
-    public Long getAuditModelId(String applicationName)
+    public Long getAuditApplicationId(String applicationName)
     {
         readLock.lock();
         try
         {
-            return auditModelIdsByApplicationsName.get(applicationName);
+            return auditApplicationIdsByApplicationsName.get(applicationName);
         }
         finally
         {
@@ -514,9 +514,13 @@ public class AuditModelRegistry
             {
                 throw new AuditModelException("Audit application '" + name + "' has already been defined.");
             }
+            
+            // Get the ID of the application
+            Long appId = auditDAO.getOrCreateAuditApplication(auditModelId, name);
+            
             AuditApplication wrapperApp = new AuditApplication(dataExtractorsByName, dataGeneratorsByName, application);
             auditApplicationsByName.put(name, wrapperApp);
-            auditModelIdsByApplicationsName.put(name, auditModelId);
+            auditApplicationIdsByApplicationsName.put(name, appId);
         }
         // Store the model itself
         auditModels.add(audit);

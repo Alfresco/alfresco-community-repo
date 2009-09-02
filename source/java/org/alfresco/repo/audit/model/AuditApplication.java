@@ -27,18 +27,15 @@ package org.alfresco.repo.audit.model;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.repo.audit.extractor.DataExtractor;
 import org.alfresco.repo.audit.generator.DataGenerator;
-import org.alfresco.repo.audit.generator.DataGenerator.DataGeneratorScope;
 import org.alfresco.repo.audit.model._3.Application;
 import org.alfresco.repo.audit.model._3.AuditPath;
 import org.alfresco.repo.audit.model._3.GenerateValue;
 import org.alfresco.repo.audit.model._3.RecordValue;
-import org.alfresco.repo.audit.model._3.ScopeAttribute;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -70,8 +67,6 @@ public class AuditApplication
     private Map<String, Map<String, DataExtractor>> dataExtractors = new HashMap<String, Map<String, DataExtractor>>(11);
     /** Derived expaned map for fast lookup */
     private Map<String, Map<String, DataGenerator>> dataGenerators = new HashMap<String, Map<String, DataGenerator>>(11);
-    /** Derived expaned map for fast lookup */
-    private Map<String, DataGeneratorScope> dataGeneratorScopes = new HashMap<String, DataGeneratorScope>(11);
     
     /**
      * @param application           the application that will be wrapped
@@ -251,43 +246,29 @@ public class AuditApplication
      * Get all data generators applicable to a given path and scope.
      * 
      * @param path              the audit path
-     * @param scope             the audit scope (e.g. SESSION or AUDIT)
      * @return                  Returns all data generators mapped to their key-path
      */
-    public Map<String, DataGenerator> getDataGenerators(String path, DataGeneratorScope scope)
+    public Map<String, DataGenerator> getDataGenerators(String path)
     {
-        Map<String, DataGenerator> generators = dataGenerators.get(path);
-        if (generators == null)
+        return getDataGenerators(Collections.singleton(path));
+    }
+    
+    /**
+     * Get all data generators applicable to a given path and scope.
+     * 
+     * @param paths             the audit paths
+     * @return                  Returns all data generators mapped to their key-path
+     */
+    public Map<String, DataGenerator> getDataGenerators(Set<String> paths)
+    {
+        Map<String, DataGenerator> amalgamatedGenerators = new HashMap<String, DataGenerator>(13);
+        for (String path : paths)
         {
-            // Don't give back a null
-            generators = new HashMap<String, DataGenerator>(0);
-        }
-        else
-        {
-            // Copy the map so that (a) we can modify it during iteration and (b) we return
-            // something that the client can't mess up.
-            generators = new HashMap<String, DataGenerator>(generators);
-        }
-        
-        if (scope != DataGeneratorScope.ALL)
-        {
-            // Go through them and eliminate the ones in the wrong scope
-            Iterator<Map.Entry<String, DataGenerator>> iterator = generators.entrySet().iterator();
-            while (iterator.hasNext())
+            Map<String, DataGenerator> generators = dataGenerators.get(path);
+            if (generators != null)
             {
-                Map.Entry<String, DataGenerator> entry = iterator.next();
-                String generatorPath = entry.getKey();
-                DataGeneratorScope generatorScope = dataGeneratorScopes.get(generatorPath);
-                if (generatorScope == DataGeneratorScope.ALL)
-                {
-                    // This one always applies
-                    continue;
-                }
-                else if (generatorScope != scope)
-                {
-                    // Wrong scope
-                    iterator.remove();
-                }
+                // Copy values to combined map
+                amalgamatedGenerators.putAll(generators);
             }
         }
         
@@ -296,11 +277,10 @@ public class AuditApplication
         {
             logger.debug(
                     "Looked up data generators: \n" +
-                    "   Path:  " + path + "\n" +
-                    "   Scope: " + scope + "\n" +
-                    "   Found: " + generators);
+                    "   Paths:  " + paths + "\n" +
+                    "   Found: " + amalgamatedGenerators);
         }
-        return generators;
+        return amalgamatedGenerators;
     }
     
     /**
@@ -365,11 +345,11 @@ public class AuditApplication
         }
         // All the extractors apply to the current path
         dataExtractors.put(currentPath, upperExtractorsByPath);
-//        // Data extractors only apply directly to data in which they appear.
-//        //    TODO: Examine this assumption.  If it is not true, i.e. data extractors apply to
-//        //          data anywhere down the hierarchy, then the followin line of code should be
-//        //          removed and the use-cases tested appropriately.
-//        upperExtractorsByPath.clear();
+        // Data extractors only apply directly to data in which they appear.
+        //    TODO: Examine this assumption.  If it is not true, i.e. data extractors apply to
+        //          data anywhere down the hierarchy, then the followin line of code should be
+        //          removed and the use-cases tested appropriately.
+        upperExtractorsByPath = new HashMap<String, DataExtractor>();
 
         // Get the data generators declared for this key
         for (GenerateValue element : auditPath.getGenerateValue())
@@ -386,26 +366,6 @@ public class AuditApplication
             if (generator == null)
             {
                 generateException(generatorPath, "No data generator exists for name: " + generatorName);
-            }
-            // Store the scope
-            ScopeAttribute scopeAttribute = element.getScope();
-            if (scopeAttribute == null)
-            {
-                generateException(generatorPath, "No scope defined for generator: " + generatorName);
-            }
-            String scopeStr = scopeAttribute.value();
-            if (scopeStr == null)
-            {
-                scopeStr = DataGeneratorScope.AUDIT.toString();
-            }
-            try
-            {
-                DataGeneratorScope scope = DataGeneratorScope.valueOf(scopeStr);
-                dataGeneratorScopes.put(generatorPath, scope);
-            }
-            catch (Throwable e)
-            {
-                generateException(generatorPath, "Illegal generator scope value: " + scopeStr);
             }
             // All generators that occur earlier in the path will also be applicable here
             upperGeneratorsByPath.put(generatorPath, generator);

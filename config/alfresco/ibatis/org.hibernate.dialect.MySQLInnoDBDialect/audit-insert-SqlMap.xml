@@ -13,8 +13,8 @@
         </selectKey>
     </insert>
 
-    <insert id="insert.AuditSession" parameterClass="AuditSession" >
-        <include refid="insert.AuditSession.AutoIncrement"/>
+    <insert id="insert.AuditApplication" parameterClass="AuditApplication" >
+        <include refid="insert.AuditApplication.AutoIncrement"/>
         <selectKey resultClass="long" keyProperty="id" type="post">
             KEY_COLUMN:GENERATED_KEY
         </selectKey>

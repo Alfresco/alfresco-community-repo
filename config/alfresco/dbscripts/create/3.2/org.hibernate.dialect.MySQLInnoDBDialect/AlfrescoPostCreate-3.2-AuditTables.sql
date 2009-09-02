@@ -17,24 +17,24 @@ CREATE TABLE alf_audit_model
    PRIMARY KEY (id)
 ) ENGINE=InnoDB;
 
-CREATE TABLE alf_audit_session
+CREATE TABLE alf_audit_app
 (
    id BIGINT NOT NULL AUTO_INCREMENT,
    audit_model_id BIGINT NOT NULL,
    app_name_id BIGINT NOT NULL,
-   CONSTRAINT fk_alf_audit_sess_model FOREIGN KEY (audit_model_id) REFERENCES alf_audit_model (id),
-   CONSTRAINT fk_alf_audit_sess_app FOREIGN KEY (app_name_id) REFERENCES alf_prop_value (id),
+   CONSTRAINT fk_alf_audit_app_model FOREIGN KEY (audit_model_id) REFERENCES alf_audit_model (id) ON DELETE CASCADE,
+   CONSTRAINT fk_alf_audit_app_app FOREIGN KEY (app_name_id) REFERENCES alf_prop_value (id),
    PRIMARY KEY (id)
 ) ENGINE=InnoDB;
 
 CREATE TABLE alf_audit_entry
 (
    id BIGINT NOT NULL AUTO_INCREMENT,
-   audit_session_id BIGINT NOT NULL,
+   audit_app_id BIGINT NOT NULL,
    audit_time BIGINT NOT NULL,
    audit_user_id BIGINT NULL,
    audit_values_id BIGINT NULL,
-   CONSTRAINT fk_alf_audit_ent_sess FOREIGN KEY (audit_session_id) REFERENCES alf_audit_session (id),
+   CONSTRAINT fk_alf_audit_ent_app FOREIGN KEY (audit_app_id) REFERENCES alf_audit_app (id) ON DELETE CASCADE,
    INDEX idx_alf_audit_ent_time (audit_time),
    CONSTRAINT fk_alf_audit_ent_user FOREIGN KEY (audit_user_id) REFERENCES alf_prop_value (id),
    CONSTRAINT fk_alf_audit_ent_prop FOREIGN KEY (audit_values_id) REFERENCES alf_prop_value (id),

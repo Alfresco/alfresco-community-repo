@@ -146,17 +146,6 @@ public class HibernateAuditDAO extends HibernateDaoSupport implements AuditDAO, 
      * @throws UnsupportedOperationException always
      * @since 3.2
      */
-    public Long createAuditSession(Long modelId, String application)
-    {
-        throw new UnsupportedOperationException();
-    }
-
-    /**
-     * Fallout implementation from new audit DAO
-     * 
-     * @throws UnsupportedOperationException always
-     * @since 3.2
-     */
     public Pair<Long, ContentData> getOrCreateAuditModel(URL url)
     {
         throw new UnsupportedOperationException();
@@ -168,7 +157,18 @@ public class HibernateAuditDAO extends HibernateDaoSupport implements AuditDAO, 
      * @throws UnsupportedOperationException always
      * @since 3.2
      */
-    public Long createAuditEntry(Long sessionId, long time, String username, Map<String, Serializable> values)
+    public Long getOrCreateAuditApplication(Long modelId, String applicationName)
+    {
+        throw new UnsupportedOperationException();
+    }
+
+    /**
+     * Fallout implementation from new audit DAO
+     * 
+     * @throws UnsupportedOperationException always
+     * @since 3.2
+     */
+    public Long createAuditEntry(Long applicationId, long time, String username, Map<String, Serializable> values)
     {
         throw new UnsupportedOperationException();
     }

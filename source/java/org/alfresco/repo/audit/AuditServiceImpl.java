@@ -122,4 +122,16 @@ public class AuditServiceImpl implements AuditService
         tx.commit();
 
     }
+
+    /*
+     * V3.2 from here on.  Put all fixes to the older audit code before this point, please.
+     */
+
+    /**
+     * {@inheritDoc}
+     */
+    public void auditQuery(AuditQueryCallback callback, String auditPath, String user, long from, long to, int limit)
+    {
+        throw new UnsupportedOperationException();
+    }
 }

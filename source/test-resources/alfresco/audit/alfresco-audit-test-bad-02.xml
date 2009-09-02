@@ -11,7 +11,7 @@
     <Application name="Alfresco Test Bad 02" key="test-bad-02">
         <AuditPath key="1.1">
             <AuditPath key="2.1">
-                <GenerateValue key="value.1" dataGenerator="blah" scope="AUDIT"/>
+                <GenerateValue key="value.1" dataGenerator="blah"/>
             </AuditPath>
         </AuditPath>
     </Application>

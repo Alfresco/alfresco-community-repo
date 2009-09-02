@@ -25,18 +25,18 @@
 package org.alfresco.repo.domain.audit;
 
 /**
- * Entity bean for <b>alf_audit_session</b> table.
+ * Entity bean for <b>alf_audit_application</b> table.
  * 
  * @author Derek Hulley
  * @since 3.2
  */
-public class AuditSessionEntity
+public class AuditApplicationEntity
 {
     private Long id;
-    private Long applicationNameId;
     private Long auditModelId;
+    private Long applicationNameId;
     
-    public AuditSessionEntity()
+    public AuditApplicationEntity()
     {
     }
     
@@ -44,10 +44,10 @@ public class AuditSessionEntity
     public String toString()
     {
         StringBuilder sb = new StringBuilder(512);
-        sb.append("AuditSessionEntity")
+        sb.append("AuditApplicationEntity")
           .append("[ ID=").append(id)
-          .append(", applicationNameId=").append(applicationNameId)
           .append(", auditModelId=").append(auditModelId)
+          .append(", applicationNameId=").append(applicationNameId)
           .append("]");
         return sb.toString();
     }

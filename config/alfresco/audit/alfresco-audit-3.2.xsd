@@ -79,7 +79,6 @@
         <xs:complexContent>
             <xs:extension base="a:KeyedAuditDefinition">
                 <xs:attribute name="dataGenerator" type="a:NameAttribute" use="required" />
-                <xs:attribute name="scope" type="a:ScopeAttribute" use="required" />
             </xs:extension>
         </xs:complexContent>
     </xs:complexType>
@@ -111,14 +110,6 @@
     <xs:simpleType name="ClassAttribute">
         <xs:restriction base="xs:string">
             <xs:minLength value="1"/>
-        </xs:restriction>
-    </xs:simpleType>
-
-    <xs:simpleType name="ScopeAttribute">
-        <xs:restriction base="xs:string">
-            <xs:enumeration value="SESSION"/>
-            <xs:enumeration value="AUDIT"/>
-            <xs:enumeration value="ALL"/>
         </xs:restriction>
     </xs:simpleType>
 

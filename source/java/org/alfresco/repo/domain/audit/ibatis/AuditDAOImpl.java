@@ -24,10 +24,16 @@
  */
 package org.alfresco.repo.domain.audit.ibatis;
 
+import java.io.Serializable;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.alfresco.repo.domain.audit.AbstractAuditDAOImpl;
+import org.alfresco.repo.domain.audit.AuditApplicationEntity;
 import org.alfresco.repo.domain.audit.AuditEntryEntity;
 import org.alfresco.repo.domain.audit.AuditModelEntity;
-import org.alfresco.repo.domain.audit.AuditSessionEntity;
+import org.alfresco.util.Pair;
 import org.springframework.orm.ibatis.SqlMapClientTemplate;
 
 /**
@@ -41,7 +47,8 @@ public class AuditDAOImpl extends AbstractAuditDAOImpl
     private static final String SELECT_MODEL_BY_CRC = "select.AuditModelByCrc";
     private static final String INSERT_MODEL = "insert.AuditModel";
     
-    private static final String INSERT_SESSION = "insert.AuditSession";
+    private static final String SELECT_APPLICATION_BY_MODEL_ID = "select.AuditApplicationByModelId";
+    private static final String INSERT_APPLICATION = "insert.AuditApplication";
     
     private static final String INSERT_ENTRY = "insert.AuditEntry";
     
@@ -75,22 +82,59 @@ public class AuditDAOImpl extends AbstractAuditDAOImpl
         return entity;
     }
 
+    @SuppressWarnings("unchecked")
     @Override
-    protected AuditSessionEntity createAuditSession(Long appNameId, Long modelId)
+    protected AuditApplicationEntity getAuditApplicationByModelIdAndName(Long modelId, String appName)
     {
-        AuditSessionEntity entity = new AuditSessionEntity();
-        entity.setApplicationNameId(appNameId);
+        Map<String, Object> params = new HashMap<String, Object>(11);
+        params.put("id", modelId);
+        List<AuditApplicationEntity> results = (List<AuditApplicationEntity>) template.queryForList(
+                SELECT_APPLICATION_BY_MODEL_ID,
+                params);
+        // There could be multiple hits for the model ID.  Go through them and find the correct app name.
+        AuditApplicationEntity result = null;
+        for (AuditApplicationEntity row : results)
+        {
+            Long appNameId = row.getApplicationNameId();
+            Pair<Long, Serializable> propPair = getPropertyValueDAO().getPropertyValueById(appNameId);
+            if (propPair == null)
+            {
+                // There is a FK to protect against this, but we'll just log it
+                logger.warn("An audit application references a non-existent app_name_id: " + appNameId);
+            }
+            // Check for exact match
+            Serializable propValue = propPair.getSecond();
+            if (propValue instanceof String && propValue.equals(appName))
+            {
+                // Got it
+                result = row;
+                break;
+            }
+        }
+        // Done
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Searched for audit application with model id " + modelId + " and found: " + result);
+        }
+        return result;
+    }
+
+    @Override
+    protected AuditApplicationEntity createAuditApplication(Long modelId, Long appNameId)
+    {
+        AuditApplicationEntity entity = new AuditApplicationEntity();
         entity.setAuditModelId(modelId);
-        Long id = (Long) template.insert(INSERT_SESSION, entity);
+        entity.setApplicationNameId(appNameId);
+        Long id = (Long) template.insert(INSERT_APPLICATION, entity);
         entity.setId(id);
         return entity;
     }
 
     @Override
-    protected AuditEntryEntity createAuditEntry(Long sessionId, long time, Long usernameId, Long valuesId)
+    protected AuditEntryEntity createAuditEntry(Long applicationId, long time, Long usernameId, Long valuesId)
     {
         AuditEntryEntity entity = new AuditEntryEntity();
-        entity.setAuditSessionId(sessionId);
+        entity.setAuditApplicationId(applicationId);
         entity.setAuditTime(time);
         entity.setAuditUserId(usernameId);
         entity.setAuditValuesId(valuesId);

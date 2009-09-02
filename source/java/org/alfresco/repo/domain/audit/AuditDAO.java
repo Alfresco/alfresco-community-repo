@@ -75,22 +75,22 @@ public interface AuditDAO
     Pair<Long, ContentData> getOrCreateAuditModel(URL url);
     
     /**
-     * Creates a new audit session entry - there is no session re-use.
+     * Creates a new audit application or finds an existing one
      * 
-     * @param modelId       an existing audit model ID
-     * @param application   the name of the application
-     * @return              Returns the unique session ID
+     * @param modelId           the ID of the model configuration
+     * @param applicationName   the name of the application
+     * @return                  Returns the ID of the application entry
      */
-    Long createAuditSession(Long modelId, String application);
+    Long getOrCreateAuditApplication(Long modelId, String applicationName);
     
     /**
      * Create a new audit entry with the given map of values.
      * 
-     * @param sessionId     an existing audit session ID
+     * @param applicationId an existing audit application ID
      * @param time          the time (ms since epoch) to log the entry against
      * @param username      the authenticated user (<tt>null</tt> if not present)
      * @param values        the values to record
      * @return              Returns the unique entry ID
      */
-    Long createAuditEntry(Long sessionId, long time, String username, Map<String, Serializable> values);
+    Long createAuditEntry(Long applicationId, long time, String username, Map<String, Serializable> values);
 }

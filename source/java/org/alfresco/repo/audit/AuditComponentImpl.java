@@ -28,6 +28,7 @@ import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -35,7 +36,6 @@ import java.util.Map;
 
 import org.alfresco.repo.audit.extractor.DataExtractor;
 import org.alfresco.repo.audit.generator.DataGenerator;
-import org.alfresco.repo.audit.generator.DataGenerator.DataGeneratorScope;
 import org.alfresco.repo.audit.model.AuditApplication;
 import org.alfresco.repo.audit.model.AuditEntry;
 import org.alfresco.repo.audit.model.AuditModelRegistry;
@@ -768,26 +768,24 @@ public class AuditComponentImpl implements AuditComponent
     }
 
     /**
-     * @see #startAuditSession(String, String, Map)
-     * @since 3.2
-     */
-    public AuditSession startAuditSession(String applicationName, String rootPath)
-    {
-        return startAuditSession(applicationName, rootPath, new HashMap<String, Serializable>(11));
-    }
-    /**
      * {@inheritDoc}
      * @since 3.2
      */
-    public AuditSession startAuditSession(String applicationName, String rootPath, Map<String, Serializable> values)
+    public Map<String, Serializable> audit(String applicationName, String rootPath, Map<String, Serializable> values)
     {
         ParameterCheck.mandatory("applicationName", applicationName);
-        ParameterCheck.mandatory("values", values);
+        ParameterCheck.mandatory("rootPath", rootPath);
         
         if (AlfrescoTransactionSupport.getTransactionReadState() != TxnReadState.TXN_READ_WRITE)
         {
             throw new IllegalStateException("Auditing requires a read-write transaction.");
         }
+        
+        if (values == null)
+        {
+            values = Collections.emptyMap();
+        }
+        
         // Get the application
         AuditApplication application = auditModelRegistry.getAuditApplication(applicationName);
         if (application == null)
@@ -796,61 +794,19 @@ public class AuditComponentImpl implements AuditComponent
             {
                 logger.debug("No audit application named '" + applicationName + "' has been registered.");
             }
-            return null;
+            return Collections.emptyMap();
         }
         // Check the path against the application
         application.checkPath(rootPath);
         // Get the model ID for the application
-        Long modelId = auditModelRegistry.getAuditModelId(applicationName);
-        if (modelId == null)
+        Long applicationId = auditModelRegistry.getAuditApplicationId(applicationName);
+        if (applicationId == null)
         {
-            throw new AuditException("No model exists for audit application: " + applicationName);
+            throw new AuditException("No persisted instance exists for audit application: " + applicationName);
         }
         
-        // Now create the session
-        Long sessionId = auditDAO.createAuditSession(modelId, applicationName);
-        AuditSession session = new AuditSession(application, rootPath, sessionId);
-
-        // Generate session data
-        Map<String, DataGenerator> generators = application.getDataGenerators(rootPath, DataGeneratorScope.SESSION);
-        Map<String, Serializable> sessionData = generateData(generators);
+        // TODO: Check if the root path is enabled or not
         
-        // Extract data from the values passed in
-        Map<String, Serializable> extractedData = extractData(application, values);
-        
-        // Combine the values
-        Map<String, Serializable> allData = new HashMap<String, Serializable>(sessionData);
-        allData.putAll(extractedData);
-        
-        // Audit it
-        audit(session, allData);
-        
-        // Done
-        if (logger.isDebugEnabled())
-        {
-            logger.debug("New audit session: " + session);
-        }
-        return session;
-    }
-
-    /**
-     * {@inheritDoc}
-     * @since 3.2
-     */
-    public Map<String, Serializable> audit(AuditSession session, Map<String, Serializable> values)
-    {
-        ParameterCheck.mandatory("session", session);
-        ParameterCheck.mandatory("values", values);
-        
-        if (AlfrescoTransactionSupport.getTransactionReadState() != TxnReadState.TXN_READ_WRITE)
-        {
-            throw new IllegalStateException("Auditing requires a read-write transaction.");
-        }
-        
-        AuditApplication app = session.getApplication();
-        String rootPath = session.getRootPath();
-        Long sessionId = session.getSessionId();
-
         // Build the key paths using the session root path
         Map<String, Serializable> pathedValues = new HashMap<String, Serializable>(values.size() * 2);
         for (Map.Entry<String, Serializable> entry : values.entrySet())
@@ -860,27 +816,38 @@ public class AuditComponentImpl implements AuditComponent
             pathedValues.put(path, entry.getValue());
         }
         
+        // Generate data
+        Map<String, DataGenerator> generators = application.getDataGenerators(pathedValues.keySet());
+        Map<String, Serializable> auditData = generateData(generators);
+        
         // Now extract values
-        Map<String, Serializable> extractedValues = extractData(app, pathedValues);
+        Map<String, Serializable> extractedData = extractData(application, pathedValues);
+        
+        // Combine extracted and generated values (extracted data takes precedence)
+        auditData.putAll(extractedData);
 
         // Time and username are intrinsic
         long time = System.currentTimeMillis();
         String username = AuthenticationUtil.getFullyAuthenticatedUser();
         
-        // Persist the values
-        Long entryId = auditDAO.createAuditEntry(sessionId, time, username, pathedValues);
+        Long entryId = null;
+        if (!auditData.isEmpty())
+        {
+            // Persist the values
+            entryId = auditDAO.createAuditEntry(applicationId, time, username, auditData);
+        }
         
         // Done
         if (logger.isDebugEnabled())
         {
             logger.debug(
                     "New audit entry: \n" +
-                    "   Session ID:        " + sessionId + "\n" +
-                    "   Entry ID:          " + entryId + "\n" +
-                    "   Path Values:       " + pathedValues + "\n" +
-                    "   Extracted Values:  " + extractedValues);
+                    "   Applicatoin ID: " + applicationId + "\n" +
+                    "   Entry ID:       " + entryId + "\n" +
+                    "   Path Values:    " + pathedValues + "\n" +
+                    "   Audit Data:     " + auditData);
         }
-        return extractedValues;
+        return auditData;
     }
     
     /**

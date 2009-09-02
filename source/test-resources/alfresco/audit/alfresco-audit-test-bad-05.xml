@@ -15,7 +15,7 @@
     <Application name="Alfresco Test Bad 05" key="test-bad-05">
         <AuditPath key="1.1">
             <AuditPath key="2.1">
-                <GenerateValue key="time" dataGenerator="systemTime" scope="SESSIOn"/>
+                <GenerateValue key="time" dataGenerator="systemTimeAAA"/>
             </AuditPath>
         </AuditPath>
     </Application>

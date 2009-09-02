@@ -34,11 +34,11 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link KeyedAuditDefinition }
+     * Create an instance of {@link RecordValue }
      * 
      */
-    public KeyedAuditDefinition createKeyedAuditDefinition() {
-        return new KeyedAuditDefinition();
+    public RecordValue createRecordValue() {
+        return new RecordValue();
     }
 
     /**
@@ -55,14 +55,6 @@ public class ObjectFactory {
      */
     public Audit createAudit() {
         return new Audit();
-    }
-
-    /**
-     * Create an instance of {@link DataExtractors }
-     * 
-     */
-    public DataExtractors createDataExtractors() {
-        return new DataExtractors();
     }
 
     /**
@@ -90,11 +82,11 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link RecordValue }
+     * Create an instance of {@link KeyedAuditDefinition }
      * 
      */
-    public RecordValue createRecordValue() {
-        return new RecordValue();
+    public KeyedAuditDefinition createKeyedAuditDefinition() {
+        return new KeyedAuditDefinition();
     }
 
     /**
@@ -111,6 +103,14 @@ public class ObjectFactory {
      */
     public GenerateValue createGenerateValue() {
         return new GenerateValue();
+    }
+
+    /**
+     * Create an instance of {@link DataExtractors }
+     * 
+     */
+    public DataExtractors createDataExtractors() {
+        return new DataExtractors();
     }
 
     /**

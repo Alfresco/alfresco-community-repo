@@ -110,11 +110,11 @@ public class AuditComponentTest extends TestCase
         // Just here to fail if the basic startup fails
     }
     
-    public void testStartSessionWithBadPath() throws Exception
+    public void testAuditWithBadPath() throws Exception
     {
         try
         {
-            auditComponent.startAuditSession(APPLICATION_TEST, "test");
+            auditComponent.audit(APPLICATION_TEST, "/test", null);
             fail("Should fail due to lack of a transaction.");
         }
         catch (IllegalStateException e)
@@ -127,7 +127,7 @@ public class AuditComponentTest extends TestCase
             {
                 try
                 {
-                    auditComponent.startAuditSession(APPLICATION_TEST, "test");
+                    auditComponent.audit(APPLICATION_TEST, "test", null);
                     fail("Failed to detect illegal path");
                 }
                 catch (AuditModelException e)
@@ -136,18 +136,16 @@ public class AuditComponentTest extends TestCase
                 }
                 try
                 {
-                    auditComponent.startAuditSession(APPLICATION_TEST, "/test/");
+                    auditComponent.audit(APPLICATION_TEST, "/test/", null);
                     fail("Failed to detect illegal path");
                 }
                 catch (AuditModelException e)
                 {
                     // Expected
                 }
-                AuditSession session;
-                session = auditComponent.startAuditSession("Bogus App", "/test");
-                assertNull("Invalid app should return null session.", session);
-                session = auditComponent.startAuditSession(APPLICATION_TEST, "/test");
-                assertNotNull("Valid app and root path failed to create session.", session);
+                Map<String, Serializable> auditedValues = auditComponent.audit("Bogus App", "/test", null);
+                assertNotNull(auditedValues);
+                assertTrue("Invalid application should not audit anything", auditedValues.isEmpty());
                 
                 return null;
             }
@@ -158,20 +156,18 @@ public class AuditComponentTest extends TestCase
     /**
      * Start a session and use it within a single txn
      */
-    public void testSession_Basic() throws Exception
+    public void testAudit_Basic() throws Exception
     {
         final RetryingTransactionCallback<Void> testCallback = new RetryingTransactionCallback<Void>()
         {
             public Void execute() throws Throwable
             {
-                AuditSession session = auditComponent.startAuditSession(APPLICATION_TEST, "/test/1.1");
-                
                 Map<String, Serializable> values = new HashMap<String, Serializable>(13);
                 values.put("/test/1.1/2.1/3.1/4.1", new Long(41));
                 values.put("/test/1.1/2.1/3.1/4.2", "42");
                 values.put("/test/1.1/2.1/3.1/4.2", new Date());
                 
-                auditComponent.audit(session, values);
+                auditComponent.audit(APPLICATION_TEST, "/test/1.1", values);
                 
                 return null;
             }
@@ -198,7 +194,7 @@ public class AuditComponentTest extends TestCase
         for (Map.Entry<String, Serializable> entry : parameters.entrySet())
         {
             String paramName = entry.getKey();
-            String path = AuditApplication.buildPath("params", paramName);
+            String path = AuditApplication.buildPath(action, "params", paramName);
             adjustedValues.put(path, entry.getValue());
         }
         
@@ -207,10 +203,9 @@ public class AuditComponentTest extends TestCase
         {
             public Map<String, Serializable> execute() throws Throwable
             {
-                String actionPath = AuditApplication.buildPath("actions-test/actions", action);
-                AuditSession session = auditComponent.startAuditSession(APPLICATION_ACTIONS_TEST, actionPath);
+                String actionPath = AuditApplication.buildPath("actions-test/actions");
                 
-                return auditComponent.audit(session, adjustedValues);
+                return auditComponent.audit(APPLICATION_ACTIONS_TEST, actionPath, adjustedValues);
             }
         };
         return transactionService.getRetryingTransactionHelper().doInTransaction(auditCallback);
@@ -279,7 +274,8 @@ public class AuditComponentTest extends TestCase
         Map<String, Serializable> result = auditTestAction("action-01", nodeRef, parameters);
         
         Map<String, Serializable> expected = new HashMap<String, Serializable>();
-        expected.put("/actions-test/actions/action-01/context-node/noderef", nodeRef);
+        expected.put("/actions-test/actions/user", AuthenticationUtil.getFullyAuthenticatedUser());
+        expected.put("/actions-test/actions/context-node/noderef", nodeRef);
         expected.put("/actions-test/actions/action-01/params/A/value", valueA);
         expected.put("/actions-test/actions/action-01/params/B/value", valueB);
         expected.put("/actions-test/actions/action-01/params/C/value", valueC);

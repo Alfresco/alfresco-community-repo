@@ -88,7 +88,7 @@ public class AuditDAOTest extends TestCase
         assertEquals(configPair, configPairCheck);
     }
     
-    public void testAuditSession() throws Exception
+    public void testAuditApplicatoin() throws Exception
     {
         final File file = AbstractContentTransformerTest.loadQuickTestFile("pdf");
         assertNotNull(file);
@@ -104,22 +104,22 @@ public class AuditDAOTest extends TestCase
         
         final String appName = getName() + "." + System.currentTimeMillis();
         final int count = 1000;
-        RetryingTransactionCallback<Void> createSessionCallback = new RetryingTransactionCallback<Void>()
+        RetryingTransactionCallback<Void> createAppCallback = new RetryingTransactionCallback<Void>()
         {
             public Void execute() throws Throwable
             {
                 for (int i = 0; i < count; i++)
                 {
-                    auditDAO.createAuditSession(modelId, appName);
+                    auditDAO.getOrCreateAuditApplication(modelId, appName);
                 }
                 return null;
             }
         };
         long before = System.nanoTime();
-        txnHelper.doInTransaction(createSessionCallback);
+        txnHelper.doInTransaction(createAppCallback);
         long after = System.nanoTime();
         System.out.println(
-                "Time for " + count + " session creations was " +
+                "Time for " + count + " application creations was " +
                 ((double)(after - before)/(10E6)) + "ms");
     }
     
@@ -130,15 +130,15 @@ public class AuditDAOTest extends TestCase
         final URL url = new URL("file:" + file.getAbsolutePath());
         final String appName = getName() + "." + System.currentTimeMillis();
 
-        RetryingTransactionCallback<Long> createSessionCallback = new RetryingTransactionCallback<Long>()
+        RetryingTransactionCallback<Long> createAppCallback = new RetryingTransactionCallback<Long>()
         {
             public Long execute() throws Throwable
             {
                 Long modelId = auditDAO.getOrCreateAuditModel(url).getFirst();
-                return auditDAO.createAuditSession(modelId, appName);
+                return auditDAO.getOrCreateAuditApplication(modelId, appName);
             }
         };
-        final Long sessionId = txnHelper.doInTransaction(createSessionCallback);
+        final Long sessionId = txnHelper.doInTransaction(createAppCallback);
         
         final int count = 1000;
         final String username = "alexi";

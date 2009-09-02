@@ -56,7 +56,7 @@ import org.apache.commons.logging.LogFactory;
  */
 public abstract class AbstractAuditDAOImpl implements AuditDAO 
 {
-    private static final Log logger = LogFactory.getLog(AbstractAuditDAOImpl.class);
+    protected final Log logger = LogFactory.getLog(this.getClass());
     
     private HibernateAuditDAO oldDAO;
     private ContentService contentService;
@@ -81,6 +81,11 @@ public abstract class AbstractAuditDAOImpl implements AuditDAO
     public void setPropertyValueDAO(PropertyValueDAO propertyValueDAO)
     {
         this.propertyValueDAO = propertyValueDAO;
+    }
+    
+    protected PropertyValueDAO getPropertyValueDAO()
+    {
+        return this.propertyValueDAO;
     }
     
     /*
@@ -196,34 +201,42 @@ public abstract class AbstractAuditDAOImpl implements AuditDAO
     protected abstract AuditModelEntity createAuditModel(Long contentDataId, long crc);
     
     /*
-     * alf_audit_session
+     * alf_audit_application
      */
-
-    public Long createAuditSession(Long modelId, String application)
+    
+    public Long getOrCreateAuditApplication(Long modelId, String application)
     {
-        // Persist the string
-        Long appNameId = propertyValueDAO.getOrCreatePropertyValue(application).getFirst();
-        // Create the audit session
-        AuditSessionEntity entity = createAuditSession(appNameId, modelId);
-        // Done
-        if (logger.isDebugEnabled())
+        // Search for it
+        AuditApplicationEntity entity = getAuditApplicationByModelIdAndName(modelId, application);
+        if (entity == null)
         {
-            logger.debug(
-                    "Created new audit session: \n" +
-                    "   Model:  " + modelId + "\n" +
-                    "   App:    " + application + "\n" +
-                    "   Result: " + entity);
+            // Create it
+            // Persist the string
+            Long appNameId = propertyValueDAO.getOrCreatePropertyValue(application).getFirst();
+            // Create the audit session
+            entity = createAuditApplication(modelId, appNameId);
+            // Done
+            if (logger.isDebugEnabled())
+            {
+                logger.debug(
+                        "Created new audit application: \n" +
+                        "   Model:  " + modelId + "\n" +
+                        "   App:    " + application + "\n" +
+                        "   Result: " + entity);
+            }
         }
+        // Done
         return entity.getId();
     }
-    
-    protected abstract AuditSessionEntity createAuditSession(Long appNameId, Long modelId);
+
+    protected abstract AuditApplicationEntity getAuditApplicationByModelIdAndName(Long modelId, String appName);
+    protected abstract AuditApplicationEntity createAuditApplication(Long modelId, Long appNameId);
     
     /*
      * alf_audit_entry
      */
 
-    public Long createAuditEntry(Long sessionId, long time, String username, Map<String, Serializable> values)
+    public Long createAuditEntry(Long applicationId, long time, String username, Map<String, Serializable> values)
     {
         final Long usernameId;
         if (username != null)
@@ -242,20 +255,20 @@ public abstract class AbstractAuditDAOImpl implements AuditDAO
         }
 
         // Create the audit entry
-        AuditEntryEntity entity = createAuditEntry(sessionId, time, usernameId, valuesId);
+        AuditEntryEntity entity = createAuditEntry(applicationId, time, usernameId, valuesId);
 
         // Done
         if (logger.isDebugEnabled())
         {
             logger.debug(
                     "Created new audit entry: \n" +
-                    "   Session: " + sessionId + "\n" +
-                    "   Time:    " + (new Date(time)) + "\n" +
-                    "   User:    " + username + "\n" +
-                    "   Result:  " + entity);
+                    "   Application: " + applicationId + "\n" +
+                    "   Time:        " + (new Date(time)) + "\n" +
+                    "   User:        " + username + "\n" +
+                    "   Result:      " + entity);
         }
         return entity.getId();
     }
     
-    protected abstract AuditEntryEntity createAuditEntry(Long sessionId, long time, Long usernameId, Long valuesId);
+    protected abstract AuditEntryEntity createAuditEntry(Long applicationId, long time, Long usernameId, Long valuesId);
 }

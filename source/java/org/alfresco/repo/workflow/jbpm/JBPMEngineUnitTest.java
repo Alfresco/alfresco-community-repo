@@ -85,28 +85,24 @@ public class JBPMEngineUnitTest extends AbstractTransactionalSpringContextTests
 
     public void testDeployWorkflow() throws Exception
     {
-        ClassPathResource processDef = new ClassPathResource(
-                    "jbpmresources/test_processdefinition.xml");
+        ClassPathResource processDef = new ClassPathResource("jbpmresources/test_processdefinition.xml");
         List<WorkflowDefinition> workflowDefs = engine.getDefinitions();
-        assertFalse(engine.isDefinitionDeployed(processDef.getInputStream(),
-                    MimetypeMap.MIMETYPE_XML));
+        assertFalse(engine.isDefinitionDeployed(processDef.getInputStream(), MimetypeMap.MIMETYPE_XML));
         assertNotNull(workflowDefs);
         assertTrue(workflowDefs.size() == 0);
 
         deployTestDefinition();
-        assertTrue(engine.isDefinitionDeployed(processDef.getInputStream(),
-                    MimetypeMap.MIMETYPE_XML));
+        assertTrue(engine.isDefinitionDeployed(processDef.getInputStream(), MimetypeMap.MIMETYPE_XML));
         workflowDefs = engine.getDefinitions();
         assertNotNull(workflowDefs);
         assertTrue(workflowDefs.size() == 1);
 
         assertNotNull(workflowDef);
-        assertEquals("jbpm_test$test", workflowDef.name);
+        assertEquals(TEST_JBPM_ENGINE + "$test", workflowDef.name);
         assertEquals("1", workflowDef.version);
 
         deployTestDefinition();
-        assertTrue(engine.isDefinitionDeployed(processDef.getInputStream(),
-                    MimetypeMap.MIMETYPE_XML));
+        assertTrue(engine.isDefinitionDeployed(processDef.getInputStream(), MimetypeMap.MIMETYPE_XML));
         assertEquals("2", workflowDef.version);
     }
 
@@ -354,7 +350,6 @@ public class JBPMEngineUnitTest extends AbstractTransactionalSpringContextTests
         engine.setDictionaryService(dictionaryService);
         engine.setEngineId(TEST_JBPM_ENGINE);
         engine.setBPMEngineRegistry(engineRegistry);
-        engine.afterPropertiesSet();
 
         // Need to register JBPMEngine with bean factory so WorflowTaskInstance
         // can load it.
@@ -384,13 +379,11 @@ public class JBPMEngineUnitTest extends AbstractTransactionalSpringContextTests
     // deploy test process definition
     private void deployTestDefinition() throws IOException
     {
-        ClassPathResource processDef = new ClassPathResource(
-                    "jbpmresources/test_processdefinition.xml");
-        WorkflowDeployment deployment = engine.deployDefinition(processDef.getInputStream(),
-                    MimetypeMap.MIMETYPE_XML);
+        ClassPathResource processDef = new ClassPathResource("jbpmresources/test_processdefinition.xml");
+        WorkflowDeployment deployment = engine.deployDefinition(processDef.getInputStream(), MimetypeMap.MIMETYPE_XML);
         workflowDef = deployment.definition;
         assertNotNull(workflowDef);
-        assertEquals(TEST_JBPM_ENGINE+"$test", workflowDef.name);
+        assertEquals(TEST_JBPM_ENGINE + "$test", workflowDef.name);
     }
 
     private NamespaceService makeNamespaceService()

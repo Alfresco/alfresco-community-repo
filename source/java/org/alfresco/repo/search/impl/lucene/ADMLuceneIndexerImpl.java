@@ -914,6 +914,7 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
                             // only indexing atomic properties
                             // indexing will take too long, so push it to the background
                             wereAllAtomic = false;
+                            readerReady = false;
                         }
                         else
                         {

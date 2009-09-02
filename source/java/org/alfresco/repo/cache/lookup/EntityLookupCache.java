@@ -341,10 +341,10 @@ public class EntityLookupCache<K extends Serializable, V extends Object, VK exte
                 CacheRegionValueKey valueCacheKey = new CacheRegionValueKey(cacheRegion, valueKey);
                 // The key is good, so we can cache the value
                 cache.put(valueCacheKey, key);
-                cache.put(
-                        keyCacheKey,
-                        (value == null ? VALUE_NULL : value));
             }
+            cache.put(
+                    keyCacheKey,
+                    (value == null ? VALUE_NULL : value));
         }
         // Done
         return entityPair;

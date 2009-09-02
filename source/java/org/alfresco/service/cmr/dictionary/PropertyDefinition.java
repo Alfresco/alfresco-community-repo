@@ -22,6 +22,7 @@
  * the FLOSS exception, and it is also available here: 
  * http://www.alfresco.com/legal/licensing"
  */
+
 package org.alfresco.service.cmr.dictionary;
 
 import java.util.List;
@@ -34,33 +35,33 @@ import org.alfresco.service.namespace.QName;
  * 
  * @author David Caruana
  */
-public interface PropertyDefinition
+public interface PropertyDefinition extends ClassAttributeDefinition
 {
     /**
-     * @return defining model 
+     * @return defining model
      */
     public ModelDefinition getModel();
-    
+
     /**
      * @return the qualified name of the property
      */
     public QName getName();
 
     /**
-     * @return the human-readable class title 
+     * @return the human-readable class title
      */
     public String getTitle();
-    
+
     /**
-     * @return the human-readable class description 
+     * @return the human-readable class description
      */
     public String getDescription();
-    
+
     /**
-     * @return the default value 
+     * @return the default value
      */
     public String getDefaultValue();
-    
+
     /**
      * @return the qualified name of the property type
      */
@@ -68,56 +69,59 @@ public interface PropertyDefinition
 
     /**
      * @return Returns the owning class's defintion
-     */    
+     */
     public ClassDefinition getContainerClass();
-    
+
     public boolean isOverride();
-    
+
     /**
-     * @return  true => multi-valued, false => single-valued  
+     * @return true => multi-valued, false => single-valued
      */
     public boolean isMultiValued();
 
     /**
-     * @return  true => mandatory, false => optional
+     * @return true => mandatory, false => optional
      */
     public boolean isMandatory();
-    
+
     /**
      * @return Returns true if the system enforces the presence of
-     *      {@link #isMandatory() mandatory} properties, or false if the system
-     *      just marks objects that don't have all mandatory properties present.  
+     *         {@link #isMandatory() mandatory} properties, or false if the
+     *         system just marks objects that don't have all mandatory
+     *         properties present.
      */
     public boolean isMandatoryEnforced();
-    
+
     /**
-     * @return  true => system maintained, false => client may maintain 
+     * @return true => system maintained, false => client may maintain
      */
     public boolean isProtected();
 
     /**
-     * @return  true => indexed, false => not indexed
+     * @return true => indexed, false => not indexed
      */
     public boolean isIndexed();
-    
+
     /**
-     * @return  true => stored in index
+     * @return true => stored in index
      */
     public boolean isStoredInIndex();
 
     /**
-     * @return IndexTokenisationMode.TREU => tokenised when it is indexed (the stored value will not be tokenised)
+     * @return IndexTokenisationMode.TREU => tokenised when it is indexed (the
+     *         stored value will not be tokenised)
      */
     public IndexTokenisationMode getIndexTokenisationMode();
-    
+
     /**
      * All non atomic properties will be indexed at the same time.
-     *
-     * @return true => The attribute must be indexed in the commit of the transaction. 
-     * false => the indexing will be done in the background and may be out of date.
+     * 
+     * @return true => The attribute must be indexed in the commit of the
+     *         transaction. false => the indexing will be done in the background
+     *         and may be out of date.
      */
     public boolean isIndexedAtomically();
-    
+
     /**
      * Get all constraints that apply to the property value
      * 

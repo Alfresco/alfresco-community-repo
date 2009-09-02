@@ -33,7 +33,7 @@ import org.alfresco.service.namespace.QName;
  * @author David Caruana
  *
  */
-public interface AssociationDefinition
+public interface AssociationDefinition extends ClassAttributeDefinition
 {
     
     /**

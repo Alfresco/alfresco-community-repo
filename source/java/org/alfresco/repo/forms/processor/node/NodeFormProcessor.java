@@ -95,21 +95,19 @@ public class NodeFormProcessor extends ContentModelFormProcessor<NodeRef, NodeRe
                 {
                     // ignored for now, dealt with below
 
-                    if (logger.isDebugEnabled())
-                        logger.debug("NodeRef creation failed for: " + item.getId(), iae);
+                    if (logger.isDebugEnabled()) logger.debug("NodeRef creation failed for: " + item.getId(), iae);
                 }
             }
         }
 
         // check we have a valid node ref
-        if (nodeRef == null) { throw new FormNotFoundException(item, new IllegalArgumentException(
-                    item.getId())); }
+        if (nodeRef == null) { throw new FormNotFoundException(item, new IllegalArgumentException(item.getId())); }
 
         // check the node itself exists
         if (this.nodeService.exists(nodeRef) == false)
         {
-            throw new FormNotFoundException(item, new InvalidNodeRefException(
-                        "Node does not exist: " + nodeRef, nodeRef));
+            throw new FormNotFoundException(item, new InvalidNodeRefException("Node does not exist: " + nodeRef,
+                        nodeRef));
         }
         else
         {
@@ -125,8 +123,8 @@ public class NodeFormProcessor extends ContentModelFormProcessor<NodeRef, NodeRe
      * org.alfresco.repo.forms.Form, java.util.Map)
      */
     @Override
-    protected void internalGenerate(NodeRef item, List<String> fields, List<String> forcedFields,
-                Form form, Map<String, Object> context)
+    protected void internalGenerate(NodeRef item, List<String> fields, List<String> forcedFields, Form form,
+                Map<String, Object> context)
     {
         if (logger.isDebugEnabled()) logger.debug("Generating form for: " + item);
 
@@ -144,17 +142,17 @@ public class NodeFormProcessor extends ContentModelFormProcessor<NodeRef, NodeRe
      * @param forcedFields List of fields to forcibly include
      * @param form The Form instance to populate
      */
-    protected void generateNode(NodeRef nodeRef, List<String> fields, List<String> forcedFields,
-                Form form)
+    protected void generateNode(NodeRef nodeRef, List<String> fields, List<String> forcedFields, Form form)
     {
         // set the type and URL of the item
         QName type = this.nodeService.getType(nodeRef);
-        form.getItem().setType(type.toPrefixString(this.namespaceService));
+        setFormItemType(form, type.toPrefixString(this.namespaceService));
+
         StringBuilder builder = new StringBuilder("/api/node/");
         builder.append(nodeRef.getStoreRef().getProtocol()).append("/");
         builder.append(nodeRef.getStoreRef().getIdentifier()).append("/");
         builder.append(nodeRef.getId());
-        form.getItem().setUrl(builder.toString());
+        setFormItemUrl(form, builder.toString());
 
         if (fields != null && fields.size() > 0)
         {
@@ -179,8 +177,7 @@ public class NodeFormProcessor extends ContentModelFormProcessor<NodeRef, NodeRe
     {
         // get data dictionary definition for node
         QName type = this.nodeService.getType(nodeRef);
-        TypeDefinition typeDef = this.dictionaryService.getAnonymousType(type, this.nodeService
-                    .getAspects(nodeRef));
+        TypeDefinition typeDef = this.dictionaryService.getAnonymousType(type, this.nodeService.getAspects(nodeRef));
 
         // iterate round the property definitions for the node and create
         // the equivalent field definition and setup the data for the property
@@ -188,8 +185,7 @@ public class NodeFormProcessor extends ContentModelFormProcessor<NodeRef, NodeRe
         Map<QName, Serializable> propValues = this.nodeService.getProperties(nodeRef);
         for (PropertyDefinition propDef : propDefs.values())
         {
-            generatePropertyField(propDef, form, propValues.get(propDef.getName()),
-                        this.namespaceService);
+            generatePropertyField(propDef, form, propValues.get(propDef.getName()), this.namespaceService);
         }
     }
 
@@ -203,8 +199,7 @@ public class NodeFormProcessor extends ContentModelFormProcessor<NodeRef, NodeRe
     {
         // get data dictionary definition for the node
         QName type = this.nodeService.getType(nodeRef);
-        TypeDefinition typeDef = this.dictionaryService.getAnonymousType(type, this.nodeService
-                    .getAspects(nodeRef));
+        TypeDefinition typeDef = this.dictionaryService.getAnonymousType(type, this.nodeService.getAspects(nodeRef));
 
         // iterate round the association defintions and setup field definition
         Map<QName, AssociationDefinition> assocDefs = typeDef.getAssociations();
@@ -229,8 +224,7 @@ public class NodeFormProcessor extends ContentModelFormProcessor<NodeRef, NodeRe
         QName type = this.nodeService.getType(nodeRef);
         if (this.dictionaryService.isSubClass(type, ContentModel.TYPE_CONTENT))
         {
-            ContentData content = (ContentData) this.nodeService.getProperty(nodeRef,
-                        ContentModel.PROP_CONTENT);
+            ContentData content = (ContentData) this.nodeService.getProperty(nodeRef, ContentModel.PROP_CONTENT);
             if (content != null)
             {
                 // setup mimetype field

@@ -75,7 +75,7 @@ public abstract class FilteredFormProcessor<ItemType, PersistType> extends Abstr
         // inform all regsitered filters the form is about to be generated
         if (this.filterRegistry != null)
         {
-            for (Filter filter : this.filterRegistry.getFilters())
+            for (Filter<ItemType, PersistType> filter : this.filterRegistry.getFilters())
             {
                 filter.beforeGenerate(typedItem, fields, forcedFields, form, context);
             }
@@ -87,7 +87,7 @@ public abstract class FilteredFormProcessor<ItemType, PersistType> extends Abstr
         // inform all regsitered filters the form has been generated
         if (this.filterRegistry != null)
         {
-            for (Filter filter : this.filterRegistry.getFilters())
+            for (Filter<ItemType, PersistType> filter : this.filterRegistry.getFilters())
             {
                 filter.afterGenerate(typedItem, fields, forcedFields, form, context);
             }
@@ -114,35 +114,25 @@ public abstract class FilteredFormProcessor<ItemType, PersistType> extends Abstr
         // inform all regsitered filters the form is about to be persisted
         if (this.filterRegistry != null)
         {
-            for (Filter filter : this.filterRegistry.getFilters())
+            for (Filter<ItemType, PersistType> filter : this.filterRegistry.getFilters())
             {
                 filter.beforePersist(typedItem, data);
             }
         }
 
         // perform the actual persistence of the form
-        Object persistedObject = internalPersist(typedItem, data);
+        PersistType persistedObject = internalPersist(typedItem, data);
 
         // inform all regsitered filters the form has been persisted
         if (this.filterRegistry != null)
         {
-            for (Filter filter : this.filterRegistry.getFilters())
+            for (Filter<ItemType, PersistType> filter : this.filterRegistry.getFilters())
             {
                 filter.afterPersist(typedItem, data, persistedObject);
             }
         }
 
         return persistedObject;
-    }
-
-    protected void setItemType(Form form, String type)
-    {
-        form.getItem().setType(type);
-    }
-
-    protected void setItemUrl(Form form, String url)
-    {
-        form.getItem().setUrl(url);
     }
 
     /**

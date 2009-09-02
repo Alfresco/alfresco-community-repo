@@ -125,8 +125,7 @@ public abstract class ContentModelFormProcessor<ItemType, PersistType> extends
      * pattern can also be used to extract the "cm", the "name" and the suffix
      * parts.
      */
-    protected Pattern associationNamePattern = Pattern.compile(ASSOC_DATA_PREFIX
-                + "(.*){1}?_(.*){1}?(_[a-zA-Z]+)");
+    protected Pattern associationNamePattern = Pattern.compile(ASSOC_DATA_PREFIX + "(.*){1}?_(.*){1}?(_[a-zA-Z]+)");
 
     /**
      * Sets the node service
@@ -180,8 +179,7 @@ public abstract class ContentModelFormProcessor<ItemType, PersistType> extends
      * @param form The Form instance to populate
      * @param namespaceService NamespaceService instance
      */
-    public static void generatePropertyField(PropertyDefinition propDef, Form form,
-                NamespaceService namespaceService)
+    public static void generatePropertyField(PropertyDefinition propDef, Form form, NamespaceService namespaceService)
     {
         generatePropertyField(propDef, form, null, null, namespaceService);
     }
@@ -199,8 +197,8 @@ public abstract class ContentModelFormProcessor<ItemType, PersistType> extends
      * @param propValue The value of the property field
      * @param namespaceService NamespaceService instance
      */
-    public static void generatePropertyField(PropertyDefinition propDef, Form form,
-                Serializable propValue, NamespaceService namespaceService)
+    public static void generatePropertyField(PropertyDefinition propDef, Form form, Serializable propValue,
+                NamespaceService namespaceService)
     {
         generatePropertyField(propDef, form, propValue, null, namespaceService);
     }
@@ -220,13 +218,13 @@ public abstract class ContentModelFormProcessor<ItemType, PersistType> extends
      * @param namespaceService NamespaceService instance
      */
     @SuppressWarnings("unchecked")
-    public static void generatePropertyField(PropertyDefinition propDef, Form form,
-                Serializable propValue, FieldGroup group, NamespaceService namespaceService)
+    public static void generatePropertyField(PropertyDefinition propDef, Form form, Serializable propValue,
+                FieldGroup group, NamespaceService namespaceService)
     {
         String propName = propDef.getName().toPrefixString(namespaceService);
         String[] nameParts = QName.splitPrefixedQName(propName);
-        PropertyFieldDefinition fieldDef = new PropertyFieldDefinition(propName, propDef
-                    .getDataType().getName().getLocalName());
+        PropertyFieldDefinition fieldDef = new PropertyFieldDefinition(propName, propDef.getDataType().getName()
+                    .getLocalName());
 
         String title = propDef.getTitle();
         if (title == null)
@@ -272,14 +270,12 @@ public abstract class ContentModelFormProcessor<ItemType, PersistType> extends
         List<ConstraintDefinition> constraints = propDef.getConstraints();
         if (constraints != null && constraints.size() > 0)
         {
-            List<FieldConstraint> fieldConstraints = new ArrayList<FieldConstraint>(constraints
-                        .size());
+            List<FieldConstraint> fieldConstraints = new ArrayList<FieldConstraint>(constraints.size());
 
             for (ConstraintDefinition constraintDef : constraints)
             {
                 Constraint constraint = constraintDef.getConstraint();
-                FieldConstraint fieldConstraint = new FieldConstraint(constraint.getType(),
-                            constraint.getParameters());
+                FieldConstraint fieldConstraint = new FieldConstraint(constraint.getType(), constraint.getParameters());
                 fieldConstraints.add(fieldConstraint);
             }
 
@@ -336,8 +332,8 @@ public abstract class ContentModelFormProcessor<ItemType, PersistType> extends
      * @param namespaceService NamespaceService instance
      */
     @SuppressWarnings("unchecked")
-    public static void generateAssociationField(AssociationDefinition assocDef, Form form,
-                List assocValues, NamespaceService namespaceService)
+    public static void generateAssociationField(AssociationDefinition assocDef, Form form, List assocValues,
+                NamespaceService namespaceService)
     {
         generateAssociationField(assocDef, form, assocValues, null, namespaceService);
     }
@@ -357,13 +353,13 @@ public abstract class ContentModelFormProcessor<ItemType, PersistType> extends
      * @param namespaceService NamespaceService instance
      */
     @SuppressWarnings("unchecked")
-    public static void generateAssociationField(AssociationDefinition assocDef, Form form,
-                List assocValues, FieldGroup group, NamespaceService namespaceService)
+    public static void generateAssociationField(AssociationDefinition assocDef, Form form, List assocValues,
+                FieldGroup group, NamespaceService namespaceService)
     {
         String assocName = assocDef.getName().toPrefixString(namespaceService);
         String[] nameParts = QName.splitPrefixedQName(assocName);
-        AssociationFieldDefinition fieldDef = new AssociationFieldDefinition(assocName, assocDef
-                    .getTargetClass().getName().toPrefixString(namespaceService), Direction.TARGET);
+        AssociationFieldDefinition fieldDef = new AssociationFieldDefinition(assocName, assocDef.getTargetClass()
+                    .getName().toPrefixString(namespaceService), Direction.TARGET);
         String title = assocDef.getTitle();
         if (title == null)
         {
@@ -437,16 +433,15 @@ public abstract class ContentModelFormProcessor<ItemType, PersistType> extends
      *            the field is not currently present
      * @param form The Form instance to populate
      */
-    protected void generateSelectedFields(NodeRef nodeRef, TypeDefinition typeDef,
-                List<String> fields, List<String> forcedFields, Form form)
+    protected void generateSelectedFields(NodeRef nodeRef, TypeDefinition typeDef, List<String> fields,
+                List<String> forcedFields, Form form)
     {
         // ensure a NodeRef or TypeDefinition is provided
         if (nodeRef == null && typeDef == null) { throw new IllegalArgumentException(
                     "A NodeRef or TypeDefinition must be provided"); }
 
         if (getLogger().isDebugEnabled())
-            getLogger().debug(
-                        "Generating selected fields: " + fields + " and forcing: " + forcedFields);
+            getLogger().debug("Generating selected fields: " + fields + " and forcing: " + forcedFields);
 
         // get data dictionary definition for node if it is provided
         QName type = null;
@@ -457,8 +452,7 @@ public abstract class ContentModelFormProcessor<ItemType, PersistType> extends
         if (nodeRef != null)
         {
             type = this.nodeService.getType(nodeRef);
-            typeDef = this.dictionaryService.getAnonymousType(type, this.nodeService
-                        .getAspects(nodeRef));
+            typeDef = this.dictionaryService.getAnonymousType(type, this.nodeService.getAspects(nodeRef));
 
             // NOTE: the anonymous type returns all property and association
             // defs
@@ -547,8 +541,7 @@ public abstract class ContentModelFormProcessor<ItemType, PersistType> extends
                     if (propDef != null)
                     {
                         // generate the property field
-                        generatePropertyField(propDef, form, propValues.get(fullQName),
-                                    this.namespaceService);
+                        generatePropertyField(propDef, form, propValues.get(fullQName), this.namespaceService);
 
                         // no need to try and find an association
                         tryAssociation = false;
@@ -563,11 +556,8 @@ public abstract class ContentModelFormProcessor<ItemType, PersistType> extends
                     if (assocDef != null)
                     {
                         // generate the association field
-                        generateAssociationField(
-                                    assocDef,
-                                    form,
-                                    (nodeRef != null) ? retrieveAssociationValues(nodeRef, assocDef)
-                                                : null, this.namespaceService);
+                        generateAssociationField(assocDef, form, (nodeRef != null) ? retrieveAssociationValues(nodeRef,
+                                    assocDef) : null, this.namespaceService);
 
                         foundField = true;
                     }
@@ -576,16 +566,14 @@ public abstract class ContentModelFormProcessor<ItemType, PersistType> extends
                 // still not found the field, is it a force'd field?
                 if (!foundField)
                 {
-                    if (forcedFields != null && forcedFields.size() > 0
-                                && forcedFields.contains(fieldName))
+                    if (forcedFields != null && forcedFields.size() > 0 && forcedFields.contains(fieldName))
                     {
                         generateForcedField(fieldName, form);
                     }
                     else if (getLogger().isDebugEnabled())
                     {
                         getLogger().debug(
-                                    "Ignoring field \"" + fieldName
-                                                + "\" as it is not defined for the current "
+                                    "Ignoring field \"" + fieldName + "\" as it is not defined for the current "
                                                 + ((nodeRef != null) ? "node" : "type")
                                                 + " and it does not appear in the 'force' list");
                     }
@@ -599,9 +587,7 @@ public abstract class ContentModelFormProcessor<ItemType, PersistType> extends
                 {
                     // if the node type is content or sublcass thereof generate
                     // appropriate field
-                    if (nodeRef != null
-                                && this.dictionaryService.isSubClass(type,
-                                            ContentModel.TYPE_CONTENT))
+                    if (nodeRef != null && this.dictionaryService.isSubClass(type, ContentModel.TYPE_CONTENT))
                     {
                         ContentData content = (ContentData) this.nodeService.getProperty(nodeRef,
                                     ContentModel.PROP_CONTENT);
@@ -675,11 +661,9 @@ public abstract class ContentModelFormProcessor<ItemType, PersistType> extends
                 else
                 {
                     if (getLogger().isWarnEnabled())
-                        getLogger()
-                                    .warn(
-                                                "\""
-                                                            + parts[0]
-                                                            + "\" is an invalid prefix for requesting a property or association");
+                        getLogger().warn(
+                                    "\"" + parts[0]
+                                                + "\" is an invalid prefix for requesting a property or association");
 
                     return;
                 }
@@ -743,8 +727,8 @@ public abstract class ContentModelFormProcessor<ItemType, PersistType> extends
     protected void generateMimetypePropertyField(ContentData content, Form form)
     {
         String dataKeyName = PROP_DATA_PREFIX + TRANSIENT_MIMETYPE;
-        PropertyFieldDefinition mimetypeField = new PropertyFieldDefinition(TRANSIENT_MIMETYPE,
-                    DataTypeDefinition.TEXT.getLocalName());
+        PropertyFieldDefinition mimetypeField = new PropertyFieldDefinition(TRANSIENT_MIMETYPE, DataTypeDefinition.TEXT
+                    .getLocalName());
         mimetypeField.setLabel(I18NUtil.getMessage(MSG_MIMETYPE_LABEL));
         mimetypeField.setDescription(I18NUtil.getMessage(MSG_MIMETYPE_DESC));
         mimetypeField.setDataKeyName(dataKeyName);
@@ -765,8 +749,8 @@ public abstract class ContentModelFormProcessor<ItemType, PersistType> extends
     protected void generateEncodingPropertyField(ContentData content, Form form)
     {
         String dataKeyName = PROP_DATA_PREFIX + TRANSIENT_ENCODING;
-        PropertyFieldDefinition encodingField = new PropertyFieldDefinition(TRANSIENT_ENCODING,
-                    DataTypeDefinition.TEXT.getLocalName());
+        PropertyFieldDefinition encodingField = new PropertyFieldDefinition(TRANSIENT_ENCODING, DataTypeDefinition.TEXT
+                    .getLocalName());
         encodingField.setLabel(I18NUtil.getMessage(MSG_ENCODING_LABEL));
         encodingField.setDescription(I18NUtil.getMessage(MSG_ENCODING_DESC));
         encodingField.setDataKeyName(dataKeyName);
@@ -787,8 +771,8 @@ public abstract class ContentModelFormProcessor<ItemType, PersistType> extends
     protected void generateSizePropertyField(ContentData content, Form form)
     {
         String dataKeyName = PROP_DATA_PREFIX + TRANSIENT_SIZE;
-        PropertyFieldDefinition sizeField = new PropertyFieldDefinition(TRANSIENT_SIZE,
-                    DataTypeDefinition.LONG.getLocalName());
+        PropertyFieldDefinition sizeField = new PropertyFieldDefinition(TRANSIENT_SIZE, DataTypeDefinition.LONG
+                    .getLocalName());
         sizeField.setLabel(I18NUtil.getMessage(MSG_SIZE_LABEL));
         sizeField.setDescription(I18NUtil.getMessage(MSG_SIZE_DESC));
         sizeField.setDataKeyName(dataKeyName);
@@ -818,8 +802,7 @@ public abstract class ContentModelFormProcessor<ItemType, PersistType> extends
         // get the list of values (if any) for the association
         if (assocDef instanceof ChildAssociationDefinition)
         {
-            assocValues = this.nodeService.getChildAssocs(nodeRef, assocDef.getName(),
-                        RegexQNamePattern.MATCH_ALL);
+            assocValues = this.nodeService.getChildAssocs(nodeRef, assocDef.getName(), RegexQNamePattern.MATCH_ALL);
         }
         else
         {
@@ -839,14 +822,12 @@ public abstract class ContentModelFormProcessor<ItemType, PersistType> extends
     {
         // get the property definitions for the type of node being persisted
         QName type = this.nodeService.getType(nodeRef);
-        TypeDefinition typeDef = this.dictionaryService.getAnonymousType(type, this.nodeService
-                    .getAspects(nodeRef));
+        TypeDefinition typeDef = this.dictionaryService.getAnonymousType(type, this.nodeService.getAspects(nodeRef));
         Map<QName, AssociationDefinition> assocDefs = typeDef.getAssociations();
         Map<QName, ChildAssociationDefinition> childAssocDefs = typeDef.getChildAssociations();
         Map<QName, PropertyDefinition> propDefs = typeDef.getProperties();
 
-        Map<QName, Serializable> propsToPersist = new HashMap<QName, Serializable>(data
-                    .getNumberOfFields());
+        Map<QName, Serializable> propsToPersist = new HashMap<QName, Serializable>(data.getNumberOfFields());
         List<AbstractAssocCommand> assocsToPersist = new ArrayList<AbstractAssocCommand>();
 
         for (FieldData fieldData : data)
@@ -862,8 +843,7 @@ public abstract class ContentModelFormProcessor<ItemType, PersistType> extends
                 }
                 else if (fieldName.startsWith(ASSOC_DATA_PREFIX))
                 {
-                    processAssociationPersist(nodeRef, assocDefs, childAssocDefs, fieldData,
-                                assocsToPersist);
+                    processAssociationPersist(nodeRef, assocDefs, childAssocDefs, fieldData, assocsToPersist);
                 }
                 else if (getLogger().isWarnEnabled())
                 {
@@ -1004,8 +984,7 @@ public abstract class ContentModelFormProcessor<ItemType, PersistType> extends
                         // everything else
                         // should be represented as null
                         if (!propDef.getDataType().getName().equals(DataTypeDefinition.TEXT)
-                                    && !propDef.getDataType().getName().equals(
-                                                DataTypeDefinition.MLTEXT))
+                                    && !propDef.getDataType().getName().equals(DataTypeDefinition.MLTEXT))
                         {
                             value = null;
                         }
@@ -1018,8 +997,7 @@ public abstract class ContentModelFormProcessor<ItemType, PersistType> extends
             else if (getLogger().isWarnEnabled())
             {
                 getLogger().warn(
-                            "Ignoring field '" + fieldData.getName()
-                                        + "' as a property definition can not be found");
+                            "Ignoring field '" + fieldData.getName() + "' as a property definition can not be found");
             }
         }
         else
@@ -1064,8 +1042,7 @@ public abstract class ContentModelFormProcessor<ItemType, PersistType> extends
      * @param fieldData Data to persist for the associations
      * @param assocCommands List of associations to be persisted
      */
-    protected void processAssociationPersist(NodeRef nodeRef,
-                Map<QName, AssociationDefinition> assocDefs,
+    protected void processAssociationPersist(NodeRef nodeRef, Map<QName, AssociationDefinition> assocDefs,
                 Map<QName, ChildAssociationDefinition> childAssocDefs, FieldData fieldData,
                 List<AbstractAssocCommand> assocCommands)
     {
@@ -1102,9 +1079,7 @@ public abstract class ContentModelFormProcessor<ItemType, PersistType> extends
             {
                 if (getLogger().isWarnEnabled())
                 {
-                    getLogger().warn(
-                                "Definition for association " + fullQName
-                                            + " not recognised and not persisted.");
+                    getLogger().warn("Definition for association " + fullQName + " not recognised and not persisted.");
                 }
                 return;
             }
@@ -1125,26 +1100,25 @@ public abstract class ContentModelFormProcessor<ItemType, PersistType> extends
                         {
                             if (assocDef.isChild())
                             {
-                                assocCommands.add(new AddChildAssocCommand(nodeRef, new NodeRef(
-                                            nextTargetNode), fullQName));
+                                assocCommands.add(new AddChildAssocCommand(nodeRef, new NodeRef(nextTargetNode),
+                                            fullQName));
                             }
                             else
                             {
-                                assocCommands.add(new AddAssocCommand(nodeRef, new NodeRef(
-                                            nextTargetNode), fullQName));
+                                assocCommands.add(new AddAssocCommand(nodeRef, new NodeRef(nextTargetNode), fullQName));
                             }
                         }
                         else if (assocSuffix.equals(ASSOC_DATA_REMOVED_SUFFIX))
                         {
                             if (assocDef.isChild())
                             {
-                                assocCommands.add(new RemoveChildAssocCommand(nodeRef, new NodeRef(
-                                            nextTargetNode), fullQName));
+                                assocCommands.add(new RemoveChildAssocCommand(nodeRef, new NodeRef(nextTargetNode),
+                                            fullQName));
                             }
                             else
                             {
-                                assocCommands.add(new RemoveAssocCommand(nodeRef, new NodeRef(
-                                            nextTargetNode), fullQName));
+                                assocCommands.add(new RemoveAssocCommand(nodeRef, new NodeRef(nextTargetNode),
+                                            fullQName));
                             }
                         }
                         else
@@ -1153,10 +1127,9 @@ public abstract class ContentModelFormProcessor<ItemType, PersistType> extends
                             {
                                 StringBuilder msg = new StringBuilder();
                                 msg.append("fieldName ").append(fieldName).append(
-                                            " does not have one of the expected suffixes [")
-                                            .append(ASSOC_DATA_ADDED_SUFFIX).append(", ").append(
-                                                        ASSOC_DATA_REMOVED_SUFFIX).append(
-                                                        "] and has been ignored.");
+                                            " does not have one of the expected suffixes [").append(
+                                            ASSOC_DATA_ADDED_SUFFIX).append(", ").append(ASSOC_DATA_REMOVED_SUFFIX)
+                                            .append("] and has been ignored.");
                                 getLogger().warn(msg.toString());
                             }
                         }
@@ -1215,8 +1188,7 @@ public abstract class ContentModelFormProcessor<ItemType, PersistType> extends
         if (contentData == null)
         {
             // content data has not been persisted yet so get it from the node
-            contentData = (ContentData) this.nodeService.getProperty(nodeRef,
-                        ContentModel.PROP_CONTENT);
+            contentData = (ContentData) this.nodeService.getProperty(nodeRef, ContentModel.PROP_CONTENT);
         }
 
         if (contentData != null)
@@ -1241,8 +1213,7 @@ public abstract class ContentModelFormProcessor<ItemType, PersistType> extends
         if (contentData == null)
         {
             // content data has not been persisted yet so get it from the node
-            contentData = (ContentData) this.nodeService.getProperty(nodeRef,
-                        ContentModel.PROP_CONTENT);
+            contentData = (ContentData) this.nodeService.getProperty(nodeRef, ContentModel.PROP_CONTENT);
         }
 
         if (contentData != null)
@@ -1300,8 +1271,7 @@ class AddAssocCommand extends AbstractAssocCommand
     @Override
     protected void updateAssociations(NodeService nodeService)
     {
-        List<AssociationRef> existingAssocs = nodeService
-                    .getTargetAssocs(sourceNodeRef, assocQName);
+        List<AssociationRef> existingAssocs = nodeService.getTargetAssocs(sourceNodeRef, assocQName);
         for (AssociationRef assoc : existingAssocs)
         {
             if (assoc.getTargetRef().equals(targetNodeRef))
@@ -1334,8 +1304,7 @@ class RemoveAssocCommand extends AbstractAssocCommand
     @Override
     protected void updateAssociations(NodeService nodeService)
     {
-        List<AssociationRef> existingAssocs = nodeService
-                    .getTargetAssocs(sourceNodeRef, assocQName);
+        List<AssociationRef> existingAssocs = nodeService.getTargetAssocs(sourceNodeRef, assocQName);
         boolean assocDoesNotExist = true;
         for (AssociationRef assoc : existingAssocs)
         {
@@ -1350,8 +1319,8 @@ class RemoveAssocCommand extends AbstractAssocCommand
             if (logger.isWarnEnabled())
             {
                 StringBuilder msg = new StringBuilder();
-                msg.append("Attempt to remove non-existent association prevented. ").append(
-                            sourceNodeRef).append("|").append(targetNodeRef).append(assocQName);
+                msg.append("Attempt to remove non-existent association prevented. ").append(sourceNodeRef).append("|")
+                            .append(targetNodeRef).append(assocQName);
                 logger.warn(msg.toString());
             }
             return;
@@ -1432,8 +1401,8 @@ class RemoveChildAssocCommand extends AbstractAssocCommand
             if (logger.isWarnEnabled())
             {
                 StringBuilder msg = new StringBuilder();
-                msg.append("Attempt to remove non-existent child association prevented. ").append(
-                            sourceNodeRef).append("|").append(targetNodeRef).append(assocQName);
+                msg.append("Attempt to remove non-existent child association prevented. ").append(sourceNodeRef)
+                            .append("|").append(targetNodeRef).append(assocQName);
                 logger.warn(msg.toString());
             }
             return;

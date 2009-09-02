@@ -22,28 +22,33 @@
  * the FLOSS exception, and it is also available here: 
  * http://www.alfresco.com/legal/licensing"
  */
+
 package org.alfresco.repo.forms.processor;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.alfresco.repo.forms.Form;
 import org.alfresco.repo.forms.Item;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 /**
- * Abstract base class for all FormProcessor implementations provides
- * a regex pattern match to test for processor applicability
- *
+ * Abstract base class for all FormProcessor implementations provides a regex
+ * pattern match to test for processor applicability
+ * 
  * @author Gavin Cornwell
  */
 public abstract class AbstractFormProcessor implements FormProcessor
 {
     private static final Log logger = LogFactory.getLog(AbstractFormProcessor.class);
-    
+
     protected FormProcessorRegistry processorRegistry;
+
     protected String matchPattern;
+
     protected boolean active = true;
+
     protected Pattern patternMatcher;
 
     /**
@@ -55,11 +60,12 @@ public abstract class AbstractFormProcessor implements FormProcessor
     {
         this.processorRegistry = processorRegistry;
     }
-    
+
     /**
      * Sets the match pattern
      * 
-     * @param pattern The regex pattern to use to determine if this processor is applicable
+     * @param pattern The regex pattern to use to determine if this processor is
+     *            applicable
      */
     public void setMatchPattern(String pattern)
     {
@@ -84,16 +90,18 @@ public abstract class AbstractFormProcessor implements FormProcessor
         if (this.processorRegistry == null)
         {
             if (logger.isWarnEnabled())
-                logger.warn("Property 'processorRegistry' has not been set.  Ignoring auto-registration of processor: " + this);
-            
+                logger.warn("Property 'processorRegistry' has not been set.  Ignoring auto-registration of processor: "
+                            + this);
+
             return;
         }
-        
+
         if (this.matchPattern == null)
         {
             if (logger.isWarnEnabled())
-                logger.warn("Property 'matchPattern' has not been set.  Ignoring auto-registration of processor: " + this);
-            
+                logger.warn("Property 'matchPattern' has not been set.  Ignoring auto-registration of processor: "
+                            + this);
+
             return;
         }
         else
@@ -105,7 +113,7 @@ public abstract class AbstractFormProcessor implements FormProcessor
         // register this instance
         this.processorRegistry.addProcessor(this);
     }
-    
+
     /*
      * @see org.alfresco.repo.forms.processor.FormProcessor#isActive()
      */
@@ -115,22 +123,25 @@ public abstract class AbstractFormProcessor implements FormProcessor
     }
 
     /*
-     * @see org.alfresco.repo.forms.processor.FormProcessor#isApplicable(org.alfresco.repo.forms.Item)
+     * @see
+     * org.alfresco.repo.forms.processor.FormProcessor#isApplicable(org.alfresco
+     * .repo.forms.Item)
      */
     public boolean isApplicable(Item item)
     {
         // this form processor matches if the match pattern provided matches
         // the kind of the item provided
-        
+
         Matcher matcher = patternMatcher.matcher(item.getKind());
         boolean matches = matcher.matches();
-        
+
         if (logger.isDebugEnabled())
-            logger.debug("Checking processor " + this + " for applicability for item '" + item + "', result = " + matches);
-        
+            logger.debug("Checking processor " + this + " for applicability for item '" + item + "', result = "
+                        + matches);
+
         return matches;
     }
-    
+
     /*
      * @see java.lang.Object#toString()
      */
@@ -143,4 +154,29 @@ public abstract class AbstractFormProcessor implements FormProcessor
         buffer.append(")");
         return buffer.toString();
     }
+
+    /**
+     * Gets the Item from the <code>form</code> parameter and sets its type
+     * field to <code>type</code>.
+     * 
+     * @param form
+     * @param type
+     */
+    protected void setFormItemType(Form form, String type)
+    {
+        form.getItem().setType(type);
+    }
+
+    /**
+     * Gets the Item from the <code>form</code> parameter and sets its URL field
+     * to <code>url</code>.
+     * 
+     * @param form
+     * @param url
+     */
+    protected void setFormItemUrl(Form form, String url)
+    {
+        form.getItem().setUrl(url);
+    }
+
 }

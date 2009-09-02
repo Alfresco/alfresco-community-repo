@@ -410,30 +410,80 @@ public class MultiTDemoTest extends TestCase
     {
         logger.info("Create demo groups");
         
+        assertTrue(tenants.size() > 0);
+        
+        final int rootGrpsOrigCnt = AuthenticationUtil.runAs(new RunAsWork<Integer>()
+        {
+            public Integer doWork() throws Exception
+            {
+                return authorityService.getAllRootAuthorities(AuthorityType.GROUP).size();
+            }
+        }, tenantService.getDomainUser(AuthenticationUtil.getAdminUserName(), tenants.get(0)));
+        
+        // create groups and add users
         for (final String tenantDomain : tenants)
         {
-            String tenantAdminName = tenantService.getDomainUser(AuthenticationUtil.getAdminUserName(), tenantDomain);
+            final String tenantAdminName = tenantService.getDomainUser(AuthenticationUtil.getAdminUserName(), tenantDomain);
             
             AuthenticationUtil.runAs(new RunAsWork<Object>()
+            {
+                public Object doWork() throws Exception
+                {
+                    createGroup("GrpA", null);
+                    createGroup("SubGrpA", "GrpA");
+                    
+                    createGroup("GrpB", null);
+                    
+                    createGroup("GrpC", null);
+                    
+                    if (tenantDomain.equals(TEST_TENANT_DOMAIN2))
                     {
-                        public Object doWork() throws Exception
-                        {
-                            createGroup("GrpA-"+tenantDomain, null);
-                            createGroup("SubGrpA-"+tenantDomain, "GrpA-"+tenantDomain);
-                            
-                            createGroup("GrpB-"+tenantDomain, null);
-                            createGroup("SubGrpB-"+tenantDomain, "GrpB-"+tenantDomain);
-                                                        
-                            if (tenantDomain.equals(TEST_TENANT_DOMAIN2))
-                            {
-                                createGroup("GrpC-"+tenantDomain, null);
-                                createGroup("SubGrpC-"+tenantDomain, "GrpC-"+tenantDomain);
-                            }
-                            
-                            return null;
-                        }
-                    }, tenantAdminName);
+                        createGroup("SubGrpC", "GrpC");
+                    }
+                    
+                    createGroup("GrpD", null);
+                    addToGroup("GrpD", tenantAdminName);
+                    
+                    return null;
+                }
+            }, tenantAdminName);
+        }
+        
+        // check groups/users
+        for (final String tenantDomain : tenants)
+        {
+            final String tenantAdminName = tenantService.getDomainUser(AuthenticationUtil.getAdminUserName(), tenantDomain);
             
+            AuthenticationUtil.runAs(new RunAsWork<Object>()
+            {
+                public Object doWork() throws Exception
+                {
+                    Set<String> rootGrps = authorityService.getAllRootAuthorities(AuthorityType.GROUP);
+                    assertEquals(rootGrpsOrigCnt+4, rootGrps.size());
+                    
+                    Set<String> auths = authorityService.getContainedAuthorities(null, "GROUP_GrpA", true);
+                    assertEquals(1, auths.size());
+                    
+                    auths = authorityService.getContainedAuthorities(null, "GROUP_GrpB", true);
+                    assertEquals(0, auths.size());
+                    
+                    auths = authorityService.getContainedAuthorities(null, "GROUP_GrpC", true);
+                    if (tenantDomain.equals(TEST_TENANT_DOMAIN2))
+                    {
+                        assertEquals(1, auths.size());
+                    }
+                    else
+                    {
+                        assertEquals(0, auths.size());
+                    }
+                    
+                    auths = authorityService.getContainedAuthorities(null, "GROUP_GrpD", true);
+                    assertEquals(1, auths.size());
+                    assertTrue(auths.toArray()[0].equals(tenantAdminName));
+                    
+                    return null;
+                }
+            }, tenantAdminName);
         }
     }
     
@@ -885,9 +935,8 @@ public class MultiTDemoTest extends TestCase
            
            if (parentGroupName != null)
            {
-               this.authorityService.addAuthority(parentGroupName, groupName);
+               addToGroup(parentShortName, groupName);
            }
-           
         }
         else
         {
@@ -895,6 +944,11 @@ public class MultiTDemoTest extends TestCase
         }
     }
     
+    private void addToGroup(String parentGroupShortName, String authorityName)
+    {
+        String parentGroupName = this.authorityService.getName(AuthorityType.GROUP, parentGroupShortName);
+        authorityService.addAuthority(parentGroupName, authorityName);
+    }
     
     private NodeRef createUser(String baseUserName, String tenantDomain, String password)
     {

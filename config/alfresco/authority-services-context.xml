@@ -62,6 +62,9 @@
         <property name="personService">
             <ref bean="personService" />
         </property>
+        <property name="tenantService">
+            <ref bean="tenantService" />
+        </property>
         <property name="userToAuthorityCache">
             <ref bean="userToAuthorityCache" />
         </property>

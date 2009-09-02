@@ -37,6 +37,7 @@ import java.util.regex.Pattern;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.cache.SimpleCache;
+import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -67,7 +68,9 @@ public class AuthorityDAOImpl implements AuthorityDAO
     private DictionaryService dictionaryService;
 
     private PersonService personService;
-
+    
+    private TenantService tenantService;
+    
     private SimpleCache<CacheKey, HashSet<String>> authorityLookupCache;
 
     public AuthorityDAOImpl()
@@ -107,7 +110,12 @@ public class AuthorityDAOImpl implements AuthorityDAO
     {
         this.personService = personService;
     }
-
+    
+    public void setTenantService(TenantService tenantService)
+    {
+        this.tenantService = tenantService;
+    }
+    
     public boolean authorityExists(String name)
     {
         NodeRef ref = getAuthorityOrNull(name);
@@ -246,7 +254,7 @@ public class AuthorityDAOImpl implements AuthorityDAO
                 throw new UnknownAuthorityException("An authority was not found for " + name);
             }
 
-            CacheKey key = new CacheKey(type, name, false, !immediate);
+            CacheKey key = new CacheKey(type, name, tenantService.getCurrentUserDomain(), false, !immediate);
 
             HashSet<String> authorities = authorityLookupCache.get(key);
             if (authorities == null)
@@ -277,7 +285,7 @@ public class AuthorityDAOImpl implements AuthorityDAO
 
     public Set<String> getContainingAuthorities(AuthorityType type, String name, boolean immediate)
     {
-        CacheKey key = new CacheKey(type, name, true, !immediate);
+        CacheKey key = new CacheKey(type, name, tenantService.getCurrentUserDomain(), true, !immediate);
 
         HashSet<String> authorities = authorityLookupCache.get(key);
         if (authorities == null)
@@ -610,23 +618,23 @@ public class AuthorityDAOImpl implements AuthorityDAO
 
     private static class CacheKey implements Serializable
     {
-        /**
-         * 
-         */
-        private static final long serialVersionUID = -4784784204722074066L;
+        private static final long serialVersionUID = -3787608436067567755L;
 
         AuthorityType type;
 
         String name;
 
+        String tenantDomain;
+
         boolean parents;
 
         boolean recursive;
 
-        CacheKey(AuthorityType type, String name, boolean parents, boolean recursive)
+        CacheKey(AuthorityType type, String name, String tenantDomain, boolean parents, boolean recursive)
         {
             this.type = type;
             this.name = name;
+            this.tenantDomain = (tenantDomain == null ? TenantService.DEFAULT_DOMAIN : tenantDomain);
             this.parents = parents;
             this.recursive = recursive;
         }
@@ -637,6 +645,7 @@ public class AuthorityDAOImpl implements AuthorityDAO
             final int prime = 31;
             int result = 1;
             result = prime * result + ((name == null) ? 0 : name.hashCode());
+            result = prime * result + ((tenantDomain == null) ? 0 : tenantDomain.hashCode());
             result = prime * result + (parents ? 1231 : 1237);
             result = prime * result + (recursive ? 1231 : 1237);
             result = prime * result + ((type == null) ? 0 : type.hashCode());
@@ -659,6 +668,8 @@ public class AuthorityDAOImpl implements AuthorityDAO
                     return false;
             }
             else if (!name.equals(other.name))
+                return false;
+            else if (!tenantDomain.equals(other.tenantDomain))
                 return false;
             if (parents != other.parents)
                 return false;

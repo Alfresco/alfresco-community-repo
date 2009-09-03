@@ -48,6 +48,8 @@ import org.apache.commons.logging.LogFactory;
 public class AdminAuthenticationFilter implements Filter
 {
    private static final Log logger = LogFactory.getLog(AdminAuthenticationFilter.class);
+   
+   private FilterConfig config;
 
    /**
     * @see javax.servlet.Filter#doFilter(javax.servlet.ServletRequest, javax.servlet.ServletResponse, javax.servlet.FilterChain)
@@ -66,7 +68,7 @@ public class AdminAuthenticationFilter implements Filter
          logger.debug("Authorising request for protected resource: " + httpRequest.getRequestURI());
       
       // there should be a user at this point so retrieve it
-      User user = AuthenticationHelper.getUser(httpRequest, httpResponse);
+      User user = AuthenticationHelper.getUser(this.config.getServletContext(), httpRequest, httpResponse);
       
       // if the user is present check to see whether it is an admin user
       boolean isAdmin = (user != null && user.isAdmin());
@@ -105,7 +107,7 @@ public class AdminAuthenticationFilter implements Filter
     */
    public void init(FilterConfig config) throws ServletException
    {
-      // nothing to do
+      this.config = config;
    }
    
    /**

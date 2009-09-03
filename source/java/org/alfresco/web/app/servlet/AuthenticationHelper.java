@@ -39,6 +39,8 @@ import javax.transaction.UserTransaction;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.i18n.I18NUtil;
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.management.subsystems.ActivateableBean;
+import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.service.ServiceRegistry;
@@ -46,7 +48,6 @@ import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.AuthenticationService;
-import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.LoginBean;
@@ -82,6 +83,8 @@ public final class AuthenticationHelper
    
    /** public service bean IDs **/
    private static final String AUTHENTICATION_SERVICE = "AuthenticationService";
+   private static final String AUTHENTICATION_COMPONENT = "AuthenticationComponent";
+   private static final String REMOTE_USER_MAPPER = "remoteUserMapper";
    private static final String UNPROTECTED_AUTH_SERVICE = "authenticationService";
    private static final String PERSON_SERVICE = "personService";
    
@@ -172,7 +175,7 @@ public final class AuthenticationHelper
       HttpSession session = req.getSession();
       
       // retrieve the User object
-      User user = getUser(req, res);
+      User user = getUser(sc, req, res);
       
       // get the login bean if we're not in the portal
       LoginBean loginBean = null;
@@ -462,15 +465,25 @@ public final class AuthenticationHelper
     * @param httpResponse The HTTP response
     * @return The User object representing the current user or null if it could not be found
     */
-   public static User getUser(HttpServletRequest httpRequest, HttpServletResponse httpResponse)
+   public static User getUser(ServletContext sc, HttpServletRequest httpRequest, HttpServletResponse httpResponse)
    {
+      String userId = null;
+
+      // If the remote user mapper is configured, we may be able to map in an externally authenticated user
+      WebApplicationContext wc = WebApplicationContextUtils.getRequiredWebApplicationContext(sc);
+      RemoteUserMapper remoteUserMapper = (RemoteUserMapper) wc.getBean(REMOTE_USER_MAPPER);
+      if (!(remoteUserMapper instanceof ActivateableBean) || ((ActivateableBean) remoteUserMapper).isActive())
+      {
+         userId = remoteUserMapper.getRemoteUser(httpRequest);
+      }
+
       HttpSession session = httpRequest.getSession();
       User user = null;
-      
+
       // examine the appropriate session to try and find the User object
       if (Application.inPortalServer() == false)
       {
-         user = (User)session.getAttribute(AUTHENTICATION_USER);
+         user = (User) session.getAttribute(AUTHENTICATION_USER);
       }
       else
       {
@@ -483,12 +496,33 @@ public final class AuthenticationHelper
             String name = (String)enumNames.nextElement();
             if (name.endsWith(AUTHENTICATION_USER))
             {
-               user = (User)session.getAttribute(name);
+               user = (User) session.getAttribute(name);
                break;
             }
          }
       }
-      
+
+      // If the remote user mapper is configured, we may be able to map in an externally authenticated user
+      if (userId != null)
+      {
+         // We have a previously-cached user with the wrong identity - replace them
+         if (user != null && !user.getUserName().equals(userId))
+         {
+            user = null;
+         }
+
+         if (user == null)
+         {
+            // If we have been authenticated by other means, just propagate through the user identity
+            if (userId != null)
+            {
+               AuthenticationComponent authenticationComponent = (AuthenticationComponent) wc
+                     .getBean(AUTHENTICATION_COMPONENT);
+               authenticationComponent.setCurrentUser(userId);
+               user = setUser(sc, httpRequest, userId, true);
+            }
+         }
+      }
       return user;
    }
    

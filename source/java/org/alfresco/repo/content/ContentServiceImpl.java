@@ -656,7 +656,8 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
                 throw new ContentIOException("Failed to set content property on stream closure: \n" +
                         "   node: " + nodeRef + "\n" +
                         "   property: " + propertyQName + "\n" +
-                        "   writer: " + writer,
+                        "   writer: " + writer + "\n" + 
+                        e.toString(),
                         e);
             }
         }

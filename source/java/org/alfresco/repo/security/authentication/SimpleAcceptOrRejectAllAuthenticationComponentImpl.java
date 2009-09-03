@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -18,7 +18,7 @@
  * As a special exception to the terms and conditions of version 2.0 of 
  * the GPL, you may redistribute this Program in connection with Free/Libre 
  * and Open Source Software ("FLOSS") applications as described in Alfresco's 
- * FLOSS exception.  You should have recieved a copy of the text describing 
+ * FLOSS exception.  You should have received a copy of the text describing 
  * the FLOSS exception, and it is also available here: 
  * http://www.alfresco.com/legal/licensing"
  */
@@ -45,6 +45,7 @@ import org.alfresco.repo.security.authentication.ntlm.NLTMAuthenticator;
 public class SimpleAcceptOrRejectAllAuthenticationComponentImpl extends AbstractAuthenticationComponent implements NLTMAuthenticator
 {
     private boolean accept = false;
+    private boolean supportNtlm = false;
 
     public SimpleAcceptOrRejectAllAuthenticationComponentImpl()
     {
@@ -55,8 +56,13 @@ public class SimpleAcceptOrRejectAllAuthenticationComponentImpl extends Abstract
     {
         this.accept = accept;
     }
-    
-    public void authenticateImpl(String userName, char[] password) throws AuthenticationException
+            
+    public void setSupportNtlm(boolean supportNtlm)
+    {
+        this.supportNtlm = supportNtlm;
+    }
+
+   public void authenticateImpl(String userName, char[] password) throws AuthenticationException
     {
         if(accept)
         {
@@ -89,7 +95,7 @@ public class SimpleAcceptOrRejectAllAuthenticationComponentImpl extends Abstract
 
     public NTLMMode getNTLMMode()
     {
-        return NTLMMode.MD4_PROVIDER;
+        return supportNtlm ? NTLMMode.MD4_PROVIDER : NTLMMode.NONE;
     }
     
     /**

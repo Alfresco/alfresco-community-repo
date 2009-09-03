@@ -40,6 +40,8 @@ import java.util.Set;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.node.MLPropertyInterceptor;
+import org.alfresco.service.cmr.dictionary.AssociationDefinition;
+import org.alfresco.service.cmr.dictionary.ClassDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
@@ -372,9 +374,9 @@ public class ExporterComponent
             {
             	String nodePathPrefixString = nodeService.getPath(nodeRef).toPrefixString(namespaceService);
             	if (! (isIncludedPath(parameters.getIncludedPaths(), nodePathPrefixString)))
-    			{
-    				return;
-    			}
+                {
+                    return;
+                }
             }
 
             // export node as reference to node, or as the actual node
@@ -396,7 +398,7 @@ public class ExporterComponent
                 {
                     continue;
                 }
-                else if (isExcludeAspect(aspect))
+                else if (isExcludedAspect(parameters.getExcludeAspects(), aspect))
                 {
                     continue;
                 }
@@ -437,6 +439,10 @@ public class ExporterComponent
             {
                 // filter out properties whose namespace is excluded
                 if (isExcludedURI(parameters.getExcludeNamespaceURIs(), property.getNamespaceURI()))
+                {
+                    continue;
+                }
+                if (isExcludedAspectProperty(parameters.getExcludeAspects(), property))
                 {
                     continue;
                 }
@@ -505,6 +511,14 @@ public class ExporterComponent
                     {
                         continue;
                     }
+                    if (isExcludedChildAssoc(parameters.getExcludeChildAssocs(), childAssocType))
+                    {
+                        continue;
+                    }
+                    if (isExcludedAspectAssociation(parameters.getExcludeAspects(), childAssocType))
+                    {
+                        continue;
+                    }
                     if (childAssoc.isPrimary() == false)
                     {
                         nodesWithSecondaryLinks.put(nodeRef, nodeRef);
@@ -515,33 +529,33 @@ public class ExporterComponent
                     	continue;
                     }
                     
-                	List<ChildAssociationRef> assocRefs = assocTypes.get(childAssocType);
-                	if (assocRefs == null)
-                	{
-                		assocRefs = new ArrayList<ChildAssociationRef>();
-                		assocTypes.put(childAssocType, assocRefs);
-                	}
-                	assocRefs.add(childAssoc);
+                    List<ChildAssociationRef> assocRefs = assocTypes.get(childAssocType);
+                    if (assocRefs == null)
+                    {
+                        assocRefs = new ArrayList<ChildAssociationRef>();
+                        assocTypes.put(childAssocType, assocRefs);
+                    }
+                    assocRefs.add(childAssoc);
                 }
                 	
                 // output each association type bucket
                 if (assocTypes.size() > 0)
                 {
-    	            exporter.startAssocs(nodeRef);
-    	            for (Map.Entry<QName, List<ChildAssociationRef>> assocType : assocTypes.entrySet())
-    	            {
-    	            	List<ChildAssociationRef> assocRefs = assocType.getValue();
-    	            	if (assocRefs.size() > 0)
-    	            	{
-    	                    exporter.startAssoc(nodeRef, assocType.getKey());
-    	            		for (ChildAssociationRef assocRef : assocRefs)
-    	            		{
-    	                        walkNode(assocRef.getChildRef(), parameters, exporter, false);
-    	            		}
-    	                    exporter.endAssoc(nodeRef, assocType.getKey());
-    	            	}
-    	            }
-    	            exporter.endAssocs(nodeRef);
+                    exporter.startAssocs(nodeRef);
+                    for (Map.Entry<QName, List<ChildAssociationRef>> assocType : assocTypes.entrySet())
+                    {
+                        List<ChildAssociationRef> assocRefs = assocType.getValue();
+                        if (assocRefs.size() > 0)
+                        {
+                            exporter.startAssoc(nodeRef, assocType.getKey());
+                            for (ChildAssociationRef assocRef : assocRefs)
+                            {
+                                walkNode(assocRef.getChildRef(), parameters, exporter, false);
+                            }
+                            exporter.endAssoc(nodeRef, assocType.getKey());
+                        }
+                    }
+                    exporter.endAssocs(nodeRef);
                 }
             }
             
@@ -671,6 +685,14 @@ public class ExporterComponent
                 {
                     continue;
                 }
+                if (isExcludedChildAssoc(parameters.getExcludeChildAssocs(), childAssocType))
+                {
+                    continue;
+                }
+                if (isExcludedAspectAssociation(parameters.getExcludeAspects(), childAssocType))
+                {
+                    continue;
+                }
                 if (childAssoc.isPrimary())
                 {
                     continue;
@@ -680,36 +702,36 @@ public class ExporterComponent
                     continue;
                 }
                 
-            	List<ChildAssociationRef> assocRefs = assocTypes.get(childAssocType);
-            	if (assocRefs == null)
-            	{
-            		assocRefs = new ArrayList<ChildAssociationRef>();
-            		assocTypes.put(childAssocType, assocRefs);
-            	}
-            	assocRefs.add(childAssoc);
+                List<ChildAssociationRef> assocRefs = assocTypes.get(childAssocType);
+                if (assocRefs == null)
+                {
+                    assocRefs = new ArrayList<ChildAssociationRef>();
+                    assocTypes.put(childAssocType, assocRefs);
+                }
+                assocRefs.add(childAssoc);
             }
             	
             // output each association type bucket
             if (assocTypes.size() > 0)
             {
-	            exporter.startReference(nodeRef, null);
-	            exporter.startAssocs(nodeRef);
-	            for (Map.Entry<QName, List<ChildAssociationRef>> assocType : assocTypes.entrySet())
-	            {
-	            	List<ChildAssociationRef> assocRefs = assocType.getValue();
-	            	if (assocRefs.size() > 0)
-	            	{
-	                    exporter.startAssoc(nodeRef, assocType.getKey());
-	            		for (ChildAssociationRef assocRef : assocRefs)
-	            		{
-	                        exporter.startReference(assocRef.getChildRef(), assocRef.getQName());
-	                        exporter.endReference(assocRef.getChildRef());
-	            		}
-	                    exporter.endAssoc(nodeRef, assocType.getKey());
-	            	}
-	            }
-	            exporter.endAssocs(nodeRef);
-	            exporter.endReference(nodeRef);
+                exporter.startReference(nodeRef, null);
+                exporter.startAssocs(nodeRef);
+                for (Map.Entry<QName, List<ChildAssociationRef>> assocType : assocTypes.entrySet())
+                {
+                    List<ChildAssociationRef> assocRefs = assocType.getValue();
+                    if (assocRefs.size() > 0)
+                    {
+                        exporter.startAssoc(nodeRef, assocType.getKey());
+                        for (ChildAssociationRef assocRef : assocRefs)
+                        {
+                            exporter.startReference(assocRef.getChildRef(), assocRef.getQName());
+                            exporter.endReference(assocRef.getChildRef());
+                        }
+                        exporter.endAssoc(nodeRef, assocType.getKey());
+                    }
+                }
+                exporter.endAssocs(nodeRef);
+                exporter.endReference(nodeRef);
             }
         }
         
@@ -737,36 +759,36 @@ public class ExporterComponent
                     continue;
                 }
                 
-            	List<AssociationRef> assocRefs = assocTypes.get(assocType);
-            	if (assocRefs == null)
-            	{
-            		assocRefs = new ArrayList<AssociationRef>();
-            		assocTypes.put(assocType, assocRefs);
-            	}
-            	assocRefs.add(assoc);
+                List<AssociationRef> assocRefs = assocTypes.get(assocType);
+                if (assocRefs == null)
+                {
+                    assocRefs = new ArrayList<AssociationRef>();
+                    assocTypes.put(assocType, assocRefs);
+                }
+                assocRefs.add(assoc);
             }
             	
             // output each association type bucket
             if (assocTypes.size() > 0)
             {
-	            exporter.startReference(nodeRef, null);
-	            exporter.startAssocs(nodeRef);
-	            for (Map.Entry<QName, List<AssociationRef>> assocType : assocTypes.entrySet())
-	            {
-	            	List<AssociationRef> assocRefs = assocType.getValue();
-	            	if (assocRefs.size() > 0)
-	            	{
-	                    exporter.startAssoc(nodeRef, assocType.getKey());
-	            		for (AssociationRef assocRef : assocRefs)
-	            		{
-	                        exporter.startReference(assocRef.getTargetRef(), null);
-	                        exporter.endReference(assocRef.getTargetRef());
-	            		}
-	                    exporter.endAssoc(nodeRef, assocType.getKey());
-	            	}
-	            }
-	            exporter.endAssocs(nodeRef);
-	            exporter.endReference(nodeRef);
+                exporter.startReference(nodeRef, null);
+                exporter.startAssocs(nodeRef);
+                for (Map.Entry<QName, List<AssociationRef>> assocType : assocTypes.entrySet())
+                {
+                    List<AssociationRef> assocRefs = assocType.getValue();
+                    if (assocRefs.size() > 0)
+                    {
+                        exporter.startAssoc(nodeRef, assocType.getKey());
+                        for (AssociationRef assocRef : assocRefs)
+                        {
+                            exporter.startReference(assocRef.getTargetRef(), null);
+                            exporter.endReference(assocRef.getTargetRef());
+                        }
+                        exporter.endAssoc(nodeRef, assocType.getKey());
+                    }
+                }
+                exporter.endAssocs(nodeRef);
+                exporter.endReference(nodeRef);
             }
         }
 
@@ -802,7 +824,6 @@ public class ExporterComponent
             return false;
         }
         
-		
         
         /**
          * Is the aspect unexportable?
@@ -810,7 +831,7 @@ public class ExporterComponent
          * @param aspectQName           the aspect name
          * @return                      <tt>true</tt> if the aspect can't be exported
          */
-        private boolean isExcludeAspect(QName aspectQName)
+        private boolean isExcludedAspect(QName[] excludeAspects, QName aspectQName)
         {
             if (aspectQName.equals(ContentModel.ASPECT_MULTILINGUAL_DOCUMENT) ||
                     aspectQName.equals(ContentModel.ASPECT_MULTILINGUAL_EMPTY_TRANSLATION))
@@ -819,8 +840,73 @@ public class ExporterComponent
             }
             else
             {
+                for (QName excludeAspect : excludeAspects)
+                {
+                    if (aspectQName.equals(excludeAspect))
+                    {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        /**
+         * Is the child association unexportable?
+         * 
+         * @param childAssocQName           the child assoc name
+         * @return                      <tt>true</tt> if the aspect can't be exported
+         */
+        private boolean isExcludedChildAssoc(QName[] excludeChildAssocs, QName childAssocQName)
+        {
+            for (QName excludeChildAssoc : excludeChildAssocs)
+            {
+                if (childAssocQName.equals(excludeChildAssoc))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+        
+        /**
+         * Is the property unexportable?
+         */
+        private boolean isExcludedAspectProperty(QName[] excludeAspects, QName propertyQName)
+        {
+            PropertyDefinition propDef = dictionaryService.getProperty(propertyQName);
+            if (propDef == null)
+            {
                 return false;
             }
+            
+            ClassDefinition classDef = propDef.getContainerClass();
+            if (classDef == null || !classDef.isAspect())
+            {
+                return false;
+            }
+            
+            return isExcludedAspect(excludeAspects, classDef.getName());
+        }
+
+        /**
+         * Is the association unexportable?
+         */
+        private boolean isExcludedAspectAssociation(QName[] excludeAspects, QName associationQName)
+        {
+            AssociationDefinition assocDef = dictionaryService.getAssociation(associationQName);
+            if (assocDef == null)
+            {
+                return false;
+            }
+            
+            ClassDefinition classDef = assocDef.getSourceClass();
+            if (classDef == null || !classDef.isAspect())
+            {
+                return false;
+            }
+            
+            return isExcludedAspect(excludeAspects, classDef.getName());
         }
         
         /**

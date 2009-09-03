@@ -25,6 +25,7 @@
 package org.alfresco.service.cmr.view;
 
 import org.alfresco.service.namespace.NamespaceService;
+import org.alfresco.service.namespace.QName;
 
 
 /**
@@ -45,6 +46,8 @@ public class ExporterCrawlerParameters
     private boolean crawlNullProperties = true;
     private ReferenceType referenceType = ReferenceType.PATHREF;
     private String[] excludeNamespaceURIs = new String[] { NamespaceService.REPOSITORY_VIEW_1_0_URI };
+    private QName[] excludeAspects = new QName[] { };
+    private QName[] excludeChildAssocs = new QName[] { };
     private String[] includedPaths = null;
     
     /**
@@ -165,6 +168,46 @@ public class ExporterCrawlerParameters
     public void setExcludeNamespaceURIs(String[] excludeNamespaceURIs)
     {
         this.excludeNamespaceURIs = excludeNamespaceURIs;
+    }
+
+    /**
+     * Gets the list of Aspects to exclude from the Export
+     * 
+     * @return  the list of Aspects
+     */
+    public QName[] getExcludeAspects()
+    {
+        return excludeAspects;
+    }
+
+    /**
+     * Sets the list of Aspects to exclude from the Export
+     * 
+     * @param excludeAspects
+     */
+    public void setExcludeAspects(QName[] excludeAspects)
+    {
+        this.excludeAspects = excludeAspects;
+    }
+
+    /**
+     * Gets the list of Child Associations to exclude from the Export
+     * 
+     * @return  the list of child assocs
+     */
+    public QName[] getExcludeChildAssocs()
+    {
+        return excludeChildAssocs;
+    }
+
+    /**
+     * Sets the list of Child Associations to exclude from the Export
+     * 
+     * @param excludeChildAssocs
+     */
+    public void setExcludeChildAssocs(QName[] excludeChildAssocs)
+    {
+        this.excludeChildAssocs = excludeChildAssocs;
     }
     
     /**

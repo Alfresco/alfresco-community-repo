@@ -109,6 +109,8 @@ public class ExporterComponentTest extends BaseSpringTest
         OutputStream output = new FileOutputStream(tempFile);
         ExporterCrawlerParameters parameters = new ExporterCrawlerParameters();
         parameters.setExportFrom(location);
+//        parameters.setExcludeAspects(new QName[] { ContentModel.ASPECT_AUDITABLE });
+//        parameters.setExcludeChildAssocs(new QName[] { ContentModel.ASSOC_CONTAINS });
         exporterService.exportView(output, parameters, testProgress);
         output.close();
     }
@@ -132,17 +134,17 @@ public class ExporterComponentTest extends BaseSpringTest
 
         public void startNamespace(String prefix, String uri)
         {
-            System.out.println("TestProgress: start namespace prefix = " + prefix + " uri = " + uri);
+//            System.out.println("TestProgress: start namespace prefix = " + prefix + " uri = " + uri);
         }
 
         public void endNamespace(String prefix)
         {
-            System.out.println("TestProgress: end namespace prefix = " + prefix);
+//            System.out.println("TestProgress: end namespace prefix = " + prefix);
         }
 
         public void startNode(NodeRef nodeRef)
         {
-//            System.out.println("TestProgress: start node " + nodeRef);
+            System.out.println("TestProgress: start node " + nodeRef);
         }
 
         public void endNode(NodeRef nodeRef)
@@ -267,12 +269,12 @@ public class ExporterComponentTest extends BaseSpringTest
 
         public void endValueMLText(NodeRef nodeRef)
         {
-             System.out.println("TestProgress: end MLValue.");            
+//             System.out.println("TestProgress: end MLValue.");            
         }
 
         public void startValueMLText(NodeRef nodeRef, Locale locale)
         {
-             System.out.println("TestProgress: start MLValue for locale: " + locale);            
+//             System.out.println("TestProgress: start MLValue for locale: " + locale);            
         }
 
     }

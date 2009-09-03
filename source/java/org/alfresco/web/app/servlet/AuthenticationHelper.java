@@ -85,7 +85,7 @@ public final class AuthenticationHelper
    /** public service bean IDs **/
    private static final String AUTHENTICATION_SERVICE = "AuthenticationService";
    private static final String AUTHENTICATION_COMPONENT = "AuthenticationComponent";
-   private static final String REMOTE_USER_MAPPER = "remoteUserMapper";
+   private static final String REMOTE_USER_MAPPER = "RemoteUserMapper";
    private static final String UNPROTECTED_AUTH_SERVICE = "authenticationService";
    private static final String PERSON_SERVICE = "personService";
    

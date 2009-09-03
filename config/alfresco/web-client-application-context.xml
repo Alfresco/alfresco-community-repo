@@ -170,7 +170,7 @@
       <property name="transactionService" ref="TransactionService" />
    </bean>
 
-   <bean id="remoteUserMapper" class="org.alfresco.repo.management.subsystems.ChainingSubsystemProxyFactory">
+   <bean id="RemoteUserMapper" class="org.alfresco.repo.management.subsystems.ChainingSubsystemProxyFactory">
       <property name="applicationContextManager">
          <ref bean="Authentication" />
       </property>

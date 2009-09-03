@@ -46,7 +46,24 @@ function main()
          var query = "+PARENT:\"" + parent.nodeRef + "\"";
          if (argsFilterType != null)
          {
-            query += " +TYPE:\"" + argsFilterType + "\"";
+            //map short name to long name
+            var types = {
+              'rma:dispositionSchedule': '{http://www.alfresco.org/model/recordsmanagement/1.0}dispositionSchedule',
+              'rma:dispositionActionDefinition': '{http://www.alfresco.org/model/recordsmanagement/1.0}dispositionActionDefinition',
+              'rma:dispositionAction': '{http://www.alfresco.org/model/recordsmanagement/1.0}dispositionAction',
+              'rma:hold':'{http://www.alfresco.org/model/recordsmanagement/1.0}hold',
+              'rma:transfer':'{http://www.alfresco.org/model/recordsmanagement/1.0}transfer'  
+            };
+         
+            var filterTypes = argsFilterType.split(',');
+            for (var i=0,len=filterTypes.length; i<len; i++)
+            {
+               var identifier = filterTypes[i];
+               if (types[identifier])
+               {
+                  query += " -TYPE:\"" + types[identifier] + "\"";
+               }
+            }            
          }
          
          if (logger.isLoggingEnabled())

@@ -214,10 +214,7 @@ public class StreamArchive extends StreamContent
                  dataFile, contentDir, this.mimetypeService);
            
             // setup parameters for export
-            ExporterCrawlerParameters params = new ExporterCrawlerParameters();
-            params.setCrawlSelf(true);
-            params.setCrawlChildNodes(true);
-            params.setCrawlAssociations(false);
+            ExporterCrawlerParameters params = setupCrawlerParameters();
             params.setExportFrom(new Location(nodeRefs));
             
             // perform the actual export
@@ -234,4 +231,23 @@ public class StreamArchive extends StreamContent
                         "Failed to create archive", fnfe);
         }
     }
+ 
+    /**
+     * Creates and sets up a ExporterCrawlerParameters object to 
+     * use to create the archive, subclasses can override this
+     * method to change the output of the generated archive.
+     * <p>
+     * NOTE: The location and includeContent flag will be setup
+     * after this method is called.
+     * 
+     * @return ExporterCrawlerParameters object
+     */
+    protected ExporterCrawlerParameters setupCrawlerParameters()
+    {
+        ExporterCrawlerParameters params = new ExporterCrawlerParameters();
+        params.setCrawlSelf(true);
+        params.setCrawlChildNodes(true);
+        params.setCrawlAssociations(false);
+        return params;
+    }   
 }

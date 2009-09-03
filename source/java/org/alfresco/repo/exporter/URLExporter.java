@@ -224,7 +224,7 @@ import org.alfresco.util.ParameterCheck;
     public void content(NodeRef nodeRef, QName property, InputStream content, ContentData contentData, int index)
     {
         // Handle the stream by converting it to a URL and export the URL
-        ContentData exportedContentData = streamHandler.exportContent(content, contentData);
+        ContentData exportedContentData = streamHandler.exportContent(content, new NodeContentData(nodeRef, contentData));
         value(nodeRef, property, exportedContentData, index);
     }
 

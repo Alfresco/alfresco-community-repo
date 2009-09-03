@@ -33,8 +33,14 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.model.ContentModel;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.MimetypeService;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.Path;
+import org.alfresco.service.cmr.repository.Path.ChildAssocElement;
 import org.alfresco.service.cmr.view.ExportPackageHandler;
 import org.alfresco.service.cmr.view.ExporterException;
 import org.alfresco.util.TempFileProvider;
@@ -54,6 +60,7 @@ public class ACPExportPackageHandler
     public final static String ACP_EXTENSION = "acp";
     
     protected MimetypeService mimetypeService;
+    protected NodeService nodeService;
     protected OutputStream outputStream;
     protected File dataFile;
     protected File contentDir;
@@ -61,7 +68,8 @@ public class ACPExportPackageHandler
     protected OutputStream tempDataFileStream;
     protected ZipOutputStream zipStream;
     protected int iFileCnt = 0;
-
+    protected boolean exportAsFolders;
+    
         
     /**
      * Construct
@@ -120,6 +128,25 @@ public class ACPExportPackageHandler
         this.mimetypeService = mimetypeService;
     }
 
+    
+    /**
+     * @param nodeService
+     */
+    public void setNodeService(NodeService nodeService)
+    {
+        this.nodeService = nodeService;
+    }
+    
+    /**
+     * Export content into folder structure of nodes
+     * 
+     * @param exportAsFolders
+     */
+    public void setExportAsFolders(boolean exportAsFolders)
+    {
+        this.exportAsFolders = exportAsFolders;
+    }
+    
     /* (non-Javadoc)
      * @see org.alfresco.service.cmr.view.ExportPackageHandler#startExport()
      */
@@ -165,23 +192,33 @@ public class ACPExportPackageHandler
         {
             contentDirPath = contentDirPath.substring(0, contentDirPath.lastIndexOf("."));
         }
-        String extension = "bin";
-        if (mimetypeService != null)
+        
+        File file;
+        if (exportAsFolders && nodeService != null && contentData instanceof NodeContentData)
         {
-            String mimetype = contentData.getMimetype();
-            if (mimetype != null && mimetype.length() > 0)
+            NodeContentData nodeContentData = (NodeContentData)contentData;
+            file = new File(contentDirPath + toDisplayPath(nodeService.getPath(nodeContentData.getNodeRef())));
+        }
+        else
+        {
+            String extension = "bin";
+            if (mimetypeService != null)
             {
-                try
+                String mimetype = contentData.getMimetype();
+                if (mimetype != null && mimetype.length() > 0)
                 {
-                    extension = mimetypeService.getExtension(mimetype);
-                }
-                catch(AlfrescoRuntimeException e)
-                {
-                    // use default extension
+                    try
+                    {
+                        extension = mimetypeService.getExtension(mimetype);
+                    }
+                    catch(AlfrescoRuntimeException e)
+                    {
+                        // use default extension
+                    }
                 }
             }
+            file = new File(contentDirPath, "content" + iFileCnt++ + "." + extension);
         }
-        File file = new File(contentDirPath, "content" + iFileCnt++ + "." + extension);
         
         try
         {
@@ -265,6 +302,34 @@ public class ACPExportPackageHandler
             output.write(buffer, 0, read);
             read = in.read(buffer, 0, 2048 *10);
         }
+    }
+    
+    /**
+     * @param path
+     * @return  display path
+     */
+    private String toDisplayPath(Path path)
+    {
+        StringBuffer displayPath = new StringBuffer();
+        if (path.size() == 1)
+        {
+            displayPath.append("/");
+        }
+        else
+        {
+            for (int i = 1; i < path.size(); i++)
+            {
+                Path.Element element = path.get(i);
+                if (element instanceof ChildAssocElement)
+                {
+                    ChildAssociationRef assocRef = ((ChildAssocElement)element).getRef();
+                    NodeRef node = assocRef.getChildRef();
+                    displayPath.append("/");
+                    displayPath.append(nodeService.getProperty(node, ContentModel.PROP_NAME));
+                }
+            }
+        }
+        return displayPath.toString();
     }
     
 }

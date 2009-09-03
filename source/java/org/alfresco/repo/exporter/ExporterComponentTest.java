@@ -111,7 +111,14 @@ public class ExporterComponentTest extends BaseSpringTest
         parameters.setExportFrom(location);
 //        parameters.setExcludeAspects(new QName[] { ContentModel.ASPECT_AUDITABLE });
 //        parameters.setExcludeChildAssocs(new QName[] { ContentModel.ASSOC_CONTAINS });
-        exporterService.exportView(output, parameters, testProgress);
+        
+        File acpFile = TempFileProvider.createTempFile("alf", ACPExportPackageHandler.ACP_EXTENSION);
+        File dataFile = new File("test");
+        File contentDir = new File("test");
+        ACPExportPackageHandler acpHandler = new ACPExportPackageHandler(new FileOutputStream(acpFile), dataFile, contentDir, null);
+        acpHandler.setNodeService(nodeService);
+        acpHandler.setExportAsFolders(true);
+        exporterService.exportView(acpHandler, parameters, testProgress);
         output.close();
     }
 

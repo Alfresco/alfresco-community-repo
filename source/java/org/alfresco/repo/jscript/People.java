@@ -31,8 +31,6 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
 import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.security.authentication.MutableAuthenticationDao;
-import org.alfresco.repo.security.authentication.PasswordGenerator;
 import org.alfresco.repo.security.authentication.UserNameGenerator;
 import org.alfresco.repo.security.authority.AuthorityDAO;
 import org.alfresco.repo.tenant.TenantService;
@@ -71,11 +69,10 @@ public final class People extends BaseScopableProcessorExtension
     private AuthorityDAO authorityDAO;
     private AuthorityService authorityService;
     private PersonService personService;
-    private MutableAuthenticationDao mutableAuthenticationDao;
+    private AuthenticationService authenticationService;
     private ContentUsageService contentUsageService;
     private TenantService tenantService;
     private UserNameGenerator usernameGenerator;
-    private PasswordGenerator passwordGenerator;
     private StoreRef storeRef;
     private int numRetries = 10;
     
@@ -93,16 +90,17 @@ public final class People extends BaseScopableProcessorExtension
             throw new IllegalStateException("Default store URL can only be set once.");
         }
         this.storeRef = new StoreRef(storeRef);
-    }
-    
+    }    
+
     /**
-     * Set the mutable authentication dao
+     * Sets the authentication service.
      * 
-     * @param mutableAuthenticationDao Mutable Authentication DAO 
+     * @param authenticationService
+     *            the authentication service
      */
-    public void setMutableAuthenticationDao(MutableAuthenticationDao mutableAuthenticationDao)
+    public void setAuthenticationService(AuthenticationService authenticationService)
     {
-        this.mutableAuthenticationDao = mutableAuthenticationDao;
+        this.authenticationService = authenticationService;
     }
 
     /**
@@ -170,17 +168,7 @@ public final class People extends BaseScopableProcessorExtension
     {
         this.usernameGenerator = userNameGenerator;
     }
-    
-    /**
-     * Set the password generator service
-     * 
-     * @param passwordGenerator the password generator
-     */
-    public void setPasswordGenerator(PasswordGenerator passwordGenerator)
-    {
-        this.passwordGenerator = passwordGenerator;
-    }
-    
+        
     /**
      * Delete a Person with the given username
      * 
@@ -189,14 +177,6 @@ public final class People extends BaseScopableProcessorExtension
     public void deletePerson(String username)
     {
         personService.deletePerson(username);
-        try
-        {
-            mutableAuthenticationDao.deleteUser(username);
-        }
-        catch (AuthenticationException e)
-        {
-            // Let's not worry if authentication details don't exist
-        }
     }
     
     /**
@@ -268,8 +248,8 @@ public final class People extends BaseScopableProcessorExtension
     		if (person != null && password != null)
     		{   			
     			// create account for person with the userName and password
-    			mutableAuthenticationDao.createUser(userName, password.toCharArray());
-    			mutableAuthenticationDao.setEnabled(userName, setAccountEnabled);
+    		    authenticationService.createAuthentication(userName, password.toCharArray());
+    		    authenticationService.setAuthenticationEnabled(userName, setAccountEnabled);
     			
     			person.save();
     		}
@@ -287,7 +267,7 @@ public final class People extends BaseScopableProcessorExtension
     {
         if (this.authorityService.isAdminAuthority(AuthenticationUtil.getFullyAuthenticatedUser()))
         {
-            this.mutableAuthenticationDao.setEnabled(userName, true);
+            this.authenticationService.setAuthenticationEnabled(userName, true);
         }
     }
     
@@ -300,7 +280,7 @@ public final class People extends BaseScopableProcessorExtension
     {
         if (this.authorityService.isAdminAuthority(AuthenticationUtil.getFullyAuthenticatedUser()))
         {
-            this.mutableAuthenticationDao.setEnabled(userName, false);
+            this.authenticationService.setAuthenticationEnabled(userName, false);
         }
     }
     
@@ -313,7 +293,7 @@ public final class People extends BaseScopableProcessorExtension
      */
     public boolean isAccountEnabled(String userName)
     {
-        return this.mutableAuthenticationDao.getEnabled(userName);
+        return this.authenticationService.getAuthenticationEnabled(userName);
     }
     
     /**

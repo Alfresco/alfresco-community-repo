@@ -132,8 +132,8 @@
         <property name="personService">
             <ref bean="PersonService"/>
         </property>
-        <property name="mutableAuthenticationDao">
-            <ref bean="authenticationDao"/>
+        <property name="authenticationService">
+            <ref bean="AuthenticationService"/>
         </property>
         <property name="contentUsageService">
             <ref bean="ContentUsageService"/>
@@ -143,9 +143,6 @@
         </property>
         <property name="userNameGenerator">
             <ref bean="userNameGenerator"/>
-        </property>
-        <property name="passwordGenerator">
-            <ref bean="passwordGenerator"/>
         </property>
     </bean>
 

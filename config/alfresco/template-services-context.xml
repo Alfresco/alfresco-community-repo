@@ -97,8 +97,8 @@
         <property name="personService">
             <ref bean="PersonService"/>
         </property>
-        <property name="mutableAuthenticationDao">
-            <ref bean="authenticationDao"/>
+        <property name="authenticationService">
+            <ref bean="AuthenticationService"/>
         </property>
     </bean>
     

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -30,11 +30,11 @@ import java.util.List;
 import java.util.Set;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.security.authentication.MutableAuthenticationDao;
 import org.alfresco.repo.security.authority.AuthorityDAO;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.PersonService;
@@ -51,7 +51,7 @@ public class People extends BaseTemplateProcessorExtension
     private ServiceRegistry services;
     private AuthorityDAO authorityDAO;
     private AuthorityService authorityService;
-    private MutableAuthenticationDao mutableAuthenticationDao;
+    private AuthenticationService authenticationService;
     private PersonService personService;
     private StoreRef storeRef;
     
@@ -112,15 +112,16 @@ public class People extends BaseTemplateProcessorExtension
     }
     
     /**
-     * Set the mutable authentication dao
+     * Sets the authentication service.
      * 
-     * @param mutableAuthenticationDao Mutable Authentication DAO 
+     * @param authenticationService
+     *            the new authentication service
      */
-    public void setMutableAuthenticationDao(MutableAuthenticationDao mutableAuthenticationDao)
+    public void setAuthenticationService(AuthenticationService authenticationService)
     {
-        this.mutableAuthenticationDao = mutableAuthenticationDao;
+        this.authenticationService = authenticationService;
     }
-    
+
     /**
      * Gets the Person given the username
      * 
@@ -234,7 +235,7 @@ public class People extends BaseTemplateProcessorExtension
      */
     public boolean isAccountEnabled(TemplateNode person)
     {
-        return this.mutableAuthenticationDao.getEnabled((String)person.getProperties().get(ContentModel.PROP_USERNAME));
+        return this.authenticationService.getAuthenticationEnabled((String)person.getProperties().get(ContentModel.PROP_USERNAME));
     }
 
     /**
@@ -255,7 +256,6 @@ public class People extends BaseTemplateProcessorExtension
             String groupName = (String)container.getProperties().get(ContentModel.PROP_AUTHORITY_NAME);
             Set<String> authorities = authorityService.getContainedAuthorities(type, groupName, !recurse);
             members = new ArrayList<TemplateNode>(authorities.size());
-            int i = 0;
             for (String authority : authorities)
             {
                 AuthorityType authorityType = AuthorityType.getAuthorityType(authority);
@@ -278,6 +278,6 @@ public class People extends BaseTemplateProcessorExtension
             }
         }
         
-        return members != null ? members : (List)Collections.emptyList();
+        return members != null ? members : Collections.<TemplateNode>emptyList();
     }
 }

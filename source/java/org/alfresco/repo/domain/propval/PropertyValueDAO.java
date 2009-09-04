@@ -27,6 +27,7 @@ package org.alfresco.repo.domain.propval;
 import java.io.Serializable;
 import java.util.Date;
 
+import org.alfresco.repo.domain.CrcHelper;
 import org.alfresco.util.Pair;
 
 /**
@@ -84,6 +85,11 @@ public interface PropertyValueDAO
     //================================
     // 'alf_prop_string_value' accessors
     //================================
+    /**
+     * Utility method to get query parameters for case-sensitive string searching
+     * @see CrcHelper
+     */
+    Pair<String, Long> getPropertyStringCaseSensitiveSearchParameters(String value);
     /**
      * <b>alf_prop_string_value</b> accessor
      * 

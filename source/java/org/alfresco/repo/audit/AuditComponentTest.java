@@ -39,12 +39,16 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.cmr.audit.AuditService.AuditQueryCallback;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.EqualsHelper;
+import org.apache.commons.lang.mutable.MutableInt;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.util.ResourceUtils;
 
@@ -62,6 +66,8 @@ public class AuditComponentTest extends TestCase
     private static final String APPLICATION_TEST = "Alfresco Test";
     private static final String APPLICATION_ACTIONS_TEST = "Actions Test";
     
+    private static final Log logger = LogFactory.getLog(AuditComponentTest.class);
+    
     private static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
     
     private AuditModelRegistry auditModelRegistry;
@@ -71,6 +77,7 @@ public class AuditComponentTest extends TestCase
     private NodeService nodeService;
     
     private NodeRef nodeRef;
+    private String user;
     
     @Override
     public void setUp() throws Exception
@@ -96,7 +103,8 @@ public class AuditComponentTest extends TestCase
         nodeRef = AuthenticationUtil.runAs(testRunAs, AuthenticationUtil.getSystemUserName());
 
         // Authenticate
-        AuthenticationUtil.setFullyAuthenticatedUser("User-" + getName());
+        user = "User-" + getName();
+        AuthenticationUtil.setFullyAuthenticatedUser(user);
     }
     
     @Override
@@ -254,9 +262,9 @@ public class AuditComponentTest extends TestCase
     }
     
     /**
-     * Start a session and use it within a single txn
+     * Test auditing of something resembling real-world data
      */
-    public void testSession_Action01() throws Exception
+    public void testAudit_Action01() throws Exception
     {
         Serializable valueA = new Date();
         Serializable valueB = "BBB-value-here";
@@ -282,5 +290,82 @@ public class AuditComponentTest extends TestCase
         
         // Check
         checkAuditMaps(result, expected);
+    }
+    
+    public void testQuery_Action01() throws Exception
+    {
+        final Long beforeTime = new Long(System.currentTimeMillis());
+        
+        // Make sure that we have something to search for
+        testAudit_Action01();
+        
+        final StringBuilder sb = new StringBuilder();
+        final MutableInt rowCount = new MutableInt();
+        
+        AuditQueryCallback callback = new AuditQueryCallback()
+        {
+            public boolean handleAuditEntry(
+                    Long entryId, String applicationName, String user, long time, Map<String, Serializable> values)
+            {
+                assertNotNull(applicationName);
+                assertNotNull(user);
+                
+                sb.append("Row: ")
+                  .append(entryId).append(" | ")
+                  .append(applicationName).append(" | ")
+                  .append(user).append(" | ")
+                  .append(new Date(time)).append(" | ")
+                  .append(values).append(" | ")
+                  .append("\n");
+                  ;
+                rowCount.setValue(rowCount.intValue() + 1);
+                return true;
+            }
+        };
+        
+        sb.delete(0, sb.length());
+        rowCount.setValue(0);
+        auditComponent.auditQuery(callback, APPLICATION_ACTIONS_TEST, null, null, null, -1);
+        assertTrue("Expected some data", rowCount.intValue() > 0);
+        logger.debug(sb.toString());
+        int allResults = rowCount.intValue();
+        
+        // Limit by count
+        sb.delete(0, sb.length());
+        rowCount.setValue(0);
+        auditComponent.auditQuery(callback, APPLICATION_ACTIONS_TEST, null, null, null, 1);
+        assertEquals("Expected to limit data", 1, rowCount.intValue());
+        logger.debug(sb.toString());
+        
+        // Limit by time and query up to and excluding the 'before' time
+        sb.delete(0, sb.length());
+        rowCount.setValue(0);
+        auditComponent.auditQuery(callback, APPLICATION_ACTIONS_TEST, null, null, beforeTime, -1);
+        logger.debug(sb.toString());
+        int resultsBefore = rowCount.intValue();
+        
+        // Limit by time and query from and including the 'before' time
+        sb.delete(0, sb.length());
+        rowCount.setValue(0);
+        auditComponent.auditQuery(callback, APPLICATION_ACTIONS_TEST, null, beforeTime, null, -1);
+        logger.debug(sb.toString());
+        int resultsAfter = rowCount.intValue();
+        
+        assertEquals(
+                "Time-limited queries did not get all results before and after a time",
+                allResults, (resultsBefore + resultsAfter));
+
+        sb.delete(0, sb.length());
+        rowCount.setValue(0);
+        auditComponent.auditQuery(callback, APPLICATION_ACTIONS_TEST, user, null, null, -1);
+        assertTrue("Expected some data for specific user", rowCount.intValue() > 0);
+        logger.debug(sb.toString());
+        
+        sb.delete(0, sb.length());
+        rowCount.setValue(0);
+        auditComponent.auditQuery(callback, APPLICATION_ACTIONS_TEST, "Numpty", null, null, -1);
+        assertTrue("Expected no data for bogus user", rowCount.intValue() == 0);
+        logger.debug(sb.toString());
+        
     }
 }

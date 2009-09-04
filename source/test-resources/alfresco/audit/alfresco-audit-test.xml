@@ -31,13 +31,13 @@
                     <AuditPath key="4.2">
                         <RecordValue key="value.1" dataExtractor="simpleValue"/>
                         <RecordValue key="value.2" dataExtractor="simpleValue"/>
-                        <GenerateValue key="value.3" dataGenerator="systemTime" scope="AUDIT"/>
+                        <GenerateValue key="value.3" dataGenerator="systemTime"/>
                     </AuditPath>
                 </AuditPath>
                 <AuditPath key="3.2">
                     <AuditPath key="4.1">
                         <RecordValue key="value.1" dataExtractor="simpleValue"/>
-                        <GenerateValue key="time" dataGenerator="systemTime" scope="AUDIT"/>
+                        <GenerateValue key="time" dataGenerator="systemTime"/>
                     </AuditPath>
                     <AuditPath key="4.2">
                         <RecordValue key="value.1" dataExtractor="simpleValue"/>

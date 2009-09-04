@@ -34,6 +34,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.audit.extractor.DataExtractor;
 import org.alfresco.repo.audit.generator.DataGenerator;
 import org.alfresco.repo.audit.model.AuditApplication;
@@ -49,6 +50,7 @@ import org.alfresco.service.Auditable;
 import org.alfresco.service.NotAuditable;
 import org.alfresco.service.PublicService;
 import org.alfresco.service.cmr.audit.AuditInfo;
+import org.alfresco.service.cmr.audit.AuditService.AuditQueryCallback;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -883,30 +885,16 @@ public class AuditComponentImpl implements AuditComponent
                 final Serializable data;
                 try
                 {
-                    data = extractor.convert(value);
+                    data = extractor.extractData(value);
                 }
                 catch (Throwable e)
                 {
-                    Log extractorLogger = LogFactory.getLog(extractor.getClass());
-                    if (extractorLogger.isDebugEnabled())
-                    {
-                        extractorLogger.debug(
-                                "Failed to extract audit data: \n" +
-                                "   Path:      " + path + "\n" +
-                                "   Raw value: " + value + "\n" +
-                                "   Extractor: " + extractor,
-                                e);
-                    }
-                    else
-                    {
-                        extractorLogger.warn(
-                                "Failed to extract audit data (turn on DEBUG for full stack): \n" +
-                                "   Path:      " + path + "\n" +
-                                "   Raw value: " + value + "\n" +
-                                "   Extractor: " + extractor + "\n" +
-                                "   Error:     " + e.getMessage());
-                    }
-                    continue;
+                    throw new AlfrescoRuntimeException(
+                            "Failed to extract audit data: \n" +
+                            "   Path:      " + path + "\n" +
+                            "   Raw value: " + value + "\n" +
+                            "   Extractor: " + extractor,
+                            e);
                 }
                 // Add it to the map
                 newData.put(extractorPath, data);
@@ -943,29 +931,39 @@ public class AuditComponentImpl implements AuditComponent
             }
             catch (Throwable e)
             {
-                Log generatorLogger = LogFactory.getLog(generator.getClass());
-                if (generatorLogger.isDebugEnabled())
-                {
-                    generatorLogger.debug(
-                            "Failed to generate audit data: \n" +
-                            "   Path:      " + path + "\n" +
-                            "   Generator: " + generator,
-                            e);
-                }
-                else
-                {
-                    generatorLogger.warn(
-                            "Failed to generate audit data (turn on DEBUG for full stack): \n" +
-                            "   Path:      " + path + "\n" +
-                            "   Generator: " + generator + "\n" +
-                            "   Error:     " + e.getMessage());
-                }
-                continue;
+                throw new AlfrescoRuntimeException(
+                        "Failed to generate audit data: \n" +
+                        "   Path:      " + path + "\n" +
+                        "   Generator: " + generator,
+                        e);
             }
             // Add it to the map
             newData.put(path, data);
         }
         // Done
         return newData;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public void auditQuery(
+            AuditQueryCallback callback,
+            String applicationName,
+            String user,
+            Long from,
+            Long to,
+            int maxResults)
+    {
+        ParameterCheck.mandatory("callback", callback);
+        
+        // Shortcuts
+        if (from != null && to != null && from.compareTo(to) > 0)
+        {
+            // Time range can't yield results
+            return;
+        }
+        
+        auditDAO.findAuditEntries(callback, applicationName, user, from, to, maxResults);
     }
 }

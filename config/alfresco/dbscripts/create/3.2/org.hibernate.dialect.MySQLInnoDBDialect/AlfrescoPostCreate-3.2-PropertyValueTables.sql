@@ -78,6 +78,7 @@ CREATE TABLE alf_prop_link
    value_prop_id BIGINT NOT NULL,
    key_prop_id BIGINT NOT NULL,
    INDEX idx_alf_prop_coll_rev (value_prop_id, root_prop_id),
+   CONSTRAINT fk_alf_prop_link_root FOREIGN KEY (root_prop_id) REFERENCES alf_prop_value (id) ON DELETE CASCADE,
    PRIMARY KEY (root_prop_id, current_prop_id, value_prop_id, key_prop_id)
 ) ENGINE=InnoDB;
 

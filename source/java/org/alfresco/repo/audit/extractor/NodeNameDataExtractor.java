@@ -26,29 +26,62 @@ package org.alfresco.repo.audit.extractor;
 
 import java.io.Serializable;
 
+import org.alfresco.model.ContentModel;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.util.PropertyCheck;
+
 /**
- * An extractor that supports all values and does not conversion.
- * This implementation can be used as a base class, although there is little
- * abstraction necessary for the converters in general.
+ * An extractor that pulls out the {@link ContentModel#PROP_NAME <b>cm:name</b>} property from a node.
  * 
  * @author Derek Hulley
  * @since 3.2
  */
-public class SimpleValueDataExtractor extends AbstractDataExtractor
+public class NodeNameDataExtractor extends AbstractDataExtractor
 {
+    private NodeService nodeService;
+    
     /**
-     * @return          Returns <tt>true</tt> always
+     * Set the service to get the property from
      */
-    public boolean isSupported(Serializable data)
+    public void setNodeService(NodeService nodeService)
     {
-        return true;
+        this.nodeService = nodeService;
+    }
+
+    @Override
+    public void afterPropertiesSet() throws Exception
+    {
+        super.afterPropertiesSet();
+        PropertyCheck.mandatory(this, "nodeService", nodeService);
     }
 
     /**
-     * Just returns the value unchanged
+     * @return          Returns <tt>true</tt> if the data is a {@link NodeRef}
+     */
+    public boolean isSupported(Serializable data)
+    {
+        return (data != null && data instanceof NodeRef);
+    }
+
+    /**
+     * Gets the <b>cm:name</b> property from the node
      */
     public Serializable extractData(Serializable in) throws Throwable
     {
-        return in;
+        NodeRef nodeRef = (NodeRef) in;
+        String nodeName = null;
+        if (!nodeService.exists(nodeRef))
+        {
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("Extractor can't pull value from non-existent node: " + nodeRef);
+            }
+        }
+        else
+        {
+            nodeName = (String) nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
+        }
+        return nodeName;
     }
 }

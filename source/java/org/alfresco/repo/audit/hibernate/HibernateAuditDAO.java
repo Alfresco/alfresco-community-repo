@@ -52,6 +52,7 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.TransactionalDao;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.audit.AuditInfo;
+import org.alfresco.service.cmr.audit.AuditService.AuditQueryCallback;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
@@ -138,39 +139,6 @@ public class HibernateAuditDAO extends HibernateDaoSupport implements AuditDAO, 
     public void setLocalSessionFactory(LocalSessionFactoryBean localSessionFactory)
     {
         this.localSessionFactory = localSessionFactory;
-    }
-
-    /**
-     * Fallout implementation from new audit DAO
-     * 
-     * @throws UnsupportedOperationException always
-     * @since 3.2
-     */
-    public Pair<Long, ContentData> getOrCreateAuditModel(URL url)
-    {
-        throw new UnsupportedOperationException();
-    }
-
-    /**
-     * Fallout implementation from new audit DAO
-     * 
-     * @throws UnsupportedOperationException always
-     * @since 3.2
-     */
-    public Long getOrCreateAuditApplication(Long modelId, String applicationName)
-    {
-        throw new UnsupportedOperationException();
-    }
-
-    /**
-     * Fallout implementation from new audit DAO
-     * 
-     * @throws UnsupportedOperationException always
-     * @since 3.2
-     */
-    public Long createAuditEntry(Long applicationId, long time, String username, Map<String, Serializable> values)
-    {
-        throw new UnsupportedOperationException();
     }
 
     public void audit(AuditState auditInfo)
@@ -680,5 +648,54 @@ public class HibernateAuditDAO extends HibernateDaoSupport implements AuditDAO, 
         query.setParameter(QUERY_AUDIT_DATE_PARAM, date);
         return (AuditDate) query.uniqueResult();
     }
+    
+    /*
+     * V3.2 from here on.  Put all fixes to the older audit code before this point, please.
+     */
 
+    /**
+     * Fallout implementation from new audit DAO
+     * 
+     * @throws UnsupportedOperationException always
+     * @since 3.2
+     */
+    public Pair<Long, ContentData> getOrCreateAuditModel(URL url)
+    {
+        throw new UnsupportedOperationException();
+    }
+
+    /**
+     * Fallout implementation from new audit DAO
+     * 
+     * @throws UnsupportedOperationException always
+     * @since 3.2
+     */
+    public Long getOrCreateAuditApplication(Long modelId, String applicationName)
+    {
+        throw new UnsupportedOperationException();
+    }
+
+    /**
+     * Fallout implementation from new audit DAO
+     * 
+     * @throws UnsupportedOperationException always
+     * @since 3.2
+     */
+    public Long createAuditEntry(Long applicationId, long time, String username, Map<String, Serializable> values)
+    {
+        throw new UnsupportedOperationException();
+    }
+
+    /**
+     * Fallout implementation from new audit DAO
+     * 
+     * @throws UnsupportedOperationException always
+     * @since 3.2
+     */
+    public void findAuditEntries(
+            AuditQueryCallback callback,
+            String applicationName, String user, Long from, Long to, int maxResults)
+    {
+        throw new UnsupportedOperationException();
+    }
 }

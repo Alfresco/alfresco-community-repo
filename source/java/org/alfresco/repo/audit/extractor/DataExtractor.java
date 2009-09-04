@@ -32,7 +32,7 @@ import java.io.Serializable;
  * components for recording.
  * <p/>
  * The framework will first determine if data passed into the instance is {@link #isSupported(Object) supported}
- * and will then pass it in for {@link #convert(Object) conversion} to the type that will be
+ * and will then pass it in for {@link #extractData(Serializable) conversion} to the type that will be
  * recorded.
  * 
  * @author Derek Hulley
@@ -51,9 +51,9 @@ public interface DataExtractor
     /**
      * Convert an value passed into the audit components into a value to be recorded.
      * 
-     * @param value                 the value to convert
-     * @return                      the (potentially) converted value
+     * @param value                 the source data
+     * @return                      the extracted data or <tt>null</tt> if the value is not relevant
      * @throws Throwable            All errors will be handled by the calling framework
      */
-    public Serializable convert(Serializable value) throws Throwable;
+    public Serializable extractData(Serializable value) throws Throwable;
 }

@@ -40,6 +40,7 @@ import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.domain.contentdata.ContentDataDAO;
 import org.alfresco.repo.domain.propval.PropertyValueDAO;
 import org.alfresco.service.cmr.audit.AuditInfo;
+import org.alfresco.service.cmr.audit.AuditService.AuditQueryCallback;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
@@ -61,7 +62,7 @@ public abstract class AbstractAuditDAOImpl implements AuditDAO
     private HibernateAuditDAO oldDAO;
     private ContentService contentService;
     private ContentDataDAO contentDataDAO;
-    private PropertyValueDAO propertyValueDAO;
+    protected PropertyValueDAO propertyValueDAO;
     
     public void setOldDAO(HibernateAuditDAO oldDAO)
     {
@@ -271,4 +272,59 @@ public abstract class AbstractAuditDAOImpl implements AuditDAO
     }
     
     protected abstract AuditEntryEntity createAuditEntry(Long applicationId, long time, Long usernameId, Long valuesId);
+    
+    /*
+     * Searches
+     */
+    
+    /**
+     * Class that passes results from a result entity into the client callback
+     */
+    protected class AuditQueryRowHandler
+    {
+        private final AuditQueryCallback callback;
+        private boolean more;
+        private AuditQueryRowHandler(AuditQueryCallback callback)
+        {
+            this.callback = callback;
+            this.more = true;
+        }
+        @SuppressWarnings("unchecked")
+        public void processResult(AuditQueryResult row)
+        {
+            if (!more)
+            {
+                // No more results required
+                return;
+            }
+            // Get the value map
+            // TODO: Should be done with a nested resultmapping
+            Long auditValuesId = row.getAuditValuesId();
+            Pair<Long, Serializable> auditValuesPair = propertyValueDAO.getPropertyValueById(auditValuesId);
+            if (auditValuesPair == null)
+            {
+                // Ignore
+                return;
+            }
+            Map<String, Serializable> auditValues = (Map<String, Serializable>) auditValuesPair.getSecond();
+            more = callback.handleAuditEntry(
+                    row.getAuditEntryId(),
+                    row.getAuditAppName(),
+                    row.getAuditUser(),
+                    row.getAuditTime(),
+                    auditValues);
+        }
+    }
+
+    public void findAuditEntries(
+            AuditQueryCallback callback,
+            String applicationName, String user, Long from, Long to, int maxResults)
+    {
+        AuditQueryRowHandler rowHandler = new AuditQueryRowHandler(callback);
+        findAuditEntries(rowHandler, applicationName, user, from, to, maxResults);
+    }
+    
+    protected abstract void findAuditEntries(
+            AuditQueryRowHandler rowHandler,
+            String applicationName, String user, Long from, Long to, int maxResults);
 }

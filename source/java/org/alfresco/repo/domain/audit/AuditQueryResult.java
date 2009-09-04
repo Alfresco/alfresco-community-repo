@@ -22,72 +22,89 @@
  * the FLOSS exception, and it is also available here: 
  * http://www.alfresco.com/legal/licensing"
  */
-package org.alfresco.repo.audit;
+package org.alfresco.repo.domain.audit;
 
-import java.io.Serializable;
 import java.util.Date;
-import java.util.Map;
-
-import org.alfresco.util.ParameterCheck;
 
 /**
- * Bean to hold audit entry data.  An audit entry represents a single audit call, but the
- * data stored may be a large map.
+ * Results bean for <b>alf_audit_entry</b> table.
  * 
  * @author Derek Hulley
  * @since 3.2
  */
-public class AuditEntry
+public class AuditQueryResult
 {
-    private final String user;
-    private final long time;
-    private final Long valuesId;
-    private final Map<String, Serializable> values;
+    private Long auditEntryId;
+    private String auditAppName;
+    private String auditUser;
+    private long auditTime;
+    private Long auditValuesId;
     
-    /**
-     * TODO: Comment
-     */
-    public AuditEntry(String user, long time, Long valuesId, Map<String, Serializable> values)
+    public AuditQueryResult()
     {
-        ParameterCheck.mandatoryString("user", user);
-        ParameterCheck.mandatory("time", time);
-        
-        this.user = user;
-        this.time = time;
-        this.valuesId = valuesId;
-        this.values = values;
     }
     
     @Override
     public String toString()
     {
         StringBuilder sb = new StringBuilder(512);
-        sb.append("AuditEntry")
-          .append("[ user=").append(user)
-          .append(", time=").append(new Date(time))
-          .append(", valuesId=").append(valuesId)
-          .append(", values=").append(values)
+        sb.append("AuditEntryResult")
+          .append("[ auditEntryId=").append(auditEntryId)
+          .append(", auditAppName=").append(auditAppName)
+          .append(", auditUser=").append(auditUser)
+          .append(", auditTime").append(new Date(auditTime))
+          .append(", auditValuesId=").append(auditValuesId)
           .append("]");
         return sb.toString();
     }
 
-    public String getUser()
+    public Long getAuditEntryId()
     {
-        return user;
+        return auditEntryId;
     }
 
-    public long getTime()
+    public void setAuditEntryId(Long entryId)
     {
-        return time;
+        this.auditEntryId = entryId;
     }
 
-    public Long getValuesId()
+    public String getAuditAppName()
     {
-        return valuesId;
+        return auditAppName;
     }
 
-    public Map<String, Serializable> getValues()
+    public void setAuditAppName(String appName)
     {
-        return values;
+        this.auditAppName = appName;
+    }
+
+    public String getAuditUser()
+    {
+        return auditUser;
+    }
+
+    public void setAuditUser(String user)
+    {
+        this.auditUser = user;
+    }
+
+    public long getAuditTime()
+    {
+        return auditTime;
+    }
+
+    public void setAuditTime(long time)
+    {
+        this.auditTime = time;
+    }
+
+    public Long getAuditValuesId()
+    {
+        return auditValuesId;
+    }
+
+    public void setAuditValuesId(Long auditValuesId)
+    {
+        this.auditValuesId = auditValuesId;
     }
 }

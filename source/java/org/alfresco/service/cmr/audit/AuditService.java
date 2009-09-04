@@ -114,50 +114,34 @@ public interface AuditService
     public static interface AuditQueryCallback
     {
         /**
-         * Check if summary or full data fetching is required.  Depending on the return value,
-         * the underlying query may be completely different; it is not possible to change the
-         * return value and expect the callback to be used differently during row handling.
+         * Handle a row of audit entry data.
          * 
-         * @return          Return <tt>true</tt> if summary data is required only i.e
-         *                  the full map of audit values for the entries will not be
-         *                  retrieved.
-         */
-        boolean isSummaryOnly();
-        
-        /**
-         * Handle a summary row of audit entry data.  The ID of the full values map is provided.
-         * 
-         * @param applicationName           the name of the application
-         * @param user                      the user that logged the entry
-         * @param time                      the time of the entry
-         * @param valuesId                  the ID of the values map as created
-         * @return                          Return <tt>true</tt> to continue processing rows or <tt>false</tt> to stop
-         */
-        boolean handleAuditEntrySummary(String applicationName, String user, long time, Long valuesId);
-        
-        /**
-         * Handle a full row of audit entry data.
-         * 
+         * @param entryId                   the unique audit entry ID
          * @param applicationName           the name of the application
          * @param user                      the user that logged the entry
          * @param time                      the time of the entry
          * @param values                    the values map as created
          * @return                          Return <tt>true</tt> to continue processing rows or <tt>false</tt> to stop
          */
-        boolean handleAuditEntryFull(String applicationName, String user, long time, Map<String, Serializable> values);
+        boolean handleAuditEntry(
+                Long entryId,
+                String applicationName,
+                String user,
+                long time,
+                Map<String, Serializable> values);
     }
     
     /**
      * Get the audit entries that match the given criteria.
      * 
      * @param callback          the callback that will handle results
-     * @param auditPath         if not <tt>null</tt>, at least one value in the entry must start with this path 
-     * @param user              if not <tt>null</tt>, the entry must be logged against this user
-     * @param from              the start search time (use 0L) to cover all times
-     * @param to                the end search time (use Long.MAX_VALUE) to cover all times
-     * @param limit             the maximum number of results to retrieve
+     * @param applicationName   if not <tt>null</tt>, find entries logged against this application 
+     * @param user              if not <tt>null</tt>, find entries logged against this user
+     * @param from              the start search time (<tt>null</tt> to start at the beginning)
+     * @param to                the end search time (<tt>null</tt> for no limit)
+     * @param maxResults        the maximum number of results to retrieve (zero or negative to ignore)
      */
     void auditQuery(
             AuditQueryCallback callback,
-            String auditPath, String user, long from, long to, int limit);
+            String applicationName, String user, Long from, Long to, int maxResults);
 }

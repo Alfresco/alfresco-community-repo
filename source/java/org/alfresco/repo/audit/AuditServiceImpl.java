@@ -35,6 +35,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
+import org.alfresco.util.ParameterCheck;
 import org.springframework.context.ApplicationContext;
 
 /**
@@ -129,9 +130,16 @@ public class AuditServiceImpl implements AuditService
 
     /**
      * {@inheritDoc}
+     * @see AuditComponent#auditQuery(AuditQueryCallback, String, String, Long, Long, int)
+     * @since 3.2
      */
-    public void auditQuery(AuditQueryCallback callback, String auditPath, String user, long from, long to, int limit)
+    public void auditQuery(
+            AuditQueryCallback callback,
+            String applicationName, String user, Long from, Long to, int maxResults)
+
     {
-        throw new UnsupportedOperationException();
+        ParameterCheck.mandatory("callback", callback);
+        
+        auditComponent.auditQuery(callback, applicationName, user, from, to, maxResults);
     }
 }

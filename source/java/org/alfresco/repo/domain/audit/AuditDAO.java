@@ -31,6 +31,7 @@ import java.util.Map;
 
 import org.alfresco.repo.audit.AuditState;
 import org.alfresco.service.cmr.audit.AuditInfo;
+import org.alfresco.service.cmr.audit.AuditService.AuditQueryCallback;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.util.Pair;
@@ -93,4 +94,8 @@ public interface AuditDAO
      * @return              Returns the unique entry ID
      */
     Long createAuditEntry(Long applicationId, long time, String username, Map<String, Serializable> values);
+    
+    void findAuditEntries(
+            AuditQueryCallback callback,
+            String applicationName, String user, Long from, Long to, int maxResults);
 }

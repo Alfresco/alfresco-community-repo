@@ -31,6 +31,8 @@ import java.util.Locale;
 import java.util.Map;
 
 import org.alfresco.repo.domain.propval.PropertyValueEntity.PersistedType;
+import org.alfresco.service.cmr.repository.AssociationRef;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.Period;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
@@ -60,6 +62,8 @@ public class DefaultPropertyTypeConverter implements PropertyTypeConverter
         mapClass.put(NodeRef.class, PersistedType.STRING);
         mapClass.put(Period.class, PersistedType.STRING);
         mapClass.put(Locale.class, PersistedType.STRING);
+        mapClass.put(AssociationRef.class, PersistedType.STRING);
+        mapClass.put(ChildAssociationRef.class, PersistedType.STRING);
         defaultPersistedTypesByClass = Collections.unmodifiableMap(mapClass);
     }
     

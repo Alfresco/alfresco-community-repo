@@ -85,6 +85,10 @@
     <bean name="auditModel.extractor.simpleValue" class="org.alfresco.repo.audit.extractor.SimpleValueDataExtractor">
         <property name="registry" ref="auditModel.extractorRegistry" />
     </bean>
+    <bean name="auditModel.extractor.nodeName" class="org.alfresco.repo.audit.extractor.NodeNameDataExtractor">
+        <property name="registry" ref="auditModel.extractorRegistry" />
+        <property name="nodeService" ref="nodeService" />
+    </bean>
     
     <!-- Data Generators -->
     <bean id="auditModel.generatorRegistry" class="org.alfresco.util.registry.NamedObjectRegistry">
@@ -95,6 +99,11 @@
     </bean>
     <bean name="auditModel.generator.user" class="org.alfresco.repo.audit.generator.AuthenticatedUserDataGenerator">
         <property name="registry" ref="auditModel.generatorRegistry" />
+    </bean>
+    <bean name="auditModel.generator.personFullName" class="org.alfresco.repo.audit.generator.AuthenticatedPersonDataGenerator">
+        <property name="registry" ref="auditModel.generatorRegistry" />
+        <property name="personService" ref="personService" />
+        <property name="nodeService" ref="nodeService" />
     </bean>
     
     <!-- Models -->

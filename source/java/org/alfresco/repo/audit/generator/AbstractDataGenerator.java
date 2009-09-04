@@ -26,6 +26,8 @@ package org.alfresco.repo.audit.generator;
 
 import org.alfresco.util.PropertyCheck;
 import org.alfresco.util.registry.NamedObjectRegistry;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.BeanNameAware;
 import org.springframework.beans.factory.InitializingBean;
 
@@ -37,6 +39,9 @@ import org.springframework.beans.factory.InitializingBean;
  */
 public abstract class AbstractDataGenerator implements DataGenerator, InitializingBean, BeanNameAware
 {
+    /** Logger that can be used by subclasses */
+    protected final Log logger = LogFactory.getLog(getClass());
+    
     private String name;
     private NamedObjectRegistry<DataGenerator> registry;
 

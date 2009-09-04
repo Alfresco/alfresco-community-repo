@@ -408,6 +408,11 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
     // 'alf_prop_string_value' accessors
     //================================
 
+    public Pair<String, Long> getPropertyStringCaseSensitiveSearchParameters(String value)
+    {
+        return CrcHelper.getStringCrcPair(value, 16, false, true);
+    }
+
     public Pair<Long, String> getPropertyStringValueById(Long id)
     {
         if (id == null)
@@ -449,7 +454,7 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
     {
         public Pair<String, Long> getValueKey(String value)
         {
-            return CrcHelper.getStringCrcPair(value, 128, true, true);
+            return getPropertyStringCaseSensitiveSearchParameters(value);
         }
 
         public Pair<Long, String> createValue(String value)

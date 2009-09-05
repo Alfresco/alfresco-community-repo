@@ -6,29 +6,29 @@
 
 <sqlMap namespace="alfresco.content">
 
-    <insert id="insert.Mimetype" parameterClass="Mimetype" >
-        <include refid="insert.Mimetype.AutoIncrement"/>
+    <insert id="insert_Mimetype" parameterClass="Mimetype" >
+        <include refid="alfresco.content.insert_Mimetype_AutoIncrement"/>
         <selectKey resultClass="long" keyProperty="id" type="post">
             KEY_COLUMN:GENERATED_KEY
         </selectKey>
     </insert>
 
-    <insert id="insert.Encoding" parameterClass="Encoding" >
-        <include refid="insert.Encoding.AutoIncrement"/>
+    <insert id="insert_Encoding" parameterClass="Encoding" >
+        <include refid="alfresco.content.insert_Encoding_AutoIncrement"/>
         <selectKey resultClass="long" keyProperty="id" type="post">
             KEY_COLUMN:GENERATED_KEY
         </selectKey>
     </insert>
 
-    <insert id="insert.ContentUrl" parameterClass="ContentUrl" >
-        <include refid="insert.ContentUrl.AutoIncrement"/>
+    <insert id="insert_ContentUrl" parameterClass="ContentUrl" >
+        <include refid="alfresco.content.insert_ContentUrl_AutoIncrement"/>
         <selectKey resultClass="long" keyProperty="id" type="post">
             KEY_COLUMN:GENERATED_KEY
         </selectKey>
     </insert>
 
-    <insert id="insert.ContentData" parameterClass="ContentData" >
-        <include refid="insert.ContentData.AutoIncrement"/>
+    <insert id="insert_ContentData" parameterClass="ContentData" >
+        <include refid="alfresco.content.insert_ContentData_AutoIncrement"/>
         <selectKey resultClass="long" keyProperty="id" type="post">
             KEY_COLUMN:GENERATED_KEY
         </selectKey>

@@ -50,32 +50,32 @@ import org.springframework.orm.ibatis.SqlMapClientTemplate;
  */
 public class PropertyValueDAOImpl extends AbstractPropertyValueDAOImpl
 {
-    private static final String SELECT_PROPERTY_CLASS_BY_ID = "select.PropertyClassByID";
-    private static final String SELECT_PROPERTY_CLASS_BY_NAME = "select.PropertyClassByName";
-    private static final String INSERT_PROPERTY_CLASS = "insert.PropertyClass";
+    private static final String SELECT_PROPERTY_CLASS_BY_ID = "alfresco.propval.select_PropertyClassByID";
+    private static final String SELECT_PROPERTY_CLASS_BY_NAME = "alfresco.propval.select_PropertyClassByName";
+    private static final String INSERT_PROPERTY_CLASS = "alfresco.propval.insert_PropertyClass";
     
-    private static final String SELECT_PROPERTY_DATE_VALUE_BY_ID = "select.PropertyDateValueByID";
-    private static final String SELECT_PROPERTY_DATE_VALUE_BY_VALUE = "select.PropertyDateValueByValue";
-    private static final String INSERT_PROPERTY_DATE_VALUE = "insert.PropertyDateValue";
+    private static final String SELECT_PROPERTY_DATE_VALUE_BY_ID = "alfresco.propval.select_PropertyDateValueByID";
+    private static final String SELECT_PROPERTY_DATE_VALUE_BY_VALUE = "alfresco.propval.select_PropertyDateValueByValue";
+    private static final String INSERT_PROPERTY_DATE_VALUE = "alfresco.propval.insert_PropertyDateValue";
     
-    private static final String SELECT_PROPERTY_STRING_VALUE_BY_ID = "select.PropertyStringValueByID";
-    private static final String SELECT_PROPERTY_STRING_VALUE_BY_VALUE = "select.PropertyStringValueByValue";
-    private static final String INSERT_PROPERTY_STRING_VALUE = "insert.PropertyStringValue";
+    private static final String SELECT_PROPERTY_STRING_VALUE_BY_ID = "alfresco.propval.select_PropertyStringValueByID";
+    private static final String SELECT_PROPERTY_STRING_VALUE_BY_VALUE = "alfresco.propval.select_PropertyStringValueByValue";
+    private static final String INSERT_PROPERTY_STRING_VALUE = "alfresco.propval.insert_PropertyStringValue";
     
-    private static final String SELECT_PROPERTY_DOUBLE_VALUE_BY_ID = "select.PropertyDoubleValueByID";
-    private static final String SELECT_PROPERTY_DOUBLE_VALUE_BY_VALUE = "select.PropertyDoubleValueByValue";
-    private static final String INSERT_PROPERTY_DOUBLE_VALUE = "insert.PropertyDoubleValue";
+    private static final String SELECT_PROPERTY_DOUBLE_VALUE_BY_ID = "alfresco.propval.select_PropertyDoubleValueByID";
+    private static final String SELECT_PROPERTY_DOUBLE_VALUE_BY_VALUE = "alfresco.propval.select_PropertyDoubleValueByValue";
+    private static final String INSERT_PROPERTY_DOUBLE_VALUE = "alfresco.propval.insert_PropertyDoubleValue";
     
-    private static final String SELECT_PROPERTY_SERIALIZABLE_VALUE_BY_ID = "select.PropertySerializableValueByID";
-    private static final String INSERT_PROPERTY_SERIALIZABLE_VALUE = "insert.PropertySerializableValue";
+    private static final String SELECT_PROPERTY_SERIALIZABLE_VALUE_BY_ID = "alfresco.propval.select_PropertySerializableValueByID";
+    private static final String INSERT_PROPERTY_SERIALIZABLE_VALUE = "alfresco.propval.insert_PropertySerializableValue";
     
-    private static final String SELECT_PROPERTY_VALUE_BY_ID = "select.PropertyValueById";
-    private static final String SELECT_PROPERTY_VALUE_BY_LOCAL_VALUE = "select.PropertyValueByLocalValue";
-    private static final String SELECT_PROPERTY_VALUE_BY_DOUBLE_VALUE = "select.PropertyValueByDoubleValue";
-    private static final String SELECT_PROPERTY_VALUE_BY_STRING_VALUE = "select.PropertyValueByStringValue";
-    private static final String INSERT_PROPERTY_VALUE = "insert.PropertyValue";
+    private static final String SELECT_PROPERTY_VALUE_BY_ID = "alfresco.propval.select_PropertyValueById";
+    private static final String SELECT_PROPERTY_VALUE_BY_LOCAL_VALUE = "alfresco.propval.select_PropertyValueByLocalValue";
+    private static final String SELECT_PROPERTY_VALUE_BY_DOUBLE_VALUE = "alfresco.propval.select_PropertyValueByDoubleValue";
+    private static final String SELECT_PROPERTY_VALUE_BY_STRING_VALUE = "alfresco.propval.select_PropertyValueByStringValue";
+    private static final String INSERT_PROPERTY_VALUE = "alfresco.propval.insert_PropertyValue";
     
-    private static final String INSERT_PROPERTY_LINK = "insert.PropertyLink";
+    private static final String INSERT_PROPERTY_LINK = "alfresco.propval.insert_PropertyLink";
     
     private SqlMapClientTemplate template;
 

@@ -6,36 +6,36 @@
 
 <sqlMap namespace="alfresco.propval">
 
-    <insert id="insert.PropertyClass" parameterClass="PropertyClass" >
-        <include refid="insert.PropertyClass.AutoIncrement"/>
+    <insert id="insert_PropertyClass" parameterClass="PropertyClass" >
+        <include refid="insert_PropertyClass_AutoIncrement"/>
         <selectKey resultClass="long" keyProperty="id" type="post">
             KEY_COLUMN:GENERATED_KEY
         </selectKey>
     </insert>
 
-    <insert id="insert.PropertyStringValue" parameterClass="PropertyStringValue" >
-        <include refid="insert.PropertyStringValue.AutoIncrement"/>
+    <insert id="insert_PropertyStringValue" parameterClass="PropertyStringValue" >
+        <include refid="insert_PropertyStringValue_AutoIncrement"/>
         <selectKey resultClass="long" keyProperty="id" type="post">
             KEY_COLUMN:GENERATED_KEY
         </selectKey>
     </insert>
 
-    <insert id="insert.PropertyDoubleValue" parameterClass="PropertyDoubleValue" >
-        <include refid="insert.PropertyDoubleValue.AutoIncrement"/>
+    <insert id="insert_PropertyDoubleValue" parameterClass="PropertyDoubleValue" >
+        <include refid="insert_PropertyDoubleValue_AutoIncrement"/>
         <selectKey resultClass="long" keyProperty="id" type="post">
             KEY_COLUMN:GENERATED_KEY
         </selectKey>
     </insert>
 
-    <insert id="insert.PropertySerializableValue" parameterMap="parameter.PropertySerializableValue" >
-        <include refid="insert.PropertySerializableValue.AutoIncrement"/>
+    <insert id="insert_PropertySerializableValue" parameterMap="parameter_PropertySerializableValue" >
+        <include refid="insert_PropertySerializableValue_AutoIncrement"/>
         <selectKey resultClass="long" keyProperty="id" type="post">
             KEY_COLUMN:GENERATED_KEY
         </selectKey>
     </insert>
 
-    <insert id="insert.PropertyValue" parameterClass="PropertyValue" >
-        <include refid="insert.PropertyValue.AutoIncrement"/>
+    <insert id="insert_PropertyValue" parameterClass="PropertyValue" >
+        <include refid="insert_PropertyValue_AutoIncrement"/>
         <selectKey resultClass="long" keyProperty="id" type="post">
             KEY_COLUMN:GENERATED_KEY
         </selectKey>

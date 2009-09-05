@@ -25,6 +25,9 @@
 package org.alfresco.repo.domain.audit;
 
 import java.util.Date;
+import java.util.List;
+
+import org.alfresco.repo.domain.propval.PropertyIdSearchRow;
 
 /**
  * Results bean for <b>alf_audit_entry</b> table.
@@ -39,6 +42,7 @@ public class AuditQueryResult
     private String auditUser;
     private long auditTime;
     private Long auditValuesId;
+    private List<PropertyIdSearchRow> auditValues;
     
     public AuditQueryResult()
     {
@@ -54,6 +58,7 @@ public class AuditQueryResult
           .append(", auditUser=").append(auditUser)
           .append(", auditTime").append(new Date(auditTime))
           .append(", auditValuesId=").append(auditValuesId)
+          .append(", auditValues=").append(auditValues.size())
           .append("]");
         return sb.toString();
     }
@@ -106,5 +111,15 @@ public class AuditQueryResult
     public void setAuditValuesId(Long auditValuesId)
     {
         this.auditValuesId = auditValuesId;
+    }
+
+    public List<PropertyIdSearchRow> getAuditValues()
+    {
+        return auditValues;
+    }
+
+    public void setAuditValues(List<PropertyIdSearchRow> auditValues)
+    {
+        this.auditValues = auditValues;
     }
 }

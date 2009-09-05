@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE sqlMapConfig      
+    PUBLIC "-//ibatis.apache.org//DTD SQL Map Config 2.0//EN"      
+    "http://ibatis.apache.org/dtd/sql-map-config-2.dtd">
+
+<sqlMapConfig>
+
+    <settings useStatementNamespaces="true" />
+    
+    <typeHandler javaType="java.io.Serializable" jdbcType="BLOB" callback="org.alfresco.ibatis.SerializableTypeHandlerCallback"/>
+    
+    <sqlMap resource="alfresco/ibatis/#resource.dialect#/locks-common-SqlMap.xml"/>
+    <sqlMap resource="alfresco/ibatis/#resource.dialect#/locks-insert-SqlMap.xml"/>
+    <sqlMap resource="alfresco/ibatis/#resource.dialect#/content-common-SqlMap.xml"/>
+    <sqlMap resource="alfresco/ibatis/#resource.dialect#/content-insert-SqlMap.xml"/>
+    <sqlMap resource="alfresco/ibatis/#resource.dialect#/propval-common-SqlMap.xml"/>
+    <sqlMap resource="alfresco/ibatis/#resource.dialect#/propval-insert-SqlMap.xml"/>
+    <sqlMap resource="alfresco/ibatis/#resource.dialect#/audit-common-SqlMap.xml"/>
+    <sqlMap resource="alfresco/ibatis/#resource.dialect#/audit-insert-SqlMap.xml"/>
+    
+</sqlMapConfig>

@@ -37,9 +37,9 @@ import org.springframework.orm.ibatis.SqlMapClientTemplate;
  */
 public class EncodingDAOImpl extends AbstractEncodingDAOImpl
 {
-    private static final String SELECT_ENCODING_BY_ID = "select.EncodingById";
-    private static final String SELECT_ENCODING_BY_KEY = "select.EncodingByKey";
-    private static final String INSERT_ENCODING = "insert.Encoding";
+    private static final String SELECT_ENCODING_BY_ID = "alfresco.content.select_EncodingById";
+    private static final String SELECT_ENCODING_BY_KEY = "alfresco.content.select_EncodingByKey";
+    private static final String INSERT_ENCODING = "alfresco.content.insert_Encoding";
     
     private SqlMapClientTemplate template;
 

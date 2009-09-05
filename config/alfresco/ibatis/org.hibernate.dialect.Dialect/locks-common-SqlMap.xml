@@ -17,14 +17,14 @@
     <!-- Result Maps    -->
     <!--                -->
 
-    <resultMap id="result.LockResource" class="LockResource">
+    <resultMap id="result_LockResource" class="LockResource">
         <result property="id" column="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <result property="version" column="version" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <result property="qnameNamespaceId" column="qname_ns_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <result property="qnameLocalName" column="qname_localname" jdbcType="VARCHAR" javaType="java.lang.String"/>
     </resultMap>
   
-    <resultMap id="result.Lock" class="Lock">
+    <resultMap id="result_Lock" class="Lock">
         <result property="id" column="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <result property="version" column="version" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <result property="sharedResourceId" column="shared_resource_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
@@ -38,7 +38,7 @@
     <!-- Parameter Maps -->
     <!--                -->
 
-    <parameterMap id="parameter.ExclusiveLockUpdateMap" class="map">
+    <parameterMap id="parameter_ExclusiveLockUpdateMap" class="map">
         <parameter property="newLockToken" jdbcType="VARCHAR" javaType="java.lang.String"/>
         <parameter property="newStartTime" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <parameter property="newExpiryTime" jdbcType="BIGINT" javaType="java.lang.Long"/>
@@ -50,12 +50,12 @@
     <!-- SQL Snippets   -->
     <!--                -->
     
-    <sql id="insert.LockResource.AutoIncrement">
+    <sql id="insert_LockResource_AutoIncrement">
         insert into alf_lock_resource (version, qname_ns_id, qname_localname) 
         values (#version#, #qnameNamespaceId#, lower(#qnameLocalName#))
     </sql>
     
-    <sql id="insert.Lock.AutoIncrement">
+    <sql id="insert_Lock_AutoIncrement">
         insert into alf_lock (version, shared_resource_id, excl_resource_id, lock_token, start_time, expiry_time) 
         values (#version#, #sharedResourceId#, #exclusiveResourceId#, lower(#lockToken#), #startTime#, #expiryTime#)
     </sql>
@@ -65,7 +65,7 @@
     <!--                -->
     
     <!-- Get the lock resource entity by qualified name -->
-    <select id="select.LockResourceByQName" parameterClass="LockResource" resultMap="result.LockResource">
+    <select id="select_LockResourceByQName" parameterClass="LockResource" resultMap="result_LockResource">
         select
             *
         from
@@ -76,7 +76,7 @@
     </select>
 
     <!-- Get a lock based on the ID -->
-    <select id="select.LockByID" parameterClass="Lock" resultMap="result.Lock">
+    <select id="select_LockByID" parameterClass="Lock" resultMap="result_Lock">
         select
             *
         from
@@ -86,7 +86,7 @@
     </select>
     
     <!-- Get a lock based on the unique key (shared and exclusive lock IDs) -->
-    <select id="select.LockByKey" parameterClass="Lock" resultMap="result.Lock">
+    <select id="select_LockByKey" parameterClass="Lock" resultMap="result_Lock">
         select
             *
         from
@@ -97,7 +97,7 @@
     </select>
     
     <!-- Get all locks for a given list of resource IDs -->
-    <select id="select.LockBySharedIds" resultMap="result.Lock">
+    <select id="select_LockBySharedIds" resultMap="result_Lock">
         select
             *
         from
@@ -112,7 +112,7 @@
     </select>
     
     <!-- Optimistic update of the lock -->
-    <update id="update.Lock" parameterClass="Lock">
+    <update id="update_Lock" parameterClass="Lock">
         update
             alf_lock
         set
@@ -126,7 +126,7 @@
     </update>
     
     <!-- Update locks for a given exclusive lock -->
-    <update id="update.ExclusiveLock" parameterMap="parameter.ExclusiveLockUpdateMap">
+    <update id="update_ExclusiveLock" parameterMap="parameter_ExclusiveLockUpdateMap">
         update
             alf_lock
         set

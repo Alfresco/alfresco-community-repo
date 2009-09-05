@@ -36,9 +36,9 @@ import org.springframework.orm.ibatis.SqlMapClientTemplate;
  */
 public class MimetypeDAOImpl extends AbstractMimetypeDAOImpl
 {
-    private static final String SELECT_MIMETYPE_BY_ID = "select.MimetypeById";
-    private static final String SELECT_MIMETYPE_BY_KEY = "select.MimetypeByKey";
-    private static final String INSERT_MIMETYPE = "insert.Mimetype";
+    private static final String SELECT_MIMETYPE_BY_ID = "alfresco.content.select_MimetypeById";
+    private static final String SELECT_MIMETYPE_BY_KEY = "alfresco.content.select_MimetypeByKey";
+    private static final String INSERT_MIMETYPE = "alfresco.content.insert_Mimetype";
     
     private SqlMapClientTemplate template;
 

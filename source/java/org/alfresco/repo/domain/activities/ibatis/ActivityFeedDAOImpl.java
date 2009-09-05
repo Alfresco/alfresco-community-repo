@@ -37,13 +37,13 @@ public class ActivityFeedDAOImpl extends IBatisSqlMapper implements ActivityFeed
 {
     public long insertFeedEntry(ActivityFeedEntity activityFeed) throws SQLException
     {
-        Long id = (Long)getSqlMapClient().insert("insert.activity.feed", activityFeed);
+        Long id = (Long)getSqlMapClient().insert("alfresco.activities.insert_activity_feed", activityFeed);
         return (id != null ? id : -1);
     }
     
     public int deleteFeedEntries(Date keepDate) throws SQLException
     {
-        return getSqlMapClient().delete("delete.activity.feed.entries.older.than.date", keepDate);
+        return getSqlMapClient().delete("alfresco.activities.delete_activity_feed_entries_older_than_date", keepDate);
     }
     
     public int deleteSiteFeedEntries(String siteId, String format, Date keepDate) throws SQLException
@@ -53,7 +53,7 @@ public class ActivityFeedDAOImpl extends IBatisSqlMapper implements ActivityFeed
         params.setActivitySummaryFormat(format);
         params.setPostDate(keepDate);
         
-        return getSqlMapClient().delete("delete.activity.feed.for.site.entries.older.than.date", params);
+        return getSqlMapClient().delete("alfresco.activities.delete_activity_feed_for_site_entries_older_than_date", params);
     }
     
     public int deleteUserFeedEntries(String feedUserId, String format, Date keepDate) throws SQLException
@@ -63,13 +63,13 @@ public class ActivityFeedDAOImpl extends IBatisSqlMapper implements ActivityFeed
         params.setActivitySummaryFormat(format);
         params.setPostDate(keepDate);
         
-        return getSqlMapClient().delete("delete.activity.feed.for.feeduser.entries.older.than.date", params);
+        return getSqlMapClient().delete("alfresco.activities.delete_activity_feed_for_feeduser_entries_older_than_date", params);
     }
     
     @SuppressWarnings("unchecked")
     public List<ActivityFeedEntity> selectFeedsToClean(int maxFeedSize) throws SQLException
     {
-        return (List<ActivityFeedEntity>)getSqlMapClient().queryForList("select.activity.feed.greater.than.max", maxFeedSize);
+        return (List<ActivityFeedEntity>)getSqlMapClient().queryForList("alfresco.activities.select_activity_feed_greater_than_max", maxFeedSize);
     }
     
     @SuppressWarnings("unchecked")
@@ -92,17 +92,17 @@ public class ActivityFeedDAOImpl extends IBatisSqlMapper implements ActivityFeed
             if ((!excludeThisUser) && (!excludeOtherUsers))
             {
                 // no excludes => everyone => where feed user is me
-                return (List<ActivityFeedEntity>)getSqlMapClient().queryForList("select.activity.feed.for.feeduser.and.site", params);
+                return (List<ActivityFeedEntity>)getSqlMapClient().queryForList("alfresco.activities.select_activity_feed_for_feeduser_and_site", params);
             }
             else if ((excludeThisUser) && (!excludeOtherUsers))
             {
                 // exclude feed user => others => where feed user is me and post user is not me
-                return (List<ActivityFeedEntity>)getSqlMapClient().queryForList("select.activity.feed.for.feeduser.others.and.site", params);
+                return (List<ActivityFeedEntity>)getSqlMapClient().queryForList("alfresco.activities.select_activity_feed_for_feeduser_others_and_site", params);
             }
             else if ((excludeOtherUsers) && (!excludeThisUser))
             {
                 // exclude others => me => where feed user is me and post user is me
-                return (List<ActivityFeedEntity>)getSqlMapClient().queryForList("select.activity.feed.for.feeduser.me.and.site", params);
+                return (List<ActivityFeedEntity>)getSqlMapClient().queryForList("alfresco.activities.select_activity_feed_for_feeduser_me_and_site", params);
             }
         }
         else
@@ -117,17 +117,17 @@ public class ActivityFeedDAOImpl extends IBatisSqlMapper implements ActivityFeed
             if (!excludeThisUser && !excludeOtherUsers)
             {
                 // no excludes => everyone => where feed user is me
-                return (List<ActivityFeedEntity>)getSqlMapClient().queryForList("select.activity.feed.for.feeduser", params);
+                return (List<ActivityFeedEntity>)getSqlMapClient().queryForList("alfresco.activities.select_activity_feed_for_feeduser", params);
             }
             else if (excludeThisUser)
             {
                 // exclude feed user => others => where feed user is me and post user is not me
-                return (List<ActivityFeedEntity>)getSqlMapClient().queryForList("select.activity.feed.for.feeduser.others", params);
+                return (List<ActivityFeedEntity>)getSqlMapClient().queryForList("alfresco.activities.select_activity_feed_for_feeduser_others", params);
             }
             else if (excludeOtherUsers)
             {
                 // exclude others => me => where feed user is me and post user is me
-                return (List<ActivityFeedEntity>)getSqlMapClient().queryForList("select.activity.feed.for.feeduser.me", params);
+                return (List<ActivityFeedEntity>)getSqlMapClient().queryForList("alfresco.activities.select_activity_feed_for_feeduser_me", params);
             }
         }
         
@@ -143,6 +143,6 @@ public class ActivityFeedDAOImpl extends IBatisSqlMapper implements ActivityFeed
         params.setActivitySummaryFormat(format);
         
         // for given site
-        return (List<ActivityFeedEntity>)getSqlMapClient().queryForList("select.activity.feed.for.site", params);
+        return (List<ActivityFeedEntity>)getSqlMapClient().queryForList("alfresco.activities.select_activity_feed_for_site", params);
     }
 }

@@ -48,15 +48,16 @@ import com.ibatis.sqlmap.client.event.RowHandler;
  */
 public class AuditDAOImpl extends AbstractAuditDAOImpl
 {
-    private static final String SELECT_MODEL_BY_CRC = "select.AuditModelByCrc";
-    private static final String INSERT_MODEL = "insert.AuditModel";
+    private static final String SELECT_MODEL_BY_CRC = "alfresco.audit.select_AuditModelByCrc";
+    private static final String INSERT_MODEL = "alfresco.audit.insert_AuditModel";
     
-    private static final String SELECT_APPLICATION_BY_MODEL_ID = "select.AuditApplicationByModelId";
-    private static final String INSERT_APPLICATION = "insert.AuditApplication";
+    private static final String SELECT_APPLICATION_BY_MODEL_ID = "alfresco.audit.select_AuditApplicationByModelId";
+    private static final String INSERT_APPLICATION = "alfresco.audit.insert_AuditApplication";
     
-    private static final String INSERT_ENTRY = "insert.AuditEntry";
+    private static final String INSERT_ENTRY = "alfresco.audit.insert_AuditEntry";
     
-    private static final String SELECT_ENTRIES_SIMPLE = "select.AuditEntriesSimple";
+    private static final String SELECT_ENTRIES_SIMPLE = "alfresco.audit.select_AuditEntriesSimple";
+    private static final String SELECT_ENTRIES_WITH_VALUES = "alfresco.audit.select_AuditEntriesWithValues";
     
     private SqlMapClientTemplate template;
 
@@ -162,6 +163,7 @@ public class AuditDAOImpl extends AbstractAuditDAOImpl
         AuditQueryParameters params = new AuditQueryParameters();
         if (appName != null)
         {
+            // Look up the application's ID (this is unique)
             Pair<String, Long> appNameCrcPair = propertyValueDAO.getPropertyStringCaseSensitiveSearchParameters(appName);
             params.setAuditAppNameCrcPair(appNameCrcPair);
         }
@@ -173,7 +175,15 @@ public class AuditDAOImpl extends AbstractAuditDAOImpl
         params.setAuditFromTime(from);
         params.setAuditToTime(to);
         
-        if (maxResults <= 0)
+        if (maxResults > 0)
+        {
+            List<AuditQueryResult> rows = template.queryForList(SELECT_ENTRIES_SIMPLE, params, 0, maxResults);
+            for (AuditQueryResult row : rows)
+            {
+                rowHandler.processResult(row);
+            }
+        }
+        else
         {
             RowHandler rowHandlerInternal = new RowHandler()
             {
@@ -184,14 +194,6 @@ public class AuditDAOImpl extends AbstractAuditDAOImpl
                 }
             };
             template.queryWithRowHandler(SELECT_ENTRIES_SIMPLE, params, rowHandlerInternal);
-        }
-        else
-        {
-            List<AuditQueryResult> rows = template.queryForList(SELECT_ENTRIES_SIMPLE, params, 0, maxResults);
-            for (AuditQueryResult row : rows)
-            {
-                rowHandler.processResult(row);
-            }
         }
     }
 }

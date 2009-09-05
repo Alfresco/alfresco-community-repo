@@ -42,11 +42,11 @@ public class ActivityPostDAOImpl extends IBatisSqlMapper implements ActivityPost
             (activityPost.getMaxId() != -1) &&
             (activityPost.getStatus() != null))
         {
-            return (List<ActivityPostEntity>)getSqlMapClient().queryForList("select.activity.posts", activityPost);
+            return (List<ActivityPostEntity>)getSqlMapClient().queryForList("alfresco.activities.select_activity_posts", activityPost);
         }
         else if (activityPost.getStatus() != null)
         {
-            return (List<ActivityPostEntity>)getSqlMapClient().queryForList("select.activity.posts.by.status.only", activityPost);
+            return (List<ActivityPostEntity>)getSqlMapClient().queryForList("alfresco.activities.select_activity_posts_by_status_only", activityPost);
         }
         else
         {
@@ -56,17 +56,17 @@ public class ActivityPostDAOImpl extends IBatisSqlMapper implements ActivityPost
 
     public Long getMaxActivitySeq() throws SQLException 
     {
-        return (Long)getSqlMapClient().queryForObject("select.activity.post.max.seq");
+        return (Long)getSqlMapClient().queryForObject("alfresco.activities.select_activity_post_max_seq");
     }
     
     public Long getMinActivitySeq() throws SQLException 
     {
-        return (Long)getSqlMapClient().queryForObject("select.activity.post.min.seq");
+        return (Long)getSqlMapClient().queryForObject("alfresco.activities.select_activity_post_min_seq");
     }
     
     public Integer getMaxNodeHash() throws SQLException 
     {
-        return (Integer)getSqlMapClient().queryForObject("select.activity.post.max.jobtasknode");
+        return (Integer)getSqlMapClient().queryForObject("alfresco.activities.select_activity_post_max_jobtasknode");
     }
 
     public int updatePost(long id, String siteNetwork, String activityData, ActivityPostEntity.STATUS status) throws SQLException
@@ -78,7 +78,7 @@ public class ActivityPostDAOImpl extends IBatisSqlMapper implements ActivityPost
         post.setStatus(status.toString());
         post.setLastModified(new Date());
         
-        return getSqlMapClient().update("update.activity.post.data", post);
+        return getSqlMapClient().update("alfresco.activities.update_activity_post_data", post);
     }
     
     public int updatePostStatus(long id, ActivityPostEntity.STATUS status) throws SQLException
@@ -88,7 +88,7 @@ public class ActivityPostDAOImpl extends IBatisSqlMapper implements ActivityPost
         post.setStatus(status.toString());
         post.setLastModified(new Date());
         
-        return getSqlMapClient().update("update.activity.post.status", post);
+        return getSqlMapClient().update("alfresco.activities.update_activity_post_status", post);
     }
     
     public int deletePosts(Date keepDate, ActivityPostEntity.STATUS status) throws SQLException
@@ -97,12 +97,12 @@ public class ActivityPostDAOImpl extends IBatisSqlMapper implements ActivityPost
         params.setPostDate(keepDate);
         params.setStatus(status.toString());
         
-        return getSqlMapClient().delete("delete.activity.posts.older.than.date", params);
+        return getSqlMapClient().delete("alfresco.activities.delete_activity_posts_older_than_date", params);
     }
     
     public long insertPost(ActivityPostEntity activityPost) throws SQLException
     {
-        Long id = (Long)getSqlMapClient().insert("insert.activity.post", activityPost);
+        Long id = (Long)getSqlMapClient().insert("alfresco.activities.insert_activity_post", activityPost);
         return (id != null ? id : -1);
     }
 }

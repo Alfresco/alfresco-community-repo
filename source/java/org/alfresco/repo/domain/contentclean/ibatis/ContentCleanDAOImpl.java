@@ -48,10 +48,10 @@ public class ContentCleanDAOImpl implements ContentCleanDAO
     
     private static final int DEFAULT_BATCH_SIZE = 50;
     
-    private static final String INSERT_CONTENT_CLEAN = "insert.ContentCleanUrl";
-    private static final String SELECT_CONTENT_CLEAN_URLS = "select.ContentCleanUrls";
-    private static final String DELETE_CONTENT_CLEAN_BY_URL = "delete.ContentCleanUrl";
-    private static final String DELETE_CONTENT_CLEAN = "delete.ContentCleanUrls";
+    private static final String INSERT_CONTENT_CLEAN = "alfresco.content.insert_ContentCleanUrl";
+    private static final String SELECT_CONTENT_CLEAN_URLS = "alfresco.content.select_ContentCleanUrls";
+    private static final String DELETE_CONTENT_CLEAN_BY_URL = "alfresco.content.delete_ContentCleanUrl";
+    private static final String DELETE_CONTENT_CLEAN = "alfresco.content.delete_ContentCleanUrls";
     
     private SqlMapClientTemplate template;
 

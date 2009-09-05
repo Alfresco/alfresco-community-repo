@@ -50,52 +50,25 @@
         </property> 
     </bean> 
 
-    <!-- iBatis config for Locks domain -->
-   	<bean id="locksSqlMapClient" class="org.alfresco.ibatis.HierarchicalSqlMapClientFactoryBean">
+    <!-- iBatis config for Alfresco (using common datasource) -->
+    <bean id="alfrescoSqlMapClient" class="org.alfresco.ibatis.HierarchicalSqlMapClientFactoryBean">
         <property name="dataSource" ref="dataSource"/>
         <property name="resourceLoader" ref="dialectResourceLoader" />
         <property name="configLocation">
-            <value>classpath:alfresco/ibatis/locks-SqlMapConfig.xml</value>
+            <value>classpath:alfresco/ibatis/alfresco-SqlMapConfig.xml</value>
         </property> 
     </bean>
-   	<bean id="locksSqlMapClientTemplate" class="org.springframework.orm.ibatis.SqlMapClientTemplate">
-        <property name="sqlMapClient" ref="locksSqlMapClient"/>
+    <bean id="locksSqlMapClientTemplate" class="org.springframework.orm.ibatis.SqlMapClientTemplate">
+        <property name="sqlMapClient" ref="alfrescoSqlMapClient"/>
     </bean>
-
-    <!-- iBatis config for Content domain -->
-   	<bean id="contentSqlMapClient" class="org.alfresco.ibatis.HierarchicalSqlMapClientFactoryBean">
-        <property name="dataSource" ref="dataSource"/>
-        <property name="resourceLoader" ref="dialectResourceLoader" />
-        <property name="configLocation">
-            <value>classpath:alfresco/ibatis/content-SqlMapConfig.xml</value>
-        </property> 
+    <bean id="contentSqlMapClientTemplate" class="org.springframework.orm.ibatis.SqlMapClientTemplate">
+        <property name="sqlMapClient" ref="alfrescoSqlMapClient"/>
     </bean>
-   	<bean id="contentSqlMapClientTemplate" class="org.springframework.orm.ibatis.SqlMapClientTemplate">
-        <property name="sqlMapClient" ref="contentSqlMapClient"/>
-    </bean>
-
-    <!-- iBatis config for PropertyValue domain -->
-   	<bean id="propertyValueSqlMapClient" class="org.alfresco.ibatis.HierarchicalSqlMapClientFactoryBean">
-        <property name="dataSource" ref="dataSource"/>
-        <property name="resourceLoader" ref="dialectResourceLoader" />
-        <property name="configLocation">
-            <value>classpath:alfresco/ibatis/propval-SqlMapConfig.xml</value>
-        </property> 
-    </bean>
-   	<bean id="propertyValueSqlMapClientTemplate" class="org.springframework.orm.ibatis.SqlMapClientTemplate">
-        <property name="sqlMapClient" ref="propertyValueSqlMapClient"/>
-    </bean>
-
-    <!-- iBatis config for Audit domain -->
-    <bean id="auditSqlMapClient" class="org.alfresco.ibatis.HierarchicalSqlMapClientFactoryBean">
-        <property name="dataSource" ref="dataSource"/>
-        <property name="resourceLoader" ref="dialectResourceLoader" />
-        <property name="configLocation">
-            <value>classpath:alfresco/ibatis/audit-SqlMapConfig.xml</value>
-        </property> 
+    <bean id="propertyValueSqlMapClientTemplate" class="org.springframework.orm.ibatis.SqlMapClientTemplate">
+        <property name="sqlMapClient" ref="alfrescoSqlMapClient"/>
     </bean>
     <bean id="auditSqlMapClientTemplate" class="org.springframework.orm.ibatis.SqlMapClientTemplate">
-        <property name="sqlMapClient" ref="auditSqlMapClient"/>
+        <property name="sqlMapClient" ref="alfrescoSqlMapClient"/>
     </bean>
 
 </beans>

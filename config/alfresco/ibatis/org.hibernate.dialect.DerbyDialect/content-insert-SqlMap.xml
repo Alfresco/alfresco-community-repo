@@ -6,29 +6,29 @@
 
 <sqlMap namespace="alfresco.content">
 
-    <insert id="insert.Mimetype" parameterClass="Mimetype" >
-        <include refid="insert.Mimetype.AutoIncrement"/>
+    <insert id="insert_Mimetype" parameterClass="Mimetype" >
+        <include refid="insert_Mimetype_AutoIncrement"/>
         <selectKey resultClass="long" keyProperty="id" type="post">
             values IDENTITY_VAL_LOCAL()
         </selectKey>
     </insert>
 
-    <insert id="insert.Encoding" parameterClass="Encoding" >
-        <include refid="insert.Encoding.AutoIncrement"/>
+    <insert id="insert_Encoding" parameterClass="Encoding" >
+        <include refid="insert_Encoding_AutoIncrement"/>
         <selectKey resultClass="long" keyProperty="id" type="post">
             values IDENTITY_VAL_LOCAL()
         </selectKey>
     </insert>
 
-    <insert id="insert.ContentUrl" parameterClass="ContentUrl" >
-        <include refid="insert.ContentUrl.AutoIncrement"/>
+    <insert id="insert_ContentUrl" parameterClass="ContentUrl" >
+        <include refid="insert_ContentUrl_AutoIncrement"/>
         <selectKey resultClass="long" keyProperty="id" type="post">
             values IDENTITY_VAL_LOCAL()
         </selectKey>
     </insert>
 
-    <insert id="insert.ContentData" parameterClass="ContentData" >
-        <include refid="insert.ContentData.AutoIncrement"/>
+    <insert id="insert_ContentData" parameterClass="ContentData" >
+        <include refid="insert_ContentData_AutoIncrement"/>
         <selectKey resultClass="long" keyProperty="id" type="post">
             values IDENTITY_VAL_LOCAL()
         </selectKey>

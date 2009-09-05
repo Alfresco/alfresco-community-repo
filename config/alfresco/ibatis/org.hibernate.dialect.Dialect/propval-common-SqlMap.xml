@@ -24,13 +24,13 @@
     <!-- Result Maps    -->
     <!--                -->
 
-    <resultMap id="result.PropertyClass" class="PropertyClass">
+    <resultMap id="result_PropertyClass" class="PropertyClass">
         <result property="id" column="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <result property="javaClassName" column="java_class_name" jdbcType="VARCHAR" javaType="java.lang.String"/>
         <result property="javaClassNameShort" column="java_class_name_short" jdbcType="VARCHAR" javaType="java.lang.String"/>
         <result property="javaClassNameCrc" column="java_class_name_crc" jdbcType="BIGINT" javaType="java.lang.Long"/>
     </resultMap>
-    <resultMap id="result.PropertyDateValue" class="PropertyDateValue">
+    <resultMap id="result_PropertyDateValue" class="PropertyDateValue">
         <!--  date_value is the PK as well -->
         <result property="dateValue" column="date_value" jdbcType="BIGINT" javaType="long"/>
         <result property="fullYear" column="full_year" jdbcType="SMALLINT" javaType="short"/>
@@ -43,21 +43,21 @@
         <result property="dayOfMonth" column="day_of_month" jdbcType="TINYINT" javaType="short"/>
         <result property="dayOfWeek" column="day_of_week" jdbcType="TINYINT" javaType="short"/>
     </resultMap>
-    <resultMap id="result.PropertyStringValue" class="PropertyStringValue">
+    <resultMap id="result_PropertyStringValue" class="PropertyStringValue">
         <result property="id" column="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <result property="stringValue" column="string_value" jdbcType="VARCHAR" javaType="java.lang.String"/>
         <result property="stringEndLower" column="string_end_lower" jdbcType="VARCHAR" javaType="java.lang.String"/>
         <result property="stringCrc" column="string_crc" jdbcType="BIGINT" javaType="java.lang.Long"/>
     </resultMap>
-    <resultMap id="result.PropertyDoubleValue" class="PropertyDoubleValue">
+    <resultMap id="result_PropertyDoubleValue" class="PropertyDoubleValue">
         <result property="id" column="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <result property="doubleValue" column="double_value" jdbcType="DOUBLE" javaType="java.lang.Double"/>
     </resultMap>
-    <resultMap id="result.PropertySerializableValue" class="PropertySerializableValue">
+    <resultMap id="result_PropertySerializableValue" class="PropertySerializableValue">
         <result property="id" column="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <result property="serializableValue" column="serializable_value" jdbcType="BLOB" javaType="java.io.Serializable"/>
     </resultMap>
-    <resultMap id="result.PropertyValue" class="PropertyValue">
+    <resultMap id="result_PropertyValue" class="PropertyValue">
         <result property="id" column="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <result property="actualTypeId" column="actual_type_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <result property="persistedType" column="persisted_type" jdbcType="TINYINT" javaType="java.lang.Short"/>
@@ -66,13 +66,13 @@
         <result property="stringValue" column="string_value" jdbcType="VARCHAR" javaType="java.lang.String"/>
         <result property="serializableValue" column="serializable_value" jdbcType="BLOB" javaType="java.io.Serializable"/>
     </resultMap>
-    <resultMap id="result.PropertyLink" class="PropertyLink">
+    <resultMap id="result_PropertyLink" class="PropertyLink">
         <result property="rootPropId" column="root_prop_id" jdbcType="BIGINT" javaType="long"/>
         <result property="currentPropId" column="current_prop_id" jdbcType="BIGINT" javaType="long"/>
         <result property="valuePropId" column="value_prop_id" jdbcType="BIGINT" javaType="long"/>
         <result property="keyPropId" column="key_prop_id" jdbcType="BIGINT" javaType="long"/>
     </resultMap>
-    <resultMap id="result.PropertyIdSearchRow" class="PropertyIdSearchRow">
+    <resultMap id="result_PropertyIdSearchRow" class="PropertyIdSearchRow">
         <result property="rootPropId" column="root_prop_id" jdbcType="BIGINT" javaType="long"/>
         <result property="currentPropId" column="current_prop_id" jdbcType="BIGINT" javaType="long"/>
         <result property="valuePropId" column="value_prop_id" jdbcType="BIGINT" javaType="long"/>
@@ -89,7 +89,7 @@
     <!-- Parameter Maps -->
     <!--                -->
 
-    <parameterMap id="parameter.PropertySerializableValue" class="PropertySerializableValue">
+    <parameterMap id="parameter_PropertySerializableValue" class="PropertySerializableValue">
         <parameter property="serializableValue" jdbcType="BLOB" javaType="java.io.Serializable"/>
     </parameterMap>
 
@@ -97,27 +97,27 @@
     <!-- SQL Snippets   -->
     <!--                -->
     
-    <sql id="insert.PropertyClass.AutoIncrement">
+    <sql id="insert_PropertyClass_AutoIncrement">
         insert into alf_prop_class (java_class_name, java_class_name_short, java_class_name_crc) 
         values (#javaClassName#, #javaClassNameShort#, #javaClassNameCrc#)
     </sql>
     
-    <sql id="insert.PropertyStringValue.AutoIncrement">
+    <sql id="insert_PropertyStringValue_AutoIncrement">
         insert into alf_prop_string_value (string_value, string_end_lower, string_crc) 
         values (#stringValue#, #stringEndLower#, #stringCrc#)
     </sql>
     
-    <sql id="insert.PropertyDoubleValue.AutoIncrement">
+    <sql id="insert_PropertyDoubleValue_AutoIncrement">
         insert into alf_prop_double_value (double_value) 
         values (#doubleValue#)
     </sql>
     
-    <sql id="insert.PropertySerializableValue.AutoIncrement">
+    <sql id="insert_PropertySerializableValue_AutoIncrement">
         insert into alf_prop_serializable_value (serializable_value) 
         values (?)
     </sql>
     
-    <sql id="insert.PropertyValue.AutoIncrement">
+    <sql id="insert_PropertyValue_AutoIncrement">
         insert into alf_prop_value (actual_type_id, persisted_type, long_value) 
         values (#actualTypeId#, #persistedType#, #longValue#)
     </sql>
@@ -127,7 +127,7 @@
     <!--                -->
     
     <!-- Get a property class by ID -->
-    <select id="select.PropertyClassByID" parameterClass="PropertyClass" resultMap="result.PropertyClass">
+    <select id="select_PropertyClassByID" parameterClass="PropertyClass" resultMap="result_PropertyClass">
         select
             *
         from
@@ -137,7 +137,7 @@
     </select>
 
     <!-- Get the property class by class name -->
-    <select id="select.PropertyClassByName" parameterClass="PropertyClass" resultMap="result.PropertyClass">
+    <select id="select_PropertyClassByName" parameterClass="PropertyClass" resultMap="result_PropertyClass">
         select
             *
         from
@@ -147,7 +147,7 @@
             java_class_name_short = #javaClassNameShort#
     </select>
 
-    <insert id="insert.PropertyDateValue" parameterClass="PropertyDateValue" >
+    <insert id="insert_PropertyDateValue" parameterClass="PropertyDateValue" >
         insert into alf_prop_date_value
         (
            date_value,
@@ -167,7 +167,7 @@
     </insert>
 
     <!-- Get a property date value by ID -->
-    <select id="select.PropertyDateValueByID" parameterClass="java.lang.Long" resultMap="result.PropertyDateValue">
+    <select id="select_PropertyDateValueByID" parameterClass="java.lang.Long" resultMap="result_PropertyDateValue">
         select
             *
         from
@@ -177,7 +177,7 @@
     </select>
 
     <!-- Get the property date value by value -->
-    <select id="select.PropertyDateValueByValue" parameterClass="java.lang.Long" resultMap="result.PropertyDateValue">
+    <select id="select_PropertyDateValueByValue" parameterClass="java.lang.Long" resultMap="result_PropertyDateValue">
         select
             *
         from
@@ -187,7 +187,7 @@
     </select>
 
     <!-- Get a property string value by ID -->
-    <select id="select.PropertyStringValueByID" parameterClass="PropertyStringValue" resultClass="string">
+    <select id="select_PropertyStringValueByID" parameterClass="PropertyStringValue" resultClass="string">
         select
             string_value
         from
@@ -198,7 +198,7 @@
 
     <!-- Get the property string value by value 
     -->
-    <select id="select.PropertyStringValueByValue" parameterClass="PropertyStringValue" resultClass="java.lang.Long">
+    <select id="select_PropertyStringValueByValue" parameterClass="PropertyStringValue" resultClass="java.lang.Long">
         select
             id
         from
@@ -209,7 +209,7 @@
     </select>
 
     <!-- Get a property double value by ID -->
-    <select id="select.PropertyDoubleValueByID" parameterClass="PropertyDoubleValue" resultMap="result.PropertyDoubleValue">
+    <select id="select_PropertyDoubleValueByID" parameterClass="PropertyDoubleValue" resultMap="result_PropertyDoubleValue">
         select
             *
         from
@@ -219,7 +219,7 @@
     </select>
 
     <!-- Get the property double value by value -->
-    <select id="select.PropertyDoubleValueByValue" parameterClass="PropertyDoubleValue" resultMap="result.PropertyDoubleValue">
+    <select id="select_PropertyDoubleValueByValue" parameterClass="PropertyDoubleValue" resultMap="result_PropertyDoubleValue">
         select
             *
         from
@@ -229,7 +229,7 @@
     </select>
 
     <!-- Get a property serializable value by ID -->
-    <select id="select.PropertySerializableValueByID" parameterClass="PropertySerializableValue" resultMap="result.PropertySerializableValue">
+    <select id="select_PropertySerializableValueByID" parameterClass="PropertySerializableValue" resultMap="result_PropertySerializableValue">
         select
             *
         from
@@ -239,7 +239,7 @@
     </select>
 
     <!-- Get the property value by value in alf_prop_value -->
-    <select id="select.PropertyValueByLocalValue" parameterClass="PropertyValue" resultMap="result.PropertyValue">
+    <select id="select_PropertyValueByLocalValue" parameterClass="PropertyValue" resultMap="result_PropertyValue">
         select
             pv.id as id,
             pv.actual_type_id as actual_type_id,
@@ -256,7 +256,7 @@
     </select>
 
     <!-- Get the property value by value in alf_prop_double_value -->
-    <select id="select.PropertyValueByDoubleValue" parameterClass="PropertyValue" resultMap="result.PropertyValue">
+    <select id="select_PropertyValueByDoubleValue" parameterClass="PropertyValue" resultMap="result_PropertyValue">
         select
             pv.id as id,
             pv.actual_type_id as actual_type_id,
@@ -274,7 +274,7 @@
     </select>
 
     <!-- Get the property value by value in alf_prop_string_value -->
-    <select id="select.PropertyValueByStringValue" parameterClass="PropertyStringQuery" resultMap="result.PropertyValue">
+    <select id="select_PropertyValueByStringValue" parameterClass="PropertyStringQuery" resultMap="result_PropertyValue">
         select
             pv.id as id,
             pv.actual_type_id as actual_type_id,
@@ -293,7 +293,7 @@
     </select>
 
     <!-- Get the property value by ID -->
-    <select id="select.PropertyValueById" parameterClass="PropertyValue" resultMap="result.PropertyIdSearchRow">
+    <select id="select_PropertyValueById" parameterClass="PropertyValue" resultMap="result_PropertyIdSearchRow">
 		select
 		   cl.root_prop_id, cl.current_prop_id, cl.value_prop_id, cl.key_prop_id,
 		   v.actual_type_id, v.persisted_type,
@@ -305,10 +305,9 @@
 		   left join alf_prop_string_value sv on (sv.id = v.long_value and (v.persisted_type = 3 || v.persisted_type = 5))
 		   left join alf_prop_serializable_value serv on (serv.id = v.long_value and v.persisted_type = 4)
 		where cl.root_prop_id = #id#
-		order by current_prop_id, value_prop_id, key_prop_id
     </select>
 
-    <insert id="insert.PropertyLink" parameterClass="PropertyLink" >
+    <insert id="insert_PropertyLink" parameterClass="PropertyLink" >
         insert into alf_prop_link
         (
            root_prop_id, current_prop_id, value_prop_id, key_prop_id

@@ -34,13 +34,13 @@ public class FeedControlDAOImpl extends IBatisSqlMapper implements FeedControlDA
 {
     public long insertFeedControl(FeedControlEntity activityFeedControl) throws SQLException
     {
-        Long id = (Long)getSqlMapClient().insert("insert.activity.feedcontrol", activityFeedControl);
+        Long id = (Long)getSqlMapClient().insert("alfresco.activities.insert_activity_feedcontrol", activityFeedControl);
         return (id != null ? id : -1);
     }
     
     public int deleteFeedControl(FeedControlEntity activityFeedControl) throws SQLException
     {
-        return getSqlMapClient().delete("delete.activity.feedcontrol", activityFeedControl);
+        return getSqlMapClient().delete("alfresco.activities.delete_activity_feedcontrol", activityFeedControl);
     }
     
     @SuppressWarnings("unchecked")
@@ -48,12 +48,12 @@ public class FeedControlDAOImpl extends IBatisSqlMapper implements FeedControlDA
     {
         FeedControlEntity params = new FeedControlEntity(feedUserId);
 
-        return (List<FeedControlEntity>)getSqlMapClient().queryForList("select.activity.feedcontrols.for.user", params);
+        return (List<FeedControlEntity>)getSqlMapClient().queryForList("alfresco.activities.select_activity_feedcontrols_for_user", params);
     }
     
     public long selectFeedControl(FeedControlEntity activityFeedControl) throws SQLException
     {
-        Long id = (Long)getSqlMapClient().queryForObject("select.activity.feedcontrol", activityFeedControl);
+        Long id = (Long)getSqlMapClient().queryForObject("alfresco.activities.select_activity_feedcontrol", activityFeedControl);
         return (id != null ? id : -1);
     }
 }

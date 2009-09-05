@@ -44,16 +44,16 @@ import com.ibatis.sqlmap.client.event.RowHandler;
  */
 public class ContentDataDAOImpl extends AbstractContentDataDAOImpl
 {
-    private static final String SELECT_CONTENT_URL_BY_ID = "select.ContentUrlById";
-    private static final String SELECT_CONTENT_URL_BY_KEY = "select.ContentUrlByKey";
-    private static final String SELECT_CONTENT_URL_BY_KEY_UNREFERENCED = "select.ContentUrlByKeyUnreferenced";
-    private static final String SELECT_CONTENT_URLS = "select.ContentUrls";
-    private static final String SELECT_CONTENT_DATA_BY_ID = "select.ContentDataById";
-    private static final String SELECT_CONTENT_DATA_BY_NODE_AND_QNAME = "select.ContentDataByNodeAndQName";
-    private static final String INSERT_CONTENT_URL = "insert.ContentUrl";
-    private static final String INSERT_CONTENT_DATA = "insert.ContentData";
-    private static final String DELETE_CONTENT_DATA = "delete.ContentData";
-    private static final String DELETE_CONTENT_URL = "delete.ContentUrl";
+    private static final String SELECT_CONTENT_URL_BY_ID = "alfresco.content.select_ContentUrlById";
+    private static final String SELECT_CONTENT_URL_BY_KEY = "alfresco.content.select_ContentUrlByKey";
+    private static final String SELECT_CONTENT_URL_BY_KEY_UNREFERENCED = "alfresco.content.select_ContentUrlByKeyUnreferenced";
+    private static final String SELECT_CONTENT_URLS = "alfresco.content.select_ContentUrls";
+    private static final String SELECT_CONTENT_DATA_BY_ID = "alfresco.content.select_ContentDataById";
+    private static final String SELECT_CONTENT_DATA_BY_NODE_AND_QNAME = "alfresco.content.select_ContentDataByNodeAndQName";
+    private static final String INSERT_CONTENT_URL = "alfresco.content.insert_ContentUrl";
+    private static final String INSERT_CONTENT_DATA = "alfresco.content.insert_ContentData";
+    private static final String DELETE_CONTENT_DATA = "alfresco.content.delete_ContentData";
+    private static final String DELETE_CONTENT_URL = "alfresco.content.delete_ContentUrl";
     
     private SqlMapClientTemplate template;
 

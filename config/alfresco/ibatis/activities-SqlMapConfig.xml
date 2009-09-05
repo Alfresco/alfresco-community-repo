@@ -6,6 +6,8 @@
 
 <sqlMapConfig>
 
+    <settings useStatementNamespaces="true" />
+    
     <sqlMap resource="alfresco/ibatis/#resource.dialect#/activities-common-SqlMap.xml"/>
     <sqlMap resource="alfresco/ibatis/#resource.dialect#/activities-insert-SqlMap.xml"/>
 

@@ -6,15 +6,15 @@
 
 <sqlMap namespace="alfresco.lock">
 
-    <insert id="insert.LockResource" parameterClass="LockResource" >
-        <include refid="insert.LockResource.AutoIncrement"/>
+    <insert id="insert_LockResource" parameterClass="LockResource" >
+        <include refid="insert_LockResource_AutoIncrement"/>
         <selectKey resultClass="long" keyProperty="id" type="post">
             KEY_COLUMN:GENERATED_KEY
         </selectKey>
     </insert>
 
-    <insert id="insert.Lock" parameterClass="Lock" >
-        <include refid="insert.Lock.AutoIncrement"/>
+    <insert id="insert_Lock" parameterClass="Lock" >
+        <include refid="insert_Lock_AutoIncrement"/>
         <selectKey resultClass="long" keyProperty="id" type="post">
             KEY_COLUMN:GENERATED_KEY
         </selectKey>

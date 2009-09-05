@@ -6,7 +6,7 @@
 
 <sqlMap namespace="alfresco.activities">
 
-   <insert id="insert.activity.feedcontrol" parameterClass="FeedControl">
+   <insert id="insert_activity_feedcontrol" parameterClass="FeedControl">
       insert into alf_activity_feed_control (id, feed_user_id, site_network, app_tool, last_modified)
       values (DEFAULT, #feedUserId#, #siteNetwork#, #appTool#, #lastModified#)
       
@@ -16,7 +16,7 @@
       </selectKey>
    </insert>
 
-   <insert id="insert.activity.feed" parameterClass="ActivityFeed">
+   <insert id="insert_activity_feed" parameterClass="ActivityFeed">
       insert into alf_activity_feed (id, activity_type, activity_summary, activity_format, feed_user_id, post_user_id, post_date, post_id, site_network, app_tool, feed_date) 
       values (DEFAULT, #activityType#, #activitySummary#, #activitySummaryFormat#, #feedUserId#, #postUserId#, #postDate#, #postId#, #siteNetwork#, #appTool#, #feedDate#)
       
@@ -26,7 +26,7 @@
       </selectKey>
    </insert>
 
-   <insert id="insert.activity.post" parameterClass="ActivityPost">
+   <insert id="insert_activity_post" parameterClass="ActivityPost">
       insert into alf_activity_post (sequence_id, status, activity_data, post_user_id, post_date, activity_type, site_network, app_tool, job_task_node, last_modified)
       values (DEFAULT, #status#, #activityData#, #userId#, #postDate#, #activityType#, #siteNetwork#, #appTool#, #jobTaskNode#, #lastModified#)
       

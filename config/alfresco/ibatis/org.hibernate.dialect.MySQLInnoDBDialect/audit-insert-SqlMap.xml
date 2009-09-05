@@ -6,22 +6,22 @@
 
 <sqlMap namespace="alfresco.audit">
 
-    <insert id="insert.AuditModel" parameterClass="AuditModel" >
-        <include refid="insert.AuditModel.AutoIncrement"/>
+    <insert id="insert_AuditModel" parameterClass="AuditModel" >
+        <include refid="insert_AuditModel_AutoIncrement"/>
         <selectKey resultClass="long" keyProperty="id" type="post">
             KEY_COLUMN:GENERATED_KEY
         </selectKey>
     </insert>
 
-    <insert id="insert.AuditApplication" parameterClass="AuditApplication" >
-        <include refid="insert.AuditApplication.AutoIncrement"/>
+    <insert id="insert_AuditApplication" parameterClass="AuditApplication" >
+        <include refid="insert_AuditApplication_AutoIncrement"/>
         <selectKey resultClass="long" keyProperty="id" type="post">
             KEY_COLUMN:GENERATED_KEY
         </selectKey>
     </insert>
 
-    <insert id="insert.AuditEntry" parameterClass="AuditEntry" >
-        <include refid="insert.AuditEntry.AutoIncrement"/>
+    <insert id="insert_AuditEntry" parameterClass="AuditEntry" >
+        <include refid="insert_AuditEntry_AutoIncrement"/>
         <selectKey resultClass="long" keyProperty="id" type="post">
             KEY_COLUMN:GENERATED_KEY
         </selectKey>

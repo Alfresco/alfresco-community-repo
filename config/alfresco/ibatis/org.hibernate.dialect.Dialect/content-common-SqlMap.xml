@@ -20,19 +20,19 @@
     <!-- Result Maps    -->
     <!--                -->
 
-    <resultMap id="result.Mimetype" class="Mimetype">
+    <resultMap id="result_Mimetype" class="Mimetype">
         <result property="id" column="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <result property="version" column="version" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <result property="mimetype" column="mimetype_str" jdbcType="VARCHAR" javaType="java.lang.String"/>
     </resultMap>
   
-    <resultMap id="result.Encoding" class="Encoding">
+    <resultMap id="result_Encoding" class="Encoding">
         <result property="id" column="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <result property="version" column="version" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <result property="encoding" column="encoding_str" jdbcType="VARCHAR" javaType="java.lang.String"/>
     </resultMap>
   
-    <resultMap id="result.ContentUrl" class="ContentUrl">
+    <resultMap id="result_ContentUrl" class="ContentUrl">
         <result property="id" column="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <result property="version" column="version" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <result property="contentUrl" column="content_url" jdbcType="VARCHAR" javaType="java.lang.String"/>
@@ -41,7 +41,7 @@
         <result property="size" column="content_size" jdbcType="BIGINT" javaType="java.lang.Long"/>
     </resultMap>
   
-    <resultMap id="result.ContentData" class="ContentData">
+    <resultMap id="result_ContentData" class="ContentData">
         <result property="id" column="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <result property="version" column="version" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <result property="contentUrlId" column="content_url_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
@@ -56,11 +56,11 @@
     <!-- Parameter Maps -->
     <!--                -->
 
-    <parameterMap id="parameter.IdMap" class="map">
+    <parameterMap id="parameter_IdMap" class="map">
         <parameter property="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
     </parameterMap>
   
-    <parameterMap id="parameter.NodeAndQNameMap" class="map">
+    <parameterMap id="parameter_NodeAndQNameMap" class="map">
         <parameter property="nodeId" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <parameter property="qnameId" jdbcType="BIGINT" javaType="java.lang.Long"/>
     </parameterMap>
@@ -69,22 +69,22 @@
     <!-- SQL Snippets   -->
     <!--                -->
     
-    <sql id="insert.Mimetype.AutoIncrement">
+    <sql id="insert_Mimetype_AutoIncrement">
         insert into alf_mimetype (version, mimetype_str) 
         values (#version#, lower(#mimetype#))
     </sql>
     
-    <sql id="insert.Encoding.AutoIncrement">
+    <sql id="insert_Encoding_AutoIncrement">
         insert into alf_encoding (version, encoding_str) 
         values (#version#, lower(#encoding#))
     </sql>
     
-    <sql id="insert.ContentUrl.AutoIncrement">
+    <sql id="insert_ContentUrl_AutoIncrement">
         insert into alf_content_url (version, content_url, content_url_short, content_url_crc, content_size) 
         values (#version#, #contentUrl#, #contentUrlShort#, #contentUrlCrc#, #size#)
     </sql>
     
-    <sql id="insert.ContentData.AutoIncrement">
+    <sql id="insert_ContentData_AutoIncrement">
         insert into alf_content_data (version, content_url_id, content_mimetype_id, content_encoding_id, content_locale_id) 
         values (#version#, #contentUrlId#, #mimetypeId#, #encodingId#, #localeId#)
     </sql>
@@ -94,7 +94,7 @@
     <!--                -->
     
     <!-- Get the mimetype entity by mimetype -->
-    <select id="select.MimetypeByKey" parameterClass="Mimetype" resultMap="result.Mimetype">
+    <select id="select_MimetypeByKey" parameterClass="Mimetype" resultMap="result_Mimetype">
         select
             *
         from
@@ -104,7 +104,7 @@
     </select>
 
     <!-- Get a mimetype based on the ID -->
-    <select id="select.MimetypeById" parameterClass="Mimetype" resultMap="result.Mimetype">
+    <select id="select_MimetypeById" parameterClass="Mimetype" resultMap="result_Mimetype">
         select
             *
         from
@@ -114,7 +114,7 @@
     </select>
 
     <!-- Get the encoding entity by encoding -->
-    <select id="select.EncodingByKey" parameterClass="Encoding" resultMap="result.Encoding">
+    <select id="select_EncodingByKey" parameterClass="Encoding" resultMap="result_Encoding">
         select
             *
         from
@@ -124,7 +124,7 @@
     </select>
 
     <!-- Get a encoding based on the ID -->
-    <select id="select.EncodingById" parameterClass="Encoding" resultMap="result.Encoding">
+    <select id="select_EncodingById" parameterClass="Encoding" resultMap="result_Encoding">
         select
             *
         from
@@ -134,7 +134,7 @@
     </select>
 
     <!-- Get the content URL entity by ID -->
-    <select id="select.ContentUrlById" parameterClass="ContentUrl" resultMap="result.ContentUrl">
+    <select id="select_ContentUrlById" parameterClass="ContentUrl" resultMap="result_ContentUrl">
         select
             *
         from
@@ -144,7 +144,7 @@
     </select>
 
     <!-- Get the content URL entity by unique key -->
-    <select id="select.ContentUrlByKey" parameterClass="ContentUrl" resultMap="result.ContentUrl">
+    <select id="select_ContentUrlByKey" parameterClass="ContentUrl" resultMap="result_ContentUrl">
         select
             *
         from
@@ -155,7 +155,7 @@
     </select>
 
     <!-- Get unreferenced content URL entity by unique key -->
-    <select id="select.ContentUrlByKeyUnreferenced" parameterClass="ContentUrl" resultMap="result.ContentUrl">
+    <select id="select_ContentUrlByKeyUnreferenced" parameterClass="ContentUrl" resultMap="result_ContentUrl">
         select
             cu.*
         from
@@ -168,7 +168,7 @@
     </select>
 
     <!-- Delete ContentUrl entity -->
-    <delete id="delete.ContentUrl" parameterMap="parameter.IdMap">
+    <delete id="delete_ContentUrl" parameterMap="parameter_IdMap">
         delete
         from
             alf_content_url
@@ -177,7 +177,7 @@
     </delete>
 
     <!-- Get the ContentData entity by ID -->
-    <select id="select.ContentDataById" parameterMap="parameter.IdMap" resultMap="result.ContentData">
+    <select id="select_ContentDataById" parameterMap="parameter_IdMap" resultMap="result_ContentData">
         select
             cd.id as id,
             cd.version as version,
@@ -195,7 +195,7 @@
     </select>
 
     <!-- Get the ContentData entity by Node and property QName -->
-    <select id="select.ContentDataByNodeAndQName" parameterMap="parameter.NodeAndQNameMap" resultClass="long">
+    <select id="select_ContentDataByNodeAndQName" parameterMap="parameter_NodeAndQNameMap" resultClass="long">
         select
             np.long_value as id
         from
@@ -208,7 +208,7 @@
     </select>
 
     <!-- Delete ContentData entity -->
-    <delete id="delete.ContentData" parameterMap="parameter.IdMap">
+    <delete id="delete_ContentData" parameterMap="parameter_IdMap">
         delete
         from
             alf_content_data
@@ -217,7 +217,7 @@
     </delete>
 
     <!-- Select all content URLs -->
-    <select id="select.ContentUrls" resultClass="string">
+    <select id="select_ContentUrls" resultClass="string">
         select
             content_url
         from
@@ -225,12 +225,12 @@
     </select>
 
     <!-- Insert a Content Clean URL -->
-    <insert id="insert.ContentCleanUrl" parameterClass="ContentClean" >
+    <insert id="insert_ContentCleanUrl" parameterClass="ContentClean" >
         insert into alf_content_clean (content_url) values (lower(#contentUrl#))
     </insert>
 
     <!-- Select all content clean URLs -->
-    <select id="select.ContentCleanUrls" resultClass="string">
+    <select id="select_ContentCleanUrls" resultClass="string">
         select
             content_url
         from
@@ -238,7 +238,7 @@
     </select>
 
     <!-- Remove a Content Clean URL -->
-    <delete id="delete.ContentCleanUrl" parameterClass="ContentClean" >
+    <delete id="delete_ContentCleanUrl" parameterClass="ContentClean" >
         delete
         from
             alf_content_clean
@@ -247,7 +247,7 @@
     </delete>
 
     <!-- Remove all Content Clean URLs -->
-    <delete id="delete.ContentCleanUrls" >
+    <delete id="delete_ContentCleanUrls" >
         delete
         from
             alf_content_clean

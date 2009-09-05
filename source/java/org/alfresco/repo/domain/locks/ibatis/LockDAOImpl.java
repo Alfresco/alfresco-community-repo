@@ -41,14 +41,14 @@ import org.springframework.orm.ibatis.SqlMapClientTemplate;
  */
 public class LockDAOImpl extends AbstractLockDAOImpl
 {
-    private static final String SELECT_LOCKRESOURCE_BY_QNAME = "select.LockResourceByQName";
-    private static final String SELECT_LOCK_BY_ID = "select.LockByID";
-    private static final String SELECT_LOCK_BY_KEY = "select.LockByKey";
-    private static final String SELECT_LOCK_BY_SHARED_IDS = "select.LockBySharedIds";
-    private static final String INSERT_LOCKRESOURCE = "insert.LockResource";
-    private static final String INSERT_LOCK = "insert.Lock";
-    private static final String UPDATE_LOCK = "update.Lock";
-    private static final String UPDATE_EXCLUSIVE_LOCK = "update.ExclusiveLock";
+    private static final String SELECT_LOCKRESOURCE_BY_QNAME = "alfresco.lock.select_LockResourceByQName";
+    private static final String SELECT_LOCK_BY_ID = "alfresco.lock.select_LockByID";
+    private static final String SELECT_LOCK_BY_KEY = "alfresco.lock.select_LockByKey";
+    private static final String SELECT_LOCK_BY_SHARED_IDS = "alfresco.lock.select_LockBySharedIds";
+    private static final String INSERT_LOCKRESOURCE = "alfresco.lock.insert_LockResource";
+    private static final String INSERT_LOCK = "alfresco.lock.insert_Lock";
+    private static final String UPDATE_LOCK = "alfresco.lock.update_Lock";
+    private static final String UPDATE_EXCLUSIVE_LOCK = "alfresco.lock.update_ExclusiveLock";
     
     private SqlMapClientTemplate template;
 

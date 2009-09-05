@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authority.AuthorityDAO;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -235,7 +236,13 @@ public class People extends BaseTemplateProcessorExtension
      */
     public boolean isAccountEnabled(TemplateNode person)
     {
-        return this.authenticationService.getAuthenticationEnabled((String)person.getProperties().get(ContentModel.PROP_USERNAME));
+        // Only admins have rights to check authentication enablement
+        if (this.authorityService.isAdminAuthority(AuthenticationUtil.getFullyAuthenticatedUser()))
+        {
+            return this.authenticationService.getAuthenticationEnabled((String) person.getProperties().get(
+                    ContentModel.PROP_USERNAME));
+        }
+        return true;
     }
 
     /**

@@ -330,12 +330,16 @@ bool AlfrescoInterface::setRootPath( const wchar_t* rootPath) {
 	if ( m_handle != INVALID_HANDLE_VALUE)
 		CloseHandle(m_handle);
 
+	// Clear the root path
+
+	m_rootPath = "";
+
 	// Check if the path is to a mapped drive
 
 	String path    = rootPath;
 	String alfPath = rootPath;
 
-	if ( alfPath.length() >= 3 && alfPath.substring(1,3).equals( L":\\")) {
+	if ( alfPath.length() >= 2 && alfPath.charAt(1) == ':') {
 
 		// Try and convert the local path to a UNC path
 
@@ -352,6 +356,10 @@ bool AlfrescoInterface::setRootPath( const wchar_t* rootPath) {
 		alfPath = remPath;
 		if ( alfPath.endsWith( PathSeperator) == false)
 			alfPath.append( PathSeperator);
+
+		m_rootPath = alfPath;
+
+		// Build the full UNC path to the target
 
 		if ( path.length() > 3)
 			alfPath.append( path.substring( 3));
@@ -395,13 +403,15 @@ bool AlfrescoInterface::setRootPath( const wchar_t* rootPath) {
 
 		// Set the root path
 
-		int pos = m_uncPath.indexOf( PathSeperator, 2);
-		if ( pos != -1) {
-			pos = m_uncPath.indexOf( PathSeperator, pos + 1);
-			if ( pos == -1)
-				m_rootPath = m_uncPath;
-			else
-				m_rootPath = m_uncPath.substring(0, pos);
+		if ( m_rootPath.length() == 0) {
+			int pos = m_uncPath.indexOf( PathSeperator, 2);
+			if ( pos != -1) {
+				pos = m_uncPath.indexOf( PathSeperator, pos + 1);
+				if ( pos == -1)
+					m_rootPath = m_uncPath;
+				else
+					m_rootPath = m_uncPath.substring(0, pos);
+			}
 		}
 	}
 

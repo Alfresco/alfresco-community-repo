@@ -413,7 +413,7 @@ public abstract class CifsAuthenticatorBase extends CifsAuthenticator implements
 
         // Check the account type and setup the authentication context
 
-        if (client.isNullSession())
+        if (client == null || client.isNullSession())
         {
             // Clear the authentication, null user should not be allowed to do any service calls
 

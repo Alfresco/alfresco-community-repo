@@ -34,8 +34,6 @@ import java.util.Enumeration;
 import java.util.Locale;
 import java.util.StringTokenizer;
 
-import net.sf.acegisecurity.AuthenticationManager;
-
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.filesys.alfresco.AlfrescoClientInfoFactory;
 import org.alfresco.filesys.alfresco.ExtendedDiskInterface;
@@ -430,6 +428,23 @@ public abstract class AbstractServerConfigurationBean extends ServerConfiguratio
       
       ClientInfo.setFactory( new AlfrescoClientInfoFactory());
       
+      // We need to check for a WINS server configuration in the CIFS server config section to initialize
+      // the NetBIOS name lookups to use WINS rather broadcast lookups, which may be used to get the local
+      // domain
+      
+      try {
+
+    	  // Get the CIFS server config section and extract the WINS server config, if available
+    	  
+          processWINSServerConfig();
+      }
+      catch (Exception ex) {
+    	  
+          // Configuration error
+
+          logger.error("File server configuration error (WINS), " + ex.getMessage(), ex);
+      }
+      
       // Initialize the filesystems
       
       try
@@ -531,6 +546,8 @@ public abstract class AbstractServerConfigurationBean extends ServerConfiguratio
   protected abstract void processNFSServerConfig();
 
   protected abstract void processFTPServerConfig();
+  
+  protected void processWINSServerConfig() {}
 
   /**
    * Close the configuration bean

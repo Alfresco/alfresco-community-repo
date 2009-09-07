@@ -75,9 +75,10 @@ public class FileState
 
     private int m_openCount;
 
-    // Sharing mode
+    // Sharing mode and PID of first process to open the file
 
     private int m_sharedAccess = SharingMode.READWRITE + SharingMode.DELETE;
+    private int m_pid = -1;
 
     // File lock list, allocated once there are active locks on this file
 
@@ -204,6 +205,16 @@ public class FileState
     }
 
     /**
+     * Return the PID of the first process to open the file, or -1 if the file is not open
+     * 
+     * @return int
+     */
+    public final int getProcessId()
+    {
+    	return m_pid;
+    }
+    
+    /**
      * Check if there are active locks on this file
      * 
      * @return boolean
@@ -279,6 +290,11 @@ public class FileState
         else
             m_openCount--;
 
+        // Clear the PID if the file is no longer open
+        
+        if ( m_openCount == 0)
+        	m_pid = -1;
+        
         return m_openCount;
     }
 
@@ -430,6 +446,17 @@ public class FileState
             m_sharedAccess = mode;
     }
 
+    /**
+     * Set the PID of the process opening the file
+     * 
+     * @param pid int
+     */
+    public final void setProcessId(int pid)
+    {
+    	if ( getOpenCount() == 0)
+    		m_pid = pid;
+    }
+    
     /**
      * Set the file path
      * 
@@ -703,6 +730,8 @@ public class FileState
         str.append(getFileStatus());
         str.append(":Opn=");
         str.append(getOpenCount());
+        str.append("/");
+        str.append(getProcessId());
 
         str.append(",Expire=");
         str.append(getSecondsToExpire(System.currentTimeMillis()));

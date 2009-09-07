@@ -321,7 +321,7 @@ bool CAlfrescoApp::buildDesktopParameters( AlfrescoInterface& alfresco, StringLi
 			// Convert the path to a UNC path
 
 			String uncPath = alfresco.getRootPath();
-			uncPath.append( curFile.substring(2));
+			uncPath.append( curFile.substring(3));
 
 			curFile = uncPath;
 		}
@@ -356,7 +356,8 @@ bool CAlfrescoApp::buildDesktopParameters( AlfrescoInterface& alfresco, StringLi
 			// If the path is to a file that is not on the Alfresco share the file will need to be copied,
 			// after checking the status of a matching file in the Alfresco folder
 
-			if ( curFile.length() >= 3 && curFile.substring(1,3).equals( L":\\")) {
+			if ( curFile.length() >= 3 && curFile.startsWithIgnoreCase( alfresco.getDrivePath()) == false && 
+				 curFile.substring(1,3).equals( L":\\")) {
 
 				// Check if the action supports local files
 

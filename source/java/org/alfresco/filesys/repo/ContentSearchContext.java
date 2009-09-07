@@ -34,6 +34,7 @@ import org.alfresco.jlan.server.filesys.FileType;
 import org.alfresco.jlan.server.filesys.SearchContext;
 import org.alfresco.jlan.server.filesys.pseudo.PseudoFile;
 import org.alfresco.jlan.server.filesys.pseudo.PseudoFileList;
+import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -76,6 +77,10 @@ public class ContentSearchContext extends SearchContext
     
     private String m_relPath;
     
+    // Keep track of the last file name returned for fast restartAt processing
+    
+    private String m_lastFileName;
+    
     /**
      * Class constructor
      * 
@@ -111,10 +116,18 @@ public class ContentSearchContext extends SearchContext
     public String toString()
     {
         StringBuilder sb = new StringBuilder(60);
-        sb.append("ContentSearchContext")
-          .append("[ searchStr=").append(getSearchString())
-          .append(", resultCount=").append(results.size())
-          .append("]");
+
+        sb.append("[ContentSearchContext searchStr=");
+        sb.append(getSearchString());
+        sb.append(", resultCount=");
+        sb.append(results.size());
+        sb.append(", pseudoList=");
+        if ( pseudoList != null)
+        	sb.append( pseudoList.numberOfFiles());
+        else
+        	sb.append("NULL");
+        sb.append("]");
+        
         return sb.toString();
     }
 
@@ -205,17 +218,46 @@ public class ContentSearchContext extends SearchContext
             }
         }
 
-        // Get the next file info from the node search
-            
-        NodeRef nextNodeRef = results.get(index);
+        // Return the next available file information for a real file/folder
         
         try
         {
-            // Get the file information and copy across to the callers file info
+        	// Loop until we get a valid node, might have been deleted since the initial folder search
+
+        	ContentFileInfo nextInfo = null;
+        	
+        	while ( nextInfo == null && index < results.size())
+        	{
+        		//	Get the next node from the search
+        	
+        		NodeRef nextNodeRef = results.get(index);
             
-            ContentFileInfo nextInfo = cifsHelper.getFileInformation(nextNodeRef, "");
-            info.copyFrom(nextInfo);
-            
+        		try {
+
+        			// Get the file information and copy across to the callers file info
+    	            
+		            nextInfo = cifsHelper.getFileInformation(nextNodeRef, "");
+		            info.copyFrom(nextInfo);
+	        	}
+	        	catch ( InvalidNodeRefException ex) {
+
+	        		// Log a warning
+	        		
+	        		if ( logger.isWarnEnabled())
+	        			logger.warn("Noderef " + nextNodeRef + " no longer valid, ignoring");
+	        		
+	        		// Update the node index, node no longer exists, try the next node in the search
+	        		
+	        		index++;
+	        		resumeId++;
+	        	}
+        	}
+        	
+        	// Check if we have finished returning file info
+        	
+        	if ( nextInfo == null)
+        		return false;
+        	
         	// Generate a file id for the current file
         	
         	StringBuilder pathStr = new StringBuilder( m_relPath);
@@ -242,6 +284,10 @@ public class ContentSearchContext extends SearchContext
         	}
         	else
         		info.setFileType( FileType.RegularFile);
+        	
+        	// Keep track of the last file name returned
+        	
+        	m_lastFileName = info.getFileName();
         	
         	// Indicate that the file information is valid
             
@@ -313,6 +359,10 @@ public class ContentSearchContext extends SearchContext
             // Get the file information and copy across to the callers file info
             
             FileInfo nextInfo = cifsHelper.getFileInformation(nextNodeRef, "");
+
+            // Keep track of the last file name returned
+            
+            m_lastFileName = nextInfo.getFileName();
             
             // Indicate that the file information is valid
             
@@ -358,6 +408,17 @@ public class ContentSearchContext extends SearchContext
                 else
                     resId++;
             }
+        }
+        
+        // Check if the resume file name is the last file returned, no need to reposition the file index
+        
+        if ( m_lastFileName != null && info.getFileName().equalsIgnoreCase( m_lastFileName)) {
+        	
+        	// DEBUG
+        	
+        	if ( logger.isDebugEnabled())
+        		logger.debug("Fast search restart - " + m_lastFileName);
+        	return true;
         }
         
         // Check if the resume file is in the main file list

@@ -1880,6 +1880,20 @@ public class ServerConfigurationBean extends AbstractServerConfigurationBean {
 
                     boolean changeNotify = elem.getChild("disableChangeNotification") == null ? true : false;
 
+                    // Check if filesyststem debug flags are enabled
+                    
+                    ConfigElement filesysDbgElem = elem.getChild("debug");
+                    if (filesysDbgElem != null)
+                    {
+                        // Check for filesystem debug flags
+              
+                        String flags = filesysDbgElem.getAttribute("flags");
+              
+                        // Set the filesystem debug flags
+              
+                        filesysContext.setDebug( flags);
+                    }
+                    
                     // Create the shared filesystem
 
                     filesys = new DiskSharedDevice(filesysName, filesysDriver, filesysContext);
@@ -2624,4 +2638,51 @@ public class ServerConfigurationBean extends AbstractServerConfigurationBean {
       return desktopActions;
   }
 
+  /**
+   * Parse the CIFS server config section to get the WINS server details, if available
+   * 
+   * @param config Config
+   */
+  protected void processWINSServerConfig( Config config)
+  {
+      // Check if WINS servers are configured
+	  
+      ConfigElement elem = config.getConfigElement("WINS");
+
+      if (elem != null)
+      {
+
+          // Get the primary WINS server
+
+          ConfigElement priWinsElem = elem.getChild("primary");
+
+          if (priWinsElem == null || priWinsElem.getValue().length() == 0)
+              throw new AlfrescoRuntimeException("No primary WINS server configured");
+
+          // Validate the WINS server address
+
+          InetAddress primaryWINS = null;
+
+          try
+          {
+              primaryWINS = InetAddress.getByName(priWinsElem.getValue());
+          }
+          catch (UnknownHostException ex)
+          {
+              throw new AlfrescoRuntimeException("Invalid primary WINS server address, " + priWinsElem.getValue());
+          }
+
+          // Pass the setting to the NetBIOS session class
+
+          NetBIOSSession.setDefaultWINSServer(primaryWINS);
+      }
+  }
+
+  /**
+   * Parse the CIFS server config section to get the WINS server details, if available
+   */
+  protected void processWINSServerConfig()
+  {
+      processWINSServerConfig(m_configService.getConfig(ConfigCIFS, configCtx));
+  }
 }

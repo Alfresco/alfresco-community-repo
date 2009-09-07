@@ -47,6 +47,7 @@ import org.alfresco.repo.content.encoding.ContentCharsetFinder;
 import org.alfresco.repo.content.filestore.FileContentReader;
 import org.alfresco.service.cmr.repository.ContentAccessor;
 import org.alfresco.service.cmr.repository.ContentData;
+import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
@@ -426,25 +427,38 @@ public class ContentNetworkFile extends NodeRefNetworkFile
     public void truncateFile(long size)
     	throws IOException
     {
-        // If the content data channel has not been opened yet and the requested size is zero
-        // then this is an open for overwrite so the existing content data is not copied
-        
-        if ( hasContent() == false && size == 0L)
-        {
-            // Open content for overwrite, no need to copy existing content data
+    	try {
+        	// If the content data channel has not been opened yet and the requested size is zero
+            // then this is an open for overwrite so the existing content data is not copied
             
-            openContent(true, true);
-        }
-        else
-        {
-            // Normal open for write
-            
-            openContent(true, false);
+            if ( hasContent() == false && size == 0L)
+            {
+                // Open content for overwrite, no need to copy existing content data
+                
+                openContent(true, true);
+            }
+            else
+            {
+                // Normal open for write
+                
+                openContent(true, false);
 
-            // Truncate or extend the channel
-            
-            channel.truncate(size);
-        }
+                // Truncate or extend the channel
+                
+                channel.truncate(size);
+            }
+    	}
+    	catch ( ContentIOException ex) {
+    		
+    		// DEBUG
+    		
+    		if ( logger.isDebugEnabled())
+    			logger.debug("Error opening file " + getFullName() + " for write", ex);
+    		
+    		// Convert to a file server I/O error
+    		
+    		throw new DiskFullException("Failed to open " + getFullName() + " for write");
+    	}
         
         // Set modification flag
         
@@ -477,9 +491,22 @@ public class ContentNetworkFile extends NodeRefNetworkFile
     public void writeFile(byte[] buffer, int length, int position, long fileOffset)
     	throws IOException
     {
-        // Open the channel for writing
-        
-        openContent(true, false);
+    	try {
+	        // Open the channel for writing
+	        
+	        openContent(true, false);
+    	}
+    	catch ( ContentIOException ex) {
+    		
+    		// DEBUG
+    		
+    		if ( logger.isDebugEnabled())
+    			logger.debug("Error opening file " + getFullName() + " for write", ex);
+    		
+    		// Convert to a file server I/O error
+    		
+    		throw new DiskFullException("Failed to open " + getFullName() + " for write");
+    	}
         
         // Write to the channel
         

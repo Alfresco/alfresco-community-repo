@@ -132,7 +132,7 @@ public class MSOfficeContentNetworkFile extends ContentNetworkFile {
     		
 	    		// Buffer the write, looks like a file open update. Do not buffer zero length writes.
 
-    			if ( length == 0) {
+    			if ( length != 0) {
 		    		byte[] data = new byte[ length];
 		    		System.arraycopy(buffer, position, data, 0, length);
 		    		

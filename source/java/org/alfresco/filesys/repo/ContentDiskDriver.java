@@ -34,6 +34,7 @@ import javax.transaction.UserTransaction;
 
 import org.alfresco.config.ConfigElement;
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.filesys.alfresco.AlfrescoContext;
 import org.alfresco.filesys.alfresco.AlfrescoDiskDriver;
 import org.alfresco.filesys.alfresco.AlfrescoNetworkFile;
 import org.alfresco.filesys.state.FileState;
@@ -64,6 +65,7 @@ import org.alfresco.jlan.server.filesys.pseudo.PseudoNetworkFile;
 import org.alfresco.jlan.server.locking.FileLockingInterface;
 import org.alfresco.jlan.server.locking.LockManager;
 import org.alfresco.jlan.smb.SharingMode;
+import org.alfresco.jlan.smb.WinNT;
 import org.alfresco.jlan.smb.server.SMBServer;
 import org.alfresco.jlan.smb.server.SMBSrvSession;
 import org.alfresco.jlan.util.WildCard;
@@ -701,7 +703,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
                 		
                		// Debug
                 		
-              		if ( logger.isDebugEnabled())
+              		if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_INFO))
                			logger.debug( "Added file state for pseudo files folder (getinfo) - " + paths[0]);
                 }
                 else if ( fstate.hasPseudoFiles() == false)
@@ -721,7 +723,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
             		
             		// Debug
             		
-            		if ( logger.isDebugEnabled())
+            		if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_INFO))
             			logger.debug( "Added pseudo files for folder (exists) - " + paths[0]);
                 }
             	
@@ -732,7 +734,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
                 if ( pfile != null)
                 {
                     // DEBUG
-                    if ( logger.isDebugEnabled())
+                    if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_INFO))
                         logger.debug("getInfo using pseudo file info for " + path);
                     
                     FileInfo pseudoFileInfo = pfile.getFileInfo();
@@ -761,7 +763,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
 
                 // DEBUG
                 
-                if ( logger.isDebugEnabled())
+                if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_INFO))
                     logger.debug("getInfo using cached noderef for path " + path);
             }
             
@@ -785,7 +787,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
                         
                         // DEBUG
                         
-                        if ( logger.isDebugEnabled())
+                        if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_INFO))
                             logger.debug("getInfo using cached noderef for parent " + path);
                     }
                 }
@@ -796,12 +798,8 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
                 
                 // DEBUG
                 
-                if (logger.isDebugEnabled())
-                {
-                    logger.debug("Getting file information: \n" +
-                            "   path: " + path + "\n" +
-                            "   file info: " + finfo);
-                }
+                if (logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_INFO))
+                    logger.debug("Getting file information: path=" + path + " file info: " + finfo);
             }
 
             // Set the file id for the file using the relative path
@@ -833,16 +831,15 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
         {
             // Debug
         	
-            if (logger.isDebugEnabled())
-                logger.debug("Getting file information - File not found: \n" +
-                        "   path: " + path);
+            if (logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_INFO))
+                logger.debug("Get file info - file not found, " + path);
             throw e;
         }
         catch (org.alfresco.repo.security.permissions.AccessDeniedException ex)
         {
             // Debug
             
-            if ( logger.isDebugEnabled())
+            if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_INFO))
                 logger.debug("Get file info - access denied, " + path);
             
             // Convert to a filesystem access denied status
@@ -853,7 +850,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
         {
             // Debug
             
-            if ( logger.isDebugEnabled())
+            if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_INFO))
                 logger.debug("Get file info error", ex);
             
             // Convert to a general I/O exception
@@ -875,12 +872,12 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
      */
     public SearchContext startSearch(SrvSession sess, TreeConnection tree, String searchPath, int attributes) throws FileNotFoundException
     {
+        // Access the device context
+        
+        ContentContext ctx = (ContentContext) tree.getContext();
+        
         try
         {
-            // Access the device context
-            
-            ContentContext ctx = (ContentContext) tree.getContext();
-
             String searchFileSpec = searchPath;
             NodeRef searchRootNodeRef = ctx.getRootNode();
             FileState searchFolderState = null;
@@ -937,7 +934,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
                         
                         // DEBUG
                         
-                        if ( logger.isDebugEnabled())
+                        if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_SEARCH))
                             logger.debug("Search using cached noderef for path " + searchPath);
                     }
                 }
@@ -948,10 +945,25 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
             if ( searchFileSpec.equals( "*.*"))
             	searchFileSpec = "*";
             
+            // Debug
+            
+            long startTime = 0L;
+            if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_SEARCH))
+            	startTime = System.currentTimeMillis();
+            
             // Perform the search
             
             List<NodeRef> results = cifsHelper.getNodeRefs(searchRootNodeRef, searchFileSpec);
 
+            // Debug
+            
+            if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_SEARCH)) {
+            	long endTime = System.currentTimeMillis();
+            	if (( endTime - startTime) > 500)
+            		logger.debug("Search for searchPath=" + searchPath + ", searchSpec=" + searchFileSpec + ", searchRootNode=" + searchRootNodeRef + " took "
+            				     + ( endTime - startTime) + "ms results=" + results.size());
+            }
+            
             // Check if there are any pseudo files for the folder being searched, for CIFS only
             
             PseudoFileList pseudoList = null;
@@ -1021,19 +1033,16 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
             
             // Debug
             
-            if (logger.isDebugEnabled())
-            {
-                logger.debug("Started search: \n" +
-                        "   search path: " + searchPath + "\n" +
-                        "   attributes: " + attributes);
-            }
+            if (logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_SEARCH))
+                logger.debug("Started search: search path=" + searchPath + " attributes=" + attributes);
+
             return searchCtx;
         }
         catch (org.alfresco.repo.security.permissions.AccessDeniedException ex)
         {
             // Debug
             
-            if ( logger.isDebugEnabled())
+            if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_SEARCH))
                 logger.debug("Start search - access denied, " + searchPath);
             
             // Convert to a file not found status
@@ -1044,7 +1053,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
         {
             // Debug
             
-            if ( logger.isDebugEnabled())
+            if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_SEARCH))
                 logger.debug("Start search", ex);
             
             // Convert to a file not found status
@@ -1064,14 +1073,13 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
      */
     public int fileExists(SrvSession sess, TreeConnection tree, String name)
     {
-        
+        ContentContext ctx = (ContentContext) tree.getContext();
         int status = FileStatus.Unknown;
         
         try
         {
             // Check for a cached file state
             
-            ContentContext ctx = (ContentContext) tree.getContext();
             FileState fstate = null;
             
             if ( ctx.hasStateTable())
@@ -1090,7 +1098,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
                 
                 // DEBUG
                 
-                if ( logger.isDebugEnabled())
+                if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_INFO))
                     logger.debug("Cache hit - fileExists() " + name + ", sts=" + status);
             }
             else
@@ -1131,7 +1139,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
     	                		
     	                		// Debug
     	                		
-    	                		if ( logger.isDebugEnabled())
+    	                		if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_PSEUDO))
     	                			logger.debug( "Added file state for pseudo files folder (exists) - " + paths[0]);
     	                	}
     	                }
@@ -1156,7 +1164,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
                     		
                     		// Debug
                     		
-                    		if ( logger.isDebugEnabled())
+                    		if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_PSEUDO))
                     			logger.debug( "Added pseudo files for folder (exists) - " + paths[0]);
     	                }
     	            	
@@ -1173,7 +1181,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
     	                {
     	                	// Failed to find pseudo file
     	                	
-    	                	if ( logger.isDebugEnabled())
+    	                	if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_PSEUDO))
     	                		logger.debug( "Failed to find pseudo file (exists) - " + name);
     	                }
                 	}
@@ -1208,20 +1216,17 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
         catch (IOException e)
         {
             // Debug
-            
-            logger.debug("File exists error, " + name, e);
+
+        	if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_INFO))
+        		logger.debug("File exists error, " + name, e);
             
             status = FileStatus.NotExist;
         }
 
         // Debug
         
-        if (logger.isDebugEnabled())
-        {
-            logger.debug("File status determined: \n" +
-                    "   name: " + name + "\n" +
-                    "   status: " + status);
-        }
+        if (logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_INFO))
+            logger.debug("File status determined: name=" + name + " status=" + FileStatus.asString(status));
         
         // Return the file/folder status
         
@@ -1242,13 +1247,10 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
         // Create the transaction
         
     	beginReadTransaction( sess);
+        ContentContext ctx = (ContentContext) tree.getContext();
         
         try
         {
-            // Get the node for the path
-            
-            ContentContext ctx = (ContentContext) tree.getContext();
-            
             // Check if pseudo files are enabled
             
             if ( hasPseudoFileInterface(ctx))
@@ -1279,7 +1281,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
 	                		
 	                		// Debug
 	                		
-	                		if ( logger.isDebugEnabled())
+	                		if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_PSEUDO))
 	                			logger.debug( "Added file state for pseudo files folder (open) - " + paths[0]);
 	                	}
 	                }
@@ -1291,7 +1293,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
                 		
                 		// Debug
                 		
-                		if ( logger.isDebugEnabled())
+                		if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_PSEUDO))
                 			logger.debug( "Added pseudo files for folder (open) - " + paths[0]);
 	                }
 	            	
@@ -1308,7 +1310,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
 	                {
 	                	// Failed to find pseudo file
 	                	
-	                	if ( logger.isDebugEnabled())
+	                	if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_PSEUDO))
 	                		logger.debug( "Failed to find pseudo file (open) - " + params.getPath());
 	                }
             	}
@@ -1361,46 +1363,102 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
                     
                     if ( fstate.exists() == false)
                         throw new FileNotFoundException();
-                    
-                    // Check the file sharing mode
-                    
-                    if ( fstate != null) {
-                    
-                    	// Check if the current file open allows the required shared access
-                    	
-                    	boolean nosharing = false;
-                    	
-                    	if ( fstate.getOpenCount() > 0) {
-                    		
-                    		// Check if the file has been opened for exclusive access
-                    		
-                    		if ( fstate.getSharedAccess() == SharingMode.NOSHARING)
-                    			nosharing = true;
-                    		
-                    		// Check if the required sharing mode is allowed by the current file open
-                    		
-                    		else if ( ( fstate.getSharedAccess() & params.getSharedAccess()) != params.getSharedAccess())
-                    			nosharing = true;
-                    		
-                    		// Check if the caller wants exclusive access to the file
-                    		
-                        	else if ( params.getSharedAccess() == SharingMode.NOSHARING)
-                        		nosharing = true;
-                    	}
-                    	
-                    	// Check if the file allows shared access
-                    	
-                    	if ( nosharing == true)
-	                    {
-	                    	if ( params.getPath().equals( "\\") == false)
-	                    		throw new FileSharingException("File already open, " + params.getPath());
-	                    }
-                    	
-                    	// Update the file sharing mode, if this is the first file open
-                    	
-                    	fstate.setSharedAccess( params.getSharedAccess());
-                    }
                 }
+                else {
+                	
+                	// Create a file state for the path
+                	
+                    fstate = ctx.getStateTable().findFileState( params.getPath(), false, true);
+                }                	
+                    
+            	// Check if the current file open allows the required shared access
+            	
+            	boolean nosharing = false;
+
+            	// TEST
+            	
+        		if ( params.getAccessMode() == AccessMode.NTFileGenericExecute && params.getPath().toLowerCase().endsWith( ".exe") == false) {
+        			
+            		// DEBUG
+            		
+            		if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_FILE)) {
+            			logger.debug( "Execute access mode, path" + params.getPath());
+            			logger.debug( "  Fstate=" + fstate);
+            		}
+        		
+        			throw new AccessDeniedException("Invalid access mode");
+        		}
+        		
+            	if ( fstate.getOpenCount() > 0) {
+            		
+            		// Check for impersonation security level from the original process that opened the file
+            		
+            		if ( params.getSecurityLevel() == WinNT.SecurityImpersonation && params.getProcessId() == fstate.getProcessId())
+            			nosharing = false;
+
+            		// Check if the caller wants read access, check the sharing mode
+            		// Check if the caller wants write access, check if the sharing mode allows write
+            		
+                	else if ( params.isReadOnlyAccess() && (fstate.getSharedAccess() & SharingMode.READ) != 0)
+                		nosharing = false;
+            		
+            		// Check if the caller wants write access, check the sharing mode
+            		
+                	else if (( params.isReadWriteAccess() || params.isWriteOnlyAccess()) && (fstate.getSharedAccess() & SharingMode.WRITE) == 0)
+                	{
+                		// DEBUG
+                		
+                		if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_FILE))
+                			logger.debug("Sharing mode disallows write access path=" + params.getPath());
+                		
+                		// Access not allowed
+                		
+                		throw new AccessDeniedException( "Sharing mode (write)");
+                	}
+                	
+            		// Check if the file has been opened for exclusive access
+            		
+            		else if ( fstate.getSharedAccess() == SharingMode.NOSHARING)
+            			nosharing = true;
+            		
+            		// Check if the required sharing mode is allowed by the current file open
+            		
+            		else if ( ( fstate.getSharedAccess() & params.getSharedAccess()) != params.getSharedAccess())
+            			nosharing = true;
+            		
+            		// Check if the caller wants exclusive access to the file
+            		
+                	else if ( params.getSharedAccess() == SharingMode.NOSHARING)
+                		nosharing = true;
+            		
+            	}
+            	
+            	// Check if the file allows shared access
+            	
+            	if ( nosharing == true)
+                {
+                	if ( params.getPath().equals( "\\") == false) {
+                		
+                		// DEBUG
+                		
+                		if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_FILE))
+                			logger.debug("Sharing violation path=" + params.getPath() + ", sharing=0x" + Integer.toHexString(fstate.getSharedAccess()));
+                	
+                		// File is locked by another user
+                		
+                		throw new FileSharingException("File already open, " + params.getPath());
+                	}
+                }
+            	
+            	// Update the file sharing mode and process id, if this is the first file open
+            	
+            	fstate.setSharedAccess( params.getSharedAccess());
+            	fstate.setProcessId( params.getProcessId());
+            	
+            	// DEBUG
+            	
+            	if ( logger.isDebugEnabled() && fstate.getOpenCount() == 0 && ctx.hasDebug(AlfrescoContext.DBG_FILE))
+            		logger.debug("Path " + params.getPath() + ", sharing=0x" + Integer.toHexString(params.getSharedAccess()) + ", PID=" + params.getProcessId());
             }
             
             // Check if the node is a link node
@@ -1508,13 +1566,8 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
             
             // Debug
             
-            if (logger.isDebugEnabled())
-            {
-                logger.debug("Opened network file: \n" +
-                        "   path: " + params.getPath() + "\n" +
-                        "   file open parameters: " + params + "\n" +
-                        "   network file: " + netFile);
-            }
+            if (logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_FILE))
+                logger.debug("Opened network file: path=" + params.getPath() + " file open parameters=" + params + " network file=" + netFile);
 
             // Return the network file
             
@@ -1524,7 +1577,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
         {
             // Debug
             
-            if ( logger.isDebugEnabled())
+            if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_FILE))
                 logger.debug("Open file - access denied, " + params.getFullPath());
             
             // Convert to a filesystem access denied status
@@ -1535,7 +1588,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
         {
             // Debug
             
-            if ( logger.isDebugEnabled())
+            if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_FILE))
                 logger.debug("Open file error", ex);
             
             // Convert to a general I/O exception
@@ -1558,14 +1611,13 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
         // Create the transaction
         
     	beginWriteTransaction( sess);
+        ContentContext ctx = (ContentContext) tree.getContext();
         
         try
         {
             // Get the device root
 
-            ContentContext ctx = (ContentContext) tree.getContext();
             NodeRef deviceRootNodeRef = ctx.getRootNode();
-            
             String path = params.getPath();
             
             // If the state table is available then try to find the parent folder node for the new file
@@ -1589,7 +1641,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
                         
                         // DEBUG
                         
-                        if ( logger.isDebugEnabled())
+                        if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_FILE))
                             logger.debug("Create file using cached noderef for path " + paths[0]);
                     }
                 }
@@ -1626,6 +1678,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
                     // Save the file sharing mode, needs to be done before the open count is incremented
                     
                     fstate.setSharedAccess( params.getSharedAccess());
+                    fstate.setProcessId( params.getProcessId());
                     
                     // Indicate that the file is open
     
@@ -1639,20 +1692,15 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
                     
                     // DEBUG
                     
-                    if ( logger.isDebugEnabled())
+                    if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_FILE))
                         logger.debug("Create file, state=" + fstate);
                 }
             }
             
-            // done
-            if (logger.isDebugEnabled())
-            {
-                logger.debug("Created file: \n" +
-                        "   path: " + path + "\n" +
-                        "   file open parameters: " + params + "\n" +
-                        "   node: " + nodeRef + "\n" +
-                        "   network file: " + netFile);
-            }
+            // Debug
+            
+            if (logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_FILE))
+                logger.debug("Created file: path=" + path + " file open parameters=" + params + " node=" + nodeRef + " network file=" + netFile);
             
             return netFile;
         }
@@ -1660,7 +1708,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
         {
             // Debug
             
-            if ( logger.isDebugEnabled())
+            if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_FILE))
                 logger.debug("Create file - access denied, " + params.getFullPath());
             
             // Convert to a filesystem access denied status
@@ -1671,7 +1719,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
         {
             // Debug
             
-            if ( logger.isDebugEnabled())
+            if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_FILE))
                 logger.debug("Create file - content I/O error, " + params.getFullPath());
             
             // Convert to a filesystem disk full status
@@ -1682,7 +1730,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
         {
             // Debug
             
-            if ( logger.isDebugEnabled())
+            if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_FILE))
                 logger.debug("Create file error", ex);
             
             // Convert to a general I/O exception
@@ -1705,12 +1753,12 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
         // Create the transaction
         
     	beginWriteTransaction( sess);
+        ContentContext ctx = (ContentContext) tree.getContext();
         
         try
         {
             // get the device root
             
-            ContentContext ctx = (ContentContext) tree.getContext();
             NodeRef deviceRootNodeRef = ctx.getRootNode();
             
             String path = params.getPath(); 
@@ -1736,7 +1784,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
                         
                         // DEBUG
                         
-                        if ( logger.isDebugEnabled())
+                        if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_FILE))
                             logger.debug("Create file using cached noderef for path " + paths[0]);
                     }
                 }
@@ -1760,25 +1808,21 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
                     
                     // DEBUG
                     
-                    if ( logger.isDebugEnabled())
+                    if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_FILE))
                         logger.debug("Creaste folder, state=" + fstate);
                 }
             }
             
-            // done
-            if (logger.isDebugEnabled())
-            {
-                logger.debug("Created directory: \n" +
-                        "   path: " + path + "\n" +
-                        "   file open params: " + params + "\n" +
-                        "   node: " + nodeRef);
-            }
+            // Debug
+            
+            if (logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_FILE))
+                logger.debug("Created directory: path=" + path + " file open params=" + params + " node=" + nodeRef);
         }
         catch (org.alfresco.repo.security.permissions.AccessDeniedException ex)
         {
             // Debug
             
-            if ( logger.isDebugEnabled())
+            if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_FILE))
                 logger.debug("Create directory - access denied, " + params.getFullPath());
             
             // Convert to a filesystem access denied status
@@ -1789,7 +1833,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
         {
             // Debug
             
-            if ( logger.isDebugEnabled())
+            if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_FILE))
                 logger.debug("Create directory error", ex);
             
             // Convert to a general I/O exception
@@ -1841,28 +1885,23 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
             		throw new DirectoryNotEmptyException( dir);
             }
             
-            // done
-            if (logger.isDebugEnabled())
-            {
-                logger.debug("Deleted directory: \n" +
-                        "   directory: " + dir + "\n" +
-                        "   node: " + nodeRef);
-            }
+            // Debug
+            
+            if (logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_FILE))
+                logger.debug("Deleted directory: directory=" + dir + " node=" + nodeRef);
         }
         catch (FileNotFoundException e)
         {
-            // already gone
-            if (logger.isDebugEnabled())
-            {
-                logger.debug("Deleted directory <alfready gone>: \n" +
-                        "   directory: " + dir);
-            }
+            // Debug
+        	
+            if (logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_FILE))
+                logger.debug("Delete directory - file not found, " + dir);
         }
         catch (org.alfresco.repo.security.permissions.AccessDeniedException ex)
         {
             // Debug
             
-            if ( logger.isDebugEnabled())
+            if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_FILE))
                 logger.debug("Delete directory - access denied, " + dir);
             
             // Convert to a filesystem access denied status
@@ -1873,7 +1912,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
         {
             // Debug
             
-            if ( logger.isDebugEnabled())
+            if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_FILE))
                 logger.debug("Delete directory", ex);
             
             // Convert to a general I/O exception
@@ -1892,6 +1931,13 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
      */
     public void flushFile(SrvSession sess, TreeConnection tree, NetworkFile file) throws IOException
     {
+    	// Debug
+    	
+    	ContentContext ctx = (ContentContext) tree.getContext();
+    	
+    	if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_FILEIO))
+    		logger.debug("Flush file=" + file.getFullName());
+    	
         // Flush the file data
         
         file.flushFile();
@@ -1956,7 +2002,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
                     	}
                     	catch ( Exception ex)
                     	{
-                    		if ( logger.isWarnEnabled())
+                    		if ( logger.isWarnEnabled() && ctx.hasDebug(AlfrescoContext.DBG_FILE))
                     			logger.warn("Error during delete on close, " + file.getFullName(), ex);
                     	}
     
@@ -1982,7 +2028,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
                     {
                         // Debug
                         
-                        if ( logger.isDebugEnabled())
+                        if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_FILE))
                             logger.debug("Delete on close - access denied, " + file.getFullName());
                         
                         // Convert to a filesystem access denied exception
@@ -2007,12 +2053,8 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
         
         // DEBUG
         
-        if (logger.isDebugEnabled())
-        {
-            logger.debug("Closed file: \n" +
-                    "   network file: " + file + "\n" +
-                    "   deleted on close: " + file.hasDeleteOnClose());
-        }
+        if (logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_FILE))
+            logger.debug("Closed file: network file=" + file + " delete on close=" + file.hasDeleteOnClose());
     }
 
     /**
@@ -2048,15 +2090,16 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
                     ctx.getStateTable().removeFileState(name);
             }
             
-            // done
-            if (logger.isDebugEnabled())
-                logger.debug("Deleted file: " + name + ", node: " + nodeRef);
+            // Debug
+            
+            if (logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_FILE))
+                logger.debug("Deleted file: " + name + ", node=" + nodeRef);
         }
         catch (NodeLockedException ex)
         {
             // Debug
             
-            if ( logger.isDebugEnabled())
+            if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_FILE))
                 logger.debug("Delete file - access denied (locked)");
             
             // Convert to a filesystem access denied status
@@ -2067,7 +2110,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
         {
             // Debug
             
-            if ( logger.isDebugEnabled())
+            if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_FILE))
                 logger.debug("Delete file - access denied");
             
             // Convert to a filesystem access denied status
@@ -2078,7 +2121,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
         {
             // Debug
             
-            if ( logger.isDebugEnabled())
+            if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_FILE))
                 logger.debug("Delete file error", ex);
             
             // Convert to a general I/O exception
@@ -2102,12 +2145,12 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
 
     	beginWriteTransaction( sess);
         
+        // Get the device context
+        
+        ContentContext ctx = (ContentContext) tree.getContext();
+        
         try
         {
-            // Get the device context
-            
-            ContentContext ctx = (ContentContext) tree.getContext();
-            
             // Get the file/folder to move
             
             NodeRef nodeToMoveRef = getNodeForPath(tree, oldName);
@@ -2156,7 +2199,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
                     		{
 		                        // DEBUG
 		                        
-		                        if ( logger.isDebugEnabled())
+		                        if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_RENAME))
 		                            logger.debug(" Found rename state, relinking, " + renState);
 		                        
 		                        // Relink the new version of the file data to the previously renamed node so that it
@@ -2186,7 +2229,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
                     	{
 	                        // DEBUG
 	                        
-	                        if ( logger.isDebugEnabled())
+	                        if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_RENAME))
 	                            logger.debug(" Found delete on close state, restore and relink, " + renState);
 	                        
 	                        // Restore the deleted node so we can relink the new version to the old history/properties
@@ -2195,7 +2238,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
 	                        
 	                        // DEBUG
 	                        
-	                        if ( logger.isDebugEnabled())
+	                        if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_RENAME))
 	                        	logger.debug(" Found archived node + " + archivedNode);
 	                        
 	                        if ( archivedNode != null && getNodeService().exists( archivedNode))
@@ -2206,7 +2249,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
 	                        
 	                        	// DEBUG
 	                        	
-	                        	if ( logger.isDebugEnabled())
+	                        	if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_RENAME))
 	                        		logger.debug(" Restored node " + restoredNode);
 
 	                        	if ( restoredNode != null)
@@ -2232,7 +2275,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
 			                        
 			                        // DEBUG
 			                        
-			                        if ( logger.isDebugEnabled())
+			                        if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_RENAME))
 			                        	logger.debug(" Swapped content to restored node, delete " + oldName + ", nodeRef=" + nodeToMoveRef);
 			                        
 			                        // Link the node ref for the associated rename state
@@ -2295,7 +2338,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
                         
                         // DEBUG
                 		
-                		if ( logger.isDebugEnabled())
+                		if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_RENAME))
                 			logger.debug("Added Temporary aspect to renamed file " + newName);
                     }
                     
@@ -2315,14 +2358,14 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
 
                         // DEBUG
                 		
-                		if ( logger.isDebugEnabled())
+                		if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_RENAME))
                 			logger.debug("Removed Temporary aspect from renamed file " + newName);
             		}
             		
             		// DEBUG
             		
-            		if ( logger.isDebugEnabled())
-            			logger.debug("Renamed file: from: " + oldName + " to: " + newName);
+            		if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_RENAME))
+            			logger.debug("Renamed file: from=" + oldName + " to=" + newName);
             	}
             	else
             	{
@@ -2332,15 +2375,15 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
             		
             		// DEBUG
             		
-            		if ( logger.isDebugEnabled())
-            			logger.debug("Moved file: from: " + oldName + " to: " + newName);
+            		if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_RENAME))
+            			logger.debug("Moved file: from=" + oldName + " to=" + newName);
             	}
 
                 // Check if we renamed a file, if so then cache the rename details for a short period
                 // in case another file renamed to the old name. MS Word uses renames to move a new
                 // version of a document into place so we need to reconnect the version history.
                 
-                if ( !cifsHelper.isDirectory(nodeToMoveRef))
+                if ( !cifsHelper.isDirectory(nodeToMoveRef) && sameFolder == true)
                 {
 	                // Get or create a new file state for the old file path
 	                
@@ -2369,7 +2412,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
 	                
 	                // DEBUG
 	                
-	                if ( logger.isDebugEnabled()) 
+	                if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_RENAME)) 
 	                {
 	                    logger.debug("Cached rename state for " + oldName + ", state=" + fstate);
 	                    logger.debug("  new name " + newName + ", state=" + newState);
@@ -2379,14 +2422,14 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
 
             // DEBUG
             
-            if (logger.isDebugEnabled())
-                logger.debug("Moved node: from: " + oldName + " to: " + newName);
+            if (logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_RENAME))
+                logger.debug("Moved node: from=" + oldName + " to=" + newName);
         }
         catch (org.alfresco.repo.security.permissions.AccessDeniedException ex)
         {
             // Debug
             
-            if ( logger.isDebugEnabled())
+            if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_RENAME))
                 logger.debug("Rename file - access denied, " + oldName);
             
             // Convert to a filesystem access denied status
@@ -2397,7 +2440,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
         {
             // Debug
             
-            if ( logger.isDebugEnabled())
+            if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_RENAME))
                 logger.debug("Rename file", ex);
             
             // Convert to an filesystem access denied exception
@@ -2408,7 +2451,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
         {
             // Debug
             
-            if ( logger.isDebugEnabled())
+            if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_RENAME))
                 logger.debug("Rename file", ex);
             
             // Convert to a general I/O exception
@@ -2428,12 +2471,12 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
      */
     public void setFileInformation(SrvSession sess, TreeConnection tree, String name, FileInfo info) throws IOException
     {
+        // Get the device context
+        
+        ContentContext ctx = (ContentContext) tree.getContext();
+        
         try
         {
-            // Get the device context
-            
-            ContentContext ctx = (ContentContext) tree.getContext();
-            
             // Check if pseudo files are enabled
             
             if ( hasPseudoFileInterface(ctx) &&
@@ -2496,7 +2539,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
                 
                 // DEBUG
                 
-                if ( logger.isDebugEnabled())
+                if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_INFO))
                 	logger.debug("Set deleteOnClose=true file=" + name);
             }
             
@@ -2520,7 +2563,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
                 
             	// DEBUG
                 
-                if ( logger.isDebugEnabled())
+                if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_INFO))
                 	logger.debug("Set creationDate=" + createDate + " file=" + name);
             }
 
@@ -2544,7 +2587,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
                 
             	// DEBUG
                 
-                if ( logger.isDebugEnabled())
+                if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_INFO))
                 	logger.debug("Set modifyDate=" + modifyDate + " file=" + name);
             }
         }
@@ -2552,7 +2595,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
         {
             // Debug
             
-            if ( logger.isDebugEnabled())
+            if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_INFO))
                 logger.debug("Set file information - access denied, " + name);
             
             // Convert to a filesystem access denied status
@@ -2563,7 +2606,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
         {
             // Debug
             
-            if ( logger.isDebugEnabled())
+            if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_INFO))
                 logger.debug("Open file error", ex);
             
             // Convert to a general I/O exception
@@ -2587,13 +2630,12 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
         
         file.truncateFile(size);
         
-        // done
-        if (logger.isDebugEnabled())
-        {
-            logger.debug("Truncated file: \n" +
-                    "   network file: " + file + "\n" +
-                    "   size: " + size);
-        }
+        // Debug
+
+        ContentContext ctx = (ContentContext) tree.getContext();
+        
+        if (logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_FILEIO))
+            logger.debug("Truncated file: network file=" + file + " size=" + size);
     }
 
     /**
@@ -2639,17 +2681,14 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
             count = 0;
         }
         
-        // done
-        if (logger.isDebugEnabled())
-        {
-            logger.debug("Read bytes from file: \n" +
-                    "   network file: " + file + "\n" +
-                    "   buffer size: " + buffer.length + "\n" +
-                    "   buffer pos: " + bufferPosition + "\n" +
-                    "   size: " + size + "\n" +
-                    "   file offset: " + fileOffset + "\n" +
-                    "   bytes read: " + count);
-        }
+        // Debug
+
+        ContentContext ctx = (ContentContext) tree.getContext();
+        
+        if (logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_FILEIO))
+            logger.debug("Read bytes from file: network file=" + file + " buffer size=" + buffer.length + " buffer pos=" + bufferPosition +
+                    " size=" + size + " file offset=" + fileOffset + " bytes read=" + count);
+        
         return count;
     }
 
@@ -2712,15 +2751,13 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
         
         file.writeFile(buffer, size, bufferOffset, fileOffset);
         
-        // done
-        if (logger.isDebugEnabled())
-        {
-            logger.debug("Wrote bytes to file: \n" +
-                    "   network file: " + file + "\n" +
-                    "   buffer size: " + buffer.length + "\n" +
-                    "   size: " + size + "\n" +
-                    "   file offset: " + fileOffset);
-        }
+        // Debug
+
+        ContentContext ctx = (ContentContext) tree.getContext();
+        
+        if (logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_FILEIO))
+            logger.debug("Wrote bytes to file: network file=" + file + " buffer size=" + buffer.length + " size=" + size + " file offset=" + fileOffset);
+
         return size;
     }
 

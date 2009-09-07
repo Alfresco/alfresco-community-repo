@@ -27,6 +27,7 @@ package org.alfresco.filesys.alfresco;
 import java.net.InetAddress;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.StringTokenizer;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.filesys.config.GlobalDesktopActionConfigBean;
@@ -52,6 +53,20 @@ public abstract class AlfrescoContext extends DiskDeviceContext
 
     private static final String TokenLocalName = "${localname}";
 
+	// Debug levels
+	
+	public final static int DBG_FILE		= 0x00000001;	// file/folder create/delete
+	public final static int DBG_FILEIO		= 0x00000002;	// file read/write/truncate
+	public final static int DBG_SEARCH  	= 0x00000004;	// folder search
+	public final static int DBG_INFO        = 0x00000008;	// file/folder information
+	public final static int DBG_LOCK        = 0x00000010;	// file byte range locking
+	public final static int DBG_PSEUDO      = 0x00000020;	// pseudo files/folders
+	public final static int DBG_RENAME      = 0x00000040;	// rename file/folder
+	
+	// Filesystem debug flag strings
+	  
+	private static final String m_filesysDebugStr[] = { "FILE", "FILEIO", "SEARCH", "INFO", "LOCK", "PSEUDO", "RENAME" };
+
     // File state table and associated file state reaper
     
     private FileStateTable m_stateTable;
@@ -76,6 +91,12 @@ public abstract class AlfrescoContext extends DiskDeviceContext
     
     private IOControlHandler m_ioHandler;
 
+    // Debug flags
+    //
+    // Requires the logger to be enabled for debug output
+    
+    public int m_debug;
+    
     public AlfrescoContext()
     {
         // Default the filesystem to look like an 80Gb sized disk with 90% free space
@@ -454,6 +475,65 @@ public abstract class AlfrescoContext extends DiskDeviceContext
     protected void setIOHandler( IOControlHandler ioctlHandler)
     {
     	m_ioHandler = ioctlHandler;
+    }
+    
+    /**
+     * Set the debug flags, also requires the logger to be enabled for debug output
+     * 
+     * @param dbg int
+     */
+    public final void setDebug(String flagsStr)
+    {
+    	int filesysDbg = 0;
+    	
+    	if (flagsStr != null)
+        {
+	        // Parse the flags
+	  
+	        StringTokenizer token = new StringTokenizer(flagsStr.toUpperCase(), ",");
+	  
+	        while (token.hasMoreTokens())
+	        {
+	        	// Get the current debug flag token
+  
+                String dbg = token.nextToken().trim();
+  
+                // Find the debug flag name
+  
+                int idx = 0;
+                boolean match = false;
+  
+                while (idx < m_filesysDebugStr.length && match == false)
+                {
+                	if ( m_filesysDebugStr[idx].equalsIgnoreCase(dbg) == true)
+                		match = true;
+                	else
+                		idx++;
+                }
+  
+                if (match == false)
+                    throw new AlfrescoRuntimeException("Invalid filesystem debug flag, " + dbg);
+  
+                // Set the debug flag
+  
+                filesysDbg += 1 << idx;
+            }
+	        
+	        // Set the debug flags
+	        
+	        m_debug = filesysDbg;
+        }
+    }
+    
+    /**
+     * Check if a debug flag is enabled
+     * 
+     * @param flg int
+     * @return boolean
+     */
+    public final boolean hasDebug(int flg)
+    {
+    	return (m_debug & flg) != 0 ? true : false;
     }
     
     /**

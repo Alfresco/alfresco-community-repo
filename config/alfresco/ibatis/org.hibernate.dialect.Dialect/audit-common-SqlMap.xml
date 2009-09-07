@@ -46,8 +46,7 @@
     </resultMap>
     <resultMap id="result_AuditQueryAllValues"
                extends="alfresco.audit.result_AuditQueryNoValues"
-               class="AuditQueryResult"
-               groupBy="auditEntryId">
+               class="AuditQueryResult">
         <result property="auditValues" resultMap="alfresco.propval.result_PropertyIdSearchRow"/>
     </resultMap>
   

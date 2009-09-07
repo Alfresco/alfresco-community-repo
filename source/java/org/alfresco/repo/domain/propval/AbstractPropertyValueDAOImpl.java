@@ -833,7 +833,7 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
     protected abstract PropertyValueEntity createPropertyValue(Serializable value);
 
     @SuppressWarnings("unchecked")
-    protected Serializable convertPropertyIdSearchRows(List<PropertyIdSearchRow> rows)
+    public Serializable convertPropertyIdSearchRows(List<PropertyIdSearchRow> rows)
     {
         /*
          * The results are ordered by the root_prop_id, current_prop_id and value_prop_id.
@@ -843,8 +843,21 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
         final Map<Long, Serializable> values = new HashMap<Long, Serializable>(rows.size());
         List<PropertyLinkEntity> keyRows = new ArrayList<PropertyLinkEntity>(5);
         Serializable result = null;
+        Long rootPropId = null;
         for (PropertyIdSearchRow row : rows)
         {
+            // Check that we are handling a single root property
+            if (rootPropId == null)
+            {
+                rootPropId = row.getLinkEntity().getRootPropId();
+            }
+            else if (!rootPropId.equals(row.getLinkEntity().getRootPropId()))
+            {
+                throw new IllegalArgumentException(
+                        "The root_prop_id for the property search rows must not change: \n" +
+                        "   Rows: " + rows);
+            }
+            
             PropertyLinkEntity linkEntity = row.getLinkEntity();
             PropertyValueEntity valueEntity = row.getValueEntity();
             // Construct the value (Maps and Collections should be CONSTRUCTABLE)

@@ -26,6 +26,7 @@ package org.alfresco.repo.domain.propval;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
 
 import org.alfresco.repo.domain.CrcHelper;
 import org.alfresco.util.Pair;
@@ -195,4 +196,18 @@ public interface PropertyValueDAO
      * @param maxDepth          the maximum depth of collections and maps to iterate into
      */
     Pair<Long, Serializable> getOrCreatePropertyValue(Serializable value, int maxDepth);
+    
+    /**
+     * Utility method to convert property query results into the original value.  Note
+     * that the rows must all share the same root property ID.
+     * <p/>
+     * If the rows passed in don't constitute a valid, full property - they don't contain all
+     * the link entities for the property - then the result may be <tt>null</tt>.
+     * 
+     * @param rows              the search results for a single root property
+     * @return                  Returns the root property as originally persisted, or <tt>null</tt>
+     *                          if the rows don't represent a complete property
+     * @throws IllegalArgumentException     if rows don't all share the same root property ID
+     */
+    Serializable convertPropertyIdSearchRows(List<PropertyIdSearchRow> rows);
 }

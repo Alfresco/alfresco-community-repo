@@ -38,6 +38,7 @@ import org.alfresco.repo.audit.AuditState;
 import org.alfresco.repo.audit.hibernate.HibernateAuditDAO;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.domain.contentdata.ContentDataDAO;
+import org.alfresco.repo.domain.propval.PropertyIdSearchRow;
 import org.alfresco.repo.domain.propval.PropertyValueDAO;
 import org.alfresco.service.cmr.audit.AuditInfo;
 import org.alfresco.service.cmr.audit.AuditService.AuditQueryCallback;
@@ -298,15 +299,39 @@ public abstract class AbstractAuditDAOImpl implements AuditDAO
                 return;
             }
             // Get the value map
-            // TODO: Should be done with a nested resultmapping
-            Long auditValuesId = row.getAuditValuesId();
-            Pair<Long, Serializable> auditValuesPair = propertyValueDAO.getPropertyValueById(auditValuesId);
-            if (auditValuesPair == null)
+            Map<String, Serializable> auditValues;
+            List<PropertyIdSearchRow> propMapRows = row.getAuditValues();
+            if (propMapRows == null)
             {
-                // Ignore
-                return;
+                // Use the audit values ID
+                Long auditValuesId = row.getAuditValuesId();
+                Pair<Long, Serializable> auditValuesPair = propertyValueDAO.getPropertyValueById(auditValuesId);
+                if (auditValuesPair == null)
+                {
+                    // Ignore
+                    logger.warn("Audit entry not joined to audit properties: " + row);
+                    return;
+                }
+                auditValues = (Map<String, Serializable>) auditValuesPair.getSecond();
             }
-            Map<String, Serializable> auditValues = (Map<String, Serializable>) auditValuesPair.getSecond();
+            else
+            {
+                // Resolve the map
+                try
+                {
+                    auditValues = (Map<String, Serializable>) propertyValueDAO.convertPropertyIdSearchRows(propMapRows);
+                }
+                catch (ClassCastException e)
+                {
+                    logger.warn("Audit entry not linked to a Map<String, Serializable> value: " + row);
+                    return;
+                }
+                if (auditValues == null)
+                {
+                    logger.warn("Audit entry incompletely joined to audit properties: " + row);
+                    return;
+                }
+            }
             more = callback.handleAuditEntry(
                     row.getAuditEntryId(),
                     row.getAuditAppName(),

@@ -29,6 +29,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.alfresco.ibatis.RollupRowHandler;
 import org.alfresco.repo.domain.audit.AbstractAuditDAOImpl;
 import org.alfresco.repo.domain.audit.AuditApplicationEntity;
 import org.alfresco.repo.domain.audit.AuditEntryEntity;
@@ -175,25 +176,38 @@ public class AuditDAOImpl extends AbstractAuditDAOImpl
         params.setAuditFromTime(from);
         params.setAuditToTime(to);
         
+        // RowHandlers in RowHandlers: See 'groupBy' issue https://issues.apache.org/jira/browse/IBATIS-503
+        RowHandler shreddedRowHandler = new RowHandler()
+        {
+            public void handleRow(Object valueObject)
+            {
+                rowHandler.processResult((AuditQueryResult)valueObject);
+            }
+        };
+        RollupRowHandler rollupRowHandler = new RollupRowHandler(
+                new String[] {"auditEntryId"},
+                "auditValues",
+                shreddedRowHandler,
+                maxResults);
+        
         if (maxResults > 0)
         {
-            List<AuditQueryResult> rows = template.queryForList(SELECT_ENTRIES_SIMPLE, params, 0, maxResults);
+            // Calculate the maximum results required
+            int sqlMaxResults = (maxResults > 0 ? ((maxResults+1) * 20) : Integer.MAX_VALUE);
+            
+            List<AuditQueryResult> rows = template.queryForList(SELECT_ENTRIES_WITH_VALUES, params, 0, sqlMaxResults);
             for (AuditQueryResult row : rows)
             {
-                rowHandler.processResult(row);
+                rollupRowHandler.handleRow(row);
             }
+            // Don't process last result:
+            //    rollupRowHandler.processLastResults();
+            //    The last result may be incomplete
         }
         else
         {
-            RowHandler rowHandlerInternal = new RowHandler()
-            {
-                public void handleRow(Object valueObject)
-                {
-                    AuditQueryResult row = (AuditQueryResult) valueObject;
-                    rowHandler.processResult(row);
-                }
-            };
-            template.queryWithRowHandler(SELECT_ENTRIES_SIMPLE, params, rowHandlerInternal);
+            template.queryWithRowHandler(SELECT_ENTRIES_WITH_VALUES, params, rollupRowHandler);
+            rollupRowHandler.processLastResults();
         }
     }
 }

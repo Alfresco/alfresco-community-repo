@@ -43,34 +43,6 @@ public class PropertyIdSearchRow
         valueEntity = new PropertyValueEntity();
     }
     
-//    @Override
-//    public int hashCode()
-//    {
-//        return (int) rootCollectionPropId + (int) valuePropId;
-//    }
-//    
-//    @Override
-//    public boolean equals(Object obj)
-//    {
-//        if (this == obj)
-//        {
-//            return true;
-//        }
-//        else if (obj instanceof PropertyCollectionLinkEntity)
-//        {
-//            PropertyCollectionLinkEntity that = (PropertyCollectionLinkEntity) obj;
-//            return
-//                    this.rootCollectionPropId == that.rootCollectionPropId &&
-//                    this.currentCollectionPropId == that.currentCollectionPropId &&
-//                    this.valuePropId == that.valuePropId &&
-//                    this.keyPropId == that.keyPropId;
-//        }
-//        else
-//        {
-//            return false;
-//        }
-//    }
-//    
     @Override
     public String toString()
     {

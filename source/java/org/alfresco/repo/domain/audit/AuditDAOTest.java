@@ -37,6 +37,7 @@ import org.alfresco.repo.domain.contentdata.ContentDataDAO;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.cmr.audit.AuditService.AuditQueryCallback;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
@@ -125,6 +126,13 @@ public class AuditDAOTest extends TestCase
     
     public void testAuditEntry() throws Exception
     {
+        doAuditEntryImpl(1000);
+    }
+    /**
+     * @return              Returns the name of the application
+     */
+    private String doAuditEntryImpl(final int count) throws Exception
+    {
         final File file = AbstractContentTransformerTest.loadQuickTestFile("pdf");
         assertNotNull(file);
         final URL url = new URL("file:" + file.getAbsolutePath());
@@ -140,7 +148,6 @@ public class AuditDAOTest extends TestCase
         };
         final Long sessionId = txnHelper.doInTransaction(createAppCallback);
         
-        final int count = 1000;
         final String username = "alexi";
         RetryingTransactionCallback<Void> createEntryCallback = new RetryingTransactionCallback<Void>()
         {
@@ -161,5 +168,38 @@ public class AuditDAOTest extends TestCase
         System.out.println(
                 "Time for " + count + " entry creations was " +
                 ((double)(after - before)/(10E6)) + "ms");
+        // Done
+        return appName;
+    }
+    
+    public void testAuditQuery() throws Exception
+    {
+        // Some entries
+        doAuditEntryImpl(1);
+        
+        // Find everything, bug look for a specific key
+        final AuditQueryCallback callback = new AuditQueryCallback()
+        {
+            public boolean handleAuditEntry(
+                    Long entryId,
+                    String applicationName,
+                    String user,
+                    long time,
+                    Map<String, Serializable> values)
+            {
+                System.out.println(values);
+                return true;
+            }
+        };
+        
+        RetryingTransactionCallback<Void> findCallback = new RetryingTransactionCallback<Void>()
+        {
+            public Void execute() throws Throwable
+            {
+                auditDAO.findAuditEntries(callback, null, null, null, null, -1, "/a/b/c", null);
+                return null;
+            }
+        };
+        txnHelper.doInTransaction(findCallback);
     }
 }

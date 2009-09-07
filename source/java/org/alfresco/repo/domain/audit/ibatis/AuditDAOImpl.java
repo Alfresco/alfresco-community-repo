@@ -155,11 +155,8 @@ public class AuditDAOImpl extends AbstractAuditDAOImpl
     @Override
     protected void findAuditEntries(
             final AuditQueryRowHandler rowHandler,
-            String appName,
-            String user,
-            Long from,
-            Long to,
-            int maxResults)
+            String appName, String user, Long from, Long to, int maxResults,
+            String searchKey, String searchString)
     {
         AuditQueryParameters params = new AuditQueryParameters();
         if (appName != null)
@@ -175,6 +172,8 @@ public class AuditDAOImpl extends AbstractAuditDAOImpl
         }
         params.setAuditFromTime(from);
         params.setAuditToTime(to);
+        params.setSearchKey(searchKey);
+        params.setSearchValueString(searchString);
         
         // RowHandlers in RowHandlers: See 'groupBy' issue https://issues.apache.org/jira/browse/IBATIS-503
         RowHandler shreddedRowHandler = new RowHandler()

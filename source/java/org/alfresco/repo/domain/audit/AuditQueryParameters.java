@@ -41,6 +41,8 @@ public class AuditQueryParameters
     private Pair<String, Long> auditUserCrcPair;
     private Long auditFromTime;
     private Long auditToTime;
+    private String searchKey;
+    private String searchValueString;
     
     public AuditQueryParameters()
     {
@@ -56,6 +58,8 @@ public class AuditQueryParameters
           .append(", auditUserCrcPair=").append(auditUserCrcPair)
           .append(", auditFromTime").append(new Date(auditFromTime))
           .append(", auditToTime").append(new Date(auditToTime))
+          .append(", searchKey").append(searchKey)
+          .append(", searchValueString").append(searchValueString)
           .append("]");
         return sb.toString();
     }
@@ -118,5 +122,25 @@ public class AuditQueryParameters
     public void setAuditToTime(Long to)
     {
         this.auditToTime = to;
+    }
+
+    public String getSearchKey()
+    {
+        return searchKey;
+    }
+
+    public void setSearchKey(String searchKey)
+    {
+        this.searchKey = searchKey;
+    }
+
+    public String getSearchValueString()
+    {
+        return searchValueString;
+    }
+
+    public void setSearchValueString(String searchValueString)
+    {
+        this.searchValueString = searchValueString;
     }
 }

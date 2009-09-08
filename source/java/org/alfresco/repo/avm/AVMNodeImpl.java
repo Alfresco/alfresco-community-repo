@@ -23,7 +23,6 @@
 
 package org.alfresco.repo.avm;
 
-import java.io.Serializable;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -34,6 +33,7 @@ import org.alfresco.repo.domain.DbAccessControlList;
 import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.repo.security.permissions.ACLCopyMode;
 import org.alfresco.service.cmr.avm.AVMReadOnlyException;
+import org.alfresco.service.namespace.QName;
 import org.alfresco.util.GUID;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -42,7 +42,7 @@ import org.apache.commons.logging.LogFactory;
  * Base class for all repository file system like objects.
  * @author britt
  */
-public abstract class AVMNodeImpl implements AVMNode, Serializable
+public abstract class AVMNodeImpl implements AVMNode
 {
     private static Log    fgLogger = LogFactory.getLog(AVMNodeImpl.class);
     
@@ -72,7 +72,7 @@ public abstract class AVMNodeImpl implements AVMNode, Serializable
      * The rootness of this node.
      */
     private boolean fIsRoot;
-
+    
     /**
      * The ACL on this node.
      */
@@ -91,29 +91,28 @@ public abstract class AVMNodeImpl implements AVMNode, Serializable
     /**
      * The Aspects that belong to this node.
      */
-    private Set<Long> fAspects;
+    private Set<QName> fAspects;
     
-    private Map<Long, PropertyValue> fProperties;
+    private Map<QName, PropertyValue> fProperties;
     
     /**
      * Default constructor.
      */
     protected AVMNodeImpl()
     {
-        fAspects = new HashSet<Long>();
-        fProperties = new HashMap<Long, PropertyValue>();
     }
-
+    
     /**
      * Constructor used when creating a new concrete subclass instance.
      * @param store The AVMStore that owns this.
      */
     protected AVMNodeImpl(AVMStore store)
     {
-        fAspects = new HashSet<Long>();
-        fProperties = new HashMap<Long, PropertyValue>();
-        fVersionID = -1;
-        fIsRoot = false;
+        this();
+        
+        setVersionID(-1);
+        setIsRoot(false);
+        
         long time = System.currentTimeMillis();
         String user = 
             RawServices.Instance().getAuthenticationContext().getCurrentUserName();
@@ -121,14 +120,14 @@ public abstract class AVMNodeImpl implements AVMNode, Serializable
         {
             user = RawServices.Instance().getAuthenticationContext().getSystemUserName();
         }
-        fBasicAttributes = new BasicAttributesImpl(user,
+        setBasicAttributes(new BasicAttributesImpl(user,
                                                    user,
                                                    user,
                                                    time,
                                                    time,
-                                                   time);
-        fStoreNew = store;
-        fGUID = GUID.generate();
+                                                   time));
+        setStoreNew(store);
+        setGuid(GUID.generate());
     }
     
     /**
@@ -211,7 +210,7 @@ public abstract class AVMNodeImpl implements AVMNode, Serializable
         {
             return false;
         }
-        return fID == ((AVMNode)obj).getId();
+        return getId() == ((AVMNode)obj).getId();
     }
 
     /**
@@ -221,14 +220,14 @@ public abstract class AVMNodeImpl implements AVMNode, Serializable
     @Override
     public int hashCode()
     {
-        return (int)fID;
+        return (int)getId();
     }
     
     /**
-     * Set the object id.  For Hibernate.
+     * Set the object id.
      * @param id The id to set.
      */
-    protected void setId(long id)
+    public void setId(long id)
     {
         fID = id;
     }
@@ -261,10 +260,10 @@ public abstract class AVMNodeImpl implements AVMNode, Serializable
     }
     
     /**
-     * Set the basic attributes. For Hibernate.
+     * Set the basic attributes.
      * @param attrs
      */
-    protected void setBasicAttributes(BasicAttributes attrs)
+    public void setBasicAttributes(BasicAttributes attrs)
     {
         fBasicAttributes = attrs;
     }
@@ -284,23 +283,23 @@ public abstract class AVMNodeImpl implements AVMNode, Serializable
      */
     public boolean getIsNew()
     {
-        return fStoreNew != null;
+        return getStoreNew() != null;
     }
  
     /**
-     * Set the version for concurrency control
-     * @param vers
+     * Set the version (for concurrency control).
+     * @param The version for optimistic locks.
      */
-    protected void setVers(long vers)
+    public void setVers(long vers)
     {
         fVers = vers;
     }
     
     /**
-     * Get the version for concurrency control.
-     * @return The version for optimistic locks.
+     * Get the version (for concurrency control).
+     * @return vers  The version for optimistic locks.
      */
-    protected long getVers()
+    public long getVers()
     {
         return fVers;
     }
@@ -337,8 +336,8 @@ public abstract class AVMNodeImpl implements AVMNode, Serializable
         {
             user = RawServices.Instance().getAuthenticationContext().getSystemUserName();
         }
-        fBasicAttributes.setModDate(System.currentTimeMillis());
-        fBasicAttributes.setLastModifier(user);
+        getBasicAttributes().setModDate(System.currentTimeMillis());
+        getBasicAttributes().setLastModifier(user);
     }
     
     /**
@@ -347,11 +346,13 @@ public abstract class AVMNodeImpl implements AVMNode, Serializable
      */
     protected void copyProperties(AVMNode other)
     {
-        fProperties = new HashMap<Long, PropertyValue>();
-        for (Map.Entry<Long, PropertyValue> entry : other.getProperties().entrySet())
+        Map<QName, PropertyValue> props = new HashMap<QName, PropertyValue>();
+        for (Map.Entry<QName, PropertyValue> entry : other.getProperties().entrySet())
         {
-            fProperties.put(entry.getKey(), entry.getValue());
+            props.put(entry.getKey(), entry.getValue());
         }
+        
+        setProperties(props);
     }
     
     /**
@@ -360,14 +361,15 @@ public abstract class AVMNodeImpl implements AVMNode, Serializable
      */
     protected void copyAspects(AVMNode other)
     {
-        fAspects = new HashSet<Long>(other.getAspects());
+        Set<QName> aspects = new HashSet<QName>(other.getAspects());
+        setAspects(aspects);
     }
     
     protected void copyCreationAndOwnerBasicAttributes(AVMNode other)
     {
-        fBasicAttributes.setCreateDate(other.getBasicAttributes().getCreateDate());
-        fBasicAttributes.setCreator(other.getBasicAttributes().getCreator());
-        fBasicAttributes.setOwner(other.getBasicAttributes().getOwner());
+        getBasicAttributes().setCreateDate(other.getBasicAttributes().getCreateDate());
+        getBasicAttributes().setCreator(other.getBasicAttributes().getCreator());
+        getBasicAttributes().setOwner(other.getBasicAttributes().getOwner());
     }
     
     protected void copyACLs(AVMNode other, Long parentAcl, ACLCopyMode mode)
@@ -396,20 +398,23 @@ public abstract class AVMNodeImpl implements AVMNode, Serializable
      * @param name The name of the property.
      * @param value The value to set.
      */
-    public void setProperty(Long qnameEntityId, PropertyValue value)
+    public void setProperty(QName qname, PropertyValue value)
     {
         if (DEBUG)
         {
             checkReadOnly();
         }
-        fProperties.put(qnameEntityId, value);
+        
+        getProperties().put(qname, value);
+        
+        AVMDAOs.Instance().fAVMNodeDAO.createOrUpdateProperty(this.getId(), qname, value);
     }
     
-    public void addProperties(Map<Long, PropertyValue> properties)
+    public void addProperties(Map<QName, PropertyValue> properties)
     {
-        for (Map.Entry<Long, PropertyValue> entry : properties.entrySet())
+        for (Map.Entry<QName, PropertyValue> entry : properties.entrySet())
         {
-            fProperties.put(entry.getKey(), entry.getValue());
+            setProperty(entry.getKey(), entry.getValue());
         }
     }
     
@@ -417,9 +422,14 @@ public abstract class AVMNodeImpl implements AVMNode, Serializable
      * Set a collection of properties on this node.
      * @param properties The Map of QNames to PropertyValues.
      */
-    public void setProperties(Map<Long, PropertyValue> properties)
+    public void setProperties(Map<QName, PropertyValue> properties)
     {
         fProperties = properties;
+        
+        for (Map.Entry<QName, PropertyValue> entry : properties.entrySet())
+        {
+            setProperty(entry.getKey(), entry.getValue());
+        }
     }
     
     /**
@@ -427,16 +437,20 @@ public abstract class AVMNodeImpl implements AVMNode, Serializable
      * @param name The name of the property.
      * @return The PropertyValue or null if non-existent.
      */
-    public PropertyValue getProperty(Long qnameEntityId)
+    public PropertyValue getProperty(QName qname)
     {
-        return fProperties.get(qnameEntityId);
+        return getProperties().get(qname);
     }
     
     /**
      * {@inheritDoc}
      */
-    public Map<Long, PropertyValue> getProperties()
+    public Map<QName, PropertyValue> getProperties()
     {
+        if (fProperties == null)
+        {
+            fProperties = AVMDAOs.Instance().fAVMNodeDAO.getProperties(getId());
+        }
         return fProperties;
     }
 
@@ -444,13 +458,15 @@ public abstract class AVMNodeImpl implements AVMNode, Serializable
      * Delete a property from this node.
      * @param name The name of the property.
      */
-    public void deleteProperty(Long qnameEntityId)
+    public void deleteProperty(QName qname)
     {
         if (DEBUG)
         {
             checkReadOnly();
         }
-        fProperties.remove(qnameEntityId);
+        getProperties().remove(qname);
+        
+        AVMDAOs.Instance().fAVMNodeDAO.deleteProperty(getId(), qname);
     }
     
     /**
@@ -458,7 +474,9 @@ public abstract class AVMNodeImpl implements AVMNode, Serializable
      */
     public void deleteProperties()
     {
-        fProperties.clear();
+        getProperties().clear();
+        
+        AVMDAOs.Instance().fAVMNodeDAO.deleteProperties(getId());
     }
     
     /**
@@ -524,8 +542,12 @@ public abstract class AVMNodeImpl implements AVMNode, Serializable
     /* (non-Javadoc)
      * @see org.alfresco.repo.avm.AVMNode#getAspects()
      */
-    public Set<Long> getAspects()
+    public Set<QName> getAspects()
     {
+        if (fAspects == null)
+        {
+            fAspects = AVMDAOs.Instance().fAVMNodeDAO.getAspects(getId());
+        }
         return fAspects;
     }
     
@@ -533,8 +555,28 @@ public abstract class AVMNodeImpl implements AVMNode, Serializable
      * Set the aspects on this node.
      * @param aspects
      */
-    public void setAspects(Set<Long> aspects)
+    public void setAspects(Set<QName> aspects)
     {
         fAspects = aspects;
+        
+        if ((aspects != null) && (aspects.size() > 0))
+        {
+            for (QName aspectQName : aspects)
+            {
+                AVMDAOs.Instance().fAVMNodeDAO.createAspect(this.getId(), aspectQName);
+            }
+        }
+    }
+    
+    public void addAspect(QName aspectQName)
+    {
+        fAspects = null;
+        AVMDAOs.Instance().fAVMNodeDAO.createAspect(this.getId(), aspectQName);
+    }
+    
+    public void removeAspect(QName aspectQName)
+    {
+        fAspects = null;
+        AVMDAOs.Instance().fAVMNodeDAO.deleteAspect(this.getId(), aspectQName);
     }
 }

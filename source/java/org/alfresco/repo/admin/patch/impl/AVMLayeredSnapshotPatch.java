@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -29,9 +29,9 @@ import java.util.List;
 
 import org.alfresco.i18n.I18NUtil;
 import org.alfresco.repo.admin.patch.AbstractPatch;
-import org.alfresco.repo.avm.AVMNodeDAO;
-import org.alfresco.repo.avm.LayeredDirectoryNode;
-import org.alfresco.repo.avm.LayeredFileNode;
+import org.alfresco.repo.domain.avm.AVMNodeDAO;
+import org.alfresco.repo.domain.avm.AVMNodeEntity;
+import org.alfresco.repo.domain.patch.PatchDAO;
 
 /**
  * Patch for changes to Layered Node path traversal.
@@ -40,6 +40,7 @@ import org.alfresco.repo.avm.LayeredFileNode;
 public class AVMLayeredSnapshotPatch extends AbstractPatch
 {
     private AVMNodeDAO fAVMNodeDAO;
+    private PatchDAO patchDAO;
     
     private static final String MSG_SUCCESS = "patch.AVMLayeredSnapshot.result";
     
@@ -47,9 +48,14 @@ public class AVMLayeredSnapshotPatch extends AbstractPatch
     {
     }
     
-    public void setAvmNodeDAO(AVMNodeDAO dao)
+    public void setAvmNodeDao(AVMNodeDAO dao)
     {
-        fAVMNodeDAO = dao;   
+        fAVMNodeDAO = dao;
+    }
+    
+    public void setPatchDao(PatchDAO dao)
+    {
+        patchDAO = dao;
     }
     
     /* (non-Javadoc)
@@ -60,29 +66,31 @@ public class AVMLayeredSnapshotPatch extends AbstractPatch
     {
         while (true)
         {
-            List<LayeredDirectoryNode> batch = fAVMNodeDAO.getNullVersionLayeredDirectories(200);
-            for (LayeredDirectoryNode node : batch)
+            List<AVMNodeEntity> batch = patchDAO.getNullVersionLayeredDirectories(200);
+            for (AVMNodeEntity nodeEntity : batch)
             {
-                node.setIndirectionVersion(-1);
+                nodeEntity.setIndirectionVersion(-1);
+                
+                fAVMNodeDAO.updateNode(nodeEntity);
             }
             if (batch.size() == 0)
             {
                 break;
             }
-            fAVMNodeDAO.flush();
         }
         while (true)
         {
-            List<LayeredFileNode> batch = fAVMNodeDAO.getNullVersionLayeredFiles(200);
-            for (LayeredFileNode node : batch)
+            List<AVMNodeEntity> batch = patchDAO.getNullVersionLayeredFiles(200);
+            for (AVMNodeEntity nodeEntity : batch)
             {
-                node.setIndirectionVersion(-1);
+                nodeEntity.setIndirectionVersion(-1);
+                
+                fAVMNodeDAO.updateNode(nodeEntity);
             }
             if (batch.size() == 0)
             {
                 break;
             }
-            fAVMNodeDAO.flush();
         }
         return I18NUtil.getMessage(MSG_SUCCESS);
     }

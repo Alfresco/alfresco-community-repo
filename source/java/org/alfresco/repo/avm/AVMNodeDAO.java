@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -23,6 +23,11 @@
 package org.alfresco.repo.avm;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import org.alfresco.repo.domain.PropertyValue;
+import org.alfresco.service.namespace.QName;
 
 /**
  * DAO for AVMNodes interface.
@@ -40,7 +45,23 @@ public interface AVMNodeDAO
      * @param node The node to delete.
      */
     public void delete(AVMNode node);
-
+    
+    public void createAspect(long nodeId, QName aspectQName);
+    
+    public void deleteAspect(long nodeId, QName aspectQName);
+    
+    public void deleteAspects(long nodeId);
+    
+    public Set<QName> getAspects(long nodeId);
+    
+    public void createOrUpdateProperty(long nodeId, QName propQName, PropertyValue value);
+    
+    public void deleteProperty(long nodeId, QName propQName);
+    
+    public void deleteProperties(long nodeId);
+    
+    public Map<QName, PropertyValue> getProperties(long nodeId);
+    
     /**
      * Get by ID.
      * @param id The id to get.
@@ -60,7 +81,10 @@ public interface AVMNodeDAO
      * @param node The node.
      */
     public void update(AVMNode node);
-
+    
+    // update optimisation, eg. when creating files
+    public void updateModTimeAndGuid(AVMNode node);
+    
     /**
      * Get the ancestor of a node.
      * @param node The node whose ancestor is desired.
@@ -82,22 +106,6 @@ public interface AVMNodeDAO
      */
     public List<AVMNode> getOrphans(int batchSize);
 
-    /**
-     * Get all content urls in the AVM Repository.
-     * @param contentUrlHandler the handler that will be called with the URLs
-     */
-    public void getContentUrls(ContentUrlHandler handler);
-
-    /**
-     * A callback handler for iterating over the content URLs
-     * 
-     * @author Derek Hulley
-     * @since 2.0
-     */
-    public interface ContentUrlHandler
-    {
-        void handle(String contentUrl);
-    }
     
     /**
      * Get all the nodes that are new in the given store.
@@ -105,14 +113,7 @@ public interface AVMNodeDAO
      * @return A List of AVMNodes.
      */
     public List<AVMNode> getNewInStore(AVMStore store);
-
-    /**
-     * Get the id's of all AVMNodes new in a given store.
-     * @param store
-     * @return
-     */
-    public List<Long> getNewInStoreIDs(AVMStore store);
-
+    
     /**
      * Clear newInStore field for a store. (Snapshot)
      * @param store
@@ -125,50 +126,40 @@ public interface AVMNodeDAO
      * @return
      */
     public List<Long> getNewLayeredInStoreIDs(AVMStore store);
+    
+    public List<Layered> getNewLayeredInStore(AVMStore store);
 
     /**
      * Inappropriate hack to get Hibernate to play nice.
+     * 
+     * @deprecated
      */
     public void flush();
 
     /**
-     * Get a batch
-     * @return An iterator over all nodes.
-     */
-    public List<AVMNode> getEmptyGUIDS(int count);
-
-    /**
-     * Get a batch of LayeredDirectories which have null indirectionVersions.
-     * @param count
-     * @return
-     */
-    public List<LayeredDirectoryNode> getNullVersionLayeredDirectories(int count);
-
-    /**
-     * Get a batch of LayeredFiles which have null indirectionVersions.
-     * @param count
-     * @return
-     */
-    public List<LayeredFileNode> getNullVersionLayeredFiles(int count);
-
-    /**
      * Evict an AVMNode that is no longer going to be used.
      * @param node
+     * 
+     * @deprecated
      */
     public void evict(AVMNode node);
 
     /**
-     * Clear the hibernate session cache.
+     * Clear the cache.
      */
     public void clear();
 
     /**
      * Turn off 2nd level caching.
+     * 
+     * @deprecated
      */
     public void noCache();
 
     /**
      * Turn on 2nd level caching.
+     * 
+     * @deprecated
      */
     public void yesCache();
 }

@@ -42,7 +42,7 @@ import org.alfresco.util.Pair;
  * A plain directory.  No monkey tricks except for possiblyCopy.
  * @author britt
  */
-class PlainDirectoryNodeImpl extends DirectoryNodeImpl implements PlainDirectoryNode
+public class PlainDirectoryNodeImpl extends DirectoryNodeImpl implements PlainDirectoryNode
 {
     static final long serialVersionUID = 9423813734583003L;
 
@@ -54,27 +54,30 @@ class PlainDirectoryNodeImpl extends DirectoryNodeImpl implements PlainDirectory
     {
         super(store);
         setVersionID(1);
-        AVMDAOs.Instance().fAVMNodeDAO.save(this);
-        AVMDAOs.Instance().fAVMNodeDAO.flush();
     }
-
+    
     /**
-     * Anonymous constructor.
+     * Default constructor.
      */
-    protected PlainDirectoryNodeImpl()
+    public PlainDirectoryNodeImpl()
     {
     }
-
+    
     /**
      * Copy like constructor.
      * @param other The other directory.
      * @param repos The AVMStore Object that will own us.
      */
-    @SuppressWarnings("unchecked")
     public PlainDirectoryNodeImpl(PlainDirectoryNode other,
                                   AVMStore store, Long parentAcl, ACLCopyMode mode)
     {
         super(store);
+        
+        setVersionID(other.getVersionID() + 1);
+        
+        copyACLs(other, parentAcl, mode);
+        copyCreationAndOwnerBasicAttributes(other);
+        
         AVMDAOs.Instance().fAVMNodeDAO.save(this);
         for (ChildEntry child : AVMDAOs.Instance().fChildEntryDAO.getByParent(other, null))
         {
@@ -83,30 +86,16 @@ class PlainDirectoryNodeImpl extends DirectoryNodeImpl implements PlainDirectory
                                                      child.getChild());
             AVMDAOs.Instance().fChildEntryDAO.save(newChild);
         }
-        setVersionID(other.getVersionID() + 1);
-        AVMDAOs.Instance().fAVMNodeDAO.flush();
+        
         copyProperties(other);
         copyAspects(other);
-        copyACLs(other, parentAcl, mode);
-        copyCreationAndOwnerBasicAttributes(other);
     }
-
-    /**
-     * Does this directory directly contain the given node.
-     * @param node The node to check.
-     * @return Whether it was found.
-     */
-    public boolean directlyContains(AVMNode node)
-    {
-        return AVMDAOs.Instance().fChildEntryDAO.getByParentChild(this, node) != null;
-    }
-
+    
     /**
      * Get a directory listing.
      * @param lPath The lookup path.
      * @return The listing.
      */
-    @SuppressWarnings("unchecked")
     public Map<String, AVMNode> getListing(Lookup lPath, boolean includeDeleted)
     {
         return getListing(lPath, null, includeDeleted);
@@ -119,7 +108,6 @@ class PlainDirectoryNodeImpl extends DirectoryNodeImpl implements PlainDirectory
      * @param includeDeleted Include deleted nodes.
      * @return The listing.
      */
-    @SuppressWarnings("unchecked")
     public Map<String, AVMNode> getListing(Lookup lPath, String childNamePattern, boolean includeDeleted)
     {
         Map<String, AVMNode> result = new HashMap<String, AVMNode>();
@@ -138,7 +126,7 @@ class PlainDirectoryNodeImpl extends DirectoryNodeImpl implements PlainDirectory
             {
                 continue;
             }
-            result.put(child.getKey().getName(), AVMNodeUnwrapper.Unwrap(child.getChild()));
+            result.put(child.getKey().getName(), child.getChild());
         }
         return result;
     }
@@ -228,7 +216,6 @@ class PlainDirectoryNodeImpl extends DirectoryNodeImpl implements PlainDirectory
      * @param includeDeleted Whether to lookup deleted nodes.
      * @return The child or null.
      */
-    @SuppressWarnings("unchecked")
     public Pair<AVMNode, Boolean> lookupChild(Lookup lPath, String name, boolean includeDeleted)
     {
         ChildKey key = new ChildKey(this, name);
@@ -241,10 +228,7 @@ class PlainDirectoryNodeImpl extends DirectoryNodeImpl implements PlainDirectory
         {
             return null;
         }
-        // We're doing the hand unrolling of the proxy because
-        // Hibernate/CGLIB proxies are broken.
-
-        Pair<AVMNode, Boolean> result = new Pair<AVMNode, Boolean>(AVMNodeUnwrapper.Unwrap(entry.getChild()), true);
+        Pair<AVMNode, Boolean> result = new Pair<AVMNode, Boolean>(entry.getChild(), true);
         return result;
     }
 
@@ -276,7 +260,6 @@ class PlainDirectoryNodeImpl extends DirectoryNodeImpl implements PlainDirectory
      * @param lPath The path by which this was found.
      * @param name The name of the child to remove.
      */
-    @SuppressWarnings("unchecked")
     public void removeChild(Lookup lPath, String name)
     {
         if (DEBUG)
@@ -297,15 +280,14 @@ class PlainDirectoryNodeImpl extends DirectoryNodeImpl implements PlainDirectory
             {
                 DeletedNodeImpl ghost = new DeletedNodeImpl(lPath.getAVMStore(), child.getAcl());
                 AVMDAOs.Instance().fAVMNodeDAO.save(ghost);
-                AVMDAOs.Instance().fAVMNodeDAO.flush();
+                
                 ghost.setAncestor(child);
                 ghost.setDeletedType(child.getType());
                 ghost.copyCreationAndOwnerBasicAttributes(child);
+                
+                AVMDAOs.Instance().fAVMNodeDAO.update(ghost);
+                
                 putChild(name, ghost);
-            }
-            else
-            {
-                AVMDAOs.Instance().fAVMNodeDAO.flush();
             }
         }
     }
@@ -328,7 +310,6 @@ class PlainDirectoryNodeImpl extends DirectoryNodeImpl implements PlainDirectory
             AVMDAOs.Instance().fChildEntryDAO.delete(existing);
         }
         ChildEntry entry = new ChildEntryImpl(key, node);
-        AVMDAOs.Instance().fAVMNodeDAO.flush();
         AVMDAOs.Instance().fChildEntryDAO.save(entry);
     }
 
@@ -357,6 +338,8 @@ class PlainDirectoryNodeImpl extends DirectoryNodeImpl implements PlainDirectory
             newMe = new LayeredDirectoryNodeImpl(this, lPath.getAVMStore(), lPath,
                                                  lPath.isInThisLayer(), parentAclId, ACLCopyMode.COPY);
             ((LayeredDirectoryNodeImpl)newMe).setLayerID(lPath.getTopLayer().getLayerID());
+            
+            AVMDAOs.Instance().fAVMNodeDAO.update(newMe);
         }
         else
         {
@@ -541,8 +524,6 @@ class PlainDirectoryNodeImpl extends DirectoryNodeImpl implements PlainDirectory
             }
             // Get rid of the DELETED_NODE child.
             AVMDAOs.Instance().fChildEntryDAO.delete(child);
-            // Another &*#*&#$ flush.
-            AVMDAOs.Instance().fAVMNodeDAO.flush();
         }
         // Make the new entry and save.
         ChildEntry newChild = new ChildEntryImpl(key, node);

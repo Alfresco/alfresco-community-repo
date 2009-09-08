@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -24,6 +24,7 @@
 package org.alfresco.repo.avm;
 
 import org.alfresco.repo.domain.PropertyValue;
+import org.alfresco.service.namespace.QName;
 
 /**
  * Arbitrary properties associated with AVMStores.
@@ -46,16 +47,16 @@ public interface AVMStoreProperty
     /**
      * Set the property type.
      * 
-     * @param qnameId       the ID of the property QName
+     * @param qname       the store property QName
      */
-    public void setQnameId(Long qnameId);
+    public void setQname(QName qname);
     
     /**
      * Get the property type.
      * 
-     * @return              returns the ID of the property QName
+     * @return              returns the store property QName
      */
-    public Long getQnameId();
+    public QName getQname();
     
     /**
      * Set the actual property value.

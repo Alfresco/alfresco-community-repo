@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2008 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -627,6 +627,8 @@ public class AVMSyncServiceImpl implements AVMSyncService
             AVMDAOs.Instance().fAVMNodeDAO.evict(node);
             node = AVMDAOs.Instance().fAVMNodeDAO.getByID(node.getId());
             node.setAcl(acl);
+            
+            AVMDAOs.Instance().fAVMNodeDAO.update(node);
         }
         else
         {

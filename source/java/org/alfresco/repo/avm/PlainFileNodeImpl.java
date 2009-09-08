@@ -35,13 +35,14 @@ import org.alfresco.service.cmr.avm.AVMException;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentReader;
+import org.alfresco.service.namespace.QName;
 
 
 /**
  * A plain old file. Contains a Content object.
  * @author britt
  */
-class PlainFileNodeImpl extends FileNodeImpl implements PlainFileNode
+public class PlainFileNodeImpl extends FileNodeImpl implements PlainFileNode
 {
     static final long serialVersionUID = 8720376837929735294L;
 
@@ -68,10 +69,10 @@ class PlainFileNodeImpl extends FileNodeImpl implements PlainFileNode
     /**
      * Default constructor.
      */
-    protected PlainFileNodeImpl()
+    public PlainFileNodeImpl()
     {
     }
-
+    
     /**
      * Make one from just an AVMStore.
      * This is the constructor used when a brand new plain file is being made.
@@ -80,9 +81,7 @@ class PlainFileNodeImpl extends FileNodeImpl implements PlainFileNode
     public PlainFileNodeImpl(AVMStore store)
     {
         super(store);
-        setVersionID(1);        
-        AVMDAOs.Instance().fAVMNodeDAO.save(this);
-        AVMDAOs.Instance().fAVMNodeDAO.flush();
+        setVersionID(1);
     }
     
     /**
@@ -98,12 +97,14 @@ class PlainFileNodeImpl extends FileNodeImpl implements PlainFileNode
         // layered files.
         setContentData(other.getContentData(null));
         setVersionID(other.getVersionID() + 1);
-        AVMDAOs.Instance().fAVMNodeDAO.save(this);
-        AVMDAOs.Instance().fAVMNodeDAO.flush();
-        copyProperties(other);
-        copyAspects(other);
+        
         copyACLs(other, parentAcl, mode);
         copyCreationAndOwnerBasicAttributes(other);
+        
+        AVMDAOs.Instance().fAVMNodeDAO.save(this);
+        
+        copyProperties(other);
+        copyAspects(other);
     }
 
     // TODO Is there a reason for passing all these parameters instead
@@ -118,8 +119,8 @@ class PlainFileNodeImpl extends FileNodeImpl implements PlainFileNode
     public PlainFileNodeImpl(AVMStore store,
                              BasicAttributes attrs,
                              ContentData content,
-                             Map<Long, PropertyValue> props,
-                             Set<Long> aspects,
+                             Map<QName, PropertyValue> props,
+                             Set<QName> aspects,
                              DbAccessControlList acl,
                              int versionID, Long parentAcl, ACLCopyMode mode)
     {
@@ -127,14 +128,16 @@ class PlainFileNodeImpl extends FileNodeImpl implements PlainFileNode
         setContentData(content);
         setBasicAttributes(attrs);
         setVersionID(versionID + 1);
-        AVMDAOs.Instance().fAVMNodeDAO.save(this);
-        AVMDAOs.Instance().fAVMNodeDAO.flush();
-        addProperties(props);
-        setAspects(new HashSet<Long>(aspects));
+        
         if (acl != null)
         {
             setAcl(acl.getCopy(parentAcl, mode));
         }
+        
+        AVMDAOs.Instance().fAVMNodeDAO.save(this);
+        
+        addProperties(props);
+        setAspects(new HashSet<QName>(aspects));
     }
     
     /**
@@ -325,11 +328,11 @@ class PlainFileNodeImpl extends FileNodeImpl implements PlainFileNode
      */
     private long getFileLength()
     {
-        if (fContentURL == null)
+        if (getContentURL() == null)
         {
             return 0L;
         }
-        ContentReader reader = RawServices.Instance().getContentStore().getReader(fContentURL);
+        ContentReader reader = RawServices.Instance().getContentStore().getReader(getContentURL());
         return reader.getSize();
     }
 
@@ -366,14 +369,14 @@ class PlainFileNodeImpl extends FileNodeImpl implements PlainFileNode
      */
     public void setContentData(ContentData contentData)
     {
-        fContentURL = contentData.getContentUrl();
-        fMimeType = contentData.getMimetype();
-        if (fMimeType == null)
+        setContentURL(contentData.getContentUrl());
+        setMimeType(contentData.getMimetype());
+        if (getMimeType() == null)
         {
             throw new AVMException("Null mime type.");
         }
-        fEncoding = contentData.getEncoding();
-        fLength = contentData.getSize();
+        setEncoding(contentData.getEncoding());
+        setLength(contentData.getSize());
     }
 
     /**
@@ -391,7 +394,7 @@ class PlainFileNodeImpl extends FileNodeImpl implements PlainFileNode
      */
     public ContentData getContentData()
     {
-        return new ContentData(fContentURL, fMimeType, fLength, fEncoding);
+        return new ContentData(getContentURL(), getMimeType(), getLength(), getEncoding());
     }
 }
 

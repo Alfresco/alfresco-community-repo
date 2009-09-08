@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -29,8 +29,9 @@ import java.util.List;
 
 import org.alfresco.i18n.I18NUtil;
 import org.alfresco.repo.admin.patch.AbstractPatch;
-import org.alfresco.repo.avm.AVMNode;
-import org.alfresco.repo.avm.AVMNodeDAO;
+import org.alfresco.repo.domain.avm.AVMNodeDAO;
+import org.alfresco.repo.domain.avm.AVMNodeEntity;
+import org.alfresco.repo.domain.patch.PatchDAO;
 import org.alfresco.util.GUID;
 
 /**
@@ -40,6 +41,7 @@ import org.alfresco.util.GUID;
 public class AVMGuidPatch extends AbstractPatch
 {
     private AVMNodeDAO fAVMNodeDAO;
+    private PatchDAO patchDAO;
     
     private static final String MSG_SUCCESS = "patch.AVMGuidPatch.result";
     
@@ -52,6 +54,11 @@ public class AVMGuidPatch extends AbstractPatch
         fAVMNodeDAO = dao;
     }
     
+    public void setPatchDao(PatchDAO dao)
+    {
+        patchDAO = dao;
+    }
+    
     /* (non-Javadoc)
      * @see org.alfresco.repo.admin.patch.AbstractPatch#applyInternal()
      */
@@ -60,16 +67,17 @@ public class AVMGuidPatch extends AbstractPatch
     {
         while (true)
         {
-            List<AVMNode> batch = fAVMNodeDAO.getEmptyGUIDS(200);
-            for (AVMNode node : batch)
+            List<AVMNodeEntity> batch = patchDAO.getEmptyGUIDS(200);
+            for (AVMNodeEntity nodeEntity : batch)
             {
-                node.setGuid(GUID.generate());
+                nodeEntity.setGuid(GUID.generate());
+                
+                fAVMNodeDAO.updateNode(nodeEntity);
             }
             if (batch.size() == 0)
             {
                 break;
             }
-            fAVMNodeDAO.flush();
         }
         
         return I18NUtil.getMessage(MSG_SUCCESS);

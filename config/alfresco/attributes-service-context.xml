@@ -4,6 +4,29 @@
 
 <beans>
 
+   <bean id="attrSessionSizeResourceInterceptor" class="org.alfresco.repo.transaction.SingleEntryTransactionResourceInterceptor" >
+      <property name="methodResourceManagers">
+         <list>
+            <ref bean="attrSessionSizeResourceManager"></ref>
+         </list>
+      </property>
+      <property name="elapsedTimeBeforeActivationMillis">
+         <value>500</value>
+      </property>
+      <property name="resourceManagerCallFrequencyMillis">
+         <value>250</value>
+      </property>
+   </bean>
+
+   <bean id="attrSessionSizeResourceManager" class="org.alfresco.repo.domain.hibernate.SessionSizeResourceManager">
+      <property name="sessionFactory">
+         <ref bean="sessionFactory" />
+      </property>
+      <property name="threshold">
+         <value>100</value>
+      </property>
+   </bean>
+   
     <bean id="attributeService" class="org.springframework.aop.framework.ProxyFactoryBean">
       <property name="proxyInterfaces">
          <value>org.alfresco.service.cmr.attributes.AttributeService</value>
@@ -13,7 +36,7 @@
       </property>
       <property name="interceptorNames">
          <list>
-            <value>avmSessionSizeResourceInterceptor</value>
+            <value>attrSessionSizeResourceInterceptor</value>
          </list>
       </property>
    </bean>

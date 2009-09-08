@@ -658,7 +658,10 @@
         <property name="fixesToSchema"><value>51</value></property>
         <property name="targetSchema"><value>52</value></property>
         <property name="avmNodeDao">
-            <ref bean="avmNodeDAO"/>
+            <ref bean="newAvmNodeDAO"/>
+        </property>
+        <property name="patchDao">
+            <ref bean="patchDAO"/>
         </property>
     </bean>
 
@@ -704,8 +707,11 @@
         <property name="fixesFromSchema"><value>0</value></property>
         <property name="fixesToSchema"><value>55</value></property>
         <property name="targetSchema"><value>56</value></property>
-        <property name="avmNodeDAO">
-            <ref bean="avmNodeDAO"/>
+        <property name="avmNodeDao">
+            <ref bean="newAvmNodeDAO"/>
+        </property>
+        <property name="patchDao">
+            <ref bean="patchDAO"/>
         </property>
     </bean>
 
@@ -1142,28 +1148,6 @@
         </property>
     </bean>
     
-    <!-- NOTE: for default WCM stores, superceded by patch.resetWCMToGroupBasedPermissions -->
-    <!--
-    <bean id="patch.updateAvmPermissions" class="org.alfresco.repo.admin.patch.impl.AVMPermissionsPatch" parent="basePatch" >
-        <property name="id"><value>patch.updateAvmPermissions</value></property>
-        <property name="description"><value>patch.updateAvmPermissions.description</value></property>
-        <property name="fixesFromSchema"><value>0</value></property>
-        <property name="fixesToSchema"><value>119</value></property>
-        <property name="targetSchema"><value>120</value></property>
-        <property name="accessControlListDao">
-            <ref bean="avmACLDAO" />
-        </property>
-         <property name="aclDaoComponent">
-            <ref bean="aclDaoComponent" />
-        </property>
-        <property name="dependsOn" >
-            <list>
-                <ref bean="patch.updateAvmPermissionData" />
-            </list>
-        </property>
-    </bean>
-    -->
-    
     <bean id="patch.db-V2.2-0-CreateMissingTables" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
         <property name="id"><value>patch.db-V2.2-0-CreateMissingTables</value></property>
         <property name="description"><value>patch.schemaUpgradeScript.description</value></property>
@@ -1227,55 +1211,6 @@
         </property>
     </bean>
     
-    <!-- NOTE: for default WCM stores, superceded by patch.resetWCMToGroupBasedPermissions -->
-    <!--
-    <bean id="patch.wcmPermissionPatch" class="org.alfresco.repo.admin.patch.impl.WCMPermissionPatch" parent="basePatch" >
-        <property name="id"><value>patch.wcmPermissionPatch</value></property>
-        <property name="description"><value>patch.wcmPermissionPatch.description</value></property>
-        <property name="fixesFromSchema"><value>0</value></property>
-        <property name="fixesToSchema"><value>121</value></property>
-        <property name="targetSchema"><value>122</value></property>
-        <property name="avmService">
-            <ref bean="avmService" />
-        </property>
-        <property name="permissionService">
-            <ref bean="permissionService" />
-        </property>
-        <property name="aclDaoComponent">
-            <ref bean="aclDaoComponent" />
-        </property>
-        <property name="avmSnapShotTriggeredIndexingMethodInterceptor">
-            <ref bean="avmSnapShotTriggeredIndexingMethodInterceptor" />
-        </property>
-    </bean>
-    -->
-    
-    
-    <!-- NOTE: for default WCM stores, superceded by patch.resetWCMToGroupBasedPermissions -->
-    <!--
-    <bean id="patch.wcmPostPermissionSnapshotPatch" class="org.alfresco.repo.admin.patch.impl.WCMPostPermissionSnapshotPatch" parent="basePatch" >
-        <property name="id"><value>patch.wcmPostPermissionSnapshotPatch</value></property>
-        <property name="description"><value>patch.wcmPostPermissionSnapshotPatch.description</value></property>
-        <property name="fixesFromSchema"><value>0</value></property>
-        <property name="fixesToSchema"><value>122</value></property>
-        <property name="targetSchema"><value>123</value></property>
-        <property name="avmService">
-            <ref bean="AVMService" />
-        </property>
-        <property name="avmSnapShotTriggeredIndexingMethodInterceptor">
-            <ref bean="avmSnapShotTriggeredIndexingMethodInterceptor" />
-        </property>
-        <property name="aclDaoComponent">
-            <ref bean="aclDaoComponent" />
-        </property>
-        <property name="dependsOn" >
-            <list>
-                <ref bean="patch.wcmPermissionPatch" />
-            </list>
-        </property>
-    </bean>
-    -->
-
     <bean id="patch.avmWebProjectInheritPermissions02" class="org.alfresco.repo.admin.patch.impl.AVMWebProjectInheritPermissionsPatch" parent="basePatch">
         <property name="id"><value>patch.avmWebProjectInheritPermissions02</value></property>
         <property name="description"><value>patch.avmWebProjectInheritPermissions.description</value></property>
@@ -1291,13 +1226,6 @@
         <property name="permissionService">
             <ref bean="permissionService"/>
         </property>
-        <!--
-        <property name="dependsOn" >
-            <list>
-                <ref bean="patch.wcmPermissionPatch" />
-            </list>
-        </property>
-        -->
     </bean>
     
     <bean id="patch.db-V2.0-ContentUrls" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">

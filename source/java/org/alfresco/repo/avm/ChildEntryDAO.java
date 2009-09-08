@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -54,12 +54,12 @@ public interface ChildEntryDAO
     public List<ChildEntry> getByParent(DirectoryNode parent, String childNamePattern);
 
     /**
-     * Get the entry for a given child in a given parent.
+     * Does the entry exist for a given child in a given parent.
      * @param parent The parent.
      * @param child The child.
-     * @return The ChildEntry or null.
+     * @return True if it exists
      */
-    public ChildEntry getByParentChild(DirectoryNode parent, AVMNode child);
+    public boolean existsParentChild(DirectoryNode parent, AVMNode child);
 
     /**
      * Get all the ChildEntries corresponding to the given child.
@@ -89,6 +89,8 @@ public interface ChildEntryDAO
     /**
      * Evict a child entry.
      * @param entry
+     * 
+     * @deprecated
      */
     public void evict(ChildEntry entry);
 }

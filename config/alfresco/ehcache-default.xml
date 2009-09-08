@@ -195,76 +195,43 @@
         />
 
     <!-- AVM caches -->
-     <cache
-        name="org.alfresco.repo.avm.AVMNodeImpl" 
-        maxElementsInMemory="5000"
+    
+    <cache
+        name="org.alfresco.cache.avm.avmEntityCache"
+        maxElementsInMemory="10000"
         eternal="true"
         overflowToDisk="false"
         />
-     <cache
-        name="org.alfresco.repo.avm.AVMStoreImpl" 
-        maxElementsInMemory="100"
-        eternal="true"
-        overflowToDisk="false"
-        />
-     <!--  Note: Workaround for ETWOTWO-978: no row issues - do not adjust -->
-     <cache
-        name="org.alfresco.repo.avm.VersionRootImpl" 
-        maxElementsInMemory="0"
-        eternal="true"
-        overflowToDisk="false"
-        />
-     <!--  Note: Workaround for ETWOTWO-978: no row issues - do not adjust -->
-     <cache
-        name="org.alfresco.repo.avm.ChildEntryImpl" 
-        maxElementsInMemory="0"
-        eternal="true"
-        overflowToDisk="false"
-        />
-     <cache
-        name="org.alfresco.repo.avm.HistoryLinkImpl" 
-        maxElementsInMemory="200"
-        eternal="true"
-        overflowToDisk="false"
-        />
-     <cache
-        name="org.alfresco.repo.avm.MergeLinkImpl" 
-        maxElementsInMemory="200"
-        eternal="true"
-        overflowToDisk="false"
-        />
-     <cache
-        name="org.alfresco.repo.avm.AVMNodePropertyImpl" 
-        maxElementsInMemory="2000"
-        eternal="true"
-        overflowToDisk="false"
-        />
-     <cache
-        name="org.alfresco.repo.avm.AVMStorePropertyImpl" 
-        maxElementsInMemory="500"
-        eternal="true"
-        overflowToDisk="false"
-        />
-     <cache
-        name="org.alfresco.repo.avm.AVMAspectNameImpl" 
+        
+    <cache
+        name="org.alfresco.cache.avm.avmVersionRootEntityCache"
         maxElementsInMemory="1000"
         eternal="true"
         overflowToDisk="false"
-        /> 
-
+        />
+        
+    <cache
+        name="org.alfresco.cache.avm.avmNodeCache"
+        maxElementsInMemory="1000"
+        eternal="true"
+        overflowToDisk="false"
+        />
+        
+    <cache
+        name="org.alfresco.cache.avm.avmStoreCache"
+        maxElementsInMemory="1000"
+        eternal="true"
+        overflowToDisk="false"
+        />
+        
+    <cache
+        name="org.alfresco.cache.avm.avmNodeAspectsCache"
+        maxElementsInMemory="1000"
+        eternal="true"
+        overflowToDisk="false"
+        />
+        
     <!-- Internally used caches -->
-    <cache 
-        name="org.alfresco.repo.avm.lookupSharedCache"
-        maxElementsInMemory="50"
-        eternal="true"
-        overflowToDisk="false"
-        />
-    <cache 
-        name="org.alfresco.repo.avm.storeLookupSharedCache"
-        maxElementsInMemory="100"
-        eternal="true"
-        overflowToDisk="false"
-        />
     <cache 
         name="org.alfresco.repo.webservices.querySessionSharedCache"
         maxElementsInMemory="1000"

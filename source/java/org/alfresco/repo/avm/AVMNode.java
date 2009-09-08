@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -28,6 +28,7 @@ import java.util.Set;
 import org.alfresco.repo.domain.DbAccessControlList;
 import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
+import org.alfresco.service.namespace.QName;
 
 /**
  * The Interface for versionable objects.
@@ -152,35 +153,41 @@ public interface AVMNode
 
     /**
      * Set a property.
-     * @param qnameEntityId     the ID of the QName to set
-     * @param value             The value to set.
+     * @param qname      the QName
+     * @param value      The value to set.
      */
-    public void setProperty(Long qnameEntityId, PropertyValue value);
+    public void setProperty(QName qname, PropertyValue value);
 
     /**
      * Set a collection of properties on this node.
-     * @param properties The Map of QName entity IDs to PropertyValues.
+     * @param properties The Map of QNames to PropertyValues.
      */
-    public void setProperties(Map<Long, PropertyValue> properties);
+    public void setProperties(Map<QName, PropertyValue> properties);
+
+    /**
+     * Add properties to those that already exist.
+     * @param properties The properties to add.
+     */
+    public void addProperties(Map<QName, PropertyValue> properties);
 
     /**
      * Get a property by name.
      * @param name The name of the property to get.
      * @return A PropertyValue
      */
-    public PropertyValue getProperty(Long name);
+    public PropertyValue getProperty(QName name);
 
     /**
      * Get all the properties associated with this node.
      * @return A Map of QNames to PropertyValues.
      */
-    public Map<Long, PropertyValue> getProperties();
+    public Map<QName, PropertyValue> getProperties();
 
     /**
      * Delete a property from this node.
      * @param qnameEntityId         the ID of the QName to delete
      */
-    public void deleteProperty(Long qnameEntityId);
+    public void deleteProperty(QName qname);
 
     /**
      * Delete all properties from this node.
@@ -233,13 +240,11 @@ public interface AVMNode
      * Get the Aspects that this node has.
      * @return A Set of Aspects IDs.
      */
-    public Set<Long> getAspects();
-
-    /**
-     * Add properties to those that already exist.
-     * @param properties The properties to add.
-     */
-    public void addProperties(Map<Long, PropertyValue> properties);
+    public Set<QName> getAspects();
+    
+    public void addAspect(QName aspectQName);
+    
+    public void removeAspect(QName aspectQName);
 
     /**
      * Get the Basic Attributes on this node.

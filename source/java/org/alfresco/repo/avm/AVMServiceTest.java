@@ -54,7 +54,6 @@ import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
-import org.alfresco.wcm.sandbox.SandboxConstants;
 import org.alfresco.service.cmr.avm.AVMBadArgumentException;
 import org.alfresco.service.cmr.avm.AVMCycleException;
 import org.alfresco.service.cmr.avm.AVMException;
@@ -84,6 +83,7 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.GUID;
 import org.alfresco.util.Pair;
+import org.alfresco.wcm.sandbox.SandboxConstants;
 
 /**
  * Big test of AVM behavior.
@@ -92,6 +92,11 @@ import org.alfresco.util.Pair;
  */
 public class AVMServiceTest extends AVMServiceTestBase
 {
+	public void testSetup() throws Exception
+	{
+		super.testSetup();
+	}
+	
     public void testDiffOrder()
     {
         try
@@ -186,7 +191,6 @@ public class AVMServiceTest extends AVMServiceTestBase
             assertEquals(1, diffs.size());
             assertEquals("[SandBox:/www/TestFolder[-1] > StagingArea:/www/TestFolder[-1]]", diffs.toString());
             fSyncService.update(diffs, null, true, true, false, false, "one", "one");
-            AVMDAOs.Instance().fAVMNodeDAO.flush();
             fSyncService.flatten("SandBox:/www", "StagingArea:/www");
 
             StoreRef storeRef = AVMNodeConverter.ToStoreRef("StagingArea");
@@ -201,7 +205,6 @@ public class AVMServiceTest extends AVMServiceTestBase
             assertEquals(1, diffs.size());
             assertEquals("[SandBox:/www/TestFolder[-1] > StagingArea:/www/TestFolder[-1]]", diffs.toString());
             fSyncService.update(diffs, null, true, true, false, false, "one", "one");
-            AVMDAOs.Instance().fAVMNodeDAO.flush();
             fSyncService.flatten("SandBox:/www", "StagingArea:/www");
 
             results = searchService.query(storeRef, "lucene", "@cm\\:name:test1");
@@ -215,7 +218,6 @@ public class AVMServiceTest extends AVMServiceTestBase
             assertEquals(1, diffs.size());
             assertEquals("[SandBox:/www/TestFolder[-1] > StagingArea:/www/TestFolder[-1]]", diffs.toString());
             fSyncService.update(diffs, null, true, true, false, false, "one", "one");
-            AVMDAOs.Instance().fAVMNodeDAO.flush();
             fSyncService.flatten("SandBox:/www", "StagingArea:/www");
 
             results = searchService.query(storeRef, "lucene", "@cm\\:name:test1");
@@ -1293,8 +1295,10 @@ public class AVMServiceTest extends AVMServiceTestBase
         try
         {
             setupBasicTree();
-            fService.getFileOutputStream("main:/a/b/c/foo").close();
             AVMNodeDescriptor desc = fService.lookup(-1, "main:/a/b/c/foo");
+            assertEquals(1, desc.getVersionID());
+            fService.getFileOutputStream("main:/a/b/c/foo").close();
+            desc = fService.lookup(-1, "main:/a/b/c/foo");
             assertEquals(2, desc.getVersionID());
             desc = fService.lookup(-1, "main:/a/b");
             assertEquals(2, desc.getVersionID());

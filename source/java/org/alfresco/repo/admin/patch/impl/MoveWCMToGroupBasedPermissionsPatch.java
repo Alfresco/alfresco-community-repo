@@ -115,13 +115,6 @@ public class MoveWCMToGroupBasedPermissionsPatch extends AbstractPatch
     @Override
     protected String applyInternal() throws Exception
     {
-        Thread progressThread = null;
-        if (this.aclDaoComponent.supportsProgressTracking())
-        {
-            progressThread = new Thread(new ProgressWatcher(), "WCMPactchProgressWatcher");
-            progressThread.start();
-        }
-
         List<AVMStoreDescriptor> stores = this.avmService.getStores();
         for (AVMStoreDescriptor store : stores)
         {
@@ -157,12 +150,6 @@ public class MoveWCMToGroupBasedPermissionsPatch extends AbstractPatch
             case UNKNOWN:
             default:
             }
-        }
-
-        if (progressThread != null)
-        {
-            progressThread.interrupt();
-            progressThread.join();
         }
 
         // build the result message
@@ -451,59 +438,5 @@ public class MoveWCMToGroupBasedPermissionsPatch extends AbstractPatch
             throw new UnsupportedOperationException(name);
         }
         return name.substring(0, index);
-    }
-
-    private class ProgressWatcher implements Runnable
-    {
-        private boolean running = true;
-
-        Long toDo;
-
-        Long max;
-
-        ProgressWatcher()
-        {
-        }
-
-        public void run()
-        {
-            while (this.running)
-            {
-                try
-                {
-                    Thread.sleep(60000);
-                }
-                catch (InterruptedException e)
-                {
-                    this.running = false;
-                }
-
-                if (this.running)
-                {
-                    RetryingTransactionHelper txHelper = MoveWCMToGroupBasedPermissionsPatch.this.transactionService
-                            .getRetryingTransactionHelper();
-                    txHelper.setMaxRetries(1);
-                    Long done = txHelper.doInTransaction(new RetryingTransactionCallback<Long>()
-                    {
-
-                        public Long execute() throws Throwable
-                        {
-                            if (ProgressWatcher.this.toDo == null)
-                            {
-                                ProgressWatcher.this.toDo = MoveWCMToGroupBasedPermissionsPatch.this.aclDaoComponent
-                                        .getAVMHeadNodeCount();
-                                ProgressWatcher.this.max = MoveWCMToGroupBasedPermissionsPatch.this.aclDaoComponent
-                                        .getMaxAclId();
-                            }
-                            return MoveWCMToGroupBasedPermissionsPatch.this.aclDaoComponent
-                                    .getAVMNodeCountWithNewACLS(org.alfresco.repo.admin.patch.impl.MoveWCMToGroupBasedPermissionsPatch.ProgressWatcher.this.max);
-                        }
-                    }, true, true);
-
-                    reportProgress(this.toDo, done);
-                }
-            }
-        }
-
     }
 }

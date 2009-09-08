@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -30,8 +30,7 @@ import java.util.Date;
 import java.util.List;
 
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.repo.avm.AVMNodeDAO;
-import org.alfresco.repo.avm.AVMNodeDAO.ContentUrlHandler;
+import org.alfresco.repo.domain.avm.AVMNodeDAO;
 import org.alfresco.repo.content.ContentStore;
 import org.alfresco.repo.domain.contentclean.ContentCleanDAO;
 import org.alfresco.repo.domain.contentclean.ContentCleanDAO.ContentUrlBatchProcessor;

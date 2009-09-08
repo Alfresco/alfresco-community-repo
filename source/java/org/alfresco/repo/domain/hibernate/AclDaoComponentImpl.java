@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -44,6 +44,9 @@ import org.alfresco.repo.domain.DbAuthority;
 import org.alfresco.repo.domain.DbPermission;
 import org.alfresco.repo.domain.Node;
 import org.alfresco.repo.domain.QNameDAO;
+import org.alfresco.repo.domain.avm.AVMNodeDAO;
+import org.alfresco.repo.domain.avm.AVMNodeEntity;
+import org.alfresco.repo.domain.patch.PatchDAO;
 import org.alfresco.repo.security.permissions.ACEType;
 import org.alfresco.repo.security.permissions.ACLCopyMode;
 import org.alfresco.repo.security.permissions.ACLType;
@@ -105,14 +108,14 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
 
     static String QUERY_GET_LATEST_ACL_BY_ACLID = "permission.FindLatestAclByGuid";
 
-    static String QUERY_GET_LAYERED_DIRECTORIES = "permission.GetLayeredDirectories";
-
-    static String QUERY_GET_LAYERED_FILES = "permission.GetLayeredFiles";
-
-    static String QUERY_GET_NEW_IN_STORE = "permission.GetNewInStore";
-
     /** Access to QName entities */
     private QNameDAO qnameDAO;
+    
+    /** Access to AVMNode queries */
+    private AVMNodeDAO avmNodeDAO;
+    
+    /** Access to additional Patch queries */
+    private PatchDAO patchDAO;
 
     /** a transactionally-safe cache to be injected */
     private SimpleCache<Long, AccessControlList> aclCache;
@@ -168,7 +171,17 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
     {
         this.qnameDAO = qnameDAO;
     }
-
+    
+    public void setPatchDAO(PatchDAO patchDAO)
+    {
+        this.patchDAO = patchDAO;
+    }
+    
+    public void setAvmNodeDAO(AVMNodeDAO avmNodeDAO)
+    {
+        this.avmNodeDAO = avmNodeDAO;
+    }
+    
     /**
      * Set the ACL cache
      * 
@@ -1108,8 +1121,7 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
     {
         throw new UnsupportedOperationException();
     }
-
-    @SuppressWarnings("unchecked")
+    
     public AccessControlList getAccessControlList(Long id)
     {
         AccessControlList acl = aclCache.get(id);
@@ -1249,7 +1261,6 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
         throw new UnsupportedOperationException();
     }
 
-    @SuppressWarnings("unchecked")
     public List<AclChange> mergeInheritedAccessControlList(Long inherited, Long target)
     {
 
@@ -1688,23 +1699,13 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
         DbAccessControlList acl = (DbAccessControlList) getHibernateTemplate().get(DbAccessControlListImpl.class, id);
         return acl;
     }
-
-    @SuppressWarnings("unchecked")
+    
     public List<Long> getAvmNodesByACL(final Long id)
     {
-        HibernateCallback callback = new HibernateCallback()
-        {
-            public Object doInHibernate(Session session)
-            {
-                Query query = session.getNamedQuery(QUERY_GET_AVM_NODES_BY_ACL);
-                query.setParameter("acl", id);
-                return query.list();
-            }
-        };
-        List<Long> avmNodeIds = (List<Long>) getHibernateTemplate().execute(callback);
+        List<Long> avmNodeIds = avmNodeDAO.getAVMNodesByAclId(id);
         return avmNodeIds;
     }
-
+    
     @SuppressWarnings("unchecked")
     private List<AclChange> disableInheritanceImpl(Long id, boolean setInheritedOnAcl, DbAccessControlList acl)
     {
@@ -1996,36 +1997,6 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
     }
 
     /**
-     * Get the total number of head nodes in the repository
-     * 
-     * @return count
-     */
-    public Long getAVMHeadNodeCount()
-    {
-        try
-        {
-            Session session = getSession();
-            int isolationLevel = session.connection().getTransactionIsolation();
-            try
-            {
-                session.connection().setTransactionIsolation(1);
-                Query query = getSession().getNamedQuery("permission.GetAVMHeadNodeCount");
-                Long answer = (Long) query.uniqueResult();
-                return answer;
-            }
-            finally
-            {
-                session.connection().setTransactionIsolation(isolationLevel);
-            }
-        }
-        catch (SQLException e)
-        {
-            throw new AlfrescoRuntimeException("Failed to set TX isolation level", e);
-        }
-
-    }
-
-    /**
      * Get the max acl id
      * 
      * @return - max acl id
@@ -2074,108 +2045,55 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
     }
 
     /**
-     * Get the acl count canges so far for progress tracking
-     * 
-     * @param above
-     * @return - the count
-     */
-    public Long getAVMNodeCountWithNewACLS(Long above)
-    {
-        try
-        {
-            Session session = getSession();
-            int isolationLevel = session.connection().getTransactionIsolation();
-            try
-            {
-                session.connection().setTransactionIsolation(1);
-                Query query = getSession().getNamedQuery("permission.GetAVMHeadNodeCountWherePermissionsHaveChanged");
-                query.setParameter("above", above);
-                Long answer = (Long) query.uniqueResult();
-                return answer;
-            }
-            finally
-            {
-                session.connection().setTransactionIsolation(isolationLevel);
-            }
-        }
-        catch (SQLException e)
-        {
-            throw new AlfrescoRuntimeException("Failed to set TX isolation level", e);
-        }
-    }
-
-    /**
      * How many nodes are noew in store (approximate)
      * 
-     * @return - the number fo new nodes - approximate
+     * @return - the number of new nodes - approximate
      */
     public Long getNewInStore()
     {
-        HibernateCallback callback = new HibernateCallback()
-        {
-            public Object doInHibernate(Session session)
-            {
-                Query query = session.getNamedQuery(QUERY_GET_NEW_IN_STORE);
-                return query.uniqueResult();
-            }
-        };
-        Long count = (Long) getHibernateTemplate().execute(callback);
+        Long count = patchDAO.getAVMNodesCountWhereNewInStore();
         return count;
     }
 
     /**
-     * Find layered directories Used to imporove performance during patching and cascading the effect fo permission
+     * Find layered directories Used to improve performance during patching and cascading the effect of permission
      * changes between layers
      * 
      * @return - layered directories
      */
-    @SuppressWarnings("unchecked")
     public List<Indirection> getLayeredDirectories()
     {
-        HibernateCallback callback = new HibernateCallback()
+        List<AVMNodeEntity> ldNodeEntities = avmNodeDAO.getAllLayeredDirectories();
+        
+        ArrayList<Indirection> indirections = new ArrayList<Indirection>(ldNodeEntities.size());
+        
+        for (AVMNodeEntity ldNodeEntity : ldNodeEntities)
         {
-            public Object doInHibernate(Session session)
-            {
-                Query query = session.getNamedQuery(QUERY_GET_LAYERED_DIRECTORIES);
-                return query.list();
-            }
-        };
-        List<Object[]> results = (List<Object[]>) getHibernateTemplate().execute(callback);
-        ArrayList<Indirection> indirections = new ArrayList<Indirection>(results.size());
-        for (Object[] row : results)
-        {
-            Long from = (Long) row[0];
-            String to = (String) row[1];
-            Integer version = (Integer) row[2];
+            Long from = ldNodeEntity.getId();
+            String to = ldNodeEntity.getIndirection();
+            Integer version = ldNodeEntity.getIndirectionVersion();
             indirections.add(new Indirection(from, to, version));
         }
         return indirections;
     }
 
     /**
-     * Find layered files Used to imporove performance during patching and cascading the effect fo permission changes
+     * Find layered files Used to improve performance during patching and cascading the effect of permission changes
      * between layers
      * 
-     * @return - layerd files
+     * @return - layered files
      */
-    @SuppressWarnings("unchecked")
     public List<Indirection> getLayeredFiles()
     {
-        HibernateCallback callback = new HibernateCallback()
+        List<AVMNodeEntity> lfNodeEntities = avmNodeDAO.getAllLayeredFiles();
+        
+        ArrayList<Indirection> indirections = new ArrayList<Indirection>(lfNodeEntities.size());
+        
+        for (AVMNodeEntity lfNodeEntity : lfNodeEntities)
         {
-            public Object doInHibernate(Session session)
-            {
-                Query query = session.getNamedQuery(QUERY_GET_LAYERED_FILES);
-                return query.list();
-            }
-        };
-        List<Object[]> results = (List<Object[]>) getHibernateTemplate().execute(callback);
-        ArrayList<Indirection> indirections = new ArrayList<Indirection>(results.size());
-        for (Object[] row : results)
-        {
-            Long from = (Long) row[0];
-            String to = (String) row[1];
-            Integer version = (Integer) row[2];
+            Long from = lfNodeEntity.getId();
+            String to = lfNodeEntity.getIndirection();
+            Integer version = lfNodeEntity.getIndirectionVersion();
             indirections.add(new Indirection(from, to, version));
         }
         return indirections;

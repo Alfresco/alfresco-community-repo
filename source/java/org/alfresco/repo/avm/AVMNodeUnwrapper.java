@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -30,9 +30,14 @@ import org.hibernate.proxy.HibernateProxy;
  * may be a HibernateProxy.  Bitter Hibernate note: Hibernate proxies for polymorphic
  * types are fundamentally broken.
  * @author britt
+ * 
+ * @deprecated
  */
 public class AVMNodeUnwrapper
 {
+    /**
+     * @deprecated
+     */
     public static AVMNode Unwrap(AVMNode node)
     {
         if (node instanceof HibernateProxy)

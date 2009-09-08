@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2008 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -38,6 +38,7 @@ import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.remote.AVMRemote;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.Pair;
 
 /**
  * This takes a filesystem directory path and a repository path and name
@@ -89,6 +90,12 @@ public class BulkLoader
      */
     public void recursiveLoad(String fsPath, String repPath)
     {
+        Pair<Integer, Integer> cnts = recursiveLoadImpl(fsPath, repPath, 0, 0);
+        
+        System.out.println("Loaded: "+cnts.getFirst()+" directories, "+cnts.getSecond()+" files");
+    }
+    private Pair<Integer, Integer> recursiveLoadImpl(String fsPath, String repPath, int dirCount, int fileCount)
+    {
         Map<QName, PropertyValue> props = new HashMap<QName, PropertyValue>();
         for (int i = 0; i < fPropertyCount; i++)
         {
@@ -99,13 +106,19 @@ public class BulkLoader
         if (file.isDirectory())
         {
             fService.createDirectory(repPath, name);
+            dirCount++;
+            
             String[] children = file.list();
             String baseName = repPath.endsWith("/") ? repPath + name : repPath + "/" + name;
             fService.setNodeProperties(baseName, props);
             for (String child : children)
             {
-                recursiveLoad(fsPath + "/" + child, baseName);
+                Pair<Integer, Integer> cnts = recursiveLoadImpl(fsPath + "/" + child, baseName, dirCount,  fileCount);
+                dirCount = cnts.getFirst();
+                fileCount = cnts.getSecond();
             }
+            
+            return new Pair<Integer, Integer>(dirCount, fileCount);
         }
         else
         {
@@ -113,6 +126,7 @@ public class BulkLoader
             {
                 InputStream in = new FileInputStream(file);
                 OutputStream out = fService.createFile(repPath, name);
+                fileCount++;
                 fService.setNodeProperties(repPath + "/" + name, props);
                 byte[] buff = new byte[8192];
                 int read = 0;
@@ -122,6 +136,8 @@ public class BulkLoader
                 }
                 out.close();
                 in.close();
+                
+                return new Pair<Integer, Integer>(dirCount, fileCount);
             }
             catch (IOException e)
             {

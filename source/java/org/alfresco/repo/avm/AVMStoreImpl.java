@@ -26,10 +26,10 @@ package org.alfresco.repo.avm;
 import java.io.File;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -42,7 +42,6 @@ import org.alfresco.repo.avm.util.RawServices;
 import org.alfresco.repo.avm.util.SimplePath;
 import org.alfresco.repo.domain.DbAccessControlList;
 import org.alfresco.repo.domain.PropertyValue;
-import org.alfresco.repo.domain.QNameDAO;
 import org.alfresco.repo.security.permissions.ACLCopyMode;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.service.cmr.avm.AVMBadArgumentException;
@@ -71,10 +70,8 @@ import org.alfresco.util.Pair;
  * operation.
  * @author britt
  */
-public class AVMStoreImpl implements AVMStore, Serializable
+public class AVMStoreImpl implements AVMStore
 {
-    static final long serialVersionUID = -1485972568675732904L;
-
     /**
      * The primary key.
      */
@@ -89,7 +86,7 @@ public class AVMStoreImpl implements AVMStore, Serializable
      * The current root directory.
      */
     private DirectoryNode fRoot;
-
+    
     /**
      * The next version id.
      */
@@ -104,20 +101,20 @@ public class AVMStoreImpl implements AVMStore, Serializable
      * Acl for this store.
      */
     private DbAccessControlList fACL;
-
+    
     /**
      * The AVMRepository.
      */
     transient private AVMRepository fAVMRepository;
-
+    
     /**
      * Default constructor.
      */
-    protected AVMStoreImpl()
+    public AVMStoreImpl()
     {
         fAVMRepository = AVMRepository.GetInstance();
     }
-
+    
     /**
      * Make a brand new AVMStore.
      * @param repo The AVMRepository.
@@ -127,10 +124,13 @@ public class AVMStoreImpl implements AVMStore, Serializable
     {
         // Make ourselves up and save.
         fAVMRepository = repo;
-        fName = name;
-        fNextVersionID = 0;
-        fRoot = null;
+        
+        setName(name);
+        setNextVersionID(0);
+        setRoot(null);
+        
         AVMDAOs.Instance().fAVMStoreDAO.save(this);
+        
         String creator = RawServices.Instance().getAuthenticationContext().getCurrentUserName();
         if (creator == null)
         {
@@ -138,31 +138,38 @@ public class AVMStoreImpl implements AVMStore, Serializable
         }
         setProperty(ContentModel.PROP_CREATOR, new PropertyValue(null, creator));
         setProperty(ContentModel.PROP_CREATED, new PropertyValue(null, new Date(System.currentTimeMillis())));
+        
         // Make up the initial version record and save.
         long time = System.currentTimeMillis();
-        fRoot = new PlainDirectoryNodeImpl(this);
-        fRoot.setIsRoot(true);
-        AVMDAOs.Instance().fAVMNodeDAO.save(fRoot);
+        
+        PlainDirectoryNode dir = new PlainDirectoryNodeImpl(this);
+        dir.setIsRoot(true);
+        AVMDAOs.Instance().fAVMNodeDAO.save(dir);
+        
+        setRoot(dir);
+        
         VersionRoot versionRoot = new VersionRootImpl(this,
-                                                      fRoot,
-                                                      fNextVersionID,
+                                                      getRoot(),
+                                                      getNextVersionID(),
                                                       time,
                                                       creator,
                                                       "Initial Empty Version.",
                                                       "Initial Empty Version.");
-        fNextVersionID++;
+        setNextVersionID(getNextVersionID()+1);
+        
+        AVMDAOs.Instance().fAVMStoreDAO.update(this);
         AVMDAOs.Instance().fVersionRootDAO.save(versionRoot);
     }
-
+    
     /**
-     * Setter for hibernate.
+     * Set the primary key
      * @param id The primary key.
      */
-    protected void setId(long id)
+    public void setId(long id)
     {
         fID = id;
     }
-
+    
     /**
      * Get the primary key.
      * @return The primary key.
@@ -179,18 +186,16 @@ public class AVMStoreImpl implements AVMStore, Serializable
     public void setNewRoot(DirectoryNode root)
     {
         fRoot = root;
-        fRoot.setIsRoot(true);
     }
 
     /**
      * Snapshot this store.  This creates a new version record.
      * @return The version id of the new snapshot.
      */
-    @SuppressWarnings("unchecked")
     public Map<String, Integer> createSnapshot(String tag, String description, Map<String, Integer> snapShotMap)
     {
-        long rootID = fRoot.getId();
-        AVMStoreImpl me = (AVMStoreImpl)AVMDAOs.Instance().fAVMStoreDAO.getByID(fID);
+        long rootID = getRoot().getId();
+        AVMStoreImpl me = (AVMStoreImpl)AVMDAOs.Instance().fAVMStoreDAO.getByID(getId());
         VersionRoot lastVersion = AVMDAOs.Instance().fVersionRootDAO.getMaxVersion(me);
         List<VersionLayeredNodeEntry> layeredEntries =
             AVMDAOs.Instance().fVersionLayeredNodeEntryDAO.get(lastVersion);
@@ -203,11 +208,13 @@ public class AVMStoreImpl implements AVMStore, Serializable
             {
                 lastVersion.setTag(tag);
                 lastVersion.setDescription(description);
+                
+                AVMDAOs.Instance().fVersionRootDAO.update(lastVersion);
             }
-            snapShotMap.put(fName, lastVersion.getVersionID());
+            snapShotMap.put(getName(), lastVersion.getVersionID());
             return snapShotMap;
         }
-        snapShotMap.put(fName, me.fNextVersionID);
+        snapShotMap.put(getName(), me.getNextVersionID());
         // Force copies on all the layered nodes from last snapshot.
         for (VersionLayeredNodeEntry entry : layeredEntries)
         {
@@ -291,24 +298,29 @@ public class AVMStoreImpl implements AVMStore, Serializable
             {
                 layered.setIndirectionVersion(snapShotMap.get(storeName));
             }
+            
+            AVMDAOs.Instance().fAVMNodeDAO.update(layered);
         }
-        AVMDAOs.Instance().fAVMNodeDAO.flush();
+        
         // Make up a new version record.
         String user = RawServices.Instance().getAuthenticationContext().getCurrentUserName();
         if (user == null)
         {
             user = RawServices.Instance().getAuthenticationContext().getSystemUserName();
         }
-        me = (AVMStoreImpl)AVMDAOs.Instance().fAVMStoreDAO.getByID(fID);
+        me = (AVMStoreImpl)AVMDAOs.Instance().fAVMStoreDAO.getByID(getId());
         VersionRoot versionRoot = new VersionRootImpl(me,
-                                                      me.fRoot,
-                                                      me.fNextVersionID++,
+                                                      me.getRoot(),
+                                                      me.getNextVersionID(),
                                                       System.currentTimeMillis(),
                                                       user,
                                                       tag,
                                                       description);
-        // Another embarassing flush needed.
-        AVMDAOs.Instance().fAVMNodeDAO.flush();
+        
+        me.setNextVersionID(me.getNextVersionID()+1);
+        
+        AVMDAOs.Instance().fAVMStoreDAO.update(me);
+        
         AVMDAOs.Instance().fVersionRootDAO.save(versionRoot);
         for (Long nodeID : layeredNodeIDs)
         {
@@ -352,14 +364,26 @@ public class AVMStoreImpl implements AVMStore, Serializable
                                 // a LayeredDirectoryNode that gets its indirection from
                                 // its parent.
         {
+            // TODO - collapse save/update
             newDir = new LayeredDirectoryNodeImpl((String)null, this, null, null, ACLCopyMode.INHERIT);
             ((LayeredDirectoryNodeImpl)newDir).setPrimaryIndirection(false);
             ((LayeredDirectoryNodeImpl)newDir).setLayerID(lPath.getTopLayer().getLayerID());
+            
+            DbAccessControlList acl = dir.getAcl();
+            newDir.setAcl(acl != null ? acl.getCopy(acl.getId(), ACLCopyMode.INHERIT) : null);
+            
+            AVMDAOs.Instance().fAVMNodeDAO.update(newDir);
         }
         else
         {
             newDir = new PlainDirectoryNodeImpl(this);
+            
+            DbAccessControlList acl = dir.getAcl();
+            newDir.setAcl(acl != null ? acl.getCopy(acl.getId(), ACLCopyMode.INHERIT) : null);
+            
+            AVMDAOs.Instance().fAVMNodeDAO.save(newDir);
         }
+        
         // newDir.setVersionID(getNextVersionID());
         if (child != null)
         {
@@ -369,29 +393,16 @@ public class AVMStoreImpl implements AVMStore, Serializable
         dir.putChild(name, newDir);
         if (aspects != null)
         {
-            // Convert the aspect QNames to entities
-            QNameDAO qnameDAO = AVMDAOs.Instance().fQNameDAO;
-            Set<Long> aspectQNameEntityIds = newDir.getAspects();
-            for (QName aspectQName : aspects)
-            {
-                Long qnameEntityId = qnameDAO.getOrCreateQName(aspectQName).getFirst();
-                aspectQNameEntityIds.add(qnameEntityId);
-            }
+            Set<QName> aspectQNames = new HashSet<QName>(newDir.getAspects());
+            aspectQNames.addAll(aspects);
+            ((DirectoryNodeImpl)newDir).setAspects(aspectQNames);
         }
         if (properties != null)
         {
-            // Convert the property QNames to entities
-            QNameDAO qnameDAO = AVMDAOs.Instance().fQNameDAO;
-            Map<Long, PropertyValue> propertiesByQNameEntityId = new HashMap<Long, PropertyValue>(properties.size() * 2 + 1);
-            for (Map.Entry<QName, PropertyValue> entry : properties.entrySet())
-            {
-                Long qnameEntityId = qnameDAO.getOrCreateQName(entry.getKey()).getFirst();
-                propertiesByQNameEntityId.put(qnameEntityId, entry.getValue());
-            }
-            newDir.getProperties().putAll(propertiesByQNameEntityId);
+            Map<QName, PropertyValue> props = new HashMap<QName, PropertyValue>(newDir.getProperties());
+            props.putAll(properties);
+            ((DirectoryNodeImpl)newDir).setProperties(props);
         }
-        DbAccessControlList acl = dir.getAcl();
-        newDir.setAcl(acl != null ? acl.getCopy(acl.getId(), ACLCopyMode.INHERIT) : null);
     }
 
     /**
@@ -416,8 +427,10 @@ public class AVMStoreImpl implements AVMStore, Serializable
             throw new AVMExistsException("Child exists: " +  name);
         }
         Long parentAcl = dir.getAcl() == null ? null : dir.getAcl().getId();
+        
         LayeredDirectoryNode newDir =
             new LayeredDirectoryNodeImpl(srcPath, this, null, parentAcl, ACLCopyMode.INHERIT);
+        
         if (lPath.isLayered())
         {
             // When a layered directory is made inside of a layered context,
@@ -433,13 +446,17 @@ public class AVMStoreImpl implements AVMStore, Serializable
             // note: re-use generated node id as a layer id
             newDir.setLayerID(newDir.getId());
         }
+        
+        AVMDAOs.Instance().fAVMNodeDAO.update(newDir);
+        
         if (child != null)
         {
             newDir.setAncestor(child);
         }
+        
+        // newDir.setVersionID(getNextVersionID());
         //dir.updateModTime();
         dir.putChild(name, newDir);
-        // newDir.setVersionID(getNextVersionID());
     }
 
     /**
@@ -450,38 +467,7 @@ public class AVMStoreImpl implements AVMStore, Serializable
      */
     public OutputStream createFile(String path, String name)
     {
-        Lookup lPath = lookupDirectory(-1, path, true);
-        if (lPath == null)
-        {
-            throw new AVMNotFoundException("Path " + path + " not found.");
-        }
-        DirectoryNode dir = (DirectoryNode)lPath.getCurrentNode();
-        if (!fAVMRepository.can(this, dir, PermissionService.ADD_CHILDREN, lPath.getDirectlyContained()))
-        {
-            throw new AccessDeniedException("Not allowed to write: " + path);
-        }
-        Pair<AVMNode, Boolean> temp = dir.lookupChild(lPath, name, true);
-        AVMNode child = (temp == null) ? null : temp.getFirst();
-        if (child != null && child.getType() != AVMNodeType.DELETED_NODE)
-        {
-            throw new AVMExistsException("Child exists: " + name);
-        }
-        PlainFileNodeImpl file = new PlainFileNodeImpl(this);
-        // file.setVersionID(getNextVersionID());
-        //dir.updateModTime();
-        dir.putChild(name, file);
-        if (child != null)
-        {
-            file.setAncestor(child);
-        }
-        file.setContentData(new ContentData(null,
-                RawServices.Instance().getMimetypeService().guessMimetype(name),
-                -1,
-                "UTF-8"));
-        DbAccessControlList acl = dir.getAcl();
-        file.setAcl(acl != null ? acl.getCopy(acl.getId(), ACLCopyMode.INHERIT) : null);
-        ContentWriter writer = createContentWriter(AVMNodeConverter.ExtendAVMPath(path, name));
-        return writer.getContentOutputStream();
+        return createFile(path, name, null, null).getContentOutputStream();
     }
 
     /**
@@ -491,6 +477,11 @@ public class AVMStoreImpl implements AVMStore, Serializable
      * @param data The contents.
      */
     public void createFile(String path, String name, File data, List<QName> aspects, Map<QName, PropertyValue> properties)
+    {
+        createFile(path, name, aspects, properties).putContent(data);
+    }
+    
+    private ContentWriter createFile(String path, String name, List<QName> aspects, Map<QName, PropertyValue> properties)
     {
         Lookup lPath = lookupDirectory(-1, path, true);
         if (lPath == null)
@@ -508,7 +499,19 @@ public class AVMStoreImpl implements AVMStore, Serializable
         {
             throw new AVMExistsException("Child exists: " + name);
         }
+        
         PlainFileNodeImpl file = new PlainFileNodeImpl(this);
+        
+        file.setContentData(new ContentData(null,
+                RawServices.Instance().getMimetypeService().guessMimetype(name),
+                -1,
+                "UTF-8"));
+        
+        DbAccessControlList acl = dir.getAcl();
+        file.setAcl(acl != null ? acl.getCopy(acl.getId(), ACLCopyMode.INHERIT) : null);
+        
+        AVMDAOs.Instance().fAVMNodeDAO.save(file);
+        
         // file.setVersionID(getNextVersionID());
         //dir.updateModTime();
         dir.putChild(name, file);
@@ -516,39 +519,21 @@ public class AVMStoreImpl implements AVMStore, Serializable
         {
             file.setAncestor(child);
         }
-        file.setContentData(new ContentData(null,
-                RawServices.Instance().getMimetypeService().guessMimetype(name),
-                -1,
-                "UTF-8"));
+        
         if (aspects != null)
         {
-            // Convert the aspect QNames to entities
-            QNameDAO qnameDAO = AVMDAOs.Instance().fQNameDAO;
-            Set<Long> aspectQNameEntityIds = file.getAspects();
-            for (QName aspectQName : aspects)
-            {
-                Long qnameEntityId = qnameDAO.getOrCreateQName(aspectQName).getFirst();
-                aspectQNameEntityIds.add(qnameEntityId);
-            }
+            Set<QName> aspectQNames = new HashSet<QName>(aspects.size());
+            aspectQNames.addAll(aspects);
+            file.setAspects(aspectQNames);
         }
         if (properties != null)
         {
-            // Convert the property QNames to entities
-            QNameDAO qnameDAO = AVMDAOs.Instance().fQNameDAO;
-            Map<Long, PropertyValue> propertiesByQNameEntityId = new HashMap<Long, PropertyValue>(properties.size() * 2 + 1);
-            for (Map.Entry<QName, PropertyValue> entry : properties.entrySet())
-            {
-                Long qnameEntityId = qnameDAO.getOrCreateQName(entry.getKey()).getFirst();
-                propertiesByQNameEntityId.put(qnameEntityId, entry.getValue());
-            }
-            file.getProperties().putAll(propertiesByQNameEntityId);
+            Map<QName, PropertyValue> props = new HashMap<QName, PropertyValue>(properties.size());
+            props.putAll(properties);
+            file.setProperties(props);
         }
-        DbAccessControlList acl = dir.getAcl();
-        file.setAcl(acl != null ? acl.getCopy(acl.getId(), ACLCopyMode.INHERIT) : null);
-        // Yet another flush.
-        AVMDAOs.Instance().fAVMNodeDAO.flush();
-        ContentWriter writer = createContentWriter(AVMNodeConverter.ExtendAVMPath(path, name));
-        writer.putContent(data);
+        
+        return createContentWriter(AVMNodeConverter.ExtendAVMPath(path, name));
     }
 
     /**
@@ -578,15 +563,20 @@ public class AVMStoreImpl implements AVMStore, Serializable
         // TODO Reexamine decision to not check validity of srcPath.
         LayeredFileNodeImpl newFile =
             new LayeredFileNodeImpl(srcPath, this, null);
+        
+        DbAccessControlList acl = dir.getAcl();
+        newFile.setAcl(acl != null ? acl.getCopy(acl.getId(), ACLCopyMode.INHERIT) : null);
+        
+        AVMDAOs.Instance().fAVMNodeDAO.save(newFile);
+        
         if (child != null)
         {
             newFile.setAncestor(child);
         }
+        
+        // newFile.setVersionID(getNextVersionID());
         //dir.updateModTime();
         dir.putChild(name, newFile);
-        DbAccessControlList acl = dir.getAcl();
-        newFile.setAcl(acl != null ? acl.getCopy(acl.getId(), ACLCopyMode.INHERIT) : null);
-        // newFile.setVersionID(getNextVersionID());
     }
 
     /**
@@ -615,7 +605,7 @@ public class AVMStoreImpl implements AVMStore, Serializable
      */
     public ContentReader getContentReader(int version, String path)
     {
-        NodeRef nodeRef = AVMNodeConverter.ToNodeRef(version, fName + ":" + path);
+        NodeRef nodeRef = AVMNodeConverter.ToNodeRef(version, getName() + ":" + path);
         return RawServices.Instance().getContentService().getReader(nodeRef, ContentModel.PROP_CONTENT);
     }
 
@@ -626,7 +616,7 @@ public class AVMStoreImpl implements AVMStore, Serializable
      */
     public ContentWriter createContentWriter(String path)
     {
-        NodeRef nodeRef = AVMNodeConverter.ToNodeRef(-1, fName + ":" + path);
+        NodeRef nodeRef = AVMNodeConverter.ToNodeRef(-1, getName() + ":" + path);
         ContentWriter writer =
             RawServices.Instance().getContentService().getWriter(nodeRef, ContentModel.PROP_CONTENT, true);
         return writer;
@@ -696,7 +686,7 @@ public class AVMStoreImpl implements AVMStore, Serializable
         for (String name : listing.keySet())
         {
             // TODO consider doing this at a lower level.
-            AVMNode child = AVMNodeUnwrapper.Unwrap(listing.get(name));
+            AVMNode child = listing.get(name);
             AVMNodeDescriptor desc = child.getDescriptor(lPath, name);
             results.put(name, desc);
         }
@@ -794,17 +784,14 @@ public class AVMStoreImpl implements AVMStore, Serializable
         }
         ((LayeredDirectoryNode)node).uncover(lPath, name);
         node.updateModTime();
+        
+        AVMDAOs.Instance().fAVMNodeDAO.update(node);
     }
-
-    // TODO This is problematic.  As time goes on this returns
-    // larger and larger data sets.  Perhaps what we should do is
-    // provide methods for getting versions by date range, n most
-    // recent etc.
+    
     /**
      * Get the set of all extant versions for this AVMStore.
      * @return A Set of version ids.
      */
-    @SuppressWarnings("unchecked")
     public List<VersionDescriptor> getVersions()
     {
         List<VersionRoot> versions = AVMDAOs.Instance().fVersionRootDAO.getAllInAVMStore(this);
@@ -812,7 +799,7 @@ public class AVMStoreImpl implements AVMStore, Serializable
         for (VersionRoot vr : versions)
         {
             VersionDescriptor desc =
-                new VersionDescriptor(fName,
+                new VersionDescriptor(getName(),
                                       vr.getVersionID(),
                                       vr.getCreator(),
                                       vr.getCreateDate(),
@@ -830,7 +817,6 @@ public class AVMStoreImpl implements AVMStore, Serializable
      * @param to The latest date.
      * @return The Set of matching version IDs.
      */
-    @SuppressWarnings("unchecked")
     public List<VersionDescriptor> getVersions(Date from, Date to)
     {
         List<VersionRoot> versions = AVMDAOs.Instance().fVersionRootDAO.getByDates(this, from, to);
@@ -838,7 +824,7 @@ public class AVMStoreImpl implements AVMStore, Serializable
         for (VersionRoot vr : versions)
         {
             VersionDescriptor desc =
-                new VersionDescriptor(fName,
+                new VersionDescriptor(getName(),
                                       vr.getVersionID(),
                                       vr.getCreator(),
                                       vr.getCreateDate(),
@@ -881,7 +867,7 @@ public class AVMStoreImpl implements AVMStore, Serializable
         AVMNode root = null;
         if (version < 0)
         {
-            root = fRoot;
+            root = getRoot();
         }
         else
         {
@@ -889,9 +875,9 @@ public class AVMStoreImpl implements AVMStore, Serializable
         }
         if (!fAVMRepository.can(this, root, PermissionService.READ_CHILDREN, true))
         {
-            throw new AccessDeniedException("Not allowed to read: " + fName + "@" + version);
+            throw new AccessDeniedException("Not allowed to read: " + getName() + "@" + version);
         }
-        return root.getDescriptor(fName + ":", "", null, -1);
+        return root.getDescriptor(getName() + ":", "", null, -1);
     }
 
     /**
@@ -975,6 +961,8 @@ public class AVMStoreImpl implements AVMStore, Serializable
         }
         dir.turnPrimary(lPath);
         dir.updateModTime();
+        
+        AVMDAOs.Instance().fAVMNodeDAO.update(dir);
     }
 
     /**
@@ -1000,6 +988,8 @@ public class AVMStoreImpl implements AVMStore, Serializable
         }
         dir.retarget(lPath, target);
         dir.updateModTime();
+        
+        AVMDAOs.Instance().fAVMNodeDAO.update(dir);
     }
 
     /**
@@ -1037,7 +1027,7 @@ public class AVMStoreImpl implements AVMStore, Serializable
      * Set the next version id.
      * @param nextVersionID
      */
-    protected void setNextVersionID(int nextVersionID)
+    public void setNextVersionID(int nextVersionID)
     {
         fNextVersionID = nextVersionID;
     }
@@ -1068,10 +1058,10 @@ public class AVMStoreImpl implements AVMStore, Serializable
     }
 
     /**
-     * Set the root directory.  Hibernate.
+     * Set the root directory.
      * @param root
      */
-    protected void setRoot(DirectoryNode root)
+    public void setRoot(DirectoryNode root)
     {
         fRoot = root;
     }
@@ -1086,19 +1076,19 @@ public class AVMStoreImpl implements AVMStore, Serializable
     }
 
     /**
-     * Set the version (for concurrency control). Hibernate.
-     * @param vers
+     * Set the version (for concurrency control).
+     * @param vers  The version for optimistic locks.
      */
-    protected void setVers(long vers)
+    public void setVers(long vers)
     {
         fVers = vers;
     }
 
     /**
-     * Get the version (for concurrency control). Hibernate.
-     * @return The version.
+     * Get the version (for concurrency control).
+     * @return The version for optimistic locks.
      */
-    protected long getVers()
+    public long getVers()
     {
         return fVers;
     }
@@ -1119,7 +1109,7 @@ public class AVMStoreImpl implements AVMStore, Serializable
         {
             return false;
         }
-        return fID == ((AVMStore)obj).getId();
+        return getId() == ((AVMStore)obj).getId();
     }
 
     /**
@@ -1129,14 +1119,13 @@ public class AVMStoreImpl implements AVMStore, Serializable
     @Override
     public int hashCode()
     {
-        return (int)fID;
+        return (int)getId();
     }
 
     /**
-     * Purge all nodes reachable only via this version and repostory.
+     * Purge all nodes reachable only via this version and repository.
      * @param version
      */
-    @SuppressWarnings("unchecked")
     public void purgeVersion(int version)
     {
         if (version == 0)
@@ -1152,17 +1141,16 @@ public class AVMStoreImpl implements AVMStore, Serializable
         AVMNode root = vRoot.getRoot();
         if (!fAVMRepository.can(null, root, PermissionService.DELETE_CHILDREN, true))
         {
-            throw new AccessDeniedException("Not allowed to purge: " + fName + "@" + version);
+            throw new AccessDeniedException("Not allowed to purge: " + getName() + "@" + version);
         }
         root.setIsRoot(false);
         AVMDAOs.Instance().fAVMNodeDAO.update(root);
         AVMDAOs.Instance().fVersionRootDAO.delete(vRoot);
-        if (root.equals(fRoot))
+        if (root.equals(getRoot()))
         {
             // We have to set a new current root.
-            // TODO More hibernate goofiness to compensate for: fSuper.getSession().flush();
             vRoot = AVMDAOs.Instance().fVersionRootDAO.getMaxVersion(this);
-            fRoot = vRoot.getRoot();
+            setRoot(vRoot.getRoot());
             AVMDAOs.Instance().fAVMStoreDAO.update(this);
         }
     }
@@ -1182,7 +1170,7 @@ public class AVMStoreImpl implements AVMStore, Serializable
         PropertyValue createdValue = getProperty(ContentModel.PROP_CREATED);
         Date created = createdValue == null ? (new Date()) : (Date) createdValue.getValue(DataTypeDefinition.DATE);
         created = (created == null) ? (new Date()) : created;
-        return new AVMStoreDescriptor(fName, creator, created.getTime());
+        return new AVMStoreDescriptor(getName(), creator, created.getTime());
     }
 
     /**
@@ -1209,6 +1197,8 @@ public class AVMStoreImpl implements AVMStore, Serializable
         }
         ((LayeredDirectoryNode)node).setOpacity(opacity);
         node.updateModTime();
+        
+        AVMDAOs.Instance().fAVMNodeDAO.update(node);
     }
 
     // TODO Does it make sense to set properties on DeletedNodes?
@@ -1230,10 +1220,12 @@ public class AVMStoreImpl implements AVMStore, Serializable
         {
             throw new AccessDeniedException("Not allowed to write: " + path);
         }
-        Long qnameEntityId = AVMDAOs.Instance().fQNameDAO.getOrCreateQName(name).getFirst();
-
-        node.setProperty(qnameEntityId, value);
+        
+        node.setProperty(name, value);
+        
         node.setGuid(GUID.generate());
+        
+        AVMDAOs.Instance().fAVMNodeDAO.update(node); // guid and property
     }
 
     /**
@@ -1255,17 +1247,13 @@ public class AVMStoreImpl implements AVMStore, Serializable
         }
         if (properties != null)
         {
-            // Convert the property QNames to entities
-            QNameDAO qnameDAO = AVMDAOs.Instance().fQNameDAO;
-            Map<Long, PropertyValue> propertiesByQNameEntityId = new HashMap<Long, PropertyValue>(properties.size() * 2 + 1);
-            for (Map.Entry<QName, PropertyValue> entry : properties.entrySet())
-            {
-                Long qnameEntityId = qnameDAO.getOrCreateQName(entry.getKey()).getFirst();
-                propertiesByQNameEntityId.put(qnameEntityId, entry.getValue());
-            }
-            node.addProperties(propertiesByQNameEntityId);
+            Map<QName, PropertyValue> props = new HashMap<QName, PropertyValue>(properties.size());
+            props.putAll(properties);
+            node.addProperties(props);
         }
         node.setGuid(GUID.generate());
+        
+        AVMDAOs.Instance().fAVMNodeDAO.update(node);
     }
 
     /**
@@ -1287,19 +1275,8 @@ public class AVMStoreImpl implements AVMStore, Serializable
         {
             throw new AccessDeniedException("Not allowed to read: " + path);
         }
-        // Convert the QName
-        QNameDAO qnameDAO = AVMDAOs.Instance().fQNameDAO;
-        Pair<Long, QName> qnamePair = qnameDAO.getQName(name);
-        if (qnamePair == null)
-        {
-            // No such QName
-            return null;
-        }
-        else
-        {
-            PropertyValue prop = node.getProperty(qnamePair.getFirst());
-            return prop;
-        }
+        
+        return node.getProperty(name);
     }
 
     /**
@@ -1320,12 +1297,8 @@ public class AVMStoreImpl implements AVMStore, Serializable
         {
             throw new AccessDeniedException("Not allowed to read: " + path);
         }
-        Map<Long, PropertyValue> props = node.getProperties();
-        // Convert to QNames
-        QNameDAO qnameDAO = AVMDAOs.Instance().fQNameDAO;
-        @SuppressWarnings("unchecked")
-        Map<QName, PropertyValue> convertedProps = (Map<QName, PropertyValue>) qnameDAO.convertIdMapToQNameMap(props);
-        return convertedProps;
+        
+        return node.getProperties();
     }
 
     /**
@@ -1347,17 +1320,9 @@ public class AVMStoreImpl implements AVMStore, Serializable
         }
         node.setGuid(GUID.generate());
 
-        // convert the QName
-        QNameDAO qnameDAO = AVMDAOs.Instance().fQNameDAO;
-        Pair<Long, QName> qnamePair = qnameDAO.getQName(name);
-        if (qnamePair == null)
-        {
-            // No such property
-        }
-        else
-        {
-            node.deleteProperty(qnamePair.getFirst());
-        }
+        node.deleteProperty(name);
+        
+        AVMDAOs.Instance().fAVMNodeDAO.update(node);
     }
 
     /**
@@ -1378,6 +1343,8 @@ public class AVMStoreImpl implements AVMStore, Serializable
         }
         node.setGuid(GUID.generate());
         node.deleteProperties();
+        
+        AVMDAOs.Instance().fAVMNodeDAO.update(node);
     }
 
     /**
@@ -1387,10 +1354,9 @@ public class AVMStoreImpl implements AVMStore, Serializable
      */
     public void setProperty(QName name, PropertyValue value)
     {
-        Long qnameEntityId = AVMDAOs.Instance().fQNameDAO.getOrCreateQName(name).getFirst();
         AVMStoreProperty prop = new AVMStorePropertyImpl();
         prop.setStore(this);
-        prop.setQnameId(qnameEntityId);
+        prop.setQname(name);
         prop.setValue(value);
         AVMDAOs.Instance().fAVMStorePropertyDAO.save(prop);
     }
@@ -1414,33 +1380,16 @@ public class AVMStoreImpl implements AVMStore, Serializable
      */
     public PropertyValue getProperty(QName name)
     {
-        AVMStoreProperty prop = AVMDAOs.Instance().fAVMStorePropertyDAO.get(this, name);
-        if (prop == null)
-        {
-            return null;
-        }
-        return prop.getValue();
+        return AVMDAOs.Instance().fAVMStorePropertyDAO.get(this, name);
     }
 
     /**
-     * Get all the properties associated with this node.
+     * Get all the properties associated with this store.
      * @return A Map of the properties.
      */
-    @SuppressWarnings("unchecked")
     public Map<QName, PropertyValue> getProperties()
     {
-        List<AVMStoreProperty> props = AVMDAOs.Instance().fAVMStorePropertyDAO.get(this);
-
-        Map<Long, PropertyValue> propsIdMap = new HashMap<Long, PropertyValue>(props.size() + 7);
-        for (AVMStoreProperty prop : props)
-        {
-            propsIdMap.put(prop.getQnameId(), prop.getValue());
-        }
-        // Mass-convert
-        QNameDAO qnameDAO = AVMDAOs.Instance().fQNameDAO;
-        Map<QName, PropertyValue> propsQNameMap = (Map<QName, PropertyValue>) qnameDAO.convertIdMapToQNameMap(propsIdMap);
-        
-        return propsQNameMap;
+        return AVMDAOs.Instance().fAVMStorePropertyDAO.get(this);
     }
 
     /**
@@ -1475,7 +1424,6 @@ public class AVMStoreImpl implements AVMStore, Serializable
             throw new AccessDeniedException("Not allowed to read: " + path);
         }
         ContentData content = ((FileNode)node).getContentData(lPath);
-        // AVMDAOs.Instance().fAVMNodeDAO.flush();
         // AVMDAOs.Instance().fAVMNodeDAO.evict(node);
         return content;
     }
@@ -1504,8 +1452,12 @@ public class AVMStoreImpl implements AVMStore, Serializable
         // TODO Set modifier.
         node.updateModTime();
         node.setGuid(GUID.generate());
+        
+        //AVMDAOs.Instance().fAVMNodeDAO.update(node);
+        // TODO review 'optimisation'
+        AVMDAOs.Instance().fAVMNodeDAO.updateModTimeAndGuid(node);
+        
         ContentData content = ((FileNode)node).getContentData(lPath);
-        // AVMDAOs.Instance().fAVMNodeDAO.flush();
         // AVMDAOs.Instance().fAVMNodeDAO.evict(node);
         return content;
     }
@@ -1531,6 +1483,8 @@ public class AVMStoreImpl implements AVMStore, Serializable
         }
         ((FileNode)node).setContentData(data);
         node.updateModTime();
+        
+        AVMDAOs.Instance().fAVMNodeDAO.update(node);
     }
 
     /**
@@ -1552,6 +1506,8 @@ public class AVMStoreImpl implements AVMStore, Serializable
         }
         node.copyMetaDataFrom(from, node.getAcl() == null ? null : node.getAcl().getInheritsFrom());
         node.setGuid(GUID.generate());
+        
+        AVMDAOs.Instance().fAVMNodeDAO.update(node);
     }
 
     /**
@@ -1571,12 +1527,11 @@ public class AVMStoreImpl implements AVMStore, Serializable
         {
             throw new AccessDeniedException("Not allowed to write: " + path);
         }
-        // Convert the aspect QNames to entities
-        QNameDAO qnameDAO = AVMDAOs.Instance().fQNameDAO;
-        Long qnameEntityId = qnameDAO.getOrCreateQName(aspectName).getFirst();
-        // Convert the
-        node.getAspects().add(qnameEntityId);
+        
+        node.addAspect(aspectName);
         node.setGuid(GUID.generate());
+        
+        AVMDAOs.Instance().fAVMNodeDAO.update(node);
     }
 
     /**
@@ -1597,10 +1552,8 @@ public class AVMStoreImpl implements AVMStore, Serializable
         {
             throw new AccessDeniedException("Not allowed to read properties: " + path);
         }
-        Set<Long> aspects = node.getAspects();
-        QNameDAO qnameDAO = AVMDAOs.Instance().fQNameDAO;
-        Set<QName> aspectQNames = qnameDAO.convertIdsToQNames(aspects);
-        return aspectQNames;
+        
+        return node.getAspects();
     }
 
     /**
@@ -1620,23 +1573,20 @@ public class AVMStoreImpl implements AVMStore, Serializable
         {
             throw new AccessDeniedException("Not allowed to write properties: " + path);
         }
-        QNameDAO qnameDAO = AVMDAOs.Instance().fQNameDAO;
-        // Get the persistent ID for the QName and remove from the set
-        Pair<Long, QName> qnamePair = qnameDAO.getQName(aspectName);
-        if (qnamePair != null)
-        {
-            node.getAspects().remove(qnamePair.getFirst());
-        }
+        
+        node.removeAspect(aspectName);
+        
         AspectDefinition def = RawServices.Instance().getDictionaryService().getAspect(aspectName);
         Map<QName, PropertyDefinition> properties = def.getProperties();
-        Set<Long> propertyQNameIds = qnameDAO.convertQNamesToIds(properties.keySet(), false);
         
-        Map<Long, PropertyValue> nodeProperties = node.getProperties();
-        for (Long propertyQNameId : propertyQNameIds)
+        for (QName propertyQName : properties.keySet())
         {
-            nodeProperties.remove(propertyQNameId);
+            node.deleteProperty(propertyQName);
         }
+        
         node.setGuid(GUID.generate());
+        
+        AVMDAOs.Instance().fAVMNodeDAO.update(node);
     }
 
     /**
@@ -1658,17 +1608,8 @@ public class AVMStoreImpl implements AVMStore, Serializable
         {
             throw new AccessDeniedException("Not allowed to read properties: " + path);
         }
-        QNameDAO qnameDAO = AVMDAOs.Instance().fQNameDAO;
-        // Get the persistent ID for the QName and remove from the set
-        Pair<Long, QName> qnamePair = qnameDAO.getQName(aspectName);
-        if (qnamePair != null)
-        {
-            return node.getAspects().contains(qnamePair.getFirst());
-        }
-        else
-        {
-            return false;
-        }
+        
+        return node.getAspects().contains(aspectName);
     }
 
     /**
@@ -1690,6 +1631,8 @@ public class AVMStoreImpl implements AVMStore, Serializable
         }
         node.setAcl(acl);
         node.setGuid(GUID.generate());
+        
+        AVMDAOs.Instance().fAVMNodeDAO.update(node);
     }
 
     /**
@@ -1800,14 +1743,13 @@ public class AVMStoreImpl implements AVMStore, Serializable
         dir.putChild(name, toLink);
         toLink.changeAncestor(child);
         toLink.setVersionID(child.getVersionID() + 1);
-        // TODO This really shouldn't be here. Leaking layers.
-        QNameDAO qnameDAO = AVMDAOs.Instance().fQNameDAO;
-        Pair<Long, QName> revertedQNamePair = qnameDAO.getOrCreateQName(WCMModel.ASPECT_REVERTED);
-        toLink.getAspects().add(revertedQNamePair.getFirst());
+        
+        toLink.addAspect(WCMModel.ASPECT_REVERTED);
+        
         PropertyValue value = new PropertyValue(null, toRevertTo.getId());
-
-        Pair<Long, QName> qnamePair = AVMDAOs.Instance().fQNameDAO.getOrCreateQName(WCMModel.PROP_REVERTED_ID);
-        toLink.setProperty(qnamePair.getFirst(), value);
+        toLink.setProperty(WCMModel.PROP_REVERTED_ID, value);
+        
+        AVMDAOs.Instance().fAVMNodeDAO.update(toLink);
     }
 
     /* (non-Javadoc)
@@ -1826,6 +1768,8 @@ public class AVMStoreImpl implements AVMStore, Serializable
             throw new AccessDeniedException("Not allowed to write properties: " + path);
         }
         node.setGuid(guid);
+        
+        AVMDAOs.Instance().fAVMNodeDAO.update(node);
     }
 
     /* (non-Javadoc)
@@ -1849,6 +1793,8 @@ public class AVMStoreImpl implements AVMStore, Serializable
         }
         PlainFileNode file = (PlainFileNode)node;
         file.setEncoding(encoding);
+        
+        AVMDAOs.Instance().fAVMNodeDAO.update(file);
     }
 
     /* (non-Javadoc)
@@ -1872,5 +1818,7 @@ public class AVMStoreImpl implements AVMStore, Serializable
         }
         PlainFileNode file = (PlainFileNode)node;
         file.setMimeType(mimeType);
+        
+        AVMDAOs.Instance().fAVMNodeDAO.update(file);
     }
 }

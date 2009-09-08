@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -23,16 +23,13 @@
 
 package org.alfresco.repo.avm;
 
-import java.io.Serializable;
 
 /**
  * An entry in a directory. Contains a name, parent, and child.
  * @author britt
  */
-public class ChildEntryImpl implements ChildEntry, Serializable
+public class ChildEntryImpl implements ChildEntry
 {
-    private static final long serialVersionUID = -307752114272916930L;
-
     /**
      * The key.
      */
@@ -46,7 +43,7 @@ public class ChildEntryImpl implements ChildEntry, Serializable
     /**
      * Default constructor for Hibernate.
      */
-    protected ChildEntryImpl()
+    public ChildEntryImpl()
     {
     }
 

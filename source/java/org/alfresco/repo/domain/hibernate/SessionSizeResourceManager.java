@@ -29,7 +29,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import org.alfresco.repo.avm.hibernate.SessionCacheChecker;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.util.resource.MethodResourceManager;
 import org.apache.commons.logging.Log;
@@ -127,11 +126,6 @@ public class SessionSizeResourceManager extends HibernateDaoSupport implements M
             long transactionElapsedTimeNs,
             Method currentMethod)
     {
-        if (logger.isDebugEnabled())
-        {
-            logger.debug("Session Size Manager Invoked.");
-            SessionCacheChecker.instance.check();
-        }
         if (isDisableInTransaction())
         {
             // Don't do anything

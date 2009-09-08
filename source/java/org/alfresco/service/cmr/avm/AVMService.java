@@ -805,7 +805,7 @@ public interface AVMService
      * @param store The store to set the property on.
      * @param name  The name of the property.
      * @param value The value of the property.
-     * @throws      AVMNotFoundException
+     * @throws      AVMNotFoundException (if store does not exist)
      */
     public void setStoreProperty(String store, QName name, PropertyValue value);
     
@@ -814,7 +814,7 @@ public interface AVMService
      *
      * @param store The name of the store.
      * @param props A Map of the properties to set.
-     * @throws      AVMNotFoundException
+     * @throws      AVMNotFoundException (if store does not exist)
      */
     public void setStoreProperties(String store, Map<QName, PropertyValue> props);
     
@@ -824,7 +824,7 @@ public interface AVMService
      * @param store The name of the store.
      * @param name  The name of the property.
      * @return      A PropertyValue or null if non-existent.
-     * @throws      AVMNotFoundException
+     * @throws      AVMNotFoundException (if store does not exist)
      */
     public PropertyValue getStoreProperty(String store, QName name);
 
@@ -833,7 +833,7 @@ public interface AVMService
      *
      * @param store The name of the store.
      * @return      A Map of the stores properties.
-     * @throws      AVMNotFoundException
+     * @throws      AVMNotFoundException (if store does not exist)
      */
     public Map<QName, PropertyValue> getStoreProperties(String store);
 

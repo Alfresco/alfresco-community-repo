@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -34,7 +34,7 @@ import java.util.Map;
 import junit.framework.TestCase;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.avm.AVMNodeDAO;
+import org.alfresco.repo.domain.avm.AVMNodeDAO;
 import org.alfresco.repo.content.ContentStore;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.content.filestore.FileContentStore;
@@ -93,7 +93,7 @@ public class ContentStoreCleanerTest extends TestCase
         TransactionService transactionService = serviceRegistry.getTransactionService();
         DictionaryService dictionaryService = serviceRegistry.getDictionaryService();
         NodeDaoService nodeDaoService = (NodeDaoService) ctx.getBean("nodeDaoService");
-        AVMNodeDAO avmNodeDAO = (AVMNodeDAO) ctx.getBean("avmNodeDAO");
+        AVMNodeDAO avmNodeDAO = (AVMNodeDAO) ctx.getBean("newAvmNodeDAO");
         ContentCleanDAO contentCleanDAO = (ContentCleanDAO) ctx.getBean("contentCleanDAO");
         ContentDataDAO contentDataDAO = (ContentDataDAO) ctx.getBean("contentDataDAO");
         

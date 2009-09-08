@@ -18,5 +18,7 @@
     <sqlMap resource="alfresco/ibatis/#resource.dialect#/propval-insert-SqlMap.xml"/>
     <sqlMap resource="alfresco/ibatis/#resource.dialect#/audit-common-SqlMap.xml"/>
     <sqlMap resource="alfresco/ibatis/#resource.dialect#/audit-insert-SqlMap.xml"/>
+    <sqlMap resource="alfresco/ibatis/#resource.dialect#/avm-common-SqlMap.xml"/>
+    <sqlMap resource="alfresco/ibatis/#resource.dialect#/avm-insert-SqlMap.xml"/>
     
 </sqlMapConfig>

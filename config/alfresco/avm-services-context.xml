@@ -4,79 +4,58 @@
 
 <beans>
 
-	<bean id="avmNodeDAO" class="org.alfresco.repo.avm.hibernate.AVMNodeDAOHibernate">
-		<property name="sessionFactory">
-			<ref bean="sessionFactory"/>
-		</property>
-	</bean>
-
-	<bean id="avmStoreDAO" class="org.alfresco.repo.avm.hibernate.AVMStoreDAOHibernate">
-		<property name="sessionFactory">
-			<ref bean="sessionFactory"/>
-		</property>
-		<property name="cache">
-			<ref bean="avmStoreLookupCache"/>
-		</property>
-	</bean>
-
-	<bean id="versionRootDAO" class="org.alfresco.repo.avm.hibernate.VersionRootDAOHibernate">
-		<property name="sessionFactory">
-			<ref bean="sessionFactory"/>
-		</property>
-	</bean>
-
-	<bean id="childEntryDAO" class="org.alfresco.repo.avm.hibernate.ChildEntryDAOHibernate">
-		<property name="sessionFactory">
-			<ref bean="sessionFactory"/>
-		</property>
-	</bean>
-
-	<bean id="historyLinkDAO" class="org.alfresco.repo.avm.hibernate.HistoryLinkDAOHibernate">
-		<property name="sessionFactory">
-			<ref bean="sessionFactory"/>
-		</property>
-	</bean>
-
-	<bean id="mergeLinkDAO" class="org.alfresco.repo.avm.hibernate.MergeLinkDAOHibernate">
-		<property name="sessionFactory">
-			<ref bean="sessionFactory"/>
-		</property>
-	</bean>
-
-	<bean id="avmStorePropertyDAO" class="org.alfresco.repo.avm.hibernate.AVMStorePropertyDAOHibernate">
-		<property name="sessionFactory">
-			<ref bean="sessionFactory"/>
-		</property>
-		<property name="qnameDAO">
-			<ref bean="qnameDAO"/>
-		</property>
-	</bean>
-
-	<bean id="versionLayeredNodeEntryDAO" class="org.alfresco.repo.avm.hibernate.VersionLayeredNodeEntryDAOHibernate">
-	    <property name="sessionFactory">
-	        <ref bean="sessionFactory"/>
-	    </property>
-	</bean>
-
-	<bean id="sessionCacheChecker" class="org.alfresco.repo.avm.hibernate.SessionCacheChecker">
-	   <property name="sessionFactory">
-	       <ref bean="sessionFactory"/>
-	   </property>
-	</bean>
-
+    <bean id="avmNodeDAO" class="org.alfresco.repo.avm.ibatis.AVMNodeDAOIbatis">
+        <property name="sessionFactory">
+            <ref bean="sessionFactory"/>
+        </property>
+    </bean>
+    
+    <bean id="avmStoreDAO" class="org.alfresco.repo.avm.ibatis.AVMStoreDAOIbatis">
+        
+        <property name="sessionFactory">
+            <ref bean="sessionFactory"/>
+        </property>
+     
+    </bean>
+    
+    <bean id="versionRootDAO" class="org.alfresco.repo.avm.ibatis.VersionRootDAOIbatis"/>
+    
+    <bean id="childEntryDAO" class="org.alfresco.repo.avm.ibatis.ChildEntryDAOIbatis"/>
+    
+    <bean id="historyLinkDAO" class="org.alfresco.repo.avm.ibatis.HistoryLinkDAOIbatis"/>
+    
+    <bean id="mergeLinkDAO" class="org.alfresco.repo.avm.ibatis.MergeLinkDAOIbatis"/>
+    
+    <bean id="avmStorePropertyDAO" class="org.alfresco.repo.avm.ibatis.AVMStorePropertyDAOIbatis">
+        <property name="sessionFactory">
+            <ref bean="sessionFactory"/>
+        </property>
+    </bean>
+    
+    <bean id="versionLayeredNodeEntryDAO" class="org.alfresco.repo.avm.ibatis.VersionLayeredNodeEntryDAOIbatis"/>
+    
 	<bean id="avmDAOs" class="org.alfresco.repo.avm.AVMDAOs" factory-method="Instance">
 		<property name="nodeDAO">
 			<ref bean="avmNodeDAO"/>
 		</property>
-		<property name="qnameDAO">
-			<ref bean="qnameDAO"/>
-		</property>
+		<property name="newAvmNodeDAO">
+            <ref bean="newAvmNodeDAO"/>
+        </property>
+		<property name="newAvmNodeLinksDAO">
+            <ref bean="newAvmNodeLinksDAO"/>
+        </property>
 		<property name="avmStoreDAO">
 			<ref bean="avmStoreDAO"/>
 		</property>
+		<property name="newAvmStoreDAO">
+            <ref bean="newAvmStoreDAO"/>
+        </property>
 		<property name="versionRootDAO">
 			<ref bean="versionRootDAO"/>
 		</property>
+		<property name="newAvmVersionRootDAO">
+            <ref bean="newAvmVersionRootDAO"/>
+        </property>
 		<property name="childEntryDAO">
 			<ref bean="childEntryDAO"/>
 		</property>
@@ -295,27 +274,5 @@
 	        <value>workspace://SpacesStore</value>
 	    </property>
 	</bean>
-
-   <bean id="avmSessionSizeResourceInterceptor" class="org.alfresco.repo.transaction.SingleEntryTransactionResourceInterceptor" >
-      <property name="methodResourceManagers">
-         <list>
-            <ref bean="avmSessionSizeResourceManager"></ref>
-         </list>
-      </property>
-      <property name="elapsedTimeBeforeActivationMillis">
-         <value>500</value>
-      </property>
-      <property name="resourceManagerCallFrequencyMillis">
-         <value>250</value>
-      </property>
-   </bean>
-
-   <bean id="avmSessionSizeResourceManager" class="org.alfresco.repo.domain.hibernate.SessionSizeResourceManager">
-      <property name="sessionFactory">
-         <ref bean="sessionFactory" />
-      </property>
-      <property name="threshold">
-         <value>100</value>
-      </property>
-   </bean>
+	
 </beans>

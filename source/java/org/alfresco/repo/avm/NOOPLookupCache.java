@@ -80,7 +80,6 @@ public class NOOPLookupCache implements LookupCache
         {
             return null;
         }
-        dir = (DirectoryNode)AVMNodeUnwrapper.Unwrap(dir);
         // Add an entry for the root.
         result.add(dir, "", true, write);
         dir = (DirectoryNode)result.getCurrentNode();

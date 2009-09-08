@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2008 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -125,7 +125,8 @@ public class AVMServicePermissionsTest extends TestCase
         super();
     }
 
-    public void setUp() throws Exception
+    @Override
+    protected void setUp() throws Exception
     {
         avmNodeDAO = (AVMNodeDAO) applicationContext.getBean("avmNodeDAO");
 
@@ -213,8 +214,14 @@ public class AVMServicePermissionsTest extends TestCase
         authenticationService.createAuthentication("reviewer", "reviewer".toCharArray());
 
         authenticationComponent.clearCurrentSecurityContext();
+        
+        if (avmService.getStore("main") != null)
+        {
+            avmService.purgeStore("main");
+        }
     }
 
+    @Override
     protected void tearDown() throws Exception
     {
 
@@ -398,7 +405,12 @@ public class AVMServicePermissionsTest extends TestCase
             runAs(curentUser);
         }
     }
-
+    
+    public void testSetup() throws Exception
+    {
+        // test setUp & tearDown
+    }
+    
     public void testStoreAcls() throws Exception
     {
         runAs(AuthenticationUtil.getAdminUserName());
@@ -3096,8 +3108,7 @@ public class AVMServicePermissionsTest extends TestCase
         }
     }
 
-    // Comment-out for now due to intermittent failure: expected:<6> but was:<7>
-    public void x_testSimpleInternalLayer()
+    public void testSimpleInternalLayer()
     {
         runAs(AuthenticationUtil.getAdminUserName());
         String storeName = "PermissionsTest-" + getName() + "-" + (new Date().getTime());

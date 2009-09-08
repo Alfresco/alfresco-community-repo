@@ -35,7 +35,7 @@ import org.alfresco.service.cmr.repository.ContentData;
  * 
  * @author britt
  */
-class LayeredFileNodeImpl extends FileNodeImpl implements LayeredFileNode
+public class LayeredFileNodeImpl extends FileNodeImpl implements LayeredFileNode
 {
     static final long serialVersionUID = 9208423010479156363L;
 
@@ -43,19 +43,19 @@ class LayeredFileNodeImpl extends FileNodeImpl implements LayeredFileNode
      * The indirection.
      */
     private String fIndirection;
-
+    
     /**
      * The indirection version.
      */
     private int fIndirectionVersion;
-
+    
     /**
-     * Anonymous constructor.
+     * Default constructor.
      */
-    protected LayeredFileNodeImpl()
+    public LayeredFileNodeImpl()
     {
     }
-
+    
     /**
      * Basically a copy constructor. Used when a branch is created from a layered file.
      * 
@@ -67,15 +67,17 @@ class LayeredFileNodeImpl extends FileNodeImpl implements LayeredFileNode
     public LayeredFileNodeImpl(LayeredFileNode other, AVMStore store, Long parentAcl, ACLCopyMode mode)
     {
         super(store);
-        fIndirection = other.getIndirection();
-        fIndirectionVersion = -1;
+        setIndirection(other.getIndirection());
+        setIndirectionVersion(-1);
         setVersionID(other.getVersionID() + 1);
-        AVMDAOs.Instance().fAVMNodeDAO.save(this);
-        AVMDAOs.Instance().fAVMNodeDAO.flush();
-        copyProperties(other);
-        copyAspects(other);
+        
         copyACLs(other, parentAcl, mode);
         copyCreationAndOwnerBasicAttributes(other);
+        
+        AVMDAOs.Instance().fAVMNodeDAO.save(this);
+        
+        copyProperties(other);
+        copyAspects(other);
     }
 
     /**
@@ -89,14 +91,13 @@ class LayeredFileNodeImpl extends FileNodeImpl implements LayeredFileNode
     public LayeredFileNodeImpl(String indirection, AVMStore store, DbAccessControlList acl)
     {
         super(store);
-        fIndirection = indirection;
-        fIndirectionVersion = -1;
+        setIndirection(indirection);
+        setIndirectionVersion(-1);
         setVersionID(1);
-        AVMDAOs.Instance().fAVMNodeDAO.save(this);
-        AVMDAOs.Instance().fAVMNodeDAO.flush();
+        
         if (acl != null)
         {
-            this.setAcl(acl);
+            setAcl(acl);
         }
         else
         {
@@ -136,7 +137,7 @@ class LayeredFileNodeImpl extends FileNodeImpl implements LayeredFileNode
     public AVMNode copy(Lookup lPath)
     {
         // LayeredFileNodes are always copied.
-        Lookup lookup = AVMRepository.GetInstance().lookup(-1, fIndirection, false);
+        Lookup lookup = AVMRepository.GetInstance().lookup(-1, getIndirection(), false);
         if (lookup == null)
         {
             throw new AVMException("Unbacked layered file node.");
@@ -178,7 +179,7 @@ class LayeredFileNodeImpl extends FileNodeImpl implements LayeredFileNode
      */
     public String getUnderlying(Lookup lookup)
     {
-        return fIndirection;
+        return getIndirection();
     }
 
     /**
@@ -190,7 +191,7 @@ class LayeredFileNodeImpl extends FileNodeImpl implements LayeredFileNode
      */
     public String toString(Lookup lPath)
     {
-        return "[LF:" + getId() + ":" + fIndirection + "]";
+        return "[LF:" + getId() + ":" + getIndirection() + "]";
     }
 
     /**
@@ -248,7 +249,7 @@ class LayeredFileNodeImpl extends FileNodeImpl implements LayeredFileNode
         BasicAttributes attrs = getBasicAttributes();
         String path = parentPath.endsWith("/") ? parentPath + name : parentPath + "/" + name;
         return new AVMNodeDescriptor(path, name, AVMNodeType.LAYERED_FILE, attrs.getCreator(), attrs.getOwner(), attrs.getLastModifier(), attrs.getCreateDate(),
-                attrs.getModDate(), attrs.getAccessDate(), getId(), getGuid(), getVersionID(), fIndirection, fIndirectionVersion, false, -1, false, 0, -1);
+                attrs.getModDate(), attrs.getAccessDate(), getId(), getGuid(), getVersionID(), getIndirection(), getIndirectionVersion(), false, -1, false, 0, -1);
     }
 
     /**
@@ -315,7 +316,7 @@ class LayeredFileNodeImpl extends FileNodeImpl implements LayeredFileNode
         {
             return -1;
         }
-        return fIndirectionVersion;
+        return getIndirectionVersion();
     }
 
     /*

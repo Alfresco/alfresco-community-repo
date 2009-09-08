@@ -23,7 +23,6 @@
 
 package org.alfresco.repo.avm;
 
-import org.alfresco.repo.domain.DbAccessControlList;
 import org.alfresco.service.cmr.avm.AVMBadArgumentException;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avm.AVMNotFoundException;
@@ -32,7 +31,7 @@ import org.alfresco.service.cmr.avm.AVMNotFoundException;
  * Base class for Directories.
  * @author britt
  */
-abstract class DirectoryNodeImpl extends AVMNodeImpl implements DirectoryNode
+public abstract class DirectoryNodeImpl extends AVMNodeImpl implements DirectoryNode
 {
     /**
      * Default constructor.
@@ -40,7 +39,7 @@ abstract class DirectoryNodeImpl extends AVMNodeImpl implements DirectoryNode
     protected DirectoryNodeImpl()
     {
     }
-
+    
     /**
      * A pass through constructor. Called when a new concrete subclass
      * instance is created.
@@ -72,8 +71,20 @@ abstract class DirectoryNodeImpl extends AVMNodeImpl implements DirectoryNode
         ChildKey key = new ChildKey(this, name);
         ChildEntry newChild = new ChildEntryImpl(key, node);
         AVMDAOs.Instance().fChildEntryDAO.save(newChild);
-        AVMDAOs.Instance().fAVMNodeDAO.flush();
+        
         AVMDAOs.Instance().fChildEntryDAO.evict(newChild);
         AVMDAOs.Instance().fAVMNodeDAO.evict(node);
+    }
+    
+    /**
+     * Does this node directly contain the indicated node.
+     *
+     * @param node
+     *            The node we are checking.
+     * @return Whether node is directly contained.
+     */
+    public boolean directlyContains(AVMNode node)
+    {
+        return AVMDAOs.Instance().fChildEntryDAO.existsParentChild(this, node);
     }
 }

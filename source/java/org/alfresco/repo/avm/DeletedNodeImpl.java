@@ -39,11 +39,11 @@ public class DeletedNodeImpl extends AVMNodeImpl implements DeletedNode
      * The type of node that this is a deleted node for.
      */
     private int fDeletedType;
-
+    
     /**
-     * For Hibernate's use.
+     * Default constructor.
      */
-    protected DeletedNodeImpl()
+    public DeletedNodeImpl()
     {
     }
     
@@ -61,12 +61,16 @@ public class DeletedNodeImpl extends AVMNodeImpl implements DeletedNode
                            AVMStore store, Long parentAcl, ACLCopyMode mode)
     {
         super(store);
+        
+        setDeletedType(other.getDeletedType());
+        
+        copyACLs(other, parentAcl, mode);
+        copyCreationAndOwnerBasicAttributes(other);
+        
         AVMDAOs.Instance().fAVMNodeDAO.save(this);
-        AVMDAOs.Instance().fAVMNodeDAO.flush();
+        
         copyProperties(other);
         copyAspects(other);
-        copyACLs(other, parentAcl, mode);       
-        copyCreationAndOwnerBasicAttributes(other);
     }
     
     /**
@@ -138,7 +142,7 @@ public class DeletedNodeImpl extends AVMNodeImpl implements DeletedNode
                                      -1,
                                      false,
                                      -1,
-                                     fDeletedType);
+                                     getDeletedType());
     }
 
     /**
@@ -168,7 +172,7 @@ public class DeletedNodeImpl extends AVMNodeImpl implements DeletedNode
                                      -1,
                                      false,
                                      -1,
-                                     fDeletedType);
+                                     getDeletedType());
     }
 
     /**
@@ -200,7 +204,7 @@ public class DeletedNodeImpl extends AVMNodeImpl implements DeletedNode
                                      -1,
                                      false,
                                      -1, 
-                                     fDeletedType);
+                                     getDeletedType());
     }
 
     /**

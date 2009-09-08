@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -26,11 +26,8 @@
 package org.alfresco.repo.attributes.hibernate;
 
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.alfresco.repo.attributes.AttrQueryHelperImpl;
 import org.alfresco.repo.attributes.Attribute;
@@ -42,7 +39,6 @@ import org.alfresco.repo.attributes.MapAttribute;
 import org.alfresco.repo.attributes.MapEntry;
 import org.alfresco.repo.attributes.MapEntryDAO;
 import org.alfresco.repo.attributes.Attribute.Type;
-import org.alfresco.repo.avm.hibernate.SessionCacheChecker;
 import org.alfresco.repo.domain.hibernate.DirtySessionMethodInterceptor;
 import org.alfresco.service.cmr.attributes.AttrQuery;
 import org.alfresco.service.cmr.attributes.AttrQueryHelper;
@@ -50,7 +46,6 @@ import org.alfresco.util.Pair;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.Query;
-import org.hibernate.engine.EntityKey;
 import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
 
 /**

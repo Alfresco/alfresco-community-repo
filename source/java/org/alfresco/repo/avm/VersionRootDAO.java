@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -37,7 +37,9 @@ public interface VersionRootDAO
      * @param vr The VersionRoot to save.
      */
     public void save(VersionRoot vr);
-
+    
+    public void update(VersionRoot vr);
+    
     /**
      * Delete a VersionRoot.
      * @param vr The VersionRoot to delete.

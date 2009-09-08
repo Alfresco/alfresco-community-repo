@@ -128,7 +128,6 @@ public class AVMSubmitPackageHandler extends JBPMSpringActionHandler implements 
             public Object doWork() throws Exception
             {
                 fAVMSyncService.update(stagingDiffs, null, false, false, true, true, tag, description);
-                AVMDAOs.Instance().fAVMNodeDAO.flush();
                 fAVMSyncService.flatten(pkgPath.getSecond(), targetPath);
 
                 for (final AVMDifference diff : stagingDiffs)
@@ -150,7 +149,6 @@ public class AVMSubmitPackageHandler extends JBPMSpringActionHandler implements 
                     // may get lost when the item is finally approved
                     final List<AVMDifference> sandboxDiffs = fAVMSyncService.compare(pkgPath.getFirst(), pkgPath.getSecond(), -1, from, null);
                     fAVMSyncService.update(sandboxDiffs, null, true, true, false, false, tag, description);
-                    AVMDAOs.Instance().fAVMNodeDAO.flush();
                     fAVMSyncService.flatten(from, targetPath);
                 }
                 

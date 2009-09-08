@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -24,7 +24,9 @@
 package org.alfresco.repo.avm;
 
 import java.util.List;
+import java.util.Map;
 
+import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.service.namespace.QName;
 
 /**
@@ -45,29 +47,29 @@ public interface AVMStorePropertyDAO
      * @param name The QName of the property.
      * @return The given AVMStoreProperty or null if not found.
      */
-    public AVMStoreProperty get(AVMStore store, QName name);
+    public PropertyValue get(AVMStore store, QName name);
     
     /**
      * Get all the properties associated with a store.
      * @param store The AVMStore whose properties should be fetched.
-     * @return A List of properties associated with the store.
+     * @return A map of properties associated with the store.
      */
-    public List<AVMStoreProperty> get(AVMStore store);
+    public Map<QName, PropertyValue> get(AVMStore store);
 
     /**
      * Query store properties by key pattern.
      * @param store The store.
      * @param keyPattern An sql 'like' pattern wrapped up in a QName
-     * @return A List of matching AVMStoreProperties.
+     * @return A map of matching properties.
      */
-    public List<AVMStoreProperty> queryByKeyPattern(AVMStore store, QName keyPattern);
+    public Map<QName, PropertyValue> queryByKeyPattern(AVMStore store, QName keyPattern);
 
     /**
      * Query all stores' properties by key pattern.
      * @param keyPattern The sql 'like' pattern wrapped up in a QName
-     * @return A List of match AVMStoreProperties.
+     * @return A list of matching properties.
      */
-    public List<AVMStoreProperty> queryByKeyPattern(QName keyPattern);
+    public Map<String, Map<QName, PropertyValue>> queryByKeyPattern(QName keyPattern);
     
     /**
      * Update a modified property.

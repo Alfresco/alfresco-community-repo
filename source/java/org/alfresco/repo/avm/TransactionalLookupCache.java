@@ -40,6 +40,8 @@ import org.springframework.beans.factory.InitializingBean;
  * A Transactional? implementation of AVM path lookup cache
  * 
  * @author britt
+ * 
+ * @deprecated
  */
 public class TransactionalLookupCache implements LookupCache, InitializingBean
 {
@@ -153,7 +155,6 @@ public class TransactionalLookupCache implements LookupCache, InitializingBean
         {
             return null;
         }
-        dir = (DirectoryNode)AVMNodeUnwrapper.Unwrap(dir);
         // Add an entry for the root.
         result.add(dir, "", true, write);
         dir = (DirectoryNode)result.getCurrentNode();

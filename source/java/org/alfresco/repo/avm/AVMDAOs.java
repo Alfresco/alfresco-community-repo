@@ -27,7 +27,6 @@ import org.alfresco.repo.attributes.AttributeDAO;
 import org.alfresco.repo.attributes.GlobalAttributeEntryDAO;
 import org.alfresco.repo.attributes.ListEntryDAO;
 import org.alfresco.repo.attributes.MapEntryDAO;
-import org.alfresco.repo.domain.QNameDAO;
 
 /**
  * This is the (shudder) global context for AVM.  It a rendezvous
@@ -59,20 +58,22 @@ public class AVMDAOs
      */
     public AVMNodeDAO fAVMNodeDAO;
     
-    /**
-     * The QName DAO
-     */
-    public QNameDAO fQNameDAO;
+    public org.alfresco.repo.domain.avm.AVMNodeDAO newAVMNodeDAO;
+    public org.alfresco.repo.domain.avm.AVMNodeLinksDAO newAVMNodeLinksDAO;
     
     /**
      *  The AVMStore DAO.
      */
     public AVMStoreDAO fAVMStoreDAO;
     
+    public org.alfresco.repo.domain.avm.AVMStoreDAO newAVMStoreDAO;
+    
     /**
      * The VersionRootDAO.
      */
     public VersionRootDAO fVersionRootDAO;
+    
+    public org.alfresco.repo.domain.avm.AVMVersionRootDAO newAVMVersionRootDAO;
     
     /**
      * The ChildEntryDAO.
@@ -111,10 +112,15 @@ public class AVMDAOs
     {
         fAVMNodeDAO = nodeDAO;
     }
-
-    public void setQnameDAO(QNameDAO qnameDAO)
+    
+    public void setNewAvmNodeDAO(org.alfresco.repo.domain.avm.AVMNodeDAO newAVMNodeDAO)
     {
-        this.fQNameDAO = qnameDAO;
+        this.newAVMNodeDAO = newAVMNodeDAO;
+    }
+    
+    public void setNewAvmNodeLinksDAO(org.alfresco.repo.domain.avm.AVMNodeLinksDAO newAVMNodeLinksDAO)
+    {
+        this.newAVMNodeLinksDAO = newAVMNodeLinksDAO;
     }
 
     /**
@@ -148,6 +154,11 @@ public class AVMDAOs
     {
         fAVMStoreDAO = aVMStoreDAO;
     }
+    
+    public void setNewAvmStoreDAO(org.alfresco.repo.domain.avm.AVMStoreDAO newAVMStoreDAO)
+    {
+        this.newAVMStoreDAO = newAVMStoreDAO;
+    }
 
     /**
      * @param versionRootDAO the fVersionRootDAO to set
@@ -155,6 +166,11 @@ public class AVMDAOs
     public void setVersionRootDAO(VersionRootDAO versionRootDAO)
     {
         fVersionRootDAO = versionRootDAO;
+    }
+    
+    public void setNewAvmVersionRootDAO(org.alfresco.repo.domain.avm.AVMVersionRootDAO newAVMVersionRootDAO)
+    {
+        this.newAVMVersionRootDAO = newAVMVersionRootDAO;
     }
     
     public void setAvmStorePropertyDAO(AVMStorePropertyDAO avmStorePropertyDAO)

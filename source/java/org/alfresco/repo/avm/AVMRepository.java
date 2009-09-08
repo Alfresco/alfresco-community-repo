@@ -26,7 +26,6 @@ package org.alfresco.repo.avm;
 import java.io.File;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -40,7 +39,7 @@ import org.alfresco.repo.content.ContentStore;
 import org.alfresco.repo.domain.DbAccessControlList;
 import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.repo.domain.QNameDAO;
-import org.alfresco.repo.search.AVMSnapShotTriggeredIndexingMethodInterceptor.StoreType;
+import org.alfresco.repo.domain.avm.AVMStoreEntity;
 import org.alfresco.repo.security.permissions.ACLCopyMode;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
@@ -54,9 +53,7 @@ import org.alfresco.service.cmr.avm.AVMStoreDescriptor;
 import org.alfresco.service.cmr.avm.AVMWrongTypeException;
 import org.alfresco.service.cmr.avm.LayeringDescriptor;
 import org.alfresco.service.cmr.avm.VersionDescriptor;
-import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
-import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
@@ -354,17 +351,28 @@ public class AVMRepository
         Long parentAcl = dir.getAcl() == null ? null : dir.getAcl().getId();
         if (dir instanceof LayeredDirectoryNode)
         {
+            // TODO - collapse save/update
             child = new LayeredDirectoryNodeImpl((String) null, store, null, parentAcl, ACLCopyMode.INHERIT);
             ((LayeredDirectoryNode) child).setPrimaryIndirection(false);
             ((LayeredDirectoryNode) child).setLayerID(parent.getLayerID());
+            
+            DbAccessControlList acl = dir.getAcl();
+            child.setAcl(acl != null ? acl.getCopy(acl.getId(), ACLCopyMode.INHERIT) : null);
+            
+            AVMDAOs.Instance().fAVMNodeDAO.update(child);
         }
         else
         {
             child = new PlainDirectoryNodeImpl(store);
+            
+            DbAccessControlList acl = dir.getAcl();
+            child.setAcl(acl != null ? acl.getCopy(acl.getId(), ACLCopyMode.INHERIT) : null);
+            
+            AVMDAOs.Instance().fAVMNodeDAO.save(child);
         }
+        
         dir.putChild(name, child);
-        DbAccessControlList acl = dir.getAcl();
-        child.setAcl(acl != null ? acl.getCopy(acl.getId(), ACLCopyMode.INHERIT) : null);
+        
         fLookupCache.onWrite(pathParts[0]);
         AVMNodeDescriptor desc = child.getDescriptor(parent.getPath(), name, parent.getIndirection(), parent.getIndirectionVersion());
         return desc;
@@ -449,8 +457,12 @@ public class AVMRepository
         }
         // Newing up the object causes it to be written to the db.
         AVMStore rep = new AVMStoreImpl(this, name);
+        
         // Special handling for AVMStore creation.
-        rep.getRoot().setStoreNew(null);
+        AVMNode rootNode = rep.getRoot();
+        rootNode.setStoreNew(null);
+        fAVMNodeDAO.update(rootNode);
+        
         fCreateStoreTxnListener.storeCreated(name);
     }
 
@@ -541,6 +553,8 @@ public class AVMRepository
                 
                 // note: re-use generated node id as a layer id
                 ((LayeredDirectoryNode) dstNode).setLayerID(dstNode.getId());
+                
+                AVMDAOs.Instance().fAVMNodeDAO.update(dstNode);
             }
             else if (srcNode.getType() == AVMNodeType.LAYERED_FILE)
             {
@@ -770,6 +784,8 @@ public class AVMRepository
                         // note: re-use generated node id as a layer id
                         ((LayeredDirectoryNode) dstNode).setLayerID(dstNode.getId());
                     }
+                    
+                    AVMDAOs.Instance().fAVMNodeDAO.update(dstNode);
                 }
                 else
                 {
@@ -813,6 +829,8 @@ public class AVMRepository
                         ((LayeredDirectoryNode) dstNode).setLayerID(dstNode.getId());
                     }
                 }
+                
+                AVMDAOs.Instance().fAVMNodeDAO.update(dstNode);
             }
             else if (srcNode.getType() == AVMNodeType.LAYERED_FILE)
             {
@@ -957,12 +975,15 @@ public class AVMRepository
         {
             throw new AccessDeniedException("Not allowed to purge: " + name);
         }
-        root.setIsRoot(false);
+        
+        fAVMNodeDAO.update(root);
+        
         List<VersionRoot> vRoots = fVersionRootDAO.getAllInAVMStore(store);
         for (VersionRoot vr : vRoots)
         {
-            AVMNode node = vr.getRoot();
-            node.setIsRoot(false);
+            AVMNode node = fAVMNodeDAO.getByID(vr.getRoot().getId());
+            fAVMNodeDAO.update(node);
+            
             fVersionLayeredNodeEntryDAO.delete(vr);
             fVersionRootDAO.delete(vr);
         }
@@ -970,6 +991,8 @@ public class AVMRepository
         for (AVMNode newGuy : newGuys)
         {
             newGuy.setStoreNew(null);
+            
+            fAVMNodeDAO.update(newGuy);
         }
         fAVMStorePropertyDAO.delete(store);
         fAVMStoreDAO.delete(store);
@@ -1243,12 +1266,16 @@ public class AVMRepository
      */
     public List<AVMStoreDescriptor> getAVMStores()
     {
-        List<AVMStore> l = fAVMStoreDAO.getAll();
-        List<AVMStoreDescriptor> result = new ArrayList<AVMStoreDescriptor>();
-        for (AVMStore store : l)
+        List<AVMStoreEntity> storeEntities = AVMDAOs.Instance().newAVMStoreDAO.getAllStores();
+        
+        List<AVMStoreDescriptor> result = new ArrayList<AVMStoreDescriptor>(storeEntities.size());
+        for (AVMStoreEntity storeEntity : storeEntities)
         {
+            AVMStore store = new AVMStoreImpl();
+            store.setName(storeEntity.getName());
             result.add(store.getDescriptor());
         }
+        
         return result;
     }
 
@@ -1711,7 +1738,7 @@ public class AVMRepository
                 fgLogger.debug("Found component: " + name);
             }
             components.add(name);
-            Pair<Integer, String> path = recursiveGetAPath(AVMNodeUnwrapper.Unwrap(entry.getKey().getParent()), components);
+            Pair<Integer, String> path = recursiveGetAPath(entry.getKey().getParent(), components);
             if (path != null)
             {
                 return path;
@@ -2303,7 +2330,6 @@ public class AVMRepository
      *            The sql 'like' pattern, inserted into a QName.
      * @return A Map of the matching key value pairs.
      */
-    @SuppressWarnings("unchecked")
     public Map<QName, PropertyValue> queryStorePropertyKey(String store, QName keyPattern)
     {
         AVMStore st = getAVMStoreByName(store);
@@ -2311,14 +2337,8 @@ public class AVMRepository
         {
             throw new AVMNotFoundException("Store not found.");
         }
-        List<AVMStoreProperty> matches = fAVMStorePropertyDAO.queryByKeyPattern(st, keyPattern);
-        Map<Long, PropertyValue> matchesMap = new HashMap<Long, PropertyValue>();
-        for (AVMStoreProperty prop : matches)
-        {
-            matchesMap.put(prop.getQnameId(), prop.getValue());
-        }
-        Map<QName, PropertyValue> propertyMap = (Map<QName, PropertyValue>) qnameDAO.convertIdMapToQNameMap(matchesMap);
-        return propertyMap;
+        
+        return fAVMStorePropertyDAO.queryByKeyPattern(st, keyPattern);
     }
 
     /**
@@ -2330,21 +2350,7 @@ public class AVMRepository
      */
     public Map<String, Map<QName, PropertyValue>> queryStoresPropertyKeys(QName keyPattern)
     {
-        List<AVMStoreProperty> matches = fAVMStorePropertyDAO.queryByKeyPattern(keyPattern);
-        Map<String, Map<QName, PropertyValue>> results = new HashMap<String, Map<QName, PropertyValue>>();
-        for (AVMStoreProperty prop : matches)
-        {
-            String storeName = prop.getStore().getName();
-            QName propQName = qnameDAO.getQName(prop.getQnameId()).getSecond();
-            Map<QName, PropertyValue> pairs = null;
-            if ((pairs = results.get(storeName)) == null)
-            {
-                pairs = new HashMap<QName, PropertyValue>();
-                results.put(storeName, pairs);
-            }
-            pairs.put(propQName, prop.getValue());
-        }
-        return results;
+        return fAVMStorePropertyDAO.queryByKeyPattern(keyPattern);
     }
 
     /**
@@ -2941,6 +2947,9 @@ public class AVMRepository
             throw new AVMBadArgumentException("Bad store name: " + destName);
         }
         store.setName(destName);
+        
+        AVMDAOs.Instance().fAVMStoreDAO.update(store);
+        
         store.createSnapshot("Rename Store", "Rename Store from " + sourceName + " to " + destName, new HashMap<String, Integer>());
         fLookupCache.onDelete(sourceName);
         fAVMStoreDAO.invalidateCache();
@@ -3118,10 +3127,7 @@ public class AVMRepository
         {
             throw new AccessDeniedException("Not allowed to read properties: " + desc);
         }
-        QNameDAO qnameDAO = AVMDAOs.Instance().fQNameDAO;
-        @SuppressWarnings("unchecked")
-        Map<QName, PropertyValue> converted = (Map<QName, PropertyValue>) qnameDAO.convertIdMapToQNameMap(node.getProperties());
-        return converted;
+        return node.getProperties();
     }
 
     public ContentData getContentDataForRead(AVMNodeDescriptor desc)
@@ -3154,9 +3160,7 @@ public class AVMRepository
         {
             throw new AccessDeniedException("Not allowed to read properties: " + desc);
         }
-        Set<Long> aspectIds = node.getAspects();
-        // Convert to QNames
-        Set<QName> aspectQNames = qnameDAO.convertIdsToQNames(aspectIds);
+        Set<QName> aspectQNames = node.getAspects();
         return aspectQNames;
     }
 
@@ -3191,11 +3195,18 @@ public class AVMRepository
         }
         PermissionContext context = new PermissionContext(type);
         
-        // We're doing the hand unrolling of the proxy because Hibernate/CGLIB proxies are broken
-        context.addDynamicAuthorityAssignment(AVMNodeUnwrapper.Unwrap(node).getBasicAttributes().getOwner(), PermissionService.OWNER_AUTHORITY);
+        context.addDynamicAuthorityAssignment(node.getBasicAttributes().getOwner(), PermissionService.OWNER_AUTHORITY);
 
         if ((store != null) && isDirectlyContained)
         {
+            String storeOwner = getStoreUserName(store.getName());
+            if (storeOwner != null)
+            {
+                // Special case: WCM author sandbox (author, author preview, author workflow, author workflow preview)
+                context.addDynamicAuthorityAssignment(storeOwner, PermissionService.WCM_STORE_OWNER_AUTHORITY);
+            }
+            
+            /*
             StoreType storeType = StoreType.getStoreType(store.getName(), store.getDescriptor(), store.getProperties());
             switch (storeType)
             {
@@ -3229,12 +3240,15 @@ public class AVMRepository
             case WORKFLOW_PREVIEW:
             default:
             }
-
+            */
         }
+        
         // Pass in node aspects
-        Set<QName> nodeAspectQNames = qnameDAO.convertIdsToQNames(node.getAspects());
+        Set<QName> nodeAspectQNames = node.getAspects();
         Set<QName> contextQNames = context.getAspects();
         contextQNames.addAll(nodeAspectQNames);
+        
+        /* TODO review - PermissionContext.getProperties() not currently used ?
         // Pass in node properties
         Map<Long, PropertyValue> nodeProperties = node.getProperties();
         Map<QName, Serializable> contextProperties = new HashMap<QName, Serializable>(5);
@@ -3253,6 +3267,8 @@ public class AVMRepository
             }
         }
         context.getProperties().putAll(contextProperties);
+        */
+        
         Long aclId = null;
         if (acl != null)
         {
@@ -3269,7 +3285,47 @@ public class AVMRepository
         }
         return fPermissionService.hasPermission(aclId, context, permission) == AccessStatus.ALLOWED;
     }
-
+    
+    private final static String WCM_STORE_SEPARATOR = "--";
+    private final static String WCM_STORE_PREVIEW   = "--preview";
+    private final static String WCM_STORE_WORKFLOW  = "--workflow-";
+   
+    // TODO - merge with WCM 3.x utils
+    // 
+    // Note: relies on WCM sandbox naming convention
+    //
+    // Staging:                 mystore
+    // Staging preview:         mystore--preview
+    // Author:                  mystore--myuserid
+    // Author preview:          mystore--myuserid--preview
+    // Author workflow:         mystore--myuserid--workflow-guid
+    // Author workflow preview: mystore--myuserid--workflow-guid--preview
+    // Workflow:                mystore--workflow-guid
+    // Workflow preview:        mystore--worklow-guid--preview
+    //
+    private static String getStoreUserName(String storeName)
+    {
+       String storeOwner = null;
+       int preview = storeName.indexOf(WCM_STORE_PREVIEW);
+       if (preview >= 0)
+       {
+           // strip off "--preview"
+           storeName = storeName.substring(0, preview);
+       }
+       int workflow = storeName.indexOf(WCM_STORE_WORKFLOW);
+       if (workflow >= 0)
+       {
+           // strip off "--workflow-<guid>"
+           storeName = storeName.substring(0, workflow);
+       }
+       int author = storeName.indexOf(WCM_STORE_SEPARATOR);
+       if (author >= 0)
+       {
+           storeOwner = storeName.substring(author + 2);
+       }
+       return storeOwner;
+    }
+    
     public boolean can(String storeName, int version, String path, String permission)
     {
         Lookup lookup = AVMRepository.GetInstance().lookup(version, path, true);
@@ -3300,6 +3356,8 @@ public class AVMRepository
             throw new AVMNotFoundException("Store not found: " + storeName);
         }
         store.setStoreAcl(acl);
+        
+        AVMDAOs.Instance().fAVMStoreDAO.update(store);
     }
 
     /**

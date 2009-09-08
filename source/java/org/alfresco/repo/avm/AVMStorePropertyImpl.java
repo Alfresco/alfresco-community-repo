@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -26,12 +26,13 @@ package org.alfresco.repo.avm;
 import java.io.Serializable;
 
 import org.alfresco.repo.domain.PropertyValue;
+import org.alfresco.service.namespace.QName;
 
 /**
  * Simple bean to hold properties attached to AVMStores.
  * @author britt
  */
-class AVMStorePropertyImpl implements AVMStoreProperty, Serializable
+public class AVMStorePropertyImpl implements AVMStoreProperty, Serializable
 {
     private static final long serialVersionUID = -5419606158990318723L;
 
@@ -48,7 +49,7 @@ class AVMStorePropertyImpl implements AVMStoreProperty, Serializable
     /**
      * The name of the property.
      */
-    private Long qnameId;
+    private QName qname;
     
     /**
      * The actual PropertyValue.
@@ -62,17 +63,17 @@ class AVMStorePropertyImpl implements AVMStoreProperty, Serializable
     /**
      * {@inheritDoc}
      */
-    public Long getQnameId()
+    public QName getQname()
     {
-        return qnameId;
+        return qname;
     }
 
     /**
      * {@inheritDoc}
      */
-    public void setQnameId(Long qnameId)
+    public void setQname(QName qname)
     {
-        this.qnameId = qnameId;
+        this.qname = qname;
     }
 
     /**
@@ -141,13 +142,13 @@ class AVMStorePropertyImpl implements AVMStoreProperty, Serializable
             return false;
         }
         AVMStoreProperty o = (AVMStoreProperty)other;
-        return fStore.equals(o.getStore()) && qnameId.equals(o.getQnameId());
+        return fStore.equals(o.getStore()) && qname.equals(o.getQname());
     }
     
     @Override
     public int hashCode()
     {
-        return fStore.hashCode() + qnameId.hashCode();
+        return fStore.hashCode() + qname.hashCode();
     }
 }
 

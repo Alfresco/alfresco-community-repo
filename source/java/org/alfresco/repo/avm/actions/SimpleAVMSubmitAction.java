@@ -143,8 +143,6 @@ public class SimpleAVMSubmitAction extends ActionExecuterAbstractBase
         fAVMSyncService.update(diffs, fExcluder, false, false, true, true,
               "Submit of item: " + AVMNodeConverter.SplitBase(path)[1], null);
         // Cleanup by flattening the source relative to the destination.
-        // This is an ugliness to prevent database write misorderings in flatten.
-        AVMDAOs.Instance().fAVMNodeDAO.flush();
         fAVMSyncService.flatten(storePath[0] + ":/" + JNDIConstants.DIR_DEFAULT_WWW, websiteName + ":/" + JNDIConstants.DIR_DEFAULT_WWW);
     }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2008 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -37,6 +37,7 @@ import org.alfresco.service.cmr.search.SearchService;
  */
 public class AVMServiceIndexTest extends AVMServiceTestBase
 {
+    private final static long SLEEP = 180000;
     /**
      * Test async indexing.
      *
@@ -130,7 +131,7 @@ public class AVMServiceIndexTest extends AVMServiceTestBase
             assertEquals(1, results.length());
             results.close();
     
-            Thread.sleep(180000);
+            Thread.sleep(SLEEP);
     
             results = searchService.query(storeRef, "lucene", "PATH:\"//.\"");
             assertEquals(4, results.length());
@@ -163,7 +164,7 @@ public class AVMServiceIndexTest extends AVMServiceTestBase
             fService.createDirectory("avmAsynchronousTest:/a/b", "c");
             fService.createSnapshot("avmAsynchronousTest", null, null);
     
-            Thread.sleep(180000);
+            Thread.sleep(SLEEP);
     
             results = searchService.query(storeRef, "lucene", "PATH:\"//.\"");
             assertEquals(4, results.length());

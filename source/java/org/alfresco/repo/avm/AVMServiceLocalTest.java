@@ -109,6 +109,11 @@ public class AVMServiceLocalTest extends TestCase
         fService.purgeStore("layer");
     }
     
+    public void testSetup() throws Exception
+    {
+        setUp();
+    }
+    
     public void testGetAPath() throws Exception
     {
         try

@@ -39,15 +39,3 @@ ALTER TABLE alf_node_properties ADD CONSTRAINT fk_alf_nprop_loc FOREIGN KEY (loc
 CREATE INDEX fk_alf_perm_tqn ON alf_permission (type_qname_id);
 ALTER TABLE alf_permission ADD CONSTRAINT fk_alf_perm_tqn FOREIGN KEY (type_qname_id) REFERENCES alf_qname (id);
 
-CREATE INDEX fk_avm_nasp_qn ON avm_aspects (qname_id);
-ALTER TABLE avm_aspects ADD CONSTRAINT fk_avm_nasp_qn FOREIGN KEY (qname_id) REFERENCES alf_qname (id);
-
-CREATE INDEX fk_avm_nprop_qn ON avm_node_properties (qname_id);
-ALTER TABLE avm_node_properties ADD CONSTRAINT fk_avm_nprop_qn FOREIGN KEY (qname_id) REFERENCES alf_qname (id);
-
-CREATE INDEX fk_avm_sprop_qname ON avm_store_properties (qname_id);
-ALTER TABLE avm_store_properties ADD CONSTRAINT fk_avm_sprop_qname FOREIGN KEY (qname_id) REFERENCES alf_qname (id);
-
-CREATE INDEX idx_avm_hl_revpk ON avm_history_links (descendent, ancestor);
-
-CREATE INDEX idx_avm_vr_revuq ON avm_version_roots (avm_store_id, version_id); 

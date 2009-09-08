@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -317,6 +317,9 @@ class Lookup implements Serializable
             {
                 // Inform the store of a new root.
                 fAVMStore.setNewRoot((DirectoryNode)node);
+                
+                ((DirectoryNode)node).setIsRoot(true);
+                AVMDAOs.Instance().fAVMNodeDAO.update(((DirectoryNode)node));
                 AVMDAOs.Instance().fAVMStoreDAO.update(fAVMStore);
                 return;
             }

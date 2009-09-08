@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -32,7 +32,6 @@ import org.alfresco.service.transaction.TransactionService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.SessionFactory;
-import org.springframework.orm.hibernate3.HibernateTemplate;
 
 /**
  * This is the background thread for reaping no longer referenced nodes in the AVM repository. These orphans arise from
@@ -292,7 +291,7 @@ public class OrphanReaper
                         mergedFrom = mlink.getMfrom();
                         AVMDAOs.Instance().fMergeLinkDAO.delete(mlink);
                     }
-                    AVMDAOs.Instance().fAVMNodeDAO.flush();
+                    
                     // Get all the nodes that have this node as ancestor.
                     List<HistoryLink> links = AVMDAOs.Instance().fHistoryLinkDAO.getByAncestor(node);
                     for (HistoryLink link : links)
@@ -312,10 +311,13 @@ public class OrphanReaper
                         link.getMto().setMergedFrom(ancestor);
                         AVMDAOs.Instance().fMergeLinkDAO.delete(link);
                     }
+                    
                     // Get rid of all properties belonging to this node.
-                    // AVMDAOs.Instance().fAVMNodePropertyDAO.deleteAll(node);
+                    AVMDAOs.Instance().fAVMNodeDAO.deleteProperties(node.getId());
+                    
                     // Get rid of all aspects belonging to this node.
-                    // AVMDAOs.Instance().fAVMAspectNameDAO.delete(node);
+                    AVMDAOs.Instance().fAVMNodeDAO.deleteAspects(node.getId());
+                    
                     // Get rid of ACL.
                     DbAccessControlList acl = node.getAcl();
                     node.setAcl(null);

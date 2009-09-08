@@ -395,7 +395,7 @@ public class EntityLookupCache<K extends Serializable, V extends Object, VK exte
             else
             {
                 // ... it did exist
-                return new Pair<K, V>(key, value);
+                return getByKey(key);
             }
         }
         // Resolve it
@@ -412,7 +412,7 @@ public class EntityLookupCache<K extends Serializable, V extends Object, VK exte
             cache.put(valueCacheKey, key);
             cache.put(
                     new CacheRegionKey(cacheRegion, key),
-                    (value == null ? VALUE_NULL : value));
+                    (entityPair.getSecond() == null ? VALUE_NULL : entityPair.getSecond()));
         }
         // Done
         return entityPair;
@@ -451,6 +451,10 @@ public class EntityLookupCache<K extends Serializable, V extends Object, VK exte
             if (entityPair == null)
             {
                 entityPair = entityLookup.createValue(value);
+                // Cache the value
+                cache.put(
+                        new CacheRegionKey(cacheRegion, entityPair.getFirst()),
+                        (entityPair.getSecond() == null ? VALUE_NULL : entityPair.getSecond()));
             }
             return entityPair;
         }
@@ -602,8 +606,11 @@ public class EntityLookupCache<K extends Serializable, V extends Object, VK exte
         {
             // Get the value key and remove it
             VK valueKey = entityLookup.getValueKey(value);
-            CacheRegionValueKey valueCacheKey = new CacheRegionValueKey(cacheRegion, valueKey);
-            cache.remove(valueCacheKey);
+            if (valueKey != null)
+            {
+                CacheRegionValueKey valueCacheKey = new CacheRegionValueKey(cacheRegion, valueKey);
+                cache.remove(valueCacheKey);
+            }
         }
         cache.remove(keyCacheKey);
     }

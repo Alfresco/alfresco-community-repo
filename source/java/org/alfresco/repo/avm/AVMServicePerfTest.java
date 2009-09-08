@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -31,126 +31,74 @@ import java.io.PrintStream;
  */
 public class AVMServicePerfTest extends AVMServiceTestBase
 {
-    /**
-     * Test adding 100 files to each directory.
-     */
-    public void testAdd100a() throws Throwable
+    public void testSetup() throws Exception
     {
-        try
-        {
-            String [] dirs = { "a", "b", "c", "d", "e", "f", "g", "h", "i", "j" };
-            for (String dir : dirs)
-            {
-                fService.createDirectory("main:/", dir);
-                String ndir = "main:/" + dir;
-                fService.createDirectory(ndir, dir);
-                ndir = ndir + "/" + dir;
-                for (int i = 0; i < 100; i++)
-                {
-                    PrintStream out = new PrintStream(fService.createFile(ndir, "file" + i));
-                    out.println("I am " + ndir + "/file" + i);
-                    System.out.println(ndir + "/file" + i);
-                    out.close();
-                }
-                fService.createSnapshot("main", null, null);
-            }
-            //            System.out.println(recursiveList("main", -1));
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace(System.err);
-            throw e;
-        }
+        super.testSetup();
     }
-
-    /**
-     * Test adding 100 files to each directory.
-     */
-    public void testAdd100b() throws Throwable
+    
+    public void testAdd100x10a() throws Throwable
     {
-        try
-        {
-            String [] dirs = { "a", "b", "c", "d", "e", "f", "g", "h", "i", "j" };
-            for (String dir : dirs)
-            {
-                fService.createDirectory("main:/", dir);
-                String ndir = "main:/" + dir;
-                fService.createDirectory(ndir, dir);
-                ndir = ndir + "/" + dir;
-                for (int i = 0; i < 100; i++)
-                {
-                    PrintStream out = new PrintStream(fService.createFile(ndir, "file" + i));
-                    out.println("I am " + ndir + "/file" + i);
-                    System.out.println(ndir + "/file" + i);
-                    out.close();
-                }
-                fService.createSnapshot("main", null, null);
-            }
-            //            System.out.println(recursiveList("main", -1));
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace(System.err);
-            throw e;
-        }
+        add(100, 10);
     }
-
-    /**
-     * Test adding 100 files to each directory.
-     */
-    public void testAdd100c() throws Throwable
+    
+    public void testAdd100x10b() throws Throwable
     {
-        try
-        {
-            String [] dirs = { "a", "b", "c", "d", "e", "f", "g", "h", "i", "j" };
-            for (String dir : dirs)
-            {
-                fService.createDirectory("main:/", dir);
-                String ndir = "main:/" + dir;
-                fService.createDirectory(ndir, dir);
-                ndir = ndir + "/" + dir;
-                for (int i = 0; i < 100; i++)
-                {
-                    PrintStream out = new PrintStream(fService.createFile(ndir, "file" + i));
-                    out.println("I am " + ndir + "/file" + i);
-                    System.out.println(ndir + "/file" + i);
-                    out.close();
-                }
-                fService.createSnapshot("main", null, null);
-            }
-            //            System.out.println(recursiveList("main", -1));
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace(System.err);
-            throw e;
-        }
+        add(100, 10);
     }
-
+    
+    public void testAdd100x10c() throws Throwable
+    {
+        add(100, 10);
+    }
+    
+    public void testAdd100x10d() throws Throwable
+    {
+        add(100, 10);
+    }
+    
+    public void testAdd500x2e() throws Throwable
+    {
+        add(500, 2);
+    }
+    
+    public void testAdd500x4g() throws Throwable
+    {
+        add(500, 4);
+    }
+    
     /**
-     * Test adding 100 files to each directory.
+     * Test adding 100 files to each of 10 directories.
      */
-    public void testAdd100d() throws Throwable
+    private void add(int fileCnt, int dirCnt) throws Throwable
     {
         try
         {
-            String [] dirs = { "a", "b", "c", "d", "e", "f", "g", "h", "i", "j" };
-            for (String dir : dirs)
+            if ((dirCnt < 1) || (dirCnt > 10))
             {
+                throw new Exception("Invalid ("+dirCnt+") - currently supports between 1 and 10 directories");
+            }
+            
+            String [] dirs = { "a", "b", "c", "d", "e", "f", "g", "h", "i", "j" };
+            for (int j = 0; j < dirCnt; j++)
+            {
+                String dir = dirs[j];
                 fService.createDirectory("main:/", dir);
                 String ndir = "main:/" + dir;
                 fService.createDirectory(ndir, dir);
                 ndir = ndir + "/" + dir;
-                for (int i = 0; i < 100; i++)
+                for (int i = 0; i < fileCnt; i++)
                 {
                     PrintStream out = new PrintStream(fService.createFile(ndir, "file" + i));
                     out.println("I am " + ndir + "/file" + i);
+                    
+                    //System.out.println(ndir + "/file" + i);
+                    
                     out.close();
-                    System.out.println(ndir + "/file" + i);
                 }
                 fService.createSnapshot("main", null, null);
             }
-            //            System.out.println(recursiveList("main", -1));
+            
+            // System.out.println(recursiveList("main", -1));
         }
         catch (Exception e)
         {

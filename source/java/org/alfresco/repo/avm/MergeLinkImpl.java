@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -29,7 +29,7 @@ import java.io.Serializable;
  * This contains a single merged from-to relationship.
  * @author britt
  */
-class MergeLinkImpl implements MergeLink, Serializable
+public class MergeLinkImpl implements MergeLink, Serializable
 {
     private static final long serialVersionUID = 6672271083042424944L;
 

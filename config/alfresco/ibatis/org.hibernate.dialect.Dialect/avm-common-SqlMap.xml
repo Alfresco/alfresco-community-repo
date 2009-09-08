@@ -164,6 +164,11 @@
         <parameter property="localname" jdbcType="VARCHAR" javaType="java.lang.String"/>
     </parameterMap>
     
+    <parameterMap id="parameter_IdPatternMap" class="map">
+        <parameter property="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <parameter property="pattern" jdbcType="VARCHAR" javaType="java.lang.String"/>
+    </parameterMap>
+    
     
     <!--                -->
     <!-- SQL Snippets   -->
@@ -786,6 +791,17 @@
             avm_child_entries
         where
             parent_id = ?
+    </select>
+    
+    <!-- Get AVMNodeChildEntries by parent node ID and name pattern -->
+    <select id="select_AVMNodeChildEntriesByParentAndNamePattern" parameterMap="parameter_IdPatternMap" resultMap="result_AVMChildEntry">
+        select
+            *
+        from
+            avm_child_entries
+        where
+            parent_id = ? and
+            name like ?
     </select>
     
     <!-- Get AVMNodeChildEntries by child node ID -->

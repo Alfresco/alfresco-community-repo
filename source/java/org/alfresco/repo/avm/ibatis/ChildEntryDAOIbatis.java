@@ -65,9 +65,7 @@ class ChildEntryDAOIbatis implements ChildEntryDAO
      */
     public List<ChildEntry> getByParent(DirectoryNode parent, String childNamePattern)
     {
-        // TODO - add option for childNamePattern
-        
-        List<AVMChildEntryEntity> childEntryEntities = AVMDAOs.Instance().newAVMNodeLinksDAO.getChildEntriesByParent(parent.getId());
+        List<AVMChildEntryEntity> childEntryEntities = AVMDAOs.Instance().newAVMNodeLinksDAO.getChildEntriesByParent(parent.getId(), childNamePattern);
         
         List<ChildEntry> result = new ArrayList<ChildEntry>(childEntryEntities.size());
         for (AVMChildEntryEntity childEntryEntity : childEntryEntities)

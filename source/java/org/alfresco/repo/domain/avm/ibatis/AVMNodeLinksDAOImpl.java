@@ -46,6 +46,7 @@ public class AVMNodeLinksDAOImpl extends AbstractAVMNodeLinksDAOImpl
     private static final String SELECT_AVM_NODE_CHILD_ENTRY_BY_PARENT_AND_NAME ="alfresco.avm.select_AVMChildEntryByParentAndName"; // parent + name
     private static final String SELECT_AVM_NODE_CHILD_ENTRY_BY_PARENT_AND_CHILD ="alfresco.avm.select_AVMChildEntryByParentAndChild"; // parent + child
     private static final String SELECT_AVM_NODE_CHILD_ENTRIES_BY_PARENT ="alfresco.avm.select_AVMNodeChildEntriesByParent"; // parent
+    private static final String SELECT_AVM_NODE_CHILD_ENTRIES_BY_PARENT_AND_NAME_PATTERN ="alfresco.avm.select_AVMNodeChildEntriesByParentAndNamePattern"; // parent + name pattern
     private static final String SELECT_AVM_NODE_CHILD_ENTRIES_BY_CHILD ="alfresco.avm.select_AVMNodeChildEntriesByChild"; // child
     
     private static final String INSERT_AVM_NODE_CHILD_ENTRY ="alfresco.avm.insert_AVMChildEntry"; // parent + name + child
@@ -101,6 +102,16 @@ public class AVMNodeLinksDAOImpl extends AbstractAVMNodeLinksDAOImpl
         Map<String, Object> params = new HashMap<String, Object>(1);
         params.put("id", parentNodeId);
         return (List<AVMChildEntryEntity>) template.queryForList(SELECT_AVM_NODE_CHILD_ENTRIES_BY_PARENT, params);
+    }
+    
+    @SuppressWarnings("unchecked")
+    @Override
+    protected List<AVMChildEntryEntity> getChildEntryEntitiesByParent(long parentNodeId, String childNamePattern)
+    {
+        Map<String, Object> params = new HashMap<String, Object>(1);
+        params.put("id", parentNodeId);
+        params.put("pattern", childNamePattern);
+        return (List<AVMChildEntryEntity>) template.queryForList(SELECT_AVM_NODE_CHILD_ENTRIES_BY_PARENT_AND_NAME_PATTERN, params);
     }
     
     @SuppressWarnings("unchecked")

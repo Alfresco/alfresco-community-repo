@@ -266,9 +266,9 @@ public abstract class AbstractAVMNodeDAOImpl implements AVMNodeDAO
     /**
      * {@inheritDoc}
      */
-    public List<AVMNodeEntity> getNodeOrphans()
+    public List<AVMNodeEntity> getNodeOrphans(int maxSize)
     {
-        return getNodeEntityOrphans();
+        return getNodeEntityOrphans(maxSize);
     }
     
     /**
@@ -399,7 +399,7 @@ public abstract class AbstractAVMNodeDAOImpl implements AVMNodeDAO
     protected abstract List<AVMNodeEntity> getNodeEntitiesNewInStore(long storeId);
     protected abstract List<AVMNodeEntity> getLayeredNodeEntitiesNewInStore(long storeId);
     protected abstract List<Long> getLayeredNodeEntityIdsNewInStore(long storeId);
-    protected abstract List<AVMNodeEntity> getNodeEntityOrphans();
+    protected abstract List<AVMNodeEntity> getNodeEntityOrphans(int maxSize);
     protected abstract List<AVMNodeEntity> getAllLayeredDirectoryNodeEntities();
     protected abstract List<AVMNodeEntity> getAllLayeredFileNodeEntities();
     protected abstract List<Long> getAVMNodeEntityIdsByAclId(long aclId);

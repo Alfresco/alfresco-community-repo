@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2008 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -40,7 +40,7 @@ public class AVMTestSuite extends TestSuite
     public static Test suite()
     {
         TestSuite suite = new TestSuite();
-
+        
         suite.addTestSuite(AVMNodeConverterTest.class);
         suite.addTestSuite(AVMExpiredContentTest.class);
         suite.addTestSuite(FileNameValidatorTest.class);
@@ -61,6 +61,7 @@ public class AVMTestSuite extends TestSuite
         suite.addTestSuite(PurgeTestP.class);
         suite.addTestSuite(SimultaneousLoadTest.class);
         suite.addTestSuite(AVMDiffPerformanceTest.class);
+        suite.addTestSuite(AVMChildNamePatternMatchPerformanceTest.class);
         
         return suite;
     }

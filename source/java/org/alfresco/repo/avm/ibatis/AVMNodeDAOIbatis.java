@@ -244,8 +244,7 @@ class AVMNodeDAOIbatis extends HibernateDaoSupport implements AVMNodeDAO
      */
     public List<AVMNode> getOrphans(int batchSize)
     {
-        // TODO - limit to batch size
-        List<AVMNodeEntity> nodeEntities = AVMDAOs.Instance().newAVMNodeDAO.getNodeOrphans();
+        List<AVMNodeEntity> nodeEntities = AVMDAOs.Instance().newAVMNodeDAO.getNodeOrphans(batchSize);
         
         if (nodeEntities == null)
         {

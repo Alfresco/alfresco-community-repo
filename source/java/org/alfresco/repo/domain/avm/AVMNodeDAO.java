@@ -65,7 +65,7 @@ public interface AVMNodeDAO
     
     public List<Long> getLayeredNodesNewInStoreIDs(long storeId);
     
-    public List<AVMNodeEntity> getNodeOrphans();
+    public List<AVMNodeEntity> getNodeOrphans(int maxSize);
     
     public void updateNodesClearNewInStore(long storeId);
     

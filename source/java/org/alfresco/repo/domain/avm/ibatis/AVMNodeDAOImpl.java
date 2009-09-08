@@ -166,9 +166,9 @@ public class AVMNodeDAOImpl extends AbstractAVMNodeDAOImpl
     
     @SuppressWarnings("unchecked")
     @Override
-    protected List<AVMNodeEntity> getNodeEntityOrphans()
+    protected List<AVMNodeEntity> getNodeEntityOrphans(int maxSize)
     {
-        return (List<AVMNodeEntity>) template.queryForList(SELECT_AVM_NODES_ORPHANS);
+        return (List<AVMNodeEntity>) template.queryForList(SELECT_AVM_NODES_ORPHANS, 0, maxSize);
     }
     
     @SuppressWarnings("unchecked")

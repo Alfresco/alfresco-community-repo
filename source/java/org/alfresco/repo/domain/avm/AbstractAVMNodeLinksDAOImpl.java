@@ -33,6 +33,7 @@ import org.alfresco.repo.cache.lookup.EntityLookupCache;
 import org.alfresco.repo.cache.lookup.EntityLookupCache.EntityLookupCallbackDAO;
 import org.alfresco.util.Pair;
 import org.alfresco.util.ParameterCheck;
+import org.alfresco.util.SearchLanguageConversion;
 import org.springframework.dao.ConcurrencyFailureException;
 
 /**
@@ -143,9 +144,20 @@ public abstract class AbstractAVMNodeLinksDAOImpl implements AVMNodeLinksDAO
     /**
      * {@inheritDoc}
      */
-    public List<AVMChildEntryEntity> getChildEntriesByParent(long parentNodeId)
+    public List<AVMChildEntryEntity> getChildEntriesByParent(long parentNodeId, String childNamePattern)
     {
-        List<AVMChildEntryEntity> result = getChildEntryEntitiesByParent(parentNodeId);
+        List<AVMChildEntryEntity> result = null;
+        
+        if ((childNamePattern == null) || (childNamePattern.length() == 0))
+        {
+            result = getChildEntryEntitiesByParent(parentNodeId);
+        }
+        else
+        {
+            String pattern = SearchLanguageConversion.convert(SearchLanguageConversion.DEF_LUCENE, SearchLanguageConversion.DEF_SQL_LIKE, childNamePattern);
+            result = getChildEntryEntitiesByParent(parentNodeId, pattern);
+        }
+        
         if (result == null)
         {
             result = new ArrayList<AVMChildEntryEntity>(0);
@@ -214,7 +226,7 @@ public abstract class AbstractAVMNodeLinksDAOImpl implements AVMNodeLinksDAO
      */
     public void deleteChildEntriesByParent(long parentNodeId)
     {
-        List<AVMChildEntryEntity> ceEntities = getChildEntriesByParent(parentNodeId);
+        List<AVMChildEntryEntity> ceEntities = getChildEntriesByParent(parentNodeId, null);
         if (ceEntities.size() == 0)
         {
             return;
@@ -353,6 +365,7 @@ public abstract class AbstractAVMNodeLinksDAOImpl implements AVMNodeLinksDAO
     }
     
     protected abstract List<AVMChildEntryEntity> getChildEntryEntitiesByParent(long parentNodeId);
+    protected abstract List<AVMChildEntryEntity> getChildEntryEntitiesByParent(long parentNodeId, String childNamePattern);
     protected abstract List<AVMChildEntryEntity> getChildEntryEntitiesByChild(long childNodeId);
     
     protected abstract AVMChildEntryEntity getChildEntryEntity(long parentNodeId, String name);

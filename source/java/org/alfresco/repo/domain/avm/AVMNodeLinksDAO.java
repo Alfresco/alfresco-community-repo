@@ -48,9 +48,9 @@ public interface AVMNodeLinksDAO
     public void createChildEntry(long parentNodeId, String name, long childNodeId);
     
     /**
-     * Get all the children of a given parent
+     * Get all the children of a given parent (with optional child name pattern)
      */
-    public List<AVMChildEntryEntity> getChildEntriesByParent(long parentNodeId);
+    public List<AVMChildEntryEntity> getChildEntriesByParent(long parentNodeId, String childNamePattern);
     
     /**
      * Get all the ChildEntries corresponding to the given child

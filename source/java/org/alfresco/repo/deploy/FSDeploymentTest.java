@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -554,11 +554,11 @@ public class FSDeploymentTest extends AVMServiceTestBase
     	/**
     	 * Now do a smaller update and check that just a few files update
     	 * Start
-    	 * Delete /avm/hibernate
+    	 * Delete /avm/ibatis
     	 * Update /avm/AVMServiceTest.java
     	 * End
     	 */
-    	fService.removeNode("main:/avm/hibernate");
+    	fService.removeNode("main:/avm/ibatis");
     	fService.getFileOutputStream("main:/avm/AVMServiceTest.java").close();
     	report = new DeploymentReport();
     	callbacks = new ArrayList<DeploymentCallback>();
@@ -574,7 +574,7 @@ public class FSDeploymentTest extends AVMServiceTestBase
     	
     	assertEquals(4, smallUpdate.size());
     	assertTrue("Start missing", smallUpdate.contains(new DeploymentEvent(DeploymentEvent.Type.START, null, TEST_TARGET)));
-    	assertTrue("End missing", smallUpdate.contains(new DeploymentEvent(DeploymentEvent.Type.DELETED, null, "/avm/hibernate")));
+    	assertTrue("End missing", smallUpdate.contains(new DeploymentEvent(DeploymentEvent.Type.DELETED, null, "/avm/ibatis")));
     	assertTrue("Update missing", smallUpdate.contains(new DeploymentEvent(DeploymentEvent.Type.UPDATED, null, "/avm/AVMServiceTest.java")));
     	assertTrue("Delete Missing", smallUpdate.contains(new DeploymentEvent(DeploymentEvent.Type.END, null, TEST_TARGET)));	
     }

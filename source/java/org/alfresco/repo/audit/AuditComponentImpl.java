@@ -966,4 +966,28 @@ public class AuditComponentImpl implements AuditComponent
         
         auditDAO.findAuditEntries(callback, applicationName, user, from, to, maxResults);
     }
+
+    /**
+     * {@inheritDoc}
+     */
+    public void auditQuery(
+            AuditQueryCallback callback,
+            String applicationName,
+            String user,
+            Long from,
+            Long to,
+            String searchKey, String searchString,
+            int maxResults)
+    {
+        ParameterCheck.mandatory("callback", callback);
+        
+        // Shortcuts
+        if (from != null && to != null && from.compareTo(to) > 0)
+        {
+            // Time range can't yield results
+            return;
+        }
+        
+        auditDAO.findAuditEntries(callback, applicationName, user, from, to, searchKey, searchString, maxResults);
+    }
 }

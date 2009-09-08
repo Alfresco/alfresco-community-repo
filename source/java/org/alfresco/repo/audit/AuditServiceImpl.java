@@ -130,16 +130,32 @@ public class AuditServiceImpl implements AuditService
 
     /**
      * {@inheritDoc}
-     * @see AuditComponent#auditQuery(AuditQueryCallback, String, String, Long, Long, int)
      * @since 3.2
      */
     public void auditQuery(
             AuditQueryCallback callback,
-            String applicationName, String user, Long from, Long to, int maxResults)
+            String applicationName, String user, Long from, Long to,
+            int maxResults)
 
     {
         ParameterCheck.mandatory("callback", callback);
         
         auditComponent.auditQuery(callback, applicationName, user, from, to, maxResults);
+    }
+
+    /**
+     * {@inheritDoc}
+     * @since 3.2
+     */
+    public void auditQuery(
+            AuditQueryCallback callback,
+            String applicationName, String user, Long from, Long to,
+            String searchKey, String searchString,
+            int maxResults)
+
+    {
+        ParameterCheck.mandatory("callback", callback);
+        
+        auditComponent.auditQuery(callback, applicationName, user, from, to, searchKey, searchString, maxResults);
     }
 }

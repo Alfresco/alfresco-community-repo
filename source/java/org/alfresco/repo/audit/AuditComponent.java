@@ -121,5 +121,24 @@ public interface AuditComponent
      */
     void auditQuery(
             AuditQueryCallback callback,
-            String applicationName, String user, Long from, Long to, int maxResults);
+            String applicationName, String user, Long from, Long to,
+            int maxResults);
+    
+    /**
+     * Get the audit entries that match the given criteria.
+     * 
+     * @param callback          the callback that will handle results
+     * @param applicationName   if not <tt>null</tt>, find entries logged against this application 
+     * @param user              if not <tt>null</tt>, find entries logged against this user
+     * @param from              the start search time (<tt>null</tt> to start at the beginning)
+     * @param to                the end search time (<tt>null</tt> for no limit)
+     * @param searchKey         the audit key path that must exist (<tt>null</tt> to ignore)
+     * @param searchString      an audit value string that must exist (<tt>null</tt> to ignore)
+     * @param maxResults        the maximum number of results to retrieve (zero or negative to ignore)
+     */
+    void auditQuery(
+            AuditQueryCallback callback,
+            String applicationName, String user, Long from, Long to,
+            String searchKey, String searchString,
+            int maxResults);
 }

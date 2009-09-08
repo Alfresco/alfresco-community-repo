@@ -694,7 +694,8 @@ public class HibernateAuditDAO extends HibernateDaoSupport implements AuditDAO, 
      */
     public void findAuditEntries(
             AuditQueryCallback callback,
-            String applicationName, String user, Long from, Long to, int maxResults)
+            String applicationName, String user, Long from, Long to,
+            int maxResults)
     {
         throw new UnsupportedOperationException();
     }
@@ -707,8 +708,9 @@ public class HibernateAuditDAO extends HibernateDaoSupport implements AuditDAO, 
      */
     public void findAuditEntries(
             AuditQueryCallback callback,
-            String applicationName, String user, Long from, Long to, int maxResults,
-            String searchKey, String searchString)
+            String applicationName, String user, Long from, Long to,
+            String searchKey, String searchString,
+            int maxResults)
     {
         throw new UnsupportedOperationException();
     }

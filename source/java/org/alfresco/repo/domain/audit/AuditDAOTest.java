@@ -196,7 +196,7 @@ public class AuditDAOTest extends TestCase
         {
             public Void execute() throws Throwable
             {
-                auditDAO.findAuditEntries(callback, null, null, null, null, -1, "/a/b/c", null);
+                auditDAO.findAuditEntries(callback, null, null, null, null, "/a/b/c", null, -1);
                 return null;
             }
         };

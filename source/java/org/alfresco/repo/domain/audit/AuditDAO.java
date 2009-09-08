@@ -101,6 +101,7 @@ public interface AuditDAO
     
     void findAuditEntries(
             AuditQueryCallback callback,
-            String applicationName, String user, Long from, Long to, int maxResults,
-            String searchKey, String searchString);
+            String applicationName, String user, Long from, Long to,
+            String searchKey, String searchString,
+            int maxResults);
 }

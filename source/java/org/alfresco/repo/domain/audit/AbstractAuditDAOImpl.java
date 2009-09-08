@@ -343,7 +343,8 @@ public abstract class AbstractAuditDAOImpl implements AuditDAO
 
     public void findAuditEntries(
             AuditQueryCallback callback,
-            String applicationName, String user, Long from, Long to, int maxResults)
+            String applicationName, String user, Long from, Long to,
+            int maxResults)
     {
         AuditQueryRowHandler rowHandler = new AuditQueryRowHandler(callback);
         findAuditEntries(rowHandler, applicationName, user, from, to, maxResults, null, null);
@@ -351,8 +352,9 @@ public abstract class AbstractAuditDAOImpl implements AuditDAO
     
     public void findAuditEntries(
             AuditQueryCallback callback,
-            String applicationName, String user, Long from, Long to, int maxResults,
-            String searchKey, String searchString)
+            String applicationName, String user, Long from, Long to,
+            String searchKey, String searchString,
+            int maxResults)
     {
         AuditQueryRowHandler rowHandler = new AuditQueryRowHandler(callback);
         findAuditEntries(rowHandler, applicationName, user, from, to, maxResults, searchKey, searchString);

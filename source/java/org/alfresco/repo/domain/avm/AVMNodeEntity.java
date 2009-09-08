@@ -208,9 +208,9 @@ public class AVMNodeEntity
         return isRoot;
     }
     
-    public void setRoot(boolean isRoot)
+    public void setRoot(Boolean isRoot)
     {
-        this.isRoot = isRoot;
+        this.isRoot = (isRoot == null ? false : isRoot);
     }
     
     public Integer getDeletedType()
@@ -248,9 +248,9 @@ public class AVMNodeEntity
         return primaryIndirection;
     }
     
-    public void setPrimaryIndirection(boolean primaryIndirection)
+    public void setPrimaryIndirection(Boolean primaryIndirection)
     {
-        this.primaryIndirection = primaryIndirection;
+        this.primaryIndirection = (primaryIndirection == null ? false : primaryIndirection);
     }
     
     public boolean getOpacity()
@@ -258,9 +258,9 @@ public class AVMNodeEntity
         return opacity;
     }
     
-    public void setOpacity(boolean opacity)
+    public void setOpacity(Boolean opacity)
     {
-        this.opacity = opacity;
+        this.opacity = (opacity == null ? false : opacity);
     }
     
     public String getContentUrl()

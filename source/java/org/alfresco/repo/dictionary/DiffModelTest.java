@@ -754,6 +754,106 @@ public class DiffModelTest extends TestCase
         
         "</model>";
     
+    public static final String MODEL6_XML = 
+        "<model name=\"test1:model6\" xmlns=\"http://www.alfresco.org/model/dictionary/1.0\">" +
+        
+        "   <description>Another description</description>" +
+        "   <author>Alfresco</author>" +
+        "   <published>2007-08-01</published>" +
+        "   <version>1.0</version>" +
+        
+        "   <imports>" +
+        "      <import uri=\"http://www.alfresco.org/model/dictionary/1.0\" prefix=\"d\"/>" +
+        "   </imports>" +
+        
+        "   <namespaces>" +
+        "      <namespace uri=\"http://www.alfresco.org/model/test1/1.0\" prefix=\"test1\"/>" +
+        "   </namespaces>" +
+        
+        "   <types>" +
+        
+        "      <type name=\"test1:type1\">" +
+        "        <title>Type1 Title</title>" +
+        "        <description>Type1 Description</description>" +
+        "        <properties>" +
+        "           <property name=\"test1:prop1\">" +
+        "              <title>Prop1 Title</title>" +
+        "              <description>Prop1 Description</description>" +
+        "              <type>d:text</type>" +
+        "           </property>" +
+        "        </properties>" +
+        "      </type>" +
+        
+        "   </types>" +
+        
+        "   <aspects>" +
+        
+        "      <aspect name=\"test1:aspect1\">" +
+        "        <title>Aspect1 Title</title>" +
+        "        <description>Aspect1 Description</description>" +
+        "        <properties>" +
+        "           <property name=\"test1:prop9\">" +
+        "              <title>Prop9 Title</title>" +
+        "              <description>Prop9 Description</description>" +
+        "              <type>d:text</type>" +
+        "           </property>" +
+        "        </properties>" +
+        "      </aspect>" +
+        
+        "   </aspects>" +
+        
+        "</model>";
+    
+    public static final String MODEL6_UPDATE1_XML = 
+        "<model name=\"test1:model6\" xmlns=\"http://www.alfresco.org/model/dictionary/1.0\">" +
+        
+        "   <description>Another description - UPDATE1</description>" +
+        "   <author>Alfresco - UPDATE1</author>" +
+        "   <published>2009-08-01</published>" +
+        "   <version>2.0</version>" +
+        
+        "   <imports>" +
+        "      <import uri=\"http://www.alfresco.org/model/dictionary/1.0\" prefix=\"d\"/>" +
+        "   </imports>" +
+        
+        "   <namespaces>" +
+        "      <namespace uri=\"http://www.alfresco.org/model/test1/1.0\" prefix=\"test1\"/>" +
+        "   </namespaces>" +
+        
+        "   <types>" +
+        
+        "      <type name=\"test1:type1\">" +
+        "        <title>Type1 Title - UPDATE1</title>" +
+        "        <description>Type1 Description - UPDATE1</description>" +
+        "        <properties>" +
+        "           <property name=\"test1:prop1\">" +
+        "              <title>Prop1 Title - UPDATE1</title>" +
+        "              <description>Prop1 Description - UPDATE1</description>" +
+        "              <type>d:text</type>" +
+        "           </property>" +
+        "        </properties>" +
+        "      </type>" +
+        
+        "   </types>" +
+        
+        "   <aspects>" +
+        
+        "      <aspect name=\"test1:aspect1\">" +
+        "        <title>Aspect1 Title</title>" +
+        "        <description>Aspect1 Description</description>" +
+        "        <properties>" +
+        "           <property name=\"test1:prop9\">" +
+        "              <title>Prop9 Title - UPDATE1</title>" +
+        "              <description>Prop9 Description - UPDATE1</description>" +
+        "              <type>d:text</type>" +
+        "           </property>" +
+        "        </properties>" +
+        "      </aspect>" +
+        
+        "   </aspects>" +
+        
+        "</model>";
+    
     private DictionaryDAOImpl dictionaryDAO;
 
     /**
@@ -996,6 +1096,31 @@ public class DiffModelTest extends TestCase
         assertEquals(1, countDiffs(modelDiffs, M2ModelDiff.TYPE_TYPE, M2ModelDiff.DIFF_UNCHANGED));
         assertEquals(1, countDiffs(modelDiffs, M2ModelDiff.TYPE_ASPECT, M2ModelDiff.DIFF_UNCHANGED));  
 
+    }
+    
+    public void testIncUpdateTitleDescription()
+    {
+        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(MODEL6_XML.getBytes());
+        M2Model model = M2Model.createModel(byteArrayInputStream);
+        QName modelName = dictionaryDAO.putModel(model);  
+        CompiledModel previousVersion = dictionaryDAO.getCompiledModel(modelName);
+        
+        byteArrayInputStream = new ByteArrayInputStream(MODEL6_UPDATE1_XML.getBytes());
+        model = M2Model.createModel(byteArrayInputStream);
+        modelName = dictionaryDAO.putModel(model);
+        CompiledModel newVersion = dictionaryDAO.getCompiledModel(modelName);
+        
+        List<M2ModelDiff> modelDiffs = dictionaryDAO.diffModel(previousVersion, newVersion);
+        
+        for (M2ModelDiff modelDiff : modelDiffs)
+        {
+            System.out.println(modelDiff.toString());
+        }   
+        
+        assertEquals(2, modelDiffs.size());
+        
+        assertEquals(1, countDiffs(modelDiffs, M2ModelDiff.TYPE_TYPE, M2ModelDiff.DIFF_UPDATED_INC));
+        assertEquals(1, countDiffs(modelDiffs, M2ModelDiff.TYPE_ASPECT, M2ModelDiff.DIFF_UPDATED_INC));
     }
     
     public void testNonIncUpdatePropertiesRemoved()

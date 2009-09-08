@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -34,6 +34,7 @@ import org.alfresco.service.cmr.dictionary.DictionaryException;
 import org.alfresco.service.cmr.dictionary.ModelDefinition;
 import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.EqualsHelper;
 
 
 /**
@@ -74,7 +75,6 @@ import org.alfresco.service.namespace.QName;
     @Override
     public String toString()
     {
-    	// note: currently used for model 'diffs'
         StringBuilder sb = new StringBuilder(56);
         sb.append("Association")
           .append("[ class=").append(classDef)
@@ -251,9 +251,81 @@ import org.alfresco.service.namespace.QName;
         return assoc.isTargetMany();
     }
     
+    /* package */ M2ModelDiff diffAssoc(AssociationDefinition assocDef)
+    {
+        M2ModelDiff modelDiff = null;
+        boolean isUpdated = false;
+        boolean isUpdatedIncrementally = false;
+        
+        if (this == assocDef)
+        {
+            modelDiff = new M2ModelDiff(name, M2ModelDiff.TYPE_ASSOCIATION, M2ModelDiff.DIFF_UNCHANGED);
+            return modelDiff;
+        }
+        
+        // check name - cannot be null
+        if (! name.equals(assocDef.getName()))
+        { 
+            isUpdated = true;
+        }
+        
+        // check title
+        if (! EqualsHelper.nullSafeEquals(getTitle(), assocDef.getTitle(), false))
+        { 
+            isUpdatedIncrementally = true;
+        }
+        
+        // check description
+        if (! EqualsHelper.nullSafeEquals(getDescription(), assocDef.getDescription(), false))
+        { 
+            isUpdatedIncrementally = true;
+        }
+        
+        // check source class qname
+        if (! EqualsHelper.nullSafeEquals(getSourceClass().getName(), assocDef.getSourceClass().getName()))
+        { 
+            isUpdated = true;
+        }
+        
+        // check source role qname
+        if (! EqualsHelper.nullSafeEquals(getSourceRoleName(), assocDef.getSourceRoleName()))
+        { 
+            isUpdated = true;
+        }
+        
+        // check target class qname
+        if (! EqualsHelper.nullSafeEquals(getTargetClass().getName(), assocDef.getTargetClass().getName()))
+        { 
+            isUpdated = true;
+        }
+        
+        // check target role qname
+        if (! EqualsHelper.nullSafeEquals(getTargetRoleName(), assocDef.getTargetRoleName()))
+        { 
+            isUpdated = true;
+        }
+        
+        // TODO - additional checks - is... (x7)
+        
+        if (isUpdated)
+        {
+            modelDiff = new M2ModelDiff(name, M2ModelDiff.TYPE_ASSOCIATION, M2ModelDiff.DIFF_UPDATED);
+        }
+        else if (isUpdatedIncrementally)
+        {
+            modelDiff = new M2ModelDiff(name, M2ModelDiff.TYPE_ASSOCIATION, M2ModelDiff.DIFF_UPDATED_INC);
+        }
+        else
+        {
+            modelDiff = new M2ModelDiff(name, M2ModelDiff.TYPE_ASSOCIATION, M2ModelDiff.DIFF_UNCHANGED);
+        }
+        
+        return modelDiff;
+    }
+    
     /*package*/ static Collection<M2ModelDiff> diffAssocLists(Collection<AssociationDefinition> previousAssocs, Collection<AssociationDefinition> newAssocs)
     {
-        List<M2ModelDiff> M2ModelDiffs = new ArrayList<M2ModelDiff>();
+        List<M2ModelDiff> modelDiffs = new ArrayList<M2ModelDiff>();
         
         for (AssociationDefinition previousAssoc : previousAssocs)
         {
@@ -262,15 +334,7 @@ import org.alfresco.service.namespace.QName;
             {
                 if (newAssoc.getName().equals(previousAssoc.getName()))
                 {
-                    // TODO currently uses toString() to check whether changed - could override equals()
-                    if ((((M2AssociationDefinition)previousAssoc).toString()).equals(((M2AssociationDefinition)newAssoc).toString()))
-                    {
-                        M2ModelDiffs.add(new M2ModelDiff(newAssoc.getName(), M2ModelDiff.TYPE_ASSOCIATION, M2ModelDiff.DIFF_UNCHANGED));
-                    }
-                    else
-                    {
-                        M2ModelDiffs.add(new M2ModelDiff(newAssoc.getName(), M2ModelDiff.TYPE_ASSOCIATION, M2ModelDiff.DIFF_UPDATED));
-                    }
+                    modelDiffs.add(((M2AssociationDefinition)previousAssoc).diffAssoc(newAssoc));
                     found = true;
                     break;
                 }
@@ -278,7 +342,7 @@ import org.alfresco.service.namespace.QName;
             
             if (! found)
             {
-                M2ModelDiffs.add(new M2ModelDiff(previousAssoc.getName(), M2ModelDiff.TYPE_ASSOCIATION, M2ModelDiff.DIFF_DELETED));
+                modelDiffs.add(new M2ModelDiff(previousAssoc.getName(), M2ModelDiff.TYPE_ASSOCIATION, M2ModelDiff.DIFF_DELETED));
             }
         }
         
@@ -296,11 +360,11 @@ import org.alfresco.service.namespace.QName;
             
             if (! found)
             {
-                M2ModelDiffs.add(new M2ModelDiff(newAssoc.getName(), M2ModelDiff.TYPE_ASSOCIATION, M2ModelDiff.DIFF_CREATED));
-            }                        
+                modelDiffs.add(new M2ModelDiff(newAssoc.getName(), M2ModelDiff.TYPE_ASSOCIATION, M2ModelDiff.DIFF_CREATED));
+            }
         }
         
-        return M2ModelDiffs;
+        return modelDiffs;
     }
 
 }

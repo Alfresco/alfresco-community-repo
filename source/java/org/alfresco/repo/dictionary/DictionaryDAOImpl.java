@@ -1111,6 +1111,18 @@ public class DictionaryDAOImpl implements DictionaryDAO
     /**
      * Return diffs between two compiled models.
      * 
+     * note:
+     * - checks classes (types & aspects) for incremental updates
+     * - checks properties for incremental updates, but does not include the diffs
+     * - checks assocs & child assocs for incremental updates, but does not include the diffs
+     * - incremental updates include changes in title/description, property default value, etc
+     * - ignores changes in model definition except name (ie. title, description, author, published date, version are treated as an incremental update)
+     * 
+     * TODO
+     * - imports
+     * - namespace
+     * - datatypes
+     * - constraints (including property constraints - references and inline)
      * 
      * @param model
      * @return model diffs (if any)

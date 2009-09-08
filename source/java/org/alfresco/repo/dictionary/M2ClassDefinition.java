@@ -44,6 +44,7 @@ import org.alfresco.service.cmr.dictionary.ModelDefinition;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.EqualsHelper;
 
 
 /**
@@ -478,11 +479,9 @@ import org.alfresco.service.namespace.QName;
      * return differences in class definition
      * 
      * note:
-     * - ignores changes in model title, description, author, published date, version
-     * - ignores changes in default values
      * - checks properties for incremental updates, but does not include the diffs
      * - checks assocs & child assocs for incremental updates, but does not include the diffs
-     * - does not check default values
+     * - incremental updates include changes in title/description, property default value, etc
      */
     /* package */ List<M2ModelDiff> diffClass(ClassDefinition classDef)
     {
@@ -497,6 +496,18 @@ import org.alfresco.service.namespace.QName;
         
         // check name - cannot be null
         if (! name.equals(classDef.getName())) 
+        { 
+            isUpdated = true;
+        }
+        
+        // check title
+        if (! EqualsHelper.nullSafeEquals(getTitle(), classDef.getTitle(), false))
+        { 
+            isUpdatedIncrementally = true;
+        }
+        
+        // check description
+        if (! EqualsHelper.nullSafeEquals(getDescription(), classDef.getDescription(), false))
         { 
             isUpdatedIncrementally = true;
         }
@@ -682,7 +693,7 @@ import org.alfresco.service.namespace.QName;
             if (! found)
             {
                 modelDiffs.add(new M2ModelDiff(newClass.getName(), M2ModelDiffType, M2ModelDiff.DIFF_CREATED));
-            }                        
+            }
         }
         
         return modelDiffs;

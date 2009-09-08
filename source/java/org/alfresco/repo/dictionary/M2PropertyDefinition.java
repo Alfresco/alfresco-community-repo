@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -39,6 +39,7 @@ import org.alfresco.service.cmr.dictionary.ModelDefinition;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.EqualsHelper;
 
 
 /**
@@ -226,7 +227,6 @@ import org.alfresco.service.namespace.QName;
     @Override
     public String toString()
     {
-        // note: currently used for model 'diffs'   	
         StringBuffer sb = new StringBuffer();
         sb.append("Name: " + getName() + "\n");
         sb.append("Title: " + getTitle() + "\n");
@@ -401,9 +401,129 @@ import org.alfresco.service.namespace.QName;
         return constraintDefs;
     }
     
+    /* package */ M2ModelDiff diffProperty(PropertyDefinition propDef)
+    {
+        M2ModelDiff modelDiff = null;
+        boolean isUpdated = false;
+        boolean isUpdatedIncrementally = false;
+        
+        if (this == propDef)
+        {
+            modelDiff = new M2ModelDiff(name, M2ModelDiff.TYPE_PROPERTY, M2ModelDiff.DIFF_UNCHANGED);
+            return modelDiff;
+        }
+        
+        // check name - cannot be null
+        if (! name.equals(propDef.getName()))
+        { 
+            isUpdated = true;
+        }
+        
+        // check title
+        if (! EqualsHelper.nullSafeEquals(getTitle(), propDef.getTitle(), false))
+        { 
+            isUpdatedIncrementally = true;
+        }
+        
+        // check description
+        if (! EqualsHelper.nullSafeEquals(getDescription(), propDef.getDescription(), false))
+        { 
+            isUpdatedIncrementally = true;
+        }
+        
+        // check default value
+        if (! EqualsHelper.nullSafeEquals(getDefaultValue(), propDef.getDefaultValue(), false))
+        { 
+            isUpdatedIncrementally = true;
+        }
+        
+        // check datatype qname (TODO check datatype defs separately)
+        if (! EqualsHelper.nullSafeEquals(getDataType().getName(), propDef.getDataType().getName()))
+        { 
+            isUpdated = true;
+        }
+        
+        // check container class qname
+        if (! EqualsHelper.nullSafeEquals(getContainerClass().getName(), propDef.getContainerClass().getName()))
+        { 
+            isUpdated = true;
+        }
+        
+        // check multi-valued
+        if (isMultiValued() != propDef.isMultiValued())
+        { 
+            isUpdated = true;
+        }
+        
+        // check mandatory
+        if (isMandatory() != propDef.isMandatory())
+        { 
+            isUpdated = true;
+        }
+        
+        // check mandatory enforced
+        if (isMandatoryEnforced() != propDef.isMandatoryEnforced())
+        { 
+            isUpdated = true;
+        }
+        
+        // check protected
+        if (isProtected() != propDef.isProtected())
+        { 
+            isUpdated = true;
+        }
+        
+        // check indexed
+        if (isIndexed() != propDef.isIndexed())
+        { 
+            isUpdated = true;
+        }
+        
+        // check stored in index
+        if (isStoredInIndex() != propDef.isStoredInIndex())
+        { 
+            isUpdated = true;
+        }
+        
+        // check auto index
+        if (isIndexedAtomically() != propDef.isIndexedAtomically())
+        { 
+            isUpdated = true;
+        }
+        
+        // check override
+        if (isOverride() != propDef.isOverride())
+        { 
+            isUpdated = true;
+        }
+        
+        // check index tokenisation mode
+        if (! EqualsHelper.nullSafeEquals(getIndexTokenisationMode().toString(), propDef.getIndexTokenisationMode().toString(), false))
+        { 
+            isUpdated = true;
+        }
+        
+        // TODO - check prop constraints (inline and referenced)
+        
+        if (isUpdated)
+        {
+            modelDiff = new M2ModelDiff(name, M2ModelDiff.TYPE_PROPERTY, M2ModelDiff.DIFF_UPDATED);
+        }
+        else if (isUpdatedIncrementally)
+        {
+            modelDiff = new M2ModelDiff(name, M2ModelDiff.TYPE_PROPERTY, M2ModelDiff.DIFF_UPDATED_INC);
+        }
+        else
+        {
+            modelDiff = new M2ModelDiff(name, M2ModelDiff.TYPE_PROPERTY, M2ModelDiff.DIFF_UNCHANGED);
+        }
+        
+        return modelDiff;
+    }
+    
     /*package*/ static Collection<M2ModelDiff> diffPropertyLists(Collection<PropertyDefinition> previousProperties, Collection<PropertyDefinition> newProperties)
     {
-        List<M2ModelDiff> M2ModelDiffs = new ArrayList<M2ModelDiff>();
+        List<M2ModelDiff> modelDiffs = new ArrayList<M2ModelDiff>();
         
         for (PropertyDefinition previousProperty : previousProperties)
         {
@@ -412,15 +532,7 @@ import org.alfresco.service.namespace.QName;
             {
                 if (newProperty.getName().equals(previousProperty.getName()))
                 {
-                    // TODO currently uses toString() to check whether changed - could override equals()
-                    if ((((M2PropertyDefinition)previousProperty).toString()).equals(((M2PropertyDefinition)newProperty).toString()))
-                    {
-                        M2ModelDiffs.add(new M2ModelDiff(newProperty.getName(), M2ModelDiff.TYPE_PROPERTY, M2ModelDiff.DIFF_UNCHANGED));
-                    }
-                    else
-                    {
-                        M2ModelDiffs.add(new M2ModelDiff(newProperty.getName(), M2ModelDiff.TYPE_PROPERTY, M2ModelDiff.DIFF_UPDATED));
-                    }
+                    modelDiffs.add(((M2PropertyDefinition)previousProperty).diffProperty(newProperty));
                     found = true;
                     break;
                 }
@@ -428,7 +540,7 @@ import org.alfresco.service.namespace.QName;
             
             if (! found)
             {
-                M2ModelDiffs.add(new M2ModelDiff(previousProperty.getName(), M2ModelDiff.TYPE_PROPERTY, M2ModelDiff.DIFF_DELETED));
+                modelDiffs.add(new M2ModelDiff(previousProperty.getName(), M2ModelDiff.TYPE_PROPERTY, M2ModelDiff.DIFF_DELETED));
             }
         }
         
@@ -446,10 +558,10 @@ import org.alfresco.service.namespace.QName;
             
             if (! found)
             {
-                M2ModelDiffs.add(new M2ModelDiff(newProperty.getName(), M2ModelDiff.TYPE_PROPERTY, M2ModelDiff.DIFF_CREATED));
-            }                        
+                modelDiffs.add(new M2ModelDiff(newProperty.getName(), M2ModelDiff.TYPE_PROPERTY, M2ModelDiff.DIFF_CREATED));
+            }
         }
         
-        return M2ModelDiffs;
+        return modelDiffs;
     }
 }

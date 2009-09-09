@@ -63,6 +63,7 @@ public class MimetypeMap implements MimetypeService
     public static final String MIMETYPE_HTML = "text/html";
     public static final String MIMETYPE_XHTML = "application/xhtml+xml";
     public static final String MIMETYPE_PDF = "application/pdf";
+    public static final String MIMETYPE_JSON = "application/json";
     public static final String MIMETYPE_WORD = "application/msword";
     public static final String MIMETYPE_EXCEL = "application/vnd.excel";
     public static final String MIMETYPE_BINARY = "application/octet-stream";

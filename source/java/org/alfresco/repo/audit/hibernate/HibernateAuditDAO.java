@@ -39,6 +39,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.audit.AuditComponentImpl;
@@ -48,6 +49,7 @@ import org.alfresco.repo.content.ContentContext;
 import org.alfresco.repo.content.ContentStore;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.domain.audit.AuditDAO;
+import org.alfresco.repo.domain.audit.AuditDAO.AuditApplicationInfo;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.TransactionalDao;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
@@ -670,7 +672,40 @@ public class HibernateAuditDAO extends HibernateDaoSupport implements AuditDAO, 
      * @throws UnsupportedOperationException always
      * @since 3.2
      */
-    public Long getOrCreateAuditApplication(Long modelId, String applicationName)
+    public AuditApplicationInfo createAuditApplication(String application, Long modelId)
+    {
+        throw new UnsupportedOperationException();
+    }
+
+    /**
+     * Fallout implementation from new audit DAO
+     * 
+     * @throws UnsupportedOperationException always
+     * @since 3.2
+     */
+    public AuditApplicationInfo getAuditApplication(String applicationName)
+    {
+        throw new UnsupportedOperationException();
+    }
+
+    /**
+     * Fallout implementation from new audit DAO
+     * 
+     * @throws UnsupportedOperationException always
+     * @since 3.2
+     */
+    public void updateAuditApplicationModel(Long id, Long modelId)
+    {
+        throw new UnsupportedOperationException();
+    }
+
+    /**
+     * Fallout implementation from new audit DAO
+     * 
+     * @throws UnsupportedOperationException always
+     * @since 3.2
+     */
+    public void updateAuditApplicationDisabledPaths(Long id, Set<String> disabledPaths)
     {
         throw new UnsupportedOperationException();
     }

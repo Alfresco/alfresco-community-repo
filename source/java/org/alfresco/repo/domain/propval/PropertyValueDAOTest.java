@@ -28,6 +28,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Random;
 
@@ -65,6 +66,7 @@ public class PropertyValueDAOTest extends TestCase
         ServiceRegistry serviceRegistry = (ServiceRegistry) ctx.getBean(ServiceRegistry.SERVICE_REGISTRY);
         transactionService = serviceRegistry.getTransactionService();
         txnHelper = transactionService.getRetryingTransactionHelper();
+        txnHelper.setMaxRetries(0);
         
         propertyValueDAO = (PropertyValueDAO) ctx.getBean("propertyValueDAO");
         
@@ -434,6 +436,24 @@ public class PropertyValueDAOTest extends TestCase
         }
     }
     
+    public void testPropertyValue_EmptyHashMap() throws Exception
+    {
+        final HashMap<String, String> map = new HashMap<String, String>(15);
+        runPropertyValueTest(map, true);
+    }
+    
+    public void testPropertyValue_EmptyArrayList() throws Exception
+    {
+        final ArrayList<String> list = new ArrayList<String>(20);
+        runPropertyValueTest(list, true);
+    }
+    
+    public void testPropertyValue_EmptyHashSet() throws Exception
+    {
+        final HashSet<String> set = new HashSet<String>(20);
+        runPropertyValueTest(set, true);
+    }
+    
     public void testPropertyValue_MapOfStrings() throws Exception
     {
         final HashMap<String, String> map = new HashMap<String, String>(15);
@@ -446,7 +466,53 @@ public class PropertyValueDAOTest extends TestCase
         runPropertyValueTest(map, false);
     }
     
-    public void testPropertyValue_MapOfMapOfSerializables() throws Exception
+    /**
+     * Tests that the given value can be persisted and retrieved with the same resulting ID
+     */
+    private Long runPropertyTest(final Serializable value) throws Exception
+    {
+        // Create it
+        RetryingTransactionCallback<Long> createValueCallback = new RetryingTransactionCallback<Long>()
+        {
+            public Long execute() throws Throwable
+            {
+                // Get the classes
+                return propertyValueDAO.createProperty(value);
+            }
+        };
+        final Long entityId = txnHelper.doInTransaction(createValueCallback, false);
+        assertNotNull(entityId);
+        
+        // Retrieve it by ID
+        RetryingTransactionCallback<Serializable> getByIdCallback = new RetryingTransactionCallback<Serializable>()
+        {
+            public Serializable execute() throws Throwable
+            {
+                // Get the classes
+                return propertyValueDAO.getPropertyById(entityId);
+            }
+        };
+        final Serializable entityValueCheck = txnHelper.doInTransaction(getByIdCallback, false);
+        assertNotNull(entityValueCheck);
+        assertEquals(value, entityValueCheck);
+        
+        // Done
+        return entityId;
+    }
+
+    public void testProperty_MapOfStrings() throws Exception
+    {
+        final HashMap<String, String> map = new HashMap<String, String>(15);
+        for (int i = 0; i < 20; i++)
+        {
+            String key = "MAP-KEY-" + i;
+            String value = "MAP-VALUE-" + i;
+            map.put(key, value);
+        }
+        runPropertyTest(map);
+    }
+    
+    public void testProperty_MapOfMapOfSerializables() throws Exception
     {
         final HashMap<String, Serializable> mapInner = new HashMap<String, Serializable>(15);
         for (int i = 0; i < 20; i++)
@@ -461,10 +527,10 @@ public class PropertyValueDAOTest extends TestCase
             String key = "OUTERMAP-KEY-" + i;
             mapOuter.put(key, mapInner);
         }
-        runPropertyValueTest(mapOuter, false);
+        runPropertyTest(mapOuter);
     }
     
-    public void testPropertyValue_MapOfMapOfStrings() throws Exception
+    public void testProperty_MapOfMapOfStrings() throws Exception
     {
         final HashMap<String, String> mapInner = new HashMap<String, String>(15);
         for (int i = 0; i < 20; i++)
@@ -479,10 +545,10 @@ public class PropertyValueDAOTest extends TestCase
             String key = "OUTERMAP-KEY-" + i;
             mapOuter.put(key, mapInner);
         }
-        runPropertyValueTest(mapOuter, false);
+        runPropertyTest(mapOuter);
     }
     
-    public void testPropertyValue_CollectionOfStrings() throws Exception
+    public void testProperty_CollectionOfStrings() throws Exception
     {
         final ArrayList<String> list = new ArrayList<String>(20);
         for (int i = 0; i < 20; i++)
@@ -490,8 +556,76 @@ public class PropertyValueDAOTest extends TestCase
             String value = "COLL-VALUE-" + i;
             list.add(value);
         }
-        runPropertyValueTest(list, false);
+        runPropertyTest(list);
     }
+    
+    public void testProperty_UpdateCollection() throws Exception
+    {
+        final ArrayList<String> list = new ArrayList<String>(20);
+        for (int i = 0; i < 20; i++)
+        {
+            String value = "COLL-VALUE-" + i;
+            list.add(value);
+        }
+        final Long propId = runPropertyTest(list);
+        
+        // Now update it
+        list.add("Additional value");
+
+        RetryingTransactionCallback<Serializable> updateAndGetCallback = new RetryingTransactionCallback<Serializable>()
+        {
+            public Serializable execute() throws Throwable
+            {
+                // Get the classes
+                propertyValueDAO.updateProperty(propId, list);
+                // Get it by the ID again
+                return propertyValueDAO.getPropertyById(propId);
+            }
+        };
+        final Serializable entityValueCheck = txnHelper.doInTransaction(updateAndGetCallback, false);
+        assertNotNull(entityValueCheck);
+        assertEquals(list, entityValueCheck);
+    }
+    
+    public void testProperty_Delete() throws Exception
+    {
+        final ArrayList<String> list = new ArrayList<String>(20);
+        final Long propId = runPropertyTest(list);
+        
+        // Now delete it
+        RetryingTransactionCallback<Serializable> deleteCallback = new RetryingTransactionCallback<Serializable>()
+        {
+            public Serializable execute() throws Throwable
+            {
+                // Get the classes
+                propertyValueDAO.deleteProperty(propId);
+                return null;
+            }
+        };
+        txnHelper.doInTransaction(deleteCallback, false);
+
+        RetryingTransactionCallback<Serializable> failedGetCallback = new RetryingTransactionCallback<Serializable>()
+        {
+            public Serializable execute() throws Throwable
+            {
+                // Get it by the ID again
+                return propertyValueDAO.getPropertyById(propId);
+            }
+        };
+        try
+        {
+            final Serializable entityValueCheck = txnHelper.doInTransaction(failedGetCallback, false);
+            fail("Deleted property should not be gettable.  Got: " + entityValueCheck);
+        }
+        catch(Throwable e)
+        {
+            // Expected
+        }
+    }
+    
+    /*
+     * Switch off caches and rerun some of the tests
+     */
     
     public void testPropertyClass_NoCache() throws Exception
     {

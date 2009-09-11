@@ -28,6 +28,7 @@ import java.io.Serializable;
 import java.net.URL;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.alfresco.repo.audit.AuditState;
 import org.alfresco.service.cmr.audit.AuditInfo;
@@ -67,6 +68,66 @@ public interface AuditDAO
      */
 
     /**
+     * Information about the audit application to be passed in an out of the interface.
+     * 
+     * @author Derek Hulley
+     * @since 3.2
+     */
+    public static class AuditApplicationInfo
+    {
+        private Long id;
+        private String name;
+        private Long modelId;
+        private Set<String> disabledPaths;
+        
+        @Override
+        public String toString()
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.append("AuditApplicationInfo ")
+              .append("[ id=").append(id)
+              .append(", name=").append(name)
+              .append(", modelId=").append(modelId)
+              .append(", disabledPaths=").append(disabledPaths)
+              .append("]");
+            return sb.toString();
+        }
+        
+        public Long getId()
+        {
+            return id;
+        }
+        public void setId(Long id)
+        {
+            this.id = id;
+        }
+        public String getName()
+        {
+            return name;
+        }
+        public void setname(String name)
+        {
+            this.name = name;
+        }
+        public Long getModelId()
+        {
+            return modelId;
+        }
+        public void setModelId(Long modelId)
+        {
+            this.modelId = modelId;
+        }
+        public Set<String> getDisabledPaths()
+        {
+            return disabledPaths;
+        }
+        public void setDisabledPaths(Set<String> disabledPaths)
+        {
+            this.disabledPaths = disabledPaths;
+        }
+    }
+    
+    /**
      * Creates a new audit model entry or finds an existing one
      * 
      * @param               the URL of the configuration
@@ -76,13 +137,38 @@ public interface AuditDAO
     Pair<Long, ContentData> getOrCreateAuditModel(URL url);
     
     /**
-     * Creates a new audit application or finds an existing one
+     * Get the audit application details.
      * 
-     * @param modelId           the ID of the model configuration
      * @param applicationName   the name of the application
-     * @return                  Returns the ID of the application entry
+     * @return                  Returns details of an existing application or <tt>null</tt> if it doesn't exist
      */
-    Long getOrCreateAuditApplication(Long modelId, String applicationName);
+    AuditApplicationInfo getAuditApplication(String applicationName);
+
+    /**
+     * Creates a new audit application.  The application name must be unique.
+     * 
+     * @param application       the name of the application
+     * @param modelId           the ID of the model configuration
+     */
+    AuditApplicationInfo createAuditApplication(String application, Long modelId);
+    
+    /**
+     * Update the audit application to refer to a new model.
+     * If the model did not change, then nothing will be done.
+     * 
+     * @param id                the ID of the audit application
+     * @param modelId           the ID of the new model
+     */
+    void updateAuditApplicationModel(Long id, Long modelId);
+    
+    /**
+     * Update the audit application to hold a new set of disabled paths.
+     * If the value did not change, then nothing will be done.
+     * 
+     * @param id                the ID of the audit application
+     * @param disabledPaths     the new disabled paths
+     */
+    void updateAuditApplicationDisabledPaths(Long id, Set<String> disabledPaths);
     
     /**
      * Create a new audit entry with the given map of values.

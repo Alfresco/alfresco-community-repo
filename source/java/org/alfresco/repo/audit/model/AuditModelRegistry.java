@@ -55,6 +55,7 @@ import org.alfresco.repo.audit.model._3.DataExtractors;
 import org.alfresco.repo.audit.model._3.DataGenerators;
 import org.alfresco.repo.audit.model._3.ObjectFactory;
 import org.alfresco.repo.domain.audit.AuditDAO;
+import org.alfresco.repo.domain.audit.AuditDAO.AuditApplicationInfo;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.transaction.TransactionService;
@@ -99,6 +100,10 @@ public class AuditModelRegistry
      * Used to lookup a reference to the application
      */
     private final Map<String, Long> auditApplicationIdsByApplicationsName;
+    /**
+     * Used to lookup application disabled paths
+     */
+    private final Map<String, Set<String>> auditDisabledPathsByApplicationsName;
     
     /**
      * Default constructor
@@ -115,6 +120,7 @@ public class AuditModelRegistry
         auditModels = new ArrayList<Audit>(7);
         auditApplicationsByName = new HashMap<String, AuditApplication>(7);
         auditApplicationIdsByApplicationsName = new HashMap<String, Long>(7);
+        auditDisabledPathsByApplicationsName = new HashMap<String, Set<String>>(7);
     }
 
     /**
@@ -246,8 +252,8 @@ public class AuditModelRegistry
                         clearCaches();
                         
                         throw new AuditModelException(
-                                "Failed to load audit model: " + auditModelUrl + "\n" +
-                                e.getMessage());
+                                "Failed to load audit model: " + auditModelUrl,
+                                e);
                     }
                 }
                 // NOTE: If we support other types of loading, then that will have to go here, too
@@ -301,6 +307,25 @@ public class AuditModelRegistry
         try
         {
             return auditApplicationsByName.get(applicationName);
+        }
+        finally
+        {
+            readLock.unlock();
+        }
+    }
+    
+    /**
+     * Get all disabled paths for the given application name
+     * 
+     * @param applicationName       the name of the audited application
+     * @return                      a set of paths for which logging is disabled
+     */
+    public Set<String> getAuditDisabledPaths(String applicationName)
+    {
+        readLock.lock();
+        try
+        {
+            return auditDisabledPathsByApplicationsName.get(applicationName);
         }
         finally
         {
@@ -516,11 +541,21 @@ public class AuditModelRegistry
             }
             
             // Get the ID of the application
-            Long appId = auditDAO.getOrCreateAuditApplication(auditModelId, name);
+            AuditApplicationInfo appInfo = auditDAO.getAuditApplication(name);
+            if (appInfo == null)
+            {
+                appInfo = auditDAO.createAuditApplication(name, auditModelId);
+            }
+            else
+            {
+                // Update it with the new model ID
+                auditDAO.updateAuditApplicationModel(appInfo.getId(), auditModelId);
+            }
             
             AuditApplication wrapperApp = new AuditApplication(dataExtractorsByName, dataGeneratorsByName, application);
             auditApplicationsByName.put(name, wrapperApp);
-            auditApplicationIdsByApplicationsName.put(name, appId);
+            auditApplicationIdsByApplicationsName.put(name, appInfo.getId());
+            auditDisabledPathsByApplicationsName.put(name, appInfo.getDisabledPaths());
         }
         // Store the model itself
         auditModels.add(audit);

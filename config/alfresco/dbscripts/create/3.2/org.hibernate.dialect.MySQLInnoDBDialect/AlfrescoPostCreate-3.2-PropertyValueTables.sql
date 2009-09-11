@@ -38,10 +38,11 @@ CREATE TABLE alf_prop_double_value
 (
    id BIGINT NOT NULL AUTO_INCREMENT,
    double_value DOUBLE NOT NULL,
-   INDEX idx_alf_prop_dbl_val (double_value),
+   UNIQUE INDEX idx_alf_prop_dbl_val (double_value),
    PRIMARY KEY (id)
 ) ENGINE=InnoDB;
 
+-- Stores unique, case-sensitive string values --
 CREATE TABLE alf_prop_string_value
 (
    id BIGINT NOT NULL AUTO_INCREMENT,
@@ -49,7 +50,7 @@ CREATE TABLE alf_prop_string_value
    string_end_lower VARCHAR(16) NOT NULL,
    string_crc BIGINT NOT NULL,
    INDEX idx_alf_prop_str (string_value(32)),
-   INDEX idx_alf_prop_crc (string_end_lower, string_crc),
+   UNIQUE INDEX idx_alf_prop_crc (string_end_lower, string_crc),
    PRIMARY KEY (id)
 ) ENGINE=InnoDB;
 
@@ -67,19 +68,29 @@ CREATE TABLE alf_prop_value
    persisted_type TINYINT NOT NULL,
    long_value BIGINT NOT NULL,
    INDEX idx_alf_prop_per (persisted_type, long_value),
-   INDEX idx_alf_prop_act (actual_type_id, long_value),
+   UNIQUE INDEX idx_alf_prop_act (actual_type_id, long_value),
+   PRIMARY KEY (id)
+) ENGINE=InnoDB;
+
+CREATE TABLE alf_prop_root
+(
+   id BIGINT NOT NULL AUTO_INCREMENT,
+   version TINYINT NOT NULL,
    PRIMARY KEY (id)
 ) ENGINE=InnoDB;
 
 CREATE TABLE alf_prop_link
 (
    root_prop_id BIGINT NOT NULL,
-   current_prop_id BIGINT NOT NULL,
-   value_prop_id BIGINT NOT NULL,
+   prop_index BIGINT NOT NULL,
+   contained_in BIGINT NOT NULL,
    key_prop_id BIGINT NOT NULL,
-   INDEX idx_alf_prop_coll_rev (value_prop_id, root_prop_id),
-   CONSTRAINT fk_alf_prop_link_root FOREIGN KEY (root_prop_id) REFERENCES alf_prop_value (id) ON DELETE CASCADE,
-   PRIMARY KEY (root_prop_id, current_prop_id, value_prop_id, key_prop_id)
+   value_prop_id BIGINT NOT NULL,
+   CONSTRAINT fk_alf_prop_link_root FOREIGN KEY (root_prop_id) REFERENCES alf_prop_root (id) ON DELETE CASCADE,
+   CONSTRAINT fk_alf_prop_link_key FOREIGN KEY (key_prop_id) REFERENCES alf_prop_value (id) ON DELETE CASCADE,
+   CONSTRAINT fk_alf_prop_link_val FOREIGN KEY (value_prop_id) REFERENCES alf_prop_value (id) ON DELETE CASCADE,
+   INDEX idx_alf_prop_link_for (root_prop_id, key_prop_id, value_prop_id),
+   PRIMARY KEY (root_prop_id, contained_in, prop_index)
 ) ENGINE=InnoDB;
 
 --

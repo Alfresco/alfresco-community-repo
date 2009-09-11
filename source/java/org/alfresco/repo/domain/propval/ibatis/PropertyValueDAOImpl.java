@@ -34,6 +34,7 @@ import org.alfresco.repo.domain.propval.PropertyDateValueEntity;
 import org.alfresco.repo.domain.propval.PropertyDoubleValueEntity;
 import org.alfresco.repo.domain.propval.PropertyIdSearchRow;
 import org.alfresco.repo.domain.propval.PropertyLinkEntity;
+import org.alfresco.repo.domain.propval.PropertyRootEntity;
 import org.alfresco.repo.domain.propval.PropertySerializableValueEntity;
 import org.alfresco.repo.domain.propval.PropertyStringQueryEntity;
 import org.alfresco.repo.domain.propval.PropertyStringValueEntity;
@@ -75,7 +76,13 @@ public class PropertyValueDAOImpl extends AbstractPropertyValueDAOImpl
     private static final String SELECT_PROPERTY_VALUE_BY_STRING_VALUE = "alfresco.propval.select_PropertyValueByStringValue";
     private static final String INSERT_PROPERTY_VALUE = "alfresco.propval.insert_PropertyValue";
     
+    private static final String SELECT_PROPERTY_BY_ID = "alfresco.propval.select_PropertyById";
+    private static final String SELECT_PROPERTY_ROOT_BY_ID = "alfresco.propval.select_PropertyRootById";
+    private static final String INSERT_PROPERTY_ROOT = "alfresco.propval.insert_PropertyRoot";
+    private static final String UPDATE_PROPERTY_ROOT = "alfresco.propval.update_PropertyRoot";
+    private static final String DELETE_PROPERTY_ROOT_BY_ID = "alfresco.propval.delete_PropertyRootById";
     private static final String INSERT_PROPERTY_LINK = "alfresco.propval.insert_PropertyLink";
+    private static final String DELETE_PROPERTY_LINKS_BY_ROOT_ID = "alfresco.propval.delete_PropertyLinksByRootId";
     
     private SqlMapClientTemplate template;
 
@@ -287,18 +294,30 @@ public class PropertyValueDAOImpl extends AbstractPropertyValueDAOImpl
 
     @SuppressWarnings("unchecked")
     @Override
-    protected List<PropertyIdSearchRow> findPropertyValueById(Long id)
+    protected PropertyValueEntity findPropertyValueById(Long id)
     {
         PropertyValueEntity entity = new PropertyValueEntity();
         entity.setId(id);
-        List<PropertyIdSearchRow> results = (List<PropertyIdSearchRow>) template.queryForList(
+        List<PropertyValueEntity> results = (List<PropertyValueEntity>) template.queryForList(
                 SELECT_PROPERTY_VALUE_BY_ID,
                 entity);
-        // Done
-        return results;
+        // At most one of the results represents a real value
+        int size = results.size();
+        if (size == 0)
+        {
+            return null;
+        }
+        else if (size == 1)
+        {
+            return results.get(0);
+        }
+        else
+        {
+            logger.error("Found property value linked to multiple raw types: " + results);
+            return results.get(0);
+        }
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     protected PropertyValueEntity findPropertyValueByValue(Serializable value)
     {
@@ -336,6 +355,8 @@ public class PropertyValueDAOImpl extends AbstractPropertyValueDAOImpl
         case DOUBLE:
             query = SELECT_PROPERTY_VALUE_BY_DOUBLE_VALUE;
             break;
+        case CONSTRUCTABLE:
+            // The string value is the name of the class (e.g. 'java.util.HashMap')
         case STRING:
             // It's best to query using the CRC and short end-value
             query = SELECT_PROPERTY_VALUE_BY_STRING_VALUE;
@@ -355,15 +376,8 @@ public class PropertyValueDAOImpl extends AbstractPropertyValueDAOImpl
         PropertyValueEntity result = null;
         if (query != null)
         {
-            List<PropertyValueEntity> results = (List<PropertyValueEntity>) template.queryForList(
-                    query,
-                    queryObject,
-                    0, 1);                              // Only want one result
-            for (PropertyValueEntity row : results)
-            {
-                result = row;
-                break;
-            }
+            // Uniqueness is guaranteed by the tables, so we get one value only
+            result = (PropertyValueEntity) template.queryForObject(query, queryObject);
         }
         
         // Done
@@ -416,19 +430,77 @@ public class PropertyValueDAOImpl extends AbstractPropertyValueDAOImpl
         return insertEntity;
     }
 
+    //================================
+    // 'alf_prop_root' accessors
+    //================================
+
+    @SuppressWarnings("unchecked")
+    @Override
+    protected List<PropertyIdSearchRow> findPropertyById(Long id)
+    {
+        PropertyValueEntity entity = new PropertyValueEntity();
+        entity.setId(id);
+        List<PropertyIdSearchRow> results = (List<PropertyIdSearchRow>) template.queryForList(
+                SELECT_PROPERTY_BY_ID,
+                entity);
+        return results;
+    }
+
+    @Override
+    protected Long createPropertyRoot()
+    {
+        PropertyRootEntity rootEntity = new PropertyRootEntity();
+        rootEntity.setVersion((short)0);
+        return (Long) template.insert(INSERT_PROPERTY_ROOT, rootEntity);
+    }
+
+    @Override
+    protected PropertyRootEntity getPropertyRoot(Long id)
+    {
+        PropertyRootEntity entity = new PropertyRootEntity();
+        entity.setId(id);
+        return (PropertyRootEntity) template.queryForObject(SELECT_PROPERTY_ROOT_BY_ID, entity);
+    }
+
+    @Override
+    protected PropertyRootEntity updatePropertyRoot(PropertyRootEntity entity)
+    {
+        entity.incrementVersion();
+        template.update(UPDATE_PROPERTY_ROOT, entity, 1);
+        return entity;
+    }
+
+    @Override
+    protected void deletePropertyRoot(Long id)
+    {
+        PropertyRootEntity entity = new PropertyRootEntity();
+        entity.setId(id);
+        template.delete(DELETE_PROPERTY_ROOT_BY_ID, entity);
+    }
+
     @Override
     protected void createPropertyLink(
             Long rootPropId,
-            Long currentPropId,
-            Long valueId,
-            Long keyId)
+            Long propIndex,
+            Long containedIn,
+            Long keyPropId,
+            Long valuePropId)
     {
         PropertyLinkEntity insertEntity = new PropertyLinkEntity();
         insertEntity.setRootPropId(rootPropId);
-        insertEntity.setCurrentPropId(currentPropId);
-        insertEntity.setValuePropId(valueId);
-        insertEntity.setKeyPropId(keyId);
+        insertEntity.setPropIndex(propIndex);
+        insertEntity.setContainedIn(containedIn);
+        insertEntity.setKeyPropId(keyPropId);
+        insertEntity.setValuePropId(valuePropId);
         template.insert(INSERT_PROPERTY_LINK, insertEntity);
         // Done
+    }
+
+    @Override
+    protected int deletePropertyLinks(Long rootPropId)
+    {
+        PropertyRootEntity entity = new PropertyRootEntity();
+        entity.setId(rootPropId);
+        return template.delete(DELETE_PROPERTY_LINKS_BY_ROOT_ID, entity);
     }
 }

@@ -25,9 +25,7 @@
 package org.alfresco.repo.domain.propval;
 
 import java.io.Serializable;
-import java.util.Collection;
 import java.util.Collections;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -171,11 +169,6 @@ public class PropertyValueEntity
      */
     public static final Map<Short, PersistedType> persistedTypesByOrdinal;
     
-    /**
-     * An unmodifiable map of persisted type enums keyed by the classes they store
-     */
-    public static final Map<Class<?>, PersistedType> persistedTypesByClass;
-    
     static
     {
         // Create a pair for null values
@@ -187,20 +180,6 @@ public class PropertyValueEntity
             mapOrdinal.put(persistedType.getOrdinalNumber(), persistedType);
         }
         persistedTypesByOrdinal = Collections.unmodifiableMap(mapOrdinal);
-        // Create the map of class-type
-        Map<Class<?>, PersistedType> mapClass = new HashMap<Class<?>, PersistedType>(29);
-        mapClass.put(Boolean.class, PersistedType.LONG);
-        mapClass.put(Short.class, PersistedType.LONG);
-        mapClass.put(Integer.class, PersistedType.LONG);
-        mapClass.put(Long.class, PersistedType.LONG);
-        mapClass.put(Float.class, PersistedType.DOUBLE);
-        mapClass.put(Double.class, PersistedType.DOUBLE);
-        mapClass.put(String.class, PersistedType.STRING);
-        mapClass.put(Date.class, PersistedType.LONG);
-        mapClass.put(Map.class, PersistedType.SERIALIZABLE);            // Will be serialized if encountered
-        mapClass.put(Collection.class, PersistedType.SERIALIZABLE);     // Will be serialized if encountered
-        mapClass.put(Class.class, PersistedType.CONSTRUCTABLE);         // Will construct a new instance
-        persistedTypesByClass = Collections.unmodifiableMap(mapClass);
     }
 
     private static final Log logger = LogFactory.getLog(PropertyValueEntity.class);
@@ -259,40 +238,29 @@ public class PropertyValueEntity
     }
     
     /**
-     * Gets the value based on the persisted type.
-     * Note that this is the value <b>as persisted</b> and not the original, client-required
-     * value.
-     * @return          Returns the persisted value
+     * Helper method to get the value based on the persisted type. 
+     * 
+     * @param actualType        the type to convert to
+     * @param converter         the data converter to use
+     * @return                  Returns the converted value
      */
-    public Serializable getPersistedValue()
+    public Serializable getValue(Class<Serializable> actualType, PropertyTypeConverter converter)
     {
         switch (persistedTypeEnum)
         {
         case NULL:
             return null;
         case LONG:
-            return longValue;
+            return converter.convert(actualType, Long.valueOf(longValue));
         case DOUBLE:
-            return doubleValue;
+            return converter.convert(actualType, Double.valueOf(doubleValue));
         case STRING:
-            return stringValue;
+            return converter.convert(actualType, stringValue);
         case SERIALIZABLE:
-            return serializableValue;
+            return converter.convert(actualType, serializableValue);
         case CONSTRUCTABLE:
-            // Construct an instance
-            try
-            {
-                Class<?> clazz = Class.forName(stringValue);
-                return (Serializable) clazz.newInstance();
-            }
-            catch (ClassNotFoundException e)
-            {
-                throw new RuntimeException("Unable to construct instance of class " + stringValue, e);
-            }
-            catch (Throwable e)
-            {
-                throw new RuntimeException("Unable to create new instance of " + stringValue, e);
-            }
+            // Construct an instance using the converter (it knows best!)
+            return converter.constructInstance(stringValue);
         default:
             throw new IllegalStateException("Should not be able to get through switch");
         }
@@ -313,22 +281,11 @@ public class PropertyValueEntity
             this.persistedTypeEnum = PersistedType.NULL;
             this.longValue = LONG_ZERO;
         }
-        else if (value instanceof Class<?>)
-        {
-            Class<?> clazz = (Class<?>) value;
-            stringValue = clazz.getName();
-            persistedTypeEnum = PersistedType.CONSTRUCTABLE;
-            persistedType = persistedTypeEnum.getOrdinalNumber();
-        }
         else
         {
-            Class<?> valueClazz = value.getClass();
-            persistedTypeEnum = persistedTypesByClass.get(valueClazz);
-            if (persistedTypeEnum == null)
-            {
-                // Give the converter a chance to change the type it must be persisted as
-                persistedTypeEnum = converter.getPersistentType(value);
-            }
+            // The converter will be responsible for deserializing, so let it choose
+            // how the data is to be stored.
+            persistedTypeEnum = converter.getPersistentType(value);
             persistedType = persistedTypeEnum.getOrdinalNumber();
             // Get the class to persist as
             switch (persistedTypeEnum)
@@ -341,6 +298,10 @@ public class PropertyValueEntity
                     break;
                 case STRING:
                     stringValue = converter.convert(String.class, value);
+                    break;
+                case CONSTRUCTABLE:
+                    // A special case.  There is no conversion, so just Store the name of the class.
+                    stringValue = value.getClass().getName();
                     break;
                 case SERIALIZABLE:
                     serializableValue = value;
@@ -359,9 +320,12 @@ public class PropertyValueEntity
      * Helper method to determine how the given value will be stored.
      * 
      * @param value         the value to check
+     * @param converter     the type converter
      * @return              Returns the persisted type
+     * 
+     * @see PropertyTypeConverter#getPersistentType(Serializable)
      */
-    public static PersistedType getPersistedTypeEnum(Serializable value)
+    public static PersistedType getPersistedTypeEnum(Serializable value, PropertyTypeConverter converter)
     {
         PersistedType persistedTypeEnum;
         if (value == null)
@@ -370,12 +334,7 @@ public class PropertyValueEntity
         }
         else
         {
-            Class<?> valueClazz = value.getClass();
-            persistedTypeEnum = persistedTypesByClass.get(valueClazz);
-            if (persistedTypeEnum == null)
-            {
-                persistedTypeEnum = PersistedType.SERIALIZABLE;
-            }
+            persistedTypeEnum = converter.getPersistentType(value);
         }
         return persistedTypeEnum;
     }

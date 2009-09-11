@@ -175,27 +175,41 @@ public interface PropertyValueDAO
      * @param value             the value to find the ID for (may be <tt>null</tt>)
      */
     Pair<Long, Serializable> getOrCreatePropertyValue(Serializable value);
+    
+    //================================
+    // 'alf_prop_root' accessors
+    //================================
     /**
-     * <b>alf_prop_value</b> accessor: find or create a property based on the value.
-     * <b>Note:</b> This method will not recurse into maps or collections.  Use the
-     * dedicated methods if you want recursion; otherwise maps and collections will
-     * be serialized and probably stored as BLOB values.
-     * <p>
-     * <u>Max depth examples</u> (there is no upper limit):
-     * <ul>
-     *   <li>0: don't expand the value if it's a map or collection</li>
-     *   <li>1: open the value up if it is a map or collection but don't do any more</li>
-     *   <li>...</li>
-     *   <li>10: open up 10 levels of maps or collections</li>
-     * </ul>
-     * All collections that are not opened up will be serialized unless there is a
-     * custom {@link PropertyTypeConverter converter} which can serialize it in an
-     * alternative format.
+     * <b>alf_prop_root</b> accessor: get a property based on the database ID
      * 
-     * @param value             the value to find the ID for (may be <tt>null</tt>)
-     * @param maxDepth          the maximum depth of collections and maps to iterate into
+     * @param id                the ID (may not be <tt>null</tt>)
+     * @return                  Returns the value of the property (never <tt>null</tt>)
      */
-    Pair<Long, Serializable> getOrCreatePropertyValue(Serializable value, int maxDepth);
+    Serializable getPropertyById(Long id);
+    /**
+     * <b>alf_prop_root</b> accessor: find or create a property based on the value.
+     * <p/>
+     * All collections and maps will be opened up to any depth.
+     * 
+     * @param value             the value to create (may be <tt>null</tt>)
+     * @return                  Returns the new property's ID
+     */
+    Long createProperty(Serializable value);
+    
+    /**
+     * <b>alf_prop_root</b> accessor: update the property root to contain a new value.
+     * 
+     * @param id                the ID of the root property to change
+     * @param value             the new property value
+     */
+    void updateProperty(Long id, Serializable value);
+    
+    /**
+     * <b>alf_prop_root</b> accessor: delete a property root completely
+     * 
+     * @param id                the ID of the root property to delete
+     */
+    void deleteProperty(Long id);
     
     /**
      * Utility method to convert property query results into the original value.  Note

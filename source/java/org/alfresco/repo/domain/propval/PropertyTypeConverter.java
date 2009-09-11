@@ -48,10 +48,14 @@ public interface PropertyTypeConverter
      *   <li>{@link PersistedType#DOUBLE}</li>
      *   <li>{@link PersistedType#STRING}</li>
      *   <li>{@link PersistedType#SERIALIZABLE}</li>
+     *   <li>{@link PersistedType#CONSTRUCTABLE}</li>
      * </ul>
      * The converter should return {@link PersistedType#SERIALIZABLE} if no further conversions
      * are possible.  Implicit in the return value is the converter's ability to do the
      * conversion when required.
+     * <p/>
+     * If the converter can fully reconstruct an equal instance using just the name of the value's
+     * class, then {@link PersistedType#CONSTRUCTABLE} can be used.
      * 
      * @param value             the value that does not have an obvious persistence slot
      * @return                  Returns the type of persistence to use
@@ -64,5 +68,13 @@ public interface PropertyTypeConverter
      * @param value             the value to convert
      * @return                  Returns the persisted type and value to persist
      */
-    <T> T convert(Class<T> targetClass, Object value);
+    <T> T convert(Class<T> targetClass, Serializable value);
+    
+    /**
+     * Construct an instance of an object that was deemed to be {@link PersistedType#CONSTRUCTABLE}.
+     * 
+     * @param clazzName         the name of the class
+     * @return                  Returns the new instance
+     */
+    Serializable constructInstance(String clazzName);
 }

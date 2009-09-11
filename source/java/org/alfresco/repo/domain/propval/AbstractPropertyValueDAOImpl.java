@@ -33,17 +33,17 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 
-import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.cache.lookup.EntityLookupCache;
 import org.alfresco.repo.cache.lookup.EntityLookupCache.EntityLookupCallbackDAOAdaptor;
 import org.alfresco.repo.domain.CrcHelper;
 import org.alfresco.repo.domain.propval.PropertyValueEntity.PersistedType;
-import org.alfresco.service.cmr.repository.MLText;
 import org.alfresco.util.Pair;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.dao.DataIntegrityViolationException;
 
 /**
  * Abstract implementation for Property Value DAO.
@@ -62,8 +62,9 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
     private static final String CACHE_REGION_PROPERTY_DOUBLE_VALUE = "PropertyDoubleValue";
     private static final String CACHE_REGION_PROPERTY_SERIALIZABLE_VALUE = "PropertySerializableValue";
     private static final String CACHE_REGION_PROPERTY_VALUE = "PropertyValue";
+    private static final String CACHE_REGION_PROPERTY = "Property";
     
-    private static final Log logger = LogFactory.getLog(AbstractPropertyValueDAOImpl.class);
+    protected final Log logger = LogFactory.getLog(getClass());
     
     protected PropertyTypeConverter converter;
     
@@ -73,6 +74,7 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
     private final PropertyDoubleValueCallbackDAO propertyDoubleValueCallback;
     private final PropertySerializableValueCallbackDAO propertySerializableValueCallback;
     private final PropertyValueCallbackDAO propertyValueCallback;
+    private final PropertyCallbackDAO propertyCallback;
     /**
      * Cache for the property class:<br/>
      * KEY: ID<br/>
@@ -115,6 +117,13 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
      * VALUE KEY: A value key based on the persisted type<br/>
      */
     private EntityLookupCache<Long, Serializable, Serializable> propertyValueCache;
+    /**
+     * Cache for the property:<br/>
+     * KEY: ID<br/>
+     * VALUE: The Serializable instance<br/>
+     * VALUE KEY: A value key based on the persisted type<br/>
+     */
+    private EntityLookupCache<Long, Serializable, Serializable> propertyCache;
     
     /**
      * Default constructor.
@@ -130,6 +139,7 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
         this.propertyDoubleValueCallback = new PropertyDoubleValueCallbackDAO();
         this.propertySerializableValueCallback = new PropertySerializableValueCallbackDAO();
         this.propertyValueCallback = new PropertyValueCallbackDAO();
+        this.propertyCallback = new PropertyCallbackDAO();
         
         this.propertyClassCache = new EntityLookupCache<Long, Class<?>, String>(propertyClassDaoCallback);
         this.propertyDateValueCache = new EntityLookupCache<Long, Date, Date>(propertyDateValueCallback);
@@ -137,6 +147,7 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
         this.propertyDoubleValueCache = new EntityLookupCache<Long, Double, Double>(propertyDoubleValueCallback);
         this.propertySerializableValueCache = new EntityLookupCache<Long, Serializable, Serializable>(propertySerializableValueCallback);
         this.propertyValueCache = new EntityLookupCache<Long, Serializable, Serializable>(propertyValueCallback);
+        this.propertyCache = new EntityLookupCache<Long, Serializable, Serializable>(propertyCallback);
     }
 
     /**
@@ -225,6 +236,19 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
                 propertyValueCallback);
     }
     
+    /**
+     * Set the cache to use for <b>alf_prop_root</b> lookups (optional).
+     * 
+     * @param propertyValueCache     the cache of IDs to property values
+     */
+    public void setPropertyCache(SimpleCache<Serializable, Object> propertyCache)
+    {
+        this.propertyCache = new EntityLookupCache<Long, Serializable, Serializable>(
+                propertyCache,
+                CACHE_REGION_PROPERTY,
+                propertyCallback);
+    }
+    
     //================================
     // 'alf_prop_class' accessors
     //================================
@@ -238,7 +262,7 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
         Pair<Long, Class<?>> entityPair = propertyClassCache.getByKey(id);
         if (entityPair == null)
         {
-            throw new AlfrescoRuntimeException("No property class exists for ID " + id);
+            throw new DataIntegrityViolationException("No property class exists for ID " + id);
         }
         return entityPair;
     }
@@ -321,7 +345,7 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
         Pair<Long, Date> entityPair = propertyDateValueCache.getByKey(id);
         if (entityPair == null)
         {
-            throw new AlfrescoRuntimeException("No property date value exists for ID " + id);
+            throw new DataIntegrityViolationException("No property date value exists for ID " + id);
         }
         return entityPair;
     }
@@ -422,7 +446,7 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
         Pair<Long, String> entityPair = propertyStringValueCache.getByKey(id);
         if (entityPair == null)
         {
-            throw new AlfrescoRuntimeException("No property string value exists for ID " + id);
+            throw new DataIntegrityViolationException("No property string value exists for ID " + id);
         }
         return entityPair;
     }
@@ -507,7 +531,7 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
         Pair<Long, Double> entityPair = propertyDoubleValueCache.getByKey(id);
         if (entityPair == null)
         {
-            throw new AlfrescoRuntimeException("No property double value exists for ID " + id);
+            throw new DataIntegrityViolationException("No property double value exists for ID " + id);
         }
         return entityPair;
     }
@@ -590,7 +614,7 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
         Pair<Long, Serializable> entityPair = propertySerializableValueCache.getByKey(id);
         if (entityPair == null)
         {
-            throw new AlfrescoRuntimeException("No property serializable value exists for ID " + id);
+            throw new DataIntegrityViolationException("No property serializable value exists for ID " + id);
         }
         return entityPair;
     }
@@ -651,7 +675,7 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
         Pair<Long, Serializable> entityPair = propertyValueCache.getByKey(id);
         if (entityPair == null)
         {
-            throw new AlfrescoRuntimeException("No property value exists for ID " + id);
+            throw new DataIntegrityViolationException("No property value exists for ID " + id);
         }
         return entityPair;
     }
@@ -662,64 +686,10 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
         return entityPair;
     }
 
-    /**
-     * {@inheritDoc}
-     * @see #getOrCreatePropertyValueImpl(Serializable, int, int)
-     */
     public Pair<Long, Serializable> getOrCreatePropertyValue(Serializable value)
     {
-        return getOrCreatePropertyValueImpl(value, null, Integer.MAX_VALUE, 0);
-    }
-
-    /**
-     * {@inheritDoc}
-     * @see #getOrCreatePropertyValueImpl(Serializable, Long, int, int)
-     */
-    public Pair<Long, Serializable> getOrCreatePropertyValue(Serializable value, int maxDepth)
-    {
-        return getOrCreatePropertyValueImpl(value, null, maxDepth, 0);
-    }
-
-    @SuppressWarnings("unchecked")
-    private Pair<Long, Serializable> getOrCreatePropertyValueImpl(
-            Serializable value,
-            Long rootId,
-            int maxDepth,
-            int currentDepth)
-    {
-        if (value != null && maxDepth > currentDepth && value instanceof Map<?, ?>)
-        {
-            // TODO: Go through cache?
-            // The default is to do a deep expansion
-            Long mapId = createPropertyMapImpl(
-                    (Map<? extends Serializable, ? extends Serializable>)value,
-                    rootId,
-                    maxDepth,
-                    currentDepth);
-            Pair<Long, Serializable> entityPair = new Pair<Long, Serializable>(mapId, value);
-            // Cache instance by ID only
-            propertyValueCache.updateValue(mapId, value);
-            return entityPair;
-        }
-        else if (value != null && maxDepth > currentDepth && value instanceof Collection<?>)
-        {
-            // TODO: Go through cache?
-            // The default is to do a deep expansion
-            Long collectionId = createPropertyCollectionImpl(
-                    (Collection<? extends Serializable>)value,
-                    rootId,
-                    maxDepth,
-                    currentDepth);
-            Pair<Long, Serializable> entityPair = new Pair<Long, Serializable>(collectionId, value);
-            // Cache instance by ID only
-            propertyValueCache.updateValue(collectionId, value);
-            return entityPair;
-        }
-        else
-        {
-            Pair<Long, Serializable> entityPair = propertyValueCache.getOrCreateByValue(value);
-            return (Pair<Long, Serializable>) entityPair;
-        }
+        Pair<Long, Serializable> entityPair = propertyValueCache.getOrCreateByValue(value);
+        return (Pair<Long, Serializable>) entityPair;
     }
 
     /**
@@ -727,25 +697,16 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
      */
     private class PropertyValueCallbackDAO extends EntityLookupCallbackDAOAdaptor<Long, Serializable, Serializable>
     {
+        @SuppressWarnings("unchecked")
         private final Serializable convertToValue(PropertyValueEntity entity)
         {
             if (entity == null)
             {
                 return null;
             }
-            final Serializable actualValue;
-            if (entity.getPersistedTypeEnum() == PersistedType.CONSTRUCTABLE)
-            {
-                actualValue = entity.getPersistedValue();
-            }
-            else
-            {
-                Long actualTypeId = entity.getActualTypeId();
-                Class<?> actualType = getPropertyClassById(actualTypeId).getSecond();
-                
-                Serializable entityValue = entity.getPersistedValue();
-                actualValue = (Serializable) converter.convert(actualType, entityValue);
-            }
+            Long actualTypeId = entity.getActualTypeId();
+            final Class<Serializable> actualType = (Class<Serializable>) getPropertyClassById(actualTypeId).getSecond();
+            final Serializable actualValue = entity.getValue(actualType, converter);
             // Done
             return actualValue;
         }
@@ -764,11 +725,11 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
         
         public Serializable getValueKey(Serializable value)
         {
-            PersistedType persistedType = PropertyValueEntity.getPersistedTypeEnum(value);
+            PersistedType persistedType = PropertyValueEntity.getPersistedTypeEnum(value, converter);
             // We don't return keys for pure Serializable instances
             if (persistedType == PersistedType.SERIALIZABLE)
             {
-                // It will be Serialized, so no key
+                // It will be Serialized, so no search key
                 return null;
             }
             else if (value instanceof String)
@@ -785,34 +746,18 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
         public Pair<Long, Serializable> createValue(Serializable value)
         {
             PropertyValueEntity entity = createPropertyValue(value);
-            Long entityId = entity.getId();
-            // Create the link entry for the property
-            createPropertyLink(entityId, entityId, entityId, 0L);
             // Done
             return new Pair<Long, Serializable>(entity.getId(), value);
         }
 
         public Pair<Long, Serializable> findByKey(Long key)
         {
-            List<PropertyIdSearchRow> rows = findPropertyValueById(key);
-            if (rows.size() == 0)
-            {
-                // No results
-                return null;
-            }
-            Serializable value = convertPropertyIdSearchRows(rows);
-            return new Pair<Long, Serializable>(key, value);
+            PropertyValueEntity entity = findPropertyValueById(key);
+            return convertEntityToPair(entity);
         }
 
         public Pair<Long, Serializable> findByValue(Serializable value)
         {
-            if (value != null)
-            {
-                if (value instanceof Map<?, ?> || value instanceof Collection<?>)
-                {
-                    throw new IllegalArgumentException("Should not be searching for Maps or Collections");
-                }
-            }
             PropertyValueEntity entity = findPropertyValueByValue(value);
             return convertEntityToPair(entity);
         }
@@ -828,22 +773,304 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
         }
     }
     
-    protected abstract List<PropertyIdSearchRow> findPropertyValueById(Long id);
+    protected abstract PropertyValueEntity findPropertyValueById(Long id);
     protected abstract PropertyValueEntity findPropertyValueByValue(Serializable value);
     protected abstract PropertyValueEntity createPropertyValue(Serializable value);
 
+    //================================
+    // 'alf_prop_root' accessors
+    //================================
+
+    public Serializable getPropertyById(Long id)
+    {
+        if (id == null)
+        {
+            throw new IllegalArgumentException("Cannot look up entity by null ID.");
+        }
+        Pair<Long, Serializable> entityPair = propertyCache.getByKey(id);
+        if (entityPair == null)
+        {
+            throw new DataIntegrityViolationException("No property value exists for ID " + id);
+        }
+        return entityPair.getSecond();
+    }
+
+    /**
+     * {@inheritDoc}
+     * @see #createPropertyImpl(Serializable, int, int)
+     */
+    public Long createProperty(Serializable value)
+    {
+        // We will need a new root
+        Long rootPropId = createPropertyRoot();
+        createPropertyImpl(rootPropId, 0L, 0L, null, value);
+        // Push this value into the cache
+        propertyCache.updateValue(rootPropId, value);
+        // Done
+        if (logger.isDebugEnabled())
+        {
+            logger.debug(
+                    "Created property: \n" +
+                    "   ID: " + rootPropId + "\n" +
+                    "   Value: " + value);
+        }
+        return rootPropId;
+    }
+    
+    public void updateProperty(Long rootPropId, Serializable value)
+    {
+        // Remove all entries for the root
+        PropertyRootEntity entity = getPropertyRoot(rootPropId);
+        if (entity == null)
+        {
+            throw new DataIntegrityViolationException("No property root exists for ID " + rootPropId);
+        }
+        // Remove all links using the root
+        deletePropertyLinks(rootPropId);
+        // Create the new properties and update the cache
+        createPropertyImpl(rootPropId, 0L, 0L, null, value);
+        propertyCache.updateValue(rootPropId, value);
+        // Update the property root to detect concurrent modification
+        updatePropertyRoot(entity);
+        // Done
+        if (logger.isDebugEnabled())
+        {
+            logger.debug(
+                    "Updated property: \n" +
+                    "   ID: " + rootPropId + "\n" +
+                    "   Value: " + value);
+        }
+    }
+
+    public void deleteProperty(Long id)
+    {
+        deletePropertyRoot(id);
+        // Done
+        if (logger.isDebugEnabled())
+        {
+            logger.debug(
+                    "Deleted property: \n" +
+                    "   ID: " + id);
+        }
+    }
+
+    /**
+     * @param propIndex         a unique index within the context of the current property root
+     */
+    @SuppressWarnings("unchecked")
+    private long createPropertyImpl(
+            Long rootPropId,
+            long propIndex,
+            long containedIn,
+            Long keyPropId,
+            Serializable value)
+    {
+        // Keep track of the index for this property.  It gets used later when making the link entry.
+        long thisPropIndex = propIndex;
+        
+        Long valuePropId = null;
+        if (value == null)
+        {
+            // The key and the value are the same
+            valuePropId = getOrCreatePropertyValue(value).getFirst();
+        }
+        else if (value instanceof Map<?, ?>)
+        {
+            Map<Serializable, Serializable> map = (Map<Serializable, Serializable>) value;
+            // Check if the it has a default constructor
+            Serializable emptyInstance = constructEmptyContainer(value.getClass());
+            if (emptyInstance == null)
+            {
+                // No default constructor, so we just throw the whole thing in as a single property
+                valuePropId = getOrCreatePropertyValue(value).getFirst();
+            }
+            else
+            {
+                // Persist the empty map
+                valuePropId = getOrCreatePropertyValue(emptyInstance).getFirst();
+                // Persist the individual entries
+                for (Map.Entry<Serializable, Serializable> entry : map.entrySet())
+                {
+                    // Recurse for each value
+                    Serializable mapKey = entry.getKey();
+                    Serializable mapValue = entry.getValue();
+                    // Get the IDs for these
+                    Long mapKeyId = getOrCreatePropertyValue(mapKey).getFirst();
+                    propIndex = createPropertyImpl(
+                            rootPropId,
+                            propIndex + 1L,
+                            thisPropIndex,
+                            mapKeyId,
+                            mapValue);
+                }
+            }
+        }
+        else if (value instanceof Collection<?>)
+        {
+            Collection<Serializable> collection = (Collection<Serializable>) value;
+            // Check if the it has a default constructor
+            Serializable emptyInstance = constructEmptyContainer(value.getClass());
+            if (emptyInstance == null)
+            {
+                // No default constructor, so we just throw the whole thing in as a single property
+                valuePropId = getOrCreatePropertyValue(value).getFirst();
+            }
+            else
+            {
+                // Persist the empty collection
+                valuePropId = getOrCreatePropertyValue(emptyInstance).getFirst();
+                // Persist the individual entries
+                for (Serializable collectionValue : collection)
+                {
+                    // Recurse for each value
+                    propIndex = createPropertyImpl(
+                            rootPropId,
+                            propIndex + 1L,
+                            thisPropIndex,
+                            null,
+                            collectionValue);
+                }
+            }
+        }
+        else
+        {
+            // The key and the value are the same
+            valuePropId = getOrCreatePropertyValue(value).getFirst();
+        }
+        
+        // Create a link entry
+        if (keyPropId == null)
+        {
+            // If the key matches the value then it is the root
+            keyPropId = valuePropId;
+        }
+        createPropertyLink(rootPropId, thisPropIndex, containedIn, keyPropId, valuePropId);
+        
+        // Done
+        return propIndex;
+    }
+    
+    private static final Serializable EMPTY_HASHMAP = new HashMap<Serializable, Serializable>();
+    private static final Serializable EMPTY_LIST = new ArrayList<Serializable>();
+    private static final Serializable EMPTY_SET = new HashSet<Serializable>();
+
+    /**
+     * Returns a reconstructable instance 
+     * 
+     * @return          Returns an empty instance of the given container (map or collection), or
+     *                  <tt>null</tt> if it is not possible to do 
+     */
+    protected Serializable constructEmptyContainer(Class<?> clazz)
+    {
+        try
+        {
+            return (Serializable) clazz.getConstructor().newInstance();
+        }
+        catch (Throwable e)
+        {
+            // Can't be constructed, so we just choose a well-known implementation.
+            // There are so many variations on maps and collections (Unmodifiable, Immutable, etc)
+            // that to not choose an alternative would leave the database full of BLOBs
+        }
+        if (Map.class.isAssignableFrom(clazz))
+        {
+            return EMPTY_HASHMAP;
+        }
+        else if (List.class.isAssignableFrom(clazz))
+        {
+            return EMPTY_LIST;
+        }
+        else if (Set.class.isAssignableFrom(clazz))
+        {
+            return EMPTY_SET;
+        }
+        else
+        {
+            logger.warn("Unable to find suitable container type with default constructor: " + clazz);
+            return null;
+        }
+    }
+    
+    /**
+     * Callback for <b>alf_prop_root</b> DAO.
+     */
+    private class PropertyCallbackDAO extends EntityLookupCallbackDAOAdaptor<Long, Serializable, Serializable>
+    {
+        public Pair<Long, Serializable> createValue(Serializable value)
+        {
+            PropertyValueEntity entity = createPropertyValue(value);
+            // Done
+            return new Pair<Long, Serializable>(entity.getId(), value);
+        }
+
+        public Pair<Long, Serializable> findByKey(Long key)
+        {
+            List<PropertyIdSearchRow> rows = findPropertyById(key);
+            if (rows.size() == 0)
+            {
+                // No results
+                return null;
+            }
+            Serializable value = convertPropertyIdSearchRows(rows);
+            return new Pair<Long, Serializable>(key, value);
+        }
+
+        /**
+         * No-op.  This is implemented as we just want to update the cache.
+         * @return              Returns 0 always
+         */
+        @Override
+        public int updateValue(Long key, Serializable value)
+        {
+            return 0;
+        }
+    }
+
+    
+    protected abstract List<PropertyIdSearchRow> findPropertyById(Long id);
+    protected abstract Long createPropertyRoot();
+    protected abstract PropertyRootEntity getPropertyRoot(Long id);
+    protected abstract PropertyRootEntity updatePropertyRoot(PropertyRootEntity entity);
+    protected abstract void deletePropertyRoot(Long id);
+    
+    /**
+     * Create an entry for the map or collection link.
+     * 
+     * @param rootPropId            the root (entry-point) property ID
+     * @param propIndex             the property number within the root property
+     * @param containedIn           the property that contains the current value
+     * @param keyPropId             the map key entity ID or collection position count
+     * @param valuePropId           the ID of the entity storing the value (may be another map or collection)
+     */
+    protected abstract void createPropertyLink(
+            Long rootPropId,
+            Long propIndex,
+            Long containedIn,
+            Long keyPropId,
+            Long valuePropId);
+    
+    /**
+     * Remove all property links for a given property root.
+     * 
+     * @param rootPropId            the root (entry-point) property ID
+     */
+    protected abstract int deletePropertyLinks(Long rootPropId);
+    
     @SuppressWarnings("unchecked")
     public Serializable convertPropertyIdSearchRows(List<PropertyIdSearchRow> rows)
     {
+        // Shortcut if there are no results
+        if (rows.size() == 0)
+        {
+            return null;
+        }
         /*
-         * The results are ordered by the root_prop_id, current_prop_id and value_prop_id.
-         * However, for safety (data patching, etc) we take a first pass to create the
-         * basic properties before hooking them all together in a second pass.
+         * The results all share the same root property.  Pass through the results and construct all
+         * instances, storing them ordered by prop_index.
          */
-        final Map<Long, Serializable> values = new HashMap<Long, Serializable>(rows.size());
-        List<PropertyLinkEntity> keyRows = new ArrayList<PropertyLinkEntity>(5);
-        Serializable result = null;
-        Long rootPropId = null;
+        Map<Long, Serializable> valuesByPropIndex = new HashMap<Long, Serializable>(7);
+        TreeMap<Long, PropertyLinkEntity> linkEntitiesByPropIndex = new TreeMap<Long, PropertyLinkEntity>();
+        Long rootPropId = null;                         // Keep this to ensure the root_prop_id is common
         for (PropertyIdSearchRow row : rows)
         {
             // Check that we are handling a single root property
@@ -859,216 +1086,74 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
             }
             
             PropertyLinkEntity linkEntity = row.getLinkEntity();
+            Long propIndex = linkEntity.getPropIndex();
+            Long valuePropId = linkEntity.getValuePropId();
             PropertyValueEntity valueEntity = row.getValueEntity();
-            // Construct the value (Maps and Collections should be CONSTRUCTABLE)
-            Serializable value = propertyValueCallback.convertToValue(valueEntity);
-            // Keep it
-            values.put(new Long(linkEntity.getValuePropId()), value);
-            
-            // If this row is a mapping row (the property value ID does not match the current property ID)
-            // then store it for quicker use later
-            if (linkEntity.getCurrentPropId() != linkEntity.getValuePropId())
+            // Get the value
+            Serializable value;
+            if (valueEntity != null)
             {
-                keyRows.add(linkEntity);
+                value = propertyValueCallback.convertToValue(valueEntity);
             }
-            if (linkEntity.getRootPropId() == linkEntity.getValuePropId())
+            else
             {
-                // We found the root
-                result = value;
+                // Go N+1 if the value entity was not retrieved
+                value = getPropertyValueById(valuePropId);
             }
+            // Keep it for later
+            valuesByPropIndex.put(propIndex, value);
+            linkEntitiesByPropIndex.put(propIndex, linkEntity);
         }
         
-        // We expect a value to be found unless the results are empty
-        if (result == null)
+        Serializable result = null;
+        // Iterate again, adding values to the collections and looking for the root property
+        for (Map.Entry<Long, PropertyLinkEntity> entry : linkEntitiesByPropIndex.entrySet())
         {
-            return null;
-        }
-        
-        // Now we have all our constructed values and the mapping rows: build the collections
-        for (PropertyLinkEntity propertyLinkEntity : keyRows)
-        {
-            Serializable value = values.get(propertyLinkEntity.getValuePropId());
-            Serializable currentProp = values.get(propertyLinkEntity.getCurrentPropId());
-            if (value == null)
+            PropertyLinkEntity linkEntity = entry.getValue();
+            Long propIndex = linkEntity.getPropIndex();
+            Long containedIn = linkEntity.getContainedIn();
+            Long keyPropId = linkEntity.getKeyPropId();
+            Serializable value = valuesByPropIndex.get(propIndex);
+            // Check if this is the root property
+            if (propIndex.equals(containedIn))
             {
-                logger.error("No value found for link property: " + propertyLinkEntity);
-                continue;
-            }
-            if (currentProp == null)
-            {
-                logger.error("No current property found for link property: " + propertyLinkEntity);
-                continue;
-            }
-            Long keyId = propertyLinkEntity.getKeyPropId();
-            // put the value into the container
-            if (currentProp instanceof Map<?, ?>)
-            {
-                Pair<Long, Serializable> keyPair = getPropertyValueById(keyId);
-                if (keyPair == null)
+                if (result != null)
                 {
-                    logger.error("Current property (map) has key without a value: " + propertyLinkEntity);
+                    logger.error("Found inconsistent property root data: " + linkEntity);
                     continue;
                 }
-                Serializable key = keyPair.getSecond();
-                Map<Serializable, Serializable> map = (Map<Serializable, Serializable>) currentProp;
-                map.put(key, value);
+                // This property is contained in itself i.e. it's the root
+                result = value;
             }
-            else if (currentProp instanceof Set<?>)
+            else
             {
-                // We can ignore the key - it won't make a difference
-                Set<Serializable> set = (Set<Serializable>) currentProp;
-                set.add(value);
-            }
-// Results 'should' be ordered by key
-//            else if (currentProp instanceof List<?>)
-//            {
-//                // The order is important
-//                List<Serializable> collection = (List<Serializable>) currentProp;
-//                collection.add(keyId.intValue(), value);
-//            }
-            else if (currentProp instanceof Collection<?>)
-            {
-                // The order is important
-                Collection<Serializable> collection = (Collection<Serializable>) currentProp;
-                collection.add(value);
+                // Add the value to the container to which it belongs.
+                // The ordering is irrelevant for some containers; but where it is important,
+                // ordering given by the prop_index will ensure that values are added back
+                // in the order in which the container originally iterated over them
+                Serializable container = valuesByPropIndex.get(containedIn);
+                if (container == null)
+                {
+                    logger.error("Found container ID that doesn't have a value: " + linkEntity);
+                }
+                else if (container instanceof Map<?, ?>)
+                {
+                    Map<Serializable, Serializable> map = (Map<Serializable, Serializable>) container;
+                    Serializable mapKey = getPropertyValueById(keyPropId).getSecond();
+                    map.put(mapKey, value);
+                }
+                else if (container instanceof Collection<?>)
+                {
+                    Collection<Serializable> collection = (Collection<Serializable>) container;
+                    collection.add(value);
+                }
+                else
+                {
+                    logger.error("Found container ID that is not a map or collection: " + linkEntity);
+                }
             }
         }
         // This will have put the values into the correct containers
         return result;
     }
-    
-    //================================
-    // Special handling of maps and collections
-    //================================
-
-    /**
-     * Recursive method to write a map out.  If the root entity ID is <tt>null</tt> then the current
-     * map ID is used as the root.
-     * 
-     * @param value                 the map to write
-     * @param rootId                the root entity ID, which may be a map or a collection
-     * @return                      Returns the ID of the newly-written map
-     */
-    private <K extends Serializable, V extends Serializable> Long createPropertyMapImpl(
-            Map<K, V> map,
-            Long rootId,
-            int maxDepth,
-            int currentDepth)
-    {
-        // Create the root of the map
-        Class<?> clazz = null;
-        if (map instanceof MLText)
-        {
-            clazz = MLText.class;
-        }
-        else
-        {
-            clazz = HashMap.class;
-        }
-        
-        // Can't use a cached instance as each map is unique.  Go direct to entity creation.
-        Long entityId = createPropertyValue(clazz).getId();
-        
-        // Use this as the root if this is the first entry into this method
-        if (rootId == null)
-        {
-            rootId = entityId;
-        }
-
-        // Create the link entry for the root
-        createPropertyLink(rootId, entityId, entityId, 0L);
-        
-        // Now iterate over the entries and create properties for the keys and values
-        for (Map.Entry<K, V> entry : map.entrySet())
-        {
-            K key = entry.getKey();
-            Long keyId = getOrCreatePropertyValue(key).getFirst();
-
-            V value = entry.getValue();
-            // Callback with this level, incrementing the current depth
-            Pair<Long, Serializable> valuePair = getOrCreatePropertyValueImpl(
-                    (Serializable) value,
-                    rootId,
-                    maxDepth,
-                    currentDepth + 1);
-            Long valueId = valuePair.getFirst();
-            
-            // Now write the mapping entry
-            createPropertyLink(rootId, entityId, valueId, keyId);
-        }
-        
-        // Done
-        return entityId;
-    }
-
-    /**
-     * Recursive method to write a collection out.  If the root entity ID is <tt>null</tt> then the current
-     * collection ID is used as the root.
-     * 
-     * @param value                 the collection to write
-     * @param rootId                the root property ID
-     * @return                      Returns the ID of the newly-written collection
-     */
-    private <V extends Serializable> Long createPropertyCollectionImpl(
-            Collection<V> collection,
-            Long rootId,
-            int maxDepth,
-            int currentDepth)
-    {
-        // Create the root of the collection
-        Class<?> clazz = null;
-        if (collection instanceof Set<?>)
-        {
-            clazz = HashSet.class;
-        }
-        else
-        {
-            clazz = ArrayList.class;
-        }
-        
-        // Can't use a cached instance as each collection is unique.  Go direct to entity creation.
-        Long entityId = createPropertyValue(clazz).getId();
-        
-        // Use this as the root if this is the first entry into this method
-        if (rootId == null)
-        {
-            rootId = entityId;
-        }
-        
-        // Create the link entry for the root
-        createPropertyLink(rootId, entityId, entityId, 0L);
-        
-        // Now iterate over the entries and create properties for the keys and values
-        long index = 0L;
-        for (V value : collection)
-        {
-            // Callback with this level, incrementing the current depth
-            Pair<Long, Serializable> valuePair = getOrCreatePropertyValueImpl(
-                    (Serializable) value,
-                    rootId,
-                    maxDepth,
-                    currentDepth + 1);
-            Long valueId = valuePair.getFirst();
-            // Now write the mapping entry
-            Long keyId = new Long(index);
-            createPropertyLink(rootId, entityId, valueId, keyId);
-            // Keep iterating
-            index++;
-        }
-        return entityId;
-    }
-
-    /**
-     * Create an entry for the map or collection link
-     * 
-     * @param rootPropId            the root (entry-point) map or collection ID
-     * @param currentPropId         the current map or collection ID
-     * @param valueId               the ID of the entity storing the value (may be another map or collection)
-     * @param keyId                 the map key entity ID or collection position count
-     */
-    protected abstract void createPropertyLink(
-            Long rootPropId,
-            Long currentPropId,
-            Long valueId,
-            Long keyId);
 }

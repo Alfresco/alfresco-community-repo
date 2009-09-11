@@ -33,6 +33,7 @@ import java.util.Map;
 import junit.framework.TestCase;
 
 import org.alfresco.repo.content.transform.AbstractContentTransformerTest;
+import org.alfresco.repo.domain.audit.AuditDAO.AuditApplicationInfo;
 import org.alfresco.repo.domain.contentdata.ContentDataDAO;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
@@ -111,7 +112,11 @@ public class AuditDAOTest extends TestCase
             {
                 for (int i = 0; i < count; i++)
                 {
-                    auditDAO.getOrCreateAuditApplication(modelId, appName);
+                    AuditApplicationInfo appInfo = auditDAO.getAuditApplication(appName);
+                    if (appInfo == null)
+                    {
+                        appInfo = auditDAO.createAuditApplication(appName, modelId);
+                    }
                 }
                 return null;
             }
@@ -142,8 +147,13 @@ public class AuditDAOTest extends TestCase
         {
             public Long execute() throws Throwable
             {
-                Long modelId = auditDAO.getOrCreateAuditModel(url).getFirst();
-                return auditDAO.getOrCreateAuditApplication(modelId, appName);
+                AuditApplicationInfo appInfo = auditDAO.getAuditApplication(appName);
+                if (appInfo == null)
+                {
+                    Long modelId = auditDAO.getOrCreateAuditModel(url).getFirst();
+                    appInfo = auditDAO.createAuditApplication(appName, modelId);
+                }
+                return appInfo.getId();
             }
         };
         final Long sessionId = txnHelper.doInTransaction(createAppCallback);

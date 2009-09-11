@@ -52,11 +52,14 @@ public class AuditDAOImpl extends AbstractAuditDAOImpl
     private static final String SELECT_MODEL_BY_CRC = "alfresco.audit.select_AuditModelByCrc";
     private static final String INSERT_MODEL = "alfresco.audit.insert_AuditModel";
     
-    private static final String SELECT_APPLICATION_BY_MODEL_ID = "alfresco.audit.select_AuditApplicationByModelId";
+    private static final String SELECT_APPLICATION_BY_ID = "alfresco.audit.select_AuditApplicationById";
+    private static final String SELECT_APPLICATION_BY_NAME_ID = "alfresco.audit.select_AuditApplicationByNameId";
     private static final String INSERT_APPLICATION = "alfresco.audit.insert_AuditApplication";
+    private static final String UPDATE_APPLICATION = "alfresco.audit.update_AuditApplication";
     
     private static final String INSERT_ENTRY = "alfresco.audit.insert_AuditEntry";
     
+    @SuppressWarnings("unused")
     private static final String SELECT_ENTRIES_SIMPLE = "alfresco.audit.select_AuditEntriesSimple";
     private static final String SELECT_ENTRIES_WITH_VALUES = "alfresco.audit.select_AuditEntriesWithValues";
     
@@ -90,52 +93,73 @@ public class AuditDAOImpl extends AbstractAuditDAOImpl
         return entity;
     }
 
-    @SuppressWarnings("unchecked")
     @Override
-    protected AuditApplicationEntity getAuditApplicationByModelIdAndName(Long modelId, String appName)
+    protected AuditApplicationEntity getAuditApplicationById(Long id)
     {
         Map<String, Object> params = new HashMap<String, Object>(11);
-        params.put("id", modelId);
-        List<AuditApplicationEntity> results = (List<AuditApplicationEntity>) template.queryForList(
-                SELECT_APPLICATION_BY_MODEL_ID,
+        params.put("id", id);
+        AuditApplicationEntity entity = (AuditApplicationEntity) template.queryForObject(
+                SELECT_APPLICATION_BY_ID,
                 params);
-        // There could be multiple hits for the model ID.  Go through them and find the correct app name.
-        AuditApplicationEntity result = null;
-        for (AuditApplicationEntity row : results)
-        {
-            Long appNameId = row.getApplicationNameId();
-            Pair<Long, Serializable> propPair = getPropertyValueDAO().getPropertyValueById(appNameId);
-            if (propPair == null)
-            {
-                // There is a FK to protect against this, but we'll just log it
-                logger.warn("An audit application references a non-existent app_name_id: " + appNameId);
-            }
-            // Check for exact match
-            Serializable propValue = propPair.getSecond();
-            if (propValue instanceof String && propValue.equals(appName))
-            {
-                // Got it
-                result = row;
-                break;
-            }
-        }
         // Done
         if (logger.isDebugEnabled())
         {
-            logger.debug("Searched for audit application with model id " + modelId + " and found: " + result);
+            logger.debug("Searched for audit application ID " + id + " and found: " + entity);
         }
-        return result;
+        return entity;
     }
 
     @Override
-    protected AuditApplicationEntity createAuditApplication(Long modelId, Long appNameId)
+    protected AuditApplicationEntity getAuditApplicationByName(String appName)
+    {
+        // Resolve the name as a property ID
+        Pair<Long, Serializable> appNamePair = propertyValueDAO.getPropertyValue(appName);
+        if (appNamePair == null)
+        {
+            // There will be no results
+            return null;
+        }
+        
+        Map<String, Object> params = new HashMap<String, Object>(11);
+        params.put("id", appNamePair.getFirst());
+        AuditApplicationEntity entity = (AuditApplicationEntity) template.queryForObject(
+                SELECT_APPLICATION_BY_NAME_ID,
+                params);
+        // Done
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Searched for audit application '" + appName + "' and found: " + entity);
+        }
+        return entity;
+    }
+
+    @Override
+    protected AuditApplicationEntity createAuditApplication(Long appNameId, Long modelId, Long disabledPathsId)
     {
         AuditApplicationEntity entity = new AuditApplicationEntity();
-        entity.setAuditModelId(modelId);
+        entity.setVersion((short)0);
         entity.setApplicationNameId(appNameId);
+        entity.setAuditModelId(modelId);
+        entity.setDisabledPathsId(disabledPathsId);
         Long id = (Long) template.insert(INSERT_APPLICATION, entity);
         entity.setId(id);
         return entity;
+    }
+
+    @Override
+    protected AuditApplicationEntity updateAuditApplication(AuditApplicationEntity entity)
+    {
+        AuditApplicationEntity updateEntity = new AuditApplicationEntity();
+        updateEntity.setId(entity.getId());
+        updateEntity.setVersion(entity.getVersion());
+        updateEntity.incrementVersion();
+        updateEntity.setApplicationNameId(entity.getApplicationNameId());
+        updateEntity.setAuditModelId(entity.getAuditModelId());
+        updateEntity.setDisabledPathsId(entity.getDisabledPathsId());
+        
+        template.update(UPDATE_APPLICATION, updateEntity, 1);
+        // Done
+        return updateEntity;
     }
 
     @Override

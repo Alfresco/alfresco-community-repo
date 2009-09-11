@@ -64,24 +64,29 @@ public class PropertyIdSearchRow
         return valueEntity;
     }
 
-    public void setRootPropId(long rootPropId)
+    public void setRootPropId(Long rootPropId)
     {
         linkEntity.setRootPropId(rootPropId);
     }
 
-    public void setCurrentPropId(long currentPropId)
+    public void setPropIndex(Long propIndex)
     {
-        linkEntity.setCurrentPropId(currentPropId);
+        linkEntity.setPropIndex(propIndex);
     }
 
-    public void setValuePropId(long valuePropId)
+    public void setContainedIn(Long containedIn)
     {
-        linkEntity.setValuePropId(valuePropId);
+        linkEntity.setContainedIn(containedIn);
     }
 
-    public void setKeyPropId(long keyPropId)
+    public void setKeyPropId(Long keyPropId)
     {
         linkEntity.setKeyPropId(keyPropId);
+    }
+    
+    public void setValuePropId(Long valuePropId)
+    {
+        linkEntity.setValuePropId(valuePropId);
     }
 
     public void setActualTypeId(Long actualTypeId)

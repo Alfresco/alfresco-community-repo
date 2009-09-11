@@ -27,8 +27,10 @@
     </resultMap>
     <resultMap id="result_AuditApplication" class="AuditApplication">
         <result property="id" column="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
-        <result property="auditModelId" column="audit_model_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="version" column="version" jdbcType="TINYINT" javaType="java.lang.Short"/>
         <result property="applicationNameId" column="app_name_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="auditModelId" column="audit_model_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="disabledPathsId" column="disabled_paths_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
     </resultMap>
     <resultMap id="result_AuditEntry" class="AuditEntry">
         <result property="id" column="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
@@ -76,8 +78,8 @@
     </sql>
     
     <sql id="insert_AuditApplication_AutoIncrement">
-        insert into alf_audit_app (audit_model_id, app_name_id) 
-        values (#auditModelId#, #applicationNameId#)
+        insert into alf_audit_app (version, app_name_id, audit_model_id, disabled_paths_id) 
+        values (#version#, #applicationNameId#, #auditModelId#, #disabledPathsId#)
     </sql>
     
     <sql id="insert_AuditEntry_AutoIncrement">
@@ -99,65 +101,60 @@
             content_crc = #contentCrc#
     </select>
 
-    <!-- Get the audit application by model ID -->
-    <select id="select_AuditApplicationByModelId" parameterMap="parameter_IdMap" resultMap="result_AuditApplication">
+    <!-- Get the audit application by ID -->
+    <select id="select_AuditApplicationById" parameterMap="parameter_IdMap" resultMap="result_AuditApplication">
         select
             *
         from
             alf_audit_app
         where
-            audit_model_id = ?
+            id = ?
     </select>
 
-    <!-- Get audit entries -->
-    <!-- TODO: Use compound parameters for string searching, possibly namespaced from propval -->
-    <select id="select_AuditEntriesSimple" parameterClass="AuditQueryParameters" resultMap="result_AuditQueryNoValues">
+    <!-- Get the audit application by name ID -->
+    <select id="select_AuditApplicationByNameId" parameterMap="parameter_IdMap" resultMap="result_AuditApplication">
         select
-            entry.id as audit_entry_id,
-            user_sv.string_value as audit_user,
-            app_sv.string_value as audit_app_name,
-            entry.audit_time as audit_time,
-            entry.audit_values_id as audit_values_id
+            *
         from
-            alf_audit_app app
-            join alf_prop_value app_pv on (app_pv.id = app.app_name_id)
-            join alf_prop_string_value app_sv on (app_sv.id = app_pv.long_value and app_pv.persisted_type = 3)
-            join alf_audit_entry entry on (entry.audit_app_id = app.id)
-            join alf_prop_value user_pv on (user_pv.id = entry.audit_user_id)
-            join alf_prop_string_value user_sv on (user_sv.id = user_pv.long_value and user_pv.persisted_type = 3)
-        <dynamic prepend="where">
-            <isNotNull prepend="and" property="auditAppNameShort">
-                app_sv.string_end_lower = #auditAppNameShort# and
-                app_sv.string_crc = #auditAppNameCrc#
-            </isNotNull>
-            <isNotNull prepend="and" property="auditUserShort">
-                user_sv.string_end_lower = #auditUserShort# and
-                user_sv.string_crc = #auditUserCrc#
-            </isNotNull>
-            <isNotNull prepend="and" property="auditFromTime">
-                <![CDATA[entry.audit_time >= #auditFromTime#]]>
-            </isNotNull>
-            <isNotNull prepend="and" property="auditToTime">
-                <![CDATA[entry.audit_time < #auditToTime#]]>
-            </isNotNull>
-        </dynamic>
-        order by
-            entry.id
+            alf_audit_app
+        where
+            app_name_id = ?
     </select>
 
+    <!-- Optimistic update of the audit application -->
+    <update id="update_AuditApplication" parameterClass="AuditApplication">
+        update
+            alf_audit_app
+        set
+            version = #version#,
+            app_name_id = #applicationNameId#
+            audit_model_id = #auditModelId#
+            disabled_paths_id = #disabledPathsId#
+        where
+            id = #id# and
+            version = (#version# -1)
+    </update>
+    
     <!-- Get audit entries -->
-    <!-- TODO: Use compound parameters for string searching, possibly namespaced from propval -->
     <select id="select_AuditEntriesWithValues" parameterClass="AuditQueryParameters" resultMap="result_AuditQueryAllValues">
         select
-            entry.id as audit_entry_id,
-            user_sv.string_value as audit_user,
-            app_sv.string_value as audit_app_name,
-            entry.audit_time as audit_time,
-            entry.audit_values_id as audit_values_id,
+            entry.id                    as audit_entry_id,
+            user_sv.string_value        as audit_user,
+            app_sv.string_value         as audit_app_name,
+            entry.audit_time            as audit_time,
+            entry.audit_values_id       as audit_values_id,
 
-            pl.root_prop_id, pl.current_prop_id, pl.value_prop_id, pl.key_prop_id,
-            v.actual_type_id, v.persisted_type,
-            v.long_value, dv.double_value, sv.string_value, serv.serializable_value
+            pl.root_prop_id             as link_root_prop_id,
+            pl.prop_index               as link_prop_index,
+            pl.contained_in             as link_contained_in,
+            pl.key_prop_id              as link_key_prop_id,
+            pl.value_prop_id            as link_value_prop_id,
+            pv.actual_type_id           as prop_actual_type_id,
+            pv.persisted_type           as prop_persisted_type,
+            pv.long_value               as prop_long_value,
+            dv.double_value             as prop_double_value,
+            sv.string_value             as prop_string_value,
+            serv.serializable_value     as prop_serializable_value
         from
             alf_audit_app app
             join alf_prop_value app_pv on (app_pv.id = app.app_name_id)
@@ -168,20 +165,20 @@
             
         <isNotNull property="searchKey">
             join alf_prop_link sp_kpl on (sp_kpl.root_prop_id = entry.audit_values_id)
-            join alf_prop_value sp_kv on (sp_kpl.key_prop_id = sp_kv.id)
-            join alf_prop_string_value sp_ksv on (sp_ksv.id = sp_kv.long_value and sp_kv.persisted_type = 3)
+            join alf_prop_value sp_kpv on (sp_kpl.key_prop_id = sp_kpv.id)
+            join alf_prop_string_value sp_ksv on (sp_ksv.id = sp_kpv.long_value and sp_kpv.persisted_type = 3)
         </isNotNull>
         <isNotNull property="searchValueString">
             join alf_prop_link sp_mpl on (sp_mpl.root_prop_id = entry.audit_values_id)
-            join alf_prop_value sp_mv on (sp_mpl.value_prop_id = sp_mv.id)
-            join alf_prop_string_value sp_msv on (sp_msv.id = sp_mv.long_value and sp_mv.persisted_type = 3)
+            join alf_prop_value sp_mpv on (sp_mpl.value_prop_id = sp_mpv.id)
+            join alf_prop_string_value sp_msv on (sp_msv.id = sp_mpv.long_value and sp_mpv.persisted_type = 3)
         </isNotNull>
         
             join alf_prop_link pl on (pl.root_prop_id = entry.audit_values_id)
-            join alf_prop_value v on (pl.value_prop_id = v.id)
-            left join alf_prop_double_value dv on (dv.id = v.long_value and v.persisted_type = 2)
-            left join alf_prop_string_value sv on (sv.id = v.long_value and (v.persisted_type = 3 || v.persisted_type = 5))
-            left join alf_prop_serializable_value serv on (serv.id = v.long_value and v.persisted_type = 4)
+            join alf_prop_value pv on (pl.value_prop_id = pv.id)
+            left join alf_prop_double_value dv on (dv.id = pv.long_value and pv.persisted_type = 2)
+            left join alf_prop_string_value sv on (sv.id = pv.long_value and (pv.persisted_type = 3 || pv.persisted_type = 5))
+            left join alf_prop_serializable_value serv on (serv.id = pv.long_value and pv.persisted_type = 4)
         <dynamic prepend="where">
             <isNotNull prepend="and" property="auditAppNameShort">
                 app_sv.string_end_lower = #auditAppNameShort# and
@@ -204,8 +201,6 @@
                 sp_msv.string_value = #searchValueString#
             </isNotNull>
         </dynamic>
-        order by
-            entry.id
     </select>
 
 </sqlMap>

@@ -48,12 +48,15 @@
       <property name="converter">
          <bean class="org.alfresco.repo.domain.propval.DefaultPropertyTypeConverter"/>
       </property>
+      <!--
       <property name="propertyClassCache" ref="immutableEntityCache"/>
       <property name="propertyDateValueCache" ref="immutableEntityCache"/>
       <property name="propertyStringValueCache" ref="immutableEntityCache"/>
       <property name="propertyDoubleValueCache" ref="immutableEntityCache"/>
       <property name="propertySerializableValueCache" ref="immutableEntityCache"/>
+      -->
       <property name="propertyValueCache" ref="immutableEntityCache"/>
+      <property name="propertyCache" ref="immutableEntityCache"/>
    </bean>
    
    <bean id="auditDAO" class="org.alfresco.repo.domain.audit.ibatis.AuditDAOImpl">

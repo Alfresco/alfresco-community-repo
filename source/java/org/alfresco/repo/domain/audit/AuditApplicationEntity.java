@@ -33,8 +33,10 @@ package org.alfresco.repo.domain.audit;
 public class AuditApplicationEntity
 {
     private Long id;
-    private Long auditModelId;
+    private short version;
     private Long applicationNameId;
+    private Long auditModelId;
+    private Long disabledPathsId;
     
     public AuditApplicationEntity()
     {
@@ -46,10 +48,24 @@ public class AuditApplicationEntity
         StringBuilder sb = new StringBuilder(512);
         sb.append("AuditApplicationEntity")
           .append("[ ID=").append(id)
-          .append(", auditModelId=").append(auditModelId)
+          .append(", version=").append(version)
           .append(", applicationNameId=").append(applicationNameId)
+          .append(", auditModelId=").append(auditModelId)
+          .append(", disabledPathsId=").append(disabledPathsId)
           .append("]");
         return sb.toString();
+    }
+    
+    public void incrementVersion()
+    {
+        if (version >= Short.MAX_VALUE)
+        {
+            this.version = 0;
+        }
+        else
+        {
+            this.version++;
+        }
     }
     
     public Long getId()
@@ -62,14 +78,14 @@ public class AuditApplicationEntity
         this.id = id;
     }
 
-    public Long getAuditModelId()
+    public short getVersion()
     {
-        return auditModelId;
+        return version;
     }
 
-    public void setAuditModelId(Long auditModelId)
+    public void setVersion(short version)
     {
-        this.auditModelId = auditModelId;
+        this.version = version;
     }
 
     public Long getApplicationNameId()
@@ -80,5 +96,25 @@ public class AuditApplicationEntity
     public void setApplicationNameId(Long applicationNameId)
     {
         this.applicationNameId = applicationNameId;
+    }
+
+    public Long getAuditModelId()
+    {
+        return auditModelId;
+    }
+
+    public void setAuditModelId(Long auditModelId)
+    {
+        this.auditModelId = auditModelId;
+    }
+
+    public Long getDisabledPathsId()
+    {
+        return disabledPathsId;
+    }
+
+    public void setDisabledPathsId(Long disabledPathsId)
+    {
+        this.disabledPathsId = disabledPathsId;
     }
 }

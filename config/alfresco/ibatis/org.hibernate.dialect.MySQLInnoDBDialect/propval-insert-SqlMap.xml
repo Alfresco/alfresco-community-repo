@@ -41,4 +41,11 @@
         </selectKey>
     </insert>
 
+    <insert id="insert_PropertyRoot" parameterMap="parameter_PropertyRoot" >
+        <include refid="insert_PropertyRoot_AutoIncrement"/>
+        <selectKey resultClass="long" keyProperty="id" type="post">
+            KEY_COLUMN:GENERATED_KEY
+        </selectKey>
+    </insert>
+
 </sqlMap>

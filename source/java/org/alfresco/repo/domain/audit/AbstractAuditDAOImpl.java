@@ -29,8 +29,10 @@ import java.io.InputStream;
 import java.io.Serializable;
 import java.net.URL;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.zip.CRC32;
 
 import org.alfresco.error.AlfrescoRuntimeException;
@@ -49,6 +51,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.util.Pair;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.dao.DataIntegrityViolationException;
 
 /**
  * Abstract helper DAO for <b>alf_audit_XXX</b> tables.
@@ -206,33 +209,105 @@ public abstract class AbstractAuditDAOImpl implements AuditDAO
      * alf_audit_application
      */
     
-    public Long getOrCreateAuditApplication(Long modelId, String application)
+    @SuppressWarnings("unchecked")
+    public AuditApplicationInfo getAuditApplication(String application)
     {
-        // Search for it
-        AuditApplicationEntity entity = getAuditApplicationByModelIdAndName(modelId, application);
+        AuditApplicationEntity entity = getAuditApplicationByName(application);
         if (entity == null)
         {
-            // Create it
-            // Persist the string
-            Long appNameId = propertyValueDAO.getOrCreatePropertyValue(application).getFirst();
-            // Create the audit session
-            entity = createAuditApplication(modelId, appNameId);
+            return null;
+        }
+        else
+        {
+            AuditApplicationInfo appInfo = new AuditApplicationInfo();
+            appInfo.setId(entity.getId());
+            appInfo.setname(application);
+            appInfo.setModelId(entity.getAuditModelId());
+            // Resolve the disabled paths
+            Set<String> disabledPaths = (Set<String>) propertyValueDAO.getPropertyById(entity.getDisabledPathsId());
+            appInfo.setDisabledPaths(disabledPaths);
             // Done
             if (logger.isDebugEnabled())
             {
                 logger.debug(
-                        "Created new audit application: \n" +
-                        "   Model:  " + modelId + "\n" +
-                        "   App:    " + application + "\n" +
-                        "   Result: " + entity);
+                        "Found existing audit application: \n" +
+                        "  " + appInfo);
             }
+            return appInfo;
         }
+    }
+    
+    public AuditApplicationInfo createAuditApplication(String application, Long modelId)
+    {
+        // Persist the string
+        Long appNameId = propertyValueDAO.getOrCreatePropertyValue(application).getFirst();
+        // We need a property to hold any disabled paths
+        Set<String> disabledPaths = new HashSet<String>();
+        Long disabledPathsId = propertyValueDAO.createProperty((Serializable)disabledPaths);
+        // Create the audit app
+        AuditApplicationEntity entity = createAuditApplication(appNameId, modelId, disabledPathsId);
+        
+        // Create return value
+        AuditApplicationInfo appInfo = new AuditApplicationInfo();
+        appInfo.setId(entity.getId());
+        appInfo.setname(application);
+        appInfo.setModelId(modelId);
+        appInfo.setDisabledPaths(disabledPaths);
         // Done
-        return entity.getId();
+        if (logger.isDebugEnabled())
+        {
+            logger.debug(
+                    "Created new audit application: \n" +
+                    "   Model:  " + modelId + "\n" +
+                    "   App:    " + application + "\n" +
+                    "   Result: " + entity);
+        }
+        return appInfo;
     }
 
-    protected abstract AuditApplicationEntity getAuditApplicationByModelIdAndName(Long modelId, String appName);
-    protected abstract AuditApplicationEntity createAuditApplication(Long modelId, Long appNameId);
+    public void updateAuditApplicationModel(Long id, Long modelId)
+    {
+        AuditApplicationEntity entity = getAuditApplicationById(id);
+        if (entity == null)
+        {
+            throw new DataIntegrityViolationException("No audit application exists for ID " + id);
+        }
+        if (entity.getAuditModelId().equals(modelId))
+        {
+            // There is nothing to update
+            return;
+        }
+        // Update
+        entity.setAuditModelId(modelId);
+        updateAuditApplication(entity);
+    }
+
+    @SuppressWarnings("unchecked")
+    public void updateAuditApplicationDisabledPaths(Long id, Set<String> disabledPaths)
+    {
+        AuditApplicationEntity entity = getAuditApplicationById(id);
+        if (entity == null)
+        {
+            throw new DataIntegrityViolationException("No audit application exists for ID " + id);
+        }
+        // Resolve the current set
+        Long disabledPathsId = entity.getDisabledPathsId();
+        Set<String> oldDisabledPaths = (Set<String>) propertyValueDAO.getPropertyById(disabledPathsId);
+        if (oldDisabledPaths.equals(disabledPaths))
+        {
+            // Nothing changed
+            return;
+        }
+        // Update the property
+        propertyValueDAO.updateProperty(disabledPathsId, (Serializable) disabledPaths);
+        // Do a precautionary update to ensure that the application row is locked appropriately
+        updateAuditApplication(entity);
+    }
+
+    protected abstract AuditApplicationEntity getAuditApplicationById(Long id);
+    protected abstract AuditApplicationEntity getAuditApplicationByName(String appName);
+    protected abstract AuditApplicationEntity createAuditApplication(Long appNameId, Long modelId, Long disabledPathsId);
+    protected abstract AuditApplicationEntity updateAuditApplication(AuditApplicationEntity entity);
     
     /*
      * alf_audit_entry
@@ -253,7 +328,7 @@ public abstract class AbstractAuditDAOImpl implements AuditDAO
         Long valuesId = null;
         if (values != null && values.size() > 0)
         {
-            valuesId = propertyValueDAO.getOrCreatePropertyValue((Serializable)values).getFirst();
+            valuesId = propertyValueDAO.createProperty((Serializable)values);
         }
 
         // Create the audit entry

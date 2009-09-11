@@ -25,20 +25,17 @@
 package org.alfresco.repo.domain.propval;
 
 /**
- * Entity bean for <b>alf_prop_link</b> table.
+ * Entity bean for <b>alf_prop_root</b> table.
  * 
  * @author Derek Hulley
  * @since 3.2
  */
-public class PropertyLinkEntity
+public class PropertyRootEntity
 {
-    private Long rootPropId;
-    private Long propIndex;
-    private Long containedIn;
-    private Long keyPropId;
-    private Long valuePropId;
+    private Long id;
+    private short version;
     
-    public PropertyLinkEntity()
+    public PropertyRootEntity()
     {
     }
     
@@ -46,63 +43,42 @@ public class PropertyLinkEntity
     public String toString()
     {
         StringBuilder sb = new StringBuilder(512);
-        sb.append("PropertyLinkEntity")
-          .append("[ rootPropId=").append(rootPropId)
-          .append(", propIndex=").append(propIndex)
-          .append(", containedIn=").append(containedIn)
-          .append(", keyPropId=").append(keyPropId)
-          .append(", valuePropId=").append(valuePropId)
+        sb.append("PropertyRootEntity")
+          .append("[ ID=").append(id)
+          .append(", version=").append(version)
           .append("]");
         return sb.toString();
     }
 
-    public Long getRootPropId()
+    public void incrementVersion()
     {
-        return rootPropId;
+        if (version >= Short.MAX_VALUE)
+        {
+            this.version = 0;
+        }
+        else
+        {
+            this.version++;
+        }
+    }
+    
+    public Long getId()
+    {
+        return id;
     }
 
-    public void setRootPropId(Long rootPropId)
+    public void setId(Long id)
     {
-        this.rootPropId = rootPropId;
+        this.id = id;
     }
 
-    public Long getPropIndex()
+    public short getVersion()
     {
-        return propIndex;
+        return version;
     }
 
-    public void setPropIndex(Long propIndex)
+    public void setVersion(short version)
     {
-        this.propIndex = propIndex;
-    }
-
-    public Long getContainedIn()
-    {
-        return containedIn;
-    }
-
-    public void setContainedIn(Long containedIn)
-    {
-        this.containedIn = containedIn;
-    }
-
-    public Long getKeyPropId()
-    {
-        return keyPropId;
-    }
-
-    public void setKeyPropId(Long keyPropId)
-    {
-        this.keyPropId = keyPropId;
-    }
-
-    public Long getValuePropId()
-    {
-        return valuePropId;
-    }
-
-    public void setValuePropId(Long valuePropId)
-    {
-        this.valuePropId = valuePropId;
+        this.version = version;
     }
 }

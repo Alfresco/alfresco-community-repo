@@ -59,6 +59,13 @@ public interface Constraint
     public String getTitle();
     
     /**
+     * Gets the constraint name.
+     * 
+     * @return the constraint name.
+     */
+    public String getShortName();
+
+    /**
      * Returns the parameters passed to the instance of the constraint.
      * 
      * @return Map of parameters or an empty <tt>Map</tt> if none exist

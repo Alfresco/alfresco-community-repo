@@ -255,7 +255,7 @@ public class AVMRemoteStore extends BaseRemoteStore
                     avmService.createFile(parts[0], parts[1], content);
                     
                     if (logger.isDebugEnabled())
-                        logger.debug("AVMRemoteStore.createDocument() " + avmPath);
+                        logger.debug("AVMRemoteStore.createDocument() " + avmPath + " of size: " + avmService.lookup(-1, avmPath).getLength());
                 }
                 catch (AccessDeniedException ae)
                 {
@@ -295,7 +295,7 @@ public class AVMRemoteStore extends BaseRemoteStore
                     writer.putContent(content);
                     
                     if (logger.isDebugEnabled())
-                        logger.debug("AVMRemoteStore.updateDocument() " + avmPath);
+                        logger.debug("AVMRemoteStore.updateDocument() " + avmPath + " of size: " + avmService.lookup(-1, avmPath).getLength());
                 }
                 catch (AccessDeniedException ae)
                 {

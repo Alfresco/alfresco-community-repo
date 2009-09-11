@@ -165,7 +165,7 @@ public abstract class BaseRemoteStore extends AbstractWebScript
         			
         			// reset element
         			el = (tokenizer.hasMoreTokens() ? tokenizer.nextToken() : null);
-        		}       		
+        		}
         		
         		if (TOKEN_WEBAPP.equals(el))
         		{
@@ -174,7 +174,6 @@ public abstract class BaseRemoteStore extends AbstractWebScript
         			        			
         			// reset element
         			el = (tokenizer.hasMoreTokens() ? tokenizer.nextToken() : null);
-        			
         		}
         		
         		while (el != null)
@@ -268,11 +267,15 @@ public abstract class BaseRemoteStore extends AbstractWebScript
                 
                 case CREATE:
                     validatePath(path);
+                    if (logger.isDebugEnabled())
+                        logger.debug("CREATE: content length=" + httpReq.getContentLength());
                     createDocument(res, store, path, httpReq.getInputStream());
                     break;
                 
                 case UPDATE:
                     validatePath(path);
+                    if (logger.isDebugEnabled())
+                        logger.debug("CREATE: content length=" + httpReq.getContentLength());
                     updateDocument(res, store, path, httpReq.getInputStream());
                     break;
                 

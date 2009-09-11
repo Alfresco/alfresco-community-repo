@@ -77,6 +77,7 @@ import org.alfresco.util.VersionNumber;
  * @author andyh
  * 
  */
+@SuppressWarnings("unchecked")
 public class DefaultTypeConverter
 {
     /**
@@ -93,6 +94,21 @@ public class DefaultTypeConverter
         //
         // From string
         //
+
+        INSTANCE.addConverter(String.class, Class.class, new TypeConverter.Converter<String, Class>()
+                {
+                    public Class convert(String source)
+                    {
+                        try
+                        {
+                            return Class.forName(source);
+                        }
+                        catch (ClassNotFoundException e)
+                        {
+                            throw new TypeConversionException("Failed to convert string to class: " + source, e);
+                        }
+                    }
+                });
 
         INSTANCE.addConverter(String.class, Boolean.class, new TypeConverter.Converter<String, Boolean>()
         {
@@ -418,6 +434,16 @@ public class DefaultTypeConverter
             }
         });
         
+        // From Class
+        
+        INSTANCE.addConverter(Class.class, String.class, new TypeConverter.Converter<Class, String>()
+                {
+                    public String convert(Class source)
+                    {
+                        return source.getName();
+                    }
+                });
+
         //
         // Number to Subtypes and Date
         //

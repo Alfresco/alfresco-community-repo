@@ -117,6 +117,8 @@ public class DefaultTypeConverterTest extends TestCase
         // Period
         assertEquals("period", DefaultTypeConverter.INSTANCE.convert(String.class, new Period("period")));
         assertEquals("period|12", DefaultTypeConverter.INSTANCE.convert(String.class, new Period("period|12")));
+        // Java Class
+        assertEquals(this.getClass(), DefaultTypeConverter.INSTANCE.convert(Class.class, this.getClass().getName()));
     }
 
     public void testFromString()
@@ -155,6 +157,8 @@ public class DefaultTypeConverterTest extends TestCase
         
         assertEquals(new Period("period"), DefaultTypeConverter.INSTANCE.convert(Period.class, "period"));
         assertEquals(new Period("period|12"), DefaultTypeConverter.INSTANCE.convert(Period.class, "period|12"));
+        // Java Class
+        assertEquals(this.getClass().getName(), DefaultTypeConverter.INSTANCE.convert(String.class, this.getClass()));
     }
     
     String localeStrEn = DefaultTypeConverter.INSTANCE.convert(String.class, Locale.ENGLISH);
@@ -225,6 +229,8 @@ public class DefaultTypeConverterTest extends TestCase
         assertEquals(new BigInteger("7"), DefaultTypeConverter.INSTANCE.convert(BigInteger.class, Integer.valueOf("7")));
         assertEquals(new BigDecimal("8"), DefaultTypeConverter.INSTANCE.convert(BigDecimal.class, Integer.valueOf("8")));
         
+        assertEquals(Boolean.TRUE, DefaultTypeConverter.INSTANCE.convert(Boolean.class, Long.valueOf("1")));
+        assertEquals(Boolean.FALSE, DefaultTypeConverter.INSTANCE.convert(Boolean.class, Long.valueOf("0")));
         assertEquals(Byte.valueOf("1"), DefaultTypeConverter.INSTANCE.convert(Byte.class, Long.valueOf("1")));
         assertEquals(Short.valueOf("2"), DefaultTypeConverter.INSTANCE.convert(Short.class, Long.valueOf("2")));
         assertEquals(Integer.valueOf("3"), DefaultTypeConverter.INSTANCE.convert(Integer.class, Long.valueOf("3")));

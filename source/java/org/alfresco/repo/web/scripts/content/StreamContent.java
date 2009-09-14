@@ -32,7 +32,6 @@ import java.io.Writer;
 import java.net.SocketException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Locale;
@@ -89,7 +88,7 @@ public class StreamContent extends AbstractWebScript
     protected MimetypeService mimetypeService;    
     
     /** Cached file modified date */
-    private Date resouceFileModifiedDate;
+//    private Date resouceFileModifiedDate;
 
     /**
      * @param mimetypeService
@@ -466,21 +465,15 @@ public class StreamContent extends AbstractWebScript
             }
         }
         
-        // Create a date in the past
-        if (this.resouceFileModifiedDate == null)
-        {
-            Calendar calendar = Calendar.getInstance();
-            calendar.set(1975, 3, 26);
-            this.resouceFileModifiedDate = calendar.getTime();
-        }      
-        
         // setup file reader and stream
         FileContentReader reader = new FileContentReader(file);
         reader.setMimetype(mimetype);
         reader.setEncoding("UTF-8");
         
-        streamContentImpl(req, res, reader, attach, this.resouceFileModifiedDate, 
-                    String.valueOf(this.resouceFileModifiedDate.getTime()), attachFileName);
+        Date lastModified = new Date(file.lastModified());
+        
+        streamContentImpl(req, res, reader, attach, lastModified, 
+                    String.valueOf(lastModified.getTime()), attachFileName);
     }
     
     /**

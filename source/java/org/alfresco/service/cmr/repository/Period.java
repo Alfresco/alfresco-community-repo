@@ -126,6 +126,11 @@ public class Period implements Serializable
      */
     public Date getNextDate(Date date)
     {
+        if (periodType == null || periodType.length() == 0)
+        {
+            return null;
+        }
+        
         PeriodProvider provider = getProvider(periodType);
         return provider.getNextDate(date, expression != null ? expression : provider.getDefaultExpression());
     }

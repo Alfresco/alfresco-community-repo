@@ -30,6 +30,7 @@ import java.util.List;
 
 import org.alfresco.repo.domain.CrcHelper;
 import org.alfresco.util.Pair;
+import org.springframework.dao.DataIntegrityViolationException;
 
 /**
  * DAO services for <b>alf_prop_XXX</b> tables.
@@ -184,6 +185,7 @@ public interface PropertyValueDAO
      * 
      * @param id                the ID (may not be <tt>null</tt>)
      * @return                  Returns the value of the property (never <tt>null</tt>)
+     * @throws DataIntegrityViolationException if the ID is invalid
      */
     Serializable getPropertyById(Long id);
     /**

@@ -801,56 +801,95 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
      */
     public Long createProperty(Serializable value)
     {
-        // We will need a new root
-        Long rootPropId = createPropertyRoot();
-        createPropertyImpl(rootPropId, 0L, 0L, null, value);
-        // Push this value into the cache
-        propertyCache.updateValue(rootPropId, value);
-        // Done
-        if (logger.isDebugEnabled())
-        {
-            logger.debug(
-                    "Created property: \n" +
-                    "   ID: " + rootPropId + "\n" +
-                    "   Value: " + value);
-        }
-        return rootPropId;
+        Pair<Long, Serializable> entityPair = propertyCache.getOrCreateByValue(value);
+        return entityPair.getFirst();
     }
     
     public void updateProperty(Long rootPropId, Serializable value)
     {
-        // Remove all entries for the root
-        PropertyRootEntity entity = getPropertyRoot(rootPropId);
-        if (entity == null)
-        {
-            throw new DataIntegrityViolationException("No property root exists for ID " + rootPropId);
-        }
-        // Remove all links using the root
-        deletePropertyLinks(rootPropId);
-        // Create the new properties and update the cache
-        createPropertyImpl(rootPropId, 0L, 0L, null, value);
         propertyCache.updateValue(rootPropId, value);
-        // Update the property root to detect concurrent modification
-        updatePropertyRoot(entity);
-        // Done
-        if (logger.isDebugEnabled())
-        {
-            logger.debug(
-                    "Updated property: \n" +
-                    "   ID: " + rootPropId + "\n" +
-                    "   Value: " + value);
-        }
     }
 
     public void deleteProperty(Long id)
     {
-        deletePropertyRoot(id);
-        // Done
-        if (logger.isDebugEnabled())
+        propertyCache.deleteByKey(id);
+    }
+
+    /**
+     * Callback for <b>alf_prop_root</b> DAO.
+     */
+    private class PropertyCallbackDAO extends EntityLookupCallbackDAOAdaptor<Long, Serializable, Serializable>
+    {
+        public Pair<Long, Serializable> createValue(Serializable value)
         {
-            logger.debug(
-                    "Deleted property: \n" +
-                    "   ID: " + id);
+            // We will need a new root
+            Long rootPropId = createPropertyRoot();
+            createPropertyImpl(rootPropId, 0L, 0L, null, value);
+            // Done
+            if (logger.isDebugEnabled())
+            {
+                logger.debug(
+                        "Created property: \n" +
+                        "   ID: " + rootPropId + "\n" +
+                        "   Value: " + value);
+            }
+            return new Pair<Long, Serializable>(rootPropId, value);
+        }
+
+        public Pair<Long, Serializable> findByKey(Long key)
+        {
+            List<PropertyIdSearchRow> rows = findPropertyById(key);
+            if (rows.size() == 0)
+            {
+                // No results
+                return null;
+            }
+            Serializable value = convertPropertyIdSearchRows(rows);
+            return new Pair<Long, Serializable>(key, value);
+        }
+
+        /**
+         * No-op.  This is implemented as we just want to update the cache.
+         * @return              Returns 0 always
+         */
+        @Override
+        public int updateValue(Long key, Serializable value)
+        {
+            // Remove all entries for the root
+            PropertyRootEntity entity = getPropertyRoot(key);
+            if (entity == null)
+            {
+                throw new DataIntegrityViolationException("No property root exists for ID " + key);
+            }
+            // Remove all links using the root
+            deletePropertyLinks(key);
+            // Create the new properties and update the cache
+            createPropertyImpl(key, 0L, 0L, null, value);
+            // Update the property root to detect concurrent modification
+            updatePropertyRoot(entity);
+            // Done
+            if (logger.isDebugEnabled())
+            {
+                logger.debug(
+                        "Updated property: \n" +
+                        "   ID: " + key + "\n" +
+                        "   Value: " + value);
+            }
+            return 1;
+        }
+
+        @Override
+        public int deleteByKey(Long key)
+        {
+            deletePropertyRoot(key);
+            // Done
+            if (logger.isDebugEnabled())
+            {
+                logger.debug(
+                        "Deleted property: \n" +
+                        "   ID: " + key);
+            }
+            return 1;
         }
     }
 
@@ -990,42 +1029,6 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
             return null;
         }
     }
-    
-    /**
-     * Callback for <b>alf_prop_root</b> DAO.
-     */
-    private class PropertyCallbackDAO extends EntityLookupCallbackDAOAdaptor<Long, Serializable, Serializable>
-    {
-        public Pair<Long, Serializable> createValue(Serializable value)
-        {
-            PropertyValueEntity entity = createPropertyValue(value);
-            // Done
-            return new Pair<Long, Serializable>(entity.getId(), value);
-        }
-
-        public Pair<Long, Serializable> findByKey(Long key)
-        {
-            List<PropertyIdSearchRow> rows = findPropertyById(key);
-            if (rows.size() == 0)
-            {
-                // No results
-                return null;
-            }
-            Serializable value = convertPropertyIdSearchRows(rows);
-            return new Pair<Long, Serializable>(key, value);
-        }
-
-        /**
-         * No-op.  This is implemented as we just want to update the cache.
-         * @return              Returns 0 always
-         */
-        @Override
-        public int updateValue(Long key, Serializable value)
-        {
-            return 0;
-        }
-    }
-
     
     protected abstract List<PropertyIdSearchRow> findPropertyById(Long id);
     protected abstract Long createPropertyRoot();

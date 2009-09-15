@@ -128,8 +128,8 @@
             alf_audit_app
         set
             version = #version#,
-            app_name_id = #applicationNameId#
-            audit_model_id = #auditModelId#
+            app_name_id = #applicationNameId#,
+            audit_model_id = #auditModelId#,
             disabled_paths_id = #disabledPathsId#
         where
             id = #id# and

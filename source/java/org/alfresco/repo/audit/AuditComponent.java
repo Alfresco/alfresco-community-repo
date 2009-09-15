@@ -83,6 +83,50 @@ public interface AuditComponent
     /*
      * V3.2 from here on.  Put all fixes to the older audit code before this point, please.
      */
+    
+    /**
+     * Enable auditing (if it is not already enabled) for all paths that contain the given path.
+     * The path is the path as originally logged (see {@link #audit(String, String, Map)}) and
+     * not the path that the generated data may contain - although this would be similarly
+     * enabled.
+     * <p>
+     * If the enabled 
+     * 
+     * @param applicationName   the name of the application being logged to
+     * @param path              the audit path to enable auditing on
+     * 
+     * @since 3.2
+     */
+    void enableAudit(String applicationName, String path);
+
+    /**
+     * Disable auditing (if it is not already disabled) for all paths that contain the given path.
+     * The path is the path as originally logged (see {@link #audit(String, String, Map)}) and
+     * not the path that the generated data may contain - although this would be similarly
+     * disabled.
+     * <p>
+     * If the path is <b>/x/y</b> then any data paths that start with <b>/x/y</b> will be stripped
+     * out <u>before</u> data generators and data recorders are applied.  If the path represents
+     * the root path of the application, then auditing for that application is effectively disabled. 
+     * 
+     * @param applicationName   the name of the application being logged to
+     * @param path              the audit path to enable auditing on
+     * 
+     * @since 3.2
+     */
+    void disableAudit(String applicationName, String path);
+    
+    /**
+     * Remove all disabled paths i.e. enable all per-path based auditing.  Auditing may still be
+     * disabled globally.  This is primarily for test purposes; applications should know which
+     * paths need {@link #enableAudit(String, String) enabling} or
+     * {@link #disableAudit(String, String) disabling}.
+     * 
+     * @param applicationName   the name of the application
+     * 
+     * @since 3.2
+     */
+    void resetDisabledPaths(String applicationName);
 
     /**
      * Record a set of values against the given session.  The map is a path - starting with '/'
@@ -118,6 +162,8 @@ public interface AuditComponent
      * @param from              the start search time (<tt>null</tt> to start at the beginning)
      * @param to                the end search time (<tt>null</tt> for no limit)
      * @param maxResults        the maximum number of results to retrieve (zero or negative to ignore)
+     * 
+     * @since 3.2
      */
     void auditQuery(
             AuditQueryCallback callback,
@@ -135,6 +181,8 @@ public interface AuditComponent
      * @param searchKey         the audit key path that must exist (<tt>null</tt> to ignore)
      * @param searchString      an audit value string that must exist (<tt>null</tt> to ignore)
      * @param maxResults        the maximum number of results to retrieve (zero or negative to ignore)
+     * 
+     * @since 3.2
      */
     void auditQuery(
             AuditQueryCallback callback,

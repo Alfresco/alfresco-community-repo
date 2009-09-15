@@ -96,14 +96,6 @@ public class AuditModelRegistry
      * Used to lookup the audit application java hierarchy 
      */
     private final Map<String, AuditApplication> auditApplicationsByName;
-    /**
-     * Used to lookup a reference to the application
-     */
-    private final Map<String, Long> auditApplicationIdsByApplicationsName;
-    /**
-     * Used to lookup application disabled paths
-     */
-    private final Map<String, Set<String>> auditDisabledPathsByApplicationsName;
     
     /**
      * Default constructor
@@ -119,8 +111,6 @@ public class AuditModelRegistry
         auditModelUrls = new HashSet<URL>(7);
         auditModels = new ArrayList<Audit>(7);
         auditApplicationsByName = new HashMap<String, AuditApplication>(7);
-        auditApplicationIdsByApplicationsName = new HashMap<String, Long>(7);
-        auditDisabledPathsByApplicationsName = new HashMap<String, Set<String>>(7);
     }
 
     /**
@@ -215,7 +205,6 @@ public class AuditModelRegistry
     {
         auditModels.clear();
         auditApplicationsByName.clear();
-        auditApplicationIdsByApplicationsName.clear();
     }
     
     /**
@@ -223,7 +212,8 @@ public class AuditModelRegistry
      * the audit models for later retrieval.  Models are loaded from the locations given by the
      * {@link #registerModel(URL) register} methods.
      * <p/>
-     * Note, the models are loaded in a new transaction.
+     * Note, the models are loaded in a new transaction, so this method can be called by any code
+     * at any time.
      */
     public void loadAuditModels()
     {
@@ -268,30 +258,11 @@ public class AuditModelRegistry
         clearCaches();
         try
         {
-            transactionService.getRetryingTransactionHelper().doInTransaction(loadModelsCallback);
+            transactionService.getRetryingTransactionHelper().doInTransaction(loadModelsCallback, false, true);
         }
         finally
         {
             writeLock.unlock();
-        }
-    }
-    
-    /**
-     * Get the ID of the persisted audit application for the given application name
-     * 
-     * @param applicationName       the name of the audited application
-     * @return                      the unique ID of the persisted application (<tt>null</tt> if not found)
-     */
-    public Long getAuditApplicationId(String applicationName)
-    {
-        readLock.lock();
-        try
-        {
-            return auditApplicationIdsByApplicationsName.get(applicationName);
-        }
-        finally
-        {
-            readLock.unlock();
         }
     }
     
@@ -307,25 +278,6 @@ public class AuditModelRegistry
         try
         {
             return auditApplicationsByName.get(applicationName);
-        }
-        finally
-        {
-            readLock.unlock();
-        }
-    }
-    
-    /**
-     * Get all disabled paths for the given application name
-     * 
-     * @param applicationName       the name of the audited application
-     * @return                      a set of paths for which logging is disabled
-     */
-    public Set<String> getAuditDisabledPaths(String applicationName)
-    {
-        readLock.lock();
-        try
-        {
-            return auditDisabledPathsByApplicationsName.get(applicationName);
         }
         finally
         {
@@ -552,10 +504,13 @@ public class AuditModelRegistry
                 auditDAO.updateAuditApplicationModel(appInfo.getId(), auditModelId);
             }
             
-            AuditApplication wrapperApp = new AuditApplication(dataExtractorsByName, dataGeneratorsByName, application);
+            AuditApplication wrapperApp = new AuditApplication(
+                    dataExtractorsByName,
+                    dataGeneratorsByName,
+                    application,
+                    appInfo.getId(),
+                    appInfo.getDisabledPathsId());
             auditApplicationsByName.put(name, wrapperApp);
-            auditApplicationIdsByApplicationsName.put(name, appInfo.getId());
-            auditDisabledPathsByApplicationsName.put(name, appInfo.getDisabledPaths());
         }
         // Store the model itself
         auditModels.add(audit);

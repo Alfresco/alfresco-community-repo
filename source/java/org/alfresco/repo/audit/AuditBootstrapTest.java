@@ -121,7 +121,9 @@ public class AuditBootstrapTest extends TestCase
     
     public void testGetApplicationId()
     {
-        Long appId = auditModelRegistry.getAuditApplicationId(APPLICATION_TEST);
+        AuditApplication app = auditModelRegistry.getAuditApplication(APPLICATION_TEST);
+        assertNotNull(app);
+        Long appId = app.getApplicationId();
         assertNotNull("No audit application ID for " + APPLICATION_TEST, appId);
     }
     

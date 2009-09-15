@@ -78,7 +78,7 @@ public interface AuditDAO
         private Long id;
         private String name;
         private Long modelId;
-        private Set<String> disabledPaths;
+        private Long disabledPathsId;
         
         @Override
         public String toString()
@@ -88,7 +88,7 @@ public interface AuditDAO
               .append("[ id=").append(id)
               .append(", name=").append(name)
               .append(", modelId=").append(modelId)
-              .append(", disabledPaths=").append(disabledPaths)
+              .append(", disabledPathsId=").append(disabledPathsId)
               .append("]");
             return sb.toString();
         }
@@ -117,13 +117,13 @@ public interface AuditDAO
         {
             this.modelId = modelId;
         }
-        public Set<String> getDisabledPaths()
+        public Long getDisabledPathsId()
         {
-            return disabledPaths;
+            return disabledPathsId;
         }
-        public void setDisabledPaths(Set<String> disabledPaths)
+        public void setDisabledPathsId(Long disabledPathsId)
         {
-            this.disabledPaths = disabledPaths;
+            this.disabledPathsId = disabledPathsId;
         }
     }
     

@@ -209,7 +209,6 @@ public abstract class AbstractAuditDAOImpl implements AuditDAO
      * alf_audit_application
      */
     
-    @SuppressWarnings("unchecked")
     public AuditApplicationInfo getAuditApplication(String application)
     {
         AuditApplicationEntity entity = getAuditApplicationByName(application);
@@ -223,9 +222,7 @@ public abstract class AbstractAuditDAOImpl implements AuditDAO
             appInfo.setId(entity.getId());
             appInfo.setname(application);
             appInfo.setModelId(entity.getAuditModelId());
-            // Resolve the disabled paths
-            Set<String> disabledPaths = (Set<String>) propertyValueDAO.getPropertyById(entity.getDisabledPathsId());
-            appInfo.setDisabledPaths(disabledPaths);
+            appInfo.setDisabledPathsId(entity.getDisabledPathsId());
             // Done
             if (logger.isDebugEnabled())
             {
@@ -252,7 +249,7 @@ public abstract class AbstractAuditDAOImpl implements AuditDAO
         appInfo.setId(entity.getId());
         appInfo.setname(application);
         appInfo.setModelId(modelId);
-        appInfo.setDisabledPaths(disabledPaths);
+        appInfo.setDisabledPathsId(disabledPathsId);
         // Done
         if (logger.isDebugEnabled())
         {

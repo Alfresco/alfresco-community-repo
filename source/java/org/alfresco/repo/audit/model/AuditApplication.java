@@ -62,6 +62,8 @@ public class AuditApplication
     private final Map<String, DataGenerator> dataGeneratorsByName;
     @SuppressWarnings("unused")
     private final Application application;
+    private final Long applicationId;
+    private final Long disabledPathsId;
 
     /** Derived expaned map for fast lookup */
     private Map<String, Map<String, DataExtractor>> dataExtractors = new HashMap<String, Map<String, DataExtractor>>(11);
@@ -76,7 +78,9 @@ public class AuditApplication
     /* package */ AuditApplication(
             Map<String, DataExtractor> dataExtractorsByName,
             Map<String, DataGenerator> dataGeneratorsByName,
-            Application application)
+            Application application,
+            Long applicationId,
+            Long disabledPathsId)
     {
         this.dataExtractorsByName = dataExtractorsByName;
         this.dataGeneratorsByName = dataGeneratorsByName;
@@ -84,6 +88,8 @@ public class AuditApplication
 
         this.applicationName = application.getName();
         this.applicationKey = application.getKey();
+        this.applicationId = applicationId;
+        this.disabledPathsId = disabledPathsId;
         
         buildAuditPaths(application);
     }
@@ -118,6 +124,8 @@ public class AuditApplication
         StringBuilder sb = new StringBuilder(56);
         sb.append("AuditApplication")
           .append("[ name=").append(applicationName)
+          .append(", id=").append(applicationId)
+          .append(", disabledPathsId=").append(disabledPathsId)
           .append("]");
         return sb.toString();
     }
@@ -138,6 +146,24 @@ public class AuditApplication
         return applicationKey;
     }
     
+    /**
+     * Get the database ID for this application
+     */
+    public Long getApplicationId()
+    {
+        return applicationId;
+    }
+
+    /**
+     * Get the property representing the set of disabled paths for the application
+     * 
+     * @return          Returns an ID <code>Set<String></code> of disabled paths
+     */
+    public Long getDisabledPathsId()
+    {
+        return disabledPathsId;
+    }
+
     /**
      * Helper method to check that a path is correct for this application instance
      * 

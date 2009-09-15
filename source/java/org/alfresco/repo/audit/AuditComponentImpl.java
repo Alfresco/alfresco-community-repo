@@ -31,8 +31,11 @@ import java.net.UnknownHostException;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.audit.extractor.DataExtractor;
@@ -42,6 +45,7 @@ import org.alfresco.repo.audit.model.AuditEntry;
 import org.alfresco.repo.audit.model.AuditModelRegistry;
 import org.alfresco.repo.audit.model.TrueFalseUnset;
 import org.alfresco.repo.domain.audit.AuditDAO;
+import org.alfresco.repo.domain.propval.PropertyValueDAO;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport.TxnReadState;
@@ -759,6 +763,7 @@ public class AuditComponentImpl implements AuditComponent
      */
     
     private AuditModelRegistry auditModelRegistry;
+    private PropertyValueDAO propertyValueDAO;
 
     /**
      * Set the registry holding the audit models
@@ -767,6 +772,200 @@ public class AuditComponentImpl implements AuditComponent
     public void setAuditModelRegistry(AuditModelRegistry auditModelRegistry)
     {
         this.auditModelRegistry = auditModelRegistry;
+    }
+
+    /**
+     * Set the DAO for manipulating property values
+     * @since 3.2
+     */
+    public void setPropertyValueDAO(PropertyValueDAO propertyValueDAO)
+    {
+        this.propertyValueDAO = propertyValueDAO;
+    }
+    
+    /**
+     * @param application       the audit application object
+     * @return                  Returns a copy of the set of disabled paths associated with the application
+     */
+    @SuppressWarnings("unchecked")
+    private Set<String> getDisabledPaths(AuditApplication application)
+    {
+        try
+        {
+            Long disabledPathsId = application.getDisabledPathsId();
+            Set<String> disabledPaths = (Set<String>) propertyValueDAO.getPropertyById(disabledPathsId);
+            return new HashSet<String>(disabledPaths);
+        }
+        catch (Throwable e)
+        {
+            // Might be an invalid ID, somehow
+            auditModelRegistry.loadAuditModels();
+            throw new AlfrescoRuntimeException("Unabled to get AuditApplication disabled paths: " + application, e);
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     * @since 3.2
+     */
+    public void enableAudit(String applicationName, String path)
+    {
+        ParameterCheck.mandatory("applicationName", applicationName);
+        ParameterCheck.mandatory("path", path);
+        
+        if (AlfrescoTransactionSupport.getTransactionReadState() != TxnReadState.TXN_READ_WRITE)
+        {
+            throw new IllegalStateException("Auditing requires a read-write transaction.");
+        }
+        
+        AuditApplication application = auditModelRegistry.getAuditApplication(applicationName);
+        if (application == null)
+        {
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("No audit application named '" + applicationName + "' has been registered.");
+            }
+            return;
+        }
+        // Check the path against the application
+        application.checkPath(path);
+
+        Long disabledPathsId = application.getDisabledPathsId();
+        Set<String> disabledPaths = getDisabledPaths(application);
+        
+        // Remove any paths that start with the given path
+        boolean changed = false;
+        Iterator<String> iterateDisabledPaths = disabledPaths.iterator();
+        while (iterateDisabledPaths.hasNext())
+        {
+            String disabledPath = iterateDisabledPaths.next();
+            if (disabledPath.startsWith(path))
+            {
+                iterateDisabledPaths.remove();
+                changed = true;
+            }
+        }
+        // Persist, if necessary
+        if (changed)
+        {
+            propertyValueDAO.updateProperty(disabledPathsId, (Serializable) disabledPaths);
+            if (logger.isDebugEnabled())
+            {
+                logger.debug(
+                        "Audit disabled paths updated: \n" +
+                        "   Application: " + applicationName + "\n" +
+                        "   Disabled:    " + disabledPaths);
+            }
+        }
+        // Done
+    }
+
+    /**
+     * {@inheritDoc}
+     * @since 3.2
+     */
+    public void disableAudit(String applicationName, String path)
+    {
+        ParameterCheck.mandatory("applicationName", applicationName);
+        ParameterCheck.mandatory("path", path);
+        
+        if (AlfrescoTransactionSupport.getTransactionReadState() != TxnReadState.TXN_READ_WRITE)
+        {
+            throw new IllegalStateException("Auditing requires a read-write transaction.");
+        }
+        
+        AuditApplication application = auditModelRegistry.getAuditApplication(applicationName);
+        if (application == null)
+        {
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("No audit application named '" + applicationName + "' has been registered.");
+            }
+            return;
+        }
+        // Check the path against the application
+        application.checkPath(path);
+        
+        Long disabledPathsId = application.getDisabledPathsId();
+        Set<String> disabledPaths = getDisabledPaths(application);
+        
+        // Shortcut if the disabled paths contain the exact path
+        if (disabledPaths.contains(path))
+        {
+            if (logger.isDebugEnabled())
+            {
+                logger.debug(
+                        "Audit disable path already present: \n" +
+                        "   Path:       " + path);
+            }
+            return;
+        }
+        
+        // Bring the set up to date by stripping out unwanted paths
+        Iterator<String> iterateDisabledPaths = disabledPaths.iterator();
+        while (iterateDisabledPaths.hasNext())
+        {
+            String disabledPath = iterateDisabledPaths.next();
+            if (disabledPath.startsWith(path))
+            {
+                // We will be superceding this
+                iterateDisabledPaths.remove();
+            }
+            else if (path.startsWith(disabledPath))
+            {
+                // There is already a superceding path
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug(
+                            "Audit disable path superceded: \n" +
+                            "   Path:          " + path + "\n" +
+                            "   Superceded by: " + disabledPath);
+                }
+                return;
+            }
+        }
+        // Add our path in
+        disabledPaths.add(path);
+        // Upload the new set
+        propertyValueDAO.updateProperty(disabledPathsId, (Serializable) disabledPaths);
+        // Done
+        if (logger.isDebugEnabled())
+        {
+            logger.debug(
+                    "Audit disabled paths updated: \n" +
+                    "   Application: " + applicationName + "\n" +
+                    "   Disabled:    " + disabledPaths);
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     * @since 3.2
+     */
+    public void resetDisabledPaths(String applicationName)
+    {
+        ParameterCheck.mandatory("applicationName", applicationName);
+        
+        if (AlfrescoTransactionSupport.getTransactionReadState() != TxnReadState.TXN_READ_WRITE)
+        {
+            throw new IllegalStateException("Auditing requires a read-write transaction.");
+        }
+        AuditApplication application = auditModelRegistry.getAuditApplication(applicationName);
+        if (application == null)
+        {
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("No audit application named '" + applicationName + "' has been registered.");
+            }
+            return;
+        }
+        Long disabledPathsId = application.getDisabledPathsId();
+        propertyValueDAO.updateProperty(disabledPathsId, (Serializable) Collections.emptySet());
+        // Done
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Removed all disabled paths for application " + applicationName);
+        }
     }
 
     /**
@@ -801,13 +1000,27 @@ public class AuditComponentImpl implements AuditComponent
         // Check the path against the application
         application.checkPath(rootPath);
         // Get the model ID for the application
-        Long applicationId = auditModelRegistry.getAuditApplicationId(applicationName);
+        Long applicationId = application.getApplicationId();
         if (applicationId == null)
         {
             throw new AuditException("No persisted instance exists for audit application: " + applicationName);
         }
-        
-        // TODO: Check if the root path is enabled or not
+
+        // Get all disabled paths
+        Set<String> disabledPaths = getDisabledPaths(application);
+        // Check if the root path has been disabled
+        // This is a fast check and will usually be activated if there are any exclusions
+        for (String disabledPath : disabledPaths)
+        {
+            if (rootPath.startsWith(disabledPath))
+            {
+                logger.debug(
+                        "Audit values root path has been excluded by disabled paths: \n" +
+                        "   Application: " + application + "\n" +
+                        "   Root Path:   " + rootPath);
+                return Collections.emptyMap();
+            }
+        }
         
         // Build the key paths using the session root path
         Map<String, Serializable> pathedValues = new HashMap<String, Serializable>(values.size() * 2);
@@ -816,6 +1029,34 @@ public class AuditComponentImpl implements AuditComponent
             String pathElement = entry.getKey();
             String path = AuditApplication.buildPath(rootPath, pathElement);
             pathedValues.put(path, entry.getValue());
+        }
+        
+        // Eliminate any paths that have been disabled
+        Iterator<String> pathedValuesKeyIterator = pathedValues.keySet().iterator();
+        while(pathedValuesKeyIterator.hasNext())
+        {
+            String pathedValueKey = pathedValuesKeyIterator.next();
+            for (String disabledPath : disabledPaths)
+            {
+                if (pathedValueKey.startsWith(disabledPath))
+                {
+                    // The pathed value is excluded
+                    pathedValuesKeyIterator.remove();
+                }
+            }
+        }
+        // Check if there is anything left
+        if (pathedValues.size() == 0)
+        {
+            if (logger.isDebugEnabled())
+            {
+                logger.debug(
+                        "Audit values have all been excluded by disabled paths: \n" +
+                        "   Application: " + application + "\n" +
+                        "   Root Path:   " + rootPath + "\n" +
+                        "   Values:      " + values);
+            }
+            return Collections.emptyMap();
         }
         
         // Generate data

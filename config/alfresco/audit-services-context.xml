@@ -38,6 +38,7 @@
         </property>
         <!-- V3.2 specific -->
         <property name="auditModelRegistry" ref="auditModel.modelRegistry"/>
+        <property name="propertyValueDAO" ref="propertyValueDAO"/>
     </bean>
     
     <!-- Public service idntifier -->

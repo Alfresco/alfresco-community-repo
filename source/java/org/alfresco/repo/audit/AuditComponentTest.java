@@ -105,6 +105,17 @@ public class AuditComponentTest extends TestCase
         // Authenticate
         user = "User-" + getName();
         AuthenticationUtil.setFullyAuthenticatedUser(user);
+
+        final RetryingTransactionCallback<Void> resetDisabledPathsCallback = new RetryingTransactionCallback<Void>()
+        {
+            public Void execute() throws Throwable
+            {
+                auditComponent.resetDisabledPaths(APPLICATION_TEST);
+                auditComponent.resetDisabledPaths(APPLICATION_ACTIONS_TEST);
+                return null;
+            }
+        };
+        transactionService.getRetryingTransactionHelper().doInTransaction(resetDisabledPathsCallback);
     }
     
     @Override
@@ -367,5 +378,75 @@ public class AuditComponentTest extends TestCase
         assertTrue("Expected no data for bogus user", rowCount.intValue() == 0);
         logger.debug(sb.toString());
         
+    }
+    
+    /**
+     * Test disabling of audit using audit paths
+     */
+    public void testAudit_EnableDisableAuditPaths() throws Exception
+    {
+        Serializable valueA = new Date();
+        Serializable valueB = "BBB-value-here";
+        Serializable valueC = new Float(16.0F);
+        // Get a noderef
+        final Map<String, Serializable> parameters = new HashMap<String, Serializable>(13);
+        parameters.put("A", valueA);
+        parameters.put("B", valueB);
+        parameters.put("C", valueC);
+        // lowercase versions are not in the config
+        parameters.put("a", valueA);
+        parameters.put("b", valueB);
+        parameters.put("c", valueC);
+        
+        Map<String, Serializable> result = auditTestAction("action-01", nodeRef, parameters);
+        
+        final Map<String, Serializable> expected = new HashMap<String, Serializable>();
+        expected.put("/actions-test/actions/user", AuthenticationUtil.getFullyAuthenticatedUser());
+        expected.put("/actions-test/actions/context-node/noderef", nodeRef);
+        expected.put("/actions-test/actions/action-01/params/A/value", valueA);
+        expected.put("/actions-test/actions/action-01/params/B/value", valueB);
+        expected.put("/actions-test/actions/action-01/params/C/value", valueC);
+        
+        // Check
+        checkAuditMaps(result, expected);
+        
+        // Good.  Now disable a path and recheck
+        RetryingTransactionCallback<Void> disableAuditCallback = new RetryingTransactionCallback<Void>()
+        {
+            public Void execute() throws Throwable
+            {
+                Map<String, Serializable> expectedInner = new HashMap<String, Serializable>(expected);
+
+                auditComponent.disableAudit(APPLICATION_ACTIONS_TEST, "/actions-test/actions/action-01/params/A");
+                expectedInner.remove("/actions-test/actions/action-01/params/A/value");
+                Map<String, Serializable> result = auditTestAction("action-01", nodeRef, parameters);
+                checkAuditMaps(result, expectedInner);
+                
+                auditComponent.disableAudit(APPLICATION_ACTIONS_TEST, "/actions-test/actions/action-01/params/B");
+                expectedInner.remove("/actions-test/actions/action-01/params/B/value");
+                result = auditTestAction("action-01", nodeRef, parameters);
+                checkAuditMaps(result, expectedInner);
+                
+                auditComponent.disableAudit(APPLICATION_ACTIONS_TEST, "/actions-test");
+                expectedInner.clear();
+                result = auditTestAction("action-01", nodeRef, parameters);
+                checkAuditMaps(result, expectedInner);
+
+                // Enabling something lower down should make no difference
+                auditComponent.enableAudit(APPLICATION_ACTIONS_TEST, "/actions-test/actions/action-01/params/B");
+                expectedInner.clear();
+                result = auditTestAction("action-01", nodeRef, parameters);
+                checkAuditMaps(result, expectedInner);
+
+                // Enabling the root should give back everything
+                auditComponent.enableAudit(APPLICATION_ACTIONS_TEST, "/actions-test");
+                expectedInner = new HashMap<String, Serializable>(expected);
+                result = auditTestAction("action-01", nodeRef, parameters);
+                checkAuditMaps(result, expectedInner);
+
+                return null;
+            }
+        };
+        transactionService.getRetryingTransactionHelper().doInTransaction(disableAuditCallback, false);
     }
 }

@@ -1094,27 +1094,67 @@ public class ScriptNode implements Serializable, Scopeable, NamespacePrefixResol
     }
     
     /**
-     * @return Array of permissions applied to this Node.
+     * @return Array of permissions applied to this Node, including inherited.
      *         Strings returned are of the format [ALLOWED|DENIED];[USERNAME|GROUPNAME];PERMISSION for example
      *         ALLOWED;kevinr;Consumer so can be easily tokenized on the ';' character.
      */
     public Scriptable getPermissions()
     {
-        String userName = this.services.getAuthenticationService().getCurrentUserName();
+        return Context.getCurrentContext().newArray(this.scope, retrieveAllSetPermissions(false, false));
+    }
+    
+    /**
+     * @return Array of permissions applied directly to this Node (does not include inherited).
+     *         Strings returned are of the format [ALLOWED|DENIED];[USERNAME|GROUPNAME];PERMISSION for example
+     *         ALLOWED;kevinr;Consumer so can be easily tokenized on the ';' character.
+     */
+    public Scriptable getDirectPermissions()
+    {
+        return Context.getCurrentContext().newArray(this.scope, retrieveAllSetPermissions(true, false));
+    }
+    
+    /**
+     * @return Array of all permissions applied to this Node, including inherited.
+     *         Strings returned are of the format [ALLOWED|DENIED];[USERNAME|GROUPNAME];PERMISSION;[INHERITED|DIRECT]
+     *         for example: ALLOWED;kevinr;Consumer;DIRECT so can be easily tokenized on the ';' character.
+     */
+    public Scriptable getFullPermissions()
+    {
+        return Context.getCurrentContext().newArray(this.scope, retrieveAllSetPermissions(false, true));
+    }
+    
+    /**
+     * Helper to construct the response object for the various getPermissions() calls.
+     * 
+     * @param direct    True to only retrieve direct permissions, false to get inherited also
+     * @param full      True to retrieve full data string with [INHERITED|DIRECT] element
+     *                  This exists to maintain backward compatibility with existing permission APIs.
+     * 
+     * @return Object[] of packed permission strings.
+     */
+    private Object[] retrieveAllSetPermissions(boolean direct, boolean full)
+    {
         Set<AccessPermission> acls = this.services.getPermissionService().getAllSetPermissions(getNodeRef());
         Object[] permissions = new Object[acls.size()];
         int count = 0;
         for (AccessPermission permission : acls)
         {
-            StringBuilder buf = new StringBuilder(64);
-            buf.append(permission.getAccessStatus())
-                .append(';')
-                .append(permission.getAuthority())
-                .append(';')
-                .append(permission.getPermission());
-            permissions[count++] = buf.toString();
+            if (!direct || permission.isSetDirectly())
+            {
+                StringBuilder buf = new StringBuilder(64);
+                buf.append(permission.getAccessStatus())
+                    .append(';')
+                    .append(permission.getAuthority())
+                    .append(';')
+                    .append(permission.getPermission());
+                if (full)
+                {
+                    buf.append(';').append(permission.isSetDirectly() ? "DIRECT" : "INHERITED");
+                }
+                permissions[count++] = buf.toString();
+            }
         }
-        return Context.getCurrentContext().newArray(this.scope, permissions);
+        return permissions;
     }
     
     /**

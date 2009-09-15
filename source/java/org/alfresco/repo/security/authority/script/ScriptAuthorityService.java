@@ -40,15 +40,16 @@ import org.alfresco.service.cmr.security.AuthorityType;
  */
 public class ScriptAuthorityService extends BaseScopableProcessorExtension
 {    
-	
-    /** The  service */
+    /** The service */
     private AuthorityService authorityService;
 
-	public void setAuthorityService(AuthorityService authorityService) {
+	public void setAuthorityService(AuthorityService authorityService)
+	{
 		this.authorityService = authorityService;
 	}
 
-	public AuthorityService getAuthorityService() {
+	public AuthorityService getAuthorityService()
+	{
 		return authorityService;
 	}
 	
@@ -60,14 +61,13 @@ public class ScriptAuthorityService extends BaseScopableProcessorExtension
 	{
 		Set<ScriptGroup> groups = new LinkedHashSet<ScriptGroup>(0);
 		Set<String> authorities = authorityService.findAuthoritiesByShortNameInZone(AuthorityType.GROUP, shortNamePattern, zone);
-		for(String authority : authorities)
+		for (String authority : authorities)
 		{
 			ScriptGroup group = new ScriptGroup(authority, authorityService);
-			if(group.isRootGroup())
+			if (group.isRootGroup())
 			{
 				groups.add(group);
 			}
-			
 		}
 		return groups.toArray(new ScriptGroup[groups.size()]);
 	}
@@ -78,16 +78,15 @@ public class ScriptAuthorityService extends BaseScopableProcessorExtension
 	 */
 	public ScriptGroup[] searchRootGroups(String shortNamePattern)
 	{
-		Set<ScriptGroup> groups = new LinkedHashSet<ScriptGroup>(0);
+		Set<ScriptGroup> groups = new LinkedHashSet<ScriptGroup>();
 		Set<String> authorities = authorityService.findAuthoritiesByShortName(AuthorityType.GROUP, shortNamePattern);
-		for(String authority : authorities)
+		for (String authority : authorities)
 		{
 			ScriptGroup group = new ScriptGroup(authority, authorityService);
-			if(group.isRootGroup())
+			if (group.isRootGroup())
 			{
 				groups.add(group);
 			}
-			
 		}
 		return groups.toArray(new ScriptGroup[groups.size()]);
 	}
@@ -98,13 +97,12 @@ public class ScriptAuthorityService extends BaseScopableProcessorExtension
 	 */
 	public ScriptGroup[] getAllRootGroups()
 	{
-		Set<ScriptGroup> groups = new LinkedHashSet<ScriptGroup>(0);
+		Set<ScriptGroup> groups = new LinkedHashSet<ScriptGroup>();
 		Set<String> authorities = authorityService.getAllRootAuthorities(AuthorityType.GROUP);
-		for(String authority : authorities)
+		for (String authority : authorities)
 		{
 			ScriptGroup group = new ScriptGroup(authority, authorityService);
 			groups.add(group);
-			
 		}
 		return groups.toArray(new ScriptGroup[groups.size()]);
 	}
@@ -116,13 +114,12 @@ public class ScriptAuthorityService extends BaseScopableProcessorExtension
 	 */
 	public ScriptGroup[] getAllRootGroupsInZone(String zone)
 	{
-		Set<ScriptGroup> groups = new LinkedHashSet<ScriptGroup>(0);
+		Set<ScriptGroup> groups = new LinkedHashSet<ScriptGroup>();
 		Set<String> authorities = authorityService.getAllRootAuthoritiesInZone(zone, AuthorityType.GROUP);
-		for(String authority : authorities)
+		for (String authority : authorities)
 		{
 			ScriptGroup group = new ScriptGroup(authority, authorityService);
 			groups.add(group);
-			
 		}
 		return groups.toArray(new ScriptGroup[groups.size()]);
 	}
@@ -134,7 +131,6 @@ public class ScriptAuthorityService extends BaseScopableProcessorExtension
 	 */
 	public ScriptGroup getGroup(String shortName)
 	{
-		
 		String fullName = authorityService.getName(AuthorityType.GROUP, shortName);
 		
 		if (authorityService.authorityExists(fullName))
@@ -145,7 +141,6 @@ public class ScriptAuthorityService extends BaseScopableProcessorExtension
 		// group not found.
 		return null;
 	}
-	
 	
 	/**
 	 * Get a group given it full authority name (Which must begin with 'GROUP_'
@@ -187,18 +182,17 @@ public class ScriptAuthorityService extends BaseScopableProcessorExtension
 		/**
 		 * Modify shortNameFilter to be "shortName*"
 		 */
-		if (shortNameFilter.length() > 0)
+		if (shortNameFilter.length() != 0)
 		{
 			filter = filter.replace("\"", "") + "*";
 		}
 		
-		Set<ScriptGroup> groups = new LinkedHashSet<ScriptGroup>(0);
+		Set<ScriptGroup> groups = new LinkedHashSet<ScriptGroup>();
 		Set<String> authorities = authorityService.findAuthoritiesByShortName(AuthorityType.GROUP, filter);
 		for(String authority : authorities)
 		{
 			ScriptGroup group = new ScriptGroup(authority, authorityService);
 			groups.add(group);
-			
 		}
 		return groups.toArray(new ScriptGroup[groups.size()]);
 	}
@@ -217,19 +211,17 @@ public class ScriptAuthorityService extends BaseScopableProcessorExtension
 		/**
 		 * Modify shortNameFilter to be "shortName*"
 		 */
-		if (shortNameFilter.length() > 0)
+		if (shortNameFilter.length() != 0)
 		{
 			filter = filter.replace("\"", "") + "*";
 		}
 		
-		
-		Set<ScriptGroup> groups = new LinkedHashSet<ScriptGroup>(0);
+		Set<ScriptGroup> groups = new LinkedHashSet<ScriptGroup>();
 		Set<String> authorities = authorityService.findAuthoritiesByShortNameInZone(AuthorityType.GROUP, filter, zone);
 		for(String authority : authorities)
 		{
 			ScriptGroup group = new ScriptGroup(authority, authorityService);
 			groups.add(group);
-			
 		}
 		return groups.toArray(new ScriptGroup[groups.size()]);
 	}

@@ -716,6 +716,17 @@ public class HibernateAuditDAO extends HibernateDaoSupport implements AuditDAO, 
      * @throws UnsupportedOperationException always
      * @since 3.2
      */
+    public void deleteAuditEntries(Long applicationId, Long from, Long to)
+    {
+        throw new UnsupportedOperationException();
+    }
+
+    /**
+     * Fallout implementation from new audit DAO
+     * 
+     * @throws UnsupportedOperationException always
+     * @since 3.2
+     */
     public Long createAuditEntry(Long applicationId, long time, String username, Map<String, Serializable> values)
     {
         throw new UnsupportedOperationException();

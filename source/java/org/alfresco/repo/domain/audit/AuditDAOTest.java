@@ -90,7 +90,7 @@ public class AuditDAOTest extends TestCase
         assertEquals(configPair, configPairCheck);
     }
     
-    public void testAuditApplicatoin() throws Exception
+    public void testAuditApplication() throws Exception
     {
         final File file = AbstractContentTransformerTest.loadQuickTestFile("pdf");
         assertNotNull(file);
@@ -187,7 +187,7 @@ public class AuditDAOTest extends TestCase
         // Some entries
         doAuditEntryImpl(1);
         
-        // Find everything, bug look for a specific key
+        // Find everything, but look for a specific key
         final AuditQueryCallback callback = new AuditQueryCallback()
         {
             public boolean handleAuditEntry(
@@ -211,5 +211,38 @@ public class AuditDAOTest extends TestCase
             }
         };
         txnHelper.doInTransaction(findCallback);
+    }
+    
+    public void testAuditDeleteEntries() throws Exception
+    {
+        final AuditQueryCallback noResultsCallback = new AuditQueryCallback()
+        {
+            public boolean handleAuditEntry(
+                    Long entryId,
+                    String applicationName,
+                    String user,
+                    long time,
+                    Map<String, Serializable> values)
+            {
+                fail("Expected no results.  All entries should have been removed.");
+                return false;
+            }
+        };
+        
+        // Some entries
+        final String appName = doAuditEntryImpl(1);
+        // Delete the entries
+        RetryingTransactionCallback<Void> deletedCallback = new RetryingTransactionCallback<Void>()
+        {
+            public Void execute() throws Throwable
+            {
+                Long appId = auditDAO.getAuditApplication(appName).getId();
+                auditDAO.deleteAuditEntries(appId, null, null);
+                // There should be no entries
+                auditDAO.findAuditEntries(noResultsCallback, appName, null, null, null, -1);
+                return null;
+            }
+        };
+        txnHelper.doInTransaction(deletedCallback);
     }
 }

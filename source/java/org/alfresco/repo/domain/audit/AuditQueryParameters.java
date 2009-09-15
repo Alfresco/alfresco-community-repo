@@ -56,8 +56,8 @@ public class AuditQueryParameters
           .append("[ auditEntryId=").append(auditEntryId)
           .append(", auditAppNameCrcPair=").append(auditAppNameCrcPair)
           .append(", auditUserCrcPair=").append(auditUserCrcPair)
-          .append(", auditFromTime").append(new Date(auditFromTime))
-          .append(", auditToTime").append(new Date(auditToTime))
+          .append(", auditFromTime").append(auditFromTime == null ? null : new Date(auditFromTime))
+          .append(", auditToTime").append(auditToTime == null ? null : new Date(auditToTime))
           .append(", searchKey").append(searchKey)
           .append(", searchValueString").append(searchValueString)
           .append("]");

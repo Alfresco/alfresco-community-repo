@@ -132,6 +132,44 @@ public class AuditServiceImpl implements AuditService
      * {@inheritDoc}
      * @since 3.2
      */
+    public boolean isAuditEnabled(String applicationName, String path)
+    {
+        // Get the root path for the application
+        return auditComponent.isAuditPathDisabled(applicationName, path);
+    }
+
+    /**
+     * {@inheritDoc}
+     * @since 3.2
+     */
+    public void enableAudit(String applicationName, String path)
+    {
+        auditComponent.enableAudit(applicationName, path);
+    }
+
+    /**
+     * {@inheritDoc}
+     * @since 3.2
+     */
+    public void disableAudit(String applicationName, String path)
+    {
+        auditComponent.disableAudit(applicationName, path);
+    }
+
+    /**
+     * {@inheritDoc}
+     * @since 3.2
+     */
+    public void clearAudit(String applicationName)
+    {
+        Long now = Long.valueOf(System.currentTimeMillis());
+        auditComponent.deleteAuditEntries(applicationName, null, now);
+    }
+
+    /**
+     * {@inheritDoc}
+     * @since 3.2
+     */
     public void auditQuery(
             AuditQueryCallback callback,
             String applicationName, String user, Long from, Long to,

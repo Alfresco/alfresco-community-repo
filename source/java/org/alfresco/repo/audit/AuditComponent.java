@@ -85,6 +85,30 @@ public interface AuditComponent
      */
     
     /**
+     * Delete audit entries for the given application and time range
+     * 
+     * @param applicationName   the name of the application being logged to
+     * @param fromTime          the start time of entries to remove (inclusive and optional)
+     * @param toTime            the end time of entries to remove (exclusive and optional)
+     * 
+     * @since 3.2
+     */
+    void deleteAuditEntries(String applicationName, Long fromTime, Long toTime);
+    
+    /**
+     * Check if an audit path is disabled.  The path will be disabled if it or any higher
+     * path has been explicitly disabled.  Any disabled path will not be processed when
+     * data is audited.
+     * 
+     * @param applicationName   the name of the application being logged to
+     * @param path              the audit path to check
+     * @return                  Returns <tt>true</tt> if the audit path has been disabled
+     * 
+     * @since 3.2
+     */
+    boolean isAuditPathDisabled(String applicationName, String path);
+    
+    /**
      * Enable auditing (if it is not already enabled) for all paths that contain the given path.
      * The path is the path as originally logged (see {@link #audit(String, String, Map)}) and
      * not the path that the generated data may contain - although this would be similarly

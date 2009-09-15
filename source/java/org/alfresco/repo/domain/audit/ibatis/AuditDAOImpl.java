@@ -32,6 +32,7 @@ import java.util.Map;
 import org.alfresco.ibatis.RollupRowHandler;
 import org.alfresco.repo.domain.audit.AbstractAuditDAOImpl;
 import org.alfresco.repo.domain.audit.AuditApplicationEntity;
+import org.alfresco.repo.domain.audit.AuditDeleteParameters;
 import org.alfresco.repo.domain.audit.AuditEntryEntity;
 import org.alfresco.repo.domain.audit.AuditModelEntity;
 import org.alfresco.repo.domain.audit.AuditQueryParameters;
@@ -57,6 +58,7 @@ public class AuditDAOImpl extends AbstractAuditDAOImpl
     private static final String INSERT_APPLICATION = "alfresco.audit.insert_AuditApplication";
     private static final String UPDATE_APPLICATION = "alfresco.audit.update_AuditApplication";
     
+    private static final String DELETE_ENTRIES = "alfresco.audit.delete_AuditEntries";
     private static final String INSERT_ENTRY = "alfresco.audit.insert_AuditEntry";
     
     @SuppressWarnings("unused")
@@ -160,6 +162,15 @@ public class AuditDAOImpl extends AbstractAuditDAOImpl
         template.update(UPDATE_APPLICATION, updateEntity, 1);
         // Done
         return updateEntity;
+    }
+
+    public void deleteAuditEntries(Long applicationId, Long from, Long to)
+    {
+        AuditDeleteParameters params = new AuditDeleteParameters();
+        params.setAuditApplicationId(applicationId);
+        params.setAuditFromTime(from);
+        params.setAuditToTime(to);
+        template.delete(DELETE_ENTRIES, params);
     }
 
     @Override

@@ -13,6 +13,7 @@
     <typeAlias alias="AuditModel" type="org.alfresco.repo.domain.audit.AuditModelEntity"/>
     <typeAlias alias="AuditApplication" type="org.alfresco.repo.domain.audit.AuditApplicationEntity"/>
     <typeAlias alias="AuditEntry" type="org.alfresco.repo.domain.audit.AuditEntryEntity"/>
+    <typeAlias alias="AuditDeleteParameters" type="org.alfresco.repo.domain.audit.AuditDeleteParameters"/>
     <typeAlias alias="AuditQueryParameters" type="org.alfresco.repo.domain.audit.AuditQueryParameters"/>
     <typeAlias alias="AuditQueryResult" type="org.alfresco.repo.domain.audit.AuditQueryResult"/>
 
@@ -134,6 +135,21 @@
             id = #id# and
             version = (#version# -1)
     </update>
+    
+    <!-- TODO: This has to be replaced with two deletes; one for the property links and another for the entries -->
+    <delete id="delete_AuditEntries" parameterClass="AuditDeleteParameters">
+       delete
+       from
+           alf_audit_entry
+       where
+           audit_app_id = #auditApplicationId#
+       <isNotNull property="auditFromTime">
+           <![CDATA[and audit_time >= #auditFromTime#]]>
+       </isNotNull>
+       <isNotNull property="auditFromTime">
+           <![CDATA[and audit_time < #auditToTime#]]>
+       </isNotNull>
+    </delete>
     
     <!-- Get audit entries -->
     <select id="select_AuditEntriesWithValues" parameterClass="AuditQueryParameters" resultMap="result_AuditQueryAllValues">

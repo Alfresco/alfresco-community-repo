@@ -133,6 +133,7 @@ public interface AuditDAO
      * @param               the URL of the configuration
      * @return              Returns the ID of the config matching the input stream and the
      *                      content storage details
+     * @since 3.2
      */
     Pair<Long, ContentData> getOrCreateAuditModel(URL url);
     
@@ -141,6 +142,8 @@ public interface AuditDAO
      * 
      * @param applicationName   the name of the application
      * @return                  Returns details of an existing application or <tt>null</tt> if it doesn't exist
+     * 
+     * @since 3.2
      */
     AuditApplicationInfo getAuditApplication(String applicationName);
 
@@ -149,6 +152,8 @@ public interface AuditDAO
      * 
      * @param application       the name of the application
      * @param modelId           the ID of the model configuration
+     * 
+     * @since 3.2
      */
     AuditApplicationInfo createAuditApplication(String application, Long modelId);
     
@@ -158,6 +163,8 @@ public interface AuditDAO
      * 
      * @param id                the ID of the audit application
      * @param modelId           the ID of the new model
+     * 
+     * @since 3.2
      */
     void updateAuditApplicationModel(Long id, Long modelId);
     
@@ -167,24 +174,59 @@ public interface AuditDAO
      * 
      * @param id                the ID of the audit application
      * @param disabledPaths     the new disabled paths
+     * 
+     * @since 3.2
      */
     void updateAuditApplicationDisabledPaths(Long id, Set<String> disabledPaths);
     
     /**
+     * Delete audit entries for the application, possibly limiting the time range.
+     * 
+     * @param applicationId     and existing audit application ID
+     * @param from              the minimum entry time (inclusive, optional)
+     * @param to                the maximum entry time (exclusive, optional)
+     * 
+     * @since 3.2
+     */
+    void deleteAuditEntries(Long applicationId, Long from, Long to);
+    
+    /**
      * Create a new audit entry with the given map of values.
      * 
-     * @param applicationId an existing audit application ID
-     * @param time          the time (ms since epoch) to log the entry against
-     * @param username      the authenticated user (<tt>null</tt> if not present)
-     * @param values        the values to record
-     * @return              Returns the unique entry ID
+     * @param applicationId     an existing audit application ID
+     * @param time              the time (ms since epoch) to log the entry against
+     * @param username          the authenticated user (<tt>null</tt> if not present)
+     * @param values            the values to record
+     * @return                  Returns the unique entry ID
+     * 
+     * @since 3.2
      */
     Long createAuditEntry(Long applicationId, long time, String username, Map<String, Serializable> values);
     
+    /**
+     * Find audit entries using the given parameters, any of which may be null
+     * 
+     * @param callback          the data callback per entry
+     * @param applicationName   the name of the application to search against (optional)
+     * @param user              the user to search for (optional)
+     * @param from              the minimum entry time (optional)
+     * @param to                the maximum entry time (optional)
+     * @param maxResults        the maximum number of results to retrieve
+     */
     void findAuditEntries(
             AuditQueryCallback callback,
             String applicationName, String user, Long from, Long to, int maxResults);
     
+    /**
+     * Find audit entries using the given parameters, any of which may be null.
+     * 
+     * @param searchKey         the audit path key to search for (optional)
+     * @param searchString      the audit string value to search for (optional)
+     * 
+     * @see #findAuditEntries(AuditQueryCallback, String, String, Long, Long, int)
+     * 
+     * @since 3.2
+     */
     void findAuditEntries(
             AuditQueryCallback callback,
             String applicationName, String user, Long from, Long to,

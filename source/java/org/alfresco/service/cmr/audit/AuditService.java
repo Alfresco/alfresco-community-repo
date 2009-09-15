@@ -108,7 +108,46 @@ public interface AuditService
      */
     
     /**
+     * @param applicationName   the name of the application to check 
+     * @param path              the path to check
+     * @return                  Returns <tt>true</tt> if auditing is enabled for the given path
+     * 
+     * @since 3.2
+     */
+    boolean isAuditEnabled(String applicationName, String path);
+    
+    /**
+     * Enable auditing for an application path
+     * 
+     * @param applicationName   the name of the application to check 
+     * @param path              the path to enable
+     * 
+     * @since 3.2
+     */
+    void enableAudit(String applicationName, String path);
+    
+    /**
+     * Disable auditing for an application path
+     * 
+     * @param applicationName   the name of the application to check 
+     * @param path              the path to disable
+     * 
+     * @since 3.2
+     */
+    void disableAudit(String applicationName, String path);
+    
+    /**
+     * Remove all audit entries for the given application
+     * 
+     * @param applicationName   the name of the application for which to remove entries
+     * 
+     * @since 3.2
+     */
+    void clearAudit(String applicationName);
+    
+    /**
      * The interface that will be used to give query results to the calling code.
+     * 
      * @since 3.2
      */
     public static interface AuditQueryCallback
@@ -140,6 +179,8 @@ public interface AuditService
      * @param from              the start search time (<tt>null</tt> to start at the beginning)
      * @param to                the end search time (<tt>null</tt> for no limit)
      * @param maxResults        the maximum number of results to retrieve (zero or negative to ignore)
+     * 
+     * @since 3.2
      */
     void auditQuery(
             AuditQueryCallback callback,
@@ -157,6 +198,8 @@ public interface AuditService
      * @param searchKey         the audit key path that must exist (<tt>null</tt> to ignore)
      * @param searchString      an audit value string that must exist (<tt>null</tt> to ignore)
      * @param maxResults        the maximum number of results to retrieve (zero or negative to ignore)
+     * 
+     * @since 3.2
      */
     void auditQuery(
             AuditQueryCallback callback,

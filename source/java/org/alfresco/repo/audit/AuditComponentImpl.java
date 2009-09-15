@@ -782,7 +782,40 @@ public class AuditComponentImpl implements AuditComponent
     {
         this.propertyValueDAO = propertyValueDAO;
     }
-    
+
+    /**
+     * {@inheritDoc}
+     * @since 3.2
+     */
+    public void deleteAuditEntries(String applicationName, Long fromTime, Long toTime)
+    {
+        ParameterCheck.mandatory("applicationName", applicationName);
+        
+        if (AlfrescoTransactionSupport.getTransactionReadState() == TxnReadState.TXN_NONE)
+        {
+            throw new IllegalStateException("Auditing requires a read transaction.");
+        }
+        
+        AuditApplication application = auditModelRegistry.getAuditApplication(applicationName);
+        if (application == null)
+        {
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("No audit application named '" + applicationName + "' has been registered.");
+            }
+            return;
+        }
+        
+        Long applicationId = application.getApplicationId();
+        
+        auditDAO.deleteAuditEntries(applicationId, fromTime, toTime);
+        // Done
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Delete audit entries for " + applicationName + " (" + fromTime + " to " + toTime);
+        }
+    }
+
     /**
      * @param application       the audit application object
      * @return                  Returns a copy of the set of disabled paths associated with the application
@@ -802,6 +835,56 @@ public class AuditComponentImpl implements AuditComponent
             auditModelRegistry.loadAuditModels();
             throw new AlfrescoRuntimeException("Unabled to get AuditApplication disabled paths: " + application, e);
         }
+    }
+
+    /**
+     * {@inheritDoc}
+     * @since 3.2
+     */
+    public boolean isAuditPathDisabled(String applicationName, String path)
+    {
+        ParameterCheck.mandatory("applicationName", applicationName);
+        ParameterCheck.mandatory("path", path);
+        
+        if (AlfrescoTransactionSupport.getTransactionReadState() == TxnReadState.TXN_NONE)
+        {
+            throw new IllegalStateException("Auditing requires a read transaction.");
+        }
+        
+        AuditApplication application = auditModelRegistry.getAuditApplication(applicationName);
+        if (application == null)
+        {
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("No audit application named '" + applicationName + "' has been registered.");
+            }
+            return true;
+        }
+        // Check the path against the application
+        application.checkPath(path);
+
+        Set<String> disabledPaths = getDisabledPaths(application);
+        
+        // Check if there are any entries that match or superced the given path
+        String disablingPath = null;;
+        for (String disabledPath : disabledPaths)
+        {
+            if (path.startsWith(disabledPath))
+            {
+                disablingPath = disabledPath;
+                break;
+            }
+        }
+        // Done
+        if (logger.isDebugEnabled())
+        {
+            logger.debug(
+                    "Audit disable check: \n" +
+                    "   Application:    " + applicationName + "\n" +
+                    "   Path:           " + path + "\n" +
+                    "   Disabling Path: " + disablingPath);
+        }
+        return disablingPath != null;
     }
 
     /**

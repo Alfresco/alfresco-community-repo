@@ -520,15 +520,13 @@ public class EntityLookupCache<K extends Serializable, V extends Object, VK exte
         // Get the value key.
         VK valueKey = (value == null) ? (VK)VALUE_NULL : entityLookup.getValueKey(value);
         // Check if the value has a good key
-        if (valueKey == null)
+        if (valueKey != null)
         {
-            // No good key, so no caching
-            return updateCount;
+            // There is a good value key, cache by value
+            CacheRegionValueKey valueCacheKey = new CacheRegionValueKey(cacheRegion, valueKey);
+            cache.put(valueCacheKey, key);
         }
-        
-        // Cache the key and value
-        CacheRegionValueKey valueCacheKey = new CacheRegionValueKey(cacheRegion, valueKey);
-        cache.put(valueCacheKey, key);
+        // Cache by key
         cache.put(
                 new CacheRegionKey(cacheRegion, key),
                 (value == null ? VALUE_NULL : value));

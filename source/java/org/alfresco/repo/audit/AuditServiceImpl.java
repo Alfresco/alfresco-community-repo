@@ -135,7 +135,7 @@ public class AuditServiceImpl implements AuditService
     public boolean isAuditEnabled(String applicationName, String path)
     {
         // Get the root path for the application
-        return auditComponent.isAuditPathDisabled(applicationName, path);
+        return auditComponent.isAuditPathEnabled(applicationName, path);
     }
 
     /**

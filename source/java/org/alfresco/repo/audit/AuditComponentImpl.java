@@ -841,7 +841,7 @@ public class AuditComponentImpl implements AuditComponent
      * {@inheritDoc}
      * @since 3.2
      */
-    public boolean isAuditPathDisabled(String applicationName, String path)
+    public boolean isAuditPathEnabled(String applicationName, String path)
     {
         ParameterCheck.mandatory("applicationName", applicationName);
         ParameterCheck.mandatory("path", path);
@@ -879,12 +879,12 @@ public class AuditComponentImpl implements AuditComponent
         if (logger.isDebugEnabled())
         {
             logger.debug(
-                    "Audit disable check: \n" +
+                    "Audit path enabled check: \n" +
                     "   Application:    " + applicationName + "\n" +
                     "   Path:           " + path + "\n" +
                     "   Disabling Path: " + disablingPath);
         }
-        return disablingPath != null;
+        return disablingPath == null;
     }
 
     /**

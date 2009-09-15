@@ -96,7 +96,7 @@ public interface AuditComponent
     void deleteAuditEntries(String applicationName, Long fromTime, Long toTime);
     
     /**
-     * Check if an audit path is disabled.  The path will be disabled if it or any higher
+     * Check if an audit path is enabled.  The path will be disabled if it or any higher
      * path has been explicitly disabled.  Any disabled path will not be processed when
      * data is audited.
      * 
@@ -106,7 +106,7 @@ public interface AuditComponent
      * 
      * @since 3.2
      */
-    boolean isAuditPathDisabled(String applicationName, String path);
+    boolean isAuditPathEnabled(String applicationName, String path);
     
     /**
      * Enable auditing (if it is not already enabled) for all paths that contain the given path.

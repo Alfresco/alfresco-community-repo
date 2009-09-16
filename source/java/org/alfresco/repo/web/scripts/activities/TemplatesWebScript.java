@@ -24,16 +24,17 @@
  */
 package org.alfresco.repo.web.scripts.activities;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.web.scripts.DeclarativeWebScript;
 import org.alfresco.web.scripts.SearchPath;
 import org.alfresco.web.scripts.Status;
 import org.alfresco.web.scripts.Store;
+import org.alfresco.web.scripts.WebScriptException;
 import org.alfresco.web.scripts.WebScriptRequest;
  
 /**
@@ -73,10 +74,17 @@ public class TemplatesWebScript extends DeclarativeWebScript
         Set<String> templatePaths = new HashSet<String>();
         for (Store apiStore : searchPath.getStores())
         {
-           for(String templatePath : apiStore.getDocumentPaths(path, false, templatePattern))
-           {
-               templatePaths.add(templatePath);
-           }
+            try
+            {
+                for (String templatePath : apiStore.getDocumentPaths(path, false, templatePattern))
+                {
+                    templatePaths.add(templatePath);
+                }
+            }
+            catch (IOException e)
+            {
+                throw new WebScriptException("Failed to search for templates from store " + apiStore, e);
+            }
         }
 
         Map<String, Object> model = new HashMap<String, Object>();

@@ -2,7 +2,7 @@
 
 <process-definition xmlns="urn:jbpm.org:jpdl-3.1" name="wf:parallelreview">
 
-    <swimlane name="initiator"></swimlane>
+    <swimlane name="initiator" />
 
     <start-state name="start">
         <task name="wf:submitParallelReviewTask" swimlane="initiator" />
@@ -30,6 +30,12 @@
             <assignment class="org.alfresco.repo.workflow.jbpm.AlfrescoAssignment">
                <actor>#{reviewer}</actor>
             </assignment>
+            <event type="task-create">
+                <script>
+                    if (bpm_workflowDueDate != void) taskInstance.dueDate = bpm_workflowDueDate;
+                    if (bpm_workflowPriority != void) taskInstance.priority = bpm_workflowPriority;
+                </script>
+            </event>
         </task>
         <transition name="reject" to="endreview" />
         <transition name="approve" to="endreview">

@@ -174,6 +174,7 @@ public class AuditApplication
      */
     public void checkPath(String path)
     {
+        checkPathFormat(path);
         if (path == null || path.length() == 0)
         {
             generateException(path, "Empty or null audit path");
@@ -189,6 +190,26 @@ public class AuditApplication
             generateException(
                     path,
                     "An audit path's first element must be the application's key i.e. '" + applicationKey + "'.");
+        }
+    }
+    
+    /**
+     * Helper method to check that a path is correct for this application instance
+     * 
+     * @param path              the path in format <b>/app-key/x/y/z</b>
+     * @throws AuditModelException      if the path is invalid
+     * 
+     * @see #AUDIT_PATH_REGEX
+     */
+    public static void checkPathFormat(String path)
+    {
+        if (path == null || path.length() == 0)
+        {
+            throw new AuditModelException("Empty or null audit path");
+        }
+        else if (!path.matches(AUDIT_PATH_REGEX))
+        {
+            throw new AuditModelException("An audit must match regular expression: " + AUDIT_PATH_REGEX);
         }
     }
     
@@ -235,6 +256,33 @@ public class AuditApplication
         }
         // Done
         return path;
+    }
+    
+    /**
+     * @param path              the audit path for form <b>/abc/def</b>
+     * @return                  the root key of form <b>abc</b>
+     * 
+     * @see #AUDIT_ROOT_KEY_REGEX
+     */
+    public static String getRootKey(String path)
+    {
+        if (!path.startsWith(AUDIT_PATH_SEPARATOR))
+        {
+            throw new AuditModelException(
+                    "The path must start with the path separator '" + AUDIT_PATH_SEPARATOR + "'");
+        }
+        String rootPath;
+        int index = path.indexOf(AUDIT_PATH_SEPARATOR, 1);
+        if (index > 0)
+        {
+            rootPath = path.substring(1, index);
+        }
+        else
+        {
+            rootPath = path.substring(1);
+        }
+        // Done
+        return rootPath;
     }
     
     /**

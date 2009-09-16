@@ -20,6 +20,10 @@
        <DataGenerator name="transactionId" class="org.alfresco.repo.audit.generator.TransactionIdDataGenerator"/>
     </DataGenerators>
 
+    <PathMappings>
+        <PathMap source="/repository" target="/repository"/>
+    </PathMappings>
+
     <Application name="Alfresco Repository" key="repository">
         <AuditPath key="services">
             <GenerateValue key="txn" dataGenerator="transactionId"/>

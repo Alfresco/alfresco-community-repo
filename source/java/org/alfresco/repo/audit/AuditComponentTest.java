@@ -26,6 +26,7 @@ package org.alfresco.repo.audit;
 
 import java.io.Serializable;
 import java.net.URL;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -133,7 +134,7 @@ public class AuditComponentTest extends TestCase
     {
         try
         {
-            auditComponent.audit(APPLICATION_TEST, "/test", null);
+            auditComponent.recordAuditValues("/test", Collections.<String, Serializable>emptyMap());
             fail("Should fail due to lack of a transaction.");
         }
         catch (IllegalStateException e)
@@ -146,7 +147,7 @@ public class AuditComponentTest extends TestCase
             {
                 try
                 {
-                    auditComponent.audit(APPLICATION_TEST, "test", null);
+                    auditComponent.recordAuditValues("test", null);
                     fail("Failed to detect illegal path");
                 }
                 catch (AuditModelException e)
@@ -155,14 +156,14 @@ public class AuditComponentTest extends TestCase
                 }
                 try
                 {
-                    auditComponent.audit(APPLICATION_TEST, "/test/", null);
+                    auditComponent.recordAuditValues("/test/", null);
                     fail("Failed to detect illegal path");
                 }
                 catch (AuditModelException e)
                 {
                     // Expected
                 }
-                Map<String, Serializable> auditedValues = auditComponent.audit("Bogus App", "/test", null);
+                Map<String, Serializable> auditedValues = auditComponent.recordAuditValues("/bogus", null);
                 assertNotNull(auditedValues);
                 assertTrue("Invalid application should not audit anything", auditedValues.isEmpty());
                 
@@ -182,11 +183,11 @@ public class AuditComponentTest extends TestCase
             public Void execute() throws Throwable
             {
                 Map<String, Serializable> values = new HashMap<String, Serializable>(13);
-                values.put("/test/1.1/2.1/3.1/4.1", new Long(41));
-                values.put("/test/1.1/2.1/3.1/4.2", "42");
-                values.put("/test/1.1/2.1/3.1/4.2", new Date());
+                values.put("/2.1/3.1/4.1", new Long(41));
+                values.put("/2.1/3.1/4.2", "42");
+                values.put("/2.1/3.1/4.2", new Date());
                 
-                auditComponent.audit(APPLICATION_TEST, "/test/1.1", values);
+                auditComponent.recordAuditValues("/test/1.1", values);
                 
                 return null;
             }
@@ -224,7 +225,7 @@ public class AuditComponentTest extends TestCase
             {
                 String actionPath = AuditApplication.buildPath("actions-test/actions");
                 
-                return auditComponent.audit(APPLICATION_ACTIONS_TEST, actionPath, adjustedValues);
+                return auditComponent.recordAuditValues(actionPath, adjustedValues);
             }
         };
         return transactionService.getRetryingTransactionHelper().doInTransaction(auditCallback);
@@ -235,47 +236,17 @@ public class AuditComponentTest extends TestCase
      */
     private void checkAuditMaps(Map<String, Serializable> result, Map<String, Serializable> expected)
     {
-        Map<String, Serializable> copyResult = new HashMap<String, Serializable>(result);
-        
-        boolean failure = false;
-
-        StringBuilder sb = new StringBuilder(1024);
-        sb.append("\nValues that don't match the expected values: ");
-        for (Map.Entry<String, Serializable> entry : expected.entrySet())
+        String failure = EqualsHelper.getMapDifferenceReport(result, expected);
+        if (failure != null)
         {
-            String key = entry.getKey();
-            Serializable expectedValue = entry.getValue();
-            Serializable resultValue = result.get(key);
-            if (!EqualsHelper.nullSafeEquals(resultValue, expectedValue))
-            {
-                sb.append("\n")
-                  .append("   Key: ").append(key).append("\n")
-                  .append("      Result:   ").append(resultValue).append("\n")
-                  .append("      Expected: ").append(expectedValue);
-                failure = true;
-            }
-            copyResult.remove(key);
-        }
-        sb.append("\nValues that are present but should not be: ");
-        for (Map.Entry<String, Serializable> entry : copyResult.entrySet())
-        {
-            String key = entry.getKey();
-            Serializable resultValue = entry.getValue();
-            sb.append("\n")
-              .append("   Key: ").append(key).append("\n")
-              .append("      Result:   ").append(resultValue);
-          failure = true;
-        }
-        if (failure)
-        {
-            fail(sb.toString());
+            fail(failure);
         }
     }
     
     /**
      * Test auditing of something resembling real-world data
      */
-    public void testAudit_Action01() throws Exception
+    private void auditAction01(String actionName) throws Exception
     {
         Serializable valueA = new Date();
         Serializable valueB = "BBB-value-here";
@@ -290,7 +261,7 @@ public class AuditComponentTest extends TestCase
         parameters.put("b", valueB);
         parameters.put("c", valueC);
         
-        Map<String, Serializable> result = auditTestAction("action-01", nodeRef, parameters);
+        Map<String, Serializable> result = auditTestAction(actionName, nodeRef, parameters);
         
         Map<String, Serializable> expected = new HashMap<String, Serializable>();
         expected.put("/actions-test/actions/user", AuthenticationUtil.getFullyAuthenticatedUser());
@@ -301,6 +272,22 @@ public class AuditComponentTest extends TestCase
         
         // Check
         checkAuditMaps(result, expected);
+    }
+    
+    /**
+     * Test auditing of something resembling real-world data
+     */
+    public void testAudit_Action01() throws Exception
+    {
+        auditAction01("action-01");
+    }
+    
+    /**
+     * Test auditing of something resembling real-world data
+     */
+    public void testAudit_Action01Mapped() throws Exception
+    {
+        auditAction01("action-01-mapped");
     }
     
     public void testQuery_Action01() throws Exception

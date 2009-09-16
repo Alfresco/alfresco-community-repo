@@ -35,6 +35,7 @@ import org.alfresco.repo.audit.model.AuditApplication;
 import org.alfresco.repo.audit.model.AuditModelException;
 import org.alfresco.repo.audit.model.AuditModelRegistry;
 import org.alfresco.util.ApplicationContextHelper;
+import org.alfresco.util.PathMapper;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.context.ApplicationContext;
@@ -51,6 +52,7 @@ import org.springframework.util.ResourceUtils;
 public class AuditBootstrapTest extends TestCase
 {
     private static final String APPLICATION_TEST = "Alfresco Test";
+    private static final String KEY_TEST = "test";
     
     private static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
     private static final Log logger = LogFactory.getLog(AuditBootstrapTest.class);
@@ -121,10 +123,31 @@ public class AuditBootstrapTest extends TestCase
     
     public void testGetApplicationId()
     {
-        AuditApplication app = auditModelRegistry.getAuditApplication(APPLICATION_TEST);
+        AuditApplication app = auditModelRegistry.getAuditApplicationByName(APPLICATION_TEST);
         assertNotNull(app);
         Long appId = app.getApplicationId();
         assertNotNull("No audit application ID for " + APPLICATION_TEST, appId);
+    }
+    
+    public void testGetApplicationByKey()
+    {
+        AuditApplication app = auditModelRegistry.getAuditApplicationByKey(KEY_TEST);
+        assertNotNull(app);
+    }
+    
+    public void testGetPathMappings()
+    {
+        PathMapper pathMapper = auditModelRegistry.getAuditPathMapper();
+        assertNotNull(pathMapper);
+        try
+        {
+            pathMapper.addPathMap("x", "y");
+            fail("Should not be allowed to update the path mappings.");
+        }
+        catch (Throwable e)
+        {
+            // Expected
+        }
     }
     
     private void testBadPath(AuditApplication app, String path)
@@ -142,7 +165,7 @@ public class AuditBootstrapTest extends TestCase
     
     public void testAuditApplication_Path()
     {
-        AuditApplication app = auditModelRegistry.getAuditApplication(APPLICATION_TEST);
+        AuditApplication app = auditModelRegistry.getAuditApplicationByName(APPLICATION_TEST);
         assertNotNull(app);
         
         // Check that path checks are working
@@ -155,7 +178,7 @@ public class AuditBootstrapTest extends TestCase
     
     public void testAuditApplication_GetDataExtractors()
     {
-        AuditApplication app = auditModelRegistry.getAuditApplication(APPLICATION_TEST);
+        AuditApplication app = auditModelRegistry.getAuditApplicationByName(APPLICATION_TEST);
         assertNotNull(app);
         
         Map<String, DataExtractor> extractors = app.getDataExtractors("/blah");
@@ -173,7 +196,7 @@ public class AuditBootstrapTest extends TestCase
     
     public void testAuditApplication_GetDataGenerators()
     {
-        AuditApplication app = auditModelRegistry.getAuditApplication(APPLICATION_TEST);
+        AuditApplication app = auditModelRegistry.getAuditApplicationByName(APPLICATION_TEST);
         assertNotNull(app);
         
         Map<String, DataGenerator> generators = app.getDataGenerators("/blah");

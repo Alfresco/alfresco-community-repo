@@ -21,6 +21,7 @@ import javax.xml.bind.annotation.XmlType;
  *       &lt;sequence>
  *         &lt;element name="DataExtractors" type="{http://www.alfresco.org/repo/audit/model/3.2}DataExtractors" minOccurs="0"/>
  *         &lt;element name="DataGenerators" type="{http://www.alfresco.org/repo/audit/model/3.2}DataGenerators" minOccurs="0"/>
+ *         &lt;element name="PathMappings" type="{http://www.alfresco.org/repo/audit/model/3.2}PathMappings" minOccurs="0"/>
  *         &lt;element name="Application" type="{http://www.alfresco.org/repo/audit/model/3.2}Application" maxOccurs="unbounded" minOccurs="0"/>
  *       &lt;/sequence>
  *     &lt;/restriction>
@@ -34,6 +35,7 @@ import javax.xml.bind.annotation.XmlType;
 @XmlType(name = "Audit", propOrder = {
     "dataExtractors",
     "dataGenerators",
+    "pathMappings",
     "application"
 })
 public class Audit {
@@ -42,6 +44,8 @@ public class Audit {
     protected DataExtractors dataExtractors;
     @XmlElement(name = "DataGenerators")
     protected DataGenerators dataGenerators;
+    @XmlElement(name = "PathMappings")
+    protected PathMappings pathMappings;
     @XmlElement(name = "Application")
     protected List<Application> application;
 
@@ -91,6 +95,30 @@ public class Audit {
      */
     public void setDataGenerators(DataGenerators value) {
         this.dataGenerators = value;
+    }
+
+    /**
+     * Gets the value of the pathMappings property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link PathMappings }
+     *     
+     */
+    public PathMappings getPathMappings() {
+        return pathMappings;
+    }
+
+    /**
+     * Sets the value of the pathMappings property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link PathMappings }
+     *     
+     */
+    public void setPathMappings(PathMappings value) {
+        this.pathMappings = value;
     }
 
     /**

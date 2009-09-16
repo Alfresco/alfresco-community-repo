@@ -19,6 +19,13 @@
        <DataGenerator name="user" class="org.alfresco.repo.audit.generator.AuthenticatedUserDataGenerator"/>
     </DataGenerators>
 
+    <PathMappings>
+        <PathMap source="/test/one.one/two.one" target="/test/1.1/2.1"/>
+        <PathMap source="/test/one.one/two.two" target="/test/1.1/2.2"/>
+        <PathMap source="/actions-test" target="/actions-test"/>
+        <PathMap source="/actions-test/actions/action-01-mapped" target="/actions-test/actions/action-01"/>
+    </PathMappings>
+
     <Application name="Alfresco Test" key="test">
         <GenerateValue key="time" dataGenerator="systemTime"/>
         <AuditPath key="1.1">

@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.alfresco.repo.audit.model.AuditApplication;
+import org.alfresco.repo.audit.model.AuditModelRegistry;
 import org.alfresco.repo.audit.model._3.AuditPath;
 import org.alfresco.service.cmr.audit.AuditInfo;
 import org.alfresco.service.cmr.audit.AuditService.AuditQueryCallback;
@@ -153,17 +154,22 @@ public interface AuditComponent
     void resetDisabledPaths(String applicationName);
 
     /**
-     * Record a set of values against the given session.  The map is a path - starting with '/'
-     * ({@link AuditApplication#AUDIT_PATH_SEPARATOR}), relative to the root path given when
-     * {@link #startAuditSession(String, String) starting the session}.  All resulting path values
-     * (session root path + map entry paths) must have data recorder entries and be enabled for data to be recorded.
+     * Create an audit entry for the given map of values.  The map key is a path - starting with '/'
+     * ({@link AuditApplication#AUDIT_PATH_SEPARATOR}) - relative to the root path provided.
+     * 
+     * The root path and value keys are combined to produce a map of data keyed by full path.  This
+     * fully-pathed map is then passed through the
+     * {@link AuditModelRegistry#getAuditPathMapper() audit path mapper}.  The result may yield data
+     * destined for several different
+     * {@link AuditModelRegistry#getAuditApplicationByKey(String) audit applications}.  depending on
+     * the data extraction and generation defined in the applications, values (or derived values) may
+     * be recorded against several audit entries (one per application represented).
      * <p/>
      * The return values reflect what was actually persisted and is controlled by the data extractors
      * defined in the audit configuration.
      * <p/>
      * This is a read-write method.  Client code must wrap calls in the appropriate transactional wrappers.
      * 
-     * @param applicationName   the name of the application to log against
      * @param rootPath          a base path of {@link AuditPath} key entries concatenated with the path separator
      *                          '/' ({@link AuditApplication#AUDIT_PATH_SEPARATOR})
      * @param values            the values to audit mapped by {@link AuditPath} key relative to root path
@@ -175,7 +181,7 @@ public interface AuditComponent
      * 
      * @since 3.2
      */
-    Map<String, Serializable> audit(String applicationName, String rootPath, Map<String, Serializable> values);
+    Map<String, Serializable> recordAuditValues(String rootPath, Map<String, Serializable> values);
     
     /**
      * Get the audit entries that match the given criteria.

@@ -54,11 +54,14 @@ import org.alfresco.repo.audit.model._3.Audit;
 import org.alfresco.repo.audit.model._3.DataExtractors;
 import org.alfresco.repo.audit.model._3.DataGenerators;
 import org.alfresco.repo.audit.model._3.ObjectFactory;
+import org.alfresco.repo.audit.model._3.PathMap;
+import org.alfresco.repo.audit.model._3.PathMappings;
 import org.alfresco.repo.domain.audit.AuditDAO;
 import org.alfresco.repo.domain.audit.AuditDAO.AuditApplicationInfo;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.util.PathMapper;
 import org.alfresco.util.PropertyCheck;
 import org.alfresco.util.registry.NamedObjectRegistry;
 import org.apache.commons.logging.Log;
@@ -93,6 +96,14 @@ public class AuditModelRegistry
     private final Set<URL> auditModelUrls;
     private final List<Audit> auditModels;
     /**
+     * Used to lookup path translations
+     */
+    private PathMapper auditPathMapper;
+    /**
+     * Used to lookup the audit application java hierarchy 
+     */
+    private final Map<String, AuditApplication> auditApplicationsByKey;
+    /**
      * Used to lookup the audit application java hierarchy 
      */
     private final Map<String, AuditApplication> auditApplicationsByName;
@@ -110,6 +121,8 @@ public class AuditModelRegistry
         
         auditModelUrls = new HashSet<URL>(7);
         auditModels = new ArrayList<Audit>(7);
+        auditPathMapper = new PathMapper();
+        auditApplicationsByKey = new HashMap<String, AuditApplication>(7);
         auditApplicationsByName = new HashMap<String, AuditApplication>(7);
     }
 
@@ -204,6 +217,7 @@ public class AuditModelRegistry
     private void clearCaches()
     {
         auditModels.clear();
+        auditApplicationsByKey.clear();
         auditApplicationsByName.clear();
     }
     
@@ -227,11 +241,11 @@ public class AuditModelRegistry
                 Set<URL> auditModelUrlsInner = new HashSet<URL>(auditModelUrls);
                 for (URL auditModelUrl : auditModelUrlsInner)
                 {
-                    Audit audit = AuditModelRegistry.unmarshallModel(auditModelUrl);
-                    // That worked, so now get an input stream and write the model
-                    Long auditModelId = auditDAO.getOrCreateAuditModel(auditModelUrl).getFirst();
                     try
                     {
+                        Audit audit = AuditModelRegistry.unmarshallModel(auditModelUrl);
+                        // That worked, so now get an input stream and write the model
+                        Long auditModelId = auditDAO.getOrCreateAuditModel(auditModelUrl).getFirst();
                         // Now cache it (eagerly)
                         cacheAuditElements(auditModelId, audit);
                     }
@@ -258,11 +272,32 @@ public class AuditModelRegistry
         clearCaches();
         try
         {
+            auditPathMapper = new PathMapper();
             transactionService.getRetryingTransactionHelper().doInTransaction(loadModelsCallback, false, true);
+            auditPathMapper.lock();
         }
         finally
         {
             writeLock.unlock();
+        }
+    }
+    
+    /**
+     * Get the application model for the given root key (as defined on the application)
+     * 
+     * @param key                   the key defined on the application
+     * @return                      the java model (<tt>null</tt> if not found)
+     */
+    public AuditApplication getAuditApplicationByKey(String key)
+    {
+        readLock.lock();
+        try
+        {
+            return auditApplicationsByKey.get(key);
+        }
+        finally
+        {
+            readLock.unlock();
         }
     }
     
@@ -272,7 +307,7 @@ public class AuditModelRegistry
      * @param applicationName       the name of the audited application
      * @return                      the java model (<tt>null</tt> if not found)
      */
-    public AuditApplication getAuditApplication(String applicationName)
+    public AuditApplication getAuditApplicationByName(String applicationName)
     {
         readLock.lock();
         try
@@ -283,6 +318,15 @@ public class AuditModelRegistry
         {
             readLock.unlock();
         }
+    }
+    
+    /**
+     * Get the 
+     * @return
+     */
+    public PathMapper getAuditPathMapper()
+    {
+        return auditPathMapper;
     }
     
     /**
@@ -331,7 +375,7 @@ public class AuditModelRegistry
                                 "   Location: Line " + locator.getLineNumber() + " column " + locator.getColumnNumber() + "\n" +
                                 "   Error:    " + ve.getMessage());
                     }
-                    return true;
+                    return false;
                 }
             });
         }
@@ -486,10 +530,18 @@ public class AuditModelRegistry
         List<Application> applications = audit.getApplication();
         for (Application application : applications)
         {
+            String key = application.getKey();
+            if (auditApplicationsByKey.containsKey(key))
+            {
+                throw new AuditModelException(
+                        "Audit application key '" + key + "' is used by: " + auditApplicationsByKey.get(key));
+            }
+            
             String name = application.getName();
             if (auditApplicationsByName.containsKey(name))
             {
-                throw new AuditModelException("Audit application '" + name + "' has already been defined.");
+                throw new AuditModelException(
+                        "Audit application '" + name + "' is used by: " + auditApplicationsByName.get(name));
             }
             
             // Get the ID of the application
@@ -511,8 +563,29 @@ public class AuditModelRegistry
                     appInfo.getId(),
                     appInfo.getDisabledPathsId());
             auditApplicationsByName.put(name, wrapperApp);
+            auditApplicationsByKey.put(key, wrapperApp);
         }
+        // Pull out all the audit path maps
+        buildAuditPathMap(audit);
         // Store the model itself
         auditModels.add(audit);
+    }
+    
+    /**
+     * Construct the reverse lookup maps for quick conversion of data to target maps
+     */
+    private void buildAuditPathMap(Audit audit)
+    {
+        PathMappings pathMappings = audit.getPathMappings();
+        if (pathMappings == null)
+        {
+            pathMappings = objectFactory.createPathMappings();
+        }
+        for (PathMap pathMap : pathMappings.getPathMap())
+        {
+            String sourcePath = pathMap.getSource();
+            String targetPath = pathMap.getTarget();
+            auditPathMapper.addPathMap(sourcePath, targetPath);
+        }
     }
 }

@@ -19,6 +19,7 @@
         <xs:sequence>
             <xs:element name="DataExtractors" type="a:DataExtractors" minOccurs="0" maxOccurs="1"/>
             <xs:element name="DataGenerators" type="a:DataGenerators" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="PathMappings" type="a:PathMappings" minOccurs="0" maxOccurs="1"/>
             <xs:element name="Application" type="a:Application" minOccurs="0" maxOccurs="unbounded"/>
         </xs:sequence>
     </xs:complexType>    
@@ -50,9 +51,23 @@
     <xs:complexType name="Application">
         <xs:complexContent>
             <xs:extension base="a:AuditPath">
+                <xs:sequence>
+                    <xs:element name="PathMappings" type="a:PathMappings" minOccurs="0" maxOccurs="unbounded"/>
+                </xs:sequence>
                 <xs:attribute name="name" type="a:NameAttribute" use="required"/>
             </xs:extension>
         </xs:complexContent>
+    </xs:complexType>
+    
+    <xs:complexType name="PathMappings">
+        <xs:sequence>
+            <xs:element name="PathMap" type="a:PathMap" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+    
+    <xs:complexType name="PathMap">
+        <xs:attribute name="source" type="a:PathAttribute" use="required"/>
+        <xs:attribute name="target" type="a:PathAttribute" use="required"/>
     </xs:complexType>
     
     <xs:complexType name="AuditPath">
@@ -104,6 +119,14 @@
             <xs:minLength value="1"/>
             <xs:maxLength value="128"/>
             <xs:pattern value="([a-z]|[A-Z]|[0-9]|\-|\.)*"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="PathAttribute">
+        <xs:restriction base="xs:string">
+            <xs:minLength value="1"/>
+            <xs:maxLength value="128"/>
+            <xs:pattern value="(/([a-z]|[A-Z]|[0-9]|\-|\.)+)+"/>
         </xs:restriction>
     </xs:simpleType>
 

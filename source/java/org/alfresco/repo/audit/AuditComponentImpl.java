@@ -64,6 +64,7 @@ import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ParameterCheck;
+import org.alfresco.util.PathMapper;
 import org.aopalliance.intercept.MethodInvocation;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -782,7 +783,7 @@ public class AuditComponentImpl implements AuditComponent
     {
         this.propertyValueDAO = propertyValueDAO;
     }
-
+    
     /**
      * {@inheritDoc}
      * @since 3.2
@@ -790,13 +791,9 @@ public class AuditComponentImpl implements AuditComponent
     public void deleteAuditEntries(String applicationName, Long fromTime, Long toTime)
     {
         ParameterCheck.mandatory("applicationName", applicationName);
+        AlfrescoTransactionSupport.checkTransactionReadState(true);
         
-        if (AlfrescoTransactionSupport.getTransactionReadState() == TxnReadState.TXN_NONE)
-        {
-            throw new IllegalStateException("Auditing requires a read transaction.");
-        }
-        
-        AuditApplication application = auditModelRegistry.getAuditApplication(applicationName);
+        AuditApplication application = auditModelRegistry.getAuditApplicationByName(applicationName);
         if (application == null)
         {
             if (logger.isDebugEnabled())
@@ -845,13 +842,9 @@ public class AuditComponentImpl implements AuditComponent
     {
         ParameterCheck.mandatory("applicationName", applicationName);
         ParameterCheck.mandatory("path", path);
+        AlfrescoTransactionSupport.checkTransactionReadState(false);
         
-        if (AlfrescoTransactionSupport.getTransactionReadState() == TxnReadState.TXN_NONE)
-        {
-            throw new IllegalStateException("Auditing requires a read transaction.");
-        }
-        
-        AuditApplication application = auditModelRegistry.getAuditApplication(applicationName);
+        AuditApplication application = auditModelRegistry.getAuditApplicationByName(applicationName);
         if (application == null)
         {
             if (logger.isDebugEnabled())
@@ -895,13 +888,9 @@ public class AuditComponentImpl implements AuditComponent
     {
         ParameterCheck.mandatory("applicationName", applicationName);
         ParameterCheck.mandatory("path", path);
+        AlfrescoTransactionSupport.checkTransactionReadState(true);
         
-        if (AlfrescoTransactionSupport.getTransactionReadState() != TxnReadState.TXN_READ_WRITE)
-        {
-            throw new IllegalStateException("Auditing requires a read-write transaction.");
-        }
-        
-        AuditApplication application = auditModelRegistry.getAuditApplication(applicationName);
+        AuditApplication application = auditModelRegistry.getAuditApplicationByName(applicationName);
         if (application == null)
         {
             if (logger.isDebugEnabled())
@@ -951,13 +940,9 @@ public class AuditComponentImpl implements AuditComponent
     {
         ParameterCheck.mandatory("applicationName", applicationName);
         ParameterCheck.mandatory("path", path);
+        AlfrescoTransactionSupport.checkTransactionReadState(true);
         
-        if (AlfrescoTransactionSupport.getTransactionReadState() != TxnReadState.TXN_READ_WRITE)
-        {
-            throw new IllegalStateException("Auditing requires a read-write transaction.");
-        }
-        
-        AuditApplication application = auditModelRegistry.getAuditApplication(applicationName);
+        AuditApplication application = auditModelRegistry.getAuditApplicationByName(applicationName);
         if (application == null)
         {
             if (logger.isDebugEnabled())
@@ -1028,12 +1013,9 @@ public class AuditComponentImpl implements AuditComponent
     public void resetDisabledPaths(String applicationName)
     {
         ParameterCheck.mandatory("applicationName", applicationName);
+        AlfrescoTransactionSupport.checkTransactionReadState(true);
         
-        if (AlfrescoTransactionSupport.getTransactionReadState() != TxnReadState.TXN_READ_WRITE)
-        {
-            throw new IllegalStateException("Auditing requires a read-write transaction.");
-        }
-        AuditApplication application = auditModelRegistry.getAuditApplication(applicationName);
+        AuditApplication application = auditModelRegistry.getAuditApplicationByName(applicationName);
         if (application == null)
         {
             if (logger.isDebugEnabled())
@@ -1055,56 +1037,16 @@ public class AuditComponentImpl implements AuditComponent
      * {@inheritDoc}
      * @since 3.2
      */
-    public Map<String, Serializable> audit(String applicationName, String rootPath, Map<String, Serializable> values)
+    public Map<String, Serializable> recordAuditValues(String rootPath, Map<String, Serializable> values)
     {
-        ParameterCheck.mandatory("applicationName", applicationName);
         ParameterCheck.mandatory("rootPath", rootPath);
-        
-        if (AlfrescoTransactionSupport.getTransactionReadState() != TxnReadState.TXN_READ_WRITE)
+        AlfrescoTransactionSupport.checkTransactionReadState(true);
+        AuditApplication.checkPathFormat(rootPath);
+
+        if (values == null || values.isEmpty())
         {
-            throw new IllegalStateException("Auditing requires a read-write transaction.");
-        }
-        
-        if (values == null)
-        {
-            values = Collections.emptyMap();
-        }
-        
-        // Get the application
-        AuditApplication application = auditModelRegistry.getAuditApplication(applicationName);
-        if (application == null)
-        {
-            if (logger.isDebugEnabled())
-            {
-                logger.debug("No audit application named '" + applicationName + "' has been registered.");
-            }
             return Collections.emptyMap();
         }
-        // Check the path against the application
-        application.checkPath(rootPath);
-        // Get the model ID for the application
-        Long applicationId = application.getApplicationId();
-        if (applicationId == null)
-        {
-            throw new AuditException("No persisted instance exists for audit application: " + applicationName);
-        }
-
-        // Get all disabled paths
-        Set<String> disabledPaths = getDisabledPaths(application);
-        // Check if the root path has been disabled
-        // This is a fast check and will usually be activated if there are any exclusions
-        for (String disabledPath : disabledPaths)
-        {
-            if (rootPath.startsWith(disabledPath))
-            {
-                logger.debug(
-                        "Audit values root path has been excluded by disabled paths: \n" +
-                        "   Application: " + application + "\n" +
-                        "   Root Path:   " + rootPath);
-                return Collections.emptyMap();
-            }
-        }
-        
         // Build the key paths using the session root path
         Map<String, Serializable> pathedValues = new HashMap<String, Serializable>(values.size() * 2);
         for (Map.Entry<String, Serializable> entry : values.entrySet())
@@ -1114,8 +1056,82 @@ public class AuditComponentImpl implements AuditComponent
             pathedValues.put(path, entry.getValue());
         }
         
+        // Translate the values map
+        PathMapper pathMapper = auditModelRegistry.getAuditPathMapper();
+        Map<String, Serializable> mappedValues = pathMapper.convertMap(pathedValues);
+        
+        // Group the values by root path
+        Map<String, Map<String, Serializable>> mappedValuesByRootKey = new HashMap<String, Map<String,Serializable>>();
+        for (Map.Entry<String, Serializable> entry : mappedValues.entrySet())
+        {
+            String path = entry.getKey();
+            String rootKey = AuditApplication.getRootKey(path);
+            Map<String, Serializable> rootKeyMappedValues = mappedValuesByRootKey.get(rootKey);
+            if (rootKeyMappedValues == null)
+            {
+                rootKeyMappedValues = new HashMap<String, Serializable>(7);
+                mappedValuesByRootKey.put(rootKey, rootKeyMappedValues);
+            }
+            rootKeyMappedValues.put(path, entry.getValue());
+        }
+
+        Map<String, Serializable> allAuditedValues = new HashMap<String, Serializable>(values.size()*2+1);
+        // Now audit for each of the root keys
+        for (Map.Entry<String, Map<String, Serializable>> entry : mappedValuesByRootKey.entrySet())
+        {
+            String rootKey = entry.getKey();
+            Map<String, Serializable> rootKeyMappedValues = entry.getValue();
+            // Get the application
+            AuditApplication application = auditModelRegistry.getAuditApplicationByKey(rootKey);
+            if (application == null)
+            {
+                // There is no application that uses the root key
+                logger.debug(
+                        "There is no application for root key: " + rootKey);
+                continue;
+            }
+            // Get the disabled paths
+            Set<String> disabledPaths = getDisabledPaths(application);
+            // Do a quick elimination if the root path is disabled
+            if (disabledPaths.contains(AuditApplication.buildPath(rootKey)))
+            {
+                // The root key has been disabled for this application
+                logger.debug(
+                        "Audit values root path has been excluded by disabled paths: \n" +
+                        "   Application: " + application + "\n" +
+                        "   Root Path:   " + AuditApplication.buildPath(rootKey));
+                continue;
+            }
+            // Do the audit
+            Map<String, Serializable> rootKeyAuditValues = audit(application, disabledPaths, rootKeyMappedValues);
+            allAuditedValues.putAll(rootKeyAuditValues);
+        }
+        // Done
+        return allAuditedValues;
+    }
+
+    /**
+     * Audit values for a given application.  No path checking is done.
+     * 
+     * @param application           the audit application to audit to
+     * @param disabledPaths         the application's disabled paths
+     * @param values                the values to store keyed by <b>full paths</b>.
+     * @return                      Returns all values as audited
+     */
+    private Map<String, Serializable> audit(
+            AuditApplication application,
+            Set<String> disabledPaths,
+            Map<String, Serializable> values)
+    {
+        // Get the model ID for the application
+        Long applicationId = application.getApplicationId();
+        if (applicationId == null)
+        {
+            throw new AuditException("No persisted instance exists for audit application: " + application);
+        }
+
         // Eliminate any paths that have been disabled
-        Iterator<String> pathedValuesKeyIterator = pathedValues.keySet().iterator();
+        Iterator<String> pathedValuesKeyIterator = values.keySet().iterator();
         while(pathedValuesKeyIterator.hasNext())
         {
             String pathedValueKey = pathedValuesKeyIterator.next();
@@ -1129,25 +1145,24 @@ public class AuditComponentImpl implements AuditComponent
             }
         }
         // Check if there is anything left
-        if (pathedValues.size() == 0)
+        if (values.size() == 0)
         {
             if (logger.isDebugEnabled())
             {
                 logger.debug(
                         "Audit values have all been excluded by disabled paths: \n" +
                         "   Application: " + application + "\n" +
-                        "   Root Path:   " + rootPath + "\n" +
                         "   Values:      " + values);
             }
             return Collections.emptyMap();
         }
         
         // Generate data
-        Map<String, DataGenerator> generators = application.getDataGenerators(pathedValues.keySet());
+        Map<String, DataGenerator> generators = application.getDataGenerators(values.keySet());
         Map<String, Serializable> auditData = generateData(generators);
         
         // Now extract values
-        Map<String, Serializable> extractedData = extractData(application, pathedValues);
+        Map<String, Serializable> extractedData = extractData(application, values);
         
         // Combine extracted and generated values (extracted data takes precedence)
         auditData.putAll(extractedData);
@@ -1168,9 +1183,9 @@ public class AuditComponentImpl implements AuditComponent
         {
             logger.debug(
                     "New audit entry: \n" +
-                    "   Applicatoin ID: " + applicationId + "\n" +
+                    "   Application ID: " + applicationId + "\n" +
                     "   Entry ID:       " + entryId + "\n" +
-                    "   Path Values:    " + pathedValues + "\n" +
+                    "   Values:         " + values + "\n" +
                     "   Audit Data:     " + auditData);
         }
         return auditData;

@@ -34,14 +34,6 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link RecordValue }
-     * 
-     */
-    public RecordValue createRecordValue() {
-        return new RecordValue();
-    }
-
-    /**
      * Create an instance of {@link DataExtractor }
      * 
      */
@@ -58,6 +50,14 @@ public class ObjectFactory {
     }
 
     /**
+     * Create an instance of {@link DataExtractors }
+     * 
+     */
+    public DataExtractors createDataExtractors() {
+        return new DataExtractors();
+    }
+
+    /**
      * Create an instance of {@link AuditPath }
      * 
      */
@@ -66,19 +66,11 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link DataGenerator }
+     * Create an instance of {@link PathMap }
      * 
      */
-    public DataGenerator createDataGenerator() {
-        return new DataGenerator();
-    }
-
-    /**
-     * Create an instance of {@link DataGenerators }
-     * 
-     */
-    public DataGenerators createDataGenerators() {
-        return new DataGenerators();
+    public PathMap createPathMap() {
+        return new PathMap();
     }
 
     /**
@@ -90,11 +82,35 @@ public class ObjectFactory {
     }
 
     /**
+     * Create an instance of {@link PathMappings }
+     * 
+     */
+    public PathMappings createPathMappings() {
+        return new PathMappings();
+    }
+
+    /**
+     * Create an instance of {@link DataGenerator }
+     * 
+     */
+    public DataGenerator createDataGenerator() {
+        return new DataGenerator();
+    }
+
+    /**
      * Create an instance of {@link Application }
      * 
      */
     public Application createApplication() {
         return new Application();
+    }
+
+    /**
+     * Create an instance of {@link DataGenerators }
+     * 
+     */
+    public DataGenerators createDataGenerators() {
+        return new DataGenerators();
     }
 
     /**
@@ -106,11 +122,11 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link DataExtractors }
+     * Create an instance of {@link RecordValue }
      * 
      */
-    public DataExtractors createDataExtractors() {
-        return new DataExtractors();
+    public RecordValue createRecordValue() {
+        return new RecordValue();
     }
 
     /**

@@ -26,9 +26,11 @@ package org.alfresco.repo.domain.propval;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
@@ -585,6 +587,29 @@ public class PropertyValueDAOTest extends TestCase
         final Serializable entityValueCheck = txnHelper.doInTransaction(updateAndGetCallback, false);
         assertNotNull(entityValueCheck);
         assertEquals(list, entityValueCheck);
+    }
+    
+    public void testProperty_UpdateToVersionRollover() throws Exception
+    {
+        final List<String> list = Collections.emptyList();
+        final Long propId = runPropertyTest((Serializable)list);
+        
+        // Do 1000 updates to a property
+        RetryingTransactionCallback<Void> updateThousandsCallback = new RetryingTransactionCallback<Void>()
+        {
+            public Void execute() throws Throwable
+            {
+                for (int i = 0; i < 1000; i++)
+                {
+                    propertyValueDAO.updateProperty(propId, (Serializable)list);
+                }
+                return null;
+            }
+        };
+        for (int i = 0; i < (Short.MAX_VALUE / 1000 + 1); i++)
+        {
+            txnHelper.doInTransaction(updateThousandsCallback, false);
+        }
     }
     
     public void testProperty_Delete() throws Exception

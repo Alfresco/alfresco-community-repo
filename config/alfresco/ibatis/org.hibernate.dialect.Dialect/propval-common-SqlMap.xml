@@ -363,8 +363,10 @@
         set
             version = #version#
         where
-            id = #id# and
-            version = (#version# -1)
+            id = #id#
+        <isGreaterThan property="version" compareValue="1">
+            and version = ((#version#-1))
+        </isGreaterThan>
     </update>
     
     <delete id="delete_PropertyRootById" parameterClass="PropertyRoot">

@@ -75,7 +75,7 @@ CREATE TABLE alf_prop_value
 CREATE TABLE alf_prop_root
 (
    id BIGINT NOT NULL AUTO_INCREMENT,
-   version TINYINT NOT NULL,
+   version SMALLINT NOT NULL,
    PRIMARY KEY (id)
 ) ENGINE=InnoDB;
 

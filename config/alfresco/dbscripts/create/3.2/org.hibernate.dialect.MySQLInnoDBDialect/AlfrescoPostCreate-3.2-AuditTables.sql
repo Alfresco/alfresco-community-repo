@@ -20,7 +20,7 @@ CREATE TABLE alf_audit_model
 CREATE TABLE alf_audit_app
 (
    id BIGINT NOT NULL AUTO_INCREMENT,
-   version TINYINT NOT NULL,
+   version SMALLINT NOT NULL,
    app_name_id BIGINT NOT NULL,
    audit_model_id BIGINT NOT NULL,
    disabled_paths_id BIGINT NOT NULL,

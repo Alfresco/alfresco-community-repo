@@ -132,8 +132,10 @@
             audit_model_id = #auditModelId#,
             disabled_paths_id = #disabledPathsId#
         where
-            id = #id# and
-            version = (#version# -1)
+            id = #id#
+        <isGreaterThan property="version" compareValue="1">
+            and version = ((#version#-1))
+        </isGreaterThan>
     </update>
     
     <!-- TODO: This has to be replaced with two deletes; one for the property links and another for the entries -->

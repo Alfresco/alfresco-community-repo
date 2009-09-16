@@ -173,6 +173,29 @@ public abstract class AlfrescoTransactionSupport
     }
     
     /**
+     * Checks the state of the current transaction and throws an exception if a transaction
+     * is not present or if the transaction is not read-write, if required.
+     * 
+     * @param requireReadWrite          <tt>true</tt> if the transaction must be read-write
+     * 
+     * @since 3.2
+     */
+    public static void checkTransactionReadState(boolean requireReadWrite)
+    {
+        if (!TransactionSynchronizationManager.isSynchronizationActive())
+        {
+            throw new IllegalStateException(
+                    "The current operation requires an active " +
+                    (requireReadWrite ? "read-write" : "") +
+                    "transaction.");
+        }
+        if (TransactionSynchronizationManager.isCurrentTransactionReadOnly() && requireReadWrite)
+        {
+            throw new IllegalStateException("The current operation requires an active read-write transaction.");
+        }
+    }
+    
+    /**
      * Are there any pending changes which must be synchronized with the store?
      * 
      * @return true => changes are pending

@@ -419,18 +419,7 @@
             (class_type = 'layereddirectory' or class_type = 'layeredfile') and
             store_new_id = ?
     </select>
-    
-    <select id="select_AVMNodes_layeredDirectories" resultMap="result_AVMNode">
-        select
-            *
-        from 
-            avm_nodes
-        where
-            class_type = 'layereddirectory' and
-            primary_indirection = true
-            
-    </select>
-    
+
     <select id="select_AVMNodes_layeredFiles" resultMap="result_AVMNode">
         select
             *
@@ -480,7 +469,6 @@
             class_type = #classType#,
             deletedType = #deletedType#,
             owner = #owner#,
-            lastModifier = #modifier#,
             modDate = #modifiedDate#,
             accessDate = #accessDate#,
             is_root = #isRoot#,
@@ -875,18 +863,7 @@
         where
             parent_id = ?
     </delete>
-    
-    <select id="select_AVMNodes_orphans" resultMap="result_AVMNode">
-        select
-            an.*
-        from
-            avm_child_entries ce
-            right outer join avm_nodes an on (an.id = ce.child_id)
-        where 
-            ce.parent_id is null and 
-            an.is_root = false
-    </select>
-    
+
     <!--                          -->
     <!-- AVM MergeLink Statements -->
     <!--                          -->

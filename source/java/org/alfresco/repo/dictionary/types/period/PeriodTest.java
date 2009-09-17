@@ -882,4 +882,19 @@ public class PeriodTest extends TestCase
         assertEquals("2011-12-07T13:37:33.104", df.format(period.getNextDate(date)));
     }
     
+    /**
+     * Test a missing expression, ensure 1 is used as the default
+     */
+    public void testMissingExpression()
+    {
+        assertTrue(Period.getProviderNames().contains(Days.PERIOD_TYPE));
+        Date now = new Date();
+        Calendar calendar = Calendar.getInstance();
+
+        Period period = new Period(Days.PERIOD_TYPE + "|");
+        assertNotNull(period.getNextDate(now));
+        calendar.setTime(now);
+        calendar.add(Calendar.DAY_OF_YEAR, 1);
+        assertEquals(period.getNextDate(now), calendar.getTime());
+    }
 }

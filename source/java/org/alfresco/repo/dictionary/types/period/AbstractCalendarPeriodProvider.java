@@ -29,6 +29,8 @@ import java.util.Date;
 
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.namespace.QName;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * Support for calendar based periods
@@ -37,7 +39,9 @@ import org.alfresco.service.namespace.QName;
  */
 public abstract class AbstractCalendarPeriodProvider extends AbstractPeriodProvider
 {
-
+    /** Logger */
+    private static Log logger = LogFactory.getLog(AbstractCalendarPeriodProvider.class);
+    
     public String getDefaultExpression()
     {
         return "1";
@@ -50,7 +54,19 @@ public abstract class AbstractCalendarPeriodProvider extends AbstractPeriodProvi
 
     public Date getNextDate(Date date, String expression)
     {
-        int value = Integer.parseInt(expression);
+        int value = 1;
+        try
+        {
+            value = Integer.parseInt(expression);
+        }
+        catch (NumberFormatException nfe)
+        {
+            // default to 1 and log warning
+            value = 1;
+            
+            if (logger.isWarnEnabled())
+                logger.warn("\"" + expression + "\" is not a valid period expression!");
+        }
 
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(date);

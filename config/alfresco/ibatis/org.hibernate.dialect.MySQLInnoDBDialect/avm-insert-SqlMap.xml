@@ -34,26 +34,4 @@
         </selectKey>
     </insert>
     
-    <select id="select_AVMNodes_orphans" resultMap="result_AVMNode">
-        select
-            an.*
-        from
-            avm_child_entries ce
-            right outer join avm_nodes an on (an.id = ce.child_id)
-        where 
-            ce.parent_id is null and 
-            an.is_root = false
-    </select>
-    
-    <select id="select_AVMNodes_layeredDirectories" resultMap="result_AVMNode">
-        select
-            *
-        from 
-            avm_nodes
-        where
-            class_type = 'layereddirectory' and
-            primary_indirection = true
-            
-    </select>
-    
 </sqlMap>

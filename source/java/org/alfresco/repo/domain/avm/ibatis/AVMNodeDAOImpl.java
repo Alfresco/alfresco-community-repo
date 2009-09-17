@@ -59,8 +59,8 @@ public class AVMNodeDAOImpl extends AbstractAVMNodeDAOImpl
     private static final String SELECT_AVM_NODES_NEW_LAYERED_IN_STORE = "alfresco.avm.select_AVMNodes_newLayeredInStore";
     private static final String SELECT_AVM_NODE_IDS_NEW_LAYERED_IN_STORE = "alfresco.avm.select_AVMNodes_IDs_newLayeredInStore";
     private static final String UPDATE_AVM_NODES_CLEAR_NEW_IN_STORE = "alfresco.avm.update_AVMNodes_clearNewInStore";
-    private static final String SELECT_AVM_NODES_ORPHANS = "alfresco.avm.select_AVMNodes_orphans";
-    private static final String SELECT_AVM_NODES_LAYERED_DIRECTORIES = "alfresco.avm.select_AVMNodes_layeredDirectories";
+    private static final String SELECT_AVM_NODES_NULL_PARENT_AND_ISROOT_TF= "alfresco.avm.select_AVMNodes_nullParentAndIsRootTF";
+    private static final String SELECT_AVM_NODES_LAYERED_DIRECTORIES_AND_PRIMARY_TF = "alfresco.avm.select_AVMNodes_layeredDirectoriesAndPrimaryTF";
     private static final String SELECT_AVM_NODES_LAYERED_FILES = "alfresco.avm.select_AVMNodes_layeredFiles";
     private static final String SELECT_AVM_NODE_IDS_BY_ACL_ID = "alfresco.avm.select_AVMNodes_IDs_byAcl";
     
@@ -168,14 +168,22 @@ public class AVMNodeDAOImpl extends AbstractAVMNodeDAOImpl
     @Override
     protected List<AVMNodeEntity> getNodeEntityOrphans(int maxSize)
     {
-        return (List<AVMNodeEntity>) template.queryForList(SELECT_AVM_NODES_ORPHANS, 0, maxSize);
+        Map<String, Object> params = new HashMap<String, Object>(1);
+        params.put("bool", false);
+        
+        // all nodes with null parent and not a root
+        return (List<AVMNodeEntity>) template.queryForList(SELECT_AVM_NODES_NULL_PARENT_AND_ISROOT_TF, params, 0, maxSize);
     }
     
     @SuppressWarnings("unchecked")
     @Override
     protected List<AVMNodeEntity> getAllLayeredDirectoryNodeEntities()
     {
-        return (List<AVMNodeEntity>) template.queryForList(SELECT_AVM_NODES_LAYERED_DIRECTORIES);
+        Map<String, Object> params = new HashMap<String, Object>(1);
+        params.put("bool", true);
+        
+        // all primary layered directories
+        return (List<AVMNodeEntity>) template.queryForList(SELECT_AVM_NODES_LAYERED_DIRECTORIES_AND_PRIMARY_TF, params);
     }
     
     @SuppressWarnings("unchecked")

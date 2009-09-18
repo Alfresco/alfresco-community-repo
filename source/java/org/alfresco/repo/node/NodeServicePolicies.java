@@ -33,6 +33,7 @@ import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 
 /**
@@ -44,6 +45,7 @@ public interface NodeServicePolicies
 {
     public interface BeforeCreateStorePolicy extends ClassPolicy
     {
+        public static final QName QNAME = QName.createQName(NamespaceService.ALFRESCO_URI, "beforeCreateStore");
         /**
          * Called before a new node store is created.
          * 
@@ -55,6 +57,7 @@ public interface NodeServicePolicies
     
     public interface OnCreateStorePolicy extends ClassPolicy
     {
+        public static final QName QNAME = QName.createQName(NamespaceService.ALFRESCO_URI, "onCreateStore");
         /**
          * Called when a new node store has been created.
          * 
@@ -65,6 +68,7 @@ public interface NodeServicePolicies
 
     public interface BeforeCreateNodePolicy extends ClassPolicy
     {
+        public static final QName QNAME = QName.createQName(NamespaceService.ALFRESCO_URI, "beforeCreateNode");
         /**
          * Called before a new node is created.
          * 
@@ -82,6 +86,7 @@ public interface NodeServicePolicies
     
     public interface OnCreateNodePolicy extends ClassPolicy
     {
+        public static final QName QNAME = QName.createQName(NamespaceService.ALFRESCO_URI, "onCreateNode");
         /**
          * Called when a new node has been created.
          * 
@@ -92,6 +97,7 @@ public interface NodeServicePolicies
 
     public interface OnMoveNodePolicy extends ClassPolicy
     {
+        public static final QName QNAME = QName.createQName(NamespaceService.ALFRESCO_URI, "onMoveNode");
         /**
          * Called when a node has been moved.
          *
@@ -103,6 +109,7 @@ public interface NodeServicePolicies
 
     public interface BeforeUpdateNodePolicy extends ClassPolicy
     {
+        public static final QName QNAME = QName.createQName(NamespaceService.ALFRESCO_URI, "beforeUpdateNode");
         /**
          * Called before a node is updated.  This includes the modification of properties, child and target 
          * associations and the addition of aspects.
@@ -114,6 +121,7 @@ public interface NodeServicePolicies
     
 	public interface OnUpdateNodePolicy extends ClassPolicy
 	{
+        public static final QName QNAME = QName.createQName(NamespaceService.ALFRESCO_URI, "onUpdateNode");
 		/**
 		 * Called after a new node has been created.  This includes the modification of properties, child and target
 		 * associations and the addition of aspects.
@@ -125,6 +133,7 @@ public interface NodeServicePolicies
     
     public interface OnUpdatePropertiesPolicy extends ClassPolicy
     {
+        public static final QName QNAME = QName.createQName(NamespaceService.ALFRESCO_URI, "onUpdateProperties");
         /**
          * Called after a node's properties have been changed.
          * 
@@ -144,6 +153,7 @@ public interface NodeServicePolicies
     
 	public interface BeforeDeleteNodePolicy extends ClassPolicy
 	{
+        public static final QName QNAME = QName.createQName(NamespaceService.ALFRESCO_URI, "beforeDeleteNode");
 		/**
 		 * Called before a node is deleted.
 		 * 
@@ -154,6 +164,7 @@ public interface NodeServicePolicies
 	
 	public interface OnDeleteNodePolicy extends ClassPolicy
 	{
+        public static final QName QNAME = QName.createQName(NamespaceService.ALFRESCO_URI, "onDeleteNode");
 		/**
 		 * Called after a node is deleted.  The reference given is for an association
          * which has been deleted and cannot be used to retrieve node or associaton
@@ -167,6 +178,7 @@ public interface NodeServicePolicies
 	
     public interface BeforeAddAspectPolicy extends ClassPolicy
     {
+        public static final QName QNAME = QName.createQName(NamespaceService.ALFRESCO_URI, "onDeleteNode");
         /**
          * Called before an <b>aspect</b> is added to a node
          * 
@@ -178,6 +190,7 @@ public interface NodeServicePolicies
 
     public interface OnAddAspectPolicy extends ClassPolicy
     {
+        public static final QName QNAME = QName.createQName(NamespaceService.ALFRESCO_URI, "onAddAspect");
         /**
          * Called after an <b>aspect</b> has been added to a node
          * 
@@ -189,6 +202,7 @@ public interface NodeServicePolicies
 
     public interface BeforeRemoveAspectPolicy extends ClassPolicy
     {
+        public static final QName QNAME = QName.createQName(NamespaceService.ALFRESCO_URI, "beforeRemoveAspect");
         /**
          * Called before an <b>aspect</b> is removed from a node
          * 
@@ -200,6 +214,7 @@ public interface NodeServicePolicies
 
     public interface OnRemoveAspectPolicy extends ClassPolicy
     {
+        public static final QName QNAME = QName.createQName(NamespaceService.ALFRESCO_URI, "onRemoveAspect");
         /**
          * Called after an <b>aspect</b> has been removed from a node
          * 
@@ -211,6 +226,7 @@ public interface NodeServicePolicies
     
     public interface BeforeCreateNodeAssociationPolicy extends AssociationPolicy
     {
+        public static final QName QNAME = QName.createQName(NamespaceService.ALFRESCO_URI, "beforeCreateNodeAssociation");
         /**
          * Called before a new node is created with the details of the new child association.
          * 
@@ -226,6 +242,7 @@ public interface NodeServicePolicies
     
     public interface OnCreateNodeAssociationPolicy extends AssociationPolicy
     {
+        public static final QName QNAME = QName.createQName(NamespaceService.ALFRESCO_URI, "onCreateNodeAssociation");
         /**
          * Called after a node is created with the created association details
          * 
@@ -236,6 +253,7 @@ public interface NodeServicePolicies
 
     public interface BeforeCreateChildAssociationPolicy extends AssociationPolicy
     {
+        public static final QName QNAME = QName.createQName(NamespaceService.ALFRESCO_URI, "beforeCreateChildAssociation");
         /**
          * Called before a node child association is created.
          * 
@@ -255,6 +273,7 @@ public interface NodeServicePolicies
     
     public interface OnCreateChildAssociationPolicy extends AssociationPolicy
     {
+        public static final QName QNAME = QName.createQName(NamespaceService.ALFRESCO_URI, "onCreateChildAssociation");
         /**
          * Called after a node child association has been created.
          * 
@@ -266,6 +285,7 @@ public interface NodeServicePolicies
     
     public interface BeforeDeleteChildAssociationPolicy extends AssociationPolicy
     {
+        public static final QName QNAME = QName.createQName(NamespaceService.ALFRESCO_URI, "beforeDeleteChildAssociation");
         /**
          * Called before a node child association is deleted.
          * 
@@ -276,6 +296,7 @@ public interface NodeServicePolicies
     
     public interface OnDeleteChildAssociationPolicy extends AssociationPolicy
     {
+        public static final QName QNAME = QName.createQName(NamespaceService.ALFRESCO_URI, "onDeleteChildAssociation");
         /**
          * Called after a node child association has been deleted.
          * 
@@ -286,6 +307,7 @@ public interface NodeServicePolicies
 
     public interface OnCreateAssociationPolicy extends AssociationPolicy
     {
+        public static final QName QNAME = QName.createQName(NamespaceService.ALFRESCO_URI, "onCreateAssociation");
         /**
          * Called after a regular node association is created.
          * 
@@ -296,6 +318,7 @@ public interface NodeServicePolicies
     
     public interface OnDeleteAssociationPolicy extends AssociationPolicy
     {
+        public static final QName QNAME = QName.createQName(NamespaceService.ALFRESCO_URI, "onDeleteAssociation");
         /**
          * Called after a regular node association is deleted.
          * 

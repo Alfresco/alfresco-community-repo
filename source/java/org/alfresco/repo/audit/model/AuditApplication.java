@@ -50,8 +50,8 @@ import org.apache.commons.logging.LogFactory;
 public class AuditApplication
 {
     public static final String AUDIT_PATH_SEPARATOR = "/";
-    public static final String AUDIT_KEY_REGEX = "[a-zA-Z0-9\\-\\.]+";
-    public static final String AUDIT_PATH_REGEX = "(/[a-zA-Z0-9\\-\\.]+)+";
+    public static final String AUDIT_KEY_REGEX = "[a-zA-Z0-9\\-\\_\\.]+";
+    public static final String AUDIT_PATH_REGEX = "(/[a-zA-Z0-9\\-\\_\\.]+)+";
     
     private static final Log logger = LogFactory.getLog(AuditApplication.class);
 

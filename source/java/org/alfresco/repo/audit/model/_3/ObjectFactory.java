@@ -34,59 +34,11 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link DataExtractor }
-     * 
-     */
-    public DataExtractor createDataExtractor() {
-        return new DataExtractor();
-    }
-
-    /**
      * Create an instance of {@link Audit }
      * 
      */
     public Audit createAudit() {
         return new Audit();
-    }
-
-    /**
-     * Create an instance of {@link DataExtractors }
-     * 
-     */
-    public DataExtractors createDataExtractors() {
-        return new DataExtractors();
-    }
-
-    /**
-     * Create an instance of {@link AuditPath }
-     * 
-     */
-    public AuditPath createAuditPath() {
-        return new AuditPath();
-    }
-
-    /**
-     * Create an instance of {@link PathMap }
-     * 
-     */
-    public PathMap createPathMap() {
-        return new PathMap();
-    }
-
-    /**
-     * Create an instance of {@link KeyedAuditDefinition }
-     * 
-     */
-    public KeyedAuditDefinition createKeyedAuditDefinition() {
-        return new KeyedAuditDefinition();
-    }
-
-    /**
-     * Create an instance of {@link PathMappings }
-     * 
-     */
-    public PathMappings createPathMappings() {
-        return new PathMappings();
     }
 
     /**
@@ -98,19 +50,19 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link Application }
+     * Create an instance of {@link AuditPath }
      * 
      */
-    public Application createApplication() {
-        return new Application();
+    public AuditPath createAuditPath() {
+        return new AuditPath();
     }
 
     /**
-     * Create an instance of {@link DataGenerators }
+     * Create an instance of {@link KeyedAuditDefinition }
      * 
      */
-    public DataGenerators createDataGenerators() {
-        return new DataGenerators();
+    public KeyedAuditDefinition createKeyedAuditDefinition() {
+        return new KeyedAuditDefinition();
     }
 
     /**
@@ -122,11 +74,59 @@ public class ObjectFactory {
     }
 
     /**
+     * Create an instance of {@link DataGenerators }
+     * 
+     */
+    public DataGenerators createDataGenerators() {
+        return new DataGenerators();
+    }
+
+    /**
+     * Create an instance of {@link DataExtractors }
+     * 
+     */
+    public DataExtractors createDataExtractors() {
+        return new DataExtractors();
+    }
+
+    /**
      * Create an instance of {@link RecordValue }
      * 
      */
     public RecordValue createRecordValue() {
         return new RecordValue();
+    }
+
+    /**
+     * Create an instance of {@link Application }
+     * 
+     */
+    public Application createApplication() {
+        return new Application();
+    }
+
+    /**
+     * Create an instance of {@link DataExtractor }
+     * 
+     */
+    public DataExtractor createDataExtractor() {
+        return new DataExtractor();
+    }
+
+    /**
+     * Create an instance of {@link PathMappings }
+     * 
+     */
+    public PathMappings createPathMappings() {
+        return new PathMappings();
+    }
+
+    /**
+     * Create an instance of {@link PathMap }
+     * 
+     */
+    public PathMap createPathMap() {
+        return new PathMap();
     }
 
     /**

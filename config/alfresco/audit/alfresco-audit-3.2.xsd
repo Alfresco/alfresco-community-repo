@@ -110,7 +110,7 @@
         <xs:restriction base="xs:string">
             <xs:minLength value="1"/>
             <xs:maxLength value="128"/>
-            <xs:pattern value="([a-z]|[A-Z]|[0-9]|\-|\.|\ )*"/>
+            <xs:pattern value="([a-z]|[A-Z]|[0-9]|\-|\_|\.|\ )*"/>
         </xs:restriction>
     </xs:simpleType>
 
@@ -118,7 +118,7 @@
         <xs:restriction base="xs:string">
             <xs:minLength value="1"/>
             <xs:maxLength value="128"/>
-            <xs:pattern value="([a-z]|[A-Z]|[0-9]|\-|\.)*"/>
+            <xs:pattern value="([a-z]|[A-Z]|[0-9]|\-|\_|\.)*"/>
         </xs:restriction>
     </xs:simpleType>
 
@@ -126,7 +126,7 @@
         <xs:restriction base="xs:string">
             <xs:minLength value="1"/>
             <xs:maxLength value="128"/>
-            <xs:pattern value="(/([a-z]|[A-Z]|[0-9]|\-|\.)+)+"/>
+            <xs:pattern value="(/([a-z]|[A-Z]|[0-9]|\-|\_|\.)+)+"/>
         </xs:restriction>
     </xs:simpleType>
 

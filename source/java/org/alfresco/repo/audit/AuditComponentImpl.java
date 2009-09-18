@@ -1096,10 +1096,13 @@ public class AuditComponentImpl implements AuditComponent
             if (disabledPaths.contains(AuditApplication.buildPath(rootKey)))
             {
                 // The root key has been disabled for this application
-                logger.debug(
-                        "Audit values root path has been excluded by disabled paths: \n" +
-                        "   Application: " + application + "\n" +
-                        "   Root Path:   " + AuditApplication.buildPath(rootKey));
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug(
+                            "Audit values root path has been excluded by disabled paths: \n" +
+                            "   Application: " + application + "\n" +
+                            "   Root Path:   " + AuditApplication.buildPath(rootKey));
+                }
                 continue;
             }
             // Do the audit

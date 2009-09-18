@@ -57,11 +57,11 @@ UPDATE
 --
 -- Record script finish
 --
-DELETE FROM alf_applied_patch WHERE id = 'patch.db-V2.2-Person-2';
+DELETE FROM alf_applied_patch WHERE id = 'patch.db-V2.2-Person-3';
 INSERT INTO alf_applied_patch
   (id, description, fixes_from_schema, fixes_to_schema, applied_to_schema, target_schema, applied_on_date, applied_to_server, was_executed, succeeded, report)
   VALUES
   (
-    'patch.db-V2.2-Person-2', 'Manually executed script upgrade V2.2: Person user name also in the association qname',
-    0, 2005, -1, 2006, null, 'UNKOWN', 1, 1, 'Script completed'
+    'patch.db-V2.2-Person-3', 'Manually executed script upgrade V2.2: Person user name also in the association qname',
+    0, 3002, -1, 3003, null, 'UNKOWN', 1, 1, 'Script completed'
   );

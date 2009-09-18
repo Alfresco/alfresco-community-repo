@@ -77,6 +77,7 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 /**
  * This class is resource manager LuceneIndexers and LuceneSearchers. It supports two phase commit inside XA
@@ -110,13 +111,12 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory implements LuceneI
     private Map<Xid, Map<StoreRef, LuceneIndexer>> suspendedIndexersInGlobalTx = new HashMap<Xid, Map<StoreRef, LuceneIndexer>>();
 
     /**
-     * Thread local indexers - used outside a global transaction
+     * The key under which this instance's map of indexers is stored in a (non-global) transaction
      */
-
-    private ThreadLocal<Map<StoreRef, LuceneIndexer>> threadLocalIndexers = new ThreadLocal<Map<StoreRef, LuceneIndexer>>();
+    private final String indexersKey = "AbstractLuceneIndexerAndSearcherFactory." + GUID.generate();
 
     /**
-     * The dafault timeout for transactions TODO: Respect this
+     * The default timeout for transactions TODO: Respect this
      */
 
     private int timeout = DEFAULT_TIMEOUT;
@@ -393,13 +393,14 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory implements LuceneI
 
     }
 
+    @SuppressWarnings("unchecked")
     private LuceneIndexer getThreadLocalIndexer(StoreRef storeRef)
     {
-        Map<StoreRef, LuceneIndexer> indexers = threadLocalIndexers.get();
+        Map<StoreRef, LuceneIndexer> indexers = (Map<StoreRef, LuceneIndexer>) AlfrescoTransactionSupport.getResource(indexersKey);
         if (indexers == null)
         {
             indexers = new HashMap<StoreRef, LuceneIndexer>();
-            threadLocalIndexers.set(indexers);
+            AlfrescoTransactionSupport.bindResource(indexersKey, indexers);            
         }
         LuceneIndexer indexer = indexers.get(storeRef);
         if (indexer == null)
@@ -411,11 +412,12 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory implements LuceneI
     }
 
     /**
-     * Get the transaction identifier uised to store it in the transaction map.
+     * Get the transaction identifier used to store it in the transaction map.
      * 
      * @param tx
      * @return - the transaction id
      */
+    @SuppressWarnings("unchecked")
     private String getTransactionId(Transaction tx, StoreRef storeRef)
     {
         if (tx instanceof SimpleTransaction)
@@ -423,9 +425,10 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory implements LuceneI
             SimpleTransaction simpleTx = (SimpleTransaction) tx;
             return simpleTx.getGUID();
         }
-        else
+        else if (TransactionSynchronizationManager.isSynchronizationActive())
         {
-            Map<StoreRef, LuceneIndexer> indexers = threadLocalIndexers.get();
+            Map<StoreRef, LuceneIndexer> indexers = (Map<StoreRef, LuceneIndexer>) AlfrescoTransactionSupport
+                    .getResource(indexersKey);
             if (indexers != null)
             {
                 LuceneIndexer indexer = indexers.get(storeRef);
@@ -434,8 +437,8 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory implements LuceneI
                     return indexer.getDeltaId();
                 }
             }
-            return null;
         }
+        return null;
     }
 
     /**
@@ -741,11 +744,13 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory implements LuceneI
      * Commit the transaction
      */
 
+    @SuppressWarnings("unchecked")
     public void commit() throws IndexerException
     {
+        Map<StoreRef, LuceneIndexer> indexers = null;
         try
         {
-            Map<StoreRef, LuceneIndexer> indexers = threadLocalIndexers.get();
+            indexers = (Map<StoreRef, LuceneIndexer>) AlfrescoTransactionSupport.getResource(indexersKey);
             if (indexers != null)
             {
                 for (LuceneIndexer indexer : indexers.values())
@@ -764,10 +769,10 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory implements LuceneI
         }
         finally
         {
-            if (threadLocalIndexers.get() != null)
+            if (indexers != null)
             {
-                threadLocalIndexers.get().clear();
-                threadLocalIndexers.set(null);
+                indexers.clear();
+                AlfrescoTransactionSupport.unbindResource(indexersKey);                
             }
         }
     }
@@ -777,11 +782,12 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory implements LuceneI
      * 
      * @return - the tx code
      */
+    @SuppressWarnings("unchecked")
     public int prepare() throws IndexerException
     {
         boolean isPrepared = true;
         boolean isModified = false;
-        Map<StoreRef, LuceneIndexer> indexers = threadLocalIndexers.get();
+        Map<StoreRef, LuceneIndexer> indexers = (Map<StoreRef, LuceneIndexer>) AlfrescoTransactionSupport.getResource(indexersKey);
         if (indexers != null)
         {
             for (LuceneIndexer indexer : indexers.values())
@@ -818,9 +824,10 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory implements LuceneI
     /**
      * Roll back the transaction
      */
+    @SuppressWarnings("unchecked")
     public void rollback()
     {
-        Map<StoreRef, LuceneIndexer> indexers = threadLocalIndexers.get();
+        Map<StoreRef, LuceneIndexer> indexers = (Map<StoreRef, LuceneIndexer>) AlfrescoTransactionSupport.getResource(indexersKey);
 
         if (indexers != null)
         {
@@ -835,20 +842,16 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory implements LuceneI
 
                 }
             }
+            indexers.clear();
+            AlfrescoTransactionSupport.unbindResource(indexersKey);
         }
-
-        if (threadLocalIndexers.get() != null)
-        {
-            threadLocalIndexers.get().clear();
-            threadLocalIndexers.set(null);
-        }
-
     }
 
+    @SuppressWarnings("unchecked")
     public void flush()
     {
         // TODO: Needs fixing if we expose the indexer in JTA
-        Map<StoreRef, LuceneIndexer> indexers = threadLocalIndexers.get();
+        Map<StoreRef, LuceneIndexer> indexers = (Map<StoreRef, LuceneIndexer>) AlfrescoTransactionSupport.getResource(indexersKey);
 
         if (indexers != null)
         {

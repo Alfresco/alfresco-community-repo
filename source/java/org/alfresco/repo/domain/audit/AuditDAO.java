@@ -221,7 +221,8 @@ public interface AuditDAO
      * Find audit entries using the given parameters, any of which may be null.
      * 
      * @param searchKey         the audit path key to search for (optional)
-     * @param searchString      the audit string value to search for (optional)
+     * @param searchValue       the audit value to search for (optional).  This can be
+     *                          of any type that is supported by the <b>alf_prop_xxx</b> tables.
      * 
      * @see #findAuditEntries(AuditQueryCallback, String, String, Long, Long, int)
      * 
@@ -230,6 +231,6 @@ public interface AuditDAO
     void findAuditEntries(
             AuditQueryCallback callback,
             String applicationName, String user, Long from, Long to,
-            String searchKey, String searchString,
+            String searchKey, Serializable searchValue,
             int maxResults);
 }

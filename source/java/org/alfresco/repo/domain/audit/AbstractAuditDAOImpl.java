@@ -404,10 +404,14 @@ public abstract class AbstractAuditDAOImpl implements AuditDAO
                     return;
                 }
             }
+            // Resolve the application and username
+            String auditAppName = (String) propertyValueDAO.getPropertyValueById(row.getAuditAppNameId()).getSecond();
+            String auditUser = (String) propertyValueDAO.getPropertyValueById(row.getAuditUserId()).getSecond();
+            
             more = callback.handleAuditEntry(
                     row.getAuditEntryId(),
-                    row.getAuditAppName(),
-                    row.getAuditUser(),
+                    auditAppName,
+                    auditUser,
                     row.getAuditTime(),
                     auditValues);
         }
@@ -425,15 +429,15 @@ public abstract class AbstractAuditDAOImpl implements AuditDAO
     public void findAuditEntries(
             AuditQueryCallback callback,
             String applicationName, String user, Long from, Long to,
-            String searchKey, String searchString,
+            String searchKey, Serializable searchValue,
             int maxResults)
     {
         AuditQueryRowHandler rowHandler = new AuditQueryRowHandler(callback);
-        findAuditEntries(rowHandler, applicationName, user, from, to, maxResults, searchKey, searchString);
+        findAuditEntries(rowHandler, applicationName, user, from, to, maxResults, searchKey, searchValue);
     }
     
     protected abstract void findAuditEntries(
             AuditQueryRowHandler rowHandler,
             String applicationName, String user, Long from, Long to, int maxResults,
-            String searchKey, String searchString);
+            String searchKey, Serializable searchValue);
 }

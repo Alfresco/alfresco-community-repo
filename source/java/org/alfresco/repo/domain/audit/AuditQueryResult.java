@@ -38,8 +38,8 @@ import org.alfresco.repo.domain.propval.PropertyIdSearchRow;
 public class AuditQueryResult
 {
     private Long auditEntryId;
-    private String auditAppName;
-    private String auditUser;
+    private Long auditAppNameId;
+    private Long auditUserId;
     private long auditTime;
     private Long auditValuesId;
     private List<PropertyIdSearchRow> auditValues;
@@ -54,8 +54,8 @@ public class AuditQueryResult
         StringBuilder sb = new StringBuilder(512);
         sb.append("AuditEntryResult")
           .append("[ auditEntryId=").append(auditEntryId)
-          .append(", auditAppName=").append(auditAppName)
-          .append(", auditUser=").append(auditUser)
+          .append(", auditAppNameId=").append(auditAppNameId)
+          .append(", auditUserId=").append(auditUserId)
           .append(", auditTime").append(new Date(auditTime))
           .append(", auditValuesId=").append(auditValuesId)
           .append(", auditValues=").append(auditValues.size())
@@ -73,24 +73,24 @@ public class AuditQueryResult
         this.auditEntryId = entryId;
     }
 
-    public String getAuditAppName()
+    public Long getAuditAppNameId()
     {
-        return auditAppName;
+        return auditAppNameId;
     }
 
-    public void setAuditAppName(String appName)
+    public void setAuditAppNameId(Long auditAppNameId)
     {
-        this.auditAppName = appName;
+        this.auditAppNameId = auditAppNameId;
     }
 
-    public String getAuditUser()
+    public Long getAuditUserId()
     {
-        return auditUser;
+        return auditUserId;
     }
 
-    public void setAuditUser(String user)
+    public void setAuditUserId(Long auditUserId)
     {
-        this.auditUser = user;
+        this.auditUserId = auditUserId;
     }
 
     public long getAuditTime()

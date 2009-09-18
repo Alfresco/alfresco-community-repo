@@ -755,7 +755,7 @@ public class HibernateAuditDAO extends HibernateDaoSupport implements AuditDAO, 
     public void findAuditEntries(
             AuditQueryCallback callback,
             String applicationName, String user, Long from, Long to,
-            String searchKey, String searchString,
+            String searchKey, Serializable searchValue,
             int maxResults)
     {
         throw new UnsupportedOperationException();

@@ -24,6 +24,7 @@
  */
 package org.alfresco.repo.audit;
 
+import java.io.Serializable;
 import java.util.List;
 
 import javax.transaction.UserTransaction;
@@ -188,12 +189,12 @@ public class AuditServiceImpl implements AuditService
     public void auditQuery(
             AuditQueryCallback callback,
             String applicationName, String user, Long from, Long to,
-            String searchKey, String searchString,
+            String searchKey, Serializable searchValue,
             int maxResults)
 
     {
         ParameterCheck.mandatory("callback", callback);
         
-        auditComponent.auditQuery(callback, applicationName, user, from, to, searchKey, searchString, maxResults);
+        auditComponent.auditQuery(callback, applicationName, user, from, to, searchKey, searchValue, maxResults);
     }
 }

@@ -209,7 +209,7 @@ public interface AuditComponent
      * @param from              the start search time (<tt>null</tt> to start at the beginning)
      * @param to                the end search time (<tt>null</tt> for no limit)
      * @param searchKey         the audit key path that must exist (<tt>null</tt> to ignore)
-     * @param searchString      an audit value string that must exist (<tt>null</tt> to ignore)
+     * @param searchValue       an audit value that must exist (<tt>null</tt> to ignore)
      * @param maxResults        the maximum number of results to retrieve (zero or negative to ignore)
      * 
      * @since 3.2
@@ -217,6 +217,6 @@ public interface AuditComponent
     void auditQuery(
             AuditQueryCallback callback,
             String applicationName, String user, Long from, Long to,
-            String searchKey, String searchString,
+            String searchKey, Serializable searchValue,
             int maxResults);
 }

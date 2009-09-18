@@ -1315,7 +1315,7 @@ public class AuditComponentImpl implements AuditComponent
             String user,
             Long from,
             Long to,
-            String searchKey, String searchString,
+            String searchKey, Serializable searchValue,
             int maxResults)
     {
         ParameterCheck.mandatory("callback", callback);
@@ -1327,6 +1327,6 @@ public class AuditComponentImpl implements AuditComponent
             return;
         }
         
-        auditDAO.findAuditEntries(callback, applicationName, user, from, to, searchKey, searchString, maxResults);
+        auditDAO.findAuditEntries(callback, applicationName, user, from, to, searchKey, searchValue, maxResults);
     }
 }

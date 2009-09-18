@@ -44,18 +44,24 @@ public interface PropertyValueDAO
     // 'alf_prop_class' accessors
     //================================
     /**
+     * <b>FOR INTERNAL USE ONLY</b>: Do not use directly; see interface comments.
+     * <p/>
      * <b>alf_prop_class</b> accessor
      * 
      * @param id                the ID (may not be <tt>null</tt>)
      */
     Pair<Long, Class<?>> getPropertyClassById(Long id);
     /**
+     * <b>FOR INTERNAL USE ONLY</b>: Do not use directly; see interface comments.
+     * <p/>
      * <b>alf_prop_class</b> accessor
      * 
      * @param value             the value to find the ID for (may not be <tt>null</tt>)
      */
     Pair<Long, Class<?>> getPropertyClass(Class<?> value);
     /**
+     * <b>FOR INTERNAL USE ONLY</b>: Do not use directly; see interface comments.
+     * <p/>
      * <b>alf_prop_class</b> accessor
      * 
      * @param value             the value to find the ID for (may not be <tt>null</tt>)
@@ -66,18 +72,24 @@ public interface PropertyValueDAO
     // 'alf_prop_date_value' accessors
     //================================
     /**
+     * <b>FOR INTERNAL USE ONLY</b>: Do not use directly; see interface comments.
+     * <p/>
      * <b>alf_prop_date_value</b> accessor
      * 
      * @param id                the ID (may not be <tt>null</tt>)
      */
     Pair<Long, Date> getPropertyDateValueById(Long id);
     /**
+     * <b>FOR INTERNAL USE ONLY</b>: Do not use directly; see interface comments.
+     * <p/>
      * <b>alf_prop_date_value</b> accessor
      * 
      * @param value             the value to find the ID for (may not be <tt>null</tt>)
      */
     Pair<Long, Date> getPropertyDateValue(Date value);
     /**
+     * <b>FOR INTERNAL USE ONLY</b>: Do not use directly; see interface comments.
+     * <p/>
      * <b>alf_prop_date_value</b> accessor
      * 
      * @param value             the value to find the ID for (may not be <tt>null</tt>)
@@ -93,18 +105,24 @@ public interface PropertyValueDAO
      */
     Pair<String, Long> getPropertyStringCaseSensitiveSearchParameters(String value);
     /**
+     * <b>FOR INTERNAL USE ONLY</b>: Do not use directly; see interface comments.
+     * <p/>
      * <b>alf_prop_string_value</b> accessor
      * 
      * @param id                the ID (may not be <tt>null</tt>)
      */
     Pair<Long, String> getPropertyStringValueById(Long id);
     /**
+     * <b>FOR INTERNAL USE ONLY</b>: Do not use directly; see interface comments.
+     * <p/>
      * <b>alf_prop_string_value</b> accessor
      * 
      * @param value             the value to find the ID for (may not be <tt>null</tt>)
      */
     Pair<Long, String> getPropertyStringValue(String value);
     /**
+     * <b>FOR INTERNAL USE ONLY</b>: Do not use directly; see interface comments.
+     * <p/>
      * <b>alf_prop_string_value</b> accessor
      * 
      * @param value             the value to find the ID for (may not be <tt>null</tt>)
@@ -115,18 +133,24 @@ public interface PropertyValueDAO
     // 'alf_prop_double_value' accessors
     //================================
     /**
+     * <b>FOR INTERNAL USE ONLY</b>: Do not use directly; see interface comments.
+     * <p/>
      * <b>alf_prop_double_value</b> accessor
      * 
      * @param id                the ID (may not be <tt>null</tt>)
      */
     Pair<Long, Double> getPropertyDoubleValueById(Long id);
     /**
+     * <b>FOR INTERNAL USE ONLY</b>: Do not use directly; see interface comments.
+     * <p/>
      * <b>alf_prop_double_value</b> accessor
      * 
      * @param value             the value to find the ID for (may not be <tt>null</tt>)
      */
     Pair<Long, Double> getPropertyDoubleValue(Double value);
     /**
+     * <b>FOR INTERNAL USE ONLY</b>: Do not use directly; see interface comments.
+     * <p/>
      * <b>alf_prop_double_value</b> accessor
      * 
      * @param value             the value to find the ID for (may not be <tt>null</tt>)
@@ -137,12 +161,16 @@ public interface PropertyValueDAO
     // 'alf_prop_serializable_value' accessors
     //================================
     /**
+     * <b>FOR INTERNAL USE ONLY</b>: Do not use directly; see interface comments.
+     * <p/>
      * <b>alf_prop_serializable_value</b> accessor
      * 
      * @param id                the ID (may not be <tt>null</tt>)
      */
     Pair<Long, Serializable> getPropertySerializableValueById(Long id);
     /**
+     * <b>FOR INTERNAL USE ONLY</b>: Do not use directly; see interface comments.
+     * <p/>
      * <b>alf_prop_serializable_value</b> accessor
      * 
      * @param value             the value to find the ID for (may not be <tt>null</tt>)
@@ -153,18 +181,24 @@ public interface PropertyValueDAO
     // 'alf_prop_value' accessors
     //================================
     /**
+     * Use for accessing unique properties; see interface comments.
+     * <p/>
      * <b>alf_prop_value</b> accessor: get a property based on the database ID
      * 
      * @param id                the ID (may not be <tt>null</tt>)
      */
     Pair<Long, Serializable> getPropertyValueById(Long id);
     /**
+     * Use for accessing unique properties; see interface comments.
+     * <p/>
      * <b>alf_prop_value</b> accessor: find a property based on the value
      * 
      * @param value             the value to find the ID for (may be <tt>null</tt>)
      */
     Pair<Long, Serializable> getPropertyValue(Serializable value);
     /**
+     * Use for accessing unique properties; see interface comments.
+     * <p/>
      * <b>alf_prop_value</b> accessor: find or create a property based on the value.
      * <b>Note:</b> This method will not recurse into maps or collections.  Use the
      * dedicated methods if you want recursion; otherwise maps and collections will
@@ -181,6 +215,8 @@ public interface PropertyValueDAO
     // 'alf_prop_root' accessors
     //================================
     /**
+     * Use for accessing non-unique, exploded properties; see interface comments.
+     * <p/>
      * <b>alf_prop_root</b> accessor: get a property based on the database ID
      * 
      * @param id                the ID (may not be <tt>null</tt>)
@@ -189,6 +225,8 @@ public interface PropertyValueDAO
      */
     Serializable getPropertyById(Long id);
     /**
+     * Use for accessing non-unique, exploded properties; see interface comments.
+     * <p/>
      * <b>alf_prop_root</b> accessor: find or create a property based on the value.
      * <p/>
      * All collections and maps will be opened up to any depth.
@@ -199,6 +237,8 @@ public interface PropertyValueDAO
     Long createProperty(Serializable value);
     
     /**
+     * Use for accessing non-unique, exploded properties; see interface comments.
+     * <p/>
      * <b>alf_prop_root</b> accessor: update the property root to contain a new value.
      * 
      * @param id                the ID of the root property to change
@@ -207,6 +247,8 @@ public interface PropertyValueDAO
     void updateProperty(Long id, Serializable value);
     
     /**
+     * Use for accessing non-unique, exploded properties; see interface comments.
+     * <p/>
      * <b>alf_prop_root</b> accessor: delete a property root completely
      * 
      * @param id                the ID of the root property to delete

@@ -191,24 +191,55 @@ public class AuditDAOImpl extends AbstractAuditDAOImpl
     protected void findAuditEntries(
             final AuditQueryRowHandler rowHandler,
             String appName, String user, Long from, Long to, int maxResults,
-            String searchKey, String searchString)
+            String searchKey, Serializable searchValue)
     {
         AuditQueryParameters params = new AuditQueryParameters();
         if (appName != null)
         {
             // Look up the application's ID (this is unique)
-            Pair<String, Long> appNameCrcPair = propertyValueDAO.getPropertyStringCaseSensitiveSearchParameters(appName);
-            params.setAuditAppNameCrcPair(appNameCrcPair);
+            Pair<Long, Serializable> appNamePair = propertyValueDAO.getPropertyValue(appName);
+            if (appNamePair == null)
+            {
+                // No such value
+                return;
+            }
+            params.setAuditAppNameId(appNamePair.getFirst());
         }
         if (user != null)
         {
-            Pair<String, Long> userCrcPair = propertyValueDAO.getPropertyStringCaseSensitiveSearchParameters(user);
-            params.setAuditUserCrcPair(userCrcPair);
+            // Look up the application's ID (this is unique)
+            Pair<Long, Serializable> userPair = propertyValueDAO.getPropertyValue(user);
+            if (userPair == null)
+            {
+                // No such value
+                return;
+            }
+            params.setAuditUserId(userPair.getFirst());
         }
         params.setAuditFromTime(from);
         params.setAuditToTime(to);
-        params.setSearchKey(searchKey);
-        params.setSearchValueString(searchString);
+        if (searchKey != null)
+        {
+            // Look up the ID of the search key
+            Pair<Long, Serializable> searchKeyPair = propertyValueDAO.getPropertyValue(searchKey);
+            if (searchKeyPair == null)
+            {
+                // No such value
+                return;
+            }
+            params.setSearchKeyId(searchKeyPair.getFirst());
+        }
+        if (searchValue != null)
+        {
+            // Look up the ID of the search key
+            Pair<Long, Serializable> searchValuePair = propertyValueDAO.getPropertyValue(searchValue);
+            if (searchValuePair == null)
+            {
+                // No such value
+                return;
+            }
+            params.setSearchValueId(searchValuePair.getFirst());
+        }
         
         // RowHandlers in RowHandlers: See 'groupBy' issue https://issues.apache.org/jira/browse/IBATIS-503
         RowHandler shreddedRowHandler = new RowHandler()

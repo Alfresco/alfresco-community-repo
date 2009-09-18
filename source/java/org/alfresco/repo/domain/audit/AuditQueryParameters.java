@@ -26,8 +26,6 @@ package org.alfresco.repo.domain.audit;
 
 import java.util.Date;
 
-import org.alfresco.util.Pair;
-
 /**
  * Query parameters for <b>alf_audit_entry</b> table.
  * 
@@ -37,12 +35,12 @@ import org.alfresco.util.Pair;
 public class AuditQueryParameters
 {
     private Long auditEntryId;
-    private Pair<String, Long> auditAppNameCrcPair;
-    private Pair<String, Long> auditUserCrcPair;
+    private Long auditAppNameId;
+    private Long auditUserId;
     private Long auditFromTime;
     private Long auditToTime;
-    private String searchKey;
-    private String searchValueString;
+    private Long searchKeyId;
+    private Long searchValueId;
     
     public AuditQueryParameters()
     {
@@ -54,12 +52,12 @@ public class AuditQueryParameters
         StringBuilder sb = new StringBuilder(512);
         sb.append("AuditEntryParameters")
           .append("[ auditEntryId=").append(auditEntryId)
-          .append(", auditAppNameCrcPair=").append(auditAppNameCrcPair)
-          .append(", auditUserCrcPair=").append(auditUserCrcPair)
+          .append(", auditAppNameId=").append(auditAppNameId)
+          .append(", auditUserId=").append(auditUserId)
           .append(", auditFromTime").append(auditFromTime == null ? null : new Date(auditFromTime))
           .append(", auditToTime").append(auditToTime == null ? null : new Date(auditToTime))
-          .append(", searchKey").append(searchKey)
-          .append(", searchValueString").append(searchValueString)
+          .append(", searchKeyId").append(searchKeyId)
+          .append(", searchValueId").append(searchValueId)
           .append("]");
         return sb.toString();
     }
@@ -74,34 +72,24 @@ public class AuditQueryParameters
         this.auditEntryId = entryId;
     }
 
-    public String getAuditAppNameShort()
+    public Long getAuditAppNameId()
     {
-        return auditAppNameCrcPair == null ? null : auditAppNameCrcPair.getFirst();
+        return auditAppNameId;
     }
 
-    public Long getAuditAppNameCrc()
+    public void setAuditAppNameId(Long auditAppNameId)
     {
-        return auditAppNameCrcPair == null ? null : auditAppNameCrcPair.getSecond();
+        this.auditAppNameId = auditAppNameId;
     }
 
-    public void setAuditAppNameCrcPair(Pair<String, Long> appNameCrcPair)
+    public Long getAuditUserId()
     {
-        this.auditAppNameCrcPair = appNameCrcPair;
+        return auditUserId;
     }
 
-    public String getAuditUserShort()
+    public void setAuditUserId(Long auditUserId)
     {
-        return auditUserCrcPair == null ? null : auditUserCrcPair.getFirst();
-    }
-
-    public Long getAuditUserCrc()
-    {
-        return auditUserCrcPair == null ? null : auditUserCrcPair.getSecond();
-    }
-
-    public void setAuditUserCrcPair(Pair<String, Long> userCrcPair)
-    {
-        this.auditUserCrcPair = userCrcPair;
+        this.auditUserId = auditUserId;
     }
 
     public Long getAuditFromTime()
@@ -124,23 +112,23 @@ public class AuditQueryParameters
         this.auditToTime = to;
     }
 
-    public String getSearchKey()
+    public Long getSearchKeyId()
     {
-        return searchKey;
+        return searchKeyId;
     }
 
-    public void setSearchKey(String searchKey)
+    public void setSearchKeyId(Long searchKeyId)
     {
-        this.searchKey = searchKey;
+        this.searchKeyId = searchKeyId;
     }
 
-    public String getSearchValueString()
+    public Long getSearchValueId()
     {
-        return searchValueString;
+        return searchValueId;
     }
 
-    public void setSearchValueString(String searchValueString)
+    public void setSearchValueId(Long searchValueId)
     {
-        this.searchValueString = searchValueString;
+        this.searchValueId = searchValueId;
     }
 }

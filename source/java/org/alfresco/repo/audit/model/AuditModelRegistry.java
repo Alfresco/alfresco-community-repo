@@ -273,7 +273,8 @@ public class AuditModelRegistry
         try
         {
             auditPathMapper = new PathMapper();
-            transactionService.getRetryingTransactionHelper().doInTransaction(loadModelsCallback, false, true);
+            transactionService.getRetryingTransactionHelper().doInTransaction(loadModelsCallback,
+                    transactionService.isReadOnly(), true);
             auditPathMapper.lock();
         }
         finally

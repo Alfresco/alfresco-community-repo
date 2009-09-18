@@ -65,7 +65,7 @@ public class AuditBootstrap extends AbstractLifecycleBean
                 return null;
             }
         };
-        transactionService.getRetryingTransactionHelper().doInTransaction(callback);
+        transactionService.getRetryingTransactionHelper().doInTransaction(callback, transactionService.isReadOnly());
     }
 
     /**

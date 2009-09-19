@@ -27,9 +27,7 @@ package org.alfresco.util;
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 import org.alfresco.service.namespace.QName;
 
@@ -75,49 +73,37 @@ public class PropertyMap extends HashMap<QName, Serializable>
     }
     
     /**
-     * Utility method to work out what changed between two property maps and to generate a difference map.
+     * Utility method to remove unchanged entries from each map.
      * 
      * @param before                the properties before (may be <tt>null</tt>)
      * @param after                 the properties after (may be <tt>null</tt>)
      * @return                      Return a map of values that <b>changed</b> from before to after.
-     *                              <tt>null</tt> values will have keys in the map, but no value.
+     *                              The before value is first and the after value is second.
      * 
      * @since 3.2
      */
-    public static Map<QName, Serializable> getDelta(Map<QName, Serializable> before, Map<QName, Serializable> after)
+    public static Pair<Map<QName, Serializable>, Map<QName, Serializable>> getBeforeAndAfterMapsForChanges(
+            Map<QName, Serializable> before,
+            Map<QName, Serializable> after)
     {
         // Shortcuts
-        if (before == null && after == null)
+        if (before == null)
         {
-            return Collections.emptyMap();
+            before = Collections.emptyMap();
         }
-        else if (before == null || before.isEmpty())
+        if (after == null)
         {
-            return after;
-        }
-        else if (after == null || after.isEmpty())
-        {
-            // Return the 'before' map but with no values
-            Map<QName, Serializable> diff = new HashMap<QName, Serializable>(before.size() * 2);
-            for (QName qname : before.keySet())
-            {
-                diff.put(qname, null);
-            }
-            return diff;
+            after = Collections.emptyMap();
         }
         
-        // Make a copy of the after values
-        Map<QName, Serializable> diff = new HashMap<QName, Serializable>(after);
-        // Remove all entries that didn't change to leave the new or modified values
-        diff.entrySet().removeAll(before.entrySet());
-        // Now find all values values that were removed and put null values in
-        Set<QName> beforeKeysCopy = new HashSet<QName>(before.keySet());
-        beforeKeysCopy.removeAll(after.keySet());
-        for (QName qname : beforeKeysCopy)
-        {
-            diff.put(qname, null);
-        }
+        // Get after values that changed
+        Map<QName, Serializable> afterDelta = new HashMap<QName, Serializable>(after);
+        afterDelta.entrySet().removeAll(before.entrySet());
+        // Get before values that changed
+        Map<QName, Serializable> beforeDelta = new HashMap<QName, Serializable>(before);
+        beforeDelta.entrySet().removeAll(after.entrySet());
+        
         // Done
-        return diff;
+        return new Pair<Map<QName, Serializable>, Map<QName, Serializable>>(beforeDelta, afterDelta);
     }
 }

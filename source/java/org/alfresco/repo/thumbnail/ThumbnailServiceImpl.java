@@ -404,10 +404,10 @@ public class ThumbnailServiceImpl implements ThumbnailService
             logger.debug("Getting thumbnail by name (nodeRef=" + node.toString() + "; contentProperty=" + contentProperty.toString() + "; thumbnailName=" + thumbnailName + ")");
         }
         
-        if (!permissionService.hasPermission(node, PermissionService.READ_PROPERTIES).equals(AccessStatus.ALLOWED))
-        {
-            throw new AccessDeniedException("Access Denied");
-        }
+        //if (!permissionService.hasPermission(node, PermissionService.READ_PROPERTIES).equals(AccessStatus.ALLOWED))
+        //{
+        //    throw new AccessDeniedException("Access Denied");
+       // }
         
         // Check that the node has the thumbnailed aspect applied
         if (nodeService.hasAspect(node, ContentModel.ASPECT_THUMBNAILED) == true)

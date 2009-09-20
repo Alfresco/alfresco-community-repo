@@ -172,6 +172,9 @@ public class HibernateQNameDAOImpl extends HibernateDaoSupport implements QNameD
         Session session = getSession();
         Long id = (Long) session.save(namespace);
         DirtySessionMethodInterceptor.flushSession(session, true);
+        // Force a flush because Hibernate doesn't always get the flush order right
+        // for DBs that use sequences for the PK: ETHREEOH-1962
+        DirtySessionMethodInterceptor.flushSession(getSession(), true);
         // Cache it
         namespaceEntityCache.put(id, namespaceUri);
         namespaceEntityCache.put(namespaceUri, id);
@@ -300,6 +303,9 @@ public class HibernateQNameDAOImpl extends HibernateDaoSupport implements QNameD
         qnameEntity.setLocalName(localName);
         // Persist
         Long id = (Long) getSession().save(qnameEntity);
+        // Force a flush because Hibernate doesn't always get the flush order right
+        // for DBs that use sequences for the PK: ETHREEOH-1962
+        DirtySessionMethodInterceptor.flushSession(getSession(), true);
         // Update the cache
         qnameEntityCache.put(qname, id);
         qnameEntityCache.put(id, qname);

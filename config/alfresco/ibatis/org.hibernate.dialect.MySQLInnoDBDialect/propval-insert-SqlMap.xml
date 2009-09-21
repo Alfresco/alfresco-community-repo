@@ -48,4 +48,11 @@
         </selectKey>
     </insert>
 
+    <insert id="insert_PropertyUniqueContext" parameterClass="PropertyUniqueContext" >
+        <include refid="insert_PropertyUniqueContext_AutoIncrement"/>
+        <selectKey resultClass="long" keyProperty="id" type="post">
+            KEY_COLUMN:GENERATED_KEY
+        </selectKey>
+    </insert>
+
 </sqlMap>

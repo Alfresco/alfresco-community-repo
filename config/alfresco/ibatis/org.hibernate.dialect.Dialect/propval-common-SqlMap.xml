@@ -19,6 +19,7 @@
     <typeAlias alias="PropertyValue" type="org.alfresco.repo.domain.propval.PropertyValueEntity"/>
     <typeAlias alias="PropertyRoot" type="org.alfresco.repo.domain.propval.PropertyRootEntity"/>
     <typeAlias alias="PropertyLink" type="org.alfresco.repo.domain.propval.PropertyLinkEntity"/>
+    <typeAlias alias="PropertyUniqueContext" type="org.alfresco.repo.domain.propval.PropertyUniqueContextEntity"/>
     <typeAlias alias="PropertyIdSearchRow" type="org.alfresco.repo.domain.propval.PropertyIdSearchRow"/>
 
     <!--                -->
@@ -73,6 +74,17 @@
         <result property="containedIn" column="link_contained_in" jdbcType="BIGINT" javaType="long"/>
         <result property="keyPropId" column="link_key_prop_id" jdbcType="BIGINT" javaType="long"/>
         <result property="valuePropId" column="link_value_prop_id" jdbcType="BIGINT" javaType="long"/>
+    </resultMap>
+    <resultMap id="result_PropertyRoot" class="PropertyRoot">
+        <result property="id" column="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="version" column="version" jdbcType="TINYINT" javaType="java.lang.Short"/>
+    </resultMap>
+    <resultMap id="result_PropertyUniqueContext" class="PropertyUniqueContext">
+        <result property="id" column="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="version" column="version" jdbcType="TINYINT" javaType="java.lang.Short"/>
+        <result property="value1PropId" column="value1_prop_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="value2PropId" column="value2_prop_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="value3PropId" column="value3_prop_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
     </resultMap>
     <resultMap id="result_PropertyIdSearchRow" class="PropertyIdSearchRow">
         <!-- If we use nested ResultMaps, then this ResultMap can't be embedded... -->
@@ -132,6 +144,11 @@
     <sql id="insert_PropertyRoot_AutoIncrement">
         insert into alf_prop_root (version) 
         values (?)
+    </sql>
+    
+    <sql id="insert_PropertyUniqueContext_AutoIncrement">
+        insert into alf_prop_unique_ctx (version, value1_prop_id, value2_prop_id, value3_prop_id) 
+        values (#version#, #value1PropId#, #value2PropId#, #value3PropId#)
     </sql>
     
     <!--                -->
@@ -347,7 +364,7 @@
             pl.root_prop_id = #id#
     </select>
     
-    <select id="select_PropertyRootById" parameterClass="PropertyRoot" resultClass="PropertyRoot">
+    <select id="select_PropertyRootById" parameterClass="PropertyRoot" resultMap="result_PropertyRoot">
         select
             id,
             version
@@ -392,6 +409,56 @@
             alf_prop_link
         where
             root_prop_id = #id#
+    </delete>
+
+    <select id="select_PropertyUniqueContextById" parameterClass="PropertyUniqueContext" resultMap="result_PropertyUniqueContext">
+        select
+            id,
+            version,
+            value1_prop_id,
+            value2_prop_id,
+            value3_prop_id
+        from
+            alf_prop_unique_ctx
+        where
+            id = #id#
+    </select>
+
+    <select id="select_PropertyUniqueContextByValues" parameterClass="PropertyUniqueContext" resultMap="result_PropertyUniqueContext">
+        select
+            id,
+            version,
+            value1_prop_id,
+            value2_prop_id,
+            value3_prop_id
+        from
+            alf_prop_unique_ctx
+        where
+            value1_prop_id = #value1PropId# and
+            value2_prop_id = #value2PropId# and
+            value3_prop_id = #value3PropId#
+    </select>
+
+    <update id="update_PropertyUniqueContext" parameterClass="PropertyUniqueContext">
+        update
+            alf_prop_unique_ctx
+        set
+            version = #version#,
+            value1_prop_id = #value1PropId#,
+            value2_prop_id = #value2PropId#,
+            value3_prop_id = #value3PropId#
+        where
+            id = #id# 
+        <isGreaterThan property="version" compareValue="1">
+            and version = ((#version#-1))
+        </isGreaterThan>
+    </update>
+
+    <delete id="delete_PropertyUniqueContextById" parameterClass="PropertyUniqueContext">
+        delete from
+            alf_prop_unique_ctx
+        where
+            id = #id# 
     </delete>
 
 </sqlMap>

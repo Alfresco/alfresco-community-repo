@@ -40,6 +40,7 @@ import org.alfresco.repo.cache.lookup.EntityLookupCache;
 import org.alfresco.repo.cache.lookup.EntityLookupCache.EntityLookupCallbackDAOAdaptor;
 import org.alfresco.repo.domain.CrcHelper;
 import org.alfresco.repo.domain.propval.PropertyValueEntity.PersistedType;
+import org.alfresco.repo.props.PropertyUniqueConstraintViolation;
 import org.alfresco.util.Pair;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -1059,6 +1060,102 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
      */
     protected abstract int deletePropertyLinks(Long rootPropId);
     
+    //================================
+    // 'alf_prop_unique_ctx' accessors
+    //================================
+
+    public Long createPropertyUniqueContext(Serializable value1, Serializable value2, Serializable value3)
+    {
+        // Translate the properties.  Null values are acceptable
+        Long id1 = getOrCreatePropertyValue(value1).getFirst();
+        Long id2 = getOrCreatePropertyValue(value2).getFirst();
+        Long id3 = getOrCreatePropertyValue(value3).getFirst();
+        try
+        {
+            PropertyUniqueContextEntity entity = createPropertyUniqueContext(id1, id2, id3);
+            if (logger.isDebugEnabled())
+            {
+                logger.debug(
+                        "Created unique property context: \n" +
+                        "   Values: " + value1 + "-" + value2 + "-" + value3 + "\n" +
+                        "   Result: " + entity);
+            }
+            return entity.getId();
+        }
+        catch (Throwable e)
+        {
+            throw new PropertyUniqueConstraintViolation(value1, value2, value3);
+        }
+    }
+
+    public Long getPropertyUniqueContext(Serializable value1, Serializable value2, Serializable value3)
+    {
+        // Translate the properties.  Null values are quite acceptable
+        Pair<Long, Serializable> pair1 = getPropertyValue(value1);
+        Pair<Long, Serializable> pair2 = getPropertyValue(value2);
+        Pair<Long, Serializable> pair3 = getPropertyValue(value3);
+        if (pair1 == null || pair2 == null || pair3 == null)
+        {
+            // None of the values exist so no unique context values can exist
+            return null;
+        }
+        Long id1 = pair1.getFirst();
+        Long id2 = pair2.getFirst();
+        Long id3 = pair3.getFirst();
+        PropertyUniqueContextEntity entity = getPropertyUniqueContextByValues(id1, id2, id3);
+        // Done
+        if (logger.isDebugEnabled())
+        {
+            logger.debug(
+                    "Searched for unique property context: \n" +
+                    "   Values: " + value1 + "-" + value2 + "-" + value3 + "\n" +
+                    "   Result: " + entity);
+        }
+        return entity == null ? null : entity.getId();
+    }
+
+    public void updatePropertyUniqueContext(Long id, Serializable value1, Serializable value2, Serializable value3)
+    {
+        // Translate the properties.  Null values are acceptable
+        Long id1 = getOrCreatePropertyValue(value1).getFirst();
+        Long id2 = getOrCreatePropertyValue(value2).getFirst();
+        Long id3 = getOrCreatePropertyValue(value3).getFirst();
+        try
+        {
+            PropertyUniqueContextEntity entity = getPropertyUniqueContextById(id);
+            if (entity == null)
+            {
+                throw new DataIntegrityViolationException("No unique property context exists for id: " + id);
+            }
+            entity.setValue1PropId(id1);
+            entity.setValue2PropId(id2);
+            entity.setValue3PropId(id3);
+            updatePropertyUniqueContext(entity);
+            // Done
+            if (logger.isDebugEnabled())
+            {
+                logger.debug(
+                        "Updated unique property context: \n" +
+                        "   ID: " + id + "\n" +
+                        "   Values: " + value1 + "-" + value2 + "-" + value3);
+            }
+            return;
+        }
+        catch (Throwable e)
+        {
+            throw new PropertyUniqueConstraintViolation(value1, value2, value3);
+        }
+    }
+
+    protected abstract PropertyUniqueContextEntity createPropertyUniqueContext(Long valueId1, Long valueId2, Long valueId3);
+    protected abstract PropertyUniqueContextEntity getPropertyUniqueContextById(Long id);
+    protected abstract PropertyUniqueContextEntity getPropertyUniqueContextByValues(Long valueId1, Long valueId2, Long valueId3);
+    protected abstract PropertyUniqueContextEntity updatePropertyUniqueContext(PropertyUniqueContextEntity entity);
+
+    //================================
+    // Utility methods
+    //================================
+
     @SuppressWarnings("unchecked")
     public Serializable convertPropertyIdSearchRows(List<PropertyIdSearchRow> rows)
     {

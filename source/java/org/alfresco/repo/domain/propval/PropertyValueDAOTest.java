@@ -26,11 +26,9 @@ package org.alfresco.repo.domain.propval;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
@@ -38,11 +36,13 @@ import javax.naming.CompositeName;
 
 import junit.framework.TestCase;
 
+import org.alfresco.repo.props.PropertyUniqueConstraintViolation;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
+import org.alfresco.util.GUID;
 import org.alfresco.util.ISO8601DateFormat;
 import org.alfresco.util.Pair;
 import org.bouncycastle.util.Arrays;
@@ -589,29 +589,29 @@ public class PropertyValueDAOTest extends TestCase
         assertEquals(list, entityValueCheck);
     }
     
-    public void testProperty_UpdateToVersionRollover() throws Exception
-    {
-        final List<String> list = Collections.emptyList();
-        final Long propId = runPropertyTest((Serializable)list);
-        
-        // Do 1000 updates to a property
-        RetryingTransactionCallback<Void> updateThousandsCallback = new RetryingTransactionCallback<Void>()
-        {
-            public Void execute() throws Throwable
-            {
-                for (int i = 0; i < 1000; i++)
-                {
-                    propertyValueDAO.updateProperty(propId, (Serializable)list);
-                }
-                return null;
-            }
-        };
-        for (int i = 0; i < (Short.MAX_VALUE / 1000 + 1); i++)
-        {
-            txnHelper.doInTransaction(updateThousandsCallback, false);
-        }
-    }
-    
+//    public void testProperty_UpdateToVersionRollover() throws Exception
+//    {
+//        final List<String> list = Collections.emptyList();
+//        final Long propId = runPropertyTest((Serializable)list);
+//        
+//        // Do 1000 updates to a property
+//        RetryingTransactionCallback<Void> updateThousandsCallback = new RetryingTransactionCallback<Void>()
+//        {
+//            public Void execute() throws Throwable
+//            {
+//                for (int i = 0; i < 1000; i++)
+//                {
+//                    propertyValueDAO.updateProperty(propId, (Serializable)list);
+//                }
+//                return null;
+//            }
+//        };
+//        for (int i = 0; i < (Short.MAX_VALUE / 1000 + 1); i++)
+//        {
+//            txnHelper.doInTransaction(updateThousandsCallback, false);
+//        }
+//    }
+//    
     public void testProperty_Delete() throws Exception
     {
         final ArrayList<String> list = new ArrayList<String>(20);
@@ -680,5 +680,64 @@ public class PropertyValueDAOTest extends TestCase
     {
         removeCaches();
         testPropertySerializableValue();
+    }
+    
+    public void testPropertyUniqueContext() throws Exception
+    {
+        final String aaa = GUID.generate();
+        final String bbb = GUID.generate();
+        RetryingTransactionCallback<Void> testCallback = new RetryingTransactionCallback<Void>()
+        {
+            public Void execute() throws Throwable
+            {
+                // Get the ID for nulls
+                Long nullId = propertyValueDAO.getPropertyUniqueContext(null, null, null);
+                if (nullId != null)
+                {
+                    propertyValueDAO.deletePropertyUniqueContext(nullId);
+                }
+                // Check nulls
+                propertyValueDAO.createPropertyUniqueContext(null, null, null);
+                try
+                {
+                    propertyValueDAO.createPropertyUniqueContext(null, null, null);
+                    fail("Failed to throw exception creating duplicate property unique context");
+                }
+                catch (PropertyUniqueConstraintViolation e)
+                {
+                    // Expected
+                }
+                Long id = propertyValueDAO.createPropertyUniqueContext("A", "AA", aaa);
+                try
+                {
+                    propertyValueDAO.createPropertyUniqueContext("A", "AA", aaa);
+                    fail("Failed to throw exception creating duplicate property unique context");
+                }
+                catch (PropertyUniqueConstraintViolation e)
+                {
+                    // Expected
+                }
+                // Now update it
+                propertyValueDAO.updatePropertyUniqueContext(id, "A", "AA", bbb);
+                // Should be able to create the previous one ...
+                propertyValueDAO.createPropertyUniqueContext("A", "AA", aaa);
+                // ... and fail to create the second one
+                try
+                {
+                    propertyValueDAO.createPropertyUniqueContext("A", "AA", bbb);
+                    fail("Failed to throw exception creating duplicate property unique context");
+                }
+                catch (PropertyUniqueConstraintViolation e)
+                {
+                    // Expected
+                }
+                // Delete
+                propertyValueDAO.deletePropertyUniqueContext(id);
+                propertyValueDAO.createPropertyUniqueContext("A", "AA", bbb);
+                
+                return null;
+            }
+        };
+        txnHelper.doInTransaction(testCallback, false);
     }
 }

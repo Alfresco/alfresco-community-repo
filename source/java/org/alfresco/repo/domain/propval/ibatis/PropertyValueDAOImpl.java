@@ -38,6 +38,7 @@ import org.alfresco.repo.domain.propval.PropertyRootEntity;
 import org.alfresco.repo.domain.propval.PropertySerializableValueEntity;
 import org.alfresco.repo.domain.propval.PropertyStringQueryEntity;
 import org.alfresco.repo.domain.propval.PropertyStringValueEntity;
+import org.alfresco.repo.domain.propval.PropertyUniqueContextEntity;
 import org.alfresco.repo.domain.propval.PropertyValueEntity;
 import org.alfresco.repo.domain.propval.PropertyValueEntity.PersistedType;
 import org.alfresco.util.Pair;
@@ -81,6 +82,13 @@ public class PropertyValueDAOImpl extends AbstractPropertyValueDAOImpl
     private static final String INSERT_PROPERTY_ROOT = "alfresco.propval.insert_PropertyRoot";
     private static final String UPDATE_PROPERTY_ROOT = "alfresco.propval.update_PropertyRoot";
     private static final String DELETE_PROPERTY_ROOT_BY_ID = "alfresco.propval.delete_PropertyRootById";
+    
+    private static final String SELECT_PROPERTY_UNIQUE_CTX_BY_ID = "alfresco.propval.select_PropertyUniqueContextById";
+    private static final String SELECT_PROPERTY_UNIQUE_CTX_BY_VALUES = "alfresco.propval.select_PropertyUniqueContextByValues";
+    private static final String INSERT_PROPERTY_UNIQUE_CTX = "alfresco.propval.insert_PropertyUniqueContext";
+    private static final String UPDATE_PROPERTY_UNIQUE_CTX = "alfresco.propval.update_PropertyUniqueContext";
+    private static final String DELETE_PROPERTY_UNIQUE_CTX_BY_ID = "alfresco.propval.delete_PropertyUniqueContextById";
+    
     private static final String INSERT_PROPERTY_LINK = "alfresco.propval.insert_PropertyLink";
     private static final String DELETE_PROPERTY_LINKS_BY_ROOT_ID = "alfresco.propval.delete_PropertyLinksByRootId";
     
@@ -476,6 +484,53 @@ public class PropertyValueDAOImpl extends AbstractPropertyValueDAOImpl
         PropertyRootEntity entity = new PropertyRootEntity();
         entity.setId(id);
         template.delete(DELETE_PROPERTY_ROOT_BY_ID, entity);
+    }
+
+    @Override
+    protected PropertyUniqueContextEntity createPropertyUniqueContext(Long valueId1, Long valueId2, Long valueId3)
+    {
+        PropertyUniqueContextEntity entity = new PropertyUniqueContextEntity();
+        entity.setValue1PropId(valueId1);
+        entity.setValue2PropId(valueId2);
+        entity.setValue3PropId(valueId3);
+        Long id = (Long) template.insert(INSERT_PROPERTY_UNIQUE_CTX, entity);
+        entity.setId(id);
+        return entity;
+    }
+
+    @Override
+    protected PropertyUniqueContextEntity getPropertyUniqueContextById(Long id)
+    {
+        PropertyUniqueContextEntity entity = new PropertyUniqueContextEntity();
+        entity.setId(id);
+        entity = (PropertyUniqueContextEntity) template.queryForObject(SELECT_PROPERTY_UNIQUE_CTX_BY_ID, entity);
+        return entity;
+    }
+
+    @Override
+    protected PropertyUniqueContextEntity getPropertyUniqueContextByValues(Long valueId1, Long valueId2, Long valueId3)
+    {
+        PropertyUniqueContextEntity entity = new PropertyUniqueContextEntity();
+        entity.setValue1PropId(valueId1);
+        entity.setValue2PropId(valueId2);
+        entity.setValue3PropId(valueId3);
+        entity = (PropertyUniqueContextEntity) template.queryForObject(SELECT_PROPERTY_UNIQUE_CTX_BY_VALUES, entity);
+        return entity;
+    }
+
+    @Override
+    protected PropertyUniqueContextEntity updatePropertyUniqueContext(PropertyUniqueContextEntity entity)
+    {
+        entity.incrementVersion();
+        template.update(UPDATE_PROPERTY_UNIQUE_CTX, entity, 1);
+        return entity;
+    }
+
+    public void deletePropertyUniqueContext(Long id)
+    {
+        PropertyUniqueContextEntity entity = new PropertyUniqueContextEntity();
+        entity.setId(id);
+        template.delete(DELETE_PROPERTY_UNIQUE_CTX_BY_ID, entity);
     }
 
     @Override

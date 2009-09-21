@@ -29,6 +29,7 @@ import java.util.Date;
 import java.util.List;
 
 import org.alfresco.repo.domain.CrcHelper;
+import org.alfresco.repo.props.PropertyUniqueConstraintViolation;
 import org.alfresco.util.Pair;
 import org.springframework.dao.DataIntegrityViolationException;
 
@@ -255,6 +256,33 @@ public interface PropertyValueDAO
      */
     void deleteProperty(Long id);
     
+    //================================
+    // 'alf_prop_unique_ctx' accessors
+    //================================
+    /**
+     * <b>alf_prop_unique_ctx</b> accessor: find an existing unique context.
+     * <p/>
+     * The DAO ensures that the region-context-value combination will be globally unique.
+     * 
+     * @throws PropertyUniqueConstraintViolation        if the combination is not unique
+     */
+    Long createPropertyUniqueContext(Serializable value1, Serializable value2, Serializable value3);
+    /**
+     * @see #createPropertyUniqueContext(Serializable, Serializable, Serializable)
+     */
+    Long getPropertyUniqueContext(Serializable value1, Serializable value2, Serializable value3);
+    /**
+     * @see #createPropertyUniqueContext(Serializable, Serializable, Serializable)
+     */
+    void updatePropertyUniqueContext(Long id, Serializable value1, Serializable value2, Serializable value3);
+    /**
+     * @see #createPropertyUniqueContext(Serializable, Serializable, Serializable)
+     */
+    void deletePropertyUniqueContext(Long id);
+
+    //================================
+    // Utility methods
+    //================================
     /**
      * Utility method to convert property query results into the original value.  Note
      * that the rows must all share the same root property ID.

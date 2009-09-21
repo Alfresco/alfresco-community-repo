@@ -64,6 +64,7 @@ import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.OwnableService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
+import org.alfresco.service.cmr.security.PublicServiceAccessService;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.cmr.tagging.TaggingService;
 import org.alfresco.service.cmr.thumbnail.ThumbnailService;
@@ -154,6 +155,9 @@ public interface ServiceRegistry
     static final QName CMIS_DICTIONARY_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "CMISDictionaryService");
     static final QName CMIS_QUERY_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "CMISQueryService");
     static final QName IMAP_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "ImapService");
+    
+    static final QName PUBLIC_SERVICE_ACCESS_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "PublicServiceAccessService");
+    
     
 
     /**
@@ -524,4 +528,13 @@ public interface ServiceRegistry
      */
     @NotAuditable
     ImapService getImapService();
+    
+    /**
+     * Get the IMAP service (or null if one is not provided)
+     * @return the IMAP service
+     */
+    @NotAuditable
+    PublicServiceAccessService getPublicServiceAccessService();
+    
+    
 }

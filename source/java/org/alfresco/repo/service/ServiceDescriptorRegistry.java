@@ -65,6 +65,7 @@ import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.OwnableService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
+import org.alfresco.service.cmr.security.PublicServiceAccessService;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.cmr.tagging.TaggingService;
 import org.alfresco.service.cmr.thumbnail.ThumbnailService;
@@ -559,5 +560,13 @@ public class ServiceDescriptorRegistry
     public ImapService getImapService() 
     {
         return (ImapService)getService(IMAP_SERVICE);
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.service.ServiceRegistry#getPublicServiceAccessService()
+     */
+    public PublicServiceAccessService getPublicServiceAccessService()
+    {
+        return (PublicServiceAccessService)getService(PUBLIC_SERVICE_ACCESS_SERVICE);
     }
 }

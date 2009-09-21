@@ -2537,7 +2537,7 @@ public class ScriptNode implements Serializable, Scopeable, NamespacePrefixResol
        
        if (this.nodeService.exists(nodeRef))
        {
-           if (this.services.getPermissionService().hasPermission(nodeRef, PermissionService.READ_PROPERTIES) == AccessStatus.ALLOWED)
+           if(this.services.getPublicServiceAccessService().hasAccess(this.services.NODE_SERVICE.getLocalName(), "getProperties", this.nodeRef) == AccessStatus.ALLOWED)
            {
                JSONObject json = new JSONObject();
               

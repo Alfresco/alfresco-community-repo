@@ -55,6 +55,7 @@
          "index": ${item_index},
          "nodeRef": "${d.nodeRef}",
          "type": "${item.type}",
+         "isFolder": ${d.isContainer?string},
          "isLink": ${item.isLink?string},
          "mimetype": "${d.mimetype!""}",
          "fileName": "<#if item.isLink>${item.linkAsset.name}<#else>${d.name}</#if>",

@@ -440,7 +440,7 @@
                    <value>org.alfresco.repo.imap.config.ImapConfigMountPointsBean</value>
                </entry>
                <entry key="imap.config.ignore.extraction">
-                   <value>org.alfresco.util.config.RepositoryPathConfigBean</value>
+                   <value>org.alfresco.util.config.RepositoryFolderConfigBean</value>
                </entry>
             </map>
         </property>

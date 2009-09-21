@@ -90,6 +90,10 @@
         <property name="registry" ref="auditModel.extractorRegistry" />
         <property name="nodeService" ref="nodeService" />
     </bean>
+    <bean name="auditModel.extractor.nodeType" class="org.alfresco.repo.audit.extractor.NodeTypeDataExtractor">
+        <property name="registry" ref="auditModel.extractorRegistry" />
+        <property name="nodeService" ref="nodeService" />
+    </bean>
     
     <!-- Data Generators -->
     <bean id="auditModel.generatorRegistry" class="org.alfresco.util.registry.NamedObjectRegistry">

@@ -322,11 +322,15 @@ public class StreamContent extends AbstractWebScript
         if (logger.isDebugEnabled())
             logger.debug("Retrieving content from node ref " + nodeRef.toString() + " (property: " + propertyQName.toString() + ") (attach: " + attach + ")");
 
+        // TODO 
+        // This was commented out to accomadate records management permissions.  We need to review how we cope with this
+        // hard coded permission checked.
+        
         // check that the user has at least READ_CONTENT access - else redirect to the login page
-        if (permissionService.hasPermission(nodeRef, PermissionService.READ_CONTENT) == AccessStatus.DENIED)
-        {
-            throw new WebScriptException(HttpServletResponse.SC_FORBIDDEN, "Permission denied");
-        }
+//        if (permissionService.hasPermission(nodeRef, PermissionService.READ_CONTENT) == AccessStatus.DENIED)
+//        {
+//            throw new WebScriptException(HttpServletResponse.SC_FORBIDDEN, "Permission denied");
+//        }
        
         // check If-Modified-Since header and set Last-Modified header as appropriate
         Date modified = (Date)nodeService.getProperty(nodeRef, ContentModel.PROP_MODIFIED);

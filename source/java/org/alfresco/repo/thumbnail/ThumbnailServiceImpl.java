@@ -35,7 +35,6 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentReader;
@@ -44,8 +43,6 @@ import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.TransformationOptions;
-import org.alfresco.service.cmr.security.AccessStatus;
-import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.thumbnail.ThumbnailException;
 import org.alfresco.service.cmr.thumbnail.ThumbnailParentAssociationDetails;
 import org.alfresco.service.cmr.thumbnail.ThumbnailService;
@@ -76,9 +73,6 @@ public class ThumbnailServiceImpl implements ThumbnailService
     /** Content service */
     private ContentService contentService;
     
-    /** Permission service */
-    private PermissionService permissionService;
-    
     /** Mimetype map */
     private MimetypeMap mimetypeMap;
     
@@ -106,14 +100,6 @@ public class ThumbnailServiceImpl implements ThumbnailService
     public void setContentService(ContentService contentService)
     {
         this.contentService = contentService;
-    }
-    
-    /**
-     * @param permissionService permission service
-     */
-    public void setPermissionService(PermissionService permissionService)
-    {
-        this.permissionService = permissionService;
     }
     
     /**
@@ -175,11 +161,6 @@ public class ThumbnailServiceImpl implements ThumbnailService
         if (logger.isDebugEnabled() == true)
         {
             logger.debug("Creating thumbnail (node=" + node.toString() + "; contentProperty=" + contentProperty.toString() + "; mimetype=" + mimetype);
-        }
-        
-        if (!permissionService.hasPermission(node, PermissionService.READ_PROPERTIES).equals(AccessStatus.ALLOWED))
-        {
-            throw new AccessDeniedException("Access Denied");
         }
         
         // Check for duplicate names
@@ -314,11 +295,6 @@ public class ThumbnailServiceImpl implements ThumbnailService
             logger.debug("Updating thumbnail (thumbnail=" + thumbnail.toString() + ")");
         }
         
-        if (!permissionService.hasPermission(thumbnail, PermissionService.READ_PROPERTIES).equals(AccessStatus.ALLOWED))
-        {
-            throw new AccessDeniedException("Access Denied");
-        }
-        
         AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
         {
             public Object doWork() throws Exception
@@ -404,11 +380,6 @@ public class ThumbnailServiceImpl implements ThumbnailService
             logger.debug("Getting thumbnail by name (nodeRef=" + node.toString() + "; contentProperty=" + contentProperty.toString() + "; thumbnailName=" + thumbnailName + ")");
         }
         
-        //if (!permissionService.hasPermission(node, PermissionService.READ_PROPERTIES).equals(AccessStatus.ALLOWED))
-        //{
-        //    throw new AccessDeniedException("Access Denied");
-       // }
-        
         // Check that the node has the thumbnailed aspect applied
         if (nodeService.hasAspect(node, ContentModel.ASPECT_THUMBNAILED) == true)
         {
@@ -447,11 +418,6 @@ public class ThumbnailServiceImpl implements ThumbnailService
         if (logger.isDebugEnabled() == true)
         {
             logger.debug("Getting thumbnails (nodeRef=" + node.toString() + "; contentProperty=" + contentProperty.toString() + "; mimetype=" + mimetype + ")");
-        }
-        
-        if (!permissionService.hasPermission(node, PermissionService.READ_PROPERTIES).equals(AccessStatus.ALLOWED))
-        {
-            throw new AccessDeniedException("Access Denied");
         }
         
         // Check that the node has the thumbnailed aspect applied

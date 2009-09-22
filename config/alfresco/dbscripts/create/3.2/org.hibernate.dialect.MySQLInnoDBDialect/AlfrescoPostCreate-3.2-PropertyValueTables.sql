@@ -105,7 +105,7 @@ CREATE TABLE alf_prop_unique_ctx
    CONSTRAINT fk_alf_prop_unique_ctx_2 FOREIGN KEY (value2_prop_id) REFERENCES alf_prop_value (id) ON DELETE CASCADE,
    CONSTRAINT fk_alf_prop_unique_ctx_3 FOREIGN KEY (value3_prop_id) REFERENCES alf_prop_value (id) ON DELETE CASCADE,
    PRIMARY KEY (id)
-)
+) ENGINE=InnoDB;
 
 --
 -- Record script finish

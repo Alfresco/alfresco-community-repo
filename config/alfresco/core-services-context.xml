@@ -460,6 +460,14 @@
     </bean>
 
     <!--                         -->
+    <!-- Property Component      -->
+    <!--                         -->
+    
+    <bean id="propertyValueComponent" class="org.alfresco.repo.props.PropertyValueComponentImpl" init-method="init">
+        <property name="propertyValueDAO" ref="propertyValueDAO"/>
+    </bean>
+
+    <!--                         -->
     <!-- Indexing and Search API -->
     <!--                         -->
 

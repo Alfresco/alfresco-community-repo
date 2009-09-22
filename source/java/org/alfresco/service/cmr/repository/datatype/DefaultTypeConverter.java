@@ -54,6 +54,7 @@ import org.alfresco.service.cmr.repository.MLText;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.repository.Period;
+import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ISO8601DateFormat;
 import org.alfresco.util.VersionNumber;
@@ -255,6 +256,15 @@ public class DefaultTypeConverter
             public NodeRef convert(String source)
             {
                 return new NodeRef(source);
+            }
+    
+        });
+
+        INSTANCE.addConverter(String.class, StoreRef.class, new TypeConverter.Converter<String, StoreRef>()
+        {
+            public StoreRef convert(String source)
+            {
+                return new StoreRef(source);
             }
     
         });

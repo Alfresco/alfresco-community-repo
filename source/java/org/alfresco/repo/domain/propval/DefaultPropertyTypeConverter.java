@@ -39,6 +39,7 @@ import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.Period;
+import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.util.ParameterCheck;
 
@@ -73,6 +74,7 @@ public class DefaultPropertyTypeConverter implements PropertyTypeConverter
         mapClass.put(String.class, PersistedType.STRING);
         mapClass.put(Class.class, PersistedType.STRING);
         mapClass.put(NodeRef.class, PersistedType.STRING);
+        mapClass.put(StoreRef.class, PersistedType.STRING);
         mapClass.put(Period.class, PersistedType.STRING);
         mapClass.put(Locale.class, PersistedType.STRING);
         mapClass.put(AssociationRef.class, PersistedType.STRING);

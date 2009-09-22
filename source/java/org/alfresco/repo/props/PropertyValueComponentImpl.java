@@ -236,35 +236,16 @@ public class PropertyValueComponentImpl implements PropertyValueComponent
     /**
      * {@inheritDoc}
      */
-    public void deletePropertyUniqueContext(Serializable value1, Serializable value2, Serializable value3)
+    public int deletePropertyUniqueContexts(Serializable ... values)
     {
-        // Get the ID of the values
-        Long id = getPropertyUniqueContext(value1, value2, value3);
-        if (id == null)
-        {
-            // No need to delete
-            if (logger.isDebugEnabled())
-            {
-                logger.debug(
-                        "No unique property context exists: \n" +
-                        "   Value1: " + value1 + "\n" +
-                        "   Value2: " + value2 + "\n" +
-                        "   Value3: " + value3);
-            }
-        }
-        else
-        {
-            deletePropertyUniqueContext(id);
-            // Deleted
-            if (logger.isDebugEnabled())
-            {
-                logger.debug(
-                        "Deleted unique property context: \n" +
-                        "   Value1: " + value1 + "\n" +
-                        "   Value2: " + value2 + "\n" +
-                        "   Value3: " + value3);
-            }
-        }
+        int deleted = propertyValueDAO.deletePropertyUniqueContext(values);
         // Done
+        if (logger.isDebugEnabled())
+        {
+            logger.debug(
+                    "Deleted " + deleted + " unique property contexts: \n" +
+                    "   Values: " + values);
+        }
+        return deleted;
     }
 }

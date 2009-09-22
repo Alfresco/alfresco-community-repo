@@ -143,9 +143,8 @@ public interface PropertyValueComponent
      * Delete a combination of three unique properties.  It doesn't matter if the unique combination
      * already existed or not.
      * 
-     * @param value1                the first property (<tt>null</tt> allowed)
-     * @param value2                the second property (<tt>null</tt> allowed)
-     * @param value3                the third property (<tt>null</tt> allowed)
+     * @param values                an array of one, two or three values, any of which may be <tt>null</tt>
+     * @return                      Returns the number of unique combinations deleted
      */
-    void deletePropertyUniqueContext(Serializable value1, Serializable value2, Serializable value3);
+    int deletePropertyUniqueContexts(Serializable ... values);
 }

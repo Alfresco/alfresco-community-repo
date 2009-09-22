@@ -88,6 +88,7 @@ public class PropertyValueDAOImpl extends AbstractPropertyValueDAOImpl
     private static final String INSERT_PROPERTY_UNIQUE_CTX = "alfresco.propval.insert_PropertyUniqueContext";
     private static final String UPDATE_PROPERTY_UNIQUE_CTX = "alfresco.propval.update_PropertyUniqueContext";
     private static final String DELETE_PROPERTY_UNIQUE_CTX_BY_ID = "alfresco.propval.delete_PropertyUniqueContextById";
+    private static final String DELETE_PROPERTY_UNIQUE_CTX_BY_VALUES = "alfresco.propval.delete_PropertyUniqueContextByValues";
     
     private static final String INSERT_PROPERTY_LINK = "alfresco.propval.insert_PropertyLink";
     private static final String DELETE_PROPERTY_LINKS_BY_ROOT_ID = "alfresco.propval.delete_PropertyLinksByRootId";
@@ -531,6 +532,30 @@ public class PropertyValueDAOImpl extends AbstractPropertyValueDAOImpl
         PropertyUniqueContextEntity entity = new PropertyUniqueContextEntity();
         entity.setId(id);
         template.delete(DELETE_PROPERTY_UNIQUE_CTX_BY_ID, entity);
+    }
+
+    @Override
+    protected int deletePropertyUniqueContexts(Long... valueIds)
+    {
+        PropertyUniqueContextEntity entity = new PropertyUniqueContextEntity();
+        for (int i = 0; i < valueIds.length; i++)
+        {
+            switch (i)
+            {
+            case 0:
+                entity.setValue1PropId(valueIds[i]);
+                break;
+            case 1:
+                entity.setValue2PropId(valueIds[i]);
+                break;
+            case 2:
+                entity.setValue3PropId(valueIds[i]);
+                break;
+            default:
+                throw new IllegalArgumentException("Only 3 ids allowed");
+            }
+        }
+        return template.delete(DELETE_PROPERTY_UNIQUE_CTX_BY_VALUES, entity);
     }
 
     @Override

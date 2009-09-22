@@ -461,4 +461,17 @@
             id = #id# 
     </delete>
 
+    <delete id="delete_PropertyUniqueContextByValues" parameterClass="PropertyUniqueContext">
+        delete from
+            alf_prop_unique_ctx
+        where
+            value1_prop_id = #value1PropId#
+        <isNotNull property="value2PropId">
+            and value2_prop_id = #value2PropId#
+        </isNotNull>
+        <isNotNull property="value3PropId">
+            and value3_prop_id = #value3PropId#
+        </isNotNull>
+    </delete>
+
 </sqlMap>

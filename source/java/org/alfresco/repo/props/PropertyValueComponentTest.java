@@ -122,5 +122,31 @@ public class PropertyValueComponentTest extends TestCase
                 logger.debug("Expected exception: " + e.getMessage());
             }
         }
+        
+        // Delete everything for the store and check that both are creatable again
+        RetryingTransactionCallback<Void> deleteStoreCallback = new RetryingTransactionCallback<Void>()
+        {
+            public Void execute() throws Throwable
+            {
+                propertyValueComponent.deletePropertyUniqueContexts(context, store);
+                propertyValueComponent.createPropertyUniqueContext(context, store, uuid1);
+                propertyValueComponent.createPropertyUniqueContext(context, store, uuid2);
+                return null;
+            }
+        };
+        transactionService.getRetryingTransactionHelper().doInTransaction(deleteStoreCallback);
+        
+        // Delete everything for the context and check that both are creatable again
+        RetryingTransactionCallback<Void> deleteContextCallback = new RetryingTransactionCallback<Void>()
+        {
+            public Void execute() throws Throwable
+            {
+                propertyValueComponent.deletePropertyUniqueContexts(context);
+                propertyValueComponent.createPropertyUniqueContext(context, store, uuid1);
+                propertyValueComponent.createPropertyUniqueContext(context, store, uuid2);
+                return null;
+            }
+        };
+        transactionService.getRetryingTransactionHelper().doInTransaction(deleteContextCallback);
     }
 }

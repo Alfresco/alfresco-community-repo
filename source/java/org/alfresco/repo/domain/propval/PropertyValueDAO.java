@@ -279,6 +279,13 @@ public interface PropertyValueDAO
      * @see #createPropertyUniqueContext(Serializable, Serializable, Serializable)
      */
     void deletePropertyUniqueContext(Long id);
+    /**
+     * Delete sets of unique contexts based on one, two or three context values.
+     * 
+     * @param values            a combination of one to three values in order
+     * @return                  Returns the number of unique contexts deleted
+     */
+    int deletePropertyUniqueContext(Serializable ... values);
 
     //================================
     // Utility methods

@@ -1147,10 +1147,40 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
         }
     }
 
+    public int deletePropertyUniqueContext(Serializable... values)
+    {
+        if (values.length < 1 || values.length > 3)
+        {
+            throw new IllegalArgumentException("Deletion of unique property sets must have 1, 2 or 3 values");
+        }
+        Long[] valueIds = new Long[values.length];
+        for (int i = 0; i < values.length; i++)
+        {
+            Pair<Long, Serializable> valuePair = getPropertyValue(values[i]);
+            if (valuePair == null)
+            {
+                // No such value, so no need to delete
+                return 0;
+            }
+            valueIds[i] = valuePair.getFirst();
+        }
+        int deleted = deletePropertyUniqueContexts(valueIds);
+        // Done
+        if (logger.isDebugEnabled())
+        {
+            logger.debug(
+                    "Deleted " + deleted + " unique property contexts: \n" +
+                    "   Values: " + values + "\n" +
+                    "   IDs:    " + valueIds);
+        }
+        return deleted;
+    }
+
     protected abstract PropertyUniqueContextEntity createPropertyUniqueContext(Long valueId1, Long valueId2, Long valueId3);
     protected abstract PropertyUniqueContextEntity getPropertyUniqueContextById(Long id);
     protected abstract PropertyUniqueContextEntity getPropertyUniqueContextByValues(Long valueId1, Long valueId2, Long valueId3);
     protected abstract PropertyUniqueContextEntity updatePropertyUniqueContext(PropertyUniqueContextEntity entity);
+    protected abstract int deletePropertyUniqueContexts(Long ... valueIds);
 
     //================================
     // Utility methods

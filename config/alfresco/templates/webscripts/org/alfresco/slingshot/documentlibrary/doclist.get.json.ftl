@@ -9,15 +9,19 @@
    "startIndex": ${paging.startIndex?c},
    "metadata":
    {
-      "permissions":
+      "parent":
       {
-         "userRole": "${user.role!""}",
-         "userAccess":
+         <#if doclist.parent??>"nodeRef": "${doclist.parent.nodeRef}",</#if>
+         "permissions":
          {
-            "create" : ${user.permissions.create?string},
-            "edit" : ${user.permissions.edit?string},
-            "delete" : ${user.permissions.delete?string}
-         }
+            "userRole": "${user.role!""}",
+            "userAccess":
+            {
+               "create" : ${user.permissions.create?string},
+               "edit" : ${user.permissions.edit?string},
+               "delete" : ${user.permissions.delete?string}
+            }
+         },
       },
       "onlineEditing": ${doclist.onlineEditing?string},
       "itemCounts":

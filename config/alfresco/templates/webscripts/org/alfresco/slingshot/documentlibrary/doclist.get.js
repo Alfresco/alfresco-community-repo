@@ -337,7 +337,8 @@ function main()
          totalRecords: totalRecords
       },
       user: user,
-      items: items
+      items: items,
+      parent: filterParams.variablePath ? null : parsedArgs.parentNode
    });
 }
 

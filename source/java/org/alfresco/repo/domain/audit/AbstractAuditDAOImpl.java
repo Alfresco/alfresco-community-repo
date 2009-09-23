@@ -398,6 +398,11 @@ public abstract class AbstractAuditDAOImpl implements AuditDAO
                     logger.warn("Audit entry not linked to a Map<String, Serializable> value: " + row);
                     return;
                 }
+                catch (Throwable e)
+                {
+                    logger.warn("Audit entry unable to extract audited values: " + row, e);
+                    return;
+                }
                 if (auditValues == null)
                 {
                     logger.warn("Audit entry incompletely joined to audit properties: " + row);

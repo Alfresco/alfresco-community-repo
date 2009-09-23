@@ -70,6 +70,16 @@
             <property name="imap:threadIndex">
                <type>d:text</type>
             </property>
+            <property name="imap:dateReceived">
+               <title>Date Received</title>
+               <type>d:date</type>
+               <mandatory>false</mandatory>
+            </property>
+            <property name="imap:dateSent">
+               <title>Date Received</title>
+               <type>d:date</type>
+               <mandatory>false</mandatory>
+            </property>
          </properties>
          <associations>
             <association name="imap:attachment">

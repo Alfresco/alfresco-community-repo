@@ -747,6 +747,10 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
                     {
                         convertedPropertyValue = makeDate((String) propertyValue);
                     }
+                    else if(propertyValue instanceof Date)
+                    {
+                        convertedPropertyValue = propertyValue;
+                    }
                 }
                 else
                 {

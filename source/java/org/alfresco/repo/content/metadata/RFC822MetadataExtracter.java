@@ -51,9 +51,11 @@ import org.alfresco.service.namespace.QName;
  *   <b>messageTo:</b>                --      imap:messageTo
  *   <b>messageCc:</b>                --      imap:messageCc
  *   <b>messageSubject:</b>           --      imap:messageSubject, cm:title, cm:description
+ *   <b>messageSent:</b>              --      imap:dateSent
  *   <b>All <code>{@link Header#getName() header names}:</b>
  *      <b>Thread-Index:</b>          --      imap:threadIndex
  *      <b>Message-ID:</b>            --      imap:messageId
+ *      <b>date:</b>                  --      imap:dateReceived
  * 
  * @author Derek Hulley
  * @since 3.2
@@ -65,6 +67,7 @@ public class RFC822MetadataExtracter extends AbstractMappingMetadataExtracter
     private static final String KEY_MESSAGE_TO = "messageTo";
     private static final String KEY_MESSAGE_CC = "messageCc";
     private static final String KEY_MESSAGE_SUBJECT = "messageSubject";
+    private static final String KEY_MESSAGE_SENT = "messageSent";
 
     public static String[] SUPPORTED_MIMETYPES = new String[] { MimetypeMap.MIMETYPE_RFC822 };
 
@@ -90,6 +93,7 @@ public class RFC822MetadataExtracter extends AbstractMappingMetadataExtracter
                 putRawValue(KEY_MESSAGE_FROM, InternetAddress.toString(mimeMessage.getFrom()), rawProperties);
                 putRawValue(KEY_MESSAGE_TO, InternetAddress.toString(mimeMessage.getRecipients(RecipientType.TO)), rawProperties);
                 putRawValue(KEY_MESSAGE_CC, InternetAddress.toString(mimeMessage.getRecipients(RecipientType.CC)), rawProperties);
+                putRawValue(KEY_MESSAGE_SENT, mimeMessage.getSentDate(), rawProperties); 
 
                 String[] subj = mimeMessage.getHeader("Subject");
                 if (subj != null && subj.length > 0)

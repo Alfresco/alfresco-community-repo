@@ -29,6 +29,7 @@ import java.util.Locale;
 import java.util.StringTokenizer;
 
 import org.alfresco.i18n.I18NUtil;
+import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.util.EqualsHelper;
 
@@ -195,6 +196,10 @@ public class ContentData implements Serializable
      */
     public ContentData(String contentUrl, String mimetype, long size, String encoding, Locale locale)
     {
+        if (mimetype == null || mimetype.length() == 0)
+        {
+            mimetype = MimetypeMap.MIMETYPE_BINARY;
+        }
         checkContentUrl(contentUrl, mimetype, encoding);
         this.contentUrl = contentUrl;
         this.mimetype = mimetype;

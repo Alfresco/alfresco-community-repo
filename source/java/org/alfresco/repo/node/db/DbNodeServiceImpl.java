@@ -809,6 +809,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         Long nodeId = nodePair.getFirst();
         // Get the node's primary children
         final List<Pair<Long, NodeRef>> childNodePairs = new ArrayList<Pair<Long, NodeRef>>(5);
+//        final Map<Long, ChildAssociationRef> childAssocRefsByChildId = new HashMap<Long, ChildAssociationRef>(5);
         NodeDaoService.ChildAssocRefQueryCallback callback = new NodeDaoService.ChildAssocRefQueryCallback()
         {
             public boolean handle(
@@ -819,6 +820,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
             {
                 // Add it
                 childNodePairs.add(childNodePair);
+//                childAssocRefsByChildId.put(childNodePair.getFirst(), childAssocPair.getSecond());
                 // No recurse
                 return false;
             }
@@ -828,18 +830,25 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         // Each child must be deleted
         for (Pair<Long, NodeRef> childNodePair : childNodePairs)
         {
-            // Cascade, if required
+            // Fire node policies.  This ensures that each node in the hierarchy gets a notification fired.
+            Long childNodeId = childNodePair.getFirst();
+            NodeRef childNodeRef = childNodePair.getSecond();
+//            QName childNodeType = nodeDaoService.getNodeType(childNodeId);
+//            Set<QName> childNodeQNames = nodeDaoService.getNodeAspects(childNodeId);
+//            ChildAssociationRef childParentAssocRef = childAssocRefsByChildId.get(childNodeId);
+            
+            invokeBeforeDeleteNode(childNodeRef);
+            
+            // Cascade first, if required.
+            // This ensures that the beforeDelete policy is fired for all nodes in the hierarchy before
+            // the actual delete starts.
             if (cascade)
             {
                 deletePrimaryChildren(childNodePair, true);
             }
             // Delete the child
-            nodeDaoService.deleteNode(childNodePair.getFirst());
-// It would appear that policies should be fired here, but they have never been, so
-// in the order to maintain historical consistency we keep it the same. 
-//            // Fire node policies.  This ensures that each node in the hierarchy gets a notification fired.
-//            invokeOnDeleteNode(oldParentAssocPair.getSecond(), childNodeTypeQName, childNodeAspectQNames, true);
-//            invokeOnCreateNode(newParentAssocPair.getSecond());
+            nodeDaoService.deleteNode(childNodeId);
+//            invokeOnDeleteNode(childParentAssocRef, childNodeType, childNodeQNames, true);
         }
     }
     

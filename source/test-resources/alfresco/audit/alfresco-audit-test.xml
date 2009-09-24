@@ -106,9 +106,7 @@
 	                    </AuditPath>
 	                </AuditPath>
 	                <AuditPath key="error">
-	                    <AuditPath key="userName">
-	                        <RecordValue key="value" dataExtractor="simpleValue"/>
-	                    </AuditPath>
+                        <RecordValue key="value" dataExtractor="simpleValue"/>
 	                </AuditPath>
 	            </AuditPath>
 	        </AuditPath>

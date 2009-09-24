@@ -79,6 +79,7 @@ public class AuditComponentTest extends TestCase
     
     private AuditModelRegistry auditModelRegistry;
     private AuditComponent auditComponent;
+    private AuditMethodInterceptor auditMethodInterceptor;
     private AuditService auditService;
     private ServiceRegistry serviceRegistry;
     private TransactionService transactionService;
@@ -92,6 +93,7 @@ public class AuditComponentTest extends TestCase
     {
         auditModelRegistry = (AuditModelRegistry) ctx.getBean("auditModel.modelRegistry");
         auditComponent = (AuditComponent) ctx.getBean("auditComponent");
+        auditMethodInterceptor = (AuditMethodInterceptor) ctx.getBean("AuditMethodInterceptor");
         serviceRegistry = (ServiceRegistry) ctx.getBean(ServiceRegistry.SERVICE_REGISTRY); 
         auditService = serviceRegistry.getAuditService();
         transactionService = serviceRegistry.getTransactionService();
@@ -125,12 +127,17 @@ public class AuditComponentTest extends TestCase
             }
         };
         transactionService.getRetryingTransactionHelper().doInTransaction(resetDisabledPathsCallback);
+        
+        auditMethodInterceptor.setEnabled(true);
+        auditMethodInterceptor.setUseNewConfig(true);
     }
     
     @Override
     public void tearDown() throws Exception
     {
         AuthenticationUtil.clearCurrentSecurityContext();
+        auditMethodInterceptor.setEnabled(false);
+        auditMethodInterceptor.setUseNewConfig(false);
     }
     
     public void testSetUp()
@@ -459,12 +466,12 @@ public class AuditComponentTest extends TestCase
                     long time,
                     Map<String, Serializable> values)
             {
+                results.add(values);
                 if (logger.isDebugEnabled())
                 {
                     logger.debug(
                             "Audit Entry: " + applicationName + ", " + user + ", " + new Date(time) + "\n" +
                             "   Data: " + values);
-                    results.add(values);
                 }
                 sb.append("Row: ")
                   .append(entryId).append(" | ")

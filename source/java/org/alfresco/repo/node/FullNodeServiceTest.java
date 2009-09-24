@@ -44,7 +44,6 @@ import org.alfresco.service.namespace.QName;
  * 
  * @author Derek Hulley
  */
-@SuppressWarnings("unused")
 public class FullNodeServiceTest extends BaseNodeServiceTest
 {
     protected NodeService getNodeService()

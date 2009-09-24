@@ -31,7 +31,6 @@ import org.alfresco.service.Auditable;
 import org.alfresco.service.PublicService;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.repository.XPathException;
 import org.alfresco.service.namespace.NamespacePrefixResolver;
@@ -133,7 +132,10 @@ public interface SearchService
      *            it follows all
      * @return a list of all the child assoc relationships to the selected nodes
      */
-    @Auditable(key = Auditable.Key.ARG_0, parameters = {"contextNodeRef", "xpath", "parameters", "namespacePrefixResolver", "followAllParentLinks"})
+    @Auditable(
+            key = Auditable.Key.ARG_0,
+            parameters = {"contextNodeRef", "xpath", "parameters", "namespacePrefixResolver", "followAllParentLinks"},
+            recordable = {true,             true,    true,         false,                     true})
     public List<NodeRef> selectNodes(NodeRef contextNodeRef, String xpath, QueryParameterDefinition[] parameters,
             NamespacePrefixResolver namespacePrefixResolver, boolean followAllParentLinks)
             throws InvalidNodeRefException, XPathException;
@@ -156,7 +158,10 @@ public interface SearchService
      *            the xpath variant
      * @return a list of all the child assoc relationships to the selected nodes
      */
-    @Auditable(key = Auditable.Key.ARG_0, parameters = {"contextNodeRef", "xpath", "parameters", "namespacePrefixResolver", "followAllParentLinks", "language"})
+    @Auditable(
+            key = Auditable.Key.ARG_0,
+            parameters = {"contextNodeRef", "xpath", "parameters", "namespacePrefixResolver", "followAllParentLinks", "language"},
+            recordable = {true,             true,    true,         false,                     true,                   true})
     public List<NodeRef> selectNodes(NodeRef contextNodeRef, String xpath, QueryParameterDefinition[] parameters,
             NamespacePrefixResolver namespacePrefixResolver, boolean followAllParentLinks, String language)
             throws InvalidNodeRefException, XPathException;
@@ -177,7 +182,10 @@ public interface SearchService
      *            it follows all
      * @return a list of property values
      */
-    @Auditable(key = Auditable.Key.ARG_0, parameters = {"contextNodeRef", "xpath", "parameters", "namespacePrefixResolver", "followAllParentLinks"})
+    @Auditable(
+            key = Auditable.Key.ARG_0,
+            parameters = {"contextNodeRef", "xpath", "parameters", "namespacePrefixResolver", "followAllParentLinks"},
+            recordable = {true,             true,    true,         false,                     true})
     public List<Serializable> selectProperties(NodeRef contextNodeRef, String xpath,
             QueryParameterDefinition[] parameters, NamespacePrefixResolver namespacePrefixResolver,
             boolean followAllParentLinks) throws InvalidNodeRefException, XPathException;
@@ -200,7 +208,10 @@ public interface SearchService
      *            the xpath variant
      * @return a list of property values
      */
-    @Auditable(key = Auditable.Key.ARG_0, parameters = {"contextNodeRef", "xpath", "parameters", "namespacePrefixResolver", "followAllParentLinks", "language"})
+    @Auditable(
+            key = Auditable.Key.ARG_0,
+            parameters = {"contextNodeRef", "xpath", "parameters", "namespacePrefixResolver", "followAllParentLinks", "language"},
+            recordable = {true,             true,     true,        false,                     true,                   true})
     public List<Serializable> selectProperties(NodeRef contextNodeRef, String xpath,
             QueryParameterDefinition[] parameters, NamespacePrefixResolver namespacePrefixResolver,
             boolean followAllParentLinks, String language) throws InvalidNodeRefException, XPathException;

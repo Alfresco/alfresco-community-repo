@@ -57,7 +57,9 @@ public interface WorkflowService
      * @param  mimetype  the mimetype of the workflow definition
      * @return  workflow deployment descriptor
      */
-    @Auditable(parameters = {"engineId", "workflowDefinition", "mimetype"})
+    @Auditable(
+            parameters = {"engineId", "workflowDefinition", "mimetype"},
+            recordable = {true,       false,                true})
     public WorkflowDeployment deployDefinition(String engineId, InputStream workflowDefinition, String mimetype);
     
     /**
@@ -95,7 +97,9 @@ public interface WorkflowService
      * @param  mimetype  the mimetype of the definition
      * @return  true => already deployed
      */
-    @Auditable(parameters = {"engineId", "workflowDefinition", "mimetype"})
+    @Auditable(
+            parameters = {"engineId", "workflowDefinition", "mimetype"},
+            recordable = {true,       false,                true})
     public boolean isDefinitionDeployed(String engineId, InputStream workflowDefinition, String mimetype);
     
     /**

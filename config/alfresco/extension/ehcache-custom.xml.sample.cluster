@@ -627,7 +627,7 @@
 
     <cache
         name="org.alfresco.cache.immutableEntityCache"
-        maxElementsInMemory="20000"
+        maxElementsInMemory="50000"
         eternal="true"
         overflowToDisk="false">
 

@@ -49,6 +49,7 @@ import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentReader;
+import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.EntityRef;
 import org.alfresco.service.cmr.repository.MLText;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -859,31 +860,22 @@ public class DefaultTypeConverter
         {
             public String convert(ContentReader source)
             {
-                String encoding = source.getEncoding();
-                if (encoding == null || !encoding.equalsIgnoreCase("UTF-8"))
-                {
-                    throw new TypeConversionException("Cannot convert non UTF-8 streams to String.");
-                }
-                
-                // TODO: Throw error on size limit
-        
-                return source.getContentString();
+                // Getting the string from the ContentReader binary is meaningless
+                return source.toString();
             }
         });
 
-        INSTANCE.addDynamicTwoStageConverter(ContentReader.class, String.class, Date.class);
+        //
+        // Content Writer
+        //
         
-        INSTANCE.addDynamicTwoStageConverter(ContentReader.class, String.class, Double.class);
-        
-        INSTANCE.addDynamicTwoStageConverter(ContentReader.class, String.class, Long.class);
-
-        INSTANCE.addDynamicTwoStageConverter(ContentReader.class, String.class, Boolean.class);
-
-        INSTANCE.addDynamicTwoStageConverter(ContentReader.class, String.class, QName.class);
-
-        INSTANCE.addDynamicTwoStageConverter(ContentReader.class, String.class, Path.class);
-
-        INSTANCE.addDynamicTwoStageConverter(ContentReader.class, String.class, NodeRef.class);
+        INSTANCE.addConverter(ContentWriter.class, String.class, new TypeConverter.Converter<ContentWriter, String>()
+        {
+            public String convert(ContentWriter source)
+            {
+                return source.toString();
+            }
+        });
 
         //
         // Input Stream

@@ -36,8 +36,9 @@ public interface PublicServiceIdentifier
     /**
      * Get the name of the public service for the method invocation.
      * 
-     * @param mi
-     * @return
+     * @param mi                the method invocation 
+     * @return                  Returns the name of the public service or <tt>null</tt> if it is
+     *                          not recognized as a public service
      */
     public String getPublicServiceName(MethodInvocation mi);
 }

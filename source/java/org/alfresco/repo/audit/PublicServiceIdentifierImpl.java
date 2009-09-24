@@ -39,15 +39,15 @@ import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.ListableBeanFactory;
 
 /**
- * Identify public services by method invocation. Look ups are cached on a thread local as they are quite expensive. All public service names end with "Service" and start with
- * capital letter. This pattern is used to filter bean names. TODO: Look at pulling out all the mappings at start up.
+ * Identify public services by method invocation. Look ups are cached on a thread local as they are quite expensive.
+ * All public service names end with "Service" and start with capital letter.
+ * This pattern is used to filter bean names. TODO: Look at pulling out all the mappings at start up.
  * 
  * @author Andy Hind
  */
 public class PublicServiceIdentifierImpl implements PublicServiceIdentifier, BeanFactoryAware
 {
     private static Log s_logger = LogFactory.getLog(PublicServiceIdentifierImpl.class);
-
     private static ThreadLocal<HashMap<Method, String>> methodToServiceMap = new ThreadLocal<HashMap<Method, String>>();
 
     private ListableBeanFactory beanFactory;
@@ -57,14 +57,10 @@ public class PublicServiceIdentifierImpl implements PublicServiceIdentifier, Bea
         super();
     }
 
-   
-
     public void setBeanFactory(BeanFactory beanFactory) throws BeansException
     {
         this.beanFactory = (ListableBeanFactory)beanFactory;
     }
-
-
 
     public String getPublicServiceName(MethodInvocation mi)
     {
@@ -72,11 +68,8 @@ public class PublicServiceIdentifierImpl implements PublicServiceIdentifier, Bea
     }
 
     /**
+     * {@inheritDoc}
      * Cache service name look up.
-     * 
-     * @param mi
-     * @return
-     * @throws BeansException
      */
     private String getServiceName(MethodInvocation mi) throws BeansException
     {
@@ -104,11 +97,9 @@ public class PublicServiceIdentifierImpl implements PublicServiceIdentifier, Bea
     /**
      * Do the look up by interface type.
      * 
-     * @param mi
-     * @return
-     * @throws BeansException
+     * @return              Returns the name of the service or <tt>null</tt> if not found
      */
-
+    @SuppressWarnings("unchecked")
     private String getServiceNameImpl(MethodInvocation mi) throws BeansException
     {
         Class clazz = mi.getThis().getClass();

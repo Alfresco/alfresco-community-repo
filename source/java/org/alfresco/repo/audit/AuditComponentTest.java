@@ -26,9 +26,11 @@ package org.alfresco.repo.audit;
 
 import java.io.Serializable;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import junit.framework.TestCase;
@@ -36,14 +38,17 @@ import junit.framework.TestCase;
 import org.alfresco.repo.audit.model.AuditApplication;
 import org.alfresco.repo.audit.model.AuditModelException;
 import org.alfresco.repo.audit.model.AuditModelRegistry;
+import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.cmr.audit.AuditService;
 import org.alfresco.service.cmr.audit.AuditService.AuditQueryCallback;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.EqualsHelper;
@@ -66,6 +71,7 @@ public class AuditComponentTest extends TestCase
 {
     private static final String APPLICATION_TEST = "Alfresco Test";
     private static final String APPLICATION_ACTIONS_TEST = "Actions Test";
+    private static final String APPLICATION_API_TEST = "API Test";
     
     private static final Log logger = LogFactory.getLog(AuditComponentTest.class);
     
@@ -73,6 +79,7 @@ public class AuditComponentTest extends TestCase
     
     private AuditModelRegistry auditModelRegistry;
     private AuditComponent auditComponent;
+    private AuditService auditService;
     private ServiceRegistry serviceRegistry;
     private TransactionService transactionService;
     private NodeService nodeService;
@@ -86,6 +93,7 @@ public class AuditComponentTest extends TestCase
         auditModelRegistry = (AuditModelRegistry) ctx.getBean("auditModel.modelRegistry");
         auditComponent = (AuditComponent) ctx.getBean("auditComponent");
         serviceRegistry = (ServiceRegistry) ctx.getBean(ServiceRegistry.SERVICE_REGISTRY); 
+        auditService = serviceRegistry.getAuditService();
         transactionService = serviceRegistry.getTransactionService();
         nodeService = serviceRegistry.getNodeService();
         
@@ -132,15 +140,9 @@ public class AuditComponentTest extends TestCase
     
     public void testAuditWithBadPath() throws Exception
     {
-        try
-        {
-            auditComponent.recordAuditValues("/test", Collections.<String, Serializable>emptyMap());
-            fail("Should fail due to lack of a transaction.");
-        }
-        catch (IllegalStateException e)
-        {
-            // Expected
-        }
+        // Should start an appropriate txn
+        auditComponent.recordAuditValues("/test", Collections.<String, Serializable>emptyMap());
+        
         RetryingTransactionCallback<Void> testCallback = new RetryingTransactionCallback<Void>()
         {
             public Void execute() throws Throwable
@@ -435,5 +437,103 @@ public class AuditComponentTest extends TestCase
             }
         };
         transactionService.getRetryingTransactionHelper().doInTransaction(disableAuditCallback, false);
+    }
+    
+    public void testAuditAuthenticationService() throws Exception
+    {
+        final Map<String, Serializable> expected = new HashMap<String, Serializable>();
+        expected.put("/actions-test/actions/user", AuthenticationUtil.getFullyAuthenticatedUser());
+        expected.put("/actions-test/actions/context-node/noderef", nodeRef);
+        expected.put("/actions-test/actions/action-01/params/A/value", null);
+        expected.put("/actions-test/actions/action-01/params/B/value", null);
+        expected.put("/actions-test/actions/action-01/params/C/value", null);
+        
+        final List<Map<String, Serializable>> results = new ArrayList<Map<String,Serializable>>();
+        final StringBuilder sb = new StringBuilder();
+        AuditQueryCallback auditQueryCallback = new AuditQueryCallback()
+        {
+            public boolean handleAuditEntry(
+                    Long entryId,
+                    String applicationName,
+                    String user,
+                    long time,
+                    Map<String, Serializable> values)
+            {
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug(
+                            "Audit Entry: " + applicationName + ", " + user + ", " + new Date(time) + "\n" +
+                            "   Data: " + values);
+                    results.add(values);
+                }
+                sb.append("Row: ")
+                  .append(entryId).append(" | ")
+                  .append(applicationName).append(" | ")
+                  .append(user).append(" | ")
+                  .append(new Date(time)).append(" | ")
+                  .append(values).append(" | ")
+                  .append("\n");
+                  ;
+                return true;
+            }
+        };
+        
+        auditService.clearAudit(APPLICATION_API_TEST);
+        results.clear();
+        sb.delete(0, sb.length());
+        auditService.auditQuery(auditQueryCallback, APPLICATION_API_TEST, null, null, null, -1);
+        logger.debug(sb.toString());
+        assertTrue("There should be no audit entries for the API test after a clear", results.isEmpty());
+        
+        final AuthenticationService authenticationService = serviceRegistry.getAuthenticationService();
+        // Create a good authentication
+        RunAsWork<Void> createAuthenticationWork = new RunAsWork<Void>()
+        {
+            public Void doWork() throws Exception
+            {
+                if (!authenticationService.authenticationExists(getName()))
+                {
+                    authenticationService.createAuthentication(getName(), getName().toCharArray());
+                }
+                return null;
+            }
+        };
+        AuthenticationUtil.runAs(createAuthenticationWork, AuthenticationUtil.getSystemUserName());
+        
+        // Clear everything out and do a successful authentication
+        auditService.clearAudit(APPLICATION_API_TEST);
+        try
+        {
+            AuthenticationUtil.pushAuthentication();
+            authenticationService.authenticate(getName(), getName().toCharArray());
+        }
+        finally
+        {
+            AuthenticationUtil.popAuthentication();
+        }
+        
+        // Check that the call was audited
+        results.clear();
+        sb.delete(0, sb.length());
+        auditService.auditQuery(auditQueryCallback, APPLICATION_API_TEST, null, null, null, -1);
+        logger.debug(sb.toString());
+        assertFalse("Did not get any audit results after successful login", results.isEmpty());
+
+        // Clear everything and check that unsuccessful authentication was audited
+        auditService.clearAudit(APPLICATION_API_TEST);
+        try
+        {
+            authenticationService.authenticate("banana", "****".toCharArray());
+            fail("Invalid authentication attempt should fail");
+        }
+        catch (AuthenticationException e)
+        {
+            // Expected
+        }
+        results.clear();
+        sb.delete(0, sb.length());
+        auditService.auditQuery(auditQueryCallback, APPLICATION_API_TEST, null, null, null, -1);
+        logger.debug(sb.toString());
+        assertFalse("Did not get any audit results after failed login", results.isEmpty());
     }
 }

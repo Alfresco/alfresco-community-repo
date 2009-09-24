@@ -168,7 +168,8 @@ public interface AuditComponent
      * The return values reflect what was actually persisted and is controlled by the data extractors
      * defined in the audit configuration.
      * <p/>
-     * This is a read-write method.  Client code must wrap calls in the appropriate transactional wrappers.
+     * A new read-write transaction is started if there are values to write that there is not a viable
+     * transaction present.
      * 
      * @param rootPath          a base path of {@link AuditPath} key entries concatenated with the path separator
      *                          '/' ({@link AuditApplication#AUDIT_PATH_SEPARATOR})

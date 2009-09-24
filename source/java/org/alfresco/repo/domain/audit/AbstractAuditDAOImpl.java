@@ -411,7 +411,10 @@ public abstract class AbstractAuditDAOImpl implements AuditDAO
             }
             // Resolve the application and username
             String auditAppName = (String) propertyValueDAO.getPropertyValueById(row.getAuditAppNameId()).getSecond();
-            String auditUser = (String) propertyValueDAO.getPropertyValueById(row.getAuditUserId()).getSecond();
+            Long auditUserId = row.getAuditUserId();
+            String auditUser = auditUserId == null
+                    ? null
+                    : (String) propertyValueDAO.getPropertyValueById(auditUserId).getSecond();
             
             more = callback.handleAuditEntry(
                     row.getAuditEntryId(),

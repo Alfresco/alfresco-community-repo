@@ -31,11 +31,20 @@
     <!-- AuditMethodInterceptor -->
 
     <bean id="AuditMethodInterceptor" class="org.alfresco.repo.audit.AuditMethodInterceptor">
+        <property name="publicServiceIdentifier">
+            <ref bean="publicServiceIdentifier"/>
+        </property>
         <property name="auditComponent">
             <ref bean="auditComponent"/>
         </property>
-        <property name="disabled">
-            <value>false</value>
+        <property name="transactionService">
+            <ref bean="transactionService"/>
+        </property>
+        <property name="enabled">
+            <value>${audit.enabled}</value>
+        </property>
+        <property name="useNewConfig">
+            <value>${audit.useNewConfig}</value>
         </property>
     </bean>
 

@@ -1040,7 +1040,6 @@ public class AuditComponentImpl implements AuditComponent
     public Map<String, Serializable> recordAuditValues(String rootPath, Map<String, Serializable> values)
     {
         ParameterCheck.mandatory("rootPath", rootPath);
-        AlfrescoTransactionSupport.checkTransactionReadState(true);
         AuditApplication.checkPathFormat(rootPath);
 
         if (values == null || values.isEmpty())
@@ -1058,8 +1057,41 @@ public class AuditComponentImpl implements AuditComponent
         
         // Translate the values map
         PathMapper pathMapper = auditModelRegistry.getAuditPathMapper();
-        Map<String, Serializable> mappedValues = pathMapper.convertMap(pathedValues);
+        final Map<String, Serializable> mappedValues = pathMapper.convertMap(pathedValues);
+        if (mappedValues.isEmpty())
+        {
+            return mappedValues;
+        }
         
+        // We have something to record.  Start a transaction, if necessary
+        TxnReadState txnState = AlfrescoTransactionSupport.getTransactionReadState();
+        switch (txnState)
+        {
+        case TXN_NONE:
+        case TXN_READ_ONLY:
+            // New transaction
+            RetryingTransactionCallback<Map<String, Serializable>> callback =
+                    new RetryingTransactionCallback<Map<String,Serializable>>()
+            {
+                public Map<String, Serializable> execute() throws Throwable
+                {
+                    return recordAuditValuesImpl(mappedValues);
+                }
+            };
+            return transactionService.getRetryingTransactionHelper().doInTransaction(callback, false, true);
+        case TXN_READ_WRITE:
+            return recordAuditValuesImpl(mappedValues);
+        default:
+            throw new IllegalStateException("Unknown txn state: " + txnState);
+        }
+    }
+    
+    /**
+     * {@inheritDoc}
+     * @since 3.2
+     */
+    public Map<String, Serializable> recordAuditValuesImpl(Map<String, Serializable> mappedValues)
+    {
         // Group the values by root path
         Map<String, Map<String, Serializable>> mappedValuesByRootKey = new HashMap<String, Map<String,Serializable>>();
         for (Map.Entry<String, Serializable> entry : mappedValues.entrySet())
@@ -1075,7 +1107,7 @@ public class AuditComponentImpl implements AuditComponent
             rootKeyMappedValues.put(path, entry.getValue());
         }
 
-        Map<String, Serializable> allAuditedValues = new HashMap<String, Serializable>(values.size()*2+1);
+        Map<String, Serializable> allAuditedValues = new HashMap<String, Serializable>(mappedValues.size()*2+1);
         // Now audit for each of the root keys
         for (Map.Entry<String, Map<String, Serializable>> entry : mappedValuesByRootKey.entrySet())
         {

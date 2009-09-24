@@ -196,7 +196,7 @@ public class ContentData implements Serializable
      */
     public ContentData(String contentUrl, String mimetype, long size, String encoding, Locale locale)
     {
-        if (mimetype == null || mimetype.length() == 0)
+        if (contentUrl != null && (mimetype == null || mimetype.length() == 0))
         {
             mimetype = MimetypeMap.MIMETYPE_BINARY;
         }

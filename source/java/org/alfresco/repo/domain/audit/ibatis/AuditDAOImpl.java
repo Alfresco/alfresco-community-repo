@@ -258,7 +258,7 @@ public class AuditDAOImpl extends AbstractAuditDAOImpl
         if (maxResults > 0)
         {
             // Calculate the maximum results required
-            int sqlMaxResults = (maxResults > 0 ? ((maxResults+1) * 20) : Integer.MAX_VALUE);
+            int sqlMaxResults = (maxResults > 0 ? ((maxResults+1) * 100) : Integer.MAX_VALUE);
             
             List<AuditQueryResult> rows = template.queryForList(SELECT_ENTRIES_WITH_VALUES, params, 0, sqlMaxResults);
             for (AuditQueryResult row : rows)

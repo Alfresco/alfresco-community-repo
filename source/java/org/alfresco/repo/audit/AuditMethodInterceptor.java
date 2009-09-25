@@ -71,6 +71,7 @@ import org.apache.commons.logging.LogFactory;
  *                ...
  *             /result=&lt;value&gt;
  *             /error=&lt;value&gt;
+ *             /no-error=&lt;null&gt;
  * 
  * </pre>
  * Applications can remap the paths onto their configurations as appropriate.
@@ -87,6 +88,7 @@ public class AuditMethodInterceptor implements MethodInterceptor
     public static final String AUDIT_SNIPPET_ARGS = "/args";
     public static final String AUDIT_SNIPPET_RESULT = "/result";
     public static final String AUDIT_SNIPPET_ERROR = "/error";
+    public static final String AUDIT_SNIPPET_NO_ERROR = "/no-error";
     
     private static final Log logger = LogFactory.getLog(AuditMethodInterceptor.class);
 
@@ -417,6 +419,8 @@ public class AuditMethodInterceptor implements MethodInterceptor
         }
         else
         {
+            // Add the "no error" indicator
+            auditData.put(AUDIT_SNIPPET_NO_ERROR, null);
             // The current transaction will be fine
             auditedData = auditComponent.recordAuditValues(rootPath, auditData);
         }

@@ -86,6 +86,9 @@
     <bean name="auditModel.extractor.simpleValue" class="org.alfresco.repo.audit.extractor.SimpleValueDataExtractor">
         <property name="registry" ref="auditModel.extractorRegistry" />
     </bean>
+    <bean name="auditModel.extractor.nullValue" class="org.alfresco.repo.audit.extractor.NullValueDataExtractor">
+        <property name="registry" ref="auditModel.extractorRegistry" />
+    </bean>
     <bean name="auditModel.extractor.nodeName" class="org.alfresco.repo.audit.extractor.NodeNameDataExtractor">
         <property name="registry" ref="auditModel.extractorRegistry" />
         <property name="nodeService" ref="nodeService" />

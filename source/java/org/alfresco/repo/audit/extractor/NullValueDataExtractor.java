@@ -27,33 +27,28 @@ package org.alfresco.repo.audit.extractor;
 import java.io.Serializable;
 
 /**
- * Interface for Audit data value extractors.  These are used to extract auditable values
- * from those arguments, return values, exceptions and any other value passed into the audit
- * components for recording.
- * <p/>
- * The framework will first determine if data passed into the instance is {@link #isSupported(Object) supported}
- * and will then pass it in for {@link #extractData(Serializable) conversion} to the type that will be
- * recorded.
+ * An extractor that merely records a null value.  This enables configuration such
+ * that the <i>presence</i> of a data path can be recorded when the actual value
+ * is of no interest.
  * 
  * @author Derek Hulley
  * @since 3.2
  */
-public interface DataExtractor
+public class NullValueDataExtractor extends AbstractDataExtractor
 {
     /**
-     * Determines if the extractor will be able to pull any data from the given value.
-     * 
-     * @param data          the data that might be useful to this extractor (could be <tt>null</tt>)
-     * @return              Returns <tt>true</tt> if the data is meaningful to this extractor
+     * @return          Returns <tt>true</tt> always
      */
-    public boolean isSupported(Serializable data);
-    
+    public boolean isSupported(Serializable data)
+    {
+        return true;
+    }
+
     /**
-     * Convert an value passed into the audit components into a value to be recorded.
-     * 
-     * @param value                 the source data
-     * @return                      the extracted data including <tt>null</tt>
-     * @throws Throwable            All errors will be handled by the calling framework
+     * @return          Returns <tt>null</tt> always
      */
-    public Serializable extractData(Serializable value) throws Throwable;
+    public Serializable extractData(Serializable in) throws Throwable
+    {
+        return null;
+    }
 }

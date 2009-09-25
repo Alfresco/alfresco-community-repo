@@ -72,12 +72,12 @@
             </property>
             <property name="imap:dateReceived">
                <title>Date Received</title>
-               <type>d:date</type>
+               <type>d:datetime</type>
                <mandatory>false</mandatory>
             </property>
             <property name="imap:dateSent">
-               <title>Date Received</title>
-               <type>d:date</type>
+               <title>Date Sent</title>
+               <type>d:datetime</type>
                <mandatory>false</mandatory>
             </property>
          </properties>

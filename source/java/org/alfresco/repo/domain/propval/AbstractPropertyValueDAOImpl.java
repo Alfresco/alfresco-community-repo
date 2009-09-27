@@ -796,6 +796,11 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
         return entityPair.getSecond();
     }
 
+    public void getPropertiesByIds(List<Long> ids, PropertyFinderCallback callback)
+    {
+        findPropertiesByIds(ids, callback);
+    }
+
     /**
      * {@inheritDoc}
      * @see #createPropertyImpl(Serializable, int, int)
@@ -1032,6 +1037,7 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
     }
     
     protected abstract List<PropertyIdSearchRow> findPropertyById(Long id);
+    protected abstract void findPropertiesByIds(List<Long> ids, PropertyFinderCallback callback);
     protected abstract Long createPropertyRoot();
     protected abstract PropertyRootEntity getPropertyRoot(Long id);
     protected abstract PropertyRootEntity updatePropertyRoot(PropertyRootEntity entity);

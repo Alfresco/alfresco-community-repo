@@ -28,10 +28,13 @@ import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
 
+import org.alfresco.ibatis.RollupRowHandler;
 import org.alfresco.repo.domain.propval.AbstractPropertyValueDAOImpl;
 import org.alfresco.repo.domain.propval.PropertyClassEntity;
 import org.alfresco.repo.domain.propval.PropertyDateValueEntity;
 import org.alfresco.repo.domain.propval.PropertyDoubleValueEntity;
+import org.alfresco.repo.domain.propval.PropertyIdQueryParameter;
+import org.alfresco.repo.domain.propval.PropertyIdQueryResult;
 import org.alfresco.repo.domain.propval.PropertyIdSearchRow;
 import org.alfresco.repo.domain.propval.PropertyLinkEntity;
 import org.alfresco.repo.domain.propval.PropertyRootEntity;
@@ -43,6 +46,8 @@ import org.alfresco.repo.domain.propval.PropertyValueEntity;
 import org.alfresco.repo.domain.propval.PropertyValueEntity.PersistedType;
 import org.alfresco.util.Pair;
 import org.springframework.orm.ibatis.SqlMapClientTemplate;
+
+import com.ibatis.sqlmap.client.event.RowHandler;
 
 /**
  * iBatis-specific implementation of the PropertyValue DAO.
@@ -78,6 +83,7 @@ public class PropertyValueDAOImpl extends AbstractPropertyValueDAOImpl
     private static final String INSERT_PROPERTY_VALUE = "alfresco.propval.insert_PropertyValue";
     
     private static final String SELECT_PROPERTY_BY_ID = "alfresco.propval.select_PropertyById";
+    private static final String SELECT_PROPERTIES_BY_IDS = "alfresco.propval.select_PropertiesByIds";
     private static final String SELECT_PROPERTY_ROOT_BY_ID = "alfresco.propval.select_PropertyRootById";
     private static final String INSERT_PROPERTY_ROOT = "alfresco.propval.insert_PropertyRoot";
     private static final String UPDATE_PROPERTY_ROOT = "alfresco.propval.update_PropertyRoot";
@@ -453,6 +459,36 @@ public class PropertyValueDAOImpl extends AbstractPropertyValueDAOImpl
                 SELECT_PROPERTY_BY_ID,
                 entity);
         return results;
+    }
+
+    private static final String[] KEY_COLUMNS_FINDBYIDS = new String[] {"propId"};
+    @Override
+    protected void findPropertiesByIds(List<Long> ids, final PropertyFinderCallback callback)
+    {
+        RowHandler valueRowHandler = new RowHandler()
+        {
+            public void handleRow(Object valueObject)
+            {
+                PropertyIdQueryResult result = (PropertyIdQueryResult) valueObject;
+                Long id = result.getPropId();
+                // Make the serializable value
+                List<PropertyIdSearchRow> rows = result.getPropValues();
+                Serializable value = convertPropertyIdSearchRows(rows);
+                callback.handleProperty(id, value);
+            }
+        };
+        // A row handler to roll up individual rows
+        RollupRowHandler rollupRowHandler = new RollupRowHandler(
+                KEY_COLUMNS_FINDBYIDS,
+                "propValues",
+                valueRowHandler);
+        // Query using the IDs
+        PropertyIdQueryParameter params = new PropertyIdQueryParameter();
+        params.setRootPropIds(ids);
+        template.queryWithRowHandler(SELECT_PROPERTIES_BY_IDS, params, rollupRowHandler);
+        // Process any remaining results
+        rollupRowHandler.processLastResults();
+        // Done
     }
 
     @Override

@@ -26,9 +26,11 @@ package org.alfresco.repo.domain.propval;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
@@ -36,6 +38,7 @@ import javax.naming.CompositeName;
 
 import junit.framework.TestCase;
 
+import org.alfresco.repo.domain.propval.PropertyValueDAO.PropertyFinderCallback;
 import org.alfresco.repo.props.PropertyUniqueConstraintViolation;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
@@ -497,6 +500,22 @@ public class PropertyValueDAOTest extends TestCase
         final Serializable entityValueCheck = txnHelper.doInTransaction(getByIdCallback, false);
         assertNotNull(entityValueCheck);
         assertEquals(value, entityValueCheck);
+        
+        // Test the callback for multiple IDs
+        final Map<Long, Serializable> propsById = new HashMap<Long, Serializable>();
+        PropertyFinderCallback finderCallback = new PropertyFinderCallback()
+        {
+            public void handleProperty(Long id, Serializable value)
+            {
+                propsById.put(id, value);
+            }
+        };
+        List<Long> entityIds = Collections.singletonList(entityId);
+        propertyValueDAO.getPropertiesByIds(entityIds, finderCallback);
+        
+        assertEquals("Should be exactly one value in map", 1, propsById.size());
+        assertTrue("Expected ID to be in map", propsById.containsKey(entityId));
+        assertEquals("Value was not retrieved correctly", value, propsById.get(entityId));
         
         // Done
         return entityId;

@@ -215,6 +215,15 @@ public interface PropertyValueDAO
     //================================
     // 'alf_prop_root' accessors
     //================================
+    
+    /**
+     * A callback for handling return properties
+     */
+    public interface PropertyFinderCallback
+    {
+        public void handleProperty(Long id, Serializable value);
+    }
+
     /**
      * Use for accessing non-unique, exploded properties; see interface comments.
      * <p/>
@@ -225,6 +234,16 @@ public interface PropertyValueDAO
      * @throws DataIntegrityViolationException if the ID is invalid
      */
     Serializable getPropertyById(Long id);
+    /**
+     * Use for accessing non-unique, exploded properties; see interface comments.
+     * <p/>
+     * <b>alf_prop_root</b> accessor: get all properties based on the database IDs
+     * 
+     * @param ids               the IDs (may not be <tt>null</tt>; may be empty)
+     * @param callback          the callback to handle the results
+     * @throws DataIntegrityViolationException if any of the the IDs are invalid
+     */
+    void getPropertiesByIds(List<Long> ids, PropertyFinderCallback callback);
     /**
      * Use for accessing non-unique, exploded properties; see interface comments.
      * <p/>

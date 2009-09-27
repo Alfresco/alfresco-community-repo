@@ -21,6 +21,8 @@
     <typeAlias alias="PropertyLink" type="org.alfresco.repo.domain.propval.PropertyLinkEntity"/>
     <typeAlias alias="PropertyUniqueContext" type="org.alfresco.repo.domain.propval.PropertyUniqueContextEntity"/>
     <typeAlias alias="PropertyIdSearchRow" type="org.alfresco.repo.domain.propval.PropertyIdSearchRow"/>
+    <typeAlias alias="PropertyIdQueryResult" type="org.alfresco.repo.domain.propval.PropertyIdQueryResult"/>
+    <typeAlias alias="PropertyIdQueryParameter" type="org.alfresco.repo.domain.propval.PropertyIdQueryParameter"/>
 
     <!--                -->
     <!-- Result Maps    -->
@@ -99,6 +101,10 @@
         <result property="doubleValue" column="prop_double_value" jdbcType="DOUBLE" javaType="java.lang.Double"/>
         <result property="stringValue" column="prop_string_value" jdbcType="VARCHAR" javaType="java.lang.String"/>
         <result property="serializableValue" column="prop_serializable_value" jdbcType="BLOB" javaType="java.io.Serializable"/>
+    </resultMap>
+    <resultMap id="result_PropertyIdQueryResult" class="PropertyIdQueryResult">
+        <result property="propId" column="prop_id" jdbcType="BIGINT" javaType="long"/>
+        <result property="propValues" resultMap="alfresco.propval.result_PropertyIdSearchRow"/>
     </resultMap>
   
     <!--                -->
@@ -362,6 +368,36 @@
             left join alf_prop_serializable_value serv on (serv.id = pv.long_value and pv.persisted_type = 4)
         where
             pl.root_prop_id = #id#
+    </select>
+    
+    <!-- Get the property values by a list of IDs -->
+    <select id="select_PropertiesByIds" parameterClass="PropertyIdQueryParameter" resultMap="result_PropertyIdQueryResult">
+        select
+            pl.root_prop_id             as prop_id,
+            pl.root_prop_id             as link_root_prop_id,
+            pl.prop_index               as link_prop_index,
+            pl.contained_in             as link_contained_in,
+            pl.key_prop_id              as link_key_prop_id,
+            pl.value_prop_id            as link_value_prop_id,
+            pv.actual_type_id           as prop_actual_type_id,
+            pv.persisted_type           as prop_persisted_type,
+            pv.long_value               as prop_long_value,
+            dv.double_value             as prop_double_value,
+            sv.string_value             as prop_string_value,
+            serv.serializable_value     as prop_serializable_value
+        from
+            alf_prop_link pl
+            join alf_prop_value pv on (pl.value_prop_id = pv.id)
+            left join alf_prop_double_value dv on (dv.id = pv.long_value and pv.persisted_type = 2)
+            left join alf_prop_string_value sv on (sv.id = pv.long_value and (pv.persisted_type = 3 || pv.persisted_type = 5))
+            left join alf_prop_serializable_value serv on (serv.id = pv.long_value and pv.persisted_type = 4)
+        <dynamic prepend="where pl.root_prop_id in ">
+            <iterate property="rootPropIds" open="(" close=")" conjunction=", ">
+                #rootPropIds[]#
+            </iterate>
+        </dynamic>
+            order by
+                root_prop_id
     </select>
     
     <select id="select_PropertyRootById" parameterClass="PropertyRoot" resultMap="result_PropertyRoot">

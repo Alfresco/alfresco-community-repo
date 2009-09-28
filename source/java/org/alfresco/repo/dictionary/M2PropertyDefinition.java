@@ -473,23 +473,31 @@ import org.alfresco.util.EqualsHelper;
             isUpdated = true;
         }
         
-        // check indexed
+        //
+        // property indexing - is index enabled -> stored, atomic, tokenized (true, false, both)
+        //
+        //    <index enabled="true">
+        //       <atomic>true</atomic>
+        //       <stored>false</stored> 
+        //       <tokenised>both</tokenised>
+        //    </index>
+        //
+        
         if (isIndexed() != propDef.isIndexed())
         { 
-            isUpdated = true;
+            isUpdatedIncrementally = true;
         }
         
-        // check stored in index
         if (isStoredInIndex() != propDef.isStoredInIndex())
         { 
-            isUpdated = true;
+            isUpdatedIncrementally = true;
         }
         
-        // check auto index
         if (isIndexedAtomically() != propDef.isIndexedAtomically())
         { 
-            isUpdated = true;
+            isUpdatedIncrementally = true;
         }
+        
         
         // check override
         if (isOverride() != propDef.isOverride())
@@ -502,6 +510,7 @@ import org.alfresco.util.EqualsHelper;
         { 
             isUpdated = true;
         }
+        
         
         // TODO - check prop constraints (inline and referenced)
         

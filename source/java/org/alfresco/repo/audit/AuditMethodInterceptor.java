@@ -429,7 +429,7 @@ public class AuditMethodInterceptor implements MethodInterceptor
         if (logger.isDebugEnabled() && auditedData.size() > 0)
         {
             logger.debug(
-                    "Audited before invocation: \n" +
+                    "Audited after invocation: \n" +
                     (thrown == null ? "" : "   Exception: " + thrown.getMessage() + "\n") +
                     "   Values: " + auditedData);
         }

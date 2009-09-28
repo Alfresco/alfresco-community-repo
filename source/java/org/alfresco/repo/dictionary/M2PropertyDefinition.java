@@ -498,19 +498,17 @@ import org.alfresco.util.EqualsHelper;
             isUpdatedIncrementally = true;
         }
         
+        if (! EqualsHelper.nullSafeEquals(getIndexTokenisationMode().toString(), propDef.getIndexTokenisationMode().toString(), false))
+        { 
+            isUpdatedIncrementally = true;
+        }
+        
         
         // check override
         if (isOverride() != propDef.isOverride())
         { 
             isUpdated = true;
         }
-        
-        // check index tokenisation mode
-        if (! EqualsHelper.nullSafeEquals(getIndexTokenisationMode().toString(), propDef.getIndexTokenisationMode().toString(), false))
-        { 
-            isUpdated = true;
-        }
-        
         
         // TODO - check prop constraints (inline and referenced)
         

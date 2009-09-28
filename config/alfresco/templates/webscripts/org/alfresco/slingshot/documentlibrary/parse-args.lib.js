@@ -84,8 +84,6 @@ var ParseArgs =
                return null;
             }
          }
-
-         parentNode = rootNode.parent;
       }
       else
       {

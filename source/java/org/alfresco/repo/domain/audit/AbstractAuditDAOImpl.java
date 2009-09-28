@@ -370,43 +370,46 @@ public abstract class AbstractAuditDAOImpl implements AuditDAO
                 // No more results required
                 return;
             }
-            // Get the value map
-            Map<String, Serializable> auditValues;
-            List<PropertyIdSearchRow> propMapRows = row.getAuditValues();
-            if (propMapRows == null)
+            // See if the value is available or if it has to be built up
+            Map<String, Serializable> auditValues = row.getAuditValue();
+            if (auditValues == null)
             {
-                // Use the audit values ID
-                Long auditValuesId = row.getAuditValuesId();
-                Pair<Long, Serializable> auditValuesPair = propertyValueDAO.getPropertyValueById(auditValuesId);
-                if (auditValuesPair == null)
+                List<PropertyIdSearchRow> propMapRows = row.getAuditValueRows();
+                if (propMapRows == null)
                 {
-                    // Ignore
-                    logger.warn("Audit entry not joined to audit properties: " + row);
-                    return;
+                    // Use the audit values ID
+                    Long auditValuesId = row.getAuditValuesId();
+                    Pair<Long, Serializable> auditValuesPair = propertyValueDAO.getPropertyValueById(auditValuesId);
+                    if (auditValuesPair == null)
+                    {
+                        // Ignore
+                        logger.warn("Audit entry not joined to audit properties: " + row);
+                        return;
+                    }
+                    auditValues = (Map<String, Serializable>) auditValuesPair.getSecond();
                 }
-                auditValues = (Map<String, Serializable>) auditValuesPair.getSecond();
-            }
-            else
-            {
-                // Resolve the map
-                try
+                else
                 {
-                    auditValues = (Map<String, Serializable>) propertyValueDAO.convertPropertyIdSearchRows(propMapRows);
-                }
-                catch (ClassCastException e)
-                {
-                    logger.warn("Audit entry not linked to a Map<String, Serializable> value: " + row);
-                    return;
-                }
-                catch (Throwable e)
-                {
-                    logger.warn("Audit entry unable to extract audited values: " + row, e);
-                    return;
-                }
-                if (auditValues == null)
-                {
-                    logger.warn("Audit entry incompletely joined to audit properties: " + row);
-                    return;
+                    // Resolve the map
+                    try
+                    {
+                        auditValues = (Map<String, Serializable>) propertyValueDAO.convertPropertyIdSearchRows(propMapRows);
+                    }
+                    catch (ClassCastException e)
+                    {
+                        logger.warn("Audit entry not linked to a Map<String, Serializable> value: " + row);
+                        return;
+                    }
+                    catch (Throwable e)
+                    {
+                        logger.warn("Audit entry unable to extract audited values: " + row, e);
+                        return;
+                    }
+                    if (auditValues == null)
+                    {
+                        logger.warn("Audit entry incompletely joined to audit properties: " + row);
+                        return;
+                    }
                 }
             }
             // Resolve the application and username

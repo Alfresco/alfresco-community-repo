@@ -25,9 +25,11 @@
 package org.alfresco.repo.domain.audit.ibatis;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 
 import org.alfresco.ibatis.RollupRowHandler;
 import org.alfresco.repo.domain.audit.AbstractAuditDAOImpl;
@@ -37,6 +39,7 @@ import org.alfresco.repo.domain.audit.AuditEntryEntity;
 import org.alfresco.repo.domain.audit.AuditModelEntity;
 import org.alfresco.repo.domain.audit.AuditQueryParameters;
 import org.alfresco.repo.domain.audit.AuditQueryResult;
+import org.alfresco.repo.domain.propval.PropertyValueDAO.PropertyFinderCallback;
 import org.alfresco.util.Pair;
 import org.springframework.orm.ibatis.SqlMapClientTemplate;
 
@@ -64,6 +67,7 @@ public class AuditDAOImpl extends AbstractAuditDAOImpl
     @SuppressWarnings("unused")
     private static final String SELECT_ENTRIES_SIMPLE = "alfresco.audit.select_AuditEntriesSimple";
     private static final String SELECT_ENTRIES_WITH_VALUES = "alfresco.audit.select_AuditEntriesWithValues";
+    private static final String SELECT_ENTRIES_WITHOUT_VALUES = "alfresco.audit.select_AuditEntriesWithoutValues";
     
     private SqlMapClientTemplate template;
 
@@ -241,36 +245,66 @@ public class AuditDAOImpl extends AbstractAuditDAOImpl
             params.setSearchValueId(searchValuePair.getFirst());
         }
         
-        // RowHandlers in RowHandlers: See 'groupBy' issue https://issues.apache.org/jira/browse/IBATIS-503
-        RowHandler shreddedRowHandler = new RowHandler()
-        {
-            public void handleRow(Object valueObject)
-            {
-                rowHandler.processResult((AuditQueryResult)valueObject);
-            }
-        };
-        RollupRowHandler rollupRowHandler = new RollupRowHandler(
-                new String[] {"auditEntryId"},
-                "auditValues",
-                shreddedRowHandler,
-                maxResults);
-        
         if (maxResults > 0)
         {
-            // Calculate the maximum results required
-            int sqlMaxResults = (maxResults > 0 ? ((maxResults+1) * 100) : Integer.MAX_VALUE);
-            
-            List<AuditQueryResult> rows = template.queryForList(SELECT_ENTRIES_WITH_VALUES, params, 0, sqlMaxResults);
+            // Query without getting the values.  We gather all the results and batch-fetch the audited
+            // values afterwards.
+            final TreeMap<Long, AuditQueryResult> resultsByValueId = new TreeMap<Long, AuditQueryResult>();
+            PropertyFinderCallback propertyFinderCallback = new PropertyFinderCallback()
+            {
+                public void handleProperty(Long id, Serializable value)
+                {
+                    // get the row
+                    AuditQueryResult row = resultsByValueId.get(id);
+                    try
+                    {
+                        row.setAuditValue((Map<String, Serializable>) value);
+                    }
+                    catch (ClassCastException e)
+                    {
+                        // The handler will deal with the entry
+                    }
+                    rowHandler.processResult(row);
+                }
+            };
+
+            List<AuditQueryResult> rows = template.queryForList(SELECT_ENTRIES_WITHOUT_VALUES, params, 0, maxResults);
             for (AuditQueryResult row : rows)
             {
-                rollupRowHandler.handleRow(row);
+                resultsByValueId.put(row.getAuditValuesId(), row);
+                if (resultsByValueId.size() >= 100)
+                {
+                    // Fetch values for the results.  The treemap is ordered.
+                    List<Long> valueIds = new ArrayList<Long>(resultsByValueId.keySet());
+                    propertyValueDAO.getPropertiesByIds(valueIds, propertyFinderCallback);
+                    // Clear and continue
+                    resultsByValueId.clear();
+                }
             }
-            // Don't process last result:
-            //    rollupRowHandler.processLastResults();
-            //    The last result may be incomplete
+            // Process any remaining results
+            if (resultsByValueId.size() > 0)
+            {
+                // Fetch values for the results.  The treemap is ordered.
+                List<Long> valueIds = new ArrayList<Long>(resultsByValueId.keySet());
+                propertyValueDAO.getPropertiesByIds(valueIds, propertyFinderCallback);
+            }
         }
         else
         {
+            // RowHandlers in RowHandlers: See 'groupBy' issue https://issues.apache.org/jira/browse/IBATIS-503
+            RowHandler queryRowHandler = new RowHandler()
+            {
+                public void handleRow(Object valueObject)
+                {
+                    rowHandler.processResult((AuditQueryResult)valueObject);
+                }
+            };
+            RollupRowHandler rollupRowHandler = new RollupRowHandler(
+                    new String[] {"auditEntryId"},
+                    "auditValueRows",
+                    queryRowHandler,
+                    maxResults);
+            
             template.queryWithRowHandler(SELECT_ENTRIES_WITH_VALUES, params, rollupRowHandler);
             rollupRowHandler.processLastResults();
         }

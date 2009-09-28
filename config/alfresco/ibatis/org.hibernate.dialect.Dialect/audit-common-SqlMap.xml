@@ -50,7 +50,7 @@
     <resultMap id="result_AuditQueryAllValues"
                extends="alfresco.audit.result_AuditQueryNoValues"
                class="AuditQueryResult">
-        <result property="auditValues" resultMap="alfresco.propval.result_PropertyIdSearchRow"/>
+        <result property="auditValueRows" resultMap="alfresco.propval.result_PropertyIdSearchRow"/>
     </resultMap>
   
     <!--                -->
@@ -181,6 +181,47 @@
             left join alf_prop_double_value dv on (dv.id = pv.long_value and pv.persisted_type = 2)
             left join alf_prop_string_value sv on (sv.id = pv.long_value and (pv.persisted_type = 3 || pv.persisted_type = 5))
             left join alf_prop_serializable_value serv on (serv.id = pv.long_value and pv.persisted_type = 4)
+        <dynamic prepend="where">
+            <isNotNull prepend="and" property="auditAppNameId">
+                app.app_name_id = #auditAppNameId#
+            </isNotNull>
+            <isNotNull prepend="and" property="auditUserId">
+                entry.audit_user_id = #auditUserId#
+            </isNotNull>
+            <isNotNull prepend="and" property="auditFromTime">
+                <![CDATA[entry.audit_time >= #auditFromTime#]]>
+            </isNotNull>
+            <isNotNull prepend="and" property="auditToTime">
+                <![CDATA[entry.audit_time < #auditToTime#]]>
+            </isNotNull>
+            <isNotNull prepend="and" property="searchKeyId">
+                sp_kpl.key_prop_id = #searchKeyId#
+            </isNotNull>
+            <isNotNull prepend="and" property="searchValueId">
+                sp_mpl.value_prop_id = #searchValueId#
+            </isNotNull>
+        </dynamic>
+    </select>
+
+    <!-- Get audit entries -->
+    <select id="select_AuditEntriesWithoutValues" parameterClass="AuditQueryParameters" resultMap="result_AuditQueryNoValues">
+        select
+            app.app_name_id             as audit_app_name_id,
+            entry.id                    as audit_entry_id,
+            entry.audit_user_id         as audit_user_id,
+            entry.audit_time            as audit_time,
+            entry.audit_values_id       as audit_values_id
+        from
+            alf_audit_app app
+            join alf_audit_entry entry on (entry.audit_app_id = app.id)
+            
+        <isNotNull property="searchKeyId">
+            join alf_prop_link sp_kpl on (sp_kpl.root_prop_id = entry.audit_values_id)
+        </isNotNull>
+        <isNotNull property="searchValueId">
+            join alf_prop_link sp_mpl on (sp_mpl.root_prop_id = entry.audit_values_id)
+        </isNotNull>
+        
         <dynamic prepend="where">
             <isNotNull prepend="and" property="auditAppNameId">
                 app.app_name_id = #auditAppNameId#

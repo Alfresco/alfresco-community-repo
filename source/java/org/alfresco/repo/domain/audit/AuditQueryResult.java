@@ -24,8 +24,10 @@
  */
 package org.alfresco.repo.domain.audit;
 
+import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import org.alfresco.repo.domain.propval.PropertyIdSearchRow;
 
@@ -42,7 +44,8 @@ public class AuditQueryResult
     private Long auditUserId;
     private long auditTime;
     private Long auditValuesId;
-    private List<PropertyIdSearchRow> auditValues;
+    private List<PropertyIdSearchRow> auditValueRows;
+    private Map<String, Serializable> auditValue;
     
     public AuditQueryResult()
     {
@@ -58,7 +61,8 @@ public class AuditQueryResult
           .append(", auditUserId=").append(auditUserId)
           .append(", auditTime").append(new Date(auditTime))
           .append(", auditValuesId=").append(auditValuesId)
-          .append(", auditValues=").append(auditValues.size())
+          .append(", auditValueRows=").append(auditValueRows == null ? null : auditValueRows.size())
+          .append(", auditValue=").append(auditValue)
           .append("]");
         return sb.toString();
     }
@@ -113,13 +117,23 @@ public class AuditQueryResult
         this.auditValuesId = auditValuesId;
     }
 
-    public List<PropertyIdSearchRow> getAuditValues()
+    public List<PropertyIdSearchRow> getAuditValueRows()
     {
-        return auditValues;
+        return auditValueRows;
     }
 
-    public void setAuditValues(List<PropertyIdSearchRow> auditValues)
+    public void setAuditValueRows(List<PropertyIdSearchRow> auditValueRows)
     {
-        this.auditValues = auditValues;
+        this.auditValueRows = auditValueRows;
+    }
+
+    public Map<String, Serializable> getAuditValue()
+    {
+        return auditValue;
+    }
+
+    public void setAuditValue(Map<String, Serializable> auditValue)
+    {
+        this.auditValue = auditValue;
     }
 }

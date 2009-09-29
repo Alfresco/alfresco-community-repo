@@ -52,7 +52,8 @@ function main()
               'rma:dispositionActionDefinition': '{http://www.alfresco.org/model/recordsmanagement/1.0}dispositionActionDefinition',
               'rma:dispositionAction': '{http://www.alfresco.org/model/recordsmanagement/1.0}dispositionAction',
               'rma:hold':'{http://www.alfresco.org/model/recordsmanagement/1.0}hold',
-              'rma:transfer':'{http://www.alfresco.org/model/recordsmanagement/1.0}transfer'  
+              'rma:transfer':'{http://www.alfresco.org/model/recordsmanagement/1.0}transfer',
+              'cm:thumbnail': '{http://www.alfresco.org/model/content/1.0}thumbnail'
             };
          
             var filterTypes = argsFilterType.split(',');

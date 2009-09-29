@@ -240,7 +240,7 @@ public class AlfrescoImapFolder extends AbstractImapFolder
                 setSelectable(selectable);
             }
             
-            AccessStatus status = serviceRegistry.getPublicServiceAccessService().hasAccess(ServiceRegistry.NODE_SERVICE.getLocalName(), "setProperty", folderInfo.getNodeRef(), ContentModel.PROP_CREATED, "");
+            AccessStatus status = serviceRegistry.getPublicServiceAccessService().hasAccess(ServiceRegistry.NODE_SERVICE.getLocalName(), "createNode", folderInfo.getNodeRef(), null, null, null);
             //serviceRegistry.getPermissionService().hasPermission(folderInfo.getNodeRef(), PermissionService.WRITE);
             if (status == AccessStatus.DENIED)
             {

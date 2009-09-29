@@ -667,7 +667,7 @@ public class Version2ServiceImpl extends VersionServiceImpl implements VersionSe
         }
         
         // TODO consolidate with VersionUtil.convertFrozenToOriginalProps
-        nodeProperties.remove(ContentModel.PROP_DESCRIPTION);    
+        
         for (QName key : nodeProperties.keySet())
         {
             Serializable value = nodeProperties.get(key);
@@ -695,12 +695,21 @@ public class Version2ServiceImpl extends VersionServiceImpl implements VersionSe
                }
                else
                {
-                   // all other properties
-                   versionProperties.put(keyName, value);
+                   if (keyName.equals(Version.PROP_DESCRIPTION) || 
+                       keyName.equals(VersionBaseModel.PROP_VERSION_LABEL) ||
+                       keyName.equals(VersionBaseModel.PROP_VERSION_NUMBER))
+                   {
+                       // ignore reserved localname (including cm:description, cm:versionLabel)
+                   }
+                   else
+                   {
+                       // all other properties
+                       versionProperties.put(keyName, value);
+                   }
                }
             }
         }
-
+        
         // Create and return the version object
         NodeRef newNodeRef = new NodeRef(new StoreRef(Version2Model.STORE_PROTOCOL, Version2Model.STORE_ID), versionRef.getId());
         Version result = new VersionImpl(versionProperties, newNodeRef);

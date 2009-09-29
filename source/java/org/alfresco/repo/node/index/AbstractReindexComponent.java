@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -26,6 +26,7 @@ package org.alfresco.repo.node.index;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -43,6 +44,7 @@ import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
 import org.alfresco.repo.search.impl.lucene.fts.FullTextSearchIndexer;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.TransactionListenerAdapter;
 import org.alfresco.repo.transaction.TransactionServiceImpl;
@@ -93,6 +95,9 @@ public abstract class AbstractReindexComponent implements IndexRecovery
     protected NodeDaoService nodeDaoService;
     /** the component that holds the reindex worker threads */
     private ThreadPoolExecutor threadPoolExecutor;
+    
+    private TenantService tenantService;
+    private List<String> storesToIgnore = new ArrayList<String>(0);
     
     private volatile boolean shutdown;
     private final WriteLock indexerWriteLock;
@@ -202,6 +207,21 @@ public abstract class AbstractReindexComponent implements IndexRecovery
     public void setThreadPoolExecutor(ThreadPoolExecutor threadPoolExecutor)
     {
         this.threadPoolExecutor = threadPoolExecutor;
+    }
+    
+    public void setTenantService(TenantService tenantService)
+    {
+        this.tenantService = tenantService;
+    }
+    
+    public void setStoresToIgnore(List<String> storesToIgnore)
+    {
+        this.storesToIgnore = storesToIgnore;
+    }
+    
+    public List<String> getStoresToIgnore()
+    {
+        return this.storesToIgnore;
     }
 
     /**
@@ -321,6 +341,23 @@ public abstract class AbstractReindexComponent implements IndexRecovery
                     storeRefsIterator.remove();
                 }
             }
+            
+            List<String> storesToIgnore = getStoresToIgnore();
+            if (storesToIgnore != null)
+            {
+                 
+                storeRefsIterator = storeRefs.iterator();
+                while (storeRefsIterator.hasNext())
+                {
+                    // Remove stores to ignore
+                    StoreRef storeRef = storeRefsIterator.next();
+                    if (storesToIgnore.contains(storeRef.toString()))
+                    {
+                        storeRefsIterator.remove();
+                    }
+                }
+            }
+            
             // Change the ordering to favour the most common stores
             if (storeRefs.contains(StoreRef.STORE_REF_ARCHIVE_SPACESSTORE))
             {
@@ -385,7 +422,41 @@ public abstract class AbstractReindexComponent implements IndexRecovery
         {
             // If none of the stores have the transaction, then that might be because it consists of 0 modifications
             int updateCount = nodeDaoService.getTxnUpdateCount(txnId);
-            if (updateCount > 0)
+            
+            /* Alternative (r15360)
+            // exclude updates in the version store
+            if(updateCount > 0)
+            {
+                // the updates could all be in the version stores ...
+                List<NodeRef> changes = nodeDaoService.getTxnChanges(txnId);
+                for(NodeRef change : changes)
+                {
+                    StoreRef changeStore = change.getStoreRef();
+                    if(changeStore.getProtocol().equals(StoreRef.PROTOCOL_WORKSPACE))
+                    {
+                        if(changeStore.getIdentifier().equals("lightWeightVersionStore"))
+                        {
+                            Status nodeStatus = nodeService.getNodeStatus(change);
+                            if(!nodeStatus.isDeleted())
+                            {
+                                updateCount--;
+                            }
+                        }
+                        if(changeStore.getIdentifier().equals("version2Store"))
+                        {
+                            Status nodeStatus = nodeService.getNodeStatus(change);
+                            if(!nodeStatus.isDeleted())
+                            {
+                                updateCount--;
+                            }
+                        }
+                    }
+                   
+                }
+            }
+            */
+            
+            if ((updateCount > 0) && (! allUpdatedNodesCanBeIgnored(txnId)))
             {
                 // There were updates, but there is no sign in the indexes
                 result = InIndex.NO;
@@ -470,6 +541,47 @@ public abstract class AbstractReindexComponent implements IndexRecovery
         {
             if (results != null) { results.close(); }
         }
+    }
+    
+    protected boolean allUpdatedNodesCanBeIgnored(Long txnId)
+    {
+        boolean allUpdatedNodesCanBeIgnored = false;
+        List<String> storesToIgnore = getStoresToIgnore();
+        if ((storesToIgnore != null) && (storesToIgnore.size() > 0) && (txnId != null))
+        {
+            List<NodeRef> nodeRefs = nodeDaoService.getTxnChanges(txnId);
+            
+            allUpdatedNodesCanBeIgnored = true;
+            for (NodeRef nodeRef : nodeRefs)
+            {
+                if (nodeRef != null)
+                {
+                    Status nodeStatus = nodeService.getNodeStatus(nodeRef);
+                    if (nodeStatus == null)
+                    {
+                        // it's not there any more
+                        continue;
+                    }
+                    if (! nodeStatus.isDeleted())
+                    {
+                        // updated node (ie. not deleted)
+                        StoreRef storeRef = nodeRef.getStoreRef();
+                        if (tenantService != null)
+                        {
+                            storeRef = tenantService.getBaseName(nodeRef.getStoreRef());
+                        }
+                            
+                        if (! storesToIgnore.contains(storeRef.toString()))
+                        {
+                            allUpdatedNodesCanBeIgnored = false;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        
+        return allUpdatedNodesCanBeIgnored;
     }
     
     private boolean haveNodesBeenRemovedFromIndex(final StoreRef storeRef, final Transaction txn)

@@ -43,6 +43,15 @@
       <property name="nodeDaoService">
           <ref bean="nodeDaoService" />
       </property>
+      <property name="tenantService">
+         <ref bean="tenantService" />
+      </property>
+      <property name="storesToIgnore">
+         <list>
+            <value>${version.store.version2Store}</value>
+            <value>${version.store.deprecated.lightWeightVersionStore}</value>
+         </list>
+      </property>
    </bean>
    
    <!-- index recovery and validation -->

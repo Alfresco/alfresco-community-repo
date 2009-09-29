@@ -21,7 +21,7 @@
                "edit" : ${user.permissions.edit?string},
                "delete" : ${user.permissions.delete?string}
             }
-         },
+         }
       },
       "onlineEditing": ${doclist.onlineEditing?string},
       "itemCounts":

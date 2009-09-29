@@ -30,6 +30,8 @@ import java.util.List;
 
 import org.alfresco.repo.imap.exception.AlfrescoImapFolderException;
 import org.alfresco.service.transaction.TransactionService;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import com.icegreen.greenmail.imap.AuthorizationException;
 import com.icegreen.greenmail.imap.ImapHostManager;
@@ -44,6 +46,8 @@ public class AlfrescoImapHostManager implements ImapHostManager
 {
     private ImapService imapService;
     private TransactionService transactionService;
+    
+    private static Log logger = LogFactory.getLog(AlfrescoImapHostManager.class);
 
     /**
      * Returns the hierarchy delimiter for mailboxes on this host.
@@ -79,6 +83,7 @@ public class AlfrescoImapHostManager implements ImapHostManager
         }
         catch (Throwable e)
         {
+            logger.debug(e.getMessage(), e);
             throw new FolderException(e.getMessage());
         }
     }
@@ -108,6 +113,7 @@ public class AlfrescoImapHostManager implements ImapHostManager
             }
         catch (Throwable e)
         {
+            logger.debug(e.getMessage(), e);
             throw new FolderException(e.getMessage());
         }
     }
@@ -135,6 +141,7 @@ public class AlfrescoImapHostManager implements ImapHostManager
                     }
         catch (Throwable e)
                     {
+            logger.debug(e.getMessage(), e);
             throw new FolderException(e.getMessage());
         }
     }
@@ -158,6 +165,7 @@ public class AlfrescoImapHostManager implements ImapHostManager
                 }
         catch (Throwable e)
                 {
+            logger.debug(e.getMessage(), e);
             throw new FolderException(e.getMessage());
         }
     }
@@ -178,6 +186,7 @@ public class AlfrescoImapHostManager implements ImapHostManager
                 }
         catch (Throwable e)
             {
+            logger.debug(e.getMessage(), e);
             throw new FolderException(e.getMessage());
         }
     }
@@ -210,6 +219,7 @@ public class AlfrescoImapHostManager implements ImapHostManager
                 }
         catch (Throwable e)
                 {
+            logger.debug(e.getMessage(), e);
             throw new FolderException(e.getMessage());
     }
     }
@@ -228,6 +238,7 @@ public class AlfrescoImapHostManager implements ImapHostManager
         }
         catch (Throwable e)
         {
+            logger.debug(e.getMessage(), e);
             throw new FolderException(e.getMessage());
         }
     }
@@ -256,6 +267,7 @@ public class AlfrescoImapHostManager implements ImapHostManager
         }
         catch (Throwable e)
         {
+            logger.debug(e.getMessage(), e);
             throw new FolderException(e.getMessage());
         }
     }
@@ -274,6 +286,7 @@ public class AlfrescoImapHostManager implements ImapHostManager
         }
         catch (Throwable e)
         {
+            logger.debug(e.getMessage(), e);
             throw new FolderException(e.getMessage());
         }
     }

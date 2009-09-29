@@ -934,6 +934,7 @@ public class SiteServiceImpl implements SiteService, SiteModel
      */
     public void deleteSite(final String shortName)
     {
+        logger.debug("delete site :" + shortName);
         NodeRef siteNodeRef = getSiteNodeRef(shortName);
         if (siteNodeRef == null)
         {
@@ -956,6 +957,8 @@ public class SiteServiceImpl implements SiteService, SiteModel
                 return null;
             }
         }, AuthenticationUtil.getSystemUserName());
+        
+        logger.debug("site deleted :" + shortName);
     }
 
     /**

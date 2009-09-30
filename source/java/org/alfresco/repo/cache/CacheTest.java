@@ -169,6 +169,7 @@ public class CacheTest extends TestCase
         String newGlobalTwo = "new_global_two";
         String newGlobalThree = "new_global_three";
         String updatedTxnThree = "updated_txn_three";
+        String updatedTxnFour = "updated_txn_four";
         
         // add item to global cache
         backingCache.put(newGlobalOne, newGlobalOne);
@@ -198,17 +199,25 @@ public class CacheTest extends TestCase
             assertFalse("Transactionally removed item found in keys", transactionalKeys.contains(newGlobalOne));
             assertTrue("Transactionally added item not found in keys", transactionalKeys.contains(updatedTxnThree));
             
-            // Register a post-commit stresser.  We do this here so that it is registered after the transactional cache
-            PostCommitCacheUser listener = new PostCommitCacheUser(transactionalCache, updatedTxnThree);
-            AlfrescoTransactionSupport.bindListener(listener);
+            // Register a post-commit cache reader to make sure that nothing blows up if the cache is hit in post-commit
+            PostCommitCacheReader listenerReader = new PostCommitCacheReader(transactionalCache, updatedTxnThree);
+            AlfrescoTransactionSupport.bindListener(listenerReader);
+            
+            // Register a post-commit cache reader to make sure that nothing blows up if the cache is hit in post-commit
+            PostCommitCacheWriter listenerWriter = new PostCommitCacheWriter(transactionalCache, updatedTxnFour, "FOUR");
+            AlfrescoTransactionSupport.bindListener(listenerWriter);
             
             // commit the transaction
             txn.commit();
             
-            // Check the post-commit stresser
-            if (listener.e != null)
+            // Check the post-commit stressers
+            if (listenerReader.e != null)
             {
-                throw listener.e;
+                throw listenerReader.e;
+            }
+            if (listenerWriter.e != null)
+            {
+                throw listenerWriter.e;
             }
             
             // check that backing cache was updated with the in-transaction changes
@@ -231,18 +240,18 @@ public class CacheTest extends TestCase
     }
     
     /**
-     * This transaction listener attempts to use the cache in the afterCommit phase.  Technically the
+     * This transaction listener attempts to read from the cache in the afterCommit phase.  Technically the
      * transaction has finished, but the transaction resources are still available.
      * 
      * @author Derek Hulley
      * @since 2.1
      */
-    private class PostCommitCacheUser extends TransactionListenerAdapter
+    private class PostCommitCacheReader extends TransactionListenerAdapter
     {
         private final SimpleCache<String, Object> transactionalCache;
         private final String key;
         private Throwable e;
-        private PostCommitCacheUser(SimpleCache<String, Object> transactionalCache, String key)
+        private PostCommitCacheReader(SimpleCache<String, Object> transactionalCache, String key)
         {
             this.transactionalCache = transactionalCache;
             this.key = key;
@@ -260,12 +269,42 @@ public class CacheTest extends TestCase
                 return;
             }
         }
-        @Override
-        public int hashCode()
+    }
+    
+    /**
+     * This transaction listener attempts to write to the cache in the afterCommit phase.  Technically the
+     * transaction has finished, but the transaction resources are still available.
+     * 
+     * @author Derek Hulley
+     * @since 2.1
+     */
+    private class PostCommitCacheWriter extends TransactionListenerAdapter
+    {
+        private final SimpleCache<String, Object> transactionalCache;
+        private final String key;
+        private final Object value;
+        private Throwable e;
+        private PostCommitCacheWriter(SimpleCache<String, Object> transactionalCache, String key, Object value)
         {
-            return -100000;
+            this.transactionalCache = transactionalCache;
+            this.key = key;
+            this.value = value;
         }
-        
+        @Override
+        public void afterCommit()
+        {
+            try
+            {
+                transactionalCache.put(key, value);
+                transactionalCache.remove(key);
+                transactionalCache.clear();
+            }
+            catch (Throwable e)
+            {
+                this.e = e;
+                return;
+            }
+        }
     }
     
     /**

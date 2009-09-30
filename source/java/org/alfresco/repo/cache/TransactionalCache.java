@@ -123,7 +123,7 @@ public class TransactionalCache<K extends Serializable, V extends Object>
         {
             return false;
         }
-        if (!(obj instanceof TransactionalCache))
+        if (!(obj instanceof TransactionalCache<?, ?>))
         {
             return false;
         }
@@ -396,40 +396,50 @@ public class TransactionalCache<K extends Serializable, V extends Object>
             // Ensure that the cache isn't being modified
             if (txnData.isClosed)
             {
-                throw new AlfrescoRuntimeException("onCommit cache modifications are not allowed.");
-            }
-            // we have a transaction - add the item into the updated cache for this transaction
-            // are we in an overflow condition?
-            if (txnData.updatedItemsCache.getMemoryStoreSize() >= maxCacheSize)
-            {
-                // overflow about to occur or has occured - we can only guarantee non-stale
-                // data by clearing the shared cache after the transaction.  Also, the
-                // shared cache needs to be ignored for the rest of the transaction.
-                txnData.isClearOn = true;
-            }
-            CacheBucket<V> bucket = null;
-            if (sharedCache.contains(key))
-            {
-                V existingValue = sharedCache.get(key);
-                // The value needs to be kept for later checks
-                bucket = new UpdateCacheBucket<V>(existingValue, value);
+                if (isDebugEnabled)
+                {
+                    logger.debug(
+                            "In post-commit add: \n" +
+                            "   cache: " + this + "\n" +
+                            "   key: " + key + "\n" +
+                            "   value: " + value);
+                }
             }
             else
             {
-                // The value didn't exist before
-                bucket = new NewCacheBucket<V>(value);
-            }
-            Element element = new Element(key, bucket);
-            txnData.updatedItemsCache.put(element);
-            // remove the item from the removed cache, if present
-            txnData.removedItemsCache.remove(key);
-            // done
-            if (isDebugEnabled)
-            {
-                logger.debug("In transaction - adding item direct to transactional update cache: \n" +
-                        "   cache: " + this + "\n" +
-                        "   key: " + key + "\n" +
-                        "   value: " + value);
+                // we have an active transaction - add the item into the updated cache for this transaction
+                // are we in an overflow condition?
+                if (txnData.updatedItemsCache.getMemoryStoreSize() >= maxCacheSize)
+                {
+                    // overflow about to occur or has occured - we can only guarantee non-stale
+                    // data by clearing the shared cache after the transaction.  Also, the
+                    // shared cache needs to be ignored for the rest of the transaction.
+                    txnData.isClearOn = true;
+                }
+                CacheBucket<V> bucket = null;
+                if (sharedCache.contains(key))
+                {
+                    V existingValue = sharedCache.get(key);
+                    // The value needs to be kept for later checks
+                    bucket = new UpdateCacheBucket<V>(existingValue, value);
+                }
+                else
+                {
+                    // The value didn't exist before
+                    bucket = new NewCacheBucket<V>(value);
+                }
+                Element element = new Element(key, bucket);
+                txnData.updatedItemsCache.put(element);
+                // remove the item from the removed cache, if present
+                txnData.removedItemsCache.remove(key);
+                // done
+                if (isDebugEnabled)
+                {
+                    logger.debug("In transaction - adding item direct to transactional update cache: \n" +
+                            "   cache: " + this + "\n" +
+                            "   key: " + key + "\n" +
+                            "   value: " + value);
+                }
             }
         }
     }
@@ -461,53 +471,62 @@ public class TransactionalCache<K extends Serializable, V extends Object>
             // Ensure that the cache isn't being modified
             if (txnData.isClosed)
             {
-                throw new AlfrescoRuntimeException("onCommit cache modifications are not allowed.");
-            }
-            // is the shared cache going to be cleared?
-            if (txnData.isClearOn)
-            {
-                // don't store removals if we're just going to clear it all out later
+                if (isDebugEnabled)
+                {
+                    logger.debug(
+                            "In post-commit remove: \n" +
+                            "   cache: " + this + "\n" +
+                            "   key: " + key);
+                }
             }
             else
             {
-                // are we in an overflow condition?
-                if (txnData.removedItemsCache.getMemoryStoreSize() >= maxCacheSize)
+                // is the shared cache going to be cleared?
+                if (txnData.isClearOn)
                 {
-                    // overflow about to occur or has occured - we can only guarantee non-stale
-                    // data by clearing the shared cache after the transaction.  Also, the
-                    // shared cache needs to be ignored for the rest of the transaction.
-                    txnData.isClearOn = true;
-                    if (isDebugEnabled)
-                    {
-                        logger.debug("In transaction - removal cache reach capacity reached: \n" +
-                                "   cache: " + this + "\n" +
-                                "   txn: " + AlfrescoTransactionSupport.getTransactionId());
-                    }
+                    // don't store removals if we're just going to clear it all out later
                 }
                 else
                 {
-                    V existingValue = sharedCache.get(key);
-                    if (existingValue == null)
+                    // are we in an overflow condition?
+                    if (txnData.removedItemsCache.getMemoryStoreSize() >= maxCacheSize)
                     {
-                        // There is no point doing a remove for a value that doesn't exist
+                        // overflow about to occur or has occured - we can only guarantee non-stale
+                        // data by clearing the shared cache after the transaction.  Also, the
+                        // shared cache needs to be ignored for the rest of the transaction.
+                        txnData.isClearOn = true;
+                        if (isDebugEnabled)
+                        {
+                            logger.debug("In transaction - removal cache reach capacity reached: \n" +
+                                    "   cache: " + this + "\n" +
+                                    "   txn: " + AlfrescoTransactionSupport.getTransactionId());
+                        }
                     }
                     else
                     {
-                        // Create a bucket to remove the value from the shared cache
-                        CacheBucket<V> removeBucket = new RemoveCacheBucket<V>(existingValue);
-                        Element element = new Element(key, removeBucket);
-                        txnData.removedItemsCache.put(element);
+                        V existingValue = sharedCache.get(key);
+                        if (existingValue == null)
+                        {
+                            // There is no point doing a remove for a value that doesn't exist
+                        }
+                        else
+                        {
+                            // Create a bucket to remove the value from the shared cache
+                            CacheBucket<V> removeBucket = new RemoveCacheBucket<V>(existingValue);
+                            Element element = new Element(key, removeBucket);
+                            txnData.removedItemsCache.put(element);
+                        }
                     }
                 }
-            }
-            // remove the item from the udpated cache, if present
-            txnData.updatedItemsCache.remove(key);
-            // done
-            if (isDebugEnabled)
-            {
-                logger.debug("In transaction - adding item direct to transactional removed cache: \n" +
-                        "   cache: " + this + "\n" +
-                        "   key: " + key);
+                // remove the item from the udpated cache, if present
+                txnData.updatedItemsCache.remove(key);
+                // done
+                if (isDebugEnabled)
+                {
+                    logger.debug("In transaction - adding item direct to transactional removed cache: \n" +
+                            "   cache: " + this + "\n" +
+                            "   key: " + key);
+                }
             }
         }
     }
@@ -531,14 +550,22 @@ public class TransactionalCache<K extends Serializable, V extends Object>
             // Ensure that the cache isn't being modified
             if (txnData.isClosed)
             {
-                throw new AlfrescoRuntimeException("onCommit cache modifications are not allowed.");
+                if (isDebugEnabled)
+                {
+                    logger.debug(
+                            "In post-commit clear: \n" +
+                            "   cache: " + this);
+                }
             }
-            // the shared cache must be cleared at the end of the transaction
-            // and also serves to ensure that the shared cache will be ignored
-            // for the remainder of the transaction
-            txnData.isClearOn = true;
-            txnData.updatedItemsCache.removeAll();
-            txnData.removedItemsCache.removeAll();
+            else
+            {
+                // the shared cache must be cleared at the end of the transaction
+                // and also serves to ensure that the shared cache will be ignored
+                // for the remainder of the transaction
+                txnData.isClearOn = true;
+                txnData.updatedItemsCache.removeAll();
+                txnData.removedItemsCache.removeAll();
+            }
         }
         else            // no transaction
         {
@@ -568,7 +595,6 @@ public class TransactionalCache<K extends Serializable, V extends Object>
     /**
      * NO-OP
      */
-    @SuppressWarnings("unchecked")
     public void beforeCommit(boolean readOnly)
     {
     }

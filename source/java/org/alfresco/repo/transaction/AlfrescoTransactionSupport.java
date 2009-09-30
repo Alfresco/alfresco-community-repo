@@ -778,6 +778,26 @@ public abstract class AlfrescoTransactionSupport
                 logger.debug("After completion (" + statusStr + "): " + this);
             }
             
+            // Clean up the transactional caches
+            for (TransactionalCache<Serializable, Object> cache : transactionalCaches)
+            {
+                try
+                {
+                    if (status  == TransactionSynchronization.STATUS_COMMITTED)
+                    {
+                        cache.afterCommit();
+                    }
+                    else
+                    {
+                        cache.afterRollback();
+                    }
+                }
+                catch (RuntimeException e)
+                {
+                    logger.error("After completion (" + statusStr + ") TransactionalCache exception", e);
+                }
+            }
+            
             List<TransactionListener> iterableListeners = getListenersIterable();
             // notify listeners
             if (status  == TransactionSynchronization.STATUS_COMMITTED)
@@ -830,26 +850,6 @@ public abstract class AlfrescoTransactionSupport
                 catch (RuntimeException e)
                 {
                     logger.error("After completion (" + statusStr + ") Lucene exception", e);
-                }
-            }
-            
-            // Clean up the transactional caches
-            for (TransactionalCache<Serializable, Object> cache : transactionalCaches)
-            {
-                try
-                {
-                    if (status  == TransactionSynchronization.STATUS_COMMITTED)
-                    {
-                        cache.afterCommit();
-                    }
-                    else
-                    {
-                        cache.afterRollback();
-                    }
-                }
-                catch (RuntimeException e)
-                {
-                    logger.error("After completion (" + statusStr + ") TransactionalCache exception", e);
                 }
             }
             

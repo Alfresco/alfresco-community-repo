@@ -28,6 +28,7 @@ import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -115,6 +116,7 @@ import org.alfresco.util.Pair;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.Criteria;
+import org.hibernate.HibernateException;
 import org.hibernate.LockMode;
 import org.hibernate.ObjectNotFoundException;
 import org.hibernate.Query;
@@ -1436,6 +1438,8 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
         if (propertyDef != null && propertyDef.getDataType().getName().equals(DataTypeDefinition.CONTENT))
         {
             Set<Long> contentQNamesToRemoveIds = Collections.singleton(qnameId);
+            // Flush the session to ensure this non-hibernate DAO can do its job
+            getHibernateTemplate().execute(new SessionFlusher());
             contentDataDAO.deleteContentDataForNode(
                     node.getId(),
                     contentQNamesToRemoveIds);
@@ -1521,6 +1525,8 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
          */
         Set<QName> contentQNames = new HashSet<QName>(dictionaryService.getAllProperties(DataTypeDefinition.CONTENT));
         Set<Long> contentQNameIds = qnameDAO.convertQNamesToIds(contentQNames, false);
+        // Flush the session to ensure this non-hibernate DAO can do its job
+        getHibernateTemplate().execute(new SessionFlusher());
         contentDataDAO.deleteContentDataForNode(nodeId, contentQNameIds);
 
         Node node = getNodeNotNull(nodeId);
@@ -1591,6 +1597,9 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
             }
         }
         Set<Long> contentQNamesToRemoveIds = qnameDAO.convertQNamesToIds(contentQNamesToRemove, false);
+
+        // Flush the session to ensure this non-hibernate DAO can do its job
+        getHibernateTemplate().execute(new SessionFlusher());
         contentDataDAO.deleteContentDataForNode(nodeId, contentQNamesToRemoveIds);
 
         Node node = getNodeNotNull(nodeId);
@@ -1715,6 +1724,9 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
          */
         Set<QName> contentQNames = new HashSet<QName>(dictionaryService.getAllProperties(DataTypeDefinition.CONTENT));
         Set<Long> contentQNamesToRemoveIds = qnameDAO.convertQNamesToIds(contentQNames, false);
+
+        // Flush the session to ensure this non-hibernate DAO can do its job
+        getHibernateTemplate().execute(new SessionFlusher());
         contentDataDAO.deleteContentDataForNode(nodeId, contentQNamesToRemoveIds);
 
         Node node = getNodeNotNull(nodeId);
@@ -4834,5 +4846,19 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
                     "   property value: " + propertyValue,
                     e);
         }
+    }
+    
+    private class SessionFlusher implements HibernateCallback
+    {
+
+        /* (non-Javadoc)
+         * @see org.springframework.orm.hibernate3.HibernateCallback#doInHibernate(org.hibernate.Session)
+         */
+        public Object doInHibernate(Session session) throws HibernateException, SQLException
+        {
+            DirtySessionMethodInterceptor.flushSession(getSession(), true);
+            return null;
+        }
+        
     }
 }

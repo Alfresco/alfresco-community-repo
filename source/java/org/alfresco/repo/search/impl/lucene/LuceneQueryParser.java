@@ -932,7 +932,7 @@ public class LuceneQueryParser extends QueryParser
         String localeString = null;
         if (field.startsWith("@"))
         {
-            if (queryText.charAt(0) == '\u0000')
+            if ((queryText.length() > 0) && (queryText.charAt(0) == '\u0000'))
             {
                 int position = queryText.indexOf("\u0000", 1);
                 testText = queryText.substring(position + 1);
@@ -1299,16 +1299,19 @@ public class LuceneQueryParser extends QueryParser
             if (replace != null)
             {
                 StringBuilder postfix = new StringBuilder();
-                for (int i = replace.endOffset(); i < testText.length(); i++)
+                if ((replace.endOffset() >= 0) && (replace.endOffset() < testText.length()))
                 {
-                    char test = testText.charAt(i);
-                    if ((test == '*') || (test == '?'))
+                    for (int i = replace.endOffset(); i < testText.length(); i++)
                     {
-                        postfix.append(test);
-                    }
-                    else
-                    {
-                        break;
+                        char test = testText.charAt(i);
+                        if ((test == '*') || (test == '?'))
+                        {
+                            postfix.append(test);
+                        }
+                        else
+                        {
+                            break;
+                        }
                     }
                 }
                 String post = postfix.toString();

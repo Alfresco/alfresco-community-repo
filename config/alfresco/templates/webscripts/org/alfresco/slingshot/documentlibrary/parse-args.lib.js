@@ -83,6 +83,8 @@ var ParseArgs =
                status.setCode(status.STATUS_NOT_FOUND, "Not a valid nodeRef: '" + nodeRef + "'");
                return null;
             }
+            
+            parentNode = rootNode.parent;
          }
       }
       else

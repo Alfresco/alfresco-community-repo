@@ -70,6 +70,7 @@ public class FilterIndexReaderByStringId extends FilterIndexReader
     public FilterIndexReaderByStringId(String id, IndexReader reader, Set<String> deletions, boolean deleteNodesOnly)
     {
         super(reader);
+        reader.incRef();
         this.id = id;
         
         deletedDocuments = new OpenBitSet(reader.maxDoc());
@@ -123,6 +124,13 @@ public class FilterIndexReaderByStringId extends FilterIndexReader
             throw new AlfrescoRuntimeException("Failed to construct filtering index reader", e);
         }
     }
+
+    // Prevent from actually setting the closed flag
+    @Override
+    protected void doClose() throws IOException
+    {
+        this.in.decRef();
+    }        
 
     /**
      * Filter implementation

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -18,32 +18,19 @@
  * As a special exception to the terms and conditions of version 2.0 of 
  * the GPL, you may redistribute this Program in connection with Free/Libre 
  * and Open Source Software ("FLOSS") applications as described in Alfresco's 
- * FLOSS exception.  You should have recieved a copy of the text describing 
+ * FLOSS exception.  You should have received a copy of the text describing 
  * the FLOSS exception, and it is also available here: 
  * http://www.alfresco.com/legal/licensing"
  */
 package org.alfresco.repo.search.impl.lucene.index;
 
 import java.io.IOException;
-import java.io.ObjectOutputStream;
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.BitSet;
-import java.util.Collection;
 import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.ListIterator;
-import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
-
-import net.sf.ehcache.CacheManager;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.search.impl.lucene.LuceneConfig;
@@ -138,7 +125,7 @@ public class ReferenceCountingReadOnlyIndexReaderFactory
 
         static
         {
-            Class c = IndexReader.class;
+            Class<IndexReader> c = IndexReader.class;
             try
             {
                 s_field = c.getDeclaredField("closed");
@@ -165,14 +152,18 @@ public class ReferenceCountingReadOnlyIndexReaderFactory
             }
             this.config = config;
         }
-
-        public synchronized void incrementReferenceCount()
+        
+        @Override
+        public synchronized void incRef()
         {
             if (wrapper_closed)
             {
                 throw new IllegalStateException(Thread.currentThread().getName() + "Indexer is closed " + id);
             }
-            refCount++;
+            if (refCount++ > 0)
+            {
+                super.incRef();
+            }
             if (s_logger.isDebugEnabled())
             {
                 s_logger.debug(Thread.currentThread().getName() + ": Reader " + id + " - increment - ref count is " + refCount + "        ... " + super.toString());
@@ -194,7 +185,7 @@ public class ReferenceCountingReadOnlyIndexReaderFactory
             }
         }
 
-        public synchronized void decrementReferenceCount() throws IOException
+        private synchronized void decrementReferenceCount() throws IOException
         {
             refCount--;
             if (s_logger.isDebugEnabled())
@@ -210,7 +201,7 @@ public class ReferenceCountingReadOnlyIndexReaderFactory
 
         private void closeIfRequired() throws IOException
         {
-            if ((refCount == 0) && invalidForReuse)
+            if ((refCount == 0) && invalidForReuse && !wrapper_closed)
             {
                 if (s_logger.isDebugEnabled())
                 {
@@ -220,7 +211,9 @@ public class ReferenceCountingReadOnlyIndexReaderFactory
                 {
                     // No tidy up
                 }
-                in.close();
+                // Pass on the last decRef
+                super.decRef();
+
                 wrapper_closed = true;
             }
             else
@@ -262,8 +255,9 @@ public class ReferenceCountingReadOnlyIndexReaderFactory
             closeIfRequired();
         }
 
+        
         @Override
-        protected void doClose() throws IOException
+        public synchronized void decRef() throws IOException
         {
             if (s_logger.isDebugEnabled())
             {
@@ -274,9 +268,9 @@ public class ReferenceCountingReadOnlyIndexReaderFactory
                 throw new IllegalStateException(Thread.currentThread().getName() + "Indexer is closed " + id);
             }
             decrementReferenceCount();
-            if (!wrapper_closed)
+            if (refCount > 0)
             {
-                incRef();
+                super.decRef();
             }
         }
 

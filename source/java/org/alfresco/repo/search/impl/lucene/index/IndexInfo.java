@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -18,7 +18,7 @@
  * As a special exception to the terms and conditions of version 2.0 of 
  * the GPL, you may redistribute this Program in connection with Free/Libre 
  * and Open Source Software ("FLOSS") applications as described in Alfresco's 
- * FLOSS exception.  You should have recieved a copy of the text describing 
+ * FLOSS exception.  You should have received a copy of the text describing 
  * the FLOSS exception, and it is also available here: 
  * http://www.alfresco.com/legal/licensing"
  */
@@ -45,6 +45,7 @@ import java.util.Collections;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -53,6 +54,7 @@ import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.TreeMap;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -76,6 +78,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.Document;
+import org.apache.lucene.index.FilterIndexReader;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.LogDocMergePolicy;
@@ -239,12 +242,12 @@ public class IndexInfo implements IndexMonitor
     /**
      * Index writers for deltas
      */
-    private Map<String, IndexWriter> indexWriters = Collections.synchronizedMap(new HashMap<String, IndexWriter>());
+    private Map<String, IndexWriter> indexWriters = new ConcurrentHashMap<String, IndexWriter>(51);
 
     /**
      * Index Readers for deltas
      */
-    private Map<String, IndexReader> indexReaders = Collections.synchronizedMap(new HashMap<String, IndexReader>());
+    private Map<String, IndexReader> indexReaders = new ConcurrentHashMap<String, IndexReader>(51);
 
     /**
      * Map of state transitions
@@ -256,15 +259,11 @@ public class IndexInfo implements IndexMonitor
      */
     private ConcurrentLinkedQueue<String> deleteQueue = new ConcurrentLinkedQueue<String>();
 
-    private ConcurrentLinkedQueue<String> deleteFails = new ConcurrentLinkedQueue<String>();
-
     /**
      * A queue of reference counting index readers. We wait for these to become unused (ref count falls to zero) then
      * the data can be removed.
      */
     private ConcurrentLinkedQueue<IndexReader> deletableReaders = new ConcurrentLinkedQueue<IndexReader>();
-
-    private ConcurrentLinkedQueue<IndexReader> waitingReaders = new ConcurrentLinkedQueue<IndexReader>();
 
     /**
      * The call that is responsible for deleting old index information from disk.
@@ -1119,13 +1118,22 @@ public class IndexInfo implements IndexMonitor
                 }
             }
             // Manage reference counting
-            ReferenceCounting refCount = (ReferenceCounting) mainIndexReader;
-            refCount.incrementReferenceCount();
+            mainIndexReader.incRef();
             if (s_logger.isDebugEnabled())
             {
-                s_logger.debug("Main index reader references = " + refCount.getReferenceCount());
+                s_logger.debug("Main index reader references = " + ((ReferenceCounting)mainIndexReader).getReferenceCount());
             }
-            return mainIndexReader;
+            
+            // Prevent close calls from really closing the main reader
+            return new FilterIndexReader(mainIndexReader) {
+                
+                @Override
+                protected void doClose() throws IOException
+                {
+                    in.decRef();
+                }                                
+
+            };
         }
         catch (RuntimeException e)
         {
@@ -1203,12 +1211,6 @@ public class IndexInfo implements IndexMonitor
                     releaseWriteLock();
                 }
             }
-            ReferenceCounting refCount = (ReferenceCounting) mainIndexReader;
-            refCount.incrementReferenceCount();
-            if (s_logger.isDebugEnabled())
-            {
-                s_logger.debug("Main index reader references = " + refCount.getReferenceCount());
-            }
             // Combine the index delta with the main index
             // Make sure the index is written to disk
             // TODO: Should use the in memory index but we often end up forcing
@@ -1220,15 +1222,25 @@ public class IndexInfo implements IndexMonitor
             IndexReader reader = null;
             if (deletions == null || deletions.size() == 0)
             {
-                reader = new MultiReader(new IndexReader[] { mainIndexReader, deltaReader });
+                reader = new MultiReader(new IndexReader[] { mainIndexReader, deltaReader }, false);
             }
             else
             {
-                reader = new MultiReader(new IndexReader[] { new FilterIndexReaderByStringId("main+id", mainIndexReader, deletions, deleteOnlyNodes), deltaReader });
+                IndexReader filterReader = new FilterIndexReaderByStringId("main+id", mainIndexReader, deletions, deleteOnlyNodes);
+                reader = new MultiReader(new IndexReader[] { filterReader, deltaReader }, false);
+                // Cancel out extra incRef made by MultiReader
+                filterReader.decRef();
+            }
+
+            // The reference count would have been incremented automatically by MultiReader / FilterIndexReaderByStringId
+            deltaReader.decRef();
+            if (s_logger.isDebugEnabled())
+            {
+                s_logger.debug("Main index reader references = " + ((ReferenceCounting)mainIndexReader).getReferenceCount());
             }
             reader = ReferenceCountingReadOnlyIndexReaderFactory.createReader(MAIN_READER + id, reader, false, config);
             ReferenceCounting refCounting = (ReferenceCounting) reader;
-            refCounting.incrementReferenceCount();
+            reader.incRef();
             refCounting.setInvalidForReuse();
             return reader;
         }
@@ -1880,19 +1892,27 @@ public class IndexInfo implements IndexMonitor
                 if (reader == null)
                 {
                     reader = subReader;
+                    reader.incRef();
                 }
                 else
                 {
                     if (entry.getType() == IndexType.INDEX)
                     {
-                        reader = new MultiReader(new IndexReader[] { reader, subReader });
+                        IndexReader oldReader = reader;
+                        reader = new MultiReader(new IndexReader[] { oldReader, subReader }, false);
+                        // Cancel out the incRef on the old reader
+                        oldReader.decRef();
                     }
                     else if (entry.getType() == IndexType.DELTA)
                     {
                         try
                         {
-                            reader = new MultiReader(new IndexReader[] { new FilterIndexReaderByStringId(id, reader, getDeletions(entry.getName()), entry.isDeletOnlyNodes()),
-                                    subReader });
+                            IndexReader oldReader = reader;
+                            IndexReader filterReader = new FilterIndexReaderByStringId(id, oldReader, getDeletions(entry.getName()), entry.isDeletOnlyNodes());
+                            reader = new MultiReader(new IndexReader[] { filterReader, subReader }, false);
+                            // Cancel out the incRef on the old readers
+                            oldReader.decRef();
+                            filterReader.decRef();
                         }
                         catch (IOException ioe)
                         {
@@ -1918,8 +1938,6 @@ public class IndexInfo implements IndexMonitor
         {
             throw new IllegalStateException("Indexer should have been pre-built for " + id);
         }
-        ReferenceCounting referenceCounting = (ReferenceCounting) reader;
-        referenceCounting.incrementReferenceCount();
         return reader;
     }
 
@@ -2761,9 +2779,10 @@ public class IndexInfo implements IndexMonitor
         ExitState runImpl()
         {
 
-            IndexReader reader;
-            while ((reader = deletableReaders.peek()) != null)
+            Iterator<IndexReader> i = deletableReaders.iterator();
+            while (i.hasNext())
             {
+                IndexReader reader = i.next();
                 ReferenceCounting refCounting = (ReferenceCounting) reader;
                 if (refCounting.getReferenceCount() == 0)
                 {
@@ -2786,19 +2805,14 @@ public class IndexInfo implements IndexMonitor
                         releaseReadLock();
                     }
                     deleteQueue.add(refCounting.getId());
+                    i.remove();
                 }
-                else
-                {
-                    waitingReaders.add(reader);
-                }
-                deletableReaders.remove();
             }
-            deletableReaders.addAll(waitingReaders);
-            waitingReaders.clear();
 
-            String id = null;
-            while ((id = deleteQueue.peek()) != null)
+            Iterator<String> j = deleteQueue.iterator();
+            while (j.hasNext())
             {
+                String id = j.next();
                 try
                 {
                     if (s_logger.isDebugEnabled())
@@ -2814,19 +2828,17 @@ public class IndexInfo implements IndexMonitor
                         {
                             s_logger.debug("DELETE FAILED");
                         }
-                        // try again later
-                        deleteFails.add(id);
                     }
-                    deleteQueue.remove();
+                    else
+                    {
+                        j.remove();
+                    }
                 }
                 catch (IOException ioe)
                 {
                     s_logger.warn("Failed to delete file - invalid canonical file", ioe);
-                    deleteFails.add(id);
                 }
             }
-            deleteQueue.addAll(deleteFails);
-            deleteFails.clear();
             return ExitState.DONE;
         }
 

@@ -38,17 +38,6 @@ import java.io.IOException;
 public interface ReferenceCounting
 {
     /**
-     * Add a new reference
-     */
-    public void incrementReferenceCount();
-
-    /**
-     * Release a references
-     * @throws IOException
-     */
-    public void decrementReferenceCount() throws IOException;
-
-    /**
      * Get the number of references
      * @return
      */
@@ -71,6 +60,4 @@ public interface ReferenceCounting
      * @return
      */
     public String getId();
-    
-    
 }

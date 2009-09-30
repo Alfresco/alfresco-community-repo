@@ -536,6 +536,7 @@ public class ADMLuceneTest extends TestCase
         searcher.setDictionaryService(dictionaryService);
         searcher.setNamespacePrefixResolver(getNamespacePrefixResolver("namespace"));
         searcher.setQueryRegister(queryRegisterComponent);
+        searcher.setTenantService(tenantService);
 
         ResultSet results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//meep\"");
         int count = results.length();

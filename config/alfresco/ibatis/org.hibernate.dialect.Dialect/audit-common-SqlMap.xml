@@ -201,6 +201,14 @@
                 sp_mpl.value_prop_id = #searchValueId#
             </isNotNull>
         </dynamic>
+        <isEqual property="forward" compareProperty="forwardTrue">
+        order by
+            entry.id asc
+        </isEqual>
+        <isNotEqual property="forward" compareProperty="forwardTrue">
+        order by
+            entry.id desc
+        </isNotEqual>
     </select>
 
     <!-- Get audit entries -->
@@ -242,6 +250,14 @@
                 sp_mpl.value_prop_id = #searchValueId#
             </isNotNull>
         </dynamic>
+        <isEqual property="forward" compareProperty="forwardTrue">
+        order by
+            entry.id asc
+        </isEqual>
+        <isNotEqual property="forward" compareProperty="forwardTrue">
+        order by
+            entry.id desc
+        </isNotEqual>
     </select>
 
 </sqlMap>

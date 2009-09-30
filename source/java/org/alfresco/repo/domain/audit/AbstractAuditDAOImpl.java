@@ -383,7 +383,10 @@ public abstract class AbstractAuditDAOImpl implements AuditDAO
                     if (auditValuesPair == null)
                     {
                         // Ignore
-                        logger.warn("Audit entry not joined to audit properties: " + row);
+                        more = callback.handleAuditEntryError(
+                                row.getAuditEntryId(),
+                                "Audit entry not joined to audit properties: " + row,
+                                null);
                         return;
                     }
                     auditValues = (Map<String, Serializable>) auditValuesPair.getSecond();
@@ -397,17 +400,26 @@ public abstract class AbstractAuditDAOImpl implements AuditDAO
                     }
                     catch (ClassCastException e)
                     {
-                        logger.warn("Audit entry not linked to a Map<String, Serializable> value: " + row);
+                        more = callback.handleAuditEntryError(
+                                row.getAuditEntryId(),
+                                "Audit entry not linked to a Map<String, Serializable> value: " + row,
+                                e);
                         return;
                     }
                     catch (Throwable e)
                     {
-                        logger.warn("Audit entry unable to extract audited values: " + row, e);
+                        more = callback.handleAuditEntryError(
+                                row.getAuditEntryId(),
+                                "Audit entry unable to extract audited values: " + row,
+                                e);
                         return;
                     }
                     if (auditValues == null)
                     {
-                        logger.warn("Audit entry incompletely joined to audit properties: " + row);
+                        more = callback.handleAuditEntryError(
+                                row.getAuditEntryId(),
+                                "Audit entry incompletely joined to audit properties: " + row,
+                                null);
                         return;
                     }
                 }
@@ -430,25 +442,28 @@ public abstract class AbstractAuditDAOImpl implements AuditDAO
 
     public void findAuditEntries(
             AuditQueryCallback callback,
+            boolean forward,
             String applicationName, String user, Long from, Long to,
             int maxResults)
     {
         AuditQueryRowHandler rowHandler = new AuditQueryRowHandler(callback);
-        findAuditEntries(rowHandler, applicationName, user, from, to, maxResults, null, null);
+        findAuditEntries(rowHandler, forward, applicationName, user, from, to, maxResults, null, null);
     }
     
     public void findAuditEntries(
             AuditQueryCallback callback,
+            boolean forward,
             String applicationName, String user, Long from, Long to,
             String searchKey, Serializable searchValue,
             int maxResults)
     {
         AuditQueryRowHandler rowHandler = new AuditQueryRowHandler(callback);
-        findAuditEntries(rowHandler, applicationName, user, from, to, maxResults, searchKey, searchValue);
+        findAuditEntries(rowHandler, forward, applicationName, user, from, to, maxResults, searchKey, searchValue);
     }
     
     protected abstract void findAuditEntries(
             AuditQueryRowHandler rowHandler,
+            boolean forward,
             String applicationName, String user, Long from, Long to, int maxResults,
             String searchKey, Serializable searchValue);
 }

@@ -1323,6 +1323,7 @@ public class AuditComponentImpl implements AuditComponent
      */
     public void auditQuery(
             AuditQueryCallback callback,
+            boolean forward,
             String applicationName,
             String user,
             Long from,
@@ -1338,7 +1339,8 @@ public class AuditComponentImpl implements AuditComponent
             return;
         }
         
-        auditDAO.findAuditEntries(callback, applicationName, user, from, to, maxResults);
+        auditDAO.findAuditEntries(
+                callback, forward, applicationName, user, from, to, maxResults);
     }
 
     /**
@@ -1346,6 +1348,7 @@ public class AuditComponentImpl implements AuditComponent
      */
     public void auditQuery(
             AuditQueryCallback callback,
+            boolean forward,
             String applicationName,
             String user,
             Long from,
@@ -1362,6 +1365,7 @@ public class AuditComponentImpl implements AuditComponent
             return;
         }
         
-        auditDAO.findAuditEntries(callback, applicationName, user, from, to, searchKey, searchValue, maxResults);
+        auditDAO.findAuditEntries(
+                callback, forward, applicationName, user, from, to, searchKey, searchValue, maxResults);
     }
 }

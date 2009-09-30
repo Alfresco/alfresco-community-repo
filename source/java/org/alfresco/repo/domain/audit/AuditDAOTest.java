@@ -28,10 +28,12 @@ import java.io.File;
 import java.io.Serializable;
 import java.net.URL;
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.Map;
 
 import junit.framework.TestCase;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.content.transform.AbstractContentTransformerTest;
 import org.alfresco.repo.domain.audit.AuditDAO.AuditApplicationInfo;
 import org.alfresco.repo.domain.contentdata.ContentDataDAO;
@@ -43,6 +45,7 @@ import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.Pair;
+import org.apache.commons.lang.mutable.MutableInt;
 import org.springframework.context.ConfigurableApplicationContext;
 
 /**
@@ -182,11 +185,13 @@ public class AuditDAOTest extends TestCase
         return appName;
     }
     
-    public void testAuditQuery() throws Exception
+    public synchronized void testAuditQuery() throws Exception
     {
         // Some entries
         doAuditEntryImpl(1);
         
+        final MutableInt count = new MutableInt(0);
+        final LinkedList<Long> timestamps = new LinkedList<Long>();
         // Find everything, but look for a specific key
         final AuditQueryCallback callback = new AuditQueryCallback()
         {
@@ -197,8 +202,14 @@ public class AuditDAOTest extends TestCase
                     long time,
                     Map<String, Serializable> values)
             {
-                System.out.println(values);
+                count.setValue(count.intValue() + 1);
+                timestamps.add(time);
                 return true;
+            }
+
+            public boolean handleAuditEntryError(Long entryId, String errorMsg, Throwable error)
+            {
+                throw new AlfrescoRuntimeException(errorMsg, error);
             }
         };
         
@@ -206,11 +217,40 @@ public class AuditDAOTest extends TestCase
         {
             public Void execute() throws Throwable
             {
-                auditDAO.findAuditEntries(callback, null, null, null, null, "/a/b/c", null, -1);
+                auditDAO.findAuditEntries(callback, true, null, null, null, null, "/a/b/c", null, 2);
                 return null;
             }
         };
+        count.setValue(0);
+        timestamps.clear();
         txnHelper.doInTransaction(findCallback);
+        assertTrue("Expected at least one result", count.intValue() > 0);
+        
+        // Make sure that the last two entries are in forward order (ascending time)
+        Long lastTimestamp = timestamps.removeLast();
+        Long secondLastTimeStamp = timestamps.removeLast();
+        assertTrue("The timestamps should be in ascending order", lastTimestamp.compareTo(secondLastTimeStamp) > 0);
+        
+        // Make sure that the last two entries differ in time
+        wait(1000L);
+        
+        // Search in reverse order
+        doAuditEntryImpl(1);
+        RetryingTransactionCallback<Void> findReverseCallback = new RetryingTransactionCallback<Void>()
+        {
+            public Void execute() throws Throwable
+            {
+                auditDAO.findAuditEntries(callback, false, null, null, null, null, "/a/b/c", null, 2);
+                return null;
+            }
+        };
+        timestamps.clear();
+        txnHelper.doInTransaction(findReverseCallback);
+        
+        // Make sure that the last two entries are in reverse order (descending time)
+        lastTimestamp = timestamps.removeLast();
+        secondLastTimeStamp = timestamps.removeLast();
+        assertTrue("The timestamps should be in descending order", lastTimestamp.compareTo(secondLastTimeStamp) < 0);
     }
     
     public void testAuditDeleteEntries() throws Exception
@@ -227,6 +267,11 @@ public class AuditDAOTest extends TestCase
                 fail("Expected no results.  All entries should have been removed.");
                 return false;
             }
+
+            public boolean handleAuditEntryError(Long entryId, String errorMsg, Throwable error)
+            {
+                throw new AlfrescoRuntimeException(errorMsg, error);
+            }
         };
         
         // Some entries
@@ -239,7 +284,7 @@ public class AuditDAOTest extends TestCase
                 Long appId = auditDAO.getAuditApplication(appName).getId();
                 auditDAO.deleteAuditEntries(appId, null, null);
                 // There should be no entries
-                auditDAO.findAuditEntries(noResultsCallback, appName, null, null, null, -1);
+                auditDAO.findAuditEntries(noResultsCallback, true, appName, null, null, null, -1);
                 return null;
             }
         };

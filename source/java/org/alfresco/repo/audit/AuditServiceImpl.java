@@ -173,13 +173,15 @@ public class AuditServiceImpl implements AuditService
      */
     public void auditQuery(
             AuditQueryCallback callback,
+            boolean forward,
             String applicationName, String user, Long from, Long to,
             int maxResults)
 
     {
         ParameterCheck.mandatory("callback", callback);
         
-        auditComponent.auditQuery(callback, applicationName, user, from, to, maxResults);
+        auditComponent.auditQuery(
+                callback, forward, applicationName, user, from, to, maxResults);
     }
 
     /**
@@ -188,6 +190,7 @@ public class AuditServiceImpl implements AuditService
      */
     public void auditQuery(
             AuditQueryCallback callback,
+            boolean forward,
             String applicationName, String user, Long from, Long to,
             String searchKey, Serializable searchValue,
             int maxResults)
@@ -195,6 +198,7 @@ public class AuditServiceImpl implements AuditService
     {
         ParameterCheck.mandatory("callback", callback);
         
-        auditComponent.auditQuery(callback, applicationName, user, from, to, searchKey, searchValue, maxResults);
+        auditComponent.auditQuery(
+                callback, forward, applicationName, user, from, to, searchKey, searchValue, maxResults);
     }
 }

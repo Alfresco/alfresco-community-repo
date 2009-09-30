@@ -168,12 +168,24 @@ public interface AuditService
                 String user,
                 long time,
                 Map<String, Serializable> values);
+        
+        /**
+         * Handle audit entry failures
+         * 
+         * @param entryId                   the entry ID
+         * @param errorMsg                  the error message
+         * @param error                     the exception causing the error (may be <tt>null</tt>)
+         * @return                          Return <tt>true</tt> to continue processing rows or <tt>false</tt> to stop
+         */
+        boolean handleAuditEntryError(Long entryId, String errorMsg, Throwable error);
     }
     
     /**
      * Get the audit entries that match the given criteria.
      * 
      * @param callback          the callback that will handle results
+     * @param forward           <tt>true</tt> for results to ordered from first to last,
+     *                          or <tt>false</tt> to order from last to first
      * @param applicationName   if not <tt>null</tt>, find entries logged against this application 
      * @param user              if not <tt>null</tt>, find entries logged against this user
      * @param from              the start search time (<tt>null</tt> to start at the beginning)
@@ -184,6 +196,7 @@ public interface AuditService
      */
     void auditQuery(
             AuditQueryCallback callback,
+            boolean forward,
             String applicationName, String user, Long from, Long to,
             int maxResults);
     
@@ -191,6 +204,8 @@ public interface AuditService
      * Get the audit entries that match the given criteria.
      * 
      * @param callback          the callback that will handle results
+     * @param forward           <tt>true</tt> for results to ordered from first to last,
+     *                          or <tt>false</tt> to order from last to first
      * @param applicationName   if not <tt>null</tt>, find entries logged against this application 
      * @param user              if not <tt>null</tt>, find entries logged against this user
      * @param from              the start search time (<tt>null</tt> to start at the beginning)
@@ -203,6 +218,7 @@ public interface AuditService
      */
     void auditQuery(
             AuditQueryCallback callback,
+            boolean forward,
             String applicationName, String user, Long from, Long to,
             String searchKey, Serializable searchValue,
             int maxResults);

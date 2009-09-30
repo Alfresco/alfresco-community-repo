@@ -34,7 +34,7 @@ import java.util.Date;
  */
 public class AuditQueryParameters
 {
-    private Long auditEntryId;
+    private boolean forward;
     private Long auditAppNameId;
     private Long auditUserId;
     private Long auditFromTime;
@@ -51,25 +51,30 @@ public class AuditQueryParameters
     {
         StringBuilder sb = new StringBuilder(512);
         sb.append("AuditEntryParameters")
-          .append("[ auditEntryId=").append(auditEntryId)
+          .append("[ forward=").append(forward)
           .append(", auditAppNameId=").append(auditAppNameId)
           .append(", auditUserId=").append(auditUserId)
-          .append(", auditFromTime").append(auditFromTime == null ? null : new Date(auditFromTime))
-          .append(", auditToTime").append(auditToTime == null ? null : new Date(auditToTime))
-          .append(", searchKeyId").append(searchKeyId)
-          .append(", searchValueId").append(searchValueId)
+          .append(", auditFromTime=").append(auditFromTime == null ? null : new Date(auditFromTime))
+          .append(", auditToTime=").append(auditToTime == null ? null : new Date(auditToTime))
+          .append(", searchKeyId=").append(searchKeyId)
+          .append(", searchValueId=").append(searchValueId)
           .append("]");
         return sb.toString();
     }
 
-    public Long getAuditEntryId()
+    public boolean isForward()
     {
-        return auditEntryId;
+        return forward;
     }
 
-    public void setAuditEntryId(Long entryId)
+    public void setForward(boolean forward)
     {
-        this.auditEntryId = entryId;
+        this.forward = forward;
+    }
+    
+    public boolean isForwardTrue()
+    {
+        return true;
     }
 
     public Long getAuditAppNameId()

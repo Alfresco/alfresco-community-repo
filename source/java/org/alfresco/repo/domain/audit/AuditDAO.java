@@ -207,6 +207,8 @@ public interface AuditDAO
      * Find audit entries using the given parameters, any of which may be null
      * 
      * @param callback          the data callback per entry
+     * @param forward           <tt>true</tt> for results to ordered from first to last,
+     *                          or <tt>false</tt> to order from last to first
      * @param applicationName   the name of the application to search against (optional)
      * @param user              the user to search for (optional)
      * @param from              the minimum entry time (optional)
@@ -215,6 +217,7 @@ public interface AuditDAO
      */
     void findAuditEntries(
             AuditQueryCallback callback,
+            boolean forward,
             String applicationName, String user, Long from, Long to, int maxResults);
     
     /**
@@ -230,6 +233,7 @@ public interface AuditDAO
      */
     void findAuditEntries(
             AuditQueryCallback callback,
+            boolean forward,
             String applicationName, String user, Long from, Long to,
             String searchKey, Serializable searchValue,
             int maxResults);

@@ -740,6 +740,7 @@ public class HibernateAuditDAO extends HibernateDaoSupport implements AuditDAO, 
      */
     public void findAuditEntries(
             AuditQueryCallback callback,
+            boolean forward,
             String applicationName, String user, Long from, Long to,
             int maxResults)
     {
@@ -754,6 +755,7 @@ public class HibernateAuditDAO extends HibernateDaoSupport implements AuditDAO, 
      */
     public void findAuditEntries(
             AuditQueryCallback callback,
+            boolean forward,
             String applicationName, String user, Long from, Long to,
             String searchKey, Serializable searchValue,
             int maxResults)

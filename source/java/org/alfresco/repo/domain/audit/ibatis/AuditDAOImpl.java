@@ -29,7 +29,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
 
 import org.alfresco.ibatis.RollupRowHandler;
 import org.alfresco.repo.domain.audit.AbstractAuditDAOImpl;
@@ -194,6 +193,7 @@ public class AuditDAOImpl extends AbstractAuditDAOImpl
     @Override
     protected void findAuditEntries(
             final AuditQueryRowHandler rowHandler,
+            boolean forward,
             String appName, String user, Long from, Long to, int maxResults,
             String searchKey, Serializable searchValue)
     {
@@ -244,12 +244,13 @@ public class AuditDAOImpl extends AbstractAuditDAOImpl
             }
             params.setSearchValueId(searchValuePair.getFirst());
         }
+        params.setForward(forward);
         
         if (maxResults > 0)
         {
             // Query without getting the values.  We gather all the results and batch-fetch the audited
             // values afterwards.
-            final TreeMap<Long, AuditQueryResult> resultsByValueId = new TreeMap<Long, AuditQueryResult>();
+            final Map<Long, AuditQueryResult> resultsByValueId = new HashMap<Long, AuditQueryResult>(173);
             PropertyFinderCallback propertyFinderCallback = new PropertyFinderCallback()
             {
                 public void handleProperty(Long id, Serializable value)
@@ -264,7 +265,6 @@ public class AuditDAOImpl extends AbstractAuditDAOImpl
                     {
                         // The handler will deal with the entry
                     }
-                    rowHandler.processResult(row);
                 }
             };
 
@@ -287,6 +287,11 @@ public class AuditDAOImpl extends AbstractAuditDAOImpl
                 // Fetch values for the results.  The treemap is ordered.
                 List<Long> valueIds = new ArrayList<Long>(resultsByValueId.keySet());
                 propertyValueDAO.getPropertiesByIds(valueIds, propertyFinderCallback);
+            }
+            // Now pass the filled-out results to the row handler (order-preserved)
+            for (AuditQueryResult row : rows)
+            {
+                rowHandler.processResult(row);
             }
         }
         else

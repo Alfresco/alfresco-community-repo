@@ -44,6 +44,7 @@ import org.alfresco.repo.copy.CopyBehaviourCallback.CopyChildAssociationDetails;
 import org.alfresco.repo.policy.ClassPolicyDelegate;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.AssociationDefinition;
 import org.alfresco.service.cmr.dictionary.ChildAssociationDefinition;
@@ -687,32 +688,41 @@ public class CopyServiceImpl implements CopyService
      * @param sourceNodeRef            the source node reference
      * @param destinationNodeRef    the destination node reference
      */
-    private void copyPermissions(NodeRef sourceNodeRef, NodeRef destinationNodeRef) 
+    private void copyPermissions(final NodeRef sourceNodeRef, final NodeRef destinationNodeRef) 
     {
-        if(this.permissionService.hasPermission(sourceNodeRef, PermissionService.READ_PERMISSIONS) == AccessStatus.ALLOWED)
+        AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
         {
-            // Get the permission details of the source node reference
-            Set<AccessPermission> permissions = this.permissionService.getAllSetPermissions(sourceNodeRef);
-            boolean includeInherited = this.permissionService.getInheritParentPermissions(sourceNodeRef);
-            
-            AccessStatus writePermission = permissionService.hasPermission(destinationNodeRef, PermissionService.CHANGE_PERMISSIONS);
-            if (writePermission.equals(AccessStatus.ALLOWED) || this.authenticationService.isCurrentUserTheSystemUser() )
+            public Object doWork() throws Exception
             {
-                // Set the permission values on the destination node        
-                for (AccessPermission permission : permissions) 
+
+                if(permissionService.hasPermission(sourceNodeRef, PermissionService.READ_PERMISSIONS) == AccessStatus.ALLOWED)
                 {
-                    if(permission.isSetDirectly())
+                    // Get the permission details of the source node reference
+                    Set<AccessPermission> permissions = permissionService.getAllSetPermissions(sourceNodeRef);
+                    boolean includeInherited = permissionService.getInheritParentPermissions(sourceNodeRef);
+                    
+                    AccessStatus writePermission = permissionService.hasPermission(destinationNodeRef, PermissionService.CHANGE_PERMISSIONS);
+                    if (writePermission.equals(AccessStatus.ALLOWED) || authenticationService.isCurrentUserTheSystemUser() )
                     {
-                        this.permissionService.setPermission(
-                            destinationNodeRef, 
-                            permission.getAuthority(), 
-                            permission.getPermission(), 
-                            permission.getAccessStatus().equals(AccessStatus.ALLOWED));
+                        // Set the permission values on the destination node        
+                        for (AccessPermission permission : permissions) 
+                        {
+                            if(permission.isSetDirectly())
+                            {
+                                permissionService.setPermission(
+                                    destinationNodeRef, 
+                                    permission.getAuthority(), 
+                                    permission.getPermission(), 
+                                    permission.getAccessStatus().equals(AccessStatus.ALLOWED));
+                            }
+                        }
+                        permissionService.setInheritParentPermissions(destinationNodeRef, includeInherited);
                     }
                 }
-                this.permissionService.setInheritParentPermissions(destinationNodeRef, includeInherited);
+                
+                return null;
             }
-        }
+       }, AuthenticationUtil.getAdminUserName());               
     }
 
     /**

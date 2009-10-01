@@ -57,7 +57,7 @@ function main()
    }
 
    // "node" Type implies single nodeRef requested
-   if (parsedArgs.type === "node")
+   if (!filter && parsedArgs.type === "node")
    {
       filter = "node";
    }

@@ -174,13 +174,30 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
         
         // Check named admin users
         Set<String> adminUsers = this.authenticationService.getDefaultAdministratorUserNames();
-
-        // note: for multi-tenancy, this currently relies on a naming convention which assumes that all tenant admins will 
-        // have the same base name as the default non-tenant specific admin. Typically "admin" is the default required admin user, 
-        // although, if for example "bob" is also listed as an admin then all tenant-specific bob's will also have admin authority
+        
         String currentUserBaseName = tenantService.getBaseNameUser(currentUserName);
-        boolean isAdminUser = (adminUsers.contains(currentUserName) || adminUsers.contains(currentUserBaseName));
-
+        
+        boolean isAdminUser = false;
+        if (tenantService.isEnabled())
+        {
+            // note: for multi-tenancy, this currently relies on a naming convention which assumes that all tenant admins will 
+            // have the same base name as the default non-tenant specific admin. Typically "admin" is the default required admin user, 
+            // although, if for example "bob" is also listed as an admin then all tenant-specific bob's will also have admin authority
+            
+            for (String adminUser : adminUsers)
+            {
+                if (adminUser.equals(currentUserName) || tenantService.getBaseNameUser(adminUser).equals(currentUserBaseName))
+                {
+                    isAdminUser = true;
+                    break;
+                }
+            }
+        }
+        else
+        {
+            isAdminUser = adminUsers.contains(currentUserName);
+        }
+        
         // Check named admin groups
         if (!isAdminUser && !adminGroups.isEmpty())
         {

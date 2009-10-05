@@ -416,6 +416,20 @@ public class AuthenticationUtil implements InitializingBean
         {
             throw new IllegalStateException("AuthenticationUtil not yet initialised; default admin username not available");
         }
+        
+        if (isMtEnabled())
+        {
+            String runAsUser = AuthenticationUtil.getRunAsUser();
+            if (runAsUser != null)
+            {
+                String[] parts = splitUserTenant(runAsUser);
+                if (parts.length == 2)
+                {
+                    return defaultAdminUserName + TenantService.SEPARATOR + parts[1];
+                }
+            }
+        }
+        
         return defaultAdminUserName;
     }
 
@@ -576,13 +590,13 @@ public class AuthenticationUtil implements InitializingBean
     public static void logNDC(String userName)
     {
         NDC.remove();
-
+        
         if (isMtEnabled())
         {
-            int idx = userName.indexOf(TenantService.SEPARATOR);
-            if ((idx != -1) && (idx < (userName.length() - 1)))
+            String[] parts = splitUserTenant(userName);
+            if (parts.length == 2)
             {
-                NDC.push("Tenant:" + userName.substring(idx + 1) + " User:" + userName.substring(0, idx));
+                NDC.push("Tenant:" + parts[1] + " User:" + parts[0]);
             }
             else
             {
@@ -594,5 +608,9 @@ public class AuthenticationUtil implements InitializingBean
             NDC.push("User:" + userName);
         }
     }
-
+    
+    private static String[] splitUserTenant(String userName)
+    {
+        return userName.split(TenantService.SEPARATOR);
+    }
 }

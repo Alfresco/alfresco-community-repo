@@ -1242,7 +1242,7 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
         {
             return baseAdminUsername;
         }
-        return AuthenticationUtil.getAdminUserName();
+        return getBaseNameUser(AuthenticationUtil.getAdminUserName());
     }
     
     private String getSystemUser(String tenantDomain)

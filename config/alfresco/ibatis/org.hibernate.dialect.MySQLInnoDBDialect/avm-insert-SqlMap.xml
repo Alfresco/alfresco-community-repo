@@ -13,7 +13,7 @@
         </selectKey>
     </insert>
     
-        <insert id="insert_AVMStoreProperty" parameterClass="AVMStoreProperty">
+    <insert id="insert_AVMStoreProperty" parameterMap="parameter_StorePropertyPatternMap">
         <include refid="insert_AVMStoreProperty_AutoIncrement"/>
         <selectKey resultClass="long" keyProperty="id" type="post">
             KEY_COLUMN:GENERATED_KEY

@@ -47,7 +47,7 @@
         <result property="floatValue" column="float_value" jdbcType="FLOAT" javaType="java.lang.Float"/>
         <result property="doubleValue" column="double_value" jdbcType="DOUBLE" javaType="java.lang.Double"/>
         <result property="stringValue" column="string_value" jdbcType="TEXT" javaType="java.lang.String"/>
-        <result property="serializable" column="serializable_value" jdbcType="BLOB"/>
+        <result property="serializableValue" column="serializable_value" jdbcType="BLOB" javaType="java.io.Serializable"/>
     </resultMap>
     
     <resultMap id="result_AVMNode" class="AVMNode">
@@ -88,7 +88,7 @@
         <result property="floatValue" column="float_value" jdbcType="FLOAT" javaType="java.lang.Float"/>
         <result property="doubleValue" column="double_value" jdbcType="DOUBLE" javaType="java.lang.Double"/>
         <result property="stringValue" column="string_value" jdbcType="TEXT" javaType="java.lang.String"/>
-        <result property="serializable" column="serializable_value" jdbcType="BLOB"/>
+        <result property="serializableValue" column="serializable_value" jdbcType="BLOB" javaType="java.io.Serializable"/>
     </resultMap>
     
     <resultMap id="result_AVMNodeAspect" class="AVMNodeAspect">
@@ -173,6 +173,34 @@
         <parameter property="pattern" jdbcType="VARCHAR" javaType="java.lang.String"/>
     </parameterMap>
     
+    <parameterMap id="parameter_NodePropertyPatternMap" class="AVMNodeProperty">
+        <parameter property="nodeId" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <parameter property="qnameId" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <parameter property="actualType" jdbcType="INT" javaType="java.lang.Integer"/>
+        <parameter property="persistedType" jdbcType="INT" javaType="java.lang.Integer"/>
+        <parameter property="isMultiValued" jdbcType="BIT" javaType="java.lang.Boolean"/>
+        <parameter property="booleanValue" jdbcType="BIT" javaType="java.lang.Boolean"/>
+        <parameter property="longValue" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <parameter property="floatValue" jdbcType="FLOAT" javaType="java.lang.Float"/>
+        <parameter property="doubleValue" jdbcType="DOUBLE" javaType="java.lang.Double"/>
+        <parameter property="stringValue" jdbcType="TEXT" javaType="java.lang.String"/>
+        <parameter property="serializableValue" jdbcType="BLOB" javaType="java.io.Serializable"/>
+    </parameterMap>
+    
+    <parameterMap id="parameter_StorePropertyPatternMap" class="AVMStoreProperty">
+        <parameter property="avmStoreId" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <parameter property="qnameId" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <parameter property="actualType" jdbcType="INT" javaType="java.lang.Integer"/>
+        <parameter property="persistedType" jdbcType="INT" javaType="java.lang.Integer"/>
+        <parameter property="isMultiValued" jdbcType="BIT" javaType="java.lang.Boolean"/>
+        <parameter property="booleanValue" jdbcType="BIT" javaType="java.lang.Boolean"/>
+        <parameter property="longValue" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <parameter property="floatValue" jdbcType="FLOAT" javaType="java.lang.Float"/>
+        <parameter property="doubleValue" jdbcType="DOUBLE" javaType="java.lang.Double"/>
+        <parameter property="stringValue" jdbcType="TEXT" javaType="java.lang.String"/>
+        <parameter property="serializableValue" jdbcType="BLOB" javaType="java.io.Serializable"/>
+    </parameterMap>
+    
     
     <!--                -->
     <!-- SQL Snippets   -->
@@ -195,7 +223,7 @@
     
     <sql id="insert_AVMStoreProperty_AutoIncrement">
         insert into avm_store_properties (avm_store_id, qname_id, actual_type_n, persisted_type_n, multi_valued, boolean_value, long_value, float_value, double_value, string_value, serializable_value)
-        values (#avmStoreId#, #qnameId#, #actualType#, #persistedType#, #isMultiValued#, #booleanValue#, #longValue#, #floatValue#, #doubleValue#, #stringValue#, #serializable#)
+        values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     </sql>
     
     
@@ -228,9 +256,9 @@
         values (#versionRootId#, #md5sum#, #path#)
     </insert>
     
-    <insert id="insert_AVMNodeProperty">
+    <insert id="insert_AVMNodeProperty" parameterMap="parameter_NodePropertyPatternMap">
         insert into avm_node_properties (node_id, qname_id, actual_type_n, persisted_type_n, multi_valued, boolean_value, long_value, float_value, double_value, string_value, serializable_value)
-        values (#nodeId#, #qnameId#, #actualType#, #persistedType#, #isMultiValued#, #booleanValue#, #longValue#, #floatValue#, #doubleValue#, #stringValue#, #serializable#)
+        values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     </insert>
     
     <!--                      -->
@@ -360,7 +388,7 @@
             float_value = #floatValue#,
             double_value = #doubleValue#,
             string_value = #stringValue#,
-            serializable_value = #serializable#
+            serializable_value = #serializableValue#
         where
             id = #id#
     </update>
@@ -573,7 +601,7 @@
             float_value = #floatValue#,
             double_value = #doubleValue#,
             string_value = #stringValue#,
-            serializable_value = #serializable#
+            serializable_value = #serializableValue#
         where
             node_id = #nodeId# and
             qname_id = #qnameId#

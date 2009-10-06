@@ -25,7 +25,6 @@
 package org.alfresco.repo.domain.avm;
 
 import org.alfresco.repo.domain.PropertyValue;
-import org.alfresco.util.EqualsHelper;
 
 /**
  * Entity bean for <b>avm_node_properties</b> table.
@@ -45,7 +44,6 @@ public class AVMNodePropertyEntity extends PropertyValue
     {
     }
     
-    // TODO redo
     public AVMNodePropertyEntity(long nodeId, Long qnameId, PropertyValue value)
     {
         setNodeId(nodeId);
@@ -78,16 +76,6 @@ public class AVMNodePropertyEntity extends PropertyValue
     public void setQnameId(Long qnameId)
     {
         this.qnameId = qnameId;
-    }
-    
-    public void setSerializable(byte[] data)
-    {
-        setSerializableValue(data);
-    }
-    
-    public byte[] getSerializable()
-    {
-        return (byte[])getSerializableValue();
     }
     
     @Override

@@ -47,7 +47,6 @@ public class AVMStorePropertyEntity extends PropertyValue
         // default constructor
     }
     
-    // TODO redo
     public AVMStorePropertyEntity(long storeId, Long qnameId, PropertyValue value)
     {
         setAvmStoreId(storeId);
@@ -88,16 +87,6 @@ public class AVMStorePropertyEntity extends PropertyValue
     public void setQnameId(Long qnameId)
     {
         this.qnameId = qnameId;
-    }
-    
-    public void setSerializable(byte[] data)
-    {
-        setSerializableValue(data);
-    }
-    
-    public byte[] getSerializable()
-    {
-        return (byte[])getSerializableValue();
     }
     
     @Override

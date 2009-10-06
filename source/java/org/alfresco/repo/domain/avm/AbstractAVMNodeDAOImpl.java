@@ -449,7 +449,7 @@ public abstract class AbstractAVMNodeDAOImpl implements AVMNodeDAO
         }
         
         // Get the persistent ID for the QName
-        Pair<Long, QName> qnamePair = qnameDAO.getQName(qname);
+        Pair<Long, QName> qnamePair = qnameDAO.getOrCreateQName(qname);
         if (qnamePair != null)
         {
             Long qnameId  = qnamePair.getFirst();

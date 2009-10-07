@@ -174,8 +174,6 @@
     </parameterMap>
     
     <parameterMap id="parameter_NodePropertyPatternMap" class="AVMNodeProperty">
-        <parameter property="nodeId" jdbcType="BIGINT" javaType="java.lang.Long"/>
-        <parameter property="qnameId" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <parameter property="actualType" jdbcType="INT" javaType="java.lang.Integer"/>
         <parameter property="persistedType" jdbcType="INT" javaType="java.lang.Integer"/>
         <parameter property="isMultiValued" jdbcType="BIT" javaType="java.lang.Boolean"/>
@@ -185,11 +183,11 @@
         <parameter property="doubleValue" jdbcType="DOUBLE" javaType="java.lang.Double"/>
         <parameter property="stringValue" jdbcType="TEXT" javaType="java.lang.String"/>
         <parameter property="serializableValue" jdbcType="BLOB" javaType="java.io.Serializable"/>
+        <parameter property="nodeId" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <parameter property="qnameId" jdbcType="BIGINT" javaType="java.lang.Long"/>
     </parameterMap>
     
     <parameterMap id="parameter_StorePropertyPatternMap" class="AVMStoreProperty">
-        <parameter property="avmStoreId" jdbcType="BIGINT" javaType="java.lang.Long"/>
-        <parameter property="qnameId" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <parameter property="actualType" jdbcType="INT" javaType="java.lang.Integer"/>
         <parameter property="persistedType" jdbcType="INT" javaType="java.lang.Integer"/>
         <parameter property="isMultiValued" jdbcType="BIT" javaType="java.lang.Boolean"/>
@@ -199,6 +197,8 @@
         <parameter property="doubleValue" jdbcType="DOUBLE" javaType="java.lang.Double"/>
         <parameter property="stringValue" jdbcType="TEXT" javaType="java.lang.String"/>
         <parameter property="serializableValue" jdbcType="BLOB" javaType="java.io.Serializable"/>
+        <parameter property="avmStoreId" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <parameter property="qnameId" jdbcType="BIGINT" javaType="java.lang.Long"/>
     </parameterMap>
     
     
@@ -222,7 +222,7 @@
     </sql>
     
     <sql id="insert_AVMStoreProperty_AutoIncrement">
-        insert into avm_store_properties (avm_store_id, qname_id, actual_type_n, persisted_type_n, multi_valued, boolean_value, long_value, float_value, double_value, string_value, serializable_value)
+        insert into avm_store_properties (actual_type_n, persisted_type_n, multi_valued, boolean_value, long_value, float_value, double_value, string_value, serializable_value, avm_store_id, qname_id)
         values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     </sql>
     
@@ -257,7 +257,7 @@
     </insert>
     
     <insert id="insert_AVMNodeProperty" parameterMap="parameter_NodePropertyPatternMap">
-        insert into avm_node_properties (node_id, qname_id, actual_type_n, persisted_type_n, multi_valued, boolean_value, long_value, float_value, double_value, string_value, serializable_value)
+        insert into avm_node_properties (actual_type_n, persisted_type_n, multi_valued, boolean_value, long_value, float_value, double_value, string_value, serializable_value, node_id, qname_id)
         values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     </insert>
     
@@ -380,17 +380,18 @@
         update
             avm_store_properties
         set
-            actual_type_n = #actualType#,
-            persisted_type_n = #persistedType#,
-            multi_valued = #isMultiValued#,
-            boolean_value = #booleanValue#,
-            long_value = #longValue#,
-            float_value = #floatValue#,
-            double_value = #doubleValue#,
-            string_value = #stringValue#,
-            serializable_value = #serializableValue#
+            actual_type_n = ?,
+            persisted_type_n = ?,
+            multi_valued = ?,
+            boolean_value = ?,
+            long_value = ?,
+            float_value = ?,
+            double_value = ?,
+            string_value = ?,
+            serializable_value = ?
         where
-            id = #id#
+            avm_store_id = ? and
+            qname_id = ?
     </update>
     
     <delete id="delete_AVMStoreProperty" parameterClass="AVMStoreProperty">
@@ -589,22 +590,22 @@
     </select>
     
     <!-- Optimistic update of the node property -->
-    <update id="update_AVMNodeProperty" parameterClass="AVMNodeProperty">
+    <update id="update_AVMNodeProperty" parameterMap="parameter_NodePropertyPatternMap">
         update
             avm_node_properties
         set
-            actual_type_n = #actualType#,
-            persisted_type_n = #persistedType#,
-            multi_valued = #isMultiValued#,
-            boolean_value = #booleanValue#,
-            long_value = #longValue#,
-            float_value = #floatValue#,
-            double_value = #doubleValue#,
-            string_value = #stringValue#,
-            serializable_value = #serializableValue#
+            actual_type_n = ?,
+            persisted_type_n = ?,
+            multi_valued = ?,
+            boolean_value = ?,
+            long_value = ?,
+            float_value = ?,
+            double_value = ?,
+            string_value = ?,
+            serializable_value = ?
         where
-            node_id = #nodeId# and
-            qname_id = #qnameId#
+            node_id = ? and
+            qname_id = ?
     </update>
     
     <delete id="delete_AVMNodeProperty" parameterClass="AVMNodeProperty">

@@ -71,7 +71,6 @@ public class DateTimeTokenFilter extends Tokenizer
 
     public void buildIterator() throws IOException
     {
-        SimpleDateFormat df = CachingDateFormat.getDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS", true);
         Token candidate;
         ArrayList<Token> tokens = new ArrayList<Token>();
         while ((candidate = baseTokeniser.next()) != null)
@@ -85,7 +84,7 @@ public class DateTimeTokenFilter extends Tokenizer
             {
                 try
                 {
-                    date = df.parse(candidate.termText());
+                    date = CachingDateFormat.lenientParse(candidate.termText());
                 }
                 catch (ParseException e)
                 {

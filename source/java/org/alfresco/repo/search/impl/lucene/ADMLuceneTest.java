@@ -652,6 +652,7 @@ public class ADMLuceneTest extends TestCase
         }
 
     }
+
     public void testQuoting() throws Exception
     {
         testTX.commit();
@@ -664,12 +665,10 @@ public class ADMLuceneTest extends TestCase
         sp.addStore(rootNodeRef.getStoreRef());
         sp.excludeDataInTheCurrentTransaction(true);
 
-        ResultSet results  = serviceRegistry.getSearchService().query(sp);
+        ResultSet results = serviceRegistry.getSearchService().query(sp);
         results.close();
     }
-    
-    
-    
+
     public void testPublicServiceSearchServicePaging() throws Exception
     {
         testTX.commit();
@@ -718,7 +717,7 @@ public class ADMLuceneTest extends TestCase
         results = serviceRegistry.getSearchService().query(sp);
         assertEquals(2, results.length());
         results.close();
-        
+
         sp.setLanguage(SearchService.LANGUAGE_FTS_ALFRESCO);
         sp.setMaxPermissionChecks(2);
         results = serviceRegistry.getSearchService().query(sp);
@@ -873,7 +872,7 @@ public class ADMLuceneTest extends TestCase
         searcher.setNamespacePrefixResolver(getNamespacePrefixResolver("namespace"));
         searcher.setQueryRegister(queryRegisterComponent);
         searcher.setQueryLanguages(((AbstractLuceneIndexerAndSearcherFactory) indexerAndSearcher).queryLanguages);
-        
+
         SearchParameters sp = new SearchParameters();
         sp.setLanguage(SearchService.LANGUAGE_FTS_ALFRESCO);
         sp.addStore(rootNodeRef.getStoreRef());
@@ -884,7 +883,7 @@ public class ADMLuceneTest extends TestCase
         sp.addSort(ContentModel.PROP_NODE_UUID.toString(), true);
         ResultSet results = searcher.query(sp);
         assertEquals(15, results.length());
-        
+
         String f = null;
         for (ResultSetRow row : results)
         {
@@ -896,11 +895,9 @@ public class ADMLuceneTest extends TestCase
             }
             f = currentBun;
         }
-        
+
         results.close();
-        
-        
-        
+
         sp = new SearchParameters();
         sp.setLanguage(SearchService.LANGUAGE_FTS_ALFRESCO);
         sp.addStore(rootNodeRef.getStoreRef());
@@ -911,7 +908,7 @@ public class ADMLuceneTest extends TestCase
         sp.addSort(ContentModel.PROP_NODE_UUID.toString(), false);
         results = searcher.query(sp);
         assertEquals(15, results.length());
-        
+
         f = null;
         for (ResultSetRow row : results)
         {
@@ -923,9 +920,9 @@ public class ADMLuceneTest extends TestCase
             }
             f = currentBun;
         }
-        
+
         results.close();
-        
+
         sp = new SearchParameters();
         sp.setLanguage(SearchService.LANGUAGE_FTS_ALFRESCO);
         sp.addStore(rootNodeRef.getStoreRef());
@@ -933,10 +930,10 @@ public class ADMLuceneTest extends TestCase
         sp.addQueryTemplate("ANDY", "%cm:content");
         sp.setNamespace(NamespaceService.CONTENT_MODEL_1_0_URI);
         sp.excludeDataInTheCurrentTransaction(true);
-        sp.addSort("@"+ContentModel.PROP_NODE_UUID.toString(), false);
+        sp.addSort("@" + ContentModel.PROP_NODE_UUID.toString(), false);
         results = searcher.query(sp);
         assertEquals(15, results.length());
-        
+
         f = null;
         for (ResultSetRow row : results)
         {
@@ -948,9 +945,9 @@ public class ADMLuceneTest extends TestCase
             }
             f = currentBun;
         }
-        
+
         results.close();
-        
+
         sp = new SearchParameters();
         sp.setLanguage(SearchService.LANGUAGE_FTS_ALFRESCO);
         sp.addStore(rootNodeRef.getStoreRef());
@@ -961,7 +958,7 @@ public class ADMLuceneTest extends TestCase
         sp.addSort("cm:name", false);
         results = searcher.query(sp);
         assertEquals(15, results.length());
-        
+
         f = null;
         for (ResultSetRow row : results)
         {
@@ -973,9 +970,9 @@ public class ADMLuceneTest extends TestCase
             }
             f = currentBun;
         }
-        
+
         results.close();
-        
+
         sp = new SearchParameters();
         sp.setLanguage(SearchService.LANGUAGE_FTS_ALFRESCO);
         sp.addStore(rootNodeRef.getStoreRef());
@@ -987,10 +984,9 @@ public class ADMLuceneTest extends TestCase
         results = searcher.query(sp);
         assertEquals(15, results.length());
         results.close();
-        
-       
+
     }
-    
+
     public void testFTS() throws InterruptedException
     {
         luceneFTS.pause();
@@ -3535,27 +3531,27 @@ public class ADMLuceneTest extends TestCase
         results.close();
 
         // QNames
-        
+
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "QNAME:\"nine\"", null);
         assertEquals(1, results.length());
         results.close();
-        
+
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PRIMARYASSOCTYPEQNAME:\"test:assoc\"", null);
         assertEquals(10, results.length());
         results.close();
-        
+
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "ASSOCTYPEQNAME:\"test:assoc\"", null);
         assertEquals(10, results.length());
         results.close();
-        
+
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PRIMARYASSOCTYPEQNAME:\"sys:children\"", null);
         assertEquals(4, results.length());
         results.close();
-        
+
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "ASSOCTYPEQNAME:\"sys:children\"", null);
         assertEquals(4, results.length());
         results.close();
-        
+
         // Type search tests
 
         QName qname = QName.createQName(TEST_NAMESPACE, "int-ista");
@@ -3863,115 +3859,120 @@ public class ADMLuceneTest extends TestCase
         boolean usesDateTimeAnalyser = analyserClassName.equals(DateTimeAnalyser.class.getCanonicalName());
 
         Date date = new Date();
-        SimpleDateFormat df = CachingDateFormat.getDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS", true);
-        String sDate = df.format(date);
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(QName.createQName(TEST_NAMESPACE, "date-ista")) + ":\"" + sDate + "\"", null);
-        assertEquals(1, results.length());
-        results.close();
-
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(QName.createQName(TEST_NAMESPACE, "datetime-ista")) + ":\"" + sDate + "\"", null);
-        assertEquals(usesDateTimeAnalyser ? 0 : 1, results.length());
-        results.close();
-
-        sDate = df.format(testDate);
-
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(QName.createQName(TEST_NAMESPACE, "date-ista")) + ":\"" + sDate + "\"", null);
-        assertEquals(1, results.length());
-        results.close();
-
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(QName.createQName(TEST_NAMESPACE, "datetime-ista")) + ":\"" + sDate + "\"", null);
-        assertEquals(1, results.length());
-        results.close();
-
-        // short and long field ranges
-
-        sDate = df.format(date);
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@cm\\:created:[MIN TO " + sDate + "]", null);
-        assertEquals(1, results.length());
-        results.close();
-        
-        sDate = df.format(date);
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@cm\\:created:[MIN TO NOW]", null);
-        assertEquals(1, results.length());
-        results.close();
-
-        sDate = df.format(date);
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(ContentModel.PROP_CREATED) + ":[MIN TO " + sDate + "]", null);
-        assertEquals(1, results.length());
-        results.close();
-
-        // Date ranges
-        // Test date collapses but date time does not
-
-        sDate = df.format(date);
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(QName.createQName(TEST_NAMESPACE, "date-ista")) + ":[" + sDate + " TO " + sDate + "]",
-                null);
-        assertEquals(1, results.length());
-        results.close();
-
-        sDate = df.format(date);
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(QName.createQName(TEST_NAMESPACE, "date-ista")) + ":[MIN  TO " + sDate + "]", null);
-        assertEquals(1, results.length());
-        results.close();
-
-        sDate = df.format(date);
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(QName.createQName(TEST_NAMESPACE, "date-ista")) + ":[" + sDate + " TO MAX]", null);
-        assertEquals(1, results.length());
-        results.close();
-
-        sDate = CachingDateFormat.getDateFormat().format(date);
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene",
-                "\\@" + escapeQName(QName.createQName(TEST_NAMESPACE, "datetime-ista")) + ":[" + sDate + " TO " + sDate + "]", null);
-        assertEquals(usesDateTimeAnalyser ? 0 : 1, results.length());
-        results.close();
-
-        sDate = CachingDateFormat.getDateFormat().format(date);
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(QName.createQName(TEST_NAMESPACE, "datetime-ista")) + ":[MIN TO " + sDate + "]", null);
-        assertEquals(1, results.length());
-        results.close();
-
-        sDate = CachingDateFormat.getDateFormat().format(date);
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(QName.createQName(TEST_NAMESPACE, "datetime-ista")) + ":[" + sDate + " TO MAX]", null);
-        assertEquals(usesDateTimeAnalyser ? 0 : 1, results.length());
-        results.close();
-
-        if (usesDateTimeAnalyser)
+        for (SimpleDateFormat df : CachingDateFormat.getLenientFormatters())
         {
+            String sDate = df.format(date);
+            results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(QName.createQName(TEST_NAMESPACE, "date-ista")) + ":\"" + sDate + "\"", null);
+            assertEquals(1, results.length());
+            results.close();
+
+            results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(QName.createQName(TEST_NAMESPACE, "datetime-ista")) + ":\"" + sDate + "\"", null);
+            assertEquals(usesDateTimeAnalyser ? 0 : 1, results.length());
+            results.close();
+
             sDate = df.format(testDate);
-            // System.out.println("SD = " + sDate);
 
-            for (long i : new long[] { 333, 20000, 20 * 60 * 1000, 8 * 60 * 60 * 1000, 10 * 24 * 60 * 60 * 1000, 4 * 30 * 24 * 60 * 60 * 1000, 10 * 12 * 30 * 24 * 60 * 60 * 1000 })
+            results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(QName.createQName(TEST_NAMESPACE, "date-ista")) + ":\"" + sDate + "\"", null);
+            assertEquals(1, results.length());
+            results.close();
+
+            results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(QName.createQName(TEST_NAMESPACE, "datetime-ista")) + ":\"" + sDate + "\"", null);
+            assertEquals(1, results.length());
+            results.close();
+
+            // short and long field ranges
+
+            sDate = df.format(date);
+            results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@cm\\:created:[MIN TO " + sDate + "]", null);
+            assertEquals(1, results.length());
+            results.close();
+
+            sDate = df.format(date);
+            results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@cm\\:created:[MIN TO NOW]", null);
+            assertEquals(1, results.length());
+            results.close();
+
+            sDate = df.format(date);
+            results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(ContentModel.PROP_CREATED) + ":[MIN TO " + sDate + "]", null);
+            assertEquals(1, results.length());
+            results.close();
+
+            // Date ranges
+            // Test date collapses but date time does not
+
+            sDate = df.format(date);
+            results = searcher.query(rootNodeRef.getStoreRef(), "lucene",
+                    "\\@" + escapeQName(QName.createQName(TEST_NAMESPACE, "date-ista")) + ":[" + sDate + " TO " + sDate + "]", null);
+            assertEquals(1, results.length());
+            results.close();
+
+            sDate = df.format(date);
+            results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(QName.createQName(TEST_NAMESPACE, "date-ista")) + ":[MIN  TO " + sDate + "]", null);
+            assertEquals(1, results.length());
+            results.close();
+
+            sDate = df.format(date);
+            results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(QName.createQName(TEST_NAMESPACE, "date-ista")) + ":[" + sDate + " TO MAX]", null);
+            assertEquals(1, results.length());
+            results.close();
+
+            sDate = CachingDateFormat.getDateFormat().format(date);
+            results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@"
+                    + escapeQName(QName.createQName(TEST_NAMESPACE, "datetime-ista")) + ":[" + sDate + " TO " + sDate + "]", null);
+            assertEquals(usesDateTimeAnalyser ? 0 : 1, results.length());
+            results.close();
+
+            sDate = CachingDateFormat.getDateFormat().format(date);
+            results = searcher
+                    .query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(QName.createQName(TEST_NAMESPACE, "datetime-ista")) + ":[MIN TO " + sDate + "]", null);
+            assertEquals(1, results.length());
+            results.close();
+
+            sDate = CachingDateFormat.getDateFormat().format(date);
+            results = searcher
+                    .query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(QName.createQName(TEST_NAMESPACE, "datetime-ista")) + ":[" + sDate + " TO MAX]", null);
+            assertEquals(usesDateTimeAnalyser ? 0 : 1, results.length());
+            results.close();
+
+            if (usesDateTimeAnalyser)
             {
-                String startDate = df.format(new Date(testDate.getTime() - i));
-                // System.out.println("\tStart = " + startDate);
+                sDate = df.format(testDate);
+                // System.out.println("SD = " + sDate);
 
-                String endDate = df.format(new Date(testDate.getTime() + i));
-                // System.out.println("\tEnd = " + endDate);
+                for (long i : new long[] { 333, 20000, 20 * 60 * 1000, 8 * 60 * 60 * 1000, 10 * 24 * 60 * 60 * 1000, 4 * 30 * 24 * 60 * 60 * 1000,
+                        10 * 12 * 30 * 24 * 60 * 60 * 1000 })
+                {
+                    String startDate = df.format(new Date(testDate.getTime() - i));
+                    // System.out.println("\tStart = " + startDate);
 
-                results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@"
-                        + escapeQName(QName.createQName(TEST_NAMESPACE, "datetime-ista")) + ":[" + startDate + " TO " + endDate + "]", null);
-                assertEquals(1, results.length());
-                results.close();
+                    String endDate = df.format(new Date(testDate.getTime() + i));
+                    // System.out.println("\tEnd = " + endDate);
 
-                results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@"
-                        + escapeQName(QName.createQName(TEST_NAMESPACE, "datetime-ista")) + ":[" + sDate + " TO " + endDate + "]", null);
-                assertEquals(1, results.length());
-                results.close();
+                    results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@"
+                            + escapeQName(QName.createQName(TEST_NAMESPACE, "datetime-ista")) + ":[" + startDate + " TO " + endDate + "]", null);
+                    assertEquals(1, results.length());
+                    results.close();
 
-                results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@"
-                        + escapeQName(QName.createQName(TEST_NAMESPACE, "datetime-ista")) + ":[" + startDate + " TO " + sDate + "]", null);
-                assertEquals(1, results.length());
-                results.close();
+                    results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@"
+                            + escapeQName(QName.createQName(TEST_NAMESPACE, "datetime-ista")) + ":[" + sDate + " TO " + endDate + "]", null);
+                    assertEquals(1, results.length());
+                    results.close();
 
-                results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@"
-                        + escapeQName(QName.createQName(TEST_NAMESPACE, "datetime-ista")) + ":{" + sDate + " TO " + endDate + "}", null);
-                assertEquals(0, results.length());
-                results.close();
+                    results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@"
+                            + escapeQName(QName.createQName(TEST_NAMESPACE, "datetime-ista")) + ":[" + startDate + " TO " + sDate + "]", null);
+                    assertEquals(1, results.length());
+                    results.close();
 
-                results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@"
-                        + escapeQName(QName.createQName(TEST_NAMESPACE, "datetime-ista")) + ":{" + startDate + " TO " + sDate + "}", null);
-                assertEquals(0, results.length());
-                results.close();
+                    results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@"
+                            + escapeQName(QName.createQName(TEST_NAMESPACE, "datetime-ista")) + ":{" + sDate + " TO " + endDate + "}", null);
+                    assertEquals(0, results.length());
+                    results.close();
+
+                    results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@"
+                            + escapeQName(QName.createQName(TEST_NAMESPACE, "datetime-ista")) + ":{" + startDate + " TO " + sDate + "}", null);
+                    assertEquals(0, results.length());
+                    results.close();
+                }
             }
         }
 

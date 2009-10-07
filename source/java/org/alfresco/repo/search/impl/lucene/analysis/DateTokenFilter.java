@@ -50,7 +50,6 @@ public class DateTokenFilter extends Tokenizer
 
     public Token next() throws IOException
     {
-        SimpleDateFormat df = CachingDateFormat.getDateFormat();
         SimpleDateFormat dof = CachingDateFormat.getDateOnlyFormat();
         Token candidate;
         while ((candidate = baseTokeniser.next()) != null)
@@ -64,7 +63,7 @@ public class DateTokenFilter extends Tokenizer
             {
                 try
                 {
-                    date = df.parse(candidate.termText());
+                    date = CachingDateFormat.lenientParse(candidate.termText());
                 }
                 catch (ParseException e)
                 {

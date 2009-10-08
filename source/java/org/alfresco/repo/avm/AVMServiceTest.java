@@ -410,20 +410,20 @@ public class AVMServiceTest extends AVMServiceTestBase
     }
 
     /**
-     * Test properties.
+     * Test (node) properties.
      */
     public void testProperties() throws Exception
     {
         try
         {
             setupBasicTree();
-
+            
             StoreRef storeRef = AVMNodeConverter.ToStoreRef("main");
             SearchService searchService = fIndexerAndSearcher.getSearcher(storeRef, true);
             ResultSet results = searchService.query(storeRef, "lucene", LuceneQueryParser.escape("@{silly.uri}SillyProperty") + ":\"Silly\"");
             assertEquals(0, results.length());
             results.close();
-
+            
             QName name = QName.createQName("silly.uri", "SillyProperty");
             PropertyValue value = new PropertyValue(DataTypeDefinition.TEXT, "Silly Property Value");
             fService.setNodeProperty("main:/a/b/c/foo", name, value);
@@ -436,7 +436,7 @@ public class AVMServiceTest extends AVMServiceTestBase
             Map<QName, PropertyValue> props = fService.getNodeProperties(-1, "main:/a/b/c/foo");
             assertEquals(1, props.size());
             assertEquals(value.toString(), props.get(name).toString());
-
+            
             props = new HashMap<QName, PropertyValue>();
             QName n1 = QName.createQName("silly.uri", "Prop1");
             PropertyValue p1 = new PropertyValue(DataTypeDefinition.DATETIME, new Date(System.currentTimeMillis()));
@@ -447,45 +447,87 @@ public class AVMServiceTest extends AVMServiceTestBase
             QName n3 = QName.createQName("silly.uri", "Prop3");
             PropertyValue p3 = new PropertyValue(DataTypeDefinition.INT, 42);
             props.put(n3, p3);
+            QName n4 = QName.createQName("silly.uri", "Prop4");
+            PropertyValue p4 = new PropertyValue(null, new Boolean(false));
+            props.put(n4, p4);
+            QName n5 = QName.createQName("silly.uri", "Prop5");
+            List<String> strList = new ArrayList<String>(2);
+            strList.add("hello");
+            strList.add("world");
+            PropertyValue p5 = new PropertyValue(DataTypeDefinition.TEXT, (Serializable)strList);
+            props.put(n5, p5);
             fService.setNodeProperties("main:/a/b/c/bar", props);
             fService.createSnapshot("main", null, null);
             props = fService.getNodeProperties(-1, "main:/a/b/c/bar");
-            assertEquals(3, props.size());
+            assertEquals(5, props.size());
             assertEquals(p1.toString(), props.get(n1).toString());
             assertEquals(p2.toString(), props.get(n2).toString());
             assertEquals(p3.toString(), props.get(n3).toString());
-
+            assertEquals(p4.toString(), props.get(n4).toString());
+            assertEquals(p5.toString(), props.get(n5).toString());
+            
             results = searchService.query(storeRef, "lucene", LuceneQueryParser.escape("@{silly.uri}Prop1") + ":\"" + props.get(n1).getStringValue() + "\"");
             assertEquals(1, results.length());
             results.close();
             results = searchService.query(storeRef, "lucene", LuceneQueryParser.escape("@{silly.uri}Prop2") + ":\"" + props.get(n2).getStringValue() + "\"");
             assertEquals(1, results.length());
             results.close();
-
+            
+            props = new HashMap<QName, PropertyValue>();
+            n1 = QName.createQName("silly.uri", "Prop1");
+            p1 = new PropertyValue(DataTypeDefinition.DATETIME, new Date(System.currentTimeMillis()));
+            props.put(n1, p1);
+            n2 = QName.createQName("silly.uri", "Prop2");
+            p2 = new PropertyValue(DataTypeDefinition.TEXT, "A String Property - updated.");
+            props.put(n2, p2);
+            n3 = QName.createQName("silly.uri", "Prop3");
+            p3 = new PropertyValue(DataTypeDefinition.INT, -42);
+            props.put(n3, p3);
+            n4 = QName.createQName("silly.uri", "Prop4");
+            p4 = new PropertyValue(null, new Boolean(true));
+            props.put(n4, p4);
+            n5 = QName.createQName("silly.uri", "Prop5");
+            strList = new ArrayList<String>(2);
+            strList.add("goodbye");
+            strList.add("world");
+            p5 = new PropertyValue(DataTypeDefinition.TEXT, (Serializable)strList);
+            props.put(n5, p5);
+            fService.setNodeProperties("main:/a/b/c/bar", props);
+            fService.createSnapshot("main", null, null);
+            props = fService.getNodeProperties(-1, "main:/a/b/c/bar");
+            assertEquals(5, props.size());
+            assertEquals(p1.toString(), props.get(n1).toString());
+            assertEquals(p2.toString(), props.get(n2).toString());
+            assertEquals(p3.toString(), props.get(n3).toString());
+            assertEquals(p4.toString(), props.get(n4).toString());
+            assertEquals(p5.toString(), props.get(n5).toString());
+            
             fService.deleteNodeProperty("main:/a/b/c/bar", n1);
             fService.createSnapshot("main", null, null);
-
+            
             results = searchService.query(storeRef, "lucene", LuceneQueryParser.escape("@{silly.uri}Prop1") + ":\"" + props.get(n1).getStringValue() + "\"");
             assertEquals(0, results.length());
             results.close();
             results = searchService.query(storeRef, "lucene", LuceneQueryParser.escape("@{silly.uri}Prop2") + ":\"" + props.get(n2).getStringValue() + "\"");
             assertEquals(1, results.length());
             results.close();
-
+            
             props = fService.getNodeProperties(-1, "main:/a/b/c/bar");
-            assertEquals(2, props.size());
+            assertEquals(4, props.size());
             assertEquals(p2.toString(), props.get(n2).toString());
             assertEquals(p3.toString(), props.get(n3).toString());
+            assertEquals(p4.toString(), props.get(n4).toString());
+            assertEquals(p5.toString(), props.get(n5).toString());
             fService.deleteNodeProperties("main:/a/b/c/bar");
             fService.createSnapshot("main", null, null);
-
+            
             results = searchService.query(storeRef, "lucene", LuceneQueryParser.escape("@{silly.uri}Prop1") + ":\"" + p1.getStringValue() + "\"");
             assertEquals(0, results.length());
             results.close();
             results = searchService.query(storeRef, "lucene", LuceneQueryParser.escape("@{silly.uri}Prop2") + ":\"" + props.get(n2).getStringValue() + "\"");
             assertEquals(0, results.length());
             results.close();
-
+            
             props = fService.getNodeProperties(-1, "main:/a/b/c/bar");
             assertEquals(0, props.size());
             fService.removeNode("main:/a/b/c/foo");
@@ -4968,12 +5010,21 @@ public class AVMServiceTest extends AVMServiceTestBase
     {
         try
         {
+            Map<QName, PropertyValue> props = fService.getStoreProperties("main");
+            assertEquals(2, props.size());
+            assertEquals(AuthenticationUtil.getAdminUserName(), props.get(ContentModel.PROP_CREATOR).getStringValue());
+            assertNotNull(props.get(ContentModel.PROP_CREATED));
+            System.out.println(props.toString());
+            
             QName name = QName.createQName("silly.uri", "SillyProperty");
             PropertyValue value = new PropertyValue(DataTypeDefinition.TEXT, "Silly Property Value");
             fService.setStoreProperty("main", name, value);
             PropertyValue found = fService.getStoreProperty("main", name);
             assertEquals(value.toString(), found.toString());
-            Map<QName, PropertyValue> props = new HashMap<QName, PropertyValue>();
+            props = fService.getStoreProperties("main");
+            assertEquals(3, props.size());
+            
+            props = new HashMap<QName, PropertyValue>(5);
             QName n1 = QName.createQName("silly.uri", "Prop1");
             PropertyValue p1 = new PropertyValue(null, new Date(System.currentTimeMillis()));
             props.put(n1, p1);
@@ -4983,15 +5034,59 @@ public class AVMServiceTest extends AVMServiceTestBase
             QName n3 = QName.createQName("silly.uri", "Prop3");
             PropertyValue p3 = new PropertyValue(null, 42);
             props.put(n3, p3);
+            QName n4 = QName.createQName("silly.uri", "Prop4");
+            PropertyValue p4 = new PropertyValue(null, new Boolean(false));
+            props.put(n4, p4);
+            QName n5 = QName.createQName("silly.uri", "Prop5");
+            List<String> strList = new ArrayList<String>(2);
+            strList.add("hello");
+            strList.add("world");
+            PropertyValue p5 = new PropertyValue(DataTypeDefinition.TEXT, (Serializable)strList);
+            props.put(n5, p5);
             fService.setStoreProperties("main", props);
+            
             props = fService.getStoreProperties("main");
-            assertEquals(6, props.size());
+            System.out.println(props.toString());
+            assertEquals(8, props.size());
             assertEquals(p1.toString(), props.get(n1).toString());
             assertEquals(p2.toString(), props.get(n2).toString());
             assertEquals(p3.toString(), props.get(n3).toString());
+            assertEquals(p4.toString(), props.get(n4).toString());
+            assertEquals(p5.toString(), props.get(n5).toString());
+            
+            props = new HashMap<QName, PropertyValue>(5);
+            n1 = QName.createQName("silly.uri", "Prop1");
+            p1 = new PropertyValue(null, new Date(System.currentTimeMillis()));
+            props.put(n1, p1);
+            n2 = QName.createQName("silly.uri", "Prop2");
+            p2 = new PropertyValue(null, "A String Property - updated.");
+            props.put(n2, p2);
+            n3 = QName.createQName("silly.uri", "Prop3");
+            p3 = new PropertyValue(null, -42);
+            props.put(n3, p3);
+            n4 = QName.createQName("silly.uri", "Prop4");
+            p4 = new PropertyValue(null, new Boolean(true));
+            props.put(n4, p4);
+            n5 = QName.createQName("silly.uri", "Prop5");
+            strList = new ArrayList<String>(2);
+            strList.add("goodbye");
+            strList.add("world");
+            p5 = new PropertyValue(DataTypeDefinition.TEXT, (Serializable)strList);
+            props.put(n5, p5);
+            fService.setStoreProperties("main", props);
+            
+            props = fService.getStoreProperties("main");
+            System.out.println(props.toString());
+            assertEquals(8, props.size());
+            assertEquals(p1.toString(), props.get(n1).toString());
+            assertEquals(p2.toString(), props.get(n2).toString());
+            assertEquals(p3.toString(), props.get(n3).toString());
+            assertEquals(p4.toString(), props.get(n4).toString());
+            assertEquals(p5.toString(), props.get(n5).toString());
+            
             fService.deleteStoreProperty("main", name);
             props = fService.getStoreProperties("main");
-            assertEquals(5, props.size());
+            assertEquals(7, props.size());
         }
         catch (Exception e)
         {

@@ -376,7 +376,7 @@
     </select>
     
     <!-- Optimistic update of the store property -->
-    <update id="update_AVMStoreProperty" parameterClass="AVMStoreProperty">
+    <update id="update_AVMStoreProperty" parameterMap="parameter_StorePropertyPatternMap">
         update
             avm_store_properties
         set

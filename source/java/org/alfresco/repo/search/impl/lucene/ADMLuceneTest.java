@@ -3861,6 +3861,11 @@ public class ADMLuceneTest extends TestCase
         Date date = new Date();
         for (SimpleDateFormat df : CachingDateFormat.getLenientFormatters())
         {
+            if(usesDateTimeAnalyser && (df.format(date).length() < 22))
+            {
+                continue;
+            }
+            
             String sDate = df.format(date);
             results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(QName.createQName(TEST_NAMESPACE, "date-ista")) + ":\"" + sDate + "\"", null);
             assertEquals(1, results.length());
@@ -3925,13 +3930,13 @@ public class ADMLuceneTest extends TestCase
             sDate = CachingDateFormat.getDateFormat().format(date);
             results = searcher
                     .query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(QName.createQName(TEST_NAMESPACE, "datetime-ista")) + ":[MIN TO " + sDate + "]", null);
-            assertEquals(1, results.length());
+            assertEquals(usesDateTimeAnalyser ? 0 : 1, results.length());
             results.close();
 
             sDate = CachingDateFormat.getDateFormat().format(date);
             results = searcher
                     .query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(QName.createQName(TEST_NAMESPACE, "datetime-ista")) + ":[" + sDate + " TO MAX]", null);
-            assertEquals(usesDateTimeAnalyser ? 0 : 1, results.length());
+            assertEquals(1, results.length());
             results.close();
 
             if (usesDateTimeAnalyser)

@@ -1700,10 +1700,9 @@ public class LuceneQueryParser extends QueryParser
                     {
                         Calendar start = Calendar.getInstance();
                         Calendar end = Calendar.getInstance();
-                        SimpleDateFormat df = CachingDateFormat.getDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS", true);
                         try
                         {
-                            Date date = df.parse(part1);
+                            Date date = CachingDateFormat.lenientParse(part1);
                             start.setTime(date);
                         }
                         catch (java.text.ParseException e)
@@ -1726,6 +1725,10 @@ public class LuceneQueryParser extends QueryParser
                                     start.set(Calendar.SECOND, start.getMinimum(Calendar.SECOND));
                                     start.set(Calendar.MILLISECOND, start.getMinimum(Calendar.MILLISECOND));
                                 }
+                                else if (part1.equalsIgnoreCase("now"))
+                                {
+                                    start.setTime(new Date());
+                                }
                                 else
                                 {
                                     return new TermQuery(new Term("NO_TOKENS", "__"));
@@ -1734,7 +1737,7 @@ public class LuceneQueryParser extends QueryParser
                         }
                         try
                         {
-                            Date date = df.parse(part2);
+                            Date date = CachingDateFormat.lenientParse(part2);
                             end.setTime(date);
                         }
                         catch (java.text.ParseException e)
@@ -1748,7 +1751,7 @@ public class LuceneQueryParser extends QueryParser
                             }
                             catch (java.text.ParseException ee)
                             {
-                                if (part1.equalsIgnoreCase("max"))
+                                if (part2.equalsIgnoreCase("max"))
                                 {
                                     end.set(Calendar.YEAR, start.getMaximum(Calendar.YEAR));
                                     end.set(Calendar.DAY_OF_YEAR, start.getMaximum(Calendar.DAY_OF_YEAR));
@@ -1756,6 +1759,10 @@ public class LuceneQueryParser extends QueryParser
                                     end.set(Calendar.MINUTE, start.getMaximum(Calendar.MINUTE));
                                     end.set(Calendar.SECOND, start.getMaximum(Calendar.SECOND));
                                     end.set(Calendar.MILLISECOND, start.getMaximum(Calendar.MILLISECOND));
+                                }
+                                else if (part2.equalsIgnoreCase("now"))
+                                {
+                                    end.setTime(new Date());
                                 }
                                 else
                                 {

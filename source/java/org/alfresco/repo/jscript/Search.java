@@ -436,7 +436,8 @@ public class Search extends BaseScopableProcessorExtension
      *    language: string,       optional, one of: lucene, xpath, jcr-xpath, fts-alfresco - defaults to 'lucene'
      *    templates: [],          optional, Array of query language template objects (see below) - if supported by the language 
      *    sort: [],               optional, Array of sort column objects (see below) - if supported by the language
-     *    page: object            optional, paging information object (see below) - if supported by the language
+     *    page: object,           optional, paging information object (see below) - if supported by the language
+     *    namespace: string       optional, the default namespace for properties
      * }
      * 
      * sort
@@ -489,6 +490,7 @@ public class Search extends BaseScopableProcessorExtension
                 String language = (String)def.get("language");
                 List<Map<Serializable, Serializable>> sort = (List<Map<Serializable, Serializable>>)def.get("sort");
                 Map<Serializable, Serializable> page = (Map<Serializable, Serializable>)def.get("page");
+                String namespace = (String)def.get("namespace");
                 
                 // extract supplied values
                 
@@ -553,6 +555,10 @@ public class Search extends BaseScopableProcessorExtension
                 sp.addStore(store != null ? new StoreRef(store) : this.storeRef);
                 sp.setLanguage(language != null ? language : SearchService.LANGUAGE_LUCENE);
                 sp.setQuery(query);
+                if (namespace != null)
+                {
+                    sp.setNamespace(namespace);
+                }
                 if (maxResults > 0)
                 {
                     sp.setLimit(maxResults);

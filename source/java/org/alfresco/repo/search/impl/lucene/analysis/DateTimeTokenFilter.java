@@ -80,6 +80,17 @@ public class DateTimeTokenFilter extends Tokenizer
             {
                 date = new Date();
             }
+            else if (candidate.termText().equalsIgnoreCase("today"))
+            {
+                date = new Date();
+                Calendar cal = Calendar.getInstance();
+                cal.setTime(date);
+                cal.set(Calendar.HOUR_OF_DAY, cal.getMinimum(Calendar.HOUR_OF_DAY));
+                cal.set(Calendar.MINUTE, cal.getMinimum(Calendar.MINUTE));
+                cal.set(Calendar.SECOND, cal.getMinimum(Calendar.SECOND));
+                cal.set(Calendar.MILLISECOND, cal.getMinimum(Calendar.MILLISECOND));
+                
+            }
             else
             {
                 try

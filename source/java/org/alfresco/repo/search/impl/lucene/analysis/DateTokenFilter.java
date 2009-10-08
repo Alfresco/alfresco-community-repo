@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.io.Reader;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 
 import org.alfresco.util.CachingDateFormat;
@@ -58,6 +59,17 @@ public class DateTokenFilter extends Tokenizer
             if (candidate.termText().equalsIgnoreCase("now"))
             {
                 date = new Date();
+            }
+            else if (candidate.termText().equalsIgnoreCase("today"))
+            {
+                date = new Date();
+                Calendar cal = Calendar.getInstance();
+                cal.setTime(date);
+                cal.set(Calendar.HOUR_OF_DAY, cal.getMinimum(Calendar.HOUR_OF_DAY));
+                cal.set(Calendar.MINUTE, cal.getMinimum(Calendar.MINUTE));
+                cal.set(Calendar.SECOND, cal.getMinimum(Calendar.SECOND));
+                cal.set(Calendar.MILLISECOND, cal.getMinimum(Calendar.MILLISECOND));
+                
             }
             else
             {

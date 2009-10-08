@@ -1729,6 +1729,15 @@ public class LuceneQueryParser extends QueryParser
                                 {
                                     start.setTime(new Date());
                                 }
+                                else if (part1.equalsIgnoreCase("today"))
+                                {
+                                    start.setTime(new Date());
+                                    start.set(Calendar.HOUR_OF_DAY, start.getMinimum(Calendar.HOUR_OF_DAY));
+                                    start.set(Calendar.MINUTE, start.getMinimum(Calendar.MINUTE));
+                                    start.set(Calendar.SECOND, start.getMinimum(Calendar.SECOND));
+                                    start.set(Calendar.MILLISECOND, start.getMinimum(Calendar.MILLISECOND));
+                                    
+                                }
                                 else
                                 {
                                     return new TermQuery(new Term("NO_TOKENS", "__"));
@@ -1753,16 +1762,25 @@ public class LuceneQueryParser extends QueryParser
                             {
                                 if (part2.equalsIgnoreCase("max"))
                                 {
-                                    end.set(Calendar.YEAR, start.getMaximum(Calendar.YEAR));
-                                    end.set(Calendar.DAY_OF_YEAR, start.getMaximum(Calendar.DAY_OF_YEAR));
-                                    end.set(Calendar.HOUR_OF_DAY, start.getMaximum(Calendar.HOUR_OF_DAY));
-                                    end.set(Calendar.MINUTE, start.getMaximum(Calendar.MINUTE));
-                                    end.set(Calendar.SECOND, start.getMaximum(Calendar.SECOND));
-                                    end.set(Calendar.MILLISECOND, start.getMaximum(Calendar.MILLISECOND));
+                                    end.set(Calendar.YEAR, end.getMaximum(Calendar.YEAR));
+                                    end.set(Calendar.DAY_OF_YEAR, end.getMaximum(Calendar.DAY_OF_YEAR));
+                                    end.set(Calendar.HOUR_OF_DAY, end.getMaximum(Calendar.HOUR_OF_DAY));
+                                    end.set(Calendar.MINUTE, end.getMaximum(Calendar.MINUTE));
+                                    end.set(Calendar.SECOND, end.getMaximum(Calendar.SECOND));
+                                    end.set(Calendar.MILLISECOND, end.getMaximum(Calendar.MILLISECOND));
                                 }
                                 else if (part2.equalsIgnoreCase("now"))
                                 {
                                     end.setTime(new Date());
+                                }
+                                else if (part1.equalsIgnoreCase("today"))
+                                {
+                                    end.setTime(new Date());
+                                    end.set(Calendar.HOUR_OF_DAY, end.getMinimum(Calendar.HOUR_OF_DAY));
+                                    end.set(Calendar.MINUTE, end.getMinimum(Calendar.MINUTE));
+                                    end.set(Calendar.SECOND, end.getMinimum(Calendar.SECOND));
+                                    end.set(Calendar.MILLISECOND, end.getMinimum(Calendar.MILLISECOND));
+                                    
                                 }
                                 else
                                 {

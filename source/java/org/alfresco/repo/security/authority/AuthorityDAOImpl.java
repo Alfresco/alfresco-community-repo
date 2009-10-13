@@ -39,7 +39,6 @@ import java.util.regex.Pattern;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.cache.SimpleCache;
-import org.alfresco.repo.tenant.TenantAdminService;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -73,8 +72,6 @@ public class AuthorityDAOImpl implements AuthorityDAO
     private PersonService personService;
     
     private TenantService tenantService;
-    
-    private TenantAdminService tenantAdminService;
     
     private SimpleCache<CacheKey, HashSet<String>> authorityLookupCache;
     
@@ -123,11 +120,6 @@ public class AuthorityDAOImpl implements AuthorityDAO
     public void setTenantService(TenantService tenantService)
     {
         this.tenantService = tenantService;
-    }
-    
-    public void setTenantAdminService(TenantAdminService tenantAdminService)
-    {
-        this.tenantAdminService = tenantAdminService;
     }
     
     public boolean authorityExists(String name)
@@ -441,7 +433,7 @@ public class AuthorityDAOImpl implements AuthorityDAO
      */
     private NodeRef getSystemContainer(QName assocQName)
     {
-        final String cacheKey = tenantAdminService.getCurrentUserDomain() + assocQName.toString();
+        final String cacheKey = tenantService.getCurrentUserDomain() + assocQName.toString();
         NodeRef systemContainerRef = systemContainerRefs.get(cacheKey);
         if (systemContainerRef == null)
         {

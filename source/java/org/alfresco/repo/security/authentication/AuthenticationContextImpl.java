@@ -114,12 +114,12 @@ public class AuthenticationContextImpl implements AuthenticationContext
     
     public String getGuestUserName()
     {
-        return PermissionService.GUEST_AUTHORITY.toLowerCase();
+        return AuthenticationUtil.getGuestUserName();
     }
 
     public boolean isGuestUserName(String userName)
     {
-        return PermissionService.GUEST_AUTHORITY.equalsIgnoreCase(this.tenantService.getBaseNameUser(userName));
+        return AuthenticationUtil.getGuestUserName().equalsIgnoreCase(this.tenantService.getBaseNameUser(userName));
     }
 
     public Authentication setCurrentAuthentication(Authentication authentication)

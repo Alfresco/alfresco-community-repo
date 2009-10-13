@@ -50,7 +50,7 @@
          <generator class="native" />
       </id>
       <natural-id>
-         <property name="ipAddress" column="ip_address" type="string" length="15" not-null="true" />
+         <property name="ipAddress" column="ip_address" type="string" length="39" not-null="true" />
       </natural-id>
       <!-- Optimistic locking -->
       <version column="version" name="version" type="long" />

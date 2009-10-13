@@ -1842,8 +1842,8 @@
             <ref bean="qnameDAO" />
         </property>
     </bean>
-    
-   <bean id="patch.db-V3.2-ContentTables" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
+
+    <bean id="patch.db-V3.2-ContentTables" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
         <property name="id"><value>patch.db-V3.2-ContentTables</value></property>
         <property name="description"><value>patch.schemaUpgradeScript.description</value></property>
         <property name="fixesFromSchema"><value>0</value></property>
@@ -1918,6 +1918,18 @@
         <property name="scriptUrl">
             <!-- Share a create script -->
             <value>classpath:alfresco/dbscripts/create/3.2/${db.script.dialect}/AlfrescoPostCreate-3.2-AuditTables.sql</value>
+        </property>
+    </bean>
+    
+    <bean id="patch.db-V3.1-Allow-IPv6" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
+        <property name="id"><value>patch.db-V3.1-Allow-IPv6</value></property>
+        <property name="description"><value>patch.schemaUpgradeScript.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>3003</value></property>
+        <property name="targetSchema"><value>3004</value></property>
+        <property name="scriptUrl">
+            <!-- Share a create script -->
+            <value>classpath:alfresco/dbscripts/upgrade/3.1/${db.script.dialect}/IPv6-patch.sql</value>
         </property>
     </bean>
     

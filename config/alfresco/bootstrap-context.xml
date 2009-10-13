@@ -127,15 +127,12 @@
         <property name="clusterName">
             <value>${alfresco.cluster.name}</value>
         </property>
-        <property name="protocolStackMapping">
+        <property name="configUrlsByAppRegion">
             <map>
                 <entry key="DEFAULT">
-                    <value>${alfresco.jgroups.defaultProtocol}</value>
+                    <value>${alfresco.jgroups.configLocation}</value>
                 </entry>
             </map>
-        </property>
-        <property name="jgroupsConfigurationUrl">
-            <value>${alfresco.jgroups.configLocation}</value>
         </property>
     </bean>
 

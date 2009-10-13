@@ -24,7 +24,6 @@
  */
 package org.alfresco.repo.jgroups;
 
-import java.io.FileNotFoundException;
 import java.io.Serializable;
 import java.net.URL;
 import java.util.HashMap;
@@ -50,12 +49,13 @@ import org.jgroups.ChannelListener;
 import org.jgroups.ChannelNotConnectedException;
 import org.jgroups.Event;
 import org.jgroups.JChannel;
-import org.jgroups.JChannelFactory;
 import org.jgroups.Message;
 import org.jgroups.Receiver;
 import org.jgroups.TimeoutException;
 import org.jgroups.UpHandler;
 import org.jgroups.View;
+import org.jgroups.protocols.LOOPBACK;
+import org.jgroups.stack.ProtocolStack;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.util.ResourceUtils;
 
@@ -63,23 +63,12 @@ import org.springframework.util.ResourceUtils;
  * A cache peer provider that does heartbeat sending and receiving using JGroups.
  * <p>
  * The cluster name needs to be set before any communication is possible.  This can be done using the
- * system property<br>
- *    {@link #PROP_CLUSTER_NAME_PREFIX -Dalfresco.cluster-name-prefix}=MyCluster
- * or by declaring a bean
- * <code><pre>
- *    <bean id="jchannelFactory" class="org.alfresco.repo.jgroups.AlfrescoJChannelFactory">
- *       <property name="clusterNamePrefix">
- *          <value>MyCluster</value>
- *       </property>
- *    </bean>
- * </pre></code>
+ * property {@link #setClusterName(String)}.
  * <p>
  * The channels provided to the callers will be proxies to underlying channels that will be hot-swappable.
  * This means that the client code can continue to use the channel references while the actual
  * implementation can be switched in and out as required.
  *  
- * @see #PROP_CLUSTER_NAME_PREFIX
- * 
  * @author Derek Hulley
  * @since 2.1.3
  */
@@ -89,15 +78,10 @@ public class AlfrescoJGroupsChannelFactory extends AbstractLifecycleBean
     public static final String APP_REGION_DEFAULT = "DEFAULT";
     /** The application region used by the EHCache heartbeat implementation over JGroups. */
     public static final String APP_REGION_EHCACHE_HEARTBEAT = "EHCACHE_HEARTBEAT";
-    /** The UDP protocol stack (default) */
-    public static final String PROTOCOL_STACK_UDP = "UDP";
-    /** The TCP protocol stack */
-    public static final String PROTOCOL_STACK_TCP = "TCP";
-    
-    
-    public static final String PROP_CLUSTER_NAME_PREFIX = "alfresco.cluster-name-prefix";
-    public static final String CUSTOM_CONFIGURATION_FILE = "classpath:alfresco/extension/jgroups-custom.xml";
-    public static final String DEFAULT_CONFIGURATION_FILE = "classpath:alfresco/jgroups-default.xml";
+    /** The UDP protocol config (default) */
+    public static final String DEFAULT_CONFIG_UDP = "classpath:alfresco/jgroups/alfresco-jgroups-UDP.xml";
+    /** The TCP protocol config */
+    public static final String DEFAULT_CONFIG_TCP = "classpath:alfresco/jgroups/alfresco-jgroups-TCP.xml";
     
     private static Log logger = LogFactory.getLog(AlfrescoJGroupsChannelFactory.class);
     
@@ -107,13 +91,11 @@ public class AlfrescoJGroupsChannelFactory extends AbstractLifecycleBean
     
     // Values that are modified by the bean implementation
     private static String clusterNamePrefix;
-    private static URL configUrl;
-    private static Map<String, String> stacksByAppRegion;
+    private static Map<String, String> configUrlsByAppRegion;
     
     // Derived data
     /** A map that stores channel information by the application region. */
-    private static final Map<String, ChannelProxy> channels;
-    private static JChannelFactory channelFactory;
+    private static final Map<String, ChannelProxy> channelsByAppRegion;
     
     static
     {
@@ -121,17 +103,13 @@ public class AlfrescoJGroupsChannelFactory extends AbstractLifecycleBean
         readLock = readWriteLock.readLock();
         writeLock = readWriteLock.writeLock();
         
-        channels = new HashMap<String, ChannelProxy>(5);
+        channelsByAppRegion = new HashMap<String, ChannelProxy>(5);
         
         clusterNamePrefix = null;
-        configUrl = null;
-        stacksByAppRegion = new HashMap<String, String>(5);
-        stacksByAppRegion.put(
-                AlfrescoJGroupsChannelFactory.APP_REGION_EHCACHE_HEARTBEAT,
-                AlfrescoJGroupsChannelFactory.PROTOCOL_STACK_UDP);
-        stacksByAppRegion.put(
+        configUrlsByAppRegion = new HashMap<String, String>(5);
+        configUrlsByAppRegion.put(
                 AlfrescoJGroupsChannelFactory.APP_REGION_DEFAULT,
-                AlfrescoJGroupsChannelFactory.PROTOCOL_STACK_UDP);
+                AlfrescoJGroupsChannelFactory.DEFAULT_CONFIG_UDP);
     }
     
     /**
@@ -158,7 +136,7 @@ public class AlfrescoJGroupsChannelFactory extends AbstractLifecycleBean
      */
     private static void closeChannels()
     {
-        for (Map.Entry<String, ChannelProxy> entry : channels.entrySet())
+        for (Map.Entry<String, ChannelProxy> entry : channelsByAppRegion.entrySet())
         {
             ChannelProxy channelProxy = entry.getValue();
             
@@ -166,7 +144,6 @@ public class AlfrescoJGroupsChannelFactory extends AbstractLifecycleBean
             try
             {
                 channelProxy.close();
-                channelProxy.shutdown();
                 if (logger.isDebugEnabled())
                 {
                     logger.debug("\n" +
@@ -183,12 +160,44 @@ public class AlfrescoJGroupsChannelFactory extends AbstractLifecycleBean
         }
     }
 
+   /**
+    * Returns the configuration URL to use for the given application region.  This might default to the
+    * {@link #APP_REGION_DEFAULT default app region}.
+    */
+   private static String getConfigUrl(String appRegion)
+   {
+       readLock.lock();
+       try
+       {
+           // Get the configuration to use
+           String configUrlStr = configUrlsByAppRegion.get(appRegion);
+           if (!PropertyCheck.isValidPropertyString(configUrlStr))
+           {
+               configUrlStr = configUrlsByAppRegion.get(AlfrescoJGroupsChannelFactory.APP_REGION_DEFAULT);
+           }
+           if (configUrlStr == null)
+           {
+               throw new AlfrescoRuntimeException(
+                       "No protocol configuration was found for application region: \n" +
+                       "   Cluster prefix:  " + clusterNamePrefix + "\n" +
+                       "   App region:      " + appRegion + "\n" +
+                       "   Regions defined: " + configUrlsByAppRegion);
+           }
+           return configUrlStr;
+       }
+       finally
+       {
+           readLock.unlock();
+       }
+   }
+   
+   /**
     /**
      * Creates a channel for the cluster.  This method should not be heavily used
-     * as the checks and synchronizations will slow the calls.  Returns channels can be
+     * as the checks and synchronizations will slow the calls.  Returned channels can be
      * kept and will be modified directly using the factory-held references, if necessary.
      * <p>
-     * The application region is used to determine the protocol stack to apply.
+     * The application region is used to determine the protocol configuration to apply.
      * <p>
      * This method returns a dummy channel if no cluster name has been provided.
      * 
@@ -200,7 +209,7 @@ public class AlfrescoJGroupsChannelFactory extends AbstractLifecycleBean
         readLock.lock();
         try
         {
-            ChannelProxy channelProxy = channels.get(appRegion);
+            ChannelProxy channelProxy = channelsByAppRegion.get(appRegion);
             if (channelProxy != null)
             {
                 // This will do
@@ -216,8 +225,7 @@ public class AlfrescoJGroupsChannelFactory extends AbstractLifecycleBean
         writeLock.lock();
         try
         {
-            // Double check
-            ChannelProxy channelProxy = channels.get(appRegion);
+            ChannelProxy channelProxy = channelsByAppRegion.get(appRegion);
             if (channelProxy != null)
             {
                 // This will do
@@ -228,7 +236,7 @@ public class AlfrescoJGroupsChannelFactory extends AbstractLifecycleBean
             // Proxy the channel
             channelProxy = new ChannelProxy(channel);
             // Store the channel to the map
-            channels.put(appRegion, channelProxy);
+            channelsByAppRegion.put(appRegion, channelProxy);
             // Done
             return channelProxy;
         }
@@ -240,7 +248,7 @@ public class AlfrescoJGroupsChannelFactory extends AbstractLifecycleBean
     
     /**
      * Creates a channel for the given cluster.  The application region is used
-     * to determine the protocol stack to apply.
+     * to determine the protocol configuration to apply.
      * 
      * @param appRegion             the application region identifier.
      * @return                      Returns a channel
@@ -249,6 +257,7 @@ public class AlfrescoJGroupsChannelFactory extends AbstractLifecycleBean
     private static /*synchronized*/ Channel getChannelInternal(String appRegion)
     {
         Channel channel;
+        URL configUrl = null;
         // If there is no cluster defined (yet) then we define a dummy channel
         if (AlfrescoJGroupsChannelFactory.clusterNamePrefix == null)
         {
@@ -267,26 +276,13 @@ public class AlfrescoJGroupsChannelFactory extends AbstractLifecycleBean
         }
         else                    // Create real channel
         {
-            JChannelFactory channelFactory = getChannelFactory();
-            // Get the protocol stack to use
-            String stack = stacksByAppRegion.get(appRegion);
-            if (!PropertyCheck.isValidPropertyString(stack))
-            {
-                stack = stacksByAppRegion.get(AlfrescoJGroupsChannelFactory.APP_REGION_DEFAULT);
-            }
-            if (stack == null)
-            {
-                throw new AlfrescoRuntimeException(
-                        "No protocol stack was found for application region: \n" +
-                        "   Cluster prefix:  " + clusterNamePrefix + "\n" +
-                        "   App region:      " + appRegion + "\n" +
-                        "   Regions defined: " + stacksByAppRegion);
-            }
+            // Get the protocol configuration to use
+            String configUrlStr = getConfigUrl(appRegion);
             try
             {
-                // Get the stack config from the factory (we are not using MUX)
-                String config = channelFactory.getConfig(stack);
-                channel = new JChannel(config);
+                // Construct the JChannel directly
+                configUrl = ResourceUtils.getURL(configUrlStr);
+                channel = new JChannel(configUrl);
             }
             catch (Throwable e)
             {
@@ -294,8 +290,8 @@ public class AlfrescoJGroupsChannelFactory extends AbstractLifecycleBean
                         "Failed to create JGroups channel: \n" +
                         "   Cluster prefix:    " + clusterNamePrefix + "\n" +
                         "   App region:        " + appRegion + "\n" +
-                        "   Protocol stack:    " + stack + "\n" +
-                        "   Configuration URL: " + AlfrescoJGroupsChannelFactory.configUrl,
+                        "   Regions defined: " + configUrlsByAppRegion + "\n" +
+                        "   Configuration URL: " + configUrlStr,
                         e);
             }
         }
@@ -303,14 +299,10 @@ public class AlfrescoJGroupsChannelFactory extends AbstractLifecycleBean
         try
         {
             String clusterName = clusterNamePrefix + ":" + appRegion;
-            // Set reconnect property
-            channel.setOpt(Channel.AUTO_RECONNECT, Boolean.TRUE);
             // Don't accept messages from self
             channel.setOpt(Channel.LOCAL, Boolean.FALSE);
-            // No state transfer
-            channel.setOpt(Channel.AUTO_GETSTATE, Boolean.FALSE);
             // Connect
-            channel.connect(clusterName, null, null, 5000L);
+            channel.connect(clusterName);
             // Done
             if (logger.isDebugEnabled())
             {
@@ -318,8 +310,9 @@ public class AlfrescoJGroupsChannelFactory extends AbstractLifecycleBean
                         "Created JGroups channel: \n" +
                         "   Cluster prefix:    " + clusterNamePrefix + "\n" +
                         "   App region:        " + appRegion + "\n" +
+                        "   Regions defined: " + configUrlsByAppRegion + "\n" +
                         "   Channel:           " + channel + "\n" +
-                        "   Configuration URL: " + AlfrescoJGroupsChannelFactory.configUrl);
+                        "   Configuration URL: " + configUrl);
             }
         }
         catch (Throwable e)
@@ -329,65 +322,26 @@ public class AlfrescoJGroupsChannelFactory extends AbstractLifecycleBean
                     "   Cluster prefix:    " + clusterNamePrefix + "\n" +
                     "   App region:        " + appRegion + "\n" +
                     "   Channel:           " + channel + "\n" +
-                    "   Configuration URL: " + AlfrescoJGroupsChannelFactory.configUrl,
+                    "   Configuration URL: " + configUrl,
                     e);
         }
         return channel;
     }
     
     /**
-     * Builds and initializes a JChannelFactory
+     * Rebuild all the channels using the current cluster name and configuration mappings.
      */
-    /* All calls to this are ultimately wrapped in the writeLock. */
-    private static /*synchronized*/ JChannelFactory getChannelFactory()
+    public static void rebuildChannels()
     {
-        if (AlfrescoJGroupsChannelFactory.channelFactory != null)
-        {
-            return AlfrescoJGroupsChannelFactory.channelFactory;
-        }
-        // Set the config location to use
-        if (AlfrescoJGroupsChannelFactory.configUrl == null)
-        {
-            // This was not set by the bean so set it using the default mechanism
-            try
-            {
-                AlfrescoJGroupsChannelFactory.configUrl = ResourceUtils.getURL(CUSTOM_CONFIGURATION_FILE);
-            }
-            catch (FileNotFoundException e)
-            {
-                // try the alfresco default
-                try
-                {
-                    AlfrescoJGroupsChannelFactory.configUrl = ResourceUtils.getURL(DEFAULT_CONFIGURATION_FILE);
-                }
-                catch (FileNotFoundException ee)
-                {
-                    throw new AlfrescoRuntimeException("Missing default JGroups config: " + DEFAULT_CONFIGURATION_FILE);
-                }
-            }
-        }
+        writeLock.lock();
         try
         {
-            // Construct factory
-            AlfrescoJGroupsChannelFactory.channelFactory = new JChannelFactory();
-            channelFactory.setMultiplexerConfig(AlfrescoJGroupsChannelFactory.configUrl);
+            rebuildChannelsInternal();
         }
-        catch (Throwable e)
+        finally
         {
-            throw new AlfrescoRuntimeException(
-                    "Failed to construct JChannelFactory using config: " + AlfrescoJGroupsChannelFactory.configUrl,
-                    e);
+            writeLock.unlock();
         }
-        // done
-        if (logger.isInfoEnabled())
-        {
-            logger.info("\n" +
-                    "Created JChannelFactory: \n" +
-                    "   Cluster Name:  " + (AlfrescoJGroupsChannelFactory.clusterNamePrefix == null ? "" : AlfrescoJGroupsChannelFactory.clusterNamePrefix) + "\n" +
-                    "   Stack Mapping: " + AlfrescoJGroupsChannelFactory.stacksByAppRegion + "\n" +
-                    "   Configuration: " + AlfrescoJGroupsChannelFactory.configUrl);
-        }
-        return AlfrescoJGroupsChannelFactory.channelFactory;
     }
     
     /**
@@ -395,29 +349,25 @@ public class AlfrescoJGroupsChannelFactory extends AbstractLifecycleBean
      * be reconstructed from scratch.  All the channels are reconstructed - but this will not
      * affect any references to channels held outside this class as the values returned are proxies
      * on top of hot swappable implementations.
+     * <p>
+     * The old channel is closed before the new one is created, so it is possible for a channel
+     * held by client code to be rendered unusable during the switch-over.
      */
     /* All calls to this are ultimately wrapped in the writeLock. */
-    private static /*synchronized*/ void rebuildChannels()
+    private static /*synchronized*/ void rebuildChannelsInternal()
     {
-        // First throw away the channel factory.  It will be fetched lazily.
-        AlfrescoJGroupsChannelFactory.channelFactory = null;
-        
         // Reprocess all the application regions with the new data
-        for (Map.Entry<String, ChannelProxy> entry : channels.entrySet())
+        for (Map.Entry<String, ChannelProxy> entry : channelsByAppRegion.entrySet())
         {
             String appRegion = entry.getKey();
             ChannelProxy channelProxy = entry.getValue();
             
-            // Create the new channel
-            Channel newChannel = getChannelInternal(appRegion);
-            
-            // Now do the hot-swap
-            Channel oldChannel = channelProxy.swap(newChannel);
-            // Close the old channel
+            // Get the old channel
+            Channel oldChannel = channelProxy.getDelegate();
+            // Close the old channel.
             try
             {
                 oldChannel.close();
-                oldChannel.shutdown();
                 if (logger.isDebugEnabled())
                 {
                     logger.debug("\n" +
@@ -432,6 +382,12 @@ public class AlfrescoJGroupsChannelFactory extends AbstractLifecycleBean
                         "   Old channel: " + oldChannel,
                         e);
             }
+            
+            // Create the new channel
+            Channel newChannel = getChannelInternal(appRegion);
+            
+            // Now do the hot-swap
+            channelProxy.swap(newChannel);
         }
     }
     
@@ -442,6 +398,8 @@ public class AlfrescoJGroupsChannelFactory extends AbstractLifecycleBean
      *    clusterNamePrefix:appRegion
      * </pre>
      * If no cluster name prefix is declared, the cluster is effectively disabled.
+     * <p>
+     * <b>NOTE: </b>The channels must be {@link #rebuildChannels() rebuilt}.
      * 
      * @param clusterNamePrefix     a prefix to append to the cluster names used
      */
@@ -467,22 +425,24 @@ public class AlfrescoJGroupsChannelFactory extends AbstractLifecycleBean
     }
     
     /**
-     * Configure a mapping between the application regions and the available JGroup protocol stacks.
+     * Configure a mapping between the application regions and the available JGroup protocol configurations.
      * The map <b>must</b> contain a mapping for application region 'DEFAULT'.
+     * <p>
+     * <b>NOTE: </b>The channels must be {@link #rebuildChannels() rebuilt}.
      * 
-     * @param protocolMap           a mapping from application region (keys) to protocol stacks (values)
+     * @param configUrlsByAppRegion     a mapping from application region (keys) to protocol configuration URLs (values)
      */
-    public static void changeProtocolStackMapping(Map<String, String> protocolMap)
+    private static void changeConfigUrlsMapping(Map<String, String> configUrlsByAppRegion)
     {
         writeLock.lock();
         try
         {
             // Check that there is a mapping for default
-            if (!protocolMap.containsKey(AlfrescoJGroupsChannelFactory.APP_REGION_DEFAULT))
+            if (!configUrlsByAppRegion.containsKey(AlfrescoJGroupsChannelFactory.APP_REGION_DEFAULT))
             {
-                throw new AlfrescoRuntimeException("A protocol stack must be defined for 'DEFAULT'");
+                throw new AlfrescoRuntimeException("A configuration URL must be defined for 'DEFAULT'");
             }
-            stacksByAppRegion = protocolMap;
+            AlfrescoJGroupsChannelFactory.configUrlsByAppRegion = configUrlsByAppRegion;
         }
         finally
         {
@@ -490,38 +450,6 @@ public class AlfrescoJGroupsChannelFactory extends AbstractLifecycleBean
         }
     }
 
-    /**
-     * Set the URL location of the JGroups configuration file.  This must refer to a MUX-compatible
-     * configuration file.
-     * 
-     * @param configUrl             a url of the form <b>file:...</b> or <b>classpath:</b>
-     */
-    public static void changeJgroupsConfigurationUrl(String configUrl)
-    {
-        writeLock.lock();
-        if (!PropertyCheck.isValidPropertyString(configUrl))
-        {
-            // It's not really being set
-            AlfrescoJGroupsChannelFactory.configUrl = null;
-            return;
-        }
-        // It's a real attempt to set it
-        try
-        {
-            AlfrescoJGroupsChannelFactory.configUrl = ResourceUtils.getURL(configUrl);
-        }
-        catch (FileNotFoundException e)
-        {
-            throw new AlfrescoRuntimeException(
-                    "Failed to set property 'jgroupsConfigurationUrl'. The url is invalid: " + configUrl,
-                    e);
-        }
-        finally
-        {
-            writeLock.unlock();
-        }
-    }
-    
     /**
      * Bean-enabling constructor
      */
@@ -538,31 +466,31 @@ public class AlfrescoJGroupsChannelFactory extends AbstractLifecycleBean
     }
     
     /**
-     * @see AlfrescoJGroupsChannelFactory#changeProtocolStackMapping(Map)
+     * @see AlfrescoJGroupsChannelFactory#changeConfigUrlsMapping(Map)
      */
-    public void setProtocolStackMapping(Map<String, String> protocolMap)
+    public void setConfigUrlsByAppRegion(Map<String, String> configUrlsByAppRegion)
     {
-        AlfrescoJGroupsChannelFactory.changeProtocolStackMapping(protocolMap);
+        AlfrescoJGroupsChannelFactory.changeConfigUrlsMapping(configUrlsByAppRegion);
     }
 
     /**
-     * Set the URL location of the JGroups configuration file.  This must refer to a MUX-compatible
-     * configuration file.
-     * 
-     * @param configUrl             a url of the form <b>file:...</b> or <b>classpath:</b>
+     * @deprecated      Use {@link #setConfigUrlsByAppRegion(Map)}
+     */
+    public void setProtocolStackMapping(Map<String, String> unused)
+    {
+        throw new AlfrescoRuntimeException(
+                "Properties 'protocolStackMapping' and 'jgroupsConfigurationUrl'" +
+                " have been deprecated in favour of 'configUrlsByAppRegion'.");
+    }
+    
+    /**
+     * @deprecated      Use {@link #setConfigUrlsByAppRegion(Map)}
      */
     public void setJgroupsConfigurationUrl(String configUrl)
     {
-        try
-        {
-            AlfrescoJGroupsChannelFactory.configUrl = ResourceUtils.getURL(configUrl);
-        }
-        catch (FileNotFoundException e)
-        {
-            throw new AlfrescoRuntimeException(
-                    "Failed to set property 'jgroupsConfigurationUrl'. The url is invalid: " + configUrl,
-                    e);
-        }
+        throw new AlfrescoRuntimeException(
+                "Properties 'protocolStackMapping' and 'jgroupsConfigurationUrl'" +
+        		" have been deprecated in favour of 'configUrlsByAppRegion'.");
     }
 
     @Override
@@ -587,7 +515,28 @@ public class AlfrescoJGroupsChannelFactory extends AbstractLifecycleBean
     {
         public DummyJChannel() throws ChannelException
         {
-            super("DUMMY_TP:UDP(mcast_addr=224.10.10.200;mcast_port=5679)");
+            super("org.alfresco.repo.jgroups.AlfrescoJGroupsChannelFactory$DummyProtocol");
+        }
+    }
+    
+    public static class DummyProtocol extends LOOPBACK
+    {
+        @Override
+        public String getName()
+        {
+            return "ALF_DUMMY";
+        }
+
+        @Override
+        public Object down(Event evt)
+        {
+            return null;
+        }
+
+        @Override
+        public Object up(Event evt)
+        {
+            return null;
         }
     }
     
@@ -609,11 +558,22 @@ public class AlfrescoJGroupsChannelFactory extends AbstractLifecycleBean
         private UpHandler delegateUpHandler;
         private Set<ChannelListener> delegateChannelListeners;
         private Receiver delegateReceiver;
-        
+
+        /**
+         * @param delegate  the real channel that will do the work
+         */
         public ChannelProxy(Channel delegate)
         {
             this.delegate = delegate;
             this.delegateChannelListeners = new HashSet<ChannelListener>(7);
+        }
+        
+        /**
+         * @return          Returns the channel to which the implementation will delegate
+         */
+        public Channel getDelegate()
+        {
+            return delegate;
         }
         
         /**
@@ -625,7 +585,7 @@ public class AlfrescoJGroupsChannelFactory extends AbstractLifecycleBean
          * @param           the new delegate
          * @return          the old, disconnected delegate
          */
-        public Channel swap(Channel channel)
+        public synchronized Channel swap(Channel channel)
         {
             // Remove the listeners from the old channel
             delegate.setReceiver(null);
@@ -635,7 +595,7 @@ public class AlfrescoJGroupsChannelFactory extends AbstractLifecycleBean
             }
             delegate.setUpHandler(null);
             
-            Channel oldDelegage = delegate;
+            Channel oldDelegate = delegate;
             
             // Assign the new delegate and carry the listeners over
             delegate = channel;
@@ -646,22 +606,42 @@ public class AlfrescoJGroupsChannelFactory extends AbstractLifecycleBean
             }
             delegate.setUpHandler(delegateUpHandler);
             // Done
-            return oldDelegage;
+            return oldDelegate;
         }
 
         @Override
-        protected Log getLog()
+        protected org.jgroups.logging.Log getLog()
         {
             throw new UnsupportedOperationException();
         }
 
-        public void setReceiver(Receiver r)
+        @Override
+        public Address getAddress()
+        {
+            return delegate.getAddress();
+        }
+
+        @Override
+        public String getName()
+        {
+            return delegate.getName();
+        }
+
+        @Override
+        public ProtocolStack getProtocolStack()
+        {
+            return delegate.getProtocolStack();
+        }
+
+        @Override
+        public synchronized void setReceiver(Receiver r)
         {
             delegateReceiver = r;
             delegate.setReceiver(r);
         }
 
-        public void addChannelListener(ChannelListener listener)
+        @Override
+        public synchronized void addChannelListener(ChannelListener listener)
         {
             if (listener == null)
             {
@@ -671,7 +651,8 @@ public class AlfrescoJGroupsChannelFactory extends AbstractLifecycleBean
             delegate.addChannelListener(listener);
         }
 
-        public void removeChannelListener(ChannelListener listener)
+        @Override
+        public synchronized void removeChannelListener(ChannelListener listener)
         {
             if (listener != null)
             {
@@ -680,223 +661,273 @@ public class AlfrescoJGroupsChannelFactory extends AbstractLifecycleBean
             delegate.removeChannelListener(listener);
         }
 
-        public void clearChannelListeners()
+        @Override
+        public synchronized void clearChannelListeners()
         {
             delegateChannelListeners.clear();
             delegate.clearChannelListeners();
         }
 
-        public void setUpHandler(UpHandler up_handler)
+        @Override
+        public synchronized void setUpHandler(UpHandler up_handler)
         {
             delegateUpHandler = up_handler;
             delegate.setUpHandler(up_handler);
         }
 
+        @Override
         public void blockOk()
         {
             delegate.blockOk();
         }
 
+        @Override
         public void close()
         {
             delegate.close();
         }
 
+        @Override
         public void connect(String cluster_name, Address target, String state_id, long timeout) throws ChannelException
         {
             delegate.connect(cluster_name, target, state_id, timeout);
         }
 
+        @Override
         public void connect(String cluster_name) throws ChannelException
         {
             delegate.connect(cluster_name);
         }
 
+        @Override
         public void disconnect()
         {
             delegate.disconnect();
         }
 
+        @Override
         public void down(Event evt)
         {
             delegate.down(evt);
         }
 
+        @Override
         public Object downcall(Event evt)
         {
             return delegate.downcall(evt);
         }
 
+        @Override
         public String dumpQueue()
         {
             return delegate.dumpQueue();
         }
 
+        @Override
         @SuppressWarnings("unchecked")
         public Map dumpStats()
         {
             return delegate.dumpStats();
         }
 
+        @Override
         public boolean equals(Object obj)
         {
             return delegate.equals(obj);
         }
 
+        @Override
         public boolean flushSupported()
         {
             return delegate.flushSupported();
         }
 
+        @Override
         @SuppressWarnings("unchecked")
         public boolean getAllStates(Vector targets, long timeout) throws ChannelNotConnectedException, ChannelClosedException
         {
             return delegate.getAllStates(targets, timeout);
         }
 
+        @Override
         public String getChannelName()
         {
             return delegate.getChannelName();
         }
 
+        @Override
         public String getClusterName()
         {
             return delegate.getClusterName();
         }
 
+        @Override
         public Map<String, Object> getInfo()
         {
             return delegate.getInfo();
         }
 
+        @Override
         public Address getLocalAddress()
         {
             return delegate.getLocalAddress();
         }
 
+        @Override
         public int getNumMessages()
         {
             return delegate.getNumMessages();
         }
 
+        @Override
         public Object getOpt(int option)
         {
             return delegate.getOpt(option);
         }
 
+        @Override
         public boolean getState(Address target, long timeout) throws ChannelNotConnectedException, ChannelClosedException
         {
             return delegate.getState(target, timeout);
         }
 
+        @Override
         public boolean getState(Address target, String state_id, long timeout) throws ChannelNotConnectedException, ChannelClosedException
         {
             return delegate.getState(target, state_id, timeout);
         }
 
+        @Override
         public View getView()
         {
             return delegate.getView();
         }
 
+        @Override
         public int hashCode()
         {
             return delegate.hashCode();
         }
 
+        @Override
         public boolean isConnected()
         {
             return delegate.isConnected();
         }
 
+        @Override
         public boolean isOpen()
         {
             return delegate.isOpen();
         }
 
+        @Override
         public void open() throws ChannelException
         {
             delegate.open();
         }
 
+        @Override
         public Object peek(long timeout) throws ChannelNotConnectedException, ChannelClosedException, TimeoutException
         {
             return delegate.peek(timeout);
         }
 
+        @Override
         public Object receive(long timeout) throws ChannelNotConnectedException, ChannelClosedException, TimeoutException
         {
             return delegate.receive(timeout);
         }
 
+        @Override
         public void returnState(byte[] state, String state_id)
         {
             delegate.returnState(state, state_id);
         }
 
+        @Override
         public void returnState(byte[] state)
         {
             delegate.returnState(state);
         }
 
+        @Override
         public void send(Address dst, Address src, Serializable obj) throws ChannelNotConnectedException, ChannelClosedException
         {
             delegate.send(dst, src, obj);
         }
 
+        @Override
         public void send(Message msg) throws ChannelNotConnectedException, ChannelClosedException
         {
             delegate.send(msg);
         }
 
+        @Override
         public void setChannelListener(ChannelListener channel_listener)
         {
             delegate.setChannelListener(channel_listener);
         }
 
+        @Override
         public void setInfo(String key, Object value)
         {
             delegate.setInfo(key, value);
         }
 
+        @Override
         public void setOpt(int option, Object value)
         {
             delegate.setOpt(option, value);
         }
 
+        @Override
         public void shutdown()
         {
             delegate.shutdown();
         }
 
+        @Override
         public boolean startFlush(boolean automatic_resume)
         {
             return delegate.startFlush(automatic_resume);
         }
 
+        @Override
         public boolean startFlush(List<Address> flushParticipants, boolean automatic_resume)
         {
             return delegate.startFlush(flushParticipants, automatic_resume);
         }
 
+        @Override
         public boolean startFlush(long timeout, boolean automatic_resume)
         {
             return delegate.startFlush(timeout, automatic_resume);
         }
 
+        @Override
         public void stopFlush()
         {
             delegate.stopFlush();
         }
 
+        @Override
         public void stopFlush(List<Address> flushParticipants)
         {
             delegate.stopFlush(flushParticipants);
         }
 
-        public String toString()
+        @Override
+        public synchronized String toString()
         {
-            return delegate.toString();
+            if (delegate instanceof DummyJChannel)
+            {
+                return delegate.toString() + "(dummy)";
+            }
+            else
+            {
+                return delegate.toString();
+            }
         }
     }
 }

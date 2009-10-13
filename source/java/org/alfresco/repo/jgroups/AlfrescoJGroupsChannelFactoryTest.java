@@ -75,6 +75,7 @@ public class AlfrescoJGroupsChannelFactoryTest extends TestCase
     public void testBasicCluster() throws Exception
     {
         AlfrescoJGroupsChannelFactory.changeClusterNamePrefix("blah");
+        AlfrescoJGroupsChannelFactory.rebuildChannels();
         Channel channel = AlfrescoJGroupsChannelFactory.getChannel(appRegion);
         stressChannel(channel);
     }
@@ -82,9 +83,11 @@ public class AlfrescoJGroupsChannelFactoryTest extends TestCase
     public void testHotSwapCluster() throws Exception
     {
         AlfrescoJGroupsChannelFactory.changeClusterNamePrefix("ONE");
+        AlfrescoJGroupsChannelFactory.rebuildChannels();
         Channel channel1 = AlfrescoJGroupsChannelFactory.getChannel(appRegion);
         stressChannel(channel1);
         AlfrescoJGroupsChannelFactory.changeClusterNamePrefix("TWO");
+        AlfrescoJGroupsChannelFactory.rebuildChannels();
         Channel channel2 = AlfrescoJGroupsChannelFactory.getChannel(appRegion);
         stressChannel(channel1);
         assertTrue("Channel reference must be the same", channel1 == channel2);

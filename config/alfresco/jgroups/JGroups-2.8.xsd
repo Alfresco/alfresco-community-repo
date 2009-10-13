@@ -1,0 +1,2000 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema elementFormDefault="qualified" targetNamespace="urn:org:jgroups" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+<xs:element name="config">
+<xs:complexType>
+<xs:choice maxOccurs="unbounded">
+<xs:element name="FD_SOCK">
+<xs:complexType>
+<xs:attribute name="bind_addr" type="xs:string">
+<xs:annotation>
+<xs:documentation>The NIC on which the ServerSocket should listen on</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="get_cache_timeout" type="xs:string">
+<xs:annotation>
+<xs:documentation>Timeout for getting socket cache from coordinator. Default is 1000 msec</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="suspect_msg_interval" type="xs:string">
+<xs:annotation>
+<xs:documentation>Interval for broadcasting suspect messages. Default is 5000 msec</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="num_tries" type="xs:string">
+<xs:annotation>
+<xs:documentation>Number of attempts coordinator is solicited for socket cache until we give up. Default is 3</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="start_port" type="xs:string">
+<xs:annotation>
+<xs:documentation>Start port for server socket. Default value of 0 picks a random port</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="keep_alive" type="xs:string">
+<xs:annotation>
+<xs:documentation>Whether to use KEEP_ALIVE on the ping socket or not. Default is true</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="sock_conn_timeout" type="xs:string">
+<xs:annotation>
+<xs:documentation>Max time in millis to wait for ping Socket.connect() to return</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="stats" type="xs:string">
+<xs:annotation>
+<xs:documentation>Determines whether to collect statistics (and expose them via JMX). Default is true</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+</xs:complexType>
+</xs:element>
+<xs:element name="STATS">
+<xs:complexType>
+<xs:attribute name="stats" type="xs:string">
+<xs:annotation>
+<xs:documentation>Determines whether to collect statistics (and expose them via JMX). Default is true</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+</xs:complexType>
+</xs:element>
+<xs:element name="TCPPING">
+<xs:complexType>
+<xs:attribute name="port_range" type="xs:string">
+<xs:annotation>
+<xs:documentation>Number of ports to be probed for initial membership. Default is 1</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="initial_hosts" type="xs:string">
+<xs:annotation>
+<xs:documentation>Comma delimeted list of hosts to be contacted for initial membership</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="timeout" type="xs:string">
+<xs:annotation>
+<xs:documentation>Timeout to wait for the initial members. Default is 3000 msec</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="num_initial_members" type="xs:string">
+<xs:annotation>
+<xs:documentation>Minimum number of initial members to get a response from. Default is 2</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="num_initial_srv_members" type="xs:string">
+<xs:annotation>
+<xs:documentation>Minimum number of server responses (PingData.isServer()=true). If this value is greater than 0, we'll ignore num_initial_members</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="break_on_coord_rsp" type="xs:string">
+<xs:annotation>
+<xs:documentation>Return from the discovery phase as soon as we have 1 coordinator response</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="num_ping_requests" type="xs:string">
+<xs:annotation>
+<xs:documentation>Number of discovery requests to be sent distributed over timeout. Default is 2</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="return_entire_cache" type="xs:string">
+<xs:annotation>
+<xs:documentation>Whether or not to return the entire logical-physical address cache mappings on a discovery request, or not. Default is false, except for TCPPING</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="stats" type="xs:string">
+<xs:annotation>
+<xs:documentation>Determines whether to collect statistics (and expose them via JMX). Default is true</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+</xs:complexType>
+</xs:element>
+<xs:element name="LOOPBACK">
+<xs:complexType>
+<xs:attribute name="bind_addr" type="xs:string">
+<xs:annotation>
+<xs:documentation>The interface (NIC) which should be used by this transport </xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="use_local_host" type="xs:string">
+<xs:annotation>
+<xs:documentation>Ignores all bind address parameters and  let's the OS return the local host address. Default is false</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="receive_on_all_interfaces" type="xs:string">
+<xs:annotation>
+<xs:documentation> If true, the transport should use all available interfaces to receive multicast messages. Default is false</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="receive_interfaces" type="xs:string">
+<xs:annotation>
+<xs:documentation>Comma delimited list of interfaces (IP addresses or interface names) to receive multicasts on</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="start_port" type="xs:string">
+<xs:annotation>
+<xs:documentation>The port to which the transport binds. Default of 0 binds to any (ephemeral) port</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="end_port" type="xs:string">
+<xs:annotation>
+<xs:documentation/>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="prevent_port_reuse" type="xs:string">
+<xs:annotation>
+<xs:documentation>tries to make sure ephemeral ports are used</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="loopback" type="xs:string">
+<xs:annotation>
+<xs:documentation>Messages to self are looped back immediately if true. Default is false</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="discard_incompatible_packets" type="xs:string">
+<xs:annotation>
+<xs:documentation>Discard packets with a different version if true. Default is false</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="thread_naming_pattern" type="xs:string">
+<xs:annotation>
+<xs:documentation>Thread naming pattern for threads in this channel. Default is cl</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="oob_thread_pool.enabled" type="xs:string">
+<xs:annotation>
+<xs:documentation>Switch for enabling thread pool for OOB messages. Default true</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="oob_thread_pool.min_threads" type="xs:string">
+<xs:annotation>
+<xs:documentation>Minimum thread pool size for OOB messages. Default is 2</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="oob_thread_pool.max_threads" type="xs:string">
+<xs:annotation>
+<xs:documentation>Maximum thread pool size for OOB messages. Default is 10</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="oob_thread_pool.keep_alive_time" type="xs:string">
+<xs:annotation>
+<xs:documentation>Timeout in milliseconds to remove idle thread from OOB pool. Default is 30000</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="oob_thread_pool.queue_enabled" type="xs:string">
+<xs:annotation>
+<xs:documentation>Use queue to enqueue incoming OOB messages. Default is true</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="oob_thread_pool.queue_max_size" type="xs:string">
+<xs:annotation>
+<xs:documentation>Maximum queue size for incoming OOB messages. Default is 500</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="oob_thread_pool.rejection_policy" type="xs:string">
+<xs:annotation>
+<xs:documentation>Thread rejection policy. Possible values are Abort, Discard, DiscardOldest and Run. Default is Run</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="thread_pool.min_threads" type="xs:string">
+<xs:annotation>
+<xs:documentation>Minimum thread pool size for regular messages. Default is 2</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="thread_pool.max_threads" type="xs:string">
+<xs:annotation>
+<xs:documentation>Maximum thread pool size for regular messages. Default is 10</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="thread_pool.keep_alive_time" type="xs:string">
+<xs:annotation>
+<xs:documentation>Timeout in milliseconds to remove idle thread from regular pool. Default is 30000</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="thread_pool.enabled" type="xs:string">
+<xs:annotation>
+<xs:documentation>Switch for enabling thread pool for regular messages. Default true</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="thread_pool.queue_enabled" type="xs:string">
+<xs:annotation>
+<xs:documentation>Use queue to enqueue incoming regular messages. Default is true</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="thread_pool.queue_max_size" type="xs:string">
+<xs:annotation>
+<xs:documentation>Maximum queue size for incoming OOB messages. Default is 500</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="thread_pool.rejection_policy" type="xs:string">
+<xs:annotation>
+<xs:documentation>Thread rejection policy. Possible values are Abort, Discard, DiscardOldest and Run Default is Run</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="timer.num_threads" type="xs:string">
+<xs:annotation>
+<xs:documentation>Number of threads to be used by the timer thread pool. Default is 4</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="enable_bundling" type="xs:string">
+<xs:annotation>
+<xs:documentation>Enable bundling of smaller messages into bigger ones. Default is true</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="enable_unicast_bundling" type="xs:string">
+<xs:annotation>
+<xs:documentation>Enable bundling of smaller messages into bigger ones for unicast messages. Default is false</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="enable_diagnostics" type="xs:string">
+<xs:annotation>
+<xs:documentation>Switch to enable diagnostic probing. Default is true</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="diagnostics_addr" type="xs:string">
+<xs:annotation>
+<xs:documentation>Address for diagnostic probing. Default is 224.0.75.75</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="diagnostics_port" type="xs:string">
+<xs:annotation>
+<xs:documentation>Port for diagnostic probing. Default is 7500</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="singleton_name" type="xs:string">
+<xs:annotation>
+<xs:documentation>If assigned enable this transport to be a singleton (shared) transport</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="persistent_ports_file" type="xs:string">
+<xs:annotation>
+<xs:documentation>Path to a file to store currently used ports on this machine</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="ports_expiry_time" type="xs:string">
+<xs:annotation>
+<xs:documentation>Timeout to expire ports used with PortManager. Default is 30000 msec</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="persistent_ports" type="xs:string">
+<xs:annotation>
+<xs:documentation>Switch to enable tracking of currently used ports on this machine. Default is false</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="stats" type="xs:string">
+<xs:annotation>
+<xs:documentation>Determines whether to collect statistics (and expose them via JMX). Default is true</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="max_bundle_size" type="xs:string"/>
+<xs:attribute name="max_bundle_timeout" type="xs:string"/>
+</xs:complexType>
+</xs:element>
+<xs:element name="BARRIER">
+<xs:complexType>
+<xs:attribute name="max_close_time" type="xs:string">
+<xs:annotation>
+<xs:documentation>Max time barrier can be closed. Default is 60000 msec</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="stats" type="xs:string">
+<xs:annotation>
+<xs:documentation>Determines whether to collect statistics (and expose them via JMX). Default is true</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+</xs:complexType>
+</xs:element>
+<xs:element name="FD_ALL">
+<xs:complexType>
+<xs:attribute name="interval" type="xs:string">
+<xs:annotation>
+<xs:documentation>Interval in which a HEARTBEAT is sent to the cluster. Default is 3000 msec</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="timeout" type="xs:string">
+<xs:annotation>
+<xs:documentation>Timeout after which a node P is suspected if neither a heartbeat nor data were received from P. Default is 5000 msec</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="msg_counts_as_heartbeat" type="xs:string">
+<xs:annotation>
+<xs:documentation>Treat messages received from members as heartbeats. Note that this means we're updating a value in a hashmap every time a message is passing up the stack through FD_ALL, which is costly. Default is false</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="shun" type="xs:string">
+<xs:annotation>
+<xs:documentation>Shun switch. Default is true</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="stats" type="xs:string">
+<xs:annotation>
+<xs:documentation>Determines whether to collect statistics (and expose them via JMX). Default is true</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+</xs:complexType>
+</xs:element>
+<xs:element name="TCPGOSSIP">
+<xs:complexType>
+<xs:attribute name="gossip_refresh_rate" type="xs:string">
+<xs:annotation>
+<xs:documentation>Rate of continious refresh registering of underlying gossip client with gossip server. Default is 20000 msec</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="sock_conn_timeout" type="xs:string">
+<xs:annotation>
+<xs:documentation>Max time for socket creation. Default is 1000 msec</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="sock_read_timeout" type="xs:string">
+<xs:annotation>
+<xs:documentation>Max time in milliseconds to block on a read. 0 blocks forever</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="timeout" type="xs:string">
+<xs:annotation>
+<xs:documentation>Timeout to wait for the initial members. Default is 3000 msec</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="num_initial_members" type="xs:string">
+<xs:annotation>
+<xs:documentation>Minimum number of initial members to get a response from. Default is 2</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="num_initial_srv_members" type="xs:string">
+<xs:annotation>
+<xs:documentation>Minimum number of server responses (PingData.isServer()=true). If this value is greater than 0, we'll ignore num_initial_members</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="break_on_coord_rsp" type="xs:string">
+<xs:annotation>
+<xs:documentation>Return from the discovery phase as soon as we have 1 coordinator response</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="num_ping_requests" type="xs:string">
+<xs:annotation>
+<xs:documentation>Number of discovery requests to be sent distributed over timeout. Default is 2</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="return_entire_cache" type="xs:string">
+<xs:annotation>
+<xs:documentation>Whether or not to return the entire logical-physical address cache mappings on a discovery request, or not. Default is false, except for TCPPING</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="stats" type="xs:string">
+<xs:annotation>
+<xs:documentation>Determines whether to collect statistics (and expose them via JMX). Default is true</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="initial_hosts" type="xs:string"/>
+</xs:complexType>
+</xs:element>
+<xs:element name="UNICAST">
+<xs:complexType>
+<xs:attribute name="loopback" type="xs:string">
+<xs:annotation>
+<xs:documentation>Whether to loop back messages sent to self. Default is false</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="max_retransmit_time" type="xs:string">
+<xs:annotation>
+<xs:documentation>Max number of milliseconds we try to retransmit a message to any given member. After that, the connection is removed. Any new connection to that member will start with seqno #1 again. 0 disables this</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="stats" type="xs:string">
+<xs:annotation>
+<xs:documentation>Determines whether to collect statistics (and expose them via JMX). Default is true</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="timeout" type="xs:string"/>
+</xs:complexType>
+</xs:element>
+<xs:element name="FRAG">
+<xs:complexType>
+<xs:attribute name="frag_size" type="xs:string">
+<xs:annotation>
+<xs:documentation>The max number of bytes in a message. Larger messages will be fragmented. Default is 8192 bytes</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="max_retained_buffer" type="xs:string">
+<xs:annotation>
+<xs:documentation>The max size in bytes for the byte array output buffer</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="stats" type="xs:string">
+<xs:annotation>
+<xs:documentation>Determines whether to collect statistics (and expose them via JMX). Default is true</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+</xs:complexType>
+</xs:element>
+<xs:element name="TCP">
+<xs:complexType>
+<xs:attribute name="skip_suspected_members" type="xs:string">
+<xs:annotation>
+<xs:documentation>Should unicast messages to suspected members be dropped. Default is false</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="suspect_on_send_failure" type="xs:string">
+<xs:annotation>
+<xs:documentation>If cannot send a message to P (on an exception), should SUSPECT message be raised. Default is false</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="reaper_interval" type="xs:string">
+<xs:annotation>
+<xs:documentation>Reaper interval in msec. Default is 0 (no reaping)</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="conn_expire_time" type="xs:string">
+<xs:annotation>
+<xs:documentation>Max time connection can be idle before being reaped</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="use_send_queues" type="xs:string">
+<xs:annotation>
+<xs:documentation>Should separate send queues be used for each connection. Default is true</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="send_queue_size" type="xs:string">
+<xs:annotation>
+<xs:documentation>Max number of messages in a send queue. Default is 10000 messages</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="recv_buf_size" type="xs:string">
+<xs:annotation>
+<xs:documentation>Receiver buffer size in bytes. Default is 150000 bytes</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="send_buf_size" type="xs:string">
+<xs:annotation>
+<xs:documentation>Send buffer size in bytes. Default is 150000 bytes</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="sock_conn_timeout" type="xs:string">
+<xs:annotation>
+<xs:documentation>Max time allowed for a socket creation in ConnectionTable. Default is 2000 msec</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="peer_addr_read_timeout" type="xs:string">
+<xs:annotation>
+<xs:documentation>Max time to block on reading of peer address. Default is 1000 msec</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="tcp_nodelay" type="xs:string">
+<xs:annotation>
+<xs:documentation>Should TCP no delay flag be turned on. Default is false</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="linger" type="xs:string">
+<xs:annotation>
+<xs:documentation>SO_LINGER in msec. Default of -1 disables it</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="bind_addr" type="xs:string">
+<xs:annotation>
+<xs:documentation>The interface (NIC) which should be used by this transport </xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="use_local_host" type="xs:string">
+<xs:annotation>
+<xs:documentation>Ignores all bind address parameters and  let's the OS return the local host address. Default is false</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="receive_on_all_interfaces" type="xs:string">
+<xs:annotation>
+<xs:documentation> If true, the transport should use all available interfaces to receive multicast messages. Default is false</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="receive_interfaces" type="xs:string">
+<xs:annotation>
+<xs:documentation>Comma delimited list of interfaces (IP addresses or interface names) to receive multicasts on</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="start_port" type="xs:string">
+<xs:annotation>
+<xs:documentation>The port to which the transport binds. Default of 0 binds to any (ephemeral) port</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="end_port" type="xs:string">
+<xs:annotation>
+<xs:documentation/>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="prevent_port_reuse" type="xs:string">
+<xs:annotation>
+<xs:documentation>tries to make sure ephemeral ports are used</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="loopback" type="xs:string">
+<xs:annotation>
+<xs:documentation>Messages to self are looped back immediately if true. Default is false</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="discard_incompatible_packets" type="xs:string">
+<xs:annotation>
+<xs:documentation>Discard packets with a different version if true. Default is false</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="thread_naming_pattern" type="xs:string">
+<xs:annotation>
+<xs:documentation>Thread naming pattern for threads in this channel. Default is cl</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="oob_thread_pool.enabled" type="xs:string">
+<xs:annotation>
+<xs:documentation>Switch for enabling thread pool for OOB messages. Default true</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="oob_thread_pool.min_threads" type="xs:string">
+<xs:annotation>
+<xs:documentation>Minimum thread pool size for OOB messages. Default is 2</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="oob_thread_pool.max_threads" type="xs:string">
+<xs:annotation>
+<xs:documentation>Maximum thread pool size for OOB messages. Default is 10</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="oob_thread_pool.keep_alive_time" type="xs:string">
+<xs:annotation>
+<xs:documentation>Timeout in milliseconds to remove idle thread from OOB pool. Default is 30000</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="oob_thread_pool.queue_enabled" type="xs:string">
+<xs:annotation>
+<xs:documentation>Use queue to enqueue incoming OOB messages. Default is true</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="oob_thread_pool.queue_max_size" type="xs:string">
+<xs:annotation>
+<xs:documentation>Maximum queue size for incoming OOB messages. Default is 500</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="oob_thread_pool.rejection_policy" type="xs:string">
+<xs:annotation>
+<xs:documentation>Thread rejection policy. Possible values are Abort, Discard, DiscardOldest and Run. Default is Run</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="thread_pool.min_threads" type="xs:string">
+<xs:annotation>
+<xs:documentation>Minimum thread pool size for regular messages. Default is 2</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="thread_pool.max_threads" type="xs:string">
+<xs:annotation>
+<xs:documentation>Maximum thread pool size for regular messages. Default is 10</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="thread_pool.keep_alive_time" type="xs:string">
+<xs:annotation>
+<xs:documentation>Timeout in milliseconds to remove idle thread from regular pool. Default is 30000</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="thread_pool.enabled" type="xs:string">
+<xs:annotation>
+<xs:documentation>Switch for enabling thread pool for regular messages. Default true</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="thread_pool.queue_enabled" type="xs:string">
+<xs:annotation>
+<xs:documentation>Use queue to enqueue incoming regular messages. Default is true</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="thread_pool.queue_max_size" type="xs:string">
+<xs:annotation>
+<xs:documentation>Maximum queue size for incoming OOB messages. Default is 500</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="thread_pool.rejection_policy" type="xs:string">
+<xs:annotation>
+<xs:documentation>Thread rejection policy. Possible values are Abort, Discard, DiscardOldest and Run Default is Run</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="timer.num_threads" type="xs:string">
+<xs:annotation>
+<xs:documentation>Number of threads to be used by the timer thread pool. Default is 4</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="enable_bundling" type="xs:string">
+<xs:annotation>
+<xs:documentation>Enable bundling of smaller messages into bigger ones. Default is true</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="enable_unicast_bundling" type="xs:string">
+<xs:annotation>
+<xs:documentation>Enable bundling of smaller messages into bigger ones for unicast messages. Default is false</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="enable_diagnostics" type="xs:string">
+<xs:annotation>
+<xs:documentation>Switch to enable diagnostic probing. Default is true</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="diagnostics_addr" type="xs:string">
+<xs:annotation>
+<xs:documentation>Address for diagnostic probing. Default is 224.0.75.75</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="diagnostics_port" type="xs:string">
+<xs:annotation>
+<xs:documentation>Port for diagnostic probing. Default is 7500</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="singleton_name" type="xs:string">
+<xs:annotation>
+<xs:documentation>If assigned enable this transport to be a singleton (shared) transport</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="persistent_ports_file" type="xs:string">
+<xs:annotation>
+<xs:documentation>Path to a file to store currently used ports on this machine</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="ports_expiry_time" type="xs:string">
+<xs:annotation>
+<xs:documentation>Timeout to expire ports used with PortManager. Default is 30000 msec</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="persistent_ports" type="xs:string">
+<xs:annotation>
+<xs:documentation>Switch to enable tracking of currently used ports on this machine. Default is false</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="stats" type="xs:string">
+<xs:annotation>
+<xs:documentation>Determines whether to collect statistics (and expose them via JMX). Default is true</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="external_addr" type="xs:string">
+<xs:annotation>
+<xs:documentation>Use "external_addr" if you have hosts on different networks, behind firewalls. On each firewall, set up a port forwarding rule (sometimes called "virtual server") to the local IP (e.g. 192.168.1.100) of the host then on each host, set "external_addr" TCP transport parameter to the external (public IP) address of the firewall. </xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="max_bundle_size" type="xs:string"/>
+<xs:attribute name="max_bundle_timeout" type="xs:string"/>
+</xs:complexType>
+</xs:element>
+<xs:element name="VERIFY_SUSPECT">
+<xs:complexType>
+<xs:attribute name="timeout" type="xs:string">
+<xs:annotation>
+<xs:documentation>Number of millisecs to wait for a response from a suspected member</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="num_msgs" type="xs:string">
+<xs:annotation>
+<xs:documentation>Number of verify heartbeats sent to a suspected member</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="use_icmp" type="xs:string">
+<xs:annotation>
+<xs:documentation>Use InetAddress.isReachable() to verify suspected member instead of regular messages</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="bind_addr" type="xs:string">
+<xs:annotation>
+<xs:documentation>Interface for ICMP pings. Used if use_icmp is true</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="stats" type="xs:string">
+<xs:annotation>
+<xs:documentation>Determines whether to collect statistics (and expose them via JMX). Default is true</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+</xs:complexType>
+</xs:element>
+<xs:element name="PING">
+<xs:complexType>
+<xs:attribute name="gossip_host" type="xs:string">
+<xs:annotation>
+<xs:documentation>Gossip host</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="gossip_port" type="xs:string">
+<xs:annotation>
+<xs:documentation>Gossip port</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="gossip_refresh" type="xs:string">
+<xs:annotation>
+<xs:documentation>Time in msecs after which the entry in GossipRouter will be refreshed. Default is 20000 msec</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="port_range" type="xs:string">
+<xs:annotation>
+<xs:documentation>Number of ports to be probed for initial membership. Default is 1</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="socket_conn_timeout" type="xs:string">
+<xs:annotation>
+<xs:documentation>If socket is used for discovery, time in msecs to wait until socket is connected. Default is 1000 msec</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="socket_read_timeout" type="xs:string">
+<xs:annotation>
+<xs:documentation>Max to block on the socket on a read (in ms). 0 means block forever</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="discovery_timeout" type="xs:string">
+<xs:annotation>
+<xs:documentation>Time (in ms) to wait for our own discovery message to be received. 0 means don't wait. If the discovery message is not received within discovery_timeout ms, a warning will be logged</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="timeout" type="xs:string">
+<xs:annotation>
+<xs:documentation>Timeout to wait for the initial members. Default is 3000 msec</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="num_initial_members" type="xs:string">
+<xs:annotation>
+<xs:documentation>Minimum number of initial members to get a response from. Default is 2</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="num_initial_srv_members" type="xs:string">
+<xs:annotation>
+<xs:documentation>Minimum number of server responses (PingData.isServer()=true). If this value is greater than 0, we'll ignore num_initial_members</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="break_on_coord_rsp" type="xs:string">
+<xs:annotation>
+<xs:documentation>Return from the discovery phase as soon as we have 1 coordinator response</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="num_ping_requests" type="xs:string">
+<xs:annotation>
+<xs:documentation>Number of discovery requests to be sent distributed over timeout. Default is 2</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="return_entire_cache" type="xs:string">
+<xs:annotation>
+<xs:documentation>Whether or not to return the entire logical-physical address cache mappings on a discovery request, or not. Default is false, except for TCPPING</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="stats" type="xs:string">
+<xs:annotation>
+<xs:documentation>Determines whether to collect statistics (and expose them via JMX). Default is true</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="sock_conn_timeout" type="xs:string"/>
+<xs:attribute name="sock_read_timeout" type="xs:string"/>
+<xs:attribute name="initial_hosts" type="xs:string"/>
+<xs:attribute name="gossip_hosts" type="xs:string"/>
+</xs:complexType>
+</xs:element>
+<xs:element name="TUNNEL">
+<xs:complexType>
+<xs:attribute name="router_host" type="xs:string">
+<xs:annotation>
+<xs:documentation>Router host address</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="router_port" type="xs:string">
+<xs:annotation>
+<xs:documentation>Router port</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="reconnect_interval" type="xs:string">
+<xs:annotation>
+<xs:documentation>Interval in msec to attempt connecting back to router in case of torn connection. Default is 5000 msec</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="bind_addr" type="xs:string">
+<xs:annotation>
+<xs:documentation>The interface (NIC) which should be used by this transport </xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="use_local_host" type="xs:string">
+<xs:annotation>
+<xs:documentation>Ignores all bind address parameters and  let's the OS return the local host address. Default is false</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="receive_on_all_interfaces" type="xs:string">
+<xs:annotation>
+<xs:documentation> If true, the transport should use all available interfaces to receive multicast messages. Default is false</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="receive_interfaces" type="xs:string">
+<xs:annotation>
+<xs:documentation>Comma delimited list of interfaces (IP addresses or interface names) to receive multicasts on</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="start_port" type="xs:string">
+<xs:annotation>
+<xs:documentation>The port to which the transport binds. Default of 0 binds to any (ephemeral) port</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="end_port" type="xs:string">
+<xs:annotation>
+<xs:documentation/>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="prevent_port_reuse" type="xs:string">
+<xs:annotation>
+<xs:documentation>tries to make sure ephemeral ports are used</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="loopback" type="xs:string">
+<xs:annotation>
+<xs:documentation>Messages to self are looped back immediately if true. Default is false</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="discard_incompatible_packets" type="xs:string">
+<xs:annotation>
+<xs:documentation>Discard packets with a different version if true. Default is false</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="thread_naming_pattern" type="xs:string">
+<xs:annotation>
+<xs:documentation>Thread naming pattern for threads in this channel. Default is cl</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="oob_thread_pool.enabled" type="xs:string">
+<xs:annotation>
+<xs:documentation>Switch for enabling thread pool for OOB messages. Default true</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="oob_thread_pool.min_threads" type="xs:string">
+<xs:annotation>
+<xs:documentation>Minimum thread pool size for OOB messages. Default is 2</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="oob_thread_pool.max_threads" type="xs:string">
+<xs:annotation>
+<xs:documentation>Maximum thread pool size for OOB messages. Default is 10</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="oob_thread_pool.keep_alive_time" type="xs:string">
+<xs:annotation>
+<xs:documentation>Timeout in milliseconds to remove idle thread from OOB pool. Default is 30000</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="oob_thread_pool.queue_enabled" type="xs:string">
+<xs:annotation>
+<xs:documentation>Use queue to enqueue incoming OOB messages. Default is true</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="oob_thread_pool.queue_max_size" type="xs:string">
+<xs:annotation>
+<xs:documentation>Maximum queue size for incoming OOB messages. Default is 500</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="oob_thread_pool.rejection_policy" type="xs:string">
+<xs:annotation>
+<xs:documentation>Thread rejection policy. Possible values are Abort, Discard, DiscardOldest and Run. Default is Run</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="thread_pool.min_threads" type="xs:string">
+<xs:annotation>
+<xs:documentation>Minimum thread pool size for regular messages. Default is 2</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="thread_pool.max_threads" type="xs:string">
+<xs:annotation>
+<xs:documentation>Maximum thread pool size for regular messages. Default is 10</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="thread_pool.keep_alive_time" type="xs:string">
+<xs:annotation>
+<xs:documentation>Timeout in milliseconds to remove idle thread from regular pool. Default is 30000</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="thread_pool.enabled" type="xs:string">
+<xs:annotation>
+<xs:documentation>Switch for enabling thread pool for regular messages. Default true</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="thread_pool.queue_enabled" type="xs:string">
+<xs:annotation>
+<xs:documentation>Use queue to enqueue incoming regular messages. Default is true</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="thread_pool.queue_max_size" type="xs:string">
+<xs:annotation>
+<xs:documentation>Maximum queue size for incoming OOB messages. Default is 500</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="thread_pool.rejection_policy" type="xs:string">
+<xs:annotation>
+<xs:documentation>Thread rejection policy. Possible values are Abort, Discard, DiscardOldest and Run Default is Run</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="timer.num_threads" type="xs:string">
+<xs:annotation>
+<xs:documentation>Number of threads to be used by the timer thread pool. Default is 4</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="enable_bundling" type="xs:string">
+<xs:annotation>
+<xs:documentation>Enable bundling of smaller messages into bigger ones. Default is true</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="enable_unicast_bundling" type="xs:string">
+<xs:annotation>
+<xs:documentation>Enable bundling of smaller messages into bigger ones for unicast messages. Default is false</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="enable_diagnostics" type="xs:string">
+<xs:annotation>
+<xs:documentation>Switch to enable diagnostic probing. Default is true</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="diagnostics_addr" type="xs:string">
+<xs:annotation>
+<xs:documentation>Address for diagnostic probing. Default is 224.0.75.75</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="diagnostics_port" type="xs:string">
+<xs:annotation>
+<xs:documentation>Port for diagnostic probing. Default is 7500</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="singleton_name" type="xs:string">
+<xs:annotation>
+<xs:documentation>If assigned enable this transport to be a singleton (shared) transport</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="persistent_ports_file" type="xs:string">
+<xs:annotation>
+<xs:documentation>Path to a file to store currently used ports on this machine</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="ports_expiry_time" type="xs:string">
+<xs:annotation>
+<xs:documentation>Timeout to expire ports used with PortManager. Default is 30000 msec</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="persistent_ports" type="xs:string">
+<xs:annotation>
+<xs:documentation>Switch to enable tracking of currently used ports on this machine. Default is false</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="stats" type="xs:string">
+<xs:annotation>
+<xs:documentation>Determines whether to collect statistics (and expose them via JMX). Default is true</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="gossip_router_hosts" type="xs:string"/>
+<xs:attribute name="max_bundle_size" type="xs:string"/>
+<xs:attribute name="max_bundle_timeout" type="xs:string"/>
+</xs:complexType>
+</xs:element>
+<xs:element name="SHARED_LOOPBACK">
+<xs:complexType>
+<xs:attribute name="bind_addr" type="xs:string">
+<xs:annotation>
+<xs:documentation>The interface (NIC) which should be used by this transport </xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="use_local_host" type="xs:string">
+<xs:annotation>
+<xs:documentation>Ignores all bind address parameters and  let's the OS return the local host address. Default is false</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="receive_on_all_interfaces" type="xs:string">
+<xs:annotation>
+<xs:documentation> If true, the transport should use all available interfaces to receive multicast messages. Default is false</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="receive_interfaces" type="xs:string">
+<xs:annotation>
+<xs:documentation>Comma delimited list of interfaces (IP addresses or interface names) to receive multicasts on</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="start_port" type="xs:string">
+<xs:annotation>
+<xs:documentation>The port to which the transport binds. Default of 0 binds to any (ephemeral) port</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="end_port" type="xs:string">
+<xs:annotation>
+<xs:documentation/>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="prevent_port_reuse" type="xs:string">
+<xs:annotation>
+<xs:documentation>tries to make sure ephemeral ports are used</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="loopback" type="xs:string">
+<xs:annotation>
+<xs:documentation>Messages to self are looped back immediately if true. Default is false</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="discard_incompatible_packets" type="xs:string">
+<xs:annotation>
+<xs:documentation>Discard packets with a different version if true. Default is false</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="thread_naming_pattern" type="xs:string">
+<xs:annotation>
+<xs:documentation>Thread naming pattern for threads in this channel. Default is cl</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="oob_thread_pool.enabled" type="xs:string">
+<xs:annotation>
+<xs:documentation>Switch for enabling thread pool for OOB messages. Default true</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="oob_thread_pool.min_threads" type="xs:string">
+<xs:annotation>
+<xs:documentation>Minimum thread pool size for OOB messages. Default is 2</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="oob_thread_pool.max_threads" type="xs:string">
+<xs:annotation>
+<xs:documentation>Maximum thread pool size for OOB messages. Default is 10</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="oob_thread_pool.keep_alive_time" type="xs:string">
+<xs:annotation>
+<xs:documentation>Timeout in milliseconds to remove idle thread from OOB pool. Default is 30000</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="oob_thread_pool.queue_enabled" type="xs:string">
+<xs:annotation>
+<xs:documentation>Use queue to enqueue incoming OOB messages. Default is true</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="oob_thread_pool.queue_max_size" type="xs:string">
+<xs:annotation>
+<xs:documentation>Maximum queue size for incoming OOB messages. Default is 500</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="oob_thread_pool.rejection_policy" type="xs:string">
+<xs:annotation>
+<xs:documentation>Thread rejection policy. Possible values are Abort, Discard, DiscardOldest and Run. Default is Run</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="thread_pool.min_threads" type="xs:string">
+<xs:annotation>
+<xs:documentation>Minimum thread pool size for regular messages. Default is 2</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="thread_pool.max_threads" type="xs:string">
+<xs:annotation>
+<xs:documentation>Maximum thread pool size for regular messages. Default is 10</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="thread_pool.keep_alive_time" type="xs:string">
+<xs:annotation>
+<xs:documentation>Timeout in milliseconds to remove idle thread from regular pool. Default is 30000</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="thread_pool.enabled" type="xs:string">
+<xs:annotation>
+<xs:documentation>Switch for enabling thread pool for regular messages. Default true</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="thread_pool.queue_enabled" type="xs:string">
+<xs:annotation>
+<xs:documentation>Use queue to enqueue incoming regular messages. Default is true</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="thread_pool.queue_max_size" type="xs:string">
+<xs:annotation>
+<xs:documentation>Maximum queue size for incoming OOB messages. Default is 500</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="thread_pool.rejection_policy" type="xs:string">
+<xs:annotation>
+<xs:documentation>Thread rejection policy. Possible values are Abort, Discard, DiscardOldest and Run Default is Run</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="timer.num_threads" type="xs:string">
+<xs:annotation>
+<xs:documentation>Number of threads to be used by the timer thread pool. Default is 4</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="enable_bundling" type="xs:string">
+<xs:annotation>
+<xs:documentation>Enable bundling of smaller messages into bigger ones. Default is true</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="enable_unicast_bundling" type="xs:string">
+<xs:annotation>
+<xs:documentation>Enable bundling of smaller messages into bigger ones for unicast messages. Default is false</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="enable_diagnostics" type="xs:string">
+<xs:annotation>
+<xs:documentation>Switch to enable diagnostic probing. Default is true</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="diagnostics_addr" type="xs:string">
+<xs:annotation>
+<xs:documentation>Address for diagnostic probing. Default is 224.0.75.75</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="diagnostics_port" type="xs:string">
+<xs:annotation>
+<xs:documentation>Port for diagnostic probing. Default is 7500</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="singleton_name" type="xs:string">
+<xs:annotation>
+<xs:documentation>If assigned enable this transport to be a singleton (shared) transport</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="persistent_ports_file" type="xs:string">
+<xs:annotation>
+<xs:documentation>Path to a file to store currently used ports on this machine</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="ports_expiry_time" type="xs:string">
+<xs:annotation>
+<xs:documentation>Timeout to expire ports used with PortManager. Default is 30000 msec</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="persistent_ports" type="xs:string">
+<xs:annotation>
+<xs:documentation>Switch to enable tracking of currently used ports on this machine. Default is false</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="stats" type="xs:string">
+<xs:annotation>
+<xs:documentation>Determines whether to collect statistics (and expose them via JMX). Default is true</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="max_bundle_size" type="xs:string"/>
+<xs:attribute name="max_bundle_timeout" type="xs:string"/>
+</xs:complexType>
+</xs:element>
+<xs:element name="SFC">
+<xs:complexType>
+<xs:attribute name="max_credits" type="xs:string">
+<xs:annotation>
+<xs:documentation>Max number of bytes to send per receiver until an ack must be received to proceed. Default is 2000000 bytes</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="max_block_time" type="xs:string">
+<xs:annotation>
+<xs:documentation>Max time (in milliseconds) to block. Default is 5000 msec</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="stats" type="xs:string">
+<xs:annotation>
+<xs:documentation>Determines whether to collect statistics (and expose them via JMX). Default is true</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+</xs:complexType>
+</xs:element>
+<xs:element name="FC">
+<xs:complexType>
+<xs:attribute name="max_credits" type="xs:string">
+<xs:annotation>
+<xs:documentation>Max number of bytes to send per receiver until an ack must be received to proceed. Default is 500000 bytes</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="max_block_time" type="xs:string">
+<xs:annotation>
+<xs:documentation>Max time (in milliseconds) to block. Default is 5000 msec</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="min_threshold" type="xs:string">
+<xs:annotation>
+<xs:documentation>If credits fall below this limit, we send more credits to the sender. Default is 0.25</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="min_credits" type="xs:string">
+<xs:annotation>
+<xs:documentation>Computed as max_credits x min_theshold unless explicitely set</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="ignore_synchronous_response" type="xs:string">
+<xs:annotation>
+<xs:documentation>Does not block a down message if it is a result of handling an up message in thesame thread. Fixes JGRP-928</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="stats" type="xs:string">
+<xs:annotation>
+<xs:documentation>Determines whether to collect statistics (and expose them via JMX). Default is true</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="max_block_times" type="xs:string">
+<xs:annotation>
+<xs:documentation>Max times to block for the listed messages sizes (Message.getLength())</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+</xs:complexType>
+</xs:element>
+<xs:element name="ENCRYPT">
+<xs:complexType>
+<xs:attribute name="asym_provider" type="xs:string">
+<xs:annotation>
+<xs:documentation>Cryptographic Service Provider. Default is Bouncy Castle Provider</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="asym_algorithm" type="xs:string">
+<xs:annotation>
+<xs:documentation>Cipher engine transformation for asymmetric algorithm. Default is RSA</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="sym_algorithm" type="xs:string">
+<xs:annotation>
+<xs:documentation>Cipher engine transformation for symmetric algorithm. Default is AES</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="asym_init" type="xs:string">
+<xs:annotation>
+<xs:documentation>Initial public/private key length. Default is 512</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="sym_init" type="xs:string">
+<xs:annotation>
+<xs:documentation>Initial key length for matching symmetric algorithm. Default is 128</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="key_store_name" type="xs:string">
+<xs:annotation>
+<xs:documentation>File on classpath that contains keystore repository</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="store_password" type="xs:string">
+<xs:annotation>
+<xs:documentation>Password used to check the integrity/unlock the keystore. Change the default</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="key_password" type="xs:string">
+<xs:annotation>
+<xs:documentation>Password for recovering the key. Change the default</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="alias" type="xs:string">
+<xs:annotation>
+<xs:documentation>Alias used for recovering the key. Change the default</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="encrypt_entire_message" type="xs:string">
+<xs:annotation>
+<xs:documentation/>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="stats" type="xs:string">
+<xs:annotation>
+<xs:documentation>Determines whether to collect statistics (and expose them via JMX). Default is true</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+</xs:complexType>
+</xs:element>
+<xs:element name="MERGE2">
+<xs:complexType>
+<xs:attribute name="min_interval" type="xs:string">
+<xs:annotation>
+<xs:documentation>Lower bound in msec to run merge protocol. Default is 5000 msec</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="max_interval" type="xs:string">
+<xs:annotation>
+<xs:documentation>Upper bound in msec to run merge protocol. Default is 20000 msec</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="stats" type="xs:string">
+<xs:annotation>
+<xs:documentation>Determines whether to collect statistics (and expose them via JMX). Default is true</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+</xs:complexType>
+</xs:element>
+<xs:element name="UDP">
+<xs:complexType>
+<xs:attribute name="tos" type="xs:string">
+<xs:annotation>
+<xs:documentation>Traffic class for sending unicast and multicast datagrams. Default is 8</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="mcast_addr" type="xs:string">
+<xs:annotation>
+<xs:documentation>The multicast address used for sending and receiving packets. Default is 228.8.8.8</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="mcast_port" type="xs:string">
+<xs:annotation>
+<xs:documentation>The multicast port used for sending and receiving packets. Default is 7600</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="ip_mcast" type="xs:string">
+<xs:annotation>
+<xs:documentation>Multicast toggle. If false multiple unicast datagrams are sent instead of one multicast. Default is true</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="ip_ttl" type="xs:string">
+<xs:annotation>
+<xs:documentation>The time-to-live (TTL) for multicast datagram packets. Default is 8</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="mcast_send_buf_size" type="xs:string">
+<xs:annotation>
+<xs:documentation>Send buffer size of the multicast datagram socket. Default is 100'000 bytes</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="mcast_recv_buf_size" type="xs:string">
+<xs:annotation>
+<xs:documentation>Receive buffer size of the multicast datagram socket. Default is 500'000 bytes</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="ucast_send_buf_size" type="xs:string">
+<xs:annotation>
+<xs:documentation>Send buffer size of the unicast datagram socket. Default is 100'000 bytes</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="ucast_recv_buf_size" type="xs:string">
+<xs:annotation>
+<xs:documentation>Receive buffer size of the unicast datagram socket. Default is 64'000 bytes</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="bind_addr" type="xs:string">
+<xs:annotation>
+<xs:documentation>The interface (NIC) which should be used by this transport </xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="use_local_host" type="xs:string">
+<xs:annotation>
+<xs:documentation>Ignores all bind address parameters and  let's the OS return the local host address. Default is false</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="receive_on_all_interfaces" type="xs:string">
+<xs:annotation>
+<xs:documentation> If true, the transport should use all available interfaces to receive multicast messages. Default is false</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="receive_interfaces" type="xs:string">
+<xs:annotation>
+<xs:documentation>Comma delimited list of interfaces (IP addresses or interface names) to receive multicasts on</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="start_port" type="xs:string">
+<xs:annotation>
+<xs:documentation>The port to which the transport binds. Default of 0 binds to any (ephemeral) port</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="end_port" type="xs:string">
+<xs:annotation>
+<xs:documentation/>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="prevent_port_reuse" type="xs:string">
+<xs:annotation>
+<xs:documentation>tries to make sure ephemeral ports are used</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="loopback" type="xs:string">
+<xs:annotation>
+<xs:documentation>Messages to self are looped back immediately if true. Default is false</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="discard_incompatible_packets" type="xs:string">
+<xs:annotation>
+<xs:documentation>Discard packets with a different version if true. Default is false</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="thread_naming_pattern" type="xs:string">
+<xs:annotation>
+<xs:documentation>Thread naming pattern for threads in this channel. Default is cl</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="oob_thread_pool.enabled" type="xs:string">
+<xs:annotation>
+<xs:documentation>Switch for enabling thread pool for OOB messages. Default true</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="oob_thread_pool.min_threads" type="xs:string">
+<xs:annotation>
+<xs:documentation>Minimum thread pool size for OOB messages. Default is 2</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="oob_thread_pool.max_threads" type="xs:string">
+<xs:annotation>
+<xs:documentation>Maximum thread pool size for OOB messages. Default is 10</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="oob_thread_pool.keep_alive_time" type="xs:string">
+<xs:annotation>
+<xs:documentation>Timeout in milliseconds to remove idle thread from OOB pool. Default is 30000</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="oob_thread_pool.queue_enabled" type="xs:string">
+<xs:annotation>
+<xs:documentation>Use queue to enqueue incoming OOB messages. Default is true</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="oob_thread_pool.queue_max_size" type="xs:string">
+<xs:annotation>
+<xs:documentation>Maximum queue size for incoming OOB messages. Default is 500</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="oob_thread_pool.rejection_policy" type="xs:string">
+<xs:annotation>
+<xs:documentation>Thread rejection policy. Possible values are Abort, Discard, DiscardOldest and Run. Default is Run</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="thread_pool.min_threads" type="xs:string">
+<xs:annotation>
+<xs:documentation>Minimum thread pool size for regular messages. Default is 2</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="thread_pool.max_threads" type="xs:string">
+<xs:annotation>
+<xs:documentation>Maximum thread pool size for regular messages. Default is 10</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="thread_pool.keep_alive_time" type="xs:string">
+<xs:annotation>
+<xs:documentation>Timeout in milliseconds to remove idle thread from regular pool. Default is 30000</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="thread_pool.enabled" type="xs:string">
+<xs:annotation>
+<xs:documentation>Switch for enabling thread pool for regular messages. Default true</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="thread_pool.queue_enabled" type="xs:string">
+<xs:annotation>
+<xs:documentation>Use queue to enqueue incoming regular messages. Default is true</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="thread_pool.queue_max_size" type="xs:string">
+<xs:annotation>
+<xs:documentation>Maximum queue size for incoming OOB messages. Default is 500</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="thread_pool.rejection_policy" type="xs:string">
+<xs:annotation>
+<xs:documentation>Thread rejection policy. Possible values are Abort, Discard, DiscardOldest and Run Default is Run</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="timer.num_threads" type="xs:string">
+<xs:annotation>
+<xs:documentation>Number of threads to be used by the timer thread pool. Default is 4</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="enable_bundling" type="xs:string">
+<xs:annotation>
+<xs:documentation>Enable bundling of smaller messages into bigger ones. Default is true</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="enable_unicast_bundling" type="xs:string">
+<xs:annotation>
+<xs:documentation>Enable bundling of smaller messages into bigger ones for unicast messages. Default is false</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="enable_diagnostics" type="xs:string">
+<xs:annotation>
+<xs:documentation>Switch to enable diagnostic probing. Default is true</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="diagnostics_addr" type="xs:string">
+<xs:annotation>
+<xs:documentation>Address for diagnostic probing. Default is 224.0.75.75</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="diagnostics_port" type="xs:string">
+<xs:annotation>
+<xs:documentation>Port for diagnostic probing. Default is 7500</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="singleton_name" type="xs:string">
+<xs:annotation>
+<xs:documentation>If assigned enable this transport to be a singleton (shared) transport</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="persistent_ports_file" type="xs:string">
+<xs:annotation>
+<xs:documentation>Path to a file to store currently used ports on this machine</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="ports_expiry_time" type="xs:string">
+<xs:annotation>
+<xs:documentation>Timeout to expire ports used with PortManager. Default is 30000 msec</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="persistent_ports" type="xs:string">
+<xs:annotation>
+<xs:documentation>Switch to enable tracking of currently used ports on this machine. Default is false</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="stats" type="xs:string">
+<xs:annotation>
+<xs:documentation>Determines whether to collect statistics (and expose them via JMX). Default is true</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="max_bundle_size" type="xs:string"/>
+<xs:attribute name="max_bundle_timeout" type="xs:string"/>
+</xs:complexType>
+</xs:element>
+<xs:element name="FD">
+<xs:complexType>
+<xs:attribute name="timeout" type="xs:string">
+<xs:annotation>
+<xs:documentation>Timeout to suspect a node P if neither a heartbeat nor data were received from P. Default is 3000 msec</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="shun" type="xs:string">
+<xs:annotation>
+<xs:documentation>Shun switch. Default is true</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="max_tries" type="xs:string">
+<xs:annotation>
+<xs:documentation>Number of times to send heartbeat. Default is 2</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="stats" type="xs:string">
+<xs:annotation>
+<xs:documentation>Determines whether to collect statistics (and expose them via JMX). Default is true</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+</xs:complexType>
+</xs:element>
+<xs:element name="MPING">
+<xs:complexType>
+<xs:attribute name="bind_addr" type="xs:string">
+<xs:annotation>
+<xs:documentation>Bind address for multicast socket</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="ip_ttl" type="xs:string">
+<xs:annotation>
+<xs:documentation>Time to live for discovery packets. Default is 8</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="mcast_port" type="xs:string">
+<xs:annotation>
+<xs:documentation>Multicast port for discovery packets. Default is 7555</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="bind_to_all_interfaces" type="xs:string">
+<xs:annotation>
+<xs:documentation>If true, the transport should use all available interfaces to receive multicast messages. Default is false</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="receive_interfaces" type="xs:string">
+<xs:annotation>
+<xs:documentation>List of interfaces to receive multicasts on</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="send_on_all_interfaces" type="xs:string">
+<xs:annotation>
+<xs:documentation>Whether send messages are sent on all interfaces. Default is false</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="send_interfaces" type="xs:string">
+<xs:annotation>
+<xs:documentation>List of interfaces to send multicasts on</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="gossip_host" type="xs:string">
+<xs:annotation>
+<xs:documentation>Gossip host</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="gossip_port" type="xs:string">
+<xs:annotation>
+<xs:documentation>Gossip port</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="gossip_refresh" type="xs:string">
+<xs:annotation>
+<xs:documentation>Time in msecs after which the entry in GossipRouter will be refreshed. Default is 20000 msec</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="port_range" type="xs:string">
+<xs:annotation>
+<xs:documentation>Number of ports to be probed for initial membership. Default is 1</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="socket_conn_timeout" type="xs:string">
+<xs:annotation>
+<xs:documentation>If socket is used for discovery, time in msecs to wait until socket is connected. Default is 1000 msec</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="socket_read_timeout" type="xs:string">
+<xs:annotation>
+<xs:documentation>Max to block on the socket on a read (in ms). 0 means block forever</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="discovery_timeout" type="xs:string">
+<xs:annotation>
+<xs:documentation>Time (in ms) to wait for our own discovery message to be received. 0 means don't wait. If the discovery message is not received within discovery_timeout ms, a warning will be logged</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="timeout" type="xs:string">
+<xs:annotation>
+<xs:documentation>Timeout to wait for the initial members. Default is 3000 msec</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="num_initial_members" type="xs:string">
+<xs:annotation>
+<xs:documentation>Minimum number of initial members to get a response from. Default is 2</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="num_initial_srv_members" type="xs:string">
+<xs:annotation>
+<xs:documentation>Minimum number of server responses (PingData.isServer()=true). If this value is greater than 0, we'll ignore num_initial_members</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="break_on_coord_rsp" type="xs:string">
+<xs:annotation>
+<xs:documentation>Return from the discovery phase as soon as we have 1 coordinator response</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="num_ping_requests" type="xs:string">
+<xs:annotation>
+<xs:documentation>Number of discovery requests to be sent distributed over timeout. Default is 2</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="return_entire_cache" type="xs:string">
+<xs:annotation>
+<xs:documentation>Whether or not to return the entire logical-physical address cache mappings on a discovery request, or not. Default is false, except for TCPPING</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="stats" type="xs:string">
+<xs:annotation>
+<xs:documentation>Determines whether to collect statistics (and expose them via JMX). Default is true</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="mcast_addr" type="xs:string"/>
+<xs:attribute name="sock_conn_timeout" type="xs:string"/>
+<xs:attribute name="sock_read_timeout" type="xs:string"/>
+<xs:attribute name="initial_hosts" type="xs:string"/>
+<xs:attribute name="gossip_hosts" type="xs:string"/>
+</xs:complexType>
+</xs:element>
+<xs:element name="ProtocolAdapter">
+<xs:complexType>
+<xs:attribute name="stats" type="xs:string">
+<xs:annotation>
+<xs:documentation>Determines whether to collect statistics (and expose them via JMX). Default is true</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+</xs:complexType>
+</xs:element>
+<xs:element name="COMPRESS">
+<xs:complexType>
+<xs:attribute name="compression_level" type="xs:string">
+<xs:annotation>
+<xs:documentation>Compression level 0-9 (0=no compression, 9=best compression). Default is 9</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="min_size" type="xs:string">
+<xs:annotation>
+<xs:documentation>Minimal payload size of a message (in bytes) for compression to kick in. Default is 500 bytes</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="pool_size" type="xs:string">
+<xs:annotation>
+<xs:documentation>Number of inflaters/deflaters for concurrent processing. Default is 2 </xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="stats" type="xs:string">
+<xs:annotation>
+<xs:documentation>Determines whether to collect statistics (and expose them via JMX). Default is true</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+</xs:complexType>
+</xs:element>
+<xs:element name="VIEW_SYNC">
+<xs:complexType>
+<xs:attribute name="avg_send_interval" type="xs:string">
+<xs:annotation>
+<xs:documentation>View synchronization interval. Default is 60 sec</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="stats" type="xs:string">
+<xs:annotation>
+<xs:documentation>Determines whether to collect statistics (and expose them via JMX). Default is true</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+</xs:complexType>
+</xs:element>
+<xs:element name="FRAG2">
+<xs:complexType>
+<xs:attribute name="frag_size" type="xs:string">
+<xs:annotation>
+<xs:documentation>The max number of bytes in a message. Larger messages will be fragmented. Default is 1500 bytes</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="stats" type="xs:string">
+<xs:annotation>
+<xs:documentation>Determines whether to collect statistics (and expose them via JMX). Default is true</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+</xs:complexType>
+</xs:element>
+<xs:element name="pbcast.GMS">
+<xs:complexType>
+<xs:attribute name="join_timeout" type="xs:string">
+<xs:annotation>
+<xs:documentation>Join timeout. Default is 5000 msec</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="leave_timeout" type="xs:string">
+<xs:annotation>
+<xs:documentation>Leave timeout. Default is 5000 msec</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="merge_timeout" type="xs:string">
+<xs:annotation>
+<xs:documentation>Timeout to complete merge. Default is 10000 msec</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="shun" type="xs:string">
+<xs:annotation>
+<xs:documentation>Shunning toggle. Default is false</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="merge_leader" type="xs:string">
+<xs:annotation>
+<xs:documentation>If true this member is a designated merge leader. Default is false</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="print_local_addr" type="xs:string">
+<xs:annotation>
+<xs:documentation>Print local address of this member after connect. Default is true</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="disable_initial_coord" type="xs:string">
+<xs:annotation>
+<xs:documentation>If true this member can never become coordinator. Default is false</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="handle_concurrent_startup" type="xs:string">
+<xs:annotation>
+<xs:documentation>Temporary switch. Default is true and should not be changed</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="view_bundling" type="xs:string">
+<xs:annotation>
+<xs:documentation>Should views be bundled? Default is true</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="max_bundling_time" type="xs:string">
+<xs:annotation>
+<xs:documentation>Max view bundling timeout if view bundling is turned on. Default is 50 msec</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="num_prev_mbrs" type="xs:string">
+<xs:annotation>
+<xs:documentation>Max number of old members to keep in history. Default is 50</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="view_ack_collection_timeout" type="xs:string">
+<xs:annotation>
+<xs:documentation>Time in ms to wait for all VIEW acks (0 == wait forever. Default is 2000 msec</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="resume_task_timeout" type="xs:string">
+<xs:annotation>
+<xs:documentation>Timeout to resume ViewHandler. Default is 20000 msec</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="use_flush_if_present" type="xs:string">
+<xs:annotation>
+<xs:documentation>Use flush for view changes. Default is true</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="flush_invoker_class" type="xs:string">
+<xs:annotation>
+<xs:documentation/>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="stats" type="xs:string">
+<xs:annotation>
+<xs:documentation>Determines whether to collect statistics (and expose them via JMX). Default is true</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+</xs:complexType>
+</xs:element>
+<xs:element name="pbcast.STREAMING_STATE_TRANSFER">
+<xs:complexType>
+<xs:attribute name="bind_addr" type="xs:string">
+<xs:annotation>
+<xs:documentation>The interface (NIC) used to accept state requests</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="bind_port" type="xs:string">
+<xs:annotation>
+<xs:documentation>The port listening for state requests. Default value of 0 binds to any (ephemeral) port</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="max_pool" type="xs:string">
+<xs:annotation>
+<xs:documentation>Maximum number of pool threads serving state requests. Default is 5</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="pool_thread_keep_alive" type="xs:string">
+<xs:annotation>
+<xs:documentation>Keep alive for pool threads serving state requests. Default is 20000 msec</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="socket_buffer_size" type="xs:string">
+<xs:annotation>
+<xs:documentation>Buffer size for state transfer. Default is 8192 bytes</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="buffer_queue_size" type="xs:string">
+<xs:annotation>
+<xs:documentation>If default transport is used the total state buffer size before state producer is blocked. Default is 81920 bytes</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="use_default_transport" type="xs:string">
+<xs:annotation>
+<xs:documentation>If true default transport is used for state transfer rather than seperate TCP sockets. Default is false</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="stats" type="xs:string">
+<xs:annotation>
+<xs:documentation>Determines whether to collect statistics (and expose them via JMX). Default is true</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+</xs:complexType>
+</xs:element>
+<xs:element name="pbcast.STATE_TRANSFER">
+<xs:complexType>
+<xs:attribute name="stats" type="xs:string">
+<xs:annotation>
+<xs:documentation>Determines whether to collect statistics (and expose them via JMX). Default is true</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+</xs:complexType>
+</xs:element>
+<xs:element name="pbcast.NAKACK">
+<xs:complexType>
+<xs:attribute name="retransmit_timeout" type="xs:string">
+<xs:annotation>
+<xs:documentation>Timeout before requesting retransmissions. Default is 600, 1200, 2400, 4800</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="enable_xmit_time_stats" type="xs:string">
+<xs:annotation>
+<xs:documentation>If true, retransmissions stats will be captured. Default is false</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="gc_lag" type="xs:string">
+<xs:annotation>
+<xs:documentation>Garbage collection lag. Default is 20 msec</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="use_mcast_xmit" type="xs:string">
+<xs:annotation>
+<xs:documentation>Retransmit messages using multicast rather than unicast. Default is true</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="use_mcast_xmit_req" type="xs:string">
+<xs:annotation>
+<xs:documentation>Use a multicast to request retransmission of missing messages. Default is false</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="xmit_from_random_member" type="xs:string">
+<xs:annotation>
+<xs:documentation>Ask a random member for retransmission of a missing message. Default is false</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="exponential_backoff" type="xs:string">
+<xs:annotation>
+<xs:documentation>The first value (in milliseconds) to use in the exponential backoff. Enabled if greater than 0. Default is 0</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="use_stats_for_retransmission" type="xs:string">
+<xs:annotation>
+<xs:documentation>Use statistics gathered from actual retransmission times to compute new retransmission times. Default is false</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="discard_delivered_msgs" type="xs:string">
+<xs:annotation>
+<xs:documentation>Should messages delivered to application be discarded. Default is false</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="eager_lock_release" type="xs:string">
+<xs:annotation>
+<xs:documentation>See http://jira.jboss.com/jira/browse/JGRP-656. Default is true</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="max_xmit_buf_size" type="xs:string">
+<xs:annotation>
+<xs:documentation>If value is &gt; 0, the retransmit buffer is bounded. If value &lt;= 0 unbounded buffers are used. Default is 0</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="xmit_history_max_size" type="xs:string">
+<xs:annotation>
+<xs:documentation>Size of retransmission history. Default is 50 entries</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="max_rebroadcast_timeout" type="xs:string">
+<xs:annotation>
+<xs:documentation>Timeout to rebroadcast messages. Default is 2000 msec</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="print_stability_history_on_failed_xmit" type="xs:string">
+<xs:annotation>
+<xs:documentation>Should stability history be printed if we fail in retransmission. Default is false</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="stats_list_size" type="xs:string">
+<xs:annotation>
+<xs:documentation>Size of send and receive history. Default is 20 entries</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="log_discard_msgs" type="xs:string">
+<xs:annotation>
+<xs:documentation>discards warnings about promiscuous traffic</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="stats" type="xs:string">
+<xs:annotation>
+<xs:documentation>Determines whether to collect statistics (and expose them via JMX). Default is true</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+</xs:complexType>
+</xs:element>
+<xs:element name="pbcast.FLUSH">
+<xs:complexType>
+<xs:attribute name="timeout" type="xs:string">
+<xs:annotation>
+<xs:documentation>Max time to keep channel blocked in flush. Default is 8000 msec</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="start_flush_timeout" type="xs:string">
+<xs:annotation>
+<xs:documentation>Timeout (per atttempt) to quiet the cluster during the first flush phase. Default is 2500 msec</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="retry_timeout" type="xs:string">
+<xs:annotation>
+<xs:documentation>Retry timeout after an unsuccessful attempt to quiet the cluster (first flush phase). Default is 3000 msec</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="enable_reconciliation" type="xs:string">
+<xs:annotation>
+<xs:documentation>Reconcilliation phase toggle. Default is true</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="stats" type="xs:string">
+<xs:annotation>
+<xs:documentation>Determines whether to collect statistics (and expose them via JMX). Default is true</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+</xs:complexType>
+</xs:element>
+<xs:element name="pbcast.STABLE">
+<xs:complexType>
+<xs:attribute name="desired_avg_gossip" type="xs:string">
+<xs:annotation>
+<xs:documentation>Average time to send a STABLE message. Default is 20000 msec</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="stability_delay" type="xs:string">
+<xs:annotation>
+<xs:documentation>Delay before stability message is sent. Default is 6000 msec</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="max_bytes" type="xs:string">
+<xs:annotation>
+<xs:documentation>Maximum number of bytes received in all messages before sending a STABLE message is triggered. Default is 0 (disabled)</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+<xs:attribute name="stats" type="xs:string">
+<xs:annotation>
+<xs:documentation>Determines whether to collect statistics (and expose them via JMX). Default is true</xs:documentation>
+</xs:annotation>
+</xs:attribute>
+</xs:complexType>
+</xs:element>
+</xs:choice>
+</xs:complexType>
+</xs:element>
+</xs:schema>

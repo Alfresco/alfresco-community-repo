@@ -37,7 +37,8 @@
 <script language="JavaScript1.2">
    function checkButtonState(inputField)
    {
-	return true;
+   var disabled = (inputField.value.length == 0);
+   document.getElementById("contains-text-condition:ok-button").disabled = disabled;
    }
 </script>
 
@@ -125,7 +126,8 @@
                                     <td width="200px"> 
                                         <h:outputText value="#{msg.date_property_condition_property}"/>:&nbsp;
 				    </td> <td>
- 					<h:inputText id="qname" value="#{WizardManager.bean.conditionProperties.qname}" size="35" maxlength="1024" />
+ 					<h:inputText id="qname" value="#{WizardManager.bean.conditionProperties.qname}" 
+ 					             onkeyup="javascript:checkButtonState(this);"  size="35" maxlength="1024" />
                                     </td>
                                  </tr>
  				<tr>
@@ -171,7 +173,8 @@
                                  <tr>
                                     <td align="center">
                                        <h:commandButton id="ok-button" value="#{msg.ok}" action="#{WizardManager.bean.addCondition}" 
-                                                        styleClass="wizardButton" />
+                                                        styleClass="wizardButton"
+                                                        disabled="#{WizardManager.bean.conditionProperties.qname == null}"  />
                                     </td>
                                  </tr>
                                  <tr>

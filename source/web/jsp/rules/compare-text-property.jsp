@@ -35,9 +35,11 @@
 <r:page titleId="title_condition_contains_text">
 
 <script language="JavaScript1.2">
-   function checkButtonState(inputField)
+   function checkButtonState()
    {
-      var disabled = (inputField.value.length == 0);
+	  var inputField1 = document.getElementById('contains-text-condition:pattern'); 
+	  var inputField2 = document.getElementById('contains-text-condition:qname'); 
+	  var disabled = (inputField1.value.length == 0 || inputField2.value.length == 0);
       document.getElementById("contains-text-condition:ok-button").disabled = disabled;
    }
 </script>
@@ -140,7 +142,8 @@
                                     <td width="200px"> 
                                         <h:outputText value="#{msg.text_property_condition_property}"/>:&nbsp;
 				    </td> <td>
- 					<h:inputText id="qname" value="#{WizardManager.bean.conditionProperties.qname}" size="35" maxlength="1024" />
+ 					<h:inputText id="qname" value="#{WizardManager.bean.conditionProperties.qname}"
+ 					             onkeyup="javascript:checkButtonState(this);" size="35" maxlength="1024" />
                                     </td>
                                  </tr>
  				<tr>
@@ -160,7 +163,7 @@
                                        <h:outputText value="#{msg.property_condition_value}"/>:&nbsp;
 				     </td> <td>
                                        <h:inputText id="pattern" value="#{WizardManager.bean.conditionProperties.containstext}" 
-                                                    onkeyup="javascript:checkButtonState(this);" size="35" maxlength="1024" />
+                                                    onkeyup="javascript:checkButtonState();" size="35" maxlength="1024" />
                                     </td>
                                  </tr>
                                  <tr>
@@ -183,7 +186,7 @@
                                     <td align="center">
                                        <h:commandButton id="ok-button" value="#{msg.ok}" action="#{WizardManager.bean.addCondition}" 
                                                         styleClass="wizardButton" 
-                                                        disabled="#{WizardManager.bean.conditionProperties.containstext == null}" />
+                                                        disabled="#{WizardManager.bean.conditionProperties.containstext == null || WizardManager.bean.conditionProperties.qname == null}" />
                                     </td>
                                  </tr>
                                  <tr>

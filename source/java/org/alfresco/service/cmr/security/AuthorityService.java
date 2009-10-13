@@ -90,10 +90,31 @@ public interface AuthorityService
      * Does the given authority have admin authority.
      *  
      * @param authorityName The name of the authority.
-     * @return Whether the authority is an admin.
+     * @return Whether the authority is an 'administrator'.
      */
     @Auditable(parameters = {"authorityName"})
     public boolean isAdminAuthority(String authorityName);
+
+    /**
+     * Check of the current user has guest authority.
+     * 
+     * There is no contract for who should have this authority, only that it can
+     * be tested here. It could be determined by group membership, role,
+     * authentication mechanism, ...
+     * 
+     * @return true if the currently authenticated user has the guest authority
+     */
+    @Auditable
+    public boolean hasGuestAuthority();
+    
+    /**
+     * Does the given authority have guest authority.
+     *  
+     * @param authorityName The name of the authority.
+     * @return Whether the authority is a 'guest'.
+     */
+    @Auditable(parameters = {"authorityName"})
+    public boolean isGuestAuthority(String authorityName);
 
     /**
      * Get the authorities for the current user

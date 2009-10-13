@@ -233,11 +233,19 @@ public interface AuthenticationService
     public Set<String> getDomiansThatAllowUserPasswordChanges();
     
     /**
-     * Gets a set of user names who should be considered administrators by default.
+     * Gets a set of user names who should be considered 'administrators' by default.
      * 
      * @return a set of user names
      */
     @Auditable
     public Set<String> getDefaultAdministratorUserNames();
+    
+    /**
+     * Gets a set of user names who should be considered 'guests' by default.
+     * 
+     * @return a set of user names
+     */
+    @Auditable
+    public Set<String> getDefaultGuestUserNames();
 }
 

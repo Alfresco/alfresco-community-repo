@@ -61,6 +61,7 @@ import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionContext;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.FileNameValidator;
 import org.alfresco.util.Pair;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -2946,7 +2947,7 @@ public class AVMRepository
         {
             throw new AVMExistsException("Store Already Exists: " + destName);
         }
-        if (!FileNameValidator.IsValid(destName))
+        if (!FileNameValidator.isValid(destName))
         {
             throw new AVMBadArgumentException("Bad store name: " + destName);
         }

@@ -81,7 +81,7 @@ public interface PermissionService
     /**
      * The guest authority
      */
-    public static final String GUEST_AUTHORITY = "guest";
+    public static final String GUEST_AUTHORITY = "ROLE_GUEST";
 
     /**
      * The permission for all - not defined in the model. Repsected in the code.

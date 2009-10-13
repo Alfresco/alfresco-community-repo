@@ -42,7 +42,6 @@ import net.sf.acegisecurity.providers.UsernamePasswordAuthenticationToken;
 import net.sf.acegisecurity.providers.dao.User;
 
 import org.alfresco.service.cmr.security.AuthenticationService;
-import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.util.EqualsHelper;
 import org.alfresco.util.GUID;
 
@@ -230,7 +229,7 @@ public class TestAuthenticationServiceImpl implements AuthenticationService
     {
         if (allowGuest)
         {
-            setCurrentUser(PermissionService.GUEST_AUTHORITY);
+            setCurrentUser(AuthenticationUtil.getGuestUserName());
         }
         else
         {
@@ -419,10 +418,10 @@ public class TestAuthenticationServiceImpl implements AuthenticationService
                 gas[0] = new GrantedAuthorityImpl("ROLE_SYSTEM");
                 ud = new User(SYSTEM_USER_NAME, "", true, true, true, true, gas);
             }
-            else if (userName.equalsIgnoreCase(PermissionService.GUEST_AUTHORITY))
+            else if (userName.equalsIgnoreCase(AuthenticationUtil.getGuestUserName()))
             {
                 GrantedAuthority[] gas = new GrantedAuthority[0];
-                ud = new User(PermissionService.GUEST_AUTHORITY.toLowerCase(), "", true, true, true, true, gas);
+                ud = new User(AuthenticationUtil.getGuestUserName().toLowerCase(), "", true, true, true, true, gas);
             }
             else
             {
@@ -476,6 +475,11 @@ public class TestAuthenticationServiceImpl implements AuthenticationService
     public Set<String> getDefaultAdministratorUserNames()
     {
         return Collections.singleton(AuthenticationUtil.getAdminUserName());
+    }
+
+    public Set<String> getDefaultGuestUserNames()
+    {
+        return Collections.singleton(AuthenticationUtil.getGuestUserName());
     }
 
     private static final String SYSTEM_USER_NAME = "System";

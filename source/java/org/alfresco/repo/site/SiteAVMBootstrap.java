@@ -149,7 +149,7 @@ public class SiteAVMBootstrap extends AbstractLifecycleBean
             // set default permissions on the new store
             StoreRef store = new StoreRef(StoreRef.PROTOCOL_AVM, storeName);
             this.permissionService.setPermission(store, PermissionService.ALL_AUTHORITIES, PermissionService.READ, true);
-            this.permissionService.setPermission(store, PermissionService.GUEST_AUTHORITY, PermissionService.READ, true);
+            this.permissionService.setPermission(store, AuthenticationUtil.getGuestUserName(), PermissionService.READ, true);
         }
     }
 

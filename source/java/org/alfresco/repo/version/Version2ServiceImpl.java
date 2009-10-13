@@ -38,6 +38,7 @@ import java.util.Set;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.policy.PolicyScope;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.version.common.VersionHistoryImpl;
 import org.alfresco.repo.version.common.VersionImpl;
 import org.alfresco.repo.version.common.VersionUtil;
@@ -455,7 +456,7 @@ public class Version2ServiceImpl extends VersionServiceImpl implements VersionSe
                         PermissionService.ALL_PERMISSIONS, true);
                 permissionService.setPermission(
                         versionNodeRef,
-                        PermissionService.GUEST_AUTHORITY,
+                        AuthenticationUtil.getGuestUserName(),
                         PermissionService.ALL_PERMISSIONS, true);
             }
             

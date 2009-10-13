@@ -40,8 +40,6 @@ import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.InitializingBean;
 
 /**
@@ -51,8 +49,6 @@ import org.springframework.beans.factory.InitializingBean;
  */
 public class AuthorityServiceImpl implements AuthorityService, InitializingBean
 {
-    private static Log logger = LogFactory.getLog(AuthorityServiceImpl.class);
-    
     private static Set<String> DEFAULT_ZONES = new HashSet<String>();
     
     private PersonService personService;
@@ -66,7 +62,7 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
     private AuthenticationService authenticationService;
     
     private PermissionServiceSPI permissionServiceSPI;
-
+    
     private Set<String> adminSet = Collections.singleton(PermissionService.ADMINISTRATOR_AUTHORITY);
 
     private Set<String> guestSet = Collections.singleton(PermissionService.GUEST_AUTHORITY);
@@ -74,6 +70,8 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
     private Set<String> allSet = Collections.singleton(PermissionService.ALL_AUTHORITIES);
 
     private Set<String> adminGroups = Collections.emptySet();
+    
+    private Set<String> guestGroups = Collections.emptySet();
     
     static
     {
@@ -115,15 +113,17 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
     {
         this.permissionServiceSPI = permissionServiceSPI;
     }
-    
+
     public void setAdminGroups(Set<String> adminGroups)
     {
         this.adminGroups = adminGroups;
     }
 
-    /* (non-Javadoc)
-     * @see org.springframework.beans.factory.InitializingBean#afterPropertiesSet()
-     */
+    public void setGuestGroups(Set<String> guestGroups)
+    {
+        this.guestGroups = guestGroups;
+    }
+
     public void afterPropertiesSet() throws Exception
     {
         // Fully qualify the admin group names
@@ -135,6 +135,16 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
                 adminGroups.add(getName(AuthorityType.GROUP, group));
             }
             this.adminGroups = adminGroups;
+        }
+        // Fully qualify the guest group names
+        if (!this.guestGroups.isEmpty())
+        {
+            Set<String> guestGroups = new HashSet<String>(this.guestGroups.size());
+            for (String group : this.guestGroups)
+            {
+                guestGroups.add(getName(AuthorityType.GROUP, group));
+            }
+            this.guestGroups = guestGroups;
         }
     }
 
@@ -158,6 +168,26 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
         return getAuthoritiesForUser(canonicalName).contains(PermissionService.ADMINISTRATOR_AUTHORITY);
     }
 
+    public boolean hasGuestAuthority()
+    {
+        String currentUserName = AuthenticationUtil.getRunAsUser();
+        
+        // Determine whether the guest role is mapped to this user or one of their groups
+        return ((currentUserName != null) && getAuthoritiesForUser(currentUserName).contains(PermissionService.GUEST_AUTHORITY));
+    }
+
+    public boolean isGuestAuthority(String authorityName)
+    {
+        String canonicalName = personService.getUserIdentifier(authorityName);
+        if (canonicalName == null)
+        {
+            canonicalName = authorityName;
+        }
+        
+        // Determine whether the administrator role is mapped to this user or one of their groups
+        return getAuthoritiesForUser(canonicalName).contains(PermissionService.GUEST_AUTHORITY);
+    }
+
     public Set<String> getAuthorities()
     {
         String currentUserName = AuthenticationUtil.getRunAsUser();
@@ -172,12 +202,17 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
         
         // Work out mapped roles
         
-        // Check named admin users
+        // Check named guest and admin users
         Set<String> adminUsers = this.authenticationService.getDefaultAdministratorUserNames();
-        
+        Set<String> guestUsers = this.authenticationService.getDefaultGuestUserNames();
+
+        // note: for multi-tenancy, this currently relies on a naming convention which assumes that all tenant admins will 
+        // have the same base name as the default non-tenant specific admin. Typically "admin" is the default required admin user, 
+        // although, if for example "bob" is also listed as an admin then all tenant-specific bob's will also have admin authority
         String currentUserBaseName = tenantService.getBaseNameUser(currentUserName);
         
         boolean isAdminUser = false;
+        boolean isGuestUser = false;
         if (tenantService.isEnabled())
         {
             // note: for multi-tenancy, this currently relies on a naming convention which assumes that all tenant admins will 
@@ -192,13 +227,25 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
                     break;
                 }
             }
+            if (!isAdminUser)
+            {
+                for (String guestUser : guestUsers)
+                {
+                    if (guestUser.equals(currentUserName) || tenantService.getBaseNameUser(guestUser).equals(currentUserBaseName))
+                    {
+                        isGuestUser = true;
+                        break;
+                    }
+                }
+            }
         }
         else
         {
-            isAdminUser = adminUsers.contains(currentUserName);
+            isAdminUser = (adminUsers.contains(currentUserName) || adminUsers.contains(currentUserBaseName));
+            isGuestUser = (guestUsers.contains(currentUserName) || guestUsers.contains(currentUserBaseName));
         }
         
-        // Check named admin groups
+        // Check if any of the user's groups are listed as admin groups
         if (!isAdminUser && !adminGroups.isEmpty())
         {
             for (String authority : authorities)
@@ -210,14 +257,32 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
                 }
             }
         }
+        // Check if any of the user's groups are listed as guest groups
+        if (!isAdminUser && !isGuestUser && !guestGroups.isEmpty())
+        {
+            for (String authority : authorities)
+            {
+                if (guestGroups.contains(authority) || guestGroups.contains(tenantService.getBaseNameUser(authority)))
+                {
+                    isAdminUser = true;
+                    break;
+                }
+            }
+        }
 
+        // Give admin user's the ADMINISTRATOR authorities
         if (isAdminUser)
         {
             authorities.addAll(adminSet);
         }
-        if (AuthorityType.getAuthorityType(currentUserBaseName) != AuthorityType.GUEST)
+        // Give all non-guest users the ALL authorities
+        if (!isGuestUser)
         {
            authorities.addAll(allSet);
+        }
+        else
+        {
+            authorities.addAll(guestSet);
         }
         return authorities;
     }

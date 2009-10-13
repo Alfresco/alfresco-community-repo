@@ -39,6 +39,13 @@
                 <value>ALFRESCO_ADMINISTRATORS</value>
             </set>
         </property>
+        <!--                                                                  -->
+        <!-- A list of groups with guest rights.                              -->
+        <!--                                                                  -->
+        <property name="guestGroups">
+            <set>
+            </set>
+        </property>
     </bean>
 
     <!-- Authority DAO that stores group information along with user information, -->

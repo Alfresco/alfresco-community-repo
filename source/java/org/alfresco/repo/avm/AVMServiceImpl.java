@@ -53,6 +53,7 @@ import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.FileNameValidator;
 import org.alfresco.util.Pair;
 import org.alfresco.util.TempFileProvider;
 import org.apache.commons.logging.Log;
@@ -361,7 +362,7 @@ public class AVMServiceImpl implements AVMService
      */
     public OutputStream createFile(String path, String name)
     {
-        if (path == null || name == null || !FileNameValidator.IsValid(name))
+        if (path == null || name == null || !FileNameValidator.isValid(name))
         {
             throw new AVMBadArgumentException("Illegal argument.");
         }
@@ -385,7 +386,7 @@ public class AVMServiceImpl implements AVMService
      */
     public void createFile(String path, String name, InputStream in, List<QName> aspects, Map<QName, PropertyValue> properties)
     {
-        if (path == null || name == null || in == null || !FileNameValidator.IsValid(name))
+        if (path == null || name == null || in == null || !FileNameValidator.isValid(name))
         {
             throw new AVMBadArgumentException("Illegal argument.");
         }
@@ -433,7 +434,7 @@ public class AVMServiceImpl implements AVMService
      */
     public void createDirectory(String path, String name, List<QName> aspects, Map<QName, PropertyValue> properties)
     {
-        if (path == null || name == null || !FileNameValidator.IsValid(name))
+        if (path == null || name == null || !FileNameValidator.isValid(name))
         {
             throw new AVMBadArgumentException("Illegal argument.");
         }
@@ -449,7 +450,7 @@ public class AVMServiceImpl implements AVMService
     public void createLayeredFile(String srcPath, String parent, String name)
     {
         if (srcPath == null || parent == null || name == null || 
-            !FileNameValidator.IsValid(name))
+            !FileNameValidator.isValid(name))
         {
             throw new AVMBadArgumentException("Illegal argument.");
         }
@@ -465,7 +466,7 @@ public class AVMServiceImpl implements AVMService
     public void createLayeredDirectory(String srcPath, String parent, String name)
     {
         if (srcPath == null || parent == null || name == null ||
-            !FileNameValidator.IsValid(name))
+            !FileNameValidator.isValid(name))
         {
             throw new AVMBadArgumentException("Illegal argument.");
         }
@@ -478,7 +479,7 @@ public class AVMServiceImpl implements AVMService
      */
     public void createStore(String name)
     {
-        if (name == null || !FileNameValidator.IsValid(name))
+        if (name == null || !FileNameValidator.isValid(name))
         {
             throw new AVMBadArgumentException("Bad Name.");
         }
@@ -496,7 +497,7 @@ public class AVMServiceImpl implements AVMService
             String name)
     {
         if (srcPath == null || dstPath == null || name == null ||
-            !FileNameValidator.IsValid(name))
+            !FileNameValidator.isValid(name))
         {
             throw new AVMBadArgumentException("Illegal argument.");
         }
@@ -547,7 +548,7 @@ public class AVMServiceImpl implements AVMService
             String dstName)
     {
         if (srcParent == null || srcName == null || dstParent == null || dstName == null ||
-            !FileNameValidator.IsValid(dstName))
+            !FileNameValidator.isValid(dstName))
         {
             throw new AVMBadArgumentException("Illegal argument.");
         }
@@ -1431,7 +1432,7 @@ public class AVMServiceImpl implements AVMService
                 throw new AVMBadArgumentException("Infinite Copy.");
             }
         }
-        if (!FileNameValidator.IsValid(name))
+        if (!FileNameValidator.isValid(name))
         {
             throw new AVMBadArgumentException("Illegal name.");
         }

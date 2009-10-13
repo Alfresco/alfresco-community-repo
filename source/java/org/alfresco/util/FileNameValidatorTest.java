@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -20,14 +20,14 @@
  * FLOSS exception.  You should have recieved a copy of the text describing
  * the FLOSS exception, and it is also available here:
  * http://www.alfresco.com/legal/licensing" */
-
-package org.alfresco.repo.avm;
+package org.alfresco.util;
 
 import junit.framework.TestCase;
 
 /**
  * Test File Name validation.
- * @author britt
+ * 
+ * @author Derek Hulley
  */
 public class FileNameValidatorTest extends TestCase
 {
@@ -37,7 +37,14 @@ public class FileNameValidatorTest extends TestCase
                                ":", "|" };
         for (String name : badNames)
         {
-            assertFalse(FileNameValidator.IsValid(name));
+            assertFalse(FileNameValidator.isValid(name));
         }
+    }
+    
+    public void testGetValidFileName()
+    {
+        // " * \ > < ? / : |
+        assertEquals("ABCDEFG.txt", FileNameValidator.getValidFileName("ABCDEFG.txt"));
+        assertEquals("A_B_C_D_E_F_G_H_I_J.txt", FileNameValidator.getValidFileName("A\"B*C\\D>E<F?G/H:I|J.txt"));
     }
 }

@@ -9,9 +9,6 @@
       <property name="authenticationManager">
          <ref bean="authenticationManager" />
       </property>
-      <property name="allowGuestLogin">
-         <value>${alfresco.authentication.allowGuestLogin}</value>
-      </property>
       <property name="nodeService">
          <ref bean="nodeService" />
       </property>
@@ -20,6 +17,41 @@
       </property>
       <property name="transactionService">
          <ref bean="transactionService" />
+      </property>
+      <property name="allowGuestLogin">
+         <value>${alfresco.authentication.allowGuestLogin}</value>
+      </property>
+      <!--                                                                  -->
+      <!-- A list of users with admin rights.                               -->
+      <!--                                                                  -->
+      <!-- If the security framework is case sensitive these values should  -->
+      <!-- be case sensitive user names. If the security framework is not   -->
+      <!-- case sensitive these values should be the lower-case user names. -->
+      <!--                                                                  -->
+      <!-- By default this includes:                                        -->
+      <!--    admin (the user name of default alfresco admin user)          -->
+      <!--    administrator (the windows default admin user)                -->
+      <!--                                                                  -->
+      <!-- This assumes that user names are not case sensitive.             -->
+      <!--                                                                  -->
+      <property name="adminUsers">
+         <set>
+            <value>${alfresco_user_store.adminusername}</value>
+            <value>administrator</value>
+         </set>
+      </property>
+      <!--                                                                  -->
+      <!-- A list of users acting as guests.                                -->
+      <!--                                                                  -->
+      <!-- By default this includes:                                        -->
+      <!--    guest (the user name of default alfresco guest user)          -->
+      <!--                                                                  -->
+      <!-- This assumes that user names are not case sensitive.             -->
+      <!--                                                                  -->
+      <property name="guestUsers">
+         <set>
+            <value>${alfresco_user_store.guestusername}</value>
+         </set>
       </property>
    </bean>
 

@@ -26,6 +26,7 @@ package org.alfresco.repo.admin.patch.impl;
 
 import org.alfresco.i18n.I18NUtil;
 import org.alfresco.repo.admin.patch.AbstractPatch;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
@@ -43,16 +44,9 @@ public class GuestPersonPermissionPatch extends AbstractPatch
 
     private PermissionService permissionService;
 
-    private String guestId = "guest";
-
     public GuestPersonPermissionPatch()
     {
         super();
-    }
-
-    public void setGuestId(String guestId)
-    {
-        this.guestId = guestId;
     }
 
     public void setPermissionService(PermissionService permissionService)
@@ -68,6 +62,7 @@ public class GuestPersonPermissionPatch extends AbstractPatch
     @Override
     protected String applyInternal() throws Exception
     {
+        String guestId = AuthenticationUtil.getGuestUserName();
         if (personService.personExists(guestId))
         {
             NodeRef personRef = personService.getPerson(guestId);

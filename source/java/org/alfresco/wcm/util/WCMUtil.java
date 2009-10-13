@@ -45,12 +45,12 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
+import org.alfresco.util.FileNameValidator;
 import org.alfresco.util.ParameterCheck;
 import org.alfresco.util.VirtServerUtils;
 import org.alfresco.wcm.sandbox.SandboxConstants;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
 
 /**
  * Helper methods and constants related to WCM directories, paths and store name manipulation.
@@ -351,8 +351,9 @@ public class WCMUtil
                                                final String userName)
    {
        ParameterCheck.mandatoryString("userName", userName);
+       String fixedUserName = FileNameValidator.getValidFileName(userName);
        return (WCMUtil.buildStagingStoreName(storeId) + WCMUtil.STORE_SEPARATOR + 
-               userName);
+               fixedUserName);
    }
    
    /**

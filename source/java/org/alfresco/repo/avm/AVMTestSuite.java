@@ -43,7 +43,6 @@ public class AVMTestSuite extends TestSuite
         
         suite.addTestSuite(AVMNodeConverterTest.class);
         suite.addTestSuite(AVMExpiredContentTest.class);
-        suite.addTestSuite(FileNameValidatorTest.class);
         suite.addTestSuite(AVMDeploymentAttemptCleanerTest.class);
         
         suite.addTestSuite(AVMServiceTestBase.class);

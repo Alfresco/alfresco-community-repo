@@ -732,7 +732,7 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
         String username = user.getUsername();
         auths.add(username);
 
-        if (tenantService.getBaseNameUser(username).equalsIgnoreCase(PermissionService.GUEST_AUTHORITY))
+        if (tenantService.getBaseNameUser(username).equalsIgnoreCase(AuthenticationUtil.getGuestUserName()))
         {
             auths.add(PermissionService.GUEST_AUTHORITY);
         }

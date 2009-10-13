@@ -59,6 +59,8 @@ public class SimpleAuthorityServiceImpl implements AuthorityService
     private Set<String> adminUsers;
 
     private AuthenticationContext authenticationContext;
+
+    private Set<String> guestUsers;
     
     private TenantService tenantService;
     
@@ -84,10 +86,6 @@ public class SimpleAuthorityServiceImpl implements AuthorityService
     }
     
 
-    /**
-     * Currently the admin authority is granted only to the ALFRESCO_ADMIN_USER
-     * user.
-     */
     public boolean hasAdminAuthority()
     {
         String currentUserName = authenticationContext.getCurrentUserName();
@@ -99,9 +97,6 @@ public class SimpleAuthorityServiceImpl implements AuthorityService
         return ((currentUserName != null) && (adminUsers.contains(currentUserName) || adminUsers.contains(tenantService.getBaseNameUser(currentUserName))));
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.security.AuthorityService#isAdminAuthority(java.lang.String)
-     */
     public boolean isAdminAuthority(String authorityName)
     {
         String canonicalName = personService.getUserIdentifier(authorityName);
@@ -110,6 +105,26 @@ public class SimpleAuthorityServiceImpl implements AuthorityService
             canonicalName = authorityName;
         }
         return adminUsers.contains(canonicalName);
+    }
+
+    public boolean hasGuestAuthority()
+    {
+        String currentUserName = authenticationContext.getCurrentUserName();
+
+        // note: for MT, this currently relies on a naming convention which assumes that all tenant admins will 
+        // have the same base name as the default non-tenant specific guest. 
+
+        return ((currentUserName != null) && (guestUsers.contains(currentUserName) || guestUsers.contains(tenantService.getBaseNameUser(currentUserName))));
+    }
+
+    public boolean isGuestAuthority(String authorityName)
+    {
+        String canonicalName = personService.getUserIdentifier(authorityName);
+        if (canonicalName == null)
+        {
+            canonicalName = authorityName;
+        }
+        return guestUsers.contains(canonicalName);
     }
 
     // IOC
@@ -124,6 +139,11 @@ public class SimpleAuthorityServiceImpl implements AuthorityService
         this.adminUsers = adminUsers;
     }
  
+    public void setGuestUsers(Set<String> guestUsers)
+    {
+        this.guestUsers = guestUsers;
+    }
+ 
     public Set<String> getAuthorities()
     {
         Set<String> authorities = new HashSet<String>();
@@ -132,9 +152,9 @@ public class SimpleAuthorityServiceImpl implements AuthorityService
         {
             authorities.addAll(adminSet);
         }
-        if(AuthorityType.getAuthorityType(currentUserName) != AuthorityType.GUEST)
+        else if (!guestUsers.contains(currentUserName))
         {
-           authorities.addAll(allSet);
+            authorities.addAll(allSet);
         }
         return authorities;
     }

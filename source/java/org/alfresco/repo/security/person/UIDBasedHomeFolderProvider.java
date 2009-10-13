@@ -25,10 +25,13 @@
 package org.alfresco.repo.security.person;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.model.FileNotFoundException;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
+import org.alfresco.util.FileNameValidator;
 
 /**
  * Create home spaces based on the UID of the user.
@@ -55,42 +58,51 @@ public class UIDBasedHomeFolderProvider extends ExistingPathBasedHomeFolderProvi
 
     protected HomeSpaceNodeRef getHomeFolder(NodeRef person)
     {
-        NodeRef existingHomeFolder = DefaultTypeConverter.INSTANCE.convert(NodeRef.class, getServiceRegistry()
-                .getNodeService().getProperty(person, ContentModel.PROP_HOMEFOLDER));
+        FileFolderService fileFolderService = getServiceRegistry().getFileFolderService();
+        NodeService nodeService = getServiceRegistry().getNodeService();
+
+        NodeRef existingHomeFolder = DefaultTypeConverter.INSTANCE.convert(
+                NodeRef.class, nodeService.getProperty(person, ContentModel.PROP_HOMEFOLDER));
         if (existingHomeFolder == null)
         {
-            String uid = DefaultTypeConverter.INSTANCE.convert(String.class, getServiceRegistry().getNodeService()
-                    .getProperty(person, ContentModel.PROP_USERNAME));
+            String uid = DefaultTypeConverter.INSTANCE.convert(
+                    String.class,
+                    nodeService.getProperty(person, ContentModel.PROP_USERNAME));
             
             if((uid == null) || (uid.length() == 0))
             {
                 throw new PersonException("Can not create a home space when the uid is null or empty");
             }
             
+            // ETHREEOH-1612: Convert the username to file- and folder-safe names
+            String homeFolderName = FileNameValidator.getValidFileName(uid);
+            
             FileInfo fileInfo;
 
             // Test if it already exists
 
-            NodeRef exising = getServiceRegistry().getFileFolderService().searchSimple(getPathNodeRef(), uid);
+            NodeRef exising = fileFolderService.searchSimple(getPathNodeRef(), homeFolderName);
             if (exising != null)
             {
-                fileInfo = getServiceRegistry().getFileFolderService().getFileInfo(exising);
+                fileInfo = fileFolderService.getFileInfo(exising);
             }
             else
             {
-
                 if (templatePath == null)
                 {
-                    fileInfo = getServiceRegistry().getFileFolderService().create(getPathNodeRef(), uid,
+                    fileInfo = fileFolderService.create(
+                            getPathNodeRef(),
+                            homeFolderName,
                             ContentModel.TYPE_FOLDER);
-
                 }
                 else
                 {
                     try
                     {
-                        fileInfo = getServiceRegistry().getFileFolderService().copy(getTemplateNodeRef(),
-                                getPathNodeRef(), uid);
+                        fileInfo = fileFolderService.copy(
+                                getTemplateNodeRef(),
+                                getPathNodeRef(),
+                                homeFolderName);
                     }
                     catch (FileNotFoundException e)
                     {

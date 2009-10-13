@@ -28,10 +28,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 
-import org.alfresco.service.cmr.security.AuthenticationService;
-import org.alfresco.service.cmr.security.PermissionService;
-
 import junit.framework.TestCase;
+
+import org.alfresco.service.cmr.security.AuthenticationService;
 
 public class ChainingAuthenticationServiceTest extends TestCase
 {
@@ -73,6 +72,12 @@ public class ChainingAuthenticationServiceTest extends TestCase
     protected void setUp() throws Exception
     {
         super.setUp();
+        
+        AuthenticationUtil authUtil = new AuthenticationUtil();
+        authUtil.setDefaultAdminUserName("admin");
+        authUtil.setDefaultGuestUserName("guest");
+        authUtil.afterPropertiesSet();
+        
         service1 = new TestAuthenticationServiceImpl(ALFRESCO, true, true, true, false);
         service1.createAuthentication("andy", "andy".toCharArray());
 
@@ -174,7 +179,7 @@ public class ChainingAuthenticationServiceTest extends TestCase
         ases.add(service2);
         as.setAuthenticationServices(ases);
         as.authenticateAsGuest();
-        assertEquals(as.getCurrentUserName(), PermissionService.GUEST_AUTHORITY);
+        assertEquals(as.getCurrentUserName(), AuthenticationUtil.getGuestUserName());
         as.clearCurrentSecurityContext();
         assertNull(as.getCurrentUserName());
     }
@@ -581,7 +586,7 @@ public class ChainingAuthenticationServiceTest extends TestCase
         ases.add(service6);
         as.setAuthenticationServices(ases);
         as.authenticateAsGuest();
-        assertEquals(as.getCurrentUserName(), PermissionService.GUEST_AUTHORITY);
+        assertEquals(as.getCurrentUserName(), AuthenticationUtil.getGuestUserName());
         as.clearCurrentSecurityContext();
         assertNull(as.getCurrentUserName());
     }

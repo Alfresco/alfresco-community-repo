@@ -39,6 +39,7 @@ import org.alfresco.i18n.I18NUtil;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.node.MLPropertyInterceptor;
 import org.alfresco.repo.policy.BehaviourFilter;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.ml.ContentFilterLanguagesService;
 import org.alfresco.service.cmr.ml.MultilingualContentService;
 import org.alfresco.service.cmr.model.FileExistsException;
@@ -147,7 +148,7 @@ public class MultilingualContentServiceImpl implements MultilingualContentServic
                 PermissionService.ALL_PERMISSIONS, true);
         permissionService.setPermission(
                 mlContainerNodeRef,
-                PermissionService.GUEST_AUTHORITY,
+                AuthenticationUtil.getGuestUserName(),
                 PermissionService.ALL_PERMISSIONS, true);
         // Done
         return mlContainerNodeRef;

@@ -29,7 +29,6 @@ import java.util.Set;
 
 import org.alfresco.repo.management.subsystems.ActivateableBean;
 import org.alfresco.repo.security.authentication.AuthenticationComponent.UserNameValidationMode;
-import org.alfresco.service.cmr.security.PermissionService;
 
 public class AuthenticationServiceImpl extends AbstractAuthenticationService implements ActivateableBean
 {
@@ -118,7 +117,6 @@ public class AuthenticationServiceImpl extends AbstractAuthenticationService imp
         authenticationDao.setEnabled(userName, enabled);
     }
 
-    @SuppressWarnings("unchecked")
     public void authenticate(String userName, char[] password) throws AuthenticationException
     {
         try
@@ -211,13 +209,13 @@ public class AuthenticationServiceImpl extends AbstractAuthenticationService imp
         return authenticationComponent.isSystemUserName(getCurrentUserName());
     }
 
-    @SuppressWarnings("unchecked")
     public void authenticateAsGuest() throws AuthenticationException
     {
-        preAuthenticationCheck(PermissionService.GUEST_AUTHORITY);
+        preAuthenticationCheck(AuthenticationUtil.getGuestUserName());
         authenticationComponent.setGuestUserAsCurrentUser();
+        String guestUser = authenticationComponent.getCurrentUserName();
         ticketComponent.clearCurrentTicket();
-        ticketComponent.getCurrentTicket(PermissionService.GUEST_AUTHORITY); // to ensure new ticket is created (even if client does not explicitly call getCurrentTicket)
+        ticketComponent.getCurrentTicket(guestUser); // to ensure new ticket is created (even if client does not explicitly call getCurrentTicket)
     }
     
     public boolean guestUserAuthenticationAllowed()
@@ -312,12 +310,19 @@ public class AuthenticationServiceImpl extends AbstractAuthenticationService imp
         return Collections.singleton(ticketComponent);
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.service.cmr.security.AuthenticationService#getDefaultAdministratorUserNames()
+    /**
+     * {@inheritDoc}
      */
     public Set<String> getDefaultAdministratorUserNames()
     {
         return authenticationComponent.getDefaultAdministratorUserNames();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public Set<String> getDefaultGuestUserNames()
+    {
+        return authenticationComponent.getDefaultGuestUserNames();
     }
 }

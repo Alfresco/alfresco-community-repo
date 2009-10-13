@@ -91,8 +91,8 @@ public abstract class AbstractChainingAuthenticationService extends AbstractAuth
 
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.security.AuthenticationService#setAuthentication(java.lang.String, char[])
+    /**
+     * {@inheritDoc}
      */
     public void setAuthentication(String userName, char[] newPassword) throws AuthenticationException
     {
@@ -104,8 +104,8 @@ public abstract class AbstractChainingAuthenticationService extends AbstractAuth
         getMutableAuthenticationService().setAuthentication(userName, newPassword);
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.security.AuthenticationService#deleteAuthentication(java.lang.String)
+    /**
+     * {@inheritDoc}
      */
     public void deleteAuthentication(String userName) throws AuthenticationException
     {
@@ -118,8 +118,8 @@ public abstract class AbstractChainingAuthenticationService extends AbstractAuth
 
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.security.AuthenticationService#setAuthenticationEnabled(java.lang.String, boolean)
+    /**
+     * {@inheritDoc}
      */
     public void setAuthenticationEnabled(String userName, boolean enabled) throws AuthenticationException
     {
@@ -131,8 +131,8 @@ public abstract class AbstractChainingAuthenticationService extends AbstractAuth
         getMutableAuthenticationService().setAuthenticationEnabled(userName, enabled);
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.security.AuthenticationService#getAuthenticationEnabled(java.lang.String)
+    /**
+     * {@inheritDoc}
      */
     public boolean getAuthenticationEnabled(String userName) throws AuthenticationException
     {
@@ -153,8 +153,8 @@ public abstract class AbstractChainingAuthenticationService extends AbstractAuth
         return false;
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.security.AuthenticationService#authenticate(java.lang.String, char[])
+    /**
+     * {@inheritDoc}
      */
     public void authenticate(String userName, char[] password) throws AuthenticationException
     {
@@ -175,8 +175,8 @@ public abstract class AbstractChainingAuthenticationService extends AbstractAuth
 
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.security.AuthenticationService#authenticateAsGuest()
+    /**
+     * {@inheritDoc}
      */
     public void authenticateAsGuest() throws AuthenticationException
     {
@@ -196,8 +196,8 @@ public abstract class AbstractChainingAuthenticationService extends AbstractAuth
         throw new AuthenticationException("Guest authentication not supported");
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.security.AuthenticationService#guestUserAuthenticationAllowed()
+    /**
+     * {@inheritDoc}
      */
     public boolean guestUserAuthenticationAllowed()
     {
@@ -212,8 +212,8 @@ public abstract class AbstractChainingAuthenticationService extends AbstractAuth
         return false;
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.security.AuthenticationService#authenticationExists(java.lang.String)
+    /**
+     * {@inheritDoc}
      */
     public boolean authenticationExists(String userName)
     {
@@ -228,8 +228,8 @@ public abstract class AbstractChainingAuthenticationService extends AbstractAuth
         return false;
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.security.AuthenticationService#getCurrentUserName()
+    /**
+     * {@inheritDoc}
      */
     public String getCurrentUserName() throws AuthenticationException
     {
@@ -247,8 +247,8 @@ public abstract class AbstractChainingAuthenticationService extends AbstractAuth
         return null;
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.security.AuthenticationService#invalidateUserSession(java.lang.String)
+    /**
+     * {@inheritDoc}
      */
     public void invalidateUserSession(String userName) throws AuthenticationException
     {
@@ -268,8 +268,8 @@ public abstract class AbstractChainingAuthenticationService extends AbstractAuth
 
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.security.AuthenticationService#invalidateTicket(java.lang.String)
+    /**
+     * {@inheritDoc}
      */
     public void invalidateTicket(String ticket) throws AuthenticationException
     {
@@ -289,8 +289,8 @@ public abstract class AbstractChainingAuthenticationService extends AbstractAuth
 
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.security.AuthenticationService#validate(java.lang.String)
+    /**
+     * {@inheritDoc}
      */
     public void validate(String ticket) throws AuthenticationException
     {
@@ -310,8 +310,8 @@ public abstract class AbstractChainingAuthenticationService extends AbstractAuth
 
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.security.AuthenticationService#getCurrentTicket()
+    /**
+     * {@inheritDoc}
      */
     public String getCurrentTicket()
     {
@@ -329,8 +329,8 @@ public abstract class AbstractChainingAuthenticationService extends AbstractAuth
         return null;
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.security.AuthenticationService#getNewTicket()
+    /**
+     * {@inheritDoc}
      */
     public String getNewTicket()
     {
@@ -348,8 +348,8 @@ public abstract class AbstractChainingAuthenticationService extends AbstractAuth
         return null;
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.security.AuthenticationService#clearCurrentSecurityContext()
+    /**
+     * {@inheritDoc}
      */
     public void clearCurrentSecurityContext()
     {
@@ -369,8 +369,8 @@ public abstract class AbstractChainingAuthenticationService extends AbstractAuth
 
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.security.AuthenticationService#isCurrentUserTheSystemUser()
+    /**
+     * {@inheritDoc}
      */
     public boolean isCurrentUserTheSystemUser()
     {
@@ -388,8 +388,8 @@ public abstract class AbstractChainingAuthenticationService extends AbstractAuth
         return false;
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.security.AuthenticationService#getDomains()
+    /**
+     * {@inheritDoc}
      */
     public Set<String> getDomains()
     {
@@ -401,8 +401,8 @@ public abstract class AbstractChainingAuthenticationService extends AbstractAuth
         return domains;
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.security.AuthenticationService#getDomainsThatAllowUserCreation()
+    /**
+     * {@inheritDoc}
      */
     public Set<String> getDomainsThatAllowUserCreation()
     {
@@ -414,8 +414,8 @@ public abstract class AbstractChainingAuthenticationService extends AbstractAuth
         return domains;
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.security.AuthenticationService#getDomainsThatAllowUserDeletion()
+    /**
+     * {@inheritDoc}
      */
     public Set<String> getDomainsThatAllowUserDeletion()
     {
@@ -427,8 +427,8 @@ public abstract class AbstractChainingAuthenticationService extends AbstractAuth
         return domains;
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.security.AuthenticationService#getDomiansThatAllowUserPasswordChanges()
+    /**
+     * {@inheritDoc}
      */
     public Set<String> getDomiansThatAllowUserPasswordChanges()
     {
@@ -440,8 +440,8 @@ public abstract class AbstractChainingAuthenticationService extends AbstractAuth
         return domains;
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.security.authentication.AbstractAuthenticationService#getUsersWithTickets(boolean)
+    /**
+     * {@inheritDoc}
      */
     @Override
     public Set<String> getUsersWithTickets(boolean nonExpiredOnly)
@@ -457,8 +457,8 @@ public abstract class AbstractChainingAuthenticationService extends AbstractAuth
         return users;
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.security.authentication.AbstractAuthenticationService#countTickets(boolean)
+    /**
+     * {@inheritDoc}
      */
     @Override
     public int countTickets(boolean nonExpiredOnly)
@@ -471,8 +471,8 @@ public abstract class AbstractChainingAuthenticationService extends AbstractAuth
         return count;
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.security.authentication.AbstractAuthenticationService#invalidateTickets(boolean)
+    /**
+     * {@inheritDoc}
      */
     @Override
     public int invalidateTickets(boolean nonExpiredOnly)
@@ -488,8 +488,8 @@ public abstract class AbstractChainingAuthenticationService extends AbstractAuth
         return count;
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.security.authentication.AbstractAuthenticationService#getTicketComponents()
+    /**
+     * {@inheritDoc}
      */
     @Override
     public Set<TicketComponent> getTicketComponents()
@@ -505,8 +505,8 @@ public abstract class AbstractChainingAuthenticationService extends AbstractAuth
         return tcs;
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.security.AuthenticationService#getDefaultAdministratorUserNames()
+    /**
+     * {@inheritDoc}
      */
     public Set<String> getDefaultAdministratorUserNames()
     {
@@ -516,6 +516,19 @@ public abstract class AbstractChainingAuthenticationService extends AbstractAuth
             defaultAdministratorUserNames.addAll(authService.getDefaultAdministratorUserNames());
         }
         return defaultAdministratorUserNames;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public Set<String> getDefaultGuestUserNames()
+    {
+        Set<String> defaultGuestUserNames = new TreeSet<String>();
+        for (AuthenticationService authService : getUsableAuthenticationServices())
+        {
+            defaultGuestUserNames.addAll(authService.getDefaultGuestUserNames());
+        }
+        return defaultGuestUserNames;
     }
 
 }

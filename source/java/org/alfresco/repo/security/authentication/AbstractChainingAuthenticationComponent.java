@@ -144,9 +144,8 @@ public abstract class AbstractChainingAuthenticationComponent extends AbstractAu
         throw new AuthenticationException("Failed to set current user " + userName);
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.repo.security.authentication.AbstractAuthenticationComponent#getDefaultAdministratorUserNames()
+    /**
+     * {@inheritDoc}
      */
     @Override
     public Set<String> getDefaultAdministratorUserNames()
@@ -157,6 +156,20 @@ public abstract class AbstractChainingAuthenticationComponent extends AbstractAu
             defaultAdministratorUserNames.addAll(authComponent.getDefaultAdministratorUserNames());
         }
         return defaultAdministratorUserNames;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Set<String> getDefaultGuestUserNames()
+    {
+        Set<String> defaultGuestUserNames = new TreeSet<String>();
+        for (AuthenticationComponent authComponent : getUsableAuthenticationComponents())
+        {
+            defaultGuestUserNames.addAll(authComponent.getDefaultGuestUserNames());
+        }
+        return defaultGuestUserNames;
     }
 
 }

@@ -99,7 +99,7 @@ public class AuthenticationUtil implements InitializingBean
         return AuthenticationUtil.mtEnabled;
     }
 
-    private AuthenticationUtil()
+    public AuthenticationUtil()
     {
         super();
     }
@@ -116,10 +116,10 @@ public class AuthenticationUtil implements InitializingBean
             gas[0] = new GrantedAuthorityImpl("ROLE_SYSTEM");
             ud = new User(SYSTEM_USER_NAME, "", true, true, true, true, gas);
         }
-        else if (userName.equalsIgnoreCase(PermissionService.GUEST_AUTHORITY))
+        else if (userName.equalsIgnoreCase(getGuestUserName()))
         {
             GrantedAuthority[] gas = new GrantedAuthority[0];
-            ud = new User(PermissionService.GUEST_AUTHORITY.toLowerCase(), "", true, true, true, true, gas);
+            ud = new User(getGuestUserName().toLowerCase(), "", true, true, true, true, gas);
         }
         else
         {
@@ -451,6 +451,14 @@ public class AuthenticationUtil implements InitializingBean
             throw new IllegalStateException("AuthenticationUtil not yet initialised; default guest username not available");
         }
         return defaultGuestUserName;
+    }
+    
+    /**
+     * Get the name of the guest role
+     */
+    public static String getGuestRoleName()
+    {
+        return PermissionService.GUEST_AUTHORITY;
     }
 
     /**

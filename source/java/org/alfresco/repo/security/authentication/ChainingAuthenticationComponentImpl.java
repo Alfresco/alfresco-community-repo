@@ -163,6 +163,14 @@ public class ChainingAuthenticationComponentImpl extends AbstractChainingAuthent
     }
 
     /**
+     * Get the guest user name
+     */
+    public String getGuestUserName()
+    {
+        return AuthenticationUtil.getGuestUserName();
+    }
+
+    /**
      * Get the MD4 password hash
      */
     public String getMD4HashedPassword(String userName)

@@ -24,13 +24,9 @@
  */
 package org.alfresco.repo.model.ml.tools;
 
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-
-import net.sf.acegisecurity.Authentication;
 
 import org.alfresco.i18n.I18NUtil;
 import org.alfresco.model.ContentModel;
@@ -237,7 +233,7 @@ public class MultilingualContentServiceImplTest extends AbstractMultilingualTest
         AuthenticationComponent authenticationComponent = (AuthenticationComponent) ctx.getBean("authenticationComponent");
         permissionService.setPermission(
                 folderNodeRef,
-                PermissionService.GUEST_AUTHORITY,
+                AuthenticationUtil.getGuestUserName(),
                 PermissionService.ALL_PERMISSIONS,
                 true);
         // Get the current authentication
@@ -267,7 +263,7 @@ public class MultilingualContentServiceImplTest extends AbstractMultilingualTest
         AuthenticationComponent authenticationComponent = (AuthenticationComponent) ctx.getBean("authenticationComponent");
         permissionService.setPermission(
                 folderNodeRef,
-                PermissionService.GUEST_AUTHORITY,
+                AuthenticationUtil.getGuestUserName(),
                 PermissionService.ALL_PERMISSIONS,
                 true);
         // Push the current authentication

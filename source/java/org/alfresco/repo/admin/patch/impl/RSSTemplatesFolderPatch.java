@@ -37,6 +37,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.admin.patch.AbstractPatch;
 import org.alfresco.repo.importer.ACPImportPackageHandler;
 import org.alfresco.repo.importer.ImporterBootstrap;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.admin.PatchException;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -231,7 +232,7 @@ public class RSSTemplatesFolderPatch extends AbstractPatch
             // apply Guest permission to the folder
             permissionService.setPermission(
                 rssFolderNodeRef,
-                PermissionService.GUEST_AUTHORITY,
+                AuthenticationUtil.getGuestUserName(),
                 PermissionService.CONSUMER,
                 true);
             
@@ -244,6 +245,11 @@ public class RSSTemplatesFolderPatch extends AbstractPatch
         else
         {
             // it already exists
+            permissionService.setPermission(
+                    rssFolderNodeRef,
+                    AuthenticationUtil.getGuestUserName(),
+                    PermissionService.CONSUMER,
+                    true);
             msg = I18NUtil.getMessage(MSG_EXISTS, rssFolderNodeRef);
         }
         // done

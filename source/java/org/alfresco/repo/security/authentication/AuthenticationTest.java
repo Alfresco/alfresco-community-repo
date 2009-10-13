@@ -342,16 +342,15 @@ public class AuthenticationTest extends TestCase
     
     public void testGuest()
     {
-        authenticationService.authenticate("GUEST", "".toCharArray());
+        authenticationService.authenticate(AuthenticationUtil.getGuestUserName(), "".toCharArray());
     }
 
     public void testCreateUsers()
     {
-        authenticationService.createAuthentication("GUEST", "".toCharArray());
-        authenticationService.authenticate("GUEST", "".toCharArray());
-        // Guest is reported as lower case and the authentication basically
-        // ignored at the moment
-        assertEquals("guest", authenticationService.getCurrentUserName());
+        authenticationService.createAuthentication(AuthenticationUtil.getGuestUserName(), "".toCharArray());
+        authenticationService.authenticate(AuthenticationUtil.getGuestUserName(), "".toCharArray());
+        // Guest is treated like any other user
+        assertEquals(AuthenticationUtil.getGuestUserName(), authenticationService.getCurrentUserName());
 
         authenticationService.createAuthentication("Andy", "".toCharArray());
         authenticationService.authenticate("Andy", "".toCharArray());

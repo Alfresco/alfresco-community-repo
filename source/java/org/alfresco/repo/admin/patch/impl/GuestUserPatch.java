@@ -34,15 +34,13 @@ import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.admin.patch.AbstractPatch;
 import org.alfresco.repo.importer.ImporterBootstrap;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.admin.PatchException;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
-import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.springframework.context.MessageSource;
 
@@ -66,17 +64,9 @@ public class GuestUserPatch extends AbstractPatch
 
     private PersonService personService;
 
-    private NodeService nodeService;
-
-    private SearchService searchService;
-
     private PermissionService permissionService;
 
     private ImporterBootstrap importerBootstrap;
-
-    private NamespaceService namespaceService;
-
-    private String guestId = "guest";
 
     private MessageSource messageSource;
 
@@ -85,24 +75,9 @@ public class GuestUserPatch extends AbstractPatch
         super();
     }
 
-    public void setGuestId(String guestId)
-    {
-        this.guestId = guestId;
-    }
-
     public void setImporterBootstrap(ImporterBootstrap importerBootstrap)
     {
         this.importerBootstrap = importerBootstrap;
-    }
-
-    public void setNamespaceService(NamespaceService namespaceService)
-    {
-        this.namespaceService = namespaceService;
-    }
-
-    public void setNodeService(NodeService nodeService)
-    {
-        this.nodeService = nodeService;
     }
 
     public void setPermissionService(PermissionService permissionService)
@@ -113,11 +88,6 @@ public class GuestUserPatch extends AbstractPatch
     public void setPersonService(PersonService personService)
     {
         this.personService = personService;
-    }
-
-    public void setSearchService(SearchService searchService)
-    {
-        this.searchService = searchService;
     }
 
     public void setMessageSource(MessageSource messageSource)
@@ -169,6 +139,7 @@ public class GuestUserPatch extends AbstractPatch
 
     private void addGuestUser(NodeRef guestHomeRef)
     {
+        String guestId = AuthenticationUtil.getGuestUserName();
         if (!personService.personExists(guestId))
         {
             HashMap<QName, Serializable> properties = new HashMap<QName, Serializable>();
@@ -245,6 +216,7 @@ public class GuestUserPatch extends AbstractPatch
 
     private void setGuestHomePermissions(NodeRef nodeRef)
     {
+        String guestId = AuthenticationUtil.getGuestUserName();
         permissionService.setInheritParentPermissions(nodeRef, false);
         permissionService.setPermission(nodeRef, PermissionService.ALL_AUTHORITIES, PermissionService.CONSUMER, true);
         permissionService.setPermission(nodeRef, guestId, PermissionService.CONSUMER, true);

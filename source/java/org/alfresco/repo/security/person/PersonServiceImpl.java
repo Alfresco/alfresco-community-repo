@@ -302,6 +302,7 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
         }
         else
         {
+            makeHomeFolderIfRequired(personNode);
             return personNode;
         }
     }
@@ -329,7 +330,6 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
             // add to cache
             this.personCache.put(searchUserName, returnRef);
         }
-        makeHomeFolderIfRequired(returnRef);
         return returnRef;
     }
 
@@ -531,10 +531,10 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
             {
                 throw new PersonException("No person found for user name " + userName);
             }
-
         }
         else
         {
+            makeHomeFolderIfRequired(personNode);
             String realUserName = DefaultTypeConverter.INSTANCE.convert(String.class, nodeService.getProperty(personNode, ContentModel.PROP_USERNAME));
             properties.put(ContentModel.PROP_USERNAME, realUserName);
         }

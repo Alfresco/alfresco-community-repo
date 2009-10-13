@@ -30,6 +30,7 @@ import org.alfresco.i18n.I18NUtil;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.admin.patch.AbstractPatch;
 import org.alfresco.repo.importer.ImporterBootstrap;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.admin.PatchException;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -89,7 +90,7 @@ public class SpacesStoreGuestPermissionPatch extends AbstractPatch
             logger.debug("Store Ref:" + store + " NodeRef: " + rootRef);
         }
         permissionService.setPermission(
-                rootRef, PermissionService.GUEST_AUTHORITY, PermissionService.READ, true);
+                rootRef, AuthenticationUtil.getGuestUserName(), PermissionService.READ, true);
         
         String sysQName = importerBootstrap.getConfiguration().getProperty("system.system_container.childname");
         String catQName = "cm:categoryRoot";
@@ -107,7 +108,7 @@ public class SpacesStoreGuestPermissionPatch extends AbstractPatch
             else if (ref.getQName().equals(QName.createQName(catQName, namespaceService)))
             {
                 // found cm:categoryRoot node
-                permissionService.clearPermission(ref.getChildRef(), PermissionService.GUEST_AUTHORITY);
+                permissionService.clearPermission(ref.getChildRef(), AuthenticationUtil.getGuestUserName());
             }
         }
         

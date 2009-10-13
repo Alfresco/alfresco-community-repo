@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -63,6 +63,8 @@ public abstract class AbstractAuthenticationComponent implements AuthenticationC
     private Boolean allowGuestLogin = null;
 
     private Set<String> defaultAdministratorUserNames = Collections.emptySet();
+
+    private Set<String> defaultGuestUserNames = Collections.emptySet();
 
     private AuthenticationContext authenticationContext;
     
@@ -141,6 +143,10 @@ public abstract class AbstractAuthenticationComponent implements AuthenticationC
         if (logger.isDebugEnabled())
         {
             logger.debug("Authenticating user \"" + userName + '"');
+        }
+        if (userName == null)
+        {
+            throw new AuthenticationException("Null user name");
         }
         // Support guest login from the login screen
         if (isGuestUserName(userName))
@@ -498,9 +504,8 @@ public abstract class AbstractAuthenticationComponent implements AuthenticationC
         }
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.repo.security.authentication.AuthenticationComponent#getDefaultAdministratorUserNames()
+    /**
+     * {@inheritDoc}
      */
     public Set<String> getDefaultAdministratorUserNames()
     {
@@ -531,6 +536,40 @@ public abstract class AbstractAuthenticationComponent implements AuthenticationC
             nameSet.addAll(Arrays.asList(defaultAdministratorUserNames.split(",")));
         }
         setDefaultAdministratorUserNames(nameSet);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public Set<String> getDefaultGuestUserNames()
+    {
+        return this.defaultGuestUserNames;
+    }
+
+    /**
+     * Sets the user names who for this particular authentication system should be considered administrators by default.
+     * 
+     * @param defaultAdministratorUserNames
+     *            a set of user names
+     */
+    public void setDefaultGuestUserNames(Set<String> defaultGuestUserNames)
+    {
+        this.defaultGuestUserNames = defaultGuestUserNames;
+    }
+    
+    /**
+     * Convenience method to allow the administrator user names to be specified as a comma separated list
+     * 
+     * @param defaultAdministratorUserNames
+     */
+    public void setDefaultGuestUserNameList(String defaultGuestUserNames)
+    {
+        Set<String> nameSet = new TreeSet<String>();
+        if (defaultGuestUserNames.length() > 0)
+        {
+            nameSet.addAll(Arrays.asList(defaultGuestUserNames.split(",")));
+        }
+        setDefaultGuestUserNames(nameSet);
     }
 
     public String getSystemUserName(String tenantDomain)

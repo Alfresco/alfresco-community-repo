@@ -201,7 +201,6 @@
    <!--  Unsupported experimental extractor commented out -->
    <!-- <bean id="extracter.MP3"           class="org.alfresco.repo.content.metadata.MP3MetadataExtracter"           parent="baseMetadataExtracter" /> -->
    <bean id="extracter.OpenDocument"  class="org.alfresco.repo.content.metadata.OpenDocumentMetadataExtracter"  parent="baseMetadataExtracter" />
-   
    <bean id="extracter.RFC822"        class="org.alfresco.repo.content.metadata.RFC822MetadataExtracter"        parent="baseMetadataExtracter" >
       <property name="supportedDateFormats">
          <list>
@@ -209,20 +208,9 @@
          </list>
       </property>
    </bean>
-   
    <bean id="extracter.OpenOffice" class="org.alfresco.repo.content.metadata.OpenOfficeMetadataExtracter" parent="baseMetadataExtracter">
       <property name="worker">
          <ref bean="extracter.worker.OpenOffice" />
-      </property>
-      <property name="supportedMimetypes">
-         <list>
-            <value>application/msword</value>
-            <value>application/vnd.excel</value>
-            <value>application/vnd.powerpoint</value>
-            <value>application/vnd.openxmlformats-officedocument.wordprocessingml.document</value>
-            <value>application/vnd.openxmlformats-officedocument.spreadsheetml.sheet</value>
-            <value>application/vnd.openxmlformats-officedocument.presentationml.presentation</value>
-         </list>
       </property>
    </bean>
 

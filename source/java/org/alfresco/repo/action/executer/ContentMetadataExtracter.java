@@ -25,6 +25,7 @@
 package org.alfresco.repo.action.executer;
 
 import java.io.Serializable;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -179,6 +180,7 @@ public class ContentMetadataExtracter extends ActionExecuterAbstractBase
                         "   Content:   " + reader + "\n" +
                         "   Failure:   " + e.getMessage());
             }
+            modifiedProperties = new HashMap<QName, Serializable>(0);
         }
 
         // If none of the properties where changed, then there is nothing more to do

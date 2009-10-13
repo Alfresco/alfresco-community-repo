@@ -104,6 +104,10 @@ public class MimetypeMap implements MimetypeService
     public static final String MIMETYPE_OPENOFFICE1_CALC = "application/vnd.sun.xml.calc";
     public static final String MIMETYPE_OPENOFFICE1_DRAW = "application/vnd.sun.xml.draw";
     public static final String MIMETYPE_OPENOFFICE1_IMPRESS = "application/vnd.sun.xml.impress";
+    // Open XML
+    public static final String MIMETYPE_OPENXML_WORDPROCESSING = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+    public static final String MIMETYPE_OPENXML_SPREADSHEET = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+    public static final String MIMETYPE_OPENXML_PRESENTATION = "application/vnd.openxmlformats-officedocument.presentationml.presentation";
     // Star Office
     public static final String MIMETYPE_STAROFFICE5_DRAW = "application/vnd.stardivision.draw";
     public static final String MIMETYPE_STAROFFICE5_CALC = "application/vnd.stardivision.calc";

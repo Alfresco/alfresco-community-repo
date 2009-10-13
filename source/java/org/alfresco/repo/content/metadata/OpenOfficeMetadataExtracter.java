@@ -47,7 +47,10 @@ public class OpenOfficeMetadataExtracter extends AbstractMappingMetadataExtracte
         MimetypeMap.MIMETYPE_STAROFFICE5_WRITER,
         MimetypeMap.MIMETYPE_STAROFFICE5_IMPRESS,
         MimetypeMap.MIMETYPE_OPENOFFICE1_WRITER,
-        MimetypeMap.MIMETYPE_OPENOFFICE1_IMPRESS
+        MimetypeMap.MIMETYPE_OPENOFFICE1_IMPRESS,
+        MimetypeMap.MIMETYPE_OPENXML_WORDPROCESSING,
+        MimetypeMap.MIMETYPE_OPENXML_SPREADSHEET,
+        MimetypeMap.MIMETYPE_OPENXML_PRESENTATION
     };
 
     private OpenOfficeMetadataWorker worker;

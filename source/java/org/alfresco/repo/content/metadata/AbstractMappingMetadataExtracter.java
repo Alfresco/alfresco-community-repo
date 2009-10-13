@@ -645,9 +645,22 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
         }
         catch (Throwable e)
         {
-            throw new ContentIOException("Metadata extraction failed: \n" +
-                    "   reader: " + reader,
-                    e);
+            if (logger.isDebugEnabled())
+            {
+                logger.debug(
+                        "Metadata extraction failed: \n" +
+                        "   Extracter: " + this + "\n" +
+                        "   Content:   " + reader,
+                        e);
+            }
+            else
+            {
+                logger.warn(
+                        "Metadata extraction failed (turn on DEBUG for full error): \n" +
+                        "   Extracter: " + this + "\n" +
+                        "   Content:   " + reader + "\n" +
+                        "   Failure:   " + e.getMessage());
+            }
         }
         finally
         {
@@ -657,6 +670,11 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
                 logger.error("Content reader not closed by metadata extracter: \n" +
                         "   reader: " + reader + "\n" +
                         "   extracter: " + this);
+            }
+            // Make sure that we have something to return
+            if (changedProperties == null)
+            {
+                changedProperties = new HashMap<QName, Serializable>(0);
             }
         }
         

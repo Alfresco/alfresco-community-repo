@@ -30,6 +30,9 @@
         
         <property name="readerManagement"><ref bean="deploymentReaderManagement" /></property>
         
+        <!--  This is the repo based deployment engine which does not need a keep alive thread -->
+        <property name="daemonThread"><value>true</value></property>
+        
         <!-- Define your content transformers here 
         <property name="transformers"> 
             <list>

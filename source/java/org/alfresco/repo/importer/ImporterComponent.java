@@ -801,6 +801,12 @@ public class ImporterComponent
             if (childName != null)
             {
                 childName = bindPlaceHolder(childName, binding);
+                // <Fix for ETHREEOH-2299>
+                if (ContentModel.TYPE_PERSON.equals(context.getTypeDefinition().getName()))
+                {
+                    childName = childName.toLowerCase();
+                }
+                // </Fix for ETHREEOH-2299>
                 String[] qnameComponents = QName.splitPrefixedQName(childName);
                 childQName = QName.createQName(qnameComponents[0], QName.createValidLocalName(qnameComponents[1]), namespaceService); 
             }

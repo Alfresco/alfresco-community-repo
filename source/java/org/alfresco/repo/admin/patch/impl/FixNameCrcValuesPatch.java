@@ -65,6 +65,7 @@ public class FixNameCrcValuesPatch extends AbstractPatch
 {
     private static final String MSG_SUCCESS = "patch.fixNameCrcValues.result";
     private static final String MSG_REWRITTEN = "patch.fixNameCrcValues.fixed";
+    private static final String MSG_UNABLE_TO_CHANGE = "patch.fixNameCrcValues.unableToChange";
     
     private SessionFactory sessionFactory;
     private NodeDaoService nodeDaoService;
@@ -163,6 +164,10 @@ public class FixNameCrcValuesPatch extends AbstractPatch
             @SuppressWarnings("unused")
             List<Long> childAssocIds = findMismatchedCrcs();
 
+            // Precautionary flush and clear so that we have an empty session
+            getSession().flush();
+            getSession().clear();
+
             int updated = 0;
             for (Long childAssocId : childAssocIds)
             {
@@ -188,7 +193,24 @@ public class FixNameCrcValuesPatch extends AbstractPatch
                 assoc.setChildNodeNameCrc(crc);
                 // Persist
                 updated++;
-                getSession().flush();
+                try
+                {
+                    getSession().flush();
+                }
+                catch (Throwable e)
+                {
+                    String msg = I18NUtil.getMessage(MSG_UNABLE_TO_CHANGE, childNode.getId(), childName, oldCrc, crc, e.getMessage());
+                    // We just log this and add details to the message file
+                    if (logger.isDebugEnabled())
+                    {
+                        logger.debug(msg, e);
+                    }
+                    else
+                    {
+                        logger.warn(msg);
+                    }
+                    writeLine(msg);
+                }
                 getSession().clear();
                 // Record
                 writeLine(I18NUtil.getMessage(MSG_REWRITTEN, childNode.getId(), childName, oldCrc, crc));

@@ -1861,6 +1861,33 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
                 RegexQNamePattern.MATCH_ALL);
     }
     
+    public void testDuplicateChildAssocCleanup() throws Exception
+    {
+        Map<QName, ChildAssociationRef> assocRefs = buildNodeGraph();
+        NodeRef n1Ref = assocRefs.get(QName.createQName(BaseNodeServiceTest.NAMESPACE,"root_p_n1")).getChildRef();
+        ChildAssociationRef n1pn3Ref = assocRefs.get(QName.createQName(BaseNodeServiceTest.NAMESPACE,"n1_p_n3"));
+        // Recreate the association from n1 to n3 i.e. duplicate it
+        QName assocQName = QName.createQName(BaseNodeServiceTest.NAMESPACE, "dup");
+        ChildAssociationRef dup1 = nodeService.addChild(
+                n1pn3Ref.getParentRef(),
+                n1pn3Ref.getChildRef(),
+                n1pn3Ref.getTypeQName(),
+                assocQName);
+        ChildAssociationRef dup2 = nodeService.addChild(
+                n1pn3Ref.getParentRef(),
+                n1pn3Ref.getChildRef(),
+                n1pn3Ref.getTypeQName(),
+                assocQName);
+        assertEquals("Duplicate not created", dup1, dup2);
+        List<ChildAssociationRef> dupAssocs = nodeService.getChildAssocs(n1pn3Ref.getParentRef(), n1pn3Ref.getTypeQName(), assocQName);
+        assertEquals("Expected duplicates", 2, dupAssocs.size());
+        // Now delete the specific association
+        nodeService.removeChildAssociation(dup1);
+        
+        setComplete();
+        endTransaction();
+    }
+    
     public void testGetChildAssocsByChildType() throws Exception
     {
         /*

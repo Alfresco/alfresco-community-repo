@@ -1746,17 +1746,15 @@ public class AVMStoreImpl implements AVMStore
         
         Lookup cPath = new Lookup(lPath, AVMDAOs.Instance().fAVMNodeDAO, AVMDAOs.Instance().fAVMStoreDAO);
         Pair<AVMNode, Boolean> result = dir.lookupChild(cPath, name, true);
-        if (result == null)
+        if (result != null)
         {
-            throw new AVMNotFoundException("Path " + parentPath + "/" +name + " not found.");
+            AVMNode child = result.getFirst();
+            if (!fAVMRepository.can(null, child, PermissionService.WRITE, cPath.getDirectlyContained()))
+            {
+                throw new AccessDeniedException("Not allowed to update node: " +  parentPath + "/" +name );
+            }
+            dir.removeChild(lPath, name);
         }
-        AVMNode child = result.getFirst();
-        if (!fAVMRepository.can(null, child, PermissionService.WRITE, cPath.getDirectlyContained()))
-        {
-            throw new AccessDeniedException("Not allowed to update node: " +  parentPath + "/" +name );
-        }
-        
-        dir.removeChild(lPath, name);
         dir.link(lPath, name, toLink);
     }
 

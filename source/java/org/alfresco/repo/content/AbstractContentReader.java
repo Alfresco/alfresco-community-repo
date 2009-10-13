@@ -45,6 +45,7 @@ import org.alfresco.service.cmr.repository.ContentAccessor;
 import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentStreamListener;
+import org.alfresco.util.EqualsHelper;
 import org.alfresco.util.TempFileProvider;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -451,6 +452,44 @@ public abstract class AbstractContentReader extends AbstractContentAccessor impl
             throw new ContentIOException("Failed to copy content to string: \n" +
                     "   accessor: " + this,
                     e);
+        }
+    }
+    
+    /**
+     * Does a comparison of the binaries associated with two readers.  Several shortcuts are assumed to be valid:<br/>
+     *  - if the readers are the same instance, then the binaries are the same<br/>
+     *  - if the size field is different, then the binaries are different<br/>
+     * Otherwise the binaries are {@link EqualsHelper#binaryStreamEquals(InputStream, InputStream) compared}.
+     * 
+     * @return          Returns <tt>true</tt> if the underlying binaries are the same
+     * @throws ContentIOException
+     */
+    public static boolean compareContentReaders(ContentReader left, ContentReader right) throws ContentIOException
+    {
+        if (left == right)
+        {
+            return true;
+        }
+        else if (left == null || right == null)
+        {
+            return false;
+        }
+        else if (left.getSize() != right.getSize())
+        {
+            return false;
+        }
+        InputStream leftIs = left.getContentInputStream();
+        InputStream rightIs = right.getContentInputStream();
+        try
+        {
+            return EqualsHelper.binaryStreamEquals(leftIs, rightIs);
+        }
+        catch (IOException e)
+        {
+            throw new ContentIOException(
+                    "Failed to compare content reader streams: \n" +
+                    "   Left:  " + left + "\n" +
+                    "   right: " + right);
         }
     }
 }

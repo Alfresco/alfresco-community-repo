@@ -247,18 +247,26 @@ public class PatchServiceImpl implements PatchService
     
     private AppliedPatch applyPatch(Patch patch)
     {
+        boolean forcePatch = patch.isForce();
+        if (forcePatch)
+        {
+            logger.warn(
+                    "Patch will be forcefully executed: \n" +
+                    "   Patch: " + patch);
+        }
         // get the patch from the DAO
         AppliedPatch appliedPatch = patchDaoService.getAppliedPatch(patch.getId());
         // We bypass the patch if it was executed successfully
-        if (appliedPatch != null)
+        if (appliedPatch != null && !forcePatch)
         {
             if (appliedPatch.getSucceeded())
             {
                 // It has already been successfully applied
                 if (logger.isDebugEnabled())
                 {
-                    logger.debug("Patch was already successfully applied: \n" +
-                            "   patch: " + appliedPatch);
+                    logger.debug(
+                            "Patch was already successfully applied: \n" +
+                            "   Patch: " + appliedPatch);
                 }
                 return appliedPatch;
             }
@@ -268,8 +276,8 @@ public class PatchServiceImpl implements PatchService
         boolean success = false;
         // first check whether the patch is relevant to the repo
         Descriptor repoDescriptor = descriptorService.getInstalledRepositoryDescriptor();
-        String preceededByAlternative = preceededByAlternative(patch);
-        boolean applies = applies(repoDescriptor, patch);
+        String preceededByAlternative = forcePatch ? null : preceededByAlternative(patch);
+        boolean applies = forcePatch || applies(repoDescriptor, patch);
         if (!applies)
         {
             // create a dummy report

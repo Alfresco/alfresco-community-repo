@@ -43,6 +43,7 @@ import org.alfresco.jlan.server.filesys.FileOpenParams;
 import org.alfresco.jlan.server.filesys.NetworkFile;
 import org.alfresco.jlan.smb.SeekType;
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.content.AbstractContentReader;
 import org.alfresco.repo.content.encoding.ContentCharsetFinder;
 import org.alfresco.repo.content.filestore.FileContentReader;
 import org.alfresco.service.cmr.repository.ContentAccessor;
@@ -83,6 +84,7 @@ public class ContentNetworkFile extends NodeRefNetworkFile
     // File content
     
     private ContentAccessor content;
+    private ContentReader preUpdateContentReader;
     
     // Indicate if file has been written to or truncated/resized
     
@@ -321,11 +323,16 @@ public class ContentNetworkFile extends NodeRefNetworkFile
         }
 
         content = null;
+        preUpdateContentReader = null;
         if (write)
         {
-        	// Get a writeable channel to the content
+        	// Get a writeable channel to the content, along with the original content
         	
             content = contentService.getWriter( getNodeRef(), ContentModel.PROP_CONTENT, false);
+            
+            // Keep the original content for later comparison
+            
+            preUpdateContentReader = contentService.getReader( getNodeRef(), ContentModel.PROP_CONTENT);
             
             // Indicate that we have a writable channel to the file
             
@@ -397,16 +404,22 @@ public class ContentNetworkFile extends NodeRefNetworkFile
             channel.close();
             channel = null;
             
-            // Update node properties
+            // Update node properties, but only if the binary has changed (ETHREEOH-1861)
             
-            ContentData contentData = content.getContentData();
-            try
+            ContentReader postUpdateContentReader = ((ContentWriter) content).getReader();
+            boolean contentChanged = !AbstractContentReader.compareContentReaders(preUpdateContentReader, postUpdateContentReader);
+            
+            if (contentChanged)
             {
-                nodeService.setProperty( getNodeRef(), ContentModel.PROP_CONTENT, contentData);
-            }
-            catch (ContentQuotaException qe)
-            {
-                throw new DiskFullException(qe.getMessage());
+                ContentData contentData = content.getContentData();
+                try
+                {
+                    nodeService.setProperty( getNodeRef(), ContentModel.PROP_CONTENT, contentData);
+                }
+                catch (ContentQuotaException qe)
+                {
+                    throw new DiskFullException(qe.getMessage());
+                }
             }
         }
         else

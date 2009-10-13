@@ -62,6 +62,7 @@
             <extension>htm</extension>
             <extension>shtml</extension>
             <extension>body</extension>
+            <extension display="xsd">xsd</extension>
          </mimetype>
          <mimetype mimetype="text/mediawiki" text="true" display="MediaWiki Markup">
             <extension display="MediaWiki Markup" default="true">mw</extension>

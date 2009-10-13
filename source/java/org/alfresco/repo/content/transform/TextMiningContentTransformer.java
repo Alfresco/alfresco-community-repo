@@ -86,6 +86,10 @@ public class TextMiningContentTransformer extends AbstractContentTransformer2
                 // just assign an empty string
                 text = "";
             }
+            else
+            {
+                throw e;
+            }
         }
         finally
         {

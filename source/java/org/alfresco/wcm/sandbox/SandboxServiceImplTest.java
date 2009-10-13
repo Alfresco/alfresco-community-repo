@@ -1307,6 +1307,123 @@ public class SandboxServiceImplTest extends AbstractWCMServiceImplTest
         assertNotNull(assetService.getAssetWebApp(stagingSandboxId, webApp, "/myDir1/myFile2"));
     }
     
+    public void testSubmitDeletedItems_mimic_ETHREEOH_2581() throws IOException, InterruptedException
+    {
+        // Create Web Project A
+        
+        WebProjectInfo wpInfoA = wpService.createWebProject(TEST_SANDBOX+"-A", TEST_WEBPROJ_NAME+" A", TEST_WEBPROJ_TITLE, TEST_WEBPROJ_DESCRIPTION);
+        
+        final String wpStoreIdA = wpInfoA.getStoreId();
+        final String webAppA = wpInfoA.getDefaultWebApp();
+        final String stagingSandboxIdA = wpInfoA.getStagingStoreName();
+        
+        SandboxInfo sbInfoA = sbService.getAuthorSandbox(wpStoreIdA);
+        String authorSandboxIdA = sbInfoA.getSandboxId();
+        
+        // no assets
+        String stagingSandboxPathA = sbInfoA.getSandboxRootPath() + "/" + webAppA;
+        assertEquals(0, assetService.listAssets(stagingSandboxIdA, -1, stagingSandboxPathA, false).size());
+        
+        // no changes yet
+        List<AssetInfo> assets = sbService.listChangedAll(authorSandboxIdA, true);
+        assertEquals(0, assets.size());
+        
+        String authorSandboxPathA = sbInfoA.getSandboxRootPath() + "/" + webAppA;
+        
+        assetService.createFolder(authorSandboxIdA, authorSandboxPathA, "test", null);
+        
+        final String MYFILE = "This is testfile.txt in AAA";
+        ContentWriter writer = assetService.createFile(authorSandboxIdA, authorSandboxPathA+"/test", "testfile.txt", null);
+        writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
+        writer.setEncoding("UTF-8");
+        writer.putContent(MYFILE);
+        
+        assertEquals(1, assetService.listAssets(authorSandboxIdA, -1, authorSandboxPathA, false).size());
+        assertEquals(1, assetService.listAssets(authorSandboxIdA, -1, authorSandboxPathA+"/test", false).size());
+        
+        assets = sbService.listChangedWebApp(authorSandboxIdA, webAppA, false);
+        assertEquals(1, assets.size());
+        
+        // check staging before
+        assertEquals(0, assetService.listAssets(stagingSandboxIdA, -1, stagingSandboxPathA, false).size());
+        
+        // submit (new assets) !
+        sbService.submitWebApp(authorSandboxIdA, webAppA, "A1", "A1");
+        
+        Thread.sleep(SUBMIT_DELAY);
+        
+        assets = sbService.listChangedWebApp(authorSandboxIdA, webAppA, false);
+        assertEquals(0, assets.size());
+        
+        // check staging after
+        List<AssetInfo> listing = assetService.listAssets(stagingSandboxIdA, -1, stagingSandboxPathA, false);
+        assertEquals(1, listing.size());
+        
+        listing = assetService.listAssets(stagingSandboxIdA, -1, stagingSandboxPathA+"/test", false);
+        assertEquals(1, listing.size());
+        
+        // Create Web Project B
+        
+        WebProjectInfo wpInfoB = wpService.createWebProject(TEST_SANDBOX+"-B", TEST_WEBPROJ_NAME+" B", TEST_WEBPROJ_TITLE, TEST_WEBPROJ_DESCRIPTION);
+        
+        final String wpStoreIdB = wpInfoB.getStoreId();
+        final String webAppB = wpInfoB.getDefaultWebApp();
+        final String stagingSandboxIdB = wpInfoB.getStagingStoreName();
+        
+        SandboxInfo sbInfoB = sbService.getAuthorSandbox(wpStoreIdB);
+        String authorSandboxIdB = sbInfoB.getSandboxId();
+        
+        // no assets
+        String stagingSandboxPathB = sbInfoB.getSandboxRootPath() + "/" + webAppB;
+        assertEquals(0, assetService.listAssets(stagingSandboxIdB, -1, stagingSandboxPathB, false).size());
+        
+        // no changes yet
+        assets = sbService.listChangedAll(authorSandboxIdB, true);
+        assertEquals(0, assets.size());
+        
+        // drop to AVM to create WCM layered folder
+        avmService.createLayeredDirectory(wpStoreIdA+":"+stagingSandboxPathA+"/test", wpStoreIdB+":"+stagingSandboxPathB, "test");
+        
+        String authorSandboxPathB = sbInfoB.getSandboxRootPath() + "/" + webAppB;
+        
+        assertEquals(1, assetService.listAssets(authorSandboxIdB, -1, authorSandboxPathB, false).size());
+        assertEquals(1, assetService.listAssets(authorSandboxIdB, -1, authorSandboxPathB+"/test", false).size());
+        
+        // modify file
+        final String MYFILE_MODIFIED = "This is testfile.txt modified in BBB";
+        
+        writer = assetService.getContentWriter(assetService.getAssetWebApp(authorSandboxIdB, webAppB+"/test", "/testfile.txt"));
+        writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
+        writer.setEncoding("UTF-8");
+        writer.putContent(MYFILE_MODIFIED);
+        
+        // submit (modified asset)
+        sbService.submitWebApp(authorSandboxIdB, webAppB, "B1", "B1");
+        
+        Thread.sleep(SUBMIT_DELAY);
+        
+        // Switch back to Web Project A
+        
+        // delete folder
+        assetService.deleteAsset(assetService.getAssetWebApp(authorSandboxIdA, webAppA, "test"));
+        
+        // submit (deleted asset)
+        sbService.submitWebApp(authorSandboxIdA, webAppA, "A2", "A2");
+        
+        Thread.sleep(SUBMIT_DELAY);
+        
+        // Switch back to Web Project B
+        
+        // delete file
+        assetService.deleteAsset(assetService.getAssetWebApp(authorSandboxIdB, webAppB+"/test", "testfile.txt"));
+        
+        // submit (deleted asset)
+        // ETHREEOH_2581
+        sbService.submitWebApp(authorSandboxIdB, webAppB, "B2", "B2");
+        
+        Thread.sleep(SUBMIT_DELAY);
+    }
+    
     // revert/undo (changed) assets in user sandbox
     public void testUndo() throws IOException, InterruptedException
     {

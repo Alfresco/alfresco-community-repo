@@ -63,6 +63,11 @@ public interface Patch
     public int getTargetSchema();
 
     /**
+     * @return              Returns <tt>true</tt> if the patch must forcefully run regardless of any other state
+     */
+    public boolean isForce();
+    
+    /**
      * Get patches that this patch depends on
      * 
      * @return Returns a list of patches

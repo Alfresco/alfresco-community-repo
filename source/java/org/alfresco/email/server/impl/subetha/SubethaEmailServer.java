@@ -126,11 +126,26 @@ public class SubethaEmailServer extends EmailServer
 
         public void data(InputStream data) throws TooMuchDataException, IOException, RejectException
         {
-            if (deliveries.size() > 0)
+            try
             {
-                Delivery delivery = deliveries.get(0);
-                processDelivery(delivery, data);
+                if (deliveries.size() > 0)
+                {
+                    Delivery delivery = deliveries.get(0);
+                    processDelivery(delivery, data);
+                }
             }
+            finally
+            {
+                // DH: As per comments in ETHREEOH-2252, I am very concerned about the need to do the clear() here.
+                //     If this message is stateful (as it must be, given the API) then the need to clear
+                //     the list of delivery recipients ('deliveries') implies that Subetha is re-using
+                //     the instance.
+                //     Later versions of Subetha appear to define the behaviour better.  Un upgrade of
+                //     the library would be a good idea.
+                deliveries.clear();
+            }
+//            See ALFCOM-3165: Support multiple recipients for inbound Subetha email messages
+//            
 //            Duplicate messages coming in
 //            http://www.subethamail.org/se/archive_msg.jsp?msgId=20938
 //            if (deliveries.size() == 1)

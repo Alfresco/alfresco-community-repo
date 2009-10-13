@@ -75,6 +75,7 @@ public abstract class AbstractPatch implements Patch
     private int fixesFromSchema;
     private int fixesToSchema;
     private int targetSchema;
+    private boolean force;
     private String description;
     /** a list of patches that this one depends on */
     private List<Patch> dependsOn;
@@ -104,6 +105,7 @@ public abstract class AbstractPatch implements Patch
         this.fixesFromSchema = -1;
         this.fixesToSchema = -1;
         this.targetSchema = -1;
+        this.force = false;
         this.applied = false;
         this.applyToTenants = true;     // by default, apply to each tenant, if tenant service is enabled
         this.dependsOn = Collections.emptyList();
@@ -255,6 +257,25 @@ public abstract class AbstractPatch implements Patch
             throw new IllegalArgumentException("'targetSchema' must be greater than 'fixesToSchema'");
         }
         this.targetSchema = version;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public boolean isForce()
+    {
+        return force;
+    }
+
+    /**
+     * Set the flag that forces the patch to be forcefully applied.  This allows patches to be overridden to induce execution
+     * regardless of the upgrade or installation versions, or even if the patch has been executed before.
+     * 
+     * @param force         <tt>true</tt> to force the patch to be applied
+     */
+    public void setForce(boolean force)
+    {
+        this.force = force;
     }
 
     public String getDescription()
@@ -513,7 +534,7 @@ public abstract class AbstractPatch implements Patch
 
                 if (timeRemaining > 60000)
                 {
-                    int reportInterval = getreportingInterval(timeSoFar, timeRemaining);
+                    int reportInterval = getReportingInterval(timeSoFar, timeRemaining);
 
                     for (int i = previous + 1; i <= percentComplete; i++)
                     {
@@ -534,7 +555,7 @@ public abstract class AbstractPatch implements Patch
         }
     }
 
-    private int getreportingInterval(long soFar, long toGo)
+    private int getReportingInterval(long soFar, long toGo)
     {
         long total = soFar + toGo;
         if (total < RANGE_10)

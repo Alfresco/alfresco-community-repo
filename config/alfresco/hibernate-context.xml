@@ -390,6 +390,9 @@
       <property name="dictionaryService">
          <ref bean="dictionaryService" />
       </property>
+      <property name="transactionService">
+         <ref bean="transactionService" />
+      </property>
       <property name="auditableTransactionHelper">
          <ref bean="auditableTransactionHelper" />
       </property>

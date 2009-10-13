@@ -46,6 +46,7 @@ import org.alfresco.service.cmr.usage.ContentUsageService;
 import org.alfresco.service.cmr.usage.UsageService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.ParameterCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -428,6 +429,8 @@ public class ContentUsageImpl implements ContentUsageService,
     
     public long getUserUsage(String userName)
     {
+        ParameterCheck.mandatoryString("userName", userName);
+        
         long currentUsage = -1;
         
         NodeRef personNodeRef = getPerson(userName);

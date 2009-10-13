@@ -110,6 +110,7 @@ import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.repository.datatype.TypeConversionException;
 import org.alfresco.service.cmr.repository.datatype.TypeConverter;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.EqualsHelper;
 import org.alfresco.util.GUID;
 import org.alfresco.util.Pair;
@@ -193,6 +194,7 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
     private LocaleDAO localeDAO;
     private DictionaryService dictionaryService;
     private boolean enableTimestampPropagation;
+    private TransactionService transactionService;
     private RetryingTransactionHelper auditableTransactionHelper;
     private BehaviourFilter behaviourFilter;
     /** A cache mapping StoreRef and NodeRef instances to the entity IDs (primary key) */
@@ -304,6 +306,14 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
     public void setEnableTimestampPropagation(boolean enableTimestampPropagation)
     {
         this.enableTimestampPropagation = enableTimestampPropagation;
+    }
+
+    /**
+     * Executes post-transaction code
+     */
+    public void setTransactionService(TransactionService transactionService)
+    {
+        this.transactionService = transactionService;
     }
 
     /**
@@ -2746,6 +2756,7 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
         }
     }
 
+    @SuppressWarnings("unchecked")
     public Pair<Long, ChildAssociationRef> getChildAssoc(
             final Long parentNodeId,
             final Long childNodeId,
@@ -2774,20 +2785,97 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
                     .setParameter("qnameNamespaceId", assocQNameNamespacePair.getFirst())
                     .setParameter("qnameLocalName", assocQNameLocalName);
                 DirtySessionMethodInterceptor.setQueryFlushMode(session, query);
-                return query.uniqueResult();
+                return query.list();
             }
         };
-        ChildAssoc childAssoc = (ChildAssoc) getHibernateTemplate().execute(callback);
-        if (childAssoc == null)
+        @SuppressWarnings("unchecked")
+        List<ChildAssoc> childAssocs = (List<ChildAssoc>) getHibernateTemplate().execute(callback);
+        Pair<Long, ChildAssociationRef> ret = null;
+        for (ChildAssoc childAssoc : childAssocs)
         {
-            return null;
+            if (ret == null)
+            {
+                ret = new Pair<Long, ChildAssociationRef>(childAssoc.getId(), childAssoc.getChildAssocRef(qnameDAO));
+            }
+            else
+            {
+                // Queue remaining assocs for a cleanup - they are duplicate
+                new ChildAssocDeleteTransactionListener(childAssoc.getId());
+            }
         }
-        else
-        {
-            return new Pair<Long, ChildAssociationRef>(childAssoc.getId(), childAssoc.getChildAssocRef(qnameDAO));
-        }
+        // Done
+        return ret;
     }
     
+    /**
+     * Post-transaction removal of duplicate child associations.
+     * 
+     * @author Derek Hulley
+     * @since 2.2SP6
+     */
+    private class ChildAssocDeleteTransactionListener extends TransactionListenerAdapter
+    {
+        private final Long childAssocId;
+        
+        private ChildAssocDeleteTransactionListener(Long childAssocId)
+        {
+            this.childAssocId = childAssocId;
+            AlfrescoTransactionSupport.bindListener(this);
+        }
+        
+        @Override
+        public boolean equals(Object obj)
+        {
+            if (obj == this)
+            {
+                return true;
+            }
+            else if (obj == null || !(obj instanceof ChildAssocDeleteTransactionListener))
+            {
+                return false;
+            }
+            ChildAssocDeleteTransactionListener that = (ChildAssocDeleteTransactionListener) obj;
+            return EqualsHelper.nullSafeEquals(this.childAssocId, that.childAssocId);
+        }
+
+        @Override
+        public int hashCode()
+        {
+            return childAssocId == null ? 0 : childAssocId.hashCode();
+        }
+
+        @Override
+        public void afterCommit()
+        {
+            if (transactionService.isReadOnly())
+            {
+                // Can't write to the repo
+                return;
+            }
+            RetryingTransactionCallback<Void> deleteCallback = new RetryingTransactionCallback<Void>()
+            {
+                public Void execute() throws Throwable
+                {
+                    deleteChildAssoc(childAssocId);
+                    if (logger.isInfoEnabled())
+                    {
+                        logger.debug("Cleaned up duplicate child assoc: " + childAssocId);
+                    }
+                    return null;
+                }
+            };
+            try
+            {
+                transactionService.getRetryingTransactionHelper().doInTransaction(deleteCallback);
+            }
+            catch (Throwable e)
+            {
+                // This is the post-commit phase.  Exceptions would be absorbed anyway.
+                logger.warn("Failed to delete duplicate child association with ID " + childAssocId);
+            }
+        }
+    }
+
     /**
      * Columns returned are:
      * <pre>

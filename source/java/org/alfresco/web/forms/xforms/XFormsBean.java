@@ -506,20 +506,10 @@ public class XFormsBean implements Serializable
          LOGGER.debug("inserting node before " + beforeLocation);
       instance.insertNode(fromLocationPath, beforeLocation);
 
-      model.getContainer().dispatch(model.getTarget(), XFormsEventNames.REBUILD, null);
-      model.getContainer().dispatch(model.getTarget(), XFormsEventNames.RECALCULATE, null);
-      model.getContainer().dispatch(model.getTarget(), XFormsEventNames.REVALIDATE, null);
-      model.getContainer().dispatch(model.getTarget(), XFormsEventNames.REFRESH, null);
-
       if (LOGGER.isDebugEnabled())
          LOGGER.debug("deleting from " + from.getLocationPath());
       // need to reload from location path since it has moved
       instance.deleteNode(from.getLocationPath());
-
-      model.getContainer().dispatch(model.getTarget(), XFormsEventNames.REBUILD, null);
-      model.getContainer().dispatch(model.getTarget(), XFormsEventNames.RECALCULATE, null);
-      model.getContainer().dispatch(model.getTarget(), XFormsEventNames.REVALIDATE, null);
-      model.getContainer().dispatch(model.getTarget(), XFormsEventNames.REFRESH, null);
 
       to.getRepeat().setIndex(toPosition);
 

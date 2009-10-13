@@ -142,7 +142,8 @@ public class EditUserDetailsDialog extends BaseDialogBean
 
     public String getEmail()
     {
-        return person.getProperties().get(ContentModel.PROP_EMAIL).toString();
+        Object value = person.getProperties().get(ContentModel.PROP_EMAIL);
+        return value == null ? null : value.toString();
     }
 
     public void setEmail(String email)
@@ -152,7 +153,8 @@ public class EditUserDetailsDialog extends BaseDialogBean
 
     public String getFirstName()
     {
-        return person.getProperties().get(ContentModel.PROP_FIRSTNAME).toString();
+        Object value = person.getProperties().get(ContentModel.PROP_FIRSTNAME);
+        return value == null ? null : value.toString();
     }
 
     public void setFirstName(String firstName)
@@ -162,7 +164,8 @@ public class EditUserDetailsDialog extends BaseDialogBean
 
     public String getLastName()
     {
-        return person.getProperties().get(ContentModel.PROP_LASTNAME).toString();
+        Object value = person.getProperties().get(ContentModel.PROP_LASTNAME);
+        return value == null ? null : value.toString();
     }
     
     public String getPersonDescription()

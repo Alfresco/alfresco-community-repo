@@ -33,7 +33,6 @@ import javax.servlet.http.HttpServletResponse;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.security.PermissionService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -96,7 +95,7 @@ public class GuestDownloadContentServlet extends BaseDownloadContentServlet
       }
       
       DownloadContentWork dcw = new DownloadContentWork(req, res);
-      AuthenticationUtil.runAs(dcw, PermissionService.GUEST_AUTHORITY);
+      AuthenticationUtil.runAs(dcw, AuthenticationUtil.getGuestUserName());
    }
    
    /**

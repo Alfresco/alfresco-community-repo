@@ -466,6 +466,7 @@ public final class AuthenticationHelper
     * @param httpResponse The HTTP response
     * @return The User object representing the current user or null if it could not be found
     */
+   @SuppressWarnings("unchecked")
    public static User getUser(ServletContext sc, HttpServletRequest httpRequest, HttpServletResponse httpResponse)
    {
       String userId = null;
@@ -491,10 +492,10 @@ public final class AuthenticationHelper
          // naff solution as we need to enumerate all session keys until we find the one that
          // should match our User objects - this is weak but we don't know how the underlying
          // Portal vendor has decided to encode the objects in the session
-         Enumeration<?> enumNames = session.getAttributeNames();
+         Enumeration<String> enumNames = (Enumeration<String>) session.getAttributeNames();
          while (enumNames.hasMoreElements())
          {
-            String name = (String)enumNames.nextElement();
+            String name = enumNames.nextElement();
             if (name.endsWith(AUTHENTICATION_USER))
             {
                user = (User) session.getAttribute(name);

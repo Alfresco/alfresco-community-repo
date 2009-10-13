@@ -44,6 +44,7 @@ import javax.faces.event.FacesEvent;
 import javax.transaction.UserTransaction;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authority.AuthorityDAO;
 import org.alfresco.service.cmr.dictionary.AssociationDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -185,6 +186,7 @@ public abstract class BaseAssociationEditor extends UIInput
    /**
     * @see javax.faces.component.UIComponent#decode(javax.faces.context.FacesContext)
     */
+   @SuppressWarnings("unchecked")
    public void decode(FacesContext context)
    {
       Map requestMap = context.getExternalContext().getRequestParameterMap();
@@ -862,7 +864,7 @@ public abstract class BaseAssociationEditor extends UIInput
                {
                   // if the node represents a person, show the full name and userid instead of the name
                   String userName = (String)nodeService.getProperty(item, ContentModel.PROP_USERNAME);
-                  if (userName != null && (userName.equals(PermissionService.GUEST_AUTHORITY) == false))
+                  if (userName != null && (userName.equals(AuthenticationUtil.getGuestUserName()) == false))
                   {
                      out.write("<option value='");
                      out.write(item.toString());
@@ -1151,9 +1153,9 @@ public abstract class BaseAssociationEditor extends UIInput
    /**
     * Comparator used for ordering groups
     */
-   private static class SimpleStringComparator implements Comparator
+   private static class SimpleStringComparator implements Comparator<String>
    {
-      public int compare(final Object obj1, final Object obj2)
+      public int compare(final String obj1, final String obj2)
       {
          if (obj1 == null && obj2 == null) return 0;
          if (obj1 == null) return -1;

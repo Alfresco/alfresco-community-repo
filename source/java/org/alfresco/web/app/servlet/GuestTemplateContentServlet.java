@@ -46,8 +46,6 @@ import org.alfresco.web.bean.repository.User;
 import org.alfresco.web.ui.repo.component.template.DefaultModelHelper;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.web.context.WebApplicationContext;
-import org.springframework.web.context.support.WebApplicationContextUtils;
 
 /**
  * Servlet responsible for streaming content from a template processed against a node directly
@@ -109,8 +107,8 @@ public class GuestTemplateContentServlet extends BaseTemplateContentServlet
       PersonService personService = (PersonService)services.getPersonService();
       NodeService nodeService = (NodeService)services.getNodeService();
       
-      NodeRef guestRef = personService.getPerson(PermissionService.GUEST_AUTHORITY);
-      User guestUser = new User(PermissionService.GUEST_AUTHORITY, auth.getCurrentTicket(), guestRef);
+      NodeRef guestRef = personService.getPerson(AuthenticationUtil.getGuestUserName());
+      User guestUser = new User(AuthenticationUtil.getGuestUserName(), auth.getCurrentTicket(), guestRef);
       NodeRef guestHomeRef = (NodeRef)nodeService.getProperty(guestRef, ContentModel.PROP_HOMEFOLDER);
       if (nodeService.exists(guestHomeRef) == false)
       {
@@ -136,7 +134,7 @@ public class GuestTemplateContentServlet extends BaseTemplateContentServlet
       }
       
       TemplateContentWork tcw = new TemplateContentWork(req, res);
-      AuthenticationUtil.runAs(tcw, PermissionService.GUEST_AUTHORITY);
+      AuthenticationUtil.runAs(tcw, AuthenticationUtil.getGuestUserName());
    }
    
    /**

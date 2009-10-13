@@ -769,7 +769,7 @@ public final class Repository
    {
 	   TenantService tenantService = (TenantService)FacesContextUtils.getRequiredWebApplicationContext(context).getBean("tenantService");
 	   String userName = Application.getCurrentUser(context).getUserName();
-	   return tenantService.getBaseNameUser(userName).equalsIgnoreCase(PermissionService.GUEST_AUTHORITY);
+	   return tenantService.getBaseNameUser(userName).equalsIgnoreCase(AuthenticationUtil.getGuestUserName());
    }
    
    /**

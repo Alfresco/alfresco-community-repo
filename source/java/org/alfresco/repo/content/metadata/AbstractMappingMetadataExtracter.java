@@ -46,7 +46,6 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
-import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
@@ -757,7 +756,11 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
                 // Attempt to make any date conversions
                 if (propertyTypeDef.getName().equals(DataTypeDefinition.DATE) || propertyTypeDef.getName().equals(DataTypeDefinition.DATETIME))
                 {
-                    if (propertyValue instanceof Collection)
+                    if (propertyValue instanceof Date)
+                    {
+                        convertedPropertyValue = propertyValue;
+                    }
+                    else if (propertyValue instanceof Collection)
                     {
                         convertedPropertyValue = (Serializable) makeDates((Collection) propertyValue);
                     }
@@ -765,9 +768,15 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
                     {
                         convertedPropertyValue = makeDate((String) propertyValue);
                     }
-                    else if(propertyValue instanceof Date)
+                    else
                     {
-                        convertedPropertyValue = propertyValue;
+                        if (logger.isWarnEnabled())
+                        {
+                            StringBuilder mesg = new StringBuilder();
+                            mesg.append("Unable to convert Date property: ").append(propertyQName)
+                                .append(", value: ").append(propertyValue).append(", type: ").append(propertyTypeDef.getName());
+                            logger.warn(mesg.toString());
+                        }
                     }
                 }
                 else

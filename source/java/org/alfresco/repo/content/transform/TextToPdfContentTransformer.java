@@ -33,10 +33,10 @@ import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.TransformationOptions;
-import org.pdfbox.TextToPDF;
-import org.pdfbox.pdmodel.PDDocument;
-import org.pdfbox.pdmodel.font.PDTrueTypeFont;
-import org.pdfbox.pdmodel.font.PDType1Font;
+import org.apache.pdfbox.TextToPDF;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.pdmodel.font.PDTrueTypeFont;
+import org.apache.pdfbox.pdmodel.font.PDType1Font;
 
 /**
  * Makes use of the {@link http://www.pdfbox.org/ PDFBox} library's <code>TextToPDF</code> utility.

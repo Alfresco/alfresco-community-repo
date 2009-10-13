@@ -31,7 +31,21 @@
          folderPath: "${url.serviceContext}/office/",
          ticket: "${session.ticket}"
       }<#if args.env??>, "${args.env}")</#if>);
-   //]]></script>
+   //]]>
+
+   function wrapDocumentNames()
+   {
+      var i = 1;
+      for(var element = document.getElementById("document" + i); undefined != element; element = document.getElementById("document" + i))
+      {
+         var name = element.innerHTML;
+         htmlWordWrap(("document" + i), 32, name);
+         i += 1;
+      }
+   }
+
+   window.addEvent('load', wrapDocumentNames);
+   </script>
 </head>
 <body>
 <div id="overlayPanel"></div>
@@ -181,9 +195,9 @@
          </span>
          <span class="documentItemDetails">
       <#if child.name?ends_with(extn) || child.name?ends_with(extnx) || isSupportedExtn>
-            <a href="#" onclick="ExternalComponent.openDocument('${relativePath}')"><span class="bold ${isVersionable?string("versionable", "notVersionable")}">${child.name?html}</span></a>
+            <a href="#" onclick="ExternalComponent.openDocument('${relativePath}')"><span id="document${documentsFound}" class="bold ${isVersionable?string("versionable", "notVersionable")}">${child.name?html}</span></a>
       <#else>
-            <a href="${url.context}${child.url}" rel="_blank"><span class="bold">${child.name?html}</span></a>
+            <a href="${url.context}${child.url}" rel="_blank"><span id="document${documentsFound}" class="bold">${child.name?html}</span></a>
       </#if>
             <br />
       <#if child.properties.description??>

@@ -36,6 +36,13 @@
          folderPath: "${url.serviceContext}/office/",
          ticket: "${session.ticket}"
       });
+
+      function wrapNameForcibly()
+      {
+         htmlWordWrap("workflowName", 32, "${d.name?html}");
+      }
+
+      window.addEvent('load', wrapNameForcibly);
    //]]></script>
 </head>
 <body>
@@ -109,7 +116,7 @@
             <tr>
                <td valign="top"><img src="${url.context}/images/office/new_workflow_large.gif" alt="${message("office.action.start_workflow")}" /></td>
                <td>
-                  ${message("office.action.start_workflow")}:<br /><span style="font-weight: bold; padding-left: 8px;">${d.name?html}</span>
+                  ${message("office.action.start_workflow")}:<br /><span id="workflowName" style="margin-left: 8px; width: 248px; font-weight: bold;"></span>
                </td>
             </tr>
          </table>

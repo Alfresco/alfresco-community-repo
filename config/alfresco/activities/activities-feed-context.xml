@@ -54,7 +54,7 @@
    <bean id="baseFeedGenerator" class="org.alfresco.repo.activities.feed.AbstractFeedGenerator" abstract="true" init-method="init">
       <property name="postDAO" ref="postDAO"/>
       <property name="authenticationService" ref="AuthenticationService"/>
-      <property name="repoEndPoint" value="${repo.remote.endpoint.url}"/>
+      <property name="repoEndPoint" value="${repo.remote.url}${repo.remote.endpoint}"/>
       <property name="userNamesAreCaseSensitive" value="${user.name.caseSensitive}"/>
       <property name="maxItemsPerCycle" value="100"/>
       <property name="activityPostServiceImpl" ref="activityPostService"/>

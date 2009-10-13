@@ -381,6 +381,9 @@
         <property name="fromAddress">
             <value>${mail.from.default}</value>
         </property>
+        <property name="repoRemoteUrl">
+            <value>${repo.remote.url}</value>
+        </property>
     </bean>
     
     <bean id="set-property-value" class="org.alfresco.repo.action.executer.SetPropertyValueActionExecuter" parent="action-executer">

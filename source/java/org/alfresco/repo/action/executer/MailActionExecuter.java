@@ -86,6 +86,8 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
      */
     private static final String FROM_ADDRESS = "alfresco@alfresco.org";
     
+    private static final String REPO_REMOTE_URL = "http://localhost:8080/alfresco";
+    
     /**
      * The java mail sender
      */
@@ -130,6 +132,11 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
      * Default from address
      */
     private String fromAddress = null;
+    
+    /**
+     * Default alfresco installation url
+     */
+    private String repoRemoteUrl = null;
     
     /**
      * @param javaMailSender    the java mail sender
@@ -204,6 +211,15 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
     }
 
     /**
+     * 
+     * @param repoRemoteUrl The default alfresco installation url
+     */
+    public void setRepoRemoteUrl(String repoRemoteUrl)
+    {
+        this.repoRemoteUrl = repoRemoteUrl;
+    }
+    
+    /**
      * Initialise bean
      */
     public void afterPropertiesSet() throws Exception
@@ -211,6 +227,11 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
         if (fromAddress == null || fromAddress.length() == 0)
         {
             fromAddress = FROM_ADDRESS;
+        }
+        
+        if (repoRemoteUrl == null || repoRemoteUrl.length() == 0)
+        {
+            repoRemoteUrl = REPO_REMOTE_URL;
         }
     }
     
@@ -421,6 +442,7 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
       model.put("hasAspect", new HasAspectMethod());
       model.put("message", new I18NMessageMethod());
       model.put("dateCompare", new DateCompareMethod());
+      model.put("url", new URLHelper(repoRemoteUrl));
       
       return model;
    }
@@ -439,4 +461,26 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
         paramList.add(new ParameterDefinitionImpl(PARAM_TEMPLATE, DataTypeDefinition.NODE_REF, false, getParamDisplayLabel(PARAM_TEMPLATE)));
     }
 
+    public static class URLHelper
+    {
+        String contextPath;
+        String serverPath;
+        
+        public URLHelper(String repoRemoteUrl)
+        {
+            String[] parts = repoRemoteUrl.split("/");
+            this.contextPath = "/" + parts[parts.length - 1];
+            this.serverPath = parts[0] + "//" + parts[2];
+        }
+        
+        public String getContext()
+        {
+           return this.contextPath;
+        }
+
+        public String getServerPath()
+        {
+           return this.serverPath;
+        }
+    }
 }

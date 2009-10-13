@@ -42,6 +42,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.management.subsystems.ActivateableBean;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationException;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
@@ -206,7 +207,7 @@ public final class AuthenticationHelper
                   auth.authenticateAsGuest();
                   
                   // if we get here then Guest access was allowed and successful
-                  setUser(sc, req, PermissionService.GUEST_AUTHORITY, false);
+                  setUser(sc, req, AuthenticationUtil.getGuestUserName(), false);
                   
                   // Set up the thread context
                   setupThread(sc, req, res);
@@ -421,7 +422,7 @@ public final class AuthenticationHelper
       {
          auth.authenticateAsGuest();
          
-         User user = createUser(ctx, auth, PermissionService.GUEST_AUTHORITY, false);
+         User user = createUser(ctx, auth, AuthenticationUtil.getGuestUserName(), false);
          
          // store the User object in the Session - the authentication servlet will then proceed
          session.setAttribute(AuthenticationHelper.AUTHENTICATION_USER, user);

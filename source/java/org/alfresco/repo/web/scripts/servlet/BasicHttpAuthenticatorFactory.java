@@ -28,7 +28,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.alfresco.repo.security.authentication.AuthenticationException;
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.util.Base64;
 import org.alfresco.web.scripts.Authenticator;
@@ -39,7 +38,6 @@ import org.alfresco.web.scripts.servlet.WebScriptServletRequest;
 import org.alfresco.web.scripts.servlet.WebScriptServletResponse;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
 
 /**
  * HTTP Basic Authentication
@@ -173,20 +171,11 @@ public class BasicHttpAuthenticatorFactory implements ServletAuthenticatorFactor
                         if (logger.isDebugEnabled())
                             logger.debug("Authenticating (BASIC HTTP) user " + parts[0]);
     
-                        // assume username and password passed
-                        if (parts[0].equals(AuthenticationUtil.getGuestUserName()))
-                        {
-                            if (required == RequiredAuthentication.guest)
-                            {
-                                authenticationService.authenticateAsGuest();
-                                authorized = true;
-                            }
-                        }
-                        else
-                        {
-                            authenticationService.authenticate(parts[0], parts[1].toCharArray());
-                            authorized = true;
-                        }
+                        String username = parts[0];
+                        // No longer need a special call to authenticate as guest
+                        // Leave guest name resolution up to the services
+                        authenticationService.authenticate(username, parts[1].toCharArray());
+                        authorized = true;
                     }
                 }
                 catch(AuthenticationException e)

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -24,16 +24,20 @@
  */
 package org.alfresco.web.bean.clipboard;
 
+import java.util.Map;
+
 import javax.faces.context.FacesContext;
 import javax.transaction.UserTransaction;
 
+import org.alfresco.model.WCMAppModel;
 import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.service.cmr.avm.AVMExistsException;
+import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.model.FileExistsException;
-import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.repository.CrossRepositoryCopyService;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.servlet.FacesHelper;
 import org.alfresco.web.bean.NavigationBean;
@@ -98,8 +102,7 @@ public class AVMClipboardItem extends AbstractClipboardItem
          NodeRef destRef = AVMNodeConverter.ToNodeRef(-1, destPath);
          String sourcePath = AVMNodeConverter.ToAVMVersionPath(getNodeRef()).getSecond();
          
-         FileFolderService fileFolderService = getServiceRegistry().getFileFolderService();
-         AVMService avmService = getServiceRegistry().getAVMLockingAwareService();
+         //FileFolderService fileFolderService = getServiceRegistry().getFileFolderService();
          
          // initial name to attempt the copy of the item with
          String name = getName();
@@ -131,7 +134,11 @@ public class AVMClipboardItem extends AbstractClipboardItem
                         getNodeRef(),
                         destRef,
                         name);*/
-                  avmService.copy(-1, sourcePath, destPath, name);
+                  getAvmService().copy(-1, sourcePath, destPath, name);
+                  
+                  // ETHREEOH-2110
+                  AVMNodeDescriptor desc = getAvmService().lookup(-1, destPath + "/" + name);
+                  recursiveFormCheck(desc);
                   
                   // if we get here without an exception, the clipboard copy operation was successful
                   operationComplete = true;
@@ -147,7 +154,7 @@ public class AVMClipboardItem extends AbstractClipboardItem
                         getNodeRef(),
                         destRef,
                         name);*/
-                  avmService.rename(AVMNodeConverter.SplitBase(sourcePath)[0], getName(),
+                  getAvmService().rename(AVMNodeConverter.SplitBase(sourcePath)[0], getName(),
                         destPath, name);
                   
                   // if we get here without an exception, the clipboard move operation was successful
@@ -220,6 +227,14 @@ public class AVMClipboardItem extends AbstractClipboardItem
                   
                   // inter-store copy operation
                   crossRepoCopyService.copy(getNodeRef(), destRef, name);
+                  
+                  if (destRef.getStoreRef().getProtocol().equals(StoreRef.PROTOCOL_AVM))
+                  {
+                      // ETHREEOH-2110
+                      String destPath = AVMNodeConverter.ToAVMVersionPath(destRef).getSecond();
+                      AVMNodeDescriptor desc = getAvmService().lookup(-1, destPath + "/" + name);
+                      recursiveFormCheck(desc);
+                  }
                   
                   // if we get here without an exception, the clipboard copy operation was successful
                   operationComplete = true;

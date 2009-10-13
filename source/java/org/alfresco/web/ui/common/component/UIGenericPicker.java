@@ -371,7 +371,8 @@ public class UIGenericPicker extends UICommand
       
       // results list row
       out.write("<tr><td colspan=2>");
-      out.write("<select size='8' style='min-width:");
+      out.write("<select size='8' style='");
+      out.write((currentResults != null && currentResults.length != 0) ? "min-width:" : "width:");
       out.write(Integer.toString(getWidth()));
       out.write("px;height:");
       out.write(Integer.toString(getHeight()));

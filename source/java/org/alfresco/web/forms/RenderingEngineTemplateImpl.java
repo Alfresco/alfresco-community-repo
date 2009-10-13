@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -283,8 +283,11 @@ public class RenderingEngineTemplateImpl
       RenderingEngine.RenderingException
    {
       final AVMService avmService = this.getServiceRegistry().getAVMLockingAwareService();
-      final boolean isRegenerate = avmService.lookup(-1, renditionAvmPath) != null;
-      if (!isRegenerate)
+      
+      boolean isRegenerate = true;
+      boolean exists = avmService.lookup(-1, renditionAvmPath) != null;
+      
+      if (! exists)
       {
          final String parentAVMPath = AVMNodeConverter.SplitBase(renditionAvmPath)[0];
          AVMUtil.makeAllDirectories(parentAVMPath);
@@ -292,18 +295,30 @@ public class RenderingEngineTemplateImpl
                                AVMNodeConverter.SplitBase(renditionAvmPath)[1]);
          
          if (LOGGER.isDebugEnabled())
+         {
             LOGGER.debug("Created file node for file: " + renditionAvmPath);
-
-         avmService.addAspect(renditionAvmPath, WCMAppModel.ASPECT_FORM_INSTANCE_DATA);
+         }
+         
          avmService.addAspect(renditionAvmPath, ContentModel.ASPECT_TITLED);
          avmService.addAspect(renditionAvmPath, WCMAppModel.ASPECT_RENDITION);
+         
+         isRegenerate = false;
       }
-
+      else
+      {
+          // ETHREEOH-2110
+          if (! avmService.hasAspect(-1, renditionAvmPath, WCMAppModel.ASPECT_RENDITION))
+          {
+              avmService.addAspect(renditionAvmPath, WCMAppModel.ASPECT_RENDITION);
+              isRegenerate = false;
+          }
+      }
+      
       final Rendition result = new RenditionImpl(-1, 
                                                  renditionAvmPath,
                                                  this.getFormsService());
       this.render(formInstanceData, result);
-
+      
       if (!isRegenerate)
       {
          final PropertyValue pv = 

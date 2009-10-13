@@ -56,19 +56,19 @@
       
       // also check to see if the 'no-condition' option has been selected, if it has, change
       // the explanation text and the button label
-      var short_text = "<a:outputText value='#{msg.click_add_to_list}' />";
-      var long_text = "<a:outputText value='#{msg.click_set_and_add}' />";
-      var short_label = "<a:outputText value='#{msg.add_to_list_button}' encodeForJavaScript='true' />";
-      var long_label = "<a:outputText value='#{msg.set_and_add_button}' encodeForJavaScript='true' />";
+      var short_text = "<h:outputText value='#{msg.click_add_to_list}' />";
+      var long_text = "<h:outputText value='#{msg.click_set_and_add}' />";
+      var short_label = "<h:outputText value='#{msg.add_to_list_button}' />";
+      var long_label = "<h:outputText value='#{msg.set_and_add_button}' />";
       
       if (inputField.value == "no-condition")
       {
-         document.getElementById("composite-condition:set-add-button").value = unescape(short_label);
+         document.getElementById("composite-condition:set-add-button").value = short_label;
          document.getElementById("composite-condition:instruction-text").innerHTML = short_text;
       }
       else
       {
-         document.getElementById("composite-condition:set-add-button").value = unescape(long_label);
+         document.getElementById("composite-condition:set-add-button").value = long_label;
          document.getElementById("composite-condition:instruction-text").innerHTML = long_text;
       }
    }

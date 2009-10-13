@@ -62,7 +62,7 @@
       {
          finishButtonPressed = false;
          return validateName(document.getElementById("dialog:dialog-body:name"), 
-                             unescape('</f:verbatim><a:outputText value="#{msg.validation_invalid_character}" encodeForJavaScript="true" /><f:verbatim>'),
+                             unescape('</f:verbatim><h:outputText value="#{msg.validation_invalid_character}" /><f:verbatim>'),
                              true);
       }
       else

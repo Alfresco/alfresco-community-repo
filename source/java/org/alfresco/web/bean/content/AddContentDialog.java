@@ -44,6 +44,7 @@ import org.alfresco.config.ConfigService;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.content.filestore.FileContentReader;
+import org.alfresco.service.cmr.model.FileExistsException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.namespace.QName;
@@ -315,6 +316,23 @@ public class AddContentDialog extends BaseContentWizard
    {
     
       return Application.getMessage(FacesContext.getCurrentInstance(), MSG_OK);
+   }
+   
+   @Override
+   protected String formatErrorMessage(Throwable exception)
+   {
+      if (exception instanceof FileExistsException)
+      {
+         return MessageFormat.format(Application.getMessage(
+               FacesContext.getCurrentInstance(), Repository.ERROR_EXISTS),
+               ((FileExistsException)exception).getName());
+      }
+      else
+      {
+         return MessageFormat.format(Application.getMessage(
+               FacesContext.getCurrentInstance(), "error_content"),
+               exception.getMessage());
+      }
    }
 
 }

@@ -214,7 +214,7 @@
          {
             finishButtonPressed = false;
             return validateName(document.getElementById("dialog:dialog-body:file-name"),
-                                unescape('</f:verbatim><a:outputText id="text11" value="#{msg.validation_invalid_character}" encodeForJavaScript="true" /><f:verbatim>'), true);
+                                unescape('</f:verbatim><h:outputText id="text11" value="#{msg.validation_invalid_character}" /><f:verbatim>'), true);
          }
          else
          {

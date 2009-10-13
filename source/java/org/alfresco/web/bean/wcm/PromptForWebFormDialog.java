@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -24,8 +24,10 @@
  */
 package org.alfresco.web.bean.wcm;
 
+import java.io.Serializable;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -36,6 +38,7 @@ import org.alfresco.model.WCMAppModel;
 import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
+import org.alfresco.service.namespace.QName;
 import org.alfresco.web.app.AlfrescoNavigationHandler;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.servlet.FacesHelper;
@@ -57,7 +60,7 @@ public class PromptForWebFormDialog extends BaseDialogBean
 {
    private static final long serialVersionUID = 8062203927131257236L;
 
-   private static final Log LOGGER = LogFactory.getLog(PromptForWebFormDialog.class);
+   private static final Log logger = LogFactory.getLog(PromptForWebFormDialog.class);
    
    /** AVM service reference */
    transient private AVMService avmService;
@@ -152,8 +155,12 @@ public class PromptForWebFormDialog extends BaseDialogBean
          {
             final Form f = fid.getForm();
             this.formName = f.getName();
-            // strange case... this should throw an exception if we're here... 
-            LOGGER.debug(avmPath + ".getForm() did not throw a form not found.  why are we here?");
+            
+            if (logger.isDebugEnabled())
+            {
+                // strange case... this should throw an exception if we're here... 
+                logger.debug(avmPath + ".getForm() did not throw a form not found.  why are we here?");
+            }
          }
          catch (final FormNotFoundException fnfe)
          {
@@ -178,19 +185,31 @@ public class PromptForWebFormDialog extends BaseDialogBean
    protected String finishImpl(final FacesContext context, String outcome)
       throws Exception
    {
-      LOGGER.debug("configuring " + this.getAvmNode().getPath() + 
-                   " to use form " + this.getFormName());
-
-      this.getAvmService().setNodeProperty(this.getAvmNode().getPath(),
-                                      WCMAppModel.PROP_PARENT_FORM_NAME,
-                                      new PropertyValue(DataTypeDefinition.TEXT, this.getFormName()));
-                                      
+      
+      if (logger.isDebugEnabled())
+      {
+         logger.debug("configuring " + this.getAvmNode().getPath() +
+                      " to use form " + this.getFormName());
+      }
+      
       if (!this.getAvmService().hasAspect(this.getAvmNode().getVersion(),
                                      this.getAvmNode().getPath(), 
                                      WCMAppModel.ASPECT_FORM_INSTANCE_DATA))
       {
-         this.getAvmService().addAspect(this.getAvmNode().getPath(), WCMAppModel.ASPECT_FORM_INSTANCE_DATA);
+         String cwd = AVMUtil.getCorrespondingPathInPreviewStore(this.avmBrowseBean.getCurrentPath());
+         
+         Map<QName, Serializable> props = new HashMap<QName, Serializable>(1, 1.0f);
+         props.put(WCMAppModel.PROP_PARENT_FORM_NAME, this.getFormName());
+         props.put(WCMAppModel.PROP_ORIGINAL_PARENT_PATH, cwd);
+         this.getNodeService().addAspect(this.getAvmNode().getNodeRef(), WCMAppModel.ASPECT_FORM_INSTANCE_DATA, props);
       }
+      else
+      {
+          this.getAvmService().setNodeProperty(this.getAvmNode().getPath(),
+                  WCMAppModel.PROP_PARENT_FORM_NAME,
+                  new PropertyValue(DataTypeDefinition.TEXT, this.getFormName()));
+      }
+      
       return outcome;
    }
       

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -34,6 +34,7 @@ import javax.transaction.UserTransaction;
 import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.avm.AVMNodeConverter;
+import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.ml.MultilingualContentService;
 import org.alfresco.service.cmr.model.FileExistsException;
@@ -43,6 +44,7 @@ import org.alfresco.service.cmr.repository.CopyService;
 import org.alfresco.service.cmr.repository.CrossRepositoryCopyService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.servlet.FacesHelper;
@@ -345,7 +347,14 @@ public class WorkspaceClipboardItem extends AbstractClipboardItem
 
                   // inter-store copy operation
                   crossRepoCopyService.copy(getNodeRef(), destRef, name);
-
+                  
+                  if (destRef.getStoreRef().getProtocol().equals(StoreRef.PROTOCOL_AVM))
+                  {
+                      // ETHREEOH-2110
+                      AVMNodeDescriptor desc = getAvmService().lookup(-1, destPath + "/" + name);
+                      recursiveFormCheck(desc);
+                  }
+                  
                   // if we get here without an exception, the clipboard copy operation was successful
                   operationComplete = true;
                }

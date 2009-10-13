@@ -244,6 +244,8 @@ public class EditFormWizard
             
             assert retd != null;
             assert retd.getNodeRef() != null;
+            this.getNodeService().removeAssociation(formNodeRef, retd.getNodeRef(), 
+                     WCMAppModel.ASSOC_RENDERING_ENGINE_TEMPLATES);
             this.getNodeService().removeChild(formNodeRef, retd.getNodeRef());
             this.removeRenderingEngineTemplateFromWebProjects(formNodeRef, retd);
 

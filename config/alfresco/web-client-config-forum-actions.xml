@@ -260,7 +260,6 @@
             <action idref="cut_node" />
             <action idref="copy_node" />
             <action idref="delete_space" />
-            <action idref="import_space" />
             <action idref="export_space" />
             <action idref="manage_space_users" />
             <action idref="create_shortcut" />
@@ -298,7 +297,6 @@
             <action idref="copy_node" />
             <action idref="paste_all" />
             <action idref="manage_space_users" />
-            <action idref="import_space" />
             <action idref="export_space" />
          </action-group>
          

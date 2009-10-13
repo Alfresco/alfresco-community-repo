@@ -219,6 +219,14 @@ public class ImportDialog extends BaseDialogBean
    }
    
    /**
+    * @param fileName The name of the file
+    */
+   public void setFileName(String fileName)
+   {
+       //do nothing required for JSF workflow
+   }
+
+   /**
     * Returns the encoding to use for the export
     *  
     * @return The encoding

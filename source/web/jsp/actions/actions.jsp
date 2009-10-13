@@ -42,19 +42,19 @@
          
       // also check to see if a no parameters option has been selected, if it has, change
       // the explanation text and the button label
-      var short_text = "</f:verbatim><a:outputText value='#{msg.click_add_to_list}' /><f:verbatim>";
-      var long_text = "</f:verbatim><a:outputText value='#{msg.click_set_and_add}' /><f:verbatim>";
-      var short_label = "</f:verbatim><a:outputText value='#{msg.add_to_list_button}' encodeForJavaScript='true' /><f:verbatim>";
-      var long_label = "</f:verbatim><a:outputText value='#{msg.set_and_add_button}' encodeForJavaScript='true' /><f:verbatim>";
+      var short_text = "</f:verbatim><h:outputText value='#{msg.click_add_to_list}' /><f:verbatim>";
+      var long_text = "</f:verbatim><h:outputText value='#{msg.click_set_and_add}' /><f:verbatim>";
+      var short_label = "</f:verbatim><h:outputText value='#{msg.add_to_list_button}' /><f:verbatim>";
+      var long_label = "</f:verbatim><h:outputText value='#{msg.set_and_add_button}'  /><f:verbatim>";
       
       if (inputField.value == "no-condition")
       {
-         document.getElementById("wizard:wizard-body:set-add-button").value = unescape(short_label);
+         document.getElementById("wizard:wizard-body:set-add-button").value = short_label;
          document.getElementById("wizard:wizard-body:instruction-text").innerHTML = short_text;
       }
       else
       {
-         document.getElementById("wizard:wizard-body:set-add-button").value = unescape(long_label);
+         document.getElementById("wizard:wizard-body:set-add-button").value = long_label;
          document.getElementById("wizard:wizard-body:instruction-text").innerHTML = long_text;
       }
    }

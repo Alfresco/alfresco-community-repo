@@ -25,6 +25,7 @@
 package org.alfresco.web.bean.content;
 
 import java.io.Serializable;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -41,11 +42,13 @@ import org.alfresco.config.ConfigElement;
 import org.alfresco.config.ConfigService;
 import org.alfresco.model.WCMAppModel;
 import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.service.cmr.model.FileExistsException;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.web.app.AlfrescoNavigationHandler;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.servlet.FacesHelper;
 import org.alfresco.web.bean.repository.Node;
+import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.data.IDataContainer;
 import org.alfresco.web.data.QuickSort;
 import org.alfresco.web.forms.Form;
@@ -391,4 +394,22 @@ public class CreateContentWizard extends BaseContentWizard
       // clear the content as HTML is not compatible with the plain text box etc.
       this.content = null;
    }
+   
+   @Override
+   protected String formatErrorMessage(Throwable exception)
+   {
+      if (exception instanceof FileExistsException)
+      {
+         return MessageFormat.format(Application.getMessage(
+               FacesContext.getCurrentInstance(), Repository.ERROR_EXISTS),
+               ((FileExistsException)exception).getName());
+      }
+      else
+      {
+         return MessageFormat.format(Application.getMessage(
+               FacesContext.getCurrentInstance(), "error_content"),
+               exception.getMessage());
+      }
+   }
+
 }

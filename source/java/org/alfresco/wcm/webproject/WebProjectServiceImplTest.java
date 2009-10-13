@@ -36,16 +36,20 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.service.cmr.avm.AVMExistsException;
 import org.alfresco.service.cmr.avm.AVMNotFoundException;
+import org.alfresco.service.cmr.avm.AVMService;
+import org.alfresco.service.cmr.avm.AVMStoreDescriptor;
 import org.alfresco.service.cmr.model.FileFolderService;
-import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.DuplicateChildNodeNameException;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.wcm.AbstractWCMServiceImplTest;
+import org.alfresco.wcm.asset.AssetInfo;
+import org.alfresco.wcm.sandbox.SandboxInfo;
 import org.alfresco.wcm.util.WCMUtil;
 
 /**
@@ -74,7 +78,6 @@ public class WebProjectServiceImplTest extends AbstractWCMServiceImplTest
     private static final int SCALE_WEBPROJECTS = 5;
     private static final int SCALE_WEBAPPS = 5;
     
-    
     //
     // services
     //
@@ -82,6 +85,8 @@ public class WebProjectServiceImplTest extends AbstractWCMServiceImplTest
     private FileFolderService fileFolderService;
     private AuthorityService authorityService;
     private PermissionService permissionService;
+    private AVMService avmService;
+    private NodeService nodeService;
 
     
     @Override
@@ -95,6 +100,8 @@ public class WebProjectServiceImplTest extends AbstractWCMServiceImplTest
         fileFolderService = (FileFolderService)ctx.getBean("FileFolderService");
         authorityService = (AuthorityService)ctx.getBean("AuthorityService");
         permissionService = (PermissionService)ctx.getBean("PermissionService");
+        avmService = (AVMService)ctx.getBean("AVMService");
+        nodeService = (NodeService)ctx.getBean("NodeService");
         
         createUser(USER_FIVE);
         createUser(USER_SIX);
@@ -118,16 +125,6 @@ public class WebProjectServiceImplTest extends AbstractWCMServiceImplTest
             
             deleteUser(USER_FIVE);
             deleteUser(USER_SIX);
-            
-            NodeRef wpRoot = wpService.getWebProjectsRoot();
-            List<FileInfo> list = fileFolderService.list(wpRoot);
-            for (FileInfo fileOrFolder : list)
-            {
-                if (fileOrFolder.getName().contains(TEST_RUN))
-                {
-                    fileFolderService.delete(fileOrFolder.getNodeRef());
-                }
-            }
         }
         
         super.tearDown();
@@ -521,7 +518,7 @@ public class WebProjectServiceImplTest extends AbstractWCMServiceImplTest
         
         // Switch back to admin
         AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
-
+        
         // Delete the web project
         wpService.deleteWebProject(wpStoreId);
         assertNull(wpService.getWebProject(wpStoreId));
@@ -562,6 +559,47 @@ public class WebProjectServiceImplTest extends AbstractWCMServiceImplTest
         
         // Delete the web project
         wpService.deleteWebProject(TEST_WEBPROJ_DNS+"-delete2");
+        
+        // Switch back to admin
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
+        
+        // Create another test web project
+        wpInfo = wpService.createWebProject(TEST_WEBPROJ_DNS+"-delete3", TEST_WEBPROJ_NAME+"-delete3", TEST_WEBPROJ_TITLE, TEST_WEBPROJ_DESCRIPTION, TEST_WEBPROJ_DEFAULT_WEBAPP, true, null);
+        wpStoreId = wpInfo.getStoreId();
+        NodeRef wpNodeRef = wpInfo.getNodeRef();
+        
+        String defaultWebApp = wpInfo.getDefaultWebApp();
+        
+        SandboxInfo sbInfo = sbService.getAuthorSandbox(wpStoreId);
+        final String authorSandboxId = sbInfo.getSandboxId();
+        
+        // no changes yet
+        List<AssetInfo> assets = sbService.listChangedAll(authorSandboxId, true);
+        assertEquals(0, assets.size());
+        
+        String authorSandboxPath = sbInfo.getSandboxRootPath() + "/" + defaultWebApp;
+        
+        for (int i = 1; i <= 100; i++)
+        {
+            assetService.createFile(authorSandboxId, authorSandboxPath, "myFile-"+i, null);
+        }
+        
+        sbService.submitAll(authorSandboxId, "s1", "s2");
+        
+        // delete immediately - don't wait for async submit to finish - this should leave an in-flight workflow
+        
+        wpService.deleteWebProject(wpStoreId);
+        
+        List<AVMStoreDescriptor> avmStores = avmService.getStores();
+        for (AVMStoreDescriptor avmStore : avmStores)
+        {
+            assertFalse("Unexpected store: "+avmStore.getName(), avmStore.getName().startsWith(wpStoreId));
+        }
+        
+        NodeRef wpArchiveNodeRef = new NodeRef(nodeService.getStoreArchiveNode(wpNodeRef.getStoreRef()).getStoreRef(), wpNodeRef.getId());
+        assertFalse(nodeService.exists(wpArchiveNodeRef));
+        
+        // TODO add more tests when WCM services explicitly support WCM workflows (eg. submit approval)
     }
     
     public void testCreateWebApp()

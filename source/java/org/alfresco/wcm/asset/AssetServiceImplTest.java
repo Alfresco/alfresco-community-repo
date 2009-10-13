@@ -28,7 +28,9 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.alfresco.model.ContentModel;
@@ -41,7 +43,6 @@ import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.wcm.AbstractWCMServiceImplTest;
 import org.alfresco.wcm.sandbox.SandboxInfo;
-import org.alfresco.wcm.sandbox.SandboxService;
 import org.alfresco.wcm.util.WCMUtil;
 import org.alfresco.wcm.webproject.WebProjectInfo;
 
@@ -52,12 +53,6 @@ import org.alfresco.wcm.webproject.WebProjectInfo;
  */
 public class AssetServiceImplTest extends AbstractWCMServiceImplTest
 {
-    //
-    // services
-    //
-    
-    private SandboxService sbService;
-    private AssetService assetService;
     
     // test data
     private static final String PREFIX = "created-by-admin-";
@@ -68,10 +63,6 @@ public class AssetServiceImplTest extends AbstractWCMServiceImplTest
     protected void setUp() throws Exception
     {
         super.setUp();
-        
-        // Get the required services
-        sbService = (SandboxService)ctx.getBean("SandboxService");
-        assetService = (AssetService)ctx.getBean("AssetService");
     }
     
     @Override
@@ -1134,6 +1125,67 @@ public class AssetServiceImplTest extends AbstractWCMServiceImplTest
         
         assertNull(assetService.getLockOwner(myFile1Asset));
         assertTrue(assetService.hasLockAccess(myFile1Asset));
+    }
+    
+    public void testSimpleLockFile2() throws InterruptedException
+    {
+        AuthenticationUtil.setFullyAuthenticatedUser(USER_ADMIN);
+        
+        // create web project (also creates staging sandbox and admin's author sandbox)
+        WebProjectInfo wpInfo = wpService.createWebProject(TEST_WEBPROJ_DNS+"-partialSubmitWithNewFolder", TEST_WEBPROJ_NAME+"-partialSubmitWithNewFolder", TEST_WEBPROJ_TITLE, TEST_WEBPROJ_DESCRIPTION, TEST_WEBPROJ_DEFAULT_WEBAPP, TEST_WEBPROJ_DONT_USE_AS_TEMPLATE, null);
+        String defaultWebApp = wpInfo.getDefaultWebApp();
+        
+        // get admin's sandbox
+        SandboxInfo sbInfo = sbService.getAuthorSandbox(wpInfo.getStoreId());
+        String sbStoreId = sbInfo.getSandboxId();
+        
+        String path = sbInfo.getSandboxRootPath() + "/" + defaultWebApp;
+        
+        // create folder
+        assetService.createFolderWebApp(sbStoreId, defaultWebApp, "/", "myDir1");
+        AssetInfo myDir1Asset = assetService.getAssetWebApp(sbStoreId, defaultWebApp, "myDir1");
+        checkAssetInfo(myDir1Asset, "myDir1", path+"/myDir1", USER_ADMIN, false, true, false, false, null);
+        
+        // note: folders do not get locked
+        assertNull(assetService.getLockOwner(myDir1Asset));
+        assertTrue(assetService.hasLockAccess(myDir1Asset));
+        
+        // create two files
+        assetService.createFileWebApp(sbStoreId, defaultWebApp, "/myDir1", "myFile1");
+        assetService.createFileWebApp(sbStoreId, defaultWebApp, "/myDir1", "myFile2");
+        
+        AssetInfo myFile1Asset = assetService.getAssetWebApp(sbStoreId, defaultWebApp, "myDir1/myFile1");
+        checkAssetInfo(myFile1Asset, "myFile1", path+"/myDir1/myFile1", USER_ADMIN, true, false, false, true, USER_ADMIN);
+        
+        assertEquals(USER_ADMIN, assetService.getLockOwner(myFile1Asset));
+        assertTrue(assetService.hasLockAccess(myFile1Asset));
+        
+        AssetInfo myFile2Asset = assetService.getAssetWebApp(sbStoreId, defaultWebApp, "myDir1/myFile2");
+        checkAssetInfo(myFile2Asset, "myFile2", path+"/myDir1/myFile2", USER_ADMIN, true, false, false, true, USER_ADMIN);
+        
+        assertEquals(USER_ADMIN, assetService.getLockOwner(myFile2Asset));
+        assertTrue(assetService.hasLockAccess(myFile2Asset));
+        
+        List<AssetInfo> changedAssets = sbService.listChangedWebApp(sbStoreId, defaultWebApp, false);
+        assertEquals(1, changedAssets.size());
+        myDir1Asset = changedAssets.get(0);
+        checkAssetInfo(myDir1Asset, "myDir1", path+"/myDir1", USER_ADMIN, false, true, false, false, null);
+        
+        List<AssetInfo> selectedAssetsToSubmit = new ArrayList<AssetInfo>(1);
+        selectedAssetsToSubmit.add(myFile1Asset);
+        
+        // partial submit with new folder
+        sbService.submitListAssets(sbStoreId, selectedAssetsToSubmit, "submit1 label", "submit1 comment");
+        Thread.sleep(SUBMIT_DELAY);
+        
+        changedAssets = sbService.listChangedWebApp(sbStoreId, defaultWebApp, false);
+        assertEquals(1, changedAssets.size());
+        myFile2Asset = changedAssets.get(0);
+        
+        // ETWOTWO-1265
+        checkAssetInfo(myFile2Asset, "myFile2", path+"/myDir1/myFile2", USER_ADMIN, true, false, false, true, USER_ADMIN);
+        assertEquals(USER_ADMIN, assetService.getLockOwner(myFile2Asset));
+        assertTrue(assetService.hasLockAccess(myFile2Asset));
     }
     
     public void testSimpleImport()

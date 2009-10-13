@@ -36,6 +36,7 @@ import org.alfresco.config.JNDIConstants;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.mbeans.VirtServerRegistry;
 import org.alfresco.repo.avm.AVMNodeConverter;
+import org.alfresco.repo.avm.actions.AVMDeployWebsiteAction;
 import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
@@ -90,6 +91,8 @@ public final class SandboxFactory extends WCMUtil
        zones.add(AuthorityService.ZONE_AUTH_ALFRESCO);
        ZONES = Collections.unmodifiableSet(zones);
    }
+   
+   private final static QName PROP_SANDBOX_LOCALHOST_DEPLOYED = QName.createQName(null, ".sandbox.localhost."+AVMDeployWebsiteAction.LIVE_SUFFIX);
    
    public void setNodeService(NodeService nodeService)
    {
@@ -239,7 +242,7 @@ public final class SandboxFactory extends WCMUtil
                                   sandboxIdProp,
                                   new PropertyValue(DataTypeDefinition.TEXT, null));
       
-      if (logger.isDebugEnabled())
+      if (logger.isTraceEnabled())
       {
          dumpStoreProperties(avmService, stagingStoreName);
          dumpStoreProperties(avmService, previewStoreName);
@@ -256,18 +259,18 @@ public final class SandboxFactory extends WCMUtil
     */
    /* package */ SandboxInfo getSandbox(String sandboxId)
    {
-       return getSandbox(sandboxId, true);
+       String wpStoreId = WCMUtil.getWebProjectStoreId(sandboxId);
+       
+       return getSandbox(wpStoreId, sandboxId, true);
    }
    
-   /* package */ SandboxInfo getSandbox(final String sandboxId, boolean withPreview)
+   private SandboxInfo getSandbox(String wpStoreId, String sandboxId, boolean withPreview)
    {
        AVMStoreDescriptor storeDesc = avmService.getStore(sandboxId);
        if (storeDesc == null)
        {
            return null;
        }
-       
-       String wpStoreId = WCMUtil.getWebProjectStoreId(sandboxId);
        
        String[] storeNames = null;
        
@@ -319,13 +322,21 @@ public final class SandboxFactory extends WCMUtil
            name = WCMUtil.getWorkflowId(sandboxId);
            storeNames = new String[] {WCMUtil.getCorrespondingMainStoreName(sandboxId), sandboxId};
        }
+       else if (WCMUtil.isLocalhostDeployedStore(wpStoreId, sandboxId))
+       {
+           // TODO refactor - pending explicit WCM services support for deployment config
+           sandboxType = PROP_SANDBOX_LOCALHOST_DEPLOYED;
+           name = sandboxId;
+           storeNames = new String[] {sandboxId};
+       }
        
        if ((storeNames == null) || (storeNames.length == 0))
        {
            throw new AlfrescoRuntimeException("Must have at least one store");
        }
        
-       if ((storeNames.length == 1) && (! sandboxType.equals(SandboxConstants.PROP_SANDBOX_STAGING_MAIN)))
+       if ((storeNames.length == 1) && 
+           ((! sandboxType.equals(SandboxConstants.PROP_SANDBOX_STAGING_MAIN)) && (! sandboxType.equals(PROP_SANDBOX_LOCALHOST_DEPLOYED))))
        {
            throw new AlfrescoRuntimeException("Main store must be of type: " + SandboxConstants.PROP_SANDBOX_STAGING_MAIN);
        }
@@ -685,7 +696,7 @@ public final class SandboxFactory extends WCMUtil
                                   sandboxIdProp,
                                   new PropertyValue(DataTypeDefinition.TEXT, null));
       
-      if (logger.isDebugEnabled())
+      if (logger.isTraceEnabled())
       {
          dumpStoreProperties(avmService, userStoreName);
          dumpStoreProperties(avmService, previewStoreName);
@@ -802,7 +813,7 @@ public final class SandboxFactory extends WCMUtil
                                   sandboxIdProp,
                                   new PropertyValue(DataTypeDefinition.TEXT, null));
       
-      if (logger.isDebugEnabled())
+      if (logger.isTraceEnabled())
       {
          dumpStoreProperties(avmService, mainStoreName);
          dumpStoreProperties(avmService, previewStoreName);
@@ -832,6 +843,7 @@ public final class SandboxFactory extends WCMUtil
     */
    public SandboxInfo createReadOnlyWorkflowSandbox(final String storeId)
    {
+      String wpStoreId = WCMUtil.getWebProjectStoreId(storeId);
       String stagingStoreName = WCMUtil.buildStagingStoreName(storeId);
 
       // create the workflow 'main' store
@@ -879,12 +891,12 @@ public final class SandboxFactory extends WCMUtil
                                   sandboxIdProp,
                                   new PropertyValue(DataTypeDefinition.TEXT, null));
       
-      if (logger.isDebugEnabled())
+      if (logger.isTraceEnabled())
       {
          dumpStoreProperties(avmService, mainStoreName);
       }
       
-      return getSandbox(mainStoreName, false); // no preview store
+      return getSandbox(wpStoreId, mainStoreName, false); // no preview store
    }
 
    
@@ -1023,8 +1035,12 @@ public final class SandboxFactory extends WCMUtil
        return workflowStoreName;
    }
    
-   // list all sandboxes for a web project
-   public List<SandboxInfo> listAllSandboxes(final String wpStoreId)
+   public List<SandboxInfo> listAllSandboxes(String wpStoreId)
+   {
+       return listAllSandboxes(wpStoreId, false, false);
+   }
+   
+   public List<SandboxInfo> listAllSandboxes(String wpStoreId, boolean includeWorkflowSandboxes, boolean includeLocalhostDeployed)
    {
        List<AVMStoreDescriptor> stores = avmService.getStores();
        
@@ -1033,21 +1049,27 @@ public final class SandboxFactory extends WCMUtil
        {
            String storeName = store.getName();
            
-           // list main stores - not preview stores or workflow stores
+           // list main stores - not preview stores or workflow stores or locally deployed "live" ASR servers (LIVE or TEST)
            if ((storeName.startsWith(wpStoreId)) && 
                (! WCMUtil.isPreviewStore(storeName)) &&
-               (! WCMUtil.isWorkflowStore(storeName)))
+               ((includeLocalhostDeployed || (! WCMUtil.isLocalhostDeployedStore(wpStoreId, storeName)))) &&
+               ((includeWorkflowSandboxes || (! WCMUtil.isWorkflowStore(storeName))))
+              )
            {
-               sbInfos.add(getSandbox(storeName));
+               sbInfos.add(getSandbox(wpStoreId, storeName, true));
            }
        }
        
        return sbInfos;
    }
-
    public void deleteSandbox(String sbStoreId)
    {
-       SandboxInfo sbInfo = getSandbox(sbStoreId);
+       deleteSandbox(WCMUtil.getWebProjectStoreId(sbStoreId), sbStoreId);
+   }
+   
+   public void deleteSandbox(String wpStoreId, String sbStoreId)
+   {
+       SandboxInfo sbInfo = getSandbox(wpStoreId, sbStoreId, true);
        
        if (sbInfo != null)
        {
@@ -1055,7 +1077,7 @@ public final class SandboxFactory extends WCMUtil
            
            // found the sandbox to remove - remove the main store (eg. user main store, staging main store, workflow main store)
            String path = WCMUtil.buildSandboxRootPath(mainSandboxStore);
-    
+           
             // Notify virtualisation server about removing this sandbox.
             //
             // Implementation note:
@@ -1093,6 +1115,11 @@ public final class SandboxFactory extends WCMUtil
                 
                 // remove any locks this user may have
                 avmLockingService.removeStoreLocks(avmStoreName);
+            }
+            
+            if (logger.isDebugEnabled())
+            {
+               logger.debug("Deleted sandbox: " + mainSandboxStore);
             }
        }
    }
@@ -1294,11 +1321,11 @@ public final class SandboxFactory extends WCMUtil
     */
    private static void dumpStoreProperties(AVMService avmService, String store)
    {
-      logger.debug("Store " + store);
+      logger.trace("Store " + store);
       Map<QName, PropertyValue> props = avmService.getStoreProperties(store);
       for (QName name : props.keySet())
       {
-         logger.debug("   " + name + ": " + props.get(name));
+         logger.trace("   " + name + ": " + props.get(name));
       }
    }
    

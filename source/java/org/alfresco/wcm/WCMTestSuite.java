@@ -54,7 +54,7 @@ public class WCMTestSuite extends TestSuite
         suite.addTestSuite(SandboxServiceImplTest.class);
         suite.addTestSuite(ScriptWebProjectsTest.class);
         suite.addTestSuite(PreviewURIServiceImplTest.class);
-        
+        suite.addTestSuite(WCMConcurrentTest.class);
         return suite;
     }
 }

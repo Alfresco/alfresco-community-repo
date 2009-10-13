@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -27,7 +27,6 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 
-import org.alfresco.repo.avm.AVMDAOs;
 import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -43,6 +42,7 @@ import org.alfresco.service.cmr.avmsync.AVMSyncService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
+import org.alfresco.wcm.util.WCMUtil;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jbpm.graph.exe.ExecutionContext;
@@ -98,76 +98,87 @@ public class AVMSubmitPackageHandler extends JBPMSpringActionHandler implements 
         final NodeRef pkg = ((JBPMNode) executionContext.getContextInstance().getVariable("bpm_package")).getNodeRef();
         final Pair<Integer, String> pkgPath = AVMNodeConverter.ToAVMVersionPath(pkg);
         final AVMNodeDescriptor pkgDesc = fAVMService.lookup(pkgPath.getFirst(), pkgPath.getSecond());
-        final String from = (String) executionContext.getContextInstance().getVariable("wcmwf_fromPath");
-        final String targetPath = pkgDesc.getIndirection();
-        if (logger.isDebugEnabled())
-            logger.debug("handling submit of " + pkgPath.getSecond() + " from " + from + " to " + targetPath);
-
-        // submit the package changes
-        final String description = (String) executionContext.getContextInstance().getVariable("bpm_workflowDescription");
-        final String tag = (String) executionContext.getContextInstance().getVariable("wcmwf_label");
-
-        final Map<QName, PropertyValue> dnsProperties = this.fAVMService.queryStorePropertyKey(targetPath.split(":")[0], QName.createQName(null, ".dns%"));
-        String localName = dnsProperties.keySet().iterator().next().getLocalName();
-        final String webProject = localName.substring(localName.lastIndexOf('.') + 1, localName.length());
-        final List<AVMDifference> stagingDiffs = fAVMSyncService.compare(pkgPath.getFirst(), pkgPath.getSecond(), -1, targetPath, null);
-
-        // Allow AVMSubmitTransactionListener to inspect the staging diffs
-        // so it can notify the virtualization server via JMX if when this
-        // submit succeeds or fails. This allows virtual webapps devoted
-        // to the workarea to be destroyed, and staging to be updated in
-        // the event that some of the files alter the behavior of the
-        // webapp itself (e.g.: WEB-INF/web.xml, WEB-INF/lib/*.jar), etc.
-
-        AlfrescoTransactionSupport.bindResource("staging_diffs", stagingDiffs);
-
-        // Workflow does this as system as the staging area has restricted access and reviewers
-        // may not have permission to flatten the store the workflow was submitted from
-        AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
+        
+        if (pkgDesc == null)
         {
-            public Object doWork() throws Exception
+            logger.warn("Submit skipped since workflow package does not exist: "+pkgPath);
+        }
+        else
+        {
+            final String from = (String) executionContext.getContextInstance().getVariable("wcmwf_fromPath");
+            final String targetPath = pkgDesc.getIndirection();
+            
+            if (logger.isDebugEnabled())
             {
-                fAVMSyncService.update(stagingDiffs, null, false, false, true, true, tag, description);
-                fAVMSyncService.flatten(pkgPath.getSecond(), targetPath);
-
-                for (final AVMDifference diff : stagingDiffs)
-                {
-                    String p = diff.getSourcePath();
-                    if (from != null && from.length() != 0)
-                    {
-                        p = from + p.substring(pkgPath.getSecond().length());
-                    }
-                    recursivelyRemoveLocks(webProject, -1, p);
-                }
-
-                // flatten source folder where changes were submitted from
-                if (from != null && from.length() > 0)
-                {
-                    // first, submit changes back to sandbox forcing addition of edits in workflow (and submission
-                    // flag removal). second, flatten sandbox, removing modified items that have been submitted
-                    // TODO: Without locking on the sandbox, it's possible that a change to a "submitted" item
-                    // may get lost when the item is finally approved
-                    final List<AVMDifference> sandboxDiffs = fAVMSyncService.compare(pkgPath.getFirst(), pkgPath.getSecond(), -1, from, null);
-                    fAVMSyncService.update(sandboxDiffs, null, true, true, false, false, tag, description);
-                    fAVMSyncService.flatten(from, targetPath);
-                }
-                
-                return null;
+                logger.debug("handling submit of " + pkgPath.getSecond() + " from " + from + " to " + targetPath);
             }
-        }, AuthenticationUtil.getSystemUserName());
+            
+            // submit the package changes
+            final String description = (String) executionContext.getContextInstance().getVariable("bpm_workflowDescription");
+            final String tag = (String) executionContext.getContextInstance().getVariable("wcmwf_label");
+    
+            final Map<QName, PropertyValue> dnsProperties = this.fAVMService.queryStorePropertyKey(targetPath.split(":")[0], QName.createQName(null, ".dns%"));
+            String localName = dnsProperties.keySet().iterator().next().getLocalName();
+            final String webProject = localName.substring(localName.lastIndexOf('.') + 1, localName.length());
+            final List<AVMDifference> stagingDiffs = fAVMSyncService.compare(pkgPath.getFirst(), pkgPath.getSecond(), -1, targetPath, null);
+    
+            // Allow AVMSubmitTransactionListener to inspect the staging diffs
+            // so it can notify the virtualization server via JMX if when this
+            // submit succeeds or fails. This allows virtual webapps devoted
+            // to the workarea to be destroyed, and staging to be updated in
+            // the event that some of the files alter the behavior of the
+            // webapp itself (e.g.: WEB-INF/web.xml, WEB-INF/lib/*.jar), etc.
+    
+            AlfrescoTransactionSupport.bindResource("staging_diffs", stagingDiffs);
+    
+            // Workflow does this as system as the staging area has restricted access and reviewers
+            // may not have permission to flatten the store the workflow was submitted from
+            AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
+            {
+                public Object doWork() throws Exception
+                {
+                    fAVMSyncService.update(stagingDiffs, null, false, false, true, true, tag, description);
+                    fAVMSyncService.flatten(pkgPath.getSecond(), targetPath);
+                    
+                    for (final AVMDifference diff : stagingDiffs)
+                    {
+                        recursivelyRemoveLocks(webProject, -1, diff.getSourcePath());
+                    }
+                    
+                    // flatten source folder where changes were submitted from
+                    if (from != null && from.length() > 0)
+                    {
+                        // first, submit changes back to sandbox forcing addition of edits in workflow (and submission
+                        // flag removal). second, flatten sandbox, removing modified items that have been submitted
+                        // TODO: Without locking on the sandbox, it's possible that a change to a "submitted" item
+                        // may get lost when the item is finally approved
+                        final List<AVMDifference> sandboxDiffs = fAVMSyncService.compare(pkgPath.getFirst(), pkgPath.getSecond(), -1, from, null);
+                        fAVMSyncService.update(sandboxDiffs, null, true, true, false, false, tag, description);
+                        fAVMSyncService.flatten(from, targetPath);
+                    }
+                    
+                    return null;
+                }
+            }, AuthenticationUtil.getSystemUserName());
+        }
     }
 
     /**
      * Recursively remove locks from a path. Walking child folders looking for files to remove locks from.
      */
-    private void recursivelyRemoveLocks(final String webProject, final int version, final String path)
+    private void recursivelyRemoveLocks(String wpStoreId, int version, String wfPath)
     {
-        if (logger.isDebugEnabled())
-            logger.debug("removing lock on " + path);
-        AVMNodeDescriptor desc = fAVMService.lookup(version, path, true);
+        AVMNodeDescriptor desc = fAVMService.lookup(version, wfPath, true);
         if (desc.isFile() || desc.isDeletedFile())
         {
-            fAVMLockingService.removeLock(webProject, path.substring(path.indexOf(":") + 1));
+            String relativePath = WCMUtil.getStoreRelativePath(wfPath);
+            
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("removing file lock on " + relativePath + " (store id: "+wpStoreId+")");
+            }
+            
+            fAVMLockingService.removeLock(wpStoreId, relativePath);
         }
         else
         {
@@ -176,7 +187,7 @@ public class AVMSubmitPackageHandler extends JBPMSpringActionHandler implements 
                 Map<String, AVMNodeDescriptor> list = fAVMService.getDirectoryListing(desc, true);
                 for (AVMNodeDescriptor child : list.values())
                 {
-                    recursivelyRemoveLocks(webProject, version, child.getPath());
+                    recursivelyRemoveLocks(wpStoreId, version, child.getPath());
                 }
             }
         }

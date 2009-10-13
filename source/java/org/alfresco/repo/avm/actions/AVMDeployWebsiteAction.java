@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -62,6 +62,8 @@ import org.apache.commons.logging.LogFactory;
 /**
  * Deploys a website to a remote server.
  *
+ * TODO refactor and add to WCM services (when we support WCM deployment config)
+ *
  * @author gavinc
  */
 public class AVMDeployWebsiteAction extends ActionExecuterAbstractBase
@@ -75,6 +77,8 @@ public class AVMDeployWebsiteAction extends ActionExecuterAbstractBase
    public static final String PARAM_CALLBACK = "callback";
    
    public static final String ASYNC_QUEUE_NAME = "deployment";
+   
+   public static final String LIVE_SUFFIX = "live";
 
    private int delay = -1;
    private int defaultAlfRmiPort = 50500;
@@ -291,7 +295,7 @@ public class AVMDeployWebsiteAction extends ActionExecuterAbstractBase
 
          if (port == null && (host.equalsIgnoreCase("localhost") || host.equalsIgnoreCase("127.0.0.1")))
          {
-            targetPath = storePath[0] + "live:" + storePath[1];
+            targetPath = storePath[0] + LIVE_SUFFIX + ":" + storePath[1];
          }
       }
       else 

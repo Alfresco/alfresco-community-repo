@@ -555,7 +555,18 @@ public class AVMSyncServiceImpl implements AVMSyncService
         // This is a delete.
         if (toLink == null)
         {
-            fAVMService.removeNode(parentPath, name);
+            try
+            {
+                fAVMService.removeNode(parentPath, name);
+            }
+            catch (AVMNotFoundException nfe)
+            {
+                // ignore
+                if (fgLogger.isDebugEnabled())
+                {
+                    fgLogger.debug("linkIn: Does not exist: "+parentPath+"/"+name);
+                }
+            }
             return;
         }
         mkdirs(parentPath, AVMNodeConverter.SplitBase(toLink.getPath())[0]);
@@ -831,11 +842,26 @@ public class AVMSyncServiceImpl implements AVMSyncService
             {
                 return AVMDifference.SAME;
             }
-            // Otherwise we know they are in conflict because they are of different type.
+            
+            AVMNodeDescriptor common = fAVMService.getCommonAncestor(srcDesc, dstDesc);
+            if (common == null)
+            {
+                return AVMDifference.CONFLICT;
+            }
+            if (common.getId() == srcDesc.getId())
+            {
+                return AVMDifference.OLDER;
+            }
+            if (common.getId() == dstDesc.getId())
+            {
+                return AVMDifference.NEWER;
+            }
+            
             return AVMDifference.CONFLICT;
         }
         // Destination is a plain file.
         AVMNodeDescriptor common = fAVMService.getCommonAncestor(srcDesc, dstDesc);
+        
         // Conflict case.
         if (common == null)
         {
@@ -849,7 +875,23 @@ public class AVMSyncServiceImpl implements AVMSyncService
         {
             return AVMDifference.NEWER;
         }
-        // The must, finally, be in conflict.
+        
+        if (common.isLayeredFile())
+        {
+            AVMNode dstAncNode = AVMDAOs.Instance().fAVMNodeDAO.getByID(dstDesc.getId()).getAncestor();
+            if ((dstAncNode != null) && (common.getId() == dstAncNode.getId()))
+            {
+                return AVMDifference.NEWER;
+            }
+            
+            AVMNode srcAncNode = AVMDAOs.Instance().fAVMNodeDAO.getByID(srcDesc.getId()).getAncestor();
+            if ((srcAncNode != null) && (common.getId() == srcAncNode.getId()))
+            {
+                return AVMDifference.OLDER;
+            }
+        }
+        
+        // They must, finally, be in conflict.
         return AVMDifference.CONFLICT;
     }
     

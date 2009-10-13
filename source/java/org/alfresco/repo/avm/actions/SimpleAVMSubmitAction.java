@@ -47,6 +47,8 @@ import org.apache.commons.logging.LogFactory;
  * This action submits all the newer changes in the passed in NodeRef
  * to its corresponding staging area. It ignores conflicts and older nodes.
  * @author britt
+ * 
+ * @deprecated see org.alfresco.wcm.actions.WCMSandboxSubmitAction or org.alfresco.wcm.SandboxService.submit
  */
 public class SimpleAVMSubmitAction extends ActionExecuterAbstractBase
 {

@@ -54,6 +54,7 @@
        <property name="sandboxFactory" ref="sandboxFactory"/>
        <property name="virtServerRegistry" ref="VirtServerRegistry"/>
        <property name="previewURIServiceRegistry" ref="previewURIServiceRegistry"/>
+       <property name="transactionService" ref="transactionService"/>
     </bean>
 
 
@@ -198,8 +199,8 @@
        <property name="nameMatcher" ref="globalPathExcluder"/>
        <property name="virtServerRegistry" ref="VirtServerRegistry"/>
        <property name="transactionService" ref="transactionService"/>
-       <property name="actionService" ref="ActionService"/>
        <property name="workflowService" ref="WorkflowService"/>
+       <property name="avmLockingService" ref="AVMLockingService"/>
     </bean>
 
     <!--
@@ -302,5 +303,44 @@
     </bean>
     
     <bean id="nullPreviewURIService" class="org.alfresco.wcm.preview.NullPreviewURIService" parent="basePreviewURIServiceProvider"/>
+    
+    <!-- WCM example actions -->
+    
+    <bean id="wcm-submit" class="org.alfresco.wcm.actions.WCMSandboxSubmitAction" parent="action-executer">
+        <property name="sandboxService">
+            <ref bean="SandboxService"/>
+        </property>
+        <property name="publicAction">
+            <value>false</value>
+        </property>
+    </bean>
+    
+    <bean id="wcm-revert-snapshot" class="org.alfresco.wcm.actions.WCMSandboxRevertSnapshotAction" parent="action-executer">
+        <property name="sandboxService">
+            <ref bean="SandboxService"/>
+        </property>
+        <property name="publicAction">
+            <value>false</value>
+        </property>
+    </bean>
+    
+    <bean id="wcm-undo" class="org.alfresco.wcm.actions.WCMSandboxUndoAction" parent="action-executer">
+        <property name="sandboxService">
+            <ref bean="SandboxService"/>
+        </property>
+        <property name="publicAction">
+            <value>false</value>
+        </property>
+    </bean>
+    
+    <!-- I18N -->
+    
+    <bean id="wcmServicesResourceBundles" class="org.alfresco.i18n.ResourceBundleBootstrapComponent">
+        <property name="resourceBundles">
+            <list>
+                <value>alfresco.messages.wcm-services</value>
+            </list>
+        </property>
+    </bean>
     
 </beans>

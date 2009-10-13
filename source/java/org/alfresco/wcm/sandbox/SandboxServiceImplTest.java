@@ -26,22 +26,32 @@ package org.alfresco.wcm.sandbox;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.alfresco.config.JNDIConstants;
+import org.alfresco.repo.action.ActionImpl;
+import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.avm.AVMService;
+import org.alfresco.service.cmr.avmsync.AVMDifference;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.util.GUID;
 import org.alfresco.wcm.AbstractWCMServiceImplTest;
+import org.alfresco.wcm.actions.WCMSandboxRevertSnapshotAction;
+import org.alfresco.wcm.actions.WCMSandboxSubmitAction;
+import org.alfresco.wcm.actions.WCMSandboxUndoAction;
 import org.alfresco.wcm.asset.AssetInfo;
-import org.alfresco.wcm.asset.AssetService;
 import org.alfresco.wcm.util.WCMUtil;
 import org.alfresco.wcm.webproject.WebProjectInfo;
 
@@ -62,9 +72,6 @@ public class SandboxServiceImplTest extends AbstractWCMServiceImplTest
     // services
     //
     
-    private SandboxService sbService;
-    private AssetService assetService;
-    
     private AVMService avmService; // non-locking-aware
     
     //private AVMService avmLockingAwareService;
@@ -77,9 +84,6 @@ public class SandboxServiceImplTest extends AbstractWCMServiceImplTest
         super.setUp();
         
         // Get the required services
-        sbService = (SandboxService)ctx.getBean("SandboxService");
-        assetService = (AssetService)ctx.getBean("AssetService");
-        
         avmService = (AVMService)ctx.getBean("AVMService");
         
         // WCM locking
@@ -296,9 +300,9 @@ public class SandboxServiceImplTest extends AbstractWCMServiceImplTest
         // Switch to USER_TWO
         AuthenticationUtil.setFullyAuthenticatedUser(USER_TWO);
 
-        // Content publisher - can only list own sandbox and staging
+        // Content publisher - can list all sandboxes
         sbInfos = sbService.listSandboxes(wpInfo.getStoreId());
-        assertEquals(2, sbInfos.size());
+        assertEquals(6, sbInfos.size());
         
         // Switch to USER_THREE
         AuthenticationUtil.setFullyAuthenticatedUser(USER_THREE);
@@ -360,21 +364,14 @@ public class SandboxServiceImplTest extends AbstractWCMServiceImplTest
         userSandboxId = TEST_SANDBOX+"-get" + "--" + USER_THREE;
         sbInfo = sbService.getSandbox(userSandboxId);
         checkSandboxInfo(sbInfo, userSandboxId, USER_THREE, AuthenticationUtil.getAdminUserName(), userSandboxId, SandboxConstants.PROP_SANDBOX_AUTHOR_MAIN);
-     
+        
         // Switch to USER_TWO
         AuthenticationUtil.setFullyAuthenticatedUser(USER_TWO);
         
-        try
-        {
-            // Content publisher - try to get another user's sandbox (-ve test)
-            userSandboxId = TEST_SANDBOX+"-get" + "--" + USER_THREE;
-            sbInfo = sbService.getSandbox(userSandboxId);
-            fail("Shouldn't be able to get another author's sandbox");
-        }
-        catch (AccessDeniedException exception)
-        {
-            // Expected
-        }
+        // content publisher can get any (author) sandbox
+        userSandboxId = TEST_SANDBOX+"-get" + "--" + USER_THREE;
+        sbInfo = sbService.getSandbox(userSandboxId);
+        checkSandboxInfo(sbInfo, userSandboxId, USER_THREE, AuthenticationUtil.getAdminUserName(), userSandboxId, SandboxConstants.PROP_SANDBOX_AUTHOR_MAIN);
         
         // Switch to USER_THREE
         AuthenticationUtil.setFullyAuthenticatedUser(USER_THREE);
@@ -483,7 +480,7 @@ public class SandboxServiceImplTest extends AbstractWCMServiceImplTest
         // Switch to USER_TWO
         AuthenticationUtil.setFullyAuthenticatedUser(USER_TWO);
         
-        assertEquals(2, sbService.listSandboxes(wpStoreId).size());
+        assertEquals(4, sbService.listSandboxes(wpStoreId).size());
         
         sbInfo = sbService.getAuthorSandbox(wpStoreId);
         assertNotNull(sbInfo);
@@ -491,7 +488,7 @@ public class SandboxServiceImplTest extends AbstractWCMServiceImplTest
         // can delete own sandbox
         sbService.deleteSandbox(sbInfo.getSandboxId());
         
-        assertEquals(1, sbService.listSandboxes(wpStoreId).size());
+        assertEquals(3, sbService.listSandboxes(wpStoreId).size());
         
         sbInfo = sbService.getAuthorSandbox(wpStoreId);
         assertNull(sbInfo);
@@ -624,22 +621,6 @@ public class SandboxServiceImplTest extends AbstractWCMServiceImplTest
                 fail("The asset '" + asset.getName() + "' is not recognised");
             }
         }
-      
-        // Switch to USER_TWO
-        AuthenticationUtil.setFullyAuthenticatedUser(USER_TWO);
-        
-        assertEquals(2, sbService.listSandboxes(wpStoreId).size());
-        
-        try
-        {
-            // Content Contributor should not be able to list another user's changes (-ve test)
-            assets = sbService.listChangedAll(userOneSandboxId, true);
-            fail("Shouldn't allow non-content-manager to get modified list for another sandbox");
-        }
-        catch (AccessDeniedException exception)
-        {
-            // Expected
-        }
         
         // test roles
         
@@ -666,7 +647,7 @@ public class SandboxServiceImplTest extends AbstractWCMServiceImplTest
         
         try
         {
-            // Content publisher - try to list changes in another user's sandbox (-ve test)
+            // Content contributor - try to list changes in another user's sandbox (-ve test)
             assets = sbService.listChangedAll(userTwoSandboxId, true);
             fail("Shouldn't be able to list another author's sandbox changes");
         }
@@ -678,16 +659,9 @@ public class SandboxServiceImplTest extends AbstractWCMServiceImplTest
         // Switch to USER_TWO
         AuthenticationUtil.setFullyAuthenticatedUser(USER_TWO);
         
-        try
-        {
-            // Content contributor - try to list changes in another user's sandbox (-ve test)
-            assets = sbService.listChangedAll(userOneSandboxId, true);
-            fail("Shouldn't be able to list another author's sandbox changes");
-        }
-        catch (AccessDeniedException exception)
-        {
-            // Expected
-        }
+        // Content Publisher should be able to list another user's changes
+        assets = sbService.listChangedAll(userOneSandboxId, true);
+        assertEquals(2, assets.size());
         
         // Switch to USER_FOUR
         AuthenticationUtil.setFullyAuthenticatedUser(USER_FOUR);
@@ -976,7 +950,7 @@ public class SandboxServiceImplTest extends AbstractWCMServiceImplTest
         // content manager can submit any (author) sandbox
         userSandboxId = wpStoreId + "--" + USER_ONE;
         sbService.submitAll(userSandboxId, "my submit", null);
-     
+        
         // Switch to USER_ONE
         AuthenticationUtil.setFullyAuthenticatedUser(USER_ONE);
         
@@ -996,17 +970,9 @@ public class SandboxServiceImplTest extends AbstractWCMServiceImplTest
         // Switch to USER_TWO
         AuthenticationUtil.setFullyAuthenticatedUser(USER_TWO);
         
-        try
-        {
-            // Content publisher - try to submit another user's sandbox (-ve test)
-            userSandboxId = wpStoreId + "--" + USER_ONE;
-            sbService.submitAll(userSandboxId, "my submit", null);
-            fail("Shouldn't be able to submit another author's sandbox");
-        }
-        catch (AccessDeniedException exception)
-        {
-            // Expected
-        }
+        // Content publisher - can submit other sandboxes (eg. submit all)
+        userSandboxId = wpStoreId + "--" + USER_ONE;
+        sbService.submitAll(userSandboxId, "my submit", null);
         
         // Switch to USER_FOUR
         AuthenticationUtil.setFullyAuthenticatedUser(USER_FOUR);
@@ -1341,8 +1307,8 @@ public class SandboxServiceImplTest extends AbstractWCMServiceImplTest
         assertNotNull(assetService.getAssetWebApp(stagingSandboxId, webApp, "/myDir1/myFile2"));
     }
     
-    // revert (changed) assets in user sandbox
-    public void testRevert() throws IOException, InterruptedException
+    // revert/undo (changed) assets in user sandbox
+    public void testUndo() throws IOException, InterruptedException
     {
         WebProjectInfo wpInfo = wpService.createWebProject(TEST_SANDBOX+"-revertChangedAssets", TEST_WEBPROJ_NAME+" revertChangedAssets", TEST_WEBPROJ_TITLE, TEST_WEBPROJ_DESCRIPTION);
         
@@ -1352,12 +1318,7 @@ public class SandboxServiceImplTest extends AbstractWCMServiceImplTest
         
         // Invite web users
         wpService.inviteWebUser(wpStoreId, USER_ONE, WCMUtil.ROLE_CONTENT_CONTRIBUTOR, true);
-        
-        // TODO - pending fix for ETWOTWO-981
-        //wpService.inviteWebUser(wpStoreId, USER_TWO, WCMUtil.ROLE_CONTENT_PUBLISHER, true);
-        
-        wpService.inviteWebUser(wpStoreId, USER_TWO, WCMUtil.ROLE_CONTENT_MANAGER, true);
-        
+        wpService.inviteWebUser(wpStoreId, USER_TWO, WCMUtil.ROLE_CONTENT_PUBLISHER, true);
         wpService.inviteWebUser(wpStoreId, USER_THREE, WCMUtil.ROLE_CONTENT_MANAGER, true);
         wpService.inviteWebUser(wpStoreId, USER_FOUR, WCMUtil.ROLE_CONTENT_REVIEWER, true);
         
@@ -1415,15 +1376,13 @@ public class SandboxServiceImplTest extends AbstractWCMServiceImplTest
         // no changes yet
         assets = sbService.listChangedAll(authorSandboxId, true);
         assertEquals(0, assets.size());
-      
-        //authorSandboxWebppPath = authorSandboxId + AVM_STORE_SEPARATOR + sbInfo.getSandboxRootPath() + "/" + webApp;
         
         final String MYFILE1_MODIFIED = "This is myFile1 ... modified by "+USER_TWO;
         writer = assetService.getContentWriter(assetService.getAssetWebApp(authorSandboxId, webApp, "/myFile1"));
         writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
         writer.setEncoding("UTF-8");
         writer.putContent(MYFILE1_MODIFIED);
-
+        
         final String MYFILE2_MODIFIED = "This is myFile2 ... modified by "+USER_TWO;
         writer = assetService.getContentWriter(assetService.getAssetWebApp(authorSandboxId, webApp, "/myDir1/myFile2"));
         writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
@@ -1486,7 +1445,7 @@ public class SandboxServiceImplTest extends AbstractWCMServiceImplTest
         // content manager can revert any (author) sandbox
         userSandboxId = wpStoreId + "--" + USER_ONE;
         sbService.revertAll(userSandboxId);
-     
+        
         // Switch to USER_ONE
         AuthenticationUtil.setFullyAuthenticatedUser(USER_ONE);
         
@@ -1503,23 +1462,14 @@ public class SandboxServiceImplTest extends AbstractWCMServiceImplTest
             // Expected
         }
         
-        // TODO - pending fix for ETWOTWO-981 - see above
-        /*
         // Switch to USER_TWO
         AuthenticationUtil.setFullyAuthenticatedUser(USER_TWO);
         
-        try
-        {
-            // Content publisher - try to revert another user's sandbox (-ve test)
-            userSandboxId = wpStoreId + "--" + USER_ONE;
-            sbService.revertAll(userSandboxId);
-            fail("Shouldn't be able to revert another author's sandbox");
-        }
-        catch (AccessDeniedException exception)
-        {
-            // Expected
-        }
-        */
+        // TODO - requires more testing - eg. revert some changes
+        
+        // Content publisher - can revert another user's sandbox
+        userSandboxId = wpStoreId + "--" + USER_ONE;
+        sbService.revertAll(userSandboxId);
         
         // Switch to USER_FOUR
         AuthenticationUtil.setFullyAuthenticatedUser(USER_FOUR);
@@ -1764,6 +1714,447 @@ public class SandboxServiceImplTest extends AbstractWCMServiceImplTest
                 fail("The asset '" + asset.getName() + "' is not recognised");
             }
         }
+    }
+    
+    public void testRevertSnapshot_ETWOTWO_1244() throws IOException, InterruptedException
+    {
+        Date fromDate = new Date();
+        
+        WebProjectInfo wpInfo = wpService.createWebProject(TEST_SANDBOX+"-revertSnapshot2", TEST_WEBPROJ_NAME+" revertSnapshot2", TEST_WEBPROJ_TITLE, TEST_WEBPROJ_DESCRIPTION);
+        
+        final String wpStoreId = wpInfo.getStoreId();
+        final String webApp = wpInfo.getDefaultWebApp();
+        final String stagingSandboxId = wpInfo.getStagingStoreName();
+        
+        SandboxInfo sbInfo = sbService.getStagingSandbox(wpStoreId);
+        String stagingSandboxPath = sbInfo.getSandboxRootPath() + "/" + webApp;
+        
+        sbInfo = sbService.getAuthorSandbox(wpStoreId);
+        String authorSandboxId = sbInfo.getSandboxId();
+        
+        String authorSandboxPath = sbInfo.getSandboxRootPath() + "/" + webApp;
+        
+        List<SandboxVersion> sbVersions = sbService.listSnapshots(stagingSandboxId, fromDate, new Date(), false);
+        assertEquals(0, sbVersions.size());
+        
+        assetService.createFile(authorSandboxId, authorSandboxPath, "c1.txt", null);
+        sbService.submitWebApp(authorSandboxId, webApp, "s1", "s1");
+        Thread.sleep(SUBMIT_DELAY);
+        
+        List<AssetInfo> listing = assetService.listAssets(stagingSandboxId, -1, stagingSandboxPath, false);
+        assertEquals(1, listing.size());
+        for (AssetInfo asset : listing)
+        {
+            if (asset.getName().equals("c1.txt") && asset.isFile())
+            {
+                continue;
+            }
+            else
+            {
+                fail("The asset '" + asset.getName() + "' is not recognised");
+            }
+        }
+        
+        assetService.createFile(authorSandboxId, authorSandboxPath, "c2.txt", null);
+        sbService.submitWebApp(authorSandboxId, webApp, "s2", "s2");
+        Thread.sleep(SUBMIT_DELAY);
+        
+        listing = assetService.listAssets(stagingSandboxId, -1, stagingSandboxPath, false);
+        assertEquals(2, listing.size());
+        for (AssetInfo asset : listing)
+        {
+            if (asset.getName().equals("c1.txt") && asset.isFile())
+            {
+                continue;
+            }
+            else if (asset.getName().equals("c2.txt") && asset.isFile())
+            {
+                continue;
+            }
+            else
+            {
+                fail("The asset '" + asset.getName() + "' is not recognised");
+            }
+        }
+        
+        sbVersions = sbService.listSnapshots(stagingSandboxId, fromDate, new Date(), false);
+        int snapshotVersionId2 = sbVersions.get(0).getVersion();
+        
+        assetService.createFile(authorSandboxId, authorSandboxPath, "c3.txt", null);
+        sbService.submitWebApp(authorSandboxId, webApp, "s3", "s3");
+        Thread.sleep(SUBMIT_DELAY);
+        
+        listing = assetService.listAssets(stagingSandboxId, -1, stagingSandboxPath, false);
+        assertEquals(3, listing.size());
+        for (AssetInfo asset : listing)
+        {
+            if (asset.getName().equals("c1.txt") && asset.isFile())
+            {
+                continue;
+            }
+            else if (asset.getName().equals("c2.txt") && asset.isFile())
+            {
+                continue;
+            }
+            else if (asset.getName().equals("c3.txt") && asset.isFile())
+            {
+                continue;
+            }
+            else
+            {
+                fail("The asset '" + asset.getName() + "' is not recognised");
+            }
+        }
+        
+        sbVersions = sbService.listSnapshots(stagingSandboxId, fromDate, new Date(), false);
+        int snapshotVersionId3 = sbVersions.get(0).getVersion();
+        
+        assetService.createFile(authorSandboxId, authorSandboxPath, "c4.txt", null);
+        sbService.submitWebApp(authorSandboxId, webApp, "s4", "s4");
+        Thread.sleep(SUBMIT_DELAY);
+        
+        listing = assetService.listAssets(stagingSandboxId, -1, stagingSandboxPath, false);
+        assertEquals(4, listing.size());
+        for (AssetInfo asset : listing)
+        {
+            if (asset.getName().equals("c1.txt") && asset.isFile())
+            {
+                continue;
+            }
+            else if (asset.getName().equals("c2.txt") && asset.isFile())
+            {
+                continue;
+            }
+            else if (asset.getName().equals("c3.txt") && asset.isFile())
+            {
+                continue;
+            }
+            else if (asset.getName().equals("c4.txt") && asset.isFile())
+            {
+                continue;
+            }
+            else
+            {
+                fail("The asset '" + asset.getName() + "' is not recognised");
+            }
+        }
+        
+        AssetInfo file = assetService.getAsset(authorSandboxId, authorSandboxPath+"/c2.txt");
+        assetService.deleteAsset(file);
+        sbService.submitWebApp(authorSandboxId, webApp, "s5", "s5");
+        Thread.sleep(SUBMIT_DELAY);
+        
+        listing = assetService.listAssets(stagingSandboxId, -1, stagingSandboxPath, false);
+        assertEquals(3, listing.size());
+        for (AssetInfo asset : listing)
+        {
+            if (asset.getName().equals("c1.txt") && asset.isFile())
+            {
+                continue;
+            }
+            else if (asset.getName().equals("c3.txt") && asset.isFile())
+            {
+                continue;
+            }
+            else if (asset.getName().equals("c4.txt") && asset.isFile())
+            {
+                continue;
+            }
+            else
+            {
+                fail("The asset '" + asset.getName() + "' is not recognised");
+            }
+        }
+        
+        // revert to snapshot
+        sbService.revertSnapshot(stagingSandboxId, snapshotVersionId2);
+        
+        listing = assetService.listAssets(stagingSandboxId, -1, stagingSandboxPath, false);
+        assertEquals(2, listing.size());
+        for (AssetInfo asset : listing)
+        {
+            if (asset.getName().equals("c1.txt") && asset.isFile())
+            {
+                continue;
+            }
+            else if (asset.getName().equals("c2.txt") && asset.isFile())
+            {
+                continue;
+            }
+            else
+            {
+                fail("The asset '" + asset.getName() + "' is not recognised");
+            }
+        }
+        
+        // revert to snapshot
+        sbService.revertSnapshot(stagingSandboxId, snapshotVersionId3);
+        
+        listing = assetService.listAssets(stagingSandboxId, -1, stagingSandboxPath, false);
+        assertEquals(3, listing.size());
+        for (AssetInfo asset : listing)
+        {
+            if (asset.getName().equals("c1.txt") && asset.isFile())
+            {
+                continue;
+            }
+            else if (asset.getName().equals("c2.txt") && asset.isFile())
+            {
+                continue;
+            }
+            else if (asset.getName().equals("c3.txt") && asset.isFile())
+            {
+                continue;
+            }
+            else
+            {
+                fail("The asset '" + asset.getName() + "' is not recognised");
+            }
+        }
+    }
+    
+    // submit sandbox
+    public void testSubmitAction() throws Exception
+    {
+        WebProjectInfo wpInfo = wpService.createWebProject(TEST_SANDBOX+"-submitAction", TEST_WEBPROJ_NAME+" submitAction", TEST_WEBPROJ_TITLE, TEST_WEBPROJ_DESCRIPTION);
+        String wpStoreId = wpInfo.getStoreId();
+        String webApp = wpInfo.getDefaultWebApp();
+        
+        SandboxInfo sbInfo = sbService.getAuthorSandbox(wpStoreId);
+        final String sbStoreId = sbInfo.getSandboxId();
+        
+        assetService.createFolderWebApp(sbStoreId, webApp, "/", "a");
+        assetService.createFolderWebApp(sbStoreId, webApp, "/a", "b");
+        assetService.createFolderWebApp(sbStoreId, webApp, "/a/b", "c");
+        
+        assetService.createFileWebApp(sbStoreId, webApp, "/a/b/c", "foo");
+        assetService.createFileWebApp(sbStoreId, webApp, "/a/b/c", "bar");
+        
+        List<AssetInfo> changedAssets = sbService.listChangedWebApp(sbStoreId, webApp, false);
+        assertEquals(1, changedAssets.size());
+        assertEquals(sbInfo.getSandboxRootPath()+"/"+webApp+"/a", changedAssets.get(0).getPath());
+        
+        final ActionImpl action = new ActionImpl(null, GUID.generate(), WCMSandboxSubmitAction.NAME);
+        
+        action.setParameterValue(WCMSandboxUndoAction.PARAM_SANDBOX_ID, sbStoreId);
+        action.setParameterValue(WCMSandboxUndoAction.PARAM_PATH_LIST, null);
+        
+        final WCMSandboxSubmitAction submit = (WCMSandboxSubmitAction)ctx.getBean(WCMSandboxSubmitAction.NAME);
+        
+        class TxnWork implements RetryingTransactionCallback<Object>
+        {
+            public Object execute() throws Exception
+            {
+                submit.execute(action, null);
+                return null;
+            }
+        };
+        TransactionService transactionService = (TransactionService) ctx.getBean("transactionService");
+        
+        // first submit - all (note: within /www/avm_webapps)
+        transactionService.getRetryingTransactionHelper().doInTransaction(new TxnWork());
+        
+        Thread.sleep(SUBMIT_DELAY);
+        
+        assetService.createFile(sbStoreId, JNDIConstants.DIR_DEFAULT_WWW, "figs", null);
+        
+        AssetInfo fileAsset = assetService.getAssetWebApp(sbStoreId, webApp, "/a/b/c/foo");
+        assetService.getContentWriter(fileAsset).getContentOutputStream().close();
+        
+        fileAsset = assetService.getAssetWebApp(sbStoreId, webApp, "/a/b/c/bar");
+        assetService.deleteAsset(fileAsset);
+        
+        changedAssets = sbService.listChanged(sbStoreId, JNDIConstants.DIR_DEFAULT_WWW, true);
+        assertEquals(3, changedAssets.size());
+        
+        assertEquals(AVMDifference.NEWER, changedAssets.get(0).getDiffCode());
+        assertEquals(sbInfo.getSandboxRootPath()+"/"+webApp+"/a/b/c/bar", changedAssets.get(0).getPath());
+        
+        assertEquals(AVMDifference.NEWER, changedAssets.get(1).getDiffCode());
+        assertEquals(sbInfo.getSandboxRootPath()+"/"+webApp+"/a/b/c/foo", changedAssets.get(1).getPath());
+        
+        assertEquals(AVMDifference.NEWER, changedAssets.get(2).getDiffCode());
+        assertEquals("/"+ JNDIConstants.DIR_DEFAULT_WWW+"/figs", changedAssets.get(2).getPath());
+        
+        List<String> paths = new ArrayList<String>();
+        paths.add(changedAssets.get(0).getPath());
+        paths.add(changedAssets.get(1).getPath());
+        paths.add(changedAssets.get(2).getPath());
+        
+        // second submit - list (note: including above /www/avm_webapps)
+        action.setParameterValue(WCMSandboxUndoAction.PARAM_PATH_LIST, (Serializable)paths);
+        action.setParameterValue(WCMSandboxUndoAction.PARAM_SANDBOX_ID, sbStoreId);
+        
+        transactionService.getRetryingTransactionHelper().doInTransaction(new TxnWork());
+        
+        Thread.sleep(SUBMIT_DELAY);
+        
+        changedAssets = sbService.listChanged(sbStoreId, JNDIConstants.DIR_DEFAULT_WWW, true);
+        assertEquals(0, changedAssets.size());
+    }
+    
+    // revert/undo sandbox
+    public void testUndoAction() throws Exception
+    {
+        WebProjectInfo wpInfo = wpService.createWebProject(TEST_SANDBOX+"-revertListAction", TEST_WEBPROJ_NAME+" revertListAction", TEST_WEBPROJ_TITLE, TEST_WEBPROJ_DESCRIPTION);
+        String wpStoreId = wpInfo.getStoreId();
+        String webApp = wpInfo.getDefaultWebApp();
+        
+        SandboxInfo sbInfo = sbService.getAuthorSandbox(wpStoreId);
+        final String sbStoreId = sbInfo.getSandboxId();
+        
+        assetService.createFolderWebApp(sbStoreId, webApp, "/", "a");
+        assetService.createFolderWebApp(sbStoreId, webApp, "/a", "b");
+        assetService.createFolderWebApp(sbStoreId, webApp, "/a/b", "c");
+        
+        List<AssetInfo> changedAssets = sbService.listChanged(sbStoreId, JNDIConstants.DIR_DEFAULT_WWW, true);
+        assertEquals(1, changedAssets.size());
+        
+        assertEquals(AVMDifference.NEWER, changedAssets.get(0).getDiffCode());
+        assertEquals(sbInfo.getSandboxRootPath()+"/"+webApp+"/a", changedAssets.get(0).getPath());
+        
+        sbService.submitWebApp(sbStoreId, webApp, "submitLabel", "submitDescription");
+        
+        Thread.sleep(SUBMIT_DELAY);
+        
+        assetService.createFileWebApp(sbStoreId, webApp, "/a/b/c", "foo");
+        
+        changedAssets = sbService.listChanged(sbStoreId, JNDIConstants.DIR_DEFAULT_WWW, true);
+        assertEquals(1, changedAssets.size());
+        
+        assertEquals(AVMDifference.NEWER, changedAssets.get(0).getDiffCode());
+        assertEquals(sbInfo.getSandboxRootPath()+"/"+webApp+"/a/b/c/foo", changedAssets.get(0).getPath());
+        
+        sbService.submitWebApp(sbStoreId, webApp, "submitLabel", "submitDescription");
+        
+        Thread.sleep(SUBMIT_DELAY);
+        
+        assetService.createFileWebApp(sbStoreId, webApp, "/a/b/c", "bar");
+        
+        assertNotNull(assetService.getAssetWebApp(sbStoreId, webApp, "/a/b/c/bar"));
+        
+        changedAssets = sbService.listChanged(sbStoreId, JNDIConstants.DIR_DEFAULT_WWW, true);
+        assertEquals(1, changedAssets.size());
+        
+        assertEquals(AVMDifference.NEWER, changedAssets.get(0).getDiffCode());
+        assertEquals(sbInfo.getSandboxRootPath()+"/"+webApp+"/a/b/c/bar", changedAssets.get(0).getPath());
+        
+        List<SandboxVersion> snapshotVersions = sbService.listSnapshots(sbStoreId, false);
+        assertEquals(2, snapshotVersions.size());
+        
+        final ActionImpl action = new ActionImpl(null, GUID.generate(), WCMSandboxUndoAction.NAME);
+        
+        List<String> paths = new ArrayList<String>();
+        paths.add(sbInfo.getSandboxRootPath()+"/"+webApp+"/a/b/c/bar");
+        
+        action.setParameterValue(WCMSandboxUndoAction.PARAM_PATH_LIST, (Serializable)paths);
+        action.setParameterValue(WCMSandboxUndoAction.PARAM_SANDBOX_ID, sbStoreId);
+        
+        final WCMSandboxUndoAction revertList = (WCMSandboxUndoAction)ctx.getBean(WCMSandboxUndoAction.NAME);
+        
+        class TxnWork implements RetryingTransactionCallback<Object>
+        {
+            public Object execute() throws Exception
+            {
+                revertList.execute(action, null);
+                return null;
+            }
+        };
+        TransactionService transactionService = (TransactionService) ctx.getBean("transactionService");
+        transactionService.getRetryingTransactionHelper().doInTransaction(new TxnWork());
+        
+        Thread.sleep(SUBMIT_DELAY);
+        
+        snapshotVersions = sbService.listSnapshots(sbStoreId, false);
+        assertEquals(2, snapshotVersions.size());
+        
+        changedAssets = sbService.listChanged(sbStoreId, JNDIConstants.DIR_DEFAULT_WWW, true);
+        assertEquals(0, changedAssets.size());
+        
+        assertNotNull(assetService.getAssetWebApp(sbStoreId, webApp, "/a/b/c/foo"));
+        assertNull(assetService.getAssetWebApp(sbStoreId, webApp, "/a/b/c/bar"));
+    }
+    
+    public void testRevertSnapshotAction() throws Exception
+    {
+        WebProjectInfo wpInfo = wpService.createWebProject(TEST_SANDBOX+"-revertSnapshotAction", TEST_WEBPROJ_NAME+" revertSnapshotAction", TEST_WEBPROJ_TITLE, TEST_WEBPROJ_DESCRIPTION);
+        String wpStoreId = wpInfo.getStoreId();
+        String webApp = wpInfo.getDefaultWebApp();
+        final String stagingStoreId = wpInfo.getStagingStoreName();
+        
+        SandboxInfo sbInfo = sbService.getAuthorSandbox(wpStoreId);
+        final String sbStoreId = sbInfo.getSandboxId();
+        
+        assetService.createFolderWebApp(sbStoreId, webApp, "/", "a");
+        assetService.createFolderWebApp(sbStoreId, webApp, "/a", "b");
+        assetService.createFolderWebApp(sbStoreId, webApp, "/a/b", "c");
+        
+        List<AssetInfo> changedAssets = sbService.listChanged(sbStoreId, JNDIConstants.DIR_DEFAULT_WWW, true);
+        assertEquals(1, changedAssets.size());
+        
+        assertEquals(AVMDifference.NEWER, changedAssets.get(0).getDiffCode());
+        assertEquals(sbInfo.getSandboxRootPath()+"/"+webApp+"/a", changedAssets.get(0).getPath());
+        
+        sbService.submitWebApp(sbStoreId, webApp, "submitLabel", "submitDescription");
+        
+        Thread.sleep(SUBMIT_DELAY);
+        
+        assetService.createFileWebApp(sbStoreId, webApp, "/a/b/c", "foo");
+        
+        changedAssets = sbService.listChanged(sbStoreId, JNDIConstants.DIR_DEFAULT_WWW, true);
+        assertEquals(1, changedAssets.size());
+        
+        assertEquals(AVMDifference.NEWER, changedAssets.get(0).getDiffCode());
+        assertEquals(sbInfo.getSandboxRootPath()+"/"+webApp+"/a/b/c/foo", changedAssets.get(0).getPath());
+        
+        sbService.submitWebApp(sbStoreId, webApp, "submitLabel", "submitDescription");
+        
+        Thread.sleep(SUBMIT_DELAY);
+        
+        assetService.createFileWebApp(sbStoreId, webApp, "/a/b/c", "bar");
+        
+        changedAssets = sbService.listChanged(sbStoreId, JNDIConstants.DIR_DEFAULT_WWW, true);
+        assertEquals(1, changedAssets.size());
+        
+        assertEquals(AVMDifference.NEWER, changedAssets.get(0).getDiffCode());
+        assertEquals(sbInfo.getSandboxRootPath()+"/"+webApp+"/a/b/c/bar", changedAssets.get(0).getPath());
+        
+        sbService.submitWebApp(sbStoreId, webApp, "submitLabel", "submitDescription");
+        
+        Thread.sleep(SUBMIT_DELAY);
+        
+        List<SandboxVersion> snapshotVersions = sbService.listSnapshots(stagingStoreId, false);
+        assertEquals(3, snapshotVersions.size());
+        
+        assertNotNull(assetService.getAssetWebApp(sbStoreId, webApp, "/a/b/c/foo"));
+        assertNotNull(assetService.getAssetWebApp(sbStoreId, webApp, "/a/b/c/bar"));
+        
+        final ActionImpl action = new ActionImpl(null, GUID.generate(), WCMSandboxRevertSnapshotAction.NAME);
+        action.setParameterValue(WCMSandboxRevertSnapshotAction.PARAM_VERSION, snapshotVersions.get(2).getVersion());
+        
+        final WCMSandboxRevertSnapshotAction revertSnapshot = (WCMSandboxRevertSnapshotAction)ctx.getBean(WCMSandboxRevertSnapshotAction.NAME);
+        
+        class TxnWork implements RetryingTransactionCallback<Object>
+        {
+            public Object execute() throws Exception
+            {
+                revertSnapshot.execute(action, AVMNodeConverter.ToNodeRef(-1, stagingStoreId+":/"));
+                return null;
+            }
+        };
+        TransactionService transactionService = (TransactionService) ctx.getBean("transactionService");
+        transactionService.getRetryingTransactionHelper().doInTransaction(new TxnWork());
+        
+        Thread.sleep(SUBMIT_DELAY);
+        
+        snapshotVersions = sbService.listSnapshots(stagingStoreId, false);
+        assertEquals(4, snapshotVersions.size());
+        
+        changedAssets = sbService.listChanged(sbStoreId, JNDIConstants.DIR_DEFAULT_WWW, true);
+        assertEquals(0, changedAssets.size());
+        
+        assertNull(assetService.getAssetWebApp(sbStoreId, webApp, "/a/b/c/foo"));
+        assertNull(assetService.getAssetWebApp(sbStoreId, webApp, "/a/b/c/bar"));
     }
     
     public void testPseudoScaleTest()

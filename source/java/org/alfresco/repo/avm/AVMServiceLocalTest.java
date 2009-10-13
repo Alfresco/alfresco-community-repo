@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2008 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -23,9 +23,12 @@
 
 package org.alfresco.repo.avm;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -39,6 +42,7 @@ import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avm.AVMStoreDescriptor;
+import org.alfresco.service.cmr.avm.VersionDescriptor;
 import org.alfresco.service.cmr.avmsync.AVMDifference;
 import org.alfresco.service.cmr.avmsync.AVMSyncException;
 import org.alfresco.service.cmr.avmsync.AVMSyncService;
@@ -982,7 +986,6 @@ public class AVMServiceLocalTest extends TestCase
             assertEquals("b title", fService.getNodeProperty(-1, "main:/b", ContentModel.PROP_TITLE).getStringValue());
             assertEquals("b descrip", fService.getNodeProperty(-1, "main:/b", ContentModel.PROP_DESCRIPTION).getStringValue());
             
-
             fService.setNodeProperty("layer:/layer/b", ContentModel.PROP_TITLE, new PropertyValue(DataTypeDefinition.TEXT, "b title2"));
             fService.setNodeProperty("layer:/layer/b", ContentModel.PROP_DESCRIPTION, new PropertyValue(DataTypeDefinition.TEXT, "b descrip2"));
             
@@ -1008,6 +1011,514 @@ public class AVMServiceLocalTest extends TestCase
         {
             e.printStackTrace(System.err);
             throw e;
+        }
+    }
+        
+    public void testSimpleUpdateLF1() throws Exception
+    {
+        try
+        {
+            List<VersionDescriptor> snapshots = fService.getStoreVersions("main");
+            assertEquals(1, snapshots.size());
+            assertEquals(0, snapshots.get(0).getVersionID());
+            
+            snapshots = fService.getStoreVersions("layer");
+            assertEquals(1, snapshots.size());
+            assertEquals(0, snapshots.get(0).getVersionID());
+            
+            recursiveList("main");
+            recursiveList("layer");
+            
+            fService.createDirectory("main:/", "a");
+            fService.createDirectory("layer:/", "a");
+            
+            logger.debug("created 2 plain dirs: main:/a, layer:/a");
+            
+            recursiveList("main");
+            recursiveList("layer");
+            
+            fService.createFile("main:/a", "foo");
+            
+            assertEquals(1, fService.lookup(-1, "main:/a/foo").getVersionID());
+            
+            PrintStream out = new PrintStream(fService.getFileOutputStream("main:/a/foo"));
+            out.println("I am main:/a/foo");
+            out.close();
+            
+            AVMNodeDescriptor node = fService.lookup(-1, "main:/a/foo");
+            assertEquals(1, node.getVersionID());
+            List<AVMNodeDescriptor> history = fService.getHistory(node, -1);
+            assertEquals(0, history.size());
+            
+            fService.createSnapshot("main", null, null);
+            
+            snapshots = fService.getStoreVersions("main");
+            assertEquals(2, snapshots.size());
+            assertEquals(1, snapshots.get(snapshots.size()-1).getVersionID());
+            
+            snapshots = fService.getStoreVersions("layer");
+            assertEquals(1, snapshots.size());
+            assertEquals(0, snapshots.get(0).getVersionID());
+            
+            assertEquals(1, fService.lookup(-1, "main:/a/foo").getVersionID());
+            assertEquals(1, fService.lookup(1, "main:/a/foo").getVersionID());
+            
+            logger.debug("created plain file: main:/a/foo");
+            
+            recursiveList("main");
+            recursiveList("layer");
+            
+            fService.createLayeredFile("main:/a/foo", "layer:/a", "foo");
+            
+            assertEquals(1, fService.lookup(-1, "layer:/a/foo").getVersionID());
+            
+            BufferedReader reader = new BufferedReader(new InputStreamReader(fService.getFileInputStream(-1, "layer:/a/foo")));
+            String line = reader.readLine();
+            reader.close();
+            assertEquals("I am main:/a/foo", line);
+            
+            node = fService.lookup(-1, "layer:/a/foo");
+            assertEquals(1, node.getVersionID());
+            
+            history = fService.getHistory(node, -1);
+            assertEquals(0, history.size());
+            
+            fService.createSnapshot("layer", null, null);
+            
+            snapshots = fService.getStoreVersions("main");
+            assertEquals(2, snapshots.size());
+            assertEquals(1, snapshots.get(snapshots.size()-1).getVersionID());
+            
+            snapshots = fService.getStoreVersions("layer");
+            assertEquals(2, snapshots.size());
+            assertEquals(1, snapshots.get(snapshots.size()-1).getVersionID());
+            
+            assertEquals(1, fService.lookup(-1, "layer:/a/foo").getVersionID());
+            assertEquals(1, fService.lookup(1, "layer:/a/foo").getVersionID());
+            
+            List<AVMDifference> diffs = fSyncService.compare(-1, "layer:/a", -1, "main:/a", null);
+            assertEquals(0, diffs.size());
+            
+            reader = new BufferedReader(new InputStreamReader(fService.getFileInputStream(-1, "layer:/a/foo")));
+            line = reader.readLine();
+            reader.close();
+            assertEquals("I am main:/a/foo", line);
+            
+            logger.debug("created layered file: layer:/a/foo -> main:/a/foo");
+            
+            recursiveList("main");
+            recursiveList("layer");
+            
+            out = new PrintStream(fService.getFileOutputStream("layer:/a/foo"));
+            out.println("I am layer:/a/foo");
+            out.close();
+            
+            logger.debug("modified file: layer:/a/foo");
+            
+            recursiveList("main");
+            recursiveList("layer");
+            
+            assertEquals(2, fService.lookup(-1, "layer:/a/foo").getVersionID());
+            
+            reader = new BufferedReader(new InputStreamReader(fService.getFileInputStream(-1, "main:/a/foo")));
+            line = reader.readLine();
+            reader.close();
+            assertEquals("I am main:/a/foo", line);
+            
+            diffs = fSyncService.compare(-1, "layer:/a", -1, "main:/a", null);
+            assertEquals(1, diffs.size());
+            
+            // TODO - review behaviour
+            assertEquals("[layer:/a/foo[-1] > main:/a/foo[-1]]", diffs.toString());
+            fSyncService.update(diffs, null, false, false, false, false, "one", "one");
+            
+            // update will implicitly snapshot (src and dst)
+            snapshots = fService.getStoreVersions("main");
+            assertEquals(3, snapshots.size());
+            assertEquals(2, snapshots.get(snapshots.size()-1).getVersionID());
+            
+            snapshots = fService.getStoreVersions("layer");
+            assertEquals(3, snapshots.size());
+            assertEquals(2, snapshots.get(snapshots.size()-1).getVersionID());
+            
+            node = fService.lookup(-1, "layer:/a/foo");
+            assertEquals(2, node.getVersionID());
+            history = fService.getHistory(node, -1);
+            
+            assertEquals(1, history.size());
+            assertEquals(1, history.get(0).getVersionID());
+            
+            assertEquals(1, fService.lookup(1, "layer:/a/foo").getVersionID());
+            assertEquals(2, fService.lookup(2, "layer:/a/foo").getVersionID());
+            
+            logger.debug("submitted/updated file: layer:/a/foo -> main:/a/foo");
+            
+            recursiveList("main");
+            recursiveList("layer");
+            
+            fSyncService.flatten("layer:/a", "main:/a");
+            
+            logger.debug("flatten dir: layer:/a -> main:/a");
+            
+            recursiveList("main");
+            recursiveList("layer");
+            
+            reader = new BufferedReader(new InputStreamReader(fService.getFileInputStream(-1, "layer:/a/foo")));
+            line = reader.readLine();
+            reader.close();
+            assertEquals("I am layer:/a/foo", line);
+            
+            reader = new BufferedReader(new InputStreamReader(fService.getFileInputStream(-1, "main:/a/foo")));
+            line = reader.readLine();
+            reader.close();
+            assertEquals("I am layer:/a/foo", line);
+            
+            snapshots = fService.getStoreVersions("main");
+            assertEquals(3, snapshots.size());
+            assertEquals(2, snapshots.get(snapshots.size()-1).getVersionID());
+            
+            snapshots = fService.getStoreVersions("layer");
+            assertEquals(3, snapshots.size());
+            assertEquals(2, snapshots.get(snapshots.size()-1).getVersionID());
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace(System.err);
+            throw e;
+        }
+    }
+    
+    public void testSimpleUpdateLF2() throws Exception
+    {
+        try
+        {
+            fService.createStore("mainA");
+            fService.createStore("mainB");
+            fService.createStore("mainB--layer");
+            
+            List<VersionDescriptor> snapshots = fService.getStoreVersions("mainA");
+            assertEquals(1, snapshots.size());
+            assertEquals(0, snapshots.get(0).getVersionID());
+            
+            snapshots = fService.getStoreVersions("mainB");
+            assertEquals(1, snapshots.size());
+            assertEquals(0, snapshots.get(0).getVersionID());
+            
+            snapshots = fService.getStoreVersions("mainB--layer");
+            assertEquals(1, snapshots.size());
+            assertEquals(0, snapshots.get(0).getVersionID());
+            
+            logger.debug("created 3 stores: mainA, mainB, mainB-layer");
+            
+            recursiveList("mainA");
+            recursiveList("mainB");
+            recursiveList("mainB--layer");
+            
+            fService.createDirectory("mainA:/", "a");
+            fService.createDirectory("mainB:/", "a");
+            
+            logger.debug("created 2 plain dirs: mainA:/a, mainB:/a");
+            
+            recursiveList("mainA");
+            recursiveList("mainB");
+            recursiveList("mainB--layer");
+            
+            fService.createLayeredDirectory("mainB:/a", "mainB--layer:/", "a");
+            
+            logger.debug("created layered dir: mainB--layer:/a -> mainB:/a");
+            
+            recursiveList("mainA");
+            recursiveList("mainB");
+            recursiveList("mainB--layer");
+            
+            // note: unlike WCM, edit staging directly (ie. don't bother with mainA--layer for now)
+            fService.createFile("mainA:/a", "foo");
+            
+            assertEquals(1, fService.lookup(-1, "mainA:/a/foo").getVersionID());
+            assertNull(fService.lookup(-1, "mainB:/a/foo"));
+            assertNull(fService.lookup(-1, "mainB--layer:/a/foo"));
+            
+            PrintStream out = new PrintStream(fService.getFileOutputStream("mainA:/a/foo"));
+            out.println("I am mainA:/a/foo");
+            out.close();
+            
+            logger.debug("created plain file: mainA:/a/foo");
+            
+            recursiveList("mainA");
+            recursiveList("mainB");
+            recursiveList("mainB--layer");
+            
+            fService.createSnapshot("mainA", null, null);
+            
+            assertEquals(1, fService.lookup(-1, "mainA:/a/foo").getVersionID());
+            assertNull(fService.lookup(-1, "mainB:/a/foo"));
+            assertNull(fService.lookup(-1, "mainB--layer:/a/foo"));
+            
+            snapshots = fService.getStoreVersions("mainA");
+            assertEquals(2, snapshots.size());
+            assertEquals(1, snapshots.get(snapshots.size()-1).getVersionID());
+            
+            logger.debug("created snapshot: mainA");
+            
+            recursiveList("mainA");
+            recursiveList("mainB");
+            recursiveList("mainB--layer");
+            
+            // note: WCM does not expose layered file (between web project staging sandboxes)
+            fService.createLayeredFile("mainA:/a/foo", "mainB:/a", "foo");
+            
+            assertEquals(1, fService.lookup(-1, "mainA:/a/foo").getVersionID());
+            assertEquals(1, fService.lookup(-1, "mainB:/a/foo").getVersionID());
+            assertEquals(1, fService.lookup(-1, "mainB--layer:/a/foo").getVersionID());
+            
+            BufferedReader reader = new BufferedReader(new InputStreamReader(fService.getFileInputStream(-1, "mainB--layer:/a/foo")));
+            String line = reader.readLine();
+            reader.close();
+            assertEquals("I am mainA:/a/foo", line);
+            
+            reader = new BufferedReader(new InputStreamReader(fService.getFileInputStream(-1, "mainB:/a/foo")));
+            line = reader.readLine();
+            reader.close();
+            assertEquals("I am mainA:/a/foo", line);
+            
+            reader = new BufferedReader(new InputStreamReader(fService.getFileInputStream(-1, "mainA:/a/foo")));
+            line = reader.readLine();
+            reader.close();
+            assertEquals("I am mainA:/a/foo", line);
+            
+            logger.debug("created layered file: mainB:/a/foo -> mainA:/a/foo");
+            
+            recursiveList("mainA");
+            recursiveList("mainB");
+            recursiveList("mainB--layer");
+            
+            // modify file in user's sandbox
+            out = new PrintStream(fService.getFileOutputStream("mainB--layer:/a/foo"));
+            out.println("I am mainB--layer:/a/foo");
+            out.close();
+            
+            assertEquals(1, fService.lookup(-1, "mainA:/a/foo").getVersionID());
+            assertEquals(1, fService.lookup(-1, "mainB:/a/foo").getVersionID());
+            assertEquals(2, fService.lookup(-1, "mainB--layer:/a/foo").getVersionID());
+            
+            logger.debug("modified file: mainB--layer:/a/foo");
+            
+            recursiveList("mainA");
+            recursiveList("mainB");
+            recursiveList("mainB--layer");
+            
+            reader = new BufferedReader(new InputStreamReader(fService.getFileInputStream(-1, "mainB--layer:/a/foo")));
+            line = reader.readLine();
+            reader.close();
+            assertEquals("I am mainB--layer:/a/foo", line);
+            
+            reader = new BufferedReader(new InputStreamReader(fService.getFileInputStream(-1, "mainB:/a/foo")));
+            line = reader.readLine();
+            reader.close();
+            assertEquals("I am mainA:/a/foo", line);
+            
+            reader = new BufferedReader(new InputStreamReader(fService.getFileInputStream(-1, "mainA:/a/foo")));
+            line = reader.readLine();
+            reader.close();
+            assertEquals("I am mainA:/a/foo", line);
+            
+            recursiveList("mainA");
+            recursiveList("mainB");
+            recursiveList("mainB--layer");
+            
+            List<AVMDifference> diffs = fSyncService.compare(-1, "mainB--layer:/a", -1, "mainB:/a", null);
+            assertEquals(1, diffs.size());
+            
+            // TODO - review behaviour
+            assertEquals("[mainB--layer:/a/foo[-1] > mainB:/a/foo[-1]]", diffs.toString());
+            fSyncService.update(diffs, null, false, false, false, false, "one", "one");
+            
+            fSyncService.flatten("mainB--layer:/a", "mainB:/a");
+            
+            assertEquals(1, fService.lookup(-1, "mainA:/a/foo").getVersionID());
+            assertEquals(2, fService.lookup(-1, "mainB:/a/foo").getVersionID());
+            assertEquals(2, fService.lookup(-1, "mainB--layer:/a/foo").getVersionID());
+            
+            snapshots = fService.getStoreVersions("mainB--layer");
+            assertEquals(2, snapshots.size());
+            assertEquals(1, snapshots.get(snapshots.size()-1).getVersionID());
+            
+            snapshots = fService.getStoreVersions("mainB");
+            assertEquals(3, snapshots.size());
+            assertEquals(2, snapshots.get(snapshots.size()-1).getVersionID());
+            
+            logger.debug("submit/update file: mainB--layer:/a/foo -> mainB:/a/foo");
+            
+            recursiveList("mainA");
+            recursiveList("mainB");
+            recursiveList("mainB--layer");
+            
+            fSyncService.flatten("mainB--layer:/a", "mainB:/a");
+            
+            logger.debug("flatten dir: mainB--layer:/a/foo -> mainB:/a/foo");
+            
+            recursiveList("mainA");
+            recursiveList("mainB");
+            recursiveList("mainB--layer");
+            
+            reader = new BufferedReader(new InputStreamReader(fService.getFileInputStream(-1, "mainB--layer:/a/foo")));
+            line = reader.readLine();
+            reader.close();
+            assertEquals("I am mainB--layer:/a/foo", line);
+            
+            reader = new BufferedReader(new InputStreamReader(fService.getFileInputStream(-1, "mainB:/a/foo")));
+            line = reader.readLine();
+            reader.close();
+            assertEquals("I am mainB--layer:/a/foo", line);
+            
+            reader = new BufferedReader(new InputStreamReader(fService.getFileInputStream(-1, "mainA:/a/foo")));
+            line = reader.readLine();
+            reader.close();
+            assertEquals("I am mainA:/a/foo", line);
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace(System.err);
+            throw e;
+        }
+        finally
+        {
+            fService.purgeStore("mainA");
+            fService.purgeStore("mainB");
+            fService.purgeStore("mainB--layer");
+        }
+    }
+    
+    public void testLayeredFolder_DeleteFile_mimic_ETHREEOH_2297() throws Exception
+    {
+        try
+        {
+            fService.createStore("mainA");
+            fService.createStore("mainB");
+            
+            fService.createDirectory("mainA:/", "a");
+            fService.createDirectory("mainA:/a", "b");
+            
+            fService.createDirectory("mainB:/", "a");
+            
+            fService.createStore("mainB--layer");
+            
+            fService.createLayeredDirectory("mainB:/a", "mainB--layer:/", "a");
+            
+            // note: short-cut - created directly in "staging" area (don't bother with sandbox mainA--layer for now)
+            fService.createFile("mainA:/a/b", "foo");
+            
+            PrintStream out = new PrintStream(fService.getFileOutputStream("mainA:/a/b/foo"));
+            out.println("I am mainA:/a/b/foo");
+            out.close();
+            
+            logger.debug("created file: mainA:/a/b/c/foo");
+            
+            recursiveList("mainA");
+            recursiveList("mainB");
+            recursiveList("mainB--layer");
+            
+            // create equivalent of WCM layered folder between web project staging sandboxes (mainB:/a/b pointing to ,mainA:/a/b)
+            fService.createLayeredDirectory("mainA:/a/b", "mainB:/a", "b");
+            
+            fService.createSnapshot("mainA", null, null);
+            fService.createSnapshot("mainB", null, null);
+            
+            logger.debug("created layered directory: mainB:/a/b -> mainA:/a/b");
+            
+            recursiveList("mainB");
+            recursiveList("mainB--layer");
+            
+            BufferedReader reader = new BufferedReader(new InputStreamReader(fService.getFileInputStream(-1, "mainB--layer:/a/b/foo")));
+            String line = reader.readLine();
+            reader.close();
+            assertEquals("I am mainA:/a/b/foo", line);
+            
+            out = new PrintStream(fService.getFileOutputStream("mainB--layer:/a/b/foo"));
+            out.println("I am mainB--layer:/a/b/foo");
+            out.close();
+            
+            fService.createSnapshot("mainB--layer", null, null);
+            
+            logger.debug("updated file: mainB--layer:/a/b/foo");
+            
+            recursiveList("mainB");
+            recursiveList("mainB--layer");
+            
+            reader = new BufferedReader(new InputStreamReader(fService.getFileInputStream(-1, "mainA:/a/b/foo")));
+            line = reader.readLine();
+            reader.close();
+            assertEquals("I am mainA:/a/b/foo", line);
+            
+            reader = new BufferedReader(new InputStreamReader(fService.getFileInputStream(-1, "mainB:/a/b/foo")));
+            line = reader.readLine();
+            reader.close();
+            assertEquals("I am mainA:/a/b/foo", line);
+            
+            reader = new BufferedReader(new InputStreamReader(fService.getFileInputStream(-1, "mainB--layer:/a/b/foo")));
+            line = reader.readLine();
+            reader.close();
+            assertEquals("I am mainB--layer:/a/b/foo", line);
+            
+            List<AVMDifference> diffs = fSyncService.compare(-1, "mainB--layer:/a", -1, "mainB:/a", null);
+            assertEquals(1, diffs.size());
+            assertEquals("[mainB--layer:/a/b/foo[-1] > mainB:/a/b/foo[-1]]", diffs.toString());
+            
+            fSyncService.update(diffs, null, false, false, false, false, "one", "one");
+            fSyncService.flatten("mainB--layer:/a", "mainB:/a");
+            
+            logger.debug("updated: created file: mainB:/a/b/foo");
+            
+            recursiveList("mainB");
+            recursiveList("mainB--layer");
+            
+            reader = new BufferedReader(new InputStreamReader(fService.getFileInputStream(-1, "mainB:/a/b/foo")));
+            line = reader.readLine();
+            reader.close();
+            assertEquals("I am mainB--layer:/a/b/foo", line);
+            
+            recursiveList("mainA");
+            recursiveList("mainB");
+            
+            // note: short-cut - removed directly from "staging" area (don't bother with sandbox mainA--layer for now)
+            fService.removeNode("mainA:/a/b", "foo");
+            
+            fService.createSnapshot("mainA", null, null);
+            
+            logger.debug("removed file: mainA:/a/b/foo");
+            
+            recursiveList("mainA");
+            recursiveList("mainB");
+            recursiveList("mainB--layer");
+            
+            // ETHREEOH-2297
+            fService.removeNode("mainB--layer:/a/b", "foo");
+            
+            diffs = fSyncService.compare(-1, "mainB--layer:/a", -1, "mainB:/a", null);
+            assertEquals(1, diffs.size());
+            assertEquals("[mainB--layer:/a/b/foo[-1] > mainB:/a/b/foo[-1]]", diffs.toString());
+            
+            fSyncService.update(diffs, null, false, false, false, false, "one", "one");
+            fSyncService.flatten("mainB--layer:/a", "mainB:/a");
+            
+            fService.createSnapshot("mainB", null, null);
+            
+            logger.debug("updated: removed file: mainB:/a/b/foo");
+            
+            recursiveList("mainA");
+            recursiveList("mainB");
+            recursiveList("mainB--layer");
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace(System.err);
+            throw e;
+        }
+        finally
+        {
+            fService.purgeStore("mainA");
+            fService.purgeStore("mainB");
+            fService.purgeStore("mainB--layer");
         }
     }
 
@@ -1077,7 +1588,7 @@ public class AVMServiceLocalTest extends TestCase
             Map<String, AVMNodeDescriptor> listing = fService.getDirectoryListing(version, path);
             for (String name : listing.keySet())
             {
-                if (logger.isDebugEnabled()) { logger.debug(name); }
+                if (logger.isTraceEnabled()) { logger.trace(name); }
                 builder.append(recursiveList(basename + name, version, indent + 2, followLinks));
             }
         }

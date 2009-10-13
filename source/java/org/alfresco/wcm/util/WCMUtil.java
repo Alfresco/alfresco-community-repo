@@ -33,6 +33,7 @@ import java.util.regex.Pattern;
 import org.alfresco.config.JNDIConstants;
 import org.alfresco.mbeans.VirtServerRegistry;
 import org.alfresco.model.WCMAppModel;
+import org.alfresco.repo.avm.actions.AVMDeployWebsiteAction;
 import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.service.cmr.avm.AVMBadArgumentException;
 import org.alfresco.service.cmr.avm.AVMNotFoundException;
@@ -121,6 +122,29 @@ public class WCMUtil
    protected static boolean isPreviewStore(final String storeName)
    {
       return ((storeName != null) && (storeName.endsWith(WCMUtil.STORE_SEPARATOR + WCMUtil.STORE_PREVIEW)));
+   }
+   
+   
+   /**
+    * http://wiki.alfresco.com/wiki/WCM_Deployment_Features#Debugging_.26_Testing
+    *
+    * Examples of locally deployed store names for web project "MyWebProj" are:
+    *
+    *    MyWebProjlive
+    *    MyWebProj--adminlive
+    *
+    * Note: if web project "MyWebProjlive" is pre-created then should be possible to browse staging:
+    *
+    *    http://wiki.alfresco.com/wiki/WCM_Deployment_Features#Deployed_Runtime
+    *
+    * @param storeName
+    * @return
+    */
+   protected static boolean isLocalhostDeployedStore(String wpStoreId, String storeName)
+   {
+      return ((storeName.startsWith(wpStoreId)) &&
+              (storeName.endsWith(AVMDeployWebsiteAction.LIVE_SUFFIX)) &&
+              (! wpStoreId.endsWith(AVMDeployWebsiteAction.LIVE_SUFFIX)));
    }
 
    /**

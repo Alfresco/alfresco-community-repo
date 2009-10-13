@@ -63,6 +63,8 @@ import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.GUID;
 import org.alfresco.util.Pair;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * A Repository contains a current root directory and a list of
@@ -72,6 +74,7 @@ import org.alfresco.util.Pair;
  */
 public class AVMStoreImpl implements AVMStore
 {
+    private static Log fgLogger = LogFactory.getLog(AVMStoreImpl.class);
     /**
      * The primary key.
      */
@@ -560,7 +563,38 @@ public class AVMStoreImpl implements AVMStore
         {
             throw new AVMExistsException("Child exists: " + name);
         }
-        // TODO Reexamine decision to not check validity of srcPath.
+        // TODO Reexamine decision to not check validity of srcPath. Warning for now.
+        String[] srcPathParts = srcPath.split(":");
+        String[] dstPathParts = dstPath.split(":");
+        
+        Lookup lPathSrc = null;
+        if (srcPathParts[0].equals(dstPathParts[0]))
+        {
+            lPathSrc = lookup(-1, srcPathParts[1], false, false);
+        }
+        else
+        {
+            AVMStore srcStore = AVMDAOs.Instance().fAVMStoreDAO.getByName(srcPathParts[0]);
+            if (srcStore != null)
+            {
+                lPathSrc = srcStore.lookup(-1, srcPathParts[1], false, false);
+            }
+        }
+        
+        AVMNode srcNode = null;
+        if (lPathSrc == null)
+        {
+            fgLogger.warn("CreateLayeredFile: srcPath not found: "+srcPath);
+        }
+        else
+        {
+            srcNode = (AVMNode)lPathSrc.getCurrentNode();
+            if (! (srcNode instanceof FileNode))
+            {
+                fgLogger.warn("CreateLayeredFile: srcPath is not a file: "+srcPath);
+            }
+        }
+        
         LayeredFileNodeImpl newFile =
             new LayeredFileNodeImpl(srcPath, this, null);
         
@@ -572,6 +606,13 @@ public class AVMStoreImpl implements AVMStore
         if (child != null)
         {
             newFile.setAncestor(child);
+        }
+        else
+        {
+            if ((srcNode != null) && (srcNode instanceof FileNode))
+            {
+                newFile.setAncestor((FileNode)srcNode);
+            }
         }
         
         // newFile.setVersionID(getNextVersionID());
@@ -738,12 +779,24 @@ public class AVMStoreImpl implements AVMStore
         {
             throw new AVMNotFoundException("Path " + path + " not found.");
         }
+        
         DirectoryNode dir = (DirectoryNode)lPath.getCurrentNode();
         Pair<AVMNode, Boolean> temp = dir.lookupChild(lPath, name, false);
         AVMNode child = (temp == null) ? null : temp.getFirst();
         if (child == null)
         {
-            throw new AVMNotFoundException("Does not exist: " + name);
+            Lookup lPathToChild = lookup(-1, path+"/"+name, true, false);
+            if (lPathToChild != null)
+            {
+                // ETHREEOH-2297
+                child = lPathToChild.getCurrentNode();
+            }
+            if (child == null)
+            {
+                throw new AVMNotFoundException("Does not exist: " + name);
+            }
+            
+            dir = lPathToChild.getCurrentNodeDirectory();
         }
         
         if (!fAVMRepository.can(this, child, PermissionService.DELETE_NODE, false))

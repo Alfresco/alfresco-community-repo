@@ -36,6 +36,8 @@ import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.PropertyMap;
+import org.alfresco.wcm.asset.AssetService;
+import org.alfresco.wcm.sandbox.SandboxService;
 import org.alfresco.wcm.util.WCMUtil;
 import org.alfresco.wcm.webproject.WebProjectInfo;
 import org.alfresco.wcm.webproject.WebProjectService;
@@ -76,7 +78,7 @@ public class AbstractWCMServiceImplTest extends TestCase
     protected static final boolean TEST_WEBPROJ_DONT_USE_AS_TEMPLATE = false;
     
     // base web users
-    //protected static final String USER_ADMIN = "admin";
+    protected static String USER_ADMIN;
     
     protected static final String TEST_USER = "testWebUser-"+TEST_RUN;
     
@@ -90,22 +92,29 @@ public class AbstractWCMServiceImplTest extends TestCase
     //
 
     protected WebProjectService wpService;
+    protected SandboxService sbService;
+    protected AssetService assetService;
+    
     protected AuthenticationService authenticationService;
     protected PersonService personService;
     
-    private TransactionService transactionService;
+    protected TransactionService transactionService;
     
     @Override
     protected void setUp() throws Exception
     {
         // Get the required services
         wpService = (WebProjectService)ctx.getBean("WebProjectService");
+        sbService = (SandboxService)ctx.getBean("SandboxService");
+        assetService = (AssetService)ctx.getBean("AssetService");
+        
         authenticationService = (AuthenticationService)ctx.getBean("AuthenticationService");
         personService = (PersonService)ctx.getBean("PersonService");
         transactionService = (TransactionService)ctx.getBean("TransactionService");
         
         // By default run as Admin
-        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
+        USER_ADMIN = AuthenticationUtil.getAdminUserName();
+        AuthenticationUtil.setFullyAuthenticatedUser(USER_ADMIN);
         
         createUser(USER_ONE);
         createUser(USER_TWO);
@@ -137,7 +146,6 @@ public class AbstractWCMServiceImplTest extends TestCase
                         }
                     };
                     transactionService.getRetryingTransactionHelper().doInTransaction(deleteWebProjectWork);
-                    
                 }
             }
             

@@ -46,6 +46,7 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.TransactionListenerAdapter;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avm.AVMNotFoundException;
 import org.alfresco.service.cmr.avm.AVMService;
@@ -66,6 +67,7 @@ import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
+import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.DNSNameMangler;
 import org.alfresco.util.ParameterCheck;
 import org.alfresco.wcm.preview.PreviewURIServiceRegistry;
@@ -101,10 +103,10 @@ public class WebProjectServiceImpl extends WCMUtil implements WebProjectService
     private AuthorityService authorityService;
     private PermissionService permissionService;
     private PersonService personService;
-    
     private SandboxFactory sandboxFactory;
     private VirtServerRegistry virtServerRegistry;
     private PreviewURIServiceRegistry previewURIProviderRegistry;
+    private TransactionService transactionService;
     
     public void setNodeService(NodeService nodeService)
     {
@@ -154,6 +156,11 @@ public class WebProjectServiceImpl extends WCMUtil implements WebProjectService
     public void setPreviewURIServiceRegistry(PreviewURIServiceRegistry previewURIProviderRegistry)
     {
         this.previewURIProviderRegistry = previewURIProviderRegistry;
+    }
+    
+    public void setTransactionService(TransactionService transactionService)
+    {
+        this.transactionService = transactionService;
     }
     
     /* (non-Javadoc)
@@ -704,7 +711,7 @@ public class WebProjectServiceImpl extends WCMUtil implements WebProjectService
 
         if (wpStoreId != null)
         {
-            // Notifiy virtualization server about removing this website
+            // Notify virtualization server about removing this website
             //
             // Implementation note:
             //
@@ -728,33 +735,61 @@ public class WebProjectServiceImpl extends WCMUtil implements WebProjectService
             String path = WCMUtil.buildStoreWebappPath(sandbox, "/ROOT");
             
             WCMUtil.removeAllVServerWebapps(virtServerRegistry, path, true);
-
-            AuthenticationUtil.runAs(new RunAsWork<Object>()
-            {
-                public Object doWork() throws Exception
-                {
-                    List<SandboxInfo> sbInfos = sandboxFactory.listAllSandboxes(wpStoreId);
-                    
-                    for (SandboxInfo sbInfo : sbInfos)
-                    {
-                        // delete sandbox
-                        sandboxFactory.deleteSandbox(sbInfo.getSandboxId());
-                    }
-                    
-                    // TODO delete workflow sandboxes !
-                    
-                    // delete the web project node itself
-                    nodeService.deleteNode(wpNodeRef);
-                    
-                    sandboxFactory.removeGroupsForStore(sandbox);
-                    
-                    return null;
-                }
-            }, AuthenticationUtil.getSystemUserName());
             
-            if (logger.isInfoEnabled())
+            try
             {
-               logger.info("Deleted web project: " + wpNodeRef + " (store id: " + wpStoreId + ")");
+                RetryingTransactionCallback<Object> deleteWebProjectWork = new RetryingTransactionCallback<Object>()
+                {
+                    public Object execute() throws Throwable
+                    {
+                        AuthenticationUtil.runAs(new RunAsWork<Object>()
+                        {
+                            public Object doWork() throws Exception
+                            {
+                                List<SandboxInfo> sbInfos = sandboxFactory.listAllSandboxes(wpStoreId, true, true);
+                                
+                                for (SandboxInfo sbInfo : sbInfos)
+                                {
+                                    String sbStoreId = sbInfo.getSandboxId();
+                                    
+                                    if (WCMUtil.isLocalhostDeployedStore(wpStoreId, sbStoreId))
+                                    {
+                                        if (getWebProject(WCMUtil.getWebProjectStoreId(sbStoreId)) != null)
+                                        {
+                                            continue;
+                                        }
+                                    }
+                                    
+                                    // delete sandbox (and associated preview sandbox, if it exists)
+                                    sandboxFactory.deleteSandbox(wpStoreId, sbInfo.getSandboxId());
+                                }
+                                
+                                StoreRef archiveStoreRef = nodeService.getStoreArchiveNode(wpNodeRef.getStoreRef()).getStoreRef();
+                                
+                                // delete the web project node itself
+                                nodeService.deleteNode(wpNodeRef);
+                                nodeService.deleteNode(new NodeRef(archiveStoreRef, wpNodeRef.getId()));
+                                
+                                sandboxFactory.removeGroupsForStore(sandbox);
+                                
+                                return null;
+                            }
+                        }, AuthenticationUtil.getSystemUserName());
+                        
+                        return null;
+                    }
+                };
+                
+                transactionService.getRetryingTransactionHelper().doInTransaction(deleteWebProjectWork);
+                
+                if (logger.isInfoEnabled())
+                {
+                   logger.info("Deleted web project: " + wpNodeRef + " (store id: " + wpStoreId + ")");
+                }
+            }
+            catch (Throwable err)
+            {
+                throw new AlfrescoRuntimeException("Failed to delete web project: ", err);
             }
         }
     }

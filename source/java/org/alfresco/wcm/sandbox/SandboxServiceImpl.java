@@ -37,8 +37,6 @@ import org.alfresco.mbeans.VirtServerRegistry;
 import org.alfresco.model.WCMAppModel;
 import org.alfresco.model.WCMWorkflowModel;
 import org.alfresco.repo.avm.AVMNodeConverter;
-import org.alfresco.repo.avm.actions.AVMRevertStoreAction;
-import org.alfresco.repo.avm.actions.AVMUndoSandboxListAction;
 import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
@@ -47,11 +45,10 @@ import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.TransactionListenerAdapter;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.repo.workflow.WorkflowModel;
-import org.alfresco.service.cmr.action.Action;
-import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.avm.VersionDescriptor;
+import org.alfresco.service.cmr.avm.locking.AVMLockingService;
 import org.alfresco.service.cmr.avmsync.AVMDifference;
 import org.alfresco.service.cmr.avmsync.AVMSyncService;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
@@ -98,10 +95,10 @@ public class SandboxServiceImpl implements SandboxService
     private AVMSyncService avmSyncService;
     private NameMatcher nameMatcher;
     private VirtServerRegistry virtServerRegistry;
-    private ActionService actionService;
     private WorkflowService workflowService;
     private AssetService assetService;
     private TransactionService transactionService;
+    private AVMLockingService avmLockingService;
     
     
     public void setWebProjectService(WebProjectService wpService)
@@ -119,6 +116,11 @@ public class SandboxServiceImpl implements SandboxService
         this.avmService = avmService;
     }
     
+    public void setAvmLockingService(AVMLockingService avmLockingService)
+    {
+        this.avmLockingService = avmLockingService;
+    }
+    
     public void setAvmSyncService(AVMSyncService avmSyncService)
     {
         this.avmSyncService = avmSyncService;
@@ -134,11 +136,6 @@ public class SandboxServiceImpl implements SandboxService
         this.virtServerRegistry = virtServerRegistry;
     }
     
-    public void setActionService(ActionService actionService)
-    {
-        this.actionService = actionService;
-    }
-
     public void setWorkflowService(WorkflowService workflowService)
     {
         this.workflowService = workflowService;
@@ -246,11 +243,12 @@ public class SandboxServiceImpl implements SandboxService
     {
         ParameterCheck.mandatoryString("wpStoreId", wpStoreId);
         
-        String currentUser = AuthenticationUtil.getFullyAuthenticatedUser();
-        
         List<SandboxInfo> sbInfos = null;
         
-        if (wpService.isContentManager(wpStoreId, currentUser))
+        String currentUser = AuthenticationUtil.getFullyAuthenticatedUser();
+        String userRole = wpService.getWebUserRole(wpStoreId, currentUser);
+        
+        if (WCMUtil.ROLE_CONTENT_MANAGER.equals(userRole) || WCMUtil.ROLE_CONTENT_PUBLISHER.equals(userRole))
         {
             sbInfos = sandboxFactory.listAllSandboxes(wpStoreId);
         }
@@ -279,9 +277,12 @@ public class SandboxServiceImpl implements SandboxService
         ParameterCheck.mandatoryString("wpStoreId", wpStoreId);
         ParameterCheck.mandatoryString("userName", userName);
         
-        if (! wpService.isContentManager(wpStoreId))
+        String currentUser = AuthenticationUtil.getFullyAuthenticatedUser();
+        String userRole = wpService.getWebUserRole(wpStoreId, currentUser);
+        
+        if (WCMUtil.ROLE_CONTENT_MANAGER.equals(userRole) || WCMUtil.ROLE_CONTENT_PUBLISHER.equals(userRole))
         {
-            throw new AccessDeniedException("Only content managers may list sandboxes for '"+userName+"' (web project id: "+wpStoreId+")");
+            throw new AccessDeniedException("Only content managers or content publishers may list sandboxes for '"+userName+"' (web project id: "+wpStoreId+")");
         }
        
         return AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<List<SandboxInfo>>()
@@ -328,9 +329,13 @@ public class SandboxServiceImpl implements SandboxService
         {
             String currentUser = AuthenticationUtil.getFullyAuthenticatedUser();
             
-            if (! ((WCMUtil.getUserName(sbStoreId).equals(currentUser)) || (wpService.isContentManager(wpStoreId, currentUser))))
+            if (! (WCMUtil.getUserName(sbStoreId).equals(currentUser)))
             {
-                throw new AccessDeniedException("Only content managers may get sandbox '"+sbStoreId+"' (web project id: "+wpStoreId+")");
+                String userRole = wpService.getWebUserRole(wpStoreId, currentUser);
+                if (! (WCMUtil.ROLE_CONTENT_MANAGER.equals(userRole) || WCMUtil.ROLE_CONTENT_PUBLISHER.equals(userRole)))
+                {
+                    throw new AccessDeniedException("Only content managers or content publishers may get sandbox '"+sbStoreId+"' (web project id: "+wpStoreId+")");
+                }
             }
         }
         
@@ -951,7 +956,9 @@ public class SandboxServiceImpl implements SandboxService
         // checks sandbox access (TODO review)
         getSandbox(sbStoreId); // ignore result
         
-        List<Pair<Integer, String>> versionPaths = new ArrayList<Pair<Integer, String>>(assets.size());
+        String wpStoreId = WCMUtil.getWebProjectStoreId(sbStoreId);
+        
+        List<AssetInfo> assetsToRevert = new ArrayList<AssetInfo>(assets.size());
         
         List<WorkflowTask> tasks = null;
         for (AssetInfo asset : assets)
@@ -961,27 +968,68 @@ public class SandboxServiceImpl implements SandboxService
               tasks = WCMWorkflowUtil.getAssociatedTasksForSandbox(workflowService, WCMUtil.getSandboxStoreId(asset.getAvmPath()));
            }
            
-           // TODO ... extra lookup ... either return AVMNodeDescriptor or change getAssociatedTasksForNode ...
-           AVMNodeDescriptor node = avmService.lookup(-1, asset.getAvmPath());
+           // TODO refactor getAssociatedTasksForNode to use AssetInfo instead of AVMNodeDescriptor
+           AVMNodeDescriptor node = ((AssetInfoImpl)asset).getAVMNodeDescriptor();
            
-           if (WCMWorkflowUtil.getAssociatedTasksForNode(avmService, node, tasks).size() == 0)
+           if (node != null)
            {
-              String revertPath = asset.getAvmPath();
-              versionPaths.add(new Pair<Integer, String>(-1, revertPath));
-              
-              if (VirtServerUtils.requiresUpdateNotification(revertPath))
-              {
-                  // Bind the post-commit transaction listener with data required for virtualization server notification
-                  UpdateSandboxTransactionListener tl = new UpdateSandboxTransactionListener(revertPath);
-                  AlfrescoTransactionSupport.bindListener(tl);
-              }
+               if (WCMWorkflowUtil.getAssociatedTasksForNode(avmService, node, tasks).size() == 0)
+               {
+                  assetsToRevert.add(asset);
+                  
+                  if (VirtServerUtils.requiresUpdateNotification(asset.getAvmPath()))
+                  {
+                      // Bind the post-commit transaction listener with data required for virtualization server notification
+                      UpdateSandboxTransactionListener tl = new UpdateSandboxTransactionListener(asset.getAvmPath());
+                      AlfrescoTransactionSupport.bindListener(tl);
+                  }
+               }
            }
         }
         
-        Map<String, Serializable> args = new HashMap<String, Serializable>(1, 1.0f);
-        args.put(AVMUndoSandboxListAction.PARAM_NODE_LIST, (Serializable)versionPaths);
-        Action action = actionService.createAction(AVMUndoSandboxListAction.NAME, args);
-        actionService.executeAction(action, null);    // dummy action ref, list passed as action arg
+        for (AssetInfo asset : assetsToRevert)
+        {
+            String [] parentChild = AVMNodeConverter.SplitBase(asset.getAvmPath());
+            if (parentChild.length != 2)
+            {
+                continue;
+            }
+            
+            AVMNodeDescriptor parent = avmService.lookup(-1, parentChild[0], true);
+            
+            if (parent.isLayeredDirectory())
+            {
+                if (logger.isDebugEnabled())
+                {
+                   logger.debug("reverting " + parentChild[1] + " in " + parentChild[0]);
+                }
+                
+                avmService.makeTransparent(parentChild[0], parentChild[1]);
+            }
+            
+            if (asset.isFile())
+            {
+                // is file or deleted file
+                String relativePath = asset.getPath();
+                
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("unlocking file " + relativePath + " in web project " + wpStoreId);
+                }
+                
+                if (avmLockingService.getLock(wpStoreId, relativePath) != null)
+                {
+                    avmLockingService.removeLock(wpStoreId, relativePath);
+                }
+                else
+                {
+                    if (logger.isWarnEnabled())
+                    {
+                        logger.warn("expected file " + relativePath + " in " + wpStoreId + " to be locked");
+                    }
+                }
+            }
+        }
     }
     
     /* (non-Javadoc)
@@ -1039,33 +1087,31 @@ public class SandboxServiceImpl implements SandboxService
     /* (non-Javadoc)
      * @see org.alfresco.wcm.sandbox.SandboxService#revertSnapshot(java.lang.String, int)
      */
-    public void revertSnapshot(final String sbStoreId, final int version)
+    public void revertSnapshot(final String sbStoreId, final int revertVersion)
     {
         ParameterCheck.mandatoryString("sbStoreId", sbStoreId);
-                
+        
         String wpStoreId = WCMUtil.getWebProjectStoreId(sbStoreId);
         if (! wpService.isContentManager(wpStoreId))
         {
             throw new AccessDeniedException("Only content managers may revert staging sandbox '"+sbStoreId+"' (web project id: "+wpStoreId+")");
         }
-
+        
         // do this as system as the staging area has restricted access (and content manager may not have permission to delete children, for example)
         List<AVMDifference> diffs = AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<List<AVMDifference>>()
         {
             public List<AVMDifference> doWork() throws Exception
             {
-                String sandboxPath = WCMUtil.buildSandboxRootPath(sbStoreId);
-
-                List<AVMDifference> diffs = avmSyncService.compare(-1, sandboxPath, version, sandboxPath, null);
-
-                Map<String, Serializable> args = new HashMap<String, Serializable>(1, 1.0f);
-                args.put(AVMRevertStoreAction.PARAM_VERSION, version);
-                Action action = actionService.createAction(AVMRevertStoreAction.NAME, args);
-                actionService.executeAction(action, AVMNodeConverter.ToNodeRef(-1, sbStoreId + WCMUtil.AVM_STORE_SEPARATOR + "/"));
+                String sandboxPath = sbStoreId + WCMUtil.AVM_STORE_SEPARATOR + "/";
+                List<AVMDifference> diffs = avmSyncService.compare(revertVersion, sandboxPath, -1, sandboxPath, null);
+                
+                String message = "Reverted to Version " + revertVersion + ".";
+                avmSyncService.update(diffs, null, false, false, true, true, message, message);
+                
                 return diffs;
             }
         }, AuthenticationUtil.getSystemUserName());
-         
+        
         // See if any of the files being reverted require notification of the virt server, to update the webapp
         for (AVMDifference diff : diffs)
         {

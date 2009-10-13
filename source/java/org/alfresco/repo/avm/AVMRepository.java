@@ -2048,6 +2048,10 @@ public class AVMRepository
         List<AVMNodeDescriptor> history = new ArrayList<AVMNodeDescriptor>();
         for (int i = 0; i < count; i++)
         {
+            if (node instanceof LayeredFileNodeImpl)
+            {
+                break;
+            }
             node = node.getAncestor();
             if (node == null)
             {

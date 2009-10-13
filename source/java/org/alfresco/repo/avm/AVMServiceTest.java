@@ -43,6 +43,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.model.WCMModel;
 import org.alfresco.repo.action.ActionImpl;
 import org.alfresco.repo.avm.actions.AVMRevertListAction;
+import org.alfresco.repo.avm.actions.AVMRevertStoreAction;
 import org.alfresco.repo.avm.actions.AVMRevertToVersionAction;
 import org.alfresco.repo.avm.actions.AVMUndoSandboxListAction;
 import org.alfresco.repo.avm.actions.SimpleAVMPromoteAction;
@@ -59,6 +60,7 @@ import org.alfresco.service.cmr.avm.AVMCycleException;
 import org.alfresco.service.cmr.avm.AVMException;
 import org.alfresco.service.cmr.avm.AVMExistsException;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
+import org.alfresco.service.cmr.avm.AVMNotFoundException;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.avm.AVMStoreDescriptor;
 import org.alfresco.service.cmr.avm.LayeringDescriptor;
@@ -160,7 +162,7 @@ public class AVMServiceTest extends AVMServiceTestBase
 
     }
     
-    public void testETWOTWO570() throws Exception
+    public void test_ETWOTWO_570() throws Exception
     {
         // Check that read-write methods are properly intercepted
         RetryingTransactionCallback<Object> readOnlyCallback = new RetryingTransactionCallback<Object>()
@@ -1926,6 +1928,8 @@ public class AVMServiceTest extends AVMServiceTestBase
 
     /**
      * Test the revert list action.
+     * 
+     * @deprecated
      */
     public void testRevertListAction() throws Exception
     {
@@ -1976,9 +1980,76 @@ public class AVMServiceTest extends AVMServiceTestBase
             fService.purgeStore("area");
         }
     }
-
+    
+    /**
+     * Test the revert store action.
+     * 
+     * @deprecated see org.alfresco.wcm.actions.WCMSandboxRevertSnapshotAction or org.alfresco.wcm.SandboxService.revertSnapshot
+     */
+    public void testRevertStoreAction() throws Exception
+    {
+        try
+        {
+            setupBasicTree();
+            
+            fService.createStore("area");
+            fService.createLayeredDirectory("main:/a", "area:/", "a");
+            
+            fService.getFileOutputStream("area:/a/b/c/foo").close();
+            
+            List<AVMDifference> diffs = fSyncService.compare(-1, "area:/a", -1, "main:/a", null);
+            assertEquals(1, diffs.size());
+            assertEquals("[area:/a/b/c/foo[-1] > main:/a/b/c/foo[-1]]", diffs.toString());
+            
+            fSyncService.update(diffs, null, false, false, false, false, null, null);
+            
+            diffs = fSyncService.compare(-1, "area:/a", -1, "main:/a", null);
+            assertEquals(0, diffs.size());
+            
+            fService.getFileOutputStream("area:/a/b/c/bar").close();
+            
+            diffs = fSyncService.compare(-1, "area:/a", -1, "main:/a", null);
+            assertEquals(1, diffs.size());
+            assertEquals("[area:/a/b/c/bar[-1] > main:/a/b/c/bar[-1]]", diffs.toString());
+            
+            final ActionImpl action = new ActionImpl(null, GUID.generate(), AVMRevertStoreAction.NAME);
+            action.setParameterValue(AVMRevertStoreAction.PARAM_VERSION, fService.getLatestSnapshotID("area"));
+            
+            final AVMRevertStoreAction revert = (AVMRevertStoreAction)fContext.getBean("avm-revert-store");
+            
+            class TxnWork implements RetryingTransactionCallback<Object>
+            {
+                public Object execute() throws Exception
+                {
+                    revert.execute(action, AVMNodeConverter.ToNodeRef(-1, "area:/"));
+                    return null;
+                }
+            };
+            
+            TransactionService transactionService = (TransactionService) fContext.getBean("transactionService");
+            transactionService.getRetryingTransactionHelper().doInTransaction(new TxnWork());
+            
+            diffs = fSyncService.compare(-1, "area:/a", -1, "main:/a", null);
+            assertEquals(0, diffs.size());
+            
+            System.out.println(recursiveList("area", -1, true));
+            System.out.println(recursiveList("main", -1, true));
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+            throw e;
+        }
+        finally
+        {
+            fService.purgeStore("area");
+        }
+    }
+    
     /**
      * Test the undo list action.
+     * 
+     * @deprecated see org.alfresco.wcm.actions.WCMSandboxRevertListAction or org.alfresco.wcm.SandboxService.revertList
      */
     public void testUndoListAction() throws Exception
     {
@@ -2031,6 +2102,8 @@ public class AVMServiceTest extends AVMServiceTestBase
 
     /**
      * Test the promote action.
+     * 
+     * @deprecated
      */
     public void testPromoteAction() throws Exception
     {
@@ -2075,13 +2148,17 @@ public class AVMServiceTest extends AVMServiceTestBase
 
     /**
      * Test the SimpleAVMSubmitAction.
+     * 
+     * @deprecated see org.alfresco.wcm.actions.WCMSandboxSubmitAction or org.alfesco.wcm.SandboxService.submit
      */
     public void testSubmitAction() throws Exception
     {
-        final String STAGING = "foo-staging"; // note: it is implied that the website/webproject name is the same as staging name
+        // NOTE: it is implied that the sandboxes follow WCM naming conventions
+        final String STAGING = "foo";
+        final String SANDBOX = "foo--sandbox";
+        
         try
         {
-
             fService.createStore(STAGING);
             fService.createDirectory(STAGING+":/", JNDIConstants.DIR_DEFAULT_WWW);
             fService.createDirectory(STAGING+":/" + JNDIConstants.DIR_DEFAULT_WWW, "a");
@@ -2089,30 +2166,33 @@ public class AVMServiceTest extends AVMServiceTestBase
             fService.createDirectory(STAGING+":/" + JNDIConstants.DIR_DEFAULT_WWW + "/a/b", "c");
             fService.createFile(STAGING+":/" + JNDIConstants.DIR_DEFAULT_WWW + "/a/b/c", "foo").close();
             fService.createFile(STAGING+":/" + JNDIConstants.DIR_DEFAULT_WWW + "/a/b/c", "bar").close();
-            fService.createStore("area");
-             fService.setStoreProperty("area", SandboxConstants.PROP_WEBSITE_NAME, new PropertyValue(null, STAGING)); // note: it is implied that the website name is the same as staging name
-            fService.createLayeredDirectory(STAGING+":/" + JNDIConstants.DIR_DEFAULT_WWW, "area:/", JNDIConstants.DIR_DEFAULT_WWW);
-            fService.createFile("area:/" + JNDIConstants.DIR_DEFAULT_WWW, "figs").close();
-            fService.getFileOutputStream("area:/" + JNDIConstants.DIR_DEFAULT_WWW + "/a/b/c/foo").close();
-            fService.removeNode("area:/" + JNDIConstants.DIR_DEFAULT_WWW + "/a/b/c/bar");
-            List<AVMDifference> diffs = fSyncService.compare(-1, "area:/" + JNDIConstants.DIR_DEFAULT_WWW, -1, STAGING+":/" + JNDIConstants.DIR_DEFAULT_WWW, null);
+            
+            fService.createStore(SANDBOX);
+            fService.setStoreProperty(SANDBOX, SandboxConstants.PROP_WEBSITE_NAME, new PropertyValue(null, STAGING)); // note: it is implied that the website name is the same as staging name
+            fService.createLayeredDirectory(STAGING+":/" + JNDIConstants.DIR_DEFAULT_WWW, SANDBOX+":/", JNDIConstants.DIR_DEFAULT_WWW);
+            fService.createFile(SANDBOX+":/" + JNDIConstants.DIR_DEFAULT_WWW, "figs").close();
+            fService.getFileOutputStream(SANDBOX+":/" + JNDIConstants.DIR_DEFAULT_WWW + "/a/b/c/foo").close();
+            fService.removeNode(SANDBOX+":/" + JNDIConstants.DIR_DEFAULT_WWW + "/a/b/c/bar");
+            
+            List<AVMDifference> diffs = fSyncService.compare(-1, SANDBOX+":/" + JNDIConstants.DIR_DEFAULT_WWW, -1, STAGING+":/" + JNDIConstants.DIR_DEFAULT_WWW, null);
             assertEquals(3, diffs.size());
-            assertEquals("[area:/www/a/b/c/bar[-1] > "+STAGING+":/www/a/b/c/bar[-1], area:/www/a/b/c/foo[-1] > "+STAGING+":/www/a/b/c/foo[-1], area:/www/figs[-1] > "+STAGING+":/www/figs[-1]]", diffs.toString());
+            assertEquals("["+SANDBOX+":/www/a/b/c/bar[-1] > "+STAGING+":/www/a/b/c/bar[-1], "+SANDBOX+":/www/a/b/c/foo[-1] > "+STAGING+":/www/a/b/c/foo[-1], "+SANDBOX+":/www/figs[-1] > "+STAGING+":/www/figs[-1]]", diffs.toString());
+            
             final SimpleAVMSubmitAction action = (SimpleAVMSubmitAction) fContext.getBean("simple-avm-submit");
             class TxnWork implements RetryingTransactionCallback<Object>
             {
                 public Object execute() throws Exception
                 {
-                    action.execute(null, AVMNodeConverter.ToNodeRef(-1, "area:/" + JNDIConstants.DIR_DEFAULT_WWW));
+                    action.execute(null, AVMNodeConverter.ToNodeRef(-1, SANDBOX+":/" + JNDIConstants.DIR_DEFAULT_WWW));
                     return null;
                 }
-            }
-            ;
+            };
+            
             TransactionService transactionService = (TransactionService) fContext.getBean("transactionService");
             transactionService.getRetryingTransactionHelper().doInTransaction(new TxnWork());
-
-            diffs = fSyncService.compare(-1, "area:/" + JNDIConstants.DIR_DEFAULT_WWW, -1, STAGING+":/" + JNDIConstants.DIR_DEFAULT_WWW, null);
-
+            
+            diffs = fSyncService.compare(-1, SANDBOX+":/" + JNDIConstants.DIR_DEFAULT_WWW, -1, STAGING+":/" + JNDIConstants.DIR_DEFAULT_WWW, null);
+            
             assertEquals(0, diffs.size());
         }
         catch (Exception e)
@@ -2123,7 +2203,7 @@ public class AVMServiceTest extends AVMServiceTestBase
         finally
         {
             fService.purgeStore(STAGING);
-            fService.purgeStore("area");
+            fService.purgeStore(SANDBOX);
         }
     }
 
@@ -3365,7 +3445,7 @@ public class AVMServiceTest extends AVMServiceTestBase
     /**
      * Test creating a layered file.
      */
-    public void testCreateLayeredFile() throws Exception
+    public void testLayeredFile1() throws Exception
     {
         try
         {
@@ -3391,6 +3471,504 @@ public class AVMServiceTest extends AVMServiceTestBase
             line = reader.readLine();
             reader.close();
             assertEquals("I am main:/d/lfoo", line);
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace(System.err);
+            throw e;
+        }
+    }
+    
+    public void testLayeredFile2() throws Exception
+    {
+        try
+        {
+            AVMNodeDescriptor desc = fService.lookup(-1, "main:/foo");
+            assertNull(desc);
+            
+            try
+            {
+                fService.getFileOutputStream("main:/foo");
+                fail("Unexpected");
+            }
+            catch (AVMNotFoundException nfe)
+            {
+                // expected
+            }
+            
+            try
+            {
+                fService.getFileInputStream(-1, "main:/foo");
+                fail("Unexpected");
+            }
+            catch (AVMNotFoundException nfe)
+            {
+                // expected
+            }
+            
+            fService.createFile("main:/", "foo").close();
+            
+            assertEquals(1, fService.lookup(-1, "main:/foo").getVersionID());
+            
+            BufferedReader reader = new BufferedReader(new InputStreamReader(fService.getFileInputStream(-1, "main:/foo")));
+            String line = reader.readLine();
+            reader.close();
+            assertNull(line);
+            
+            PrintStream out = new PrintStream(fService.getFileOutputStream("main:/foo"));
+            out.println("I am main:/foo V1a");
+            out.close();
+            
+            out = new PrintStream(fService.getFileOutputStream("main:/foo"));
+            out.println("I am main:/foo V1b");
+            out.close();
+            
+            out = new PrintStream(fService.getFileOutputStream("main:/foo"));
+            out.println("I am main:/foo V1c");
+            out.close();
+            
+            assertEquals(1, fService.lookup(-1, "main:/foo").getVersionID());
+            
+            fService.createSnapshot("main", null, null);
+            
+            assertEquals(1, fService.lookup(-1, "main:/foo").getVersionID());
+            
+            reader = new BufferedReader(new InputStreamReader(fService.getFileInputStream(-1, "main:/foo")));
+            line = reader.readLine();
+            reader.close();
+            assertEquals("I am main:/foo V1c", line);
+            
+            out = new PrintStream(fService.getFileOutputStream("main:/foo"));
+            out.println("I am main:/foo V2a");
+            out.close();
+            
+            assertEquals(2, fService.lookup(-1, "main:/foo").getVersionID());
+            
+            out = new PrintStream(fService.getFileOutputStream("main:/foo"));
+            out.println("I am main:/foo V2b");
+            out.close();
+            
+            assertEquals(2, fService.lookup(-1, "main:/foo").getVersionID());
+            
+            fService.createSnapshot("main", null, null);
+            
+            assertEquals(2, fService.lookup(-1, "main:/foo").getVersionID());
+            
+            reader = new BufferedReader(new InputStreamReader(fService.getFileInputStream(-1, "main:/foo")));
+            line = reader.readLine();
+            reader.close();
+            assertEquals("I am main:/foo V2b", line);
+            
+            out = new PrintStream(fService.getFileOutputStream("main:/foo"));
+            out.println("I am main:/foo V3");
+            out.close();
+            
+            assertEquals(3, fService.lookup(-1, "main:/foo").getVersionID());
+            
+            fService.createSnapshot("main", null, null);
+            
+            assertEquals(3, fService.lookup(-1, "main:/foo").getVersionID());
+            
+            try
+            {
+                fService.createLayeredFile("main:/foo", "main:/", "foo");
+                fail("Unexpected");
+            }
+            catch (AVMExistsException ee)
+            {
+                // expected
+            }
+            
+            fService.createLayeredFile("main:/foo", "main:/", "lfoo");
+            
+            assertEquals(3, fService.lookup(-1, "main:/foo").getVersionID());
+            assertEquals(1, fService.lookup(-1, "main:/lfoo").getVersionID());
+            
+            assertEquals("main:/foo", fService.lookup(-1, "main:/lfoo").getIndirection());
+            
+            reader = new BufferedReader(new InputStreamReader(fService.getFileInputStream(-1, "main:/foo")));
+            line = reader.readLine();
+            reader.close();
+            assertEquals("I am main:/foo V3", line);
+            
+            reader = new BufferedReader(new InputStreamReader(fService.getFileInputStream(-1, "main:/lfoo")));
+            line = reader.readLine();
+            reader.close();
+            assertEquals("I am main:/foo V3", line);
+            
+            fService.createSnapshot("main", null, null);
+            
+            assertEquals(3, fService.lookup(-1, "main:/foo").getVersionID());
+            assertEquals(1, fService.lookup(-1, "main:/lfoo").getVersionID());
+            
+            reader = new BufferedReader(new InputStreamReader(fService.getFileInputStream(-1, "main:/foo")));
+            line = reader.readLine();
+            reader.close();
+            assertEquals("I am main:/foo V3", line);
+            
+            reader = new BufferedReader(new InputStreamReader(fService.getFileInputStream(-1, "main:/lfoo")));
+            line = reader.readLine();
+            reader.close();
+            assertEquals("I am main:/foo V3", line);
+            
+            out = new PrintStream(fService.getFileOutputStream("main:/foo"));
+            out.println("I am main:/foo V4");
+            out.close();
+            
+            reader = new BufferedReader(new InputStreamReader(fService.getFileInputStream(-1, "main:/foo")));
+            line = reader.readLine();
+            reader.close();
+            assertEquals("I am main:/foo V4", line);
+            
+            // TODO - review
+            reader = new BufferedReader(new InputStreamReader(fService.getFileInputStream(-1, "main:/lfoo")));
+            line = reader.readLine();
+            reader.close();
+            assertEquals("I am main:/foo V4", line);
+            
+            assertEquals(4, fService.lookup(-1, "main:/foo").getVersionID());
+            assertEquals(1, fService.lookup(-1, "main:/lfoo").getVersionID());
+            
+            reader = new BufferedReader(new InputStreamReader(fService.getFileInputStream(-1, "main:/foo")));
+            line = reader.readLine();
+            reader.close();
+            assertEquals("I am main:/foo V4", line);
+            
+            reader = new BufferedReader(new InputStreamReader(fService.getFileInputStream(-1, "main:/lfoo")));
+            line = reader.readLine();
+            reader.close();
+            assertEquals("I am main:/foo V4", line);
+            
+            assertEquals(4, fService.lookup(-1, "main:/foo").getVersionID());
+            assertEquals(1, fService.lookup(-1, "main:/lfoo").getVersionID());
+            
+            fService.createSnapshot("main", null, null);
+            
+            assertEquals(4, fService.lookup(-1, "main:/foo").getVersionID());
+            
+            // TODO - review
+            assertEquals(2, fService.lookup(-1, "main:/lfoo").getVersionID());
+            
+            reader = new BufferedReader(new InputStreamReader(fService.getFileInputStream(-1, "main:/foo")));
+            line = reader.readLine();
+            reader.close();
+            assertEquals("I am main:/foo V4", line);
+            
+            reader = new BufferedReader(new InputStreamReader(fService.getFileInputStream(-1, "main:/lfoo")));
+            line = reader.readLine();
+            reader.close();
+            assertEquals("I am main:/foo V4", line);
+            
+            out = new PrintStream(fService.getFileOutputStream("main:/foo"));
+            out.println("I am main:/foo V5a");
+            out.close();
+            
+            out = new PrintStream(fService.getFileOutputStream("main:/foo"));
+            out.println("I am main:/foo V5b");
+            out.close();
+            
+            reader = new BufferedReader(new InputStreamReader(fService.getFileInputStream(-1, "main:/foo")));
+            line = reader.readLine();
+            reader.close();
+            assertEquals("I am main:/foo V5b", line);
+            
+            reader = new BufferedReader(new InputStreamReader(fService.getFileInputStream(-1, "main:/lfoo")));
+            line = reader.readLine();
+            reader.close();
+            assertEquals("I am main:/foo V4", line);
+            
+            assertEquals(5, fService.lookup(-1, "main:/foo").getVersionID());
+            assertEquals(2, fService.lookup(-1, "main:/lfoo").getVersionID());
+            
+            fService.createSnapshot("main", null, null);
+            
+            assertEquals(5, fService.lookup(-1, "main:/foo").getVersionID());
+            assertEquals(2, fService.lookup(-1, "main:/lfoo").getVersionID());
+            
+            reader = new BufferedReader(new InputStreamReader(fService.getFileInputStream(-1, "main:/foo")));
+            line = reader.readLine();
+            reader.close();
+            assertEquals("I am main:/foo V5b", line);
+            
+            reader = new BufferedReader(new InputStreamReader(fService.getFileInputStream(-1, "main:/lfoo")));
+            line = reader.readLine();
+            reader.close();
+            assertEquals("I am main:/foo V4", line);
+            
+            out = new PrintStream(fService.getFileOutputStream("main:/foo"));
+            out.println("I am main:/foo V6");
+            out.close();
+            
+            assertEquals(6, fService.lookup(-1, "main:/foo").getVersionID());
+            assertEquals(2, fService.lookup(-1, "main:/lfoo").getVersionID());
+            
+            fService.createSnapshot("main", null, null);
+            
+            assertEquals(6, fService.lookup(-1, "main:/foo").getVersionID());
+            assertEquals(2, fService.lookup(-1, "main:/lfoo").getVersionID());
+            
+            reader = new BufferedReader(new InputStreamReader(fService.getFileInputStream(-1, "main:/foo")));
+            line = reader.readLine();
+            reader.close();
+            assertEquals("I am main:/foo V6", line);
+            
+            reader = new BufferedReader(new InputStreamReader(fService.getFileInputStream(-1, "main:/lfoo")));
+            line = reader.readLine();
+            reader.close();
+            assertEquals("I am main:/foo V4", line);
+            
+            out = new PrintStream(fService.getFileOutputStream("main:/lfoo"));
+            out.println("I am main:/lfoo V1");
+            out.close();
+            
+            assertEquals(6, fService.lookup(-1, "main:/foo").getVersionID());
+            assertEquals(3, fService.lookup(-1, "main:/lfoo").getVersionID());
+            
+            fService.createSnapshot("main", null, null);
+            
+            assertEquals(6, fService.lookup(-1, "main:/foo").getVersionID());
+            assertEquals(3, fService.lookup(-1, "main:/lfoo").getVersionID());
+            
+            reader = new BufferedReader(new InputStreamReader(fService.getFileInputStream(-1, "main:/foo")));
+            line = reader.readLine();
+            reader.close();
+            assertEquals("I am main:/foo V6", line);
+            
+            reader = new BufferedReader(new InputStreamReader(fService.getFileInputStream(-1, "main:/lfoo")));
+            line = reader.readLine();
+            reader.close();
+            assertEquals("I am main:/lfoo V1", line);
+            
+            out = new PrintStream(fService.getFileOutputStream("main:/lfoo"));
+            out.println("I am main:/lfoo V2");
+            out.close();
+            
+            assertEquals(6, fService.lookup(-1, "main:/foo").getVersionID());
+            assertEquals(4, fService.lookup(-1, "main:/lfoo").getVersionID());
+            
+            fService.createSnapshot("main", null, null);
+            
+            assertEquals(6, fService.lookup(-1, "main:/foo").getVersionID());
+            assertEquals(4, fService.lookup(-1, "main:/lfoo").getVersionID());
+            
+            reader = new BufferedReader(new InputStreamReader(fService.getFileInputStream(-1, "main:/foo")));
+            line = reader.readLine();
+            reader.close();
+            assertEquals("I am main:/foo V6", line);
+            
+            reader = new BufferedReader(new InputStreamReader(fService.getFileInputStream(-1, "main:/lfoo")));
+            line = reader.readLine();
+            reader.close();
+            assertEquals("I am main:/lfoo V2", line);
+            
+            fService.removeNode("main:/foo");
+            
+            desc = fService.lookup(-1, "main:/foo");
+            assertNull(desc);
+            
+            try
+            {
+                fService.getFileOutputStream("main:/foo");
+                fail("Unexpected");
+            }
+            catch (AVMNotFoundException nfe)
+            {
+                // expected
+            }
+            
+            try
+            {
+                fService.getFileInputStream(-1, "main:/foo");
+                fail("Unexpected");
+            }
+            catch (AVMNotFoundException nfe)
+            {
+                // expected
+            }
+            
+            fService.createSnapshot("main", null, null);
+            
+            reader = new BufferedReader(new InputStreamReader(fService.getFileInputStream(-1, "main:/lfoo")));
+            line = reader.readLine();
+            reader.close();
+            assertEquals("I am main:/lfoo V2", line);
+            
+            assertEquals(4, fService.lookup(-1, "main:/lfoo").getVersionID());
+            
+            fService.removeNode("main:/lfoo");
+            
+            desc = fService.lookup(-1, "main:/lfoo");
+            assertNull(desc);
+            
+            try
+            {
+                fService.getFileOutputStream("main:/lfoo");
+                fail("Unexpected");
+            }
+            catch (AVMNotFoundException nfe)
+            {
+                // expected
+            }
+            
+            try
+            {
+                fService.getFileInputStream(-1, "main:/lfoo");
+                fail("Unexpected");
+            }
+            catch (AVMNotFoundException nfe)
+            {
+                // expected
+            }
+            
+            fService.createSnapshot("main", null, null);
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace(System.err);
+            throw e;
+        }
+    }
+    
+    public void testLayeredFile3() throws Exception
+    {
+        try
+        {
+            AVMNodeDescriptor desc = fService.lookup(-1, "main:/foo");
+            assertNull(desc);
+            
+            try
+            {
+                fService.getFileOutputStream("main:/foo");
+                fail("Unexpected");
+            }
+            catch (AVMNotFoundException nfe)
+            {
+                // expected
+            }
+            
+            try
+            {
+                fService.getFileInputStream(-1, "main:/foo");
+                fail("Unexpected");
+            }
+            catch (AVMNotFoundException nfe)
+            {
+                // expected
+            }
+            
+            fService.createLayeredFile("main:/foo", "main:/", "lfoo");
+            
+            assertEquals(1, fService.lookup(-1, "main:/lfoo").getVersionID());
+            
+            fService.createSnapshot("main", null, null);
+            
+            try
+            {
+                fService.getFileOutputStream("main:/lfoo");
+                fail("Unexpected");
+            }
+            catch (AVMException e)
+            {
+                // TODO - review
+            }
+            
+            try
+            {
+                fService.getFileInputStream(-1, "main:/lfoo");
+                fail("Unexpected");
+            }
+            catch (AVMException e)
+            {
+                // TODO - review
+            }
+            
+            fService.createFile("main:/", "foo").close();
+            
+            assertEquals(1, fService.lookup(-1, "main:/foo").getVersionID());
+            assertEquals(1, fService.lookup(-1, "main:/lfoo").getVersionID());
+            
+            BufferedReader reader = new BufferedReader(new InputStreamReader(fService.getFileInputStream(-1, "main:/foo")));
+            String line = reader.readLine();
+            reader.close();
+            assertNull(line);
+            
+            reader = new BufferedReader(new InputStreamReader(fService.getFileInputStream(-1, "main:/lfoo")));
+            line = reader.readLine();
+            reader.close();
+            assertNull(line);
+            
+            PrintStream out = new PrintStream(fService.getFileOutputStream("main:/foo"));
+            out.println("I am main:/foo V1");
+            out.close();
+            
+            reader = new BufferedReader(new InputStreamReader(fService.getFileInputStream(-1, "main:/foo")));
+            line = reader.readLine();
+            reader.close();
+            assertEquals("I am main:/foo V1", line);
+            
+            reader = new BufferedReader(new InputStreamReader(fService.getFileInputStream(-1, "main:/lfoo")));
+            line = reader.readLine();
+            reader.close();
+            assertEquals("I am main:/foo V1", line);
+            
+            assertEquals(1, fService.lookup(-1, "main:/foo").getVersionID());
+            assertEquals(1, fService.lookup(-1, "main:/lfoo").getVersionID());
+            
+            fService.createSnapshot("main", null, null);
+            
+            assertEquals(1, fService.lookup(-1, "main:/foo").getVersionID());
+            assertEquals(2, fService.lookup(-1, "main:/lfoo").getVersionID());
+            
+            reader = new BufferedReader(new InputStreamReader(fService.getFileInputStream(-1, "main:/foo")));
+            line = reader.readLine();
+            reader.close();
+            assertEquals("I am main:/foo V1", line);
+            
+            reader = new BufferedReader(new InputStreamReader(fService.getFileInputStream(-1, "main:/lfoo")));
+            line = reader.readLine();
+            reader.close();
+            assertEquals("I am main:/foo V1", line);
+            
+            fService.removeNode( "main:/foo");
+            
+            desc = fService.lookup(-1, "main:/foo");
+            assertNull(desc);
+            
+            try
+            {
+                fService.getFileOutputStream("main:/foo");
+                fail("Unexpected");
+            }
+            catch (AVMNotFoundException nfe)
+            {
+                // expected
+            }
+            
+            try
+            {
+                fService.getFileInputStream(-1, "main:/foo");
+                fail("Unexpected");
+            }
+            catch (AVMNotFoundException nfe)
+            {
+                // expected
+            }
+            
+            assertEquals(2, fService.lookup(-1, "main:/lfoo").getVersionID());
+            
+            reader = new BufferedReader(new InputStreamReader(fService.getFileInputStream(-1, "main:/lfoo")));
+            line = reader.readLine();
+            reader.close();
+            assertEquals("I am main:/foo V1", line);
+            
+            fService.createSnapshot("main", null, null);
+            
+            assertEquals(2, fService.lookup(-1, "main:/lfoo").getVersionID());
+            
+            reader = new BufferedReader(new InputStreamReader(fService.getFileInputStream(-1, "main:/lfoo")));
+            line = reader.readLine();
+            reader.close();
+            assertEquals("I am main:/foo V1", line);
         }
         catch (Exception e)
         {

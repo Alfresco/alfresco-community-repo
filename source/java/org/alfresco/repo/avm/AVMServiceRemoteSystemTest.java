@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2008 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -24,7 +24,6 @@
 package org.alfresco.repo.avm;
 
 import org.alfresco.repo.remote.ClientTicketHolder;
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.avmsync.AVMSyncService;
 import org.alfresco.service.cmr.remote.AVMRemote;
 import org.alfresco.service.cmr.security.AuthenticationService;
@@ -36,6 +35,9 @@ import org.springframework.context.support.FileSystemXmlApplicationContext;
  */
 public class AVMServiceRemoteSystemTest extends AVMServiceLocalTest
 {
+    private final static String ADMIN_UN = "admin";
+    private final static String ADMIN_PW = "admin";
+    
     @Override
     protected void setUp() throws Exception
     {
@@ -48,7 +50,7 @@ public class AVMServiceRemoteSystemTest extends AVMServiceLocalTest
             excluder = (NameMatcher) fContext.getBean("globalPathExcluder");
             
             AuthenticationService authService = (AuthenticationService)fContext.getBean("authenticationService");
-            authService.authenticate(AuthenticationUtil.getAdminUserName(), "admin".toCharArray());
+            authService.authenticate(ADMIN_UN, ADMIN_PW.toCharArray());
             String ticket = authService.getCurrentTicket();
             ((ClientTicketHolder)fContext.getBean("clientTicketHolder")).setTicket(ticket);
         }

@@ -505,6 +505,7 @@
         </property>
     </bean>
     
+    <!-- deprecated - see "wcm-submit" (wcm-services-context.xml) -->
     <bean id="simple-avm-submit" class="org.alfresco.repo.avm.actions.SimpleAVMSubmitAction" parent="action-executer">
         <property name="avmService">
             <ref bean="indexingAVMService"/>
@@ -520,6 +521,7 @@
         </property>
     </bean>
     
+    <!-- deprecated -->
     <bean id="start-avm-workflow" class="org.alfresco.repo.avm.actions.StartAVMWorkflowAction" parent="action-executer">
       <property name="workflowService">
          <ref bean="WorkflowService"/>
@@ -532,6 +534,7 @@
       </property>
     </bean>
     
+    <!-- deprecated -->
     <bean id="simple-avm-promote" class="org.alfresco.repo.avm.actions.SimpleAVMPromoteAction" parent="action-executer">
         <property name="avmSyncService">
             <ref bean="avmSyncService"/>
@@ -541,6 +544,7 @@
         </property>
     </bean>
     
+    <!-- deprecated - see "wcm-revert-snapshot" (wcm-services-context.xml) -->
     <bean id="avm-revert-store" class="org.alfresco.repo.avm.actions.AVMRevertStoreAction" parent="action-executer">
         <property name="avmSyncService">
             <ref bean="avmSyncService"/>
@@ -550,6 +554,7 @@
         </property>
     </bean>
     
+    <!-- deprecated -->
     <bean id="avm-revert-list" class="org.alfresco.repo.avm.actions.AVMRevertListAction" parent="action-executer">
         <property name="avmSyncService">
             <ref bean="avmSyncService"/>
@@ -559,6 +564,7 @@
         </property>
     </bean>
     
+    <!-- deprecated -->
     <bean id="avm-revert-to-version" class="org.alfresco.repo.avm.actions.AVMRevertToVersionAction" parent = "action-executer">
         <property name="avmService">
             <ref bean="indexingAVMService"/>
@@ -568,6 +574,7 @@
         </property>
     </bean>
     
+    <!-- deprecated - see "wcm-undo" (wcm-services-context.xml) -->
     <bean id="avm-undo-list" class="org.alfresco.repo.avm.actions.AVMUndoSandboxListAction" parent="action-executer">
         <property name="avmService">
             <ref bean="indexingAVMService"/>
@@ -580,6 +587,7 @@
         </property>
     </bean>
     
+    <!-- deprecated -->
     <bean id="avm-deploy-website" class="org.alfresco.repo.avm.actions.AVMDeployWebsiteAction" parent="action-executer">
       
       <!--  Run avm-deploy-website action on the deployment queue -->
@@ -627,6 +635,7 @@
         </property>
     </bean>
     
+    <!-- deprecated -->
     <bean id="avm-link-validation" class="org.alfresco.linkvalidation.LinkValidationAction" parent="action-executer" lazy-init="true">
       <property name="linkValidationService">
           <ref bean="LinkValidationService"/>

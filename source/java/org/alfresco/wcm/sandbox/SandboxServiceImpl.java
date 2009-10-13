@@ -162,7 +162,7 @@ public class SandboxServiceImpl implements SandboxService
     {
         ParameterCheck.mandatoryString("wpStoreId", wpStoreId);
         
-        String currentUserName = AuthenticationUtil.getRunAsUser();
+        String currentUserName = AuthenticationUtil.getFullyAuthenticatedUser();
         SandboxInfo sbInfo = null;
         
         if (! wpService.isWebUser(wpStoreId, currentUserName))
@@ -246,7 +246,7 @@ public class SandboxServiceImpl implements SandboxService
     {
         ParameterCheck.mandatoryString("wpStoreId", wpStoreId);
         
-        String currentUser = AuthenticationUtil.getRunAsUser();
+        String currentUser = AuthenticationUtil.getFullyAuthenticatedUser();
         
         List<SandboxInfo> sbInfos = null;
         
@@ -326,7 +326,7 @@ public class SandboxServiceImpl implements SandboxService
         
         if (! WCMUtil.isStagingStore(sbStoreId))
         {
-            String currentUser = AuthenticationUtil.getRunAsUser();
+            String currentUser = AuthenticationUtil.getFullyAuthenticatedUser();
             
             if (! ((WCMUtil.getUserName(sbStoreId).equals(currentUser)) || (wpService.isContentManager(wpStoreId, currentUser))))
             {
@@ -344,7 +344,7 @@ public class SandboxServiceImpl implements SandboxService
     {
         ParameterCheck.mandatoryString("wpStoreId", wpStoreId);
         
-        String currentUserName = AuthenticationUtil.getRunAsUser();
+        String currentUserName = AuthenticationUtil.getFullyAuthenticatedUser();
         return getSandbox(WCMUtil.buildUserMainStoreName(WCMUtil.buildStagingStoreName(wpStoreId), currentUserName));
     }
     
@@ -378,7 +378,7 @@ public class SandboxServiceImpl implements SandboxService
         
         String wpStoreId = WCMUtil.getWebProjectStoreId(sbStoreId);
         
-        String currentUserName = AuthenticationUtil.getRunAsUser();
+        String currentUserName = AuthenticationUtil.getFullyAuthenticatedUser();
         if (sbStoreId.equals(WCMUtil.buildUserMainStoreName(wpStoreId, currentUserName)))
         {
             // author may delete their own sandbox
@@ -725,7 +725,7 @@ public class SandboxServiceImpl implements SandboxService
         //     mysite--workflow-9161f640-b020-11db-8015-130bf9b5b652
         String workflowMainStoreName = sandboxInfo.getMainStoreName();
        
-        List<AVMDifference> diffs = new ArrayList<AVMDifference>(srcPaths.size());
+        final List<AVMDifference> diffs = new ArrayList<AVMDifference>(srcPaths.size());
        
         // get diff list - also process expiration dates, if any, and set virt svr update path
        
@@ -766,7 +766,15 @@ public class SandboxServiceImpl implements SandboxService
         }
 
         // write changes to layer so files are marked as modified
-        avmSyncService.update(diffs, null, false, false, false, false, null, null);
+        AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
+        {
+
+            public Object doWork() throws Exception
+            {
+                avmSyncService.update(diffs, null, false, false, false, false, null, null);
+                return null;
+            }
+        }, AuthenticationUtil.getSystemUserName());
        
         return new Pair<SandboxInfo, String>(sandboxInfo, virtUpdatePath);
     }

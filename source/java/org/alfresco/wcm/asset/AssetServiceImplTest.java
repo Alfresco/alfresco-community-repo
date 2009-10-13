@@ -578,7 +578,7 @@ public class AssetServiceImplTest extends AbstractWCMServiceImplTest
             assertEquals("file description", props.get(ContentModel.PROP_DESCRIPTION));
             
             /* TODO - pending ETHREEOH-1314 - fails for content contributor / content publisher during submit if updating folder properties
-            
+            */
             // update folder properties - eg. title and description
             
             newProps = new HashMap<QName, Serializable>(2);
@@ -589,7 +589,8 @@ public class AssetServiceImplTest extends AbstractWCMServiceImplTest
             props = assetService.getAssetProperties(existingFolder1Asset);
             assertEquals("folder title", props.get(ContentModel.PROP_TITLE));
             assertEquals("folder description", props.get(ContentModel.PROP_DESCRIPTION));
-            */
+            
+            
         }
         else
         {

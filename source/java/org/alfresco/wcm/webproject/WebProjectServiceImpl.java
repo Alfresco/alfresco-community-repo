@@ -284,7 +284,7 @@ public class WebProjectServiceImpl extends WCMUtil implements WebProjectService
         
         // TODO: Currently auto-creates author sandbox for creator of web project (eg. an admin or a DM contributor to web projects root space)
         // NOTE: JSF client does not yet allow explicit creation of author sandboxes 
-        inviteWebUser(wpNodeRef, AuthenticationUtil.getRunAsUser(), WCMUtil.ROLE_CONTENT_MANAGER, true);
+        inviteWebUser(wpNodeRef, AuthenticationUtil.getFullyAuthenticatedUser(), WCMUtil.ROLE_CONTENT_MANAGER, true);
         
         // Bind the post-commit transaction listener with data required for virtualization server notification
         CreateWebProjectTransactionListener tl = new CreateWebProjectTransactionListener(wpStoreId);
@@ -764,7 +764,7 @@ public class WebProjectServiceImpl extends WCMUtil implements WebProjectService
      */
     public boolean isContentManager(String storeName)
     {
-        return isContentManager(storeName, AuthenticationUtil.getRunAsUser());
+        return isContentManager(storeName, AuthenticationUtil.getFullyAuthenticatedUser());
     }
     
     /* (non-Javadoc)
@@ -780,7 +780,7 @@ public class WebProjectServiceImpl extends WCMUtil implements WebProjectService
      */
     public boolean isContentManager(NodeRef wpNodeRef)
     {
-        return isContentManager(wpNodeRef, AuthenticationUtil.getRunAsUser());
+        return isContentManager(wpNodeRef, AuthenticationUtil.getFullyAuthenticatedUser());
     }
     
     /* (non-Javadoc)

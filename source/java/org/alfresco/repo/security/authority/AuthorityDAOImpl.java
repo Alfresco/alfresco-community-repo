@@ -30,13 +30,16 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.cache.SimpleCache;
+import org.alfresco.repo.tenant.TenantAdminService;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -71,8 +74,14 @@ public class AuthorityDAOImpl implements AuthorityDAO
     
     private TenantService tenantService;
     
+    private TenantAdminService tenantAdminService;
+    
     private SimpleCache<CacheKey, HashSet<String>> authorityLookupCache;
-
+    
+    /** System Container ref cache (Tennant aware) */
+    private Map<String, NodeRef> systemContainerRefs = new ConcurrentHashMap<String, NodeRef>(4);
+    
+    
     public AuthorityDAOImpl()
     {
         super();
@@ -114,6 +123,11 @@ public class AuthorityDAOImpl implements AuthorityDAO
     public void setTenantService(TenantService tenantService)
     {
         this.tenantService = tenantService;
+    }
+    
+    public void setTenantAdminService(TenantAdminService tenantAdminService)
+    {
+        this.tenantAdminService = tenantAdminService;
     }
     
     public boolean authorityExists(String name)
@@ -417,30 +431,36 @@ public class AuthorityDAOImpl implements AuthorityDAO
         return getSystemContainer(qnameAssocZones);
     }
 
+    /**
+     * Return the system container for the specified assoc name.
+     * The containers are cached in a thread safe Tenant aware cache.
+     *
+     * @param assocQName
+     *
+     * @return System container, <b>which must exist</b>
+     */
     private NodeRef getSystemContainer(QName assocQName)
     {
-        NodeRef rootNodeRef = nodeService.getRootNode(this.storeRef);
-        List<ChildAssociationRef> results = nodeService.getChildAssocs(rootNodeRef, RegexQNamePattern.MATCH_ALL, qnameAssocSystem);
-        NodeRef sysNodeRef = null;
-        if (results.size() == 0)
+        final String cacheKey = tenantAdminService.getCurrentUserDomain() + assocQName.toString();
+        NodeRef systemContainerRef = systemContainerRefs.get(cacheKey);
+        if (systemContainerRef == null)
         {
-            throw new AlfrescoRuntimeException("Required system path not found: " + qnameAssocSystem);
+            NodeRef rootNodeRef = nodeService.getRootNode(this.storeRef);
+            List<ChildAssociationRef> results = nodeService.getChildAssocs(rootNodeRef, RegexQNamePattern.MATCH_ALL, qnameAssocSystem);
+            if (results.size() == 0)
+            {
+                throw new AlfrescoRuntimeException("Required system path not found: " + qnameAssocSystem);
+            }
+            NodeRef sysNodeRef = results.get(0).getChildRef();
+            results = nodeService.getChildAssocs(sysNodeRef, RegexQNamePattern.MATCH_ALL, assocQName);
+            if (results.size() == 0)
+            {
+                throw new AlfrescoRuntimeException("Required path not found: " + assocQName);
+            }
+            systemContainerRef = results.get(0).getChildRef();
+            systemContainerRefs.put(cacheKey, systemContainerRef);
         }
-        else
-        {
-            sysNodeRef = results.get(0).getChildRef();
-        }
-        results = nodeService.getChildAssocs(sysNodeRef, RegexQNamePattern.MATCH_ALL, assocQName);
-        NodeRef authNodeRef = null;
-        if (results.size() == 0)
-        {
-            throw new AlfrescoRuntimeException("Required path not found: " + assocQName);
-        }
-        else
-        {
-            authNodeRef = results.get(0).getChildRef();
-        }
-        return authNodeRef;
+        return systemContainerRef;
     }
 
     public NodeRef getAuthorityNodeRefOrNull(String name)
@@ -578,7 +598,6 @@ public class AuthorityDAOImpl implements AuthorityDAO
             NodeRef authRef = getAuthorityOrNull(authorityName);
             if (authRef != null)
             {
-
                 for (String zone : zones)
                 {
                     // Add the person to an authentication zone (corresponding to an external user registry)
@@ -613,12 +632,36 @@ public class AuthorityDAOImpl implements AuthorityDAO
                 }
             }
         }
-
+    }
+    
+    public Set<String> getAllRootAuthoritiesInZone(String zoneName, AuthorityType type)
+    {
+        NodeRef zone = getZone(zoneName);
+        return zone == null ? Collections.<String> emptySet() : getAllRootAuthoritiesUnderContainer(zone, type);
+    }
+    
+    private Set<String> getAllRootAuthoritiesUnderContainer(NodeRef container, AuthorityType type)
+    {
+        if (type != null && type.equals(AuthorityType.USER))
+        {
+            return Collections.<String> emptySet();
+        }        
+        Collection<ChildAssociationRef> childRefs = nodeService.getChildAssocsWithoutParentAssocsOfType(container, ContentModel.ASSOC_MEMBER);
+        Set<String> authorities = new HashSet<String>(childRefs.size() * 2);
+        for (ChildAssociationRef childRef : childRefs)
+        {
+            addAuthorityNameIfMatches(authorities, childRef.getQName().getLocalName(), type, null);
+        }
+        return authorities;        
     }
 
+    
+    /**
+     * CacheKey class for getContainedAuthorities() parent Group cache.
+     */
     private static class CacheKey implements Serializable
     {
-        private static final long serialVersionUID = -3787608436067567755L;
+        private static final long serialVersionUID = -3787608436067567757L;
 
         AuthorityType type;
 
@@ -684,27 +727,5 @@ public class AuthorityDAOImpl implements AuthorityDAO
                 return false;
             return true;
         }
-
-    }
-
-    public Set<String> getAllRootAuthoritiesInZone(String zoneName, AuthorityType type)
-    {
-        NodeRef zone = getZone(zoneName);
-        return zone == null ? Collections.<String> emptySet() : getAllRootAuthoritiesUnderContainer(zone, type);
-    }
-    
-    private Set<String> getAllRootAuthoritiesUnderContainer(NodeRef container, AuthorityType type)
-    {
-        if (type != null && type.equals(AuthorityType.USER))
-        {
-            return Collections.<String> emptySet();
-        }        
-        Collection<ChildAssociationRef> childRefs = nodeService.getChildAssocsWithoutParentAssocsOfType(container, ContentModel.ASSOC_MEMBER);
-        Set<String> authorities = new HashSet<String>(childRefs.size() * 2);
-        for (ChildAssociationRef childRef : childRefs)
-        {
-            addAuthorityNameIfMatches(authorities, childRef.getQName().getLocalName(), type, null);
-        }
-        return authorities;        
     }
 }

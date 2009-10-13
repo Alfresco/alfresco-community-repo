@@ -329,6 +329,14 @@ public class RetryingTransactionHelper
                 {
                     if (txn.getStatus() == Status.STATUS_MARKED_ROLLBACK)
                     {
+                        if (logger.isDebugEnabled())
+                        {
+                            logger.debug("\n" +
+                                        "Transaction marked for rollback: \n" +
+                                        "   Thread: " + Thread.currentThread().getName() + "\n" +
+                                        "   Txn:    " + txn + "\n" +
+                                        "   Iteration: " + count);
+                        }
                         // Something caused the transaction to be marked for rollback
                         // There is no recovery or retrying with this
                         txn.rollback();

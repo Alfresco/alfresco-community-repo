@@ -101,6 +101,7 @@ public class RetryingTransactionHelper
                 ConstraintViolationException.class,
                 UncategorizedSQLException.class,
                 SQLException.class,
+                NestedSQLException.class,
                 BatchUpdateException.class,
                 DataIntegrityViolationException.class,
                 StaleStateException.class,
@@ -479,6 +480,17 @@ public class RetryingTransactionHelper
             {
                 // We dig further into this
                 cause = retryCause.getCause();
+                // Check for SQL-related "deadlock" messages
+                if (retryCause.getMessage().toLowerCase().contains("deadlock"))
+                {
+                    // The word "deadlock" is usually an indication that we need to resolve with a retry.
+                    return retryCause;
+                }
+                else if (retryCause.getMessage().toLowerCase().contains("constraint"))
+                {
+                    // The word "constraint" is also usually an indication or a concurrent update
+                    return retryCause;
+                }
                 // Recurse
                 return extractRetryCause(cause);
             }

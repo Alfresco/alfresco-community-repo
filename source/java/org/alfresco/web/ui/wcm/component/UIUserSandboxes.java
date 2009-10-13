@@ -336,7 +336,7 @@ public class UIUserSandboxes extends SelfRenderingComponent implements Serializa
          if (showAllSandboxes)
          {
             Map<String, String> userRoles = null;
-            if (currentUserRole.equals(WCMUtil.ROLE_CONTENT_MANAGER))
+            if (currentUserRole.equals(WCMUtil.ROLE_CONTENT_MANAGER) || currentUserRole.equals(WCMUtil.ROLE_CONTENT_PUBLISHER))
             {
                 Map<String, String> allUserRoles = wpService.listWebUsers(websiteRef);
                 
@@ -408,8 +408,8 @@ public class UIUserSandboxes extends SelfRenderingComponent implements Serializa
                
                if ((showAllSandboxes &&
                     (currentUserName.equals(username) ||
-                     AVMUtil.ROLE_CONTENT_MANAGER.equals(currentUserRole) ||
-                     AVMUtil.ROLE_CONTENT_PUBLISHER.equals(currentUserRole))) ||
+                     WCMUtil.ROLE_CONTENT_MANAGER.equals(currentUserRole) ||
+                     WCMUtil.ROLE_CONTENT_PUBLISHER.equals(currentUserRole))) ||
                    showAllSandboxes == false)
                {
                   if (logger.isDebugEnabled())
@@ -558,7 +558,7 @@ public class UIUserSandboxes extends SelfRenderingComponent implements Serializa
                   menu.getChildren().add(refresh);
 
                   // Delete Sandbox action
-                  if (AVMUtil.ROLE_CONTENT_MANAGER.equals(currentUserRole))
+                  if (WCMUtil.ROLE_CONTENT_MANAGER.equals(currentUserRole))
                   {
                      UIActionLink delete = createAction(context, mainStore, username, 
                               ACT_REMOVE_SANDBOX, "/images/icons/delete_sandbox.gif",

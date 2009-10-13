@@ -25,7 +25,6 @@
 package org.alfresco.web.bean.wcm;
 
 import java.io.FileNotFoundException;
-import java.io.Serializable;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -52,9 +51,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.model.WCMAppModel;
 import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.avm.AVMNodeType;
-import org.alfresco.repo.avm.actions.AVMUndoSandboxListAction;
 import org.alfresco.repo.web.scripts.FileTypeImageUtils;
-import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avm.AVMService;
@@ -75,11 +72,11 @@ import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.service.cmr.workflow.WorkflowTask;
-import org.alfresco.util.NameMatcher;
-import org.alfresco.util.Pair;
-import org.alfresco.util.VirtServerUtils;
+import org.alfresco.wcm.asset.AssetInfo;
+import org.alfresco.wcm.asset.AssetInfoImpl;
 import org.alfresco.wcm.sandbox.SandboxInfo;
 import org.alfresco.wcm.sandbox.SandboxService;
+import org.alfresco.wcm.util.WCMUtil;
 import org.alfresco.wcm.webproject.WebProjectInfo;
 import org.alfresco.wcm.webproject.WebProjectService;
 import org.alfresco.web.app.Application;
@@ -91,6 +88,7 @@ import org.alfresco.web.bean.BrowseBean;
 import org.alfresco.web.bean.NavigationBean;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.Repository;
+import org.alfresco.web.bean.repository.User;
 import org.alfresco.web.bean.search.SearchContext;
 import org.alfresco.web.forms.FormInstanceData;
 import org.alfresco.web.forms.FormNotFoundException;
@@ -1070,6 +1068,18 @@ public class AVMBrowseBean implements IContextListener
       return false;
    }
    
+   public boolean getIsManagerOrPublisherRole()
+   {
+      Node wpNode = getWebsite();
+      if (wpNode != null)
+      {
+         User user = Application.getCurrentUser(FacesContext.getCurrentInstance());
+         String userRole = getWebProjectService().getWebUserRole(wpNode.getNodeRef(), user.getUserName());
+         return (WCMUtil.ROLE_CONTENT_MANAGER.equals(userRole) || WCMUtil.ROLE_CONTENT_PUBLISHER.equals(userRole));
+      }
+      return false;
+   }
+   
    /**
     * @return true to show all sandboxes visible to this user, false to only show the current user sandbox
     */
@@ -1085,6 +1095,7 @@ public class AVMBrowseBean implements IContextListener
    {
       this.showAllSandboxes = value;
    }
+   
    
    /**
     * @return true if the website has had a deployment attempt
@@ -1645,8 +1656,9 @@ public class AVMBrowseBean implements IContextListener
     */
    public void revertNode(ActionEvent event)
    {
-      final String path = getPathFromEventArgs(event);
-      final List<String> namesForDisplayMsg = new LinkedList<String>();
+      String avmPath = getPathFromEventArgs(event);
+      String sbStoreId = WCMUtil.getSandboxStoreId(avmPath);
+      List<String> namesForDisplayMsg = new LinkedList<String>();
       UserTransaction tx = null;
       final FacesContext context = FacesContext.getCurrentInstance();
       try
@@ -1654,49 +1666,40 @@ public class AVMBrowseBean implements IContextListener
          tx = Repository.getUserTransaction(context, false);
          tx.begin();
          
-         AVMNodeDescriptor node = getAvmService().lookup(-1, path, true);
+         AVMNodeDescriptor node = getAvmService().lookup(-1, avmPath, true);
          if (node != null)
          {
             FormInstanceData fid = null;
-            if (getAvmService().hasAspect(-1, path, WCMAppModel.ASPECT_RENDITION))
+            if (getAvmService().hasAspect(-1, avmPath, WCMAppModel.ASPECT_RENDITION))
             {
-               fid = this.getFormsService().getRendition(-1, path).getPrimaryFormInstanceData();
+               fid = this.getFormsService().getRendition(-1, avmPath).getPrimaryFormInstanceData();
             }
-            else if (getAvmService().hasAspect(-1, path, WCMAppModel.ASPECT_FORM_INSTANCE_DATA))
+            else if (getAvmService().hasAspect(-1, avmPath, WCMAppModel.ASPECT_FORM_INSTANCE_DATA))
             {
-               fid = this.getFormsService().getFormInstanceData(-1, path);
+               fid = this.getFormsService().getFormInstanceData(-1, avmPath);
             }
-            List<Pair<Integer, String>> versionPaths = new ArrayList<Pair<Integer, String>>();
+            List<String> paths = new ArrayList<String>();
             if (fid != null)
             {
-               versionPaths.add(new Pair<Integer, String>(-1, fid.getPath()));
+               paths.add(WCMUtil.getStoreRelativePath(fid.getPath()));
                namesForDisplayMsg.add(fid.getName());
                for (Rendition r : fid.getRenditions())
                {
-                  versionPaths.add(new Pair<Integer, String>(-1, r.getPath()));
+                  paths.add(WCMUtil.getStoreRelativePath(r.getPath()));
                   namesForDisplayMsg.add(r.getName());
                }
             }
             else
             {
-               versionPaths.add(new Pair<Integer, String>(-1, path));
+               paths.add(WCMUtil.getStoreRelativePath(avmPath));
                namesForDisplayMsg.add(node.getName());
             }
-            final Map<String, Serializable> args = new HashMap<String, Serializable>(1, 1.0f);
-            args.put(AVMUndoSandboxListAction.PARAM_NODE_LIST, (Serializable)versionPaths);
-            Action action = this.getActionService().createAction(AVMUndoSandboxListAction.NAME, args);
-            this.getActionService().executeAction(action, null); // dummy action ref
+            
+            getSandboxService().revertList(sbStoreId, paths);
          }
          
          // commit the transaction
          tx.commit();
-
-         // possibly update webapp after commit
-
-         if (VirtServerUtils.requiresUpdateNotification(path))
-         {
-             AVMUtil.updateVServerWebapp(path, true);
-         }
          
          // if we get here, all was well - output friendly status message to the user
          this.displayStatusMessage(context,
@@ -2162,46 +2165,47 @@ public class AVMBrowseBean implements IContextListener
       final HtmlCommandButton button = (HtmlCommandButton) event.getComponent();
 
       List<Object> params = button.getChildren();
-      String userStore = null;
-      String stagingStore = null;
+      String userStorePath = null;
+      //String stagingStorePath = null;
       for (Object obj : params)
       {
          UIParameter uip = (UIParameter) obj;
          if (uip.getName().equals("userStorePath"))
          {
-            userStore = (String) uip.getValue();
+            userStorePath = (String) uip.getValue();
          }
+         /*
          if (uip.getName().equals("stagingStorePath"))
          {
             stagingStore = (String) uip.getValue();
          }
+         */
       }
-      NameMatcher matcher = (NameMatcher) FacesContextUtils.getRequiredWebApplicationContext(FacesContext.getCurrentInstance()).getBean("globalPathExcluder");
-
-      // calcluate the list of differences between the user store and the staging area
-      List<AVMDifference> diffs = this.getAvmSyncService().compare(-1, userStore, -1, stagingStore, matcher);
-      List<Pair<Integer, String>> versionPaths = new ArrayList<Pair<Integer, String>>();
+      String[] storePath = WCMUtil.splitPath(userStorePath);
+      
+      List<AssetInfo> assets = sbService.listChanged(storePath[0], storePath[1], true);
+      
+      String sbStoreId = storePath[0];
+      
+      List<String> paths = new ArrayList<String>();
       List<WorkflowTask> tasks = null;
-      for (AVMDifference diff : diffs)
+      for (AssetInfo asset : assets)
       {
-         if (diff.getDifferenceCode() == AVMDifference.CONFLICT)
+         if (asset.getDiffCode() == AVMDifference.CONFLICT)
          {
-            AVMNodeDescriptor node = getAvmService().lookup(-1, diff.getSourcePath(), true);
+            // TODO refactor getAssociatedTasksForNode to use AssetInfo instead of AVMNodeDescriptor
+            AVMNodeDescriptor node = ((AssetInfoImpl)asset).getAVMNodeDescriptor();
             if (tasks == null)
             {
-               tasks = AVMWorkflowUtil.getAssociatedTasksForSandbox(AVMUtil.getStoreName(diff.getSourcePath()));
+               tasks = AVMWorkflowUtil.getAssociatedTasksForSandbox(sbStoreId);
             }
             if (AVMWorkflowUtil.getAssociatedTasksForNode(node, tasks).size() == 0)
             {
-               String revertPath = diff.getSourcePath();
-               versionPaths.add(new Pair<Integer, String>(-1, revertPath));
+               paths.add(asset.getPath());
             }
          }
       }
-
-      Map<String, Serializable> args = new HashMap<String, Serializable>(1, 1.0f);
-      args.put(AVMUndoSandboxListAction.PARAM_NODE_LIST, (Serializable) versionPaths);
-      Action action = this.getActionService().createAction(AVMUndoSandboxListAction.NAME, args);
-      this.getActionService().executeAction(action, null);
+      
+      sbService.revertList(sbStoreId, paths);
    }
 }

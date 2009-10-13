@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2008 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -247,10 +247,8 @@ public class UISandboxSnapshots extends SelfRenderingComponent
             determineDeploymentStatus(context, webProjectRef, sandbox, nodeService, avmService);
 
             Map requestMap = context.getExternalContext().getRequestMap();
-            for (int i = versions.size() - 1; i >= 0; i--) // reverse order
+            for (SandboxVersion item : versions)
             {
-                SandboxVersion item = versions.get(i);
-
                 // only display snapshots with a valid label/tag - others are system generated snapshots
                 if (! item.isSystemGenerated())
                 {

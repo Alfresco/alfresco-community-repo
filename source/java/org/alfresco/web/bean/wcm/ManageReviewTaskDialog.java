@@ -24,6 +24,7 @@
  */
 package org.alfresco.web.bean.wcm;
 
+import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -31,10 +32,14 @@ import java.util.Map;
 import javax.faces.context.FacesContext;
 import javax.transaction.UserTransaction;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.linkvalidation.LinkValidationReport;
 import org.alfresco.repo.domain.PropertyValue;
-import org.alfresco.wcm.sandbox.SandboxConstants;
+import org.alfresco.service.cmr.avm.AVMNotFoundException;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.security.AccessStatus;
+import org.alfresco.service.cmr.security.PermissionService;
+import org.alfresco.wcm.sandbox.SandboxConstants;
 import org.alfresco.wcm.util.WCMUtil;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.repository.Repository;
@@ -53,10 +58,13 @@ public class ManageReviewTaskDialog extends ManageTaskDialog
 {
    private static final long serialVersionUID = 59524560340308134L;
    
+   private static final String MSG_WEB_PRJ_DOES_NOT_EXIST = "error_webprj_does_not_exist";
+   
    protected String store;
    protected String webapp;
    protected NodeRef webProjectRef;
    protected AVMBrowseBean avmBrowseBean;
+   protected PermissionService permissionService;
    
    private static final Log logger = LogFactory.getLog(ManageReviewTaskDialog.class);
    
@@ -85,7 +93,14 @@ public class ManageReviewTaskDialog extends ManageTaskDialog
          this.store = this.workflowPackage.getStoreRef().getIdentifier();
          
          // get the web project noderef for the workflow store
+         String wpStoreId = WCMUtil.getWebProjectStoreId(this.store);
          this.webProjectRef = getWebProjectService().getWebProjectNodeFromStore(WCMUtil.getWebProjectStoreId(this.store));
+         
+         if (this.webProjectRef == null)
+         {
+             String mesg = MessageFormat.format(Application.getMessage(context, MSG_WEB_PRJ_DOES_NOT_EXIST), wpStoreId);
+             throw new AlfrescoRuntimeException(mesg);
+         }
          
          PropertyValue val = this.getAvmService().getStoreProperty(this.store, 
                   SandboxConstants.PROP_LINK_VALIDATION_REPORT);
@@ -185,6 +200,14 @@ public class ManageReviewTaskDialog extends ManageTaskDialog
    }
    
    /**
+   * @param permissionService PermissionService instance
+   */
+   public void setPermissionService(PermissionService permissionService)
+   {
+      this.permissionService = permissionService;
+   }
+   
+   /**
     * @return Determines if there are any test servers configured for the
     *         web project this task belongs to
     */
@@ -203,7 +226,7 @@ public class ManageReviewTaskDialog extends ManageTaskDialog
       {
          result = Boolean.FALSE;
          
-         if (this.webProjectRef != null)
+         if (this.webProjectRef != null && permissionService.hasPermission(webProjectRef, PermissionService.READ_PROPERTIES).equals(AccessStatus.ALLOWED))
          {
             List<NodeRef> testServers = DeploymentUtil.findTestServers(this.webProjectRef, false);
             if (testServers != null)
@@ -227,8 +250,16 @@ public class ManageReviewTaskDialog extends ManageTaskDialog
     */
    public boolean getDeployAttempted()
    {
-      PropertyValue propVal = getAvmService().getStoreProperty(this.store, 
+     PropertyValue propVal = null;
+      try
+      {
+          propVal = getAvmService().getStoreProperty(this.store, 
                SandboxConstants.PROP_LAST_DEPLOYMENT_ID);
+      }
+      catch (AVMNotFoundException nfe)
+      {
+          // ignore - eg. web project deleted
+      }
       
       return (propVal != null);
    }

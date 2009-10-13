@@ -1,5 +1,5 @@
 <%--
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -233,7 +233,7 @@
                      <%-- used by the panel to add additional component facets --%>
                      <h:panelGroup id="sandboxes-panel-facets">
                         <f:facet name="title">
-                           <h:panelGroup id="sandboxes-panel-facets-wrapper">
+                           <h:panelGroup id="sandboxes-panel-facets-wrapper" rendered="#{AVMBrowseBean.isManagerOrPublisherRole}">
                               <h:selectBooleanCheckbox id="showAllSandboxes" value="#{AVMBrowseBean.showAllSandboxes}" onchange="document.forms['website'].submit(); return true;" immediate="false" />
                               <h:outputText id="txtShowSandboxes" value="#{msg.website_showallsandboxes}" style="vertical-align:15%" />
                            </h:panelGroup>

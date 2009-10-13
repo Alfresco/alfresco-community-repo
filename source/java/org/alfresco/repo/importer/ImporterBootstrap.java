@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2008 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -18,7 +18,7 @@
  * As a special exception to the terms and conditions of version 2.0 of 
  * the GPL, you may redistribute this Program in connection with Free/Libre 
  * and Open Source Software ("FLOSS") applications as described in Alfresco's 
- * FLOSS exception.  You should have recieved a copy of the text describing 
+ * FLOSS exception.  You should have received a copy of the text describing 
  * the FLOSS exception, and it is also available here: 
  * http://www.alfresco.com/legal/licensing"
  */
@@ -44,6 +44,7 @@ import org.alfresco.i18n.I18NUtil;
 import org.alfresco.repo.security.authentication.AuthenticationContext;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -91,6 +92,7 @@ public class ImporterBootstrap extends AbstractLifecycleBean
     private UUID_BINDING uuidBinding = null;
     // Dependencies
     private TransactionService transactionService;
+    private RetryingTransactionHelper retryingTransactionHelper;
     private NamespaceService namespaceService;
     private NodeService nodeService;
     private ImporterService importerService;
@@ -140,8 +142,8 @@ public class ImporterBootstrap extends AbstractLifecycleBean
     public void setUuidBinding(UUID_BINDING uuidBinding)
     {
         this.uuidBinding = uuidBinding;
-    }
-
+    }    
+    
     /**
      * Sets the Transaction Service
      * 
@@ -151,7 +153,19 @@ public class ImporterBootstrap extends AbstractLifecycleBean
     {
         this.transactionService = transactionService;
     }
-    
+
+    /**
+     * Sets the retrying transaction helper specific to the importer bootstrap. This transaction helper's parameters are
+     * tuned to the longer-running import transaction.
+     * 
+     * @param retryingTransactionHelper
+     *            the retrying transaction helper
+     */
+    public void setRetryingTransactionHelper(RetryingTransactionHelper retryingTransactionHelper)
+    {
+        this.retryingTransactionHelper = retryingTransactionHelper;
+    }
+
     /**
      * Sets the namespace service
      * 
@@ -314,6 +328,7 @@ public class ImporterBootstrap extends AbstractLifecycleBean
     public void bootstrap()
     {
         PropertyCheck.mandatory(this, "transactionService", transactionService);
+        PropertyCheck.mandatory(this, "retryingTransactionHelper", retryingTransactionHelper);
         PropertyCheck.mandatory(this, "namespaceService", namespaceService);
         PropertyCheck.mandatory(this, "nodeService", nodeService);
         PropertyCheck.mandatory(this, "importerService", importerService);
@@ -342,7 +357,7 @@ public class ImporterBootstrap extends AbstractLifecycleBean
                             return null;
                         }
                     };
-                    return transactionService.getRetryingTransactionHelper().doInTransaction(doImportCallback, transactionService.isReadOnly(), false);
+                    return retryingTransactionHelper.doInTransaction(doImportCallback, transactionService.isReadOnly(), false);
                 }
             };
             AuthenticationUtil.runAs(importRunAs, authenticationContext.getSystemUserName());

@@ -25,7 +25,6 @@
 package org.alfresco.repo.descriptor;
 
 import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -42,6 +41,7 @@ import org.alfresco.util.VersionNumber;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationEvent;
+import org.springframework.context.ConfigurableApplicationContext;
 
 /**
  * Implementation of Descriptor Service.
@@ -68,7 +68,7 @@ public class DescriptorServiceImpl extends AbstractLifecycleBean implements Desc
     /** The heart beat service. */
     @SuppressWarnings("unused")
     private Object heartBeat;
-    
+
     /** The server descriptor. */
     private Descriptor serverDescriptor;
 
@@ -128,7 +128,7 @@ public class DescriptorServiceImpl extends AbstractLifecycleBean implements Desc
      */
     public Descriptor getServerDescriptor()
     {
-        return serverDescriptor;
+        return this.serverDescriptor;
     }
 
     /*
@@ -137,7 +137,7 @@ public class DescriptorServiceImpl extends AbstractLifecycleBean implements Desc
      */
     public Descriptor getCurrentRepositoryDescriptor()
     {
-        return currentRepoDescriptor;
+        return this.currentRepoDescriptor;
     }
 
     /*
@@ -146,7 +146,7 @@ public class DescriptorServiceImpl extends AbstractLifecycleBean implements Desc
      */
     public Descriptor getInstalledRepositoryDescriptor()
     {
-        return installedRepoDescriptor;
+        return this.installedRepoDescriptor;
     }
 
     /*
@@ -155,7 +155,7 @@ public class DescriptorServiceImpl extends AbstractLifecycleBean implements Desc
      */
     public LicenseDescriptor getLicenseDescriptor()
     {
-        return (licenseService == null) ? null : licenseService.getLicense();
+        return this.licenseService == null ? null : this.licenseService.getLicense();
     }
 
     /*
@@ -165,15 +165,15 @@ public class DescriptorServiceImpl extends AbstractLifecycleBean implements Desc
     @Override
     protected void onBootstrap(ApplicationEvent event)
     {
-        // initialise the repository descriptor
-        // note: this requires that the repository schema has already been initialised
+        // Initialize the repository descriptor
+        // note: this requires that the repository schema has already been initialized
         final RetryingTransactionCallback<Descriptor> createDescriptorWork = new RetryingTransactionCallback<Descriptor>()
         {
             public Descriptor execute() throws ClassNotFoundException
             {
                 boolean initialiseHeartBeat = false;
 
-                // initialise license service (if installed)
+                // Initialize license service (if installed)
                 DescriptorServiceImpl.this.licenseService = (LicenseService) constructSpecialService("org.alfresco.enterprise.license.LicenseComponent");
                 if (DescriptorServiceImpl.this.licenseService == null)
                 {
@@ -181,12 +181,21 @@ public class DescriptorServiceImpl extends AbstractLifecycleBean implements Desc
                     initialiseHeartBeat = true;
                 }
 
+                // Make the license service available through the application context as a singleton for other beans
+                // that need it (e.g. the HeartBeat).
+                ApplicationContext applicationContext = getApplicationContext();
+                if (applicationContext instanceof ConfigurableApplicationContext)
+                {
+                    ((ConfigurableApplicationContext) applicationContext).getBeanFactory().registerSingleton(
+                            "licenseService", DescriptorServiceImpl.this.licenseService);
+                }
+
                 // verify license, but only if license component is installed
                 try
                 {
-                    licenseService.verifyLicense();
-                    LicenseDescriptor l = licenseService.getLicense();
-                    // Initialise the heartbeat unless it is disabled by the license
+                    DescriptorServiceImpl.this.licenseService.verifyLicense();
+                    LicenseDescriptor l = DescriptorServiceImpl.this.licenseService.getLicense();
+                    // Initialize the heartbeat unless it is disabled by the license
                     if (initialiseHeartBeat || l == null || !l.isHeartBeatDisabled())
                     {
                         DescriptorServiceImpl.this.heartBeat = constructSpecialService("org.alfresco.enterprise.heartbeat.HeartBeat");
@@ -194,14 +203,14 @@ public class DescriptorServiceImpl extends AbstractLifecycleBean implements Desc
                 }
                 catch (LicenseException e)
                 {
-                    // Initialise heart beat anyway
+                    // Initialize heart beat anyway
                     DescriptorServiceImpl.this.heartBeat = constructSpecialService("org.alfresco.enterprise.heartbeat.HeartBeat");
                     throw e;
                 }
 
                 // persist the server descriptor values
-                currentRepoDescriptor = DescriptorServiceImpl.this.currentRepoDescriptorDAO
-                        .updateDescriptor(serverDescriptor);
+                DescriptorServiceImpl.this.currentRepoDescriptor = DescriptorServiceImpl.this.currentRepoDescriptorDAO
+                        .updateDescriptor(DescriptorServiceImpl.this.serverDescriptor);
 
                 // create the installed descriptor
                 Descriptor installed = DescriptorServiceImpl.this.installedRepoDescriptorDAO.getDescriptor();
@@ -212,12 +221,12 @@ public class DescriptorServiceImpl extends AbstractLifecycleBean implements Desc
         {
             public Descriptor doWork() throws Exception
             {
-                return transactionService.getRetryingTransactionHelper().doInTransaction(createDescriptorWork,
-                        transactionService.isReadOnly(), false);
+                return DescriptorServiceImpl.this.transactionService.getRetryingTransactionHelper().doInTransaction(
+                        createDescriptorWork, DescriptorServiceImpl.this.transactionService.isReadOnly(), false);
             }
-        }, AuthenticationUtil.getSystemUserName());         
-        
-        ((ApplicationContext)event.getSource()).publishEvent(new DescriptorServiceAvailableEvent(this));
+        }, AuthenticationUtil.getSystemUserName());
+
+        ((ApplicationContext) event.getSource()).publishEvent(new DescriptorServiceAvailableEvent(this));
     }
 
     /*
@@ -242,7 +251,7 @@ public class DescriptorServiceImpl extends AbstractLifecycleBean implements Desc
     public void afterPropertiesSet() throws Exception
     {
         // initialise server descriptor
-        serverDescriptor = this.serverDescriptorDAO.getDescriptor();
+        this.serverDescriptor = this.serverDescriptorDAO.getDescriptor();
     }
 
     /**
@@ -498,8 +507,8 @@ public class DescriptorServiceImpl extends AbstractLifecycleBean implements Desc
                 String label = getVersionLabel();
                 String build = getVersionBuild();
 
-                boolean hasLabel = (label != null && label.length() > 0);
-                boolean hasBuild = (build != null && build.length() > 0);
+                boolean hasLabel = label != null && label.length() > 0;
+                boolean hasBuild = build != null && build.length() > 0;
 
                 // add opening bracket if either a label or build number is present
                 if (hasLabel || hasBuild)

@@ -213,6 +213,9 @@
         <property name="transactionService">
             <ref bean="transactionService"/>
         </property>
+        <property name="retryingTransactionHelper">
+            <ref bean="storeImporterTransactionHelper"/>
+        </property>
         <property name="nodeService">
             <ref bean="nodeService"/>
         </property>
@@ -238,6 +241,24 @@
     <bean id="storeImporterViews" class="org.alfresco.repo.importer.ImporterBootstrapViews" abstract="true">
     </bean>
 
+    <!-- This retrying transaction helper is tuned for longer-running transactions on initial setup  -->
+    <bean id="storeImporterTransactionHelper" class="org.alfresco.repo.transaction.RetryingTransactionHelper">
+        <property name="transactionService">
+            <ref bean="transactionService"/>
+        </property>
+        <property name="maxRetries">
+            <value>${server.setup.transaction.max-retries}</value>
+        </property>
+        <property name="minRetryWaitMs">
+            <value>${server.setup.transaction.min-retry-wait-ms}</value>
+        </property>
+        <property name="maxRetryWaitMs">
+            <value>${server.setup.transaction.max-retry-wait-ms}</value>
+        </property>
+        <property name="retryWaitIncrementMs">
+            <value>${server.setup.transaction.wait-increment-ms}</value>
+        </property>
+    </bean>
 
    <!--  -->
    <!--  Store specific Importers -->

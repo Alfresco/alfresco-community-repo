@@ -31,6 +31,7 @@ import java.util.Properties;
 import org.alfresco.repo.importer.ImporterBootstrap;
 import org.alfresco.repo.security.authentication.AuthenticationContext;
 import org.alfresco.repo.security.authentication.MutableAuthenticationDao;
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -110,6 +111,7 @@ public class TestData
                 bootstrap.setNodeService((NodeService) applicationContext.getBean(ServiceRegistry.NODE_SERVICE.getLocalName()));
                 bootstrap.setNamespaceService((NamespaceService) applicationContext.getBean(ServiceRegistry.NAMESPACE_SERVICE.getLocalName()));
                 bootstrap.setTransactionService((TransactionService) applicationContext.getBean(ServiceRegistry.TRANSACTION_SERVICE.getLocalName()));
+                bootstrap.setRetryingTransactionHelper((RetryingTransactionHelper) applicationContext.getBean("storeImporterTransactionHelper"));
                 bootstrap.setStoreUrl(storeRef.toString());
 
                 List<Properties> views = new ArrayList<Properties>();

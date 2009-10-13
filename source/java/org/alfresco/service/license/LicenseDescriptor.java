@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -18,7 +18,7 @@
  * As a special exception to the terms and conditions of version 2.0 of 
  * the GPL, you may redistribute this Program in connection with Free/Libre 
  * and Open Source Software ("FLOSS") applications as described in Alfresco's 
- * FLOSS exception.  You should have recieved a copy of the text describing 
+ * FLOSS exception.  You should have received a copy of the text describing 
  * the FLOSS exception, and it is also available here: 
  * http://www.alfresco.com/legal/licensing"
  */
@@ -90,4 +90,11 @@ public interface LicenseDescriptor
      * @return <code>true</code> if this license allow the heartbeat to be disabled
      */
     public boolean isHeartBeatDisabled();
+    
+    /**
+     * Gets an alternative URL that the heart beat should post data to, or <code>null</code> if the default URL is to be used.
+     * 
+     * @return a URL or <code>null</code>
+     */
+    public String getHeartBeatUrl();
 }

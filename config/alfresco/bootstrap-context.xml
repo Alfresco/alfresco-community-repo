@@ -387,6 +387,9 @@
         </property>
     </bean>
 
+    <!--  System Administration Parameters -->
+    <bean id="sysAdmin" class="org.alfresco.repo.management.subsystems.ChildApplicationContextFactory" parent="abstractPropertyBackedBean"/>
+
     <!--  File Servers Subsystem -->
     <bean id="fileServers" class="org.alfresco.repo.management.subsystems.ChildApplicationContextFactory" parent="abstractPropertyBackedBean">
         <property name="autoStart">

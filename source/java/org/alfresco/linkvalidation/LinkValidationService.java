@@ -190,7 +190,5 @@ public interface LinkValidationService
     //-------------------------------------------------------------------------
     public List<String> getHrefsDependentUponFile(String path);
 
-    public void setLinkValidationDisabled(boolean disabled);
-
     public boolean isLinkValidationDisabled();
 }

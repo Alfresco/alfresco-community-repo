@@ -27,48 +27,35 @@ package org.alfresco.repo.security.authentication;
 import java.util.List;
 import java.util.Set;
 
-import org.alfresco.repo.cache.SimpleCache;
+import org.alfresco.repo.admin.SysAdminParams;
 import org.alfresco.service.cmr.security.AuthenticationService;
-import org.springframework.beans.factory.InitializingBean;
 
 /**
  * Common code for authentication services
  * 
  * @author andyh
  */
-public abstract class AbstractAuthenticationService implements AuthenticationService, InitializingBean
+public abstract class AbstractAuthenticationService implements AuthenticationService
 {
+    private SysAdminParams sysAdminParams;
 
-    private SimpleCache<String, Object> sysAdminCache;
-
-    private static final String KEY_SYSADMIN_ALLOWED_USERS = "sysAdminCache.authAllowedUsers";
-
-    private static final String KEY_SYSADMIN_MAX_USERS = "sysAdminCache.authMaxUsers";
-
-    private boolean initialised = false;
-
-    private Integer initialMaxUsers = null;
-
-    private List<String> initialAllowedUsers = null;
-
-    public void setSysAdminCache(SimpleCache<String, Object> sysAdminCache)
+    public void setSysAdminParams(SysAdminParams sysAdminParams)
     {
-        this.sysAdminCache = sysAdminCache;
+        this.sysAdminParams = sysAdminParams;
     }
 
-    @SuppressWarnings("unchecked")
     public void preAuthenticationCheck(String userName) throws AuthenticationException
     {
-        if (sysAdminCache != null)
+        if (sysAdminParams != null)
         {
-            List<String> allowedUsers = (List<String>) sysAdminCache.get(KEY_SYSADMIN_ALLOWED_USERS);
+            List<String> allowedUsers = sysAdminParams.getAllowedUserList();
 
             if ((allowedUsers != null) && (!allowedUsers.contains(userName)))
             {
                 throw new AuthenticationDisallowedException("Username not allowed: " + userName);
             }
 
-            Integer maxUsers = (Integer) sysAdminCache.get(KEY_SYSADMIN_MAX_USERS);
+            Integer maxUsers = (Integer) sysAdminParams.getMaxUsers();
 
             if ((maxUsers != null) && (maxUsers != -1) && (getUsersWithTickets(true).size() >= maxUsers))
             {
@@ -77,62 +64,14 @@ public abstract class AbstractAuthenticationService implements AuthenticationSer
         }
     }
 
-    public void setAllowedUsers(List<String> allowedUsers)
-    {
-        if (initialised)
-        {
-            if (sysAdminCache != null)
-            {
-                sysAdminCache.put(KEY_SYSADMIN_ALLOWED_USERS, allowedUsers);
-            }
-        }
-        else
-        {
-            initialAllowedUsers = allowedUsers;
-        }
-
-    }
-
-    @SuppressWarnings("unchecked")
     public List<String> getAllowedUsers()
     {
-        if (sysAdminCache != null)
-        {
-            return (List<String>) sysAdminCache.get(KEY_SYSADMIN_ALLOWED_USERS);
-        }
-        else
-        {
-            return null;
-        }
+        return sysAdminParams.getAllowedUserList();
     }
 
-    public void setMaxUsers(int maxUsers)
-    {
-        if (initialised)
-        {
-            if (sysAdminCache != null)
-            {
-                sysAdminCache.put(KEY_SYSADMIN_MAX_USERS, new Integer(maxUsers));
-            }
-        }
-        else
-        {
-            initialMaxUsers = new Integer(maxUsers);
-        }
-    }
-
-    @SuppressWarnings("unchecked")
     public int getMaxUsers()
     {
-        if (sysAdminCache != null)
-        {
-            Integer maxUsers = (Integer) sysAdminCache.get(KEY_SYSADMIN_MAX_USERS);
-            return (maxUsers == null ? -1 : maxUsers.intValue());
-        }
-        else
-        {
-            return -1;
-        }
+        return sysAdminParams.getMaxUsers();
     }
 
     public abstract Set<String> getUsersWithTickets(boolean nonExpiredOnly);
@@ -142,15 +81,4 @@ public abstract class AbstractAuthenticationService implements AuthenticationSer
     public abstract int countTickets(boolean nonExpiredOnly);
 
     public abstract Set<TicketComponent> getTicketComponents();
-
-    final public void afterPropertiesSet() throws Exception
-    {
-        initialised = true;
-        if (sysAdminCache != null)
-        {
-            sysAdminCache.put(KEY_SYSADMIN_MAX_USERS, initialMaxUsers);
-            sysAdminCache.put(KEY_SYSADMIN_ALLOWED_USERS, initialAllowedUsers);
-        }
-    }
-
 }

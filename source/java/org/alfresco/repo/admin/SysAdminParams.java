@@ -22,40 +22,36 @@
  * the FLOSS exception, and it is also available here: 
  * http://www.alfresco.com/legal/licensing"
  */
-package org.alfresco.repo.management.subsystems;
+package org.alfresco.repo.admin;
+
+import java.util.List;
 
 /**
- * An event emitted a {@link PropertyBackedBean} is destroyed.
+ * An interface for retrieving configurable system parameters.
  * 
  * @author dward
  */
-public class PropertyBackedBeanUnregisteredEvent extends PropertyBackedBeanEvent
+public interface SysAdminParams
 {
-    private static final long serialVersionUID = 4154847737689541132L;
-
-    private final boolean isPermanent;
 
     /**
-     * The Constructor.
+     * Do we allow write operations by non-system users on the repository?.
      * 
-     * @param source
-     *            the source of the event
+     * @return <code>true</code> if we allow write operations by non-system users on the repository
      */
-    public PropertyBackedBeanUnregisteredEvent(PropertyBackedBean source, boolean isPermanent)
-    {
-        super(source);
-        this.isPermanent = isPermanent;
-    }
+    public boolean getAllowWrite();
 
     /**
-     * Is the component being destroyed forever, i.e. should persisted values be removed?
+     * Gets the list of users who are allowed to log in.
      * 
-     * @return <code>true</code> if the bean is being destroyed forever. On server shutdown, this value would be
-     *         <code>false</code>, whereas on the removal of a dynamically created instance, this value would be
-     *         <code>true</code>.
+     * @return the allowed user list or <code>null</code> if all users are allowed to log in
      */
-    public boolean isPermanent()
-    {
-        return isPermanent;
-    }
+    public List<String> getAllowedUserList();
+
+    /**
+     * Gets the maximum number of users who are allowed to log in.
+     * 
+     * @return the the maximum number of users who are allowed to log in
+     */
+    public int getMaxUsers();
 }

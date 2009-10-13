@@ -38,6 +38,8 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.attributes.Attribute;
 import org.alfresco.repo.attributes.LongAttributeValue;
 import org.alfresco.repo.attributes.MapAttributeValue;
+import org.alfresco.repo.lock.JobLockService;
+import org.alfresco.repo.lock.LockAcquisitionException;
 import org.alfresco.repo.management.subsystems.ActivateableBean;
 import org.alfresco.repo.management.subsystems.ChildApplicationContextManager;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -50,6 +52,8 @@ import org.alfresco.service.cmr.attributes.AttributeService;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.PersonService;
+import org.alfresco.service.namespace.NamespaceService;
+import org.alfresco.service.namespace.QName;
 import org.alfresco.util.AbstractLifecycleBean;
 import org.alfresco.util.PropertyMap;
 import org.apache.commons.logging.Log;
@@ -65,7 +69,8 @@ import org.springframework.context.ApplicationEvent;
  * the 'chain' of application contexts, managed by a {@link ChildApplicationContextManager}, and compares its
  * timestamped user and group information with the local users and groups last retrieved from the same source. Any
  * updates and additions made to those users and groups are applied to the local copies. The ordering of each
- * {@link UserRegistry} in the chain determines its precedence when it comes to user and group name collisions.
+ * {@link UserRegistry} in the chain determines its precedence when it comes to user and group name collisions. The
+ * {@link JobLockService} is used to ensure that in a cluster, no two nodes actually run a synchronize at the same time.
  * <p>
  * The <code>force</code> argument determines whether a complete or partial set of information is queried from the
  * {@link UserRegistry}. When <code>true</code> then <i>all</i> users and groups are queried. With this complete set of
@@ -84,11 +89,19 @@ import org.springframework.context.ApplicationEvent;
  */
 public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean implements UserRegistrySynchronizer
 {
-    /** The number of users / groups we add at a time in a transaction **/
+
+    /** The number of users / groups we add at a time in a transaction *. */
     private static final int BATCH_SIZE = 10;
 
     /** The logger. */
     private static final Log logger = LogFactory.getLog(ChainingUserRegistrySynchronizer.class);
+
+    /** The name of the lock used to ensure that a synchronize does not run on more than one node at the same time. */
+    private static final QName LOCK_QNAME = QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI,
+            "ChainingUserRegistrySynchronizer");
+
+    /** The maximum time this lock will be held for (1 day). */
+    private static final long LOCK_TTL = 1000 * 60 * 60 * 24;
 
     /** The path in the attribute service below which we persist attributes. */
     private static final String ROOT_ATTRIBUTE_PATH = ".ChainingUserRegistrySynchronizer";
@@ -117,13 +130,16 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean impl
     /** The retrying transaction helper. */
     private RetryingTransactionHelper retryingTransactionHelper;
 
-    /** Should we trigger a differential sync when missing people log in? */
+    /** The job lock service. */
+    private JobLockService jobLockService;
+
+    /** Should we trigger a differential sync when missing people log in?. */
     private boolean syncWhenMissingPeopleLogIn = true;
 
-    /** Should we trigger a differential sync on startup? */
+    /** Should we trigger a differential sync on startup?. */
     private boolean syncOnStartup = true;
 
-    /** Should we auto create a missing person on log in? */
+    /** Should we auto create a missing person on log in?. */
     private boolean autoCreatePeopleOnLogin = true;
 
     /**
@@ -193,7 +209,18 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean impl
     }
 
     /**
-     * Controls whether we auto create a missing person on log in
+     * Sets the job lock service.
+     * 
+     * @param jobLockService
+     *            the job lock service
+     */
+    public void setJobLockService(JobLockService jobLockService)
+    {
+        this.jobLockService = jobLockService;
+    }
+
+    /**
+     * Controls whether we auto create a missing person on log in.
      * 
      * @param autoCreatePeopleOnLogin
      *            <code>true</code> if we should auto create a missing person on log in
@@ -204,7 +231,7 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean impl
     }
 
     /**
-     * Controls whether we trigger a differential sync when missing people log in
+     * Controls whether we trigger a differential sync when missing people log in.
      * 
      * @param syncWhenMissingPeopleLogIn
      *            <codetrue</code> if we should trigger a sync when missing people log in
@@ -215,7 +242,7 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean impl
     }
 
     /**
-     * Controls whether we trigger a differential sync when the subsystem starts up
+     * Controls whether we trigger a differential sync when the subsystem starts up.
      * 
      * @param syncOnStartup
      *            <codetrue</code> if we should trigger a sync on startup
@@ -231,10 +258,36 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean impl
      */
     public void synchronize(boolean force, boolean splitTxns)
     {
+        // First, try to obtain a lock to ensure we are the only node trying to run this job
+        try
+        {
+            if (splitTxns)
+            {
+                // If this is an automated sync on startup or scheduled sync, don't even wait around for the lock.
+                // Assume the sync will be completed on another node.
+                this.jobLockService.getTransactionalLock(ChainingUserRegistrySynchronizer.LOCK_QNAME,
+                        ChainingUserRegistrySynchronizer.LOCK_TTL, 0, 1);
+            }
+            else
+            {
+                // If this is a login-triggered sync, give it a few retries before giving up
+                this.jobLockService.getTransactionalLock(ChainingUserRegistrySynchronizer.LOCK_QNAME,
+                        ChainingUserRegistrySynchronizer.LOCK_TTL, 3000, 10);
+            }
+        }
+        catch (LockAcquisitionException e)
+        {
+            // Don't proceed with the sync if it is running on another node
+            ChainingUserRegistrySynchronizer.logger
+                    .warn("User registry synchronization already running in another thread. Synchronize aborted");
+            return;
+        }
+
         Set<String> visitedZoneIds = new TreeSet<String>();
         Collection<String> instanceIds = this.applicationContextManager.getInstanceIds();
 
-        // Work out the set of all zone IDs in the authentication chain so that we can decide which users / groups need
+        // Work out the set of all zone IDs in the authentication chain so that we can decide which users / groups
+        // need
         // 're-zoning'
         Set<String> allZoneIds = new TreeSet<String>();
         for (String id : instanceIds)
@@ -894,6 +947,10 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean impl
         return zones;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.alfresco.util.AbstractLifecycleBean#onBootstrap(org.springframework.context.ApplicationEvent)
+     */
     @Override
     protected void onBootstrap(ApplicationEvent event)
     {
@@ -928,6 +985,10 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean impl
         }
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.alfresco.util.AbstractLifecycleBean#onShutdown(org.springframework.context.ApplicationEvent)
+     */
     @Override
     protected void onShutdown(ApplicationEvent event)
     {

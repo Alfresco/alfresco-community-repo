@@ -82,6 +82,28 @@ public class DefaultPropertyBackedBeanRegistry implements PropertyBackedBeanRegi
         broadcastEvent(new PropertyBackedBeanUnregisteredEvent(bean, isPermanent));
     }
 
+    /*
+     * (non-Javadoc)
+     * @see
+     * org.alfresco.repo.management.subsystems.PropertyBackedBeanRegistry#broadcastStart(org.alfresco.repo.management
+     * .subsystems.PropertyBackedBean)
+     */
+    public void broadcastStart(PropertyBackedBean bean)
+    {
+        broadcastEvent(new PropertyBackedBeanStartedEvent(bean));
+    }
+
+    /*
+     * (non-Javadoc)
+     * @see
+     * org.alfresco.repo.management.subsystems.PropertyBackedBeanRegistry#broadcastStop(org.alfresco.repo.management
+     * .subsystems.PropertyBackedBean)
+     */
+    public void broadcastStop(PropertyBackedBean bean)
+    {
+        broadcastEvent(new PropertyBackedBeanStoppedEvent(bean));
+    }
+
     /**
      * Broadcast event.
      * 

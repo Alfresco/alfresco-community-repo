@@ -214,8 +214,6 @@
     <bean id="RepoServerMgmt" class="org.alfresco.repo.admin.RepoServerMgmt">
         <property name="transactionService"><ref bean="transactionService"/></property>
         <property name="authenticationService"><ref bean="authenticationService"/></property>
-        <property name="maxUsers"><value>${server.maxusers}</value></property>
-        <property name="singleUserOnly"><value>${server.singleuseronly.name}</value></property>
     </bean>
 
 
@@ -316,8 +314,11 @@
         <property name="transactionManager">
             <ref bean="transactionManager" />
         </property>
-        <property name="sysAdminCache">
-            <ref bean="sysAdminCache"/>
+        <property name="authenticationContext">
+            <ref bean="authenticationContext" />
+        </property>
+        <property name="sysAdminParams">
+            <ref bean="sysAdminParams"/>
         </property>
         <property name="allowWrite">
             <value>${server.transaction.allow-writes}</value>
@@ -1396,5 +1397,17 @@
         <property name="defaultRetryCount"><value>10</value></property>
         <property name="defaultRetryWait"><value>20</value></property>
     </bean>
-
+    
+   <!-- Import the sys admin params from the sysAdmin subsystem -->
+   <bean id="sysAdminParams" class="org.alfresco.repo.management.subsystems.SubsystemProxyFactory">
+      <property name="sourceApplicationContextFactory">
+         <ref bean="sysAdmin" />
+      </property>
+      <property name="interfaces">
+         <list>
+            <value>org.alfresco.repo.admin.SysAdminParams</value>
+         </list>
+      </property>
+   </bean>
+    
 </beans>

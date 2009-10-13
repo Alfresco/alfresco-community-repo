@@ -16,7 +16,10 @@
             <ref bean="testApplicationContextManager" />
         </property>
         <property name="retryingTransactionHelper">
-            <ref bean="retryingTransactionHelper"/>
+            <ref bean="retryingTransactionHelper" />
+        </property>
+        <property name="jobLockService">
+            <ref bean="jobLockService" />
         </property>
         <property name="sourceBeanName">
             <value>userRegistry</value>

@@ -317,12 +317,6 @@
         eternal="true"
         overflowToDisk="true"
         />
-    <cache
-        name="org.alfresco.cache.sysAdminCache"
-        maxElementsInMemory="10"
-        eternal="true"
-        overflowToDisk="false"
-        />
     <cache 
         name="org.alfresco.cache.aclCache" 
         maxElementsInMemory="50000"

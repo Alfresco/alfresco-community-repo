@@ -24,6 +24,7 @@
  */
 package org.alfresco.repo.management.subsystems;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -66,18 +67,12 @@ public class DefaultChildApplicationContextManager extends AbstractPropertyBacke
     /** The default chain. */
     private String defaultChain;
 
-    /** The instance ids. */
-    private List<String> instanceIds = new ArrayList<String>(10);
-
-    /** The child application contexts. */
-    private Map<String, ChildApplicationContextFactory> childApplicationContexts = new TreeMap<String, ChildApplicationContextFactory>();
-
     /**
      * Instantiates a new default child application context manager.
      */
     public DefaultChildApplicationContextManager()
     {
-        setId(Collections.singletonList("manager"));
+        setInstancePath(Collections.singletonList("manager"));
     }
 
     /**
@@ -108,94 +103,6 @@ public class DefaultChildApplicationContextManager extends AbstractPropertyBacke
 
     /*
      * (non-Javadoc)
-     * @see org.alfresco.repo.management.subsystems.AbstractPropertyBackedBean#afterPropertiesSet()
-     */
-    @Override
-    public void afterPropertiesSet() throws Exception
-    {
-        if (this.defaultChain != null && this.defaultChain.length() > 0)
-        {
-            // Use the first type as the default, unless one is specified explicitly
-            if (this.defaultTypeName == null)
-            {
-                updateOrder(this.defaultChain, AbstractPropertyBackedBean.DEFAULT_ID_ROOT);
-                this.defaultTypeName = this.childApplicationContexts.get(this.instanceIds.get(0)).getTypeName();
-            }
-            else
-            {
-                updateOrder(this.defaultChain, this.defaultTypeName);
-            }
-        }
-        else if (this.defaultTypeName == null)
-        {
-            setDefaultTypeName(AbstractPropertyBackedBean.DEFAULT_ID_ROOT);
-        }
-
-        super.afterPropertiesSet();
-    }
-
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.repo.management.subsystems.PropertyBackedBean#start()
-     */
-    public void start()
-    {
-        for (String instance : getInstanceIds())
-        {
-            getApplicationContext(instance);
-        }
-    }
-
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.repo.management.subsystems.PropertyBackedBean#stop()
-     */
-    public void stop()
-    {
-        // Nothing to do
-    }
-
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.repo.management.subsystems.AbstractPropertyBackedBean#destroy(boolean)
-     */
-    @Override
-    public void destroy(boolean permanent)
-    {
-        super.destroy(permanent);
-
-        // Cascade the destroy / shutdown
-        for (String id : this.instanceIds)
-        {
-            ChildApplicationContextFactory factory = this.childApplicationContexts.get(id);
-            factory.destroy(permanent);
-        }
-    }
-
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.repo.management.subsystems.PropertyBackedBean#getProperty(java.lang.String)
-     */
-    public synchronized String getProperty(String name)
-    {
-        if (!name.equals(DefaultChildApplicationContextManager.ORDER_PROPERTY))
-        {
-            return null;
-        }
-        return getOrderString();
-    }
-
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.repo.management.subsystems.PropertyBackedBean#getPropertyNames()
-     */
-    public Set<String> getPropertyNames()
-    {
-        return Collections.singleton(DefaultChildApplicationContextManager.ORDER_PROPERTY);
-    }
-
-    /*
-     * (non-Javadoc)
      * @see org.alfresco.repo.management.subsystems.AbstractPropertyBackedBean#getDescription(java.lang.String)
      */
     @Override
@@ -206,115 +113,281 @@ public class DefaultChildApplicationContextManager extends AbstractPropertyBacke
 
     /*
      * (non-Javadoc)
-     * @see org.alfresco.repo.management.subsystems.PropertyBackedBean#setProperty(java.lang.String, java.lang.String)
+     * @see org.alfresco.repo.management.subsystems.AbstractPropertyBackedBean#destroy(boolean)
      */
-    public synchronized void setProperty(String name, String value)
+    @Override
+    public void destroy(boolean permanent)
     {
-        if (!name.equals(DefaultChildApplicationContextManager.ORDER_PROPERTY))
+        ApplicationContextManagerState state = (ApplicationContextManagerState) getState(false);
+
+        if (state != null)
         {
-            throw new IllegalStateException("Illegal attempt to write to property \"" + name + "\"");
+            // Cascade the destroy / shutdown
+            for (String id : state.getInstanceIds())
+            {
+                ChildApplicationContextFactory factory = state.getApplicationContextFactory(id);
+                factory.destroy(permanent);
+            }
         }
-        updateOrder(value, this.defaultTypeName);
+
+        super.destroy(permanent);
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.management.subsystems.AbstractPropertyBackedBean#createInitialState()
+     */
+    @Override
+    protected PropertyBackedBeanState createInitialState() throws IOException
+    {
+        return new ApplicationContextManagerState(this.defaultChain, this.defaultTypeName);
     }
 
     /*
      * (non-Javadoc)
      * @see org.alfresco.repo.management.ChildApplicationContextManager#getInstanceIds()
      */
-    public synchronized Collection<String> getInstanceIds()
+    public Collection<String> getInstanceIds()
     {
-        return Collections.unmodifiableList(this.instanceIds);
+        return ((ApplicationContextManagerState) getState(true)).getInstanceIds();
     }
 
     /*
      * (non-Javadoc)
      * @see org.alfresco.repo.management.ChildApplicationContextManager#getApplicationContext(java.lang.String)
      */
-    public synchronized ApplicationContext getApplicationContext(String id)
+    public ApplicationContext getApplicationContext(String id)
     {
-        ChildApplicationContextFactory child = this.childApplicationContexts.get(id);
-        return child == null ? null : child.getApplicationContext();
+        return ((ApplicationContextManagerState) getState(true)).getApplicationContext(id);
     }
 
     /**
-     * Gets the order string.
-     * 
-     * @return the order string
+     * The Class ApplicationContextManagerState.
      */
-    private String getOrderString()
+    protected class ApplicationContextManagerState implements PropertyBackedBeanState
     {
-        StringBuilder orderString = new StringBuilder(100);
-        for (String id : this.instanceIds)
+        
+        /** The instance ids. */
+        private List<String> instanceIds = new ArrayList<String>(10);
+
+        /** The child application contexts. */
+        private Map<String, ChildApplicationContextFactory> childApplicationContexts = new TreeMap<String, ChildApplicationContextFactory>();
+
+        /** The default type name. */
+        private String defaultTypeName;
+
+        /**
+         * Instantiates a new application context manager state.
+         * 
+         * @param defaultChain
+         *            the default chain
+         * @param defaultTypeName
+         *            the default type name
+         */
+        protected ApplicationContextManagerState(String defaultChain, String defaultTypeName)
         {
-            if (orderString.length() > 0)
+            // Work out what the default type name should be; either specified explicitly or implied by the first member
+            // of the default chain
+            if (defaultChain != null && defaultChain.length() > 0)
             {
-                orderString.append(",");
-            }
-            orderString.append(id).append(':').append(this.childApplicationContexts.get(id).getTypeName());
-        }
-        return orderString.toString();
-    }
-
-    /**
-     * Updates the order from a comma or whitespace separated string.
-     * 
-     * @param orderString
-     *            the order as a comma or whitespace separated string
-     * @param defaultTypeName
-     *            the default type name
-     */
-    private void updateOrder(String orderString, String defaultTypeName)
-    {
-        try
-        {
-            StringTokenizer tkn = new StringTokenizer(orderString, ", \t\n\r\f");
-            List<String> newInstanceIds = new ArrayList<String>(tkn.countTokens());
-            while (tkn.hasMoreTokens())
-            {
-                String instance = tkn.nextToken();
-                int sepIndex = instance.indexOf(':');
-                String id = sepIndex == -1 ? instance : instance.substring(0, sepIndex);
-                String typeName = sepIndex == -1 || sepIndex + 1 >= instance.length() ? defaultTypeName : instance
-                        .substring(sepIndex + 1);
-                newInstanceIds.add(id);
-
-                // Look out for new or updated children
-                ChildApplicationContextFactory factory = this.childApplicationContexts.get(id);
-
-                // If we have the same instance ID but a different type, treat that as a destroy and remove
-                if (factory != null && !factory.getTypeName().equals(typeName))
+                // Use the first type as the default, unless one is specified explicitly
+                if (defaultTypeName == null)
                 {
+                    updateOrder(defaultChain, AbstractPropertyBackedBean.DEFAULT_INSTANCE_NAME);
+                    this.defaultTypeName = this.childApplicationContexts.get(this.instanceIds.get(0)).getTypeName();
+                }
+                else
+                {
+                    this.defaultTypeName = defaultTypeName;
+                    updateOrder(defaultChain, defaultTypeName);
+                }
+            }
+            else if (defaultTypeName == null)
+            {
+                this.defaultTypeName = AbstractPropertyBackedBean.DEFAULT_INSTANCE_NAME;
+            }
+        }
+
+        /*
+         * (non-Javadoc)
+         * @see org.alfresco.repo.management.subsystems.PropertyBackedBean#getProperty(java.lang.String)
+         */
+        public synchronized String getProperty(String name)
+        {
+            if (!name.equals(DefaultChildApplicationContextManager.ORDER_PROPERTY))
+            {
+                return null;
+            }
+            return getOrderString();
+        }
+
+        /*
+         * (non-Javadoc)
+         * @see org.alfresco.repo.management.subsystems.PropertyBackedBean#getPropertyNames()
+         */
+        public Set<String> getPropertyNames()
+        {
+            return Collections.singleton(DefaultChildApplicationContextManager.ORDER_PROPERTY);
+        }
+
+        /*
+         * (non-Javadoc)
+         * @see org.alfresco.repo.management.subsystems.PropertyBackedBean#setProperty(java.lang.String,
+         * java.lang.String)
+         */
+        public synchronized void setProperty(String name, String value)
+        {
+            if (!name.equals(DefaultChildApplicationContextManager.ORDER_PROPERTY))
+            {
+                throw new IllegalStateException("Illegal attempt to write to property \"" + name + "\"");
+            }
+            updateOrder(value, this.defaultTypeName);
+        }
+
+        /*
+         * (non-Javadoc)
+         * @see org.alfresco.repo.management.subsystems.PropertyBackedBean#start()
+         */
+        public void start()
+        {
+            for (String instance : getInstanceIds())
+            {
+                getApplicationContext(instance);
+            }
+        }
+
+        /*
+         * (non-Javadoc)
+         * @see org.alfresco.repo.management.subsystems.PropertyBackedBean#stop()
+         */
+        public void stop()
+        {
+            // Nothing to do
+        }
+
+        /*
+         * (non-Javadoc)
+         * @see org.alfresco.repo.management.ChildApplicationContextManager#getInstanceIds()
+         */
+        /**
+         * Gets the instance ids.
+         * 
+         * @return the instance ids
+         */
+        public synchronized Collection<String> getInstanceIds()
+        {
+            return Collections.unmodifiableList(this.instanceIds);
+        }
+
+        /*
+         * (non-Javadoc)
+         * @see org.alfresco.repo.management.ChildApplicationContextManager#getApplicationContext(java.lang.String)
+         */
+        /**
+         * Gets the application context.
+         * 
+         * @param id
+         *            the id
+         * @return the application context
+         */
+        public synchronized ApplicationContext getApplicationContext(String id)
+        {
+            ChildApplicationContextFactory child = this.childApplicationContexts.get(id);
+            return child == null ? null : child.getApplicationContext();
+        }
+
+        /**
+         * Gets the application context factory.
+         * 
+         * @param id
+         *            the id
+         * @return the application context factory
+         */
+        protected ChildApplicationContextFactory getApplicationContextFactory(String id)
+        {
+            return this.childApplicationContexts.get(id);
+        }
+
+        /**
+         * Gets the order string.
+         * 
+         * @return the order string
+         */
+        private String getOrderString()
+        {
+            StringBuilder orderString = new StringBuilder(100);
+            for (String id : this.instanceIds)
+            {
+                if (orderString.length() > 0)
+                {
+                    orderString.append(",");
+                }
+                orderString.append(id).append(':').append(this.childApplicationContexts.get(id).getTypeName());
+            }
+            return orderString.toString();
+        }
+
+        /**
+         * Updates the order from a comma or whitespace separated string.
+         * 
+         * @param orderString
+         *            the order as a comma or whitespace separated string
+         * @param defaultTypeName
+         *            the default type name
+         */
+        private void updateOrder(String orderString, String defaultTypeName)
+        {
+            try
+            {
+                StringTokenizer tkn = new StringTokenizer(orderString, ", \t\n\r\f");
+                List<String> newInstanceIds = new ArrayList<String>(tkn.countTokens());
+                while (tkn.hasMoreTokens())
+                {
+                    String instance = tkn.nextToken();
+                    int sepIndex = instance.indexOf(':');
+                    String id = sepIndex == -1 ? instance : instance.substring(0, sepIndex);
+                    String typeName = sepIndex == -1 || sepIndex + 1 >= instance.length() ? defaultTypeName : instance
+                            .substring(sepIndex + 1);
+                    newInstanceIds.add(id);
+
+                    // Look out for new or updated children
+                    ChildApplicationContextFactory factory = this.childApplicationContexts.get(id);
+
+                    // If we have the same instance ID but a different type, treat that as a destroy and remove
+                    if (factory != null && !factory.getTypeName().equals(typeName))
+                    {
+                        factory.destroy(true);
+                        factory = null;
+                    }
+                    if (factory == null)
+                    {
+                        // Generate a unique ID within the category
+                        List<String> childId = new ArrayList<String>(2);
+                        childId.add("managed");
+                        childId.add(id);
+                        this.childApplicationContexts.put(id, new ChildApplicationContextFactory(getParent(),
+                                getRegistry(), getPropertyDefaults(), getCategory(), typeName, childId));
+                    }
+                }
+
+                // Destroy any children that have been removed
+                Set<String> idsToRemove = new TreeSet<String>(this.childApplicationContexts.keySet());
+                idsToRemove.removeAll(newInstanceIds);
+                for (String id : idsToRemove)
+                {
+                    ChildApplicationContextFactory factory = this.childApplicationContexts.remove(id);
                     factory.destroy(true);
-                    factory = null;
                 }
-                if (factory == null)
-                {
-                    // Generate a unique ID within the category
-                    List<String> childId = new ArrayList<String>(2);
-                    childId.add("managed");
-                    childId.add(id);
-                    this.childApplicationContexts.put(id, new ChildApplicationContextFactory(getParent(),
-                            getRegistry(), getPropertyDefaults(), getCategory(), typeName, childId));
-                }
+                this.instanceIds = newInstanceIds;
             }
-
-            // Destroy any children that have been removed
-            Set<String> idsToRemove = new TreeSet<String>(this.childApplicationContexts.keySet());
-            idsToRemove.removeAll(newInstanceIds);
-            for (String id : idsToRemove)
+            catch (RuntimeException e)
             {
-                ChildApplicationContextFactory factory = this.childApplicationContexts.remove(id);
-                factory.destroy(true);
+                throw e;
             }
-            this.instanceIds = newInstanceIds;
+            catch (Exception e)
+            {
+                throw new RuntimeException(e);
+            }
         }
-        catch (RuntimeException e)
-        {
-            throw e;
-        }
-        catch (Exception e)
-        {
-            throw new RuntimeException(e);
-        }
+
     }
 }

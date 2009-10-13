@@ -165,20 +165,30 @@ public class DescriptorServiceImpl extends AbstractLifecycleBean implements Desc
     @Override
     protected void onBootstrap(ApplicationEvent event)
     {
-        // Initialize the repository descriptor
-        // note: this requires that the repository schema has already been initialized
-        final RetryingTransactionCallback<Descriptor> createDescriptorWork = new RetryingTransactionCallback<Descriptor>()
+        AuthenticationUtil.runAs(new RunAsWork<Object>()
         {
-            public Descriptor execute() throws ClassNotFoundException
+            public Object doWork() throws Exception
             {
-                boolean initialiseHeartBeat = false;
+                final boolean initialiseHeartBeat;
 
                 // Initialize license service (if installed)
-                DescriptorServiceImpl.this.licenseService = (LicenseService) constructSpecialService("org.alfresco.enterprise.license.LicenseComponent");
+                DescriptorServiceImpl.this.licenseService = DescriptorServiceImpl.this.transactionService
+                        .getRetryingTransactionHelper().doInTransaction(
+                                new RetryingTransactionCallback<LicenseService>()
+                                {
+                                    public LicenseService execute()
+                                    {
+                                        return (LicenseService) constructSpecialService("org.alfresco.enterprise.license.LicenseComponent");
+                                    }
+                                }, DescriptorServiceImpl.this.transactionService.isReadOnly(), false);
                 if (DescriptorServiceImpl.this.licenseService == null)
                 {
                     DescriptorServiceImpl.this.licenseService = new NOOPLicenseService();
                     initialiseHeartBeat = true;
+                }
+                else
+                {
+                    initialiseHeartBeat = false;
                 }
 
                 // Make the license service available through the application context as a singleton for other beans
@@ -190,39 +200,41 @@ public class DescriptorServiceImpl extends AbstractLifecycleBean implements Desc
                             "licenseService", DescriptorServiceImpl.this.licenseService);
                 }
 
-                // verify license, but only if license component is installed
-                try
-                {
-                    DescriptorServiceImpl.this.licenseService.verifyLicense();
-                    LicenseDescriptor l = DescriptorServiceImpl.this.licenseService.getLicense();
-                    // Initialize the heartbeat unless it is disabled by the license
-                    if (initialiseHeartBeat || l == null || !l.isHeartBeatDisabled())
-                    {
-                        DescriptorServiceImpl.this.heartBeat = constructSpecialService("org.alfresco.enterprise.heartbeat.HeartBeat");
-                    }
-                }
-                catch (LicenseException e)
-                {
-                    // Initialize heart beat anyway
-                    DescriptorServiceImpl.this.heartBeat = constructSpecialService("org.alfresco.enterprise.heartbeat.HeartBeat");
-                    throw e;
-                }
+                DescriptorServiceImpl.this.installedRepoDescriptor = DescriptorServiceImpl.this.transactionService
+                        .getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Descriptor>()
+                        {
+                            public Descriptor execute() throws ClassNotFoundException
+                            {
 
-                // persist the server descriptor values
-                DescriptorServiceImpl.this.currentRepoDescriptor = DescriptorServiceImpl.this.currentRepoDescriptorDAO
-                        .updateDescriptor(DescriptorServiceImpl.this.serverDescriptor);
+                                // verify license, but only if license component is installed
+                                try
+                                {
+                                    DescriptorServiceImpl.this.licenseService.verifyLicense();
+                                    LicenseDescriptor l = DescriptorServiceImpl.this.licenseService.getLicense();
+                                    // Initialize the heartbeat unless it is disabled by the license
+                                    if (initialiseHeartBeat || l == null || !l.isHeartBeatDisabled())
+                                    {
+                                        DescriptorServiceImpl.this.heartBeat = constructSpecialService("org.alfresco.enterprise.heartbeat.HeartBeat");
+                                    }
+                                }
+                                catch (LicenseException e)
+                                {
+                                    // Initialize heart beat anyway
+                                    DescriptorServiceImpl.this.heartBeat = constructSpecialService("org.alfresco.enterprise.heartbeat.HeartBeat");
+                                    throw e;
+                                }
 
-                // create the installed descriptor
-                Descriptor installed = DescriptorServiceImpl.this.installedRepoDescriptorDAO.getDescriptor();
-                return installed == null ? new UnknownDescriptor() : installed;
-            }
-        };
-        this.installedRepoDescriptor = AuthenticationUtil.runAs(new RunAsWork<Descriptor>()
-        {
-            public Descriptor doWork() throws Exception
-            {
-                return DescriptorServiceImpl.this.transactionService.getRetryingTransactionHelper().doInTransaction(
-                        createDescriptorWork, DescriptorServiceImpl.this.transactionService.isReadOnly(), false);
+                                // persist the server descriptor values
+                                DescriptorServiceImpl.this.currentRepoDescriptor = DescriptorServiceImpl.this.currentRepoDescriptorDAO
+                                        .updateDescriptor(DescriptorServiceImpl.this.serverDescriptor);
+
+                                // create the installed descriptor
+                                Descriptor installed = DescriptorServiceImpl.this.installedRepoDescriptorDAO
+                                        .getDescriptor();
+                                return installed == null ? new UnknownDescriptor() : installed;
+                            }
+                        }, DescriptorServiceImpl.this.transactionService.isReadOnly(), false);
+                return null;
             }
         }, AuthenticationUtil.getSystemUserName());
 

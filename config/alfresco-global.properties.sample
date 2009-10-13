@@ -31,7 +31,7 @@
 # alfresco.rmi.services.port=50500
 #
 # RMI service ports for the individual services.
-# These six services are available remotely.
+# These seven services are available remotely.
 #
 # Assign individual ports for each service for best performance 
 # or run several services on the same port. You can even run everything on 50500 if needed.
@@ -44,3 +44,4 @@
 #authentication.rmi.service.port=50504
 #repo.rmi.service.port=50505
 #action.rmi.service.port=50506
+#wcm-deployment-receiver.rmi.service.port=50507

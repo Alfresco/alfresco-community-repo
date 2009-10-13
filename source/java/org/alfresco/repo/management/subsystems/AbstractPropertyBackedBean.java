@@ -24,10 +24,13 @@
  */
 package org.alfresco.repo.management.subsystems;
 
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanNameAware;
@@ -43,7 +46,10 @@ import org.springframework.context.event.ContextRefreshedEvent;
 /**
  * A base class for {@link PropertyBackedBean}s. Gets its category from its Spring bean name and automatically
  * propagates and resolves property defaults on initialization. Automatically destroys itself on server shutdown.
- * Communicates its creation and destruction to a {@link PropertyBackedBeanRegistry}.
+ * Communicates its creation and destruction and start and stop events to a {@link PropertyBackedBeanRegistry}. Listens
+ * for start and stop events from remote nodes in order to keep the bean in sync with edits made on a remote node. On
+ * receiving a start event from a remote node, the bean is completely reinitialized, allowing it to be resynchronized
+ * with any persisted changes.
  * 
  * @author dward
  */
@@ -51,12 +57,8 @@ public abstract class AbstractPropertyBackedBean implements PropertyBackedBean, 
         ApplicationListener, InitializingBean, DisposableBean, BeanNameAware
 {
 
-    /** The root component of the default ID. */
-    protected static final String DEFAULT_ID_ROOT = "default";
-
-    /** The default ID (when we do not expect there to be more than one instance within a category). */
-    protected static final List<String> DEFAULT_ID = Collections
-            .singletonList(AbstractPropertyBackedBean.DEFAULT_ID_ROOT);
+    /** The default final part of an ID. */
+    protected static final String DEFAULT_INSTANCE_NAME = "default";
 
     /** The parent application context. */
     private ApplicationContext parent;
@@ -64,11 +66,14 @@ public abstract class AbstractPropertyBackedBean implements PropertyBackedBean, 
     /** The registry of all property backed beans. */
     private PropertyBackedBeanRegistry registry;
 
-    /** The hierarchical id. Must be unique within the category. */
-    private List<String> id = AbstractPropertyBackedBean.DEFAULT_ID;
-
-    /** The category. */
+    /** The category (first part of the ID). */
     private String category;
+
+    /** The hierarchical instance path within the category (second part of the ID). */
+    private List<String> instancePath = Collections.singletonList(AbstractPropertyBackedBean.DEFAULT_INSTANCE_NAME);
+
+    /** The combined unique id. */
+    private List<String> id;
 
     /** Should the application context be started on startup of the parent application?. */
     private boolean autoStart;
@@ -78,6 +83,12 @@ public abstract class AbstractPropertyBackedBean implements PropertyBackedBean, 
 
     /** Resolves placeholders in the property defaults. */
     private DefaultResolver defaultResolver = new DefaultResolver();
+
+    /** Has the state been started yet?. */
+    private boolean isStarted;
+
+    /** The state. */
+    private PropertyBackedBeanState state;
 
     /*
      * (non-Javadoc)
@@ -120,14 +131,14 @@ public abstract class AbstractPropertyBackedBean implements PropertyBackedBean, 
     }
 
     /**
-     * Sets the id.
+     * Sets the hierarchical instance path within the category (second part of the ID)..
      * 
-     * @param id
-     *            the id to set
+     * @param instancePath
+     *            the instance path
      */
-    public void setId(List<String> id)
+    public void setInstancePath(List<String> instancePath)
     {
-        this.id = id;
+        this.instancePath = instancePath;
     }
 
     /**
@@ -189,42 +200,124 @@ public abstract class AbstractPropertyBackedBean implements PropertyBackedBean, 
         return this.parent;
     }
 
+    /**
+     * Gets the state.
+     * 
+     * @param start
+     *            are we making use of the state? I.e. should we start it if it has not been already?
+     * @return the state
+     */
+    protected synchronized PropertyBackedBeanState getState(boolean start)
+    {
+        if (start)
+        {
+            start();
+        }
+        return this.state;
+    }
+
     /*
      * (non-Javadoc)
      * @see org.springframework.beans.factory.InitializingBean#afterPropertiesSet()
      */
     public void afterPropertiesSet() throws Exception
     {
-        // Override default settings using corresponding global defaults (this allows installer settings
-        // to propagate through)
-        for (String property : getPropertyNames())
-        {
-            String value = resolveDefault(property);
-            if (value != null)
-            {
-                setProperty(property, value);
-            }
-        }
+        // Derive the unique ID from the category and instance path
+        List<String> path = getInstancePath();
+        this.id = new ArrayList<String>(path.size() + 1);
+        this.id.add(getCategory());
+        this.id.addAll(getInstancePath());
 
-        this.registry.register(this);
+        init();
+    }
+
+    /**
+     * Initializes or resets the bean and its state.
+     */
+    public void init()
+    {
+        if (this.state == null)
+        {
+            try
+            {
+                this.state = createInitialState();
+                applyDefaultOverrides(this.state);
+            }
+            catch (IOException e)
+            {
+                throw new RuntimeException(e);
+            }
+            this.registry.register(this);
+        }
     }
 
     /*
      * (non-Javadoc)
-     * @see org.alfresco.repo.management.SelfDescribingBean#getId()
+     * @see org.alfresco.repo.management.subsystems.PropertyBackedBean#revert()
+     */
+    public synchronized void revert()
+    {
+        stop();
+        destroy(true);
+        init();
+    }
+
+    /**
+     * Creates the initial state.
+     * 
+     * @return the property backed bean state
+     * @throws IOException
+     *             Signals that an I/O exception has occurred.
+     */
+    protected abstract PropertyBackedBeanState createInitialState() throws IOException;
+
+    /**
+     * Applies default overrides to the initial state.
+     * 
+     * @param state
+     *            the state
+     * @throws IOException
+     *             Signals that an I/O exception has occurred.
+     */
+    protected void applyDefaultOverrides(PropertyBackedBeanState state) throws IOException
+    {
+        for (String name : state.getPropertyNames())
+        {
+            String override = resolveDefault(name);
+            if (override != null)
+            {
+                state.setProperty(name, override);
+            }
+        }
+    }
+
+    /*
+     * (non-Javadoc)
+     * @see org.alfresco.repo.management.subsystems.PropertyBackedBean#getId()
      */
     public List<String> getId()
     {
         return this.id;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.repo.management.subsystems.PropertyBackedBean#getCategory()
+    /**
+     * Gets the category.
+     * 
+     * @return the category
      */
-    public String getCategory()
+    protected String getCategory()
     {
         return this.category;
+    }
+
+    /**
+     * Gets the hierarchical instance path within the category (second part of the ID).
+     * 
+     * @return the instance path
+     */
+    protected List<String> getInstancePath()
+    {
+        return this.instancePath;
     }
 
     /*
@@ -236,14 +329,22 @@ public abstract class AbstractPropertyBackedBean implements PropertyBackedBean, 
         destroy(false);
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.repo.management.subsystems.PropertyBackedBean#destroy(boolean)
+    /**
+     * Releases any resources held by this component.
+     * 
+     * @param isPermanent
+     *            is the component being destroyed forever, i.e. should persisted values be removed? On server shutdown,
+     *            this value would be <code>false</code>, whereas on the removal of a dynamically created instance, this
+     *            value would be <code>true</code>.
      */
-    public void destroy(boolean isPermanent)
+    protected synchronized void destroy(boolean isPermanent)
     {
-        stop();
-        this.registry.deregister(this, isPermanent);
+        if (this.state != null)
+        {
+            stop(false);
+            this.registry.deregister(this, isPermanent);
+            this.state = null;
+        }
     }
 
     /*
@@ -273,7 +374,113 @@ public abstract class AbstractPropertyBackedBean implements PropertyBackedBean, 
     {
         if (this.autoStart && event instanceof ContextRefreshedEvent && event.getSource() == this.parent)
         {
-            start();
+            start(false);
+        }
+        else if (event instanceof PropertyBackedBeanStartedEvent)
+        {
+            synchronized (this)
+            {
+                if (!this.isStarted)
+                {
+                    // Reinitialize so that we pick up state changes from the database
+                    destroy(false);
+                    start(false);
+                }
+            }
+        }
+        else if (event instanceof PropertyBackedBeanStoppedEvent)
+        {
+            // Completely destroy the state so that it will have to be reinitialized should the bean be put back in to
+            // use by this node
+            destroy(false);
+        }
+    }
+
+    /*
+     * (non-Javadoc)
+     * @see org.alfresco.repo.management.subsystems.PropertyBackedBeanState#getProperty(java.lang.String)
+     */
+    public synchronized String getProperty(String name)
+    {
+        init();
+        return this.state.getProperty(name);
+    }
+
+    /*
+     * (non-Javadoc)
+     * @see org.alfresco.repo.management.subsystems.PropertyBackedBeanState#getPropertyNames()
+     */
+    public synchronized Set<String> getPropertyNames()
+    {
+        init();
+        return this.state.getPropertyNames();
+    }
+
+    /*
+     * (non-Javadoc)
+     * @see org.alfresco.repo.management.subsystems.PropertyBackedBeanState#setProperty(java.lang.String,
+     * java.lang.String)
+     */
+    public synchronized void setProperty(String name, String value)
+    {
+        init();
+        this.state.setProperty(name, value);
+    }
+
+    /*
+     * (non-Javadoc)
+     * @see org.alfresco.repo.management.subsystems.PropertyBackedBeanState#start()
+     */
+    public synchronized void start()
+    {
+        start(true);
+    }
+
+    /**
+     * Starts the bean, optionally broadcasting the event to remote nodes.
+     * 
+     * @param broadcast
+     *            Should the event be broadcast?
+     */
+    protected synchronized void start(boolean broadcast)
+    {
+        if (!this.isStarted)
+        {
+            init();
+            if (broadcast)
+            {
+                this.registry.broadcastStart(this);
+            }
+            this.state.start();
+            this.isStarted = true;
+        }
+    }
+
+    /*
+     * (non-Javadoc)
+     * @see org.alfresco.repo.management.subsystems.PropertyBackedBeanState#stop()
+     */
+    public void stop()
+    {
+        stop(true);
+    }
+
+    /**
+     * Stops the bean, optionally broadcasting the event to remote nodes.
+     * 
+     * @param broadcast
+     *            Should the event be broadcast?
+     */
+    protected synchronized void stop(boolean broadcast)
+    {
+        if (this.isStarted)
+        {
+            if (broadcast)
+            {
+                this.registry.broadcastStop(this);
+            }
+            this.state.stop();
+            this.isStarted = false;
         }
     }
 
@@ -293,7 +500,7 @@ public abstract class AbstractPropertyBackedBean implements PropertyBackedBean, 
         }
 
         /**
-         * Expands the given value, resolving any ${} placeholders using the property defaults
+         * Expands the given value, resolving any ${} placeholders using the property defaults.
          * 
          * @param val
          *            the value to expand

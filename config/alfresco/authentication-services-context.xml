@@ -142,8 +142,8 @@
     <!-- Each method 'chains' through all AuthenticationService implementations in the authentication chain -->
 
     <bean id="authenticationService" class="org.alfresco.repo.security.authentication.subsystems.SubsystemChainingAuthenticationService">
-        <property name="sysAdminCache">
-            <ref bean="sysAdminCache" />
+        <property name="sysAdminParams">
+            <ref bean="sysAdminParams" />
         </property>
         <property name="applicationContextManager">
             <ref bean="Authentication" />

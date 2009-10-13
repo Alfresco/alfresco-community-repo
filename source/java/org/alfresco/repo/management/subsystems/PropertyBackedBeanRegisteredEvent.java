@@ -31,7 +31,7 @@ package org.alfresco.repo.management.subsystems;
  */
 public class PropertyBackedBeanRegisteredEvent extends PropertyBackedBeanEvent
 {
-    private static final long serialVersionUID = -5922059120018335685L;
+    private static final long serialVersionUID = -2860105961131524745L;
 
     /**
      * The Constructor.
@@ -42,6 +42,5 @@ public class PropertyBackedBeanRegisteredEvent extends PropertyBackedBeanEvent
     public PropertyBackedBeanRegisteredEvent(PropertyBackedBean source)
     {
         super(source);
-    }
-
+    }    
 }

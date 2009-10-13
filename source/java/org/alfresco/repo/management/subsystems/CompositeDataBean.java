@@ -32,6 +32,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
 import org.springframework.beans.factory.BeanNameAware;
@@ -47,14 +48,12 @@ import org.springframework.context.ApplicationContext;
  */
 public class CompositeDataBean extends AbstractPropertyBackedBean
 {
-    /** The owning bean */
+
+    /** The owning bean. */
     private final PropertyBackedBean owner;
 
-    /** The Java bean instance. */
-    private final Object bean;
-
-    /** A Spring wrapper around the Java bean, allowing easy configuration of properties. */
-    private final BeanWrapper wrappedBean;
+    /** The bean type. */
+    private final Class<?> type;
 
     /** The property names. */
     private final Set<String> propertyNames;
@@ -62,10 +61,10 @@ public class CompositeDataBean extends AbstractPropertyBackedBean
     /** The writeable properties. */
     private final Set<String> writeableProperties;
 
-    /** The prefix used to look up default values for this bean's properties */
+    /** The prefix used to look up default values for this bean's properties. */
     private String defaultKeyPrefix;
 
-    /** The prefix used to look up instance-specific default values for this bean's properties */
+    /** The prefix used to look up instance-specific default values for this bean's properties. */
     private String instanceKeyPrefix;
 
     /**
@@ -79,8 +78,8 @@ public class CompositeDataBean extends AbstractPropertyBackedBean
      *            property defaults provided by the installer or System properties
      * @param category
      *            the category
-     * @param id
-     *            the instance id
+     * @param instancePath
+     *            the instance path within the category
      * @param owner
      *            the owning bean
      * @param type
@@ -89,25 +88,19 @@ public class CompositeDataBean extends AbstractPropertyBackedBean
      *             Signals that an I/O exception has occurred.
      */
     public CompositeDataBean(ApplicationContext parent, PropertyBackedBean owner, PropertyBackedBeanRegistry registry,
-            Properties propertyDefaults, String category, Class<?> type, List<String> id) throws IOException
+            Properties propertyDefaults, String category, Class<?> type, List<String> instancePath) throws IOException
     {
         setApplicationContext(parent);
         setRegistry(registry);
         setPropertyDefaults(propertyDefaults);
         setBeanName(category);
-        setId(id);
+        setInstancePath(instancePath);
         this.owner = owner;
+        this.type = type;
 
         try
         {
-            this.bean = type.newInstance();
-            // Tell the bean its name if it cares
-            if (this.bean instanceof BeanNameAware)
-            {
-                ((BeanNameAware) this.bean).setBeanName(id.get(id.size() - 1));
-            }
-            this.wrappedBean = new BeanWrapperImpl(this.bean);
-            PropertyDescriptor[] descriptors = this.wrappedBean.getPropertyDescriptors();
+            PropertyDescriptor[] descriptors = BeanUtils.getPropertyDescriptors(type);
             this.propertyNames = new TreeSet<String>();
             this.writeableProperties = new TreeSet<String>();
             for (PropertyDescriptor descriptor : descriptors)
@@ -149,7 +142,7 @@ public class CompositeDataBean extends AbstractPropertyBackedBean
         // Derive a default and instance key prefix of the form "<parent>.default." and "<parent>.value.<this>."
         StringBuilder defaultKeyPrefixBuff = new StringBuilder(200);
         StringBuilder instanceKeyPrefixBuff = new StringBuilder(200);
-        List<String> id = getId();
+        List<String> id = getInstancePath();
         int size = id.size();
         if (size > 1)
         {
@@ -181,30 +174,12 @@ public class CompositeDataBean extends AbstractPropertyBackedBean
 
     /*
      * (non-Javadoc)
-     * @see org.alfresco.repo.management.subsystems.PropertyBackedBean#getProperty(java.lang.String)
+     * @see org.alfresco.repo.management.subsystems.AbstractPropertyBackedBean#createInitialState()
      */
-    public String getProperty(String name)
+    @Override
+    protected PropertyBackedBeanState createInitialState() throws IOException
     {
-        Object value = this.wrappedBean.getPropertyValue(name);
-        return value == null ? null : value.toString();
-    }
-
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.repo.management.subsystems.PropertyBackedBean#getPropertyNames()
-     */
-    public Set<String> getPropertyNames()
-    {
-        return this.propertyNames;
-    }
-
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.repo.management.subsystems.PropertyBackedBean#setProperty(java.lang.String, java.lang.String)
-     */
-    public void setProperty(String name, String value)
-    {
-        this.wrappedBean.setPropertyValue(name, value);
+        return new CompositeDataBeanState();
     }
 
     /*
@@ -217,24 +192,6 @@ public class CompositeDataBean extends AbstractPropertyBackedBean
         return this.writeableProperties.contains(name);
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.repo.management.subsystems.PropertyBackedBean#start()
-     */
-    public void start()
-    {
-    }
-
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.repo.management.subsystems.PropertyBackedBean#stop()
-     */
-    public void stop()
-    {
-        // Ensure any edits to child composites cause the parent to be shut down and subsequently re-initialized
-        this.owner.stop();
-    }
-
     /**
      * Gets the wrapped Java bean.
      * 
@@ -242,6 +199,115 @@ public class CompositeDataBean extends AbstractPropertyBackedBean
      */
     protected Object getBean()
     {
-        return this.bean;
+        return ((CompositeDataBeanState) getState(true)).getBean();
+    }
+
+    /*
+     * (non-Javadoc)
+     * @see org.alfresco.repo.management.subsystems.AbstractPropertyBackedBean#stop(boolean)
+     */
+    @Override
+    protected synchronized void stop(boolean broadcast)
+    {
+        super.stop(broadcast);
+
+        // Ensure any edits to child composites cause the parent to be shut down and subsequently re-initialized
+        if (broadcast)
+        {
+            this.owner.stop();
+        }
+    }
+
+    /**
+     * The Class CompositeDataBeanState.
+     */
+    protected class CompositeDataBeanState implements PropertyBackedBeanState
+    {
+
+        /** The Java bean instance. */
+        private final Object bean;
+
+        /** A Spring wrapper around the Java bean, allowing easy configuration of properties. */
+        private final BeanWrapper wrappedBean;
+
+        /**
+         * Instantiates a new composite data bean state.
+         */
+        protected CompositeDataBeanState()
+        {
+            try
+            {
+                this.bean = CompositeDataBean.this.type.newInstance();
+                // Tell the bean its name if it cares
+                if (this.bean instanceof BeanNameAware)
+                {
+                    ((BeanNameAware) this.bean).setBeanName(getId().get(getId().size() - 1));
+                }
+                this.wrappedBean = new BeanWrapperImpl(this.bean);
+            }
+            catch (RuntimeException e)
+            {
+                throw e;
+            }
+            catch (Exception e)
+            {
+                throw new RuntimeException(e);
+            }
+        }
+
+        /*
+         * (non-Javadoc)
+         * @see org.alfresco.repo.management.subsystems.PropertyBackedBean#getProperty(java.lang.String)
+         */
+        public String getProperty(String name)
+        {
+            Object value = this.wrappedBean.getPropertyValue(name);
+            return value == null ? null : value.toString();
+        }
+
+        /*
+         * (non-Javadoc)
+         * @see org.alfresco.repo.management.subsystems.PropertyBackedBean#getPropertyNames()
+         */
+        public Set<String> getPropertyNames()
+        {
+            return CompositeDataBean.this.propertyNames;
+        }
+
+        /*
+         * (non-Javadoc)
+         * @see org.alfresco.repo.management.subsystems.PropertyBackedBean#setProperty(java.lang.String,
+         * java.lang.String)
+         */
+        public void setProperty(String name, String value)
+        {
+            this.wrappedBean.setPropertyValue(name, value);
+        }
+
+        /*
+         * (non-Javadoc)
+         * @see org.alfresco.repo.management.subsystems.PropertyBackedBean#start()
+         */
+        public void start()
+        {
+        }
+
+        /*
+         * (non-Javadoc)
+         * @see org.alfresco.repo.management.subsystems.PropertyBackedBean#stop()
+         */
+        public void stop()
+        {
+        }
+
+        /**
+         * Gets the wrapped Java bean.
+         * 
+         * @return the Java bean
+         */
+        protected Object getBean()
+        {
+            return this.bean;
+        }
     }
 }

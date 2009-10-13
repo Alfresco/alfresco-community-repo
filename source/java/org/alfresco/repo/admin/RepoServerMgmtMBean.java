@@ -33,13 +33,6 @@ package org.alfresco.repo.admin;
 public interface RepoServerMgmtMBean
 {
 	/**
-	 * Set whether Repository allows writes or not
-	 * 
-	 * @param readOnly  true is READONLY, false is WRITEABLE
-	 */
-	public void setReadOnly(boolean readOnly);
-	
-	/**
 	 * Does the Repository allows writes or not ?
 	 * 
 	 * @return boolean  true is READONLY, false is WRITEABLE
@@ -118,42 +111,6 @@ public interface RepoServerMgmtMBean
 	public void invalidateUser(String username);
 	
 	/**
-	 * Set whether Repository allows single user mode or not
-	 * 
-	 * If single user mode is set then all tickets will be invalidated first before allowing the
-	 * named user to login (with one or more sessions) assuming maxUsers is not set to 0
-	 *
-	 * Note: This can also be configured at startup. Refer to repository property (server.singleuseronly.name).
-	 * 
-	 * @param String  allowed username (eg. 'admin') or null to unset (ie. allow all users)
-	 */
-	public void setSingleUserOnly(String allowedUsername);
-	
-	/**
-	 * If Repository is in single user mode then return the name of the allowed user else return null
-	 * 
-	 * @param String  allowed username (eg. 'admin') or null (ie. allow all users)
-	 */
-	public String getSingleUserOnly();
-	
-	/**
-	 * Set limit for max users and/or prevent further logins
-	 * 
-	 * If number of non-expired logins is greater or equal to the limit then further logins will be prevented
-	 * otherwise valid login attempt will be permitted, unless the system is in single-user mode.
-	 * 
-	 * Note:
-	 * 
-	 * Max users = 0 prevents further logins (will also prevent single-user mode login)
-	 * Max users = -1 allow logins (without a max limit)
-	 * 
-	 * Note: This can also be configured at startup. Refer to repository property (server.maxusers).
-	 * 
-	 * @param maxUsers
-	 */
-	public void setMaxUsers(int maxUsers);
-	
-	/**
 	 * Get limit for max users
 	 * 
 	 * If number of non-expired logins is greater or equal to the limit then further logins will be prevented
@@ -166,13 +123,7 @@ public interface RepoServerMgmtMBean
 	 */
 	public int getMaxUsers();
 	
-	/**
-	 * Disable or re-enable link validation
-	 * 
-	 * @param disable  true = disable, false = re-enable
-	 */
-	public void setLinkValidationDisabled(boolean disable);
-	
+
 	/**
 	 * Is link validation disabled ?
 	 * 

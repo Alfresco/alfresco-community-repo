@@ -257,9 +257,6 @@
         <property name="purgeStoreTxnListener">
             <ref bean="purgeStoreTxnListener"/>
         </property>
-        <property name="sysAdminCache">
-            <ref bean="sysAdminCache"/>
-        </property>
         <property name="repoServerMgmt">
             <ref bean="RepoServerMgmt"/>
         </property>

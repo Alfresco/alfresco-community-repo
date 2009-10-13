@@ -64,4 +64,21 @@ public interface PropertyBackedBeanRegistry
      *            value would be <code>true</code>.
      */
     public void deregister(PropertyBackedBean bean, boolean isPermanent);
+
+    /**
+     * Signals that a {@link PropertyBackedBean} has been started.
+     * 
+     * @param bean
+     *            the bean
+     */
+    public void broadcastStart(PropertyBackedBean bean);
+
+
+    /**
+     * Signals that a {@link PropertyBackedBean} has been stopped.
+     * 
+     * @param bean
+     *            the bean
+     */
+    public void broadcastStop(PropertyBackedBean bean);
 }

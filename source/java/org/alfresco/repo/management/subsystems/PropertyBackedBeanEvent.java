@@ -24,6 +24,8 @@
  */
 package org.alfresco.repo.management.subsystems;
 
+import java.util.List;
+
 import org.springframework.context.ApplicationEvent;
 
 /**
@@ -33,8 +35,10 @@ import org.springframework.context.ApplicationEvent;
  */
 public abstract class PropertyBackedBeanEvent extends ApplicationEvent
 {
+    private static final long serialVersionUID = -5414152423990988923L;
 
-    private static final long serialVersionUID = 1848914557290327762L;
+    /** The ID of the bean that emitted the event. */
+    private List<String> sourceId;
 
     /**
      * The Constructor.
@@ -45,16 +49,16 @@ public abstract class PropertyBackedBeanEvent extends ApplicationEvent
     public PropertyBackedBeanEvent(PropertyBackedBean source)
     {
         super(source);
+        this.sourceId = source.getId();
     }
 
     /**
-     * Gets the bean that emitted the event.
+     * Gets the ID of the bean that emitted the event.
      * 
-     * @return the bean
+     * @return the ID
      */
-    public PropertyBackedBean getBean()
+    public List<String> getSourceId()
     {
-        return (PropertyBackedBean) getSource();
+        return this.sourceId;
     }
-
 }

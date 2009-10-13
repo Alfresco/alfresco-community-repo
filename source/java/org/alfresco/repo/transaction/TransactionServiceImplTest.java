@@ -29,10 +29,9 @@ import javax.transaction.Status;
 import javax.transaction.UserTransaction;
 
 import junit.framework.TestCase;
-import net.sf.ehcache.Cache;
-import net.sf.ehcache.CacheManager;
 
-import org.alfresco.repo.cache.EhCacheAdapter;
+import org.alfresco.repo.admin.SysAdminParams;
+import org.alfresco.repo.security.authentication.AuthenticationContext;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -59,17 +58,10 @@ public class TransactionServiceImplTest extends TestCase
     {
         transactionManager = (PlatformTransactionManager) ctx.getBean("transactionManager");
         transactionService = new TransactionServiceImpl();
-        transactionService.setTransactionManager(transactionManager);
-        
-        CacheManager cacheManager = new CacheManager();
-        Cache sysAdminEhCache = new Cache("sysAdminCache", 10, false, true, 0L, 0L);
-        cacheManager.addCache(sysAdminEhCache);      
-        EhCacheAdapter<String, Object> sysAdminCache = new EhCacheAdapter<String, Object>();
-        sysAdminCache.setCache(sysAdminEhCache);
-
-        transactionService.setSysAdminCache(sysAdminCache);
-        
+        transactionService.setTransactionManager(transactionManager);   
         transactionService.setAllowWrite(true);
+        transactionService.setAuthenticationContext((AuthenticationContext) ctx.getBean("authenticationContext"));
+        transactionService.setSysAdminParams((SysAdminParams) ctx.getBean("sysAdminParams"));
 
         nodeService = (NodeService) ctx.getBean("dbNodeService");
     }

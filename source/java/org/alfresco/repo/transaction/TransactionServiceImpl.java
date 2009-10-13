@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -18,7 +18,7 @@
  * As a special exception to the terms and conditions of version 2.0 of 
  * the GPL, you may redistribute this Program in connection with Free/Libre 
  * and Open Source Software ("FLOSS") applications as described in Alfresco's 
- * FLOSS exception.  You should have recieved a copy of the text describing 
+ * FLOSS exception.  You should have received a copy of the text describing 
  * the FLOSS exception, and it is also available here: 
  * http://www.alfresco.com/legal/licensing"
  */
@@ -26,7 +26,8 @@ package org.alfresco.repo.transaction;
 
 import javax.transaction.UserTransaction;
 
-import org.alfresco.repo.cache.SimpleCache;
+import org.alfresco.repo.admin.SysAdminParams;
+import org.alfresco.repo.security.authentication.AuthenticationContext;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.VmShutdownListener;
 import org.alfresco.util.transaction.SpringAwareUserTransaction;
@@ -45,59 +46,65 @@ public class TransactionServiceImpl implements TransactionService
     private static VmShutdownListener shutdownListener = new VmShutdownListener("TransactionService");
 
     private PlatformTransactionManager transactionManager;
+    private AuthenticationContext authenticationContext;
     private int maxRetries = -1;
     private int minRetryWaitMs = -1;
     private int maxRetryWaitMs = -1;
     private int retryWaitIncrementMs = -1;
-    
-    // SysAdmin cache - used to cluster certain JMX operations
-    private SimpleCache<String, Object> sysAdminCache;
-    private final static String KEY_SYSADMIN_ALLOW_WRITE = "sysAdminCache.txAllowWrite";
-    
-    
+
+    // SysAdmin cache - used to cluster certain configuration parameters
+    private SysAdminParams sysAdminParams;
+    private boolean allowWrite;
+
     /**
      * Set the transaction manager to use
      * 
-     * @param transactionManager platform transaction manager
+     * @param transactionManager
+     *            platform transaction manager
      */
     public void setTransactionManager(PlatformTransactionManager transactionManager)
     {
         this.transactionManager = transactionManager;
     }
-    
-    public void setSysAdminCache(SimpleCache<String, Object> sysAdminCache)
+
+    /**
+     * Sets the authentication context.
+     * 
+     * @param authenticationContext
+     *            the authentication context
+     */
+    public void setAuthenticationContext(AuthenticationContext authenticationContext)
     {
-        this.sysAdminCache = sysAdminCache;
+        this.authenticationContext = authenticationContext;
+    }
+
+    public void setSysAdminParams(SysAdminParams sysAdminParams)
+    {
+        this.sysAdminParams = sysAdminParams;
     }
 
     /**
      * Set the read-only mode for all generated transactions.
      * 
-     * @param allowWrite false if all transactions must be read-only
+     * @param allowWrite
+     *            false if all transactions must be read-only
      */
     public void setAllowWrite(boolean allowWrite)
     {
-    	sysAdminCache.put(KEY_SYSADMIN_ALLOW_WRITE, allowWrite);
+        this.allowWrite = allowWrite;
     }
-    
+
     public boolean isReadOnly()
     {
         if (shutdownListener.isVmShuttingDown())
         {
             return true;
         }
-        try
-        {
-            Boolean allowWrite = (Boolean)sysAdminCache.get(KEY_SYSADMIN_ALLOW_WRITE);
-            return (allowWrite == null ? false : ! allowWrite);
-        }
-        catch (IllegalStateException e)
-        {
-            // The cache is not working
-            return true;
-        }
+        // Make the repo writable to the system user, so that e.g. the allow write flag can still be edited by JMX
+        return !this.allowWrite || !this.authenticationContext.isCurrentUserTheSystemUser()
+                && !this.sysAdminParams.getAllowWrite();
     }
-    
+
     /**
      * @see RetryingTransactionHelper#setMaxRetries(int)
      */
@@ -135,25 +142,19 @@ public class TransactionServiceImpl implements TransactionService
      */
     public UserTransaction getUserTransaction()
     {
-        SpringAwareUserTransaction txn = new SpringAwareUserTransaction(
-                transactionManager,
-                isReadOnly(),
-                TransactionDefinition.ISOLATION_DEFAULT,
-                TransactionDefinition.PROPAGATION_REQUIRED,
+        SpringAwareUserTransaction txn = new SpringAwareUserTransaction(transactionManager, isReadOnly(),
+                TransactionDefinition.ISOLATION_DEFAULT, TransactionDefinition.PROPAGATION_REQUIRED,
                 TransactionDefinition.TIMEOUT_DEFAULT);
         return txn;
     }
-    
+
     /**
      * @see org.springframework.transaction.TransactionDefinition#PROPAGATION_REQUIRED
      */
     public UserTransaction getUserTransaction(boolean readOnly)
     {
-        SpringAwareUserTransaction txn = new SpringAwareUserTransaction(
-                transactionManager,
-                (readOnly | isReadOnly()),
-                TransactionDefinition.ISOLATION_DEFAULT,
-                TransactionDefinition.PROPAGATION_REQUIRED,
+        SpringAwareUserTransaction txn = new SpringAwareUserTransaction(transactionManager, (readOnly | isReadOnly()),
+                TransactionDefinition.ISOLATION_DEFAULT, TransactionDefinition.PROPAGATION_REQUIRED,
                 TransactionDefinition.TIMEOUT_DEFAULT);
         return txn;
     }
@@ -163,11 +164,8 @@ public class TransactionServiceImpl implements TransactionService
      */
     public UserTransaction getNonPropagatingUserTransaction()
     {
-        SpringAwareUserTransaction txn = new SpringAwareUserTransaction(
-                transactionManager,
-                isReadOnly(),
-                TransactionDefinition.ISOLATION_DEFAULT,
-                TransactionDefinition.PROPAGATION_REQUIRES_NEW,
+        SpringAwareUserTransaction txn = new SpringAwareUserTransaction(transactionManager, isReadOnly(),
+                TransactionDefinition.ISOLATION_DEFAULT, TransactionDefinition.PROPAGATION_REQUIRES_NEW,
                 TransactionDefinition.TIMEOUT_DEFAULT);
         return txn;
     }
@@ -177,18 +175,15 @@ public class TransactionServiceImpl implements TransactionService
      */
     public UserTransaction getNonPropagatingUserTransaction(boolean readOnly)
     {
-        SpringAwareUserTransaction txn = new SpringAwareUserTransaction(
-                transactionManager,
-                (readOnly | isReadOnly()),
-                TransactionDefinition.ISOLATION_DEFAULT,
-                TransactionDefinition.PROPAGATION_REQUIRES_NEW,
+        SpringAwareUserTransaction txn = new SpringAwareUserTransaction(transactionManager, (readOnly | isReadOnly()),
+                TransactionDefinition.ISOLATION_DEFAULT, TransactionDefinition.PROPAGATION_REQUIRES_NEW,
                 TransactionDefinition.TIMEOUT_DEFAULT);
         return txn;
     }
 
     /**
-     * Creates a new helper instance.  It can be reused or customized by the client code:
-     * each instance is new and initialized afresh.
+     * Creates a new helper instance. It can be reused or customized by the client code: each instance is new and
+     * initialized afresh.
      */
     public RetryingTransactionHelper getRetryingTransactionHelper()
     {

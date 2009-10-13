@@ -1,9 +1,12 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
 
-<beans>    
-    <!-- Job definition to import people and groups from one or more external user registries in the authentication chain (e.g. LDAP directory) -->
-    
+<beans>
+    <!--
+        Job definition to import people and groups from one or more external user registries in the authentication chain
+        (e.g. LDAP directory)
+    -->
+
     <bean id="syncTrigger" class="org.alfresco.util.CronTriggerBean">
         <property name="jobDetail">
             <bean id="ldapPeopleJobDetail" class="org.springframework.scheduling.quartz.JobDetailBean">
@@ -13,7 +16,7 @@
                 <property name="jobDataAsMap">
                     <map>
                         <entry key="userRegistrySynchronizer">
-                            <ref bean="UserRegistrySynchronizer"/>
+                            <ref bean="UserRegistrySynchronizer" />
                         </entry>
                         <entry key="synchronizeChangesOnly">
                             <value>${synchronization.synchronizeChangesOnly}</value>
@@ -23,22 +26,22 @@
             </bean>
         </property>
         <property name="cronExpression">
-			<value>${synchronization.import.cron}</value>
-		</property>
+            <value>${synchronization.import.cron}</value>
+        </property>
         <property name="scheduler">
             <ref bean="schedulerFactory" />
         </property>
     </bean>
-        
+
     <!-- The chaining user registry synchronizer -->
     <bean id="userRegistrySynchronizer" class="org.alfresco.repo.security.sync.ChainingUserRegistrySynchronizer">
-       <property name="syncWhenMissingPeopleLogIn">
+        <property name="syncWhenMissingPeopleLogIn">
             <value>${synchronization.syncWhenMissingPeopleLogIn}</value>
         </property>
-       <property name="syncOnStartup">
+        <property name="syncOnStartup">
             <value>${synchronization.syncOnStartup}</value>
         </property>
-       <property name="autoCreatePeopleOnLogin">
+        <property name="autoCreatePeopleOnLogin">
             <value>${synchronization.autoCreatePeopleOnLogin}</value>
         </property>
         <property name="authorityService">
@@ -54,7 +57,10 @@
             <ref bean="Authentication" />
         </property>
         <property name="retryingTransactionHelper">
-            <ref bean="retryingTransactionHelper"/>
+            <ref bean="retryingTransactionHelper" />
+        </property>
+        <property name="jobLockService">
+            <ref bean="jobLockService" />
         </property>
         <property name="sourceBeanName">
             <value>userRegistry</value>

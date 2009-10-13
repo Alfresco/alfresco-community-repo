@@ -68,8 +68,8 @@
       <property name="authenticationComponent">
          <ref bean="authenticationComponent" />
       </property>
-      <property name="sysAdminCache">
-         <ref bean="sysAdminCache" />
+      <property name="sysAdminParams">
+         <ref bean="sysAdminParams" />
       </property>
    </bean>
 

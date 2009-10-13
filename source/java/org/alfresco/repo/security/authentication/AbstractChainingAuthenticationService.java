@@ -30,7 +30,6 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import org.alfresco.service.cmr.security.AuthenticationService;
-import org.alfresco.service.cmr.security.PermissionService;
 
 /**
  * A base class for chaining authentication services. Where appropriate, methods will 'chain' across multiple
@@ -180,7 +179,7 @@ public abstract class AbstractChainingAuthenticationService extends AbstractAuth
      */
     public void authenticateAsGuest() throws AuthenticationException
     {
-        preAuthenticationCheck(PermissionService.GUEST_AUTHORITY);
+        preAuthenticationCheck(AuthenticationUtil.getGuestUserName());
         for (AuthenticationService authService : getUsableAuthenticationServices())
         {
             try

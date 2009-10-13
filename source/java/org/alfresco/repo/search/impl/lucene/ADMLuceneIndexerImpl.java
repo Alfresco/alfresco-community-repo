@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -56,10 +56,11 @@ import org.alfresco.repo.search.impl.lucene.analysis.MLTokenDuplicator;
 import org.alfresco.repo.search.impl.lucene.analysis.VerbatimAnalyser;
 import org.alfresco.repo.search.impl.lucene.fts.FTSIndexerAware;
 import org.alfresco.repo.search.impl.lucene.fts.FullTextSearchIndexer;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
-import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -92,10 +93,10 @@ import org.apache.lucene.index.TermDocs;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.Hits;
 import org.apache.lucene.search.IndexSearcher;
-import org.apache.lucene.search.Query;
 import org.apache.lucene.search.Searcher;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.BooleanClause.Occur;
+
 
 /**
  * The implementation of the lucene based indexer. Supports basic transactional behaviour if used on its own.
@@ -571,7 +572,26 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
         }
     }
 
-    public List<Document> createDocuments(String stringNodeRef, boolean isNew, boolean indexAllProperties, boolean includeDirectoryDocuments)
+    public List<Document> createDocuments(final String stringNodeRef, final boolean isNew, final boolean indexAllProperties, final boolean includeDirectoryDocuments)
+    {
+        if (tenantService.isEnabled() && ((AuthenticationUtil.getRunAsUser() == null) || (AuthenticationUtil.isRunAsUserTheSystemUser())))
+        {
+            // ETHREEOH-2014 - dictionary access should be in context of tenant (eg. full reindex with MT dynamic models)
+            return AuthenticationUtil.runAs(new RunAsWork<List<Document>>()
+            {
+                public List<Document> doWork()
+                {            
+                    return createDocumentsImpl(stringNodeRef, isNew, indexAllProperties, includeDirectoryDocuments);
+                }
+            }, tenantService.getDomainUser(AuthenticationUtil.getSystemUserName(), tenantService.getDomain(new NodeRef(stringNodeRef).getStoreRef().getIdentifier())));
+        }
+        else
+        {
+            return createDocumentsImpl(stringNodeRef, isNew, indexAllProperties, includeDirectoryDocuments);
+        }
+    }
+    
+    private List<Document> createDocumentsImpl(String stringNodeRef, boolean isNew, boolean indexAllProperties, boolean includeDirectoryDocuments)
     {
         NodeRef nodeRef = new NodeRef(stringNodeRef);
 
@@ -639,7 +659,7 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
             else
             // not a root node
             {
-                Counter counter = nodeCounts.get(qNameRef);
+                Counter counter = nodeCounts.get(tenantService.getBaseName(qNameRef));
                 // If we have something in a container with root aspect we will
                 // not find it
 

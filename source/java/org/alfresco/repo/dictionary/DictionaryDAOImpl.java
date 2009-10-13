@@ -551,6 +551,11 @@ public class DictionaryDAOImpl implements DictionaryDAO
         		return type;
         	}
         }
+        
+        if (logger.isWarnEnabled())
+        {
+            logger.warn("Type not found: "+typeName);
+        }
         return null;
     }
     

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -1096,13 +1096,7 @@ public class JBPMEngine extends BPMEngine
                     Token token = getWorkflowToken(graphSession, pathId);
                     TaskMgmtSession taskSession = context.getTaskMgmtSession();
                     List<TaskInstance> tasks = taskSession.findTaskInstancesByToken(token.getId());
-                    List<WorkflowTask> workflowTasks = new ArrayList<WorkflowTask>(tasks.size());
-                    for (TaskInstance task : tasks)
-                    {
-                        WorkflowTask workflowTask = createWorkflowTask(task);
-                        workflowTasks.add(workflowTask);
-                    }
-                    return workflowTasks;
+                    return getWorkflowTasks(tasks);
                 }
             });
         }
@@ -1181,14 +1175,7 @@ public class JBPMEngine extends BPMEngine
                         tasks = findCompletedTaskInstances(context, authority);
                     }
                     
-                    // convert tasks to appropriate service response format 
-                    List<WorkflowTask> workflowTasks = new ArrayList<WorkflowTask>(tasks.size());
-                    for (TaskInstance task : tasks)
-                    {
-                        WorkflowTask workflowTask = createWorkflowTask(task);
-                        workflowTasks.add(workflowTask);
-                    }
-                    return workflowTasks;
+                    return getWorkflowTasks(tasks);
                 }
                 
                 /**
@@ -1239,13 +1226,7 @@ public class JBPMEngine extends BPMEngine
                     // retrieve pooled tasks for all flattened authorities
                     TaskMgmtSession taskSession = context.getTaskMgmtSession();
                     List<TaskInstance> tasks = taskSession.findPooledTaskInstances(authorities);
-                    List<WorkflowTask> workflowTasks = new ArrayList<WorkflowTask>(tasks.size());
-                    for (TaskInstance task : tasks)
-                    {
-                        WorkflowTask workflowTask = createWorkflowTask(task);
-                        workflowTasks.add(workflowTask);
-                    }
-                    return workflowTasks;
+                    return getWorkflowTasks(tasks);
                 }
             });
         }
@@ -1276,28 +1257,7 @@ public class JBPMEngine extends BPMEngine
                     
                     Criteria criteria = createTaskQueryCriteria(session, query);
                     List<TaskInstance> tasks = criteria.list();
-                    
-                    // convert tasks to appropriate service response format 
-                    List<WorkflowTask> workflowTasks = new ArrayList<WorkflowTask>(tasks.size());
-                    for (TaskInstance task : tasks)
-                    {
-                        if (tenantService.isEnabled())
-                        {                           
-                            try 
-                            {
-                                tenantService.checkDomain(task.getTask().getProcessDefinition().getName());
-                            }
-                            catch (RuntimeException re)
-                            {
-                                // deliberately skip this one - due to domain mismatch
-                                continue;
-                            } 
-                        }
-                        
-                        WorkflowTask workflowTask = createWorkflowTask(task);
-                        workflowTasks.add(workflowTask);
-                    }
-                    return workflowTasks;
+                    return getWorkflowTasks(tasks);
                 }
             });
         }
@@ -1305,6 +1265,31 @@ public class JBPMEngine extends BPMEngine
         {
             throw new WorkflowException("Failed to query tasks", e);
         }
+    }
+    
+    protected List<WorkflowTask> getWorkflowTasks(List<TaskInstance> tasks)
+    {
+        // convert tasks to appropriate service response format 
+        List<WorkflowTask> workflowTasks = new ArrayList<WorkflowTask>(tasks.size());
+        for (TaskInstance task : tasks)
+        {
+            if (tenantService.isEnabled())
+            {                           
+                try 
+                {
+                    tenantService.checkDomain(task.getTask().getProcessDefinition().getName());
+                }
+                catch (RuntimeException re)
+                {
+                    // deliberately skip this one - due to domain mismatch - eg. when querying by group authority
+                    continue;
+                } 
+            }
+            
+            WorkflowTask workflowTask = createWorkflowTask(task);
+            workflowTasks.add(workflowTask);
+        }
+        return workflowTasks;
     }
 
     /**

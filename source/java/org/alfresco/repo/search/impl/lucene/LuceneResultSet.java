@@ -238,7 +238,7 @@ public class LuceneResultSet extends AbstractResultSet
 
     public ChildAssociationRef getChildAssocRef(int n)
     {
-        return getRow(n).getChildAssocRef();
+        return tenantService.getBaseName(getRow(n).getChildAssocRef());
     }
 
     public ResultSetMetaData getResultSetMetaData()
@@ -255,4 +255,10 @@ public class LuceneResultSet extends AbstractResultSet
     {
         throw new UnsupportedOperationException();
     }
+    
+    public TenantService getTenantService()
+    {
+        return tenantService;
+    }
+    
 }

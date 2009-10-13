@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -27,9 +27,9 @@ package org.alfresco.repo.content;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.alfresco.repo.content.filestore.FileContentStore;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -48,13 +48,14 @@ import org.springframework.context.ConfigurableApplicationContext;
  */
 public class TenantRoutingFileContentStore extends AbstractRoutingContentStore implements TenantDeployer, ApplicationContextAware
 {
-    Map<String, FileContentStore> tenantFileStores = new HashMap<String, FileContentStore>();
+    // cache of tenant file stores
+    Map<String, FileContentStore> tenantFileStores = new ConcurrentHashMap<String, FileContentStore>();
     
     private String defaultRootDirectory;
     private TenantService tenantService;
     private ApplicationContext applicationContext;
-
-
+    
+    
     public void setDefaultRootDir(String defaultRootDirectory)
     {
         this.defaultRootDirectory = defaultRootDirectory;
@@ -75,11 +76,13 @@ public class TenantRoutingFileContentStore extends AbstractRoutingContentStore i
         this.applicationContext = applicationContext;
     }
     
+    @Override
     protected ContentStore selectWriteStore(ContentContext ctx)
     {
         return getTenantFileStore(tenantService.getCurrentUserDomain());
     }
     
+    @Override
     public List<ContentStore> getAllStores()
     {
         if (tenantService.isEnabled())
@@ -101,7 +104,13 @@ public class TenantRoutingFileContentStore extends AbstractRoutingContentStore i
     
     private ContentStore getTenantFileStore(String tenantDomain)
     {
-        return tenantFileStores.get(tenantDomain);
+        ContentStore cs = tenantFileStores.get(tenantDomain);
+        if (cs == null)
+        {
+            init();
+            cs = tenantFileStores.get(tenantDomain);
+        }
+        return cs;
     }
     
     private void putTenantFileStore(String tenantDomain, FileContentStore fileStore)
@@ -113,7 +122,7 @@ public class TenantRoutingFileContentStore extends AbstractRoutingContentStore i
     {
         tenantFileStores.remove(tenantDomain);
     }
-   
+    
     public void init()
     {
         String tenantDomain = TenantService.DEFAULT_DOMAIN;
@@ -128,7 +137,7 @@ public class TenantRoutingFileContentStore extends AbstractRoutingContentStore i
             }
             tenantDomain = tenant.getTenantDomain();
         }
-
+        
         putTenantFileStore(tenantDomain, new FileContentStore((ConfigurableApplicationContext) this.applicationContext,
                 new File(rootDir)));
     }

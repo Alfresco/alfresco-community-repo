@@ -29,6 +29,7 @@ import java.util.Map;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.search.AbstractResultSetRow;
+import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
@@ -47,6 +48,8 @@ public class LuceneResultSetRow extends AbstractResultSetRow
      * The current document - cached so we do not get it for each value
      */
     private Document document;
+    
+    private TenantService tenantService;
 
     /**
      * Wrap a position in a lucene Hits class with node support
@@ -57,6 +60,8 @@ public class LuceneResultSetRow extends AbstractResultSetRow
     public LuceneResultSetRow(LuceneResultSet resultSet, int index)
     {
         super(resultSet, index);
+        
+        tenantService = resultSet.getTenantService();
     }
 
     /**
@@ -119,6 +124,7 @@ public class LuceneResultSetRow extends AbstractResultSetRow
         }
     }
 
+    @Override
     public ChildAssociationRef getChildAssocRef()
     {
         Field field = getDocument().getField("PRIMARYPARENT");
@@ -128,7 +134,7 @@ public class LuceneResultSetRow extends AbstractResultSetRow
             primaryParent = field.stringValue();
         }
         NodeRef childNodeRef = getNodeRef();
-        NodeRef parentNodeRef = primaryParent == null ? null : new NodeRef(primaryParent);
+        NodeRef parentNodeRef = primaryParent == null ? null : tenantService.getBaseName(new NodeRef(primaryParent));
         return new ChildAssociationRef(getPrimaryAssocTypeQName(), parentNodeRef, getQName(), childNodeRef);
     }
 

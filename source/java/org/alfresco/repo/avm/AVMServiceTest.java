@@ -2049,7 +2049,7 @@ public class AVMServiceTest extends AVMServiceTestBase
     /**
      * Test the undo list action.
      * 
-     * @deprecated see org.alfresco.wcm.actions.WCMSandboxRevertListAction or org.alfresco.wcm.SandboxService.revertList
+     * @deprecated see org.alfresco.wcm.actions.WCMSandboxUndoAction or org.alfresco.wcm.SandboxService.revertList
      */
     public void testUndoListAction() throws Exception
     {

@@ -131,6 +131,7 @@ public class AVMBrowseBean implements IContextListener
    private static final String MSG_CREATED_BY = "store_created_by";
    private static final String MSG_WORKING_USERS = "store_working_users";
    private static final String MSG_SEARCH_FORM_CONTENT = "search_form_content";
+   private static final String MSG_TARGET_IS_DELETED ="target_is_deleted";
 
    /** Component id the status messages are tied too */
    static final String COMPONENT_SANDBOXESPANEL = "sandboxes-panel";
@@ -1328,18 +1329,39 @@ public class AVMBrowseBean implements IContextListener
          String type = "";
          if (avmRef.getType() == AVMNodeType.LAYERED_DIRECTORY && avmRef.isPrimary())
          {
-            type = Application.getMessage(FacesContext.getCurrentInstance(), "shared_folder");
+            if (getAvmService().lookup(avmRef.getIndirectionVersion(), avmRef.getIndirection()) != null)
+            {
+               type = Application.getMessage(FacesContext.getCurrentInstance(), "shared_folder");
+            }
+            else
+            {
+               type = Application.getMessage(FacesContext.getCurrentInstance(), "stale_shared_folder");
+            }
          }
          else
          {
             type = Application.getMessage(FacesContext.getCurrentInstance(), "folder");
          }
          node.getProperties().put("folderType", type);
-      
+         
          this.folders.add(node);
       }
       else
       {
+         String type = "file";
+    	 if (avmRef.isLayeredFile())
+    	 {
+            if (getAvmService().lookup(avmRef.getIndirectionVersion(), avmRef.getIndirection()) != null)
+            {
+               type = Application.getMessage(FacesContext.getCurrentInstance(), "shared_file");
+            }
+            else
+            {
+               type = Application.getMessage(FacesContext.getCurrentInstance(), "stale_shared_file");
+            } 
+    	 }
+    	 
+    	 node.getProperties().put("fileType", type);
          node.getProperties().put("fileType16", FileTypeImageUtils.getFileTypeImage(avmRef.getName(), true));
          node.getProperties().put("url", DownloadContentServlet.generateBrowserURL(
                AVMNodeConverter.ToNodeRef(-1, avmRef.getPath()), avmRef.getName()));
@@ -1406,7 +1428,18 @@ public class AVMBrowseBean implements IContextListener
       UIActionLink link = (UIActionLink)event.getComponent();
       Map<String, String> params = link.getParameterMap();
       String path = params.get("id");
-      updateUILocation(path);
+      AVMNodeDescriptor avmNode = getAvmService().lookup(-1, path);
+
+      if (avmNode.isLayeredDirectory() && avmNode.isPrimary() && (getAvmService().lookup(avmNode.getIndirectionVersion(), avmNode.getIndirection()) == null))
+      {
+         String pattern = Application.getMessage(FacesContext.getCurrentInstance(), MSG_TARGET_IS_DELETED);
+         String folderName = path.substring(path.lastIndexOf("/") + 1);
+         Utils.addErrorMessage(MessageFormat.format(pattern, folderName));
+      }
+      else
+      {
+         updateUILocation(path);
+      }
    }
 
    /**

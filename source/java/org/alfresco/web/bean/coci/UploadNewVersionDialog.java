@@ -34,6 +34,8 @@ import org.alfresco.web.app.Application;
 public class UploadNewVersionDialog extends DoneEditingDialog
 {
     private final static String MSG_UPLOAD_NEW_VERSION = "upload_new_version";
+    private final static String MSG_LEFT_QUOTE = "left_qoute";
+    private final static String MSG_RIGHT_QUOTE = "right_quote";
     private final static String MSG_OF = "of";
 
     private boolean finishedEditing = false;
@@ -57,8 +59,10 @@ public class UploadNewVersionDialog extends DoneEditingDialog
     @Override
     public String getContainerTitle()
     {
-        return Application.getMessage(FacesContext.getCurrentInstance(), MSG_UPLOAD_NEW_VERSION) + " " + Application.getMessage(FacesContext.getCurrentInstance(), MSG_OF) + " '"
-                + property.getDocument().getName() + "'";
+        FacesContext fc = FacesContext.getCurrentInstance();
+        return Application.getMessage(fc, MSG_UPLOAD_NEW_VERSION) + " " + Application.getMessage(fc, MSG_OF) + " " +
+                Application.getMessage(fc, MSG_LEFT_QUOTE)
+                + property.getDocument().getName() + Application.getMessage(fc, MSG_RIGHT_QUOTE);
     }
 
     @Override

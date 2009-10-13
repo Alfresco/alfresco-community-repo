@@ -40,6 +40,8 @@ public class CCUndoCheckoutFileDialog extends CheckinCheckoutDialog
     
     public static final String LBL_UNDO_CHECKOUT = "undo_checkout";
     public static final String MSG_UNDO_CHECKOUT_FOR = "undo_checkout_for";
+    private final static String MSG_LEFT_QUOTE = "left_qoute";
+    private final static String MSG_RIGHT_QUOTE = "right_quote";
 
     private static Log logger = LogFactory.getLog(CheckinCheckoutDialog.class);
 
@@ -52,8 +54,9 @@ public class CCUndoCheckoutFileDialog extends CheckinCheckoutDialog
     @Override
     public String getContainerTitle()
     {
-
-        return Application.getMessage(FacesContext.getCurrentInstance(), MSG_UNDO_CHECKOUT_FOR) + " '" + property.getDocument().getName() + "'";
+        FacesContext fc = FacesContext.getCurrentInstance();
+        return Application.getMessage(fc, MSG_UNDO_CHECKOUT_FOR) + " " + Application.getMessage(fc, MSG_LEFT_QUOTE) 
+            + property.getDocument().getName() + Application.getMessage(fc, MSG_RIGHT_QUOTE);
     }
 
     @Override

@@ -43,6 +43,8 @@ public class SpaceUsersBean extends UserMembersBean
    private final static String MSG_MANAGE_INVITED_USERS = "manage_invited_users";
    private final static String MSG_SPACE_OWNER = "space_owner";
    private final static String MSG_CLOSE= "close";
+   private final static String MSG_LEFT_QUOTE = "left_qoute";
+   private final static String MSG_RIGHT_QUOTE = "right_quote";
    
    /**
     * @return The space to work against
@@ -67,7 +69,9 @@ public class SpaceUsersBean extends UserMembersBean
    @Override
    public String getContainerTitle()
    {
-      return Application.getMessage(FacesContext.getCurrentInstance(), MSG_MANAGE_INVITED_USERS) + " '" + browseBean.getActionSpace().getName() + "'";
+       FacesContext fc = FacesContext.getCurrentInstance();
+       return Application.getMessage(fc, MSG_MANAGE_INVITED_USERS) + " " + Application.getMessage(fc, MSG_LEFT_QUOTE)
+               + browseBean.getActionSpace().getName() + Application.getMessage(fc, MSG_RIGHT_QUOTE);
    }
    
    @Override

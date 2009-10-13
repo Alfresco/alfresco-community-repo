@@ -38,7 +38,7 @@
    function pageLoaded()
    {
       document.getElementById("dialog:dialog-body:name").focus();
-      document.getElementById("dialog").onsubmit = validate;
+      document.getElementById("dialog").onsubmit = validateDialog;
       document.getElementById("dialog:finish-button").onclick = function() {finishButtonPressed = true; clear_dialog();}
       checkButtonState();
    }
@@ -52,21 +52,6 @@
       else
       {
          document.getElementById("dialog:finish-button").disabled = false;
-      }
-   }
-   
-   function validate()
-   {
-      if (finishButtonPressed)
-      {
-         finishButtonPressed = false;
-         return validateName(document.getElementById("dialog:dialog-body:name"), 
-                             unescape('</f:verbatim><h:outputText value="#{msg.validation_invalid_character}"  /><f:verbatim>'),
-                             true);
-      }
-      else
-      {
-         return true;
       }
    }
 

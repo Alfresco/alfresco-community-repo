@@ -49,33 +49,8 @@
 
 <h:outputText id="padding2" styleClass="paddingRow" value="&nbsp;" escape="false" />
 
-<a:panel id="link-validation-panel" label="#{msg.link_validation}" rendered="#{AVMBrowseBean.linkValidationState != null}"
+<a:panel id="resources-panel" label="#{msg.resources}"
          border="white" bgcolor="white" titleBorder="lbgrey" expandedTitleBorder="dotted" titleBgcolor="white" styleClass="mainSubTitle">
-   
-   <w:linkValidationSummary value="#{AVMBrowseBean.linkValidationState}" styleClass="linkValidationSummaryPanelTask"
-                            showPanel="false" showTitle="false" />
-   
-   <a:actionLink value="#{msg.view_link_validation_report}" action="#{DialogManager.bean.viewLinkReport}" 
-                 style='margin-left: 4px;'/>
-   <h:outputText value="<div>&nbsp;</div>" escape="false" />
-</a:panel>
-
-<h:outputText id="padding3" styleClass="paddingRow" value="&nbsp;" escape="false" />
-
-<h:panelGroup id="resources-panel-facets">
-   <f:facet name="title">
-      <h:panelGroup id="resources-actions" styleClass="deployReviewTaskActions">
-         <a:actionLink id="resources-action1" value="#{msg.sandbox_deploy}" image="/images/icons/deploy.gif"
-                       action="#{DialogManager.bean.deploy}" rendered="#{DialogManager.bean.testServersAvailable}" />
-         <a:actionLink id="resources-action2" value="#{msg.deployment_report_action}" image="/images/icons/deployment_report.gif"
-                       action="#{DialogManager.bean.viewDeployReport}" rendered="#{DialogManager.bean.deployAttempted}" />
-      </h:panelGroup>
-   </f:facet>
-</h:panelGroup>
-
-<a:panel id="resources-panel" label="#{msg.resources}" facetsId="dialog-body:resources-panel-facets"
-         border="white" bgcolor="white" titleBorder="lbgrey" expandedTitleBorder="dotted" titleBgcolor="white" 
-         styleClass="mainSubTitle">
    
    <h:outputText value="<div>#{msg.no_resources}</div>" rendered="#{empty DialogManager.bean.resources}" escape="false"/>
    
@@ -140,23 +115,13 @@
             <a:convertXMLDate type="both" pattern="#{msg.date_time_pattern}" />
          </h:outputText>
       </a:column>
-      
-      <%-- Expiration Date column --%>
-		<a:column id="col16" style="text-align:left; white-space:nowrap">
-		   <f:facet name="header">
-		      <a:sortLink label="#{msg.expiration_date}" value="expirationDate" styleClass="header" />
-		   </f:facet>
-		   <h:outputText id="col16-date" value='#{r["wca:expirationDate"]}'>
-		      <a:convertXMLDate type="both" pattern="#{msg.date_time_pattern}" />
-		   </h:outputText>
-		</a:column>
                         
       <%-- Actions column --%>
-      <a:column id="col7" actions="true" style="padding:2px;text-align:left">
+      <a:column id="col6" actions="true" style="padding:2px;text-align:left">
          <f:facet name="header">
-            <h:outputText id="col7-txt" value="#{msg.actions}"/>
+            <h:outputText id="col6-txt" value="#{msg.actions}"/>
          </f:facet>
-         <r:actions id="col7-actions" value="#{DialogManager.bean.packageItemActionGroup}" 
+         <r:actions id="col6-actions" value="#{DialogManager.bean.packageItemActionGroup}" 
                     context="#{r}" showLink="false" styleClass="inlineAction" />
       </a:column>
       <a:dataPager styleClass="pager" id="pager1" />
@@ -178,13 +143,13 @@
 
 </a:panel>
 
-<h:outputText id="padding4" styleClass="paddingRow" value="&nbsp;" escape="false" />
+<h:outputText id="padding3" styleClass="paddingRow" value="&nbsp;" escape="false" />
 
 <a:panel id="workflow-summary-panel" label="#{msg.part_of_workflow}"
          border="white" bgcolor="white" titleBorder="lbgrey" expandedTitleBorder="dotted" titleBgcolor="white" styleClass="mainSubTitle">
 
    <r:workflowSummary id="workflow-summary" value="#{DialogManager.bean.workflowInstance}" styleClass="workflowSummary" />
-   
+
    <f:verbatim><div style="padding-left:9px;padding-top:8px;padding-bottom:4px"></f:verbatim>
       <a:panel id="pending-submission-panel" label="#{msg.workflow_history}" progressive="true" 
             expanded="true" styleClass="mainSubTitle">
@@ -193,7 +158,7 @@
    <f:verbatim></div></f:verbatim>
 </a:panel>
 
-<h:outputText id="padding5" styleClass="paddingRow" value="&nbsp;" escape="false" />
+<h:outputText id="padding4" styleClass="paddingRow" value="&nbsp;" escape="false" />
 
 <a:panel rendered="false" id="workflow-outline" label="#{msg.workflow_outline}" progressive="true" expanded="false" 
          border="white" bgcolor="white" titleBorder="lbgrey" expandedTitleBorder="dotted" titleBgcolor="white" styleClass="mainSubTitle">

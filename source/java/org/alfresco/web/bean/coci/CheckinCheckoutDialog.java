@@ -80,6 +80,8 @@ public class CheckinCheckoutDialog extends BaseDialogBean
    public static final String MSG_ERROR_CANCELCHECKOUT = "error_cancel_checkout";
    public static final String MSG_ERROR_UPDATE = "error_update";
    public static final String MSG_ERROR_CHECKOUT = "error_checkout";
+   private final static String MSG_LEFT_QUOTE = "left_qoute";
+   private final static String MSG_RIGHT_QUOTE = "right_quote";
 
    public static final String FILE = "file";
    
@@ -132,7 +134,9 @@ public class CheckinCheckoutDialog extends BaseDialogBean
    
    public String getContainerTitle()
    {
-      return Application.getMessage(FacesContext.getCurrentInstance(), "check_in") + " '" + this.property.getDocument().getName() + "'";
+       FacesContext fc = FacesContext.getCurrentInstance();
+       return Application.getMessage(fc, "check_in") + " " +
+           Application.getMessage(fc, MSG_LEFT_QUOTE)+ this.property.getDocument().getName() + Application.getMessage(fc, MSG_RIGHT_QUOTE);
    }
    
    /**

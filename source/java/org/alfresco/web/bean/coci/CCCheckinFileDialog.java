@@ -10,6 +10,8 @@ public class CCCheckinFileDialog extends CheckinCheckoutDialog
    private static final long serialVersionUID = -3591701539727090905L;
    
    private static final String MSG_CHECK_IN = "check_in";
+   private final static String MSG_LEFT_QUOTE = "left_qoute";
+   private final static String MSG_RIGHT_QUOTE = "right_quote";
    
    @Override
    protected String finishImpl(FacesContext context, String outcome) throws Exception
@@ -26,7 +28,9 @@ public class CCCheckinFileDialog extends CheckinCheckoutDialog
    @Override
    public String getContainerTitle()
    {
-     return Application.getMessage(FacesContext.getCurrentInstance(), MSG_CHECK_IN) + " '" + property.getDocument().getName() + "'";
+       FacesContext fc = FacesContext.getCurrentInstance();
+       return Application.getMessage(fc, MSG_CHECK_IN) + " " + Application.getMessage(fc, MSG_LEFT_QUOTE)       
+           + property.getDocument().getName() + Application.getMessage(fc, MSG_RIGHT_QUOTE);
    }
    
    @Override

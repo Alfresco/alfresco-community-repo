@@ -86,10 +86,10 @@
                            </td>
                            <td>
                               <div class="mainTitle">
-                                 <h:outputText value="#{msg.versioned_details_of}" /> '<h:outputText value="#{VersionedDocumentDetailsDialog.name}" />'
+                                  <h:outputText value="#{msg.versioned_details_of}" /> <h:outputText value="#{msg.left_qoute}"/><h:outputText value="#{VersionedDocumentDetailsDialog.name}" /><h:outputText value="#{msg.right_quote}"/>
                               </div>
                               <div class="mainSubText">
-                                 <h:outputText value="#{msg.version}" />: <h:outputText value="#{VersionedDocumentDetailsDialog.version.versionLabel}" />'
+                                  <h:outputText value="#{msg.version}" />: <h:outputText value="#{msg.left_qoute}"/><h:outputText value="#{VersionedDocumentDetailsDialog.version.versionLabel}" /><h:outputText value="#{msg.right_quote}"/>
                               </div>
                               <div class="mainSubText"><h:outputText id="doc-details" value="#{msg.versioned_documentdetails_description}" /></div>
                            </td>

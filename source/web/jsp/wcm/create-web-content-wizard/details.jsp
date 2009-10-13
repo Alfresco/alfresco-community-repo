@@ -36,15 +36,15 @@
    
    function pageLoaded()
    {
-      document.getElementById("wizard:wizard-body:file-name").focus();
-      document.getElementById("wizard").onsubmit = validate;
+      document.getElementById("wizard:wizard-body:name").focus();
+      document.getElementById("wizard").onsubmit = validateWizard;
       document.getElementById("wizard:next-button").onclick = function() {finishButtonPressed = true; clear_wizard();}
       document.getElementById("wizard:finish-button").onclick = function() {finishButtonPressed = true; clear_wizard();}
    }
    
    function checkButtonState()
    {
-      if (document.getElementById("wizard:wizard-body:file-name").value.length == 0 )
+      if (document.getElementById("wizard:wizard-body:name").value.length == 0 )
       {
          document.getElementById("wizard:next-button").disabled = true;
          document.getElementById("wizard:finish-button").disabled = true;
@@ -53,21 +53,6 @@
       {
          document.getElementById("wizard:next-button").disabled = false;
          document.getElementById("wizard:finish-button").disabled = true;
-      }
-   }
-   
-   function validate()
-   {
-      if (finishButtonPressed)
-      {
-         finishButtonPressed = false;
-         return validateName(document.getElementById("wizard:wizard-body:file-name"), 
-                             unescape('</f:verbatim><h:outputText value="#{msg.validation_invalid_character}"  /><f:verbatim>'),
-                             true);
-      }
-      else
-      {
-         return true;
       }
    }
 
@@ -86,7 +71,7 @@
 <h:panelGrid columns="3" cellpadding="3" cellspacing="3" border="0">
    <h:graphicImage value="/images/icons/required_field.gif" alt="#{msg.required_field}" />
    <h:outputText value="#{msg.name}:"/>
-   <h:inputText id="file-name" value="#{WizardManager.bean.fileName}" 
+   <h:inputText id="name" value="#{WizardManager.bean.fileName}" 
                 maxlength="1024" size="35" 
                 onkeyup="checkButtonState();" 
                 onchange="checkButtonState();" />

@@ -39,6 +39,8 @@ public class RemoveInvitedUserDialog extends BaseDialogBean {
     private static final String BUTTON_YES = "yes";
 
     private static final String MSG_REMOVE_USER = "remove_user";
+    private final static String MSG_LEFT_QUOTE = "left_qoute";
+    private final static String MSG_RIGHT_QUOTE = "right_quote";
 
     private SpaceUsersBean spaceUsersBean;
 
@@ -84,8 +86,10 @@ public class RemoveInvitedUserDialog extends BaseDialogBean {
     }
 
     @Override
-    public String getContainerTitle() {
-        return Application.getMessage(FacesContext.getCurrentInstance(), MSG_REMOVE_USER) + " '"
-                + spaceUsersBean.getPersonName() + "'";
+    public String getContainerTitle() 
+    {
+        FacesContext fc = FacesContext.getCurrentInstance();
+        return Application.getMessage(fc, MSG_REMOVE_USER) + " " + Application.getMessage(fc, MSG_LEFT_QUOTE)
+                + spaceUsersBean.getPersonName() + Application.getMessage(fc, MSG_RIGHT_QUOTE);
     }
 }

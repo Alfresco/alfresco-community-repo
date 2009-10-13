@@ -54,6 +54,8 @@ public class EditNodeCategoriesDialog extends BaseDialogBean
 
    private static final String MSG_ERROR_UPDATE_CATEGORY = "error_update_category";
    private static final String MSG_MODIFY_CATEGORIES_OF = "modify_categories_of";
+   private final static String MSG_LEFT_QUOTE = "left_qoute";
+   private final static String MSG_RIGHT_QUOTE = "right_quote";
    
    // ------------------------------------------------------------------------------
    // Dialog implementation
@@ -112,8 +114,9 @@ public class EditNodeCategoriesDialog extends BaseDialogBean
    @Override
    public String getContainerTitle()
    {
-      return Application.getMessage(FacesContext.getCurrentInstance(), MSG_MODIFY_CATEGORIES_OF) + 
-            " '" + this.node.getName() + "'";
+       FacesContext fc = FacesContext.getCurrentInstance();
+       return Application.getMessage(fc, MSG_MODIFY_CATEGORIES_OF) + 
+            " " + Application.getMessage(fc, MSG_LEFT_QUOTE) + this.node.getName() + Application.getMessage(fc, MSG_RIGHT_QUOTE);
    }
    
    @Override

@@ -63,6 +63,9 @@ public class FileDetailsBean extends AVMDetailsBean
    /** Action service bean reference */
    transient private ActionService actionService;
    
+   private final static String MSG_LEFT_QUOTE = "left_qoute";
+   private final static String MSG_RIGHT_QUOTE = "right_quote";
+   
    
    // ------------------------------------------------------------------------------
    // Construction 
@@ -256,7 +259,8 @@ public class FileDetailsBean extends AVMDetailsBean
    
    public String getContainerTitle()
    {
-      return Application.getMessage(FacesContext.getCurrentInstance(), "details_of") + " '" + getName() + "'";
+       FacesContext fc = FacesContext.getCurrentInstance();      
+       return Application.getMessage(fc, "details_of") + " " + Application.getMessage(fc, MSG_LEFT_QUOTE) + getName() + Application.getMessage(fc, MSG_RIGHT_QUOTE);
    }
    
    public String getCurrentItemId()

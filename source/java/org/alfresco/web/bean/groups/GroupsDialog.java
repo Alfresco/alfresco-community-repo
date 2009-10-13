@@ -438,7 +438,7 @@ public class GroupsDialog extends BaseDialogBean
             StringBuilder label = new StringBuilder(48);
             label.append(firstName)
                  .append(' ')
-                 .append(lastName);
+                 .append(lastName != null ? lastName : "");
             authMap.put("name", label.toString());
             
             users.add(authMap);

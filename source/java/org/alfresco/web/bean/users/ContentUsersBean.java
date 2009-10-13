@@ -43,6 +43,8 @@ public class ContentUsersBean extends UserMembersBean
    private final static String MSG_MANAGE_CONTENT_USERS = "manage_content_users";
    private final static String MSG_CONTENT_OWNER = "content_owner";
    private final static String MSG_CLOSE= "close";
+   private final static String MSG_LEFT_QUOTE = "left_qoute";
+   private final static String MSG_RIGHT_QUOTE = "right_quote";
    
    /**
     * @return The space to work against
@@ -67,7 +69,9 @@ public class ContentUsersBean extends UserMembersBean
    @Override
    public String getContainerTitle()
    {
-      return Application.getMessage(FacesContext.getCurrentInstance(), MSG_MANAGE_CONTENT_USERS) + " '" + browseBean.getDocument().getName() + "'";
+       FacesContext fc = FacesContext.getCurrentInstance();
+       return Application.getMessage(fc, MSG_MANAGE_CONTENT_USERS) + " " + Application.getMessage(fc, MSG_LEFT_QUOTE)
+               + browseBean.getDocument().getName() + Application.getMessage(fc, MSG_RIGHT_QUOTE);
    }
    
    @Override

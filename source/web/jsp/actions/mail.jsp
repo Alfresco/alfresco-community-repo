@@ -224,7 +224,7 @@
                                              <td>
                                                 <%-- Templates drop-down selector --%>
                                                 <h:selectOneMenu value="#{WizardManager.bean.actionProperties.template}">
-                                                   <f:selectItems value="#{TemplateSupportBean.emailTemplates}" />
+                                                     <f:selectItems value="#{TemplateSupportBean.notifyEmailTemplates}" />
                                                 </h:selectOneMenu>
                                              </td>
                                              <td><h:commandButton value="#{msg.insert_template}" actionListener="#{WizardManager.bean.insertTemplate}" styleClass="wizardButton" /></td>

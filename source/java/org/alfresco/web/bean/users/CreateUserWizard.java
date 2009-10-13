@@ -332,8 +332,8 @@ public class CreateUserWizard extends BaseWizardBean
                     bundle.getString("user_jobtitle"), bundle.getString("user_location"),
                     bundle.getString("presence_username"), bundle.getString("quota")},
                 new String[] {
-                    Utils.encode(this.firstName + " " + this.lastName), this.userName,
-                    "********", homeSpaceLabel,
+                    Utils.encode(this.firstName + " " + this.lastName), Utils.encode(this.userName),
+                    "********", Utils.encode(homeSpaceLabel),
                     Utils.encode(this.email), Utils.encode(this.organisation),
                     Utils.encode(this.jobtitle), Utils.encode(this.location),
                     Utils.encode(presenceLabel), quotaLabel});

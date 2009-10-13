@@ -96,6 +96,20 @@
             </params>
          </action>
          
+         <action id="workflow_edit_content_properties">
+            <permissions>
+               <permission allow="true">Write</permission>
+            </permissions>
+            <evaluator>org.alfresco.web.action.evaluator.WCMWorkflowEvaluator</evaluator>
+            <label-id>edit_properties</label-id>
+            <image>/images/icons/edit_properties.gif</image>
+            <action>dialog:editAvmFileProperties</action>
+            <action-listener>#{AVMBrowseBean.setupContentAction}</action-listener>
+            <params>
+               <param name="id">#{actionContext.id}</param>
+            </params>
+         </action>
+         
          <!-- Checkin document from workflow package -->
          <action id="workflow_checkin_doc">
             <evaluator>org.alfresco.web.action.evaluator.CheckinDocEvaluator</evaluator>
@@ -175,7 +189,7 @@
             <label-id>view_details</label-id>
             <image>/images/icons/View_details.gif</image>
             <action-listener>#{AVMBrowseBean.setupContentAction}</action-listener>
-            <action>dialog:showFileDetails</action>
+            <action>dialog:workflowShowFileDetails</action>
             <params>
                <param name="id">#{actionContext.id}</param>
             </params>
@@ -223,12 +237,58 @@
          <!--  Task Dialog Action Groups for managing Workflow Packages -->
          <!--  -->
          
-         <action-group id="read_package_item_actions">
-            <action idref="view_content_properties" />
+         <!-- WCM -->
+         <action-group id="edit_and_remove_wcm_package_item_actions">
+            <action idref="edit_file"/>
+            <action idref="update_file" />
+            <action idref="workflow_preview_file" />
+            <action idref="workflow_file_details" />
+            <action idref="workflow_edit_content_properties" />
+            <action idref="remove_package_item" />
+            <action idref="delete_file" />
+            <action idref="workflow_revert" />
+         </action-group>
+
+         <action-group id="edit_and_delete_wcm_package_item_actions">
+            <action idref="edit_file"/>
+            <action idref="update_file" />
+            <action idref="workflow_preview_file" />
+            <action idref="workflow_file_details" />
+            <action idref="delete_file" />
+            <action idref="workflow_revert" />
          </action-group>
 
          <action-group id="read_wcm_package_item_actions">
-            <action idref="file_details" />
+            <action idref="workflow_file_details" />
+         </action-group>
+
+         <action-group id="edit_wcm_package_item_actions">
+            <action idref="edit_file" />
+            <action idref="update_file" />
+            <action idref="workflow_preview_file" />
+            <action idref="workflow_file_details" />
+            <action idref="workflow_edit_content_properties" />
+            <action idref="workflow_revert" />
+            <action idref="delete_file" />
+         </action-group>
+
+         <action-group id="review_wcm_package_item_actions">
+            <action idref="workflow_edit_content_properties" />
+            <action idref="workflow_preview_file" />
+            <action idref="workflow_file_details" />
+            <action idref="workflow_revert" />
+            <action idref="delete_file" />
+         </action-group>
+
+         <action-group id="remove_wcm_package_item_actions">
+            <action idref="workflow_file_details" />
+            <action idref="remove_package_item" />
+         </action-group>
+
+         <!-- ADM -->
+         
+         <action-group id="read_package_item_actions">
+            <action idref="view_content_properties" />
          </action-group>
 
          <action-group id="edit_package_item_actions">
@@ -243,27 +303,8 @@
             <action idref="workflow_cancelcheckout_doc" />
          </action-group>
 
-         <action-group id="edit_wcm_package_item_actions">
-            <action idref="edit_file" />
-            <action idref="update_file" />
-            <action idref="workflow_preview_file" />
-            <action idref="workflow_file_details" />
-            <action idref="workflow_revert" />
-         </action-group>
-
-         <action-group id="review_wcm_package_item_actions">
-            <action idref="workflow_preview_file" />
-            <action idref="workflow_file_details" />
-            <action idref="workflow_revert" />
-         </action-group>
-
          <action-group id="remove_package_item_actions">
             <action idref="view_content_properties" />
-            <action idref="remove_package_item" />
-         </action-group>
-
-         <action-group id="remove_wcm_package_item_actions">
-            <action idref="file_details" />
             <action idref="remove_package_item" />
          </action-group>
          
@@ -290,24 +331,6 @@
             <action idref="remove_package_item" />
          </action-group>
 
-         <action-group id="edit_and_remove_wcm_package_item_actions">
-            <action idref="edit_file"/>
-            <action idref="update_file" />
-            <action idref="workflow_preview_file" />
-            <action idref="workflow_file_details" />
-            <action idref="remove_package_item" />
-            <action idref="workflow_revert" />
-         </action-group>
-         
-         <action-group id="edit_and_delete_wcm_package_item_actions">
-            <action idref="edit_file"/>
-            <action idref="update_file" />
-            <action idref="workflow_preview_file" />
-            <action idref="workflow_file_details" />
-            <action idref="delete_file" />
-            <action idref="workflow_revert" />
-         </action-group>
-         
          <action-group id="add_package_item_actions">
             <action idref="add_package_item" />
          </action-group>

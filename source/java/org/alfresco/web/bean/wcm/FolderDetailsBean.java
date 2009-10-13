@@ -42,6 +42,9 @@ public class FolderDetailsBean extends AVMDetailsBean
 {
    private static final long serialVersionUID = -2668158215990649862L;
 
+   private final static String MSG_LEFT_QUOTE = "left_qoute";
+   private final static String MSG_RIGHT_QUOTE = "right_quote";
+
    /**
     * @see org.alfresco.web.bean.wcm.AVMDetailsBean#getAvmNode()
     */
@@ -109,7 +112,8 @@ public class FolderDetailsBean extends AVMDetailsBean
    
    public String getContainerTitle()
    {
-      return Application.getMessage(FacesContext.getCurrentInstance(), "details_of") + " '" + getName() + "'";
+       FacesContext fc = FacesContext.getCurrentInstance();
+       return Application.getMessage(fc, "details_of") + " " + Application.getMessage(fc, MSG_LEFT_QUOTE) + getName() + Application.getMessage(fc, MSG_RIGHT_QUOTE);
    }
    
    public String getCurrentItemId()

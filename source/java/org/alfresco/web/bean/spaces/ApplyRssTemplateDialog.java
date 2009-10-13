@@ -45,6 +45,8 @@ public class ApplyRssTemplateDialog extends BaseDialogBean
     
     private static final String DIALOG_CLOSE = "dialog:close";
     private static final String MSG_APPLY_RSS_FEED = "apply_rss_feed";
+    private final static String MSG_LEFT_QUOTE = "left_qoute";
+    private final static String MSG_RIGHT_QUOTE = "right_quote";
     
     private String rssTemplate;
     
@@ -73,7 +75,8 @@ public class ApplyRssTemplateDialog extends BaseDialogBean
 
     public String getContainerTitle()
     {
-        return Application.getMessage(FacesContext.getCurrentInstance(), MSG_APPLY_RSS_FEED) + " '" + getNode().getName() + "'";
+        FacesContext fc = FacesContext.getCurrentInstance();
+        return Application.getMessage(fc, MSG_APPLY_RSS_FEED) + " " + Application.getMessage(fc, MSG_LEFT_QUOTE) + getNode().getName() + Application.getMessage(fc, MSG_RIGHT_QUOTE);
     }
 
     public void applyRSSTemplate(ActionEvent event)

@@ -41,7 +41,7 @@
    function pageLoaded()
    {
       document.getElementById("wizard:wizard-body:name").focus();
-      document.getElementById("wizard").onsubmit = validate;
+      document.getElementById("wizard").onsubmit = validateWizard;
       document.getElementById("wizard:next-button").onclick = function() {finishButtonPressed = true; clear_wizard();}
       document.getElementById("wizard:finish-button").onclick = function() {finishButtonPressed = true; clear_wizard();}
       checkButtonState();
@@ -77,21 +77,7 @@
       
       checkButtonState();
    }
-   
-   function validate()
-   {
-      if (finishButtonPressed)
-      {
-         finishButtonPressed = false;
-         return validateName(document.getElementById("wizard:wizard-body:name"), 
-                             unescape('</f:verbatim><h:outputText value="#{msg.validation_invalid_character}" /><f:verbatim>'),
-                             true);
-      }
-      else
-      {
-         return true;
-      }
-   }
+
 </script>
 </f:verbatim>
 

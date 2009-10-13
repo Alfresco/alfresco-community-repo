@@ -63,14 +63,16 @@
       if (finishButtonPressed)
       {
          finishButtonPressed = false;
+         var message = (window.gecko) ? $("wizard:wizard-body:validation_invalid_character").textContent : $("wizard:wizard-body:validation_invalid_character").innerText;
          var valid = validateName(document.getElementById("wizard:wizard-body:name"), 
-                             unescape('</f:verbatim><h:outputText value="#{msg.validation_invalid_character}" /><f:verbatim>'),
+                             message,
                              true);
          if (valid == true)
          {
+            message = (window.gecko) ? $("wizard:wizard-body:validation_invalid_dns_name").textContent : $("wizard:wizard-body:validation_invalid_dns_name").innerText;
             valid = validateRegex(document.getElementById("wizard:wizard-body:dnsname"),
                   "^[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?$", true, null,
-                  unescape('</f:verbatim><a:outputText value="#{msg.validation_invalid_dns_name}" encodeForJavaScript="true" /><f:verbatim>'), true);
+                  message, true);
          }
          return valid;
       }
@@ -86,7 +88,8 @@
       d.style.display = d.style.display == 'block' ? 'none' : 'block';
    }
 </script>
-
+<h:outputText id="validation_invalid_character" style="display:none" value="#{msg.validation_invalid_character}" />
+<h:outputText id="validation_invalid_dns_name" style="display:none" value="#{msg.validation_invalid_dns_name}" />
 <table cellpadding="3" cellspacing="2" border="0" width="100%">
    <tr>
       <td colspan="3" class="wizardSectionHeading">

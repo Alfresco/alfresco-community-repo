@@ -49,6 +49,8 @@ public class DeleteRuleDialog extends BaseDialogBean
    private static final String MSG_DELETE_RULE = "delete_rule";
    private static final String MSG_YES = "yes";
    private static final String MSG_NO = "no";
+   private final static String MSG_LEFT_QUOTE = "left_qoute";
+   private final static String MSG_RIGHT_QUOTE = "right_quote";
 
    transient private Rule currentRule;
    transient private RuleService ruleService;
@@ -144,7 +146,9 @@ public class DeleteRuleDialog extends BaseDialogBean
    @Override
    public String getContainerTitle()
    {
-      return Application.getMessage(FacesContext.getCurrentInstance(), MSG_DELETE_RULE) + " '" + currentRule.getTitle() + "'";
+       FacesContext fc = FacesContext.getCurrentInstance();
+       return Application.getMessage(fc, MSG_DELETE_RULE) + " " + Application.getMessage(fc, MSG_LEFT_QUOTE)
+               + currentRule.getTitle() + Application.getMessage(fc, MSG_RIGHT_QUOTE);
    }
 
    @Override

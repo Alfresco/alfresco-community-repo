@@ -564,7 +564,7 @@ public class UIRichList extends UIComponentBase implements IDataContainer,Serial
    // Private data
    
    /** map of available IRichListRenderer instances */
-   private final Map<String, IRichListRenderer> viewRenderers = new HashMap<String, IRichListRenderer>(4, 1.0f);
+   protected final Map<String, IRichListRenderer> viewRenderers = new HashMap<String, IRichListRenderer>(4, 1.0f);
    
    // component state
    private int currentPage = 0;

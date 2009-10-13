@@ -22,47 +22,33 @@
  * the FLOSS exception, and it is also available here: 
  * http://www.alfresco.com/legal/licensing"
  */
-package org.alfresco.web.bean.coci;
+package org.alfresco.web.ui.wcm.tag;
 
-import javax.faces.context.FacesContext;
+import org.alfresco.web.ui.common.tag.data.RichListTag;
 
-import org.alfresco.web.app.Application;
-
-public class CCEditFileDialog extends CheckinCheckoutDialog
+/**
+ * @author kevinr
+ */
+public class AVMListTag extends RichListTag
 {
-    private static final long serialVersionUID = -1145049277343144264L;
-    
-    private final static String MSG_LEFT_QUOTE = "left_qoute";
-    private final static String MSG_RIGHT_QUOTE = "right_quote";
-    public static final String LBL_CLOSE = "close";
+   // ------------------------------------------------------------------------------
+   // Component methods 
+   
+   /**
+    * @see javax.faces.webapp.UIComponentTag#getComponentType()
+    */
+   @Override
+   public String getComponentType()
+   {
+      return "org.alfresco.faces.AVMList";
+   }
 
-    @Override
-    protected String finishImpl(FacesContext context, String outcome) throws Exception
-    {
-
-        return super.cancel();
-    }
-
-    @Override
-    public String cancel()
-    {
-        property.setDocument(null);
-        property.setWorkingDocument(null);
-        resetState();
-        return super.cancel();
-    }
-
-    @Override
-    public String getCancelButtonLabel()
-    {
-        return Application.getMessage(FacesContext.getCurrentInstance(), LBL_CLOSE);
-    }
-
-    @Override
-    public String getContainerTitle()
-    {
-        FacesContext fc = FacesContext.getCurrentInstance();
-        return Application.getMessage(fc, MSG_LEFT_QUOTE) + property.getDocument().getName() + Application.getMessage(fc, MSG_RIGHT_QUOTE);
-    }
-
+   /**
+    * @see javax.faces.webapp.UIComponentTag#getRendererType()
+    */
+   @Override
+   public String getRendererType()
+   {
+      return "org.alfresco.faces.AVMListRenderer";
+   }
 }

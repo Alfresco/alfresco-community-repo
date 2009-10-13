@@ -37,6 +37,8 @@ public class TrashcanItemDetailsDialog extends TrashcanDialog
    
    private static final String MSG_DETAILS_OF = "details_of";
    private static final String MSG_CLOSE = "close";
+   private final static String MSG_LEFT_QUOTE = "left_qoute";
+   private final static String MSG_RIGHT_QUOTE = "right_quote";
    
    transient private PermissionService permissionService;
 
@@ -49,8 +51,9 @@ public class TrashcanItemDetailsDialog extends TrashcanDialog
    @Override
    public String getContainerTitle()
    {
-      return Application.getMessage(FacesContext.getCurrentInstance(), MSG_DETAILS_OF) + " '" + 
-             property.getItem().getName() + "'";
+       FacesContext fc = FacesContext.getCurrentInstance();
+       return Application.getMessage(fc, MSG_DETAILS_OF) + " " + Application.getMessage(fc, MSG_LEFT_QUOTE) + 
+             property.getItem().getName() + Application.getMessage(fc, MSG_RIGHT_QUOTE);
    }
 
    @Override

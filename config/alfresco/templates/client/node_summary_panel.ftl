@@ -70,7 +70,7 @@
 	               <tr><td>&nbsp;${msg("author")}:</td><td>${node.properties.author?html}</td></tr>
 	            </#if>
 	            <#if node.isDocument>
-	               <tr><td>&nbsp;${msg("size")}:</td><td>${(node.size / 1000)?string("0.##")} ${msg("kilobyte")}</td></tr>
+	               <tr><td>&nbsp;${msg("size")}:</td><td>${(node.size / 1024)?string("0.##")} ${msg("kilobyte")}</td></tr>
 	            </#if>
 	         </table>
 	      </td>

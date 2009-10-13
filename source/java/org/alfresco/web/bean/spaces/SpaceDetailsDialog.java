@@ -64,6 +64,8 @@ public class SpaceDetailsDialog extends BaseDetailsBean implements NavigationSup
    private static final String MSG_DETAILS_OF = "details_of";
    private static final String MSG_LOCATION = "location";
    private final static String MSG_CLOSE = "close";
+   private final static String MSG_LEFT_QUOTE = "left_qoute";
+   private final static String MSG_RIGHT_QUOTE = "right_quote";
    
    /** RSS Template ID */
    private String rssTemplate;
@@ -518,7 +520,8 @@ public class SpaceDetailsDialog extends BaseDetailsBean implements NavigationSup
 
    public String getContainerTitle()
    {
-      return Application.getMessage(FacesContext.getCurrentInstance(), MSG_DETAILS_OF) + " '" + getName() + "'";
+       FacesContext fc = FacesContext.getCurrentInstance();
+       return Application.getMessage(fc, MSG_DETAILS_OF) + " " + Application.getMessage(fc, MSG_LEFT_QUOTE) + getName() + Application.getMessage(fc, MSG_RIGHT_QUOTE);
    }
    
    public String getOutcome(){

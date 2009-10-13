@@ -57,6 +57,8 @@ public class ExportDialog extends BaseDialogBean
    private static final String CURRENT_SPACE = "current";
    private static final String DEFAULT_OUTCOME = "dialog:close";
    private static final String MSG_EXPORT = "export";
+   private final static String MSG_LEFT_QUOTE = "left_qoute";
+   private final static String MSG_RIGHT_QUOTE = "right_quote";
    
    protected BrowseBean browseBean;
    transient private ActionService actionService;
@@ -117,8 +119,9 @@ public class ExportDialog extends BaseDialogBean
    @Override
    public String getContainerTitle()
    {
-      return Application.getMessage(FacesContext.getCurrentInstance(), MSG_EXPORT) + 
-             " '" + browseBean.getActionSpace().getName() + "'";
+       FacesContext fc = FacesContext.getCurrentInstance();
+       return Application.getMessage(fc, MSG_EXPORT) + 
+             " " + Application.getMessage(fc, MSG_LEFT_QUOTE) + browseBean.getActionSpace().getName() + Application.getMessage(fc, MSG_RIGHT_QUOTE);
    }
    
    /**

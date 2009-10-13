@@ -141,6 +141,12 @@
                  managed-bean="ReassignTaskDialog" icon="/images/icons/reassign_workflow_task_large.gif" 
                  title-id="reassign_task_title" description-id="reassign_task_desc" />
                  
+         <dialog name="workflowShowFileDetails" page="/jsp/wcm/workflow-file-details.jsp" managed-bean="FileDetailsBean"
+                 icon="/images/icons/details_large.gif" title-id="details_of" 
+                 description-id="file_details_desc" show-ok-button="false" 
+                 error-message-id="empty_message"/>
+   
+
          <!--               -->
          <!-- Other Dialogs -->
          
@@ -664,6 +670,7 @@
       </dialogs>
    </config>
    
+   <!-- WCM -->
    <config evaluator="node-type" condition="wca:webfolder">
       <dialogs>
          <dialog name="deleteSpace" page="/jsp/dialog/delete.jsp" managed-bean="DeleteWebsiteDialog"
@@ -690,6 +697,42 @@
       </dialogs>
    </config>
    
+   <config evaluator="node-type" condition="wcmwf:submittedTask">
+      <dialogs>
+         <dialog name="manageTask" page="/jsp/wcm/manage-task-dialog.jsp"
+                 managed-bean="ManageTaskDialog" 
+                 icon="/images/icons/manage_workflow_task_large.gif" 
+                 description-id="manage_task_desc" />
+      </dialogs>
+   </config>
+
+   <config evaluator="node-type" condition="wcmwf:rejectedTask">
+      <dialogs>
+         <dialog name="manageTask" page="/jsp/wcm/manage-task-dialog.jsp"
+                 managed-bean="ManageTaskDialog" 
+                 icon="/images/icons/manage_workflow_task_large.gif" 
+                 description-id="manage_task_desc" />
+      </dialogs>
+   </config>
+   
+   <config evaluator="node-type" condition="wcmwf:submitpendingTask">
+      <dialogs>
+         <dialog name="manageTask" page="/jsp/wcm/manage-task-dialog.jsp"
+                 managed-bean="ManageTaskDialog" 
+                 icon="/images/icons/manage_workflow_task_large.gif" 
+                 description-id="manage_task_desc" />
+      </dialogs>
+   </config>
+   
+   <config evaluator="node-type" condition="wcmwf:submitcancelledTask">
+      <dialogs>
+         <dialog name="manageTask" page="/jsp/wcm/manage-task-dialog.jsp"
+                 managed-bean="ManageTaskDialog" 
+                 icon="/images/icons/manage_workflow_task_large.gif" 
+                 description-id="manage_task_desc" />
+      </dialogs>
+   </config>
+   
    <config evaluator="node-type" condition="wcmwf:verifyBrokenLinksTask">
       <dialogs>
          <dialog name="manageTask" page="/jsp/wcm/manage-review-task-dialog.jsp"
@@ -708,6 +751,16 @@
       </dialogs>
    </config>
    
+   <config evaluator="node-type" condition="wca:webfolder">
+      <dialogs>
+         <dialog name="showSpaceDetails" page="/jsp/wcm/website-details.jsp" 
+                 managed-bean="WebSiteDetailsDialog"
+                 icon="/images/icons/details_large.gif" title-id="details_of" 
+                 show-ok-button="false" error-message-id="empty_message"/>
+         </dialogs>
+   </config>
+   <!-- End WCM -->
+
     <config evaluator="node-type" condition="app:filelink">
       <dialogs>
          <dialog name="showDocDetails" page="/jsp/content/filelink-details.jsp"
@@ -758,12 +811,4 @@
          </dialogs>
    </config>
    
-   <config evaluator="node-type" condition="wca:webfolder">
-      <dialogs>
-         <dialog name="showSpaceDetails" page="/jsp/wcm/website-details.jsp" 
-                 managed-bean="WebSiteDetailsDialog"
-                 icon="/images/icons/details_large.gif" title-id="details_of" 
-                 show-ok-button="false" error-message-id="empty_message"/>
-         </dialogs>
-   </config>
 </alfresco-config>

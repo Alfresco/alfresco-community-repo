@@ -56,8 +56,11 @@ public class AVMEditBean extends BaseDialogBean
    
    private static final String MSG_ERROR_UPDATE = "error_update";
    private static final String MSG_UPLOAD_SUCCESS = "file_upload_success";
-   private static final String MSG_APPLY_RSS_FEED= "update";
+   private static final String MSG_APPLY_RSS_FEED= "apply_rss_feed";
    private static final String MSG_UPDATE = "update";
+   private final static String MSG_LEFT_QUOTE = "left_qoute";
+   private final static String MSG_RIGHT_QUOTE = "right_quote";
+   
    private File file = null;
    private String fileName = null;
 
@@ -280,7 +283,8 @@ public class AVMEditBean extends BaseDialogBean
    @Override
    public String getContainerTitle()
    {
-      return Application.getMessage(FacesContext.getCurrentInstance(), MSG_APPLY_RSS_FEED) + " '" + getAvmNode().getName() + "'";
+       FacesContext fc = FacesContext.getCurrentInstance();
+       return Application.getMessage(fc, MSG_APPLY_RSS_FEED) + " " + Application.getMessage(fc, MSG_LEFT_QUOTE) + getAvmNode().getName() + Application.getMessage(fc, MSG_RIGHT_QUOTE);
    }
    
    @Override

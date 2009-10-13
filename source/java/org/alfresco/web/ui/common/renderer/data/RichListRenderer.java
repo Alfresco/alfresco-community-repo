@@ -25,7 +25,6 @@
 package org.alfresco.web.ui.common.renderer.data;
 
 import java.io.IOException;
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -175,10 +174,22 @@ public class RichListRenderer extends BaseRenderer
       private static final long serialVersionUID = -2753231623981676639L;
       
       public static final String VIEWMODEID = "details";
+      public static final String STALE_CSS= "conflictItemsList";
       
       public String getViewModeID()
       {
          return VIEWMODEID;
+      }
+      
+      public String getRowStyle(FacesContext context, UIRichList richList, Object row)
+      {
+         String rowStyle = (String)richList.getAttributes().get("rowStyleClass");
+         String altStyle = (String)richList.getAttributes().get("altRowStyleClass");
+         if (altStyle != null && (this.rowIndex++ & 1) == 1)
+         {
+            rowStyle = altStyle;
+         }
+         return rowStyle;
       }
 
       public void renderListBefore(FacesContext context, UIRichList richList, UIColumn[] columns)
@@ -231,13 +242,7 @@ public class RichListRenderer extends BaseRenderer
          
          // output row or alt style row if set
          out.write("<tr");
-         String rowStyle = (String)richList.getAttributes().get("rowStyleClass");
-         String altStyle = (String)richList.getAttributes().get("altRowStyleClass");
-         if (altStyle != null && (this.rowIndex++ & 1) == 1)
-         {
-            rowStyle = altStyle;
-         }         
-         outputAttribute(out, rowStyle, "class");
+         outputAttribute(out, getRowStyle(context, richList, row), "class");
          out.write('>');
          
          // find the actions column if it exists
@@ -321,7 +326,7 @@ public class RichListRenderer extends BaseRenderer
          out.write("</td></tr>");
       }
       
-      private int rowIndex = 0;
+      protected int rowIndex = 0;
    }
    
    

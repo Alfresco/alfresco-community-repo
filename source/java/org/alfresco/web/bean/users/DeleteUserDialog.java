@@ -67,6 +67,8 @@ public class DeleteUserDialog extends BaseDialogBean
    private static final String MSG_TITLE_DELETE_USER = "title_delete_user";
 
    private static final String BUTTON_NO = "no";
+   private final static String MSG_LEFT_QUOTE = "left_qoute";
+   private final static String MSG_RIGHT_QUOTE = "right_quote";
 
    transient private AuthenticationService authenticationService;
 
@@ -300,6 +302,8 @@ public class DeleteUserDialog extends BaseDialogBean
    @Override
    public String getContainerTitle()
    {
-      return Application.getMessage(FacesContext.getCurrentInstance(), MSG_TITLE_DELETE_USER) + " '" + getPerson().getProperties().get("userName") + "'";
+       FacesContext fc = FacesContext.getCurrentInstance();
+       return Application.getMessage(fc, MSG_TITLE_DELETE_USER) + " " + Application.getMessage(fc, MSG_LEFT_QUOTE)
+               + getPerson().getProperties().get("userName") + Application.getMessage(fc, MSG_RIGHT_QUOTE);
    }
 }

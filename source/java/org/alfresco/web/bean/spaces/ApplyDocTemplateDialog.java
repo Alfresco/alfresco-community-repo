@@ -44,6 +44,8 @@ public class ApplyDocTemplateDialog extends BaseDialogBean
     
     private static final String DIALOG_CLOSE = "dialog:close";
     private static final String MSG_APPLY_TEMPLATE = "apply_template";
+    private final static String MSG_LEFT_QUOTE = "left_qoute";
+    private final static String MSG_RIGHT_QUOTE = "right_quote";
     
     protected String template;
     
@@ -81,7 +83,8 @@ public class ApplyDocTemplateDialog extends BaseDialogBean
 
     public String getContainerTitle()
     {
-        return Application.getMessage(FacesContext.getCurrentInstance(), MSG_APPLY_TEMPLATE) + " '" + getName() + "'";
+        FacesContext fc = FacesContext.getCurrentInstance();
+        return Application.getMessage(fc, MSG_APPLY_TEMPLATE) + " " + Application.getMessage(fc, MSG_LEFT_QUOTE) + getName() + Application.getMessage(fc, MSG_RIGHT_QUOTE);
     }
 
     public String getTemplate()

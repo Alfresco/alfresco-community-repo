@@ -161,6 +161,25 @@ public class TemplateSupportBean implements Serializable
    }
    
    /**
+    * @return the list of available Notify Email Templates.
+    */
+   public List<SelectItem> getNotifyEmailTemplates()
+   {       
+       List<SelectItem> templates = null;
+      
+       // get the template from the special Email Templates folder
+       FacesContext fc = FacesContext.getCurrentInstance();
+       String xpath = Application.getRootPath(fc) + "/" + 
+           Application.getGlossaryFolderName(fc) + "/" +
+           Application.getEmailTemplatesFolderName(fc) + "/" + 
+           Application.getNotifyEmailTemplatesFolderName(fc) + "//*";
+     
+       templates = selectDictionaryNodes(fc, xpath, MSG_SELECT_TEMPLATE);
+       
+       return templates;
+   }
+   
+   /**
     * @return the list of available RSS Templates.
     */
    public List<SelectItem> getRSSTemplates()

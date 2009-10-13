@@ -34,6 +34,8 @@ public class CCWorkingCopyMissingDialog extends CheckinCheckoutDialog
     private static final long serialVersionUID = 8067485292477557683L;
     
     public static final String MSG_WORKING_COPY_FOR = "working_copy_for";
+    private final static String MSG_LEFT_QUOTE = "left_qoute";
+    private final static String MSG_RIGHT_QUOTE = "right_quote";
     public static final String LBL_CLOSE = "close";
 
     @Override
@@ -55,7 +57,9 @@ public class CCWorkingCopyMissingDialog extends CheckinCheckoutDialog
     @Override
     public String getContainerTitle()
     {
-        return Application.getMessage(FacesContext.getCurrentInstance(), MSG_WORKING_COPY_FOR) + " '" + property.getDocument().getName() + "'";
+        FacesContext fc = FacesContext.getCurrentInstance();
+        return Application.getMessage(fc, MSG_WORKING_COPY_FOR) + " " + Application.getMessage(fc, MSG_LEFT_QUOTE)
+            + property.getDocument().getName() + Application.getMessage(fc, MSG_RIGHT_QUOTE);
     }
 
     @Override

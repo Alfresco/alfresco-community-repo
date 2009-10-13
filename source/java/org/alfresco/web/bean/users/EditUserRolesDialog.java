@@ -36,6 +36,8 @@ public class EditUserRolesDialog extends BaseDialogBean {
     private static final long serialVersionUID = 614541023231055676L;
 
     private static final String MSG_MODIFY_USER_ROLE = "modify_user_roles";
+    private final static String MSG_LEFT_QUOTE = "left_qoute";
+    private final static String MSG_RIGHT_QUOTE = "right_quote";
 
     SpaceUsersBean spaceUsersBean;
 
@@ -75,7 +77,10 @@ public class EditUserRolesDialog extends BaseDialogBean {
     }
 
     @Override
-    public String getContainerTitle() {
-        return Application.getMessage(FacesContext.getCurrentInstance(), MSG_MODIFY_USER_ROLE) + " '" + spaceUsersBean.getPersonName() + "'";
+    public String getContainerTitle() 
+    {
+        FacesContext fc = FacesContext.getCurrentInstance();
+        return Application.getMessage(fc, MSG_MODIFY_USER_ROLE) + " " + Application.getMessage(fc, MSG_LEFT_QUOTE)
+                + spaceUsersBean.getPersonName() + Application.getMessage(fc, MSG_RIGHT_QUOTE);
     }
 }

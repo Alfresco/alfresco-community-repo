@@ -59,10 +59,21 @@
       <component-class>org.alfresco.web.ui.wcm.component.UILinkValidationReport</component-class>
    </component>
    
+   <component>
+      <component-type>org.alfresco.faces.AVMList</component-type>
+      <component-class>org.alfresco.web.ui.wcm.component.UIAVMList</component-class>
+   </component>
+   
    <!-- ==================== CONVERTERS ==================== -->
    
+   <!-- ==================== RENDERERS ===================== -->
    
-   <!-- ==================== RENDERERS ==================== -->
-   
+   <render-kit>
+      <renderer>
+         <component-family>org.alfresco.faces.Data</component-family>
+         <renderer-type>org.alfresco.faces.AVMListRenderer</renderer-type>
+         <renderer-class>org.alfresco.web.ui.wcm.renderer.AVMListRenderer</renderer-class>
+      </renderer>
+   </render-kit>
    
 </faces-config>

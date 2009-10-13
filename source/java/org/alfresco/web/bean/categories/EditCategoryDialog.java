@@ -61,6 +61,8 @@ public class EditCategoryDialog extends BaseDialogBean
    private final static String MSG_EDIT_CATEGORY = "edit_category";
    private final static String MSG_FINISH = "finish_button";
    private static final String MSG_CATEGORIES = "categories";
+   private final static String MSG_LEFT_QUOTE = "left_qoute";
+   private final static String MSG_RIGHT_QUOTE = "right_quote";
 
    transient protected CategoryService categoryService;
 
@@ -213,8 +215,9 @@ public class EditCategoryDialog extends BaseDialogBean
    @Override
    public String getContainerTitle()
    {
-
-      return Application.getMessage(FacesContext.getCurrentInstance(), MSG_EDIT_CATEGORY) + " '" + getActionCategory().getName() + "'";
+       FacesContext fc = FacesContext.getCurrentInstance();
+       return Application.getMessage(fc, MSG_EDIT_CATEGORY) + " " + Application.getMessage(fc, MSG_LEFT_QUOTE) 
+               + getActionCategory().getName() + Application.getMessage(fc, MSG_RIGHT_QUOTE);
    }
 
    @Override

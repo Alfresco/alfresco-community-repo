@@ -45,6 +45,8 @@ public class TrashcanRecoverItemDialog extends TrashcanDialog
     private static final String MSG_RECOVERED_ITEM_PERMISSION = "recovered_item_permission";
     private static final String MSG_RECOVERED_ITEM_PARENT = "recovered_item_parent";
     private static final String MSG_RECOVERED_ITEM_FAILURE = "recovered_item_failure";
+    private final static String MSG_LEFT_QUOTE = "left_qoute";
+    private final static String MSG_RIGHT_QUOTE = "right_quote";
 
     private static final String MSG_RECOVER_ITEM = "recover_item";
     private static final String MSG_NO = "no";
@@ -135,7 +137,9 @@ public class TrashcanRecoverItemDialog extends TrashcanDialog
     @Override
     public String getContainerTitle()
     {
-        return Application.getMessage(FacesContext.getCurrentInstance(), MSG_RECOVER_ITEM) + " '" + property.getItem().getName() + "'";
+        FacesContext fc = FacesContext.getCurrentInstance();
+        return Application.getMessage(fc, MSG_RECOVER_ITEM) + " " + Application.getMessage(fc, MSG_LEFT_QUOTE) 
+                + property.getItem().getName() + Application.getMessage(fc, MSG_RIGHT_QUOTE);
     }
 
     @Override

@@ -50,6 +50,8 @@ public class DeleteGroupDialog extends BaseDialogBean
    
    private static final String MSG_DELETE = "delete";
    private static final String MSG_DELETE_GROUP = "delete_group";
+   private final static String MSG_LEFT_QUOTE = "left_qoute";
+   private final static String MSG_RIGHT_QUOTE = "right_quote";
 
    // ------------------------------------------------------------------------------
    // Dialog implementation
@@ -108,8 +110,9 @@ public class DeleteGroupDialog extends BaseDialogBean
    @Override
    public String getContainerTitle()
    {
-      return Application.getMessage(FacesContext.getCurrentInstance(), MSG_DELETE_GROUP) + " '" + 
-             this.groupName + "'";
+       FacesContext fc = FacesContext.getCurrentInstance();
+       return Application.getMessage(fc, MSG_DELETE_GROUP) + " " + Application.getMessage(fc, MSG_LEFT_QUOTE) + 
+             this.groupName + Application.getMessage(fc, MSG_RIGHT_QUOTE);
    }
    
    // ------------------------------------------------------------------------------

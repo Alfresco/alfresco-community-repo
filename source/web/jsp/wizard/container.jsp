@@ -130,6 +130,7 @@
                                  <tr>
                                     <td style="width: 100%;" valign="top">
                                        <f:subview id="wizard-body">
+                                       <h:outputText id="validation_invalid_character" style="display:none" value="#{msg.validation_invalid_character}" />
                               		 <jsp:include page="<%=Application.getWizardManager().getPage() %>" />
                               	       </f:subview>
                                     </td>

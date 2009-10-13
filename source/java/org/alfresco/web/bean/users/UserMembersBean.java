@@ -429,8 +429,9 @@ public abstract class UserMembersBean extends BaseDialogBean implements IContext
                   // set data binding properties
                   // this will also force initialisation of the props now during the UserTransaction
                   // it is much better for performance to do this now rather than during page bind
-                  Map<String, Object> props = node.getProperties(); 
-                  props.put("fullName", ((String)props.get("firstName")) + ' ' + ((String)props.get("lastName")));
+                  Map<String, Object> props = node.getProperties();
+                  String lastName = (String)props.get("lastName");
+                  props.put("fullName", ((String)props.get("firstName")) + ' ' + (lastName != null ? lastName : ""));
                   props.put("userNameLabel", props.get("userName"));
                   props.put("roles", roleListToString(context, permissionMap.get(authority)));
                   props.put("icon", WebResources.IMAGE_PERSON);

@@ -63,6 +63,8 @@ public class MultilingualManageDialog extends BaseDialogBean
    private static final String MSG_CURRENT = "current";
    private static final String ML_VERSION_PANEL_ID = "ml-versions-panel";
    private static final String MSG_CLOSE = "close";
+   private final static String MSG_LEFT_QUOTE = "left_qoute";
+   private final static String MSG_RIGHT_QUOTE = "right_quote";
 
    protected Map<String, Boolean> panels = new HashMap<String, Boolean>(4, 1.0f);
 
@@ -214,7 +216,9 @@ public class MultilingualManageDialog extends BaseDialogBean
    @Override
    public String getContainerTitle()
    {
-      return Application.getMessage(FacesContext.getCurrentInstance(), MSG_MANAGE_DETAILS_FOR) + " '" + getDocument().getName() + "'";
+       FacesContext fc = FacesContext.getCurrentInstance();
+       return Application.getMessage(fc, MSG_MANAGE_DETAILS_FOR) + " " + Application.getMessage(fc, MSG_LEFT_QUOTE)
+               + getDocument().getName() + Application.getMessage(fc, MSG_RIGHT_QUOTE);
    }
 
    @Override

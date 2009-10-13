@@ -50,6 +50,8 @@ public class DoneEditingDialog extends CheckinCheckoutDialog
    private final static String MSG_OK = "ok";
    private static final String MSG_DONE_EDITING = "done_editing";
    private final static String MSG_MISSING_ORIGINAL_NODE = "missing_original_node";
+   private final static String MSG_LEFT_QUOTE = "left_qoute";
+   private final static String MSG_RIGHT_QUOTE = "right_quote";
 
    private final static String DIALOG_NAME = AlfrescoNavigationHandler.DIALOG_PREFIX + "doneEditingFile";
 
@@ -155,7 +157,9 @@ public class DoneEditingDialog extends CheckinCheckoutDialog
    {
       if (isSourceFound())
       {
-         return Application.getMessage(FacesContext.getCurrentInstance(), MSG_DONE_EDITING) + " '" + getNodeService().getProperty(sourceNodeRef, ContentModel.PROP_NAME) + "'";
+          FacesContext fc = FacesContext.getCurrentInstance();
+          return Application.getMessage(fc, MSG_DONE_EDITING) + " " + Application.getMessage(fc, MSG_LEFT_QUOTE)
+              + getNodeService().getProperty(sourceNodeRef, ContentModel.PROP_NAME) + Application.getMessage(fc, MSG_RIGHT_QUOTE);
       }
       else
       {

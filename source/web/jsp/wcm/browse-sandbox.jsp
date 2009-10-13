@@ -220,7 +220,7 @@
                      <a:panel id="folders-panel" border="white" bgcolor="white" titleBorder="lbgrey" expandedTitleBorder="dotted" titleBgcolor="white" styleClass="mainSubTitle"
                               facetsId="folder-panel-facets" label="#{msg.website_browse_folders}">
                         
-                        <a:richList id="folder-list" binding="#{AVMBrowseBean.foldersRichList}" viewMode="details" pageSize="#{AVMBrowseBean.pageSizeFolders}"
+                        <w:avmList id="folder-list" binding="#{AVMBrowseBean.foldersRichList}" viewMode="details" pageSize="#{AVMBrowseBean.pageSizeFolders}"
                               styleClass="recordSet" headerStyleClass="recordSetHeader" rowStyleClass="recordSetRow" altRowStyleClass="recordSetRowAlt" width="100%"
                               value="#{AVMBrowseBean.folders}" var="r">
                            
@@ -305,7 +305,7 @@
                            </a:column>
                            
                            <a:dataPager id="pager1" styleClass="pager" />
-                        </a:richList>
+                        </w:avmList>
                         
                      </a:panel>
                      
@@ -330,7 +330,7 @@
                      <a:panel id="files-panel" border="white" bgcolor="white" titleBorder="lbgrey" expandedTitleBorder="dotted" titleBgcolor="white" styleClass="mainSubTitle"
                               facetsId="files-panel-facets" label="#{msg.website_browse_files}">
                         
-                        <a:richList id="files-list" binding="#{AVMBrowseBean.filesRichList}" viewMode="details" pageSize="#{AVMBrowseBean.pageSizeFiles}"
+                        <w:avmList id="files-list" binding="#{AVMBrowseBean.filesRichList}" viewMode="details" pageSize="#{AVMBrowseBean.pageSizeFiles}"
                               styleClass="recordSet" headerStyleClass="recordSetHeader" rowStyleClass="recordSetRow" altRowStyleClass="recordSetRowAlt" width="100%"
                               value="#{AVMBrowseBean.files}" var="r">
                            
@@ -402,10 +402,18 @@
                               </h:outputText>
                            </a:column>
                            
-                           <%-- Content Actions column --%>
-                           <a:column id="col18" actions="true" style="text-align:left">
+                           <%-- Type column --%>
+                           <a:column id="col18" style="text-align:left">
                               <f:facet name="header">
-                                 <h:outputText id="col18-txt" value="#{msg.actions}"/>
+                                 <a:sortLink id="col18-sort" label="#{msg.type}" value="fileType" styleClass="header"/>
+                              </f:facet>
+                              <h:outputText id="col18-txt" value="#{r.fileType}"></h:outputText>
+                           </a:column>
+                           
+                           <%-- Content Actions column --%>
+                           <a:column id="col19" actions="true" style="text-align:left">
+                              <f:facet name="header">
+                                 <h:outputText id="col19-txt" value="#{msg.actions}"/>
                               </f:facet>
                               
                               <%-- actions are configured in web-client-config-wcm-actions.xml --%>
@@ -414,7 +422,7 @@
                            
                            <a:dataPager id="pager2" styleClass="pager" />
                            
-                        </a:richList>
+                        </w:avmList>
                         
                      </a:panel>
                      

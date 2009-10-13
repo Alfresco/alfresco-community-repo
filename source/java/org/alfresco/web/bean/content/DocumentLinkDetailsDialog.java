@@ -50,6 +50,8 @@ public class DocumentLinkDetailsDialog extends BaseDetailsBean implements Naviga
    private static final String MSG_DETAILS_OF = "details_of";
    private static final String MSG_LOCATION = "location";
    private final static String MSG_CLOSE = "close";
+   private final static String MSG_LEFT_QUOTE = "left_qoute";
+   private final static String MSG_RIGHT_QUOTE = "right_quote";
 
    /**
     * Returns the document this bean is currently representing
@@ -206,7 +208,8 @@ public class DocumentLinkDetailsDialog extends BaseDetailsBean implements Naviga
 
    public String getContainerTitle()
    {
-      return Application.getMessage(FacesContext.getCurrentInstance(), MSG_DETAILS_OF) + " '" + getName() + "'";
+       FacesContext fc = FacesContext.getCurrentInstance();
+       return Application.getMessage(FacesContext.getCurrentInstance(), MSG_DETAILS_OF) + " " + Application.getMessage(fc, MSG_LEFT_QUOTE) + getName() + Application.getMessage(fc, MSG_RIGHT_QUOTE);
    }
 
    /**

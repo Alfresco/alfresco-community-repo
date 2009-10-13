@@ -73,6 +73,8 @@ public class ImportDialog extends BaseDialogBean
    private static final String MSG_ERROR_EMPTY_FILE = "error_import_empty_file";
    private static final String MSG_OK = "ok";
    private static final String MSG_IMPORT = "import";
+   private final static String MSG_LEFT_QUOTE = "left_qoute";
+   private final static String MSG_RIGHT_QUOTE = "right_quote";
    
    transient private ActionService actionService;
    transient private ContentService contentService;
@@ -384,6 +386,8 @@ public class ImportDialog extends BaseDialogBean
    @Override
    public String getContainerTitle()
    {
-      return Application.getMessage(FacesContext.getCurrentInstance(), MSG_IMPORT) + " '" + browseBean.getActionSpace().getName() + "'";
+       FacesContext fc = FacesContext.getCurrentInstance();
+      return Application.getMessage(fc, MSG_IMPORT) + " " + Application.getMessage(fc, MSG_LEFT_QUOTE)
+              + browseBean.getActionSpace().getName() + Application.getMessage(fc, MSG_RIGHT_QUOTE);
    }
 }

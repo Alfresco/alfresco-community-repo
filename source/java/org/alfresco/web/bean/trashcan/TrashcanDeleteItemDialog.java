@@ -44,6 +44,8 @@ public class TrashcanDeleteItemDialog extends TrashcanDialog
     private static final String MSG_YES = "yes";
     private static final String MSG_NO = "no";
     private static final String MSG_DELETE_ITEM = "delete_item";
+    private final static String MSG_LEFT_QUOTE = "left_qoute";
+    private final static String MSG_RIGHT_QUOTE = "right_quote";
 
     private String deleteItem(FacesContext newContext, String newOutcome)
     {
@@ -98,8 +100,9 @@ public class TrashcanDeleteItemDialog extends TrashcanDialog
     @Override
     public String getContainerTitle()
     {
-
-        return Application.getMessage(FacesContext.getCurrentInstance(), MSG_DELETE_ITEM) + " '" + property.getItem().getName() + "'";
+        FacesContext fc = FacesContext.getCurrentInstance();
+        return Application.getMessage(fc, MSG_DELETE_ITEM) + " " + Application.getMessage(fc, MSG_LEFT_QUOTE)
+                + property.getItem().getName() + Application.getMessage(fc, MSG_RIGHT_QUOTE);
     }
 
 }

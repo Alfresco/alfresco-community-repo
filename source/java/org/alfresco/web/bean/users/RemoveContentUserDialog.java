@@ -40,6 +40,8 @@ public class RemoveContentUserDialog extends BaseDialogBean
    private static final long serialVersionUID = -3090054828215666084L;
 
    private static final String MSG_REMOVE_USER = "remove_user";
+   private final static String MSG_LEFT_QUOTE = "left_qoute";
+   private final static String MSG_RIGHT_QUOTE = "right_quote";
    
    private ContentUsersBean contentUsersBean;
 
@@ -60,8 +62,9 @@ public class RemoveContentUserDialog extends BaseDialogBean
    @Override
    public String getContainerTitle()
    {
-      return Application.getMessage(FacesContext.getCurrentInstance(), MSG_REMOVE_USER) + 
-             " '" + this.getPersonName() + "'";
+       FacesContext fc = FacesContext.getCurrentInstance();
+       return Application.getMessage(fc, MSG_REMOVE_USER) + " " + Application.getMessage(fc, MSG_LEFT_QUOTE) 
+             + this.getPersonName() + Application.getMessage(fc, MSG_RIGHT_QUOTE);
    }
    
    @Override

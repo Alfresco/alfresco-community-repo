@@ -38,6 +38,8 @@ public class CCCheckoutFileLinkDialog extends CheckinCheckoutDialog
     
     public static final String MSG_CHECKOUT_OF = "check_out_of";
     public static final String LBL_UNDO_CHECKOUT = "undo_checkout";
+    private final static String MSG_LEFT_QUOTE = "left_qoute";
+    private final static String MSG_RIGHT_QUOTE = "right_quote";
 
     private static Log logger = LogFactory.getLog(CCCheckoutFileLinkDialog.class);
 
@@ -56,7 +58,9 @@ public class CCCheckoutFileLinkDialog extends CheckinCheckoutDialog
     @Override
     public String getContainerTitle()
     {
-        return Application.getMessage(FacesContext.getCurrentInstance(), MSG_CHECKOUT_OF) + " '" + property.getDocument().getName() + "'";
+        FacesContext fc = FacesContext.getCurrentInstance();
+        return Application.getMessage(fc, MSG_CHECKOUT_OF) + " " + Application.getMessage(fc, MSG_LEFT_QUOTE)
+            + property.getDocument().getName() + Application.getMessage(fc, MSG_RIGHT_QUOTE);
     }
 
     @Override

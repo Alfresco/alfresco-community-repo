@@ -49,6 +49,8 @@ public class SpacePreviewBean extends BasePreviewBean implements NavigationSuppo
    private static final long serialVersionUID = -4766291793031654901L;
    private final static String MSG_PREVIEW_OF = "preview_of";
    private final static String MSG_CLOSE = "close";
+   private final static String MSG_LEFT_QUOTE = "left_qoute";
+   private final static String MSG_RIGHT_QUOTE = "right_quote";
 
    /**
     * Returns the Space this bean is currently representing
@@ -196,7 +198,8 @@ public class SpacePreviewBean extends BasePreviewBean implements NavigationSuppo
 
    public String getContainerTitle()
    {
-      return Application.getMessage(FacesContext.getCurrentInstance(), MSG_PREVIEW_OF) + " '" + getName() + "'";
+       FacesContext fc = FacesContext.getCurrentInstance();
+       return Application.getMessage(fc, MSG_PREVIEW_OF) + " " + Application.getMessage(fc, MSG_LEFT_QUOTE) + getName() + Application.getMessage(fc, MSG_RIGHT_QUOTE);
    }
    
    public String getCancelButtonLabel()

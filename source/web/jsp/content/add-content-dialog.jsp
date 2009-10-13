@@ -119,7 +119,7 @@ if (fileUploaded)
       <tr>
          <td align="middle"></f:verbatim><h:graphicImage id="img0" value="/images/icons/required_field.gif" alt="#{msg.required_field}" /><f:verbatim></td>
          <td></f:verbatim><h:outputText id="text5" value="#{msg.name}:" /><f:verbatim></td>
-         <td width="85%"></f:verbatim><h:inputText id="file-name" value="#{AddContentDialog.fileName}" maxlength="1024" size="35" onkeyup="checkButtonState();" onchange="checkButtonState();" /><f:verbatim></td>
+         <td width="85%"></f:verbatim><h:inputText id="name" value="#{AddContentDialog.fileName}" maxlength="1024" size="35" onkeyup="checkButtonState();" onchange="checkButtonState();" /><f:verbatim></td>
       </tr>
       <tr>
          <td></td>
@@ -184,34 +184,20 @@ if (fileUploaded)
       function pageLoaded()
       {
    <% if (fileUploaded) { %>
-         document.getElementById("dialog").onsubmit = validate;
+         document.getElementById("dialog").onsubmit = validateDialog;
    <% } %>
          document.getElementById("dialog:finish-button").onclick = function() {finishButtonPressed = true; clear_dialog();}
       }
 
       function checkButtonState()
       {
-         if (document.getElementById("dialog:dialog-body:file-name").value.length == 0 )
+         if (document.getElementById("dialog:dialog-body:name").value.length == 0 )
          {
             document.getElementById("dialog:finish-button").disabled = true;
          }
          else
          {
             document.getElementById("dialog:finish-button").disabled = false;
-         }
-      }
-
-      function validate()
-      {
-         if (finishButtonPressed)
-         {
-            finishButtonPressed = false;
-            return validateName(document.getElementById("dialog:dialog-body:file-name"),
-                                unescape('</f:verbatim><h:outputText id="text11" value="#{msg.validation_invalid_character}" /><f:verbatim>'), true);
-         }
-         else
-         {
-            return true;
          }
       }
    </script>

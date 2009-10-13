@@ -48,6 +48,8 @@ public class CCCheckoutFileDialog extends CheckinCheckoutDialog
     
     public static final String LBL_SAVE = "save";
     public static final String LBL_CHECKOUT = "check_out";
+    private final static String MSG_LEFT_QUOTE = "left_qoute";
+    private final static String MSG_RIGHT_QUOTE = "right_quote";
     
     private static Log logger = LogFactory.getLog(CCCheckoutFileDialog.class);
     
@@ -76,7 +78,9 @@ public class CCCheckoutFileDialog extends CheckinCheckoutDialog
     {
         final Node document = property.getDocument();
         if (document != null){
-        	return Application.getMessage(FacesContext.getCurrentInstance(), LBL_CHECKOUT) + " '" + document.getName() + "'";
+            FacesContext fc = FacesContext.getCurrentInstance();
+            return Application.getMessage(fc, LBL_CHECKOUT) + " " + Application.getMessage(fc, MSG_LEFT_QUOTE)
+                + document.getName() + Application.getMessage(fc, MSG_RIGHT_QUOTE);
         }
         return null;
     }

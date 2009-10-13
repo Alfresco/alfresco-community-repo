@@ -62,7 +62,8 @@ public class DeleteCategoryDialog extends BaseDialogBean
     private static final String DEFAULT_OUTCOME = "finish";
     private final static String MSG_DELETE_CATEGORY = "delete_category";
     private final static String MSG_DELETE = "delete";
-    
+    private final static String MSG_LEFT_QUOTE = "left_qoute";
+    private final static String MSG_RIGHT_QUOTE = "right_quote";    
     private static final String MSG_CATEGORIES = "categories";
     
     transient protected CategoryService categoryService;
@@ -258,8 +259,9 @@ public class DeleteCategoryDialog extends BaseDialogBean
     @Override
     public String getContainerTitle()
     {
-
-        return Application.getMessage(FacesContext.getCurrentInstance(), MSG_DELETE_CATEGORY) + " '" + getActionCategory().getName() + "'";
+        FacesContext fc = FacesContext.getCurrentInstance();
+        return Application.getMessage(fc, MSG_DELETE_CATEGORY) + " " + Application.getMessage(fc, MSG_LEFT_QUOTE)
+                + getActionCategory().getName() + Application.getMessage(fc, MSG_RIGHT_QUOTE);
     }
 
     @Override

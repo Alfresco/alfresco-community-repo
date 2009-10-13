@@ -72,7 +72,11 @@ public class CreateCategoryDialog extends BaseDialogBean
        if (ref != null)
        {
           categoryRef = new NodeRef(ref);
-       } 
+       }
+       else
+       {
+          categoryRef = null;
+       }
     }
     
     /**

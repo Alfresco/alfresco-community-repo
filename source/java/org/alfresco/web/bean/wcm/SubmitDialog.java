@@ -43,6 +43,7 @@ import org.alfresco.config.JNDIConstants;
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.WCMAppModel;
 import org.alfresco.repo.avm.AVMNodeConverter;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.web.scripts.FileTypeImageUtils;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avm.AVMService;
@@ -335,16 +336,18 @@ public class SubmitDialog extends BaseDialogBean
                 }
              }
              
+             final String finalWorkflowName = workflowName; 
+             
              List<ItemWrapper> items = getSubmitItems();
              
-             List<String> relativePaths = new ArrayList<String>(items.size());
+             final List<String> relativePaths = new ArrayList<String>(items.size());
              
              for (ItemWrapper wrapper : items)
              {
                  relativePaths.add(AVMUtil.getStoreRelativePath(wrapper.getDescriptor().getPath()));
              }
 
-             String sbStoreId = this.avmBrowseBean.getSandbox();
+             final String sbStoreId = this.avmBrowseBean.getSandbox();
 
              String submitLabel = this.label;
              String submitComment = this.comment;
@@ -357,12 +360,27 @@ public class SubmitDialog extends BaseDialogBean
              {
                  submitComment = submitComment.substring(0, 255);
              }
+             
+             final String finalSubmitLabel = submitLabel;
+             final String finalSubmitComment = submitComment;
 
              // note: always submit via workflow (if no workflow selected, then defaults to direct submit workflow)
-             getSandboxService().submitListAssets(sbStoreId, relativePaths,
-                                                  workflowName, workflowParams, 
-                                                  submitLabel, submitComment, 
-                                                  expirationDates, launchDate, validateLinks, autoDeploy);
+             
+             // This nees to run with higher rights to push into the work flow store ....
+             
+             AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>() {
+
+                public Object doWork() throws Exception
+                {
+                    getSandboxService().submitListAssets(sbStoreId, relativePaths,
+                            finalWorkflowName, workflowParams, 
+                            finalSubmitLabel, finalSubmitComment, 
+                            expirationDates, launchDate, validateLinks, autoDeploy);
+                    return null;
+                }
+                 
+             }, AuthenticationUtil.getSystemUserName());
+            
              
              // if we get this far return the default outcome
              outcome = this.getDefaultFinishOutcome();

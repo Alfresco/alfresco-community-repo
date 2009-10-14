@@ -38,7 +38,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
 
+import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
+import javax.servlet.http.HttpServletRequest;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
@@ -56,9 +58,11 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.TemplateException;
 import org.alfresco.service.cmr.repository.TemplateService;
+import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.namespace.DynamicNamespacePrefixResolver;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.URLDecoder;
 import org.alfresco.util.URLEncoder;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.servlet.FacesHelper;
@@ -100,6 +104,7 @@ public class RenderingEngineTemplateImpl
    static final QName PROP_RESOURCE_RESOLVER = QName.createQName(NamespaceService.ALFRESCO_PREFIX,
                                                                  "resource_resolver",
                                                                  namespacePrefixResolver);
+   private static final String WEBSCRIPT_PREFIX = "webscript://";
 
    private final NodeRef nodeRef;
    private final NodeRef renditionPropertiesNodeRef;
@@ -435,6 +440,64 @@ public class RenderingEngineTemplateImpl
                          {
                             LOGGER.debug(e);
                          }
+                      }
+                      
+                      if (name.startsWith(WEBSCRIPT_PREFIX))
+                      {
+                          try
+                          {
+                              final FacesContext facesContext = FacesContext.getCurrentInstance();
+                              final ExternalContext externalContext = facesContext.getExternalContext();
+                              final HttpServletRequest request = (HttpServletRequest)externalContext.getRequest();
+                          
+                              String decodedName = URLDecoder.decode(name.substring(WEBSCRIPT_PREFIX.length()));
+                              String rewrittenName = decodedName;
+                              
+                              if (decodedName.contains("${storeid}"))
+                              {
+                                 rewrittenName = rewrittenName.replace("${storeid}", AVMUtil.getStoreName(formInstanceDataAvmPath));
+                              }
+                              else
+                              {
+                                 if (decodedName.contains("{storeid}"))
+                                 {
+                                     rewrittenName = rewrittenName.replace("{storeid}", AVMUtil.getStoreName(formInstanceDataAvmPath));
+                                 }
+                              }
+                              
+                              if (decodedName.contains("${ticket}"))
+                              {
+                                 AuthenticationService authenticationService = Repository.getServiceRegistry(facesContext).getAuthenticationService();
+                                 final String ticket = authenticationService.getCurrentTicket();
+                                 rewrittenName  = rewrittenName.replace("${ticket}", ticket);
+                              }
+                              else
+                              {
+                                 if (decodedName.contains("{ticket}"))
+                                 {
+                                     AuthenticationService authenticationService = Repository.getServiceRegistry(facesContext).getAuthenticationService();
+                                     final String ticket = authenticationService.getCurrentTicket();
+                                     rewrittenName = rewrittenName.replace("{ticket}", ticket);
+                                 }
+                              }
+                              
+                              final String webscriptURI = (request.getScheme() + "://" +
+                                                           request.getServerName() + ':' + 
+                                                           request.getServerPort() + 
+                                                           request.getContextPath() + "/wcservice/" +
+                                                           rewrittenName);
+                              
+                              if (LOGGER.isDebugEnabled())
+                                  LOGGER.debug("loading webscript: " + webscriptURI);
+                              
+                              final URI uri = new URI(webscriptURI);
+                              return uri.toURL().openStream();
+                          }
+                          catch (Exception e)
+                          {
+                             if (LOGGER.isDebugEnabled())
+                                LOGGER.debug(e);
+                          }
                       }
 
                       try

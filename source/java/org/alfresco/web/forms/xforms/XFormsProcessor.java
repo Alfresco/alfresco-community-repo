@@ -215,7 +215,8 @@ public class XFormsProcessor implements FormProcessor
          String storeName = avmBrowseBean.getSandbox();
          if (storeName != null)
          {
-            js.append(JavaScriptUtils.javaScriptEscape(AVMUtil.buildWebappUrl(AVMUtil.getCorrespondingPreviewStoreName(storeName), avmBrowseBean.getWebapp())));
+            js.append(JavaScriptUtils.javaScriptEscape(fc.getExternalContext().getRequestContextPath() + "/wcs/api/path/content/avm/" +
+                      AVMUtil.buildStoreWebappPath(storeName, avmWebApp).replace(":","")));
          }
       }
          

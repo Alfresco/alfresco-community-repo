@@ -713,6 +713,19 @@ public final class People extends BaseScopableProcessorExtension
     }
 
     /**
+     * Return true if the specified user is an guest authority.
+     * 
+     * @param person to test
+     * 
+     * @return true if an admin, false otherwise
+     */
+    public boolean isGuest(ScriptNode person)
+    {
+        ParameterCheck.mandatory("Person", person);
+        return this.authorityService.isGuestAuthority((String) person.getProperties().get(ContentModel.PROP_USERNAME));
+    }
+
+    /**
      * Get Contained Authorities
      * 
      * @param container  authority containers

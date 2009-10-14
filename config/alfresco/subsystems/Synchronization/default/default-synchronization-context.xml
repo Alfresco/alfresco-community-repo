@@ -65,6 +65,12 @@
         <property name="sourceBeanName">
             <value>userRegistry</value>
         </property>
+        <property name="loggingInterval">
+            <value>${synchronization.loggingInterval}</value>
+        </property>
+        <property name="workerThreads">
+            <value>${synchronization.workerThreads}</value>
+        </property>
     </bean>
 
 

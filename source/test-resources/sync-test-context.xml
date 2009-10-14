@@ -24,6 +24,9 @@
         <property name="sourceBeanName">
             <value>userRegistry</value>
         </property>
+        <property name="loggingInterval">
+            <value>10</value>
+        </property>
     </bean>
 
     <!--  A fake applicaton context manager into which we can inject test-specific beans -->

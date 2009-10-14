@@ -37,6 +37,11 @@ import org.alfresco.util.PropertyMap;
  */
 public class NodeDescription
 {
+    /**
+     * An identifier for the node for monitoring purposes. Should help trace where the node originated from.
+     */
+    private String sourceId;
+
     /** The properties. */
     private final PropertyMap properties = new PropertyMap(19);
 
@@ -45,6 +50,27 @@ public class NodeDescription
 
     /** The last modification date. */
     private Date lastModified;
+
+    /**
+     * Instantiates a new node description.
+     * 
+     * @param sourceId
+     *            An identifier for the node for monitoring purposes. Should help trace where the node originated from.
+     */
+    public NodeDescription(String sourceId)
+    {
+        this.sourceId = sourceId;
+    }        
+
+    /**
+     * Gets an identifier for the node for monitoring purposes. Should help trace where the node originated from.
+     * 
+     * @return an identifier for the node for monitoring purposes
+     */
+    public String getSourceId()
+    {
+        return sourceId;
+    }
 
     /**
      * Gets the last modification date.

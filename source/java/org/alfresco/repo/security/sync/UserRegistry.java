@@ -24,8 +24,9 @@
  */
 package org.alfresco.repo.security.sync;
 
+import java.util.Collection;
 import java.util.Date;
-import java.util.Iterator;
+import java.util.Set;
 
 /**
  * A <code>UserRegistry</code> is an encapsulation of an external registry from which user and group information can be
@@ -42,21 +43,29 @@ public interface UserRegistry
      * @param modifiedSince
      *            if non-null, then only descriptions of users modified since this date should be returned; if
      *            <code>null</code> then descriptions of all users should be returned.
-     * @return a {@link Iterator} over {@link NodeDescription}s of all the persons (users) in the user registry or all
+     * @return a {@link Collection} of {@link NodeDescription}s of all the persons (users) in the user registry or all
      *         those changed since a certain date. The description properties should correspond to those of an Alfresco
      *         person node.
      */
-    public Iterator<NodeDescription> getPersons(Date modifiedSince);
+    public Collection<NodeDescription> getPersons(Date modifiedSince);
 
     /**
-     * Gets descriptions of all the groups in the user registry or all those changed since a certain date.
+     * Gets descriptions of all the groups in the user registry or all those changed since a certain date. Group
+     * associations should be restricted to those in the given set of known authorities. Optionally this set is 'pruned'
+     * to contain only those authorities that no longer exist in the user registry, i.e. the deletion candidates.
      * 
      * @param modifiedSince
      *            if non-null, then only descriptions of groups modified since this date should be returned; if
      *            <code>null</code> then descriptions of all groups should be returned.
-     * @return a {@link Iterator} over {@link NodeDescription}s of all the groups in the user registry or all those
+     * @param knownAuthorities
+     *            the current set of known authorities
+     * @param prune
+     *            should this set be 'pruned' so that it contains only those authorities that do not exist in the
+     *            registry, i.e. the deletion candidates?
+     * @return a {@link Collection} of {@link NodeDescription}s of all the groups in the user registry or all those
      *         changed since a certain date. The description properties should correspond to those of an Alfresco
      *         authority node.
      */
-    public Iterator<NodeDescription> getGroups(Date modifiedSince);
+    public Collection<NodeDescription> getGroups(Date modifiedSince, Set<String> knownAuthorities, boolean prune);
+
 }

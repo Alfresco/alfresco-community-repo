@@ -174,18 +174,20 @@ public class AuthenticationServiceImpl extends AbstractAuthenticationService imp
 
     public void validate(String ticket) throws AuthenticationException
     {
+        String currentUser = null;
         try
         {
 
-           // clear context - to avoid MT concurrency issue (causing domain mismatch) - see also 'authenticate' above
-           clearCurrentSecurityContext();
-           authenticationComponent.setCurrentUser(ticketComponent.validateTicket(ticket), UserNameValidationMode.NONE);
+            // clear context - to avoid MT concurrency issue (causing domain mismatch) - see also 'authenticate' above
+            clearCurrentSecurityContext();
+            currentUser = ticketComponent.validateTicket(ticket);
+            authenticationComponent.setCurrentUser(currentUser, UserNameValidationMode.CHECK);
         }
-        catch(AuthenticationException ae)
+        catch (AuthenticationException ae)
         {
             clearCurrentSecurityContext();
             throw ae;
-        } 
+        }
     }
 
     public String getCurrentTicket()

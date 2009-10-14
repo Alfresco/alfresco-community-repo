@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -87,6 +87,7 @@ public class LDAPInitialDirContextFactoryImpl implements LDAPInitialDirContextFa
         Hashtable<String, String> env = new Hashtable<String, String>(initialDirContextEnvironment.size());
         env.putAll(initialDirContextEnvironment);
         env.put("javax.security.auth.useSubjectCredsOnly", "false");
+        env.put("com.sun.jndi.ldap.connect.pool", "true"); // Pool the default connection
         return buildInitialDirContext(env, pageSize);
     }
 

@@ -191,19 +191,12 @@ public abstract class AbstractAuthenticationComponent implements AuthenticationC
         throw new UnsupportedOperationException();
     }
 
-    public Authentication setCurrentUser(String userName, UserNameValidationMode validationMode)
+    public Authentication setCurrentUser(final String userName) throws AuthenticationException
     {
-        switch (validationMode)
-        {
-        case NONE:
-            return setCurrentUserImpl(userName);
-        case CHECK_AND_FIX:
-        default:
-            return setCurrentUser(userName);
-        }
+        return setCurrentUser(userName, UserNameValidationMode.CHECK_AND_FIX);
     }
 
-    public Authentication setCurrentUser(final String userName) throws AuthenticationException
+    public Authentication setCurrentUser(String userName, UserNameValidationMode validationMode)
     {
         if (isSystemUserName(userName))
         {
@@ -211,28 +204,32 @@ public abstract class AbstractAuthenticationComponent implements AuthenticationC
         }
         else
         {
-            SetCurrentUserCallback callback = new SetCurrentUserCallback(userName);
-            Authentication auth;
-            // If the repository is read only, we have to settle for a read only transaction. Auto user creation will
-            // not be possible.
+            CurrentUserCallback callback = validationMode == UserNameValidationMode.CHECK_AND_FIX ? new FixCurrentUserCallback(
+                    userName)
+                    : new CheckCurrentUserCallback(userName);
+            Authentication authentication;
+            // If the repository is read only, we have to settle for a read only transaction. Auto user creation
+            // will not be possible.
             if (transactionService.isReadOnly())
             {
-                auth = transactionService.getRetryingTransactionHelper().doInTransaction(callback, true, false);
+                authentication = transactionService.getRetryingTransactionHelper().doInTransaction(callback, true,
+                        false);
             }
             // Otherwise, we want a writeable transaction, so if the current transaction is read only we set the
             // requiresNew flag to true
             else
             {
-                auth = transactionService.getRetryingTransactionHelper().doInTransaction(callback, false,
+                authentication = transactionService.getRetryingTransactionHelper().doInTransaction(callback, false,
                         AlfrescoTransactionSupport.getTransactionReadState() == TxnReadState.TXN_READ_ONLY);
             }
-            if ((auth == null) || (callback.ae != null))
+            if ((authentication == null) || (callback.ae != null))
             {
                 throw callback.ae;
             }
-            return auth;
+            return authentication;
         }
     }
+    
 
     /**
      * Explicitly set the current user to be authenticated.
@@ -451,22 +448,72 @@ public abstract class AbstractAuthenticationComponent implements AuthenticationC
         authenticationContext.clearCurrentSecurityContext();
     }
 
-    class SetCurrentUserCallback implements RetryingTransactionHelper.RetryingTransactionCallback<Authentication>
+    abstract class CurrentUserCallback implements RetryingTransactionHelper.RetryingTransactionCallback<Authentication>
     {
         AuthenticationException ae = null;
 
         String userName;
 
-        SetCurrentUserCallback(String userName)
+        CurrentUserCallback(String userName)
         {
             this.userName = userName;
+        }
+    }
+
+    class CheckCurrentUserCallback extends CurrentUserCallback
+    {
+
+        CheckCurrentUserCallback(String userName)
+        {
+            super(userName);
         }
 
         public Authentication execute() throws Throwable
         {
             try
             {
-                String name = AuthenticationUtil.runAs(new RunAsWork<String>()
+                // We must set full authentication before calling runAs in order to retain tickets
+                Authentication authentication = setCurrentUserImpl(userName);
+                AuthenticationUtil.runAs(new RunAsWork<Object>()
+                {
+                    public Object doWork() throws Exception
+                    {
+                        if (!personService.personExists(userName)
+                                || !nodeService.getProperty(personService.getPerson(userName),
+                                        ContentModel.PROP_USERNAME).equals(userName))
+                        {
+                            if (logger.isDebugEnabled())
+                            {
+                                logger.debug("User \"" + userName
+                                        + "\" does not exist in Alfresco. Failing validation.");
+                            }
+                            throw new AuthenticationException("User \"" + userName + "\" does not exist in Alfresco");
+                        }
+                        return null;
+                    }
+                }, getSystemUserName(getUserDomain(userName)));
+                return authentication;
+            }
+            catch (AuthenticationException ae)
+            {
+                this.ae = ae;
+                return null;
+            }
+        }
+    }
+    
+    class FixCurrentUserCallback extends CurrentUserCallback
+    {
+        FixCurrentUserCallback(String userName)
+        {
+            super(userName);
+        }
+
+        public Authentication execute() throws Throwable
+        {
+            try
+            {
+                return setCurrentUserImpl(AuthenticationUtil.runAs(new RunAsWork<String>()
                 {
                     public String doWork() throws Exception
                     {
@@ -492,9 +539,7 @@ public abstract class AbstractAuthenticationComponent implements AuthenticationC
                         // checks
                         return (String) nodeService.getProperty(userNode, ContentModel.PROP_USERNAME);
                     }
-                }, getSystemUserName(getUserDomain(userName)));
-
-                return setCurrentUserImpl(name);
+                }, getSystemUserName(getUserDomain(userName))));
             }
             catch (AuthenticationException ae)
             {

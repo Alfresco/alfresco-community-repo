@@ -670,6 +670,16 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
         {
             // Ignore this - externally authenticated user
         }
+        
+        // Invalidate all that user's tickets
+        try
+        {
+            authenticationService.invalidateUserSession(userName);
+        }
+        catch (AuthenticationException e)
+        {
+            // Ignore this
+        }
 
         // remove user from any containing authorities
         Set<String> containerAuthorities = authorityService.getContainingAuthorities(null, userName, true);

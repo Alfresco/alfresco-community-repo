@@ -32,7 +32,7 @@ public interface AuthenticationComponent extends AuthenticationContext
 {
     public enum UserNameValidationMode
     {
-        NONE, CHECK_AND_FIX;
+        CHECK, CHECK_AND_FIX;
     }
     
     /**

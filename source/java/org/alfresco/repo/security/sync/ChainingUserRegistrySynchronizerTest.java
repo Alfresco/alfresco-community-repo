@@ -24,6 +24,8 @@
  */
 package org.alfresco.repo.security.sync;
 
+import java.util.AbstractCollection;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -31,6 +33,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -46,6 +49,7 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.PersonService;
+import org.alfresco.util.GUID;
 import org.alfresco.util.PropertyMap;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
@@ -65,7 +69,7 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
         "classpath:alfresco/application-context.xml", "classpath:sync-test-context.xml"
     };
 
-    /** The Spring application context */
+    /** The Spring application context. */
     private static ApplicationContext context = new ClassPathXmlApplicationContext(
             ChainingUserRegistrySynchronizerTest.CONFIG_LOCATIONS);
 
@@ -90,6 +94,10 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
     /** The retrying transaction helper. */
     private RetryingTransactionHelper retryingTransactionHelper;
 
+    /*
+     * (non-Javadoc)
+     * @see junit.framework.TestCase#setUp()
+     */
     @Override
     protected void setUp() throws Exception
     {
@@ -110,6 +118,10 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
                 .getBean("retryingTransactionHelper");
     }
 
+    /*
+     * (non-Javadoc)
+     * @see junit.framework.TestCase#tearDown()
+     */
     @Override
     protected void tearDown() throws Exception
     {
@@ -191,6 +203,12 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
         });
     }
 
+    /**
+     * Tear down test users and groups.
+     * 
+     * @throws Exception
+     *             the exception
+     */
     private void tearDownTestUsersAndGroups() throws Exception
     {
         // Wipe out everything that was in Z1 and Z2
@@ -301,7 +319,7 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
      * <pre>
      * Z1
      * G1 - U6
-     * G2 - 
+     * G2 -
      * G3 - U2, G5 - U6
      * G6 - u3
      * 
@@ -365,7 +383,30 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
     }
 
     /**
-     * Constructs a description of a test group
+     * Tests synchronization with a zone with a larger volume of authorities.
+     * 
+     * @throws Exception
+     *             the exception
+     */
+    public void testVolume() throws Exception
+    {
+        List<NodeDescription> persons = new ArrayList<NodeDescription>(new RandomPersonCollection(100));
+        List<NodeDescription> groups = new ArrayList<NodeDescription>(new RandomGroupCollection(100, persons));
+        this.applicationContextManager.setUserRegistries(new MockUserRegistry("Z0", persons, groups));
+        this.retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Object>()
+        {
+
+            public Object execute() throws Throwable
+            {
+                ChainingUserRegistrySynchronizerTest.this.synchronizer.synchronize(true, true);
+                return null;
+            }
+        });
+        tearDownTestUsersAndGroups();
+    }
+
+    /**
+     * Constructs a description of a test group.
      * 
      * @param name
      *            the name
@@ -375,9 +416,10 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
      */
     private NodeDescription newGroup(String name, String... members)
     {
-        NodeDescription group = new NodeDescription();
+        String longName = longName(name);
+        NodeDescription group = new NodeDescription(longName);
         PropertyMap properties = group.getProperties();
-        properties.put(ContentModel.PROP_AUTHORITY_NAME, longName(name));
+        properties.put(ContentModel.PROP_AUTHORITY_NAME, longName);
         if (members.length > 0)
         {
             Set<String> assocs = group.getChildAssociations();
@@ -413,7 +455,7 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
      */
     private NodeDescription newPerson(String userName, String email)
     {
-        NodeDescription person = new NodeDescription();
+        NodeDescription person = new NodeDescription(userName);
         PropertyMap properties = person.getProperties();
         properties.put(ContentModel.PROP_USERNAME, userName);
         properties.put(ContentModel.PROP_FIRSTNAME, userName + "F");
@@ -481,7 +523,7 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
     }
 
     /**
-     * Asserts that a person's email has the expected value
+     * Asserts that a person's email has the expected value.
      * 
      * @param personName
      *            the person name
@@ -518,10 +560,27 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
         private String zoneId;
 
         /** The persons. */
-        private NodeDescription[] persons;
+        private Collection<NodeDescription> persons;
 
         /** The groups. */
-        private NodeDescription[] groups;
+        private Collection<NodeDescription> groups;
+
+        /**
+         * Instantiates a new mock user registry.
+         * 
+         * @param zoneId
+         *            the zone id
+         * @param persons
+         *            the persons
+         * @param groups
+         *            the groups
+         */
+        public MockUserRegistry(String zoneId, Collection<NodeDescription> persons, Collection<NodeDescription> groups)
+        {
+            this.zoneId = zoneId;
+            this.persons = persons;
+            this.groups = groups;
+        }
 
         /**
          * Instantiates a new mock user registry.
@@ -535,9 +594,7 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
          */
         public MockUserRegistry(String zoneId, NodeDescription[] persons, NodeDescription[] groups)
         {
-            this.zoneId = zoneId;
-            this.persons = persons;
-            this.groups = groups;
+            this(zoneId, Arrays.asList(persons), Arrays.asList(groups));
         }
 
         /**
@@ -552,20 +609,32 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
 
         /*
          * (non-Javadoc)
-         * @see org.alfresco.repo.security.sync.UserRegistry#getGroups(java.util.Date)
+         * @see org.alfresco.repo.security.sync.UserRegistry#getGroups(java.util.Date, java.util.Set, boolean)
          */
-        public Iterator<NodeDescription> getGroups(Date modifiedSince)
+        public Collection<NodeDescription> getGroups(Date modifiedSince, Set<String> candidateAuthoritiesForDeletion,
+                boolean prune)
         {
-            return Arrays.asList(this.groups).iterator();
+            if (prune)
+            {
+                for (NodeDescription person : this.persons)
+                {
+                    candidateAuthoritiesForDeletion.remove(person.getProperties().get(ContentModel.PROP_USERNAME));
+                }
+                for (NodeDescription group : this.groups)
+                {
+                    candidateAuthoritiesForDeletion.remove(group.getProperties().get(ContentModel.PROP_AUTHORITY_NAME));
+                }
+            }
+            return this.groups;
         }
 
         /*
          * (non-Javadoc)
          * @see org.alfresco.repo.security.sync.UserRegistry#getPersons(java.util.Date)
          */
-        public Iterator<NodeDescription> getPersons(Date modifiedSince)
+        public Collection<NodeDescription> getPersons(Date modifiedSince)
         {
-            return Arrays.asList(this.persons).iterator();
+            return this.persons;
         }
     }
 
@@ -615,4 +684,144 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
             return this.contexts.keySet();
         }
     }
+
+    /**
+     * A collection whose iterator returns randomly generated persons.
+     */
+    public class RandomPersonCollection extends AbstractCollection<NodeDescription>
+    {
+
+        /** The collection size. */
+        private final int size;
+
+        /**
+         * The Constructor.
+         * 
+         * @param size
+         *            the collection size
+         */
+        public RandomPersonCollection(int size)
+        {
+            this.size = size;
+        }
+
+        /*
+         * (non-Javadoc)
+         * @see java.util.AbstractCollection#iterator()
+         */
+        @Override
+        public Iterator<NodeDescription> iterator()
+        {
+            return new Iterator<NodeDescription>()
+            {
+
+                private int pos;
+
+                public boolean hasNext()
+                {
+                    return pos < size;
+                }
+
+                public NodeDescription next()
+                {
+                    pos++;
+                    return newPerson("U" + GUID.generate());
+                }
+
+                public void remove()
+                {
+                    throw new UnsupportedOperationException();
+                }
+            };
+
+        }
+
+        /*
+         * (non-Javadoc)
+         * @see java.util.AbstractCollection#size()
+         */
+        @Override
+        public int size()
+        {
+            return size;
+        }
+
+    }
+
+    /**
+     * A collection whose iterator returns randomly generated groups with random associations to a given list of
+     * persons.
+     */
+    public class RandomGroupCollection extends AbstractCollection<NodeDescription>
+    {
+
+        /** The collection size. */
+        private final int size;
+
+        /** The persons. */
+        private final List<NodeDescription> persons;
+
+        /**
+         * The Constructor.
+         * 
+         * @param size
+         *            the collection size
+         * @param persons
+         *            the persons
+         */
+        public RandomGroupCollection(int size, List<NodeDescription> persons)
+        {
+            this.size = size;
+            this.persons = persons;
+        }
+
+        /*
+         * (non-Javadoc)
+         * @see java.util.AbstractCollection#iterator()
+         */
+        @Override
+        public Iterator<NodeDescription> iterator()
+        {
+            return new Iterator<NodeDescription>()
+            {
+
+                private int pos;
+
+                public boolean hasNext()
+                {
+                    return pos < size;
+                }
+
+                public NodeDescription next()
+                {
+                    pos++;
+                    String[] personNames = new String[10];
+                    for (int i = 0; i < personNames.length; i++)
+                    {
+                        personNames[i] = (String) persons.get((int) (Math.random() * (double) (persons.size() - 1)))
+                                .getProperties().get(ContentModel.PROP_USERNAME);
+                    }
+                    return newGroup("G" + GUID.generate(), personNames);
+                }
+
+                public void remove()
+                {
+                    throw new UnsupportedOperationException();
+                }
+            };
+
+        }
+
+        /*
+         * (non-Javadoc)
+         * @see java.util.AbstractCollection#size()
+         */
+        @Override
+        public int size()
+        {
+            return size;
+        }
+
+    }
+
 }

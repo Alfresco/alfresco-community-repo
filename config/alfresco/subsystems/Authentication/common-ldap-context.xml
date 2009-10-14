@@ -35,16 +35,10 @@
          <ref bean="ldapInitialDirContextFactory" />
       </property>
       <property name="userNameFormat">
-         <!--
-
-            This maps between what the user types in and what is passed through to the underlying LDAP authentication.
-
-            "%s" - the user id is passed through without modification. Used for LDAP authentication such as DIGEST-MD5,
-            anything that is not "simple". "cn=%s,ou=London,dc=company,dc=com" - If the user types in "Joe Bloggs" the
-            authenticate as "cn=Joe Bloggs,ou=London,dc=company,dc=com" Usually for simple authentication. Simple
-            authentication always uses the DN for the user.
-         -->
          <value>${ldap.authentication.userNameFormat}</value>
+      </property>
+      <property name="ldapNameResolver">
+         <ref bean="userRegistry" />
       </property>
       <property name="nodeService">
          <ref bean="nodeService" />
@@ -339,6 +333,10 @@
                     <value>${ldap.synchronization.defaultHomeFolderProvider}</value>
                 </entry>
             </map>
+        </property>
+    
+        <property name="enableProgressEstimation">
+            <value>${ldap.synchronization.enableProgressEstimation}</value>
         </property>
 
         <!-- Services -->

@@ -26,12 +26,11 @@ package org.alfresco.repo.security.sync;
 
 import java.text.DateFormat;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Map;
 import java.util.Set;
-import java.util.TreeMap;
 import java.util.TreeSet;
 
 import org.alfresco.model.ContentModel;
@@ -44,6 +43,7 @@ import org.alfresco.repo.management.subsystems.ActivateableBean;
 import org.alfresco.repo.management.subsystems.ChildApplicationContextManager;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
+import org.alfresco.repo.security.sync.BatchProcessor.Worker;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport.TxnReadState;
@@ -55,12 +55,15 @@ import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.AbstractLifecycleBean;
+import org.alfresco.util.Pair;
 import org.alfresco.util.PropertyMap;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationEvent;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.ApplicationEventPublisherAware;
 
 /**
  * A <code>ChainingUserRegistrySynchronizer</code> is responsible for synchronizing Alfresco's local user (person) and
@@ -87,11 +90,9 @@ import org.springframework.context.ApplicationEvent;
  * 
  * @author dward
  */
-public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean implements UserRegistrySynchronizer
+public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean implements UserRegistrySynchronizer,
+        ApplicationEventPublisherAware
 {
-
-    /** The number of users / groups we add at a time in a transaction *. */
-    private static final int BATCH_SIZE = 10;
 
     /** The logger. */
     private static final Log logger = LogFactory.getLog(ChainingUserRegistrySynchronizer.class);
@@ -133,6 +134,9 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean impl
     /** The job lock service. */
     private JobLockService jobLockService;
 
+    /** The application event publisher. */
+    private ApplicationEventPublisher applicationEventPublisher;
+
     /** Should we trigger a differential sync when missing people log in?. */
     private boolean syncWhenMissingPeopleLogIn = true;
 
@@ -141,6 +145,12 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean impl
 
     /** Should we auto create a missing person on log in?. */
     private boolean autoCreatePeopleOnLogin = true;
+
+    /** The number of entries to process before reporting progress. */
+    private int loggingInterval = 100;
+
+    /** The number of worker threads. */
+    private int workerThreads = 2;
 
     /**
      * Sets the application context manager.
@@ -219,6 +229,17 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean impl
         this.jobLockService = jobLockService;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see
+     * org.springframework.context.ApplicationEventPublisherAware#setApplicationEventPublisher(org.springframework.context
+     * .ApplicationEventPublisher)
+     */
+    public void setApplicationEventPublisher(ApplicationEventPublisher applicationEventPublisher)
+    {
+        this.applicationEventPublisher = applicationEventPublisher;
+    }
+
     /**
      * Controls whether we auto create a missing person on log in.
      * 
@@ -252,91 +273,121 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean impl
         this.syncOnStartup = syncOnStartup;
     }
 
+    /**
+     * Sets the number of entries to process before reporting progress.
+     * 
+     * @param loggingInterval
+     *            the number of entries to process before reporting progress or zero to disable progress reporting.
+     */
+    public void setLoggingInterval(int loggingInterval)
+    {
+        this.loggingInterval = loggingInterval;
+    }
+
+    /**
+     * Sets the number of worker threads.
+     * 
+     * @param workerThreads
+     *            the number of worker threads
+     */
+    public void setWorkerThreads(int workerThreads)
+    {
+        this.workerThreads = workerThreads;
+    }
+
     /*
      * (non-Javadoc)
      * @see org.alfresco.repo.security.sync.UserRegistrySynchronizer#synchronize(boolean, boolean)
      */
     public void synchronize(boolean force, boolean splitTxns)
     {
-        // First, try to obtain a lock to ensure we are the only node trying to run this job
+        // Let's ensure all exceptions get logged
         try
         {
-            if (splitTxns)
-            {
-                // If this is an automated sync on startup or scheduled sync, don't even wait around for the lock.
-                // Assume the sync will be completed on another node.
-                this.jobLockService.getTransactionalLock(ChainingUserRegistrySynchronizer.LOCK_QNAME,
-                        ChainingUserRegistrySynchronizer.LOCK_TTL, 0, 1);
-            }
-            else
-            {
-                // If this is a login-triggered sync, give it a few retries before giving up
-                this.jobLockService.getTransactionalLock(ChainingUserRegistrySynchronizer.LOCK_QNAME,
-                        ChainingUserRegistrySynchronizer.LOCK_TTL, 3000, 10);
-            }
-        }
-        catch (LockAcquisitionException e)
-        {
-            // Don't proceed with the sync if it is running on another node
-            ChainingUserRegistrySynchronizer.logger
-                    .warn("User registry synchronization already running in another thread. Synchronize aborted");
-            return;
-        }
-
-        Set<String> visitedZoneIds = new TreeSet<String>();
-        Collection<String> instanceIds = this.applicationContextManager.getInstanceIds();
-
-        // Work out the set of all zone IDs in the authentication chain so that we can decide which users / groups
-        // need
-        // 're-zoning'
-        Set<String> allZoneIds = new TreeSet<String>();
-        for (String id : instanceIds)
-        {
-            allZoneIds.add(AuthorityService.ZONE_AUTH_EXT_PREFIX + id);
-        }
-        for (String id : instanceIds)
-        {
-            ApplicationContext context = this.applicationContextManager.getApplicationContext(id);
+            // First, try to obtain a lock to ensure we are the only node trying to run this job
             try
             {
-                UserRegistry plugin = (UserRegistry) context.getBean(this.sourceBeanName);
-                if (!(plugin instanceof ActivateableBean) || ((ActivateableBean) plugin).isActive())
+                if (splitTxns)
                 {
-                    if (ChainingUserRegistrySynchronizer.logger.isInfoEnabled())
-                    {
-                        ChainingUserRegistrySynchronizer.logger
-                                .info("Synchronizing users and groups with user registry '" + id + "'");
-                    }
-                    if (force && ChainingUserRegistrySynchronizer.logger.isWarnEnabled())
-                    {
-                        ChainingUserRegistrySynchronizer.logger
-                                .warn("Forced synchronization with user registry '"
-                                        + id
-                                        + "'; some users and groups previously created by synchronization with this user registry may be removed.");
-                    }
-                    // Work out whether we should do the work in a separate transaction (it's most performant if we
-                    // bunch it into small transactions, but if we are doing a sync on login, it has to be the same
-                    // transaction)
-                    boolean requiresNew = splitTxns
-                            || AlfrescoTransactionSupport.getTransactionReadState() == TxnReadState.TXN_READ_ONLY;
-
-                    int personsProcessed = syncPersonsWithPlugin(id, plugin, force, requiresNew, visitedZoneIds,
-                            allZoneIds);
-                    int groupsProcessed = syncGroupsWithPlugin(id, plugin, force, requiresNew, visitedZoneIds,
-                            allZoneIds);
-                    if (ChainingUserRegistrySynchronizer.logger.isInfoEnabled())
-                    {
-                        ChainingUserRegistrySynchronizer.logger
-                                .info("Finished synchronizing users and groups with user registry '" + id + "'");
-                        ChainingUserRegistrySynchronizer.logger.info(personsProcessed + " user(s) and "
-                                + groupsProcessed + " group(s) processed");
-                    }
+                    // If this is an automated sync on startup or scheduled sync, don't even wait around for the lock.
+                    // Assume the sync will be completed on another node.
+                    this.jobLockService.getTransactionalLock(ChainingUserRegistrySynchronizer.LOCK_QNAME,
+                            ChainingUserRegistrySynchronizer.LOCK_TTL, 0, 1);
+                }
+                else
+                {
+                    // If this is a login-triggered sync, give it a few retries before giving up
+                    this.jobLockService.getTransactionalLock(ChainingUserRegistrySynchronizer.LOCK_QNAME,
+                            ChainingUserRegistrySynchronizer.LOCK_TTL, 3000, 10);
                 }
             }
-            catch (NoSuchBeanDefinitionException e)
+            catch (LockAcquisitionException e)
             {
-                // Ignore and continue
+                // Don't proceed with the sync if it is running on another node
+                ChainingUserRegistrySynchronizer.logger
+                        .warn("User registry synchronization already running in another thread. Synchronize aborted");
+                return;
             }
+
+            Set<String> visitedZoneIds = new TreeSet<String>();
+            Collection<String> instanceIds = this.applicationContextManager.getInstanceIds();
+
+            // Work out the set of all zone IDs in the authentication chain so that we can decide which users / groups
+            // need 're-zoning'
+            Set<String> allZoneIds = new TreeSet<String>();
+            for (String id : instanceIds)
+            {
+                allZoneIds.add(AuthorityService.ZONE_AUTH_EXT_PREFIX + id);
+            }
+            for (String id : instanceIds)
+            {
+                ApplicationContext context = this.applicationContextManager.getApplicationContext(id);
+                try
+                {
+                    UserRegistry plugin = (UserRegistry) context.getBean(this.sourceBeanName);
+                    if (!(plugin instanceof ActivateableBean) || ((ActivateableBean) plugin).isActive())
+                    {
+                        if (ChainingUserRegistrySynchronizer.logger.isInfoEnabled())
+                        {
+                            ChainingUserRegistrySynchronizer.logger
+                                    .info("Synchronizing users and groups with user registry '" + id + "'");
+                        }
+                        if (force && ChainingUserRegistrySynchronizer.logger.isWarnEnabled())
+                        {
+                            ChainingUserRegistrySynchronizer.logger
+                                    .warn("Forced synchronization with user registry '"
+                                            + id
+                                            + "'; some users and groups previously created by synchronization with this user registry may be removed.");
+                        }
+                        // Work out whether we should do the work in a separate transaction (it's most performant if we
+                        // bunch it into small transactions, but if we are doing a sync on login, it has to be the same
+                        // transaction)
+                        boolean requiresNew = splitTxns
+                                || AlfrescoTransactionSupport.getTransactionReadState() == TxnReadState.TXN_READ_ONLY;
+
+                        int personsProcessed = syncPersonsWithPlugin(id, plugin, requiresNew, visitedZoneIds,
+                                allZoneIds);
+                        int groupsProcessed = syncGroupsWithPlugin(id, plugin, force, requiresNew, visitedZoneIds,
+                                allZoneIds);
+                        if (ChainingUserRegistrySynchronizer.logger.isInfoEnabled())
+                        {
+                            ChainingUserRegistrySynchronizer.logger
+                                    .info("Finished synchronizing users and groups with user registry '" + id + "'");
+                            ChainingUserRegistrySynchronizer.logger.info(personsProcessed + " user(s) and "
+                                    + groupsProcessed + " group(s) processed");
+                        }
+                    }
+                }
+                catch (NoSuchBeanDefinitionException e)
+                {
+                    // Ignore and continue
+                }
+            }
+        }
+        catch (RuntimeException e)
+        {
+            ChainingUserRegistrySynchronizer.logger.error("Synchronization aborted due to error", e);
+            throw e;
         }
     }
 
@@ -380,16 +431,13 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean impl
     }
 
     /**
-     * Synchronizes local users (persons) with a {@link UserRegistry} for a particular zone.
+     * Synchronizes changes only to local users (persons) with a {@link UserRegistry} for a particular zone.
      * 
      * @param zone
      *            the zone id. This identifier is used to tag all created users, so that in the future we can tell those
      *            that have been deleted from the registry.
      * @param userRegistry
      *            the user registry for the zone.
-     * @param force
-     *            <code>true</code> if all persons are to be queried. <code>false</code> if only those changed since the
-     *            most recent queried user should be queried.
      * @param splitTxns
      *            Can the modifications to Alfresco be split across multiple transactions for maximum performance? If
      *            <code>true</code>, users and groups are created/updated in batches of 10 for increased performance. If
@@ -405,7 +453,7 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean impl
      *            be 're-zoned'.
      * @return the number of users processed
      */
-    private int syncPersonsWithPlugin(final String zone, UserRegistry userRegistry, boolean force, boolean splitTxns,
+    private int syncPersonsWithPlugin(final String zone, UserRegistry userRegistry, boolean splitTxns,
             final Set<String> visitedZoneIds, final Set<String> allZoneIds)
     {
         // Create a prefixed zone ID for use with the authority service
@@ -414,7 +462,7 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean impl
         // The set of zones we associate with new objects (default plus registry specific)
         final Set<String> zoneSet = getZones(zoneId);
 
-        final long lastModifiedMillis = force ? -1L : getMostRecentUpdateTime(
+        final long lastModifiedMillis = getMostRecentUpdateTime(
                 ChainingUserRegistrySynchronizer.PERSON_LAST_MODIFIED_ATTRIBUTE, zoneId);
         final Date lastModified = lastModifiedMillis == -1 ? null : new Date(lastModifiedMillis);
         if (ChainingUserRegistrySynchronizer.logger.isInfoEnabled())
@@ -429,10 +477,10 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean impl
                         + DateFormat.getDateTimeInstance().format(lastModified) + " from user registry '" + zone + "'");
             }
         }
-        final Iterator<NodeDescription> persons = userRegistry.getPersons(lastModified);
-        final Set<String> personsCreated = new TreeSet<String>();
-
-        class CreationWorker implements RetryingTransactionCallback<Integer>
+        final BatchProcessor<NodeDescription> personProcessor = new BatchProcessor<NodeDescription>(
+                this.retryingTransactionHelper, this.applicationEventPublisher, userRegistry.getPersons(lastModified),
+                zone + " User Creation", this.loggingInterval, this.workerThreads, 10);
+        class CreationWorker implements Worker<NodeDescription>
         {
             private long latestTime = lastModifiedMillis;
 
@@ -441,88 +489,81 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean impl
                 return this.latestTime;
             }
 
-            /*
-             * (non-Javadoc)
-             * @see org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback#execute()
-             */
-            public Integer execute() throws Throwable
+            public String getIdentifier(NodeDescription entry)
             {
-                int processedCount = 0;
-                do
-                {
-                    NodeDescription person = persons.next();
-                    PropertyMap personProperties = person.getProperties();
-                    String personName = (String) personProperties.get(ContentModel.PROP_USERNAME);
+                return entry.getSourceId();
+            }
 
-                    Set<String> zones = ChainingUserRegistrySynchronizer.this.authorityService
-                            .getAuthorityZones(personName);
-                    if (zones == null)
+            public void process(NodeDescription person) throws Throwable
+            {
+                PropertyMap personProperties = person.getProperties();
+                String personName = (String) personProperties.get(ContentModel.PROP_USERNAME);
+                Set<String> zones = ChainingUserRegistrySynchronizer.this.authorityService
+                        .getAuthorityZones(personName);
+                if (zones == null)
+                {
+                    // The person did not exist at all
+                    if (ChainingUserRegistrySynchronizer.logger.isDebugEnabled())
                     {
-                        // The person did not exist at all
-                        if (ChainingUserRegistrySynchronizer.logger.isInfoEnabled())
-                        {
-                            ChainingUserRegistrySynchronizer.logger.info("Creating user '" + personName + "'");
-                        }
-                        ChainingUserRegistrySynchronizer.this.personService.createPerson(personProperties, zoneSet);
+                        ChainingUserRegistrySynchronizer.logger.debug("Creating user '" + personName + "'");
                     }
-                    else if (zones.contains(zoneId))
+                    ChainingUserRegistrySynchronizer.this.personService.createPerson(personProperties, zoneSet);
+                }
+                else if (zones.contains(zoneId))
+                {
+                    // The person already existed in this zone: update the person
+                    if (ChainingUserRegistrySynchronizer.logger.isDebugEnabled())
                     {
-                        // The person already existed in this zone: update the person
-                        if (ChainingUserRegistrySynchronizer.logger.isInfoEnabled())
+                        ChainingUserRegistrySynchronizer.logger.debug("Updating user '" + personName + "'");
+                    }
+                    ChainingUserRegistrySynchronizer.this.personService.setPersonProperties(personName,
+                            personProperties);
+                }
+                else
+                {
+                    // Check whether the user is in any of the authentication chain zones
+                    Set<String> intersection = new TreeSet<String>(zones);
+                    intersection.retainAll(allZoneIds);
+                    if (intersection.size() == 0)
+                    {
+                        // The person exists, but not in a zone that's in the authentication chain. May be due
+                        // to upgrade or zone changes. Let's re-zone them
+                        if (ChainingUserRegistrySynchronizer.logger.isWarnEnabled())
                         {
-                            ChainingUserRegistrySynchronizer.logger.info("Updating user '" + personName + "'");
+                            ChainingUserRegistrySynchronizer.logger.warn("Updating user '" + personName
+                                    + "'. This user will in future be assumed to originate from user registry '" + zone
+                                    + "'.");
                         }
+                        ChainingUserRegistrySynchronizer.this.authorityService.removeAuthorityFromZones(personName,
+                                zones);
+                        ChainingUserRegistrySynchronizer.this.authorityService.addAuthorityToZones(personName, zoneSet);
                         ChainingUserRegistrySynchronizer.this.personService.setPersonProperties(personName,
                                 personProperties);
                     }
                     else
                     {
-                        // Check whether the user is in any of the authentication chain zones
-                        Set<String> intersection = new TreeSet<String>(zones);
-                        intersection.retainAll(allZoneIds);
-                        if (intersection.size() == 0)
+                        // Check whether the user is in any of the higher priority authentication chain zones
+                        intersection.retainAll(visitedZoneIds);
+                        if (intersection.size() > 0)
                         {
-                            // The person exists, but not in a zone that's in the authentication chain. May be due to
-                            // upgrade or zone changes. Let's re-zone them
-                            if (ChainingUserRegistrySynchronizer.logger.isWarnEnabled())
-                            {
-                                ChainingUserRegistrySynchronizer.logger.warn("Updating user '" + personName
-                                        + "'. This user will in future be assumed to originate from user registry '"
-                                        + zone + "'.");
-                            }
-                            ChainingUserRegistrySynchronizer.this.authorityService.removeAuthorityFromZones(personName,
-                                    zones);
-                            ChainingUserRegistrySynchronizer.this.authorityService.addAuthorityToZones(personName,
-                                    zoneSet);
-                            ChainingUserRegistrySynchronizer.this.personService.setPersonProperties(personName,
-                                    personProperties);
+                            // A person that exists in a different zone with higher precedence - ignore
+                            return;
                         }
-                        else
-                        {
-                            // Check whether the user is in any of the higher priority authentication chain zones
-                            intersection.retainAll(visitedZoneIds);
-                            if (intersection.size() > 0)
-                            {
-                                // A person that exists in a different zone with higher precedence - ignore
-                                continue;
-                            }
 
-                            // The person existed, but in a zone with lower precedence
-                            if (ChainingUserRegistrySynchronizer.logger.isWarnEnabled())
-                            {
-                                ChainingUserRegistrySynchronizer.logger
-                                        .warn("Recreating occluded user '"
-                                                + personName
-                                                + "'. This user was previously created through synchronization with a lower priority user registry.");
-                            }
-                            ChainingUserRegistrySynchronizer.this.personService.deletePerson(personName);
-                            ChainingUserRegistrySynchronizer.this.personService.createPerson(personProperties, zoneSet);
+                        // The person existed, but in a zone with lower precedence
+                        if (ChainingUserRegistrySynchronizer.logger.isWarnEnabled())
+                        {
+                            ChainingUserRegistrySynchronizer.logger
+                                    .warn("Recreating occluded user '"
+                                            + personName
+                                            + "'. This user was previously created through synchronization with a lower priority user registry.");
                         }
+                        ChainingUserRegistrySynchronizer.this.personService.deletePerson(personName);
+                        ChainingUserRegistrySynchronizer.this.personService.createPerson(personProperties, zoneSet);
                     }
-                    // Increment the count of processed people
-                    personsCreated.add(personName);
-                    processedCount++;
-
+                }
+                synchronized (this)
+                {
                     // Maintain the last modified date
                     Date personLastModified = person.getLastModified();
                     if (personLastModified != null)
@@ -530,54 +571,16 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean impl
                         this.latestTime = Math.max(this.latestTime, personLastModified.getTime());
                     }
                 }
-                while (persons.hasNext() && processedCount < ChainingUserRegistrySynchronizer.BATCH_SIZE);
-                return processedCount;
             }
         }
 
         CreationWorker creations = new CreationWorker();
-        int processedCount = 0;
-        while (persons.hasNext())
-        {
-            processedCount += this.retryingTransactionHelper.doInTransaction(creations, false, splitTxns);
-        }
+        int processedCount = personProcessor.process(creations, splitTxns);
         long latestTime = creations.getLatestTime();
         if (latestTime != -1)
         {
-            setMostRecentUpdateTime(ChainingUserRegistrySynchronizer.PERSON_LAST_MODIFIED_ATTRIBUTE, zoneId, latestTime);
-        }
-
-        // Handle deletions if we are doing a full sync
-        if (force)
-        {
-            class DeletionWorker implements RetryingTransactionCallback<Integer>
-            {
-                /*
-                 * (non-Javadoc)
-                 * @see org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback#execute()
-                 */
-                public Integer execute() throws Throwable
-                {
-                    int processedCount = 0;
-                    Set<String> personsToDelete = ChainingUserRegistrySynchronizer.this.authorityService
-                            .getAllAuthoritiesInZone(zoneId, AuthorityType.USER);
-                    personsToDelete.removeAll(personsCreated);
-                    for (String personName : personsToDelete)
-                    {
-                        if (ChainingUserRegistrySynchronizer.logger.isWarnEnabled())
-                        {
-                            ChainingUserRegistrySynchronizer.logger.warn("Deleting user '" + personName + "'");
-                        }
-                        ChainingUserRegistrySynchronizer.this.personService.deletePerson(personName);
-                        processedCount++;
-                    }
-                    return processedCount;
-                }
-            }
-
-            // Just use a single transaction
-            DeletionWorker deletions = new DeletionWorker();
-            processedCount += this.retryingTransactionHelper.doInTransaction(deletions, false, splitTxns);
+            setMostRecentUpdateTime(ChainingUserRegistrySynchronizer.PERSON_LAST_MODIFIED_ATTRIBUTE, zoneId,
+                    latestTime, splitTxns);
         }
 
         // Remember we have visited this zone
@@ -587,7 +590,8 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean impl
     }
 
     /**
-     * Synchronizes local groups (authorities) with a {@link UserRegistry} for a particular zone.
+     * Synchronizes local groups with a {@link UserRegistry} for a particular zone and also handles deletions of local
+     * groups and users.
      * 
      * @param zone
      *            the zone id. This identifier is used to tag all created groups, so that in the future we can tell
@@ -595,8 +599,7 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean impl
      * @param userRegistry
      *            the user registry for the zone.
      * @param force
-     *            <code>true</code> if all groups are to be queried. <code>false</code> if only those changed since the
-     *            most recent queried group should be queried.
+     *            <code>true</code> if user and group deletions are to be processed.
      * @param splitTxns
      *            Can the modifications to Alfresco be split across multiple transactions for maximum performance? If
      *            <code>true</code>, users and groups are created/updated in batches of 10 for increased performance. If
@@ -621,7 +624,7 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean impl
         // The set of zones we associate with new objects (default plus registry specific)
         final Set<String> zoneSet = getZones(zoneId);
 
-        final long lastModifiedMillis = force ? -1L : getMostRecentUpdateTime(
+        final long lastModifiedMillis = getMostRecentUpdateTime(
                 ChainingUserRegistrySynchronizer.GROUP_LAST_MODIFIED_ATTRIBUTE, zoneId);
         final Date lastModified = lastModifiedMillis == -1 ? null : new Date(lastModifiedMillis);
 
@@ -638,12 +641,37 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean impl
             }
         }
 
-        final Iterator<NodeDescription> groups = userRegistry.getGroups(lastModified);
-        final Map<String, Set<String>> groupAssocsToCreate = new TreeMap<String, Set<String>>();
-        final Set<String> groupsCreated = new TreeSet<String>();
+        // Get current set of known authorities
+        Set<String> deletionCandidates = this.retryingTransactionHelper.doInTransaction(
+                new RetryingTransactionCallback<Set<String>>()
+                {
+                    public Set<String> execute() throws Throwable
+                    {
+                        return ChainingUserRegistrySynchronizer.this.authorityService.getAllAuthoritiesInZone(zoneId,
+                                null);
+                    }
+                }, false, splitTxns);
 
-        class CreationWorker implements RetryingTransactionCallback<Integer>
+        final BatchProcessor<NodeDescription> groupProcessor = new BatchProcessor<NodeDescription>(
+                this.retryingTransactionHelper, this.applicationEventPublisher, userRegistry.getGroups(lastModified,
+                        deletionCandidates, force), zone + " Group Creation", this.loggingInterval, this.workerThreads,
+                20);
+        class CreationWorker implements Worker<NodeDescription>
         {
+            private final Set<Pair<String, String>> groupAssocsToCreate = new TreeSet<Pair<String, String>>(
+                    new Comparator<Pair<String, String>>()
+                    {
+
+                        public int compare(Pair<String, String> o1, Pair<String, String> o2)
+                        {
+                            int result = o1.getFirst().compareTo(o2.getFirst());
+                            if (result == 0)
+                            {
+                                return o1.getSecond().compareTo(o2.getSecond());
+                            }
+                            return result;
+                        }
+                    });
             private long latestTime = lastModifiedMillis;
 
             public long getLatestTime()
@@ -651,30 +679,123 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean impl
                 return this.latestTime;
             }
 
+            public Set<Pair<String, String>> getGroupAssocsToCreate()
+            {
+                return this.groupAssocsToCreate;
+            }
+
             /*
              * (non-Javadoc)
-             * @see org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback#execute()
+             * @see org.alfresco.repo.security.sync.BatchProcessor.Worker#getIdentifier(java.lang.Object)
              */
-            public Integer execute() throws Throwable
+            public String getIdentifier(NodeDescription entry)
             {
-                int processedCount = 0;
-                do
-                {
-                    NodeDescription group = groups.next();
-                    PropertyMap groupProperties = group.getProperties();
-                    String groupName = (String) groupProperties.get(ContentModel.PROP_AUTHORITY_NAME);
-                    String groupShortName = ChainingUserRegistrySynchronizer.this.authorityService
-                            .getShortName(groupName);
-                    Set<String> groupZones = ChainingUserRegistrySynchronizer.this.authorityService
-                            .getAuthorityZones(groupName);
+                return entry.getSourceId();
+            }
 
-                    if (groupZones == null)
+            /*
+             * (non-Javadoc)
+             * @see org.alfresco.repo.security.sync.BatchProcessor.Worker#process(java.lang.Object)
+             */
+            public void process(NodeDescription group) throws Throwable
+            {
+                PropertyMap groupProperties = group.getProperties();
+                String groupName = (String) groupProperties.get(ContentModel.PROP_AUTHORITY_NAME);
+                String groupShortName = ChainingUserRegistrySynchronizer.this.authorityService.getShortName(groupName);
+                Set<String> groupZones = ChainingUserRegistrySynchronizer.this.authorityService
+                        .getAuthorityZones(groupName);
+
+                if (groupZones == null)
+                {
+                    // The group did not exist at all
+                    if (ChainingUserRegistrySynchronizer.logger.isDebugEnabled())
                     {
-                        // The group did not exist at all
-                        if (ChainingUserRegistrySynchronizer.logger.isInfoEnabled())
+                        ChainingUserRegistrySynchronizer.logger.debug("Creating group '" + groupShortName + "'");
+                    }
+                    // create the group
+                    ChainingUserRegistrySynchronizer.this.authorityService.createAuthority(AuthorityType
+                            .getAuthorityType(groupName), groupShortName, (String) groupProperties
+                            .get(ContentModel.PROP_AUTHORITY_DISPLAY_NAME), zoneSet);
+                    Set<String> children = group.getChildAssociations();
+                    if (!children.isEmpty())
+                    {
+                        synchronized (this)
                         {
-                            ChainingUserRegistrySynchronizer.logger.info("Creating group '" + groupShortName + "'");
+                            for (String child : children)
+                            {
+                                this.groupAssocsToCreate.add(new Pair<String, String>(groupName, child));
+                            }
                         }
+                    }
+                }
+                else
+                {
+                    // Check whether the group is in any of the authentication chain zones
+                    Set<String> intersection = new TreeSet<String>(groupZones);
+                    intersection.retainAll(allZoneIds);
+                    if (intersection.isEmpty())
+                    {
+                        // The group exists, but not in a zone that's in the authentication chain. May be due to
+                        // upgrade or zone changes. Let's re-zone them
+                        if (ChainingUserRegistrySynchronizer.logger.isWarnEnabled())
+                        {
+                            ChainingUserRegistrySynchronizer.logger.warn("Updating group '" + groupShortName
+                                    + "'. This group will in future be assumed to originate from user registry '"
+                                    + zone + "'.");
+                        }
+                        ChainingUserRegistrySynchronizer.this.authorityService.removeAuthorityFromZones(groupName,
+                                groupZones);
+                        ChainingUserRegistrySynchronizer.this.authorityService.addAuthorityToZones(groupName, zoneSet);
+                    }
+                    if (groupZones.contains(zoneId) || intersection.isEmpty())
+                    {
+                        // The group already existed in this zone or no valid zone: update the group
+                        Set<String> oldChildren = ChainingUserRegistrySynchronizer.this.authorityService
+                                .getContainedAuthorities(null, groupName, true);
+                        Set<String> newChildren = group.getChildAssociations();
+                        Set<String> toDelete = new TreeSet<String>(oldChildren);
+                        Set<String> toAdd = new TreeSet<String>(newChildren);
+                        toDelete.removeAll(newChildren);
+                        toAdd.removeAll(oldChildren);
+                        if (!toAdd.isEmpty())
+                        {
+                            synchronized (this)
+                            {
+                                for (String child : toAdd)
+                                {
+                                    this.groupAssocsToCreate.add(new Pair<String, String>(groupName, child));
+                                }
+                            }
+                        }
+                        for (String child : toDelete)
+                        {
+                            if (ChainingUserRegistrySynchronizer.logger.isDebugEnabled())
+                            {
+                                ChainingUserRegistrySynchronizer.logger.debug("Removing '"
+                                        + ChainingUserRegistrySynchronizer.this.authorityService.getShortName(child)
+                                        + "' from group '" + groupShortName + "'");
+                            }
+                            ChainingUserRegistrySynchronizer.this.authorityService.removeAuthority(groupName, child);
+                        }
+                    }
+                    else
+                    {
+                        // Check whether the group is in any of the higher priority authentication chain zones
+                        intersection.retainAll(visitedZoneIds);
+                        if (!intersection.isEmpty())
+                        {
+                            // A group that exists in a different zone with higher precedence
+                            return;
+                        }
+                        // The group existed, but in a zone with lower precedence
+                        if (ChainingUserRegistrySynchronizer.logger.isWarnEnabled())
+                        {
+                            ChainingUserRegistrySynchronizer.logger
+                                    .warn("Recreating occluded group '"
+                                            + groupShortName
+                                            + "'. This group was previously created through synchronization with a lower priority user registry.");
+                        }
+                        ChainingUserRegistrySynchronizer.this.authorityService.deleteAuthority(groupName);
                         // create the group
                         ChainingUserRegistrySynchronizer.this.authorityService.createAuthority(AuthorityType
                                 .getAuthorityType(groupName), groupShortName, (String) groupProperties
@@ -682,204 +803,101 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean impl
                         Set<String> children = group.getChildAssociations();
                         if (!children.isEmpty())
                         {
-                            groupAssocsToCreate.put(groupName, children);
-                        }
-                    }
-                    else
-                    {
-                        // Check whether the group is in any of the authentication chain zones
-                        Set<String> intersection = new TreeSet<String>(groupZones);
-                        intersection.retainAll(allZoneIds);
-                        if (intersection.isEmpty())
-                        {
-                            // The group exists, but not in a zone that's in the authentication chain. May be due to
-                            // upgrade or zone changes. Let's re-zone them
-                            if (ChainingUserRegistrySynchronizer.logger.isWarnEnabled())
+                            synchronized (this)
                             {
-                                ChainingUserRegistrySynchronizer.logger.warn("Updating group '" + groupShortName
-                                        + "'. This group will in future be assumed to originate from user registry '"
-                                        + zone + "'.");
-                            }
-                            ChainingUserRegistrySynchronizer.this.authorityService.removeAuthorityFromZones(groupName,
-                                    groupZones);
-                            ChainingUserRegistrySynchronizer.this.authorityService.addAuthorityToZones(groupName,
-                                    zoneSet);
-                        }
-                        if (groupZones.contains(zoneId) || intersection.isEmpty())
-                        {
-                            // The group already existed in this zone or no valid zone: update the group
-                            Set<String> oldChildren = ChainingUserRegistrySynchronizer.this.authorityService
-                                    .getContainedAuthorities(null, groupName, true);
-                            Set<String> newChildren = group.getChildAssociations();
-                            Set<String> toDelete = new TreeSet<String>(oldChildren);
-                            Set<String> toAdd = new TreeSet<String>(newChildren);
-                            toDelete.removeAll(newChildren);
-                            toAdd.removeAll(oldChildren);
-                            if (!toAdd.isEmpty())
-                            {
-                                groupAssocsToCreate.put(groupName, toAdd);
-                            }
-                            for (String child : toDelete)
-                            {
-                                if (ChainingUserRegistrySynchronizer.logger.isInfoEnabled())
+                                for (String child : children)
                                 {
-                                    ChainingUserRegistrySynchronizer.logger.info("Removing '"
-                                            + ChainingUserRegistrySynchronizer.this.authorityService
-                                                    .getShortName(child) + "' from group '" + groupShortName + "'");
+                                    this.groupAssocsToCreate.add(new Pair<String, String>(groupName, child));
                                 }
-                                ChainingUserRegistrySynchronizer.this.authorityService
-                                        .removeAuthority(groupName, child);
-                            }
-                        }
-                        else
-                        {
-                            // Check whether the group is in any of the higher priority authentication chain zones
-                            intersection.retainAll(visitedZoneIds);
-                            if (!intersection.isEmpty())
-                            {
-                                // A group that exists in a different zone with higher precedence
-                                continue;
-                            }
-                            // The group existed, but in a zone with lower precedence
-                            if (ChainingUserRegistrySynchronizer.logger.isWarnEnabled())
-                            {
-                                ChainingUserRegistrySynchronizer.logger
-                                        .warn("Recreating occluded group '"
-                                                + groupShortName
-                                                + "'. This group was previously created through synchronization with a lower priority user registry.");
-                            }
-                            ChainingUserRegistrySynchronizer.this.authorityService.deleteAuthority(groupName);
-                            // create the group
-                            ChainingUserRegistrySynchronizer.this.authorityService.createAuthority(AuthorityType
-                                    .getAuthorityType(groupName), groupShortName, (String) groupProperties
-                                    .get(ContentModel.PROP_AUTHORITY_DISPLAY_NAME), zoneSet);
-                            Set<String> children = group.getChildAssociations();
-                            if (!children.isEmpty())
-                            {
-                                groupAssocsToCreate.put(groupName, children);
                             }
                         }
                     }
-                    // Increment the count of processed groups
-                    processedCount++;
-                    groupsCreated.add(groupName);
+                }
 
+                synchronized (this)
+                {
                     // Maintain the last modified date
                     Date groupLastModified = group.getLastModified();
                     if (groupLastModified != null)
                     {
                         this.latestTime = Math.max(this.latestTime, groupLastModified.getTime());
                     }
-
                 }
-                while (groups.hasNext() && processedCount < ChainingUserRegistrySynchronizer.BATCH_SIZE);
-                return processedCount;
             }
         }
 
         CreationWorker creations = new CreationWorker();
-        int processedCount = 0;
-        while (groups.hasNext())
-        {
-            processedCount += this.retryingTransactionHelper.doInTransaction(creations, false, splitTxns);
-        }
+        int processedCount = groupProcessor.process(creations, splitTxns);
         long latestTime = creations.getLatestTime();
         if (latestTime != -1)
         {
-            setMostRecentUpdateTime(ChainingUserRegistrySynchronizer.GROUP_LAST_MODIFIED_ATTRIBUTE, zoneId, latestTime);
+            setMostRecentUpdateTime(ChainingUserRegistrySynchronizer.GROUP_LAST_MODIFIED_ATTRIBUTE, zoneId, latestTime,
+                    splitTxns);
         }
 
         // Add the new associations, now that we have created everything
-
-        final Iterator<Map.Entry<String, Set<String>>> groupAssocs = groupAssocsToCreate.entrySet().iterator();
-        class AssocWorker implements RetryingTransactionCallback<Integer>
+        BatchProcessor<Pair<String, String>> groupAssocProcessor = new BatchProcessor<Pair<String, String>>(
+                this.retryingTransactionHelper, this.applicationEventPublisher, creations.getGroupAssocsToCreate(),
+                zone + " Group Association Creation", this.loggingInterval, this.workerThreads, 20);
+        groupAssocProcessor.process(new Worker<Pair<String, String>>()
         {
-            /*
-             * (non-Javadoc)
-             * @see org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback#execute()
-             */
-            public Integer execute() throws Throwable
+
+            public String getIdentifier(Pair<String, String> entry)
             {
-                int processedCount = 0;
-                do
-                {
-
-                    Map.Entry<String, Set<String>> entry = groupAssocs.next();
-                    for (String child : entry.getValue())
-                    {
-                        String groupName = entry.getKey();
-                        if (ChainingUserRegistrySynchronizer.logger.isInfoEnabled())
-                        {
-                            ChainingUserRegistrySynchronizer.logger.info("Adding '"
-                                    + ChainingUserRegistrySynchronizer.this.authorityService.getShortName(child)
-                                    + "' to group '"
-                                    + ChainingUserRegistrySynchronizer.this.authorityService.getShortName(groupName)
-                                    + "'");
-                        }
-                        try
-                        {
-                            ChainingUserRegistrySynchronizer.this.authorityService.addAuthority(groupName, child);
-                        }
-                        catch (Exception e)
-                        {
-                            // Let's not allow referential integrity problems (dangling references) kill the whole
-                            // process
-                            if (ChainingUserRegistrySynchronizer.logger.isWarnEnabled())
-                            {
-                                ChainingUserRegistrySynchronizer.logger.warn("Failed to add '"
-                                        + ChainingUserRegistrySynchronizer.this.authorityService.getShortName(child)
-                                        + "' to group '"
-                                        + ChainingUserRegistrySynchronizer.this.authorityService
-                                                .getShortName(groupName) + "'", e);
-                            }
-                        }
-
-                    }
-                }
-                while (groupAssocs.hasNext() && processedCount < ChainingUserRegistrySynchronizer.BATCH_SIZE);
-                return processedCount;
-
+                return entry.toString();
             }
-        }
 
-        AssocWorker assocs = new AssocWorker();
-        while (groupAssocs.hasNext())
-        {
-            this.retryingTransactionHelper.doInTransaction(assocs, false, splitTxns);
-        }
+            public void process(Pair<String, String> entry) throws Throwable
+            {
+                String groupName = entry.getFirst();
+                String child = entry.getSecond();
+                if (ChainingUserRegistrySynchronizer.logger.isDebugEnabled())
+                {
+                    ChainingUserRegistrySynchronizer.logger.debug("Adding '"
+                            + ChainingUserRegistrySynchronizer.this.authorityService.getShortName(child)
+                            + "' to group '"
+                            + ChainingUserRegistrySynchronizer.this.authorityService.getShortName(groupName) + "'");
+                }
+                ChainingUserRegistrySynchronizer.this.authorityService.addAuthority(groupName, child);
+            }
+        }, splitTxns);
 
-        // Delete groups if we have complete information for the zone
+        // Delete authorities if we have complete information for the zone
         if (force)
         {
-            class DeletionWorker implements RetryingTransactionCallback<Integer>
+            BatchProcessor<String> authorityDeletionProcessor = new BatchProcessor<String>(
+                    this.retryingTransactionHelper, this.applicationEventPublisher, deletionCandidates, zone
+                            + " Authority Deletion", this.loggingInterval, this.workerThreads, 10);
+            processedCount += authorityDeletionProcessor.process(new Worker<String>()
             {
-                /*
-                 * (non-Javadoc)
-                 * @see org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback#execute()
-                 */
-                public Integer execute() throws Throwable
-                {
-                    int processedCount = 0;
-                    Set<String> groupsToDelete = ChainingUserRegistrySynchronizer.this.authorityService
-                            .getAllAuthoritiesInZone(zoneId, AuthorityType.GROUP);
-                    groupsToDelete.removeAll(groupsCreated);
-                    for (String group : groupsToDelete)
-                    {
-                        if (ChainingUserRegistrySynchronizer.logger.isWarnEnabled())
-                        {
-                            ChainingUserRegistrySynchronizer.logger.warn("Deleting group '"
-                                    + ChainingUserRegistrySynchronizer.this.authorityService.getShortName(group) + "'");
-                        }
-                        ChainingUserRegistrySynchronizer.this.authorityService.deleteAuthority(group);
-                        processedCount++;
-                    }
-                    return processedCount;
-                }
-            }
 
-            // Just use a single transaction
-            DeletionWorker deletions = new DeletionWorker();
-            processedCount += this.retryingTransactionHelper.doInTransaction(deletions, false, splitTxns);
+                public String getIdentifier(String entry)
+                {
+                    return entry;
+                }
+
+                public void process(String authority) throws Throwable
+                {
+                    if (AuthorityType.getAuthorityType(authority) == AuthorityType.USER)
+                    {
+                        if (ChainingUserRegistrySynchronizer.logger.isDebugEnabled())
+                        {
+                            ChainingUserRegistrySynchronizer.logger.debug("Deleting user '" + authority + "'");
+                        }
+                        ChainingUserRegistrySynchronizer.this.personService.deletePerson(authority);
+                    }
+                    else
+                    {
+                        if (ChainingUserRegistrySynchronizer.logger.isDebugEnabled())
+                        {
+                            ChainingUserRegistrySynchronizer.logger.debug("Deleting group '"
+                                    + ChainingUserRegistrySynchronizer.this.authorityService.getShortName(authority)
+                                    + "'");
+                        }
+                        ChainingUserRegistrySynchronizer.this.authorityService.deleteAuthority(authority);
+                    }
+                }
+            }, splitTxns);
         }
 
         // Remember we have visited this zone
@@ -913,21 +931,38 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean impl
      *            the zone id
      * @param lastModifiedMillis
      *            the update time in milliseconds
+     * @param splitTxns
+     *            Can the modifications to Alfresco be split across multiple transactions for maximum performance? If
+     *            <code>true</code>, the attribute is persisted in a new transaction for increased performance and
+     *            reliability.
      */
-    private void setMostRecentUpdateTime(String label, String zoneId, long lastModifiedMillis)
+    private void setMostRecentUpdateTime(final String label, final String zoneId, final long lastModifiedMillis,
+            boolean splitTxns)
     {
-        String path = ChainingUserRegistrySynchronizer.ROOT_ATTRIBUTE_PATH + '/' + label;
-        if (!this.attributeService.exists(path))
-        {
-            if (!this.attributeService.exists(ChainingUserRegistrySynchronizer.ROOT_ATTRIBUTE_PATH))
-            {
-                this.attributeService.setAttribute("", ChainingUserRegistrySynchronizer.ROOT_ATTRIBUTE_PATH,
-                        new MapAttributeValue());
-            }
-            this.attributeService.setAttribute(ChainingUserRegistrySynchronizer.ROOT_ATTRIBUTE_PATH, label,
-                    new MapAttributeValue());
-        }
-        this.attributeService.setAttribute(path, zoneId, new LongAttributeValue(lastModifiedMillis));
+        final String path = ChainingUserRegistrySynchronizer.ROOT_ATTRIBUTE_PATH + '/' + label;
+        this.retryingTransactionHelper.doInTransaction(
+                new RetryingTransactionHelper.RetryingTransactionCallback<Object>()
+                {
+
+                    public Object execute() throws Throwable
+                    {
+                        if (!ChainingUserRegistrySynchronizer.this.attributeService.exists(path))
+                        {
+                            if (!ChainingUserRegistrySynchronizer.this.attributeService
+                                    .exists(ChainingUserRegistrySynchronizer.ROOT_ATTRIBUTE_PATH))
+                            {
+                                ChainingUserRegistrySynchronizer.this.attributeService.setAttribute("",
+                                        ChainingUserRegistrySynchronizer.ROOT_ATTRIBUTE_PATH, new MapAttributeValue());
+                            }
+                            ChainingUserRegistrySynchronizer.this.attributeService.setAttribute(
+                                    ChainingUserRegistrySynchronizer.ROOT_ATTRIBUTE_PATH, label,
+                                    new MapAttributeValue());
+                        }
+                        ChainingUserRegistrySynchronizer.this.attributeService.setAttribute(path, zoneId,
+                                new LongAttributeValue(lastModifiedMillis));
+                        return null;
+                    }
+                }, false, splitTxns);
     }
 
     /**
@@ -941,7 +976,7 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean impl
      */
     private Set<String> getZones(String zoneId)
     {
-        Set<String> zones = new HashSet<String>(2, 1.0f);
+        Set<String> zones = new HashSet<String>(5);
         zones.add(AuthorityService.ZONE_APP_DEFAULT);
         zones.add(zoneId);
         return zones;
@@ -993,5 +1028,4 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean impl
     protected void onShutdown(ApplicationEvent event)
     {
     }
-
 }

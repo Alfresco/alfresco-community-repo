@@ -30,13 +30,17 @@ import javax.naming.directory.InitialDirContext;
 import org.alfresco.repo.management.subsystems.ActivateableBean;
 import org.alfresco.repo.security.authentication.AbstractAuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationException;
+import org.alfresco.repo.security.sync.ldap.LDAPNameResolver;
+import org.springframework.beans.factory.InitializingBean;
 
 /**
- * Currently expects the cn name of the user which is in a fixed location.
+ * Authenticates a user by LDAP. To convert the user name to an LDAP DN, it uses the fixed format in
+ * <code>userNameFormat</code> if set, or calls the {@link LDAPNameResolver} otherwise.
  * 
  * @author Andy Hind
  */
-public class LDAPAuthenticationComponentImpl extends AbstractAuthenticationComponent implements ActivateableBean
+public class LDAPAuthenticationComponentImpl extends AbstractAuthenticationComponent implements InitializingBean,
+        ActivateableBean
 {
     private boolean escapeCommasInBind = false;
     
@@ -45,6 +49,8 @@ public class LDAPAuthenticationComponentImpl extends AbstractAuthenticationCompo
     private boolean active = true;
 
     private String userNameFormat;
+    
+    private LDAPNameResolver ldapNameResolver;
 
     private LDAPInitialDirContextFactory ldapInitialContextFactory;
 
@@ -60,9 +66,14 @@ public class LDAPAuthenticationComponentImpl extends AbstractAuthenticationCompo
 
     public void setUserNameFormat(String userNameFormat)
     {
-        this.userNameFormat = userNameFormat;
+        this.userNameFormat = userNameFormat == null || userNameFormat.length() == 0 ? null : userNameFormat;
     }
-    
+        
+    public void setLdapNameResolver(LDAPNameResolver ldapNameResolver)
+    {
+        this.ldapNameResolver = ldapNameResolver;
+    }
+
     public void setEscapeCommasInBind(boolean escapeCommasInBind)
     {
         this.escapeCommasInBind = escapeCommasInBind;
@@ -85,6 +96,18 @@ public class LDAPAuthenticationComponentImpl extends AbstractAuthenticationCompo
     public boolean isActive()
     {
         return this.active;
+    }        
+
+    /*
+     * (non-Javadoc)
+     * @see org.springframework.beans.factory.InitializingBean#afterPropertiesSet()
+     */
+    public void afterPropertiesSet() throws Exception
+    {
+        if (this.ldapNameResolver == null && this.userNameFormat == null)
+        {
+            throw new IllegalStateException("At least one of ldapNameResolver and userNameFormat must be set");
+        }
     }
 
     /**
@@ -92,10 +115,17 @@ public class LDAPAuthenticationComponentImpl extends AbstractAuthenticationCompo
      */
     protected void authenticateImpl(String userName, char[] password) throws AuthenticationException
     {
+        // If we aren't using a fixed name format, do a search to resolve the user DN
+        String userDN = userNameFormat == null ? ldapNameResolver.resolveDistinguishedName(userName) : String.format(
+                userNameFormat, new Object[]
+                {
+                    escapeUserName(userName, escapeCommasInBind)
+                });
+
         InitialDirContext ctx = null;
         try
         {
-            ctx = ldapInitialContextFactory.getInitialDirContext(String.format(userNameFormat, new Object[] { escapeUserName(userName, escapeCommasInBind) }), new String(password));
+            ctx = ldapInitialContextFactory.getInitialDirContext(userDN, new String(password));
 
             // Authentication has been successful.
             // Set the current user, they are now authenticated.

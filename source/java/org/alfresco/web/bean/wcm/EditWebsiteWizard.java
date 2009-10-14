@@ -138,7 +138,10 @@ public class EditWebsiteWizard extends CreateWebsiteWizard
       // persist the forms, templates, workflows, workflow defaults and deployment config
       // to the model for this web project
       saveWebProjectModel(nodeRef);
-      
+
+      // Make sure name and description are refreshed before display
+      this.navigator.resetCurrentNodeProperties();      
+
       return AlfrescoNavigationHandler.CLOSE_WIZARD_OUTCOME;
    }
    

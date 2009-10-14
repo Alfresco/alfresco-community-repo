@@ -48,13 +48,16 @@
    function checkButtonState()
    {
       if (document.getElementById("wizard:wizard-body:name").value.length == 0 ||
-          document.getElementById("wizard:wizard-body:dnsname").value.length < 1)
+          document.getElementById("wizard:wizard-body:dnsname").value.length < 1 ||
+          document.getElementById("wizard:wizard-body:description").value.length > 1000)
       {
          document.getElementById("wizard:next-button").disabled = true;
+         document.getElementById("wizard:finish-button").disabled = true;
       }
       else
       {
          document.getElementById("wizard:next-button").disabled = false;
+         document.getElementById("wizard:finish-button").disabled = false;
       }
    }
    
@@ -171,7 +174,8 @@
       </td>
       <td>
          </f:verbatim>
-         <h:inputTextarea id="description" value="#{WizardManager.bean.description}" rows="3" cols="42" />
+         <h:inputTextarea id="description" value="#{WizardManager.bean.description}" rows="3" cols="42"
+                 onkeyup="javascript:checkButtonState();" />
          <f:verbatim>
       </td>
    </tr>

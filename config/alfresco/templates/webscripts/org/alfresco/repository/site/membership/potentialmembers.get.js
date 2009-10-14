@@ -1,7 +1,8 @@
 function main()
 {
    // Get the args
-   var site = siteService.getSite(url.templateArgs.shortname),
+   var siteShortName = url.templateArgs.shortname,
+      site = siteService.getSite(siteShortName),
       filter = (args.filter != null) ? args.filter : (args.shortNameFilter != null) ? args.shortNameFilter : "",
       maxResults = (args.maxResults == null) ? 0 : parseInt(args.maxResults, 10),
       authorityType = args.authorityType,
@@ -32,7 +33,20 @@ function main()
          name = search.findNode(peopleFound[i]).properties.userName;
          if (site.getMembersRole(name) != null)
          {
+            // User is already a member
             notAllowed.push(name);
+         }
+         else
+         {
+            var criteria = {
+               resourceName: siteShortName,
+               inviteeUserName: name
+            };
+            if (invitations.listInvitations(criteria).length != 0)
+            {
+               // User has already got an invitation
+               notAllowed.push(name);
+            }
          }
       }
 
@@ -57,6 +71,7 @@ function main()
          name = groupsFound[i].fullName;
          if (site.getMembersRole(name) != null)
          {
+            // Group is already a member
             notAllowed.push(name);
          }
       }

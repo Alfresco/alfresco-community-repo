@@ -252,7 +252,11 @@ function main()
                path: "/" + displayPaths.slice(5, displayPaths.length).join("/"),
                file: locationAsset.name
             };
-            location.siteTitle = getSite(location.site).title;
+            var site = getSite(location.site);
+            if (site != null)
+            {
+               location.siteTitle = site.title;
+            }
          }
          else
          {

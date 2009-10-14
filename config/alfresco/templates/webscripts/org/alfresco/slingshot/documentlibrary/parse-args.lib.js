@@ -173,17 +173,19 @@ var ParseArgs =
       {
          siteId = displayPaths[3];
          siteNode = siteService.getSite(siteId);
-         containerId = displayPaths[4];
-
-         location = 
+         if (siteNode != null)
          {
-            site: siteId,
-            siteTitle: siteNode.title,
-            siteNode: siteNode,
-            container: containerId,
-            containerNode: siteNode.getContainer(containerId),
-            path: "/" + displayPaths.slice(5, displayPaths.length).join("/")
-         };
+            containerId = qnamePaths[4].substr(3);
+            location = 
+            {
+               site: siteId,
+               siteTitle: siteNode.title,
+               siteNode: siteNode,
+               container: containerId,
+               containerNode: siteNode.getContainer(containerId),
+               path: "/" + displayPaths.slice(5, displayPaths.length).join("/")
+            };
+         }
       }
 
       var objRet =

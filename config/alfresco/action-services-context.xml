@@ -511,7 +511,7 @@
     <!-- deprecated - see "wcm-submit" (wcm-services-context.xml) -->
     <bean id="simple-avm-submit" class="org.alfresco.repo.avm.actions.SimpleAVMSubmitAction" parent="action-executer">
         <property name="avmService">
-            <ref bean="indexingAVMService"/>
+            <ref bean="AVMService"/>
         </property>
         <property name="avmSyncService">
             <ref bean="avmSyncService"/>
@@ -570,7 +570,7 @@
     <!-- deprecated -->
     <bean id="avm-revert-to-version" class="org.alfresco.repo.avm.actions.AVMRevertToVersionAction" parent = "action-executer">
         <property name="avmService">
-            <ref bean="indexingAVMService"/>
+            <ref bean="AVMService"/>
         </property>
         <property name="publicAction">
             <value>false</value>
@@ -580,7 +580,7 @@
     <!-- deprecated - see "wcm-undo" (wcm-services-context.xml) -->
     <bean id="avm-undo-list" class="org.alfresco.repo.avm.actions.AVMUndoSandboxListAction" parent="action-executer">
         <property name="avmService">
-            <ref bean="indexingAVMService"/>
+            <ref bean="AVMService"/>
         </property>
         <property name="avmLockingService">
             <ref bean="AVMLockingService"/>
@@ -644,7 +644,7 @@
           <ref bean="LinkValidationService"/>
       </property>
       <property name="avmService">
-            <ref bean="indexingAVMService"/>
+            <ref bean="AVMService"/>
         </property>
       <property name="publicAction">
           <value>false</value>

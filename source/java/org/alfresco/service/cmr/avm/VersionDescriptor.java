@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -25,6 +25,8 @@ package org.alfresco.service.cmr.avm;
 
 import java.io.Serializable;
 import java.util.Date;
+
+import org.alfresco.util.ISO8601DateFormat;
 
 /**
  * All the information about a particular version.
@@ -150,7 +152,7 @@ public class VersionDescriptor implements Serializable
         builder.append(":");
         builder.append(fCreator);
         builder.append(":");
-        builder.append(new Date(fCreateDate).toString());
+        builder.append(ISO8601DateFormat.format(new Date(fCreateDate)));
         builder.append(":");
         builder.append(fTag);
         builder.append("]");

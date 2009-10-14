@@ -167,7 +167,7 @@ public class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements Layer
         setIndirection(other.getIndirection());
         setIndirectionVersion(-1);
         setPrimaryIndirection(other.getPrimaryIndirection());
-        setOpacity(false);
+        setOpacity(other.getOpacity());
         
         setVersionID(other.getVersionID() + 1);
         
@@ -1045,18 +1045,18 @@ public class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements Layer
         BasicAttributes attrs = getBasicAttributes();
         String path = lPath.getRepresentedPath();
         path = AVMNodeConverter.ExtendAVMPath(path, name);
+        
+        int indirectionVersion = getUnderlyingVersion(lPath);
         String indirect = null;
-        int indirectionVersion = -1;
         if (getPrimaryIndirection())
         {
             indirect = getIndirection();
-            indirectionVersion = getIndirectionVersion();
         }
         else
         {
             indirect = AVMNodeConverter.ExtendAVMPath(lPath.getCurrentIndirection(), name);
-            indirectionVersion = lPath.getCurrentIndirectionVersion();
         }
+        
         return new AVMNodeDescriptor(path, name, AVMNodeType.LAYERED_DIRECTORY, attrs.getCreator(), attrs.getOwner(), attrs.getLastModifier(), attrs.getCreateDate(), attrs
                 .getModDate(), attrs.getAccessDate(), getId(), getGuid(), getVersionID(), indirect, indirectionVersion, getPrimaryIndirection(), getLayerID(), getOpacity(), -1, -1);
     }

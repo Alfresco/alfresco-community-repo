@@ -35,6 +35,7 @@ import java.util.Set;
 import java.util.SortedMap;
 
 import org.alfresco.model.WCMModel;
+import org.alfresco.repo.avm.util.AVMUtil;
 import org.alfresco.repo.content.ContentStore;
 import org.alfresco.repo.domain.DbAccessControlList;
 import org.alfresco.repo.domain.PropertyValue;
@@ -570,9 +571,9 @@ public class AVMRepository
             dstNode.setAncestor(srcNode);
             dirNode.putChild(name, dstNode);
             // dirNode.updateModTime();
-            String beginingPath = AVMNodeConverter.NormalizePath(srcPath);
-            String finalPath = AVMNodeConverter.ExtendAVMPath(dstPath, name);
-            finalPath = AVMNodeConverter.NormalizePath(finalPath);
+            String beginingPath = AVMUtil.normalizePath(srcPath);
+            String finalPath = AVMUtil.extendAVMPath(dstPath, name);
+            finalPath = AVMUtil.normalizePath(finalPath);
             VersionRoot latestVersion = fVersionRootDAO.getMaxVersion(dstRepo);
             for (VersionLayeredNodeEntry entry : layeredEntries)
             {
@@ -1960,12 +1961,7 @@ public class AVMRepository
      */
     private String[] SplitPath(String path)
     {
-        String[] pathParts = path.split(":");
-        if (pathParts.length != 2)
-        {
-            throw new AVMException("Invalid path: " + path);
-        }
-        return pathParts;
+        return AVMUtil.splitPath(path);
     }
 
     /**
@@ -2049,20 +2045,21 @@ public class AVMRepository
         List<AVMNodeDescriptor> history = new ArrayList<AVMNodeDescriptor>();
         for (int i = 0; i < count; i++)
         {
-            if (node instanceof LayeredFileNodeImpl)
+            AVMNode ancNode = node.getAncestor();
+            if (ancNode == null)
             {
                 break;
             }
-            node = node.getAncestor();
-            if (node == null)
+            if (!can(null, ancNode, PermissionService.READ_PROPERTIES, false))
             {
                 break;
             }
-            if (!can(null, node, PermissionService.READ_PROPERTIES, false))
+            if ((node.getType() == AVMNodeType.LAYERED_FILE) && (ancNode.getType() == AVMNodeType.PLAIN_FILE))
             {
                 break;
             }
-            history.add(node.getDescriptor("UNKNOWN", "UNKNOWN", "UNKNOWN", -1));
+            history.add(ancNode.getDescriptor("UNKNOWN", "UNKNOWN", "UNKNOWN", -1));
+            node = ancNode;
         }
         return history;
     }

@@ -37,6 +37,7 @@ import org.alfresco.mbeans.VirtServerRegistry;
 import org.alfresco.model.WCMAppModel;
 import org.alfresco.model.WCMWorkflowModel;
 import org.alfresco.repo.avm.AVMNodeConverter;
+import org.alfresco.repo.avm.util.AVMUtil;
 import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
@@ -471,8 +472,8 @@ public class SandboxServiceImpl implements SandboxService
         getSandbox(srcSandboxStoreId); // ignore result
         getSandbox(dstSandboxStoreId); // ignore result
         
-        String avmSrcPath = WCMUtil.buildPath(srcSandboxStoreId, srcRelativePath);
-        String avmDstPath = WCMUtil.buildPath(dstSandboxStoreId, dstRelativePath);
+        String avmSrcPath = AVMUtil.buildAVMPath(srcSandboxStoreId, srcRelativePath);
+        String avmDstPath = AVMUtil.buildAVMPath(dstSandboxStoreId, dstRelativePath);
         
         return listChanged(-1, avmSrcPath, -1, avmDstPath, includeDeleted);
     }
@@ -642,7 +643,7 @@ public class SandboxServiceImpl implements SandboxService
         final List<String> srcPaths = new ArrayList<String>(relativePaths.size());
         for (String relativePath : relativePaths)
         {
-            srcPaths.add(WCMUtil.buildPath(sbStoreId, relativePath));
+            srcPaths.add(AVMUtil.buildAVMPath(sbStoreId, relativePath));
         }
         
         final String webApp = WCMUtil.getCommonWebApp(sbStoreId, relativePaths);
@@ -758,7 +759,7 @@ public class SandboxServiceImpl implements SandboxService
                 // except that it belongs to a the main store of
                 // the workflow sandbox instead of the sandbox
                 // that originated the submit.
-                virtUpdatePath = workflowMainStoreName + srcPath.substring(srcPath.indexOf(':'),srcPath.length());
+                virtUpdatePath = WCMUtil.getCorrespondingPath(srcPath, workflowMainStoreName);
             }
 
             if ((expirationDates != null) && (! expirationDates.isEmpty()))
@@ -1102,7 +1103,7 @@ public class SandboxServiceImpl implements SandboxService
         {
             public List<AVMDifference> doWork() throws Exception
             {
-                String sandboxPath = sbStoreId + WCMUtil.AVM_STORE_SEPARATOR + "/";
+                String sandboxPath = AVMUtil.buildAVMPath(sbStoreId, AVMUtil.AVM_PATH_SEPARATOR); // root
                 List<AVMDifference> diffs = avmSyncService.compare(revertVersion, sandboxPath, -1, sandboxPath, null);
                 
                 String message = "Reverted to Version " + revertVersion + ".";

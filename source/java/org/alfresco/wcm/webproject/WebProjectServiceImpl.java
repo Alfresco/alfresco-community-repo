@@ -40,6 +40,7 @@ import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.WCMAppModel;
 import org.alfresco.repo.avm.AVMNodeConverter;
+import org.alfresco.repo.avm.util.AVMUtil;
 import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
@@ -209,9 +210,9 @@ public class WebProjectServiceImpl extends WCMUtil implements WebProjectService
             throw new IllegalArgumentException("Unexpected store id '"+wpStoreId+"' - should not contain '"+WCMUtil.STORE_SEPARATOR+"'");
         }
         
-        if (wpStoreId.indexOf(WCMUtil.AVM_STORE_SEPARATOR) != -1)
+        if (wpStoreId.indexOf(AVMUtil.AVM_STORE_SEPARATOR_CHAR) != -1)
         {
-            throw new IllegalArgumentException("Unexpected store id '"+wpStoreId+"' - should not contain '"+WCMUtil.AVM_STORE_SEPARATOR+"'");
+            throw new IllegalArgumentException("Unexpected store id '"+wpStoreId+"' - should not contain '"+AVMUtil.AVM_STORE_SEPARATOR_CHAR+"'");
         }
         
         if (previewProviderName == null)

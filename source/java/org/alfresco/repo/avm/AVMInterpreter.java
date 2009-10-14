@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2008 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -56,6 +56,8 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.ISO8601DateFormat;
+import org.alfresco.wcm.util.WCMUtil;
 import org.springframework.context.support.FileSystemXmlApplicationContext;
 
 /**
@@ -63,6 +65,7 @@ import org.springframework.context.support.FileSystemXmlApplicationContext;
  * 
  * @author britt
  * @author Gavin Cornwell
+ * @author janv
  */
 public class AVMInterpreter
 {
@@ -256,11 +259,28 @@ public class AVMInterpreter
             }
             else if (command[0].equals("lsver"))
             {
-                if (command.length != 2)
+                if ((command.length < 2) || (command.length > 4))
                 {
                     return "Syntax Error.";
                 }
-                List<VersionDescriptor> listing = fService.getStoreVersions(command[1]);
+                
+                List<VersionDescriptor> listing = null;
+                String storeName = command[1];
+                if (command.length == 2)
+                {
+                    listing = fService.getStoreVersions(storeName);
+                }
+                else
+                {
+                    Date fromDate = ISO8601DateFormat.parse(command[2]);
+                    Date toDate = new Date();
+                    if (command.length == 4)
+                    {
+                        toDate = ISO8601DateFormat.parse(command[3]);
+                    }
+                    listing = fService.getStoreVersions(storeName, fromDate, toDate);
+                }
+                
                 for (VersionDescriptor desc : listing)
                 {
                     out.println(desc);
@@ -305,6 +325,15 @@ public class AVMInterpreter
                     return "Syntax Error.";
                 }
                 fService.createLayeredDirectory(command[1], command[2], command[3]);
+            }
+            else if (command[0].equals("setopacity"))
+            {
+                if (command.length != 3)
+                {
+                    return "Syntax Error.";
+                }
+                boolean isOpaque = new Boolean(command[2]);
+                fService.setOpacity(command[1], isOpaque);
             }
             else if (command[0].equals("rename"))
             {
@@ -406,7 +435,38 @@ public class AVMInterpreter
                 {
                     return "Syntax Error.";
                 }
-                fService.purgeVersion(Integer.parseInt(command[2]), command[1]);
+                
+                String storeName = command[1];
+                int ver =Integer.parseInt(command[2]);
+                String wpStoreId = getWebProject(storeName);
+                if ((wpStoreId != null) && (ver <= 2))
+                {
+                    return "WCM store - cannot delete versions 0-2";
+                }
+                fService.purgeVersion(ver, storeName);
+            }
+            else if (command[0].equals("rmvers"))
+            {
+                if (command.length != 4)
+                {
+                    return "Syntax Error.";
+                }
+                String storeName = command[1];
+                String wpStoreId = getWebProject(storeName);
+                
+                Date fromDate = ISO8601DateFormat.parse(command[2]);
+                Date toDate = ISO8601DateFormat.parse(command[3]);
+                
+                List<VersionDescriptor> listing = fService.getStoreVersions(storeName, fromDate, toDate);
+                for (VersionDescriptor desc : listing)
+                {
+                    int ver = desc.getVersionID();
+                    if ((wpStoreId != null) && (ver <= 2))
+                    {
+                        return "WCM store - cannot delete versions 0-2";
+                    }
+                    fService.purgeVersion(ver, storeName);
+                }
             }
             else if (command[0].equals("write"))
             {
@@ -915,5 +975,15 @@ public class AVMInterpreter
             elements[0] = valueString;
         }
         return elements;
+    }
+    
+    private String getWebProject(String name)
+    {   
+        String wpStoreId = WCMUtil.getWebProjectStoreId(name);
+        if (WCMUtil.getWebProjectNodeFromWebProjectStore(fService, wpStoreId) != null)
+        {
+            return wpStoreId;
+        }
+        return null;
     }
 }

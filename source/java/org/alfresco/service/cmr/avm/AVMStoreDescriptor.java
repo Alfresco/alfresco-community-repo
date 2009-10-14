@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -25,6 +25,8 @@ package org.alfresco.service.cmr.avm;
 
 import java.io.Serializable;
 import java.util.Date;
+
+import org.alfresco.util.ISO8601DateFormat;
 
 /**
  * A value class for Data about an AVMStore.
@@ -84,6 +86,6 @@ public class AVMStoreDescriptor implements Serializable
     
     public String toString()
     {
-        return "[" + fName + ":" + fCreator + ":" + new Date(fCreateDate) + "]";
+        return "[" + fName + ":" + fCreator + ":" + ISO8601DateFormat.format(new Date(fCreateDate)) + "]";
     }
 }

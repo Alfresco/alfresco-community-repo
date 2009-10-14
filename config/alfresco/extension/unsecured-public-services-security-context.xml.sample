@@ -35,13 +35,15 @@
         </property>
     </bean>
 
-    
     <bean id="permissionServiceImpl" class="org.alfresco.repo.security.permissions.noop.PermissionServiceNOOPImpl" />
-    
-    <!--
+
+<!--    
     <bean id="permissionServiceImpl" class="org.alfresco.repo.security.permissions.impl.PermissionServiceImpl">
         <property name="nodeService">
-            <ref bean="nodeService" />
+            <ref bean="mtAwareNodeService" />
+        </property>
+        <property name="tenantService">
+            <ref bean="tenantService"/>
         </property>
         <property name="dictionaryService">
             <ref bean="dictionaryService" />
@@ -71,9 +73,8 @@
             </list>
         </property>
     </bean>
-    -->
+-->    
     
-
     <!-- =================== -->
     <!-- Dynamic Authorities -->
     <!-- =================== -->
@@ -95,6 +96,16 @@
         <property name="nodeService">
             <ref bean="nodeService" />
         </property>
+		<property name="modelDAO">
+            <ref bean="permissionsModelDAO" />
+        </property>
+		<property name="requiredFor">
+			<list>
+				<value>Unlock</value>
+				<value>CheckIn</value>
+				<value>CancelCheckOut</value>
+			</list>
+		</property>
     </bean>
 
     <!-- ===================== -->
@@ -111,6 +122,14 @@
         <property name="dictionaryService">
             <ref bean="dictionaryService" />
         </property>
+    </bean>
+    
+    <!-- =========================== -->
+    <!-- Permissions Model Bootstrap -->
+    <!-- =========================== -->
+    
+    <bean id="permissionModelBootstrap" class="org.alfresco.repo.security.permissions.impl.model.PermissionModelBootstrap" abstract="true" init-method="init">
+    	<property name="permissionModel" ref="permissionsModelDAO"/>    
     </bean>
 
     <!-- ====== -->
@@ -160,6 +179,9 @@
        <property name="nodeService">
            <ref bean="nodeService"></ref>
        </property>
+       <property name="authenticationService">
+            <ref bean="authenticationService" />
+       </property>
        <property name="authorityService">
             <ref bean="authorityService" />
        </property>
@@ -198,6 +220,9 @@
         </property>
         <property name="nodeService">
             <ref bean="nodeService"></ref>
+        </property>
+        <property name="authenticationService">
+             <ref bean="authenticationService" />
         </property>
         <property name="maxPermissionCheckTimeMillis">
             <value>${system.acl.maxPermissionCheckTimeMillis}</value>
@@ -320,6 +345,7 @@
     <!-- ============================== -->
 
     <bean id="FileFolderService_security" class="org.alfresco.repo.security.permissions.impl.AlwaysProceedMethodInterceptor" />
+
     <!-- =========================== -->
     <!-- Content Service Permissions -->
     <!-- =========================== -->
@@ -351,9 +377,10 @@
 
     <!-- Category queries are filtered for nodes that are visible to the current user    -->
     <!-- Other methods are unrestricted at the moment                                    -->
+	
+	<!-- Uses the public node service for all mutations -  access is allowed here and enforced by the public node service -->
 
     <bean id="CategoryService_security" class="org.alfresco.repo.security.permissions.impl.AlwaysProceedMethodInterceptor" />
-
 
     <!-- ============ -->
     <!-- Copy Service -->
@@ -390,6 +417,7 @@
     <!-- does not use a node service that would apply any permissions.                   -->
 
     <bean id="MultilingualContentService_security" class="org.alfresco.repo.security.permissions.impl.AlwaysProceedMethodInterceptor" />
+
     <!-- =================== -->
     <!-- Edition  Service    -->
     <!-- =================== -->
@@ -442,6 +470,7 @@
     <!-- the moment.                                                                     -->
 
     <bean id="PermissionService_security" class="org.alfresco.repo.security.permissions.impl.AlwaysProceedMethodInterceptor" />
+
     <!-- ===================== -->
     <!-- The Authority Service -->
     <!-- ===================== -->
@@ -467,7 +496,6 @@
     <!-- TODO: respect the permissions on the ownable service                            -->
 
     <bean id="OwnableService_security" class="org.alfresco.repo.security.permissions.impl.AlwaysProceedMethodInterceptor" />
-
 
     <!-- Person Service -->
 
@@ -505,4 +533,19 @@
 
     <bean id="AuditService_security" class="org.alfresco.repo.security.permissions.impl.AlwaysProceedMethodInterceptor" />
 
+    <!-- ======================== -->
+    <!-- Repository Admin Service -->
+    <!-- ======================== -->
+    
+    <!-- TODO: Add repository admin security -->
+    
+    <bean id="RepoAdminService_security" class="org.alfresco.repo.security.permissions.impl.AlwaysProceedMethodInterceptor" />
+
+    <!-- ===================== -->
+    <!-- Content Usage Service -->
+    <!-- ===================== -->
+    
+    <!-- TODO: Add content usage security -->
+    <bean id="ContentUsageService_security" class="org.alfresco.repo.security.permissions.impl.AlwaysProceedMethodInterceptor" />
+    
 </beans>

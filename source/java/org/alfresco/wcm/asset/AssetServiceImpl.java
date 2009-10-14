@@ -43,6 +43,7 @@ import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.executer.ImporterActionExecuter;
 import org.alfresco.repo.avm.AVMNodeConverter;
+import org.alfresco.repo.avm.util.AVMUtil;
 import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
@@ -105,22 +106,11 @@ public class AssetServiceImpl implements AssetService
         this.virtServerRegistry = virtServerRegistry;
     }
     
-    
-    private String addLeadingSlash(String path)
-    {
-        if (path.charAt(0) != PATH_SEPARATOR)
-        {
-            path = PATH_SEPARATOR + path;
-        }
-        
-        return path;
-    }
-    
     private void checkMandatoryPath(String path)
     {
         ParameterCheck.mandatoryString("path", path);
         
-        if (path.indexOf(WCMUtil.AVM_STORE_SEPARATOR) != -1)
+        if (path.indexOf(AVMUtil.AVM_STORE_SEPARATOR_CHAR) != -1)
         {
             throw new IllegalArgumentException("Unexpected path '"+path+"' - should not contain '"+WCMUtil.AVM_STORE_SEPARATOR+"'");
         }
@@ -144,7 +134,7 @@ public class AssetServiceImpl implements AssetService
         
         if (! isWebProjectStagingSandbox(sbStoreId))
         {
-            parentFolderPathRelativeToWebApp = addLeadingSlash(parentFolderPathRelativeToWebApp);
+            parentFolderPathRelativeToWebApp = AVMUtil.addLeadingSlash(parentFolderPathRelativeToWebApp);
             
             String avmParentPath = WCMUtil.buildStoreWebappPath(sbStoreId, webApp) + parentFolderPathRelativeToWebApp;
             
@@ -165,9 +155,7 @@ public class AssetServiceImpl implements AssetService
         ParameterCheck.mandatoryString("parentFolderPath", parentFolderPath);
         ParameterCheck.mandatoryString("name", name);
         
-        parentFolderPath = addLeadingSlash(parentFolderPath);
-        
-        String avmParentPath = sbStoreId + WCMUtil.AVM_STORE_SEPARATOR + parentFolderPath;
+        String avmParentPath = AVMUtil.buildAVMPath(sbStoreId, parentFolderPath);
         
         createFolderAVM(avmParentPath, name, properties);
     }
@@ -208,7 +196,7 @@ public class AssetServiceImpl implements AssetService
         ParameterCheck.mandatoryString("parentFolderPathRelativeToWebApp", parentFolderPathRelativeToWebApp);
         ParameterCheck.mandatoryString("name", name);
         
-        parentFolderPathRelativeToWebApp = addLeadingSlash(parentFolderPathRelativeToWebApp);
+        parentFolderPathRelativeToWebApp = AVMUtil.addLeadingSlash(parentFolderPathRelativeToWebApp);
         
         String avmParentPath = WCMUtil.buildStoreWebappPath(sbStoreId, webApp) + parentFolderPathRelativeToWebApp;
         
@@ -228,9 +216,7 @@ public class AssetServiceImpl implements AssetService
         ParameterCheck.mandatoryString("parentFolderPath", parentFolderPath);
         ParameterCheck.mandatoryString("name", name);
         
-        parentFolderPath = addLeadingSlash(parentFolderPath);
-        
-        String avmParentPath = sbStoreId + WCMUtil.AVM_STORE_SEPARATOR + parentFolderPath;
+        String avmParentPath = AVMUtil.buildAVMPath(sbStoreId, parentFolderPath);
         
         createFileAVM(avmParentPath, name);
         
@@ -319,7 +305,7 @@ public class AssetServiceImpl implements AssetService
         ParameterCheck.mandatoryString("webApp", webApp);
         ParameterCheck.mandatoryString("pathRelativeToWebApp", pathRelativeToWebApp);
         
-        pathRelativeToWebApp = addLeadingSlash(pathRelativeToWebApp);
+        pathRelativeToWebApp = AVMUtil.addLeadingSlash(pathRelativeToWebApp);
         
         String avmPath = WCMUtil.buildStoreWebappPath(sbStoreId, webApp) + pathRelativeToWebApp;
         
@@ -342,9 +328,7 @@ public class AssetServiceImpl implements AssetService
         ParameterCheck.mandatoryString("sbStoreId", sbStoreId);
         ParameterCheck.mandatoryString("path", path);
         
-        path = addLeadingSlash(path);
-        
-        String avmPath = sbStoreId + WCMUtil.AVM_STORE_SEPARATOR + path;
+        String avmPath = AVMUtil.buildAVMPath(sbStoreId, path);
         
         return getAssetAVM(version, avmPath, includeDeleted);
     }
@@ -519,7 +503,7 @@ public class AssetServiceImpl implements AssetService
         ParameterCheck.mandatoryString("webApp", webApp);
         ParameterCheck.mandatoryString("parentFolderPathRelativeToWebApp", parentFolderPathRelativeToWebApp);
         
-        parentFolderPathRelativeToWebApp = addLeadingSlash(parentFolderPathRelativeToWebApp);
+        parentFolderPathRelativeToWebApp = AVMUtil.addLeadingSlash(parentFolderPathRelativeToWebApp);
         
         String avmPath = WCMUtil.buildStoreWebappPath(sbStoreId, webApp) + parentFolderPathRelativeToWebApp;
         
@@ -534,9 +518,7 @@ public class AssetServiceImpl implements AssetService
         ParameterCheck.mandatoryString("sbStoreId", sbStoreId);
         ParameterCheck.mandatoryString("parentFolderPath", parentFolderPath);
         
-        parentFolderPath = addLeadingSlash(parentFolderPath);
-        
-        String avmPath = sbStoreId + WCMUtil.AVM_STORE_SEPARATOR + parentFolderPath;
+        String avmPath = AVMUtil.buildAVMPath(sbStoreId, parentFolderPath);
         
         return listAssetsAVM(-1, avmPath, includeDeleted);
     }
@@ -549,9 +531,7 @@ public class AssetServiceImpl implements AssetService
         ParameterCheck.mandatoryString("sbStoreId", sbStoreId);
         ParameterCheck.mandatoryString("parentFolderPath", parentFolderPath);
         
-        parentFolderPath = addLeadingSlash(parentFolderPath);
-        
-        String avmPath = sbStoreId + WCMUtil.AVM_STORE_SEPARATOR + parentFolderPath;
+        String avmPath = AVMUtil.buildAVMPath(sbStoreId, parentFolderPath);
         
         return listAssetsAVM(version, avmPath, includeDeleted);
     }
@@ -606,7 +586,7 @@ public class AssetServiceImpl implements AssetService
         
         if (! isWebProjectStagingSandbox(asset.getSandboxId()))
         {
-            String avmParentPath = AVMNodeConverter.SplitBase(asset.getAvmPath())[0];
+            String avmParentPath = AVMUtil.splitBase(asset.getAvmPath())[0];
             String oldName = asset.getName();
             
             avmService.rename(avmParentPath, oldName, avmParentPath, newName);
@@ -628,11 +608,9 @@ public class AssetServiceImpl implements AssetService
         
         if (! isWebProjectStagingSandbox(asset.getSandboxId()))
         {
-            parentFolderPath = addLeadingSlash(parentFolderPath);
+            String avmDstPath = AVMUtil.buildAVMPath(asset.getSandboxId(), parentFolderPath);
             
-            String avmDstPath = asset.getSandboxId() + WCMUtil.AVM_STORE_SEPARATOR + parentFolderPath;
-            
-            String avmSrcPath = AVMNodeConverter.SplitBase(asset.getAvmPath())[0];
+            String avmSrcPath = AVMUtil.splitBase(asset.getAvmPath())[0];
             String name = asset.getName();
             
             avmService.rename(avmSrcPath, name, avmDstPath, name);
@@ -654,9 +632,7 @@ public class AssetServiceImpl implements AssetService
         
         if (! isWebProjectStagingSandbox(asset.getSandboxId()))
         {
-            parentFolderPath = addLeadingSlash(parentFolderPath);
-            
-            String avmDstParentPath = asset.getSandboxId() + WCMUtil.AVM_STORE_SEPARATOR + parentFolderPath;
+            String avmDstParentPath = AVMUtil.buildAVMPath(asset.getSandboxId(), parentFolderPath);
             
             String avmSrcPath = asset.getAvmPath();
             String name = asset.getName();
@@ -676,14 +652,12 @@ public class AssetServiceImpl implements AssetService
     {
         if (! isWebProjectStagingSandbox(sbStoreId))
         {
-            parentFolderPath = addLeadingSlash(parentFolderPath);
+            String avmDstPath = AVMUtil.buildAVMPath(sbStoreId, parentFolderPath);
             
-            String avmDstPath = sbStoreId + WCMUtil.AVM_STORE_SEPARATOR + parentFolderPath;
-        
             // convert the AVM path to a NodeRef so we can use the NodeService to perform import
             NodeRef importRef = AVMNodeConverter.ToNodeRef(-1, avmDstPath);
             processZipImport(zipFile, isHighByteZip, importRef);
-        
+            
             // After a bulk import, snapshot the store
             avmService.createSnapshot(sbStoreId, "Import of file: " + zipFile.getName(), null);
             

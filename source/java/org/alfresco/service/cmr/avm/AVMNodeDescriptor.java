@@ -450,15 +450,15 @@ public class AVMNodeDescriptor implements Serializable
         switch (fType)
         {
             case AVMNodeType.PLAIN_FILE :
-                return "[PF:" + fID + ":" + fName + ": FILE]";
+                return "[PF:" + fID + ":" + fName + ", " + fVersionID + "]";
             case AVMNodeType.PLAIN_DIRECTORY :
-                return "[PF:" + fID + ":" + fName + ": DIR]";
+                return "[PD:" + fID + ":" + fName + ", " + fVersionID + "]";
             case AVMNodeType.LAYERED_FILE :
-                return "[LF:" + fID + ":" + fIndirection + "]";
+                return "[LF:" + fID + ":" + fIndirection + ", " + fVersionID + "]";
             case AVMNodeType.LAYERED_DIRECTORY :
-                return "[LD:" + fID + ":" + fIndirection + "]";
+                return "[LD:" + fID + ":" + fIndirection + ", " + fVersionID + "]";
             case AVMNodeType.DELETED_NODE :
-                return "[DN:" + fID + "]";
+                return "[DN:" + fID + ", " + fVersionID + "]";
             default :
                 throw new AVMException("Internal Error.");
         }

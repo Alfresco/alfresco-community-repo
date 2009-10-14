@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.alfresco.repo.avm.util.AVMUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.util.ParameterCheck;
 import org.alfresco.wcm.util.WCMUtil;
@@ -71,7 +72,7 @@ public class PreviewURIServiceImpl implements PreviewURIService
         String webApp = null;
         if (pathToAsset != null)
         {
-            webApp = WCMUtil.getWebapp(WCMUtil.buildPath(sbStoreId, pathToAsset));
+            webApp = WCMUtil.getWebapp(AVMUtil.buildAVMPath(sbStoreId, pathToAsset));
         }
         
         PreviewContext prevCtx = new PreviewContext(wpStoreId, webApp, authenticatedUser);

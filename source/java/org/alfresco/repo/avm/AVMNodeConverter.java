@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -23,6 +23,7 @@
 
 package org.alfresco.repo.avm;
 
+import org.alfresco.repo.avm.util.AVMUtil;
 import org.alfresco.service.cmr.avm.AVMException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -37,7 +38,7 @@ import org.apache.commons.logging.LogFactory;
  */
 public class AVMNodeConverter
 {
-    private static Log    fgLogger = LogFactory.getLog(AVMNodeConverter.class);
+    private static Log fgLogger = LogFactory.getLog(AVMNodeConverter.class);
     
     /**
      * Get a NodeRef corresponding to the given path and version.
@@ -47,12 +48,8 @@ public class AVMNodeConverter
      */
     public static NodeRef ToNodeRef(int version, String avmPath)
     {
-        String [] pathParts = avmPath.split(":");
-        if (pathParts.length != 2)
-        {
-            throw new AVMException("Malformed AVM Path: " + avmPath);
-        }
-        while (pathParts[1].endsWith("/") && pathParts[1].length() > 1)
+        String [] pathParts = AVMUtil.splitPath(avmPath);
+        while (pathParts[1].endsWith(AVMUtil.AVM_PATH_SEPARATOR) && pathParts[1].length() > 1)
         {
             pathParts[1] = pathParts[1].substring(0, pathParts[1].length() - 1);
         }
@@ -81,8 +78,8 @@ public class AVMNodeConverter
     {
         StoreRef store = nodeRef.getStoreRef();
         String translated = nodeRef.getId();
-        translated = translated.replace(';', '/');
-        int off = translated.indexOf("/");
+        translated = translated.replace(';', AVMUtil.AVM_PATH_SEPARATOR_CHAR);
+        int off = translated.indexOf(AVMUtil.AVM_PATH_SEPARATOR_CHAR);
         if (off == -1)
         {
             fgLogger.error(translated);
@@ -90,9 +87,9 @@ public class AVMNodeConverter
         }
         int version = Integer.parseInt(translated.substring(0, off));
         String path = translated.substring(off);
-        return new Pair<Integer, String>(version, store.getIdentifier() + ":" + path);
+        return new Pair<Integer, String>(version, AVMUtil.buildAVMPath(store.getIdentifier(), path));
     }
-
+    
     /**
      * Extend an already valid AVM path by one more component.
      * @param path The starting AVM path.
@@ -101,57 +98,29 @@ public class AVMNodeConverter
      */
     public static String ExtendAVMPath(String path, String name)
     {
-        if (path.endsWith("/"))
-        {
-            return path + name;
-        }
-        else
-        {
-            return path + "/" + name;
-        }
+        return AVMUtil.extendAVMPath(path, name);
     }
-
+    
     /**
      * Split a path into its parent path and its base name.
      * @param path The initial AVM path.
      * @return An array of 2 Strings containing the parent path and the base
      * name.
      */
-    public static String [] SplitBase(String path)
+    public static String[] SplitBase(String path)
     {
-        path = path.replaceAll("/+", "/");
-        while (path.endsWith("/") && !path.endsWith(":/"))
-        {
-            path = path.substring(0, path.length() - 1);
-        }
-        if (path.endsWith(":/"))
-        {
-           return new String[] { null, "" };
-        }
-        int off = path.lastIndexOf("/");
-        if (off == -1)
-        {
-            throw new AVMException("Invalid Path: " + path);
-        }
-        String [] decomposed = new String[2];
-        decomposed[0] = path.substring(0, off);
-        if (decomposed[0].endsWith(":"))
-        {
-            decomposed[0] = decomposed[0] + "/";
-        }
-        decomposed[1] = path.substring(off + 1);
-        return decomposed;
+        return AVMUtil.splitBase(path);
     }
     
     /**
      * Normalize an AVM path.
      * @param path The incoming path.
      * @return The normalized path.
+     * 
+     * @deprecated see org.alfresco.repo.avm.util.AVMUtil.normalizePath
      */
     public static String NormalizePath(String path)
     {
-        path = path.replaceAll("/+", "/");
-        path = path.replaceAll("/$", "");
-        return path;
+        return AVMUtil.normalizePath(path);
     }
 }

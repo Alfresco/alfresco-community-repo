@@ -34,8 +34,8 @@ import org.alfresco.config.JNDIConstants;
 import org.alfresco.mbeans.VirtServerRegistry;
 import org.alfresco.model.WCMAppModel;
 import org.alfresco.repo.avm.actions.AVMDeployWebsiteAction;
+import org.alfresco.repo.avm.util.AVMUtil;
 import org.alfresco.repo.domain.PropertyValue;
-import org.alfresco.service.cmr.avm.AVMBadArgumentException;
 import org.alfresco.service.cmr.avm.AVMNotFoundException;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
@@ -57,7 +57,7 @@ import org.apache.commons.logging.LogFactory;
  *
  * @author Ariel Backenroth, Kevin Roast, janv
  */
-public class WCMUtil
+public class WCMUtil extends AVMUtil
 {
     private static Log logger = LogFactory.getLog(WCMUtil.class);
     
@@ -70,12 +70,7 @@ public class WCMUtil
     */
    public static String getSandboxStoreId(final String avmPath)
    {
-      final int i = avmPath.indexOf(AVM_STORE_SEPARATOR);
-      if (i == -1)
-      {
-         throw new IllegalArgumentException("path " + avmPath + " does not contain a store");
-      }
-      return avmPath.substring(0, i);
+      return getStoreName(avmPath);
    }
    
    /**
@@ -109,7 +104,7 @@ public class WCMUtil
     */
    public static String getWebProjectStoreIdFromPath(final String avmPath)
    {
-       return getWebProjectStoreId(getSandboxStoreId(avmPath));
+       return getWebProjectStoreId(getStoreName(avmPath));
    }
 
    /**
@@ -279,7 +274,7 @@ public class WCMUtil
     */
    protected static String getCorrespondingPathInMainStore(final String avmPath)
    {
-      String storeName = WCMUtil.getSandboxStoreId(avmPath);
+      String storeName = getStoreName(avmPath);
       storeName = WCMUtil.getCorrespondingMainStoreName(storeName);
       return WCMUtil.getCorrespondingPath(avmPath, storeName);
    }
@@ -296,7 +291,7 @@ public class WCMUtil
     */
    protected static String getCorrespondingPathInPreviewStore(final String avmPath)
    {
-      String storeName = WCMUtil.getSandboxStoreId(avmPath);
+      String storeName = getStoreName(avmPath);
       storeName = WCMUtil.getCorrespondingPreviewStoreName(storeName);
       return WCMUtil.getCorrespondingPath(avmPath, storeName);
    }
@@ -305,13 +300,13 @@ public class WCMUtil
     * Returns the corresponding path in the store provided.
     * 
     * @param avmPath an avm path
-    * @param otherStore the other store to return the corresponding path for
+    * @param otherStore the other store name to return the corresponding path for
     * 
     * @return the corresponding path within the supplied store
     */
-   public static String getCorrespondingPath(final String avmPath, final String otherStore)
+   public static String getCorrespondingPath(final String avmPath, final String otherStoreName)
    {
-      return (otherStore + AVM_STORE_SEPARATOR + WCMUtil.getStoreRelativePath(avmPath));
+      return (buildAVMPath(otherStoreName, WCMUtil.getStoreRelativePath(avmPath)));
    }
    
    /**
@@ -414,7 +409,7 @@ public class WCMUtil
    public static String buildStoreRootPath(final String storeName)
    {
        ParameterCheck.mandatoryString("storeName", storeName);
-       return storeName + AVM_STORE_SEPARATOR + "/" + JNDIConstants.DIR_DEFAULT_WWW;
+       return buildAVMPath(storeName, AVM_PATH_SEPARATOR_CHAR + JNDIConstants.DIR_DEFAULT_WWW);
    }
 
    /**
@@ -429,7 +424,7 @@ public class WCMUtil
    public static String buildSandboxRootPath(final String storeName)
    {
        ParameterCheck.mandatoryString("storeName", storeName);
-       return storeName + AVM_STORE_SEPARATOR + JNDIConstants.DIR_DEFAULT_WWW_APPBASE;
+       return buildAVMPath(storeName, JNDIConstants.DIR_DEFAULT_WWW_APPBASE);
    }
    
    /**
@@ -443,7 +438,7 @@ public class WCMUtil
    public static String buildStoreWebappPath(final String storeName, String webApp)
    {
        ParameterCheck.mandatoryString("webApp", webApp);
-       return WCMUtil.buildSandboxRootPath(storeName) + '/' + webApp;
+       return WCMUtil.buildSandboxRootPath(storeName) + AVM_PATH_SEPARATOR_CHAR + webApp;
    }
    
    public static String lookupStoreDNS(AVMService avmService, String store)
@@ -503,7 +498,7 @@ public class WCMUtil
          return parent;
       }
       
-      if (path.charAt(0) == '/')
+      if (path.charAt(0) == AVM_PATH_SEPARATOR_CHAR)
       {
          final Matcher m = relation.pattern().matcher(parent);
          if (m.matches())
@@ -511,9 +506,9 @@ public class WCMUtil
             parent = m.group(1);
          }
       } 
-      else if (parent.charAt(parent.length() - 1) != '/')
+      else if (parent.charAt(parent.length() - 1) != AVM_PATH_SEPARATOR_CHAR)
       {
-         parent = parent + '/';
+         parent = parent + AVM_PATH_SEPARATOR_CHAR;
       }
 
       return parent + path;
@@ -529,7 +524,7 @@ public class WCMUtil
    public static String getStoreRelativePath(final String absoluteAVMPath)
    {
        ParameterCheck.mandatoryString("absoluteAVMPath", absoluteAVMPath);
-       return absoluteAVMPath.substring(absoluteAVMPath.indexOf(AVM_STORE_SEPARATOR) + 1);
+       return AVMUtil.splitPath(absoluteAVMPath)[1];
    }
 
    /**
@@ -541,7 +536,7 @@ public class WCMUtil
    protected static String getWebappRelativePath(final String absoluteAVMPath)
    {
       final Matcher m = WEBAPP_RELATIVE_PATH_PATTERN.matcher(absoluteAVMPath);
-      return m.matches() && m.group(3).length() != 0 ? m.group(3) : "/";
+      return m.matches() && m.group(3).length() != 0 ? m.group(3) : AVM_PATH_SEPARATOR;
    }
    
    /**
@@ -580,7 +575,7 @@ public class WCMUtil
    protected static String getSandboxRelativePath(final String absoluteAVMPath)
    {
       final Matcher m = SANDBOX_RELATIVE_PATH_PATTERN.matcher(absoluteAVMPath);
-      return m.matches() && m.group(2).length() != 0 ? m.group(2) : "/";
+      return m.matches() && m.group(2).length() != 0 ? m.group(2) : AVM_PATH_SEPARATOR;
    }
 
    /**
@@ -662,7 +657,7 @@ public class WCMUtil
     {
         if (force || VirtServerUtils.requiresUpdateNotification(path))
         {
-            final int webappIndex = path.indexOf('/', 
+            final int webappIndex = path.indexOf(AVM_PATH_SEPARATOR_CHAR, 
                                                  path.indexOf(JNDIConstants.DIR_DEFAULT_APPBASE) + 
                                                  JNDIConstants.DIR_DEFAULT_APPBASE.length() + 1);
 
@@ -684,7 +679,7 @@ public class WCMUtil
     {
         if (force || VirtServerUtils.requiresUpdateNotification(path))
         {
-            final int webappIndex = path.indexOf('/', 
+            final int webappIndex = path.indexOf(AVM_PATH_SEPARATOR_CHAR, 
                                                  path.indexOf(JNDIConstants.DIR_DEFAULT_APPBASE) + 
                                                  JNDIConstants.DIR_DEFAULT_APPBASE.length() + 1);
 
@@ -706,41 +701,16 @@ public class WCMUtil
    {
       if (force || VirtServerUtils.requiresUpdateNotification(path))
       {
-         final int webappIndex = path.indexOf('/', 
+         final int webappIndex = path.indexOf(AVM_PATH_SEPARATOR_CHAR, 
                                               path.indexOf(JNDIConstants.DIR_DEFAULT_APPBASE) + 
                                               JNDIConstants.DIR_DEFAULT_APPBASE.length() + 1);
-
+         
          if (webappIndex != -1)
          {
             path = path.substring(0, webappIndex);
          }
          vServerRegistry.removeWebapp(-1, path, true);
       }
-   }
-   
-   public static String[] splitPath(String path)
-   {
-       String[] storePath = path.split(AVM_STORE_SEPARATOR);
-       if (storePath.length != 2)
-       {
-           throw new AVMBadArgumentException("Invalid Path: " + path);
-       }
-       return storePath;
-   }
-   
-   public static String buildPath(String sbStoreId, String relativePath)
-   {
-       return sbStoreId + AVM_STORE_SEPARATOR + addLeadingSlash(relativePath);
-   }
-   
-   public static String addLeadingSlash(String relativePath)
-   {
-       if ((relativePath.length() == 0) || (relativePath.charAt(0) != PATH_SEPARATOR))
-       {
-           relativePath = PATH_SEPARATOR + relativePath;
-       }
-       
-       return relativePath;
    }
    
    // return common web app or null if paths span multiple web apps (or no web app)
@@ -753,7 +723,7 @@ public class WCMUtil
        {
            // Example srcPath:
            //     mysite--alice:/www/avm_webapps/ROOT/foo.txt
-           String srcPath = WCMUtil.buildPath(sbStoreId, storeRelativePath);
+           String srcPath = WCMUtil.buildAVMPath(sbStoreId, storeRelativePath);
            
            // TODO - don't really need the sbStoreId 
            // derive webapp for now
@@ -777,10 +747,6 @@ public class WCMUtil
    // Component Separator.
    protected static final String STORE_SEPARATOR = "--";
    
-   public static final String AVM_STORE_SEPARATOR = ":";
-   
-   public static final char PATH_SEPARATOR = '/';
-   
    // names of the stores representing the layers for an AVM website
    //XXXarielb this should be private
    protected final static String STORE_WORKFLOW = "workflow";
@@ -800,9 +766,9 @@ public class WCMUtil
    
    private final static Pattern WEBAPP_RELATIVE_PATH_PATTERN = 
       Pattern.compile("([^:]+:/" + JNDIConstants.DIR_DEFAULT_WWW +
-                      "/" + JNDIConstants.DIR_DEFAULT_APPBASE + "/([^/]+))(.*)");
+                      AVM_PATH_SEPARATOR + JNDIConstants.DIR_DEFAULT_APPBASE + "/([^/]+))(.*)");
    
    private final static Pattern SANDBOX_RELATIVE_PATH_PATTERN = 
       Pattern.compile("([^:]+:/" + JNDIConstants.DIR_DEFAULT_WWW +
-                      "/" + JNDIConstants.DIR_DEFAULT_APPBASE + ")(.*)");
+                      AVM_PATH_SEPARATOR + JNDIConstants.DIR_DEFAULT_APPBASE + ")(.*)");
 }

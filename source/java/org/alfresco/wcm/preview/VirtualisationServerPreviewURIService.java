@@ -29,6 +29,7 @@ import java.text.MessageFormat;
 
 import org.alfresco.config.JNDIConstants;
 import org.alfresco.mbeans.VirtServerRegistry;
+import org.alfresco.repo.avm.util.AVMUtil;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.util.ParameterCheck;
 import org.alfresco.wcm.util.WCMUtil;
@@ -118,12 +119,12 @@ public class VirtualisationServerPreviewURIService extends AbstractPreviewURISer
        {
           assetPath = assetPath.substring((JNDIConstants.DIR_DEFAULT_WWW_APPBASE).length());
        }
-       if (assetPath.startsWith(WCMUtil.PATH_SEPARATOR + WCMUtil.DIR_ROOT))
+       if (assetPath.startsWith(AVMUtil.AVM_PATH_SEPARATOR + WCMUtil.DIR_ROOT))
        {
-          assetPath = assetPath.substring((WCMUtil.PATH_SEPARATOR + WCMUtil.DIR_ROOT).length());
+          assetPath = assetPath.substring((AVMUtil.AVM_PATH_SEPARATOR + WCMUtil.DIR_ROOT).length());
        }
        
-       assetPath = WCMUtil.addLeadingSlash(assetPath);
+       assetPath = AVMUtil.addLeadingSlash(assetPath);
        
        return MessageFormat.format(PREVIEW_ASSET_URL, dns, domain, port, assetPath);
     }

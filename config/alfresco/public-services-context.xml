@@ -817,7 +817,8 @@
             </list>
         </property>
     </bean>
-
+    
+    <!-- deprecated (since 3.2) - refer to AVMLockingAwareService -->
     <bean id="indexingAVMLockingAwareService" class="org.springframework.aop.framework.ProxyFactoryBean">
         <property name="proxyInterfaces">
             <list>
@@ -985,6 +986,8 @@
             </list>
         </property>
     </bean>
+    
+    <!--  deprecated (since 3.2) - refer to AVMService -->
     <bean id="indexingAVMService" class="org.springframework.aop.framework.ProxyFactoryBean">
         <property name="proxyInterfaces">
             <list>
@@ -1034,7 +1037,7 @@
 
     <bean id="avmSyncService" class="org.alfresco.repo.avm.AVMSyncServiceImpl">
         <property name="avmService">
-            <ref bean="indexingAVMService"/>
+            <ref bean="AVMService"/>
         </property>
         <property name="avmRepository">
             <ref bean="avmRepository"/>

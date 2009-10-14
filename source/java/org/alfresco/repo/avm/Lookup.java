@@ -27,6 +27,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.alfresco.repo.avm.util.AVMUtil;
 import org.alfresco.util.Pair;
 
 /**
@@ -224,7 +225,7 @@ class Lookup implements Serializable
         comp.setName(name);
         comp.setNode(node);
         if (fPosition >= 0 && fDirectlyContained && 
-                fComponents.get(fPosition).getNode().getType() == AVMNodeType.LAYERED_DIRECTORY)
+                getCurrentNode().getType() == AVMNodeType.LAYERED_DIRECTORY)
         {
 //            if (directlyContained != ((DirectoryNode)fComponents.get(fPosition).getNode()).directlyContains(node))
 //            {
@@ -311,8 +312,7 @@ class Lookup implements Serializable
         if (fNeedsCopying)
         {
             node = node.copy(this);
-            // node.setVersionID(fAVMStore.getNextVersionID());
-            fComponents.get(fPosition).setNode(node);
+            getCurrentLookupComponent().setNode(node);
             if (fPosition == 0)
             {
                 // Inform the store of a new root.
@@ -339,8 +339,8 @@ class Lookup implements Serializable
      */
     private Pair<String, Integer> computeIndirection(String name)
     {
-        String parentIndirection = fComponents.get(fPosition).getIndirection();
-        int parentIndirectionVersion = fComponents.get(fPosition).getIndirectionVersion();
+        String parentIndirection = getCurrentIndirection();
+        int parentIndirectionVersion = getCurrentIndirectionVersion();
         if (parentIndirection.endsWith("/"))
         {
             return new Pair<String, Integer>(parentIndirection + name, parentIndirectionVersion);
@@ -368,13 +368,18 @@ class Lookup implements Serializable
         }
     }
     
+    private LookupComponent getCurrentLookupComponent()
+    {
+        return fComponents.get(fPosition);
+    }
+    
     /**
      * Get the current node we're looking at.
      * @return The current node.   
      */
     public AVMNode getCurrentNode()
     {
-        return fComponents.get(fPosition).getNode();
+        return getCurrentLookupComponent().getNode();
     }
     
     /**
@@ -440,8 +445,7 @@ class Lookup implements Serializable
      */
     public String getCurrentIndirection()
     {
-        String value = fComponents.get(fPosition).getIndirection();
-        return value;
+        return getCurrentLookupComponent().getIndirection();
     }
     
     /**
@@ -450,7 +454,7 @@ class Lookup implements Serializable
      */
     public int getCurrentIndirectionVersion()
     {
-        return fComponents.get(fPosition).getIndirectionVersion();
+        return getCurrentLookupComponent().getIndirectionVersion();
     }
     
     /**
@@ -480,15 +484,15 @@ class Lookup implements Serializable
     {
         if (fComponents.size() == 1)
         {
-            return fStoreName + ":/";
+            return AVMUtil.buildAVMPath(fStoreName, AVMUtil.AVM_PATH_SEPARATOR); // root;
         }
         StringBuilder builder = new StringBuilder();
         builder.append(fStoreName);
-        builder.append(':');
+        builder.append(AVMUtil.AVM_STORE_SEPARATOR_CHAR);
         int count = fComponents.size();
         for (int i = 1; i < count; i++)
         {
-            builder.append('/');
+            builder.append(AVMUtil.AVM_PATH_SEPARATOR_CHAR);
             builder.append(fComponents.get(i).getName());
         }
         return builder.toString();
@@ -500,7 +504,7 @@ class Lookup implements Serializable
      */
     public String getBaseName()
     {
-        return fComponents.get(fPosition).getName();
+        return getCurrentLookupComponent().getName();
     }
     
     /**
@@ -538,5 +542,12 @@ class Lookup implements Serializable
     public int getVersion()
     {
         return fVersion;
+    }
+    
+    // for debug
+    @Override
+    public String toString()
+    {
+        return getRepresentedPath();
     }
 }

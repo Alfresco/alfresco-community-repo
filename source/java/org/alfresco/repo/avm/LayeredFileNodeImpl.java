@@ -291,7 +291,16 @@ public class LayeredFileNodeImpl extends FileNodeImpl implements LayeredFileNode
      */
     public ContentData getContentData(Lookup lPath)
     {
-        Lookup lookup = lPath.getAVMStore().getAVMRepository().lookup(getUnderlyingVersion(lPath), getIndirection(), false);
+        Lookup lookup = null;
+        if (lPath != null)
+        {
+            lookup = lPath.getAVMStore().getAVMRepository().lookup(getUnderlyingVersion(lPath), getIndirection(), false);
+        }
+        else
+        {
+            lookup = AVMRepository.GetInstance().lookup(getUnderlyingVersion(null), getIndirection(), false);
+        }
+        
         if (lookup == null)
         {
             throw new AVMException("Invalid target.");
@@ -312,7 +321,7 @@ public class LayeredFileNodeImpl extends FileNodeImpl implements LayeredFileNode
      */
     public int getUnderlyingVersion(Lookup lookup)
     {
-        if (lookup.getVersion() == -1)
+        if ((lookup != null) && (lookup.getVersion() == -1))
         {
             return -1;
         }
@@ -353,7 +362,6 @@ public class LayeredFileNodeImpl extends FileNodeImpl implements LayeredFileNode
      */
     public LayeredFileNode copyLiterally(Lookup lookup)
     {
-        // As far As I can tell this not used
         DirectoryNode dir = lookup.getCurrentNodeDirectory();
         Long parentAclId = null;
         if ((dir != null) && (dir.getAcl() != null))

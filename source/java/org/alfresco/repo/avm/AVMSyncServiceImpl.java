@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.alfresco.repo.avm.util.AVMUtil;
 import org.alfresco.repo.domain.DbAccessControlList;
 import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.repo.security.permissions.ACLCopyMode;
@@ -423,12 +424,7 @@ public class AVMSyncServiceImpl implements AVMSyncService
             int version = diff.getSourceVersion();
             if (version < 0)
             {
-                int colonOff = diff.getSourcePath().indexOf(':');
-                if (colonOff == -1)
-                {
-                    throw new AVMBadArgumentException("Invalid path.");
-                }
-                String storeName = diff.getSourcePath().substring(0, colonOff);
+                String storeName = AVMUtil.getStoreName(diff.getSourcePath());
                 if (storeVersions.containsKey(storeName))
                 {
                     // We've already snapshotted this store.
@@ -459,7 +455,7 @@ public class AVMSyncServiceImpl implements AVMSyncService
             // Keep track of stores updated so that they can all be snapshotted
             // at end of update.
             String dstPath = diff.getDestinationPath();
-            destStores.add(dstPath.substring(0, dstPath.indexOf(':')));
+            destStores.add(AVMUtil.getStoreName(dstPath));
             
             dispatchUpdate(diffCode, dstParts[0], dstParts[1], excluder, srcDesc, dstDesc, 
                            ignoreConflicts, ignoreOlder, overrideConflicts, overrideOlder);
@@ -488,7 +484,7 @@ public class AVMSyncServiceImpl implements AVMSyncService
             case AVMDifference.NEWER :
             {
                 // You can't delete what isn't there.
-                linkIn(parentPath, name, srcDesc, excluder, dstDesc != null && !dstDesc.isDeleted());
+                linkIn(parentPath, name, srcDesc, excluder, dstDesc != null && !dstDesc.isDeleted(), dstDesc);
                 return;
             }
             case AVMDifference.OLDER :
@@ -496,7 +492,7 @@ public class AVMSyncServiceImpl implements AVMSyncService
                 // You can force it.
                 if (overrideOlder)
                 {
-                    linkIn(parentPath, name, srcDesc, excluder, !dstDesc.isDeleted());
+                    linkIn(parentPath, name, srcDesc, excluder, !dstDesc.isDeleted(), dstDesc);
                     return;
                 }
                 // You can ignore it.
@@ -512,7 +508,7 @@ public class AVMSyncServiceImpl implements AVMSyncService
                 // You can force it.
                 if (overrideConflicts)
                 {
-                    linkIn(parentPath, name, srcDesc, excluder, true);
+                    linkIn(parentPath, name, srcDesc, excluder, true, dstDesc);
                     return;
                 }
                 // You can ignore it.
@@ -550,7 +546,7 @@ public class AVMSyncServiceImpl implements AVMSyncService
      * @param toLink The node descriptor.
      * @param removeFirst Whether to do a removeNode before linking in.
      */
-    private void linkIn(String parentPath, String name, AVMNodeDescriptor toLink, NameMatcher excluder, boolean removeFirst)
+    private void linkIn(String parentPath, String name, AVMNodeDescriptor toLink, NameMatcher excluder, boolean removeFirst, AVMNodeDescriptor dstDesc)
     {
         // This is a delete.
         if (toLink == null)
@@ -581,7 +577,18 @@ public class AVMSyncServiceImpl implements AVMSyncService
             recursiveCopy(parentPath, name, toLink, excluder);
             return;
         }
-
+        
+        String newPath = AVMNodeConverter.ExtendAVMPath(parentPath, name);
+        
+        if (toLink.isLayeredDirectory() &&
+            toLink.isPrimary() &&
+            dstDesc == null &&
+            toLink.getIndirection().equals(newPath))
+        {
+            recursiveCopy(parentPath, name, toLink, excluder);
+            return;
+        }
+        
         if (removeFirst)
         {
             if (toLink.isDirectory())
@@ -600,8 +607,6 @@ public class AVMSyncServiceImpl implements AVMSyncService
         {
             fAVMService.link(parentPath, name, toLink);
         }
-        
-        String newPath = AVMNodeConverter.ExtendAVMPath(parentPath, name);
         
         DbAccessControlList parentAcl= getACL(parentPath);
         DbAccessControlList acl = getACL(toLink.getPath());
@@ -746,6 +751,33 @@ public class AVMSyncServiceImpl implements AVMSyncService
             {
                 return AVMDifference.NEWER;
             }
+            
+            if (common.isLayeredFile())
+            {
+                Integer diff = compareLayeredCommonAncestor(common, srcDesc, dstDesc);
+                if (diff != null)
+                {
+                    return diff;
+                }
+            }
+            
+            if (srcDesc.isDeleted() && (srcDesc.getDeletedType() == AVMNodeType.LAYERED_DIRECTORY))
+            {
+                Integer diff = compareLayeredCommonAncestor(common, srcDesc, dstDesc);
+                if (diff != null)
+                {
+                    return diff;
+                }
+            }
+            else if (dstDesc.isDeleted() && (dstDesc.getDeletedType() == AVMNodeType.LAYERED_DIRECTORY))
+            {
+                Integer diff = compareLayeredCommonAncestor(common, dstDesc, srcDesc);
+                if (diff != null)
+                {
+                    return diff;
+                }
+            }
+            
             // Must be a conflict.
             return AVMDifference.CONFLICT;
         }
@@ -857,6 +889,15 @@ public class AVMSyncServiceImpl implements AVMSyncService
                 return AVMDifference.NEWER;
             }
             
+            if (common.isLayeredFile())
+            {
+                Integer diff = compareLayeredCommonAncestor(common, srcDesc, dstDesc);
+                if (diff != null)
+                {
+                    return diff;
+                }
+            }
+            
             return AVMDifference.CONFLICT;
         }
         // Destination is a plain file.
@@ -878,21 +919,51 @@ public class AVMSyncServiceImpl implements AVMSyncService
         
         if (common.isLayeredFile())
         {
-            AVMNode dstAncNode = AVMDAOs.Instance().fAVMNodeDAO.getByID(dstDesc.getId()).getAncestor();
-            if ((dstAncNode != null) && (common.getId() == dstAncNode.getId()))
+            Integer diff = compareLayeredCommonAncestor(common, srcDesc, dstDesc);
+            if (diff != null)
             {
-                return AVMDifference.NEWER;
-            }
-            
-            AVMNode srcAncNode = AVMDAOs.Instance().fAVMNodeDAO.getByID(srcDesc.getId()).getAncestor();
-            if ((srcAncNode != null) && (common.getId() == srcAncNode.getId()))
-            {
-                return AVMDifference.OLDER;
+                return diff;
             }
         }
         
         // They must, finally, be in conflict.
         return AVMDifference.CONFLICT;
+    }
+    
+    private Integer compareLayeredCommonAncestor(AVMNodeDescriptor common, AVMNodeDescriptor srcDesc, AVMNodeDescriptor dstDesc)
+    {
+        Integer diff = null;
+        
+        // check dst ancestry
+        diff = compareLayeredCommonAncestor(common, dstDesc.getId(), AVMDifference.NEWER);
+        if (diff == null)
+        {
+            // check src ancestry
+            diff = compareLayeredCommonAncestor(common, srcDesc.getId(), AVMDifference.OLDER);
+        }
+        
+        return diff;
+    }
+    
+    private Integer compareLayeredCommonAncestor(AVMNodeDescriptor common, long compareNodeId, int diffType)
+    {
+        Integer diff = null;
+        
+        AVMNode compareAncNode = AVMDAOs.Instance().fAVMNodeDAO.getByID(compareNodeId).getAncestor();
+        if (compareAncNode != null)
+        {
+            if (common.getId() == compareAncNode.getId())
+            {
+                diff = diffType;
+            }
+            else if (common.isLayeredFile())
+            {
+                // TODO review (alongside createSnapshot+COW)
+                diff = compareLayeredCommonAncestor(common, compareAncNode.getId(), diffType);
+            }
+        }
+        
+        return diff;
     }
     
     // compare node properties

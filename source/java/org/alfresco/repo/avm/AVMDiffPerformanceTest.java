@@ -27,9 +27,6 @@ import java.util.List;
 
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.avmsync.AVMDifference;
-import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.cmr.search.ResultSet;
-import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.util.GUID;
 
 public class AVMDiffPerformanceTest extends AVMServiceTestBase
@@ -69,39 +66,45 @@ public class AVMDiffPerformanceTest extends AVMServiceTestBase
                     fService.createDirectory("StagingArea:/www", "test");
                     fService.createLayeredDirectory("StagingArea:/www", "SandBox:/", "www");
 
-                    
+                    long start = System.nanoTime();
                     for(int i = 0; i < cnt; i++)
                     {
                         String name = GUID.generate();
                         fService.createFile("SandBox:/www", name).close();
                     }
-                    System.out.println("Create SandBox:/www");
+                    long end = System.nanoTime();
+                    System.out.println("Create SandBox:/www in "+( (end-start)/1000000000.0f));
                     
-                    
+                    start = System.nanoTime();
                     for(int i = 0; i < cnt; i++)
                     {
                         String name = GUID.generate();
                         fService.createFile("SandBox:/www/test", name).close();
                     }
-                    System.out.println("Create SandBox:/www/test");
+                    end = System.nanoTime();
+                    System.out.println("Create SandBox:/www/test in "+( (end-start)/1000000000.0f));
                     
+                    start = System.nanoTime();
                     for(int i = 0; i < cnt; i++)
                     {
                         String name = GUID.generate();
                         fService.createFile("StagingArea:/www", name).close();
                     }
-                    System.out.println("Create StagingArea:/www");
+                    end = System.nanoTime();
+                    System.out.println("Create StagingArea:/www in "+( (end-start)/1000000000.0f));
                     
+                    start = System.nanoTime();
                     for(int i = 0; i < cnt; i++)
                     {
                         String name = GUID.generate();
                         fService.createFile("StagingArea:/www/test", name).close();
                     }
-                    System.out.println("Create StagingArea:/www/test");
+                    end = System.nanoTime();
+                    System.out.println("Create StagingArea:/www/test in "+( (end-start)/1000000000.0f));
                     
-                    long start = System.nanoTime();
+                    start = System.nanoTime();
                     List<AVMDifference> diffs = fSyncService.compare(-1, "SandBox:/www", -1, "StagingArea:/www", null);
-                    long end = System.nanoTime();
+                    end = System.nanoTime();
                     System.out.println("Diff in "+( (end-start)/1000000000.0f));
                     
                     assertEquals(cnt*2, diffs.size());

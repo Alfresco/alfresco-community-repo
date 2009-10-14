@@ -94,11 +94,11 @@ import org.alfresco.wcm.sandbox.SandboxConstants;
  */
 public class AVMServiceTest extends AVMServiceTestBase
 {
-	public void testSetup() throws Exception
-	{
-		super.testSetup();
-	}
-	
+    public void testSetup() throws Exception
+    {
+        super.testSetup();
+    }
+    
     public void testDiffOrder()
     {
         try
@@ -620,9 +620,23 @@ public class AVMServiceTest extends AVMServiceTestBase
             runQueriesAgainstBasicTree("main");
             fService.createFile("main:/a", "Xander");
             fService.createSnapshot("layer", null, null);
+            
             assertEquals(2, fService.lookup(2, "layer:/a").getIndirectionVersion());
+            Map<String, AVMNodeDescriptor> listing =fService.getDirectoryListing(2, "layer:/");
+            assertEquals(1, listing.size());
+            assertEquals(2, listing.values().iterator().next().getIndirectionVersion());
             assertEquals(fService.lookup(2, "main:/a/Xander").getId(), fService.lookup(2, "layer:/a/Xander").getId());
+            
             assertNull(fService.lookup(1, "layer:/a/Xander"));
+            listing = fService.getDirectoryListing(1, "layer:/");
+            assertEquals(1, listing.size());
+            assertEquals(1, listing.values().iterator().next().getIndirectionVersion());
+            
+            assertEquals(-1, fService.lookup(-1, "layer:/a").getIndirectionVersion());
+            listing = fService.getDirectoryListing(-1, "layer:/");
+            assertEquals(1, listing.size());
+            assertEquals(-1, listing.values().iterator().next().getIndirectionVersion());
+            assertEquals(fService.lookup(-1, "main:/a/Xander").getId(), fService.lookup(-1, "layer:/a/Xander").getId());
         }
         catch (Exception e)
         {
@@ -3451,9 +3465,11 @@ public class AVMServiceTest extends AVMServiceTestBase
         {
             setupBasicTree();
             fService.createLayeredFile("main:/a/b/c/foo", "main:/d", "lfoo");
+            assertTrue(fService.lookup(-1, "main:/d/lfoo").isLayeredFile());
             fService.createSnapshot("main", null, null);
             System.out.println(recursiveList("main", -1, true));
             assertEquals("main:/a/b/c/foo", fService.lookup(-1, "main:/d/lfoo").getIndirection());
+            assertTrue(fService.lookup(-1, "main:/d/lfoo").isLayeredFile());
             BufferedReader reader = new BufferedReader(new InputStreamReader(fService.getFileInputStream(-1, "main:/d/lfoo")));
             String line = reader.readLine();
             reader.close();
@@ -3461,6 +3477,7 @@ public class AVMServiceTest extends AVMServiceTestBase
             PrintStream out = new PrintStream(fService.getFileOutputStream("main:/d/lfoo"));
             out.println("I am main:/d/lfoo");
             out.close();
+            assertFalse(fService.lookup(-1, "main:/d/lfoo").isLayeredFile());
             fService.createSnapshot("main", null, null);
             System.out.println(recursiveList("main", -1, true));
             reader = new BufferedReader(new InputStreamReader(fService.getFileInputStream(-1, "main:/a/b/c/foo")));
@@ -3471,6 +3488,7 @@ public class AVMServiceTest extends AVMServiceTestBase
             line = reader.readLine();
             reader.close();
             assertEquals("I am main:/d/lfoo", line);
+            assertFalse(fService.lookup(-1, "main:/d/lfoo").isLayeredFile());
         }
         catch (Exception e)
         {
@@ -3506,6 +3524,7 @@ public class AVMServiceTest extends AVMServiceTestBase
                 // expected
             }
             
+            // create plain file
             fService.createFile("main:/", "foo").close();
             
             assertEquals(1, fService.lookup(-1, "main:/foo").getVersionID());
@@ -3518,6 +3537,8 @@ public class AVMServiceTest extends AVMServiceTestBase
             PrintStream out = new PrintStream(fService.getFileOutputStream("main:/foo"));
             out.println("I am main:/foo V1a");
             out.close();
+            
+            // update plain file
             
             out = new PrintStream(fService.getFileOutputStream("main:/foo"));
             out.println("I am main:/foo V1b");
@@ -3537,6 +3558,8 @@ public class AVMServiceTest extends AVMServiceTestBase
             line = reader.readLine();
             reader.close();
             assertEquals("I am main:/foo V1c", line);
+            
+            // update plain file
             
             out = new PrintStream(fService.getFileOutputStream("main:/foo"));
             out.println("I am main:/foo V2a");
@@ -3559,6 +3582,7 @@ public class AVMServiceTest extends AVMServiceTestBase
             reader.close();
             assertEquals("I am main:/foo V2b", line);
             
+            // update plain file
             out = new PrintStream(fService.getFileOutputStream("main:/foo"));
             out.println("I am main:/foo V3");
             out.close();
@@ -3579,10 +3603,12 @@ public class AVMServiceTest extends AVMServiceTestBase
                 // expected
             }
             
+            // create layered file
             fService.createLayeredFile("main:/foo", "main:/", "lfoo");
             
             assertEquals(3, fService.lookup(-1, "main:/foo").getVersionID());
             assertEquals(1, fService.lookup(-1, "main:/lfoo").getVersionID());
+            assertTrue(fService.lookup(-1, "main:/lfoo").isLayeredFile());
             
             assertEquals("main:/foo", fService.lookup(-1, "main:/lfoo").getIndirection());
             
@@ -3611,23 +3637,10 @@ public class AVMServiceTest extends AVMServiceTestBase
             reader.close();
             assertEquals("I am main:/foo V3", line);
             
+            // update plain file
             out = new PrintStream(fService.getFileOutputStream("main:/foo"));
             out.println("I am main:/foo V4");
             out.close();
-            
-            reader = new BufferedReader(new InputStreamReader(fService.getFileInputStream(-1, "main:/foo")));
-            line = reader.readLine();
-            reader.close();
-            assertEquals("I am main:/foo V4", line);
-            
-            // TODO - review
-            reader = new BufferedReader(new InputStreamReader(fService.getFileInputStream(-1, "main:/lfoo")));
-            line = reader.readLine();
-            reader.close();
-            assertEquals("I am main:/foo V4", line);
-            
-            assertEquals(4, fService.lookup(-1, "main:/foo").getVersionID());
-            assertEquals(1, fService.lookup(-1, "main:/lfoo").getVersionID());
             
             reader = new BufferedReader(new InputStreamReader(fService.getFileInputStream(-1, "main:/foo")));
             line = reader.readLine();
@@ -3645,8 +3658,6 @@ public class AVMServiceTest extends AVMServiceTestBase
             fService.createSnapshot("main", null, null);
             
             assertEquals(4, fService.lookup(-1, "main:/foo").getVersionID());
-            
-            // TODO - review
             assertEquals(2, fService.lookup(-1, "main:/lfoo").getVersionID());
             
             reader = new BufferedReader(new InputStreamReader(fService.getFileInputStream(-1, "main:/foo")));
@@ -3658,6 +3669,8 @@ public class AVMServiceTest extends AVMServiceTestBase
             line = reader.readLine();
             reader.close();
             assertEquals("I am main:/foo V4", line);
+            
+            // update plain file
             
             out = new PrintStream(fService.getFileOutputStream("main:/foo"));
             out.println("I am main:/foo V5a");
@@ -3675,7 +3688,7 @@ public class AVMServiceTest extends AVMServiceTestBase
             reader = new BufferedReader(new InputStreamReader(fService.getFileInputStream(-1, "main:/lfoo")));
             line = reader.readLine();
             reader.close();
-            assertEquals("I am main:/foo V4", line);
+            assertEquals("I am main:/foo V5b", line);
             
             assertEquals(5, fService.lookup(-1, "main:/foo").getVersionID());
             assertEquals(2, fService.lookup(-1, "main:/lfoo").getVersionID());
@@ -3683,7 +3696,7 @@ public class AVMServiceTest extends AVMServiceTestBase
             fService.createSnapshot("main", null, null);
             
             assertEquals(5, fService.lookup(-1, "main:/foo").getVersionID());
-            assertEquals(2, fService.lookup(-1, "main:/lfoo").getVersionID());
+            assertEquals(3, fService.lookup(-1, "main:/lfoo").getVersionID());
             
             reader = new BufferedReader(new InputStreamReader(fService.getFileInputStream(-1, "main:/foo")));
             line = reader.readLine();
@@ -3693,19 +3706,20 @@ public class AVMServiceTest extends AVMServiceTestBase
             reader = new BufferedReader(new InputStreamReader(fService.getFileInputStream(-1, "main:/lfoo")));
             line = reader.readLine();
             reader.close();
-            assertEquals("I am main:/foo V4", line);
+            assertEquals("I am main:/foo V5b", line);
             
+            // update plain file
             out = new PrintStream(fService.getFileOutputStream("main:/foo"));
             out.println("I am main:/foo V6");
             out.close();
             
             assertEquals(6, fService.lookup(-1, "main:/foo").getVersionID());
-            assertEquals(2, fService.lookup(-1, "main:/lfoo").getVersionID());
+            assertEquals(3, fService.lookup(-1, "main:/lfoo").getVersionID());
             
             fService.createSnapshot("main", null, null);
             
             assertEquals(6, fService.lookup(-1, "main:/foo").getVersionID());
-            assertEquals(2, fService.lookup(-1, "main:/lfoo").getVersionID());
+            assertEquals(4, fService.lookup(-1, "main:/lfoo").getVersionID());
             
             reader = new BufferedReader(new InputStreamReader(fService.getFileInputStream(-1, "main:/foo")));
             line = reader.readLine();
@@ -3715,19 +3729,22 @@ public class AVMServiceTest extends AVMServiceTestBase
             reader = new BufferedReader(new InputStreamReader(fService.getFileInputStream(-1, "main:/lfoo")));
             line = reader.readLine();
             reader.close();
-            assertEquals("I am main:/foo V4", line);
+            assertEquals("I am main:/foo V6", line);
             
+            // update layered file
             out = new PrintStream(fService.getFileOutputStream("main:/lfoo"));
             out.println("I am main:/lfoo V1");
             out.close();
             
             assertEquals(6, fService.lookup(-1, "main:/foo").getVersionID());
-            assertEquals(3, fService.lookup(-1, "main:/lfoo").getVersionID());
+            assertEquals(5, fService.lookup(-1, "main:/lfoo").getVersionID());
+            assertFalse(fService.lookup(-1, "main:/lfoo").isLayeredFile());
             
             fService.createSnapshot("main", null, null);
             
             assertEquals(6, fService.lookup(-1, "main:/foo").getVersionID());
-            assertEquals(3, fService.lookup(-1, "main:/lfoo").getVersionID());
+            assertEquals(5, fService.lookup(-1, "main:/lfoo").getVersionID());
+            assertFalse(fService.lookup(-1, "main:/lfoo").isLayeredFile());
             
             reader = new BufferedReader(new InputStreamReader(fService.getFileInputStream(-1, "main:/foo")));
             line = reader.readLine();
@@ -3739,17 +3756,20 @@ public class AVMServiceTest extends AVMServiceTestBase
             reader.close();
             assertEquals("I am main:/lfoo V1", line);
             
+            // update layered file
             out = new PrintStream(fService.getFileOutputStream("main:/lfoo"));
             out.println("I am main:/lfoo V2");
             out.close();
             
             assertEquals(6, fService.lookup(-1, "main:/foo").getVersionID());
-            assertEquals(4, fService.lookup(-1, "main:/lfoo").getVersionID());
+            assertEquals(6, fService.lookup(-1, "main:/lfoo").getVersionID());
+            assertFalse(fService.lookup(-1, "main:/lfoo").isLayeredFile());
             
             fService.createSnapshot("main", null, null);
             
             assertEquals(6, fService.lookup(-1, "main:/foo").getVersionID());
-            assertEquals(4, fService.lookup(-1, "main:/lfoo").getVersionID());
+            assertEquals(6, fService.lookup(-1, "main:/lfoo").getVersionID());
+            assertFalse(fService.lookup(-1, "main:/lfoo").isLayeredFile());
             
             reader = new BufferedReader(new InputStreamReader(fService.getFileInputStream(-1, "main:/foo")));
             line = reader.readLine();
@@ -3761,6 +3781,7 @@ public class AVMServiceTest extends AVMServiceTestBase
             reader.close();
             assertEquals("I am main:/lfoo V2", line);
             
+            // remove plain file
             fService.removeNode("main:/foo");
             
             desc = fService.lookup(-1, "main:/foo");
@@ -3793,8 +3814,9 @@ public class AVMServiceTest extends AVMServiceTestBase
             reader.close();
             assertEquals("I am main:/lfoo V2", line);
             
-            assertEquals(4, fService.lookup(-1, "main:/lfoo").getVersionID());
+            assertEquals(6, fService.lookup(-1, "main:/lfoo").getVersionID());
             
+            // remove layered file
             fService.removeNode("main:/lfoo");
             
             desc = fService.lookup(-1, "main:/lfoo");
@@ -3856,6 +3878,7 @@ public class AVMServiceTest extends AVMServiceTestBase
                 // expected
             }
             
+            // create layered file (pointing nowhere)
             fService.createLayeredFile("main:/foo", "main:/", "lfoo");
             
             assertEquals(1, fService.lookup(-1, "main:/lfoo").getVersionID());
@@ -3882,6 +3905,7 @@ public class AVMServiceTest extends AVMServiceTestBase
                 // TODO - review
             }
             
+            // create plain file
             fService.createFile("main:/", "foo").close();
             
             assertEquals(1, fService.lookup(-1, "main:/foo").getVersionID());
@@ -3897,6 +3921,7 @@ public class AVMServiceTest extends AVMServiceTestBase
             reader.close();
             assertNull(line);
             
+            // update plain file
             PrintStream out = new PrintStream(fService.getFileOutputStream("main:/foo"));
             out.println("I am main:/foo V1");
             out.close();
@@ -3929,6 +3954,7 @@ public class AVMServiceTest extends AVMServiceTestBase
             reader.close();
             assertEquals("I am main:/foo V1", line);
             
+            // remove plain file
             fService.removeNode( "main:/foo");
             
             desc = fService.lookup(-1, "main:/foo");
@@ -3956,19 +3982,47 @@ public class AVMServiceTest extends AVMServiceTestBase
             
             assertEquals(2, fService.lookup(-1, "main:/lfoo").getVersionID());
             
-            reader = new BufferedReader(new InputStreamReader(fService.getFileInputStream(-1, "main:/lfoo")));
-            line = reader.readLine();
-            reader.close();
-            assertEquals("I am main:/foo V1", line);
+            try
+            {
+                fService.getFileInputStream(-1, "main:/lfoo");
+                fail("Unexpected");
+            }
+            catch (AVMNotFoundException nfe)
+            {
+                // expected
+            }
             
             fService.createSnapshot("main", null, null);
             
-            assertEquals(2, fService.lookup(-1, "main:/lfoo").getVersionID());
+            assertEquals(3, fService.lookup(-1, "main:/lfoo").getVersionID());
             
-            reader = new BufferedReader(new InputStreamReader(fService.getFileInputStream(-1, "main:/lfoo")));
-            line = reader.readLine();
-            reader.close();
-            assertEquals("I am main:/foo V1", line);
+            try
+            {
+                fService.getFileInputStream(-1, "main:/lfoo");
+                fail("Unexpected");
+            }
+            catch (AVMNotFoundException nfe)
+            {
+                // expected
+            }
+            
+            assertTrue(fService.lookup(-1, "main:/lfoo").isLayeredFile());
+            assertFalse(fService.lookup(-1, "main:/lfoo").isPlainFile());
+            
+            try
+            {
+                fService.getFileOutputStream("main:/lfoo");
+                fail();
+            }
+            catch (AVMException e)
+            {
+                // TODO - review
+            }
+            
+            // remove layered file
+            fService.removeNode("main:/lfoo");
+            
+            fService.createSnapshot("main", null, null);
         }
         catch (Exception e)
         {

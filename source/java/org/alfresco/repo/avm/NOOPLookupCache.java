@@ -89,6 +89,7 @@ public class NOOPLookupCache implements LookupCache
         }
         // Now look up each path element in sequence up to one
         // before the end.
+        DirectoryNode prevDir = null;
         for (int i = 0; i < path.size() - 1; i++)
         {
             if (!AVMRepository.GetInstance().can(null, dir, PermissionService.READ_CHILDREN, result.getDirectlyContained()))
@@ -106,6 +107,8 @@ public class NOOPLookupCache implements LookupCache
             {
                 return null;
             }
+            
+            prevDir = (DirectoryNode)child.getFirst();
             result.add(child.getFirst(), path.get(i), child.getSecond(), write);
             dir = (DirectoryNode)result.getCurrentNode();
         }
@@ -118,7 +121,28 @@ public class NOOPLookupCache implements LookupCache
                                         includeDeleted);
         if (child == null)
         {
-            return null;
+            if (write && (dir.getType() == AVMNodeType.LAYERED_DIRECTORY))
+            {
+                // stale ?
+                ChildKey key = new ChildKey(prevDir, path.get(path.size() - 1));
+                ChildEntry entry = AVMDAOs.Instance().fChildEntryDAO.get(key);
+                if (entry != null)
+                {
+                    if (!includeDeleted && entry.getChild().getType() == AVMNodeType.DELETED_NODE)
+                    {
+                        return null;
+                    }
+                    child = new Pair<AVMNode, Boolean>(AVMNodeUnwrapper.Unwrap(entry.getChild()), true);
+                }
+                else
+                {
+                    return null;
+                }
+            }
+            else
+            {
+                return null;
+            }
         }
         result.add(child.getFirst(), path.get(path.size() - 1), child.getSecond(), write);
         return result;

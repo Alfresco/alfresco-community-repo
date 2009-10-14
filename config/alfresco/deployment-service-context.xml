@@ -55,7 +55,7 @@
      <!--  Deployment Service -->
      <bean id="deploymentService" class="org.alfresco.repo.deploy.DeploymentServiceImpl" init-method="init">
         <property name="avmService">
-            <ref bean="indexingAVMService"/>
+            <ref bean="AVMService"/>
         </property>
         
         <property name="avmNodeService">

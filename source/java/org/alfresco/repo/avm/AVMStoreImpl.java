@@ -38,6 +38,7 @@ import java.util.TreeMap;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.WCMModel;
+import org.alfresco.repo.avm.util.AVMUtil;
 import org.alfresco.repo.avm.util.RawServices;
 import org.alfresco.repo.avm.util.SimplePath;
 import org.alfresco.repo.domain.DbAccessControlList;
@@ -156,8 +157,8 @@ public class AVMStoreImpl implements AVMStore
                                                       getNextVersionID(),
                                                       time,
                                                       creator,
-                                                      "Initial Empty Version.",
-                                                      "Initial Empty Version.");
+                                                      AVMUtil.INITIAL_SNAPSHOT,
+                                                      AVMUtil.INITIAL_SNAPSHOT);
         setNextVersionID(getNextVersionID()+1);
         
         AVMDAOs.Instance().fAVMStoreDAO.update(this);
@@ -221,9 +222,8 @@ public class AVMStoreImpl implements AVMStore
         // Force copies on all the layered nodes from last snapshot.
         for (VersionLayeredNodeEntry entry : layeredEntries)
         {
-            String path = entry.getPath();
-            path = path.substring(path.indexOf(':') + 1);
-            Lookup lookup = me.lookup(-1, path, false, false);
+            String[] pathParts = AVMUtil.splitPath(entry.getPath());
+            Lookup lookup = me.lookup(-1, pathParts[1], false, false);
             if (lookup == null)
             {
                 continue;
@@ -237,7 +237,33 @@ public class AVMStoreImpl implements AVMStore
             {
                 continue;
             }
-            fAVMRepository.forceCopy(entry.getPath());
+            
+            if (lookup.getCurrentNode().getType() == AVMNodeType.LAYERED_DIRECTORY)
+            {
+                fAVMRepository.forceCopy(entry.getPath());
+            }
+            else if (lookup.getCurrentNode().getType() == AVMNodeType.LAYERED_FILE)
+            {
+                String parentName[] = AVMUtil.splitBase(entry.getPath());
+                parentName[0] = parentName[0].substring(parentName[0].indexOf(':') + 1);
+                
+                lookup = lookupDirectory(-1, parentName[0], true);
+                
+                DirectoryNode parent = (DirectoryNode)lookup.getCurrentNode();
+                Pair<AVMNode, Boolean> temp = parent.lookupChild(lookup, parentName[1], false);
+                
+                AVMNode child = temp.getFirst();
+                if (child == null)
+                {
+                    throw new AVMException("Unexpected: missing child: "+entry.getPath());
+                }
+                
+                lookup.add(child, parentName[1], temp.getSecond(), false);
+                AVMNode newChild = ((LayeredFileNode)child).copyLiterally(lookup);
+                newChild.setAncestor(child);
+                parent.putChild(parentName[1], newChild);
+            }
+            
             // TODO This leaves the behavior of LayeredFiles not quite
             // right.
             /*
@@ -282,7 +308,7 @@ public class AVMStoreImpl implements AVMStore
                 continue;
             }
             layeredNodeIDs.add(layeredID);
-            String storeName = indirection.substring(0, indirection.indexOf(':'));
+            String storeName = AVMUtil.getStoreName(indirection);
             if (!snapShotMap.containsKey(storeName))
             {
                 AVMStore store = AVMDAOs.Instance().fAVMStoreDAO.getByName(storeName);

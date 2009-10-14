@@ -41,6 +41,7 @@ import org.alfresco.repo.avm.util.RemoteBulkLoader;
 import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
+import org.alfresco.service.cmr.avm.AVMNotFoundException;
 import org.alfresco.service.cmr.avm.AVMStoreDescriptor;
 import org.alfresco.service.cmr.avm.VersionDescriptor;
 import org.alfresco.service.cmr.avmsync.AVMDifference;
@@ -460,9 +461,6 @@ public class AVMServiceLocalTest extends TestCase
             
             fSyncService.flatten("layer:/layer", "main:/");
             
-            recursiveList("layer");
-            recursiveList("main");
-            
             fService.createStore("layer2");
             fService.createLayeredDirectory("layer:/layer", "layer2:/", "layer");
             
@@ -487,9 +485,9 @@ public class AVMServiceLocalTest extends TestCase
             assertEquals(1, diffs.size());
             assertEquals("[layer:/layer/c[-1] > main:/c[-1]]", diffs.toString());
             
-            recursiveList("layer2");
-            recursiveList("layer");
             recursiveList("main");
+            recursiveList("layer");
+            recursiveList("layer2");
         }
         catch (Exception e)
         {
@@ -499,6 +497,306 @@ public class AVMServiceLocalTest extends TestCase
         finally
         {
             fService.purgeStore("layer2");
+        }
+    }
+    
+    public void testSimpleUpdateLD5() throws Exception
+    {
+        try
+        {
+            logger.debug("created 2 stores: main, layer");
+            
+            fService.createLayeredDirectory("main:/", "layer:/", "layer");
+            
+            logger.debug("created layered dir: layer:/layer -> main:/");
+            
+            fService.createDirectory("layer:/layer", "b");
+            
+            logger.debug("created dir in layer: layer:/layer/b");
+            
+            List<AVMDifference> diffs = fSyncService.compare(-1, "layer:/layer", -1, "main:/", null);
+            assertEquals(1, diffs.size());
+            assertEquals("[layer:/layer/b[-1] > main:/b[-1]]", diffs.toString());
+            
+            fSyncService.update(diffs, null, false, false, false, false, null, null);
+            
+            diffs = fSyncService.compare(-1, "layer:/layer", -1, "main:/", null);
+            assertEquals(0, diffs.size());
+            
+            fSyncService.flatten("layer:/layer", "main:/");
+            
+            logger.debug("updated & flattened: created directory: main:/b");
+            
+            fService.createFile("layer:/layer/b", "foo").close();
+            fService.createFile("layer:/layer/b", "bar").close();
+            
+            logger.debug("created 2 files in layer: layer:/layer/b/foo and layer:/layer/b/bar");
+            
+            diffs = fSyncService.compare(-1, "layer:/layer", -1, "main:/", null);
+            assertEquals(2, diffs.size());
+            assertEquals("[layer:/layer/b/bar[-1] > main:/b/bar[-1], layer:/layer/b/foo[-1] > main:/b/foo[-1]]", diffs.toString());
+            
+            // submit only first diff
+            List<AVMDifference> selected = new ArrayList<AVMDifference>(1);
+            selected.add(diffs.get(1));
+            
+            assertEquals("[layer:/layer/b/foo[-1] > main:/b/foo[-1]]", selected.toString());
+            
+            fSyncService.update(selected, null, false, false, false, false, null, null);
+            
+            diffs = fSyncService.compare(-1, "layer:/layer", -1, "main:/", null);
+            assertEquals(1, diffs.size());
+            assertEquals("[layer:/layer/b/bar[-1] > main:/b/bar[-1]]", diffs.toString());
+            
+            fSyncService.flatten("layer:/layer", "main:/");
+            
+            logger.debug("updated & flattened: created file: main:/b/foo");
+            
+            fService.removeNode("layer:/layer", "b");
+            fService.createSnapshot("layer", null, null);
+            
+            logger.debug("removed dir in layer & snapshot: layer:/layer/b");
+            
+            // ETWOTWO-1266
+            diffs = fSyncService.compare(-1, "layer:/layer", -1, "main:/", null);
+            assertEquals(1, diffs.size());
+            assertEquals("[layer:/layer/b[-1] > main:/b[-1]]", diffs.toString());
+            
+            fSyncService.update(diffs, null, false, false, false, false, null, null);
+            
+            diffs = fSyncService.compare(-1, "layer:/layer", -1, "main:/", null);
+            assertEquals(0, diffs.size());
+            
+            fSyncService.flatten("layer:/layer", "main:/");
+            
+            logger.debug("updated & flattened: deleted dir: main:/b");
+            
+            recursiveList("main");
+            recursiveList("layer");
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace(System.err);
+            throw e;
+        }
+    }
+    
+    public void testDeleteLD1() throws Exception
+    {
+        try
+        {
+            logger.debug("created 2 stores: main, layer");
+            
+            fService.createDirectory("main:/", "a");
+            
+            OutputStream o = fService.createFile("main:/a", "foo");
+            PrintStream out = new PrintStream(o);
+            out.println("I am main:/a/foo");
+            out.close();
+            
+            logger.debug("created file in main: main:/a/foo");
+            
+            fService.createLayeredDirectory("main:/a", "layer:/", "a");
+            
+            logger.debug("created layered dir: layer:/a -> main:/a");
+            
+            BufferedReader reader = new BufferedReader(new InputStreamReader(fService.getFileInputStream(-1, "layer:/a/foo")));
+            String line = reader.readLine();
+            reader.close();
+            assertEquals("I am main:/a/foo", line);
+            
+            reader = new BufferedReader(new InputStreamReader(fService.getFileInputStream(-1, "main:/a/foo")));
+            line = reader.readLine();
+            reader.close();
+            assertEquals("I am main:/a/foo", line);
+            
+            out = new PrintStream(fService.getFileOutputStream("layer:/a/foo"));
+            out.println("I am layer:/a/foo");
+            out.close();
+            
+            logger.debug("update file in layer: layer:/a/foo");
+            
+            reader = new BufferedReader(new InputStreamReader(fService.getFileInputStream(-1, "layer:/a/foo")));
+            line = reader.readLine();
+            reader.close();
+            assertEquals("I am layer:/a/foo", line);
+            
+            reader = new BufferedReader(new InputStreamReader(fService.getFileInputStream(-1, "main:/a/foo")));
+            line = reader.readLine();
+            reader.close();
+            assertEquals("I am main:/a/foo", line);
+            
+            List<AVMDifference> diffs = fSyncService.compare(-1, "layer:/a", -1, "main:/a", null);
+            assertEquals(1, diffs.size());
+            assertEquals("[layer:/a/foo[-1] > main:/a/foo[-1]]", diffs.toString());
+            
+            fSyncService.update(diffs, null, false, false, false, false, null, null);
+            
+            diffs = fSyncService.compare(-1, "layer:/a", -1, "main:/a", null);
+            assertEquals(0, diffs.size());
+            
+            fSyncService.flatten("layer:/a", "main:/a");
+            
+            logger.debug("updated & flattened: updated file: main:/a/foo");
+            
+            reader = new BufferedReader(new InputStreamReader(fService.getFileInputStream(-1, "layer:/a/foo")));
+            line = reader.readLine();
+            reader.close();
+            assertEquals("I am layer:/a/foo", line);
+            
+            reader = new BufferedReader(new InputStreamReader(fService.getFileInputStream(-1, "main:/a/foo")));
+            line = reader.readLine();
+            reader.close();
+            assertEquals("I am layer:/a/foo", line);
+            
+            fService.removeNode("main:/", "a");
+            fService.createSnapshot("main", null, null);
+            
+            logger.debug("remove directory in main & snapshot: main:/a");
+            
+            assertNotNull(fService.lookup(-1, "layer:/a"));
+            assertNull(fService.lookup(-1, "layer:/a/foo"));
+            
+            try 
+            {
+                fService.getFileInputStream(-1, "layer:/a/foo");
+                fail();
+            }
+            catch (AVMNotFoundException nfe)
+            {
+                // expected
+            }
+            
+            try 
+            {
+                fService.getFileOutputStream("layer:/a/foo");
+                fail();
+            }
+            catch (AVMNotFoundException nfe)
+            {
+                // expected
+            }
+            
+            recursiveList("main");
+            recursiveList("layer");
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace(System.err);
+            throw e;
+        }
+    }
+    
+    public void testDeleteLD2() throws Exception
+    {
+        try
+        {
+            logger.debug("created 2 stores: main, layer");
+            
+            fService.createDirectory("main:/", "a");
+            
+            OutputStream o = fService.createFile("main:/a", "foo");
+            PrintStream out = new PrintStream(o);
+            out.println("I am main:/a/foo");
+            out.close();
+            
+            logger.debug("created file in main: main:/a/foo");
+            
+            fService.createLayeredDirectory("main:/a", "layer:/", "a");
+            
+            logger.debug("created layered dir: layer:/a -> main:/a");
+            
+            BufferedReader reader = new BufferedReader(new InputStreamReader(fService.getFileInputStream(-1, "layer:/a/foo")));
+            String line = reader.readLine();
+            reader.close();
+            assertEquals("I am main:/a/foo", line);
+            
+            reader = new BufferedReader(new InputStreamReader(fService.getFileInputStream(-1, "main:/a/foo")));
+            line = reader.readLine();
+            reader.close();
+            assertEquals("I am main:/a/foo", line);
+            
+            out = new PrintStream(fService.getFileOutputStream("layer:/a/foo"));
+            out.println("I am layer:/a/foo");
+            out.close();
+            
+            logger.debug("update file in layer: layer:/a/foo");
+            
+            reader = new BufferedReader(new InputStreamReader(fService.getFileInputStream(-1, "layer:/a/foo")));
+            line = reader.readLine();
+            reader.close();
+            assertEquals("I am layer:/a/foo", line);
+            
+            reader = new BufferedReader(new InputStreamReader(fService.getFileInputStream(-1, "main:/a/foo")));
+            line = reader.readLine();
+            reader.close();
+            assertEquals("I am main:/a/foo", line);
+            
+            fService.removeNode("main:/", "a");
+            
+            logger.debug("remove directory in main: main:/a");
+            
+            fService.createSnapshot("main", null, null);
+            
+            logger.debug("snapshot: main:/a");
+            
+            assertNull(fService.lookup(-1, "main:/a"));
+            assertNull(fService.lookup(-1, "main:/a/foo"));
+            
+            try 
+            {
+                fService.getFileInputStream(-1, "main:/a/foo");
+                fail();
+            }
+            catch (AVMNotFoundException nfe)
+            {
+                // expected
+            }
+            
+            assertNotNull(fService.lookup(-1, "layer:/a"));
+            assertNotNull(fService.lookup(-1, "layer:/a/foo"));
+            
+            reader = new BufferedReader(new InputStreamReader(fService.getFileInputStream(-1, "layer:/a/foo")));
+            line = reader.readLine();
+            reader.close();
+            assertEquals("I am layer:/a/foo", line);
+            
+            out = new PrintStream(fService.getFileOutputStream("layer:/a/foo"));
+            out.println("I am layer:/a/foo V2");
+            out.close();
+            
+            List<AVMDifference> diffs = fSyncService.compare(-1, "layer:/a", -1, "main:/a", null);
+            assertEquals(1, diffs.size());
+            assertEquals("[layer:/a[-1] > main:/a[-1]]", diffs.toString());
+            
+            fSyncService.update(diffs, null, false, false, false, false, null, null);
+            
+            diffs = fSyncService.compare(-1, "layer:/a", -1, "main:/a", null);
+            assertEquals(0, diffs.size());
+            
+            logger.debug("updated: updated dir & file: main:/a/foo");
+            
+            fSyncService.flatten("layer:/a", "main:/a");
+            
+            logger.debug("flattened: layer:/a -> main:/a");
+            
+            reader = new BufferedReader(new InputStreamReader(fService.getFileInputStream(-1, "layer:/a/foo")));
+            line = reader.readLine();
+            reader.close();
+            assertEquals("I am layer:/a/foo V2", line);
+            
+            reader = new BufferedReader(new InputStreamReader(fService.getFileInputStream(-1, "main:/a/foo")));
+            line = reader.readLine();
+            reader.close();
+            assertEquals("I am layer:/a/foo V2", line);
+            
+            recursiveList("main");
+            recursiveList("layer");
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace(System.err);
+            throw e;
         }
     }
     
@@ -1026,16 +1324,10 @@ public class AVMServiceLocalTest extends TestCase
             assertEquals(1, snapshots.size());
             assertEquals(0, snapshots.get(0).getVersionID());
             
-            recursiveList("main");
-            recursiveList("layer");
-            
             fService.createDirectory("main:/", "a");
             fService.createDirectory("layer:/", "a");
             
             logger.debug("created 2 plain dirs: main:/a, layer:/a");
-            
-            recursiveList("main");
-            recursiveList("layer");
             
             fService.createFile("main:/a", "foo");
             
@@ -1064,9 +1356,6 @@ public class AVMServiceLocalTest extends TestCase
             assertEquals(1, fService.lookup(1, "main:/a/foo").getVersionID());
             
             logger.debug("created plain file: main:/a/foo");
-            
-            recursiveList("main");
-            recursiveList("layer");
             
             fService.createLayeredFile("main:/a/foo", "layer:/a", "foo");
             
@@ -1106,17 +1395,11 @@ public class AVMServiceLocalTest extends TestCase
             
             logger.debug("created layered file: layer:/a/foo -> main:/a/foo");
             
-            recursiveList("main");
-            recursiveList("layer");
-            
             out = new PrintStream(fService.getFileOutputStream("layer:/a/foo"));
             out.println("I am layer:/a/foo");
             out.close();
             
             logger.debug("modified file: layer:/a/foo");
-            
-            recursiveList("main");
-            recursiveList("layer");
             
             assertEquals(2, fService.lookup(-1, "layer:/a/foo").getVersionID());
             
@@ -1153,15 +1436,9 @@ public class AVMServiceLocalTest extends TestCase
             
             logger.debug("submitted/updated file: layer:/a/foo -> main:/a/foo");
             
-            recursiveList("main");
-            recursiveList("layer");
-            
             fSyncService.flatten("layer:/a", "main:/a");
             
             logger.debug("flatten dir: layer:/a -> main:/a");
-            
-            recursiveList("main");
-            recursiveList("layer");
             
             reader = new BufferedReader(new InputStreamReader(fService.getFileInputStream(-1, "layer:/a/foo")));
             line = reader.readLine();
@@ -1180,6 +1457,9 @@ public class AVMServiceLocalTest extends TestCase
             snapshots = fService.getStoreVersions("layer");
             assertEquals(3, snapshots.size());
             assertEquals(2, snapshots.get(snapshots.size()-1).getVersionID());
+            
+            recursiveList("main");
+            recursiveList("layer");
         }
         catch (Exception e)
         {
@@ -1210,26 +1490,14 @@ public class AVMServiceLocalTest extends TestCase
             
             logger.debug("created 3 stores: mainA, mainB, mainB-layer");
             
-            recursiveList("mainA");
-            recursiveList("mainB");
-            recursiveList("mainB--layer");
-            
             fService.createDirectory("mainA:/", "a");
             fService.createDirectory("mainB:/", "a");
             
             logger.debug("created 2 plain dirs: mainA:/a, mainB:/a");
             
-            recursiveList("mainA");
-            recursiveList("mainB");
-            recursiveList("mainB--layer");
-            
             fService.createLayeredDirectory("mainB:/a", "mainB--layer:/", "a");
             
             logger.debug("created layered dir: mainB--layer:/a -> mainB:/a");
-            
-            recursiveList("mainA");
-            recursiveList("mainB");
-            recursiveList("mainB--layer");
             
             // note: unlike WCM, edit staging directly (ie. don't bother with mainA--layer for now)
             fService.createFile("mainA:/a", "foo");
@@ -1244,10 +1512,6 @@ public class AVMServiceLocalTest extends TestCase
             
             logger.debug("created plain file: mainA:/a/foo");
             
-            recursiveList("mainA");
-            recursiveList("mainB");
-            recursiveList("mainB--layer");
-            
             fService.createSnapshot("mainA", null, null);
             
             assertEquals(1, fService.lookup(-1, "mainA:/a/foo").getVersionID());
@@ -1259,10 +1523,6 @@ public class AVMServiceLocalTest extends TestCase
             assertEquals(1, snapshots.get(snapshots.size()-1).getVersionID());
             
             logger.debug("created snapshot: mainA");
-            
-            recursiveList("mainA");
-            recursiveList("mainB");
-            recursiveList("mainB--layer");
             
             // note: WCM does not expose layered file (between web project staging sandboxes)
             fService.createLayeredFile("mainA:/a/foo", "mainB:/a", "foo");
@@ -1288,10 +1548,6 @@ public class AVMServiceLocalTest extends TestCase
             
             logger.debug("created layered file: mainB:/a/foo -> mainA:/a/foo");
             
-            recursiveList("mainA");
-            recursiveList("mainB");
-            recursiveList("mainB--layer");
-            
             // modify file in user's sandbox
             out = new PrintStream(fService.getFileOutputStream("mainB--layer:/a/foo"));
             out.println("I am mainB--layer:/a/foo");
@@ -1302,10 +1558,6 @@ public class AVMServiceLocalTest extends TestCase
             assertEquals(2, fService.lookup(-1, "mainB--layer:/a/foo").getVersionID());
             
             logger.debug("modified file: mainB--layer:/a/foo");
-            
-            recursiveList("mainA");
-            recursiveList("mainB");
-            recursiveList("mainB--layer");
             
             reader = new BufferedReader(new InputStreamReader(fService.getFileInputStream(-1, "mainB--layer:/a/foo")));
             line = reader.readLine();
@@ -1321,10 +1573,6 @@ public class AVMServiceLocalTest extends TestCase
             line = reader.readLine();
             reader.close();
             assertEquals("I am mainA:/a/foo", line);
-            
-            recursiveList("mainA");
-            recursiveList("mainB");
-            recursiveList("mainB--layer");
             
             List<AVMDifference> diffs = fSyncService.compare(-1, "mainB--layer:/a", -1, "mainB:/a", null);
             assertEquals(1, diffs.size());
@@ -1349,17 +1597,9 @@ public class AVMServiceLocalTest extends TestCase
             
             logger.debug("submit/update file: mainB--layer:/a/foo -> mainB:/a/foo");
             
-            recursiveList("mainA");
-            recursiveList("mainB");
-            recursiveList("mainB--layer");
-            
             fSyncService.flatten("mainB--layer:/a", "mainB:/a");
             
             logger.debug("flatten dir: mainB--layer:/a/foo -> mainB:/a/foo");
-            
-            recursiveList("mainA");
-            recursiveList("mainB");
-            recursiveList("mainB--layer");
             
             reader = new BufferedReader(new InputStreamReader(fService.getFileInputStream(-1, "mainB--layer:/a/foo")));
             line = reader.readLine();
@@ -1375,6 +1615,10 @@ public class AVMServiceLocalTest extends TestCase
             line = reader.readLine();
             reader.close();
             assertEquals("I am mainA:/a/foo", line);
+            
+            recursiveList("mainA");
+            recursiveList("mainB");
+            recursiveList("mainB--layer");
         }
         catch (Exception e)
         {
@@ -1389,7 +1633,170 @@ public class AVMServiceLocalTest extends TestCase
         }
     }
     
-    public void testLayeredFolderDeleteFile1() throws Exception
+    public void testSimpleUpdateLF3() throws Exception
+    {
+        try
+        {
+            fService.createStore("mainA");
+            fService.createStore("mainB");
+            fService.createStore("mainB--layer");
+            
+            List<VersionDescriptor> snapshots = fService.getStoreVersions("mainA");
+            assertEquals(1, snapshots.size());
+            assertEquals(0, snapshots.get(0).getVersionID());
+            
+            snapshots = fService.getStoreVersions("mainB");
+            assertEquals(1, snapshots.size());
+            assertEquals(0, snapshots.get(0).getVersionID());
+            
+            snapshots = fService.getStoreVersions("mainB--layer");
+            assertEquals(1, snapshots.size());
+            assertEquals(0, snapshots.get(0).getVersionID());
+            
+            logger.debug("created 3 stores: mainA, mainB, mainB-layer");
+            
+            fService.createDirectory("mainA:/", "a");
+            fService.createDirectory("mainB:/", "a");
+            
+            logger.debug("created 2 plain dirs: mainA:/a, mainB:/a");
+            
+            fService.createLayeredDirectory("mainB:/a", "mainB--layer:/", "a");
+            
+            logger.debug("created layered dir: mainB--layer:/a -> mainB:/a");
+            
+            // note: unlike WCM, edit staging directly (ie. don't bother with mainA--layer for now)
+            fService.createFile("mainA:/a", "foo");
+            
+            assertEquals(1, fService.lookup(-1, "mainA:/a/foo").getVersionID());
+            assertNull(fService.lookup(-1, "mainB:/a/foo"));
+            assertNull(fService.lookup(-1, "mainB--layer:/a/foo"));
+            
+            PrintStream out = new PrintStream(fService.getFileOutputStream("mainA:/a/foo"));
+            out.println("I am mainA:/a/foo");
+            out.close();
+            
+            logger.debug("created plain file: mainA:/a/foo");
+            
+            fService.createSnapshot("mainA", null, null);
+            
+            assertEquals(1, fService.lookup(-1, "mainA:/a/foo").getVersionID());
+            assertNull(fService.lookup(-1, "mainB:/a/foo"));
+            assertNull(fService.lookup(-1, "mainB--layer:/a/foo"));
+            
+            snapshots = fService.getStoreVersions("mainA");
+            assertEquals(2, snapshots.size());
+            assertEquals(1, snapshots.get(snapshots.size()-1).getVersionID());
+            
+            logger.debug("created snapshot: mainA");
+            
+            // note: WCM does not expose layered file (between web project staging sandboxes)
+            fService.createLayeredFile("mainA:/a/foo", "mainB:/a", "foo");
+            
+            assertEquals(1, fService.lookup(-1, "mainA:/a/foo").getVersionID());
+            assertEquals(1, fService.lookup(-1, "mainB:/a/foo").getVersionID());
+            
+            AVMNodeDescriptor foo = fService.lookup(-1, "mainB--layer:/a/foo");
+            assertEquals(1, foo.getVersionID());
+            assertTrue(foo.isLayeredFile());
+            
+            BufferedReader reader = new BufferedReader(new InputStreamReader(fService.getFileInputStream(-1, "mainB--layer:/a/foo")));
+            String line = reader.readLine();
+            reader.close();
+            assertEquals("I am mainA:/a/foo", line);
+            
+            reader = new BufferedReader(new InputStreamReader(fService.getFileInputStream(-1, "mainB:/a/foo")));
+            line = reader.readLine();
+            reader.close();
+            assertEquals("I am mainA:/a/foo", line);
+            
+            reader = new BufferedReader(new InputStreamReader(fService.getFileInputStream(-1, "mainA:/a/foo")));
+            line = reader.readLine();
+            reader.close();
+            assertEquals("I am mainA:/a/foo", line);
+            
+            logger.debug("created layered file: mainB:/a/foo -> mainA:/a/foo");
+            
+            // add dir in user's sandbox
+            fService.createDirectory("mainB--layer:/a", "b");
+            
+            assertEquals(1, fService.lookup(-1, "mainA:/a/foo").getVersionID());
+            assertEquals(1, fService.lookup(-1, "mainB:/a/foo").getVersionID());
+            assertEquals(1, fService.lookup(-1, "mainB--layer:/a/b").getVersionID());
+            
+            foo = fService.lookup(-1, "mainB--layer:/a/foo");
+            assertEquals(1, foo.getVersionID());
+            assertTrue(foo.isLayeredFile());
+            
+            logger.debug("created dir: mainB--layer:/a/b");
+            
+            List<AVMDifference> diffs = fSyncService.compare(-1, "mainB--layer:/a", -1, "mainB:/a", null);
+            assertEquals(1, diffs.size());
+            
+            foo = fService.lookup(-1, "mainB--layer:/a/foo");
+            assertTrue(foo.isLayeredFile());
+            
+            assertEquals("[mainB--layer:/a/b[-1] > mainB:/a/b[-1]]", diffs.toString());
+            fSyncService.update(diffs, null, false, false, false, false, "one", "one");
+            
+            foo = fService.lookup(-1, "mainB--layer:/a/foo");
+            assertTrue(foo.isLayeredFile());
+            
+            fSyncService.flatten("mainB--layer:/a", "mainB:/a");
+            
+            foo = fService.lookup(-1, "mainB--layer:/a/foo");
+            assertTrue(foo.isLayeredFile());
+            
+            assertEquals(1, fService.lookup(-1, "mainA:/a/foo").getVersionID());
+            assertEquals(2, fService.lookup(-1, "mainB:/a/foo").getVersionID());
+            assertEquals(2, fService.lookup(-1, "mainB--layer:/a/foo").getVersionID());
+            
+            snapshots = fService.getStoreVersions("mainB--layer");
+            assertEquals(2, snapshots.size());
+            assertEquals(1, snapshots.get(snapshots.size()-1).getVersionID());
+            
+            snapshots = fService.getStoreVersions("mainB");
+            assertEquals(3, snapshots.size());
+            assertEquals(2, snapshots.get(snapshots.size()-1).getVersionID());
+            
+            logger.debug("submitted dir: mainB--layer:/a/b -> mainB:/a/b");
+            
+            foo = fService.lookup(-1, "mainB--layer:/a/foo");
+            assertEquals(2, foo.getVersionID());
+            assertTrue(foo.isLayeredFile());
+            
+            reader = new BufferedReader(new InputStreamReader(fService.getFileInputStream(-1, "mainA:/a/foo")));
+            line = reader.readLine();
+            reader.close();
+            assertEquals("I am mainA:/a/foo", line);
+            
+            reader = new BufferedReader(new InputStreamReader(fService.getFileInputStream(-1, "mainB:/a/foo")));
+            line = reader.readLine();
+            reader.close();
+            assertEquals("I am mainA:/a/foo", line);
+            
+            reader = new BufferedReader(new InputStreamReader(fService.getFileInputStream(-1, "mainB--layer:/a/foo")));
+            line = reader.readLine();
+            reader.close();
+            assertEquals("I am mainA:/a/foo", line);
+            
+            recursiveList("mainA");
+            recursiveList("mainB");
+            recursiveList("mainB--layer");
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace(System.err);
+            throw e;
+        }
+        finally
+        {
+            fService.purgeStore("mainA");
+            fService.purgeStore("mainB");
+            fService.purgeStore("mainB--layer");
+        }
+    }
+    
+    public void testLayeredFolder1() throws Exception
     {
         try
         {
@@ -1414,9 +1821,93 @@ public class AVMServiceLocalTest extends TestCase
             
             logger.debug("created file: mainA:/a/b/c/foo");
             
+            // create equivalent of WCM layered folder between web project staging sandboxes (mainB:/a/b pointing to mainA:/a/b)
+            fService.createLayeredDirectory("mainA:/a/b", "mainB:/a", "b");
+            
+            fService.createSnapshot("mainA", null, null);
+            fService.createSnapshot("mainB", null, null);
+            
+            assertTrue(fService.lookup(-1, "mainB--layer:/a/b").isLayeredDirectory());
+            
+            logger.debug("created layered directory: mainB:/a/b -> mainA:/a/b");
+            
+            fService.createDirectory("mainB--layer:/a", "c");
+            
+            fService.createSnapshot("mainB--layer", null, null);
+            
+            logger.debug("created dir: mainB--layer:/a/c");
+            
+            List<AVMDifference> diffs = fSyncService.compare(-1, "mainB--layer:/a", -1, "mainB:/a", null);
+            assertEquals(1, diffs.size());
+            assertEquals("[mainB--layer:/a/c[-1] > mainB:/a/c[-1]]", diffs.toString());
+            
+            fSyncService.update(diffs, null, false, false, false, false, "one", "one");
+            fSyncService.flatten("mainB--layer:/a", "mainB:/a");
+            
+            logger.debug("updated: created dir: mainB:/a/d");
+            
+            assertTrue(fService.lookup(-1, "mainB--layer:/a/b").isLayeredDirectory());
+            
+            fService.createDirectory("mainB--layer:/a/b", "c");
+            
+            assertTrue(fService.lookup(-1, "mainB--layer:/a/b").isLayeredDirectory());
+            
+            fService.createSnapshot("mainB--layer", null, null);
+            
+            logger.debug("created dir: mainB--layer:/a/b/c");
+            
+            diffs = fSyncService.compare(-1, "mainB--layer:/a", -1, "mainB:/a", null);
+            assertEquals(1, diffs.size());
+            assertEquals("[mainB--layer:/a/b/c[-1] > mainB:/a/b/c[-1]]", diffs.toString());
+            
+            fSyncService.update(diffs, null, false, false, false, false, "one", "one");
+            fSyncService.flatten("mainB--layer:/a", "mainB:/a");
+            
+            logger.debug("updated: created dir: mainB:/a/b/c");
+            
+            assertTrue(fService.lookup(-1, "mainB--layer:/a/b").isLayeredDirectory());
+            
             recursiveList("mainA");
             recursiveList("mainB");
             recursiveList("mainB--layer");
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace(System.err);
+            throw e;
+        }
+        finally
+        {
+            fService.purgeStore("mainA");
+            fService.purgeStore("mainB");
+            fService.purgeStore("mainB--layer");
+        }
+    }
+    
+    public void testLayeredFolderDelete1() throws Exception
+    {
+        try
+        {
+            fService.createStore("mainA");
+            fService.createStore("mainB");
+            
+            fService.createDirectory("mainA:/", "a");
+            fService.createDirectory("mainA:/a", "b");
+            
+            fService.createDirectory("mainB:/", "a");
+            
+            fService.createStore("mainB--layer");
+            
+            fService.createLayeredDirectory("mainB:/a", "mainB--layer:/", "a");
+            
+            // note: short-cut - created directly in "staging" area (don't bother with sandbox mainA--layer for now)
+            fService.createFile("mainA:/a/b", "foo");
+            
+            PrintStream out = new PrintStream(fService.getFileOutputStream("mainA:/a/b/foo"));
+            out.println("I am mainA:/a/b/foo");
+            out.close();
+            
+            logger.debug("created file: mainA:/a/b/foo");
             
             // create equivalent of WCM layered folder between web project staging sandboxes (mainB:/a/b pointing to ,mainA:/a/b)
             fService.createLayeredDirectory("mainA:/a/b", "mainB:/a", "b");
@@ -1425,9 +1916,6 @@ public class AVMServiceLocalTest extends TestCase
             fService.createSnapshot("mainB", null, null);
             
             logger.debug("created layered directory: mainB:/a/b -> mainA:/a/b");
-            
-            recursiveList("mainB");
-            recursiveList("mainB--layer");
             
             BufferedReader reader = new BufferedReader(new InputStreamReader(fService.getFileInputStream(-1, "mainB--layer:/a/b/foo")));
             String line = reader.readLine();
@@ -1441,9 +1929,6 @@ public class AVMServiceLocalTest extends TestCase
             fService.createSnapshot("mainB--layer", null, null);
             
             logger.debug("updated file: mainB--layer:/a/b/foo");
-            
-            recursiveList("mainB");
-            recursiveList("mainB--layer");
             
             reader = new BufferedReader(new InputStreamReader(fService.getFileInputStream(-1, "mainA:/a/b/foo")));
             line = reader.readLine();
@@ -1469,30 +1954,20 @@ public class AVMServiceLocalTest extends TestCase
             
             logger.debug("updated: created file: mainB:/a/b/foo");
             
-            recursiveList("mainB");
-            recursiveList("mainB--layer");
-            
             reader = new BufferedReader(new InputStreamReader(fService.getFileInputStream(-1, "mainB:/a/b/foo")));
             line = reader.readLine();
             reader.close();
             assertEquals("I am mainB--layer:/a/b/foo", line);
-            
-            recursiveList("mainA");
-            recursiveList("mainB");
             
             // delete file - note: short-cut - removed directly from "staging" area (don't bother with sandbox mainA--layer for now)
             fService.removeNode("mainA:/a/b", "foo");
-            
             fService.createSnapshot("mainA", null, null);
             
-            logger.debug("removed file: mainA:/a/b/foo");
-            
-            recursiveList("mainA");
-            recursiveList("mainB");
-            recursiveList("mainB--layer");
+            logger.debug("removed file & snapshot: mainA:/a/b/foo");
             
             // ETHREEOH-2297
             fService.removeNode("mainB--layer:/a/b", "foo");
+            fService.createSnapshot("mainB--layer", null, null);
             
             diffs = fSyncService.compare(-1, "mainB--layer:/a", -1, "mainB:/a", null);
             assertEquals(1, diffs.size());
@@ -1522,7 +1997,7 @@ public class AVMServiceLocalTest extends TestCase
         }
     }
     
-    public void testLayeredFolderDeleteFile2() throws Exception
+    public void testLayeredFolderDelete2() throws Exception
     {
         try
         {
@@ -1545,11 +2020,7 @@ public class AVMServiceLocalTest extends TestCase
             out.println("I am mainA:/a/b/foo");
             out.close();
             
-            logger.debug("created file: mainA:/a/b/c/foo");
-            
-            recursiveList("mainA");
-            recursiveList("mainB");
-            recursiveList("mainB--layer");
+            logger.debug("created file: mainA:/a/b/foo");
             
             // create equivalent of WCM layered folder between web project staging sandboxes (mainB:/a/b pointing to ,mainA:/a/b)
             fService.createLayeredDirectory("mainA:/a/b", "mainB:/a", "b");
@@ -1558,9 +2029,6 @@ public class AVMServiceLocalTest extends TestCase
             fService.createSnapshot("mainB", null, null);
             
             logger.debug("created layered directory: mainB:/a/b -> mainA:/a/b");
-            
-            recursiveList("mainB");
-            recursiveList("mainB--layer");
             
             BufferedReader reader = new BufferedReader(new InputStreamReader(fService.getFileInputStream(-1, "mainB--layer:/a/b/foo")));
             String line = reader.readLine();
@@ -1574,9 +2042,6 @@ public class AVMServiceLocalTest extends TestCase
             fService.createSnapshot("mainB--layer", null, null);
             
             logger.debug("updated file: mainB--layer:/a/b/foo");
-            
-            recursiveList("mainB");
-            recursiveList("mainB--layer");
             
             reader = new BufferedReader(new InputStreamReader(fService.getFileInputStream(-1, "mainA:/a/b/foo")));
             line = reader.readLine();
@@ -1602,29 +2067,21 @@ public class AVMServiceLocalTest extends TestCase
             
             logger.debug("updated: created file: mainB:/a/b/foo");
             
-            recursiveList("mainB");
-            recursiveList("mainB--layer");
-            
             reader = new BufferedReader(new InputStreamReader(fService.getFileInputStream(-1, "mainB:/a/b/foo")));
             line = reader.readLine();
             reader.close();
             assertEquals("I am mainB--layer:/a/b/foo", line);
             
-            recursiveList("mainA");
-            recursiveList("mainB");
-            
             // delete folder - note: short-cut - remove directly from "staging" area (don't bother with sandbox mainA--layer for now)
             fService.removeNode("mainA:/a", "b");
-            
             fService.createSnapshot("mainA", null, null);
             
-            logger.debug("removed file: mainA:/a/b/foo");
-            
-            recursiveList("mainA");
-            recursiveList("mainB");
-            recursiveList("mainB--layer");
+            logger.debug("removed folder & snapshot: mainA:/a/b");
             
             fService.removeNode("mainB--layer:/a/b", "foo");
+            fService.createSnapshot("mainB--layer", null, null);
+            
+            logger.debug("removed file & snapshot: mainB--layer:/a/b/foo");
             
             diffs = fSyncService.compare(-1, "mainB--layer:/a", -1, "mainB:/a", null);
             assertEquals(1, diffs.size());
@@ -1633,9 +2090,7 @@ public class AVMServiceLocalTest extends TestCase
             fSyncService.update(diffs, null, false, false, false, false, "one", "one");
             fSyncService.flatten("mainB--layer:/a", "mainB:/a");
             
-            fService.createSnapshot("mainB", null, null);
-            
-            logger.debug("updated: removed file: mainB:/a/b/foo");
+            logger.debug("updated & flattened: removed file: mainB:/a/b/foo");
             
             recursiveList("mainA");
             recursiveList("mainB");
@@ -1653,7 +2108,718 @@ public class AVMServiceLocalTest extends TestCase
             fService.purgeStore("mainB--layer");
         }
     }
-
+    
+    public void testLayeredFolderDelete3() throws Exception
+    {
+        try
+        {
+            fService.createStore("mainA");
+            fService.createStore("mainB");
+            
+            fService.createDirectory("mainA:/", "a");
+            fService.createDirectory("mainA:/a", "b");
+            
+            fService.createDirectory("mainB:/", "a");
+            
+            fService.createStore("mainB--layer");
+            
+            fService.createLayeredDirectory("mainB:/a", "mainB--layer:/", "a");
+            
+            // note: short-cut - created directly in "staging" area (don't bother with sandbox mainA--layer for now)
+            fService.createFile("mainA:/a/b", "foo");
+            
+            PrintStream out = new PrintStream(fService.getFileOutputStream("mainA:/a/b/foo"));
+            out.println("I am mainA:/a/b/foo");
+            out.close();
+            
+            logger.debug("created file: mainA:/a/b/foo");
+            
+            // create equivalent of WCM layered folder between web project staging sandboxes (mainB:/a/b pointing to ,mainA:/a/b)
+            fService.createLayeredDirectory("mainA:/a/b", "mainB:/a", "b");
+            
+            fService.createSnapshot("mainA", null, null);
+            fService.createSnapshot("mainB", null, null);
+            
+            logger.debug("created layered directory: mainB:/a/b -> mainA:/a/b");
+            
+            BufferedReader reader = new BufferedReader(new InputStreamReader(fService.getFileInputStream(-1, "mainB--layer:/a/b/foo")));
+            String line = reader.readLine();
+            reader.close();
+            assertEquals("I am mainA:/a/b/foo", line);
+            
+            out = new PrintStream(fService.getFileOutputStream("mainB--layer:/a/b/foo"));
+            out.println("I am mainB--layer:/a/b/foo");
+            out.close();
+            
+            logger.debug("updated file: mainB--layer:/a/b/foo");
+            
+            reader = new BufferedReader(new InputStreamReader(fService.getFileInputStream(-1, "mainA:/a/b/foo")));
+            line = reader.readLine();
+            reader.close();
+            assertEquals("I am mainA:/a/b/foo", line);
+            
+            reader = new BufferedReader(new InputStreamReader(fService.getFileInputStream(-1, "mainB:/a/b/foo")));
+            line = reader.readLine();
+            reader.close();
+            assertEquals("I am mainA:/a/b/foo", line);
+            
+            reader = new BufferedReader(new InputStreamReader(fService.getFileInputStream(-1, "mainB--layer:/a/b/foo")));
+            line = reader.readLine();
+            reader.close();
+            assertEquals("I am mainB--layer:/a/b/foo", line);
+            
+            List<AVMDifference> diffs = fSyncService.compare(-1, "mainB--layer:/a", -1, "mainB:/a", null);
+            assertEquals(1, diffs.size());
+            assertEquals("[mainB--layer:/a/b/foo[-1] > mainB:/a/b/foo[-1]]", diffs.toString());
+            
+            fSyncService.update(diffs, null, false, false, false, false, "one", "one");
+            fSyncService.flatten("mainB--layer:/a", "mainB:/a");
+            
+            logger.debug("updated: created file: mainB:/a/b/foo");
+            
+            reader = new BufferedReader(new InputStreamReader(fService.getFileInputStream(-1, "mainB:/a/b/foo")));
+            line = reader.readLine();
+            reader.close();
+            assertEquals("I am mainB--layer:/a/b/foo", line);
+            
+            // delete folder - note: short-cut - remove directly from "staging" area (don't bother with sandbox mainA--layer for now)
+            fService.removeNode("mainA:/a", "b");
+            fService.createSnapshot("mainA", null, null);
+            
+            logger.debug("removed folder & snapshot: mainA:/a/b");
+            
+            fService.createFile("mainB--layer:/a/b", "bar");
+            
+            out = new PrintStream(fService.getFileOutputStream("mainB--layer:/a/b/bar"));
+            out.println("I am mainB--layer:/a/b/bar");
+            out.close();
+            
+            logger.debug("created file: mainB--layer:/a/b/bar");
+            
+            diffs = fSyncService.compare(-1, "mainB--layer:/a", -1, "mainB:/a", null);
+            assertEquals(1, diffs.size());
+            assertEquals("[mainB--layer:/a/b/bar[-1] > mainB:/a/b/bar[-1]]", diffs.toString());
+            
+            fSyncService.update(diffs, null, false, false, false, false, "two", "two");
+            fSyncService.flatten("mainB--layer:/a", "mainB:/a");
+            
+            logger.debug("updated & flattened: created file: mainB:/a/b/bar");
+            
+            recursiveList("mainA");
+            recursiveList("mainB");
+            recursiveList("mainB--layer");
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace(System.err);
+            throw e;
+        }
+        finally
+        {
+            fService.purgeStore("mainA");
+            fService.purgeStore("mainB");
+            fService.purgeStore("mainB--layer");
+        }
+    }
+    
+    public void testLayeredFolderDelete4() throws Exception
+    {
+        try
+        {
+            fService.createStore("mainA");
+            fService.createStore("mainB");
+            
+            fService.createDirectory("mainA:/", "a");
+            fService.createDirectory("mainA:/a", "b");
+            
+            fService.createDirectory("mainB:/", "a");
+            
+            fService.createStore("mainB--layer");
+            
+            fService.createLayeredDirectory("mainB:/a", "mainB--layer:/", "a");
+            
+            // note: short-cut - created directly in "staging" area (don't bother with sandbox mainA--layer for now)
+            fService.createFile("mainA:/a/b", "foo");
+            
+            PrintStream out = new PrintStream(fService.getFileOutputStream("mainA:/a/b/foo"));
+            out.println("I am mainA:/a/b/foo");
+            out.close();
+            
+            logger.debug("created file: mainA:/a/b/foo");
+            
+            // create equivalent of WCM layered folder between web project staging sandboxes (mainB:/a/b pointing to ,mainA:/a/b)
+            fService.createLayeredDirectory("mainA:/a/b", "mainB:/a", "b");
+            
+            fService.createSnapshot("mainA", null, null);
+            fService.createSnapshot("mainB", null, null);
+            
+            logger.debug("created layered directory: mainB:/a/b -> mainA:/a/b");
+            
+            BufferedReader reader = new BufferedReader(new InputStreamReader(fService.getFileInputStream(-1, "mainB--layer:/a/b/foo")));
+            String line = reader.readLine();
+            reader.close();
+            assertEquals("I am mainA:/a/b/foo", line);
+            
+            out = new PrintStream(fService.getFileOutputStream("mainB--layer:/a/b/foo"));
+            out.println("I am mainB--layer:/a/b/foo");
+            out.close();
+            
+            logger.debug("updated file: mainB--layer:/a/b/foo");
+            
+            reader = new BufferedReader(new InputStreamReader(fService.getFileInputStream(-1, "mainA:/a/b/foo")));
+            line = reader.readLine();
+            reader.close();
+            assertEquals("I am mainA:/a/b/foo", line);
+            
+            reader = new BufferedReader(new InputStreamReader(fService.getFileInputStream(-1, "mainB:/a/b/foo")));
+            line = reader.readLine();
+            reader.close();
+            assertEquals("I am mainA:/a/b/foo", line);
+            
+            reader = new BufferedReader(new InputStreamReader(fService.getFileInputStream(-1, "mainB--layer:/a/b/foo")));
+            line = reader.readLine();
+            reader.close();
+            assertEquals("I am mainB--layer:/a/b/foo", line);
+            
+            List<AVMDifference> diffs = fSyncService.compare(-1, "mainB--layer:/a", -1, "mainB:/a", null);
+            assertEquals(1, diffs.size());
+            assertEquals("[mainB--layer:/a/b/foo[-1] > mainB:/a/b/foo[-1]]", diffs.toString());
+            
+            fSyncService.update(diffs, null, false, false, false, false, "one", "one");
+            fSyncService.flatten("mainB--layer:/a", "mainB:/a");
+            
+            logger.debug("updated & flattened: updated file: mainB:/a/b/foo");
+            
+            reader = new BufferedReader(new InputStreamReader(fService.getFileInputStream(-1, "mainB:/a/b/foo")));
+            line = reader.readLine();
+            reader.close();
+            assertEquals("I am mainB--layer:/a/b/foo", line);
+            
+            // delete folder - note: short-cut - remove directly from "staging" area (don't bother with sandbox mainA--layer for now)
+            fService.removeNode("mainA:/a", "b");
+            fService.createSnapshot("mainA", null, null);
+            
+            logger.debug("removed folder & snapshot: mainA:/a/b");
+            
+            reader = new BufferedReader(new InputStreamReader(fService.getFileInputStream(-1, "mainB--layer:/a/b/foo")));
+            line = reader.readLine();
+            reader.close();
+            assertEquals("I am mainB--layer:/a/b/foo", line);
+            
+            out = new PrintStream(fService.getFileOutputStream("mainB--layer:/a/b/foo"));
+            out.println("I am mainB--layer:/a/b/foo V2");
+            out.close();
+            
+            reader = new BufferedReader(new InputStreamReader(fService.getFileInputStream(-1, "mainB--layer:/a/b/foo")));
+            line = reader.readLine();
+            reader.close();
+            assertEquals("I am mainB--layer:/a/b/foo V2", line);
+            
+            reader = new BufferedReader(new InputStreamReader(fService.getFileInputStream(-1, "mainB:/a/b/foo")));
+            line = reader.readLine();
+            reader.close();
+            assertEquals("I am mainB--layer:/a/b/foo", line);
+            
+            logger.debug("updated file: mainB--layer:/a/b/foo");
+            
+            diffs = fSyncService.compare(-1, "mainB--layer:/a", -1, "mainB:/a", null);
+            assertEquals(1, diffs.size());
+            assertEquals("[mainB--layer:/a/b/foo[-1] > mainB:/a/b/foo[-1]]", diffs.toString());
+            
+            fSyncService.update(diffs, null, false, false, false, false, "two", "two");
+            fSyncService.flatten("mainB--layer:/a", "mainB:/a");
+            
+            logger.debug("updated & flattened: updated file: mainB:/a/b/foo");
+            
+            reader = new BufferedReader(new InputStreamReader(fService.getFileInputStream(-1, "mainB:/a/b/foo")));
+            line = reader.readLine();
+            reader.close();
+            assertEquals("I am mainB--layer:/a/b/foo V2", line);
+            
+            recursiveList("mainA");
+            recursiveList("mainB");
+            recursiveList("mainB--layer");
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace(System.err);
+            throw e;
+        }
+        finally
+        {
+            fService.purgeStore("mainA");
+            fService.purgeStore("mainB");
+            fService.purgeStore("mainB--layer");
+        }
+    }
+    
+    public void testLayeredFileDeleteFile1() throws Exception
+    {
+        try
+        {
+            fService.createStore("mainA");
+            fService.createStore("mainB");
+            fService.createStore("mainB--layer");
+            
+            logger.debug("created 3 stores: mainA, mainB, mainB--layer");
+            
+            fService.createDirectory("mainA:/", "a");
+            fService.createDirectory("mainB:/", "a");
+            
+            logger.debug("created 2 plain dirs: mainA:/a and mainB:/a");
+            
+            fService.createLayeredDirectory("mainB:/a", "mainB--layer:/", "a");
+            
+            logger.debug("created layered dir: mainB--layer:/a -> mainB:/a");
+            
+            // note: short-cut - created directly in "staging" area (don't bother with sandbox mainA--layer for now)
+            fService.createFile("mainA:/a", "foo");
+            
+            PrintStream out = new PrintStream(fService.getFileOutputStream("mainA:/a/foo"));
+            out.println("I am mainA:/a/foo");
+            out.close();
+            
+            logger.debug("created file: mainA:/a/foo");
+            
+            // create equivalent of WCM layered folder between web project staging sandboxes (mainB:/a/b pointing to ,mainA:/a/b)
+            fService.createLayeredFile("mainA:/a/foo", "mainB:/a", "foo");
+            
+            logger.debug("created layered file: mainB:/a/foo -> mainA:/a/foo");
+            
+            fService.createSnapshot("mainA", null, null);
+            fService.createSnapshot("mainB", null, null);
+            
+            logger.debug("created 2 snapshots: mainA and mainB");
+            
+            BufferedReader reader = new BufferedReader(new InputStreamReader(fService.getFileInputStream(-1, "mainB--layer:/a/foo")));
+            String line = reader.readLine();
+            reader.close();
+            assertEquals("I am mainA:/a/foo", line);
+            
+            reader = new BufferedReader(new InputStreamReader(fService.getFileInputStream(-1, "mainB:/a/foo")));
+            line = reader.readLine();
+            reader.close();
+            assertEquals("I am mainA:/a/foo", line);
+            
+            reader = new BufferedReader(new InputStreamReader(fService.getFileInputStream(-1, "mainA:/a/foo")));
+            line = reader.readLine();
+            reader.close();
+            assertEquals("I am mainA:/a/foo", line);
+            
+            List<AVMDifference> diffs = fSyncService.compare(-1, "mainB--layer:/a", -1, "mainB:/a", null);
+            assertEquals(0, diffs.size());
+            
+            fService.removeNode("mainB--layer:/a", "foo");
+            fService.createSnapshot("mainB--layer", null, null);
+            
+            logger.debug("removed file & snapshot: mainB--layer:/a/foo");
+            
+            diffs = fSyncService.compare(-1, "mainB--layer:/a", -1, "mainB:/a", null);
+            assertEquals("[mainB--layer:/a/foo[-1] > mainB:/a/foo[-1]]", diffs.toString());
+            
+            // ETHREEOH-2844
+            fSyncService.update(diffs, null, false, false, false, false, "one", "one");
+            fSyncService.flatten("mainB--layer:/a", "mainB:/a");
+            
+            logger.debug("updated & flattened: removed file: mainB:/a/foo");
+            
+            recursiveList("mainA");
+            recursiveList("mainB");
+            recursiveList("mainB--layer");
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace(System.err);
+            throw e;
+        }
+        finally
+        {
+            fService.purgeStore("mainA");
+            fService.purgeStore("mainB");
+            fService.purgeStore("mainB--layer");
+        }
+    }
+    
+    public void testLayeredFileDeleteFile2() throws Exception
+    {
+        try
+        {
+            fService.createStore("mainA");
+            fService.createStore("mainB");
+            fService.createStore("mainB--layer");
+            
+            logger.debug("created 3 stores: mainA, mainB, mainB--layer");
+            
+            fService.createDirectory("mainA:/", "a");
+            fService.createDirectory("mainB:/", "a");
+            
+            logger.debug("created 2 plain dirs: mainA:/a and mainB:/a");
+            
+            fService.createLayeredDirectory("mainB:/a", "mainB--layer:/", "a");
+            
+            logger.debug("created layered dir: mainB--layer:/a -> mainB:/a");
+            
+            // note: short-cut - created directly in "staging" area (don't bother with sandbox mainA--layer for now)
+            fService.createFile("mainA:/a", "foo");
+            
+            PrintStream out = new PrintStream(fService.getFileOutputStream("mainA:/a/foo"));
+            out.println("I am mainA:/a/foo");
+            out.close();
+            
+            logger.debug("created file: mainA:/a/foo");
+            
+            // create equivalent of WCM layered folder between web project staging sandboxes (mainB:/a/b pointing to ,mainA:/a/b)
+            fService.createLayeredFile("mainA:/a/foo", "mainB:/a", "foo");
+            
+            logger.debug("created layered file: mainB:/a/foo -> mainA:/a/foo");
+            
+            fService.createSnapshot("mainA", null, null);
+            fService.createSnapshot("mainB", null, null);
+            
+            logger.debug("created 2 snapshots: mainA and mainB");
+            
+            BufferedReader reader = new BufferedReader(new InputStreamReader(fService.getFileInputStream(-1, "mainB--layer:/a/foo")));
+            String line = reader.readLine();
+            reader.close();
+            assertEquals("I am mainA:/a/foo", line);
+            
+            reader = new BufferedReader(new InputStreamReader(fService.getFileInputStream(-1, "mainB:/a/foo")));
+            line = reader.readLine();
+            reader.close();
+            assertEquals("I am mainA:/a/foo", line);
+            
+            reader = new BufferedReader(new InputStreamReader(fService.getFileInputStream(-1, "mainA:/a/foo")));
+            line = reader.readLine();
+            reader.close();
+            assertEquals("I am mainA:/a/foo", line);
+            
+            List<AVMDifference> diffs = fSyncService.compare(-1, "mainB--layer:/a", -1, "mainB:/a", null);
+            assertEquals(0, diffs.size());
+            
+            // note: short-cut - removed directly from "staging" area (don't bother with sandbox mainA--layer for now)
+            fService.removeNode("mainA:/a", "foo");
+            fService.createSnapshot("mainA", null, null);
+            
+            logger.debug("removed file & snapshot: mainA:/a/foo");
+            
+            try
+            {
+                fService.getFileInputStream(-1, "mainA:/a/foo");
+                fail("Unexpected");
+            }
+            catch (AVMNotFoundException nfe)
+            {
+                // expected
+            }
+            
+            try
+            {
+                fService.getFileInputStream(-1, "mainB:/a/foo");
+                fail("Unexpected");
+            }
+            catch (AVMNotFoundException nfe)
+            {
+                // expected
+            }
+            
+            try
+            {
+                fService.getFileInputStream(-1, "mainB--layer:/a/foo");
+                fail("Unexpected");
+            }
+            catch (AVMNotFoundException nfe)
+            {
+                // expected
+            }
+            
+            fService.removeNode("mainB--layer:/a", "foo");
+            fService.createSnapshot("mainB--layer", null, null);
+            
+            logger.debug("removed file & snapshot: mainB--layer:/a/foo");
+            
+            diffs = fSyncService.compare(-1, "mainB--layer:/a", -1, "mainB:/a", null);
+            assertEquals("[mainB--layer:/a/foo[-1] > mainB:/a/foo[-1]]", diffs.toString());
+            
+            // ETHREEOH-2829
+            fSyncService.update(diffs, null, false, false, false, false, "one", "one");
+            fSyncService.flatten("mainB--layer:/a", "mainB:/a");
+            
+            logger.debug("updated & flattened: removed file: mainB:/a/foo");
+            
+            recursiveList("mainA");
+            recursiveList("mainB");
+            recursiveList("mainB--layer");
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace(System.err);
+            throw e;
+        }
+        finally
+        {
+            fService.purgeStore("mainA");
+            fService.purgeStore("mainB");
+            fService.purgeStore("mainB--layer");
+        }
+    }
+    
+    public void testLayeredFileDeleteFile3() throws Exception
+    {
+        try
+        {
+            fService.createStore("mainB");
+            fService.createStore("mainB--layer");
+            
+            logger.debug("created 2 stores: mainB, mainB--layer");
+            
+            fService.createDirectory("mainB:/", "a");
+            
+            logger.debug("created plain dir: mainB:/a");
+            
+            fService.createLayeredDirectory("mainB:/a", "mainB--layer:/", "a");
+            
+            logger.debug("created layered dir: mainB--layer:/a -> mainB:/a");
+            
+            // create equivalent of WCM layered file between web project staging sandboxes (mainB:/a/b/foo pointing to mainA:/a/b/foo)
+            fService.createLayeredFile("mainA:/a/foo", "mainB:/a", "foo"); // note: unbacked/stale here ... even store does not exist !!
+            
+            logger.debug("created layered file: mainB:/a/foo -> mainA:/a/foo");
+            
+            List<AVMDifference> diffs = fSyncService.compare(-1, "mainB--layer:/a", -1, "mainB:/a", null);
+            assertEquals(0, diffs.size());
+            
+            // create file
+            fService.createFile("mainB--layer:/a", "bar");
+            
+            logger.debug("created file: mainB--layer:/a/bar");
+            
+            diffs = fSyncService.compare(-1, "mainB--layer:/a", -1, "mainB:/a", null);
+            assertEquals("[mainB--layer:/a/bar[-1] > mainB:/a/bar[-1]]", diffs.toString());
+            
+            fSyncService.update(diffs, null, false, false, false, false, "one", "one");
+            
+            logger.debug("updated: created file: mainB:/a/bar");
+            
+            fSyncService.flatten("mainB--layer:/a", "mainB:/a");
+            
+            logger.debug("flattened: created file: mainB:/a/bar");
+            
+            // delete layered file (from mainB--layer)
+            fService.removeNode("mainB--layer:/a", "foo");
+            fService.createSnapshot("mainB--layer", null, null);
+            
+            logger.debug("removed file & snapshot: mainB--layer:/a/foo");
+            
+            diffs = fSyncService.compare(-1, "mainB--layer:/a", -1, "mainB:/a", null);
+            assertEquals("[mainB--layer:/a/foo[-1] > mainB:/a/foo[-1]]", diffs.toString());
+            
+            fService.createStore("mainB--workflow1");
+            
+            logger.debug("created store: mainB--workflow1");
+            
+            recursiveList("mainB--workflow1");
+            
+            fService.createLayeredDirectory("mainB:/a", "mainB--workflow1:/", "a");
+            
+            logger.debug("created layered dir: mainB--workflow1:/a -> mainB:/a");
+            
+            recursiveList("mainB");
+            recursiveList("mainB--layer");
+            recursiveList("mainB--workflow1");
+            
+            diffs = fSyncService.compare(-1, "mainB--workflow1:/a", -1, "mainB:/a", null);
+            assertEquals(0, diffs.size());
+            
+            diffs = new ArrayList<AVMDifference>(1);
+            diffs.add(new AVMDifference(-1, "mainB--layer:/a/foo", -1, "mainB--workflow1:/a/foo", AVMDifference.NEWER));
+            
+            // ETHREEOH-2868
+            fSyncService.update(diffs, null, false, false, false, false, null, null);
+            
+            logger.debug("updated: removed file: mainB--workflow1:/a/foo");
+            
+            recursiveList("mainB");
+            recursiveList("mainB--layer");
+            recursiveList("mainB--workflow1");
+            
+            diffs = fSyncService.compare(-1, "mainB--workflow1:/a", -1, "mainB:/a", null);
+            assertEquals("[mainB--workflow1:/a/foo[-1] > mainB:/a/foo[-1]]", diffs.toString());
+            
+            fSyncService.update(diffs, null, false, false, true, true, "one", "one");
+            fSyncService.flatten("mainB--workflow1:/a", "mainB:/a");
+            
+            logger.debug("updated & flattened: removed file: mainB:/a/foo");
+            
+            diffs = fSyncService.compare(-1, "mainB--workflow1:/a", -1, "mainB:/a", null);
+            assertEquals(0, diffs.size());
+            
+            diffs = fSyncService.compare(-1, "mainB--workflow1:/a", -1, "mainB--layer:/a", null);
+            assertEquals(0, diffs.size());
+            
+            fSyncService.update(diffs, null, true, true, false, false, null, null);
+            fSyncService.flatten("mainB--layer:/a", "mainB--workflow1:/a");
+            
+            recursiveList("mainB");
+            recursiveList("mainB--layer");
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace(System.err);
+            throw e;
+        }
+        finally
+        {
+            fService.purgeStore("mainB");
+            fService.purgeStore("mainB--layer");
+            if (fService.getStore("mainB--workflow1") != null) { fService.purgeStore("mainB--workflow1"); }
+        }
+    }
+    
+    public void testLayeredFileDeleteFile4() throws Exception
+    {
+        try
+        {
+            fService.createStore("mainA");
+            fService.createStore("mainB");
+            fService.createStore("mainB--layer");
+            
+            logger.debug("created 3 stores: mainA, mainB, mainB--layer");
+            
+            fService.createDirectory("mainA:/", "a");
+            fService.createDirectory("mainB:/", "a");
+            
+            logger.debug("created 2 plain dirs: mainA:/a and mainB:/a");
+            
+            fService.createSnapshot("mainA", null, null);
+            fService.createSnapshot("mainB", null, null);
+            
+            logger.debug("created 2 snapshots: mainA and mainB");
+            
+            fService.createLayeredDirectory("mainB:/a", "mainB--layer:/", "a");
+            
+            logger.debug("created layered dir: mainB--layer:/a -> mainB:/a");
+            
+            // note: short-cut - created directly in "staging" areas (don't bother with sandbox mainA--layer or mainB--layer for now)
+            fService.createDirectory("mainA:/a", "b");
+            fService.createDirectory("mainB:/a", "b");
+            
+            logger.debug("created directories: mainA:/a/b &  mainB:/a/b");
+            
+            fService.createFile("mainA:/a/b", "foo");
+            
+            PrintStream out = new PrintStream(fService.getFileOutputStream("mainA:/a/b/foo"));
+            out.println("I am mainA:/a/b/foo");
+            out.close();
+            
+            logger.debug("created file: mainA:/a/b/foo");
+            
+            // create equivalent of WCM layered file between web project staging sandboxes (mainB:/a/b/foo pointing to mainA:/a/b/foo)
+            fService.createLayeredFile("mainA:/a/b/foo", "mainB:/a/b", "foo");
+            
+            logger.debug("created layered file: mainB:/a/b/foo -> mainA:/a/b/foo");
+            
+            BufferedReader reader = new BufferedReader(new InputStreamReader(fService.getFileInputStream(-1, "mainB--layer:/a/b/foo")));
+            String line = reader.readLine();
+            reader.close();
+            assertEquals("I am mainA:/a/b/foo", line);
+            
+            reader = new BufferedReader(new InputStreamReader(fService.getFileInputStream(-1, "mainB:/a/b/foo")));
+            line = reader.readLine();
+            reader.close();
+            assertEquals("I am mainA:/a/b/foo", line);
+            
+            reader = new BufferedReader(new InputStreamReader(fService.getFileInputStream(-1, "mainA:/a/b/foo")));
+            line = reader.readLine();
+            reader.close();
+            assertEquals("I am mainA:/a/b/foo", line);
+            
+            List<AVMDifference> diffs = fSyncService.compare(-1, "mainB--layer:/a/b", -1, "mainB:/a/b", null);
+            assertEquals(0, diffs.size());
+            
+            // create file
+            fService.createFile("mainB--layer:/a/b", "bar");
+            
+            logger.debug("created file: mainB--layer:/a/b/bar");
+            
+            diffs = fSyncService.compare(-1, "mainB--layer:/a/b", -1, "mainB:/a/b", null);
+            assertEquals("[mainB--layer:/a/b/bar[-1] > mainB:/a/b/bar[-1]]", diffs.toString());
+            
+            fSyncService.update(diffs, null, false, false, false, false, "one", "one");
+            fSyncService.flatten("mainB--layer:/a/b", "mainB:/a/b");
+            
+            logger.debug("updated & flattened: created file: mainB:/a/b/bar");
+            
+            // delete layered file (from mainB--layer)
+            fService.removeNode("mainB--layer:/a/b", "foo");
+            fService.createSnapshot("mainB--layer", null, null);
+            
+            logger.debug("removed file & snapshot: mainB--layer:/a/b/foo");
+            
+            diffs = fSyncService.compare(-1, "mainB--layer:/a/b", -1, "mainB:/a/b", null);
+            assertEquals("[mainB--layer:/a/b/foo[-1] > mainB:/a/b/foo[-1]]", diffs.toString());
+            
+            fService.createStore("mainB--workflow1");
+            
+            fService.createLayeredDirectory("mainB:/a", "mainB--workflow1:/", "a");
+            
+            logger.debug("created layered dir: mainB--workflow1:/a -> mainB:/a");
+            
+            recursiveList("mainA");
+            recursiveList("mainB");
+            recursiveList("mainB--layer");
+            recursiveList("mainB--workflow1");
+            
+            diffs = fSyncService.compare(-1, "mainB--workflow1:/a/b", -1, "mainB:/a/b", null);
+            assertEquals(0, diffs.size());
+            
+            diffs = new ArrayList<AVMDifference>(1);
+            diffs.add(new AVMDifference(-1, "mainB--layer:/a/b/foo", -1, "mainB--workflow1:/a/b/foo", AVMDifference.NEWER));
+            
+            // ETHREEOH-2868
+            fSyncService.update(diffs, null, false, false, false, false, null, null);
+            
+            logger.debug("updated: removed file: mainB--workflow1:/a/b/foo");
+            
+            recursiveList("mainA");
+            recursiveList("mainB");
+            recursiveList("mainB--layer");
+            recursiveList("mainB--workflow1");
+            
+            diffs = fSyncService.compare(-1, "mainB--workflow1:/a/b", -1, "mainB:/a/b", null);
+            assertEquals("[mainB--workflow1:/a/b/foo[-1] > mainB:/a/b/foo[-1]]", diffs.toString());
+            
+            fSyncService.update(diffs, null, false, false, true, true, "one", "one");
+            fSyncService.flatten("mainB--workflow1:/a/b", "mainB:/a/b");
+            
+            logger.debug("updated & flattened: removed file: mainB:/a/b/foo");
+            
+            diffs = fSyncService.compare(-1, "mainB--workflow1:/a/b", -1, "mainB:/a/b", null);
+            assertEquals(0, diffs.size());
+            
+            diffs = fSyncService.compare(-1, "mainB--workflow1:/a/b", -1, "mainB--layer:/a/b", null);
+            assertEquals(0, diffs.size());
+            
+            fSyncService.update(diffs, null, true, true, false, false, null, null);
+            fSyncService.flatten("mainB--layer:/a/b", "mainB--workflow1:/a/b");
+            
+            recursiveList("mainA");
+            recursiveList("mainB");
+            recursiveList("mainB--layer");
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace(System.err);
+            throw e;
+        }
+        finally
+        {
+            fService.purgeStore("mainA");
+            fService.purgeStore("mainB");
+            fService.purgeStore("mainB--layer");
+            if (fService.getStore("mainB--workflow1") != null) { fService.purgeStore("mainB--workflow1"); }
+        }
+    }
+    
     protected void recursiveContents(String path)
     {
         String contentsStr = recursiveContents(path, -1, true);
@@ -1680,8 +2846,7 @@ public class AVMServiceLocalTest extends TestCase
         String list = recursiveList(store, -1, true);
         if (logger.isDebugEnabled())
         { 
-            logger.debug(store+":");
-            logger.debug(list);
+            logger.debug("\n\n"+store+":"+"\n"+list+"\n");
         }
     }
     
@@ -1712,6 +2877,13 @@ public class AVMServiceLocalTest extends TestCase
         builder.append(' ');
         AVMNodeDescriptor desc = fService.lookup(version, path, true);
         builder.append(desc.toString());
+        
+        List<AVMNodeDescriptor> ancs = fService.getHistory(desc, -1);
+        for (AVMNodeDescriptor anc : ancs)
+        {
+            builder.append("--->").append(anc.toString());
+        }
+        
         builder.append('\n');
         if (desc.getType() == AVMNodeType.PLAIN_DIRECTORY ||
             (desc.getType() == AVMNodeType.LAYERED_DIRECTORY && followLinks))
@@ -1719,6 +2891,12 @@ public class AVMServiceLocalTest extends TestCase
             String basename = path.endsWith("/") ? path : path + "/";
             Map<String, AVMNodeDescriptor> listing = fService.getDirectoryListing(version, path);
             for (String name : listing.keySet())
+            {
+                if (logger.isTraceEnabled()) { logger.trace(name); }
+                builder.append(recursiveList(basename + name, version, indent + 2, followLinks));
+            }
+            List<String> deletedList = fService.getDeleted(version, path);
+            for (String name : deletedList)
             {
                 if (logger.isTraceEnabled()) { logger.trace(name); }
                 builder.append(recursiveList(basename + name, version, indent + 2, followLinks));

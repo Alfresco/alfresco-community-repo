@@ -70,10 +70,10 @@ public class UIChildAssociationEditor extends BaseAssociationEditor
    }
    
    /**
-    * @see org.alfresco.web.ui.repo.component.property.BaseAssociationEditor#populateAssocationMaps(org.alfresco.web.bean.repository.Node)
+    * @see org.alfresco.web.ui.repo.component.property.BaseAssociationEditor#populateAssocationMaps(org.alfresco.web.bean.repository.Node, org.alfresco.service.cmr.repository.NodeService)
     */
    @SuppressWarnings("unchecked")
-   protected void populateAssocationMaps(Node node)
+   protected void populateAssocationMaps(Node node, NodeService nodeService)
    {
       // we need to remember the original set of associations (if there are any)
       // and place them in a map keyed by the noderef of the child node

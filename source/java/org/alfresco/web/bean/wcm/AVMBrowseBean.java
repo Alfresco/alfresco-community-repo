@@ -1060,9 +1060,9 @@ public class AVMBrowseBean implements IContextListener
    public boolean getIsManagerRole()
    {
       Node wpNode = getWebsite();
-      if (wpNode != null)
+      if (wpNode != null && nodeService.exists(wpNode.getNodeRef()))
       {
-          return getWebProjectService().isContentManager(wpNode.getNodeRef());
+         return getWebProjectService().isContentManager(wpNode.getNodeRef());
       }
       return false;
    }
@@ -1070,7 +1070,7 @@ public class AVMBrowseBean implements IContextListener
    public boolean getIsManagerOrPublisherRole()
    {
       Node wpNode = getWebsite();
-      if (wpNode != null)
+      if (wpNode != null && nodeService.exists(wpNode.getNodeRef()))
       {
          User user = Application.getCurrentUser(FacesContext.getCurrentInstance());
          String userRole = getWebProjectService().getWebUserRole(wpNode.getNodeRef(), user.getUserName());
@@ -1095,7 +1095,6 @@ public class AVMBrowseBean implements IContextListener
       this.showAllSandboxes = value;
    }
    
-   
    /**
     * @return true if the website has had a deployment attempt
     */
@@ -1112,14 +1111,21 @@ public class AVMBrowseBean implements IContextListener
       Map request = context.getExternalContext().getRequestMap();
       if (request.get(REQUEST_BEEN_DEPLOYED_RESULT) == null)
       {
-         // see if there are any deployment attempts for the staging area
-         NodeRef webProjectRef = this.getWebsite().getNodeRef();
-         String store = (String)getNodeService().getProperty(webProjectRef, 
+         if (!nodeService.exists(this.getWebsite().getNodeRef()))
+         {
+            result = false;
+         }
+         else
+         {
+            // see if there are any deployment attempts for the staging area
+            NodeRef webProjectRef = this.getWebsite().getNodeRef();
+            String store = (String)getNodeService().getProperty(webProjectRef, 
                   WCMAppModel.PROP_AVMSTORE);
-         List<NodeRef> deployAttempts = DeploymentUtil.findDeploymentAttempts(store);
-         
-         // add a placeholder object in the request so we don't evaluate this again for this request
-         result = new Boolean(deployAttempts != null && deployAttempts.size() > 0);
+            List<NodeRef> deployAttempts = DeploymentUtil.findDeploymentAttempts(store);
+            
+            // add a placeholder object in the request so we don't evaluate this again for this request
+            result = new Boolean(deployAttempts != null && deployAttempts.size() > 0);
+         }
          request.put(REQUEST_BEEN_DEPLOYED_RESULT, result);
       }
       else

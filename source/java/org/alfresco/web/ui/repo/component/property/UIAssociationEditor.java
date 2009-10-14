@@ -73,10 +73,10 @@ public class UIAssociationEditor extends BaseAssociationEditor
    }
    
    /**
-    * @see org.alfresco.web.ui.repo.component.property.BaseAssociationEditor#populateAssocationMaps(org.alfresco.web.bean.repository.Node)
+    * @see org.alfresco.web.ui.repo.component.property.BaseAssociationEditor#populateAssocationMaps(org.alfresco.web.bean.repository.Node, org.alfresco.service.cmr.repository.NodeService)
     */
    @SuppressWarnings("unchecked")
-   protected void populateAssocationMaps(Node node)
+   protected void populateAssocationMaps(Node node, NodeService nodeService)
    {
       // we need to remember the original set of associations (if there are any)
       // and place them in a map keyed by the noderef of the child node
@@ -92,8 +92,11 @@ public class UIAssociationEditor extends BaseAssociationEditor
             {
                AssociationRef assoc = (AssociationRef)iter.next();
                
-               // add the association to the map
-               this.originalAssocs.put(assoc.getTargetRef().toString(), assoc);
+               if (nodeService.exists(assoc.getTargetRef()))
+               {
+                   // add the association to the map
+                   this.originalAssocs.put(assoc.getTargetRef().toString(), assoc);
+               }
             }
          }
       }

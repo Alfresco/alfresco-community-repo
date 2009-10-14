@@ -317,7 +317,7 @@ public abstract class BaseAssociationEditor extends UIInput
          String targetType = assocDef.getTargetClass().getName().toString();
          boolean allowMany = assocDef.isTargetMany();
          
-         populateAssocationMaps((Node)getValue());
+         populateAssocationMaps((Node)getValue(), nodeService);
          
          if (isDisabled())
          {
@@ -655,8 +655,9 @@ public abstract class BaseAssociationEditor extends UIInput
     * Populates all the internal Maps with the appropriate association reference objects
     * 
     * @param node The Node we are dealing with
+     * @param nodeService The NodeService
     */
-   protected abstract void populateAssocationMaps(Node node);
+    protected abstract void populateAssocationMaps(Node node, NodeService nodeService);
    
    /**
     * Renders the existing associations in a read-only form 

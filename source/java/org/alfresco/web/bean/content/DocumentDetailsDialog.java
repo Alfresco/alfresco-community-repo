@@ -33,6 +33,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Stack;
 
 import javax.faces.application.FacesMessage;
 import javax.faces.component.UIComponent;
@@ -97,6 +98,8 @@ public class DocumentDetailsDialog extends BaseDetailsBean implements  Navigatio
 
    private static final String ML_VERSION_PANEL_ID = "ml-versions-panel";
 
+   private final static String DOC_DETAILS_STACK = "_alfDocDetailsStack";
+
    transient protected LockService lockService;
    transient protected VersionService versionService;
    transient protected CheckOutCheckInService cociService;
@@ -138,6 +141,53 @@ public class DocumentDetailsDialog extends BaseDetailsBean implements  Navigatio
    {
       // reset the workflow cache
       this.workflowProperties = null;
+   }
+
+   @Override
+   @SuppressWarnings("unchecked")
+   public void init(Map<String, String> parameters)
+   {   
+       super.init(parameters);
+       //Remember active node.
+       Stack stack = getRecentNodeRefsStack();
+       stack.push(getNode().getNodeRef().getId());
+   }
+   
+   @Override
+   @SuppressWarnings("unchecked")
+   public void restored()
+   {
+       super.restored();
+       Stack stack = getRecentNodeRefsStack();
+       if (stack.isEmpty() == false)
+       {
+           browseBean.setupContentAction((String) stack.peek(), true);
+       }
+   }
+   
+   @Override
+   @SuppressWarnings("unchecked")
+   public String cancel()
+   {
+       Stack stack = getRecentNodeRefsStack();
+       if (stack.isEmpty() == false)
+       {
+           stack.pop();
+       }
+       return super.cancel();
+   }
+   
+   @SuppressWarnings("unchecked")
+   private Stack getRecentNodeRefsStack()
+   {
+       FacesContext fc = FacesContext.getCurrentInstance();
+       Stack stack = (Stack) fc.getExternalContext().getSessionMap().get(DOC_DETAILS_STACK);
+       if (stack == null)
+       {
+           stack = new Stack();
+           fc.getExternalContext().getSessionMap().put(DOC_DETAILS_STACK, stack);
+       }
+       return stack;
    }
 
    /**
@@ -692,6 +742,7 @@ public class DocumentDetailsDialog extends BaseDetailsBean implements  Navigatio
                   }
 
                   // prepare for showing details for this node
+                  getRecentNodeRefsStack().clear();
                   this.browseBean.setupContentAction(next.getId(), false);
                   break;
                }
@@ -731,6 +782,7 @@ public class DocumentDetailsDialog extends BaseDetailsBean implements  Navigatio
                   }
 
                   // prepare for showing details for this node
+                  getRecentNodeRefsStack().clear();
                   this.browseBean.setupContentAction(previous.getId(), false);
                   break;
                }

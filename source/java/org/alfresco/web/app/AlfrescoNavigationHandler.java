@@ -33,6 +33,7 @@ import javax.faces.context.FacesContext;
 
 import org.alfresco.config.Config;
 import org.alfresco.config.ConfigService;
+import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.web.app.servlet.FacesHelper;
 import org.alfresco.web.bean.NavigationBean;
 import org.alfresco.web.bean.dialog.DialogManager;
@@ -536,9 +537,17 @@ public class AlfrescoNavigationHandler extends NavigationHandler
             
          // see if there is any navigation config for the node type
          ConfigService configSvc = Application.getConfigService(context);
+         NavigationConfigElement navigationCfg = null;
+         try
+         {
          Config nodeConfig = configSvc.getConfig(dispatchNode);
-         NavigationConfigElement navigationCfg = (NavigationConfigElement)nodeConfig.
+             navigationCfg = (NavigationConfigElement)nodeConfig.
                getConfigElement(NavigationElementReader.ELEMENT_NAVIGATION);
+         }
+         catch (InvalidNodeRefException e)
+         {
+             if (logger.isDebugEnabled()) logger.debug("Invalid node reference: " + dispatchNode);
+         } 
          
          if (navigationCfg != null)
          {

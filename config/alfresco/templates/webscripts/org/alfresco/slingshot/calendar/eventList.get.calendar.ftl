@@ -1,6 +1,7 @@
 <#if events?exists>
 <#assign dateFormat = "yyyyMMdd">
 <#assign timeFormat = "HHmmss">
+<#assign zoneFormat = "z">
 BEGIN:VCALENDAR
 PRODID:-//Alfresco Software//Calendar 1.0//EN
 VERSION:2.0
@@ -11,10 +12,10 @@ VERSION:2.0
 <#assign to = event.properties["ia:toDate"]>
 BEGIN:VEVENT
 UID:${event.id}
-DTSTART:${from?string(dateFormat)}T${from?string(timeFormat)}Z
-DTEND:${to?string(dateFormat)}T${to?string(timeFormat)}Z
+DTSTART;TZID=${from?string(zoneFormat)}:${from?string(dateFormat)}T${from?string(timeFormat)}
+DTEND;TZID=${from?string(zoneFormat)}:${to?string(dateFormat)}T${to?string(timeFormat)}
 SUMMARY:${event.properties["ia:whatEvent"]!""}
-DTSTAMP:${event.properties["cm:created"]?string(dateFormat)}T${event.properties["cm:created"]?string(timeFormat)}Z
+DTSTAMP;TZID=${event.properties["cm:created"]?string(zoneFormat)}:${event.properties["cm:created"]?string(dateFormat)}T${event.properties["cm:created"]?string(timeFormat)}
 <#if event.properties["ia:descriptionEvent"]?exists>
 DESCRIPTION:${event.properties["ia:descriptionEvent"]?replace("\\", "\\\\")?replace(",", "\\,")?replace(";", "\\;")?replace("\r?\n", "\\n", "r")}
 </#if>

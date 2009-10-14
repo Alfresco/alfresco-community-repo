@@ -322,20 +322,13 @@ public class SiteServiceImpl implements SiteService, SiteModel
         /**
          * Check that the site does not already exist
          */
-        AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
-        {
-            public String doWork() throws Exception
-            {
-            	// Check to see if we already have a site of this name
-            	NodeRef existingSite = getSiteNodeRef(shortName);
-            	if (existingSite != null)
-            	{
-            		// Throw an exception since we have a duplicate site name
-            		throw new SiteServiceException(MSG_UNABLE_TO_CREATE, new Object[]{shortName});
-            	}
-            	return null;
-            }
-        }, AuthenticationUtil.getSystemUserName());
+    	// Check to see if we already have a site of this name
+    	NodeRef existingSite = getSiteNodeRef(shortName);
+    	if (existingSite != null)
+    	{
+    		// Throw an exception since we have a duplicate site name
+    		throw new SiteServiceException(MSG_UNABLE_TO_CREATE, new Object[]{shortName});
+    	}
 
         // Get the site parent node reference
         NodeRef siteParent = getSiteParent(shortName);
@@ -374,7 +367,6 @@ public class SiteServiceImpl implements SiteService, SiteModel
                 Set<String> shareZones = new HashSet<String>(2, 1.0f);
                 shareZones.add(AuthorityService.ZONE_APP_SHARE);
                 shareZones.add(AuthorityService.ZONE_AUTH_ALFRESCO);
-            	
             	
                 // Create the site's groups
                 String siteGroup = authorityService
@@ -513,7 +505,7 @@ public class SiteServiceImpl implements SiteService, SiteModel
     }
 
     /**
-     * Gets a sites parent folder based on it's short name ]
+     * Gets a sites parent folder based on it's short name
      * 
      * @param shortName site short name
      * @return NodeRef the site's parent
@@ -739,19 +731,25 @@ public class SiteServiceImpl implements SiteService, SiteModel
      */
     private SiteInfo createSiteInfo(NodeRef siteNodeRef)
     {
-        // Get the properties
-        Map<QName, Serializable> properties = this.nodeService.getProperties(siteNodeRef);
-        String shortName = (String) properties.get(ContentModel.PROP_NAME);
-        String sitePreset = (String) properties.get(PROP_SITE_PRESET);
-        String title = (String) properties.get(ContentModel.PROP_TITLE);
-        String description = (String) properties.get(ContentModel.PROP_DESCRIPTION);
-
-        // Get the visibility of the site
-        SiteVisibility visibility = getSiteVisibility(siteNodeRef);
+        SiteInfo siteInfo = null;
         
-        // Create and return the site information
-        Map<QName, Serializable> customProperties = getSiteCustomProperties(properties);
-        SiteInfo siteInfo = new SiteInfoImpl(sitePreset, shortName, title, description, visibility, customProperties, siteNodeRef);
+        if (this.permissionService.hasPermission(siteNodeRef, PermissionService.READ_PROPERTIES).equals(AccessStatus.ALLOWED))
+        {
+            // Get the properties
+            Map<QName, Serializable> properties = this.nodeService.getProperties(siteNodeRef);
+            String shortName = (String) properties.get(ContentModel.PROP_NAME);
+            String sitePreset = (String) properties.get(PROP_SITE_PRESET);
+            String title = (String) properties.get(ContentModel.PROP_TITLE);
+            String description = (String) properties.get(ContentModel.PROP_DESCRIPTION);
+    
+            // Get the visibility of the site
+            SiteVisibility visibility = getSiteVisibility(siteNodeRef);
+            
+            // Create and return the site information
+            Map<QName, Serializable> customProperties = getSiteCustomProperties(properties);
+            siteInfo = new SiteInfoImpl(sitePreset, shortName, title, description, visibility, customProperties, siteNodeRef);
+        }
+        
         return siteInfo;
     }
     
@@ -843,7 +841,7 @@ public class SiteServiceImpl implements SiteService, SiteModel
      * 
      * @return NodeRef node reference
      */
-    private NodeRef getSiteNodeRef(String shortName)
+    private NodeRef getSiteNodeRef(final String shortName)
     {
         final String cacheKey = this.tenantAdminService.getCurrentUserDomain() + '_' + shortName;
         NodeRef siteNodeRef = this.siteNodeRefs.get(cacheKey);
@@ -859,16 +857,23 @@ public class SiteServiceImpl implements SiteService, SiteModel
         else
         {
             // not in cache - find and store
-            NodeRef siteRoot = getSiteParent(shortName);
+            final NodeRef siteRoot = getSiteParent(shortName);
             
-            // the site "short name" directly maps to the cm:name property
-            siteNodeRef = this.nodeService.getChildByName(siteRoot, ContentModel.ASSOC_CONTAINS, shortName);
-            
-            // cache the result if found - null results will be requeried to ensure new sites are found later
-            if (siteNodeRef != null)
+            siteNodeRef = AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<NodeRef>()
             {
-                this.siteNodeRefs.put(cacheKey, siteNodeRef);
-            }
+                public NodeRef doWork() throws Exception
+                {
+                    // the site "short name" directly maps to the cm:name property
+                    NodeRef siteNodeRef = nodeService.getChildByName(siteRoot, ContentModel.ASSOC_CONTAINS, shortName);
+                    
+                    // cache the result if found - null results will be required to ensure new sites are found later
+                    if (siteNodeRef != null)
+                    {
+                        siteNodeRefs.put(cacheKey, siteNodeRef);
+                    }
+                    return siteNodeRef;
+                }
+            }, AuthenticationUtil.getSystemUserName());
         }
         return siteNodeRef;
     }

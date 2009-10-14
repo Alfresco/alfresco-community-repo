@@ -41,20 +41,12 @@ import org.alfresco.jlan.server.auth.ntlm.NTLM;
 import org.alfresco.jlan.server.auth.passthru.DomainMapping;
 import org.alfresco.jlan.server.config.SecurityConfigSection;
 import org.alfresco.jlan.util.IPAddress;
-import org.alfresco.model.ContentModel;
 import org.alfresco.repo.SessionUser;
 import org.alfresco.repo.management.subsystems.ActivateableBean;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationException;
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.web.filter.beans.DependencyInjectedFilter;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.security.AuthenticationService;
-import org.alfresco.service.cmr.security.PersonService;
-import org.alfresco.service.transaction.TransactionService;
-import org.apache.commons.logging.Log;
 import org.springframework.beans.factory.InitializingBean;
 
 /**
@@ -63,7 +55,7 @@ import org.springframework.beans.factory.InitializingBean;
  * @author gkspencer
  * @author kroast
  */
-public abstract class BaseSSOAuthenticationFilter implements DependencyInjectedFilter, ActivateableBean, InitializingBean
+public abstract class BaseSSOAuthenticationFilter extends BaseAuthenticationFilter implements DependencyInjectedFilter, ActivateableBean, InitializingBean
 {
 	// Constants
 	//
@@ -71,37 +63,15 @@ public abstract class BaseSSOAuthenticationFilter implements DependencyInjectedF
 	//
 	// Note: These values are copied from the AuthenticationHelper and LoginBean classes to avoid project dependencies
 	
-    protected static final String AUTHENTICATION_USER = "_alfAuthTicket";
-    protected static final String LOGIN_EXTERNAL_AUTH = "_alfExternalAuth";
-	
-    // Request level marker to indicate that authentication should not be processed
-    //
-    // Note: copied from the AbstractAuthenticationFilter to avoid project dependencies
-    
     protected static final String NO_AUTH_REQUIRED = "alfNoAuthRequired"; 
-
-    // Attribute used by WebDAV filters for storing the WebDAV user details
-    
-    protected static final String WEBDAV_AUTH_USER    = "_alfDAVAuthTicket";
     
     // Allow an authentication ticket to be passed as part of a request to bypass authentication
 
-    private static final String ARG_TICKET = "ticket";
-        
-    // File server configuration
-
-	private ExtendedServerConfigurationAccessor serverConfiguration;
+    private ExtendedServerConfigurationAccessor serverConfiguration;
     
     // Various services required by NTLM authenticator
 
-	protected AuthenticationService authenticationService;
-    protected AuthenticationComponent authenticationComponent;
-    protected PersonService personService;
-    protected NodeService nodeService;
-    protected TransactionService transactionService;
-    
-    // Login page relative address, if null then login will loop until a valid login is received
-    
+	protected AuthenticationComponent authenticationComponent;
     private String m_loginPage;
     
     // Indicate whether ticket based logons are supported
@@ -109,8 +79,6 @@ public abstract class BaseSSOAuthenticationFilter implements DependencyInjectedF
     private boolean m_ticketLogons;
     
     // User object attribute name
-    
-    private String m_userAttributeName = AUTHENTICATION_USER;
     
     private String m_lastConfiguredServerName;
     private String m_lastResolvedServerName;
@@ -126,14 +94,6 @@ public abstract class BaseSSOAuthenticationFilter implements DependencyInjectedF
     }
     
     /**
-     * @param authenticationService the authenticationService to set
-     */
-    public void setAuthenticationService(AuthenticationService authenticationService)
-    {
-        this.authenticationService = authenticationService;
-    }
-
-    /**
      * @param authenticationComponent the authenticationComponent to set
      */
     public void setAuthenticationComponent(AuthenticationComponent authenticationComponent)
@@ -141,30 +101,6 @@ public abstract class BaseSSOAuthenticationFilter implements DependencyInjectedF
         this.authenticationComponent = authenticationComponent;
     }
 
-    /**
-     * @param personService the personService to set
-     */
-    public void setPersonService(PersonService personService)
-    {
-        this.personService = personService;
-    }
-
-    /**
-     * @param nodeService the nodeService to set
-     */
-    public void setNodeService(NodeService nodeService)
-    {
-        this.nodeService = nodeService;
-    }
-
-    /**
-     * @param transactionService the transactionService to set
-     */
-    public void setTransactionService(TransactionService transactionService)
-    {
-        this.transactionService = transactionService;
-    }
-    
     /**
      * Activates or deactivates the bean
      * 
@@ -207,134 +143,31 @@ public abstract class BaseSSOAuthenticationFilter implements DependencyInjectedF
     }
     
     /**
-     * Create the user object that will be stored in the session
-     * 
-     * @param userName String
-     * @param ticket String
-     * @param personNode NodeRef
-     * @param homeSpace String
-     * @return SessionUser 
-     */
-    protected abstract SessionUser createUserObject( String userName, String ticket, NodeRef personNode, String homeSpace);
-    
-    /**
-     * Callback to get the specific impl of the Session User for a filter
-     * 
-     * @return User from the session
-     */
-    protected SessionUser getSessionUser(HttpSession session)
-    {
-        return (SessionUser)session.getAttribute( getUserAttributeName());
-    }
-    
-    /**
-     * Remove the user from the session - after failed ticket auth
-     */
-    protected void removeSessionUser(HttpSession session)
-    {
-        session.removeAttribute( getUserAttributeName());
-    }
-    
-    /**
-     * Return the user object session attribute name
-     * 
-     * @return String
-     */
-    protected final String getUserAttributeName()
-    {
-    	return m_userAttributeName;
-    }
-
-    /**
-     * Set the user object attribute name
-     * 
-     * @param userAttr String
-     */
-    protected final void setUserAttributeName( String userAttr)
-    {
-    	m_userAttributeName = userAttr;
-    }
-    
-    /**
      * Callback to create the User environment as appropriate for a filter impl
      * 
-     * @param session HttpSession
-     * @param userName String
+     * @param session
+     *            HttpSession
+     * @param userName
+     *            String
      * @return SessionUser
      * @throws IOException
      * @throws ServletException
      */
-    protected SessionUser createUserEnvironment(HttpSession session, String userName)
-        throws IOException, ServletException
+    protected SessionUser createUserEnvironment(final HttpSession session, final String userName) throws IOException,
+            ServletException
     {
-        SessionUser user = null;
-        
-        UserTransaction tx = transactionService.getUserTransaction();
-        
-        try
-        {
-            tx.begin();
-            
-            // Setup User object and Home space ID etc.
-            
-            final NodeRef personNodeRef = personService.getPerson(userName);
-            
-            // Use the system user context to do the user lookup
-            RunAsWork<String> getUserNameRunAsWork = new RunAsWork<String>()
-            {
-                public String doWork() throws Exception
+        return this.transactionService.getRetryingTransactionHelper().doInTransaction(
+                new RetryingTransactionHelper.RetryingTransactionCallback<SessionUser>()
                 {
-                    return (String) nodeService.getProperty(personNodeRef, ContentModel.PROP_USERNAME);
-                }
-            };
-            userName = AuthenticationUtil.runAs(getUserNameRunAsWork, AuthenticationUtil.SYSTEM_USER_NAME);
-            
-            authenticationComponent.setCurrentUser(userName);
-            String currentTicket = authenticationService.getCurrentTicket();
-            
-            NodeRef homeSpaceRef = (NodeRef) nodeService.getProperty(personNodeRef, ContentModel.PROP_HOMEFOLDER);
-            
-            // Create the user object to be stored in the session
-            
-            user = createUserObject( userName, currentTicket, personNodeRef, homeSpaceRef.getId());
-            
-            tx.commit();
-        }
-        catch (Throwable ex)
-        {
-            try
-            {
-                tx.rollback();
-            }
-            catch (Exception err)
-            {
-                getLogger().error("Failed to rollback transaction", err);
-            }
-            if (ex instanceof RuntimeException)
-            {
-                throw (RuntimeException)ex;
-            }
-            else if (ex instanceof IOException)
-            {
-                throw (IOException)ex;
-            }
-            else if (ex instanceof ServletException)
-            {
-                throw (ServletException)ex;
-            }
-            else
-            {
-                throw new RuntimeException("Authentication setup failed", ex);
-            }
-        }
-        
-        // Store the user on the session
-        
-        session.setAttribute( getUserAttributeName(), user);
-        session.setAttribute( LOGIN_EXTERNAL_AUTH, Boolean.TRUE);
-        
-        return user;
+
+                    public SessionUser execute() throws Throwable
+                    {
+                        authenticationComponent.setCurrentUser(userName);
+                        return createUserEnvironment(session, userName, authenticationService.getCurrentTicket(), true);
+                    }
+                });
     }
+    
     
     /**
      * Callback executed on successful ticket validation during Type3 Message processing.
@@ -416,13 +249,17 @@ public abstract class BaseSSOAuthenticationFilter implements DependencyInjectedF
     }
     
     /**
-     * Check if the request has specified a ticket parameter to bypass the standard authentication
+     * Check if the request has specified a ticket parameter to bypass the standard authentication.
      * 
-     * @param req HttpServletRequest
-     * @param sess HttpSession
+     * @param servletContext
+     *            the servlet context
+     * @param req
+     *            the request
+     * @param resp
+     *            the response
      * @return boolean
      */
-    protected boolean checkForTicketParameter( HttpServletRequest req, HttpSession sess)
+    protected boolean checkForTicketParameter(ServletContext servletContext, HttpServletRequest req, HttpServletResponse resp)
     {
     	// Check if the request includes an authentication ticket
 
@@ -438,32 +275,21 @@ public abstract class BaseSSOAuthenticationFilter implements DependencyInjectedF
     		UserTransaction tx = null;
     		try
     		{
-    		    // Validate the ticket
-    			
-    		    authenticationService.validate(ticket);
-
-    		    SessionUser user = getSessionUser( sess);
+    		    // Get a cached user with a valid ticket
+    		    SessionUser user = getSessionUser(servletContext, req, resp, true);
+				
+    		    // If this isn't the same ticket, invalidate the session
+				if (!ticket.equals(user.getTicket()))
+				{
+				    invalidateSession(req);
+					user = null;
+				}
     		    
-                if ( user == null)
+				// If we don't yet have a valid cached user, validate the ticket and create one
+                if ( user == null )
                 {
-        		    // Start a transaction
-                	
-        		    tx = transactionService.getUserTransaction();
-        		    tx.begin();
-        		    
-                    // Need to create the User instance if not already available
-        		    
-                    String currentUsername = authenticationService.getCurrentUserName();
-                    
-        		    NodeRef personRef = personService.getPerson(currentUsername);
-        		    user = createUserObject( currentUsername, authenticationService.getCurrentTicket(), personRef, null);
-        		    
-        		    tx.commit();
-        		    tx = null; 
-        		    
-        		    // Store the User object in the Session - the authentication servlet will then proceed
-        		    
-        		    req.getSession().setAttribute( getUserAttributeName(), user);
+                    authenticationService.validate(ticket);
+                    user = createUserEnvironment(req.getSession(), authenticationService.getCurrentUserName(), authenticationService.getCurrentTicket(), true);
                 }
     		    
     		    // Indicate the ticket parameter was specified, and valid
@@ -513,13 +339,6 @@ public abstract class BaseSSOAuthenticationFilter implements DependencyInjectedF
     	if ( hasLoginPage())
     		res.sendRedirect(req.getContextPath() + "/faces" + getLoginPage());
     }
-    
-    /**
-     * Return the logger
-     * 
-     * @return Log
-     */
-    protected abstract Log getLogger();
     
     /**
      * Determine if the login page is available

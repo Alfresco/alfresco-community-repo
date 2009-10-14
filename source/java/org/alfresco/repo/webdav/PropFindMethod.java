@@ -35,8 +35,8 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.SessionUser;
 import org.alfresco.repo.webdav.auth.AuthenticationFilter;
-import org.alfresco.repo.webdav.auth.WebDAVUser;
 import org.alfresco.service.cmr.lock.LockService;
 import org.alfresco.service.cmr.lock.LockStatus;
 import org.alfresco.service.cmr.model.FileFolderService;
@@ -604,7 +604,7 @@ public class PropFindMethod extends WebDAVMethod
                 {
                 	// Get the users authentication ticket
                 	
-                    WebDAVUser davUser = (WebDAVUser) m_request.getSession().getAttribute( AuthenticationFilter.AUTHENTICATION_USER);
+                    SessionUser davUser = (SessionUser) m_request.getSession().getAttribute( AuthenticationFilter.AUTHENTICATION_USER);
                     
                     xml.startElement(WebDAV.DAV_NS, WebDAV.XML_ALF_AUTHTICKET, WebDAV.XML_NS_ALF_AUTHTICKET, nullAttr);
                     if ( davUser != null)
@@ -808,7 +808,7 @@ public class PropFindMethod extends WebDAVMethod
 
         // Print out all the custom properties
 
-        WebDAVUser davUser = (WebDAVUser) m_request.getSession().getAttribute( AuthenticationFilter.AUTHENTICATION_USER);
+        SessionUser davUser = (SessionUser) m_request.getSession().getAttribute( AuthenticationFilter.AUTHENTICATION_USER);
         
         xml.startElement(WebDAV.DAV_NS, WebDAV.XML_ALF_AUTHTICKET, WebDAV.XML_NS_ALF_AUTHTICKET, nullAttr);
         if ( davUser != null)

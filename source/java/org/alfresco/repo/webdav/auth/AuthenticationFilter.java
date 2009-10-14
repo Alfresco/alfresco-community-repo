@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -34,18 +34,11 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.transaction.UserTransaction;
 
-import org.alfresco.model.ContentModel;
+import org.alfresco.repo.SessionUser;
 import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.repo.web.filter.beans.DependencyInjectedFilter;
-import org.alfresco.service.cmr.repository.InvalidNodeRefException;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.NoSuchPersonException;
-import org.alfresco.service.cmr.security.PersonService;
-import org.alfresco.service.transaction.TransactionService;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -55,62 +48,18 @@ import org.apache.commons.logging.LogFactory;
  * 
  * @author GKSpencer
  */
-public class AuthenticationFilter implements DependencyInjectedFilter
+public class AuthenticationFilter extends BaseAuthenticationFilter implements DependencyInjectedFilter
 {
     // Debug logging
     
-    private static Log logger = LogFactory.getLog(NTLMAuthenticationFilter.class);
+    private static Log logger = LogFactory.getLog(AuthenticationFilter.class);
     
     // Authenticated user session object name
 
-    public final static String AUTHENTICATION_USER = "_alfDAVAuthTicket";
-
-    // Allow an authentication ticket to be passed as part of a request to bypass authentication
-    
-    private static final String ARG_TICKET = "ticket";
     private static final String PPT_EXTN = ".ppt";
-    private static final String VTI_IGNORE = "&vtiIgnore";
     
     // Various services required by NTLM authenticator
     
-    private AuthenticationService authService;
-    private PersonService personService;
-    private NodeService nodeService;
-    private TransactionService transactionService;
-    
-    
-    /**
-     * @param authService the authService to set
-     */
-    public void setAuthenticationService(AuthenticationService authService)
-    {
-        this.authService = authService;
-    }
-
-    /**
-     * @param personService the personService to set
-     */
-    public void setPersonService(PersonService personService)
-    {
-        this.personService = personService;
-    }
-
-    /**
-     * @param nodeService the nodeService to set
-     */
-    public void setNodeService(NodeService nodeService)
-    {
-        this.nodeService = nodeService;
-    }
-
-    /**
-     * @param transactionService the transactionService to set
-     */
-    public void setTransactionService(TransactionService transactionService)
-    {
-        this.transactionService = transactionService;
-    }
-
     /**
      * Run the authentication filter
      * 
@@ -130,8 +79,7 @@ public class AuthenticationFilter implements DependencyInjectedFilter
         HttpServletResponse httpResp = (HttpServletResponse) resp;
 
         // Get the user details object from the session
-
-        WebDAVUser user = (WebDAVUser) httpReq.getSession().getAttribute(AUTHENTICATION_USER);
+        SessionUser user = getSessionUser(context, httpReq, httpResp, false);
 
         if (user == null)
         {
@@ -166,21 +114,9 @@ public class AuthenticationFilter implements DependencyInjectedFilter
                 {
                     // Authenticate the user
 
-                	authService.authenticate(username, password.toCharArray());
-                    
-                    // Set the user name as stored by the back end
-                    username = authService.getCurrentUserName();
-                    
-                    // Get the user node and home folder
+                	authenticationService.authenticate(username, password.toCharArray());
                 	
-                    NodeRef personNodeRef = personService.getPerson(username);
-                    NodeRef homeSpaceRef = (NodeRef) nodeService.getProperty(personNodeRef, ContentModel.PROP_HOMEFOLDER);
-                    
-                    // Setup User object and Home space ID etc.
-                    
-                    user = new WebDAVUser(username, authService.getCurrentTicket(), homeSpaceRef);
-                    
-                    httpReq.getSession().setAttribute(AUTHENTICATION_USER, user);
+                	user = createUserEnvironment(httpReq.getSession(), authenticationService.getCurrentUserName(), authenticationService.getCurrentTicket(), false);                    
                 }
                 catch ( AuthenticationException ex)
                 {
@@ -193,87 +129,36 @@ public class AuthenticationFilter implements DependencyInjectedFilter
             }
             else
             {
-            	// Check if the request includes an authentication ticket
-            
-            	String ticket = req.getParameter( ARG_TICKET);
-            	
-            	if ( ticket != null &&  ticket.length() > 0)
-            	{
-            		// PowerPoint bug fix
-            		if (ticket.endsWith(PPT_EXTN))
-            		{
-            			ticket = ticket.substring(0, ticket.length() - PPT_EXTN.length());
-            		}
+                // Check if the request includes an authentication ticket
 
-                	// Debug
-                    
-                    if ( logger.isDebugEnabled())
-                        logger.debug("Logon via ticket from " + req.getRemoteHost() + " (" +
-                                req.getRemoteAddr() + ":" + req.getRemotePort() + ")" + " ticket=" + ticket);
-                    
-            		UserTransaction tx = null;
-            	    try
-            	    {
-            	    	// Validate the ticket
-            	    	  
-            	    	authService.validate(ticket);
+                String ticket = req.getParameter(ARG_TICKET);
 
-            	    	// Need to create the User instance if not already available
-            	    	  
-            	        String currentUsername = authService.getCurrentUserName();
+                if (ticket != null && ticket.length() > 0)
+                {
+                    // PowerPoint bug fix
+                    if (ticket.endsWith(PPT_EXTN))
+                    {
+                        ticket = ticket.substring(0, ticket.length() - PPT_EXTN.length());
+                    }
 
-            	        // Start a transaction
-            	          
-          	            tx = transactionService.getUserTransaction();
-            	        tx.begin();
-            	            
-            	        NodeRef personRef = personService.getPerson(currentUsername);
-            	        user = new WebDAVUser( currentUsername, authService.getCurrentTicket(), personRef);
-            	        NodeRef homeRef = (NodeRef) nodeService.getProperty(personRef, ContentModel.PROP_HOMEFOLDER);
-            	            
-            	        // Check that the home space node exists - else Login cannot proceed
-            	            
-            	        if (nodeService.exists(homeRef) == false)
-            	        {
-            	        	throw new InvalidNodeRefException(homeRef);
-            	        }
-            	        user.setHomeNode(homeRef);
-            	            
-            	        tx.commit();
-            	        tx = null; 
-            	            
-            	        // Store the User object in the Session - the authentication servlet will then proceed
-            	            
-            	        httpReq.getSession().setAttribute( AUTHENTICATION_USER, user);
-            	    }
-	            	catch (AuthenticationException authErr)
-	            	{
-	            		// Clear the user object to signal authentication failure
-	            		
-	            		user = null;
-	            	}
-	            	catch (Throwable e)
-	            	{
-	            		// Clear the user object to signal authentication failure
-	            		
-	            		user = null;
-	            	}
-	            	finally
-	            	{
-	            		try
-	            	    {
-	            			if (tx != null)
-	            	        {
-	            				tx.rollback();
-	           	        	}
-	            	    }
-	            	    catch (Exception tex)
-	            	    {
-	            	    }
-	            	}
-            	}
+                    // Debug
+
+                    if (logger.isDebugEnabled())
+                        logger.debug("Logon via ticket from " + req.getRemoteHost() + " (" + req.getRemoteAddr() + ":"
+                                + req.getRemotePort() + ")" + " ticket=" + ticket);
+
+                    // Validate the ticket
+
+                    authenticationService.validate(ticket);
+
+                    // Need to create the User instance if not already available
+
+                    String currentUsername = authenticationService.getCurrentUserName();
+
+                    user = createUserEnvironment(httpReq.getSession(), currentUsername, ticket, false);
+                }
             }
-            
+
             // Check if the user is authenticated, if not then prompt again
             
             if ( user == null)
@@ -285,28 +170,6 @@ public class AuthenticationFilter implements DependencyInjectedFilter
     
                 httpResp.flushBuffer();
                 return;
-            }
-        }
-        else
-        {
-            try
-            {
-               // Setup the authentication context
-               authService.validate(user.getTicket());
-
-               // Set the current locale
-
-               // I18NUtil.setLocale(Application.getLanguage(httpRequest.getSession()));
-            }
-            catch (Exception ex)
-            {
-               // No user/ticket, force the client to prompt for logon details
-               
-               httpResp.setHeader("WWW-Authenticate", "BASIC realm=\"Alfresco DAV Server\"");
-               httpResp.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-   
-               httpResp.flushBuffer();
-               return;
             }
         }
 
@@ -321,5 +184,13 @@ public class AuthenticationFilter implements DependencyInjectedFilter
     public void destroy()
     {
         // Nothing to do
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.webdav.auth.BaseAuthenticationFilter#getLogger()
+     */
+    protected Log getLogger()
+    {
+        return logger;
     }
 }

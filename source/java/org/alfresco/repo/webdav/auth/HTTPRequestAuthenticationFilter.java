@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -18,9 +18,9 @@
  * As a special exception to the terms and conditions of version 2.0 of 
  * the GPL, you may redistribute this Program in connection with Free/Libre 
  * and Open Source Software ("FLOSS") applications as described in Alfresco's 
- * FLOSS exception.  You should have recieved a copy of the text describing 
+ * FLOSS exception.  You should have received a copy of the text describing 
  * the FLOSS exception, and it is also available here: 
- * http://www.alfresco.com/legal/licensing
+ * http://www.alfresco.com/legal/licensing"
  */
 
 package org.alfresco.repo.webdav.auth;
@@ -39,19 +39,13 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.transaction.UserTransaction;
 
-import org.alfresco.model.ContentModel;
+import org.alfresco.repo.SessionUser;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationException;
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.service.ServiceRegistry;
-import org.alfresco.service.cmr.repository.InvalidNodeRefException;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.security.AuthenticationService;
-import org.alfresco.service.cmr.security.NoSuchPersonException;
 import org.alfresco.service.cmr.security.PersonService;
-import org.alfresco.service.transaction.TransactionService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.web.context.WebApplicationContext;
@@ -60,33 +54,15 @@ import org.springframework.web.context.support.WebApplicationContextUtils;
 /**
  * WebDAV Authentication Filter Class for SSO linke SiteMinder and IChains
  */
-public class HTTPRequestAuthenticationFilter implements Filter
+public class HTTPRequestAuthenticationFilter extends BaseAuthenticationFilter implements Filter
 {
     // Debug logging
 
     private static Log logger = LogFactory.getLog(HTTPRequestAuthenticationFilter.class);
 
-    // Authenticated user session object name
-
-    public final static String AUTHENTICATION_USER = "_alfDAVAuthTicket";
-
-    // Allow an authenitcation ticket to be passed as part of a request to bypass authentication
-
-    private static final String ARG_TICKET = "ticket";
-
     // Servlet context
 
     private ServletContext m_context;
-
-    // Various services required by NTLM authenticator
-
-    private AuthenticationService m_authService;
-
-    private PersonService m_personService;
-
-    private NodeService m_nodeService;
-
-    private TransactionService m_transactionService;
 
     private String httpServletRequestAuthHeaderName;
     
@@ -115,10 +91,10 @@ public class HTTPRequestAuthenticationFilter implements Filter
         WebApplicationContext ctx = WebApplicationContextUtils.getRequiredWebApplicationContext(m_context);
 
         ServiceRegistry serviceRegistry = (ServiceRegistry) ctx.getBean(ServiceRegistry.SERVICE_REGISTRY);
-        m_nodeService = serviceRegistry.getNodeService();
-        m_authService = serviceRegistry.getAuthenticationService();
-        m_transactionService = serviceRegistry.getTransactionService();
-        m_personService = (PersonService) ctx.getBean("PersonService"); // transactional and permission-checked
+        setNodeService(serviceRegistry.getNodeService());
+        setAuthenticationService(serviceRegistry.getAuthenticationService());
+        setTransactionService(serviceRegistry.getTransactionService());
+        setPersonService((PersonService) ctx.getBean("PersonService")); // transactional and permission-checked
         m_authComponent = (AuthenticationComponent) ctx.getBean("authenticationComponent");
         
         httpServletRequestAuthHeaderName = config.getInitParameter("httpServletRequestAuthHeaderName");
@@ -159,12 +135,12 @@ public class HTTPRequestAuthenticationFilter implements Filter
     {
         // Assume it's an HTTP request
 
-        HttpServletRequest httpReq = (HttpServletRequest) req;
+        final HttpServletRequest httpReq = (HttpServletRequest) req;
         HttpServletResponse httpResp = (HttpServletResponse) resp;
 
         // Get the user details object from the session
 
-        WebDAVUser user = (WebDAVUser) httpReq.getSession().getAttribute(AUTHENTICATION_USER);
+        SessionUser user = (SessionUser) httpReq.getSession().getAttribute(AUTHENTICATION_USER);
 
         if (user == null)
         {
@@ -185,12 +161,12 @@ public class HTTPRequestAuthenticationFilter implements Filter
 
             // Throw an error if we have an unknown authentication
 
-            if ((authHdr != null) || (authHdr.length() > 0))
+            if ((authHdr != null) && (authHdr.length() > 0))
             {
 
                 // Get the user
 
-                String userName = "";
+                final String userName;
                 if (m_authPattern != null)
                 {
                     Matcher matcher = m_authPattern.matcher(authHdr);
@@ -201,8 +177,8 @@ public class HTTPRequestAuthenticationFilter implements Filter
                         {
                             if (logger.isDebugEnabled())
                             {
-                                logger.debug("Extracted null or empty user name from pattern "
-                                        + m_authPatternString + " against " + authHdr);
+                                logger.debug("Extracted null or empty user name from pattern " + m_authPatternString
+                                        + " against " + authHdr);
                             }
                             reject(httpReq, httpResp);
                             return;
@@ -230,71 +206,34 @@ public class HTTPRequestAuthenticationFilter implements Filter
 
                 // Get the authorization header
 
-                UserTransaction tx = null;
-                try
-                {
-                    tx = m_transactionService.getUserTransaction();
-                    tx.begin();
-                    // Authenticate the user
-
-                    m_authComponent.clearCurrentSecurityContext();
-                    m_authComponent.setCurrentUser(userName);
-
-                    // Get the user node and home folder
-
-                    NodeRef personNodeRef = m_personService.getPerson(userName);
-                    NodeRef homeSpaceRef = (NodeRef) m_nodeService.getProperty(personNodeRef,
-                            ContentModel.PROP_HOMEFOLDER);
-
-                    // Setup User object and Home space ID etc.
-
-                    user = new WebDAVUser(userName, m_authService.getCurrentTicket(), homeSpaceRef);
-
-                    tx.commit();
-                    tx = null;
-                    
-                    httpReq.getSession().setAttribute(AUTHENTICATION_USER, user);
-                }
-                catch (AuthenticationException ex)
-                {
-                    if(logger.isDebugEnabled())
-                    {
-                        logger.debug("Failed", ex);
-                    }
-                    user = null;
-                    // Do nothing, user object will be null
-                }
-                catch (NoSuchPersonException e)
-                {
-                    // Do nothing, user object will be null
-                    if(logger.isDebugEnabled())
-                    {
-                        logger.debug("Failed", e);
-                    }
-                    user = null;
-                }
-                catch (Exception e)
-                {
-                    // Do nothing, user object will be null
-                    if(logger.isDebugEnabled())
-                    {
-                        logger.debug("Failed", e);
-                    }
-                    user = null;
-                }
-                finally
-                {
-                    try
-                    {
-                        if (tx != null)
+                user = transactionService.getRetryingTransactionHelper().doInTransaction(
+                        new RetryingTransactionHelper.RetryingTransactionCallback<SessionUser>()
                         {
-                            tx.rollback();
-                        }
-                    }
-                    catch (Exception tex)
-                    {
-                    }
-                }
+
+                            public SessionUser execute() throws Throwable
+                            {
+                                try
+                                {
+                                    // Authenticate the user
+
+                                    m_authComponent.clearCurrentSecurityContext();
+                                    m_authComponent.setCurrentUser(userName);
+
+                                    return createUserEnvironment(httpReq.getSession(), userName, authenticationService
+                                            .getCurrentTicket(), true);
+                                }
+                                catch (AuthenticationException ex)
+                                {
+                                    if (logger.isDebugEnabled())
+                                    {
+                                        logger.debug("Failed", ex);
+                                    }
+                                    return null;
+                                    // Perhaps auto-creation/import is disabled
+                                }
+                            }
+                        });
+
             }
             else
             {
@@ -307,75 +246,26 @@ public class HTTPRequestAuthenticationFilter implements Filter
                     // Debug
 
                     if (logger.isDebugEnabled())
-                        logger.debug("Logon via ticket from "
-                                + req.getRemoteHost() + " (" + req.getRemoteAddr() + ":" + req.getRemotePort() + ")"
-                                + " ticket=" + ticket);
+                        logger.debug("Logon via ticket from " + req.getRemoteHost() + " (" + req.getRemoteAddr() + ":"
+                                + req.getRemotePort() + ")" + " ticket=" + ticket);
 
-                    UserTransaction tx = null;
                     try
                     {
                         // Validate the ticket
-
-                        m_authService.validate(ticket);
+                        authenticationService.validate(ticket);
 
                         // Need to create the User instance if not already available
-
-                        String currentUsername = m_authService.getCurrentUserName();
-
-                        // Start a transaction
-
-                        tx = m_transactionService.getUserTransaction();
-                        tx.begin();
-
-                        NodeRef personRef = m_personService.getPerson(currentUsername);
-                        user = new WebDAVUser(currentUsername, m_authService.getCurrentTicket(), personRef);
-                        NodeRef homeRef = (NodeRef) m_nodeService.getProperty(personRef, ContentModel.PROP_HOMEFOLDER);
-
-                        // Check that the home space node exists - else Login cannot proceed
-
-                        if (m_nodeService.exists(homeRef) == false)
-                        {
-                            throw new InvalidNodeRefException(homeRef);
-                        }
-                        user.setHomeNode(homeRef);
-
-                        tx.commit();
-                        tx = null;
-
-                        // Store the User object in the Session - the authentication servlet will then proceed
-
-                        httpReq.getSession().setAttribute(AUTHENTICATION_USER, user);
+                        user = createUserEnvironment(httpReq.getSession(), authenticationService.getCurrentUserName(),
+                                ticket, true);
                     }
                     catch (AuthenticationException authErr)
                     {
                         // Clear the user object to signal authentication failure
-                        if(logger.isDebugEnabled())
+                        if (logger.isDebugEnabled())
                         {
                             logger.debug("Failed", authErr);
                         }
                         user = null;
-                    }
-                    catch (Throwable e)
-                    {
-                        // Clear the user object to signal authentication failure
-                        if(logger.isDebugEnabled())
-                        {
-                            logger.debug("Failed", e);
-                        }
-                        user = null;
-                    }
-                    finally
-                    {
-                        try
-                        {
-                            if (tx != null)
-                            {
-                                tx.rollback();
-                            }
-                        }
-                        catch (Exception tex)
-                        {
-                        }
                     }
                 }
             }
@@ -388,12 +278,6 @@ public class HTTPRequestAuthenticationFilter implements Filter
                 reject(httpReq, httpResp);
                 return;
             }
-        }
-        else
-        {
-            // Setup the authentication context
-
-            m_authService.validate(user.getTicket());
         }
 
         // Chain other filters
@@ -415,5 +299,14 @@ public class HTTPRequestAuthenticationFilter implements Filter
     public void destroy()
     {
         // Nothing to do
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.webdav.auth.BaseAuthenticationFilter#getLogger()
+     */
+    @Override
+    protected Log getLogger()
+    {
+        return logger;
     }
 }

@@ -56,7 +56,6 @@ import org.alfresco.jlan.server.auth.spnego.NegTokenTarg;
 import org.alfresco.jlan.server.auth.spnego.OID;
 import org.alfresco.jlan.server.auth.spnego.SPNEGO;
 import org.alfresco.repo.SessionUser;
-import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.apache.commons.codec.binary.Base64;
 import org.ietf.jgss.Oid;
 
@@ -255,8 +254,6 @@ public abstract class BaseKerberosAuthenticationFilter extends BaseSSOAuthentica
         HttpServletRequest req = (HttpServletRequest) sreq;
         HttpServletResponse resp = (HttpServletResponse) sresp;
         
-        HttpSession httpSess = req.getSession(true);
-
         // If a filter up the chain has marked the request as not requiring auth then respect it
         
         if (req.getAttribute( NO_AUTH_REQUIRED) != null)
@@ -287,50 +284,24 @@ public abstract class BaseKerberosAuthenticationFilter extends BaseSSOAuthentica
         		
         		// Restart the authentication
         		
-            	restartLoginChallenge(resp, httpSess);
+            	restartLoginChallenge(resp, req.getSession());
 
             	chain.doFilter(sreq, sresp);
         		return;
         	}
         }
         
-        // Check if the user is already authenticated
+        // Check if the user is already authenticated        
+        SessionUser user = getSessionUser(context, req, resp, true);
+        HttpSession httpSess = req.getSession(true);
         
-        SessionUser user = getSessionUser( httpSess);
-        
-        if ( user != null && reqAuth == false)
-        {
-            try
-            {
-                // Debug
-                
-                if ( getLogger().isDebugEnabled())
-                    getLogger().debug("User " + user.getUserName() + " validate ticket");
-                
-                // Validate the user ticket
-                
-                authenticationService.validate( user.getTicket());
-                reqAuth = false;
-                
-                // Filter validate hook
-                onValidate( context, req, resp);
-            }
-            catch (AuthenticationException ex)
-            {
-                if ( getLogger().isErrorEnabled())
-                    getLogger().error("Failed to validate user " + user.getUserName(), ex);
-                
-                removeSessionUser( httpSess);
-                
-                reqAuth = true;
-            }
-        }
-
         // If the user has been validated and we do not require re-authentication then continue to
         // the next filter
-        
-        if ( reqAuth == false && user != null)
+        if ( user != null && reqAuth == false)
         {
+            // Filter validate hook
+            onValidate( context, req, resp);
+
             // Debug
             
             if ( getLogger().isDebugEnabled())
@@ -352,7 +323,7 @@ public abstract class BaseKerberosAuthenticationFilter extends BaseSSOAuthentica
         	{
         		// Check if a ticket parameter has been specified in the reuqest
         		
-        		if ( checkForTicketParameter( req, httpSess))
+        		if (checkForTicketParameter(context, req, resp))
         		{
         	        // Chain to the next filter
                     
@@ -542,14 +513,10 @@ public abstract class BaseKerberosAuthenticationFilter extends BaseSSOAuthentica
                 if ( negTokenTarg != null)
                 {
                 	
-                	// Create the user authentication context
+                	// Create and store the user authentication context
                 	
                 	SessionUser user = createUserEnvironment( httpSess, krbDetails.getUserName());
                     
-                    // Store the user
-                    
-                    httpSess.setAttribute(AUTHENTICATION_USER, user);
-
                     // Debug
                     
                     if ( getLogger().isDebugEnabled())

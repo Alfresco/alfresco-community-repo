@@ -61,23 +61,8 @@ public class KerberosAuthenticationFilter extends BaseKerberosAuthenticationFilt
     	
     	// Enable ticket based logons
     	
-    	setTicketLogons( true);
-    	
-    	// Use the WebDAV specific attribute to store the user details
-    	
-    	setUserAttributeName( WEBDAV_AUTH_USER);
+    	setTicketLogons(true);
     }
-
-	/* (non-Javadoc)
-	 * @see org.alfresco.repo.webdav.auth.BaseSSOAuthenticationFilter#createUserObject(java.lang.String, java.lang.String, org.alfresco.service.cmr.repository.NodeRef, java.lang.String)
-	 */
-	@Override
-	protected SessionUser createUserObject(String userName, String ticket, NodeRef personNode, String homeSpace) {
-
-		// Create a WebDAV user object
-		
-		return new WebDAVUser( userName, ticket, personNode);
-	}
 
     /* (non-Javadoc)
      * @see org.alfresco.repo.webdav.auth.BaseNTLMAuthenticationFilter#onValidateFailed(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse, javax.servlet.http.HttpSession)

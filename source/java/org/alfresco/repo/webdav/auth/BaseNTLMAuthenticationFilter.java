@@ -188,7 +188,6 @@ public abstract class BaseNTLMAuthenticationFilter extends BaseSSOAuthentication
         // Get the HTTP request/response/session
         HttpServletRequest req = (HttpServletRequest) sreq;
         HttpServletResponse resp = (HttpServletResponse) sresp;
-        HttpSession httpSess = req.getSession(true);
         
         // If a filter up the chain has marked the request as not requiring auth then respect it
         
@@ -221,43 +220,23 @@ public abstract class BaseNTLMAuthenticationFilter extends BaseSSOAuthentication
         		
         		// Restart the authentication
         		
-            	restartLoginChallenge(resp, httpSess);
+            	restartLoginChallenge(resp, req.getSession());
         		return;
         	}
         }
         
         // Check if the user is already authenticated
-        SessionUser user = getSessionUser( httpSess);
+        SessionUser user = getSessionUser(context, req, resp, true);
         
-        if (user != null && reqAuth == false)
-        {
-            try
-            {
-                if (getLogger().isDebugEnabled())
-                    getLogger().debug("User " + user.getUserName() + " validate ticket");
-                
-                // Validate the user ticket
-                authenticationService.validate(user.getTicket());
-                reqAuth = false;
-                
-                // Filter validate hook
-                onValidate( context, req, resp);
-            }
-            catch (AuthenticationException ex)
-            {
-                if (getLogger().isErrorEnabled())
-                    getLogger().error("Failed to validate user " + user.getUserName(), ex);
-                
-                removeSessionUser( httpSess);
-                
-                reqAuth = true;
-            }
-        }
+        HttpSession httpSess = req.getSession(true);
 
         // If the user has been validated and we do not require re-authentication then continue to
         // the next filter
-        if (reqAuth == false && user != null)
+        if (user != null && reqAuth == false)
         {
+            // Filter validate hook
+            onValidate( context, req, resp);
+
             if (getLogger().isDebugEnabled())
                 getLogger().debug("Authentication not required (user), chaining ...");
             
@@ -303,7 +282,8 @@ public abstract class BaseNTLMAuthenticationFilter extends BaseSSOAuthentication
             {
             	// Check if the request includes an authentication ticket
             	
-            	if ( checkForTicketParameter(req, httpSess)) {
+            	if (checkForTicketParameter(context, req, resp))
+                {
             		
         		    // Authentication was bypassed using a ticket parameter
             		
@@ -330,13 +310,13 @@ public abstract class BaseNTLMAuthenticationFilter extends BaseSSOAuthentication
             {
                 // Process the type 1 NTLM message
                 Type1NTLMMessage type1Msg = new Type1NTLMMessage(ntlmByts);
-                processType1(type1Msg, req, resp, httpSess);
+                processType1(type1Msg, req, resp);
             }
             else if (ntlmTyp == NTLM.Type3)
             {
                 // Process the type 3 NTLM message
                 Type3NTLMMessage type3Msg = new Type3NTLMMessage(ntlmByts);
-                processType3(type3Msg, context, req, resp, httpSess, chain);
+                processType3(type3Msg, context, req, resp, chain);
             }
             else
             {
@@ -358,18 +338,15 @@ public abstract class BaseNTLMAuthenticationFilter extends BaseSSOAuthentication
      * @exception IOException
      */
     protected void processType1(Type1NTLMMessage type1Msg, HttpServletRequest req,
-            HttpServletResponse res, HttpSession session) throws IOException
+            HttpServletResponse res) throws IOException
     {
         if (getLogger().isDebugEnabled())
             getLogger().debug("Received type1 " + type1Msg);
         
         // Get the existing NTLM details
         NTLMLogonDetails ntlmDetails = null;
-        
-        if (session != null)
-        {
-            ntlmDetails = (NTLMLogonDetails)session.getAttribute(NTLM_AUTH_DETAILS);
-        }
+        HttpSession session = req.getSession();
+        ntlmDetails = (NTLMLogonDetails)session.getAttribute(NTLM_AUTH_DETAILS);
         
         // Check if cached logon details are available
         if (ntlmDetails != null && ntlmDetails.hasType2Message() &&
@@ -473,8 +450,7 @@ public abstract class BaseNTLMAuthenticationFilter extends BaseSSOAuthentication
      * @exception IOException
      * @exception ServletException
      */
-    protected void processType3(Type3NTLMMessage type3Msg, ServletContext context, HttpServletRequest req, HttpServletResponse res,
-            HttpSession session, FilterChain chain) throws IOException, ServletException
+    protected void processType3(Type3NTLMMessage type3Msg, ServletContext context, HttpServletRequest req, HttpServletResponse res, FilterChain chain) throws IOException, ServletException
     {
         Log logger = getLogger();
         
@@ -485,11 +461,9 @@ public abstract class BaseNTLMAuthenticationFilter extends BaseSSOAuthentication
         NTLMLogonDetails ntlmDetails = null;
         SessionUser user = null;
         
-        if (session != null)
-        {
-            ntlmDetails = (NTLMLogonDetails)session.getAttribute(NTLM_AUTH_DETAILS);
-            user = getSessionUser(session);
-        }
+        user = getSessionUser(context, req, res, true);
+        HttpSession session = req.getSession();
+        ntlmDetails = (NTLMLogonDetails)session.getAttribute(NTLM_AUTH_DETAILS);
         
         // Get the NTLM logon details
         String userName = type3Msg.getUserName();
@@ -513,26 +487,7 @@ public abstract class BaseNTLMAuthenticationFilter extends BaseSSOAuthentication
             if (logger.isDebugEnabled())
                 logger.debug("Using cached NTLM hash, authenticated = " + authenticated);
             
-            try
-            {
-                if (logger.isDebugEnabled())
-                    logger.debug("User " + user.getUserName() + " validate ticket");
-                
-                // Validate the user ticket
-                authenticationService.validate(user.getTicket());
-                
-                onValidate(context, req, res);
-            }
-            catch (AuthenticationException ex)
-            {
-                if (logger.isErrorEnabled())
-                    logger.error("Failed to validate user " + user.getUserName(), ex);
-                
-                removeSessionUser(session);
-                
-                onValidateFailed(req, res, session);
-                return;
-            }
+            onValidate(context, req, res);
             
             // Allow the user to access the requested page
             chain.doFilter(req, res);
@@ -639,22 +594,15 @@ public abstract class BaseNTLMAuthenticationFilter extends BaseSSOAuthentication
             {
                 if (user == null)
                 {
-                    user = createUserEnvironment(session, userName);
-                }
-                else
-                {
-                    // user already exists - revalidate ticket to authenticate the current user thread
                     try
                     {
-                        authenticationService.validate(user.getTicket());
+                        user = createUserEnvironment(session, userName);
                     }
                     catch (AuthenticationException ex)
                     {
-                        if (logger.isErrorEnabled())
-                            logger.error("Failed to validate user " + user.getUserName(), ex);
-                        
-                        removeSessionUser(session);
-                        
+                        if (logger.isDebugEnabled())
+                            logger.debug("Failed to validate user " + user.getUserName(), ex);
+
                         onValidateFailed(req, res, session);
                         return;
                     }

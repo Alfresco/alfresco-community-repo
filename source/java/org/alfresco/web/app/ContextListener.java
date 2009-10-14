@@ -34,6 +34,7 @@ import javax.servlet.http.HttpSessionListener;
 import javax.transaction.UserTransaction;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.repo.SessionUser;
 import org.alfresco.repo.cache.InternalEhCacheManagerFactoryBean;
 import org.alfresco.repo.security.authentication.AuthenticationContext;
 import org.alfresco.service.ServiceRegistry;
@@ -46,7 +47,6 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.web.app.servlet.AuthenticationHelper;
 import org.alfresco.web.bean.repository.Repository;
-import org.alfresco.web.bean.repository.User;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.web.context.WebApplicationContext;
@@ -186,7 +186,7 @@ public class ContextListener implements ServletContextListener, HttpSessionListe
       }
       if (userKey != null)
       {
-         User user = (User)event.getSession().getAttribute(userKey);
+         SessionUser user = (SessionUser)event.getSession().getAttribute(userKey);
          if (user != null)
          {
             // invalidate ticket and clear the Security context for this thread

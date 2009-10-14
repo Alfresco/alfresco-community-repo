@@ -43,6 +43,7 @@ import javax.portlet.UnavailableException;
 
 import org.alfresco.config.ConfigService;
 import org.alfresco.i18n.I18NUtil;
+import org.alfresco.repo.SessionUser;
 import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.util.TempFileProvider;
@@ -162,7 +163,8 @@ public class AlfrescoFacesPortlet extends MyFacesGenericPortlet
          }
          else
          {
-            User user = (User)request.getPortletSession().getAttribute(AuthenticationHelper.AUTHENTICATION_USER);
+            SessionUser sessionUser = (SessionUser)request.getPortletSession().getAttribute(AuthenticationHelper.AUTHENTICATION_USER);
+            User user = sessionUser instanceof User ? (User)sessionUser : null;
             if (user != null)
             {
                // setup the authentication context
@@ -267,7 +269,8 @@ public class AlfrescoFacesPortlet extends MyFacesGenericPortlet
          String viewId = request.getParameter(VIEW_ID);
          // keep track of last view id so we can use it as return page from multi-part requests
          request.getPortletSession().setAttribute(SESSION_LAST_VIEW_ID, viewId);
-         User user = (User)request.getPortletSession().getAttribute(AuthenticationHelper.AUTHENTICATION_USER);
+         SessionUser sessionUser = (SessionUser)request.getPortletSession().getAttribute(AuthenticationHelper.AUTHENTICATION_USER);
+         User user = sessionUser instanceof User ? (User)sessionUser : null;
          if (user == null && (viewId == null || viewId.equals(getLoginPage()) == false))
          {
             if (AuthenticationHelper.portalGuestAuthenticate(ctx, session, auth) == AuthenticationStatus.Guest)

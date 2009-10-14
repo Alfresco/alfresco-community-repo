@@ -436,6 +436,7 @@ public class NtlmAuthenticationHandler extends AbstractAuthenticationHandler imp
             if (user == null)
             {
                 user = createUserEnvironment(session, userName);
+                session.setAttribute(USER_SESSION_ATTRIBUTE, user);
             }
             else
             {

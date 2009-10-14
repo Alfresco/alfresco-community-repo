@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -37,6 +37,7 @@ import javax.faces.validator.ValidatorException;
 import javax.servlet.http.HttpServletRequest;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.SessionUser;
 import org.alfresco.repo.security.authentication.AuthenticationDisallowedException;
 import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.repo.security.authentication.AuthenticationMaxUsersException;
@@ -63,8 +64,20 @@ import org.apache.commons.logging.LogFactory;
  */ 
 public class LoginBean implements Serializable
 {
-   // ------------------------------------------------------------------------------
-   // Managed bean properties
+   /**
+    * The default outcome of the logout action.
+    */
+   private static final String OUTCOME_LOGOUT = "logout";
+
+   /**
+    * The outcome of the logout action when the user has been signed on by SSO.
+    */
+   private static final String OUTCOME_RELOGIN = "relogin";
+
+   /**
+    * The name of the form parameter carrying the outcome to the logout action.
+    */
+   private static final String PARAM_OUTCOME = "outcome";
 
    private static final long serialVersionUID = 7417882503323795282L;
 
@@ -143,13 +156,13 @@ public class LoginBean implements Serializable
    }
    
    /**
-    * @return true if the default Alfresco authentication process is being used, else false
+    * @return "logout" if the default Alfresco authentication process is being used, else "relogin"
     *         if an external authorisation mechanism is present.
     */
-   public boolean isAlfrescoAuth()
+   public String getLogoutOutcome()
    {
-      Map session = FacesContext.getCurrentInstance().getExternalContext().getSessionMap();
-      return (session.get(LOGIN_EXTERNAL_AUTH) == null);
+       Map<?, ?> session = FacesContext.getCurrentInstance().getExternalContext().getSessionMap();
+       return session.get(LOGIN_EXTERNAL_AUTH) == null ? OUTCOME_LOGOUT : OUTCOME_RELOGIN;
    }
 
    /**
@@ -388,9 +401,15 @@ public class LoginBean implements Serializable
    public String logout()
    {
       FacesContext context = FacesContext.getCurrentInstance();
-      
-      // need to capture this value before invalidating the session
-      boolean externalAuth = isAlfrescoAuth();
+
+      // The outcome is decided in advance (before session expiry) and included as a parameter
+      Map<?, ?> params = context.getExternalContext().getRequestParameterMap();
+      String outcome = (String)params.get(PARAM_OUTCOME);
+      if (outcome == null)
+      {
+          outcome = OUTCOME_LOGOUT;
+      }
+
       Locale language = Application.getLanguage(context);
       
       // Invalidate Session for this user.
@@ -404,7 +423,7 @@ public class LoginBean implements Serializable
       else
       {
          Map session = context.getExternalContext().getSessionMap();
-         User user = (User)session.get(AuthenticationHelper.AUTHENTICATION_USER);
+         SessionUser user = (SessionUser)session.get(AuthenticationHelper.AUTHENTICATION_USER);
          if (user != null)
          {
             // invalidate ticket and clear the Security context for this thread
@@ -428,7 +447,7 @@ public class LoginBean implements Serializable
       // set language to last used on the login page
       Application.setLanguage(context, language.toString());
       
-      return externalAuth ? "logout" : "relogin";
+      return outcome;
    }
    
    

@@ -29,6 +29,7 @@ import javax.portlet.RenderRequest;
 import javax.portlet.RenderResponse;
 import javax.transaction.UserTransaction;
 
+import org.alfresco.repo.SessionUser;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -216,7 +217,8 @@ public class WebClientPortletAuthenticatorFactory implements PortletAuthenticato
          */
         private User getWebClientUser(PortletSession session)
         {
-            return (User)session.getAttribute(AuthenticationHelper.AUTHENTICATION_USER, PortletSession.APPLICATION_SCOPE);
+            SessionUser user = (SessionUser)session.getAttribute(AuthenticationHelper.AUTHENTICATION_USER, PortletSession.APPLICATION_SCOPE);
+            return user instanceof User ? (User)user : null;
         }
     }
 

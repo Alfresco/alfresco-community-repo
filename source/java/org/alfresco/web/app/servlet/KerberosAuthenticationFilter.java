@@ -80,18 +80,22 @@ public class KerberosAuthenticationFilter extends BaseKerberosAuthenticationFilt
         {
             setLoginPage(clientConfig.getLoginPage());
         }
+        
+        // Use the web client user attribute name
+        setUserAttributeName(AuthenticationHelper.AUTHENTICATION_USER);
     }
 
-	/* (non-Javadoc)
-	 * @see org.alfresco.repo.webdav.auth.BaseSSOAuthenticationFilter#createUserObject(java.lang.String, java.lang.String, org.alfresco.service.cmr.repository.NodeRef, java.lang.String)
-	 */
-	@Override
-	protected SessionUser createUserObject(String userName, String ticket, NodeRef personNode, String homeSpace) {
-		
+        
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.webdav.auth.BaseAuthenticationFilter#createUserObject(java.lang.String, java.lang.String, org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.repository.NodeRef)
+     */
+    @Override
+    protected SessionUser createUserObject(String userName, String ticket, NodeRef personNode, NodeRef homeSpaceRef)
+    {
 		// Create a web client user object
 		
 		User user = new User( userName, ticket, personNode);
-		user.setHomeSpaceId( homeSpace);
+		user.setHomeSpaceId( homeSpaceRef.getId());
 		
 		return user;
 	}

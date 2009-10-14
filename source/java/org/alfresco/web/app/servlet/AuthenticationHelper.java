@@ -34,16 +34,17 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
-import javax.transaction.UserTransaction;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.i18n.I18NUtil;
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.SessionUser;
 import org.alfresco.repo.management.subsystems.ActivateableBean;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -174,10 +175,10 @@ public final class AuthenticationHelper
          ServletContext sc, HttpServletRequest req, HttpServletResponse res, boolean forceGuest, boolean allowGuest)
          throws IOException
    {
-      HttpSession session = req.getSession();
-      
       // retrieve the User object
       User user = getUser(sc, req, res);
+      
+      HttpSession session = req.getSession();
       
       // get the login bean if we're not in the portal
       LoginBean loginBean = null;
@@ -207,7 +208,7 @@ public final class AuthenticationHelper
                   auth.authenticateAsGuest();
                   
                   // if we get here then Guest access was allowed and successful
-                  setUser(sc, req, AuthenticationUtil.getGuestUserName(), false);
+                  setUser(sc, req, AuthenticationUtil.getGuestUserName(), auth.getCurrentTicket(), false);
                   
                   // Set up the thread context
                   setupThread(sc, req, res);
@@ -245,18 +246,7 @@ public final class AuthenticationHelper
          return AuthenticationStatus.Failure;
       }
       else
-      {
-         try
-         {
-            auth.validate(user.getTicket());
-         }
-         catch (AuthenticationException authErr)
-         {
-            // expired ticket
-            session.removeAttribute(AUTHENTICATION_USER);
-            return AuthenticationStatus.Failure;
-         }
-         
+      {         
          // set last authentication username cookie value
          if (loginBean != null)
          {
@@ -287,13 +277,11 @@ public final class AuthenticationHelper
       {
          auth.validate(ticket);
          
-         User user = (User)session.getAttribute(AuthenticationHelper.AUTHENTICATION_USER);
-         if (user == null)
+         // We may have previously been authenticated via WebDAV so we may need to 'promote' the user object
+         SessionUser user = (SessionUser)session.getAttribute(AuthenticationHelper.AUTHENTICATION_USER);
+         if (user == null || !(user instanceof User))
          {
-            // need to create the User instance if not already available
-            String currentUsername = auth.getCurrentUserName();
-            
-            setUser(context, httpRequest, currentUsername, false);
+            setUser(context, httpRequest, auth.getCurrentUserName(), ticket, false);
          }
       }
       catch (AuthenticationException authErr)
@@ -325,90 +313,81 @@ public final class AuthenticationHelper
      *            the request
      * @param currentUsername
      *            the current user name
+     * @param ticket
+     *            a validated ticket
      * @param externalAuth
      *            was this user authenticated externally?
      * @return the user object
      */
     public static User setUser(ServletContext context, HttpServletRequest req, String currentUsername,
-            boolean externalAuth)
+            String ticket, boolean externalAuth)
     {
         WebApplicationContext wc = WebApplicationContextUtils.getRequiredWebApplicationContext(context);
-        AuthenticationService auth = (AuthenticationService) wc.getBean(AUTHENTICATION_SERVICE);
 
-        User user = createUser(wc, auth, currentUsername, externalAuth);
+        User user = createUser(wc, currentUsername, ticket);
         // store the User object in the Session - the authentication servlet will then proceed
         HttpSession session = req.getSession(true);
         session.setAttribute(AuthenticationHelper.AUTHENTICATION_USER, user);
-        if (externalAuth)
-        {
-            session.setAttribute(LoginBean.LOGIN_EXTERNAL_AUTH, Boolean.TRUE);
-        }
+        setExternalAuth(session, externalAuth);
         return user;
     }
 
     /**
-     * Creates an object for an authentication user.
+     * Sets or clears the external authentication flag on the session
      * 
-     * @param wc
-     *            the web application context
-     * @param auth
-     *            the authentication service
-     * @param currentUsername
-     *            the current user name
+     * @param session
+     *            the session
      * @param externalAuth
-     *            was this user authenticated externally?
-     * @return the user object
+     *            was the user authenticated externally?
      */
-    private static User createUser(WebApplicationContext wc, AuthenticationService auth, String currentUsername,
-            boolean externalAuth)
+    private static void setExternalAuth(HttpSession session, boolean externalAuth)
     {
-        UserTransaction tx = null;
-        ServiceRegistry services = (ServiceRegistry) wc.getBean(ServiceRegistry.SERVICE_REGISTRY);
-        try
+        if (externalAuth)
         {
-            tx = services.getTransactionService().getUserTransaction();
-            tx.begin();
-
-            NodeService nodeService = services.getNodeService();
-            PersonService personService = (PersonService) wc.getBean(PERSON_SERVICE);
-            NodeRef personRef = personService.getPerson(currentUsername);
-            User user = new User(currentUsername, auth.getCurrentTicket(), personRef);
-            NodeRef homeRef = (NodeRef) nodeService.getProperty(personRef, ContentModel.PROP_HOMEFOLDER);
-
-            // check that the home space node exists - else Login cannot proceed
-            if (nodeService.exists(homeRef) == false)
-            {
-                throw new InvalidNodeRefException(homeRef);
-            }
-            user.setHomeSpaceId(homeRef.getId());
-
-            tx.commit();
-
-            return user;
+            session.setAttribute(LoginBean.LOGIN_EXTERNAL_AUTH, Boolean.TRUE);
         }
-        catch (Exception ex)
+        else
         {
-            logger.error(ex);
-
-            try
-            {
-                tx.rollback();
-            }
-            catch (Exception ex2)
-            {
-                logger.error("Failed to rollback transaction", ex2);
-            }
-
-            if (ex instanceof RuntimeException)
-            {
-                throw (RuntimeException) ex;
-            }
-            else
-            {
-                throw new RuntimeException("Failed to set authenticated user", ex);
-            }
+            session.removeAttribute(LoginBean.LOGIN_EXTERNAL_AUTH);
         }
     }
+
+   /**
+    * Creates an object for an authentication user.
+    * 
+    * @param wc
+    *           the web application context
+    * @param currentUsername
+    *           the current user name
+    * @param ticket
+    *           a validated ticket
+    * @return the user object
+    */
+   private static User createUser(final WebApplicationContext wc, final String currentUsername, final String ticket)
+   {
+      final ServiceRegistry services = (ServiceRegistry) wc.getBean(ServiceRegistry.SERVICE_REGISTRY);
+      return services.getTransactionService().getRetryingTransactionHelper().doInTransaction(
+            new RetryingTransactionHelper.RetryingTransactionCallback<User>()
+            {
+
+               public User execute() throws Throwable
+               {
+                  NodeService nodeService = services.getNodeService();
+                  PersonService personService = (PersonService) wc.getBean(PERSON_SERVICE);
+                  NodeRef personRef = personService.getPerson(currentUsername);
+                  User user = new User(currentUsername, ticket, personRef);
+                  NodeRef homeRef = (NodeRef) nodeService.getProperty(personRef, ContentModel.PROP_HOMEFOLDER);
+
+                  // check that the home space node exists - else Login cannot proceed
+                  if (nodeService.exists(homeRef) == false)
+                  {
+                     throw new InvalidNodeRefException(homeRef);
+                  }
+                  user.setHomeSpaceId(homeRef.getId());
+                  return user;
+               }
+            });
+   }
     
    /**
     * For no previous authentication or forced Guest - attempt Guest access
@@ -422,7 +401,7 @@ public final class AuthenticationHelper
       {
          auth.authenticateAsGuest();
          
-         User user = createUser(ctx, auth, AuthenticationUtil.getGuestUserName(), false);
+         User user = createUser(ctx, AuthenticationUtil.getGuestUserName(), auth.getCurrentTicket());
          
          // store the User object in the Session - the authentication servlet will then proceed
          session.setAttribute(AuthenticationHelper.AUTHENTICATION_USER, user);
@@ -461,19 +440,23 @@ public final class AuthenticationHelper
    }
    
    /**
-    * Attempts to retrieve the User object stored in the current session.
-    * 
-    * @param httpRequest The HTTP request
-    * @param httpResponse The HTTP response
-    * @return The User object representing the current user or null if it could not be found
-    */
+     * Attempts to retrieve the User object stored in the current session.
+     * 
+     * @param sc
+     *            the servlet context
+     * @param httpRequest
+     *            The HTTP request
+     * @param httpResponse
+     *            The HTTP response
+     * @return The User object representing the current user or null if it could not be found
+     */
    @SuppressWarnings("unchecked")
-   public static User getUser(ServletContext sc, HttpServletRequest httpRequest, HttpServletResponse httpResponse)
+   public static User getUser(final ServletContext sc, final HttpServletRequest httpRequest, HttpServletResponse httpResponse)
    {
       String userId = null;
 
       // If the remote user mapper is configured, we may be able to map in an externally authenticated user
-      WebApplicationContext wc = WebApplicationContextUtils.getRequiredWebApplicationContext(sc);
+      final WebApplicationContext wc = WebApplicationContextUtils.getRequiredWebApplicationContext(sc);
       RemoteUserMapper remoteUserMapper = (RemoteUserMapper) wc.getBean(REMOTE_USER_MAPPER);
       if (!(remoteUserMapper instanceof ActivateableBean) || ((ActivateableBean) remoteUserMapper).isActive())
       {
@@ -484,9 +467,11 @@ public final class AuthenticationHelper
       User user = null;
 
       // examine the appropriate session to try and find the User object
+      SessionUser sessionUser = null;
+      String sessionUserAttrib = null;
       if (Application.inPortalServer() == false)
       {
-         user = (User) session.getAttribute(AUTHENTICATION_USER);
+         sessionUserAttrib = AUTHENTICATION_USER;
       }
       else
       {
@@ -499,31 +484,62 @@ public final class AuthenticationHelper
             String name = enumNames.nextElement();
             if (name.endsWith(AUTHENTICATION_USER))
             {
-               user = (User) session.getAttribute(name);
+               sessionUserAttrib = name;
                break;
             }
          }
       }
 
+      // Make sure the ticket is valid, the person exists, and the cached user is of the right type (WebDAV users have
+      // been known to leak in but shouldn't now)
+      if (sessionUserAttrib != null && (sessionUser = (SessionUser) session.getAttribute(sessionUserAttrib)) != null)
+      {
+         AuthenticationService auth = (AuthenticationService) wc.getBean(AUTHENTICATION_SERVICE);
+         try
+         {
+            auth.validate(sessionUser.getTicket());
+            if (sessionUser instanceof User)
+            {
+               user = (User)sessionUser;
+               setExternalAuth(session, userId != null);                  
+            }
+            else
+            {
+               user = setUser(sc, httpRequest, sessionUser.getUserName(), sessionUser.getTicket(), userId != null);
+            }
+         }
+         catch (AuthenticationException authErr)
+         {
+            session.removeAttribute(sessionUserAttrib);
+            if (!Application.inPortalServer())
+            {
+               session.invalidate();
+            }
+         }
+      }
+      
       // If the remote user mapper is configured, we may be able to map in an externally authenticated user
       if (userId != null)
       {
          // We have a previously-cached user with the wrong identity - replace them
          if (user != null && !user.getUserName().equals(userId))
          {
-            user = null;
+             session.removeAttribute(sessionUserAttrib);
+             if (!Application.inPortalServer())
+             {
+                session.invalidate();
+             }
+             user = null;
          }
 
          if (user == null)
          {
             // If we have been authenticated by other means, just propagate through the user identity
-            if (userId != null)
-            {
-               AuthenticationComponent authenticationComponent = (AuthenticationComponent) wc
-                     .getBean(AUTHENTICATION_COMPONENT);
-               authenticationComponent.setCurrentUser(userId);
-               user = setUser(sc, httpRequest, userId, true);
-            }
+            AuthenticationComponent authenticationComponent = (AuthenticationComponent) wc
+                  .getBean(AUTHENTICATION_COMPONENT);
+            authenticationComponent.setCurrentUser(userId);
+            AuthenticationService authenticationService = (AuthenticationService) wc.getBean(AUTHENTICATION_SERVICE);
+            user = setUser(sc, httpRequest, userId, authenticationService.getCurrentTicket(), true);
          }
       }
       return user;

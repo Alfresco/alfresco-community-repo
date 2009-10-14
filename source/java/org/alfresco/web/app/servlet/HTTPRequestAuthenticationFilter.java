@@ -38,10 +38,10 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationException;
+import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.repository.User;
 import org.apache.commons.logging.Log;
@@ -64,6 +64,8 @@ public class HTTPRequestAuthenticationFilter implements Filter
     private String loginPage;
 
     private AuthenticationComponent authComponent;
+    
+    private AuthenticationService authenticationService;
 
     private String httpServletRequestAuthHeaderName;
 
@@ -96,8 +98,6 @@ public class HTTPRequestAuthenticationFilter implements Filter
 
         HttpServletRequest req = (HttpServletRequest) sreq;
         HttpServletResponse resp = (HttpServletResponse) sresp;
-
-        HttpSession httpSess = req.getSession(true);
 
         // Check for the auth header
 
@@ -164,7 +164,7 @@ public class HTTPRequestAuthenticationFilter implements Filter
 
         // See if there is a user in the session and test if it matches
 
-        User user = (User) httpSess.getAttribute(AuthenticationHelper.AUTHENTICATION_USER);
+        User user = AuthenticationHelper.getUser(this.context, req, resp);
 
         if (user != null)
         {
@@ -236,7 +236,7 @@ public class HTTPRequestAuthenticationFilter implements Filter
         authComponent.setCurrentUser(userName);
         
         // Set up the user information
-        AuthenticationHelper.setUser(context, req, userName, true);
+        AuthenticationHelper.setUser(context, req, userName, authenticationService.getCurrentTicket(), true);
 
         // Set the locale using the session
         AuthenticationHelper.setupThread(this.context, req, res);
@@ -253,6 +253,7 @@ public class HTTPRequestAuthenticationFilter implements Filter
 
         WebApplicationContext ctx = WebApplicationContextUtils.getRequiredWebApplicationContext(context);
         authComponent = (AuthenticationComponent) ctx.getBean("authenticationComponent");
+        authenticationService = (AuthenticationService) ctx.getBean("AuthenticationService");
                 
         httpServletRequestAuthHeaderName = config.getInitParameter("httpServletRequestAuthHeaderName");
         if(httpServletRequestAuthHeaderName == null)

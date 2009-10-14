@@ -102,7 +102,9 @@
                <td style="white-space:nowrap;"><a href="http://www.alfresco.com/services/support/issues/" target="new"><h:outputText value="#{msg.raise_issue}" /></a></td>
                <td style="width:8px;">&nbsp;</td>
                <td style="white-space:nowrap;">
-                  <a:actionLink id="logout" image="/images/icons/logout.gif" value="#{msg.logout} (#{NavigationBean.currentUser.userName})" rendered="#{!NavigationBean.isGuest}" action="#{LoginBean.logout}" immediate="true" />
+                  <a:actionLink id="logout" image="/images/icons/logout.gif" value="#{msg.logout} (#{NavigationBean.currentUser.userName})" rendered="#{!NavigationBean.isGuest}" action="#{LoginBean.logout}" immediate="true">
+                     <f:param name="outcome" value="#{LoginBean.logoutOutcome}" />
+                  </a:actionLink>
                   <a:actionLink id="login" image="/images/icons/login.gif" value="#{msg.login} (#{NavigationBean.currentUser.userName})" rendered="#{NavigationBean.isGuest}" action="#{LoginBean.logout}" />
                </td>
             </tr>

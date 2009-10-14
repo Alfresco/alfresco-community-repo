@@ -25,7 +25,7 @@
 	"instantmsg": <#if person.properties.instantmsg??>"${person.properties.instantmsg}"<#else>null</#if>,
 	"quota": <#if person.properties.sizeQuota??>${person.properties.sizeQuota?c}<#else>-1</#if>,
 	"sizeCurrent": <#if person.properties.sizeCurrent??>${person.properties.sizeCurrent?c}<#else>0</#if>,
-	"persondescription": <#if person.properties.persondescription??>"${person.properties.persondescription.content}"<#else>null</#if>
+	"persondescription": <#if person.properties.persondescription??>"${stringUtils.stripUnsafeHTML(person.properties.persondescription.content)}"<#else>null</#if>
 </#escape>
 </#macro>
 

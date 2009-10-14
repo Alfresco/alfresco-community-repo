@@ -10,7 +10,7 @@
    "type": "${item.properties["blg:blogImplementation"]!''}",
    "id": "${item.properties["blg:id"]!'0'}",
    "name": "${item.properties["blg:name"]!''}",
-    "description": "${item.properties["blg:description"]!''}",
+   "description": "${item.properties["blg:description"]!''}",
    "url": "${item.properties["blg:url"]!''}",
    "username": "${item.properties["blg:userName"]!''}",
    "password": "${item.properties["blg:password"]!''}",

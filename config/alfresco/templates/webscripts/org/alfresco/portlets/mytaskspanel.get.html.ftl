@@ -48,10 +48,10 @@
             <tr>
                <td width="190" class="taskDetailSeparator">
                   <table cellpadding="2" cellspacing="2" style="margin-left:24px; margin-top:4px">
-                     <tr><td class="taskMetaprop">Status:</td><td class="taskMetadata">${t.properties["bpm:status"]}</td>
-                     <tr><td class="taskMetaprop">Priority:</td><td class="taskMetadata">${t.properties["bpm:priority"]}</td>
-                     <tr><td class="taskMetaprop">Start Date:</td><td class="taskMetadata">${t.startDate?date}</td></tr>
-                     <tr><td class="taskMetaprop">Complete:</td><td class="taskMetadata">${t.properties["bpm:percentComplete"]}%</td>
+                     <tr><td class="taskMetaprop">${message("portlets.mytaskspanel.status")}:</td><td class="taskMetadata">${t.properties["bpm:status"]}</td>
+                     <tr><td class="taskMetaprop">${message("portlets.mytaskspanel.priority")}:</td><td class="taskMetadata">${t.properties["bpm:priority"]}</td>
+                     <tr><td class="taskMetaprop">${message("portlets.mytaskspanel.start_date")}:</td><td class="taskMetadata">${t.startDate?date}</td></tr>
+                     <tr><td class="taskMetaprop">${message("portlets.mytaskspanel.complete")}:</td><td class="taskMetadata">${t.properties["bpm:percentComplete"]}%</td>
       	         </table>
       	      </td>
                <td width="8">&nbsp;</td>
@@ -66,7 +66,7 @@
                      <td>
                         <div class="taskManage">
                            <ul>
-                              <li><a href="#" onclick="event.cancelBubble=true; openWindowCallback('${url.context}/command/ui/managetask?id=${t.id}&amp;type=${t.qnameType}&amp;container=plain', MyTasks.manageTaskCallback);"><span><img src="${url.context}/images/icons/manage_workflow_task.gif" align="top" alt="" border="0"> Manage Task</span></a></li>
+                              <li><a href="#" onclick="event.cancelBubble=true; openWindowCallback('${url.context}/command/ui/managetask?id=${t.id}&amp;type=${t.qnameType}&amp;container=plain', MyTasks.manageTaskCallback);"><span><img src="${url.context}/images/icons/manage_workflow_task.gif" align="top" alt="" border="0"> ${message("portlets.mytaskspanel.manage_task")}</span></a></li>
                            </ul>
                         </div>
                      </td>
@@ -83,7 +83,7 @@
                         <div class="taskAction">
          	               <ul>
       	                  <#list t.transitions as wt>
-         	                  <li><a href="#" onclick="event.cancelBubble=true; MyTasks.transitionTask('/command/task/end/${t.id}<#if wt.id?exists>/${wt.id}</#if>', 'Workflow action \'${wt.label?html}\' completed.');"><span>${wt.label?html}</span></a></li>
+         	                  <li><a href="#" onclick="event.cancelBubble=true; MyTasks.transitionTask('/command/task/end/${t.id}<#if wt.id?exists>/${wt.id}</#if>', '${message("portlets.mytaskspanel.workflow_action")} \'${wt.label?html}\' ${message("portlets.mytaskspanel.workflow_complited")}.');"><span>${wt.label?html}</span></a></li>
       	                  </#list>
          	               </ul>
          	            </div>
@@ -98,5 +98,7 @@
    </div>
    </#if>
 </#list>
+<#-- hidden div with the error message -->
+<div id="displayTheError" style="display:none">${message("portlets.error.data_currently_unavailable")}</div>
 <#-- hidden div with the count value for the page -->
 <div id="taskCountValue" style="display:none">${count}</div>

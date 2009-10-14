@@ -29,16 +29,16 @@
                         <td>
                            <div id="taskFilterBar">
                               <ul>
-                                 <li <#if filter=0>class="taskCurrent"</#if>><a href="#" onclick="MyTasks.filter(0); return false;"><span>Tasks to do</span></a></li>
-                                 <li <#if filter=1>class="taskCurrent"</#if>><a href="#" onclick="MyTasks.filter(1); return false;"><span style="color: #399DF7;">Due Today</span></a></li>
-                                 <li <#if filter=2>class="taskCurrent"</#if>><a href="#" onclick="MyTasks.filter(2); return false;"><span>Next 7 days</span></a></li>
-                                 <li <#if filter=3>class="taskCurrent"</#if>><a href="#" onclick="MyTasks.filter(3); return false;"><span>No due date</span></a></li>
-                                 <li <#if filter=4>class="taskCurrent"</#if>><a href="#" onclick="MyTasks.filter(4); return false;"><span style="color: #DF3704;">Overdue</span></a></li>
+                                 <li <#if filter=0>class="taskCurrent"</#if>><a href="#" onclick="MyTasks.filter(0); return false;"><span>${message("portlets.mytasks.tasks_to_do")}</span></a></li>
+                                 <li <#if filter=1>class="taskCurrent"</#if>><a href="#" onclick="MyTasks.filter(1); return false;"><span style="color: #399DF7;">${message("portlets.mytasks.due_today")}</span></a></li>
+                                 <li <#if filter=2>class="taskCurrent"</#if>><a href="#" onclick="MyTasks.filter(2); return false;"><span>${message("portlets.mytasks.next_7_days")}</span></a></li>
+                                 <li <#if filter=3>class="taskCurrent"</#if>><a href="#" onclick="MyTasks.filter(3); return false;"><span>${message("portlets.mytasks.no_due_date")}</span></a></li>
+                                 <li <#if filter=4>class="taskCurrent"</#if>><a href="#" onclick="MyTasks.filter(4); return false;"><span style="color: #DF3704;">${message("portlets.mytasks.overdue")}</span></a></li>
                               </ul>
                            </div>
                         </td>
                         <td width="150" align="right" style="padding: 5px 5px 0px 0px;">
-                           <a class="refreshViewLink" href="#" onclick="MyTasks.refreshList(); return false;"><img src="${url.context}/images/icons/reset.gif" border="0" width="16" height="16" style="vertical-align:-25%;padding-right:4px"><span>Refresh</span></a>
+                           <a class="refreshViewLink" href="#" onclick="MyTasks.refreshList(); return false;"><img src="${url.context}/images/icons/reset.gif" border="0" width="16" height="16" style="vertical-align:-25%;padding-right:4px"><span>${message("portlets.refresh")}</span></a>
                         </td>
                      </tr>
                   </table>
@@ -58,7 +58,7 @@
                <td>
                   <div id="taskFooter">
                      <#-- the count value is retrieved and set dynamically from the AJAX webscript output above -->
-                     <span class="taskFooterText">Showing <span id="taskCount">0</span> <#if filter=4>overdue</#if> task(s)<#if filter=1> due today</#if><#if filter=2> due next week</#if><#if filter=3> with no due date set</#if></span>
+                     <span class="taskFooterText">${message("portlets.message.showing")} <span id="taskCount">0</span> <#if filter=4>${message("portlets.mytasks.showing_overdue")}</#if> ${message("portlets.mytasks.showing_task")}<#if filter=1> ${message("portlets.mytasks.showing_due_today")}</#if><#if filter=2> ${message("portlets.mytasks.showing_due_next_week")}</#if><#if filter=3> ${message("portlets.mytasks.showing_with_no_due_date_set")}</#if></span>
                   </div>
                </td>
             </tr>

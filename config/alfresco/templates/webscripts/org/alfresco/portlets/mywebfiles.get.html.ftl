@@ -35,7 +35,7 @@
                   <span class="webProjectInfo" onclick="event.cancelBubble=true; AlfNodeInfoMgr.toggle('${wp.nodeRef}',this);">
                      <img src="${url.context}/images/icons/popup.gif" class="popupImage" width="16" height="16" />
                   </span>
-                  <a class="webProjectLink" href="${url.context}${wp.url}" target="new"><img class="itemImageIcon" src="${url.context}/images/icons/view_web_project.gif" width="16" height="16" border="0">View Web Project</a>
+                  <a class="webProjectLink" href="${url.context}${wp.url}" target="new"><img class="itemImageIcon" src="${url.context}/images/icons/view_web_project.gif" width="16" height="16" border="0">${message("portlets.mywebfiles.view_web_project")}</a>
                   <#if wp.properties.description?exists && wp.properties.description?length!=0>
                   <br>
                   <span class="webprojectDesc">${wp.properties.description?html}</span>
@@ -43,7 +43,7 @@
                </div>
                <div class="webProjectFiles"> <#-- marker class for dynamic click script -->
                   <#assign moditems = avm.getModifiedItems(storeId, username, wp.properties["wca:defaultwebapp"])>
-                  <div class="fileTitleRow">My Modified Items</div>
+                  <div class="fileTitleRow">${message("portlets.mywebfiles.my_modified_items")}</div>
                   <div class="fileResources">
                   <#if moditems?size != 0>
                      <#assign lcount=0>
@@ -61,14 +61,14 @@
                                  <img class="itemImageIcon" src="${url.context}/images/icons/locked${(t.isLockOwner)?string("_owner", "")}.gif" border="0">
                               </#if>
                               <#if t.hasAspect("wca:forminstancedata") && !t.hasAspect("wcmwf:submitted") && t.hasLockAccess>
-                                 <a class="fileActionLink" href="${url.context}/c/ui/editwebcontent?sandbox=${sandbox}&webproject=${wp.id}&path=${t.path?url}&container=plain" target="new"><img class="itemImageIcon" src="${url.context}/images/icons/edit_icon.gif" border="0">Edit</a>
+                                 <a class="fileActionLink" href="${url.context}/c/ui/editwebcontent?sandbox=${sandbox}&webproject=${wp.id}&path=${t.path?url}&container=plain" target="new"><img class="itemImageIcon" src="${url.context}/images/icons/edit_icon.gif" border="0">${message("portlets.mywebfiles.edit")}</a>
                               </#if>
                            </#if>
                            <#assign lcount=lcount+1>
                         </div>
                      </#list>
                   <#else>
-                     <div class="fileItemRow">No items modified</div>
+                     <div class="fileItemRow">${message("portlets.mywebfiles.no_items_modified")}</div>
                   </#if>
                   </div>
                </div>
@@ -83,7 +83,7 @@
 <tr>
 <td>
    <div class="filesFooter">
-      Showing ${filecount} files(s) in ${projectcount} web project(s)
+      ${message("portlets.mywebfiles.showing_count_files_in_count_web_projects", filecount, projectcount)}
    </div>
 </td>
 </tr>

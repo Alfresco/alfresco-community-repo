@@ -51,38 +51,38 @@
    <div class="spaceToolbar">
       <#-- TODO: permission checks on the actions! -->
       <#-- Upload File action -->
-      <div class="spaceToolbarAction spaceToolbarActionUpload" title="Upload a new document" <#if home.hasPermission("CreateChildren")>onclick="MySpaces.upload(this);"</#if>>Upload</div>
+      <div class="spaceToolbarAction spaceToolbarActionUpload" title="${message('portlets.myspaces.upload.title')}" <#if home.hasPermission("CreateChildren")>onclick="MySpaces.upload(this);"</#if>>${message("portlets.myspaces.upload")}</div>
       <div class="spaceUploadPanel">
          <#-- Url encode the path value, and encode any single quotes to generate valid string -->
-         <input class="spaceFormItem" type="button" value="OK" onclick='MySpaces.uploadOK(this, "${path?url?replace("'","_%_")}");'>
-         <input class="spaceFormItem" type="button" value="Cancel" onclick="MySpaces.closePopupPanel();">
+         <input class="spaceFormItem" type="button" value="${message('portlets.button.ok')}" onclick='MySpaces.uploadOK(this, "${path?url?replace("'","_%_")}");'>
+         <input class="spaceFormItem" type="button" value="${message('portlets.button.cancel')}" onclick="MySpaces.closePopupPanel();">
       </div>
       <div id="spaceUpdateDocPanel">
-         <input class="spaceFormItem" type="button" value="OK" onclick="MySpaces.updateOK(this);">
-         <input class="spaceFormItem" type="button" value="Cancel" onclick="MySpaces.closePopupPanel();">
+         <input class="spaceFormItem" type="button" value="${message('portlets.button.ok')}" onclick="MySpaces.updateOK(this);">
+         <input class="spaceFormItem" type="button" value="${message('portlets.button.cancel')}" onclick="MySpaces.closePopupPanel();">
       </div>
       <#-- Create Space action -->
-      <div class="spaceToolbarAction spaceToolbarActionCreateSpace" title="Create a new Space" <#if home.hasPermission("CreateChildren")>onclick="MySpaces.createSpace(this);"</#if>>Create Space</div>
+      <div class="spaceToolbarAction spaceToolbarActionCreateSpace" title="${message('portlets.myspaces.create_space.title')}" <#if home.hasPermission("CreateChildren")>onclick="MySpaces.createSpace(this);"</#if>>${message("portlets.myspaces.create_space")}</div>
       <div class="spaceCreateSpacePanel">
          <table cellspacing="2" cellpadding="2" border="0">
-            <tr><td class="spaceFormLabel">Name:</td><td><input class="spaceFormItem" type="text" size="32" maxlength="1024" id="space-name"></td></tr>
-            <tr><td class="spaceFormLabel">Title:</td><td><input class="spaceFormItem" type="text" size="32" maxlength="1024" id="space-title"></td></tr>
-            <tr><td class="spaceFormLabel">Description:</td><td><input class="spaceFormItem" type="text" size="32" maxlength="1024" id="space-description"></td></tr>
+            <tr><td class="spaceFormLabel">${message("portlets.myspaces.name")}:</td><td><input class="spaceFormItem" type="text" size="32" maxlength="1024" id="space-name"></td></tr>
+            <tr><td class="spaceFormLabel">${message("portlets.myspaces.title")}:</td><td><input class="spaceFormItem" type="text" size="32" maxlength="1024" id="space-title"></td></tr>
+            <tr><td class="spaceFormLabel">${message("portlets.myspaces.description")}:</td><td><input class="spaceFormItem" type="text" size="32" maxlength="1024" id="space-description"></td></tr>
          </table>
-         <input class="spaceFormItem" type="button" value="OK" onclick='MySpaces.createSpaceOK(this, "${path?url?replace("'","_%_")}");'>
-         <input class="spaceFormItem" type="button" value="Cancel" onclick="MySpaces.closePopupPanel();">
+         <input class="spaceFormItem" type="button" value="${message('portlets.button.ok')}" onclick='MySpaces.createSpaceOK(this, "${path?url?replace("'","_%_")}");'>
+         <input class="spaceFormItem" type="button" value="${message('portlets.button.cancel')}" onclick="MySpaces.closePopupPanel();">
       </div>
    </div>
    <div class="spaceHeader">
       <table border="0" cellspacing="6" cellpadding="0" width="100%">
          <tr>
-            <th><a class="spacefilterLink <#if filter=0>spacefilterLinkSelected</#if>" href="#" onclick="MySpaces.filter(0); return false;">All Items</a></th>
-            <th><a class="spacefilterLink <#if filter=1>spacefilterLinkSelected</#if>" href="#" onclick="MySpaces.filter(1); return false;">Spaces</a></th>
-            <th><a class="spacefilterLink <#if filter=2>spacefilterLinkSelected</#if>" href="#" onclick="MySpaces.filter(2); return false;">Documents</a></th>
-            <th><a class="spacefilterLink <#if filter=3>spacefilterLinkSelected</#if>" href="#" onclick="MySpaces.filter(3); return false;">My Items</a></th>
-            <th><a class="spacefilterLink <#if filter=4>spacefilterLinkSelected</#if>" href="#" onclick="MySpaces.filter(4); return false;">Recently Modified</a></th>
+            <th><a class="spacefilterLink <#if filter=0>spacefilterLinkSelected</#if>" href="#" onclick="MySpaces.filter(0); return false;">${message("portlets.myspaces.all_items")}</a></th>
+            <th><a class="spacefilterLink <#if filter=1>spacefilterLinkSelected</#if>" href="#" onclick="MySpaces.filter(1); return false;">${message("portlets.myspaces.spaces")}</a></th>
+            <th><a class="spacefilterLink <#if filter=2>spacefilterLinkSelected</#if>" href="#" onclick="MySpaces.filter(2); return false;">${message("portlets.myspaces.documents")}</a></th>
+            <th><a class="spacefilterLink <#if filter=3>spacefilterLinkSelected</#if>" href="#" onclick="MySpaces.filter(3); return false;">${message("portlets.myspaces.my_items")}</a></th>
+            <th><a class="spacefilterLink <#if filter=4>spacefilterLinkSelected</#if>" href="#" onclick="MySpaces.filter(4); return false;">${message("portlets.myspaces.recently_modified")}</a></th>
             <td align=right>
-               <a href="#" onclick="MySpaces.refreshList(); return false;" class="refreshViewLink"><img src="${url.context}/images/icons/reset.gif" border="0" width="16" height="16" class="spaceImageIcon">Refresh</a>
+               <a href="#" onclick="MySpaces.refreshList(); return false;" class="refreshViewLink"><img src="${url.context}/images/icons/reset.gif" border="0" width="16" height="16" class="spaceImageIcon">${message("portlets.refresh")}</a>
             </td>
          </tr>
       </table>
@@ -106,7 +106,7 @@
    </div>
    <div class="spaceFooter">
       <#-- the count value is retrieved and set dynamically from the AJAX webscript output above -->
-      <span class="spaceFooterText">Showing <span id="spaceCount">0</span> items(s)</span>
+      <span class="spaceFooterText" id="spaceCount" />0</span>
    </div>
 </div>
 

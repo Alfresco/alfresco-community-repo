@@ -45,13 +45,13 @@
    <td class="docHeader">
       <table border="0" cellspacing="0" cellpadding="0" width="100%">
          <tr>
-            <th><a id="docFilter0" class="docfilterLink <#if filter=0>docfilterLinkSelected</#if>" href="#" onclick="MyDocs.filter(0); return false;"><span>All Items</span></a></th>
-            <th><a id="docFilter1" class="docfilterLink <#if filter=1>docfilterLinkSelected</#if>" href="#" onclick="MyDocs.filter(1); return false;"><span>Word Documents</span></a></th>
-            <th><a id="docFilter2" class="docfilterLink <#if filter=2>docfilterLinkSelected</#if>" href="#" onclick="MyDocs.filter(2); return false;"><span>HTML Documents</span></a></th>
-            <th><a id="docFilter3" class="docfilterLink <#if filter=3>docfilterLinkSelected</#if>" href="#" onclick="MyDocs.filter(3); return false;"><span>PDF Documents</span></a></th>
-            <th><a id="docFilter4" class="docfilterLink <#if filter=4>docfilterLinkSelected</#if>" href="#" onclick="MyDocs.filter(4); return false;"><span>Recently Modified</span></a></th>
+            <th><a id="docFilter0" class="docfilterLink <#if filter=0>docfilterLinkSelected</#if>" href="#" onclick="MyDocs.filter(0); return false;"><span>${message("portlets.doclist.all_items")}</span></a></th>
+            <th><a id="docFilter1" class="docfilterLink <#if filter=1>docfilterLinkSelected</#if>" href="#" onclick="MyDocs.filter(1); return false;"><span>${message("portlets.doclist.word_documents")}</span></a></th>
+            <th><a id="docFilter2" class="docfilterLink <#if filter=2>docfilterLinkSelected</#if>" href="#" onclick="MyDocs.filter(2); return false;"><span>${message("portlets.doclist.html_documents")}</span></a></th>
+            <th><a id="docFilter3" class="docfilterLink <#if filter=3>docfilterLinkSelected</#if>" href="#" onclick="MyDocs.filter(3); return false;"><span>${message("portlets.doclist.pdf_documents")}</span></a></th>
+            <th><a id="docFilter4" class="docfilterLink <#if filter=4>docfilterLinkSelected</#if>" href="#" onclick="MyDocs.filter(4); return false;"><span>${message("portlets.doclist.recently_modified")}</span></a></th>
             <th align=right>
-               <a href="#" onclick="MyDocs.refreshList(); return false;" class="docRefreshViewLink"><img src="${url.context}/images/icons/reset.gif" border="0" width="16" height="16" style="vertical-align:-25%;padding-right:4px">Refresh</a>
+               <a href="#" onclick="MyDocs.refreshList(); return false;" class="docRefreshViewLink"><img src="${url.context}/images/icons/reset.gif" border="0" width="16" height="16" style="vertical-align:-25%;padding-right:4px">${message("portlets.refresh")}</a>
             </th>
          </tr>
       </table>
@@ -60,8 +60,8 @@
 <tr>
    <td>
       <div id="docUpdatePanel">
-         <input class="docFormItem" type="button" value="OK" onclick="MyDocs.updateOK(this);">
-         <input class="docFormItem" type="button" value="Cancel" onclick="MyDocs.closePopupPanel();">
+         <input class="docFormItem" type="button" value="${message('portlets.button.ok')}" onclick="MyDocs.updateOK(this);">
+         <input class="docFormItem" type="button" value="${message('portlets.button.cancel')}" onclick="MyDocs.closePopupPanel();">
       </div>
       <div id="docPanelOverlay"></div>
       <div id="docPanelOverlayAjax"></div>
@@ -84,7 +84,7 @@
 <tr>
    <td>
       <div class="docFooter">
-         <span class="docFooterText">Showing <span id="docCount">0</span> items(s)</span>
+         <span class="docFooterText" id="docCount" />
       </div>
    </td>
 </tr>

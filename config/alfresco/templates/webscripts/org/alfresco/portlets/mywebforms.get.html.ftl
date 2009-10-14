@@ -35,7 +35,7 @@
                   <span class="webProjectInfo" onclick="event.cancelBubble=true; AlfNodeInfoMgr.toggle('${wp.nodeRef}',this);">
                      <img src="${url.context}/images/icons/popup.gif" class="popupImage" width="16" height="16" />
                   </span>
-                  <a class="webProjectLink" href="${url.context}${wp.url}" target="new"><img class="itemImageIcon" src="${url.context}/images/icons/view_web_project.gif" width="16" height="16" border="0">View Web Project</a>
+                  <a class="webProjectLink" href="${url.context}${wp.url}" target="new"><img class="itemImageIcon" src="${url.context}/images/icons/view_web_project.gif" width="16" height="16" border="0">${message("portlets.mywebfiles.view_web_project")}</a>
                   <#if wp.properties.description?exists && wp.properties.description?length!=0>
                   <br>
                   <span class="webprojectDesc">${wp.properties.description?html}</span>
@@ -67,7 +67,7 @@
 <tr>
 <td>
    <div class="formsFooter">
-      Showing ${formcount} form(s) in ${projectcount} web project(s)
+      ${message("portlets.mywebfiles.showing_count_files_in_count_web_projects", formcount, projectcount)}
    </div>
 </td>
 </tr>

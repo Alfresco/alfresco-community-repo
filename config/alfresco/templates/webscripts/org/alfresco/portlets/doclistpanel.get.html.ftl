@@ -31,15 +31,15 @@
             <table cellpadding="2" cellspacing="0" border="0">
 	            <tr>
 	               <td>
-	                  <span class="docMetaprop">Description:</span>&nbsp;<span class="docMetadata"><#if d.properties.description?exists>${d.properties.description?html}<#else>&nbsp;</#if></span><br />
-   	               <span class="docMetaprop">Modified:</span>&nbsp;<span class="docMetadata">${d.properties.modified?datetime}</span><br />
-   	               <span class="docMetaprop">Modified By:</span>&nbsp;<span class="docMetadata">${d.properties.modifier}</span>
+	                  <span class="docMetaprop">${message("portlets.panel.description")}:</span>&nbsp;<span class="docMetadata"><#if d.properties.description?exists>${d.properties.description?html}<#else>&nbsp;</#if></span><br />
+   	               <span class="docMetaprop">${message("portlets.panel.modified")}:</span>&nbsp;<span class="docMetadata">${d.properties.modified?datetime}</span><br />
+   	               <span class="docMetaprop">${message("portlets.panel.modified_by")}:</span>&nbsp;<span class="docMetadata">${d.properties.modifier}</span>
 	               </td>
 	               <td width="24">&nbsp;</td>
 	               <td>
-	                  <span class="docMetaprop">Created:</span>&nbsp;<span class="docMetadata">${d.properties.created?datetime}</span><br />
-   	               <span class="docMetaprop">Created By:</span>&nbsp;<span class="docMetadata">${d.properties.creator}</span><br />
-	                  <span class="docMetaprop">Size:</span>&nbsp;<span class="docMetadata">${(d.size/1000)?string("0.##")} KB</span>
+	                  <span class="docMetaprop">${message("portlets.panel.created")}:</span>&nbsp;<span class="docMetadata">${d.properties.created?datetime}</span><br />
+   	               <span class="docMetaprop">${message("portlets.panel.created_by")}:</span>&nbsp;<span class="docMetadata">${d.properties.creator}</span><br />
+	                  <span class="docMetaprop">${message("portlets.panel.size")}:</span>&nbsp;<span class="docMetadata">${(d.size/1000)?string("0.##")} ${message("portlets.panel.kb")}</span>
 	               </td>
 	            </tr>
 	         </table>
@@ -50,4 +50,7 @@
    </#if>
 </#list>
 <#-- hidden div with the count value for the page -->
-<div id="docCountValue" style="display:none">${count}</div>
+<div id="docCountValue" style="display:none">${message("portlets.message.showing_items", count)}</div>
+<#-- hidden div with the error message -->
+<div id="displayTheError" style="display:none">${message("portlets.error.data_currently_unavailable")}</div>
+<div id="previewCurrentlyUnavailable" style="display:none">${message("portlets.preview_currently_unavailable")}</div>

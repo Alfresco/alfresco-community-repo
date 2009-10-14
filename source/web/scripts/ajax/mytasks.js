@@ -30,7 +30,7 @@ var MyTasks = {
                failure: function(response)
                {
                   // display the error
-                  $('taskPanel').setHTML("Sorry, data currently unavailable.");
+                  $('taskPanel').setHTML($('displayTheError').innerHTML);
                   
                   // hide the ajax wait panel and show the main task panel
                   $('taskPanelOverlay').setStyle('visibility', 'hidden');

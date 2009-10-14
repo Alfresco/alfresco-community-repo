@@ -25,33 +25,33 @@
             <tr>
 <#assign navurl='/navigate/showDocDetails/' + node.nodeRef.storeRef.protocol + '/' + node.nodeRef.storeRef.identifier + '/' + node.nodeRef.id>
 <#if node.isLocked>
-               <td class="docAction docActionCheckout docActionLocked">(Locked)</td>
+               <td class="docAction docActionCheckout docActionLocked">(${msg("locked")})</td>
 <#elseif hasAspect(node, "cm:workingcopy") == 1>
-               <td class="docAction docActionCheckin" <#if node.hasPermission("CheckIn")>onclick='event.cancelBubble=true;MyDocs.checkinItem("${node.name}", "${node.nodeRef}");'</#if>>Check In</td>
+               <td class="docAction docActionCheckin" <#if node.hasPermission("CheckIn")>onclick='event.cancelBubble=true;MyDocs.checkinItem("${msg("portlets.checkin.item_working_copy_of_name_has_been_checked_in", node.name)}", "${node.nodeRef}");'</#if>>${msg("checkin")}</td>
 <#else>
-               <td class="docAction docActionCheckout" <#if node.hasPermission("CheckOut")>onclick='event.cancelBubble=true;MyDocs.checkoutItem("${node.name}", "${node.nodeRef}");'</#if>>Check Out</td>
+               <td class="docAction docActionCheckout" <#if node.hasPermission("CheckOut")>onclick='event.cancelBubble=true;MyDocs.checkoutItem("${msg("portlets.checkout.working_copy_for_the_checked_out", node.name)}", "${node.nodeRef}");'</#if>>${msg("checkout")}</td>
 </#if>
 <#if node.isLocked>
-               <td class="docAction docActionEditDetails docActionLocked">Edit Details</td>
+               <td class="docAction docActionEditDetails docActionLocked">${msg("edit_details")}</td>
 <#else>
-               <td class="docAction docActionEditDetails" onclick="openWindowCallback('${url.context}/command/ui/editcontentprops?container=plain&amp;noderef=${node.nodeRef}', MyDocs.editDetailsCallback);">Edit Details</td>
+               <td class="docAction docActionEditDetails" onclick="openWindowCallback('${url.context}/command/ui/editcontentprops?container=plain&amp;noderef=${node.nodeRef}', MyDocs.editDetailsCallback);">${msg("edit_details")}</td>
 </#if>
             </tr>
             <tr>
 <#if node.isLocked>
-               <td class="docAction docActionUpdate docActionLocked">Update</td>
+               <td class="docAction docActionUpdate docActionLocked">${msg("update")}</td>
 <#else>
-               <td class="docAction docActionUpdate" onclick="event.cancelBubble=true;MyDocs.updateItem(this, '${node.nodeRef}');">Update</td>
+               <td class="docAction docActionUpdate" onclick="event.cancelBubble=true;MyDocs.updateItem(this, '${node.nodeRef}');">${msg("update")}</td>
 </#if>
-               <td class="docAction docActionViewContent" onclick="window.open('${url.context}${node.downloadUrl}', '_blank');">Download</td>
+               <td class="docAction docActionViewContent" onclick="window.open('${url.context}${node.downloadUrl}', '_blank');">${msg("download")}</td>
             </tr>
             <tr>
 <#if node.isLocked>
-               <td class="docAction docActionDelete docActionLocked">Delete</td>
+               <td class="docAction docActionDelete docActionLocked">${msg("delete")}</td>
 <#else>
-               <td class="docAction docActionDelete" <#if node.hasPermission("Delete")>onclick='event.cancelBubble=true;MyDocs.deleteItem("${node.name}", "${node.nodeRef}");'</#if>>Delete</td>
+               <td class="docAction docActionDelete" <#if node.hasPermission("Delete")>onclick='event.cancelBubble=true;MyDocs.deleteItem("${node.name}", "${node.nodeRef}");'</#if>>${msg("delete")}</td>
 </#if>
-               <td class="docAction docActionMoreActions" onclick="window.open('${url.context}${navurl}', '_blank');">More Actions...</td>
+               <td class="docAction docActionMoreActions" onclick="window.open('${url.context}${navurl}', '_blank');">${msg("more_actions")}...</td>
             </tr>
          </table>
       </td>

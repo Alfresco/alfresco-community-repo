@@ -45,7 +45,7 @@ var MyDocs = {
                failure: function(response)
                {
                   // display the error
-                  $('docPanel').setHTML("Sorry, data currently unavailable.");
+                  $('docPanel').setHTML($('displayTheError').innerHTML);
                   
                   // hide the ajax wait panel and show the main doc panel
                   $('docPanelOverlayAjax').setStyle('display', 'none');
@@ -286,7 +286,7 @@ var MyDocs = {
                         },
                         failure: function(response)
                         {
-                           resource.innerHTML = "Sorry, preview currently unavailable.";
+                           resource.innerHTML = $('previewCurrentlyUnavailable').innerHTML;
                         },
                         argument: [resource]
                      }, 
@@ -534,7 +534,7 @@ var MyDocs = {
                if (response.responseText.indexOf("OK:") == 0)
                {
                   MyDocs.refreshList();
-                  MyDocs.displayMessage("A working copy for the checked out item 'Working Copy of " + name + "' has been created.");
+                  MyDocs.displayMessage(name);
                }
                else
                {
@@ -569,7 +569,7 @@ var MyDocs = {
                if (response.responseText.indexOf("OK:") == 0)
                {
                   MyDocs.refreshList();
-                  MyDocs.displayMessage("Item 'Working Copy of " + name + "' has been checked in.");
+                  MyDocs.displayMessage(name);
                }
                else
                {

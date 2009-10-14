@@ -60,7 +60,7 @@ var MySpaces = {
                failure: function(response)
                {
                   // display the error
-                  $('spacePanel').setHTML("Sorry, data currently unavailable.");
+                  $('spacePanel').setHTML($('displayTheError').innerHTML);
                   
                   // hide the ajax wait panel and show the main spaces panel
                   $('spacePanelOverlayAjax').setStyle('display', 'none');
@@ -302,7 +302,7 @@ var MySpaces = {
                         },
                         failure: function(response)
                         {
-                           resource.innerHTML = "Sorry, preview currently unavailable.";
+                           resource.innerHTML = $('previewCurrentlyUnavailable').innerHTML;
                         },
                         argument: [resource]
                      }, 
@@ -712,7 +712,7 @@ var MySpaces = {
                if (response.responseText.indexOf("OK:") == 0)
                {
                   MySpaces.refreshList();
-                  MySpaces.displayMessage("A working copy for the checked out item 'Working Copy of " + name + "' has been created.");
+                  MySpaces.displayMessage(name);
                }
                else
                {
@@ -747,7 +747,7 @@ var MySpaces = {
                if (response.responseText.indexOf("OK:") == 0)
                {
                   MySpaces.refreshList();
-                  MySpaces.displayMessage("Item 'Working Copy of " + name + "' has been checked in.");
+                  MySpaces.displayMessage(name);
                }
                else
                {

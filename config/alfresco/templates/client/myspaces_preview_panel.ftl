@@ -22,7 +22,7 @@
    	               </#if>
    	            </#list>
    	         <#else>
-                  <div style="padding:2px" class="spacesNoItems">No items to display</div>
+                  <div style="padding:2px" class="spacesNoItems">${msg("no_items")}</div>
                </#if>
       	   </#if>
          </div>
@@ -34,41 +34,41 @@
 <#if node.isDocument>
             <tr>
    <#if node.isLocked>
-               <td class="spaceAction docActionCheckout docActionLocked">(Locked)</td>
+               <td class="spaceAction docActionCheckout docActionLocked">(${msg("locked")})</td>
    <#elseif hasAspect(node, "cm:workingcopy") == 1>
-               <td class="spaceAction docActionCheckin" <#if node.hasPermission("CheckIn")>onclick='event.cancelBubble=true;MySpaces.checkinItem("${node.name}", "${node.nodeRef}");'</#if>>Check In</td>
+               <td class="spaceAction docActionCheckin" <#if node.hasPermission("CheckIn")>onclick='event.cancelBubble=true;MySpaces.checkinItem("${msg("portlets.checkin.item_working_copy_of_name_has_been_checked_in", node.name)}", "${node.nodeRef}");'</#if>>${msg("checkin")}</td>
    <#else>
-               <td class="spaceAction docActionCheckout" <#if node.hasPermission("CheckOut")>onclick='event.cancelBubble=true;MySpaces.checkoutItem("${node.name}", "${node.nodeRef}");'</#if>>Check Out</td>
+               <td class="spaceAction docActionCheckout" <#if node.hasPermission("CheckOut")>onclick='event.cancelBubble=true;MySpaces.checkoutItem("${msg("portlets.checkout.working_copy_for_the_checked_out", node.name)}", "${node.nodeRef}");'</#if>>${msg("checkout")}</td>
    </#if>
    <#if node.isLocked>
-               <td class="spaceAction docActionEditDetails docActionLocked">Edit Details</td>
+               <td class="spaceAction docActionEditDetails docActionLocked">${msg("edit_details")}</td>
    <#else>
-               <td class="spaceAction docActionEditDetails" onclick="openWindowCallback('${url.context}/command/ui/editcontentprops?container=plain&amp;noderef=${node.nodeRef}', MySpaces.editDetailsCallback);">Edit Details</td>
+               <td class="spaceAction docActionEditDetails" onclick="openWindowCallback('${url.context}/command/ui/editcontentprops?container=plain&amp;noderef=${node.nodeRef}', MySpaces.editDetailsCallback);">${msg("edit_details")}</td>
    </#if>
             </tr>
             <tr>
    <#if node.isLocked>
-               <td class="spaceAction docActionUpdate docActionLocked">Update</td>
+               <td class="spaceAction docActionUpdate docActionLocked">${msg("update")}</td>
    <#else>
-               <td class="spaceAction docActionUpdate" onclick="event.cancelBubble=true;MySpaces.updateItem(this, '${node.nodeRef}');">Update</td>
+               <td class="spaceAction docActionUpdate" onclick="event.cancelBubble=true;MySpaces.updateItem(this, '${node.nodeRef}');">${msg("update")}</td>
    </#if>
-               <td class="spaceAction docActionViewContent" onclick="window.open('${url.context}${node.downloadUrl}', '_blank');">View Content</td>
+               <td class="spaceAction docActionViewContent" onclick="window.open('${url.context}${node.downloadUrl}', '_blank');">${msg("view_content")}</td>
             </tr>
             <tr>
    <#if node.isLocked>
-               <td class="spaceAction docActionDelete docActionLocked">Delete</td>
+               <td class="spaceAction docActionDelete docActionLocked">${msg("delete")}</td>
    <#else>
-               <td class="spaceAction docActionDelete" <#if node.hasPermission("Delete")>onclick='event.cancelBubble=true;MySpaces.deleteItem("${node.name}", "${node.nodeRef}");'</#if>>Delete</td>
+               <td class="spaceAction docActionDelete" <#if node.hasPermission("Delete")>onclick='event.cancelBubble=true;MySpaces.deleteItem("${node.name}", "${node.nodeRef}");'</#if>>${msg("delete")}</td>
    </#if>
-               <td class="spaceAction docActionMoreActions" onclick="window.open('${url.context}${navurl}', '_blank');">More Actions...</td>
+               <td class="spaceAction docActionMoreActions" onclick="window.open('${url.context}${navurl}', '_blank');">${msg("more_actions")}...</td>
             </tr>
 <#else>
             <tr>
-               <td class="spaceAction docActionEditDetails" onclick="window.open('${url.context}/command/ui/editcontentprops?container=plain&amp;noderef=${node.nodeRef}', '_blank');">Edit Details</td>
-               <td class="spaceAction spaceActionDelete" <#if node.hasPermission("Delete")>onclick='event.cancelBubble=true;MySpaces.deleteItem("${node.name}", "${node.nodeRef}");'</#if>>Delete</td>
+               <td class="spaceAction docActionEditDetails" onclick="window.open('${url.context}/command/ui/editcontentprops?container=plain&amp;noderef=${node.nodeRef}', '_blank');">${msg("edit_details")}</td>
+               <td class="spaceAction spaceActionDelete" <#if node.hasPermission("Delete")>onclick='event.cancelBubble=true;MySpaces.deleteItem("${node.name}", "${node.nodeRef}");'</#if>>${msg("delete")}</td>
             </tr>
             <tr>
-               <td class="spaceAction docActionMoreActions" onclick="window.open('${url.context}${navurl}', '_blank');">More Actions...</td>
+               <td class="spaceAction docActionMoreActions" onclick="window.open('${url.context}${navurl}', '_blank');">${msg("more_actions")}...</td>
                <td></td>
             </tr>
 </#if>

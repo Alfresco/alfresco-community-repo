@@ -33,6 +33,7 @@ import java.util.Map;
 import javax.faces.context.FacesContext;
 import javax.faces.context.ResponseWriter;
 
+import org.alfresco.repo.template.I18NMessageMethod;
 import org.alfresco.repo.template.Workflow;
 import org.alfresco.repo.web.scripts.FileTypeImageUtils;
 import org.alfresco.service.cmr.repository.FileTypeImageSize;
@@ -143,6 +144,7 @@ public class TaskInfoBean implements Serializable
       
       // create template api methods and objects
       model.put("date", new Date());
+      model.put("msg", new I18NMessageMethod());
       model.put("url", new BaseTemplateContentServlet.URLHelper(context));
       model.put("task", new Workflow.WorkflowTaskItem(
             Repository.getServiceRegistry(context),

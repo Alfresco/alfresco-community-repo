@@ -16,6 +16,6 @@
          </tr>
       </#list>
    <#else>
-      <tr><td><span class="resourceLink">No task resources</span></td></tr>
+      <tr><td><span class="resourceLink">${msg("task_resource_panel.no_task_resources")}</span></td></tr>
    </#if>
 </table>

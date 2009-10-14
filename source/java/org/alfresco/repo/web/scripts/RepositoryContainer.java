@@ -243,11 +243,12 @@ public class RepositoryContainer extends AbstractRuntimeContainer implements Ten
         WebScript script = scriptReq.getServiceMatch().getWebScript();
         Description desc = script.getDescription();
         
-        // Escalate the webscript declared level of authentication to the container required authentication (must be
-        // guest if MT is enabled)
+        // Escalate the webscript declared level of authentication to the container required authentication
+        // eg. must be guest if MT is enabled unless credentials are empty
         RequiredAuthentication required = desc.getRequiredAuthentication();
         RequiredAuthentication containerRequiredAuthentication = getRequiredAuthentication();
-        if (required.compareTo(containerRequiredAuthentication) < 0)
+        
+        if ((required.compareTo(containerRequiredAuthentication) < 0) && (! auth.emptyCredentials()))
         {
             required = containerRequiredAuthentication;
         }
@@ -255,9 +256,9 @@ public class RepositoryContainer extends AbstractRuntimeContainer implements Ten
         
         if (required == RequiredAuthentication.none)
         {
-                // TODO revisit - cleared here, in-lieu of WebClient clear
+            // TODO revisit - cleared here, in-lieu of WebClient clear
             AuthenticationUtil.clearCurrentSecurityContext();
-
+            
             transactionedExecuteAs(script, scriptReq, scriptRes);
         }
         else if ((required == RequiredAuthentication.user || required == RequiredAuthentication.admin) && isGuest)
@@ -312,7 +313,7 @@ public class RepositoryContainer extends AbstractRuntimeContainer implements Ten
                 if (logger.isDebugEnabled())
                 {
                     String user = AuthenticationUtil.getFullyAuthenticatedUser();
-                    logger.debug("Authentication reset: " + (user == null ? "unauthenticated" : "authenticated as " + user));                
+                    logger.debug("Authentication reset: " + (user == null ? "unauthenticated" : "authenticated as " + user));
                 }
             }
         }
@@ -457,15 +458,6 @@ public class RepositoryContainer extends AbstractRuntimeContainer implements Ten
     @Override
     public Registry getRegistry()
     {
-        if (AuthenticationUtil.isMtEnabled())
-        {
-            String user = AuthenticationUtil.getRunAsUser();
-            if (user == null)
-            {
-                throw new RuntimeException("Failed to getRegistry: need to pre-authenticate in MT environment");
-            }
-        }
-        
         String tenantDomain = tenantAdminService.getCurrentUserDomain();
         Registry registry = webScriptsRegistryCache.get(tenantDomain);
         if (registry == null)

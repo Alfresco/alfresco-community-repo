@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -81,6 +81,9 @@ public class BasicHttpAuthenticatorFactory implements ServletAuthenticatorFactor
         private WebScriptServletRequest servletReq;
         private WebScriptServletResponse servletRes;
         
+        private String authorization;
+        private String ticket;
+        
         /**
          * Construct
          * 
@@ -92,6 +95,11 @@ public class BasicHttpAuthenticatorFactory implements ServletAuthenticatorFactor
         {
             this.servletReq = req;
             this.servletRes = res;
+            
+            HttpServletRequest httpReq = servletReq.getHttpServletRequest();
+            
+            this.authorization = httpReq.getHeader("Authorization");
+            this.ticket = httpReq.getParameter("alf_ticket");
         }
     
         /* (non-Javadoc)
@@ -105,10 +113,7 @@ public class BasicHttpAuthenticatorFactory implements ServletAuthenticatorFactor
             // validate credentials
             // 
             
-            HttpServletRequest req = servletReq.getHttpServletRequest();
             HttpServletResponse res = servletRes.getHttpServletResponse();
-            String authorization = req.getHeader("Authorization");
-            String ticket = req.getParameter("alf_ticket");
             
             if (logger.isDebugEnabled())
             {
@@ -197,6 +202,14 @@ public class BasicHttpAuthenticatorFactory implements ServletAuthenticatorFactor
                 res.setHeader("WWW-Authenticate", "Basic realm=\"Alfresco\"");
             }
             return authorized;
+        }
+        
+        /* (non-Javadoc)
+         * @see org.alfresco.web.scripts.Authenticator#emptyCredentials()
+         */
+        public boolean emptyCredentials()
+        {
+            return ((ticket == null || ticket.length() == 0) && (authorization == null || authorization.length() == 0));
         }
     }
 

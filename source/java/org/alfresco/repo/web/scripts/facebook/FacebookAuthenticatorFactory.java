@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -82,6 +82,9 @@ public class FacebookAuthenticatorFactory implements ServletAuthenticatorFactory
         private FacebookServletRequest fbReq;
         private WebScriptServletResponse fbRes;
         
+        private String sessionKey;
+        private String user;
+        
         /**
          * Construct
          * 
@@ -93,6 +96,9 @@ public class FacebookAuthenticatorFactory implements ServletAuthenticatorFactory
         {
             this.fbReq = req;
             this.fbRes = res;
+            
+            this.sessionKey = fbReq.getSessionKey();
+            this.user = fbReq.getUserId();
         }
         
         /* (non-Javadoc)
@@ -100,16 +106,13 @@ public class FacebookAuthenticatorFactory implements ServletAuthenticatorFactory
          */
         public boolean authenticate(RequiredAuthentication required, boolean isGuest)
         {
-    	    String sessionKey = fbReq.getSessionKey();
-    	    String user = fbReq.getUserId();
-    
     	    if (logger.isDebugEnabled())
     	    {
     	    	logger.debug("fb_sig_session_key = '" + sessionKey + "'");
     	    	logger.debug("fb_sig_user = '" + user + "'");
     	    }
     	    
-            if ((sessionKey == null || sessionKey.length() == 0) || (user == null || user.length() == 0))
+            if (emptyCredentials())
             {
             	// session has not been established, redirect to login
             	
@@ -144,6 +147,14 @@ public class FacebookAuthenticatorFactory implements ServletAuthenticatorFactory
         	// session has been established, authenticate as Facebook user id
             AuthenticationUtil.setFullyAuthenticatedUser(user);
         	return true;
+        }
+        
+        /* (non-Javadoc)
+         * @see org.alfresco.web.scripts.Authenticator#emptyCredentials()
+         */
+        public boolean emptyCredentials()
+        {
+            return ((sessionKey == null || sessionKey.length() == 0) || (user == null || user.length() == 0));
         }
     }
 

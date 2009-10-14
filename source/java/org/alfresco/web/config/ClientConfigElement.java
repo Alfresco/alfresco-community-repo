@@ -88,6 +88,7 @@ public class ClientConfigElement extends ConfigElementAdapter
    private boolean userGroupAdmin = true;
    private boolean allowUserConfig = true;
    private int pickerSearchMinimum = 2;
+   private boolean checkContextAgainstPath = false;
    
    
    /**
@@ -313,7 +314,12 @@ public class ClientConfigElement extends ConfigElementAdapter
       {
          combinedElement.setPickerSearchMinimum(newElement.getPickerSearchMinimum());
       }
-      
+
+      if (newElement.getCheckContextAgainstPath() != combinedElement.getCheckContextAgainstPath())
+      {
+         combinedElement.setCheckContextAgainstPath(newElement.getCheckContextAgainstPath());
+      }
+
       return combinedElement;
    }
    
@@ -874,5 +880,21 @@ public class ClientConfigElement extends ConfigElementAdapter
    /*package*/ void setPickerSearchMinimum(int searchMinimum)
    {
       this.pickerSearchMinimum = searchMinimum;
+   }
+   
+   /**
+    * @return true if the context path should be checked against the path in the current URL
+    */
+   public boolean getCheckContextAgainstPath()
+   {
+      return this.checkContextAgainstPath;
+   }
+
+   /**
+    * @param checkContextAgainstPath true to check the context path against the path in the current URL
+    */
+   /*package*/ void setCheckContextAgainstPath(boolean checkContextAgainstPath)
+   {
+      this.checkContextAgainstPath = checkContextAgainstPath;
    }
 }

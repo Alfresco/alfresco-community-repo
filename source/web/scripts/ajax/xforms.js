@@ -531,7 +531,9 @@ alfresco.xforms.FilePicker = alfresco.xforms.Widget.extend({
     this._selectableTypes = "selectable_types" in params ? params["selectable_types"].split(",") : null;
     this._filterMimetypes = "filter_mimetypes" in params ? params["filter_mimetypes"].split(",") : [];
     this._folderRestriction = "folder_restriction" in params ? params["folder_restriction"] : null;
-    this._configSearchName = "config_search_name" in params ? params["config_search_name"] : null;  },
+    this._configSearchName = "config_search_name" in params ? params["config_search_name"] : null;
+    this._layout = "layout" in params ? params["layout"] : null;
+  },
 
   /////////////////////////////////////////////////////////////////
   // overridden methods
@@ -542,6 +544,23 @@ alfresco.xforms.FilePicker = alfresco.xforms.Widget.extend({
     this.domNode.addClass("xformsFilePicker");
     attach_point.appendChild(this.domNode);
     //XXXarielb support readonly and disabled
+    
+    if (this._layout == "table")
+    {
+    	this.widget = new alfresco.FilePickerWidgetTableLayout(this.id,
+                                                    this.domNode, 
+                                                    this.getInitialValue(), 
+                                                    false,
+                                                    this._filePicker_changeHandler.bindAsEventListener(this),
+                                                    null /* cancel is ignored */,
+                                                    this._filePicker_resizeHandler.bindAsEventListener(this),
+                                                    this._selectableTypes,
+                                                    this._filterMimetypes,
+                                                    this._folderRestriction,
+                                                    this._configSearchName);
+    }
+    else
+    {
     this.widget = new alfresco.FilePickerWidget(this.id,
                                                 this.domNode, 
                                                 this.getInitialValue(), 
@@ -553,6 +572,7 @@ alfresco.xforms.FilePicker = alfresco.xforms.Widget.extend({
                                                 this._filterMimetypes,
                                                 this._folderRestriction,
                                                 this._configSearchName);
+    }
     this.widget.render();
   },
 
@@ -633,7 +653,14 @@ alfresco.xforms.TextField = alfresco.xforms.Widget.extend({
       var borderWidth = (this.widget.offsetWidth - this.widget.clientWidth);
       var marginRight = 2;
       this.widget.style.marginRight = marginRight + "px";
+      if (attach_point.offsetWidth == 0)
+      {
+    	  this.widget.style.width = "100%";
+      }
+      else
+      {
       this.widget.style.width = (((attach_point.offsetWidth - borderWidth - marginRight) / attach_point.offsetWidth) * 100) + "%";
+      }
       this.widget.style.minWidth = "50px";
     }
 
@@ -2698,10 +2725,13 @@ alfresco.xforms.VGroup = alfresco.xforms.AbstractGroup.extend({
                              ? "0px" 
                              : "30%");
 
-    contentDiv.style.width = (child instanceof alfresco.xforms.AbstractGroup
-                              ? "100%"
-                              : (1 - (contentDiv.offsetLeft / 
-                                      child.domContainer.offsetWidth)) * 100 + "%");
+    var contentDivWidth = "100%";
+    // the following does avoid devision by zero ... in contentDiv.offsetLeft / child.domContainer.offsetWidth
+    if (!(child instanceof alfresco.xforms.AbstractGroup) && child.domContainer.offsetWidth != 0)
+    {
+    	contentDivWidth = ((1 - (contentDiv.offsetLeft / child.domContainer.offsetWidth)) * 100) + "%";
+    }
+    contentDiv.style.width = contentDivWidth;
     child.render(contentDiv);
     if (!(child instanceof alfresco.xforms.AbstractGroup))
     {
@@ -2813,19 +2843,16 @@ alfresco.xforms.VGroup = alfresco.xforms.AbstractGroup.extend({
 
   _updateDisplay: function(recursively)
   {
+	this.domNode.style.width = "100%";
+	if (!window.ie)
+	{
     if (this._isIndented())
     {
       this.domNode.style.marginLeft = 10 + "px";
       this.domNode.style.marginRight = 5 + "px";
-      // XXXarielb can this be moved to render or insertChild?
+	      
       this.domNode.style.width = (((this.domNode.offsetWidth - 15) / this.domNode.offsetWidth) * 100) + "%";
     }
-    if (window.ie)
-    {
-      this.domNode.style.width = "100%";
-    }
-    else
-    {
 //      var x = ((this.domNode.offsetWidth - this.domNode.clientWidth) + 
 //               this.domNode.getStyle("margin-left").toFloat() + 
 //               this.domNode.getStyle("margin-right").toFloat());
@@ -2848,10 +2875,17 @@ alfresco.xforms.VGroup = alfresco.xforms.AbstractGroup.extend({
       contentDiv.style.left = (this._children[i] instanceof alfresco.xforms.AbstractGroup
                                ? "0px"
                                : "30%");
+      if (this._children[i].domContainer.parentNode.offsetWidth != 0)
+      {
       contentDiv.style.width = (this._children[i] instanceof alfresco.xforms.AbstractGroup
                                 ? "100%"
                                 : (1 - (contentDiv.offsetLeft / 
                                         this._children[i].domContainer.parentNode.offsetWidth)) * 100 + "%");
+      }
+      else
+      {
+    	  contentDiv.style.width = "100%";
+      }
 
       if (recursively)
       {
@@ -3511,7 +3545,7 @@ alfresco.xforms.Repeat = alfresco.xforms.VGroup.extend({
     this._groupHeaderNode.repeat = this;
     this._groupHeaderNode.onclick = function(event)
       {
-        if (event.target == event.currentTarget)
+        if ((typeof(event) != 'undefined') && (typeof(event.target) != 'undefined') && (event.target == event.currentTarget))
         {
           event.currentTarget.repeat.setFocusedChild(null);
         }

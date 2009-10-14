@@ -41,6 +41,7 @@ import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 
 import org.alfresco.repo.avm.AVMNodeConverter;
+import org.alfresco.util.Pair;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.servlet.FacesHelper;
 import org.alfresco.web.bean.NavigationBean;
@@ -52,6 +53,7 @@ import org.alfresco.web.forms.FormProcessor;
 import org.alfresco.web.forms.XMLUtil;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.xerces.xs.XSModel;
 import org.chiba.xml.events.ChibaEventNames;
 import org.chiba.xml.events.DOMEventNames;
 import org.chiba.xml.events.XFormsEventNames;
@@ -226,7 +228,8 @@ public class XFormsBean implements Serializable
       
       final ChibaBean chibaBean = new ChibaBean();
       chibaBean.setConfig(servletContext.getRealPath("/WEB-INF/chiba.xml"));
-      chibaBean.setXMLContainer(this.getXFormsDocument());
+      Pair<Document, XSModel> chibaPair = this.getXFormsDocument();
+      chibaBean.setXMLContainer(chibaPair.getFirst(), chibaPair.getSecond());
 
       final EventTarget et = (EventTarget)
          chibaBean.getXMLContainer().getDocumentElement();
@@ -726,7 +729,7 @@ public class XFormsBean implements Serializable
 //      }
 //   }
    
-   private Document getXFormsDocument()
+   private Pair<Document, XSModel> getXFormsDocument()
       throws FormBuilderException
    {
       String path = null;
@@ -756,14 +759,14 @@ public class XFormsBean implements Serializable
          final Document schemaDocument = this.xformsSession.form.getSchema();
          XFormsBean.rewriteInlineURIs(schemaDocument, path);
          final String rootElementName = this.xformsSession.form.getSchemaRootElementName();
-         final Document result = 
+         final Pair<Document, XSModel> result = 
             this.xformsSession.schema2XForms.buildXForm(this.xformsSession.formInstanceData, 
                                                         schemaDocument,
                                                         rootElementName,
                                                         resourceBundle);
          if (LOGGER.isDebugEnabled())
          {
-            LOGGER.debug("generated xform: " + XMLUtil.toString(result));
+            LOGGER.debug("generated xform: " + XMLUtil.toString(result.getFirst()));
          }
          return result;
       }

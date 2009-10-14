@@ -32,6 +32,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import javax.xml.transform.*;
 import org.alfresco.service.namespace.NamespaceService;
+import org.alfresco.util.Pair;
 import org.alfresco.web.forms.XMLUtil;
 import org.apache.commons.jxpath.JXPathContext;
 import org.apache.commons.jxpath.Pointer;
@@ -139,7 +140,7 @@ public class Schema2XForms implements Serializable
     * @throws org.chiba.tools.schemabuilder.FormBuilderException
     *          If an error occurs building the XForm.
     */
-   public Document buildXForm(final Document instanceDocument,
+   public Pair<Document, XSModel> buildXForm(final Document instanceDocument,
                               final Document schemaDocument,
                               String rootElementName,
                               final ResourceBundle resourceBundle)
@@ -160,11 +161,25 @@ public class Schema2XForms implements Serializable
          xformsDocument.getDocumentElement().getElementsByTagNameNS(NamespaceConstants.XFORMS_NS,
                                                                     "model").item(0);
 
-      //add XMLSchema if we use schema types
-      modelSection.setAttributeNS(NamespaceConstants.XFORMS_NS, "schema", "#schema-1");
+      //add XMLSchema if we use schema types      
       final Element importedSchemaDocumentElement = (Element)
          xformsDocument.importNode(schemaDocument.getDocumentElement(), true);
       importedSchemaDocumentElement.setAttributeNS(null, "id", "schema-1");
+
+      NodeList nl = importedSchemaDocumentElement.getChildNodes();
+      
+      for (int i = 0; i < nl.getLength(); i++)
+      {
+          Node current = nl.item(i);
+          if (current.getNamespaceURI() != null && current.getNamespaceURI().equals(NamespaceConstants.XMLSCHEMA_NS))
+          {
+              String localName = current.getLocalName();
+              if (localName.equals("include") || localName.equals("import"))
+              {
+                  importedSchemaDocumentElement.removeChild(current);
+              }
+          }
+      }
 
       modelSection.appendChild(importedSchemaDocumentElement);
 
@@ -312,7 +327,7 @@ public class Schema2XForms implements Serializable
       xformsDocument.getDocumentElement().insertBefore(comment,
                                                        xformsDocument.getDocumentElement().getFirstChild());
       xformsDocument.normalizeDocument();
-      return xformsDocument;
+      return new Pair<Document, XSModel>(xformsDocument, schema);
    }
 
    /**

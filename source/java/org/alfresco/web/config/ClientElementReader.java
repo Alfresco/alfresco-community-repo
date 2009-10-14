@@ -72,6 +72,7 @@ public class ClientElementReader implements ConfigElementReader
    public static final String ELEMENT_USERGROUPADMIN = "user-group-admin";
    public static final String ELEMENT_ALLOWUSERCONFIG = "allow-user-config";
    public static final String ELEMENT_PICKERSEARCHMINIMUM = "picker-search-minimum";
+   public static final String ELEMENT_CHECKCONTEXTPATH = "check-context-against-path";
    
    
    /**
@@ -322,6 +323,14 @@ public class ClientElementReader implements ConfigElementReader
          if (pickerSearchMin != null)
          {
             configElement.setPickerSearchMinimum(Integer.parseInt(pickerSearchMin.getTextTrim()));
+         }
+         
+         // determine whether the JavaScript setContextPath method should
+         // check the path of the current URL
+         Element checkContextAgainstPath = element.element(ELEMENT_CHECKCONTEXTPATH);
+         if (checkContextAgainstPath != null)
+         {
+            configElement.setCheckContextAgainstPath(Boolean.parseBoolean(checkContextAgainstPath.getTextTrim()));
          }
       }
       

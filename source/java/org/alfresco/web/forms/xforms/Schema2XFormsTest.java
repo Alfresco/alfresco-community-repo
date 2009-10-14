@@ -668,7 +668,7 @@ public class Schema2XFormsTest
                                 {
                                    return new Vector<String>().elements();
                                 }
-                             });
+                             }).getFirst();
    }
 
    private static SchemaUtil.Occurrence occuranceFromBind(final Element bindElement)

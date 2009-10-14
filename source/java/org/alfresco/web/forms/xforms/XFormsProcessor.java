@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
+import java.util.StringTokenizer;
 import java.util.TreeSet;
 
 import javax.faces.context.FacesContext;
@@ -296,6 +297,26 @@ public class XFormsProcessor implements FormProcessor
          e.setAttribute("src", contextPath + script);
          e.appendChild(result.createTextNode("\n"));
          div.appendChild(e);
+      }
+      
+      // output any custom scripts
+      ConfigElement config = Application.getConfigService(fc).getGlobalConfig().getConfigElement("wcm");
+      if (config != null)
+      {
+         // get the custom scripts to include
+         ConfigElement xformsScriptsConfig = config.getChild("xforms-scripts");
+         if (xformsScriptsConfig != null)
+         {
+            StringTokenizer t = new StringTokenizer(xformsScriptsConfig.getValue().trim(), ", ");
+            while (t.hasMoreTokens())
+            {
+               e = result.createElement("script");
+               e.setAttribute("type", "text/javascript");
+               e.setAttribute("src", contextPath + t.nextToken());
+               e.appendChild(result.createTextNode("\n"));
+               div.appendChild(e);
+            }
+         }
       }
  
       XMLUtil.print(result, out);

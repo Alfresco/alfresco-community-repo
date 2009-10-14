@@ -10,6 +10,7 @@ if (typeof Alfresco == "undefined")
    var Alfresco = {};
 }
 
+var _checkContextAgainstPath = false;
 var _alfContextPath = null;
 
 
@@ -82,19 +83,35 @@ function handleErrorYahoo(e)
 }
 
 /**
+ * Determines whether the setContextPath method below should
+ * check the provided context path against the URLs path
+ */
+function setCheckContextAgainstPath(checkContextAgainstPath)
+{
+   _checkContextAgainstPath = checkContextAgainstPath;
+}
+
+/**
  * Sets the context path to use, useful for portals where 
  * the URL can be different from the app's context path.
  */
 function setContextPath(contextPath)
 {
-   if (window.location.pathname.indexOf(contextPath) == 0 ) 
-   { 
-      _alfContextPath = contextPath; 
-   } 
-   else 
-   { 
-      _alfContextPath = ""; 
-   } 
+   if (_checkContextAgainstPath)
+   {
+      if (window.location.pathname.indexOf(contextPath) == 0 ) 
+      { 
+         _alfContextPath = contextPath; 
+      } 
+      else 
+      { 
+         _alfContextPath = ""; 
+      }
+   }
+   else
+   {
+      _alfContextPath = contextPath;
+   }
 }
 
 /**

@@ -19,6 +19,7 @@
          <element-reader element-name="wizards" class="org.alfresco.web.config.WizardsElementReader"/>
          <element-reader element-name="dashboards" class="org.alfresco.web.config.DashboardsElementReader"/>
          <element-reader element-name="sidebar" class="org.alfresco.web.config.SidebarElementReader"/>
+         <element-reader element-name="wcm" class="org.alfresco.web.config.WCMElementReader" />
       </element-readers>
    </plug-ins>
    
@@ -117,6 +118,13 @@
          
          <!-- the minimum number of characters required for a valid search in the pickers -->
          <picker-search-minimum>2</picker-search-minimum>
+	      
+	      <!-- Controls the behaviour of the JavaScript setContextPath method. -->
+	      <!-- Default behaviour is to use the result of ServletContext.getContextPath() -->
+	      <!-- In some scenarios (ETWOONE-218) this is not correct and a check -->
+	      <!-- against the current URL path is required. -->
+	      <!-- Set this flag to true to enable the check. -->
+	      <check-context-against-path>false</check-context-against-path>
       </client>
    </config>
 

@@ -80,6 +80,7 @@
            <widget xforms-type="xf:upload" 
                    javascript-class-name="alfresco.xforms.FilePicker">
              <param name="selectable_types">wcm:avmcontent,wcm:avmfolder</param>
+             <param name="layout">table</param>
            </widget>
            <widget xforms-type="xf:upload" 
                    appearance="folder_restricted_file_picker"

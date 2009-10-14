@@ -15,15 +15,27 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
+
 ////////////////////////////////////////////////////////////////////////////////
-// FilePickerWidget
+// FilePickerWidget extends Class (mootools)
 //
 // This script communicates with the XFormBean to manage a file picker widget
 // for selecting and uploading files in the avm.
 //
-// This script requires dojo.js, ajax_helper.js and upload_helper.js to be
+// This script requires dojo.js, ajax_helper.js and upload_helper.js and mootools.1.11.js to be
 // loaded in advance.
 ////////////////////////////////////////////////////////////////////////////////
+
+////////////////////////////////////////////////////////////////////////////////
+// FilePickerWidgetTableLayout extends FilePickerWidget
+//
+// See comments to ETHREEOH-2728 in the code. Also, some css tricks and new selectors
+// were added into xforms.css.
+//
+// The methods _openParentPathMenu, _showStatus, _hideStatus, _showAddContent should be
+// overridden using mootools if necessary.
+////////////////////////////////////////////////////////////////////////////////
+
 if (typeof alfresco == "undefined")
 {
   throw new Error("file_picker_widget requires alfresco be defined");
@@ -42,7 +54,8 @@ if (typeof alfresco.resources == "undefined")
 /**
  * The file picker widget.
  */
-alfresco.FilePickerWidget = function(uploadId, 
+alfresco.FilePickerWidget = new Class({
+	initialize: function(uploadId, 
                                      node, 
                                      value, 
                                      readonly, 
@@ -65,39 +78,7 @@ alfresco.FilePickerWidget = function(uploadId,
   this.filterMimetypes = filterMimetypes;
   this.folderRestriction = folderRestriction;
   this.configSearchName = configSearchName;
-}
-
-// static methods and properties
-
-alfresco.FilePickerWidget._uploads = [];
-alfresco.FilePickerWidget._handleUpload = function(id, fileInput, webappRelativePath, widget)
-{
-  alfresco.FilePickerWidget._uploads[id] = 
-  {
-    widget:widget, 
-    path: fileInput.value, 
-    webappRelativePath: webappRelativePath
-  };
-  handle_upload_helper(fileInput, 
-                       id,
-                       alfresco.FilePickerWidget._upload_completeHandler,
-                       alfresco.constants.WEBAPP_CONTEXT,
-                       "/ajax/invoke/FilePickerBean.uploadFile",
-                       { currentPath: webappRelativePath });
-}
-
-alfresco.FilePickerWidget._upload_completeHandler = function(id, path, fileName, fileTypeImage, error)
-{
-  var upload = alfresco.FilePickerWidget._uploads[id];
-  upload.widget._upload_completeHandler(fileName, 
-                                        upload.webappRelativePath,
-                                        fileTypeImage,
-                                        error);
-}
-
-// instance methods and properties
-
-alfresco.FilePickerWidget.prototype = {
+	},
 
 getValue: function()
 {
@@ -751,4 +732,435 @@ _openParentPathMenu: function(target, path)
   }
   this.node.appendChild(this.parentPathMenu);
 }
+});
+
+//static methods and properties
+
+alfresco.FilePickerWidget._uploads = [];
+alfresco.FilePickerWidget._handleUpload = function(id, fileInput, webappRelativePath, widget)
+{
+  alfresco.FilePickerWidget._uploads[id] = 
+  {
+    widget:widget, 
+    path: fileInput.value, 
+    webappRelativePath: webappRelativePath
 };
+  handle_upload_helper(fileInput, 
+                       id,
+                       alfresco.FilePickerWidget._upload_completeHandler,
+                       alfresco.constants.WEBAPP_CONTEXT,
+                       "/ajax/invoke/FilePickerBean.uploadFile",
+                       { currentPath: webappRelativePath });
+}
+
+alfresco.FilePickerWidget._upload_completeHandler = function(id, path, fileName, fileTypeImage, error)
+{
+  var upload = alfresco.FilePickerWidget._uploads[id];
+  upload.widget._upload_completeHandler(fileName, 
+                                        upload.webappRelativePath,
+                                        fileTypeImage,
+                                        error);
+}
+
+
+// ------------------------------------------------------------------------------------------------------------------------------
+/**
+ * The file picker widget with table layout and mootools rendering.
+ */
+
+
+alfresco.FilePickerWidgetTableLayout = alfresco.FilePickerWidget.extend({
+		
+destroy: function()
+{
+  $(this.node).remove();
+  this.node = null;
+},
+
+_showSelectedValue: function()
+{
+  if (this.node == null)
+  {
+    return;
+  }
+  var node = $(this.node);
+  node.empty();
+  this.statusDiv = null;
+  this.contentDiv = null;
+  this.addContentDiv = null;
+  // The FilePickerWidget wrapper div. It is neccessary for further manipulations which are realted to ETHREEOH-2728 issue.
+  this.wrapper = new Element("div", {"class":"xformsFilePickerWrapper"});
+  node.setStyles({"height":"20px", "line-height":"20px", "position":"relative", "white-space":"nowrap"});
+  // Inject the wrapper into this.node. We do this for further proper calculation of the sizes of controls
+  this.wrapper.inject(node);
+  this.resize_callback(this);
+  this.selectedPathInput = new Element("input",
+		  {
+	  		"type":"text",
+	  		"value": (this.value == null ? "" : this.value),
+	  		"styles": {"margin":"0"},
+	  		"events":
+	  		{
+	  			"blur": function(event)
+	  			{
+	        		var w = this.filePickerWidget;
+	        		if (typeof(w) != "undefined")
+	        		{
+	        			w.setValue(this.value);
+	        		}
+	  			}
+	  		}
+	  	  });
+  this.selectedPathInput.inject(this.wrapper);
+  this.selectedPathInput.filePickerWidget = this;
+
+  this._selectButton = new Element("input",
+		  {
+		"type":"button",
+		"value": (this.value == null 
+                ? alfresco.resources["select"] 
+                : alfresco.resources["change"]),
+        "disabled":this.readonly,
+        "styles":{"margin":"0 3px"},
+		"events":
+		{
+			"click": function(event)
+			{
+        		var w = this.filePickerWidget;
+        		if (typeof(w) != "undefined")
+        		{
+        			w._navigateToNode(w.getValue() || "");
+        		}
+			}
+		}
+	  });
+  this._selectButton.filePickerWidget = this;
+  this._selectButton.inject(this.wrapper);
+  var nodeSize = node.getSize();
+  var selectButtonSize = this._selectButton.getSize();
+  
+  var selectedPathInputWidth = "80%";
+  if (!window.ie6 && nodeSize.size.x != 0)
+  {
+	  selectedPathInputWidth = ((1 - (this._selectButton.getStyle("margin-left").toInt() + 
+		  							 this._selectButton.getStyle("margin-right").toInt() +
+		  							 selectButtonSize.size.x)/nodeSize.size.x)*100) +"%";
+	  
+  }
+  
+  this.selectedPathInput.style.width = selectedPathInputWidth;
+  //
+  // See comments in _showPicker method.
+  //
+  
+  if (window.ie6)
+  {
+	  var reload = function()
+	  {
+		  var grabbedWrapper = $(this.wrapper).remove();
+		  grabbedWrapper.inject(this.node);
+	  }
+	  reload.delay(1, this);
+  }
+},
+
+_showPicker: function(data)
+{
+  data = data.documentElement;
+  while (this.node.hasChildNodes() && this.node.lastChild != this.statusDiv)
+  {
+    this.node.removeChild(this.node.lastChild);
+  }
+
+  this.node.style.height = (200 + (this.statusDiv 
+                             ? (parseInt(this.statusDiv.style.height) +
+                                parseInt(this.statusDiv.style.marginTop) +
+                                parseInt(this.statusDiv.style.marginBottom))
+                             : 0) + "px");
+  this.resize_callback(this);
+  
+  var currentPath = data.getElementsByTagName("current-node")[0];
+  currentPath = currentPath.getAttribute("webappRelativePath");
+  var currentPathName = currentPath.replace(/.*\/([^/]+)/, "$1");
+  //The FilePickerWidget wrapper div. It is neccessary for further manipulations which are realted to ETHREEOH-2728 issue.
+  this.wrapper = new Element("div", {"class":"xformsFilePickerWrapper"});
+  var container = new Element("table",{"id":"picker-" + this.uploadId, "class":"xformsFilePickerTable"});
+  this.wrapper.inject(this.node);
+  container.inject(this.wrapper);
+  var tbody = new Element("tbody");
+  tbody.inject(container);
+  var headerTdLeft	= new Element("td", {"class":"headerTdLeft"});
+  var headerTdRight	= new Element("td", {"class":"headerTdRight"});
+  var contentTd		= new Element("td", {"class":"contentTd", "colspan":"2", "styles":{"vertical-align":"top"}});
+  var contentDiv	= new Element("div", {"class":"xformsFilePickerFileList"});
+  contentDiv.inject(contentTd);
+  var footerTd		= new Element("td", {"class":"footerTd", "colspan":"2", "styles":{"text-align":"center"}});
+  var headerTr = new Element("tr");
+  headerTdLeft.inject(headerTr);
+  headerTdRight.inject(headerTr);
+  headerTr.inject(tbody);
+  contentTd.inject(new Element("tr").inject(tbody));
+  footerTd.inject(new Element("tr").inject(tbody));
+  
+  headerTdLeft.appendText("In: ");
+  
+  this.headerMenuTriggerLink = new Element("a",
+		  {
+		  "styles":{"text-decoration":"none"},
+		  "href":"javascript:void(0)",
+		  "webappRelativePath":"currentPath",
+		  "class":"xformsFilePickerHeaderMenuTrigger",
+		  "events":{"mouseover": function(event){
+			   			this.style.backgroundColor = "#fefefe";
+		   				this.style.borderStyle = "inset";
+			 		},
+			 		"mouseout": function(event) {
+			 			var w = this.filePickerWidget;
+			 			if (!w.parentPathMenu)
+			 			{
+			 				this.style.backgroundColor = this.parentNode.style.backgroundColor;
+			 				this.style.borderStyle = "solid";
+			 			}
+			 		},
+			 		"click": function(event) {
+			 			var w = this.filePickerWidget;
+			 			if (w.parentPathMenu)
+			 			{
+			 				w._closeParentPathMenu();
+			 			}
+			 			else
+			 			{
+			 				w._openParentPathMenu(this, this.getAttribute("webappRelativePath"));
+			 			}
+			 		}
+		  }
+		  }
+  );
+  this.headerMenuTriggerLink.filePickerWidget = this;
+  this.headerMenuTriggerLink.inject(headerTdLeft);
+  this.headerMenuTriggerLink.appendText(currentPathName);
+  
+  var headerMenuTriggerImage = new Element("img",
+		  {
+	  		"src": alfresco.constants.WEBAPP_CONTEXT + "/images/icons/menu.gif",
+	  		"styles" : {"border":"0", "width:":"16px", "height":"16px", "margin":"0 0 0 4px", "z-index":"500", "vertical-align":"middle"}
+	  	  });
+  
+  headerMenuTriggerImage.inject(this.headerMenuTriggerLink);
+  var addContentLink = new Element("a",
+		  {
+	  		"webappRelativePath":currentPath,
+	  		"href":"javascript:void(0)",
+	  		"styles":{"text-decoration":"none"},
+	  		"events":{
+	  			"click":function(event){
+			                var w = this.filePickerWidget;
+			                if (w.addContentDiv)
+			                {
+			                  w._hideAddContent();
+			                }
+			                else
+			                {
+			                  w._showAddContent(this.getAttribute("webappRelativePath"));
+			                }
+	  					}
+	  		}
+		  });
+
+  addContentLink.inject(headerTdRight);
+  addContentLink.filePickerWidget = this;
+  
+  var addContentImage = new Element("img",
+		  {
+	  		"src":alfresco.constants.WEBAPP_CONTEXT + "/images/icons/add.gif",
+	  		"styles":{"border":"0", "width:":"16px", "height":"16px", "margin":"0 2px", "vertical-align":"middle"}
+	  	  });
+  
+  addContentImage.inject(addContentLink);
+  addContentLink.appendText(alfresco.resources["add_content"]);
+
+  var navigateToParentLink = new Element("a",
+		  {
+	  		"webappRelativePath" : currentPath,
+	  		"href":"javascript:void(0)",
+	  		"styles":{"text-decoration":"none"}
+		  });
+  
+  navigateToParentLink.inject(headerTdRight);
+  navigateToParentLink.filePickerWidget = this;
+  if (currentPathName != "/")
+  {
+	  navigateToParentLink.addEvent("click", 
+                       function(event)
+                       {
+                         var w = this.filePickerWidget;
+                         var parentPath = this.getAttribute("webappRelativePath");
+                         parentPath = (parentPath.lastIndexOf("/") == 0 ? "/" : parentPath.substring(0, parentPath.lastIndexOf("/")));
+                         w._navigateToNode(parentPath);
+                       });
+  }
+
+  var navigateToParentNodeImage = new Element("img",
+		  {
+	  		"src":alfresco.constants.WEBAPP_CONTEXT + "/images/icons/up.gif",
+	  		"styles":{"border":"0", "width:":"16px", "height":"16px", "margin":"0 2px", "vertical-align":"middle"}
+	  	  });
+  dojo.html.setOpacity(navigateToParentNodeImage, (currentPathName == "/" ? .3 : 1)); 
+  navigateToParentNodeImage.inject(navigateToParentLink);
+  navigateToParentLink.appendText(alfresco.resources["go_up"]);
+
+  this.contentDiv = contentDiv;
+  var footerDiv = footerTd;
+  var cancelButton = new Element("input",
+		  {
+	  		"type" : "button",
+	  		"value" : alfresco.resources["cancel"],
+	  		"events" : {
+	  			"click" : function(event)
+                {
+                    var w = this.filePickerWidget;
+                    w.cancel_callback(this);
+                    w._showSelectedValue();
+                }
+  			}
+		  }
+	  );
+  
+  cancelButton.filePickerWidget = this;
+  cancelButton.inject(footerDiv);
+  var contentDivHeight = (this.node.offsetHeight - (this.statusDiv ? this.statusDiv.offsetHeight : 0) - footerDiv.offsetHeight - headerTdLeft.offsetHeight - 10) + "px";
+  this.contentDiv.setStyle("height",contentDivHeight);
+  
+  var childNodes = data.getElementsByTagName("child-node");
+  for (var i = 0; i < childNodes.length; i++)
+  {
+    if (childNodes[i].nodeType != document.ELEMENT_NODE)
+    {
+      continue;
+    }
+    var webappRelativePath = childNodes[i].getAttribute("webappRelativePath");
+    var fileName = webappRelativePath.replace(/.*\/([^/]+)/, "$1");
+    var row = this._createRow(fileName,
+                              webappRelativePath,
+                              childNodes[i].getAttribute("type") == "directory",
+                              eval(childNodes[i].getAttribute("selectable")),
+                              childNodes[i].getAttribute("image"),
+                              "xformsRow" + (i % 2 ? "Even" : "Odd"));
+    row.inject(this.contentDiv);
+  }
+  if (data.getAttribute("error") && data.getAttribute("error").length != 0)
+  {
+    this._showStatus(data.getAttribute("error"), true);
+  }
+  //
+  // This trick does allow to rerender the FilePickerWidget with a delay of 1ms.
+  // It's user friendly behaviour, because it is not visibly for end user.
+  // IE6 dosn't render div content generated by JavaScript in some unknown circumstances.
+  // It occurs especially with mixed related, floated, absolute layouts. Presumably, it occurs
+  // when IE can't calculate some elements layout, untill all ememens are rendered.
+  // So,
+  // 1. We generate all elements as usual.
+  // 2. For IE we remove rendered element with its' children, and then inject him into the same place again, after some delay.
+  //    It allows to recalculate element layouts, after #1.
+  //
+  if (window.ie6)
+  {
+	  var reload = function()
+	  {
+		  var grabbedWrapper = $(this.wrapper).remove();
+		  grabbedWrapper.inject(this.node);
+	  }
+	  reload.delay(1, this);
+  }
+  
+},
+
+_createRow: function(fileName, webappRelativePath,  isDirectory, isSelectable, fileTypeImage, rowClass)
+{
+  var result = new Element("div",
+		  {
+	  		"id":fileName + "-row",
+	  		"webappRelativePath":webappRelativePath,
+	  		"class":"xformsFilePickerRow",
+	  		"events":
+	  		{
+	  			"mouseover" : function(event)
+	  			{
+	  				this.addClass("xformsRowHover");
+	  			},
+	  			"mouseout" : function(event)
+	  			{
+	  				this.removeClass("xformsRowHover");
+	  			}
+	  		}
+		  });
+  result.addClass(rowClass);
+  result.filePickerWidget = this;
+  var e = new Element("img",
+		  {
+	  		"src" : alfresco.constants.WEBAPP_CONTEXT + fileTypeImage,
+	  		"styles" : {"vertical-align":"middle", "margin":"0 4px"}
+		  });
+  e.inject(result);
+
+  if (isDirectory)
+  {
+	  
+    e = new Element("a",
+    		{
+    			"href":"javascript:void(0)",
+    			"styles":{"text-decoration":"none"},
+    			"events":
+    			{
+    				"click": function(event)
+    				{
+	    		        var w = result.filePickerWidget;
+	    		        w._navigateToNode(result.getAttribute("webappRelativePath"));
+	    		        return true;
+    				}
+    			}
+    		});
+
+    e.appendText(fileName);
+    e.inject(result);
+  }
+  else
+  {
+	  result.appendText(fileName);
+  }
+  if (isSelectable)
+  {
+	e = new Element("input", 
+			{
+				"type":"button",
+				"name":webappRelativePath,
+				"value":"Select",
+				"styles":{"position":"absolute", "right":"10px", "top":(.5 * result.offsetHeight) - (.5 * e.offsetHeight) + "px"},
+				"events":
+				{
+					"click":function(event)
+					{
+				        var w = result.filePickerWidget;
+				        w.setValue(result.getAttribute("webappRelativePath"));
+				        w._showSelectedValue();
+					}
+				}
+			}
+		);
+    e.inject(result);
+  }
+  return result;
+},
+
+_closeParentPathMenu: function()
+{
+  if (this.parentPathMenu)
+  {
+	$(this.parentPathMenu).remove();
+	this.parentPathMenu = null;
+  }
+  this.headerMenuTriggerLink.style.borderStyle = "solid";
+}
+
+});
+

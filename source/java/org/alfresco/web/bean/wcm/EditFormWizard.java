@@ -48,7 +48,6 @@ import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.forms.Form;
 import org.alfresco.web.forms.RenderingEngineTemplate;
-import org.alfresco.web.forms.xforms.SchemaUtil;
 import org.alfresco.web.ui.common.Utils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -122,7 +121,7 @@ public class EditFormWizard
                                                                   ContentModel.PROP_NAME));
       try
       {
-         this.schema = SchemaUtil.parseSchema(form.getSchema(), false);
+         this.schema = form.getSchema();
       }
       catch (Throwable t)
       {

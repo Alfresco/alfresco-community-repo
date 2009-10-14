@@ -23,6 +23,11 @@
  */
 package org.alfresco.web.bean.wcm;
 
+import static org.alfresco.web.bean.wcm.DescriptionAttributeHelper.getDescriptionNotEmpty;
+import static org.alfresco.web.bean.wcm.DescriptionAttributeHelper.getTableBegin;
+import static org.alfresco.web.bean.wcm.DescriptionAttributeHelper.getTableEnd;
+import static org.alfresco.web.bean.wcm.DescriptionAttributeHelper.getTableLine;
+
 import java.io.File;
 import java.io.Serializable;
 import java.text.MessageFormat;
@@ -65,8 +70,6 @@ import org.alfresco.web.forms.RenderingEngine;
 import org.alfresco.web.forms.RenderingEngineTemplate;
 import org.alfresco.web.forms.RenderingEngineTemplateImpl;
 import org.alfresco.web.forms.XMLUtil;
-import org.alfresco.web.forms.xforms.FormBuilderException;
-import org.alfresco.web.forms.xforms.SchemaUtil;
 import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.common.component.UIListItem;
 import org.alfresco.web.ui.wcm.WebResources;
@@ -74,11 +77,10 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.xerces.xs.XSConstants;
-import org.apache.xerces.xs.XSElementDeclaration;
-import org.apache.xerces.xs.XSModel;
-import org.apache.xerces.xs.XSNamedMap;
+import org.chiba.xml.ns.NamespaceConstants;
 import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 /**
  * Bean implementation for the "Create XML Form" dialog
@@ -238,7 +240,7 @@ public class CreateFormWizard extends BaseWizardBean
    protected String defaultWorkflowName = null;
    protected boolean applyDefaultWorkflow = true;
    protected List<RenderingEngineTemplateData> renderingEngineTemplates = null;
-   protected transient XSModel schema;
+   transient protected Document schema;
    protected String schemaFileName;
    protected transient ContentService contentService;
    protected transient MimetypeService mimetypeService;
@@ -773,17 +775,7 @@ public class CreateFormWizard extends BaseWizardBean
       {
          try
          {
-            final Document d = XMLUtil.parse(this.getSchemaFile());
-            try
-            {
-               this.schema = SchemaUtil.parseSchema(d, true);
-            }
-            catch (FormBuilderException fbe)
-            {
-               this.schema = SchemaUtil.parseSchema(d, false);
-               LOGGER.warn("non fatal errors encountered parsing schema " + this.getFileName(FILE_SCHEMA) + 
-                           "\n " + fbe.getMessage());
-            }
+            this.schema = XMLUtil.parse(this.getSchemaFile());            
          }
          catch (Exception e)
          {
@@ -999,11 +991,16 @@ public class CreateFormWizard extends BaseWizardBean
          if (this.schemaRootElementNameChoices == null)
          {
             this.schemaRootElementNameChoices = new LinkedList<SelectItem>();
-            final XSNamedMap elementsMap = this.schema.getComponents(XSConstants.ELEMENT_DECLARATION);
-            for (int i = 0; i < elementsMap.getLength(); i++)
+            NodeList elements = this.schema.getElementsByTagNameNS(NamespaceConstants.XMLSCHEMA_NS, "element");
+            
+            for (int i = 0; i < elements.getLength(); i++)
             {
-               final XSElementDeclaration e = (XSElementDeclaration)elementsMap.item(i);
-               this.schemaRootElementNameChoices.add(new SelectItem(e.getName(), e.getName()));
+                Node current = elements.item(i);   
+                if (current.getParentNode().equals(this.schema.getDocumentElement()))
+            {
+                    this.schemaRootElementNameChoices.add(new SelectItem(current.getAttributes().getNamedItem("name").getNodeValue(),
+                        current.getAttributes().getNamedItem("name").getNodeValue()));
+                }
             }
          }
          result = this.schemaRootElementNameChoices;

@@ -57,6 +57,15 @@
             </parameter>
         </constraint>
 
+        <constraint name="bpm:allowedDescriptionLength" type="LENGTH">
+             <parameter name="minLength">
+                 <value>0</value>
+             </parameter>
+             <parameter name="maxLength">
+                 <value>250</value>
+             </parameter>
+        </constraint>
+        
     </constraints>
 
     <types>
@@ -244,6 +253,9 @@
                 <!--  Description for the workflow as a whole -->
                 <property name="bpm:workflowDescription">
                     <type>d:text</type>
+                    <constraints>
+                        <constraint ref="bpm:allowedDescriptionLength"/>
+                    </constraints> 
                 </property>
 
                 <!--  Due date for the workflow as a whole -->

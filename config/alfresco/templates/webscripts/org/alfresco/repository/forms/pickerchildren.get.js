@@ -107,26 +107,30 @@ function main()
          var catAspect = (args["aspect"] != null) ? args["aspect"] : "cm:generalclassifiable";
          var nodeRef = url.templateArgs.store_type + "://" + url.templateArgs.store_id + "/" + url.templateArgs.id;
          // TODO: Better way of finding this
-         rootNode = classification.getRootCategories(catAspect)[0].parent;
-         if (nodeRef == "alfresco://category/root")
+         var rootCategories = classification.getRootCategories(catAspect);
+         if (rootCategories != null && rootCategories.length > 0)
          {
-            parent = rootNode;
-            categoryResults = classification.getRootCategories(catAspect);
-         }
-         else
-         {
-            parent = search.findNode(nodeRef);
-            categoryResults = parent.children;
-         }
-         
-         // make each result an object and indicate it is selectable in the UI
-         for each(var result in categoryResults)
-         {
-            results.push(
-            { 
-               item: result, 
-               selectable: true 
-            });
+            rootNode = rootCategories[0].parent;
+            if (nodeRef == "alfresco://category/root")
+            {
+               parent = rootNode;
+               categoryResults = classification.getRootCategories(catAspect);
+            }
+            else
+            {
+               parent = search.findNode(nodeRef);
+               categoryResults = parent.children;
+            }
+            
+            // make each result an object and indicate it is selectable in the UI
+            for each(var result in categoryResults)
+            {
+               results.push(
+               { 
+                  item: result, 
+                  selectable: true 
+               });
+            }
          }
       }
       

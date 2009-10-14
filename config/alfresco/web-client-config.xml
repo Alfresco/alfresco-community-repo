@@ -89,6 +89,9 @@
          <username-min-length>2</username-min-length>
          <password-min-length>3</password-min-length>
 
+         <!-- minimum length for group name -->
+         <group-name-min-length>3</group-name-min-length>
+
          <!-- Domain suffix appended to the CIFS URL host name -->
          <!--
          <cifs-url-suffix>.alfresco.org</cifs-url-suffix>

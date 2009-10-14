@@ -80,6 +80,7 @@ public class ClientConfigElement extends ConfigElementAdapter
    private List<QName> simpleSearchAdditionalAttributes = null;
    private int minUsernameLength = 2;
    private int minPasswordLength = 3;
+   private int minGroupNameLength = 3;
    private String breadcrumbMode = BREADCRUMB_PATH;
    private String cifsURLSuffix = null;
    private boolean languageSelect = true;
@@ -276,7 +277,12 @@ public class ClientConfigElement extends ConfigElementAdapter
       {
          combinedElement.setMinPasswordLength(newElement.getMinPasswordLength());
       }
-      
+
+      if (newElement.getMinGroupNameLength() != combinedElement.getMinGroupNameLength())
+      {
+         combinedElement.setMinGroupNameLength(newElement.getMinGroupNameLength());
+      }
+
       if (newElement.getBreadcrumbMode() != null &&
           newElement.getBreadcrumbMode().equals(combinedElement.getBreadcrumbMode()) == false)
       {
@@ -728,7 +734,23 @@ public class ClientConfigElement extends ConfigElementAdapter
    {
       this.minPasswordLength = minPasswordLength;
    }
-   
+
+   /**
+    * @return Returns the minimum length for a group name.
+    */
+   public int getMinGroupNameLength()
+   {
+      return this.minGroupNameLength;
+   }
+
+   /**
+    * @param minGroupNameLength The minimum length of a group name
+    */
+   /*package*/ void setMinGroupNameLength(int minGroupNameLength)
+   {
+      this.minGroupNameLength = minGroupNameLength;
+   }
+
    /**
     * Get the breadcrumb mode
     * 

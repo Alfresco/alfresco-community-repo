@@ -64,6 +64,7 @@ public class ClientElementReader implements ConfigElementReader
    public static final String ELEMENT_SIMPLESEARCHADDITIONALATTRSQNAME = "qname";
    public static final String ELEMENT_MINUSERNAMELENGTH = "username-min-length";
    public static final String ELEMENT_MINPASSWORDLENGTH = "password-min-length";
+   public static final String ELEMENT_MINGROUPNAMELENGTH = "group-name-min-length";
    public static final String ELEMENT_BREADCRUMB_MODE = "breadcrumb-mode";
    public static final String ELEMENT_CIFSURLSUFFIX = "cifs-url-suffix";
    public static final String ELEMENT_LANGUAGESELECT = "language-select";
@@ -261,7 +262,14 @@ public class ClientElementReader implements ConfigElementReader
          {
             configElement.setMinPasswordLength(Integer.parseInt(minPassword.getTextTrim()));
          }
-         
+
+         // get the minimum length of group names
+         Element minGroupName = element.element(ELEMENT_MINGROUPNAMELENGTH);
+         if (minGroupName != null)
+         {
+            configElement.setMinGroupNameLength(Integer.parseInt(minGroupName.getTextTrim()));
+         }
+
          // get the breadcrumb mode
          Element breadcrumbMode = element.element(ELEMENT_BREADCRUMB_MODE);
          if (breadcrumbMode != null)

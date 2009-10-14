@@ -51,6 +51,7 @@ public class CreateGroupDialog extends BaseDialogBean
    transient private AuthorityService authService;
    
    private static final String MSG_ERR_EXISTS = "groups_err_exists";
+   private static final String MSG_GROUPNAME_LENGTH = "groups_err_group_name_length";
    private static final String MSG_ERR_NAME = "groups_err_group_name";
    private static final String MSG_ROOT_GROUPS = "root_groups";
    private static final String MSG_BUTTON_NEW_GROUP = "new_group";
@@ -154,8 +155,17 @@ public class CreateGroupDialog extends BaseDialogBean
 
    public void validateGroupName(FacesContext context, UIComponent component, Object value) throws ValidatorException
    {
-      String name = (String) value;
-      
+      int minGroupNameLength = Application.getClientConfig(context).getMinGroupNameLength();
+
+      String name = ((String)value).trim();
+
+      if (name.length() < minGroupNameLength || name.length() > 100)
+      {
+         String err = MessageFormat.format(Application.getMessage(context, MSG_GROUPNAME_LENGTH),
+               new Object[]{minGroupNameLength, 100});
+         throw new ValidatorException(new FacesMessage(err));
+      }
+
       if (name.indexOf('"') != -1 || name.indexOf('\\') != -1)
       {
          String err = MessageFormat.format(Application.getMessage(context, MSG_ERR_NAME), 

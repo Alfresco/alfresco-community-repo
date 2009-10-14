@@ -716,6 +716,22 @@
          (p1.string_value != 'System' OR (p1.string_value IS NULL AND n.audit_creator != 'System'))
    </sql-query>
    
+   <!-- note: for PersonUsagePatch only -->
+   <sql-query name="node.GetUsersWithoutUsageProp">
+      <return-scalar column="uuid" type="string"/>
+      SELECT
+         n.uuid AS uuid
+      FROM
+         alf_node n
+         JOIN alf_store s ON (s.id = n.store_id AND n.type_qname_id = :personTypeQNameID)
+         LEFT JOIN alf_node_properties p1 ON (p1.node_id = n.id AND p1.qname_id = :sizeCurrentPropQNameID)
+      WHERE
+         s.protocol = :storeProtocol AND
+         s.identifier = :storeIdentifier AND
+         n.node_deleted = :isDeleted AND
+         p1.persisted_type_n IS NULL
+   </sql-query>
+   
    <sql-query name="node.GetUsersWithoutUsage">
       <return-scalar column="username" type="string"/>
       <return-scalar column="uuid" type="string"/>

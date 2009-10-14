@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2008 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -508,6 +508,7 @@ public class AuthenticationUtil implements InitializingBean
                 }
                 AuthenticationUtil.setRunAsUser(uid);
             }
+            logNDC(uid);
             result = runAsWork.doWork();
             return result;
         }
@@ -528,12 +529,15 @@ public class AuthenticationUtil implements InitializingBean
             if (originalFullAuthentication == null)
             {
                 AuthenticationUtil.clearCurrentSecurityContext();
+                logNDC(null);
             }
             else
             {
                 AuthenticationUtil.setFullAuthentication(originalFullAuthentication);
                 AuthenticationUtil.setRunAsAuthentication(originalRunAsAuthentication);
-            }   
+                
+                logNDC(getUserName(originalFullAuthentication));
+            }
         }
     }
     
@@ -599,21 +603,24 @@ public class AuthenticationUtil implements InitializingBean
     {
         NDC.remove();
         
-        if (isMtEnabled())
+        if (userName != null)
         {
-            String[] parts = splitUserTenant(userName);
-            if (parts.length == 2)
+            if (isMtEnabled())
             {
-                NDC.push("Tenant:" + parts[1] + " User:" + parts[0]);
+                String[] parts = splitUserTenant(userName);
+                if (parts.length == 2)
+                {
+                    NDC.push("Tenant:" + parts[1] + " User:" + parts[0]);
+                }
+                else
+                {
+                    NDC.push("User:" + userName);
+                }
             }
             else
             {
                 NDC.push("User:" + userName);
             }
-        }
-        else
-        {
-            NDC.push("User:" + userName);
         }
     }
     

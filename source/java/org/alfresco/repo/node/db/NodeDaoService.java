@@ -504,6 +504,19 @@ public interface NodeDaoService
             ObjectArrayQueryCallback resultsCallback);
     
     /**
+     * Iterate over all person nodes with missing usage property (for one-off patch)
+     * 
+     * @param storeRef                          the store to search in
+     * @param handler                           the callback to use while iterating over the people
+     * @return Returns the values for person node uuid
+     */
+    @DirtySessionAnnotation(markDirty=true)
+    public void getUsersWithoutUsageProp(
+            StoreRef storeRef,
+            ObjectArrayQueryCallback resultsCallback);
+    
+    
+    /**
      * Iterate over all person nodes to get users without a calculated usage
      * 
      * @param storeRef                          the store to search in

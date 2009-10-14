@@ -1933,4 +1933,22 @@
         </property>
     </bean>
     
+    <bean id="patch.personUsagePatch" class="org.alfresco.repo.admin.patch.impl.PersonUsagePatch" parent="basePatch" >
+        <property name="id"><value>patch.personUsagePatch</value></property>
+        <property name="description"><value>patch.personUsagePatch.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>3004</value></property>
+        <property name="targetSchema"><value>3005</value></property>
+        <!-- helper beans -->
+        <property name="nodeDaoService">
+            <ref bean="nodeDaoService"/>
+        </property>
+        <property name="personStoreUrl">
+           <value>${spaces.store}</value>
+        </property>
+        <property name="tenantService">
+            <ref bean="tenantService"/>
+        </property>
+    </bean>
+    
 </beans>

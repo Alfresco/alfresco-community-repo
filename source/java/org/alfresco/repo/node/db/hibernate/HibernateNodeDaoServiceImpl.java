@@ -163,6 +163,7 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
     private static final String QUERY_GET_NODES_WITH_PROPERTY_VALUES_BY_STRING_AND_STORE = "node.GetNodesWithPropertyValuesByStringAndStore";
     private static final String QUERY_GET_CONTENT_URLS_FOR_STORE_OLD = "node.GetContentUrlsForStoreOld";
     private static final String QUERY_GET_CONTENT_URLS_FOR_STORE_NEW = "node.GetContentUrlsForStoreNew";
+    private static final String QUERY_GET_USERS_WITHOUT_USAGE_PROP = "node.GetUsersWithoutUsageProp";
     private static final String QUERY_GET_USERS_WITHOUT_USAGE = "node.GetUsersWithoutUsage";
     private static final String QUERY_GET_USERS_WITH_USAGE = "node.GetUsersWithUsage";
     private static final String QUERY_GET_NODES_WITH_PROPERTY_VALUES_BY_ACTUAL_TYPE = "node.GetNodesWithPropertyValuesByActualType";
@@ -3647,6 +3648,59 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
         }
 
         // Done
+    }
+    
+    public void getUsersWithoutUsageProp(
+            final StoreRef storeRef,
+            final ObjectArrayQueryCallback resultsCallback)
+    {
+        final Pair<Long, QName> sizeCurrentPropQNamePair = qnameDAO.getQName(ContentModel.PROP_SIZE_CURRENT);
+        final Pair<Long, QName> personTypeQNamePair = qnameDAO.getQName(ContentModel.TYPE_PERSON);
+        
+        // Shortcut the query if the QNames don't exist
+        if (sizeCurrentPropQNamePair == null || personTypeQNamePair == null)
+        {
+            return;
+        }
+        
+        HibernateCallback callback = new HibernateCallback()
+        {
+            public Object doInHibernate(Session session)
+            {
+                Query query = session
+                    .getNamedQuery(HibernateNodeDaoServiceImpl.QUERY_GET_USERS_WITHOUT_USAGE_PROP)
+                  .setString("storeProtocol", storeRef.getProtocol())
+                  .setString("storeIdentifier", storeRef.getIdentifier())
+                    .setParameter("sizeCurrentPropQNameID", sizeCurrentPropQNamePair.getFirst()) // cm:sizeCurrent
+                    .setParameter("personTypeQNameID", personTypeQNamePair.getFirst()) // cm:person
+                    .setParameter("isDeleted", false);
+                  ;
+                DirtySessionMethodInterceptor.setQueryFlushMode(session, query);
+                return query.scroll(ScrollMode.FORWARD_ONLY);
+            }
+        };
+        ScrollableResults results = null;
+        try
+        {
+            results = (ScrollableResults) getHibernateTemplate().execute(callback);
+            // Callback with the results
+            Session session = getSession();
+            while (results.next())
+            {
+                Object[] arr = new Object[1];
+                arr[0] = (String)results.get(0); // node uuid
+                resultsCallback.handle(arr);
+                // Flush if required
+                DirtySessionMethodInterceptor.flushSession(session);
+            }
+        }
+        finally
+        {
+            if (results != null)
+            {
+                results.close();
+            }
+        }
     }
     
     public void getUsersWithoutUsage(

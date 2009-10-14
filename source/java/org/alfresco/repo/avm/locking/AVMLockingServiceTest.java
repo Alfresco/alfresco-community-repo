@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -31,6 +31,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import junit.framework.TestCase;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.WCMAppModel;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
@@ -47,9 +49,8 @@ import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
-import org.springframework.context.support.FileSystemXmlApplicationContext;
-
-import junit.framework.TestCase;
+import org.alfresco.util.ApplicationContextHelper;
+import org.springframework.context.ApplicationContext;
 
 /**
  * Tests for AVM locking service.
@@ -57,7 +58,7 @@ import junit.framework.TestCase;
  */
 public class AVMLockingServiceTest extends TestCase
 {
-    private static FileSystemXmlApplicationContext fContext = null;
+    private static ApplicationContext fContext = null;
     
     private static AVMLockingService fService;
     
@@ -77,6 +78,8 @@ public class AVMLockingServiceTest extends TestCase
     
     private static NodeRef fWebProject;
     
+    private final static String WP = "alfresco-"+System.currentTimeMillis();
+    
     /* (non-Javadoc)
      * @see junit.framework.TestCase#setUp()
      */
@@ -85,7 +88,7 @@ public class AVMLockingServiceTest extends TestCase
     {
         if (fContext == null)
         {
-            fContext = new FileSystemXmlApplicationContext("config/alfresco/application-context.xml");
+            fContext = ApplicationContextHelper.getApplicationContext();
             fService = (AVMLockingService)fContext.getBean("AVMLockingService");
             fAttributeService = (AttributeService)fContext.getBean("AttributeService");
             fPersonService = (PersonService)fContext.getBean("PersonService");
@@ -99,9 +102,9 @@ public class AVMLockingServiceTest extends TestCase
         // Set up a fake web project.
         NodeRef root = fRepoRemote.getRoot();
         Map<QName, Serializable> properties = new HashMap<QName, Serializable>();
-        properties.put(WCMAppModel.PROP_AVMSTORE, "alfresco");
-        fWebProject = fNodeService.createNode(root, ContentModel.ASSOC_CONTAINS, 
-                QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "alfresco"), 
+        properties.put(WCMAppModel.PROP_AVMSTORE, WP);
+        fWebProject = fNodeService.createNode(root, ContentModel.ASSOC_CONTAINS,
+                QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, WP),
                 WCMAppModel.TYPE_AVMWEBFOLDER, properties).getChildRef();
         // Set up sample users groups and roles.
         fAuthenticationService.createAuthentication("Buffy", "Buffy".toCharArray());
@@ -134,7 +137,10 @@ public class AVMLockingServiceTest extends TestCase
         List<String> webProjects = fService.getWebProjects();
         for (String webProject : webProjects)
         {
-            fService.removeWebProject(webProject);
+            if (webProject.equals(WP))
+            {
+                fService.removeWebProject(WP);
+            }
         }
         fAuthenticationService.deleteAuthentication("Buffy");
         fAuthenticationService.deleteAuthentication("Willow");
@@ -156,25 +162,25 @@ public class AVMLockingServiceTest extends TestCase
     {
         try
         {
-            fService.addWebProject("alfresco");
+            fService.addWebProject(WP);
             System.out.println(fAttributeService.getAttribute(".avm_lock_table"));
             List<String> owners = new ArrayList<String>();
             owners.add("Buffy");
             owners.add("Spike");
-            AVMLock lock = new AVMLock("alfresco",
+            AVMLock lock = new AVMLock(WP,
                                        "Sunnydale",
                                        "Revello Drive/1630",
                                        AVMLockingService.Type.DISCRETIONARY,
                                        owners);
             fService.lockPath(lock);
             System.out.println(fAttributeService.getAttribute(".avm_lock_table"));
-            assertNotNull(fService.getLock("alfresco", "Revello Drive/1630"));
+            assertNotNull(fService.getLock(WP, "Revello Drive/1630"));
             // assertEquals(1, fService.getUsersLocks("Buffy").size());
-            assertEquals(1, fService.getWebProjectLocks("alfresco").size());
+            assertEquals(1, fService.getWebProjectLocks(WP).size());
             List<String> owners2 = new ArrayList<String>();
             owners2.add("Buffy");
             owners2.add("Willow");
-            AVMLock lock2 = new AVMLock("alfresco",
+            AVMLock lock2 = new AVMLock(WP,
                                         "Sunnydale",
                                         "UC Sunnydale/Stevenson Hall",
                                         AVMLockingService.Type.DISCRETIONARY,
@@ -182,14 +188,14 @@ public class AVMLockingServiceTest extends TestCase
             fService.lockPath(lock2);
             System.out.println(fAttributeService.getAttribute(".avm_lock_table"));
             // assertEquals(2, fService.getUsersLocks("Buffy").size());
-            assertEquals(2, fService.getWebProjectLocks("alfresco").size());
+            assertEquals(2, fService.getWebProjectLocks(WP).size());
             System.out.println("Before----------------------------");
-            fService.removeLock("alfresco", "Revello Drive/1630");
+            fService.removeLock(WP, "Revello Drive/1630");
             System.out.println("After----------------------------");
             System.out.println(fAttributeService.getAttribute(".avm_lock_table"));
             // assertEquals(1, fService.getUsersLocks("Buffy").size());
-            assertEquals(1, fService.getWebProjectLocks("alfresco").size());
-            fService.removeWebProject("alfresco");
+            assertEquals(1, fService.getWebProjectLocks(WP).size());
+            fService.removeWebProject(WP);
             System.out.println(fAttributeService.getAttribute(".avm_lock_table"));
             // assertEquals(0, fService.getUsersLocks("Spike").size());
             // assertEquals(0, fService.getUsersLocks("Buffy").size());
@@ -207,26 +213,26 @@ public class AVMLockingServiceTest extends TestCase
     {
         try
         {
-            fService.addWebProject("alfresco");
+            fService.addWebProject(WP);
             List<String> owners = new ArrayList<String>();
             owners.add("ROLE_SUPER_POWERED");
             owners.add("Tara");
-            AVMLock lock = new AVMLock("alfresco", 
+            AVMLock lock = new AVMLock(WP, 
                                        "Sunnydale", 
                                        "TheInitiative/Adam/plans.txt", 
                                        AVMLockingService.Type.DISCRETIONARY, 
                                        owners);
             fService.lockPath(lock);
-            assertTrue(fService.hasAccess("alfresco", "Sunnydale:/TheInitiative/Adam/plans.txt", "Buffy"));
-            assertTrue(fService.hasAccess("alfresco", "Sunnydale:/TheInitiative/Adam/plans.txt", "Spike"));
-            assertFalse(fService.hasAccess("alfresco", "Sunnydale:/TheInitiative/Adam/plans.txt", "Willow"));
-            assertTrue(fService.hasAccess("alfresco", "Sunnydale:/TheInitiative/Adam/plans.txt", "Tara"));
-            assertFalse(fService.hasAccess("alfresco", "Sunnydale:/TheInitiative/Adam/plans.txt", "Xander"));
-            assertFalse(fService.hasAccess("alfresco", "LA:/TheInitiative/Adam/plans.txt", "Buffy"));
-            assertFalse(fService.hasAccess("alfresco", "LA:/TheInitiative/Adam/plans.txt", "Spike"));
-            assertFalse(fService.hasAccess("alfresco", "LA:/TheInitiative/Adam/plans.txt", "Willow"));
-            assertFalse(fService.hasAccess("alfresco", "LA:/TheInitiative/Adam/plans.txt", "Tara"));
-            assertFalse(fService.hasAccess("alfresco", "LA:/TheInitiative/Adam/plans.txt", "Xander"));
+            assertTrue(fService.hasAccess(WP, "Sunnydale:/TheInitiative/Adam/plans.txt", "Buffy"));
+            assertTrue(fService.hasAccess(WP, "Sunnydale:/TheInitiative/Adam/plans.txt", "Spike"));
+            assertFalse(fService.hasAccess(WP, "Sunnydale:/TheInitiative/Adam/plans.txt", "Willow"));
+            assertTrue(fService.hasAccess(WP, "Sunnydale:/TheInitiative/Adam/plans.txt", "Tara"));
+            assertFalse(fService.hasAccess(WP, "Sunnydale:/TheInitiative/Adam/plans.txt", "Xander"));
+            assertFalse(fService.hasAccess(WP, "LA:/TheInitiative/Adam/plans.txt", "Buffy"));
+            assertFalse(fService.hasAccess(WP, "LA:/TheInitiative/Adam/plans.txt", "Spike"));
+            assertFalse(fService.hasAccess(WP, "LA:/TheInitiative/Adam/plans.txt", "Willow"));
+            assertFalse(fService.hasAccess(WP, "LA:/TheInitiative/Adam/plans.txt", "Tara"));
+            assertFalse(fService.hasAccess(WP, "LA:/TheInitiative/Adam/plans.txt", "Xander"));
         }
         catch (Exception e)
         {
@@ -239,26 +245,26 @@ public class AVMLockingServiceTest extends TestCase
     {
         try
         {
-            fService.addWebProject("alfresco");
+            fService.addWebProject(WP);
             List<String> owners = new ArrayList<String>();
             owners.add("GROUP_Scoobies");
             owners.add("Tara");
-            AVMLock lock = new AVMLock("alfresco", 
+            AVMLock lock = new AVMLock(WP, 
                                        "Sunnydale", 
                                        "TheInitiative/Adam/plans.txt", 
                                        AVMLockingService.Type.DISCRETIONARY, 
                                        owners);
             fService.lockPath(lock);
-            assertTrue(fService.hasAccess("alfresco", "Sunnydale:/TheInitiative/Adam/plans.txt", "Buffy"));
-            assertFalse(fService.hasAccess("alfresco", "Sunnydale:/TheInitiative/Adam/plans.txt", "Spike"));
-            assertTrue(fService.hasAccess("alfresco", "Sunnydale:/TheInitiative/Adam/plans.txt", "Willow"));
-            assertTrue(fService.hasAccess("alfresco", "Sunnydale:/TheInitiative/Adam/plans.txt", "Tara"));
-            assertTrue(fService.hasAccess("alfresco", "Sunnydale:/TheInitiative/Adam/plans.txt", "Xander"));
-            assertFalse(fService.hasAccess("alfresco", "LA:/TheInitiative/Adam/plans.txt", "Buffy"));
-            assertFalse(fService.hasAccess("alfresco", "LA:/TheInitiative/Adam/plans.txt", "Spike"));
-            assertFalse(fService.hasAccess("alfresco", "LA:/TheInitiative/Adam/plans.txt", "Willow"));
-            assertFalse(fService.hasAccess("alfresco", "LA:/TheInitiative/Adam/plans.txt", "Tara"));
-            assertFalse(fService.hasAccess("alfresco", "LA:/TheInitiative/Adam/plans.txt", "Xander"));
+            assertTrue(fService.hasAccess(WP, "Sunnydale:/TheInitiative/Adam/plans.txt", "Buffy"));
+            assertFalse(fService.hasAccess(WP, "Sunnydale:/TheInitiative/Adam/plans.txt", "Spike"));
+            assertTrue(fService.hasAccess(WP, "Sunnydale:/TheInitiative/Adam/plans.txt", "Willow"));
+            assertTrue(fService.hasAccess(WP, "Sunnydale:/TheInitiative/Adam/plans.txt", "Tara"));
+            assertTrue(fService.hasAccess(WP, "Sunnydale:/TheInitiative/Adam/plans.txt", "Xander"));
+            assertFalse(fService.hasAccess(WP, "LA:/TheInitiative/Adam/plans.txt", "Buffy"));
+            assertFalse(fService.hasAccess(WP, "LA:/TheInitiative/Adam/plans.txt", "Spike"));
+            assertFalse(fService.hasAccess(WP, "LA:/TheInitiative/Adam/plans.txt", "Willow"));
+            assertFalse(fService.hasAccess(WP, "LA:/TheInitiative/Adam/plans.txt", "Tara"));
+            assertFalse(fService.hasAccess(WP, "LA:/TheInitiative/Adam/plans.txt", "Xander"));
         }
         catch (Exception e)
         {
@@ -271,60 +277,60 @@ public class AVMLockingServiceTest extends TestCase
     {
         try
         {
-            fService.addWebProject("alfresco");
+            fService.addWebProject(WP);
             List<String> owners = new ArrayList<String>();
             owners.add("GROUP_Scoobies");
             owners.add("Tara");
-            AVMLock lock = new AVMLock("alfresco", 
+            AVMLock lock = new AVMLock(WP, 
                                        "Sunnydale", 
                                        "TheInitiative/Adam/plans.txt", 
                                        AVMLockingService.Type.DISCRETIONARY, 
                                        owners);
             fService.lockPath(lock);
-            assertTrue(fService.hasAccess("alfresco", "Sunnydale:/TheInitiative/Adam/plans.txt", "Buffy"));
-            assertFalse(fService.hasAccess("alfresco", "Sunnydale:/TheInitiative/Adam/plans.txt", "Spike"));
-            assertTrue(fService.hasAccess("alfresco", "Sunnydale:/TheInitiative/Adam/plans.txt", "Willow"));
-            assertTrue(fService.hasAccess("alfresco", "Sunnydale:/TheInitiative/Adam/plans.txt", "Tara"));
-            assertTrue(fService.hasAccess("alfresco", "Sunnydale:/TheInitiative/Adam/plans.txt", "Xander"));
-            assertFalse(fService.hasAccess("alfresco", "LA:/TheInitiative/Adam/plans.txt", "Buffy"));
-            assertFalse(fService.hasAccess("alfresco", "LA:/TheInitiative/Adam/plans.txt", "Spike"));
-            assertFalse(fService.hasAccess("alfresco", "LA:/TheInitiative/Adam/plans.txt", "Willow"));
-            assertFalse(fService.hasAccess("alfresco", "LA:/TheInitiative/Adam/plans.txt", "Tara"));
-            assertFalse(fService.hasAccess("alfresco", "LA:/TheInitiative/Adam/plans.txt", "Xander"));
-            fService.modifyLock("alfresco", "TheInitiative/Adam/plans.txt", "ScrapHeap/Adam/plans.txt", null, null, null);
-            assertTrue(fService.hasAccess("alfresco", "Sunnydale:/ScrapHeap/Adam/plans.txt", "Buffy"));
-            assertFalse(fService.hasAccess("alfresco", "Sunnydale:/ScrapHeap/Adam/plans.txt", "Spike"));
-            assertTrue(fService.hasAccess("alfresco", "Sunnydale:/ScrapHeap/Adam/plans.txt", "Willow"));
-            assertTrue(fService.hasAccess("alfresco", "Sunnydale:/ScrapHeap/Adam/plans.txt", "Tara"));
-            assertTrue(fService.hasAccess("alfresco", "Sunnydale:/ScrapHeap/Adam/plans.txt", "Xander"));
-            fService.modifyLock("alfresco", "ScrapHeap/Adam/plans.txt", null, "LA", null, null);
-            assertTrue(fService.hasAccess("alfresco", "LA:/ScrapHeap/Adam/plans.txt", "Buffy"));
-            assertFalse(fService.hasAccess("alfresco", "LA:/ScrapHeap/Adam/plans.txt", "Spike"));
-            assertTrue(fService.hasAccess("alfresco", "LA:/ScrapHeap/Adam/plans.txt", "Willow"));
-            assertTrue(fService.hasAccess("alfresco", "LA:/ScrapHeap/Adam/plans.txt", "Tara"));
-            assertTrue(fService.hasAccess("alfresco", "LA:/ScrapHeap/Adam/plans.txt", "Xander"));
-            assertFalse(fService.hasAccess("alfresco", "Sunnydale:/ScrapHeap/Adam/plans.txt", "Buffy"));
-            assertFalse(fService.hasAccess("alfresco", "Sunnydale:/ScrapHeap/Adam/plans.txt", "Spike"));
-            assertFalse(fService.hasAccess("alfresco", "Sunnydale:/ScrapHeap/Adam/plans.txt", "Willow"));
-            assertFalse(fService.hasAccess("alfresco", "Sunnydale:/ScrapHeap/Adam/plans.txt", "Tara"));
-            assertFalse(fService.hasAccess("alfresco", "Sunnydale:/ScrapHeap/Adam/plans.txt", "Xander"));
+            assertTrue(fService.hasAccess(WP, "Sunnydale:/TheInitiative/Adam/plans.txt", "Buffy"));
+            assertFalse(fService.hasAccess(WP, "Sunnydale:/TheInitiative/Adam/plans.txt", "Spike"));
+            assertTrue(fService.hasAccess(WP, "Sunnydale:/TheInitiative/Adam/plans.txt", "Willow"));
+            assertTrue(fService.hasAccess(WP, "Sunnydale:/TheInitiative/Adam/plans.txt", "Tara"));
+            assertTrue(fService.hasAccess(WP, "Sunnydale:/TheInitiative/Adam/plans.txt", "Xander"));
+            assertFalse(fService.hasAccess(WP, "LA:/TheInitiative/Adam/plans.txt", "Buffy"));
+            assertFalse(fService.hasAccess(WP, "LA:/TheInitiative/Adam/plans.txt", "Spike"));
+            assertFalse(fService.hasAccess(WP, "LA:/TheInitiative/Adam/plans.txt", "Willow"));
+            assertFalse(fService.hasAccess(WP, "LA:/TheInitiative/Adam/plans.txt", "Tara"));
+            assertFalse(fService.hasAccess(WP, "LA:/TheInitiative/Adam/plans.txt", "Xander"));
+            fService.modifyLock(WP, "TheInitiative/Adam/plans.txt", "ScrapHeap/Adam/plans.txt", null, null, null);
+            assertTrue(fService.hasAccess(WP, "Sunnydale:/ScrapHeap/Adam/plans.txt", "Buffy"));
+            assertFalse(fService.hasAccess(WP, "Sunnydale:/ScrapHeap/Adam/plans.txt", "Spike"));
+            assertTrue(fService.hasAccess(WP, "Sunnydale:/ScrapHeap/Adam/plans.txt", "Willow"));
+            assertTrue(fService.hasAccess(WP, "Sunnydale:/ScrapHeap/Adam/plans.txt", "Tara"));
+            assertTrue(fService.hasAccess(WP, "Sunnydale:/ScrapHeap/Adam/plans.txt", "Xander"));
+            fService.modifyLock(WP, "ScrapHeap/Adam/plans.txt", null, "LA", null, null);
+            assertTrue(fService.hasAccess(WP, "LA:/ScrapHeap/Adam/plans.txt", "Buffy"));
+            assertFalse(fService.hasAccess(WP, "LA:/ScrapHeap/Adam/plans.txt", "Spike"));
+            assertTrue(fService.hasAccess(WP, "LA:/ScrapHeap/Adam/plans.txt", "Willow"));
+            assertTrue(fService.hasAccess(WP, "LA:/ScrapHeap/Adam/plans.txt", "Tara"));
+            assertTrue(fService.hasAccess(WP, "LA:/ScrapHeap/Adam/plans.txt", "Xander"));
+            assertFalse(fService.hasAccess(WP, "Sunnydale:/ScrapHeap/Adam/plans.txt", "Buffy"));
+            assertFalse(fService.hasAccess(WP, "Sunnydale:/ScrapHeap/Adam/plans.txt", "Spike"));
+            assertFalse(fService.hasAccess(WP, "Sunnydale:/ScrapHeap/Adam/plans.txt", "Willow"));
+            assertFalse(fService.hasAccess(WP, "Sunnydale:/ScrapHeap/Adam/plans.txt", "Tara"));
+            assertFalse(fService.hasAccess(WP, "Sunnydale:/ScrapHeap/Adam/plans.txt", "Xander"));
             List<String> usersToAdd = new ArrayList<String>();
             usersToAdd.add("Spike");
-            fService.modifyLock("alfresco", "ScrapHeap/Adam/plans.txt", null, null, null, usersToAdd);
-            assertTrue(fService.hasAccess("alfresco", "LA:/ScrapHeap/Adam/plans.txt", "Buffy"));
-            assertTrue(fService.hasAccess("alfresco", "LA:/ScrapHeap/Adam/plans.txt", "Spike"));
-            assertTrue(fService.hasAccess("alfresco", "LA:/ScrapHeap/Adam/plans.txt", "Willow"));
-            assertTrue(fService.hasAccess("alfresco", "LA:/ScrapHeap/Adam/plans.txt", "Tara"));
-            assertTrue(fService.hasAccess("alfresco", "LA:/ScrapHeap/Adam/plans.txt", "Xander"));
+            fService.modifyLock(WP, "ScrapHeap/Adam/plans.txt", null, null, null, usersToAdd);
+            assertTrue(fService.hasAccess(WP, "LA:/ScrapHeap/Adam/plans.txt", "Buffy"));
+            assertTrue(fService.hasAccess(WP, "LA:/ScrapHeap/Adam/plans.txt", "Spike"));
+            assertTrue(fService.hasAccess(WP, "LA:/ScrapHeap/Adam/plans.txt", "Willow"));
+            assertTrue(fService.hasAccess(WP, "LA:/ScrapHeap/Adam/plans.txt", "Tara"));
+            assertTrue(fService.hasAccess(WP, "LA:/ScrapHeap/Adam/plans.txt", "Xander"));
             List<String> usersToRemove = new ArrayList<String>();
             usersToRemove.add("GROUP_Scoobies");
-            fService.modifyLock("alfresco", "ScrapHeap/Adam/plans.txt", null, null, usersToRemove, null);
-            assertFalse(fService.hasAccess("alfresco", "LA:/ScrapHeap/Adam/plans.txt", "Buffy"));
-            assertTrue(fService.hasAccess("alfresco", "LA:/ScrapHeap/Adam/plans.txt", "Spike"));
-            assertFalse(fService.hasAccess("alfresco", "LA:/ScrapHeap/Adam/plans.txt", "Willow"));
-            assertTrue(fService.hasAccess("alfresco", "LA:/ScrapHeap/Adam/plans.txt", "Tara"));
-            assertFalse(fService.hasAccess("alfresco", "LA:/ScrapHeap/Adam/plans.txt", "Xander"));
-            assertTrue(fService.hasAccess("alfresco", "LA:/ScrapHeap/Adam/plans.txt", AuthenticationUtil.getAdminUserName()));
+            fService.modifyLock(WP, "ScrapHeap/Adam/plans.txt", null, null, usersToRemove, null);
+            assertFalse(fService.hasAccess(WP, "LA:/ScrapHeap/Adam/plans.txt", "Buffy"));
+            assertTrue(fService.hasAccess(WP, "LA:/ScrapHeap/Adam/plans.txt", "Spike"));
+            assertFalse(fService.hasAccess(WP, "LA:/ScrapHeap/Adam/plans.txt", "Willow"));
+            assertTrue(fService.hasAccess(WP, "LA:/ScrapHeap/Adam/plans.txt", "Tara"));
+            assertFalse(fService.hasAccess(WP, "LA:/ScrapHeap/Adam/plans.txt", "Xander"));
+            assertTrue(fService.hasAccess(WP, "LA:/ScrapHeap/Adam/plans.txt", AuthenticationUtil.getAdminUserName()));
         }
         catch (Exception e)
         {

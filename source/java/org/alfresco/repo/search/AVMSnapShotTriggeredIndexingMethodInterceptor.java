@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -42,7 +42,7 @@ import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
 
 /**
- * Method interceptor for atomic indexing of AVM entries The proeprties can defined how stores are indexed based on type
+ * Method interceptor for atomic indexing of AVM entries The properties can defined how stores are indexed based on type
  * (as set by Alfresco the Web site management UI) or based on the name of the store. Creates and deletes are indexed
  * synchronously. Updates may be asynchronous, synchronous or ignored by the index.
  * 
@@ -106,12 +106,14 @@ public class AVMSnapShotTriggeredIndexingMethodInterceptor implements MethodInte
             {
                 String store = (String) mi.getArguments()[0];
                 Object returnValue = mi.proceed();
-                StoreRef storeRef = AVMNodeConverter.ToStoreRef(store);
-                Indexer indexer = indexerAndSearcher.getIndexer(storeRef);
-                if (indexer instanceof AVMLuceneIndexer)
+                
+                if (getIndexMode(store) != IndexMode.UNINDEXED)
                 {
-                    AVMLuceneIndexer avmIndexer = (AVMLuceneIndexer) indexer;
-                    avmIndexer.deleteIndex(store, IndexMode.SYNCHRONOUS);
+                    AVMLuceneIndexer avmIndexer = getIndexer(store);
+                    if (avmIndexer != null)
+                    {
+                        avmIndexer.deleteIndex(store, IndexMode.SYNCHRONOUS);
+                    }
                 }
                 return returnValue;
             }
@@ -119,7 +121,10 @@ public class AVMSnapShotTriggeredIndexingMethodInterceptor implements MethodInte
             {
                 String store = (String) mi.getArguments()[0];
                 Object returnValue = mi.proceed();
-                createIndex(store);
+                if (getIndexMode(store) != IndexMode.UNINDEXED)
+                {
+                    createIndex(store);
+                }
                 return returnValue;
             }
             else if (mi.getMethod().getName().equals("renameStore"))
@@ -128,25 +133,25 @@ public class AVMSnapShotTriggeredIndexingMethodInterceptor implements MethodInte
                 String to = (String) mi.getArguments()[1];
                 Object returnValue = mi.proceed();
                 int after = avmService.getLatestSnapshotID(to);
-
-                StoreRef fromRef = AVMNodeConverter.ToStoreRef(from);
-                StoreRef toRef = AVMNodeConverter.ToStoreRef(to);
-
-                Indexer indexer = indexerAndSearcher.getIndexer(fromRef);
-                if (indexer instanceof AVMLuceneIndexer)
+                
+                if (getIndexMode(from) != IndexMode.UNINDEXED)
                 {
-                    AVMLuceneIndexer avmIndexer = (AVMLuceneIndexer) indexer;
-                    avmIndexer.deleteIndex(from, IndexMode.SYNCHRONOUS);
+                    AVMLuceneIndexer avmIndexer = getIndexer(from);
+                    if (avmIndexer != null)
+                    {
+                        avmIndexer.deleteIndex(from, IndexMode.SYNCHRONOUS);
+                    }
                 }
-
-                indexer = indexerAndSearcher.getIndexer(toRef);
-                if (indexer instanceof AVMLuceneIndexer)
+                
+                if (getIndexMode(to) != IndexMode.UNINDEXED)
                 {
-                    AVMLuceneIndexer avmIndexer = (AVMLuceneIndexer) indexer;
-                    avmIndexer.createIndex(to, IndexMode.SYNCHRONOUS);
-                    avmIndexer.index(to, 0, after, getIndexMode(to));
+                    AVMLuceneIndexer avmIndexer = getIndexer(to);
+                    if (avmIndexer != null)
+                    {
+                        avmIndexer.createIndex(to, IndexMode.SYNCHRONOUS);
+                        avmIndexer.index(to, 0, after, getIndexMode(to));
+                    }
                 }
-
                 return returnValue;
             }
             else
@@ -222,43 +227,56 @@ public class AVMSnapShotTriggeredIndexingMethodInterceptor implements MethodInte
      */
     public void indexSnapshot(String store, int before, int after)
     {
-        StoreRef storeRef = AVMNodeConverter.ToStoreRef(store);
-        Indexer indexer = indexerAndSearcher.getIndexer(storeRef);
-        if (indexer instanceof AVMLuceneIndexer)
-        {
-            AVMLuceneIndexer avmIndexer = (AVMLuceneIndexer) indexer;
-            avmIndexer.index(store, before, after, getIndexMode(store));
-        }
+        indexSnapshotImpl(store, before, after);
     }
-
+    
+    /**
+     * @param store
+     * @param after
+     */
     public void indexSnapshot(String store, int after)
     {
-        StoreRef storeRef = AVMNodeConverter.ToStoreRef(store);
-        Indexer indexer = indexerAndSearcher.getIndexer(storeRef);
-        if (indexer instanceof AVMLuceneIndexer)
+        indexSnapshotImpl(store, -1, after);
+    }
+    
+    private void indexSnapshotImpl(String store, int before, int after)
+    {
+        if (getIndexMode(store) != IndexMode.UNINDEXED)
         {
-            AVMLuceneIndexer avmIndexer = (AVMLuceneIndexer) indexer;
-            int before = avmIndexer.getLastIndexedSnapshot(store);
-            avmIndexer.index(store, before, after, getIndexMode(store));
+            AVMLuceneIndexer avmIndexer = getIndexer(store);
+            if (avmIndexer != null)
+            {
+                int last = getLastIndexedSnapshot(avmIndexer, store);
+                
+                if ((last == -1) && (! hasIndexBeenCreated(store)))
+                {
+                    createIndex(store);
+                }
+                
+                avmIndexer.index(store, (before != -1 ? before : last), after, getIndexMode(store));
+            }
         }
     }
-
+    
     /**
      * @param store
      * @return - the last indexed snapshot
      */
     public int getLastIndexedSnapshot(String store)
     {
-        StoreRef storeRef = AVMNodeConverter.ToStoreRef(store);
-        Indexer indexer = indexerAndSearcher.getIndexer(storeRef);
-        if (indexer instanceof AVMLuceneIndexer)
+        AVMLuceneIndexer avmIndexer = getIndexer(store);
+        if (avmIndexer != null)
         {
-            AVMLuceneIndexer avmIndexer = (AVMLuceneIndexer) indexer;
-            return avmIndexer.getLastIndexedSnapshot(store);
+            return getLastIndexedSnapshot(avmIndexer, store);
         }
         return -1;
     }
-
+    
+    private int getLastIndexedSnapshot(AVMLuceneIndexer avmIndexer, String store)
+    {
+        return avmIndexer.getLastIndexedSnapshot(store);
+    }
+    
     /**
      * Is the snapshot applied to the index? Is there an entry for any node that was added OR have all the nodes in the
      * transaction been deleted as expected?
@@ -269,11 +287,9 @@ public class AVMSnapShotTriggeredIndexingMethodInterceptor implements MethodInte
      */
     public boolean isSnapshotIndexed(String store, int id)
     {
-        StoreRef storeRef = AVMNodeConverter.ToStoreRef(store);
-        Indexer indexer = indexerAndSearcher.getIndexer(storeRef);
-        if (indexer instanceof AVMLuceneIndexer)
+        AVMLuceneIndexer avmIndexer = getIndexer(store);
+        if (avmIndexer != null)
         {
-            AVMLuceneIndexer avmIndexer = (AVMLuceneIndexer) indexer;
             return avmIndexer.isSnapshotIndexed(store, id);
         }
         return false;
@@ -295,11 +311,9 @@ public class AVMSnapShotTriggeredIndexingMethodInterceptor implements MethodInte
         case SYNCHRONOUS:
         case ASYNCHRONOUS:
             int last = avmService.getLatestSnapshotID(store);
-            StoreRef storeRef = AVMNodeConverter.ToStoreRef(store);
-            Indexer indexer = indexerAndSearcher.getIndexer(storeRef);
-            if (indexer instanceof AVMLuceneIndexer)
+            AVMLuceneIndexer avmIndexer = getIndexer(store);
+            if (avmIndexer != null)
             {
-                AVMLuceneIndexer avmIndexer = (AVMLuceneIndexer) indexer;
                 avmIndexer.flushPending();
                 return avmIndexer.isSnapshotSearchable(store, last);
             }
@@ -318,7 +332,6 @@ public class AVMSnapShotTriggeredIndexingMethodInterceptor implements MethodInte
      */
     public boolean isIndexUpToDate(String store)
     {
-
         switch (getIndexMode(store))
         {
         case UNINDEXED:
@@ -326,13 +339,11 @@ public class AVMSnapShotTriggeredIndexingMethodInterceptor implements MethodInte
         case SYNCHRONOUS:
         case ASYNCHRONOUS:
             int last = avmService.getLatestSnapshotID(store);
-            StoreRef storeRef = AVMNodeConverter.ToStoreRef(store);
-            Indexer indexer = indexerAndSearcher.getIndexer(storeRef);
-            if (indexer instanceof AVMLuceneIndexer)
+            AVMLuceneIndexer avmIndexer = getIndexer(store);
+            if (avmIndexer != null)
             {
-                AVMLuceneIndexer avmIndexer = (AVMLuceneIndexer) indexer;
                 avmIndexer.flushPending();
-                return avmIndexer.getLastIndexedSnapshot(store) == last;
+                return getLastIndexedSnapshot(avmIndexer, store) == last;
             }
             return false;
         default:
@@ -472,11 +483,9 @@ public class AVMSnapShotTriggeredIndexingMethodInterceptor implements MethodInte
 
     public boolean hasIndexBeenCreated(String store)
     {
-        StoreRef storeRef = AVMNodeConverter.ToStoreRef(store);
-        Indexer indexer = indexerAndSearcher.getIndexer(storeRef);
-        if (indexer instanceof AVMLuceneIndexer)
+        AVMLuceneIndexer avmIndexer = getIndexer(store);
+        if (avmIndexer != null)
         {
-            AVMLuceneIndexer avmIndexer = (AVMLuceneIndexer) indexer;
             avmIndexer.flushPending();
             return avmIndexer.hasIndexBeenCreated(store);
         }
@@ -485,11 +494,9 @@ public class AVMSnapShotTriggeredIndexingMethodInterceptor implements MethodInte
 
     public void createIndex(String store)
     {
-        StoreRef storeRef = AVMNodeConverter.ToStoreRef(store);
-        Indexer indexer = indexerAndSearcher.getIndexer(storeRef);
-        if (indexer instanceof AVMLuceneIndexer)
+        AVMLuceneIndexer avmIndexer = getIndexer(store);
+        if (avmIndexer != null)
         {
-            AVMLuceneIndexer avmIndexer = (AVMLuceneIndexer) indexer;
             avmIndexer.createIndex(store, IndexMode.SYNCHRONOUS);
         }
     }

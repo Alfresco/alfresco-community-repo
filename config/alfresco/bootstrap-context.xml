@@ -359,6 +359,9 @@
        <property name="contentService">
            <ref bean="contentService"/>
        </property>
+       <property name="avmSnapShotTriggeredIndexingMethodInterceptor">
+           <ref bean="avmSnapShotTriggeredIndexingMethodInterceptor"/>
+        </property>
     </bean>
 
 

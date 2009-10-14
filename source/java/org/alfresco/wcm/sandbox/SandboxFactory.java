@@ -27,6 +27,7 @@ package org.alfresco.wcm.sandbox;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -153,7 +154,16 @@ public final class SandboxFactory extends WCMUtil
    {
       // create the 'staging' store for the website
       String stagingStoreName = WCMUtil.buildStagingStoreName(storeId);
-      avmService.createStore(stagingStoreName);
+      
+      // tag store with properties
+      Map<QName, PropertyValue> props = new HashMap<QName, PropertyValue>(3);
+      // tag the store with the store type
+      props.put(SandboxConstants.PROP_SANDBOX_STAGING_MAIN, new PropertyValue(DataTypeDefinition.TEXT, null));
+      props.put(SandboxConstants.PROP_WEB_PROJECT_NODE_REF, new PropertyValue(DataTypeDefinition.NODE_REF, webProjectNodeRef));
+      // tag the store with the DNS name property
+      addStoreDNSPath(stagingStoreName, props, storeId);
+      
+      avmService.createStore(stagingStoreName, props);
       
       if (logger.isDebugEnabled())
       {
@@ -182,24 +192,23 @@ public final class SandboxFactory extends WCMUtil
       
       // Add permissions for layers
       
-      // tag the store with the store type
-      avmService.setStoreProperty(stagingStoreName,
-                                  SandboxConstants.PROP_SANDBOX_STAGING_MAIN,
-                                  new PropertyValue(DataTypeDefinition.TEXT, null));
-      avmService.setStoreProperty(stagingStoreName,
-                                  SandboxConstants.PROP_WEB_PROJECT_NODE_REF,
-                                  new PropertyValue(DataTypeDefinition.NODE_REF, webProjectNodeRef));
-      
-      // tag the store with the DNS name property
-      tagStoreDNSPath(avmService, stagingStoreName, storeId);
-      
       // snapshot the store
       avmService.createSnapshot(stagingStoreName, null, null);
       
       
       // create the 'preview' store for the website
       String previewStoreName = WCMUtil.buildStagingPreviewStoreName(storeId);
-      avmService.createStore(previewStoreName);
+      
+      // tag store with properties - store type, web project DM nodeRef, DNS name
+      props = new HashMap<QName, PropertyValue>(3);
+      // tag the store with the store type
+      props.put(SandboxConstants.PROP_SANDBOX_STAGING_PREVIEW, new PropertyValue(DataTypeDefinition.TEXT, null));
+      // tag the store with the DNS name property
+      addStoreDNSPath(previewStoreName, props, storeId, "preview");
+      // The preview store depends on the main staging store (dist=1)
+      addStoreBackgroundLayer(props, stagingStoreName, 1);
+      
+      avmService.createStore(previewStoreName, props);
       
       if (logger.isDebugEnabled())
       {
@@ -212,21 +221,10 @@ public final class SandboxFactory extends WCMUtil
                                         previewStoreName + ":/", 
                                         JNDIConstants.DIR_DEFAULT_WWW);
       
-    
+      
       // apply READ permissions for all users
       //dirRef = AVMNodeConverter.ToNodeRef(-1, WCMUtil.buildStoreRootPath(previewStoreName));
       //permissionService.setPermission(dirRef, PermissionService.ALL_AUTHORITIES, PermissionService.READ, true);
-      
-      // tag the store with the store type
-      avmService.setStoreProperty(previewStoreName,
-                                  SandboxConstants.PROP_SANDBOX_STAGING_PREVIEW,
-                                  new PropertyValue(DataTypeDefinition.TEXT, null));
-      
-      // tag the store with the DNS name property
-      tagStoreDNSPath(avmService, previewStoreName, storeId, "preview");
-
-      // The preview store depends on the main staging store (dist=1)
-      tagStoreBackgroundLayer(avmService,previewStoreName,stagingStoreName,1);
       
       // snapshot the store
       avmService.createSnapshot(previewStoreName, null, null);
@@ -580,8 +578,26 @@ public final class SandboxFactory extends WCMUtil
           return userSandboxInfo;
       }
       
-      avmService.createStore(userStoreName);
+      QName sandboxIdProp = QName.createQName(null, SandboxConstants.PROP_SANDBOXID + GUID.generate());
+      
       String stagingStoreName = WCMUtil.buildStagingStoreName(storeId);
+      
+      // tag store with properties
+      Map<QName, PropertyValue> props = new HashMap<QName, PropertyValue>(6);
+      // tag the store with the store type
+      props.put(SandboxConstants.PROP_SANDBOX_AUTHOR_MAIN, new PropertyValue(DataTypeDefinition.TEXT, null));
+      // tag the store with the base name of the website so that corresponding staging areas can be found.
+      props.put(SandboxConstants.PROP_WEBSITE_NAME, new PropertyValue(DataTypeDefinition.TEXT, storeId));
+      // tag the store, oddly enough, with its own store name for querying.
+      props.put(QName.createQName(null, SandboxConstants.PROP_SANDBOX_STORE_PREFIX + userStoreName), new PropertyValue(DataTypeDefinition.TEXT, null));
+      // tag all related stores to indicate that they are part of a single sandbox
+      props.put(sandboxIdProp, new PropertyValue(DataTypeDefinition.TEXT, null));
+      // tag the store with the DNS name property
+      addStoreDNSPath(userStoreName, props, storeId, username);
+      // The user store depends on the main staging store (dist=1)
+      addStoreBackgroundLayer(props, stagingStoreName, 1);
+      
+      avmService.createStore(userStoreName, props);
       
       if (logger.isDebugEnabled())
       {
@@ -611,33 +627,26 @@ public final class SandboxFactory extends WCMUtil
       // permissionService.setPermission(dirRef.getStoreRef(), manager, AVMUtil.ROLE_CONTENT_MANAGER, true);
       // }
       
-      // tag the store with the store type
-      avmService.setStoreProperty(userStoreName,
-                                  SandboxConstants.PROP_SANDBOX_AUTHOR_MAIN,
-                                  new PropertyValue(DataTypeDefinition.TEXT, null));
-      
-      // tag the store with the base name of the website so that corresponding
-      // staging areas can be found.
-      avmService.setStoreProperty(userStoreName,
-                                  SandboxConstants.PROP_WEBSITE_NAME,
-                                  new PropertyValue(DataTypeDefinition.TEXT, storeId));
-      
-      // tag the store, oddly enough, with its own store name for querying.
-      avmService.setStoreProperty(userStoreName,
-                                  QName.createQName(null, SandboxConstants.PROP_SANDBOX_STORE_PREFIX + userStoreName),
-                                  new PropertyValue(DataTypeDefinition.TEXT, null));
-         
-      // tag the store with the DNS name property
-      tagStoreDNSPath(avmService, userStoreName, storeId, username);
-      
-      // The user store depends on the main staging store (dist=1)
-      tagStoreBackgroundLayer(avmService,userStoreName,stagingStoreName,1);
-
       // snapshot the store
       avmService.createSnapshot(userStoreName, null, null);
       
+      // tag store with properties
+      props = new HashMap<QName, PropertyValue>(6);
+      // tag the store with the store type
+      props.put(SandboxConstants.PROP_SANDBOX_AUTHOR_PREVIEW, new PropertyValue(DataTypeDefinition.TEXT, null));
+      // tag the store with its own store name for querying.
+      props.put(QName.createQName(null, SandboxConstants.PROP_SANDBOX_STORE_PREFIX + previewStoreName), new PropertyValue(DataTypeDefinition.TEXT, null));
+      // tag all related stores to indicate that they are part of a single sandbox
+      props.put(sandboxIdProp, new PropertyValue(DataTypeDefinition.TEXT, null));
+      // tag the store with the DNS name property
+      addStoreDNSPath(previewStoreName, props, storeId, username, "preview");
+      // The preview user store depends on the main user store (dist=1)
+      addStoreBackgroundLayer(props, userStoreName, 1);
+      // The preview user store depends on the main staging store (dist=2)
+      addStoreBackgroundLayer(props, stagingStoreName, 2);
+      
       // create the user 'preview' store
-      avmService.createStore(previewStoreName);
+      avmService.createStore(previewStoreName, props);
       
       if (logger.isDebugEnabled())
       {
@@ -663,38 +672,8 @@ public final class SandboxFactory extends WCMUtil
          permissionService.setPermission(dirRef.getStoreRef(), manager, WCMUtil.ROLE_CONTENT_MANAGER, true);
       }
       
-      // tag the store with the store type
-      avmService.setStoreProperty(previewStoreName,
-                                  SandboxConstants.PROP_SANDBOX_AUTHOR_PREVIEW,
-                                  new PropertyValue(DataTypeDefinition.TEXT, null));
-      
-      // tag the store with its own store name for querying.
-      avmService.setStoreProperty(previewStoreName,
-                                  QName.createQName(null, SandboxConstants.PROP_SANDBOX_STORE_PREFIX + previewStoreName),
-                                  new PropertyValue(DataTypeDefinition.TEXT, null));
-         
-      // tag the store with the DNS name property
-      tagStoreDNSPath(avmService, previewStoreName, storeId, username, "preview");
-      
-      // The preview user store depends on the main user store (dist=1)
-      tagStoreBackgroundLayer(avmService,previewStoreName, userStoreName,1);
-
-      // The preview user store depends on the main staging store (dist=2)
-      tagStoreBackgroundLayer(avmService,previewStoreName, stagingStoreName,2);
-
-         
       // snapshot the store
       avmService.createSnapshot(previewStoreName, null, null);
-      
-      
-      // tag all related stores to indicate that they are part of a single sandbox
-      QName sandboxIdProp = QName.createQName(null, SandboxConstants.PROP_SANDBOXID + GUID.generate());
-      avmService.setStoreProperty(userStoreName, 
-                                  sandboxIdProp,
-                                  new PropertyValue(DataTypeDefinition.TEXT, null));
-      avmService.setStoreProperty(previewStoreName,
-                                  sandboxIdProp,
-                                  new PropertyValue(DataTypeDefinition.TEXT, null));
       
       if (logger.isTraceEnabled())
       {
@@ -720,53 +699,62 @@ public final class SandboxFactory extends WCMUtil
    public SandboxInfo createWorkflowSandbox(final String storeId)
    {
       String stagingStoreName = WCMUtil.buildStagingStoreName(storeId);
-
+      
       // create the workflow 'main' store
       String packageName = WCMUtil.STORE_WORKFLOW + "-" + GUID.generate();
       String mainStoreName = WCMUtil.buildWorkflowMainStoreName(storeId, packageName);
       
-      avmService.createStore(mainStoreName);
+      final QName sandboxIdProp = QName.createQName(SandboxConstants.PROP_SANDBOXID + GUID.generate());
+      
+      // tag store with properties
+      Map<QName, PropertyValue> props = new HashMap<QName, PropertyValue>(6);
+      // tag the store with the store type
+      props.put(SandboxConstants.PROP_SANDBOX_WORKFLOW_MAIN, new PropertyValue(DataTypeDefinition.TEXT, null));
+      // tag the store with the base name of the website so that corresponding staging areas can be found.
+      props.put(SandboxConstants.PROP_WEBSITE_NAME, new PropertyValue(DataTypeDefinition.TEXT, storeId));
+      // tag the store, oddly enough, with its own store name for querying.
+      props.put(QName.createQName(null, SandboxConstants.PROP_SANDBOX_STORE_PREFIX + mainStoreName), new PropertyValue(DataTypeDefinition.TEXT, null));
+      // tag all related stores to indicate that they are part of a single sandbox
+      props.put(sandboxIdProp, new PropertyValue(DataTypeDefinition.TEXT, null));
+      // tag the store with the DNS name property
+      addStoreDNSPath(mainStoreName, props, storeId, packageName);
+      // The main workflow store depends on the main staging store (dist=1)
+      addStoreBackgroundLayer(props, stagingStoreName, 1);
+      
+      avmService.createStore(mainStoreName, props);
       
       if (logger.isDebugEnabled())
       {
          logger.debug("Created workflow sandbox store: " + mainStoreName);
       }
-         
+      
       // create a layered directory pointing to 'www' in the staging area
       avmService.createLayeredDirectory(WCMUtil.buildStoreRootPath(stagingStoreName), 
                                         mainStoreName + ":/", 
                                         JNDIConstants.DIR_DEFAULT_WWW);
-         
-      // tag the store with the store type
-      avmService.setStoreProperty(mainStoreName,
-                                  SandboxConstants.PROP_SANDBOX_WORKFLOW_MAIN,
-                                  new PropertyValue(DataTypeDefinition.TEXT, null));
-         
-      // tag the store with the base name of the website so that corresponding
-      // staging areas can be found.
-      avmService.setStoreProperty(mainStoreName,
-                                  SandboxConstants.PROP_WEBSITE_NAME,
-                                  new PropertyValue(DataTypeDefinition.TEXT, storeId));
-         
-      // tag the store, oddly enough, with its own store name for querying.
-      avmService.setStoreProperty(mainStoreName,
-                                  QName.createQName(null, SandboxConstants.PROP_SANDBOX_STORE_PREFIX + mainStoreName),
-                                  new PropertyValue(DataTypeDefinition.TEXT, null));
-         
-      // tag the store with the DNS name property
-      tagStoreDNSPath(avmService, mainStoreName, storeId, packageName);
-         
-
-      // The main workflow store depends on the main staging store (dist=1)
-      tagStoreBackgroundLayer(avmService,mainStoreName, stagingStoreName ,1);
-
+      
       // snapshot the store
       avmService.createSnapshot(mainStoreName, null, null);
-         
+      
       // create the workflow 'preview' store
       final String previewStoreName = WCMUtil.buildWorkflowPreviewStoreName(storeId, packageName);
       
-      avmService.createStore(previewStoreName);
+      // tag store with properties
+      props = new HashMap<QName, PropertyValue>(6);
+      // tag the store with the store type
+      props.put(SandboxConstants.PROP_SANDBOX_WORKFLOW_PREVIEW, new PropertyValue(DataTypeDefinition.TEXT, null));
+      // tag the store with its own store name for querying.
+      props.put(QName.createQName(null, SandboxConstants.PROP_SANDBOX_STORE_PREFIX + previewStoreName), new PropertyValue(DataTypeDefinition.TEXT, null));
+      // tag all related stores to indicate that they are part of a single sandbox
+      props.put(sandboxIdProp, new PropertyValue(DataTypeDefinition.TEXT, null));
+      // tag the store with the DNS name property
+      addStoreDNSPath(previewStoreName, props, storeId, packageName, "preview");
+      // The preview workflow store depends on the main workflow store (dist=1)
+      addStoreBackgroundLayer(props, mainStoreName, 1);
+      // The preview workflow store depends on the main staging store (dist=2)
+      addStoreBackgroundLayer(props, stagingStoreName, 2);
+      
+      avmService.createStore(previewStoreName, props);
       
       if (logger.isDebugEnabled())
       {
@@ -777,41 +765,9 @@ public final class SandboxFactory extends WCMUtil
       avmService.createLayeredDirectory(WCMUtil.buildStoreRootPath(mainStoreName), 
                                         previewStoreName + ":/", 
                                         JNDIConstants.DIR_DEFAULT_WWW);
-         
-      // tag the store with the store type
-      avmService.setStoreProperty(previewStoreName,
-                                  SandboxConstants.PROP_SANDBOX_WORKFLOW_PREVIEW,
-                                  new PropertyValue(DataTypeDefinition.TEXT, null));
-      
-      // tag the store with its own store name for querying.
-      avmService.setStoreProperty(previewStoreName,
-                                  QName.createQName(null, 
-                                                    SandboxConstants.PROP_SANDBOX_STORE_PREFIX + previewStoreName),
-                                  new PropertyValue(DataTypeDefinition.TEXT, null));
-         
-      // tag the store with the DNS name property
-      tagStoreDNSPath(avmService, previewStoreName, storeId, packageName, "preview");
-
-
-      // The preview worfkflow store depends on the main workflow store (dist=1)
-      tagStoreBackgroundLayer(avmService,previewStoreName, mainStoreName,1);
-
-      // The preview workflow store depends on the main staging store (dist=2)
-      tagStoreBackgroundLayer(avmService,previewStoreName, stagingStoreName,2);
-
       
       // snapshot the store
       avmService.createSnapshot(previewStoreName, null, null);
-         
-         
-      // tag all related stores to indicate that they are part of a single sandbox
-      final QName sandboxIdProp = QName.createQName(SandboxConstants.PROP_SANDBOXID + GUID.generate());
-      avmService.setStoreProperty(mainStoreName, 
-                                  sandboxIdProp,
-                                  new PropertyValue(DataTypeDefinition.TEXT, null));
-      avmService.setStoreProperty(previewStoreName, 
-                                  sandboxIdProp,
-                                  new PropertyValue(DataTypeDefinition.TEXT, null));
       
       if (logger.isTraceEnabled())
       {
@@ -845,12 +801,29 @@ public final class SandboxFactory extends WCMUtil
    {
       String wpStoreId = WCMUtil.getWebProjectStoreId(storeId);
       String stagingStoreName = WCMUtil.buildStagingStoreName(storeId);
-
+      
       // create the workflow 'main' store
       String packageName = WCMUtil.STORE_WORKFLOW + "-" + GUID.generate();
       String mainStoreName = WCMUtil.buildWorkflowMainStoreName(storeId, packageName);
       
-      avmService.createStore(mainStoreName);
+      final QName sandboxIdProp = QName.createQName(SandboxConstants.PROP_SANDBOXID + GUID.generate());
+      
+      // tag store with properties
+      Map<QName, PropertyValue> props = new HashMap<QName, PropertyValue>(6);
+      // tag the store with the store type
+      props.put(SandboxConstants.PROP_SANDBOX_WORKFLOW_MAIN, new PropertyValue(DataTypeDefinition.TEXT, null));
+      // tag the store with the base name of the website so that corresponding staging areas can be found.
+      props.put(SandboxConstants.PROP_WEBSITE_NAME, new PropertyValue(DataTypeDefinition.TEXT, storeId));
+      // tag the store, oddly enough, with its own store name for querying.
+      props.put(QName.createQName(null, SandboxConstants.PROP_SANDBOX_STORE_PREFIX + mainStoreName), new PropertyValue(DataTypeDefinition.TEXT, null));
+      // tag the store with the DNS name property
+      addStoreDNSPath(mainStoreName, props, storeId, packageName);
+      // The main workflow store depends on the main staging store (dist=1)
+      addStoreBackgroundLayer(props, stagingStoreName, 1);
+      // tag all related stores to indicate that they are part of a single sandbox
+      props.put(sandboxIdProp, new PropertyValue(DataTypeDefinition.TEXT, null));
+      
+      avmService.createStore(mainStoreName, props);
       
       if (logger.isDebugEnabled())
       {
@@ -861,35 +834,6 @@ public final class SandboxFactory extends WCMUtil
       avmService.createLayeredDirectory(WCMUtil.buildStoreRootPath(stagingStoreName), 
                                         mainStoreName + ":/", 
                                         JNDIConstants.DIR_DEFAULT_WWW);
-         
-      // tag the store with the store type
-      avmService.setStoreProperty(mainStoreName,
-                                  SandboxConstants.PROP_SANDBOX_WORKFLOW_MAIN,
-                                  new PropertyValue(DataTypeDefinition.TEXT, null));
-         
-      // tag the store with the base name of the website so that corresponding
-      // staging areas can be found.
-      avmService.setStoreProperty(mainStoreName,
-                                  SandboxConstants.PROP_WEBSITE_NAME,
-                                  new PropertyValue(DataTypeDefinition.TEXT, storeId));
-         
-      // tag the store, oddly enough, with its own store name for querying.
-      avmService.setStoreProperty(mainStoreName,
-                                  QName.createQName(null, SandboxConstants.PROP_SANDBOX_STORE_PREFIX + mainStoreName),
-                                  new PropertyValue(DataTypeDefinition.TEXT, null));
-         
-      // tag the store with the DNS name property
-      tagStoreDNSPath(avmService, mainStoreName, storeId, packageName);
-         
-
-      // The main workflow store depends on the main staging store (dist=1)
-      tagStoreBackgroundLayer(avmService,mainStoreName, stagingStoreName ,1);
-
-      // tag all related stores to indicate that they are part of a single sandbox
-      final QName sandboxIdProp = QName.createQName(SandboxConstants.PROP_SANDBOXID + GUID.generate());
-      avmService.setStoreProperty(mainStoreName, 
-                                  sandboxIdProp,
-                                  new PropertyValue(DataTypeDefinition.TEXT, null));
       
       if (logger.isTraceEnabled())
       {
@@ -914,8 +858,27 @@ public final class SandboxFactory extends WCMUtil
        // create the workflow 'main' store
        String packageName = "workflow-" + GUID.generate();
        String workflowStoreName = userStore + STORE_SEPARATOR + packageName;
-     
-       avmService.createStore(workflowStoreName);
+       
+       final QName sandboxIdProp = QName.createQName(SandboxConstants.PROP_SANDBOXID + GUID.generate());
+       
+       // tag store with properties
+       Map<QName, PropertyValue> props = new HashMap<QName, PropertyValue>(7);
+       // tag the store with the store type
+       props.put(SandboxConstants.PROP_SANDBOX_AUTHOR_WORKFLOW_MAIN, new PropertyValue(DataTypeDefinition.TEXT, null));
+       // tag the store with the name of the author's store this one is layered over
+       props.put(SandboxConstants.PROP_AUTHOR_NAME, new PropertyValue(DataTypeDefinition.TEXT, userStore));
+       // tag the store, oddly enough, with its own store name for querying.
+       props.put(QName.createQName(null, SandboxConstants.PROP_SANDBOX_STORE_PREFIX + workflowStoreName), new PropertyValue(DataTypeDefinition.TEXT, null));
+       // tag the store with the DNS name property
+       addStoreDNSPath(workflowStoreName, props, stagingStore, packageName);
+       // the main workflow store depends on the main user store (dist=1)
+       addStoreBackgroundLayer(props, userStore, 1);
+       // The main workflow store depends on the main staging store (dist=2)
+       addStoreBackgroundLayer(props, stagingStore, 2);
+       // tag all related stores to indicate that they are part of a single sandbox
+       props.put(sandboxIdProp, new PropertyValue(DataTypeDefinition.TEXT, null));
+       
+       avmService.createStore(workflowStoreName, props);
        
        if (logger.isDebugEnabled())
        {
@@ -927,52 +890,32 @@ public final class SandboxFactory extends WCMUtil
                 userStore + ":/" + JNDIConstants.DIR_DEFAULT_WWW, 
                 workflowStoreName + ":/", JNDIConstants.DIR_DEFAULT_WWW);
         
-       // tag the store with the store type
-       avmService.setStoreProperty(workflowStoreName, 
-                SandboxConstants.PROP_SANDBOX_AUTHOR_WORKFLOW_MAIN,
-                new PropertyValue(DataTypeDefinition.TEXT, null));
-        
-       // tag the store with the name of the author's store this one is layered over
-       avmService.setStoreProperty(workflowStoreName, 
-                SandboxConstants.PROP_AUTHOR_NAME,
-                new PropertyValue(DataTypeDefinition.TEXT, userStore));
-        
-       // tag the store, oddly enough, with its own store name for querying.
-       avmService.setStoreProperty(workflowStoreName,
-                QName.createQName(null, SandboxConstants.PROP_SANDBOX_STORE_PREFIX + workflowStoreName),
-                new PropertyValue(DataTypeDefinition.TEXT, null));
-        
-       // tag the store with the DNS name property
-       String path = workflowStoreName + ":/" + JNDIConstants.DIR_DEFAULT_WWW + 
-                "/" + JNDIConstants.DIR_DEFAULT_APPBASE;
-       // DNS name mangle the property name - can only contain value DNS characters!
-       String dnsProp = SandboxConstants.PROP_DNS + DNSNameMangler.MakeDNSName(stagingStore, packageName);
-       avmService.setStoreProperty(workflowStoreName, QName.createQName(null, dnsProp),
-                new PropertyValue(DataTypeDefinition.TEXT, path));
-       
-       // TODO review above and replace with common call to ...
-       /*
-       // tag the store with the DNS name property
-       tagStoreDNSPath(avmService, workflowStoreName, storeId, packageName);
-       */
-       
-       // the main workflow store depends on the main user store (dist=1)
-       String prop_key = SandboxConstants.PROP_BACKGROUND_LAYER + userStore;
-       avmService.setStoreProperty(workflowStoreName, QName.createQName(null, prop_key),
-                new PropertyValue(DataTypeDefinition.INT, 1));
-       
-       // The main workflow store depends on the main staging store (dist=2)
-       prop_key = SandboxConstants.PROP_BACKGROUND_LAYER + stagingStore;
-       avmService.setStoreProperty(workflowStoreName, QName.createQName(null, prop_key),
-                new PropertyValue(DataTypeDefinition.INT, 2));
-     
        // snapshot the store
        avmService.createSnapshot(workflowStoreName, null, null);
         
        // create the workflow 'preview' store
        String previewStoreName = workflowStoreName + STORE_SEPARATOR + "preview";
-       avmService.createStore(previewStoreName);
-     
+       
+       // tag store with properties
+       props = new HashMap<QName, PropertyValue>(7);
+       // tag the store with the store type
+       props.put(SandboxConstants.PROP_SANDBOX_AUTHOR_WORKFLOW_PREVIEW, new PropertyValue(DataTypeDefinition.TEXT, null));
+       // tag the store with its own store name for querying.
+       props.put(QName.createQName(null, SandboxConstants.PROP_SANDBOX_STORE_PREFIX + previewStoreName), new PropertyValue(DataTypeDefinition.TEXT, null));
+       // tag the store with the DNS name property
+       addStoreDNSPath(previewStoreName, props, userStore, packageName, "preview");
+       // The preview worfkflow store depends on the main workflow store (dist=1)
+       addStoreBackgroundLayer(props, workflowStoreName, 1);
+       // The preview workflow store depends on the main user store (dist=2)
+       addStoreBackgroundLayer(props, userStore, 2);
+       // The preview workflow store depends on the main staging store (dist=3)
+       addStoreBackgroundLayer(props, stagingStore, 3);
+       
+       // tag all related stores to indicate that they are part of a single sandbox
+       props.put(sandboxIdProp, new PropertyValue(DataTypeDefinition.TEXT, null));
+       
+       avmService.createStore(previewStoreName, props);
+       
        if (logger.isDebugEnabled())
        {
            logger.debug("Created user workflow sandbox preview store: " + previewStoreName);
@@ -982,55 +925,10 @@ public final class SandboxFactory extends WCMUtil
        avmService.createLayeredDirectory(
                 workflowStoreName + ":/" + JNDIConstants.DIR_DEFAULT_WWW, 
                 previewStoreName + ":/", JNDIConstants.DIR_DEFAULT_WWW);
-        
-       // tag the store with the store type
-       avmService.setStoreProperty(previewStoreName, SandboxConstants.PROP_SANDBOX_WORKFLOW_PREVIEW,
-                new PropertyValue(DataTypeDefinition.TEXT, null));
-     
-       // tag the store with its own store name for querying.
-       avmService.setStoreProperty(previewStoreName,
-                QName.createQName(null, SandboxConstants.PROP_SANDBOX_STORE_PREFIX + previewStoreName),
-                new PropertyValue(DataTypeDefinition.TEXT, null));
-        
-       // tag the store with the DNS name property
-       path = previewStoreName + ":/" + JNDIConstants.DIR_DEFAULT_WWW + 
-                "/" + JNDIConstants.DIR_DEFAULT_APPBASE;
-       // DNS name mangle the property name - can only contain value DNS characters!
-       dnsProp = SandboxConstants.PROP_DNS + DNSNameMangler.MakeDNSName(userStore, packageName, "preview");
-       avmService.setStoreProperty(previewStoreName, QName.createQName(null, dnsProp),
-                new PropertyValue(DataTypeDefinition.TEXT, path));
        
-       // TODO review above and replace with common call to ...
-       /*
-       // tag the store with the DNS name property
-       tagStoreDNSPath(avmService, previewStoreName, storeId, packageName, "preview");
-       */
-
-       // The preview worfkflow store depends on the main workflow store (dist=1)
-       prop_key = SandboxConstants.PROP_BACKGROUND_LAYER + workflowStoreName;
-       avmService.setStoreProperty(previewStoreName, QName.createQName(null, prop_key),
-                new PropertyValue(DataTypeDefinition.INT, 1));
-
-       // The preview workflow store depends on the main user store (dist=2)
-       prop_key = SandboxConstants.PROP_BACKGROUND_LAYER + userStore;
-       avmService.setStoreProperty(previewStoreName, QName.createQName(null, prop_key),
-                new PropertyValue(DataTypeDefinition.INT, 2));
-       
-       // The preview workflow store depends on the main staging store (dist=3)
-       prop_key = SandboxConstants.PROP_BACKGROUND_LAYER + stagingStore;
-       avmService.setStoreProperty(previewStoreName, QName.createQName(null, prop_key),
-                new PropertyValue(DataTypeDefinition.INT, 3));
-     
        // snapshot the store
        avmService.createSnapshot(previewStoreName, null, null);
-        
-       // tag all related stores to indicate that they are part of a single sandbox
-       QName sandboxIdProp = QName.createQName(SandboxConstants.PROP_SANDBOXID + GUID.generate());
-       avmService.setStoreProperty(workflowStoreName, sandboxIdProp,
-                new PropertyValue(DataTypeDefinition.TEXT, null));
-       avmService.setStoreProperty(previewStoreName, sandboxIdProp,
-                new PropertyValue(DataTypeDefinition.TEXT, null));
-     
+       
        // return the main workflow store name
        return workflowStoreName;
    }
@@ -1270,13 +1168,12 @@ public final class SandboxFactory extends WCMUtil
     * 
     * @param store  Name of the store to tag
     */
-   private static void tagStoreDNSPath(AVMService avmService, String store, String... components)
+   private static void addStoreDNSPath(String store, Map<QName, PropertyValue> props, String... components)
    {
       String path = WCMUtil.buildSandboxRootPath(store);
       // DNS name mangle the property name - can only contain value DNS characters!
       String dnsProp = SandboxConstants.PROP_DNS + DNSNameMangler.MakeDNSName(components);
-      avmService.setStoreProperty(store, QName.createQName(null, dnsProp),
-            new PropertyValue(DataTypeDefinition.TEXT, path));
+      props.put(QName.createQName(null, dnsProp), new PropertyValue(DataTypeDefinition.TEXT, path));
    }
 
    /**
@@ -1304,14 +1201,12 @@ public final class SandboxFactory extends WCMUtil
     *                         The backgroundStore 'mysite' is 1 away from the store 'mysite--alice'
     *                         but 2 away from the store 'mysite--alice--preview'.
     */
-   private static void tagStoreBackgroundLayer(AVMService  avmService, 
-                                               String      store, 
+   private static void addStoreBackgroundLayer(Map<QName, PropertyValue> props,
                                                String      backgroundStore, 
                                                int         distance)
    {
       String prop_key = SandboxConstants.PROP_BACKGROUND_LAYER + backgroundStore;
-      avmService.setStoreProperty(store, QName.createQName(null, prop_key),
-            new PropertyValue(DataTypeDefinition.INT, distance));
+      props.put(QName.createQName(null, prop_key), new PropertyValue(DataTypeDefinition.INT, distance));
    }
 
    /**

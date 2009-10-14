@@ -452,6 +452,11 @@ public class AVMRepository
      */
     public void createAVMStore(String name)
     {
+        createAVMStore(name, null);
+    }
+    
+    public void createAVMStore(String name, Map<QName, PropertyValue> props)
+    {
         AlfrescoTransactionSupport.bindListener(fCreateStoreTxnListener);
         if (getAVMStoreByName(name) != null)
         {
@@ -464,6 +469,12 @@ public class AVMRepository
         AVMNode rootNode = rep.getRoot();
         rootNode.setStoreNew(null);
         fAVMNodeDAO.update(rootNode);
+        
+        
+        if (props != null)
+        {
+            setStoreProperties(name, props);
+        }
         
         fCreateStoreTxnListener.storeCreated(name);
     }

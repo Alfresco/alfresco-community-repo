@@ -474,7 +474,7 @@ public class AVMServiceImpl implements AVMService
     }
 
     /**
-     * Create an AVMStore with the given name.  It must not exist.
+     * Create an AVMStore with the given name (it must not exist).
      * @param name The name to give the AVMStore.   
      */
     public void createStore(String name)
@@ -485,7 +485,21 @@ public class AVMServiceImpl implements AVMService
         }
         fAVMRepository.createAVMStore(name);
     }
-
+    
+    /**
+     * Create an AVMStore with the given name (it must not exist) and set store properties.
+     * @param name The name to give the AVMStore.
+     * @param props A Map of the properties to set.
+     */
+    public void createStore(String name, Map<QName, PropertyValue> props)
+    {
+        if (name == null || !FileNameValidator.isValid(name))
+        {
+            throw new AVMBadArgumentException("Bad Name.");
+        }
+        fAVMRepository.createAVMStore(name, props);
+    }
+    
     /**
      * Create a branch.
      * @param version The version to branch from.

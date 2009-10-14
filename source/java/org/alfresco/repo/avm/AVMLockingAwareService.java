@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -175,7 +175,15 @@ public class AVMLockingAwareService implements AVMService, ApplicationContextAwa
     {
         fService.createStore(name);
     }
-
+    
+    /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.avm.AVMService#createStore(java.lang.String, java.util.Map)
+     */
+    public void createStore(String name, Map<QName, PropertyValue> props)
+    {
+        fService.createStore(name, props);
+    }
+    
     /* (non-Javadoc)
      * @see org.alfresco.service.cmr.avm.AVMService#deleteNodeProperties(java.lang.String)
      */
@@ -915,15 +923,28 @@ public class AVMLockingAwareService implements AVMService, ApplicationContextAwa
         if (webProject != null)
         {
             String userName = fAuthenticationService.getCurrentUserName();
-            if (!fLockingService.hasAccess(webProject, path, userName))
+            
+            boolean hasAccess = fLockingService.hasAccess(webProject, path, userName);
+            AVMLock lock = fLockingService.getLock(webProject, storePath[1]);
+            
+            if (!hasAccess)
             {
-                throw new AVMLockingException("avmlockservice.locked", new Object[]{path});
+                String owners = null;
+                if (lock == null)
+                {
+                    owners = null;
+                }
+                else 
+                {
+                    owners = lock.getOwners().toString(); // eg. '[alice]' or '[alice, bob]'
+                }
+                throw new AVMLockingException("avmlockservice.locked", new Object[]{path, owners});
             }
-            if (fLockingService.getLock(webProject, storePath[1]) == null)
+            if (lock == null)
             {
                 List<String> owners = new ArrayList<String>(1);
                 owners.add(userName);
-                AVMLock lock = new AVMLock(webProject, storePath[0], storePath[1], AVMLockingService.Type.DISCRETIONARY, owners);
+                lock = new AVMLock(webProject, storePath[0], storePath[1], AVMLockingService.Type.DISCRETIONARY, owners);
                 fLockingService.lockPath(lock);
             }
         }

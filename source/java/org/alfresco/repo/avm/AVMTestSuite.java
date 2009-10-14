@@ -27,6 +27,8 @@ package org.alfresco.repo.avm;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 
+import org.alfresco.repo.avm.locking.AVMLockingServiceTest;
+
 /**
  * AVM test suite
  */
@@ -48,6 +50,7 @@ public class AVMTestSuite extends TestSuite
         suite.addTestSuite(AVMServiceTestBase.class);
         suite.addTestSuite(AVMServiceTest.class);
         suite.addTestSuite(AVMServiceLocalTest.class);
+        suite.addTestSuite(AVMLockingServiceTest.class);
         suite.addTestSuite(AVMServicePermissionsTest.class);
         suite.addTestSuite(AVMServiceIndexTest.class);
         

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -34,6 +34,8 @@ import org.alfresco.i18n.I18NUtil;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.importer.ImporterBootstrap;
 import org.alfresco.repo.node.index.FullIndexRecoveryComponent.RecoveryMode;
+import org.alfresco.repo.search.AVMSnapShotTriggeredIndexingMethodInterceptor;
+import org.alfresco.repo.search.IndexMode;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
@@ -92,6 +94,7 @@ public class ConfigurationChecker extends AbstractLifecycleBean
     private NodeService nodeService;
     private SearchService searchService;
     private ContentService contentService;
+    private AVMSnapShotTriggeredIndexingMethodInterceptor avmSnapShotTriggeredIndexingMethodInterceptor;
     
     public ConfigurationChecker()
     {
@@ -167,7 +170,12 @@ public class ConfigurationChecker extends AbstractLifecycleBean
     {
         this.contentService = contentService;
     }
-
+    
+    public void setAvmSnapShotTriggeredIndexingMethodInterceptor(AVMSnapShotTriggeredIndexingMethodInterceptor avmSnapShotTriggeredIndexingMethodInterceptor)
+    {
+        this.avmSnapShotTriggeredIndexingMethodInterceptor = avmSnapShotTriggeredIndexingMethodInterceptor;
+    }
+    
     @Override
     protected void onBootstrap(ApplicationEvent event)
     {
@@ -208,12 +216,6 @@ public class ConfigurationChecker extends AbstractLifecycleBean
         List<StoreRef> missingIndexStoreRefs = new ArrayList<StoreRef>(0);
         for (StoreRef storeRef : storeRefs)
         {
-            // TODO: For now, do not check existence of index for AVM stores
-            //if (storeRef.getProtocol().equals(StoreRef.PROTOCOL_AVM))
-            //{
-            //    continue;
-            //}
-            
             @SuppressWarnings("unused")
             NodeRef rootNodeRef = null;
             try
@@ -227,6 +229,19 @@ public class ConfigurationChecker extends AbstractLifecycleBean
             }
             if (indexRecoveryMode != RecoveryMode.FULL)
             {
+                if (storeRef.getProtocol().equals(StoreRef.PROTOCOL_AVM))
+                {
+                    IndexMode storeIndexMode = avmSnapShotTriggeredIndexingMethodInterceptor.getIndexMode(storeRef.getIdentifier());
+                    if (storeIndexMode.equals(IndexMode.UNINDEXED))
+                    {
+                        if (logger.isDebugEnabled())
+                        {
+                            logger.debug("Skipping index for store: " + storeRef + " (unindexed AVM store)");
+                        }
+                        continue;
+                    }
+                }
+                
                 if (logger.isDebugEnabled())
                 {
                     logger.debug("Checking index for store: " + storeRef);

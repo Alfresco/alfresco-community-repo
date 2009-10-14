@@ -152,7 +152,15 @@ public class MultiTAVMService implements AVMService
     {
         fService.createStore(getTenantStoreName(storeName));
     }
-
+    
+    /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.avm.AVMService#createStore(java.lang.String, java.util.Map)
+     */
+    public void createStore(String name, Map<QName, PropertyValue> props)
+    {
+        fService.createStore(name, props);
+    }
+    
     /* (non-Javadoc)
      * @see org.alfresco.service.cmr.avm.AVMService#deleteNodeProperties(java.lang.String)
      */

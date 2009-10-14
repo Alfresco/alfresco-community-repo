@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -86,6 +86,8 @@ public class WebClientAuthenticatorFactory implements ServletAuthenticatorFactor
         private WebScriptServletRequest servletReq;
         private WebScriptServletResponse servletRes;
         
+        private String ticket;
+        
         /**
          * Construct
          * 
@@ -97,6 +99,8 @@ public class WebClientAuthenticatorFactory implements ServletAuthenticatorFactor
         {
             this.servletReq = req;
             this.servletRes = res;
+            
+            this.ticket = req.getParameter("ticket");
         }
         
         /* (non-Javadoc)
@@ -113,14 +117,14 @@ public class WebClientAuthenticatorFactory implements ServletAuthenticatorFactor
                 // 
                 HttpServletRequest req = servletReq.getHttpServletRequest();
                 HttpServletResponse res = servletRes.getHttpServletResponse();
-                String ticket = req.getParameter("ticket");
+                
                 
                 if (logger.isDebugEnabled())
                 {
                     logger.debug("Alfresco ticket provided: " + (ticket != null && ticket.length() > 0));
                 }
             
-                if (ticket != null && ticket.length() > 0)
+                if (! emptyCredentials())
                 {
                     if (logger.isDebugEnabled())
                         logger.debug("Authenticating ticket " + ticket);
@@ -163,6 +167,14 @@ public class WebClientAuthenticatorFactory implements ServletAuthenticatorFactor
             }
             
             return !(status == null || status == AuthenticationStatus.Failure);
+        }
+        
+        /* (non-Javadoc)
+         * @see org.alfresco.web.scripts.Authenticator#emptyCredentials()
+         */
+        public boolean emptyCredentials()
+        {
+            return (ticket == null || ticket.length() == 0);
         }
     }
 

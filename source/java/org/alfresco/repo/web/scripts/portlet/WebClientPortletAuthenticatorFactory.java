@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -167,7 +167,20 @@ public class WebClientPortletAuthenticatorFactory implements PortletAuthenticato
             
             return true;
         }
-    
+        
+        /* (non-Javadoc)
+         * @see org.alfresco.web.scripts.Authenticator#emptyCredentials()
+         */
+        public boolean emptyCredentials()
+        {
+            String portalUser = (String)req.getPortletSession().getAttribute(WebScriptPortletRequest.ALFPORTLETUSERNAME);
+            if (portalUser == null)
+            {
+                portalUser = req.getRemoteUser();
+            }
+            return (portalUser == null);
+        }
+        
         /**
          * Helper.  Remove Web Client session invalidated flag
          * 

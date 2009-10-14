@@ -38,7 +38,7 @@
                   <a class="webProjectLink" href="${url.context}${wp.url}" target="new"><img class="itemImageIcon" src="${url.context}/images/icons/view_web_project.gif" width="16" height="16" border="0">View Web Project</a>
                   <#if wp.properties.description?exists && wp.properties.description?length!=0>
                   <br>
-                  <span class="webprojectDesc">${wp.properties.description}</span>
+                  <span class="webprojectDesc">${wp.properties.description?html}</span>
                   </#if>
                </div>
                <div class="webProjectFiles"> <#-- marker class for dynamic click script -->

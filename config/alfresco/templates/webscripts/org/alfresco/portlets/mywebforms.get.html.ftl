@@ -38,7 +38,7 @@
                   <a class="webProjectLink" href="${url.context}${wp.url}" target="new"><img class="itemImageIcon" src="${url.context}/images/icons/view_web_project.gif" width="16" height="16" border="0">View Web Project</a>
                   <#if wp.properties.description?exists && wp.properties.description?length!=0>
                   <br>
-                  <span class="webprojectDesc">${wp.properties.description}</span>
+                  <span class="webprojectDesc">${wp.properties.description?html}</span>
                   </#if>
                </div>
                <div class="webProjectForms"> <#-- marker class for rollover script -->
@@ -48,7 +48,7 @@
                      <#assign formcount=formcount+1>
                      <div class="formsRow">
                         <img src="${url.context}/images/icons/webform_large.gif" width=32 height=32 border=0>
-                        <a class="webformLink" href="${url.context}/c/ui/createwebcontent?sandbox=${sandbox}&webproject=${wp.id}&form=${form.properties["wca:formname"]}&container=plain" target="new">${form.properties.title}</a>
+                        <a class="webformLink" href="${url.context}/c/ui/createwebcontent?sandbox=${sandbox}&webproject=${wp.id}&form=${form.properties["wca:formname"]}&container=plain" target="new">${form.properties.title?html}</a>
                         <#if (form.properties.description?exists) && (form.properties.description?length!=0)>
                         <span style="vertical-align:50%">(${form.properties.description})</span>
                         </#if>

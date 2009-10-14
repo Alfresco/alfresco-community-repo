@@ -1456,65 +1456,136 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         Long nodeId = nodePair.getFirst();
 
         final List<ChildAssociationRef> results = new ArrayList<ChildAssociationRef>(100);
-        
-        // if the type is the wildcard type, and the qname is not a search, then use a shortcut query
-        if (typeQNamePattern.equals(RegexQNamePattern.MATCH_ALL) && qnamePattern instanceof QName)
+
+        if (qnamePattern instanceof QName)
         {
-            NodeDaoService.ChildAssocRefQueryCallback callback = new NodeDaoService.ChildAssocRefQueryCallback()
+            // Both explicit QNames
+            if (typeQNamePattern instanceof QName)
             {
-                public boolean handle(
-                        Pair<Long, ChildAssociationRef> childAssocPair,
-                        Pair<Long, NodeRef> parentNodePair,
-                        Pair<Long, NodeRef> childNodePair)
+                NodeDaoService.ChildAssocRefQueryCallback callback = new NodeDaoService.ChildAssocRefQueryCallback()
                 {
-                    results.add(childAssocPair.getSecond());
-                    return false;
-                }
-            };
-            // Get all child associations with the specific qualified name
-            nodeDaoService.getChildAssocs(nodeId, (QName)qnamePattern, callback);
-        }
-        else if (typeQNamePattern instanceof QName && qnamePattern instanceof QName)
-        {
-            NodeDaoService.ChildAssocRefQueryCallback callback = new NodeDaoService.ChildAssocRefQueryCallback()
+                    public boolean handle(Pair<Long, ChildAssociationRef> childAssocPair,
+                            Pair<Long, NodeRef> parentNodePair, Pair<Long, NodeRef> childNodePair)
+                    {
+                        results.add(childAssocPair.getSecond());
+                        return false;
+                    }
+                };
+                // Get all child associations with the specific qualified name
+                nodeDaoService.getChildAssocsByTypeQNameAndQName(nodeId, (QName) typeQNamePattern,
+                        (QName) qnamePattern, callback);
+            }
+            // Type is explicit, local qname is pattern
+            else
             {
-                public boolean handle(
-                        Pair<Long, ChildAssociationRef> childAssocPair,
-                        Pair<Long, NodeRef> parentNodePair,
-                        Pair<Long, NodeRef> childNodePair)
+                NodeDaoService.ChildAssocRefQueryCallback callback;
+                if (typeQNamePattern.equals(RegexQNamePattern.MATCH_ALL))
                 {
-                    results.add(childAssocPair.getSecond());
-                    return false;
+                    callback = new NodeDaoService.ChildAssocRefQueryCallback()
+                    {
+                        public boolean handle(Pair<Long, ChildAssociationRef> childAssocPair,
+                                Pair<Long, NodeRef> parentNodePair, Pair<Long, NodeRef> childNodePair)
+                        {
+                            results.add(childAssocPair.getSecond());
+                            return false;
+                        }
+                    };
                 }
-            };
-            // Get all child associations with the specific qualified name
-            nodeDaoService.getChildAssocsByTypeQNameAndQName(
-                    nodeId,
-                    (QName)typeQNamePattern,
-                    (QName)qnamePattern,
-                    callback);
+                else
+                {
+                    callback = new NodeDaoService.ChildAssocRefQueryCallback()
+                    {
+                        public boolean handle(Pair<Long, ChildAssociationRef> childAssocPair,
+                                Pair<Long, NodeRef> parentNodePair, Pair<Long, NodeRef> childNodePair)
+                        {
+                            ChildAssociationRef assocRef = childAssocPair.getSecond();
+                            QName assocTypeQName = assocRef.getTypeQName();
+                            if (!typeQNamePattern.isMatch(assocTypeQName))
+                            {
+                                // No match
+                                return false;
+                            }
+                            results.add(assocRef);
+                            return false;
+                        }
+                    };
+
+                }
+
+                // Get all child associations with the specific qualified name
+                nodeDaoService.getChildAssocs(nodeId, (QName) qnamePattern, callback);
+            }
         }
         else
         {
-            NodeDaoService.ChildAssocRefQueryCallback callback = new NodeDaoService.ChildAssocRefQueryCallback()
+            // Local qname is pattern, type name is explicit
+            if (typeQNamePattern instanceof QName)
             {
-                public boolean handle(Pair<Long, ChildAssociationRef> childAssocPair, Pair<Long, NodeRef> parentNodePair, Pair<Long, NodeRef> childNodePair)
+                NodeDaoService.ChildAssocRefQueryCallback callback;
+                // if the type is the wildcard type, and the qname is not a search, then use a shortcut query
+                if (qnamePattern.equals(RegexQNamePattern.MATCH_ALL))
                 {
-                    ChildAssociationRef assocRef = childAssocPair.getSecond();
-                    QName assocTypeQName = assocRef.getTypeQName();
-                    QName assocQName = assocRef.getQName();
-                    if (!qnamePattern.isMatch(assocQName) || !typeQNamePattern.isMatch(assocTypeQName))
+                    callback = new NodeDaoService.ChildAssocRefQueryCallback()
                     {
-                        // No match
+                        public boolean handle(Pair<Long, ChildAssociationRef> childAssocPair,
+                                Pair<Long, NodeRef> parentNodePair, Pair<Long, NodeRef> childNodePair)
+                        {
+                            results.add(childAssocPair.getSecond());
+                            return false;
+                        }
+                    };
+                }
+                else
+                {
+
+                    callback = new NodeDaoService.ChildAssocRefQueryCallback()
+                    {
+                        public boolean handle(Pair<Long, ChildAssociationRef> childAssocPair,
+                                Pair<Long, NodeRef> parentNodePair, Pair<Long, NodeRef> childNodePair)
+                        {
+                            ChildAssociationRef assocRef = childAssocPair.getSecond();
+                            QName assocQName = assocRef.getQName();
+                            if (!qnamePattern.isMatch(assocQName))
+                            {
+                                // No match
+                                return false;
+                            }
+                            results.add(assocRef);
+                            return false;
+                        }
+                    };
+                }
+
+                // Get all child associations with the specific type qualified name
+                nodeDaoService.getChildAssocsByTypeQNames(nodeId, Collections.singletonList((QName) typeQNamePattern),
+                        callback);
+
+            }
+            // Local qname is pattern, type name is pattern
+            else
+            {
+                NodeDaoService.ChildAssocRefQueryCallback callback = new NodeDaoService.ChildAssocRefQueryCallback()
+                {
+                    public boolean handle(Pair<Long, ChildAssociationRef> childAssocPair,
+                            Pair<Long, NodeRef> parentNodePair, Pair<Long, NodeRef> childNodePair)
+                    {
+                        ChildAssociationRef assocRef = childAssocPair.getSecond();
+                        QName assocTypeQName = assocRef.getTypeQName();
+                        QName assocQName = assocRef.getQName();
+                        if (!qnamePattern.isMatch(assocQName) || !typeQNamePattern.isMatch(assocTypeQName))
+                        {
+                            // No match
+                            return false;
+                        }
+                        results.add(assocRef);
                         return false;
                     }
-                    results.add(assocRef);
-                    return false;
-                }
-            };
-            // Get all child associations
-            nodeDaoService.getChildAssocs(nodeId, callback, false);
+                };
+                // Get all child associations
+                nodeDaoService.getChildAssocs(nodeId, callback, false);
+            }
         }
+            
         // sort the results
         List<ChildAssociationRef> orderedList = reorderChildAssocs(results);
         // done

@@ -18,7 +18,7 @@
  * As a special exception to the terms and conditions of version 2.0 of 
  * the GPL, you may redistribute this Program in connection with Free/Libre 
  * and Open Source Software ("FLOSS") applications as described in Alfresco's 
- * FLOSS exception.  You should have recieved a copy of the text describing 
+ * FLOSS exception.  You should have received a copy of the text describing 
  * the FLOSS exception, and it is also available here: 
  * http://www.alfresco.com/legal/licensing"
  */
@@ -255,7 +255,25 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
      * @return NodeRef of the person as specified by the username
      * @throws NoSuchPersonException
      */
-    public NodeRef getPerson(final String userName)
+    public NodeRef getPerson(String userName)
+    {
+        return getPerson(userName, true);
+    }
+
+    /**
+     * Retrieve the person NodeRef for a username key. Depending on the <code>autoCreate</code> parameter and
+     * configuration missing people will be created if not found, else a NoSuchPersonException exception will be thrown.
+     * 
+     * @param userName
+     *            of the person NodeRef to retrieve
+     * @param autoCreate
+     *            should we auto-create the person node and home folder if they don't exist? (and configuration allows
+     *            us to)
+     * @return NodeRef of the person as specified by the username
+     * @throws NoSuchPersonException
+     *             if the person doesn't exist and can't be created
+     */
+    public NodeRef getPerson(final String userName, final boolean autoCreate)
     {
         // MT share - for activity service system callback
         if (tenantService.isEnabled() && (AuthenticationUtil.SYSTEM_USER_NAME.equals(AuthenticationUtil.getRunAsUser())) && tenantService.isTenantUser(userName))
@@ -266,17 +284,17 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
             {
                 public NodeRef doWork() throws Exception
                 {
-                    return getPersonImpl(userName);
+                    return getPersonImpl(userName, autoCreate);
                 }
             }, tenantService.getDomainUser(AuthenticationUtil.getSystemUserName(), tenantDomain));
         }
         else
         {
-            return getPersonImpl(userName);
+            return getPersonImpl(userName, autoCreate);
         }
     }
 
-    private NodeRef getPersonImpl(String userName)
+    private NodeRef getPersonImpl(String userName, boolean autoCreate)
     {
         if(userName == null)
         {
@@ -290,7 +308,7 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
         if (personNode == null)
         {
             TxnReadState txnReadState = AlfrescoTransactionSupport.getTransactionReadState();
-            if (createMissingPeople() && txnReadState == TxnReadState.TXN_READ_WRITE)
+            if (autoCreate && createMissingPeople() && txnReadState == TxnReadState.TXN_READ_WRITE)
             {
                 // We create missing people AND are in a read-write txn
                 return createMissingPerson(userName);
@@ -300,11 +318,11 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
                 throw new NoSuchPersonException(userName);
             }
         }
-        else
+        else if (autoCreate)
         {
             makeHomeFolderIfRequired(personNode);
-            return personNode;
         }
+        return personNode;
     }
 
     public boolean personExists(String caseSensitiveUserName)

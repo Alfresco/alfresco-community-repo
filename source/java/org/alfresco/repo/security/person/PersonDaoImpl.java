@@ -57,6 +57,7 @@ public class PersonDaoImpl extends HibernateDaoSupport implements PersonDao
     private static final String QUERY_PERSON_GET_ALL_PEOPLE = "person.getAllPeople";
 
     private QNameDAO qnameDAO;
+    private Long assocTypeQNameID;
     private Long qNamePropId;
     private Long qNameTypeId;
     private LocaleDAO localeDAO;
@@ -79,6 +80,7 @@ public class PersonDaoImpl extends HibernateDaoSupport implements PersonDao
 
     public void init()
     {
+        assocTypeQNameID = qnameDAO.getOrCreateQName(ContentModel.ASSOC_CHILDREN).getFirst();
         qNamePropId = qnameDAO.getOrCreateQName(ContentModel.PROP_USERNAME).getFirst();
         qNameTypeId = qnameDAO.getOrCreateQName(ContentModel.TYPE_PERSON).getFirst();
     }
@@ -112,6 +114,7 @@ public class PersonDaoImpl extends HibernateDaoSupport implements PersonDao
             public Object doInHibernate(Session session)
             {
                 SQLQuery query = (SQLQuery) session.getNamedQuery(QUERY_PERSON_GET_PERSON_IGNORE_CASE);
+                query.setParameter("assocTypeQNameID", assocTypeQNameID);
                 query.setParameter("qnamePropId", qNamePropId);
                 query.setParameter("qnameTypeId", qNameTypeId);
                 query.setParameter("userNameLowerCase", searchUserName.toLowerCase());      // Lowercase: ETHREEOH-1431

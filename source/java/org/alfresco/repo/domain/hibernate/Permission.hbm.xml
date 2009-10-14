@@ -412,6 +412,7 @@
 		   JOIN alf_store s on s.id = n.store_id
         WHERE
            c.qname_localname = :userNameLowerCase AND
+           c.type_qname_id = :assocTypeQNameID AND
            p.qname_id = :qnamePropId AND
            n.type_qname_id = :qnameTypeId AND
            n.node_deleted = :False AND

@@ -452,9 +452,12 @@ public class BatchProcessor<T> implements BatchMonitor
         /** The number of successfully processed entries. */
         private int txnSuccesses;
 
+        /** The current entry being processed in the transaction */
+        private String txnEntryId;
+        
         /** The last error. */
         private Throwable txnLastError;
-
+        
         /** The last error entry id. */
         private String txnLastErrorEntryId;
 
@@ -467,7 +470,7 @@ public class BatchProcessor<T> implements BatchMonitor
             reset();
             for (T entry : this.batch)
             {
-                String txnEntryId = this.worker.getIdentifier(entry);
+                this.txnEntryId = this.worker.getIdentifier(entry);
                 synchronized (BatchProcessor.this)
                 {
                     BatchProcessor.this.currentEntryId = txnEntryId;
@@ -479,9 +482,6 @@ public class BatchProcessor<T> implements BatchMonitor
                 }
                 catch (Throwable t)
                 {
-                    this.txnLastError = t;
-                    this.txnLastErrorEntryId = txnEntryId;
-                    this.txnErrors++;
                     if (RetryingTransactionHelper.extractRetryCause(t) == null)
                     {
                         if (BatchProcessor.logger.isWarnEnabled())
@@ -489,6 +489,9 @@ public class BatchProcessor<T> implements BatchMonitor
                             BatchProcessor.logger.warn(getProcessName() + ": Failed to process entry \"" + txnEntryId
                                     + "\".", t);
                         }
+                        this.txnLastError = t;
+                        this.txnLastErrorEntryId = txnEntryId;
+                        this.txnErrors++;
                     }
                     else
                     {
@@ -514,6 +517,9 @@ public class BatchProcessor<T> implements BatchMonitor
                 // If the callback was in its own transaction, it must have run out of retries
                 if (this.splitTxns)
                 {
+                    this.txnLastError = t;
+                    this.txnLastErrorEntryId = this.txnEntryId;
+                    this.txnErrors++;
                     if (BatchProcessor.logger.isWarnEnabled())
                     {
                         BatchProcessor.logger.warn(getProcessName() + ": Failed to process entry \""

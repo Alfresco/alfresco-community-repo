@@ -406,6 +406,31 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
     }
 
     /**
+     * Tests synchronization of group associations in a zone with a larger volume of authorities.
+     * 
+     * @throws Exception
+     *             the exception
+     */
+    public void dontTestAssocs() throws Exception
+    {
+        this.retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Object>()
+        {
+            public Object execute() throws Throwable
+            {
+                List<NodeDescription> groups = new ArrayList<NodeDescription>(new RandomGroupCollection(1000,
+                        ChainingUserRegistrySynchronizerTest.this.authorityService.getAllAuthoritiesInZone(
+                                AuthorityService.ZONE_AUTH_EXT_PREFIX + "Z0", null)));
+                ChainingUserRegistrySynchronizerTest.this.applicationContextManager
+                        .setUserRegistries(new MockUserRegistry("Z0", Collections.<NodeDescription> emptyList(), groups));
+                ;
+                ChainingUserRegistrySynchronizerTest.this.synchronizer.synchronize(true, true);
+                return null;
+            }
+        });
+        tearDownTestUsersAndGroups();
+    }
+
+    /**
      * Constructs a description of a test group.
      * 
      * @param name
@@ -719,12 +744,12 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
 
                 public boolean hasNext()
                 {
-                    return pos < size;
+                    return this.pos < RandomPersonCollection.this.size;
                 }
 
                 public NodeDescription next()
                 {
-                    pos++;
+                    this.pos++;
                     return newPerson("U" + GUID.generate());
                 }
 
@@ -743,7 +768,7 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
         @Override
         public int size()
         {
-            return size;
+            return this.size;
         }
 
     }
@@ -758,21 +783,39 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
         /** The collection size. */
         private final int size;
 
-        /** The persons. */
-        private final List<NodeDescription> persons;
+        /** The authorities. */
+        private final List<String> authorities;
 
         /**
          * The Constructor.
          * 
          * @param size
          *            the collection size
-         * @param persons
-         *            the persons
+         * @param authorities
+         *            the authorities
          */
-        public RandomGroupCollection(int size, List<NodeDescription> persons)
+        public RandomGroupCollection(int size, Set<String> authorities)
         {
             this.size = size;
-            this.persons = persons;
+            this.authorities = new ArrayList<String>(authorities);
+        }
+
+        /**
+         * The Constructor.
+         * 
+         * @param size
+         *            the collection size
+         * @param authorities
+         *            the authorities
+         */
+        public RandomGroupCollection(int size, Collection<NodeDescription> persons)
+        {
+            this.size = size;
+            this.authorities = new ArrayList<String>(persons.size());
+            for (NodeDescription nodeDescription : persons)
+            {
+                this.authorities.add((String) nodeDescription.getProperties().get(ContentModel.PROP_USERNAME));
+            }
         }
 
         /*
@@ -789,19 +832,21 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
 
                 public boolean hasNext()
                 {
-                    return pos < size;
+                    return this.pos < RandomGroupCollection.this.size;
                 }
 
                 public NodeDescription next()
                 {
-                    pos++;
-                    String[] personNames = new String[10];
-                    for (int i = 0; i < personNames.length; i++)
+                    this.pos++;
+                    String[] authorityNames = new String[17];
+                    for (int i = 0; i < authorityNames.length; i++)
                     {
-                        personNames[i] = (String) persons.get((int) (Math.random() * (double) (persons.size() - 1)))
-                                .getProperties().get(ContentModel.PROP_USERNAME);
+                        authorityNames[i] = ChainingUserRegistrySynchronizerTest.this.authorityService
+                                .getShortName((String) RandomGroupCollection.this.authorities
+                                        .get((int) (Math.random() * (double) (RandomGroupCollection.this.authorities
+                                                .size() - 1))));
                     }
-                    return newGroup("G" + GUID.generate(), personNames);
+                    return newGroup("G" + GUID.generate(), authorityNames);
                 }
 
                 public void remove()
@@ -819,7 +864,7 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
         @Override
         public int size()
         {
-            return size;
+            return this.size;
         }
 
     }

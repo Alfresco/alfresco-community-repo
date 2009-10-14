@@ -47,6 +47,7 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.security.AuthorityType;
+import org.alfresco.service.cmr.security.NoSuchPersonException;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.namespace.QName;
@@ -219,7 +220,8 @@ public class AuthorityDAOImpl implements AuthorityDAO
                 NodeRef container = getAuthorityContainer();
                 if (container != null)
                 {
-                    for (ChildAssociationRef childRef : nodeService.getChildAssocs(container))
+                    for (ChildAssociationRef childRef : nodeService.getChildAssocs(container,
+                            ContentModel.ASSOC_CHILDREN, RegexQNamePattern.MATCH_ALL))
                     {
                         addAuthorityNameIfMatches(authorities, childRef.getQName().getLocalName(), type, pattern);
                     }
@@ -234,9 +236,11 @@ public class AuthorityDAOImpl implements AuthorityDAO
                     {
                         if (container != null)
                         {
-                            for (ChildAssociationRef childRef : nodeService.getChildAssocs(container))
+                            for (ChildAssociationRef childRef : nodeService.getChildAssocs(container,
+                                    ContentModel.ASSOC_IN_ZONE, RegexQNamePattern.MATCH_ALL))
                             {
-                                addAuthorityNameIfMatches(authorities, childRef.getQName().getLocalName(), type, pattern);
+                                addAuthorityNameIfMatches(authorities, childRef.getQName().getLocalName(), type,
+                                        pattern);
                             }
                         }
                     }
@@ -375,35 +379,30 @@ public class AuthorityDAOImpl implements AuthorityDAO
 
     private NodeRef getAuthorityOrNull(String name)
     {
-        if (AuthorityType.getAuthorityType(name).equals(AuthorityType.USER))
+        try
         {
-            if (!personService.personExists(name))
+            if (AuthorityType.getAuthorityType(name).equals(AuthorityType.USER))
             {
-                return null;
+                return personService.getPerson(name, false);
             }
-            return personService.getPerson(name);
-        }
-        else if (AuthorityType.getAuthorityType(name).equals(AuthorityType.GUEST))
-        {
-            if (!personService.personExists(name))
+            else if (AuthorityType.getAuthorityType(name).equals(AuthorityType.GUEST))
             {
-                return null;
+                return personService.getPerson(name, false);
             }
-            return personService.getPerson(name);
-        }
-        else if (AuthorityType.getAuthorityType(name).equals(AuthorityType.ADMIN))
-        {
-            if (!personService.personExists(name))
+            else if (AuthorityType.getAuthorityType(name).equals(AuthorityType.ADMIN))
             {
-                return null;
+                return personService.getPerson(name, false);
             }
-            return personService.getPerson(name);
+            else
+            {
+                List<ChildAssociationRef> results = nodeService.getChildAssocs(getAuthorityContainer(),
+                        ContentModel.ASSOC_CHILDREN, QName.createQName("cm", name, namespacePrefixResolver));
+                return results.isEmpty() ? null : results.get(0).getChildRef();
+            }
         }
-        else
+        catch (NoSuchPersonException e)
         {
-            List<ChildAssociationRef> results = nodeService.getChildAssocs(getAuthorityContainer(), ContentModel.ASSOC_CHILDREN, QName.createQName("cm", name,
-                    namespacePrefixResolver));
-            return results.isEmpty() ? null : results.get(0).getChildRef();
+            return null;
         }
     }
 
@@ -575,7 +574,7 @@ public class AuthorityDAOImpl implements AuthorityDAO
         NodeRef zoneRef = getZone(zoneName);
         if (zoneRef != null)
         {
-            for (ChildAssociationRef childRef : nodeService.getChildAssocs(zoneRef))
+            for (ChildAssociationRef childRef : nodeService.getChildAssocs(zoneRef, ContentModel.ASSOC_IN_ZONE, RegexQNamePattern.MATCH_ALL))
             {
                 addAuthorityNameIfMatches(authorities, childRef.getQName().getLocalName(), type, null);
             }

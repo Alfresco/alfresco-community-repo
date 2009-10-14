@@ -69,6 +69,22 @@ public interface PersonService
     public NodeRef getPerson(String userName);
 
     /**
+     * Retrieve the person NodeRef for a username key. Depending on the <code>autoCreate</code> parameter and
+     * configuration missing people will be created if not found, else a NoSuchPersonException exception will be thrown.
+     * 
+     * @param userName
+     *            of the person NodeRef to retrieve
+     * @param autoCreate
+     *            should we auto-create the person node and home folder if they don't exist? (and configuration allows
+     *            us to)
+     * @return NodeRef of the person as specified by the username
+     * @throws NoSuchPersonException
+     *             if the person doesn't exist and can't be created
+     */
+    @Auditable(parameters = {"userName", "autoCreate"})
+    public NodeRef getPerson(final String userName, final boolean autoCreate);
+
+    /**
      * Check if a person exists.
      * 
      * @param userName

@@ -48,17 +48,19 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.usage.UsageService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.AbstractLifecycleBean;
 import org.alfresco.util.Pair;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.context.ApplicationEvent;
 
 /**
  * User Usage Tracking Component - to allow user usages to be collapsed or re-calculated
  * 
  * - used by UserUsageCollapseJob to collapse usage deltas.
- * - used by UserUsageBootstrapJob to either clear all usages or (re-)calculate all missing usages.
+ * - used on bootstrap to either clear all usages or (re-)calculate all missing usages.
  */
-public class UserUsageTrackingComponent
+public class UserUsageTrackingComponent extends AbstractLifecycleBean
 {
     private static Log logger = LogFactory.getLog(UserUsageTrackingComponent.class);
     
@@ -156,8 +158,9 @@ public class UserUsageTrackingComponent
         }
     }
     
-    // called once on startup
-    public void bootstrap()
+    
+    @Override
+    protected void onBootstrap(ApplicationEvent event)
     {
         // default domain
         bootstrapInternal();
@@ -176,7 +179,7 @@ public class UserUsageTrackingComponent
                     }
                 }, tenantAdminService.getDomainUser(AuthenticationUtil.getSystemUserName(), tenant.getTenantDomain()));
             }
-       }
+       }        
     }
     
     public void bootstrapInternal()
@@ -211,6 +214,12 @@ public class UserUsageTrackingComponent
             }
         }
     }
+    
+    @Override
+    protected void onShutdown(ApplicationEvent event)
+    {
+    }
+    
     
     /**
      * Clear content usage for all users that have a usage.

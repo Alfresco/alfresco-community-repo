@@ -462,6 +462,44 @@
         </property>
     </bean>
 
+    <!--  User usage tracking (requires a query across all users on startup) -->
+    <bean id="userUsageTrackingComponent" class="org.alfresco.repo.usage.UserUsageTrackingComponent">
+        <property name="transactionService">
+            <ref bean="transactionService"/>
+        </property>
+        <property name="contentUsageImpl">
+            <ref bean="contentUsageImpl"/>
+        </property>
+        <!-- The store in which people are persisted-->
+        <property name="personStoreUrl">
+           <value>${spaces.store}</value>
+        </property>
+        <property name="nodeService">
+            <ref bean="nodeService"/>
+        </property>
+        <property name="nodeDaoService">
+            <ref bean="nodeDaoService"/>
+        </property>
+        <property name="usageService">
+            <ref bean="usageService"/>
+        </property>
+        <property name="tenantAdminService">
+            <ref bean="tenantAdminService" />
+        </property>
+        <property name="tenantService">
+            <ref bean="tenantService" />
+        </property>
+        <property name="clearBatchSize">
+            <value>50</value>
+        </property>
+        <property name="updateBatchSize">
+            <value>50</value>
+        </property>
+        <property name="enabled">
+            <value>${system.usages.enabled}</value>
+        </property>
+    </bean>
+
     <!-- User registry synchronization jobs (e.g. LDAP) -->
     <bean id="Synchronization" class="org.alfresco.repo.management.subsystems.ChildApplicationContextFactory" parent="abstractPropertyBackedBean">
         <property name="autoStart">

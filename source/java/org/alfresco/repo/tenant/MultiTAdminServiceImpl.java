@@ -52,7 +52,6 @@ import org.alfresco.repo.security.authentication.AuthenticationContext;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.site.SiteAVMBootstrap;
-import org.alfresco.repo.usage.UserUsageBootstrapJob;
 import org.alfresco.repo.usage.UserUsageTrackingComponent;
 import org.alfresco.repo.workflow.WorkflowDeployer;
 import org.alfresco.service.cmr.admin.RepoAdminService;
@@ -937,7 +936,7 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
         spacesImporterBootstrap.bootstrap();
         
         // calculate any missing usages
-        UserUsageTrackingComponent userUsageTrackingComponent = (UserUsageTrackingComponent)ctx.getBean(UserUsageBootstrapJob.KEY_COMPONENT);
+        UserUsageTrackingComponent userUsageTrackingComponent = (UserUsageTrackingComponent)ctx.getBean("userUsageTrackingComponent");
         userUsageTrackingComponent.bootstrapInternal();
        
         logger.debug("Bootstrapped store: " + tenantService.getBaseName(bootstrapStoreRef));

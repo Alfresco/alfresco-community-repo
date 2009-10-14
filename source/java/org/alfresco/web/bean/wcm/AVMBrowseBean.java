@@ -383,7 +383,6 @@ public class AVMBrowseBean implements IContextListener
          linkValidationService = (LinkValidationService)FacesContextUtils.getRequiredWebApplicationContext(
                   FacesContext.getCurrentInstance()).getBean("LinkValidationService");
       }
-      
       return this.linkValidationService;
    }
    
@@ -400,14 +399,13 @@ public class AVMBrowseBean implements IContextListener
     */
    public SearchService getSearchService()
    {
-    //check for null for cluster environment
-      if(searchService == null)
+      //check for null for cluster environment
+      if (searchService == null)
       {
          searchService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getSearchService();
       }
       return searchService;
    }
-
 
    /**
     * @param permissionService The PermissionService to set.

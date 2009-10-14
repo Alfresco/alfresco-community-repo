@@ -2445,6 +2445,10 @@
          <value>#{SearchService}</value>
       </managed-property>
       <managed-property>
+         <property-name>permissionService</property-name>
+         <value>#{PermissionService}</value>
+      </managed-property>
+      <managed-property>
          <property-name>dictionaryService</property-name>
          <value>#{DictionaryService}</value>
       </managed-property>

@@ -49,6 +49,8 @@ import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.ResultSetRow;
 import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
+import org.alfresco.service.cmr.security.AccessStatus;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.CachingDateFormat;
 import org.alfresco.web.app.Application;
@@ -109,6 +111,27 @@ public class TrashcanDialog extends BaseDialogBean implements IContextListener
    private final static String SEARCH_NAME_QUOTED = "PARENT:\"%s\" AND ASPECT:\"%s\" AND @" + NAME_ATTR + ":\"%s\"";
    private final static String SEARCH_TEXT_QUOTED = "PARENT:\"%s\" AND ASPECT:\"%s\" AND TEXT:\"%s\"";
    private final static String SEARCH_USERPREFIX  = "@" + USER_ATTR + ":%s AND ";
+   
+   /** The PermissionService reference */
+   transient protected PermissionService permissionService;
+   
+   
+   /**
+    * @param permissionService The PermissionService to set.
+    */
+   public void setPermissionService(PermissionService permissionService)
+   {
+      this.permissionService = permissionService;
+   }
+   
+   protected PermissionService getPermissionService()
+   {
+      if (permissionService == null)
+      {
+         permissionService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getPermissionService();
+      }
+      return permissionService;
+   }
    
    public void setProperty(TrashcanDialogProperty property)
    {
@@ -278,7 +301,8 @@ public class TrashcanDialog extends BaseDialogBean implements IContextListener
       public Object get(Node node)
       {
          ChildAssociationRef childRef = (ChildAssociationRef)node.getProperties().get(ContentModel.PROP_ARCHIVED_ORIGINAL_PARENT_ASSOC);
-         if (getNodeService().exists(childRef.getParentRef()))
+         if (getPermissionService().hasPermission(childRef.getParentRef(), PermissionService.READ).equals(AccessStatus.ALLOWED) &&
+             getNodeService().exists(childRef.getParentRef()))
          {
             return getNodeService().getPath(childRef.getParentRef());
          }
@@ -296,7 +320,8 @@ public class TrashcanDialog extends BaseDialogBean implements IContextListener
       public Object get(Node node)
       {
          ChildAssociationRef childRef = (ChildAssociationRef)node.getProperties().get(ContentModel.PROP_ARCHIVED_ORIGINAL_PARENT_ASSOC);
-         if (getNodeService().exists(childRef.getParentRef()))
+         if (getPermissionService().hasPermission(childRef.getParentRef(), PermissionService.READ).equals(AccessStatus.ALLOWED) &&
+             getNodeService().exists(childRef.getParentRef()))
          {
             return Repository.getDisplayPath(getNodeService().getPath(childRef.getParentRef()), true);
          }

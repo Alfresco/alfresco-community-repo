@@ -64,9 +64,10 @@ public class ManageReviewTaskDialog extends ManageTaskDialog
    protected String webapp;
    protected NodeRef webProjectRef;
    protected AVMBrowseBean avmBrowseBean;
-   protected PermissionService permissionService;
+   transient protected PermissionService permissionService;
    
    private static final Log logger = LogFactory.getLog(ManageReviewTaskDialog.class);
+   
    
    // ------------------------------------------------------------------------------
    // Implementation
@@ -200,11 +201,20 @@ public class ManageReviewTaskDialog extends ManageTaskDialog
    }
    
    /**
-   * @param permissionService PermissionService instance
-   */
+    * @param permissionService The PermissionService to set.
+    */
    public void setPermissionService(PermissionService permissionService)
    {
       this.permissionService = permissionService;
+   }
+   
+   protected PermissionService getPermissionService()
+   {
+      if (permissionService == null)
+      {
+         permissionService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getPermissionService();
+      }
+      return permissionService;
    }
    
    /**
@@ -226,7 +236,7 @@ public class ManageReviewTaskDialog extends ManageTaskDialog
       {
          result = Boolean.FALSE;
          
-         if (this.webProjectRef != null && permissionService.hasPermission(webProjectRef, PermissionService.READ_PROPERTIES).equals(AccessStatus.ALLOWED))
+         if (this.webProjectRef != null && getPermissionService().hasPermission(webProjectRef, PermissionService.READ_PROPERTIES).equals(AccessStatus.ALLOWED))
          {
             List<NodeRef> testServers = DeploymentUtil.findTestServers(this.webProjectRef, false);
             if (testServers != null)

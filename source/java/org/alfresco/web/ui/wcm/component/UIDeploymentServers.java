@@ -205,7 +205,7 @@ public class UIDeploymentServers extends UIInput
             {
               // yes title has changed - write out the new displayGroup	
               out.write("<p class='mainSubTitle'>");
-              out.write(displayGroup);
+              out.write(Utils.encode(displayGroup));
               out.write("</p>");
               currentDisplayGroup = displayGroup;
         	}
@@ -366,7 +366,7 @@ public class UIDeploymentServers extends UIInput
       out.write("<table width='100%'><tr><td><img class='deployConfigServerIcon' src='");
       out.write(contextPath);
       out.write("/images/icons/deploy_server_");
-      out.write(server.getDeployType());
+      out.write(Utils.encode(server.getDeployType()));
       out.write(".gif");
       out.write("' /></td><td width='100%'><span class='deployPanelServerName'>");
       out.write(Utils.encode(serverName));
@@ -411,7 +411,7 @@ public class UIDeploymentServers extends UIInput
       out.write(":</td><td>");
       if (server.getProperties().get(DeploymentServerConfig.PROP_PORT) != null)
       {
-         out.write((String)server.getProperties().get(DeploymentServerConfig.PROP_PORT));
+         out.write(Utils.encode((String)server.getProperties().get(DeploymentServerConfig.PROP_PORT)));
       }
       else
       {
@@ -440,11 +440,11 @@ public class UIDeploymentServers extends UIInput
          String type = (String)server.getProperties().get(DeploymentServerConfig.PROP_TYPE);
          if (WCMAppModel.CONSTRAINT_LIVESERVER.equals(type))
          {
-            out.write(Application.getMessage(context, MSG_LIVE_SERVER));
+            out.write(Utils.encode(Application.getMessage(context, MSG_LIVE_SERVER)));
          }
          else if (WCMAppModel.CONSTRAINT_TESTSERVER.equals(type))
          {
-            out.write(Application.getMessage(context, MSG_TEST_SERVER));
+            out.write(Utils.encode(Application.getMessage(context, MSG_TEST_SERVER)));
          }
       }
       out.write("</td></tr>");
@@ -530,14 +530,14 @@ public class UIDeploymentServers extends UIInput
           server.getProperties().get(DeploymentServerConfig.PROP_TYPE)))
       {
          out.write("<tr><td align='right'><nobr>");
-         out.write(bundle.getString(MSG_ALLOCATED));
+         out.write(Utils.encode(bundle.getString(MSG_ALLOCATED)));
          out.write(":</nobr></td><td>");
          if (server.getProperties().get(DeploymentServerConfig.PROP_ALLOCATED_TO) != null)
          {
             String allocatedToTip = (String)server.getProperties().get(
                      DeploymentServerConfig.PROP_ALLOCATED_TO);
             out.write("<span title='");
-            out.write(allocatedToTip);
+            out.write(Utils.encode(allocatedToTip));
             out.write("'><nobr>");
             out.write(bundle.getString("yes"));
             out.write("&nbsp;(");
@@ -548,7 +548,7 @@ public class UIDeploymentServers extends UIInput
             else
             {
                String username = AVMUtil.getUserName(allocatedToTip);
-               out.write(username);
+               out.write(Utils.encode(username));
             }
             out.write(")</nobr></span>");
          }
@@ -585,7 +585,7 @@ public class UIDeploymentServers extends UIInput
       out.write("/images/icons/deploy_server_");
       if (edit)
       {
-         out.write(server.getDeployType());
+         out.write(Utils.encode(server.getDeployType()));
       }
       else
       {

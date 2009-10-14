@@ -505,29 +505,7 @@ public abstract class BaseInviteUsersWizard extends BaseWizardBean
          }
          else
          {
-            // groups - text search match on supplied name
-            String term = PermissionService.GROUP_PREFIX + "*" + search + "*";
-            Set<String> groups;
-            groups = getAuthorityService().findAuthorities(AuthorityType.GROUP, term);
-            groups.addAll(getAuthorityService().getAllAuthorities(AuthorityType.EVERYONE));
-            
-            results = new ArrayList<SelectItem>(groups.size());
-            
-            int count = 0;
-            String groupDisplayName;
-            for (String group : groups)
-            {
-               // get display name, if not present strip prefix from group id
-               groupDisplayName = getAuthorityService().getAuthorityDisplayName(group);
-               if (groupDisplayName == null || groupDisplayName.length() == 0)
-               {
-                  groupDisplayName = group.substring(PermissionService.GROUP_PREFIX.length());
-               }
-               
-               results.add(new SortableSelectItem(group, groupDisplayName, groupDisplayName));
-               
-               if (++count == maxResults) break;
-            }
+            results = addGroupItems(search, maxResults);
          }
          
          items = new SelectItem[results.size()];
@@ -562,6 +540,40 @@ public abstract class BaseInviteUsersWizard extends BaseWizardBean
       }
       
       return items;
+   }
+   
+   private List<SelectItem> addGroupItems(String search, int maxResults)
+   {
+       Set<String> groups = getGroups(search);
+       
+       List<SelectItem> results = new ArrayList<SelectItem>(groups.size());
+       
+       int count = 0;
+       String groupDisplayName;
+       for (String group : groups)
+       {
+          // get display name, if not present strip prefix from group id
+          groupDisplayName = getAuthorityService().getAuthorityDisplayName(group);
+          if (groupDisplayName == null || groupDisplayName.length() == 0)
+          {
+             groupDisplayName = group.substring(PermissionService.GROUP_PREFIX.length());
+          }
+          
+          results.add(new SortableSelectItem(group, groupDisplayName, groupDisplayName));
+          
+          if (++count == maxResults) break;
+       }
+       return results;
+   }
+   
+   protected Set<String> getGroups(String search)
+   {
+       // groups - text search match on supplied name
+       String term = PermissionService.GROUP_PREFIX + "*" + search + "*";
+       Set<String> groups;
+       groups = getAuthorityService().findAuthorities(AuthorityType.GROUP, term);
+       groups.addAll(getAuthorityService().getAllAuthorities(AuthorityType.EVERYONE));
+       return groups;
    }
    
    /**

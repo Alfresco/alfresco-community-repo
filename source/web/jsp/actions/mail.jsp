@@ -33,7 +33,7 @@
 <%@ page import="javax.faces.context.FacesContext" %>
 <%@ page import="java.util.HashMap" %>
 <%@ page import="org.alfresco.web.ui.common.PanelGenerator" %>
-<%@ page import="org.alfresco.web.bean.spaces.InviteSpaceUsersWizard" %>
+<%@ page import="org.alfresco.web.bean.users.MailInviteSpaceUsersWizard" %>
 <%@ page import="org.alfresco.web.app.servlet.FacesHelper" %>
 <%@ page import="org.alfresco.web.ui.common.PanelGenerator" %>
 
@@ -147,13 +147,13 @@
                                     <td colspan="2" class="mainSubTitle"><h:outputText value="#{msg.set_action_values}" /></td>
                                  </tr>
                                  
-                                 <h:panelGroup rendered="#{InviteSpaceUsersWizard.haveMaximumUsersBeenReturned}">
+                                 <h:panelGroup rendered="#{MailInviteSpaceUsersWizard.haveMaximumUsersBeenReturned}">
                                     <f:verbatim><tr><td colspan="2">
                                     <% out.write("<div style='padding:2px;'></div>");
                                     PanelGenerator.generatePanelStart(out, request.getContextPath(), "yellowInner", "#ffffcc"); %>
                                     <img src='<%=request.getContextPath()%>/images/icons/info_icon.gif' align='absmiddle' />&nbsp;&nbsp;
                                     </f:verbatim>
-                                    <h:outputText id="infoMsg" value="#{InviteSpaceUsersWizard.maximumUsersMsg}" />
+                                    <h:outputText id="infoMsg" value="#{MailInviteSpaceUsersWizard.maximumUsersMsg}" />
                                     <f:verbatim>
                                     <% PanelGenerator.generatePanelEnd(out, request.getContextPath(), "yellowInner"); %>
                                     </td></tr></f:verbatim>
@@ -166,8 +166,8 @@
                                  <tr>
                                     <%-- Generic Picker to select Users/Groups --%>
                                     <td colspan=2 style="padding-left:16px">
-                                       <a:genericPicker id="picker" filters="#{InviteSpaceUsersWizard.filters}"
-                                             queryCallback="#{InviteSpaceUsersWizard.pickerCallback}"
+                                       <a:genericPicker id="picker" filters="#{MailInviteSpaceUsersWizard.filters}"
+                                             queryCallback="#{MailInviteSpaceUsersWizard.pickerCallback}"
                                              actionListener="#{WizardManager.bean.addRecipient}" />
                                     </td>
                                  </tr>
@@ -290,7 +290,7 @@
 </r:page>
 
 <%
-InviteSpaceUsersWizard wizard = (InviteSpaceUsersWizard)FacesHelper.getManagedBean(FacesContext.getCurrentInstance(), "InviteSpaceUsersWizard");
+MailInviteSpaceUsersWizard wizard = (MailInviteSpaceUsersWizard)FacesHelper.getManagedBean(FacesContext.getCurrentInstance(), "MailInviteSpaceUsersWizard");
 if (wizard != null) 
 {
    wizard.init(new HashMap());

@@ -25,6 +25,7 @@
 package org.alfresco.web.bean.admin;
 
 import java.io.Serializable;
+import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -56,7 +57,7 @@ public class ExportDialog extends BaseDialogBean
    private static final String ALL_SPACES = "all";
    private static final String CURRENT_SPACE = "current";
    private static final String DEFAULT_OUTCOME = "dialog:close";
-   private static final String MSG_EXPORT = "export";
+   private static final String MSG_EXPORT_TITLE = "export_title";
    private final static String MSG_LEFT_QUOTE = "left_qoute";
    private final static String MSG_RIGHT_QUOTE = "right_quote";
    
@@ -120,8 +121,10 @@ public class ExportDialog extends BaseDialogBean
    public String getContainerTitle()
    {
        FacesContext fc = FacesContext.getCurrentInstance();
-       return Application.getMessage(fc, MSG_EXPORT) + 
-             " " + Application.getMessage(fc, MSG_LEFT_QUOTE) + browseBean.getActionSpace().getName() + Application.getMessage(fc, MSG_RIGHT_QUOTE);
+       String name = Application.getMessage(fc, MSG_LEFT_QUOTE)
+       + browseBean.getActionSpace().getName()
+       + Application.getMessage(fc, MSG_RIGHT_QUOTE);
+       return MessageFormat.format(Application.getMessage(fc, MSG_EXPORT_TITLE), name);
    }
    
    /**

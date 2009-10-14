@@ -1025,7 +1025,7 @@ public abstract class BaseAssociationEditor extends UIInput
             query.append(type);
             query.append("\"");
             
-            if (contains != null && contains.length() > 0)
+            if (contains != null && contains.trim().length() != 0)
             {
                String safeContains = null;
                if (contains != null && contains.length() > 0)
@@ -1038,13 +1038,9 @@ public abstract class BaseAssociationEditor extends UIInput
                // firstName and lastName properties instead of the name property
                if (type.equals(ContentModel.TYPE_PERSON.toString()))
                {                
-                   query.append(" AND (@").append(NamespaceService.CONTENT_MODEL_PREFIX).append("\\:firstName:\"*");
-                   query.append(safeContains);
-                   query.append("*\" @").append(NamespaceService.CONTENT_MODEL_PREFIX).append("\\:lastName:\"*");
-                   query.append(safeContains);
-                   query.append("*\" @").append(NamespaceService.CONTENT_MODEL_PREFIX).append("\\:userName:\"");
-                   query.append(safeContains);
-                   query.append("*\")");
+                   query.append(" AND (");
+                   Utils.generatePersonSearch(query, safeContains);
+                   query.append(")");
                }
                else
                {

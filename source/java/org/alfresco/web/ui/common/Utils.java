@@ -33,6 +33,7 @@ import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.StringTokenizer;
 
 import javax.faces.application.FacesMessage;
 import javax.faces.component.NamingContainer;
@@ -55,6 +56,7 @@ import org.alfresco.jlan.server.filesys.DiskSharedDevice;
 import org.alfresco.jlan.server.filesys.FilesystemsConfigSection;
 import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.repo.webdav.WebDAVServlet;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -1054,12 +1056,17 @@ public final class Utils extends StringUtils
     */
    public static void generatePersonSearch(StringBuilder query, String term)
    {
-      query.append("@").append(NamespaceService.CONTENT_MODEL_PREFIX).append("\\:firstName:\"*");
-      query.append(term);
-      query.append("*\" @").append(NamespaceService.CONTENT_MODEL_PREFIX).append("\\:lastName:\"*");
-      query.append(term);
-      query.append("*\" @").append(NamespaceService.CONTENT_MODEL_PREFIX).append("\\:userName:");
-      query.append(term);
-      query.append("*");
+      // define the query to find people by their first or last name
+      for (StringTokenizer t = new StringTokenizer(term.trim(), " "); t.hasMoreTokens(); /**/)
+      {
+         String token = LuceneQueryParser.escape(t.nextToken());
+         query.append("@").append(NamespaceService.CONTENT_MODEL_PREFIX).append("\\:firstName:\"*");
+         query.append(token);
+         query.append("*\" @").append(NamespaceService.CONTENT_MODEL_PREFIX).append("\\:lastName:\"*");
+         query.append(token);
+         query.append("*\" @").append(NamespaceService.CONTENT_MODEL_PREFIX).append("\\:userName:");
+         query.append(token);
+         query.append("* ");
+      }
    }
 }

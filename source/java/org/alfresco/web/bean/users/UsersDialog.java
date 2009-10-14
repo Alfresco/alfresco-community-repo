@@ -30,20 +30,17 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.StringTokenizer;
 
 import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
 import javax.transaction.UserTransaction;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
-import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.context.IContextListener;
@@ -304,19 +301,9 @@ public class UsersDialog extends BaseDialogBean implements IContextListener, Cha
             tx.begin();
             
             // define the query to find people by their first or last name
-            String search = properties.getSearchCriteria().trim();
+            String search = properties.getSearchCriteria();
             StringBuilder query = new StringBuilder(128);
-            for (StringTokenizer t = new StringTokenizer(search, " "); t.hasMoreTokens(); /**/)
-            {
-               String term = LuceneQueryParser.escape(t.nextToken());
-               query.append("@").append(NamespaceService.CONTENT_MODEL_PREFIX).append("\\:firstName:\"*");
-               query.append(term);
-               query.append("*\" @").append(NamespaceService.CONTENT_MODEL_PREFIX).append("\\:lastName:\"*");
-               query.append(term);
-               query.append("*\" @").append(NamespaceService.CONTENT_MODEL_PREFIX).append("\\:userName:");
-               query.append(term);
-               query.append("*");
-            }
+            Utils.generatePersonSearch(query, search);
             
             if (logger.isDebugEnabled())
                logger.debug("Query: " + query.toString());

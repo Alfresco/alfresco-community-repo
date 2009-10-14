@@ -106,7 +106,7 @@ public class NtlmAuthenticationHandler extends AbstractAuthenticationHandler imp
                                                 NTLM.FlagNegotiateOEM +
                                                 NTLM.FlagNegotiateUnicode;
    
-    private static int ntlmFlags;
+    private int ntlmFlags;
     
     public void setAuthenticationComponent(NLTMAuthenticator authenticationComponent)
     {

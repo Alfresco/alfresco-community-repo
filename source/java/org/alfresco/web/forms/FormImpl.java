@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -38,7 +38,6 @@ import javax.faces.context.FacesContext;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.WCMAppModel;
-import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -213,7 +212,7 @@ public class FormImpl implements Form
       result = AVMUtil.buildPath(parentAVMPath, 
                                  result,
                                  AVMUtil.PathRelation.SANDBOX_RELATIVE);
-      result = AVMNodeConverter.NormalizePath(result);
+      result = AVMUtil.normalizePath(result);
       LOGGER.debug("processed pattern " + outputPathPattern + " as " + result);
       return result;
    }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -67,7 +67,8 @@ public class AVMListRenderer extends RichListRenderer
             if ((avmRef.isLayeredDirectory() && avmRef.isPrimary()) || avmRef.isLayeredFile())
             {
                AVMService avmService = Repository.getServiceRegistry(context).getAVMService();
-               if (avmService.lookup(avmRef.getIndirectionVersion(), avmRef.getIndirection()) == null)
+               if ((avmService.lookup(avmRef.getIndirectionVersion(), avmRef.getIndirection()) == null) &&
+                   (! avmRef.getOpacity()))
                {
                   rowStyle = STALE_CSS;
                }

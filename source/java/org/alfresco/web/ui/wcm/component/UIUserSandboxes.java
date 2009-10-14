@@ -734,10 +734,19 @@ public class UIUserSandboxes extends SelfRenderingComponent implements Serializa
       String stagingStore = AVMUtil.buildStagingStoreName(storeRoot);
       String stagingStorePath = AVMUtil.buildStoreWebappPath(stagingStore, getWebapp());
       
+      long start = System.currentTimeMillis();
+      
       List<AssetInfo> assets = sandboxService.listChangedWebApp(userStore, getWebapp(), true);
+      
+      if (logger.isDebugEnabled())
+      {
+          logger.debug("List "+assets.size()+" changes webapp in "+(System.currentTimeMillis()-start)+" msecs");
+      }
       
       if (assets.size() != 0)
       {
+         start = System.currentTimeMillis();
+          
          // output confict header, only if conflicts exist
          int diffCount = 0;
          for (AssetInfo asset : assets)
@@ -891,7 +900,7 @@ public class UIUserSandboxes extends SelfRenderingComponent implements Serializa
                    out.write("</td><td width=20>");
             	   UIAVMLockIcon lockIcon = (UIAVMLockIcon)fc.getApplication().createComponent(UIAVMLockIcon.ALFRESCO_FACES_AVMLOCKICON);
                    lockIcon.setId("avmlock_" + Integer.toString(rowIndex));
-                   lockIcon.setValue(sourcePath);
+                   lockIcon.setValue(node);
                    Utils.encodeRecursive(fc, lockIcon);
                    out.write("</td><td width=16>");
                    out.write(linkPrefix);
@@ -993,6 +1002,11 @@ public class UIUserSandboxes extends SelfRenderingComponent implements Serializa
          
          // end table
          out.write("</table>");
+         
+         if (logger.isDebugEnabled())
+         {
+             logger.debug("Wrote table in "+(System.currentTimeMillis()-start)+" msecs");
+         }
       }
       else
       {

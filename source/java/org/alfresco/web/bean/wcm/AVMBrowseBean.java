@@ -1329,7 +1329,7 @@ public class AVMBrowseBean implements IContextListener
          String type = "";
          if (avmRef.getType() == AVMNodeType.LAYERED_DIRECTORY && avmRef.isPrimary())
          {
-            if (getAvmService().lookup(avmRef.getIndirectionVersion(), avmRef.getIndirection()) != null)
+            if ((getAvmService().lookup(avmRef.getIndirectionVersion(), avmRef.getIndirection()) != null) || (avmRef.getOpacity()))
             {
                type = Application.getMessage(FacesContext.getCurrentInstance(), "shared_folder");
             }
@@ -1348,9 +1348,9 @@ public class AVMBrowseBean implements IContextListener
       }
       else
       {
-         String type = "file";
-    	 if (avmRef.isLayeredFile())
-    	 {
+         String type = "";
+         if (avmRef.isLayeredFile())
+         {
             if (getAvmService().lookup(avmRef.getIndirectionVersion(), avmRef.getIndirection()) != null)
             {
                type = Application.getMessage(FacesContext.getCurrentInstance(), "shared_file");
@@ -1359,12 +1359,17 @@ public class AVMBrowseBean implements IContextListener
             {
                type = Application.getMessage(FacesContext.getCurrentInstance(), "stale_shared_file");
             } 
-    	 }
-    	 
-    	 node.getProperties().put("fileType", type);
+         }
+         else
+         {
+            type = Application.getMessage(FacesContext.getCurrentInstance(), "file");
+         }
+         
+         node.getProperties().put("fileType", type);
          node.getProperties().put("fileType16", FileTypeImageUtils.getFileTypeImage(avmRef.getName(), true));
          node.getProperties().put("url", DownloadContentServlet.generateBrowserURL(
                AVMNodeConverter.ToNodeRef(-1, avmRef.getPath()), avmRef.getName()));
+         
          this.files.add(node);
       }
       
@@ -1430,7 +1435,10 @@ public class AVMBrowseBean implements IContextListener
       String path = params.get("id");
       AVMNodeDescriptor avmNode = getAvmService().lookup(-1, path);
 
-      if (avmNode.isLayeredDirectory() && avmNode.isPrimary() && (getAvmService().lookup(avmNode.getIndirectionVersion(), avmNode.getIndirection()) == null))
+      if (avmNode.isLayeredDirectory() && avmNode.isPrimary() && 
+          (getAvmService().lookup(avmNode.getIndirectionVersion(), avmNode.getIndirection()) == null) &&
+          (! avmNode.getOpacity()) &&
+          getAvmService().getDirectoryListingDirect(avmNode, false).isEmpty())
       {
          String pattern = Application.getMessage(FacesContext.getCurrentInstance(), MSG_TARGET_IS_DELETED);
          String folderName = path.substring(path.lastIndexOf("/") + 1);

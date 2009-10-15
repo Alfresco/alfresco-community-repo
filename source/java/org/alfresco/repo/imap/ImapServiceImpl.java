@@ -25,6 +25,7 @@
 package org.alfresco.repo.imap;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -44,10 +45,13 @@ import org.alfresco.model.ImapModel;
 import org.alfresco.repo.imap.AlfrescoImapConst.ImapViewMode;
 import org.alfresco.repo.imap.config.ImapConfigMountPointsBean;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.site.SiteServiceException;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.preference.PreferenceService;
+import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.search.SearchService;
@@ -608,7 +612,36 @@ public class ImapServiceImpl implements ImapService
         else
         {
             // Remove folders from Sites
-            List<SiteInfo> sites = serviceRegistry.getSiteService().listSites(getCurrentUser());
+            List<SiteInfo> sites = serviceRegistry.getTransactionService().getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<List<SiteInfo>>()
+            {
+                public List<SiteInfo> execute() throws Exception
+                {
+                    List<SiteInfo> res = new ArrayList<SiteInfo>();
+                    try
+                    {
+
+                        res = serviceRegistry.getSiteService().listSites(getCurrentUser());
+                    }
+                    catch (SiteServiceException e)
+                    {
+                        // Do nothing. Root sites folder was not created.
+                        if (logger.isWarnEnabled())
+                        {
+                            logger.warn("Root sites folder was not created.");
+                        }
+                    }
+                    catch (InvalidNodeRefException e)
+                    {
+                        // Do nothing. Root sites folder was deleted.
+                        if (logger.isWarnEnabled())
+                        {
+                            logger.warn("Root sites folder was deleted.");
+                        }
+                    }
+
+                    return res;
+                }
+            }, false, true);
             for (SiteInfo siteInfo : sites)
             {
                 List<FileInfo> siteChilds = fileFolderService.search(siteInfo.getNodeRef(), namePattern, false, true, true);
@@ -1280,12 +1313,44 @@ public class ImapServiceImpl implements ImapService
      * @param userName name of user
      * @return List of nonFavourite sites.
      */
-    private List<SiteInfo> getNonFavouriteSites(String userName)
+    private List<SiteInfo> getNonFavouriteSites(final String userName)
     {
         List<SiteInfo> nonFavSites = new LinkedList<SiteInfo>();
+
         PreferenceService preferenceService = (PreferenceService) serviceRegistry.getService(ServiceRegistry.PREFERENCE_SERVICE);
         Map<String, Serializable> prefs = preferenceService.getPreferences(userName, AlfrescoImapConst.PREF_IMAP_FAVOURITE_SITES);
-        List<SiteInfo> sites = serviceRegistry.getSiteService().listSites(userName);
+
+        List<SiteInfo> sites = serviceRegistry.getTransactionService().getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<List<SiteInfo>>()
+        {
+            public List<SiteInfo> execute() throws Exception
+           {
+                List<SiteInfo> res = new ArrayList<SiteInfo>();
+                try
+               {
+
+                    res = serviceRegistry.getSiteService().listSites(userName);
+        }
+        catch (SiteServiceException e)
+        {
+            //Do nothing. Root sites folder was not created.
+            if (logger.isDebugEnabled())
+            {
+                logger.warn("Root sites folder was not created.");
+            }
+        }
+        catch (InvalidNodeRefException e)
+        {
+            //Do nothing. Root sites folder was deleted.
+            if (logger.isDebugEnabled())
+            {
+                logger.warn("Root sites folder was deleted.");
+            }
+        }
+
+                return res;
+            }
+        }, false, true);
+
         for (SiteInfo siteInfo : sites)
         {
             String key = AlfrescoImapConst.PREF_IMAP_FAVOURITE_SITES + "." + siteInfo.getShortName();

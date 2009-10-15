@@ -32,7 +32,7 @@
         </property>
     </bean>
 
-    <bean id="defaltOnLoadListsner" class="org.hibernate.event.def.DefaultLoadEventListener" />
+    <bean id="defaltOnLoadListener" class="org.hibernate.event.def.DefaultLoadEventListener" />
     
     <bean id="clearCGLibThreadLocal" class="org.alfresco.repo.domain.hibernate.HibernateLoadListener" />
     
@@ -58,7 +58,7 @@
             <map>
                 <entry key="load">
                     <list>
-                        <ref bean="defaltOnLoadListsner" />
+                        <ref bean="defaltOnLoadListener" />
                         <ref bean="clearCGLibThreadLocal" />
                     </list>
                 </entry>

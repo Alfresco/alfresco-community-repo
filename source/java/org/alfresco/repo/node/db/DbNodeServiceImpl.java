@@ -2313,6 +2313,12 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         {
             Long childNodeId = oldChildNodePair.getFirst();
             NodeRef childNodeRef = oldChildNodePair.getSecond();
+            if (nodeDaoService.getNodeRefStatus(childNodeRef).isDeleted())
+            {
+               //Node has been already deleted.
+                continue;
+            } 
+            
             QName childNodeTypeQName = nodeDaoService.getNodeType(childNodeId);
             Set<QName> childNodeAspectQNames = nodeDaoService.getNodeAspects(childNodeId);
             Pair<Long, ChildAssociationRef> oldParentAssocPair = nodeDaoService.getPrimaryParentAssoc(childNodeId);

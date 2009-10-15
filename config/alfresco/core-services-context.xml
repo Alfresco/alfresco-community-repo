@@ -111,7 +111,7 @@
 
     <!-- Custom MBeanServer -->
     <bean id="alfrescoMBeanServer" class="org.springframework.jmx.support.MBeanServerFactoryBean">
-        <property name="locateExistingServerIfPossible" value="true" />
+        <property name="locateExistingServerIfPossible" value="${mbean.server.locateExistingServerIfPossible}" />
     </bean>
 
     <bean id="registry"

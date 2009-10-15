@@ -332,12 +332,37 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
 			 * Nominated invitation complete the wf:invitePendingTask along the
 			 * 'accept' transition because the invitation has been accepted
 			 */
-			InviteHelper
-					.completeInviteTask(
-							invitationId,
-							WorkflowModelNominatedInvitation.WF_INVITE_TASK_INVITE_PENDING,
-							WorkflowModelNominatedInvitation.WF_TRANSITION_ACCEPT,
-							this.workflowService);
+ 		    
+			// create workflow task query
+	        WorkflowTaskQuery wfTaskQuery = new WorkflowTaskQuery();
+	        
+	        // set the given invite ID as the workflow process ID in the workflow query
+	        wfTaskQuery.setProcessId(invitationId);
+
+	        // find incomplete invite workflow tasks with given task name 
+	        wfTaskQuery.setActive(Boolean.TRUE);
+	        wfTaskQuery.setTaskState(WorkflowTaskState.IN_PROGRESS);
+	        wfTaskQuery.setTaskName(WorkflowModelNominatedInvitation.WF_INVITE_TASK_INVITE_PENDING);
+
+	        // set process name to "wf:invite" so that only
+	        // invite workflow instances are considered by this query
+	        wfTaskQuery.setProcessName(WorkflowModelNominatedInvitation.WF_PROCESS_INVITE);
+
+	        // query for invite workflow tasks with the constructed query
+	        List<WorkflowTask> wf_invite_tasks = workflowService
+	                .queryTasks(wfTaskQuery);
+	        
+            if(wf_invite_tasks.size() == 0)
+            {
+                Object objs[] = { invitationId };
+                throw new InvitationExceptionUserError("invitation.invite.already_finished", objs); 
+            }
+            
+	        // end all tasks found with this name 
+	        for (WorkflowTask workflowTask : wf_invite_tasks)
+	        {
+	            workflowService.endTask(workflowTask.id,  WorkflowModelNominatedInvitation.WF_TRANSITION_ACCEPT);
+	        }
 
 			return invitation;
 		}
@@ -406,12 +431,36 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
 			 * Nominated invitation complete the wf:invitePendingTask along the
 			 * 'reject' transition because the invitation has been rejected
 			 */
-			InviteHelper
-					.completeInviteTask(
-							invitationId,
-							WorkflowModelNominatedInvitation.WF_INVITE_TASK_INVITE_PENDING,
-							WorkflowModelNominatedInvitation.WF_TRANSITION_REJECT,
-							this.workflowService);
+	          // create workflow task query
+            WorkflowTaskQuery wfTaskQuery = new WorkflowTaskQuery();
+            
+            // set the given invite ID as the workflow process ID in the workflow query
+            wfTaskQuery.setProcessId(invitationId);
+
+            // find incomplete invite workflow tasks with given task name 
+            wfTaskQuery.setActive(Boolean.TRUE);
+            wfTaskQuery.setTaskState(WorkflowTaskState.IN_PROGRESS);
+            wfTaskQuery.setTaskName(WorkflowModelNominatedInvitation.WF_INVITE_TASK_INVITE_PENDING);
+
+            // set process name to "wf:invite" so that only
+            // invite workflow instances are considered by this query
+            wfTaskQuery.setProcessName(WorkflowModelNominatedInvitation.WF_PROCESS_INVITE);
+
+            // query for invite workflow tasks with the constructed query
+            List<WorkflowTask> wf_invite_tasks = workflowService
+                    .queryTasks(wfTaskQuery);
+            
+            if(wf_invite_tasks.size() == 0)
+            {
+                Object objs[] = { invitationId };
+                throw new InvitationExceptionUserError("invitation.invite.already_finished", objs); 
+            }
+             
+            // end all tasks found with this name 
+            for (WorkflowTask workflowTask : wf_invite_tasks)
+            {
+                workflowService.endTask(workflowTask.id,  WorkflowModelNominatedInvitation.WF_TRANSITION_REJECT);
+            }
 
 			return invitation;
 		}

@@ -260,6 +260,7 @@ public class InviteHelper
         List<WorkflowTask> wf_invite_tasks = workflowService
                 .queryTasks(wfTaskQuery);
         
+        
         // end all tasks found with this name 
         for (WorkflowTask workflowTask : wf_invite_tasks)
         {

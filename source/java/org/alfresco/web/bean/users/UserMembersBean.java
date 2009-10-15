@@ -851,7 +851,7 @@ public abstract class UserMembersBean extends BaseDialogBean implements IContext
     */
    public String removeOK()
    {
-      String outcome = OUTCOME_FINISH;
+      String outcome = getDefaultFinishOutcome(); 
       UserTransaction tx = null;
       FacesContext context = FacesContext.getCurrentInstance();
 

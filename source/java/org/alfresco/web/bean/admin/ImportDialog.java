@@ -32,6 +32,7 @@ import java.util.Map;
 
 import javax.faces.context.FacesContext;
 
+import org.alfresco.i18n.I18NUtil;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.executer.ImporterActionExecuter;
 import org.alfresco.repo.content.MimetypeMap;
@@ -42,6 +43,7 @@ import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
+import org.alfresco.service.cmr.repository.DuplicateChildNodeNameException;
 import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.NamespaceService;
@@ -69,6 +71,7 @@ public class ImportDialog extends BaseDialogBean
    private static final String DEFAULT_OUTCOME = "dialog:close";
    
    private static final String MSG_ERROR = "error_import";
+   private static final String ERR_DUPLICATE_NAME = "system.err.duplicate_name";
    private static final String MSG_ERROR_NO_FILE = "error_import_no_file";
    private static final String MSG_ERROR_EMPTY_FILE = "error_import_empty_file";
    private static final String MSG_OK = "ok";
@@ -139,8 +142,18 @@ public class ImportDialog extends BaseDialogBean
             }
             catch (Throwable e)
             {
-               Utils.addErrorMessage(MessageFormat.format(Application.getMessage(
-                     FacesContext.getCurrentInstance(), MSG_ERROR), e.toString()), e);
+               if (e instanceof DuplicateChildNodeNameException)
+               {
+                  String name = ((DuplicateChildNodeNameException)e).getName();
+                  String err_mess = MessageFormat.format(I18NUtil.getMessage(ERR_DUPLICATE_NAME), name);
+                  Utils.addErrorMessage(MessageFormat.format(Application.getMessage(
+                        FacesContext.getCurrentInstance(), MSG_ERROR), err_mess), e);
+               }
+               else
+               {
+                  Utils.addErrorMessage(MessageFormat.format(Application.getMessage(
+                        FacesContext.getCurrentInstance(), MSG_ERROR), e.toString()), e);
+               }
                outcome = null;
                ReportedException.throwIfNecessary(e);
             }

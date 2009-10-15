@@ -57,6 +57,28 @@
         rendering_engine_template_file_input.value = filename;
         rendering_engine_template_file_input.form.submit();
       }
+      
+      function refresh_add_to_list_button()
+      {
+        var wizard = document.forms["wizard"]["wizard:wizard-body:rendering-engine"];
+        var count = wizard.length;
+        var checked = false;
+        while (count > 0)
+        {
+          count--;
+          if (wizard[count].checked) checked = true;
+        }
+        var name = document.getElementById("wizard:wizard-body:name").value;
+        var output_path_pattern = document.getElementById("wizard:wizard-body:output-path-pattern").value;
+        if (name.length == 0 || output_path_pattern.length == 0 || !checked)
+        {
+          document.getElementById("wizard:wizard-body:add-to-list-button").disabled = true;
+        }
+        else
+        {
+          document.getElementById("wizard:wizard-body:add-to-list-button").disabled = false;
+        }
+      } 
     </script>
   </f:verbatim>
 
@@ -86,6 +108,7 @@
 			   type="file" 
 			   size="35" 
 			   name="alfFileInput" 
+                           contentEditable="false" 
 			   onchange="javascript:handle_upload(this)"/></f:verbatim>
         
       </h:column>
@@ -127,7 +150,8 @@
                     value="#{msg.rendering_engine}:"/>
       <h:selectOneRadio id="rendering-engine" 
 		        value="#{WizardManager.bean.renderingEngineName}"
-                        disabled="#{WizardManager.bean.renderingEngineTemplateFileName == null}">
+                        disabled="#{WizardManager.bean.renderingEngineTemplateFileName == null}"
+                        onchange="refresh_add_to_list_button();">
         <f:selectItems id="rendering-engine-choices"
 		       value="#{WizardManager.bean.renderingEngineChoices}"/>
       </h:selectOneRadio>
@@ -146,7 +170,9 @@
 		   value="#{WizardManager.bean.renderingEngineTemplateName}"
                    disabled="#{WizardManager.bean.renderingEngineTemplateFileName == null}"
                    maxlength="1024" 
-		   size="35"/>
+		   size="35"
+                   onkeyup="refresh_add_to_list_button();"
+                   onchange="refresh_add_to_list_button();"/>
       <h:column id="name-help"/>
 
       <h:outputText id="no_graphic_image_title" value=""/>
@@ -199,7 +225,9 @@
       <h:inputText id="output-path-pattern" 
                    disabled="#{WizardManager.bean.renderingEngineTemplateFileName == null}"
 		   value="#{WizardManager.bean.outputPathPatternForRendition}"
-		   style="width:100%;"/>
+		   style="width:100%;"
+                   onkeyup="refresh_add_to_list_button();"
+                   onchange="refresh_add_to_list_button();"/>
       <h:graphicImage id="graphic_image_output_path_pattern_help"
 		      value="/images/icons/Help_icon.gif" style="cursor:help"
 		      onclick="javascript:toggleOutputPathPatternHelp()" />
@@ -207,7 +235,7 @@
       <h:column id="output_path_pattern_help_empty_col_1"/>
       <h:column id="output_path_pattern_help_empty_col_2"/>
       <f:verbatim>
-        <jsp:directive.include file="/jsp/wcm/output-path-pattern-help.jsp"/>
+        <c:import url="/jsp/wcm/output-path-pattern-help.jsp" />
       </f:verbatim>
       <h:column id="output_path_pattern_help_empty_col_3"/>
     </h:panelGrid>
@@ -218,7 +246,11 @@
 		       value="#{msg.add_to_list_button}" 
 		       actionListener="#{WizardManager.bean.addSelectedRenderingEngineTemplate}" 
 		       styleClass="wizardButton" 
-		       disabled="#{WizardManager.bean.addToListDisabled}" />
+		       disabled="#{WizardManager.bean.renderingEngineTemplateFileName == null ||
+                           WizardManager.bean.renderingEngineName == null ||
+                           WizardManager.bean.renderingEngineTemplateName == null ||
+                           WizardManager.bean.mimetypeForRendition == null ||
+                           WizardManager.bean.outputPathPatternForRendition}" />
     </h:panelGroup>
     <h:panelGroup id="data-table-panel-group">
       <h:dataTable id="rendering-engine-template-data-table"

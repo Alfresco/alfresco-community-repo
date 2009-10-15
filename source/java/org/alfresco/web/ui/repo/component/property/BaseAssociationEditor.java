@@ -44,6 +44,7 @@ import javax.faces.event.FacesEvent;
 import javax.transaction.UserTransaction;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.search.SearcherException;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authority.AuthorityDAO;
 import org.alfresco.service.cmr.dictionary.AssociationDefinition;
@@ -1084,6 +1085,11 @@ public abstract class BaseAssociationEditor extends UIInput
             {
                results = Repository.getServiceRegistry(context).getSearchService().query(searchParams);
                this.availableOptions = results.getNodeRefs();
+            }
+            catch (SearcherException se) 
+            {
+                logger.info("Search failed for: " + query, se);
+                Utils.addErrorMessage(Application.getMessage(FacesContext.getCurrentInstance(), Repository.ERROR_QUERY));
             }
             finally
             {

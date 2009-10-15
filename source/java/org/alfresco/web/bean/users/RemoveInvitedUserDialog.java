@@ -30,7 +30,8 @@ import javax.faces.event.ActionEvent;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.dialog.BaseDialogBean;
 
-public class RemoveInvitedUserDialog extends BaseDialogBean {
+public class RemoveInvitedUserDialog extends BaseDialogBean
+{
 
     private static final long serialVersionUID = -7457234588814115434L;
 
@@ -45,43 +46,51 @@ public class RemoveInvitedUserDialog extends BaseDialogBean {
     private SpaceUsersBean spaceUsersBean;
 
     @Override
-    public boolean getFinishButtonDisabled() {
+    public boolean getFinishButtonDisabled()
+    {
         return false;
     }
 
     @Override
-    protected String finishImpl(FacesContext context, String outcome) throws Exception {
-        spaceUsersBean.removeOK();
-        return outcome;
+    protected String finishImpl(FacesContext context, String outcome) throws Exception
+    {
+        return spaceUsersBean.removeOK();
     }
 
-    public void setupUserAction(ActionEvent event) {
+    public void setupUserAction(ActionEvent event)
+    {
         spaceUsersBean.setupUserAction(event);
     }
 
-    public String getPersonName() {
+    public String getPersonName()
+    {
         return spaceUsersBean.getPersonName();
     }
 
-    public void setPersonName(String personName) {
+    public void setPersonName(String personName)
+    {
         this.spaceUsersBean.setPersonName(personName);
     }
 
-    public SpaceUsersBean getSpaceUsersBean() {
+    public SpaceUsersBean getSpaceUsersBean()
+    {
         return spaceUsersBean;
     }
 
-    public void setSpaceUsersBean(SpaceUsersBean spaceUsersBean) {
+    public void setSpaceUsersBean(SpaceUsersBean spaceUsersBean)
+    {
         this.spaceUsersBean = spaceUsersBean;
     }
 
     @Override
-    public String getCancelButtonLabel() {
+    public String getCancelButtonLabel()
+    {
         return Application.getMessage(FacesContext.getCurrentInstance(), BUTTON_NO);
     }
 
     @Override
-    public String getFinishButtonLabel() {
+    public String getFinishButtonLabel()
+    {
         return Application.getMessage(FacesContext.getCurrentInstance(), BUTTON_YES);
     }
 
@@ -89,7 +98,7 @@ public class RemoveInvitedUserDialog extends BaseDialogBean {
     public String getContainerTitle() 
     {
         FacesContext fc = FacesContext.getCurrentInstance();
-        return Application.getMessage(fc, MSG_REMOVE_USER) + " " + Application.getMessage(fc, MSG_LEFT_QUOTE)
-                + spaceUsersBean.getPersonName() + Application.getMessage(fc, MSG_RIGHT_QUOTE);
+        return Application.getMessage(fc, MSG_REMOVE_USER) + " " + Application.getMessage(fc, MSG_LEFT_QUOTE) + spaceUsersBean.getPersonName()
+                + Application.getMessage(fc, MSG_RIGHT_QUOTE);
     }
 }

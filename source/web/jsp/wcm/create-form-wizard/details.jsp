@@ -138,6 +138,7 @@
 			   type="file" 
 			   size="35" 
 			   name="alfFileInput" 
+                           contentEditable="false" 
 			   onchange="javascript:handle_upload(this)"/></f:verbatim>
       </h:column>
       <h:column id="column_schema_not_empty"
@@ -242,7 +243,7 @@
       <h:column id="output_path_pattern_help_empty_col_1"/>
       <h:column id="output_path_pattern_help_empty_col_2"/>
       <f:verbatim>
-        <jsp:directive.include file="/jsp/wcm/output-path-pattern-help.jsp"/>
+        <c:import url="/jsp/wcm/output-path-pattern-help.jsp" />
       </f:verbatim>
       <h:column id="output_path_pattern_help_empty_col_3"/>
 

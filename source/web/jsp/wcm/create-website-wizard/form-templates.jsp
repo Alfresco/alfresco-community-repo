@@ -30,6 +30,52 @@
 <%@ page buffer="32kb" contentType="text/html;charset=UTF-8" %>
 <%@ page isELIgnored="false" %>
 
+
+<f:verbatim>
+
+<script type="text/javascript" src="<%=request.getContextPath()%>/scripts/validation.js"> </script>
+
+<script type="text/javascript">
+   window.onload = pageLoaded;
+   
+   function pageLoaded()
+   {
+      checkButtonState();
+   }
+
+   function checkButtonState(control)
+   {
+        var outputPatterns = $("dialog:dialog-body:templates").getElements('input[name^=dialog:dialog-body:templates]');
+
+        var disable = false;
+        for (var i = 0; i < outputPatterns.length; i++)
+        {
+            if (outputPatterns[i].value.length == 0)
+            {
+                disable = true;
+                break;
+            }
+        }
+	  
+	  
+        if (disable)
+        {
+            document.getElementById("dialog:finish-button").disabled = true;
+        }
+        else
+        {
+            document.getElementById("dialog:finish-button").disabled = false;
+        }
+    }
+
+   
+</script>
+</f:verbatim>
+
+
+
+
+
 <h:panelGrid id="grid-1" columns="1" cellpadding="2" cellpadding="2" width="100%">
    <%-- Template selection list --%>
    <h:outputText id="msg-select" styleClass="mainSubText" value="#{msg.website_select_templates}:" />
@@ -61,10 +107,15 @@
                <h:outputText id="msg-01" value="#{row.title}" />
             </h:column>
             <h:column>
+               <h:graphicImage value="/images/icons/required_field.gif" alt="#{msg.required_field}" />
+            </h:column>
+            <h:column>
                <f:facet name="header">
                   <h:outputText id="head-2" value="#{msg.output_path_pattern}" />
                </f:facet>
-               <h:inputText id="in-01" value="#{row.outputPathPattern}" size="70" maxlength="1024" />
+               <h:inputText id="in-01" value="#{row.outputPathPattern}" size="70" maxlength="1024" 
+                                       onchange="javascript:checkButtonState(this);"
+                                       onkeyup="javascript:checkButtonState(this);" />
             </h:column>
             <h:column>
                <a:actionLink id="act-01" actionListener="#{DialogManager.bean.removeTemplate}" image="/images/icons/delete.gif"
@@ -74,7 +125,7 @@
          <h:graphicImage id="img-help" value="/images/icons/Help_icon.gif" style="vertical-align:-20%;padding-left:8px;cursor:help" onclick="javascript:toggleOutputPathPatternHelp()" />
       </h:panelGrid>
       <f:verbatim>
-         <jsp:directive.include file="/jsp/wcm/output-path-pattern-help.jsp"/>
+         <c:import url="/jsp/wcm/output-path-pattern-help.jsp" />
       </f:verbatim>
    </h:panelGroup>
    

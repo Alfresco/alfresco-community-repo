@@ -198,8 +198,9 @@
 
       function checkButtonState()
       {
-         if (document.getElementById("dialog:dialog-body:name").value.length == 0
-            || document.getElementById("dialog:dialog-body:language").selectedIndex == 0)
+         if (document.getElementById("dialog:dialog-body:name") == undefined ||
+             document.getElementById("dialog:dialog-body:name").value.length == 0 ||
+             document.getElementById("dialog:dialog-body:language").selectedIndex == 0)
          {
             document.getElementById("dialog:finish-button").disabled = true;
          }

@@ -69,6 +69,9 @@ public class CreatePostDialog extends CreateContentWizard
       // remove link breaks and replace with <br>
       this.content = Utils.replaceLineBreaks(this.content, false);
       
+      // set UTF-8 encoding for the post (all original posts are UTF-8 also)
+      this.encoding = "UTF-8";
+      
       return super.finishImpl(context, outcome);
    }
 

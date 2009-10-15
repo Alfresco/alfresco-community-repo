@@ -40,6 +40,33 @@
    var disabled = (inputField.value.length == 0);
    document.getElementById("contains-text-condition:ok-button").disabled = disabled;
    }
+
+   function checkOkButtonState()
+   {
+       var input = document.getElementById("contains-text-condition:pattern_hour");
+       if (!input.disabled)
+       {
+           if (input.value.length == 0 || input.value.charCodeAt(0) < 48 || input.value.charCodeAt(0) > 57 ||
+                   (input.value.length == 2 && (input.value.charCodeAt(1) < 48 || input.value.charCodeAt(1) > 57)))
+           {
+               document.getElementById("contains-text-condition:ok-button").disabled = true;
+               return;
+           }
+       }
+       input = document.getElementById("contains-text-condition:pattern_minute");
+       if (!input.disabled)
+       {
+           if (input.value.length == 0 || input.value.charCodeAt(0) < 48 || input.value.charCodeAt(0) > 57 ||
+                   (input.value.length == 2 && (input.value.charCodeAt(1) < 48 || input.value.charCodeAt(1) > 57)))
+           {
+               document.getElementById("contains-text-condition:ok-button").disabled = true;
+               return;
+           }
+       }
+
+       document.getElementById("contains-text-condition:ok-button").disabled = false;
+   } 
+   
 </script>
 
 <f:view>

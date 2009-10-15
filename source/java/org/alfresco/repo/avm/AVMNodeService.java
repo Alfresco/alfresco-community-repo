@@ -1425,6 +1425,13 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
                 try
                 {
                     fAVMService.setContentData(avmVersionPath.getSecond(), (ContentData)value);
+                    if (fInvokePolicies)
+                    {
+                        Map<QName, Serializable> propsBefore = getProperties(nodeRef);
+                        Map<QName, Serializable> propsAfter = new HashMap<QName, Serializable>(propsBefore);
+                        propsAfter.put(ContentModel.PROP_CONTENT, value);
+                        invokeOnUpdateProperties(nodeRef, propsBefore, propsAfter);
+                    } 
                 }
                 catch (ClassCastException e)
                 {

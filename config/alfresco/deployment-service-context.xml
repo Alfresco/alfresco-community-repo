@@ -72,7 +72,7 @@
         
         <!-- how many files to send in parallel -->
         <property name="numberOfSendingThreads">
-            <value>5</value>
+            <value>${deployment.service.numberOfSendingThreads}</value>
         </property>
         
         <!-- Which adapters are provided to communicate with remote File System Receivers -->

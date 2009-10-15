@@ -318,47 +318,6 @@ public class DeploymentServiceImpl implements DeploymentService
     			throw new AVMWrongTypeException("Not a directory: " + srcPath);
     		}
 
-    		// Get the root of the deployment on the destination server.
-    		if (createdRoot)
-    		{
-    			/**
-    			 * This is the first deployment
-    			 */
-    			if (dontDo)
-    			{
-    				fgLogger.debug("dont do specified returning");
-    				return;
-    			}
-
-    			/**
-    			 * Copy the new directory
-    			 */
-    			fgLogger.debug("start copying to remote");
-    			final AVMNodeDescriptor dstParentNode = dstRoot;
-    			RetryingTransactionCallback<Integer> copyContents = new RetryingTransactionCallback<Integer>()
-    			{
-    				public  Integer execute() throws Throwable
-    				{
-    					copyDirectory(srcVersion, srcRoot, dstParentNode, remote, matcher, callbacks);
-    					return new Integer(0);
-    				}
-    			};
-    			trn.setMaxRetries(1);
-    			version = trn.doInTransaction(copyContents, false, true).intValue();  
-
-    			fgLogger.debug("finished copying, snapshot remote");
-    			remote.createSnapshot(storePath[0], "Deployment", "Post Deployment Snapshot.");
-    			if (callbacks != null)
-    			{
-    				DeploymentEvent event = new DeploymentEvent(DeploymentEvent.Type.END,
-    						new Pair<Integer, String>(version, srcPath),
-    						dstPath);
-    				processEvent(event, callbacks);
-
-    			}
-    			return;
-    		}
-
     		/**
     		 * The destination directory exists - check is actually a directory
     		 */
@@ -459,6 +418,19 @@ public class DeploymentServiceImpl implements DeploymentService
         SortedMap<String, AVMNodeDescriptor> srcList = fAVMService.getDirectoryListing(src);
         // Get the listing for the destination.
         SortedMap<String, AVMNodeDescriptor> dstList = remote.getDirectoryListing(dst);
+        
+        // Strip out stale nodes.
+        for (Map.Entry<String, AVMNodeDescriptor> entry : srcList.entrySet())
+        {
+            String name = entry.getKey();
+            AVMNodeDescriptor srcNode = entry.getValue();
+            
+            if(isStale(srcNode))
+            {
+                srcList.remove(name);
+            }
+        }
+        
         for (Map.Entry<String, AVMNodeDescriptor> entry : srcList.entrySet())
         {
             String name = entry.getKey();
@@ -466,6 +438,12 @@ public class DeploymentServiceImpl implements DeploymentService
             AVMNodeDescriptor dstNode = dstList.get(name);
             if (!excluded(matcher, srcNode.getPath(), dstNode != null ? dstNode.getPath() : null))
             {
+                if(isStale(srcNode))
+                {
+                    fgLogger.debug("stale file not added" + srcNode);
+                    continue;
+                }
+                
                 deploySinglePush(version, srcNode, dst, dstNode, remote, matcher, dontDelete, dontDo, callbacks);
             }
         }
@@ -661,7 +639,14 @@ public class DeploymentServiceImpl implements DeploymentService
         {
             if (!excluded(matcher, child.getPath(), null))
             {
-
+                /**
+                 * Temporary work around for staleness.
+                 */
+                if(isStale(child))
+                {
+                    fgLogger.debug("stale file ignored" + child);
+                    continue;
+                }
                 
                 // If it's a file, copy it over and move on.
                 if (child.isFile())
@@ -1178,7 +1163,8 @@ public class DeploymentServiceImpl implements DeploymentService
     		Object[] objs = { srcPath, target, version, adapterName, hostName, port, e };       
             throw new AVMException(f.format(objs), e);
         }
-    }
+    }	
+	
 	
 	private class ComparatorFileDescriptorCaseSensitive  implements Comparator<FileDescriptor> 
 	{
@@ -1252,6 +1238,22 @@ public class DeploymentServiceImpl implements DeploymentService
                 if (srcIter.hasNext())
                 {
                     src = srcIter.next();
+                    
+                    /** 
+                     * Temporary check for stale assets 
+                     * 
+                     * Correct fix would be to remove stale files from the snapshot.
+                     * Code becomes obsolete once stale files are not part of the snapshot.
+                     */
+                    if(isStale(src))
+                    {
+                        if (fgLogger.isDebugEnabled())
+                        {
+                            fgLogger.debug("Stale content found" + src);
+                        }
+                        src = null;
+                        continue;
+                    }    
                 }
             }
             if (dst == null)
@@ -1273,12 +1275,7 @@ public class DeploymentServiceImpl implements DeploymentService
             {
                 String newDstPath = extendPath(dstPath, dst.getName());
                 if (!excluded(matcher, null, newDstPath))
-                {
-//                    service.delete(ticket, newDstPath);
-//                    eventQueue.add(new DeploymentEvent(DeploymentEvent.Type.DELETED,
-//                                                                new Pair<Integer, String>(version, extendPath(srcPath, dst.getName())),
-//                                                                newDstPath));
-                	
+                {                	
                     sendQueue.add(new DeploymentWork(new DeploymentEvent(DeploymentEvent.Type.DELETED,
                             new Pair<Integer, String>(version, extendPath(srcPath, dst.getName())), 
                             newDstPath), ticket));
@@ -1311,13 +1308,19 @@ public class DeploymentServiceImpl implements DeploymentService
             }
             if (diff == 0)
             {
-            	// src and dst have same file name
+            	/**
+            	 *  src and dst have same file name and GUID - nothing to do
+            	 */
                 if (src.getGuid().equals(dst.getGUID()))
-                {
+                {                    
                     src = null;
                     dst = null;
                     continue;
                 }
+                
+                /**
+                 * src and dst are different and src is a file
+                 */
                 if (src.isFile())
                 {
                 	// this is an update to a file
@@ -1334,7 +1337,10 @@ public class DeploymentServiceImpl implements DeploymentService
                     dst = null;
                     continue;
                 }
-                // Source is a directory.
+                
+                /**
+                 * src and dst are different and src is a directory
+                 */
                 if (dst.getType() == FileType.DIR)
                 {
                     String extendedPath = extendPath(dstPath, dst.getName());
@@ -1364,17 +1370,13 @@ public class DeploymentServiceImpl implements DeploymentService
                 dst = null;
                 continue;
             }
-            // diff > 0
-            // Destination is missing in source, delete it.
+            
+            /**
+             * diff > 0
+             * Destination is missing in source, delete it.
+             */ 
             String newDstPath = extendPath(dstPath, dst.getName());
 
-            //            service.delete(ticket, newDstPath);
-//            
-//            eventQueue.add(new DeploymentEvent(DeploymentEvent.Type.DELETED,
-//                                                        new Pair<Integer, String>(version, extendPath(srcPath, dst.getName())),
-//                                                        newDstPath));
- 
-            //
             sendQueue.add(new DeploymentWork(new DeploymentEvent(DeploymentEvent.Type.DELETED,
                     new Pair<Integer, String>(version, extendPath(srcPath, dst.getName())), 
                     newDstPath), ticket));
@@ -1849,5 +1851,26 @@ public class DeploymentServiceImpl implements DeploymentService
 	            throw new AVMException("Failed to copy filename:" + dstPath, e);
 	        }
 	    }
+	}
+	
+	private boolean isStale(AVMNodeDescriptor avmRef)
+	{
+	    // note: currently specific to WCM use-cases, eg. ETHREEOH-2758
+	    if ((avmRef.isLayeredDirectory() && avmRef.isPrimary()) || avmRef.isLayeredFile())
+	    {
+	        AVMNodeDescriptor parentNode = avmRef;
+	        
+	        while((parentNode.isLayeredDirectory() && parentNode.isPrimary()) || parentNode.isLayeredFile())
+	        {
+	            AVMNodeDescriptor childNode = fAVMService.lookup(avmRef.getIndirectionVersion(), avmRef.getIndirection());
+	            if(childNode == null)
+	            {
+	                // The child node is missing
+	                return true;
+	            }
+	            parentNode = childNode;	                
+	        }   
+	    }
+	    return false;
 	}
 }

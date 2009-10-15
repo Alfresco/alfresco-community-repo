@@ -11,6 +11,10 @@
   </dl>
   <BR>
   Returns the new authentication ticket.
+  <BR>
+  The username and password are provided as URL arguments which may be<br>
+  logged by proxies or the Alfresco server. The alternative POST method<br>
+  of login is recommended instead of GET.
   ]]>
   </description>
   <url>/api/login?u={username}&amp;pw={password?}</url>

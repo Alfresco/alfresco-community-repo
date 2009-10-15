@@ -312,7 +312,6 @@ public class LockMethod extends WebDAVMethod
         xml.endElement(WebDAV.DAV_NS, WebDAV.XML_MULTI_STATUS, WebDAV.XML_NS_MULTI_STATUS);
 
         // Send the XML back to the client
-        m_response.setStatus(HttpServletResponse.SC_OK);
         xml.flush();
     }
 }

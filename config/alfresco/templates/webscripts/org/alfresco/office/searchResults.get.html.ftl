@@ -4,6 +4,7 @@
 <#assign extn=args.e!"doc"><#assign extnx=extn+"x">
 <#if args.e??><#assign extList=[]><#else><#assign extList=[".odt", ".sxw", ".doc", ".rtf", ".ods", ".sxc", ".xls", ".odp", ".sxi", ".ppt", ".odg", ".sxd", ".odb", ".odf", ".sxm"]></#if>
 <#if args.search??><#assign searchString = args.search><#else><#assign searchString=""></#if>
+<#assign chLen=companyhome.name?length>
 <#assign defaultQuery="?p=" + path?url + "&e=" + extn + "&n=" + nav>
 
 <#if args.maxresults??>
@@ -29,10 +30,10 @@
          </#if>
       </#list>
       <#if child.isDocument>
-         <#assign relativePath = (child.displayPath?substring(companyhome.name?length+1) + '/' + child.name)?url?replace('%2F', '/')?replace('\'', '\\\'') />
+         <#assign relativePath = child.displayPath?substring(chLen + 1) + '/' + child.name />
          <#if child.name?ends_with(extn) || child.name?ends_with(extnx) || isSupportedExtn>
             <#assign openURL = "#">
-            <#assign hrefExtra = " onClick=\"ExternalComponent.openDocument('${relativePath}')\"">
+            <#assign hrefExtra = " onClick=\"ExternalComponent.openDocument('${relativePath?js_string}')\"">
          <#else>
             <#assign openURL = "${url.context}${child.url}">
             <#assign hrefExtra = " target=\"_blank\"">
@@ -62,7 +63,7 @@
          <a href="#" onclick="OfficeAddin.getAction('${doc_actions}','checkout','${child.id}', '');"><img src="${url.context}/images/office/checkout.gif" style="padding:3px 6px 2px 0px;" alt="${message("office.action.checkout")}" title="${message("office.action.checkout")}" /></a>
          </#if>
          <a href="${url.serviceContext}/office/myTasks${defaultQuery?html}&amp;w=new&amp;wd=${child.id}"><img src="${url.context}/images/office/new_workflow.gif" style="padding:3px 6px 2px 0px;" alt="${message("office.action.start_workflow")}..." title="${message("office.action.start_workflow")}..." /></a>
-         <a href="#" onclick="ExternalComponent.insertDocument('${relativePath}', '${child.nodeRef}')"><img src="${url.context}/images/office/insert_document.gif" style="padding:3px 6px 2px 0px;" alt="${message("office.action.insert")}" title="${message("office.action.insert")}" /></a>
+         <a href="#" onclick="ExternalComponent.insertDocument('${relativePath?js_string}', '${child.nodeRef}')"><img src="${url.context}/images/office/insert_document.gif" style="padding:3px 6px 2px 0px;" alt="${message("office.action.insert")}" title="${message("office.action.insert")}" /></a>
          <#if !child.name?ends_with(".pdf")>
          <a href="#" onclick="OfficeAddin.getAction('${doc_actions}','makepdf','${child.id}', '');"><img src="${url.context}/images/office/makepdf.gif" style="padding:3px 6px 2px 0px;" alt="${message("office.action.transform_pdf")}" title="${message("office.action.transform_pdf")}" /></a>
          </#if>

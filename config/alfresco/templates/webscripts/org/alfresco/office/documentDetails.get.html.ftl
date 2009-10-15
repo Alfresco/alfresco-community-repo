@@ -170,7 +170,7 @@
             </#if>
             <#-- Only Word supports document compare -->
             <#if extn == "doc" || extn == "docx" || extn == "odt" || extn == "sxw" >
-               <a class="bold" href="#" onclick="ExternalComponent.compareDocument('${record.url}')" title="${message("office.action.compare_current")}">${message("office.action.compare_current")}</a><br />
+               <a class="bold" href="#" onclick="ExternalComponent.compareDocument('${record.url?js_string}')" title="${message("office.action.compare_current")}">${message("office.action.compare_current")}</a><br />
             </#if>
             </td>
          </tr>

@@ -13,10 +13,12 @@
 		"url": "page/site/${event.site}/calendar?date=${event.when?string("yyyy-MM-dd")}",
 		"start": "${event.start?string("HH:mm")}",
 		"end": "${event.end?string("HH:mm")}",
+      "endDate" : "${xmldate(event.end)}",
 		"site": "${event.site?html}",
 		"siteTitle": "${event.siteTitle?html}",
 		"allday": "${event.allday}",
-      "tags": "${event.tags?html}"
+      "tags": "${event.tags?html}",
+      "duration": "${event.duration?html}"
 	}<#if event_has_next>,</#if>
 </#list>
 ]

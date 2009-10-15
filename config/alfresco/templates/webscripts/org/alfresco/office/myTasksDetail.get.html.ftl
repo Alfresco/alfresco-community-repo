@@ -6,6 +6,7 @@
       <#assign task = workflow.getTaskById(taskid)>
    </#if>
 </#if>
+<#assign chLen=companyhome.name?length>
 
 <#if task??>
    <table width="260">
@@ -46,11 +47,11 @@
    <#list task.packageResources as res>
          <tr>
       <#if res.isDocument>
-         <#assign relativePath = (res.displayPath?substring(companyhome.name?length+1) + '/' + res.name)?url?replace('%2F', '/')?replace('\'', '\\\'') />
+         <#assign relativePath = res.displayPath?substring(chLen + 1) + '/' + res.name />
          <#if res.name?ends_with(extn) || res.name?ends_with(extnx)>
             <td width="16" valign="top"><a href="${url.context}${res.url}" target="_blank"><img src="${url.context}${res.icon16}" alt="${res.name?html}"></a></td>
             <td>
-               <a href="#" onclick="ExternalComponent.openDocument('${relativePath}')" title="${message("office.action.open", res.name?html)}">${res.name?html}</a>
+               <a href="#" onclick="ExternalComponent.openDocument('${relativePath?js_string}')" title="${message("office.action.open", res.name?html)}">${res.name?html}</a>
          <#else>
             <td width="16" valign="top"><a href="${url.context}${res.url}" target="_blank" title="${message("office.action.open", res.name?html)}"><img src="${url.context}${res.icon16}" alt="${res.name?html}"></a></td>
             <td>
@@ -65,7 +66,7 @@
          <#else>
                <a href="#" onclick="OfficeMyTasks.runAction('${doc_actions}','checkout','${res.id}');"><img src="${url.context}/images/office/checkout.gif" style="padding:3px 6px 2px 0px;" alt="${message("office.action.checkout")}" title="${message("office.action.checkout")}" /></a>
          </#if>
-               <a href="#" onclick="ExternalComponent.insertDocument('${relativePath}', '${res.nodeRef}')"><img src="${url.context}/images/office/insert_document.gif" style="padding:3px 6px 2px 0px;" alt="${message("office.action.insert")}" title="${message("office.action.insert")}" /></a>
+               <a href="#" onclick="ExternalComponent.insertDocument('${relativePath?js_string}', '${res.nodeRef}')"><img src="${url.context}/images/office/insert_document.gif" style="padding:3px 6px 2px 0px;" alt="${message("office.action.insert")}" title="${message("office.action.insert")}" /></a>
          <#if !res.name?ends_with(".pdf")>
                <a href="#" onclick="OfficeMyTasks.runAction('${doc_actions}','makepdf','${res.id}');"><img src="${url.context}/images/office/makepdf.gif" style="padding:3px 6px 2px 0px;" alt="${message("office.action.transform_pdf")}" title="${message("office.action.transform_pdf")}" /></a>
          </#if>

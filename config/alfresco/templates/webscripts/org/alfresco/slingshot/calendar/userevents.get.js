@@ -1,3 +1,4 @@
+<import resource="classpath:/alfresco/templates/webscripts/org/alfresco/slingshot/calendar/lib/calendar.lib.js">
 /** 
  * Limits the number of events that get returned.
  * TODO: have this supported in the Lucene query syntax
@@ -16,6 +17,67 @@ if (dateFilter)
 var siteId = url.templateArgs.site;
 
 model.events = getUserEvents(username, siteId, range);
+
+/**
+ * calculates duration based on specified start and end dates
+ * 
+ * 
+ * @method getDuration 
+ * @param dtStartDate {Date} start date
+ * @param dtEndDate {Date} end date
+ * @return {String} Duration in ical format eg PT2H15M
+ */
+function getDuration(dtStartDate,dtEndDate)
+{
+
+    var DAY = "D";
+    var WEEK = "W";
+    var YEAR = "Y";
+    var MONTH = "M";
+    var HOUR = 'H';
+    var SECOND = 'S';
+    var MINUTE = 'Mn';
+    
+    var diff = dtEndDate.getTime() - dtStartDate.getTime() ;
+    var dateDiff = {};
+    var duration = 'P';
+    var diff = new Date();
+    diff.setTime(Math.abs(dtStartDate.getTime() - dtEndDate.getTime()));
+    var timediff = diff.getTime();
+
+    dateDiff[WEEK] = Math.floor(timediff / (1000 * 60 * 60 * 24 * 7));
+    timediff -= dateDiff[WEEK] * (1000 * 60 * 60 * 24 * 7);
+
+    dateDiff[DAY] = (Math.floor(timediff / (1000 * 60 * 60 * 24))+1); 
+    timediff -= dateDiff[DAY] * (1000 * 60 * 60 * 24);
+
+    dateDiff[HOUR] = Math.floor(timediff / (1000 * 60 * 60)); 
+    timediff -= dateDiff[HOUR] * (1000 * 60 * 60);
+
+    dateDiff[MINUTE] = Math.floor(timediff / (1000 * 60)); 
+    timediff -= dateDiff[MINUTE] * (1000 * 60);
+
+    dateDiff[SECOND] = Math.floor(timediff / 1000); 
+    timediff -= dateDiff[SECOND] * 1000;
+
+    if (dateDiff[WEEK]>0){
+        duration+=dateDiff[WEEK]+WEEK;
+    }
+    if (dateDiff[DAY]>0){
+        duration+=dateDiff[DAY]+DAY;
+    }
+    duration+='T';
+    if (dateDiff[HOUR]>0){
+        duration+=dateDiff[HOUR]+HOUR;
+    }
+    if (dateDiff[MINUTE]>0){
+        duration+=dateDiff[MINUTE]+'M';
+    }
+    if (dateDiff[SECOND]>0){
+        duration+=dateDiff[SECOND]+SECOND;
+    }
+    return duration;
+};
 
 function getUserEvents(user, siteId, range)
 {
@@ -76,6 +138,7 @@ function getUserEvents(user, siteId, range)
       event.siteTitle = siteTitles[event.site];    
       event.allday = (isAllDayEvent(e)) ? 'true' : 'false';
       event.tags = e.tags.join(' ');
+      event.duration = getDuration(event.start,event.end);
       events.push(event);
    }
    

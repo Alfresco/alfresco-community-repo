@@ -177,7 +177,7 @@
    <#if child.isDocument>
       <#assign isVersionable = child.hasAspect("cm:versionable")>
       <#assign documentsFound = documentsFound + 1>
-      <#assign relativePath = (child.displayPath?substring(chLen+1) + '/' + child.name)?url?replace('%2F', '/')?replace('\'', '\\\'') />
+      <#assign relativePath = child.displayPath?substring(chLen + 1) + '/' + child.name />
       <#assign isSupportedExtn = false>
       <#list extList as ext>
          <#if child.name?ends_with(ext)>
@@ -188,14 +188,14 @@
       <div class="documentItem ${(documentsFound % 2 = 0)?string("even", "odd")}">
          <span class="documentItemIcon">
       <#if child.name?ends_with(extn) || child.name?ends_with(extnx) || isSupportedExtn>
-            <a href="#" onclick="ExternalComponent.openDocument('${relativePath}')"><img src="${url.context}${child.icon32}" alt="Open ${child.name?html}" /></a>
+            <a href="#" onclick="ExternalComponent.openDocument('${relativePath?js_string}')"><img src="${url.context}${child.icon32}" alt="Open ${child.name?html}" /></a>
       <#else>
             <a href="${url.context}${child.url}" rel="_blank"><img src="${url.context}${child.icon32}" alt="Open ${child.name?html}" /></a>
       </#if>
          </span>
          <span class="documentItemDetails">
       <#if child.name?ends_with(extn) || child.name?ends_with(extnx) || isSupportedExtn>
-            <a href="#" onclick="ExternalComponent.openDocument('${relativePath}')"><span id="document${documentsFound}" class="bold ${isVersionable?string("versionable", "notVersionable")}">${child.name?html}</span></a>
+            <a href="#" onclick="ExternalComponent.openDocument('${relativePath?js_string}')"><span id="document${documentsFound}" class="bold ${isVersionable?string("versionable", "notVersionable")}">${child.name?html}</span></a>
       <#else>
             <a href="${url.context}${child.url}" rel="_blank"><span id="document${documentsFound}" class="bold">${child.name?html}</span></a>
       </#if>
@@ -214,7 +214,7 @@
             <a href="#" onclick="OfficeAddin.getAction('${doc_actions}','checkout','${child.id}', '');"><img src="${url.context}/images/office/checkout.gif" style="padding:3px 6px 2px 0px;" alt="${message("office.action.checkout")}" title="${message("office.action.checkout")}" /></a>
       </#if>
             <a href="${url.serviceContext}/office/myTasks${defaultQuery?html}&amp;w=new&amp;wd=${child.id}"><img src="${url.context}/images/office/new_workflow.gif" style="padding:3px 6px 2px 0px;" alt="${message("office.action.start_workflow")}..." title="${message("office.action.start_workflow")}..." /></a>
-            <a href="#" onclick="ExternalComponent.insertDocument('${relativePath}', '${child.nodeRef}')"><img src="${url.context}/images/office/insert_document.gif" style="padding:3px 6px 2px 0px;" alt="${message("office.action.insert")}" title="${message("office.action.insert")}" /></a>
+            <a href="#" onclick="ExternalComponent.insertDocument('${relativePath?js_string}', '${child.nodeRef}')"><img src="${url.context}/images/office/insert_document.gif" style="padding:3px 6px 2px 0px;" alt="${message("office.action.insert")}" title="${message("office.action.insert")}" /></a>
       <#if !child.name?ends_with(".pdf")>
             <a href="#" onclick="OfficeAddin.getAction('${doc_actions}','makepdf','${child.id}', '');"><img src="${url.context}/images/office/makepdf.gif" style="padding:3px 6px 2px 0px;" alt="${message("office.action.transform_pdf")}" title="${message("office.action.transform_pdf")}" /></a>
       </#if>
@@ -235,7 +235,7 @@
 </div>
 
 <#assign currentPath = thisSpace.displayPath  + '/' + thisSpace.name />
-<#assign currentPath = currentPath?substring(chLen+1)?url?replace('%2F', '/')?replace('\'', '\\\'') />
+<#assign currentPath = currentPath?substring(chLen + 1) />
 <div id="navigationActions" class="actionsPanel">
    <div id="saveDetailsPanel">
       ${message("office.property.filename")}:<br />
@@ -246,7 +246,7 @@
    <div id="nonStatusText">
       <ul>
          <li>
-            <a href="#" onclick="OfficeNavigation.saveToAlfresco('${currentPath}')">
+            <a href="#" onclick="OfficeNavigation.saveToAlfresco('${currentPath?js_string}')">
                <img src="${url.context}/images/office/save_to_alfresco.gif" alt="${message("office.action.save_to_alfresco")}" />
                ${message("office.action.save_to_alfresco")}
             </a>

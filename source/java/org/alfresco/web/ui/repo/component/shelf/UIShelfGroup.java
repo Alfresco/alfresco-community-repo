@@ -89,7 +89,7 @@ public class UIShelfGroup extends SelfRenderingComponent
       ResponseWriter out = context.getResponseWriter();
       
       // output each shelf group component in turn
-      out.write("<table cellspacing=0 cellpadding=0 border=0 width=100%>");
+      out.write("<table cellspacing=\"0\" cellpadding=\"0\" border=\"0\" width=\"100%\">");
       for (Iterator i=this.getChildren().iterator(); i.hasNext(); /**/)
       {
          UIComponent child = (UIComponent)i.next();
@@ -98,7 +98,7 @@ public class UIShelfGroup extends SelfRenderingComponent
             // render child items
             out.write("<tr><td>");
             Utils.encodeRecursive(context, child);
-            out.write("</tr></td>");
+            out.write("</td></tr>");
          }
       }
       out.write("</table>");

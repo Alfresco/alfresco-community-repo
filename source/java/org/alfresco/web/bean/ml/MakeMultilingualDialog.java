@@ -175,7 +175,7 @@ public class MakeMultilingualDialog extends BaseDialogBean
    @Override
    public boolean getFinishButtonDisabled()
    {
-      return !(author != null && author.length() > 0 && language != null);
+      return !(author != null && author.length() != 0 && language != null && language.length() != 0);
    }
 
 
@@ -223,7 +223,6 @@ public class MakeMultilingualDialog extends BaseDialogBean
    {
       this.addTranslationAfter = addTranslationAfter;
    }
-
 
    /**
     * @return the language of the translation
@@ -294,5 +293,4 @@ public class MakeMultilingualDialog extends BaseDialogBean
    {
       this.userPreferencesBean = userPreferencesBean;
    }
-
 }

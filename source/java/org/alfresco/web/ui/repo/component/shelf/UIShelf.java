@@ -179,7 +179,7 @@ public class UIShelf extends SelfRenderingComponent
       ResponseWriter out = context.getResponseWriter();
       
       out.write("<div id=\"shelf\" class=\"shelf\">");
-      out.write("<table border=0 cellspacing=4 cellpadding=0 width=100%>");
+      out.write("<table border=\"0\" cellspacing=\"4\" cellpadding=\"0\" width=\"100%\">");
    }
    
    /**

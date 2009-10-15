@@ -30,6 +30,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import javax.faces.context.FacesContext;
+import javax.faces.event.AbortProcessingException;
 import javax.faces.event.ActionEvent;
 
 import org.alfresco.model.ApplicationModel;
@@ -302,6 +303,7 @@ public class CheckinCheckoutDialog extends BaseDialogBean
       {
          Utils.addErrorMessage(MessageFormat.format(Application.getMessage(
                FacesContext.getCurrentInstance(), Repository.ERROR_NODEREF), new Object[] {id}) );
+         throw new AbortProcessingException("Invalid node reference");
       }
       
       return node;

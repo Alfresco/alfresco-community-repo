@@ -244,7 +244,6 @@ public class FileDetailsBean extends AVMDetailsBean
       }
    }
 
-
    @Override
    protected String finishImpl(FacesContext context, String outcome) throws Exception
    {
@@ -268,9 +267,15 @@ public class FileDetailsBean extends AVMDetailsBean
       return getAvmNode().getId();
    }
 
-
    public String getOutcome()
    {
-      return "dialog:close:dialog:showFileDetails";
+      if ( getAvmNode() != null && AVMUtil.isWorkflowStore(AVMUtil.getStoreName(getAvmNode().getPath())) )
+      {
+          return "dialog:close:dialog:workflowShowFileDetails";
+      }
+      else
+      {
+          return "dialog:close:dialog:showFileDetails";
+      }
    }
 }

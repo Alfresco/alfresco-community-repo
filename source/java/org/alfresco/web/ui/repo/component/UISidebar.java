@@ -95,12 +95,13 @@ public class UISidebar extends SelfRenderingComponent
       // render the start of the header panel
       String cxPath = context.getExternalContext().getRequestContextPath();
       out.write("<table cellspacing='0' cellpadding='0' style='background-color: #ffffff;' width='100%'>" + 
+                "<tr valign='top'><td width='20%'><table cellspacing='0' cellpadding='0' width='100%'>" +
                 "<tr><td style='width: 5px; background-image: url(");
       out.write(cxPath);
       out.write("/images/parts/sidebar_top_grey_begin.gif)' valign='top'>" +
                 "<img src=\"");
       out.write(cxPath);
-      out.write("/images/parts/sidebar_grey_01.gif\" width='5' height='5' alt=''/></td>" + 
+      out.write("/images/parts/sidebar_grey_01.gif\" width='5' height='5' alt=''></td>" + 
                 "<td style='height: 24px; background-image: url(");
       out.write(cxPath);
       out.write("/images/parts/sidebar_top_grey_bg.gif)'>");
@@ -166,7 +167,7 @@ public class UISidebar extends SelfRenderingComponent
       {
          ResponseWriter out = context.getResponseWriter();
 
-         out.write("<table border='0' cellpadding='6' cellspacing='0' style='width: 100%;'><tr><td>");
+         out.write("<table border='0' cellpadding='6' cellspacing='0' width='100%;'><tr><td>");
          
          // render the list
          UIModeList modeList = (UIModeList)getChildren().get(0);
@@ -187,14 +188,13 @@ public class UISidebar extends SelfRenderingComponent
          out.write("/images/parts/sidebar_top_grey_end.gif)' align='right' valign='top'>" +
                    "<img src='");
          out.write(cxPath);
-         out.write("/images/parts/sidebar_grey_03.gif' width='5' height='5' alt=''/></td></tr>" +
-                   "<tr><td colspan='3'>");
+         out.write("/images/parts/sidebar_grey_03.gif' width='5' height='5' alt=''></td></tr>" +
+                   "</table><table cellspacing='0' cellpadding='0' width='100%'>" +
+                   "<tr><td width='100%' id='pluginBox'>");
          
          // render the plugin
-         out.write("<div id=\"pluginBox\">");
          UIComponent plugin = (UIComponent)getChildren().get(2);
          Utils.encodeRecursive(context, plugin);
-         out.write("</div>");
       }
    }
 
@@ -207,19 +207,20 @@ public class UISidebar extends SelfRenderingComponent
       ResponseWriter out = context.getResponseWriter();
       String cxPath = context.getExternalContext().getRequestContextPath();
       out.write("</td></tr>" + 
+                "</table><table cellspacing='0' cellpadding='0' width='100%'>" +
                 "<tr><td style='height: 12px; width: 5px;'><img src='");
       out.write(cxPath);
-      out.write("/images/parts/sidebar_bottom_grey_begin.gif' width='5' height='12' alt=''/></td>" + 
+      out.write("/images/parts/sidebar_bottom_grey_begin.gif' width='5' height='12' alt=''></td>" + 
                 "<td style='width: 100%; background-image: url(");
       out.write(cxPath);
       out.write("/images/parts/sidebar_bottom_grey_bg.gif)'>" +
                 "<img src='");
       out.write(cxPath);
-      out.write("/images/parts/sidebar_bottom_grey_bg.gif' width='48' height='12' alt=''/></td>" +
+      out.write("/images/parts/sidebar_bottom_grey_bg.gif' width='48' height='12' alt=''></td>" +
                 "<td align='right' style='width: 5px;'><img src='");
       out.write(cxPath);
-      out.write("/images/parts/sidebar_bottom_grey_end.gif' width='5' height='12' alt=''/></td></tr>" + 
-                "</table>" +
+      out.write("/images/parts/sidebar_bottom_grey_end.gif' width='5' height='12' alt=''></td></tr>" + 
+                "</table></td></tr></table>" +
                 "</div>");
    }
 

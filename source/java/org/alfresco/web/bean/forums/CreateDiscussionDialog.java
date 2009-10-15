@@ -29,11 +29,13 @@ import java.util.List;
 import java.util.Map;
 
 import javax.faces.context.FacesContext;
+import javax.faces.event.AbortProcessingException;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ForumModel;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
+import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.web.app.AlfrescoNavigationHandler;
@@ -159,6 +161,12 @@ public class CreateDiscussionDialog extends CreateTopicDialog
          forumNodeRef = getTransactionService().getRetryingTransactionHelper().doInTransaction(
                createTopicCallback, false);
       }
+      catch (InvalidNodeRefException refErr)
+      {
+         Utils.addErrorMessage(MessageFormat.format(Application.getMessage(
+               FacesContext.getCurrentInstance(), Repository.ERROR_NODEREF), new Object[] {id}) );
+         throw new AbortProcessingException("Invalid node reference");
+      }
       catch (Throwable e)
       {
          Utils.addErrorMessage(MessageFormat.format(Application.getMessage(
@@ -170,73 +178,6 @@ public class CreateDiscussionDialog extends CreateTopicDialog
       {
          this.browseBean.clickSpace(forumNodeRef);
       }
-//      
-//      try
-//      {
-//         tx = Repository.getUserTransaction(context);
-//         tx.begin();
-//         
-//         this.discussingNodeRef = new NodeRef(Repository.getStoreRef(), id);
-//         
-//         if (this.getNodeService().hasAspect(this.discussingNodeRef, ForumModel.ASPECT_DISCUSSABLE))
-//         {
-//            throw new AlfrescoRuntimeException("createDiscussion called for an object that already has a discussion!");
-//         }
-//         
-//         // Add the discussable aspect
-//         this.getNodeService().addAspect(this.discussingNodeRef, ForumModel.ASPECT_DISCUSSABLE, null);
-//         // The discussion aspect create the necessary child
-//         List<ChildAssociationRef> destChildren = this.getNodeService().getChildAssocs(
-//                 this.discussingNodeRef,
-//                 ForumModel.ASSOC_DISCUSSION,
-//                 RegexQNamePattern.MATCH_ALL);
-//         // Take the first one
-//         if (destChildren.size() == 0)
-//         {
-//             // Drop the aspect and recreate it.  This should not happen, but just in case ...
-//             this.getNodeService().removeAspect(this.discussingNodeRef, ForumModel.ASPECT_DISCUSSABLE);
-//         }
-//         else
-//         {
-//             ChildAssociationRef discussionAssoc = destChildren.get(0);
-//             forumNodeRef = discussionAssoc.getChildRef();
-//         }
-//         
-////         // create a child forum space using the child association just introduced by
-////         // adding the discussable aspect
-////         String name = (String)this.getNodeService().getProperty(this.discussingNodeRef, 
-////               ContentModel.PROP_NAME);
-////         String msg = Application.getMessage(FacesContext.getCurrentInstance(), "discussion_for");
-////         String forumName = MessageFormat.format(msg, new Object[] {name});
-////         
-////         Map<QName, Serializable> forumProps = new HashMap<QName, Serializable>(1);
-////         forumProps.put(ContentModel.PROP_NAME, forumName);
-////         ChildAssociationRef childRef = this.getNodeService().createNode(this.discussingNodeRef, 
-////               ForumModel.ASSOC_DISCUSSION,
-////               QName.createQName(NamespaceService.FORUMS_MODEL_1_0_URI, "discussion"), 
-////               ForumModel.TYPE_FORUM, forumProps);
-////         
-////         forumNodeRef = childRef.getChildRef();
-////
-//         // apply the uifacets aspect
-//         Map<QName, Serializable> uiFacetsProps = new HashMap<QName, Serializable>(5);
-//         uiFacetsProps.put(ApplicationModel.PROP_ICON, "forum");
-//         this.getNodeService().addAspect(forumNodeRef, ApplicationModel.ASPECT_UIFACETS, uiFacetsProps);
-//         
-//         if (logger.isDebugEnabled())
-//            logger.debug("created forum for content: " + this.discussingNodeRef.toString());
-//         
-//         // commit the transaction
-//         tx.commit();
-//      }
-//      catch (Throwable e)
-//      {
-//         // rollback the transaction
-//         try { if (tx != null) {tx.rollback();} } catch (Exception ex) {}
-//         Utils.addErrorMessage(MessageFormat.format(Application.getMessage(
-//               context, Repository.ERROR_GENERIC), e.getMessage()), e);
-//      }
-//      
    }
    
    /**

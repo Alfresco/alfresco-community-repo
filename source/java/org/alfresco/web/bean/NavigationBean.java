@@ -272,6 +272,16 @@ public class NavigationBean implements Serializable
    }
    
    /**
+    * Return the width of the main work area depending on the visibility of the Shelf panel
+    * 
+    * @return width, which will either be "80%" or "100%"
+    */
+   public String getWorkAreaWidth()
+   {
+      return this.shelfExpanded ? "80%" : "100%";
+   }
+   
+   /**
     * @return Returns the array containing the expanded state of the shelf items
     */
    public boolean[] getShelfItemExpanded()

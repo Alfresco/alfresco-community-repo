@@ -38,6 +38,7 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.faces.context.FacesContext;
+import javax.faces.event.AbortProcessingException;
 import javax.faces.event.ActionEvent;
 import javax.transaction.UserTransaction;
 
@@ -1838,6 +1839,7 @@ public class BrowseBean implements IContextListener, Serializable
          {
             Utils.addErrorMessage(MessageFormat.format(Application.getMessage(
                FacesContext.getCurrentInstance(), Repository.ERROR_NODEREF), new Object[] {id}) );
+            throw new AbortProcessingException("Invalid node reference");
          }
       }
       else

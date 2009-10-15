@@ -196,6 +196,7 @@ public abstract class AVMDetailsBean extends BaseDialogBean implements Navigatio
       String path = params.get("id");
       if (path != null && path.length() != 0)
       {
+         this.avmBrowseBean.setupContentAction(getCurrentItemId(), false);
          List<AVMNode> nodes = getNodes();
          if (nodes.size() > 1)
          {
@@ -238,6 +239,7 @@ public abstract class AVMDetailsBean extends BaseDialogBean implements Navigatio
       String path = params.get("id");
       if (path != null && path.length() != 0)
       {
+         this.avmBrowseBean.setupContentAction(getCurrentItemId(), false);
          List<AVMNode> nodes = getNodes();
          if (nodes.size() > 1)
          {

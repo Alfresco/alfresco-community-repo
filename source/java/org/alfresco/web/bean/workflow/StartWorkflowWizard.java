@@ -35,6 +35,7 @@ import java.util.ResourceBundle;
 import java.util.StringTokenizer;
 
 import javax.faces.context.FacesContext;
+import javax.faces.event.AbortProcessingException;
 import javax.faces.event.ActionEvent;
 import javax.faces.model.SelectItem;
 import javax.transaction.UserTransaction;
@@ -45,6 +46,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.workflow.WorkflowModel;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.invitation.InvitationService;
+import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.workflow.WorkflowDefinition;
@@ -154,17 +156,24 @@ public class StartWorkflowWizard extends BaseWizardBean
       
       // add the item the workflow wizard was started on to the list of resources
       String itemToWorkflowId = this.parameters.get("item-to-workflow");
-      if (itemToWorkflowId != null && itemToWorkflowId.length() > 0)
+      try
       {
-         // create the node ref for the item and determine its type
-         NodeRef itemToWorkflow = new NodeRef(Repository.getStoreRef(), itemToWorkflowId);
-         QName type = this.getNodeService().getType(itemToWorkflow);
-
-         if (this.getDictionaryService().isSubClass(type, ContentModel.TYPE_CONTENT) || 
-             this.getDictionaryService().isSubClass(type, ApplicationModel.TYPE_FILELINK))
+         if (itemToWorkflowId != null && itemToWorkflowId.length() > 0)
          {
-            this.packageItemsToAdd.add(itemToWorkflow.toString());
+            // create the node ref for the item and determine its type
+            NodeRef itemToWorkflow = new NodeRef(Repository.getStoreRef(), itemToWorkflowId);
+            QName type = this.getNodeService().getType(itemToWorkflow);
+            
+            if (this.getDictionaryService().isSubClass(type, ContentModel.TYPE_CONTENT) || this.getDictionaryService().isSubClass(type, ApplicationModel.TYPE_FILELINK))
+            {
+               this.packageItemsToAdd.add(itemToWorkflow.toString());
+            }
          }
+      }
+      catch (InvalidNodeRefException refErr)
+      {
+         Utils.addErrorMessage(MessageFormat.format(Application.getMessage(FacesContext.getCurrentInstance(), Repository.ERROR_NODEREF), new Object[] { itemToWorkflowId }));
+         throw new AbortProcessingException("Invalid node reference");
       }
    }
    

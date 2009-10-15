@@ -191,7 +191,7 @@ public class UIChildAssociationEditor extends BaseAssociationEditor
                out.write(Repository.getNameForNode(nodeService, targetNode));
             }
             
-            out.write("</tr></td>");
+            out.write("</td></tr>");
          }
          
          out.write("</table>");

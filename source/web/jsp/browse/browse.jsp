@@ -79,7 +79,7 @@
    <h:form acceptcharset="UTF-8" id="browse">
    
    <%-- Main outer table --%>
-   <table cellspacing=0 cellpadding=2>
+   <table cellspacing="0" cellpadding="2" width="100%">
 
       <%-- Title bar --%>
       <tr>
@@ -89,15 +89,15 @@
       </tr>
       
       <%-- Main area --%>
-      <tr valign=top>
+      <tr valign="top">
          <%-- Shelf --%>
          <td style="white-space: nowrap;">
             <%@ include file="../parts/shelf.jsp" %>
          </td>
          
          <%-- Work Area --%>
-         <td width=100%>
-            <table cellspacing=0 cellpadding=0 width=100%>
+         <td width="<h:outputText value="#{NavigationBean.workAreaWidth}" />">
+            <table cellspacing=0 cellpadding=0 width='100%'>
                <%-- Breadcrumb --%>
                <%@ include file="../parts/breadcrumb.jsp" %>
                
@@ -108,7 +108,7 @@
                   
                      <%-- Status and Actions inner contents table --%>
                      <%-- Generally this consists of an icon, textual summary and actions for the current object --%>
-                     <table cellspacing=4 cellpadding=0 width=100%>
+                     <table cellspacing=4 cellpadding=0 width='100%'>
                         <tr>
  
                            <%-- actions for browse mode --%>
@@ -213,7 +213,7 @@
                
                <%-- Custom Template View --%>
                <a:panel id="custom-wrapper-panel" rendered="#{NavigationBean.hasCustomView && NavigationBean.searchContext == null}">
-               <tr valign=top>
+               <tr valign="top">
                   <td style="background-image: url(<%=request.getContextPath()%>/images/parts/whitepanel_4.gif)" width=4></td>
                   <td style="padding:4px">
                      <a:panel id="custom-panel" border="white" bgcolor="white" titleBorder="lbgrey" expandedTitleBorder="dotted" titleBgcolor="white" styleClass="mainSubTitle"
@@ -228,7 +228,7 @@
                </a:panel>
                
                <%-- Details - Spaces --%>
-               <tr valign=top>
+               <tr valign="top">
                   <td style="background-image: url(<%=request.getContextPath()%>/images/parts/whitepanel_4.gif)" width=4></td>
                   <td style="padding:4px">
                      
@@ -375,7 +375,7 @@
                </tr>
                
                <%-- Details - Content --%>
-               <tr valign=top>
+               <tr valign="top">
                   <td style="background-image: url(<%=request.getContextPath()%>/images/parts/whitepanel_4.gif)" width=4></td>
                   <td style="padding:4px">
                      
@@ -521,7 +521,7 @@
                </tr>
                
                <%-- Error Messages --%>
-               <tr valign=top>
+               <tr valign="top">
                   <td style="background-image: url(<%=request.getContextPath()%>/images/parts/whitepanel_4.gif)" width=4></td>
                   <td style="padding:4px">
                      <%-- messages tag to show messages not handled by other specific message tags --%> 
@@ -533,7 +533,7 @@
                <%-- separator row with bottom panel graphics --%>
                <tr>
                   <td><img src="<%=request.getContextPath()%>/images/parts/whitepanel_7.gif" width=4 height=4></td>
-                  <td width=100% align=center style="background-image: url(<%=request.getContextPath()%>/images/parts/whitepanel_8.gif)"></td>
+                  <td width='100%' align=center style="background-image: url(<%=request.getContextPath()%>/images/parts/whitepanel_8.gif)"></td>
                   <td><img src="<%=request.getContextPath()%>/images/parts/whitepanel_9.gif" width=4 height=4></td>
                </tr>
                

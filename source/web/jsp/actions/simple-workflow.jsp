@@ -81,7 +81,7 @@
    <h:form acceptcharset="UTF-8" id="simple-workflow-action">
    
    <%-- Main outer table --%>
-   <table cellspacing="0" cellpadding="2">
+   <table cellspacing="0" cellpadding="2" width="100%">
       
       <%-- Title bar --%>
       <tr>
@@ -98,7 +98,7 @@
          </td>
          
          <%-- Work Area --%>
-         <td width="100%">
+         <td width="<h:outputText value="#{NavigationBean.workAreaWidth}" />">
             <table cellspacing="0" cellpadding="0" width="100%">
                <%-- Breadcrumb --%>
                <%@ include file="../parts/breadcrumb.jsp" %>

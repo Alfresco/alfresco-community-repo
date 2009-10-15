@@ -56,7 +56,9 @@
          <tr>
             <td align=left></f:verbatim>
                <r:permissionEvaluator value="#{DialogManager.bean.document}" allow="Write" id="evalApply">
-                  <a:actionLink id="actDashboard" value="#{msg.apply_template}" rendered="#{!DialogManager.bean.hasCustomView}" action="dialog:applyDocTemplate" />
+                  <r:actionInstanceEvaluator id="eval2" value="#{DialogManager.bean.document}" evaluatorClassName="org.alfresco.web.action.evaluator.UnlockedDocEvaluator">
+                     <a:actionLink id="actDashboard" value="#{msg.apply_template}" rendered="#{!DialogManager.bean.hasCustomView}" action="dialog:applyDocTemplate" />
+                  </r:actionInstanceEvaluator>
                </r:permissionEvaluator>
                <a:panel id="template-panel" rendered="#{DialogManager.bean.hasCustomView}">
                   <f:verbatim><div style="padding: 4px; border: 1px dashed #cccccc"></f:verbatim>

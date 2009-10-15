@@ -1254,7 +1254,7 @@ public class ForumsBean implements IContextListener
          renderBodyContents(context, primaryColumn);
          renderBubbleBottom(out, contextPath, colour);
          
-         out.write("</td><td><div style='width:32px;'></div></td></table></td>");
+         out.write("</td><td><div style='width:32px;'></div></td></tr></table></td>");
       }
       
       /**
@@ -1286,7 +1286,7 @@ public class ForumsBean implements IContextListener
          out.write(contextPath);
          out.write("/images/icons/user_large.gif'/><br>");
          out.write((String)node.getProperties().get("creator"));
-         out.write("</td></table></td>");
+         out.write("</td></tr></table></td>");
       }
 
       private void renderHeaderContents(FacesContext context, ResponseWriter out,  
@@ -1309,7 +1309,7 @@ public class ForumsBean implements IContextListener
                {
                   out.write("<td><nobr><b>");
                   Utils.encodeRecursive(context, header);
-                  out.write("</nobr></b></td>");
+                  out.write("</b></nobr></td>");
                }
                
                // render the contents of the column

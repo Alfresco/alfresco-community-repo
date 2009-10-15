@@ -1541,7 +1541,7 @@ public class AVMBrowseBean implements IContextListener
       if (logger.isDebugEnabled())
          logger.debug("Setup content action for path: " + path);
 
-      if (path == null && path.length() == 0)
+      if (path == null || path.length() == 0)
       {
          setAvmActionNode(null);
       }
@@ -1573,7 +1573,8 @@ public class AVMBrowseBean implements IContextListener
          }
          
          // setup the action node
-         this.setAVMActionNodeDescriptor(getAvmService().lookup(-1, path, true));
+         AVMNodeDescriptor avmNodeDesc = getAvmService().lookup(-1, path, true);
+         this.setAVMActionNodeDescriptor(avmNodeDesc);
       }
       
       // update UI state ready for return after dialog close

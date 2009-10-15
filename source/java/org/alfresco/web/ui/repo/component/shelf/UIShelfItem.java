@@ -31,7 +31,7 @@ import org.alfresco.web.ui.common.component.SelfRenderingComponent;
  */
 public class UIShelfItem extends SelfRenderingComponent
 {
-   protected final static String SHELF_START = "<table border=0 cellspacing=3 cellpadding=0 width=100% valign=top>";
+   protected final static String SHELF_START = "<table border=\"0\" cellspacing=\"3\" cellpadding=\"0\" width=\"100%\" valign=\"top\">";
    protected final static String SHELF_END   = "</table>";
    
    

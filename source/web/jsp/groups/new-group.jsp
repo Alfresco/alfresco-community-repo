@@ -32,12 +32,16 @@
 <%@ page import="org.alfresco.web.ui.common.PanelGenerator" %>
 
 <f:verbatim>
+<script type="text/javascript" src="<%=request.getContextPath()%>/scripts/validation.js"> </script>
 <script type="text/javascript">
+   var finishButtonPressed = false;
    window.onload = pageLoaded;
    
    function pageLoaded()
    {
       document.getElementById("dialog:dialog-body:name").focus();
+      document.getElementById("dialog").onsubmit = validate;
+      document.getElementById("dialog:finish-button").onclick = function() {finishButtonPressed = true;}
       checkButtonState();
    }
    
@@ -52,8 +56,27 @@
          document.getElementById("dialog:finish-button").disabled = false;
       }
    }
-</script>
 
+
+   function validate()
+   {
+      if (finishButtonPressed)
+      {
+         finishButtonPressed = false;
+
+         var message = (window.gecko) ? $("dialog:dialog-body:validation_invalid_character").textContent : $("dialog:dialog-body:validation_invalid_character").innerText;
+         return validateName(document.getElementById("dialog:dialog-body:name"),
+               message,
+               true);
+      }
+      else
+      {
+         return true;
+      }
+   }
+
+</script>
+<h:outputText id="validation_invalid_character" style="display:none" value="#{msg.validation_invalid_character}" />   
 <table cellpadding="2" cellspacing="2" border="0" width="100%">
 <tr>
 <td colspan="2" class="wizardSectionHeading"></f:verbatim><h:outputText value="#{msg.group_props}" /><f:verbatim></td>

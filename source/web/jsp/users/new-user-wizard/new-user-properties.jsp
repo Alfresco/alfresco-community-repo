@@ -29,7 +29,10 @@
 <%@ taglib uri="/WEB-INF/repo.tld" prefix="r" %>
 
 <f:verbatim>
+<script type="text/javascript" src="<%=request.getContextPath()%>/scripts/validation.js"> </script>   
 <script type="text/javascript">
+
+var finishButtonPressed = false;
 
 window.onload = pageLoaded;
 
@@ -39,6 +42,9 @@ function pageLoaded()
 		document.getElementById("wizard:wizard-body:userName").disabled == false)
 	{
 		document.getElementById("wizard:wizard-body:userName").focus();
+      document.getElementById("wizard").onsubmit = validate;
+      document.getElementById("wizard:finish-button").onclick = function() {finishButtonPressed = true;}
+      document.getElementById("wizard:next-button").onclick = function() {finishButtonPressed = true;}      
 	}
 	else
 	{
@@ -46,7 +52,6 @@ function pageLoaded()
 	}
 	updateButtonState();
 }
-
 function updateButtonState()
 {
 	if (document.getElementById("wizard:wizard-body:password") != null &&
@@ -71,7 +76,26 @@ function updateButtonState()
 		document.getElementById("wizard:next-button").disabled = false;
 	}
 }
+
+function validate()
+{
+   if (finishButtonPressed)
+   {
+      finishButtonPressed = false;
+
+      var message = (window.gecko) ? $("wizard:wizard-body:validation_invalid_character").textContent : $("wizard:wizard-body:validation_invalid_character").innerText;
+      return validateName(document.getElementById("wizard:wizard-body:userName"),
+            message,
+            true);
+   }
+   else
+   {
+      return true;
+   }
+}
+
 </script>
+<h:outputText id="validation_invalid_character" style="display:none" value="#{msg.validation_invalid_character}" />
 </f:verbatim>
 
 <h:panelGrid columns="1" cellpadding="2" style="padding-top: 4px; padding-bottom: 4px;"

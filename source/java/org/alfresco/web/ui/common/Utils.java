@@ -270,6 +270,10 @@ public final class Utils extends StringUtils
             buf.append(name);
             buf.append("'].value='");
             String val = params.get(name);
+            if(val != null)
+            {
+               val = Utils.encode(val);
+            }
             val = replace(val, "\\", "\\\\");   // encode escape character
             val = replace(val, "'", "\\'");     // encode single quote as we wrap string with that
             buf.append(val);

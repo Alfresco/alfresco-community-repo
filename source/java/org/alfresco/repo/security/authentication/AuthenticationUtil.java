@@ -468,6 +468,8 @@ public class AuthenticationUtil implements InitializingBean
     {
         ContextHolder.setContext(null);
         InMemoryTicketComponentImpl.clearCurrentSecurityContext();
+        
+        NDC.remove();
     }
 
     /**

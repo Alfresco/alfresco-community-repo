@@ -582,6 +582,13 @@ public class InviteServiceTest extends BaseWebScriptTest
         // Invitee accepts invitation to a Site from Inviter
         String acceptInviteUrl = URL_INVITE + "/" + inviteId + "/" + inviteTicket + "/accept";
         sendRequest(new PutRequest(acceptInviteUrl, (byte[])null, null), Status.STATUS_OK);
+        
+        // Invitee attempts to accept the invitation again
+        sendRequest(new PutRequest(acceptInviteUrl, (byte[])null, null), Status.STATUS_CONFLICT);
+        
+        // Invitee attempts to reject an invitation that has already been accepted.
+        rejectInvite(inviteId, inviteTicket, Status.STATUS_CONFLICT);
+
 
         //
         // test that invitation represented by invite ID (of invitation started
@@ -610,6 +617,9 @@ public class InviteServiceTest extends BaseWebScriptTest
         String inviteTicket = result.getString("inviteTicket");
 
         rejectInvite(inviteId, inviteTicket, Status.STATUS_OK);
+        
+        // Negative test 
+        rejectInvite(inviteId, inviteTicket, Status.STATUS_CONFLICT);
 
         //
         // test that invite represented by invite ID (of invitation started
@@ -624,6 +634,8 @@ public class InviteServiceTest extends BaseWebScriptTest
 
         // there should no longer be any invites identified by invite ID pending
         // assertEquals(0, getInvitesResult.getJSONArray("invites").length());
+        
+        
     }
 
     public void testGetInvitesByInviteId() throws Exception

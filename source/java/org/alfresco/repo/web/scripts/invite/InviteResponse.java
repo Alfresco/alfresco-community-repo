@@ -134,6 +134,9 @@ public class InviteResponse extends DeclarativeWebScript
         String inviteId = req.getServiceMatch().getTemplateVars().get("inviteId");
         String inviteTicket = req.getServiceMatch().getTemplateVars().get("inviteTicket");
                
+        // Check that the task is still open.
+        //if(inviteStart)
+        
         // process response
         String action = req.getServiceMatch().getTemplateVars().get("action");
         if (action.equals("accept"))
@@ -149,6 +152,10 @@ public class InviteResponse extends DeclarativeWebScript
             {
         		throw new WebScriptException(Status.STATUS_FORBIDDEN, fe.toString());            
             }
+            catch (InvitationExceptionUserError fe)
+            {
+                throw new WebScriptException(Status.STATUS_CONFLICT, fe.toString());            
+            }
         }
         else if (action.equals("reject"))
         {
@@ -162,7 +169,11 @@ public class InviteResponse extends DeclarativeWebScript
             catch (InvitationExceptionForbidden fe)
             {
         		throw new WebScriptException(Status.STATUS_FORBIDDEN, fe.toString());            
-            }  
+            }
+            catch (InvitationExceptionUserError fe)
+            {
+                throw new WebScriptException(Status.STATUS_CONFLICT, fe.toString());            
+            }
         }
         else
         {

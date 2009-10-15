@@ -213,7 +213,14 @@ function main()
                var tmpFilename;
                while (existingFile !== null)
                {
-                  tmpFilename = filename.substring(0, filename.lastIndexOf(".")) + "-" + suffix + filename.substring(filename.lastIndexOf("."));
+                  if(filename.lastIndexOf(".") > 0)
+                  {
+                     tmpFilename = filename.substring(0, filename.lastIndexOf(".")) + "-" + suffix + filename.substring(filename.lastIndexOf("."));
+                  }
+                  else
+                  {
+                     tmpFilename = filename + "-" + suffix;
+                  }
                   existingFile = container.childByNamePath(uploadDirectory + tmpFilename);
                   suffix++;
                }

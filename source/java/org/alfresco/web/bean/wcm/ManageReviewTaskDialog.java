@@ -189,6 +189,18 @@ public class ManageReviewTaskDialog extends ManageTaskDialog
       return "dialog:deployWebsite";
    }
    
+   public String releaseTestServer()
+   {   
+       if (logger.isDebugEnabled())
+           logger.debug("Release test server for store: " + store);
+
+       Map<String, String> params = new HashMap<String, String>(3);
+       params.put("store", this.store);
+       Application.getDialogManager().setupParameters(params);
+
+       return "dialog:releaseTestServer";
+   }
+   
    // ------------------------------------------------------------------------------
    // Getters and Setters
    
@@ -272,5 +284,23 @@ public class ManageReviewTaskDialog extends ManageTaskDialog
       }
       
       return (propVal != null);
+   }
+   
+   /**
+    * 
+    */
+   /**
+    * @return Determines whether a test server is allocated
+    */
+   public boolean getTestServerAllocated()
+   {
+       // if a test server has already been allocated inform the dialog
+       // that an update is needed
+       List<NodeRef> testServers = DeploymentUtil.findAllocatedTestServers(this.store);
+       if (!testServers.isEmpty())
+       {
+          return true;
+       }
+       return false;
    }
 }

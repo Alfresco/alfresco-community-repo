@@ -69,6 +69,8 @@
                        action="#{DialogManager.bean.deploy}" rendered="#{DialogManager.bean.testServersAvailable}" />
          <a:actionLink id="resources-action2" value="#{msg.deployment_report_action}" image="/images/icons/deployment_report.gif"
                        action="#{DialogManager.bean.viewDeployReport}" rendered="#{DialogManager.bean.deployAttempted}" />
+         <a:actionLink id="resources-action3" value="#{msg.sandbox_release_test_server}" image="/images/icons/release_server.gif"
+                       action="#{DialogManager.bean.releaseTestServer}" rendered="#{DialogManager.bean.testServerAllocated}" />
       </h:panelGroup>
    </f:facet>
 </h:panelGroup>

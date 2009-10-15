@@ -82,8 +82,9 @@ public class ReleaseTestServerDialog extends BaseDialogBean
       }
          
       // close dialog and refresh website view
-      return AlfrescoNavigationHandler.CLOSE_DIALOG_OUTCOME + 
-                AlfrescoNavigationHandler.OUTCOME_SEPARATOR + "browseWebsite";
+//      return AlfrescoNavigationHandler.CLOSE_DIALOG_OUTCOME + 
+//                AlfrescoNavigationHandler.OUTCOME_SEPARATOR + "browseWebsite";
+      return(outcome);
    }
 
    @Override

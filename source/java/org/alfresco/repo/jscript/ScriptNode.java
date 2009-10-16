@@ -34,7 +34,9 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -465,6 +467,108 @@ public class ScriptNode implements Serializable, Scopeable, NamespacePrefixResol
     public Scriptable childrenByXPath(String xpath)
     {
         return Context.getCurrentContext().newArray(this.scope, getChildrenByXPath(xpath, null, false));
+    }
+    
+    /**
+     * @return Returns a JavaScript array of child file/folder nodes for this nodes.
+     *         Automatically retrieves all sub-types of cm:content and cm:folder, also removes
+     *         system folder types from the results.
+     *         This is equivalent to @see FileFolderService.list() 
+     */
+    public Scriptable childFileFolders()
+    {
+        return childFileFolders(true, true, null);
+    }
+    
+    /**
+     * @param files     Return files extending from cm:content
+     * @param folders   Return folders extending from cm:folder - ignoring sub-types of cm:systemfolder
+     * @return Returns a JavaScript array of child file/folder nodes for this nodes.
+     *         Automatically retrieves all sub-types of cm:content and cm:folder, also removes
+     *         system folder types from the results.
+     *         This is equivalent to @see FileFolderService.listFiles() and @see FileFolderService.listFolders()
+     */
+    public Scriptable childFileFolders(boolean files, boolean folders)
+    {
+        return childFileFolders(files, folders, null);
+    }
+    
+    /**
+     * @param files     Return files extending from cm:content
+     * @param folders   Return folders extending from cm:folder - ignoring sub-types of cm:systemfolder
+     * @return Returns a JavaScript array of child file/folder nodes for this nodes.
+     *         Automatically retrieves all sub-types of cm:content and cm:folder, also removes
+     *         system folder types from the results.
+     *         Also optionally removes additional type qnames. The additional type can be
+     *         specified in short or long qname string form as a single string or an Array e.g. "fm:forum".
+     *         This is equivalent to @see FileFolderService.listFiles() and @see FileFolderService.listFolders()
+     */
+    public Scriptable childFileFolders(boolean files, boolean folders, Object ignoreTypes)
+    {
+        Object[] results;
+        
+        // Build a list of file and folder types
+        DictionaryService dd = services.getDictionaryService();
+        Set<QName> searchTypeQNames = new HashSet<QName>(16, 1.0f);
+        if (folders)
+        {
+            Collection<QName> qnames = dd.getSubTypes(ContentModel.TYPE_FOLDER, true);
+            searchTypeQNames.addAll(qnames);
+            searchTypeQNames.add(ContentModel.TYPE_FOLDER);
+        }
+        if (files)
+        {
+            Collection<QName> qnames = dd.getSubTypes(ContentModel.TYPE_CONTENT, true);
+            searchTypeQNames.addAll(qnames);
+            searchTypeQNames.add(ContentModel.TYPE_CONTENT);
+            qnames = dd.getSubTypes(ContentModel.TYPE_LINK, true);
+            searchTypeQNames.addAll(qnames);
+            searchTypeQNames.add(ContentModel.TYPE_LINK);
+        }
+        
+        // Remove 'system' folder types
+        Collection<QName> qnames = dd.getSubTypes(ContentModel.TYPE_SYSTEM_FOLDER, true);
+        searchTypeQNames.removeAll(qnames);
+        searchTypeQNames.remove(ContentModel.TYPE_SYSTEM_FOLDER);
+        
+        // Add user defined types to ignore from the search
+        if (ignoreTypes instanceof ScriptableObject)
+        {
+            Serializable types = getValueConverter().convertValueForRepo((ScriptableObject)ignoreTypes);
+            if (types instanceof List)
+            {
+                for (Serializable typeObj : (List<Serializable>)types)
+                {
+                    searchTypeQNames.remove(createQName(typeObj.toString()));
+                }
+            }
+            else if (types instanceof String)
+            {
+                searchTypeQNames.remove(createQName(types.toString()));
+            }
+        }
+        else if (ignoreTypes instanceof String)
+        {
+            searchTypeQNames.remove(createQName(ignoreTypes.toString()));
+        }
+        
+        // Perform the query and collect the results
+        if (searchTypeQNames.size() != 0)
+        {
+            List<ChildAssociationRef> childAssocRefs = this.nodeService.getChildAssocs(this.nodeRef, searchTypeQNames);
+            results = new Object[childAssocRefs.size()];
+            for (int i=0; i<childAssocRefs.size(); i++)
+            {
+                ChildAssociationRef assocRef = childAssocRefs.get(i);
+                results[i] = newInstance(assocRef.getChildRef(), this.services, this.scope);
+            }
+        }
+        else
+        {
+            results = new Object[0];
+        }
+        
+        return Context.getCurrentContext().newArray(this.scope, results);
     }
     
     /**

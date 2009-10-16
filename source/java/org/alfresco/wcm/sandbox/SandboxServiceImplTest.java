@@ -916,7 +916,7 @@ public class SandboxServiceImplTest extends AbstractWCMServiceImplTest
         // submit (new assets) !
         sbService.submitWebApp(authorSandboxId, webApp, "a submit label", "a submit comment");
         
-        Thread.sleep(SUBMIT_DELAY);
+        pollForSnapshotCount(stagingSandboxId, 1);
         
         assets = sbService.listChangedWebApp(authorSandboxId, webApp, false);
         assertEquals(0, assets.size());
@@ -1033,7 +1033,7 @@ public class SandboxServiceImplTest extends AbstractWCMServiceImplTest
         writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
         writer.setEncoding("UTF-8");
         writer.putContent(MYFILE2);
-                
+        
         assets = sbService.listChangedWebApp(authorSandboxId, webApp, false);
         assertEquals(2, assets.size());
         
@@ -1044,7 +1044,7 @@ public class SandboxServiceImplTest extends AbstractWCMServiceImplTest
         // submit (new assets) !
         sbService.submitWebApp(authorSandboxId, webApp, "a submit label", "a submit comment");
         
-        Thread.sleep(SUBMIT_DELAY);
+        pollForSnapshotCount(stagingSandboxId, 1);
         
         assets = sbService.listChangedWebApp(authorSandboxId, webApp, false);
         assertEquals(0, assets.size());
@@ -1069,13 +1069,13 @@ public class SandboxServiceImplTest extends AbstractWCMServiceImplTest
         writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
         writer.setEncoding("UTF-8");
         writer.putContent(MYFILE1_MODIFIED);
-
+        
         final String MYFILE2_MODIFIED = "This is myFile2 ... modified by "+USER_TWO;
         writer = assetService.getContentWriter(assetService.getAssetWebApp(authorSandboxId, webApp, "/myDir1/myFile2"));
         writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
         writer.setEncoding("UTF-8");
         writer.putContent(MYFILE2_MODIFIED);
-                
+        
         assets = sbService.listChangedWebApp(authorSandboxId, webApp, false);
         assertEquals(2, assets.size());
         
@@ -1099,7 +1099,7 @@ public class SandboxServiceImplTest extends AbstractWCMServiceImplTest
         // submit (modified assets) !
         sbService.submitWebApp(authorSandboxId, webApp, "my label", null);
         
-        Thread.sleep(SUBMIT_DELAY);
+        pollForSnapshotCount(stagingSandboxId, 2);
         
         assets = sbService.listChangedWebApp(authorSandboxId, webApp, false);
         assertEquals(0, assets.size());
@@ -1162,7 +1162,7 @@ public class SandboxServiceImplTest extends AbstractWCMServiceImplTest
         // submit (new assets) !
         sbService.submitAll(authorSandboxId, "a submit label", "a submit comment");
         
-        Thread.sleep(SUBMIT_DELAY);
+        pollForSnapshotCount(stagingSandboxId, 1);
         
         // check staging after
         List<AssetInfo> listing = assetService.listAssets(stagingSandboxId, -1, rootPath, false);
@@ -1196,11 +1196,11 @@ public class SandboxServiceImplTest extends AbstractWCMServiceImplTest
         // submit all (modified assets) !
         sbService.submitAll(authorSandboxId, "my label", null);
         
-        Thread.sleep(SUBMIT_DELAY);
+        pollForSnapshotCount(stagingSandboxId, 2);
         
         assets = sbService.listChangedAll(authorSandboxId, true);
         assertEquals(0, assets.size());
-       
+        
         // check staging after
         listing = assetService.listAssets(stagingSandboxId, -1, rootPath, false);
         assertEquals(3, listing.size());  // 'figs', 'a' and 'ROOT'
@@ -1228,7 +1228,7 @@ public class SandboxServiceImplTest extends AbstractWCMServiceImplTest
         // no changes yet
         List<AssetInfo> assets = sbService.listChangedAll(authorSandboxId, true);
         assertEquals(0, assets.size());
-      
+       
         String authorSandboxPath = sbInfo.getSandboxRootPath() + "/" + webApp;
         
         final String MYFILE1 = "This is myFile1";
@@ -1256,7 +1256,7 @@ public class SandboxServiceImplTest extends AbstractWCMServiceImplTest
         // submit (new assets) !
         sbService.submitWebApp(authorSandboxId, webApp, "a submit label", "a submit comment");
         
-        Thread.sleep(SUBMIT_DELAY);
+        pollForSnapshotCount(stagingSandboxId, 1);
         
         assets = sbService.listChangedWebApp(authorSandboxId, webApp, false);
         assertEquals(0, assets.size());
@@ -1274,7 +1274,7 @@ public class SandboxServiceImplTest extends AbstractWCMServiceImplTest
         // no changes yet
         assets = sbService.listChangedAll(authorSandboxId, true);
         assertEquals(0, assets.size());
-      
+       
         //authorSandboxWebppPath = authorSandboxId + AVM_STORE_SEPARATOR + sbInfo.getSandboxRootPath() + "/" + webApp;
         
         
@@ -1300,7 +1300,7 @@ public class SandboxServiceImplTest extends AbstractWCMServiceImplTest
         // submit (deleted assets) !
         sbService.submitWebApp(authorSandboxId, webApp, "my label", null);
         
-        Thread.sleep(SUBMIT_DELAY);
+        pollForSnapshotCount(stagingSandboxId, 2);
         
         assets = sbService.listChangedWebApp(authorSandboxId, webApp, false);
         assertEquals(0, assets.size());
@@ -1356,7 +1356,7 @@ public class SandboxServiceImplTest extends AbstractWCMServiceImplTest
         // submit (new assets) !
         sbService.submitWebApp(authorSandboxIdA, webAppA, "A1", "A1");
         
-        Thread.sleep(SUBMIT_DELAY);
+        pollForSnapshotCount(stagingSandboxIdA, 1);
         
         assets = sbService.listChangedWebApp(authorSandboxIdA, webAppA, false);
         assertEquals(0, assets.size());
@@ -1406,7 +1406,7 @@ public class SandboxServiceImplTest extends AbstractWCMServiceImplTest
         // submit (modified asset)
         sbService.submitWebApp(authorSandboxIdB, webAppB, "B1", "B1");
         
-        Thread.sleep(SUBMIT_DELAY);
+        pollForSnapshotCount(stagingSandboxIdB, 1);
         
         // Switch back to Web Project A
         
@@ -1416,7 +1416,7 @@ public class SandboxServiceImplTest extends AbstractWCMServiceImplTest
         // submit (deleted asset)
         sbService.submitWebApp(authorSandboxIdA, webAppA, "A2", "A2");
         
-        Thread.sleep(SUBMIT_DELAY);
+        pollForSnapshotCount(stagingSandboxIdA, 1);
         
         // Switch back to Web Project B
         
@@ -1427,7 +1427,7 @@ public class SandboxServiceImplTest extends AbstractWCMServiceImplTest
         // ETHREEOH_2581
         sbService.submitWebApp(authorSandboxIdB, webAppB, "B2", "B2");
         
-        Thread.sleep(SUBMIT_DELAY);
+        pollForSnapshotCount(stagingSandboxIdB, 1);
     }
     
     public void testSubmitUpdatedItemWithLF() throws IOException, InterruptedException
@@ -1470,7 +1470,7 @@ public class SandboxServiceImplTest extends AbstractWCMServiceImplTest
         // submit (new assets) !
         sbService.submitWebApp(authorSandboxIdA, webAppA, "A1", "A1");
         
-        Thread.sleep(SUBMIT_DELAY);
+        pollForSnapshotCount(stagingSandboxIdA, 1);
         
         assets = sbService.listChangedWebApp(authorSandboxIdA, webAppA, false);
         assertEquals(0, assets.size());
@@ -1529,7 +1529,7 @@ public class SandboxServiceImplTest extends AbstractWCMServiceImplTest
         assertEquals(AVMDifference.NEWER, assets.get(0).getDiffCode());
         
         // wait for submit to complete
-        Thread.sleep(SUBMIT_DELAY);
+        pollForSnapshotCount(stagingSandboxIdB, 1);
         
         assets = sbService.listChangedWebApp(authorSandboxIdB, webAppB, false);
         assertEquals(0, assets.size());
@@ -1577,7 +1577,7 @@ public class SandboxServiceImplTest extends AbstractWCMServiceImplTest
         // submit (new assets) !
         sbService.submitWebApp(authorSandboxIdA, webAppA, "A1", "A1");
         
-        Thread.sleep(SUBMIT_DELAY);
+        pollForSnapshotCount(stagingSandboxIdA, 1);
         
         assets = sbService.listChangedWebApp(authorSandboxIdA, webAppA, false);
         assertEquals(0, assets.size());
@@ -1623,7 +1623,7 @@ public class SandboxServiceImplTest extends AbstractWCMServiceImplTest
         // submit (deleted asset)
         sbService.submitWebApp(authorSandboxIdB, webAppB, "B2", "B2");
         
-        Thread.sleep(SUBMIT_DELAY);
+        pollForSnapshotCount(stagingSandboxIdB, 1);
         
         assertEquals(0, sbService.listChangedAll(authorSandboxIdB, true).size());
         
@@ -1672,7 +1672,7 @@ public class SandboxServiceImplTest extends AbstractWCMServiceImplTest
         // submit (new assets) !
         sbService.submitWebApp(authorSandboxIdA, webAppA, "A1", "A1");
         
-        Thread.sleep(SUBMIT_DELAY);
+        pollForSnapshotCount(stagingSandboxIdA, 1);
         
         assets = sbService.listChangedWebApp(authorSandboxIdA, webAppA, false);
         assertEquals(0, assets.size());
@@ -1732,7 +1732,7 @@ public class SandboxServiceImplTest extends AbstractWCMServiceImplTest
         recursiveList(stagingSandboxIdB);
         recursiveList(authorSandboxIdB);
         
-        Thread.sleep(SUBMIT_DELAY);
+        pollForSnapshotCount(stagingSandboxIdB, 1);
         
         logger.debug("submit completed: created file b.txt in B staging sandbox");
         
@@ -1763,7 +1763,7 @@ public class SandboxServiceImplTest extends AbstractWCMServiceImplTest
         recursiveList(stagingSandboxIdB);
         recursiveList(authorSandboxIdB);
         
-        Thread.sleep(SUBMIT_DELAY);
+        pollForSnapshotCount(stagingSandboxIdB, 2);
         
         logger.debug("submit completed: deleted file a.txt in B staging sandbox");
         
@@ -1828,7 +1828,7 @@ public class SandboxServiceImplTest extends AbstractWCMServiceImplTest
         // submit (new assets) !
         sbService.submitWebApp(authorSandboxId, webApp, "a submit label", "a submit comment");
         
-        Thread.sleep(SUBMIT_DELAY);
+        pollForSnapshotCount(stagingSandboxId, 1);
         
         assets = sbService.listChangedWebApp(authorSandboxId, webApp, false);
         assertEquals(0, assets.size());
@@ -1979,7 +1979,7 @@ public class SandboxServiceImplTest extends AbstractWCMServiceImplTest
         // no changes yet
         List<AssetInfo> assets = sbService.listChangedAll(authorSandboxId, true);
         assertEquals(0, assets.size());
-      
+        
         assetService.createFolderWebApp(authorSandboxId, webApp, "/", "myDir1");
         assetService.createFolderWebApp(authorSandboxId, webApp, "/", "myDir2");
         assetService.createFolderWebApp(authorSandboxId, webApp, "/", "myDir3");
@@ -1997,7 +1997,7 @@ public class SandboxServiceImplTest extends AbstractWCMServiceImplTest
         // submit (new assets) !
         sbService.submitWebApp(authorSandboxId, webApp, "a submit label", "a submit comment");
         
-        Thread.sleep(SUBMIT_DELAY);
+        pollForSnapshotCount(stagingSandboxId, 1);
         
         assets = sbService.listChangedWebApp(authorSandboxId, webApp, false);
         assertEquals(0, assets.size());
@@ -2011,11 +2011,11 @@ public class SandboxServiceImplTest extends AbstractWCMServiceImplTest
         
         // more changes ...
         assetService.createFolderWebApp(authorSandboxId, webApp, "/", "myDir4");
-
+        
         // submit (new assets) !
         sbService.submitWebApp(authorSandboxId, webApp, "a submit label", "a submit comment");
         
-        Thread.sleep(SUBMIT_DELAY);
+        pollForSnapshotCount(stagingSandboxId, 2);
         
         // check staging after
         listing = assetService.listAssets(stagingSandboxId, -1, stagingSandboxPath, false);
@@ -2051,7 +2051,7 @@ public class SandboxServiceImplTest extends AbstractWCMServiceImplTest
         // no changes yet
         List<AssetInfo> assets = sbService.listChangedAll(authorSandboxId, true);
         assertEquals(0, assets.size());
-      
+        
         String authorSandboxPath = sbInfo.getSandboxRootPath() + "/" + webApp;
         
         assetService.createFolder(authorSandboxId, authorSandboxPath, "myDir1", null);
@@ -2069,7 +2069,7 @@ public class SandboxServiceImplTest extends AbstractWCMServiceImplTest
         // submit (new assets) !
         sbService.submitWebApp(authorSandboxId, webApp, "a submit label", "a submit comment");
         
-        Thread.sleep(SUBMIT_DELAY);
+        pollForSnapshotCount(stagingSandboxId, 1);
         
         assets = sbService.listChangedWebApp(authorSandboxId, webApp, false);
         assertEquals(0, assets.size());
@@ -2094,11 +2094,11 @@ public class SandboxServiceImplTest extends AbstractWCMServiceImplTest
         
         // more changes ...
         assetService.createFolder(authorSandboxId, authorSandboxPath, "myDir2", null);
-
+        
         // submit (new assets) !
         sbService.submitWebApp(authorSandboxId, webApp, "a submit label", "a submit comment");
         
-        Thread.sleep(SUBMIT_DELAY);
+        pollForSnapshotCount(stagingSandboxId, 2);
         
         // check staging after
         listing = assetService.listAssets(stagingSandboxId, -1, stagingSandboxPath, false);
@@ -2124,11 +2124,11 @@ public class SandboxServiceImplTest extends AbstractWCMServiceImplTest
         
         // more changes ...
         assetService.createFolderWebApp(authorSandboxId, webApp, "/", "myDir3");
-
+        
         // submit (new assets) !
         sbService.submitWebApp(authorSandboxId, webApp, "a submit label", "a submit comment");
         
-        Thread.sleep(SUBMIT_DELAY);
+        pollForSnapshotCount(stagingSandboxId, 3);
         
         // check staging after
         listing = assetService.listAssets(stagingSandboxId, -1, stagingSandboxPath, false);
@@ -2209,7 +2209,8 @@ public class SandboxServiceImplTest extends AbstractWCMServiceImplTest
         
         assetService.createFile(authorSandboxId, authorSandboxPath, "c1.txt", null);
         sbService.submitWebApp(authorSandboxId, webApp, "s1", "s1");
-        Thread.sleep(SUBMIT_DELAY);
+        
+        pollForSnapshotCount(stagingSandboxId, 1);
         
         List<AssetInfo> listing = assetService.listAssets(stagingSandboxId, -1, stagingSandboxPath, false);
         assertEquals(1, listing.size());
@@ -2227,7 +2228,8 @@ public class SandboxServiceImplTest extends AbstractWCMServiceImplTest
         
         assetService.createFile(authorSandboxId, authorSandboxPath, "c2.txt", null);
         sbService.submitWebApp(authorSandboxId, webApp, "s2", "s2");
-        Thread.sleep(SUBMIT_DELAY);
+        
+        pollForSnapshotCount(stagingSandboxId, 2);
         
         listing = assetService.listAssets(stagingSandboxId, -1, stagingSandboxPath, false);
         assertEquals(2, listing.size());
@@ -2252,7 +2254,8 @@ public class SandboxServiceImplTest extends AbstractWCMServiceImplTest
         
         assetService.createFile(authorSandboxId, authorSandboxPath, "c3.txt", null);
         sbService.submitWebApp(authorSandboxId, webApp, "s3", "s3");
-        Thread.sleep(SUBMIT_DELAY);
+        
+        pollForSnapshotCount(stagingSandboxId, 3);
         
         listing = assetService.listAssets(stagingSandboxId, -1, stagingSandboxPath, false);
         assertEquals(3, listing.size());
@@ -2281,7 +2284,8 @@ public class SandboxServiceImplTest extends AbstractWCMServiceImplTest
         
         assetService.createFile(authorSandboxId, authorSandboxPath, "c4.txt", null);
         sbService.submitWebApp(authorSandboxId, webApp, "s4", "s4");
-        Thread.sleep(SUBMIT_DELAY);
+        
+        pollForSnapshotCount(stagingSandboxId, 4);
         
         listing = assetService.listAssets(stagingSandboxId, -1, stagingSandboxPath, false);
         assertEquals(4, listing.size());
@@ -2312,7 +2316,8 @@ public class SandboxServiceImplTest extends AbstractWCMServiceImplTest
         AssetInfo file = assetService.getAsset(authorSandboxId, authorSandboxPath+"/c2.txt");
         assetService.deleteAsset(file);
         sbService.submitWebApp(authorSandboxId, webApp, "s5", "s5");
-        Thread.sleep(SUBMIT_DELAY);
+        
+        pollForSnapshotCount(stagingSandboxId, 5);
         
         listing = assetService.listAssets(stagingSandboxId, -1, stagingSandboxPath, false);
         assertEquals(3, listing.size());
@@ -2391,6 +2396,7 @@ public class SandboxServiceImplTest extends AbstractWCMServiceImplTest
         WebProjectInfo wpInfo = wpService.createWebProject(TEST_SANDBOX+"-submitAction", TEST_WEBPROJ_NAME+" submitAction", TEST_WEBPROJ_TITLE, TEST_WEBPROJ_DESCRIPTION);
         String wpStoreId = wpInfo.getStoreId();
         String webApp = wpInfo.getDefaultWebApp();
+        String stagingSandboxId = wpInfo.getStagingStoreName();
         
         SandboxInfo sbInfo = sbService.getAuthorSandbox(wpStoreId);
         final String sbStoreId = sbInfo.getSandboxId();
@@ -2426,7 +2432,7 @@ public class SandboxServiceImplTest extends AbstractWCMServiceImplTest
         // first submit - all (note: within /www/avm_webapps)
         transactionService.getRetryingTransactionHelper().doInTransaction(new TxnWork());
         
-        Thread.sleep(SUBMIT_DELAY);
+        pollForSnapshotCount(stagingSandboxId, 1);
         
         assetService.createFile(sbStoreId, JNDIConstants.DIR_DEFAULT_WWW, "figs", null);
         
@@ -2459,7 +2465,7 @@ public class SandboxServiceImplTest extends AbstractWCMServiceImplTest
         
         transactionService.getRetryingTransactionHelper().doInTransaction(new TxnWork());
         
-        Thread.sleep(SUBMIT_DELAY);
+        pollForSnapshotCount(stagingSandboxId, 2);
         
         changedAssets = sbService.listChanged(sbStoreId, JNDIConstants.DIR_DEFAULT_WWW, true);
         assertEquals(0, changedAssets.size());
@@ -2471,6 +2477,7 @@ public class SandboxServiceImplTest extends AbstractWCMServiceImplTest
         WebProjectInfo wpInfo = wpService.createWebProject(TEST_SANDBOX+"-revertListAction", TEST_WEBPROJ_NAME+" revertListAction", TEST_WEBPROJ_TITLE, TEST_WEBPROJ_DESCRIPTION);
         String wpStoreId = wpInfo.getStoreId();
         String webApp = wpInfo.getDefaultWebApp();
+        String stagingSandboxId = wpInfo.getStagingStoreName();
         
         SandboxInfo sbInfo = sbService.getAuthorSandbox(wpStoreId);
         final String sbStoreId = sbInfo.getSandboxId();
@@ -2487,7 +2494,7 @@ public class SandboxServiceImplTest extends AbstractWCMServiceImplTest
         
         sbService.submitWebApp(sbStoreId, webApp, "submitLabel", "submitDescription");
         
-        Thread.sleep(SUBMIT_DELAY);
+        pollForSnapshotCount(stagingSandboxId, 1);
         
         assetService.createFileWebApp(sbStoreId, webApp, "/a/b/c", "foo");
         
@@ -2499,7 +2506,7 @@ public class SandboxServiceImplTest extends AbstractWCMServiceImplTest
         
         sbService.submitWebApp(sbStoreId, webApp, "submitLabel", "submitDescription");
         
-        Thread.sleep(SUBMIT_DELAY);
+        pollForSnapshotCount(stagingSandboxId, 2);
         
         assetService.createFileWebApp(sbStoreId, webApp, "/a/b/c", "bar");
         
@@ -2535,7 +2542,7 @@ public class SandboxServiceImplTest extends AbstractWCMServiceImplTest
         TransactionService transactionService = (TransactionService) ctx.getBean("transactionService");
         transactionService.getRetryingTransactionHelper().doInTransaction(new TxnWork());
         
-        Thread.sleep(SUBMIT_DELAY);
+        pollForSnapshotCount(stagingSandboxId, 3);
         
         snapshotVersions = sbService.listSnapshots(sbStoreId, false);
         assertEquals(2, snapshotVersions.size());
@@ -2569,7 +2576,7 @@ public class SandboxServiceImplTest extends AbstractWCMServiceImplTest
         
         sbService.submitWebApp(sbStoreId, webApp, "submitLabel", "submitDescription");
         
-        Thread.sleep(SUBMIT_DELAY);
+        pollForSnapshotCount(stagingStoreId, 1);
         
         assetService.createFileWebApp(sbStoreId, webApp, "/a/b/c", "foo");
         
@@ -2581,7 +2588,7 @@ public class SandboxServiceImplTest extends AbstractWCMServiceImplTest
         
         sbService.submitWebApp(sbStoreId, webApp, "submitLabel", "submitDescription");
         
-        Thread.sleep(SUBMIT_DELAY);
+        pollForSnapshotCount(stagingStoreId, 2);
         
         assetService.createFileWebApp(sbStoreId, webApp, "/a/b/c", "bar");
         
@@ -2593,7 +2600,7 @@ public class SandboxServiceImplTest extends AbstractWCMServiceImplTest
         
         sbService.submitWebApp(sbStoreId, webApp, "submitLabel", "submitDescription");
         
-        Thread.sleep(SUBMIT_DELAY);
+        pollForSnapshotCount(stagingStoreId, 3);
         
         List<SandboxVersion> snapshotVersions = sbService.listSnapshots(stagingStoreId, false);
         assertEquals(3, snapshotVersions.size());
@@ -2617,7 +2624,7 @@ public class SandboxServiceImplTest extends AbstractWCMServiceImplTest
         TransactionService transactionService = (TransactionService) ctx.getBean("transactionService");
         transactionService.getRetryingTransactionHelper().doInTransaction(new TxnWork());
         
-        Thread.sleep(SUBMIT_DELAY);
+        pollForSnapshotCount(stagingStoreId, 4);
         
         snapshotVersions = sbService.listSnapshots(stagingStoreId, false);
         assertEquals(4, snapshotVersions.size());

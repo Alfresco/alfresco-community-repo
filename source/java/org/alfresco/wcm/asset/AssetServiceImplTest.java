@@ -45,6 +45,8 @@ import org.alfresco.wcm.AbstractWCMServiceImplTest;
 import org.alfresco.wcm.sandbox.SandboxInfo;
 import org.alfresco.wcm.util.WCMUtil;
 import org.alfresco.wcm.webproject.WebProjectInfo;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * Asset Service implementation unit test
@@ -53,11 +55,11 @@ import org.alfresco.wcm.webproject.WebProjectInfo;
  */
 public class AssetServiceImplTest extends AbstractWCMServiceImplTest
 {
+    private static Log logger = LogFactory.getLog(AssetServiceImplTest.class);
     
     // test data
     private static final String PREFIX = "created-by-admin-";
     private static final String FILE = "This is file1 - admin";
-    
     
     @Override
     protected void setUp() throws Exception
@@ -384,6 +386,7 @@ public class AssetServiceImplTest extends AbstractWCMServiceImplTest
         
         String wpStoreId = wpInfo.getStoreId();
         String defaultWebApp = wpInfo.getDefaultWebApp();
+        String stagingStoreId = wpInfo.getStagingStoreName();
         
         // get admin sandbox
         SandboxInfo sbInfo = sbService.getAuthorSandbox(wpStoreId);
@@ -404,7 +407,7 @@ public class AssetServiceImplTest extends AbstractWCMServiceImplTest
         
         sbService.submitWebApp(sbStoreId, defaultWebApp, "some existing folders and files", null);
         
-        Thread.sleep(SUBMIT_DELAY);
+        pollForSnapshotCount(stagingStoreId, 1);
         
         runCRUDforRoles(USER_ONE, WCMUtil.ROLE_CONTENT_MANAGER, wpStoreId, defaultWebApp, true, true, true);
         
@@ -414,8 +417,8 @@ public class AssetServiceImplTest extends AbstractWCMServiceImplTest
         
         runCRUDforRoles(USER_FOUR, WCMUtil.ROLE_CONTENT_CONTRIBUTOR, wpStoreId, defaultWebApp, true, false, false);
     }
-        
-    private void runCRUDforRoles(String user, String role, String wpStoreId, String defaultWebApp, boolean canCreate, boolean canUpdateExisting, boolean canDeleteExisting) throws IOException, InterruptedException
+    
+    private void runCRUDforRoles(String user, String role, final String wpStoreId, String defaultWebApp, boolean canCreate, boolean canUpdateExisting, boolean canDeleteExisting) throws IOException, InterruptedException
     {
         // switch to user - content manager
         AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
@@ -425,7 +428,10 @@ public class AssetServiceImplTest extends AbstractWCMServiceImplTest
         
         // switch to user
         AuthenticationUtil.setFullyAuthenticatedUser(user);
-
+        
+        // get staging sandbox
+        String stagingStoreId = sbService.getStagingSandbox(wpStoreId).getSandboxId();
+            
         // get user's author sandbox
         SandboxInfo sbInfo = sbService.getAuthorSandbox(wpStoreId);
         String sbStoreId = sbInfo.getSandboxId();
@@ -658,10 +664,18 @@ public class AssetServiceImplTest extends AbstractWCMServiceImplTest
             }
         }
         
+        // switch to admin (content manager)
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
+        
+        int snapCnt = sbService.listSnapshots(wpStoreId, false).size();
+        
+        // switch to user
+        AuthenticationUtil.setFullyAuthenticatedUser(user);
+        
         // submit the changes
         sbService.submitWebApp(sbStoreId, defaultWebApp, "some updates by "+user, null);
         
-        Thread.sleep(SUBMIT_DELAY);
+        pollForSnapshotCount(stagingStoreId, snapCnt+1);
     }
     
     public void testRenameFile()
@@ -921,6 +935,9 @@ public class AssetServiceImplTest extends AbstractWCMServiceImplTest
         WebProjectInfo wpInfo = wpService.createWebProject(TEST_WEBPROJ_DNS+"-properties", TEST_WEBPROJ_NAME+"-properties", TEST_WEBPROJ_TITLE, TEST_WEBPROJ_DESCRIPTION, TEST_WEBPROJ_DEFAULT_WEBAPP, TEST_WEBPROJ_DONT_USE_AS_TEMPLATE, null);
         String defaultWebApp = wpInfo.getDefaultWebApp();
         
+        // get staging sandbox id
+        String stagingStoreId = sbService.getStagingSandbox(wpInfo.getStoreId()).getSandboxId();
+        
         // invite web user and auto-create their (author) sandbox
         wpService.inviteWebUser(wpInfo.getStoreId(), USER_ONE, WCMUtil.ROLE_CONTENT_CONTRIBUTOR, true);
         
@@ -955,7 +972,7 @@ public class AssetServiceImplTest extends AbstractWCMServiceImplTest
         
         sbService.submitWebApp(sbStoreId, defaultWebApp, "submit1 label", "submit1 comment");
         
-        Thread.sleep(SUBMIT_DELAY);
+        pollForSnapshotCount(stagingStoreId, 1);
         
         assertNull(assetService.getLockOwner(myFile1Asset));
         
@@ -1076,6 +1093,9 @@ public class AssetServiceImplTest extends AbstractWCMServiceImplTest
         WebProjectInfo wpInfo = wpService.createWebProject(TEST_WEBPROJ_DNS+"-simpleLock", TEST_WEBPROJ_NAME+"-simpleLock", TEST_WEBPROJ_TITLE, TEST_WEBPROJ_DESCRIPTION, TEST_WEBPROJ_DEFAULT_WEBAPP, TEST_WEBPROJ_DONT_USE_AS_TEMPLATE, null);
         String defaultWebApp = wpInfo.getDefaultWebApp();
         
+        // get staging sandbox id
+        String stagingStoreId = sbService.getStagingSandbox(wpInfo.getStoreId()).getSandboxId();
+        
         // invite web users and auto-create their (author) sandboxs
         wpService.inviteWebUser(wpInfo.getStoreId(), USER_ONE, WCMUtil.ROLE_CONTENT_CONTRIBUTOR, true);
         wpService.inviteWebUser(wpInfo.getStoreId(), USER_TWO, WCMUtil.ROLE_CONTENT_CONTRIBUTOR, true);
@@ -1115,7 +1135,7 @@ public class AssetServiceImplTest extends AbstractWCMServiceImplTest
         
         sbService.submitWebApp(sbStoreId, defaultWebApp, "submit1 label", "submit1 comment");
         
-        Thread.sleep(SUBMIT_DELAY);
+        pollForSnapshotCount(stagingStoreId, 1);
         
         assertNull(assetService.getLockOwner(myFile1Asset));
         assertTrue(assetService.hasLockAccess(myFile1Asset));
@@ -1134,6 +1154,9 @@ public class AssetServiceImplTest extends AbstractWCMServiceImplTest
         // create web project (also creates staging sandbox and admin's author sandbox)
         WebProjectInfo wpInfo = wpService.createWebProject(TEST_WEBPROJ_DNS+"-partialSubmitWithNewFolder", TEST_WEBPROJ_NAME+"-partialSubmitWithNewFolder", TEST_WEBPROJ_TITLE, TEST_WEBPROJ_DESCRIPTION, TEST_WEBPROJ_DEFAULT_WEBAPP, TEST_WEBPROJ_DONT_USE_AS_TEMPLATE, null);
         String defaultWebApp = wpInfo.getDefaultWebApp();
+        
+        // get staging sandbox id
+        String stagingStoreId = sbService.getStagingSandbox(wpInfo.getStoreId()).getSandboxId();
         
         // get admin's sandbox
         SandboxInfo sbInfo = sbService.getAuthorSandbox(wpInfo.getStoreId());
@@ -1176,7 +1199,8 @@ public class AssetServiceImplTest extends AbstractWCMServiceImplTest
         
         // partial submit with new folder
         sbService.submitListAssets(sbStoreId, selectedAssetsToSubmit, "submit1 label", "submit1 comment");
-        Thread.sleep(SUBMIT_DELAY);
+        
+        pollForSnapshotCount(stagingStoreId, 1);
         
         changedAssets = sbService.listChangedWebApp(sbStoreId, defaultWebApp, false);
         assertEquals(1, changedAssets.size());
@@ -1188,14 +1212,21 @@ public class AssetServiceImplTest extends AbstractWCMServiceImplTest
         assertTrue(assetService.hasLockAccess(myFile2Asset));
     }
     
-    public void testSimpleImport()
+    // bulk import and submit all
+    public void testImportAndSubmit1() throws InterruptedException
     {
         // create web project (also creates staging sandbox and admin's author sandbox)
         WebProjectInfo wpInfo = wpService.createWebProject(TEST_WEBPROJ_DNS+"-simpleImport", TEST_WEBPROJ_NAME+"-simpleImport", TEST_WEBPROJ_TITLE, TEST_WEBPROJ_DESCRIPTION, TEST_WEBPROJ_DEFAULT_WEBAPP, TEST_WEBPROJ_DONT_USE_AS_TEMPLATE, null);
         String defaultWebApp = wpInfo.getDefaultWebApp();
         
+        // get staging sandbox
+        SandboxInfo stagingInfo = sbService.getStagingSandbox(wpInfo.getStoreId());
+        String stagingStoreId = stagingInfo.getSandboxId();
+        
         // invite web user and auto-create their (author) sandbox
         wpService.inviteWebUser(wpInfo.getStoreId(), USER_ONE, WCMUtil.ROLE_CONTENT_CONTRIBUTOR, true);
+        
+        assertEquals(0, sbService.listSnapshots(stagingStoreId, false).size());
         
         // switch to user
         AuthenticationUtil.setFullyAuthenticatedUser(USER_ONE);
@@ -1206,14 +1237,120 @@ public class AssetServiceImplTest extends AbstractWCMServiceImplTest
         
         String path = sbInfo.getSandboxRootPath() + "/" + defaultWebApp;
         
+        assertEquals(0, assetService.listAssets(stagingStoreId, path, false).size());
+        assertEquals(0, assetService.listAssets(sbStoreId, path, false).size());
+        
+        assertEquals(0, sbService.listChanged(sbStoreId, path, false).size());
+        
         // create folder
         assetService.createFolder(sbStoreId, path, "myFolder1", null);
         AssetInfo myFolder1Asset = assetService.getAsset(sbStoreId, path+"/myFolder1");
+        
+        assertEquals(1, sbService.listChanged(sbStoreId, path, false).size());
+        
+        assertEquals(0, assetService.listAssets(stagingStoreId, path, false).size());
+        assertEquals(1, assetService.listAssets(sbStoreId, path, false).size());
+        assertEquals(0, assetService.listAssets(sbStoreId, path+"/myFolder1", false).size());
         
         // bulk import
         String testFile = System.getProperty("user.dir") + "/source/test-resources/module/test.war";
         
         File zipFile = new File(testFile);
         assetService.bulkImport(sbStoreId, myFolder1Asset.getPath(), zipFile, false);
+        
+        assertEquals(0, assetService.listAssets(stagingStoreId, path, false).size());
+        assertEquals(1, assetService.listAssets(sbStoreId, path, false).size());
+        assertEquals(9, assetService.listAssets(sbStoreId, path+"/myFolder1", false).size());
+        
+        assertEquals(1, sbService.listChanged(sbStoreId, path, false).size());
+        
+        sbService.submitWebApp(sbStoreId, defaultWebApp, "s1", "s1");
+        
+        pollForSnapshotCount(stagingStoreId, 1);
+        
+        assertEquals(1, assetService.listAssets(stagingStoreId, path, false).size());
+        assertEquals(9, assetService.listAssets(stagingStoreId, path+"/myFolder1", false).size());
+        assertEquals(1, assetService.listAssets(sbStoreId, path, false).size());
+        assertEquals(9, assetService.listAssets(sbStoreId, path+"/myFolder1", false).size());
+        
+        assertEquals(0, sbService.listChanged(sbStoreId, path, false).size());
+        
+        // switch to admin
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
+        
+        assertEquals(1, sbService.listSnapshots(stagingStoreId, false).size());
+    }
+    
+    // bulk import and submit 1-by-1
+    public void testImportAndSubmit2() throws InterruptedException
+    {
+        long start = System.currentTimeMillis();
+        
+        // create web project (also creates staging sandbox and admin's author sandbox)
+        WebProjectInfo wpInfo = wpService.createWebProject(TEST_WEBPROJ_DNS+"-import", TEST_WEBPROJ_NAME+"-import", TEST_WEBPROJ_TITLE, TEST_WEBPROJ_DESCRIPTION, TEST_WEBPROJ_DEFAULT_WEBAPP, TEST_WEBPROJ_DONT_USE_AS_TEMPLATE, null);
+        
+        logger.debug("create web project in "+(System.currentTimeMillis()-start)+" msecs");
+        
+        String defaultWebApp = wpInfo.getDefaultWebApp();
+        
+        // get staging sandbox
+        SandboxInfo stagingInfo = sbService.getStagingSandbox(wpInfo.getStoreId());
+        String stagingStoreId = stagingInfo.getSandboxId();
+        
+        // get admin user's author sandbox
+        SandboxInfo sbInfo = sbService.getAuthorSandbox(wpInfo.getStoreId());
+        String sbStoreId = sbInfo.getSandboxId();
+        
+        String path = sbInfo.getSandboxRootPath() + "/" + defaultWebApp;
+        
+        assertEquals(0, assetService.listAssets(stagingStoreId, path, false).size());
+        assertEquals(0, assetService.listAssets(sbStoreId, path, false).size());
+        
+        assertEquals(0, sbService.listSnapshots(stagingStoreId, false).size());
+        
+        // bulk import
+        //String testFile = System.getProperty("user.dir") + "/source/test-resources/wcm/1001_files.zip";
+        String testFile = System.getProperty("user.dir") + "/source/test-resources/module/test.war";
+        
+        start = System.currentTimeMillis();
+        
+        File zipFile = new File(testFile);
+        assetService.bulkImport(sbStoreId, path, zipFile, false);
+        
+        logger.debug("bulk import in "+(System.currentTimeMillis()-start)+" msecs");
+        
+        int totalCnt = assetService.listAssets(sbStoreId, path, false).size();
+        int expectedChangeCnt = totalCnt;
+        int expectedSnapCnt = 0;
+        int expectedStageCnt = 0;
+        
+        for (int i = 1; i <= totalCnt; i++)
+        {
+            assertEquals(expectedStageCnt, assetService.listAssets(stagingStoreId, path, false).size());
+            assertEquals(totalCnt, assetService.listAssets(sbStoreId, path, false).size());
+            
+            assertEquals(expectedSnapCnt, sbService.listSnapshots(stagingStoreId, false).size());
+            
+            List<AssetInfo> assets = sbService.listChanged(sbStoreId, path, false);
+            assertEquals(expectedChangeCnt, assets.size());
+            
+            List<AssetInfo> submitAssets = new ArrayList<AssetInfo>(1);
+            submitAssets.add(assets.get(0));
+            
+            start = System.currentTimeMillis();
+            
+            sbService.submitListAssets(sbStoreId, submitAssets, "s1", "s1");
+            
+            logger.debug("initiated submit of item "+i+" in "+(System.currentTimeMillis()-start)+" msecs");
+            
+            start = System.currentTimeMillis();
+            
+            expectedSnapCnt++;
+            
+            pollForSnapshotCount(stagingStoreId, expectedSnapCnt);
+            
+            expectedChangeCnt--;
+            expectedStageCnt++;
+        }
     }
 }

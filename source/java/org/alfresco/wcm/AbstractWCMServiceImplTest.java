@@ -28,6 +28,7 @@ import java.util.List;
 
 import junit.framework.TestCase;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
@@ -41,6 +42,8 @@ import org.alfresco.wcm.sandbox.SandboxService;
 import org.alfresco.wcm.util.WCMUtil;
 import org.alfresco.wcm.webproject.WebProjectInfo;
 import org.alfresco.wcm.webproject.WebProjectService;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
@@ -51,11 +54,16 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
  */
 public class AbstractWCMServiceImplTest extends TestCase
 {
+    private static Log logger = LogFactory.getLog(AbstractWCMServiceImplTest.class);
+    
     private static final String PREVIEW_CONFIG_LOCATION = "classpath:wcm/wcm-test-preview-context.xml";
     
     // override jbpm.job.executor idleInterval to 5s (was 1.5m) for WCM unit tests
     private static final String SUBMIT_CONFIG_LOCATION = "classpath:wcm/wcm-jbpm-context.xml";
     protected static final long SUBMIT_DELAY = 15000L; // (in millis) 15s - to allow async submit direct workflow to complete (as per 5s idleInterval above)
+    
+    protected static final long POLL_DELAY = 5000L; // (in millis) 5s
+    protected static final int POLL_MAX_ATTEMPTS = 5;
     
     // note: all tests share same context (when run via WCMTestSuite)
     protected static ApplicationContext ctx = new ClassPathXmlApplicationContext(new String[] {ApplicationContextHelper.CONFIG_LOCATIONS[0], SUBMIT_CONFIG_LOCATION, PREVIEW_CONFIG_LOCATION});;
@@ -178,5 +186,43 @@ public class AbstractWCMServiceImplTest extends TestCase
     protected void deleteUser(String userName)
     {
         personService.deletePerson(userName);
+    }
+    
+    protected int pollForSnapshotCount(final String stagingStoreId, final int expectedCnt) throws InterruptedException
+    {
+        long start = System.currentTimeMillis();
+        
+        String currentUser = AuthenticationUtil.getFullyAuthenticatedUser();
+        
+        int attempts = 0;
+        
+        try
+        {
+            AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
+            
+            int cnt = 0;
+            
+            while (cnt != expectedCnt)
+            {
+                Thread.sleep(POLL_DELAY);
+                
+                cnt = sbService.listSnapshots(stagingStoreId, false).size();
+                
+                attempts++;
+                
+                if (attempts > POLL_MAX_ATTEMPTS)
+                {
+                    throw new AlfrescoRuntimeException("Too many poll attempts");
+                }
+            }
+        }
+        finally
+        {
+            AuthenticationUtil.setFullyAuthenticatedUser(currentUser);
+        }
+        
+        logger.debug("pollForSnapshotCount: "+stagingStoreId+" in "+(System.currentTimeMillis()-start)+" msecs ("+attempts+" attempts)");
+        
+        return attempts;
     }
 }

@@ -850,7 +850,7 @@ public class DeploymentServiceImpl implements DeploymentService
         }
         catch (Exception e)
         {
-            throw new AVMException("Could not connect to remote FSR, transportName:" + transportName + ", hostName:" + hostName + ", port: " + port, e);
+            throw new AVMException("Could not connect to remote deployment receiver, transportName:" + transportName + ", hostName:" + hostName + ", port: " + port, e);
         }
     }
 

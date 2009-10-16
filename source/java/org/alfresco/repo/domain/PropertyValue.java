@@ -687,13 +687,23 @@ public class PropertyValue implements Cloneable, Serializable
         }
         else if (value instanceof Collection)
         {
-            Collection collection = (Collection) value;
-            ValueType collectionValueType = makeValueType(typeQName);
-            // convert the collection values - we need to do this to ensure that the
-            // values provided conform to the given type
-            ArrayList<Serializable> convertedCollection = collectionValueType.convert(collection);
-            // the persisted type is, nonetheless, a serializable
-            setPersistedValue(ValueType.SERIALIZABLE, convertedCollection);
+            if(typeQName != null)
+            {  
+                Collection collection = (Collection) value;
+                ValueType collectionValueType = makeValueType(typeQName);
+                // convert the collection values - we need to do this to ensure that the
+                // values provided conform to the given type
+            
+                ArrayList<Serializable> convertedCollection = collectionValueType.convert(collection);
+                // the persisted type is, nonetheless, a serializable
+                setPersistedValue(ValueType.SERIALIZABLE, convertedCollection);
+            }
+            else
+            {
+                setPersistedValue(ValueType.SERIALIZABLE, value);
+            }
+             
+
             setMultiValued(true);
         }
         else

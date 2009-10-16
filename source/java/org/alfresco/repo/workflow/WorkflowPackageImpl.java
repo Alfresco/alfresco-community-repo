@@ -187,7 +187,8 @@ public class WorkflowPackageImpl implements WorkflowPackageComponent
             for (ChildAssociationRef packageItemParent : packageItemParents)
             {
                 NodeRef parentRef = packageItemParent.getParentRef();
-                if (nodeService.hasAspect(parentRef, WorkflowModel.ASPECT_WORKFLOW_PACKAGE))
+                if (nodeService.hasAspect(parentRef, WorkflowModel.ASPECT_WORKFLOW_PACKAGE) 
+                        && !nodeService.hasAspect(parentRef, ContentModel.ASPECT_ARCHIVED)) 
                 {
                     String workflowInstance = (String)nodeService.getProperty(parentRef, WorkflowModel.PROP_WORKFLOW_INSTANCE_ID);
                     if (workflowInstance != null && workflowInstance.length() > 0)

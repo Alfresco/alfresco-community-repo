@@ -202,7 +202,6 @@ public abstract class AbstractAVMStoreDAOImpl implements AVMStoreDAO
         {
             throw new ConcurrencyFailureException("AVMStore with ID (" + storeEntity.getId() + ") no longer exists or has been updated concurrently");
         }
-        storeEntity.setVers(storeEntity.getVers()+1);
     }
     
     /**

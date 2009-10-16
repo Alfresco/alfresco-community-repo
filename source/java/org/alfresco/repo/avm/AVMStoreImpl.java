@@ -75,7 +75,7 @@ import org.apache.commons.logging.LogFactory;
  */
 public class AVMStoreImpl implements AVMStore
 {
-    private static Log fgLogger = LogFactory.getLog(AVMStoreImpl.class);
+    private static Log logger = LogFactory.getLog(AVMStoreImpl.class);
     /**
      * The primary key.
      */
@@ -198,6 +198,8 @@ public class AVMStoreImpl implements AVMStore
      */
     public Map<String, Integer> createSnapshot(String tag, String description, Map<String, Integer> snapShotMap)
     {
+        long start = System.currentTimeMillis();
+        
         long rootID = getRoot().getId();
         AVMStoreImpl me = (AVMStoreImpl)AVMDAOs.Instance().fAVMStoreDAO.getByID(getId());
         VersionRoot lastVersion = AVMDAOs.Instance().fVersionRootDAO.getMaxVersion(me);
@@ -207,6 +209,11 @@ public class AVMStoreImpl implements AVMStore
         DirectoryNode root = (DirectoryNode)AVMDAOs.Instance().fAVMNodeDAO.getByID(rootID);
         if (!root.getIsNew() && layeredEntries.size() == 0)
         {
+            if (logger.isTraceEnabled())
+            {
+                logger.trace("createSnapshot: no snapshot required: "+me.getName()+" ["+me.getId()+"] - lastVersion = "+lastVersion.getVersionID() + "("+tag+", "+description+")");
+            }
+            
             // So, we set the tag and description fields of the latest version.
             if (tag != null || description != null)
             {
@@ -218,6 +225,12 @@ public class AVMStoreImpl implements AVMStore
             snapShotMap.put(getName(), lastVersion.getVersionID());
             return snapShotMap;
         }
+        
+        if (logger.isTraceEnabled())
+        {
+            logger.trace("createSnapshot: snapshot: "+me.getName()+" ["+me.getId()+"] - lastVersion="+lastVersion.getVersionID()+", layeredEntries="+layeredEntries.size());
+        }
+        
         snapShotMap.put(getName(), me.getNextVersionID());
         // Force copies on all the layered nodes from last snapshot.
         for (VersionLayeredNodeEntry entry : layeredEntries)
@@ -241,13 +254,14 @@ public class AVMStoreImpl implements AVMStore
             if (lookup.getCurrentNode().getType() == AVMNodeType.LAYERED_DIRECTORY)
             {
                 fAVMRepository.forceCopy(entry.getPath());
+                me = (AVMStoreImpl)AVMDAOs.Instance().fAVMStoreDAO.getByID(getId());
             }
             else if (lookup.getCurrentNode().getType() == AVMNodeType.LAYERED_FILE)
             {
                 String parentName[] = AVMUtil.splitBase(entry.getPath());
                 parentName[0] = parentName[0].substring(parentName[0].indexOf(':') + 1);
                 
-                lookup = lookupDirectory(-1, parentName[0], true);
+                lookup = me.lookupDirectory(-1, parentName[0], true);
                 
                 DirectoryNode parent = (DirectoryNode)lookup.getCurrentNode();
                 Pair<AVMNode, Boolean> temp = parent.lookupChild(lookup, parentName[1], false);
@@ -337,6 +351,7 @@ public class AVMStoreImpl implements AVMStore
         {
             user = RawServices.Instance().getAuthenticationContext().getSystemUserName();
         }
+        
         me = (AVMStoreImpl)AVMDAOs.Instance().fAVMStoreDAO.getByID(getId());
         VersionRoot versionRoot = new VersionRootImpl(me,
                                                       me.getRoot(),
@@ -350,6 +365,8 @@ public class AVMStoreImpl implements AVMStore
         
         AVMDAOs.Instance().fAVMStoreDAO.update(me);
         
+        int vlneCnt = 0;
+        
         AVMDAOs.Instance().fVersionRootDAO.save(versionRoot);
         for (Long nodeID : layeredNodeIDs)
         {
@@ -361,7 +378,20 @@ public class AVMStoreImpl implements AVMStore
                     new VersionLayeredNodeEntryImpl(versionRoot, path);
                 AVMDAOs.Instance().fVersionLayeredNodeEntryDAO.save(entry);
             }
+            
+            vlneCnt = vlneCnt+paths.size();
         }
+        
+        if (logger.isTraceEnabled())
+        {
+            logger.trace("createSnapshot: snapshot: "+me.getName()+" ["+me.getId()+"] - created new version root ["+versionRoot.getId()+"] - layeredNodeIDs="+layeredNodeIDs.size()+", versionLayeredNodeEntries="+vlneCnt);
+        }
+        
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("createSnapshot: snapshot: "+me.getName()+" ["+me.getId()+"] in "+(System.currentTimeMillis()-start)+" msecs");
+        }
+        
         return snapShotMap;
     }
 
@@ -610,14 +640,14 @@ public class AVMStoreImpl implements AVMStore
         AVMNode srcNode = null;
         if (lPathSrc == null)
         {
-            fgLogger.warn("CreateLayeredFile: srcPath not found: "+srcPath);
+            logger.warn("CreateLayeredFile: srcPath not found: "+srcPath);
         }
         else
         {
             srcNode = (AVMNode)lPathSrc.getCurrentNode();
             if (! (srcNode instanceof FileNode))
             {
-                fgLogger.warn("CreateLayeredFile: srcPath is not a file: "+srcPath);
+                logger.warn("CreateLayeredFile: srcPath is not a file: "+srcPath);
             }
         }
         

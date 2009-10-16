@@ -373,6 +373,18 @@ public class AVMNodeEntity
         this.vers = vers;
     }
     
+    public void incrementVers()
+    {
+        if (this.vers >= Long.MAX_VALUE)
+        {
+            this.vers = 0L;
+        }
+        else
+        {
+            this.vers++;
+        }
+    }
+    
     @Override
     public int hashCode()
     {

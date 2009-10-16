@@ -312,10 +312,12 @@
             name = #name#,
             current_root_id = #rootNodeId#,
             acl_id = #aclId#,
-            vers = (#vers# + 1)
-        where
-            id = #id# and
             vers = #vers#
+        where
+            id = #id#
+        <isGreaterThan property="vers" compareValue="1">
+            and vers = (#vers#-1)
+        </isGreaterThan>
     </update>
     
     <!-- Delete AVMStore -->
@@ -525,10 +527,12 @@
             encoding = #encoding#,
             length = #length#,
             guid = #guid#,
-            vers = (#vers# + 1)
-        where
-            id = #id# and
             vers = #vers#
+        where
+            id = #id#
+        <isGreaterThan property="vers" compareValue="1">
+            and vers = (#vers#-1)
+        </isGreaterThan>
     </update>
     
     <update id="update_AVMNode_modTimeAndGuid" parameterClass="AVMNode">
@@ -537,10 +541,12 @@
         set
             modDate = #modifiedDate#,
             guid = #guid#,
-            vers = (#vers# + 1)
-        where
-            id = #id# and
             vers = #vers#
+        where
+            id = #id#
+        <isGreaterThan property="vers" compareValue="1">
+            and vers = (#vers#-1)
+        </isGreaterThan>
     </update>
     
     <update id="update_AVMNode_modTimeAndContentData" parameterClass="AVMNode">
@@ -552,10 +558,12 @@
             mime_type = #mimetype#,
             encoding = #encoding#,
             length = #length#,
-            vers = (#vers# + 1)
-        where
-            id = #id# and
             vers = #vers#
+        where
+            id = #id#
+        <isGreaterThan property="vers" compareValue="1">
+            and vers = (#vers#-1)
+        </isGreaterThan>
     </update>
     
     <delete id="delete_AVMNode" parameterMap="parameter_IdMap">

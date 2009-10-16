@@ -104,12 +104,16 @@ public class AVMNodeDAOImpl extends AbstractAVMNodeDAOImpl
     @Override
     protected int updateNodeEntity(AVMNodeEntity updateNodeEntity)
     {
+        updateNodeEntity.incrementVers();
+        
         return template.update(UPDATE_AVM_NODE, updateNodeEntity);
     }
     
     @Override
     protected int updateNodeEntityModTimeAndGuid(AVMNodeEntity updateNodeEntity)
     {
+        updateNodeEntity.incrementVers();
+        
         // partial update
         return template.update(UPDATE_AVM_NODE_MODTIME_AND_GUID, updateNodeEntity);
     }
@@ -117,6 +121,8 @@ public class AVMNodeDAOImpl extends AbstractAVMNodeDAOImpl
     @Override
     protected int updateNodeEntityModTimeAndContentData(AVMNodeEntity updateNodeEntity)
     {
+        updateNodeEntity.incrementVers();
+        
         // partial update
         return template.update(UPDATE_AVM_NODE_MODTIME_AND_CDATA, updateNodeEntity);
     }

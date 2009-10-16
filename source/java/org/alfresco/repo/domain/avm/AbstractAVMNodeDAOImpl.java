@@ -189,7 +189,6 @@ public abstract class AbstractAVMNodeDAOImpl implements AVMNodeDAO
         {
             throw new ConcurrencyFailureException("AVMNode with ID (" + nodeEntity.getId() + ") no longer exists or has been updated concurrently");
         }
-        nodeEntity.setVers(nodeEntity.getVers()+1);
     }
     
     /**
@@ -209,7 +208,6 @@ public abstract class AbstractAVMNodeDAOImpl implements AVMNodeDAO
         {
             throw new ConcurrencyFailureException("AVMNode with ID (" + nodeEntity.getId() + ") no longer exists or has been updated concurrently");
         }
-        nodeEntity.setVers(nodeEntity.getVers()+1);
         
         // update cache
         avmNodeCache.removeByKey(nodeEntity.getId());
@@ -232,7 +230,6 @@ public abstract class AbstractAVMNodeDAOImpl implements AVMNodeDAO
         {
             throw new ConcurrencyFailureException("AVMNode with ID (" + nodeEntity.getId() + ") no longer exists or has been updated concurrently");
         }
-        nodeEntity.setVers(nodeEntity.getVers()+1);
         
         // update cache
         avmNodeCache.removeByKey(nodeEntity.getId());

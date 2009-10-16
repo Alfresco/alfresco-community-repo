@@ -109,6 +109,8 @@ public class AVMStoreDAOImpl extends AbstractAVMStoreDAOImpl
     @Override
     protected int updateStoreEntity(AVMStoreEntity updateStoreEntity)
     {
+        updateStoreEntity.incrementVers();
+        
         return template.update(UPDATE_AVM_STORE, updateStoreEntity);
     }
     

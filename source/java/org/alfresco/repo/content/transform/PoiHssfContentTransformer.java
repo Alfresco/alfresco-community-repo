@@ -33,11 +33,11 @@ import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.TransformationOptions;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.poi.hssf.record.RecordFormatException;
 import org.apache.poi.hssf.usermodel.HSSFCell;
 import org.apache.poi.hssf.usermodel.HSSFRow;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.util.RecordFormatException;
 
 /**
  * Makes use of the {@link http://jakarta.apache.org/poi/ POI} library to
@@ -152,24 +152,25 @@ public class PoiHssfContentTransformer extends AbstractContentTransformer2
         }
     }
     
-    @SuppressWarnings("deprecation")
     private void writeRow(OutputStream os, HSSFRow row, String encoding) throws Exception
     {
         short firstCellNum = row.getFirstCellNum(); 
         short lastCellNum = row.getLastCellNum();
         // pad out to first cell
-        for (short i = 0; i < firstCellNum; i++)
+        for (int i = 0; i < firstCellNum; i++)
         {
             PoiHssfContentTransformer.writeString(os, encoding, ",", false);   // CSV up to first cell
         }
         // write each cell
-        for (short i = 0; i <= lastCellNum; i++)
+        for (int i = 0; i <= lastCellNum; i++)
         {
             HSSFCell cell = row.getCell(i);
             if (cell != null)
             {
-                StringBuilder sb = new StringBuilder(10);
-                switch (cell.getCellType())
+            	int cellType = cell.getCellType();
+
+            	StringBuilder sb = new StringBuilder(10);
+				switch (cellType)
                 {
                     case HSSFCell.CELL_TYPE_BLANK:
                         // ignore
@@ -180,25 +181,35 @@ public class PoiHssfContentTransformer extends AbstractContentTransformer2
                     case HSSFCell.CELL_TYPE_ERROR:
                         sb.append("ERROR");
                         break;
-                    case HSSFCell.CELL_TYPE_FORMULA:
-                        double dataNumber = cell.getNumericCellValue();
-                        if (Double.isNaN(dataNumber))
-                        {
-                            // treat it as a string
-                            sb.append(cell.getStringCellValue());
-                        }
-                        else
-                        {
-                            // treat it as a number
-                            sb.append(dataNumber);
-                        }
-                        break;
                     case HSSFCell.CELL_TYPE_NUMERIC:
                         sb.append(cell.getNumericCellValue());
                         break;
                     case HSSFCell.CELL_TYPE_STRING:
                         sb.append(cell.getStringCellValue());
                         break;
+                    case HSSFCell.CELL_TYPE_FORMULA:
+                    	final int formulaResultType = cell.getCachedFormulaResultType();
+                    	if (HSSFCell.CELL_TYPE_NUMERIC == formulaResultType)
+                    	{
+                    		sb.append(cell.getNumericCellValue());
+                    	}
+                    	else if (HSSFCell.CELL_TYPE_STRING == formulaResultType)
+                    	{
+                    		sb.append(cell.getStringCellValue());
+                    	}
+                    	else if (HSSFCell.CELL_TYPE_BOOLEAN == formulaResultType)
+                    	{
+                    		sb.append(cell.getBooleanCellValue());
+                    	}
+                    	else if (HSSFCell.CELL_TYPE_ERROR == formulaResultType)
+                    	{
+                    		sb.append(cell.getErrorCellValue());
+                    	}
+                    	else
+                    	{
+                    		throw new RuntimeException("Unknown formula result type: " + formulaResultType);
+                    	}
+                    	break;
                     default:
                         throw new RuntimeException("Unknown HSSF cell type: " + cell);
                 }

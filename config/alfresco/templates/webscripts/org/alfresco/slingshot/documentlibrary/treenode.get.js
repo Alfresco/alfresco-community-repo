@@ -31,7 +31,7 @@ function getTreenode(siteId, path)
       {
          if (item.isSubType("cm:folder") && !(item.type in ignoredTypes))
          {
-            hasSubfolders = item.childrenByXPath("*[subtypeOf('cm:folder') and not(subtypeOf('fm:forum')) and not(subtypeOf('cm:systemfolder'))]").length > 0;
+            hasSubfolders = item.childFileFolders(false, true, "fm:forum").length > 0;
             
             items.push(
             {

@@ -1416,7 +1416,7 @@ public class SandboxServiceImplTest extends AbstractWCMServiceImplTest
         // submit (deleted asset)
         sbService.submitWebApp(authorSandboxIdA, webAppA, "A2", "A2");
         
-        pollForSnapshotCount(stagingSandboxIdA, 1);
+        pollForSnapshotCount(stagingSandboxIdA, 2);
         
         // Switch back to Web Project B
         
@@ -1427,7 +1427,7 @@ public class SandboxServiceImplTest extends AbstractWCMServiceImplTest
         // ETHREEOH_2581
         sbService.submitWebApp(authorSandboxIdB, webAppB, "B2", "B2");
         
-        pollForSnapshotCount(stagingSandboxIdB, 1);
+        pollForSnapshotCount(stagingSandboxIdB, 2);
     }
     
     public void testSubmitUpdatedItemWithLF() throws IOException, InterruptedException
@@ -2542,7 +2542,7 @@ public class SandboxServiceImplTest extends AbstractWCMServiceImplTest
         TransactionService transactionService = (TransactionService) ctx.getBean("transactionService");
         transactionService.getRetryingTransactionHelper().doInTransaction(new TxnWork());
         
-        pollForSnapshotCount(stagingSandboxId, 3);
+        pollForSnapshotCount(stagingSandboxId, 2);
         
         snapshotVersions = sbService.listSnapshots(sbStoreId, false);
         assertEquals(2, snapshotVersions.size());

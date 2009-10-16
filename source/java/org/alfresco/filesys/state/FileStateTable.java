@@ -51,6 +51,10 @@ public class FileStateTable
 
     private long m_cacheTimer = 2 * 60000L; // 2 minutes default
 
+    // File state listener, can veto expiring of file states
+    
+    private FileStateListener m_stateListener;
+    
     /**
      * Class constructor
      */
@@ -287,6 +291,11 @@ public class FileStateTable
 
             FileState state = m_stateTable.get(enm.nextElement());
 
+			//	Check if there is a state listener
+			
+			if ( m_stateListener != null)
+				m_stateListener.fileStateClosed(state);
+			
             // DEBUG
 
             if (logger.isDebugEnabled())
@@ -336,19 +345,23 @@ public class FileStateTable
 
                     if (state.hasExpired(curTime) && state.getOpenCount() == 0)
                     {
-
-                        // Remove the expired file state
-
-                        m_stateTable.remove(state.getPath());
-
-                        // DEBUG
-
-                        if (logger.isDebugEnabled())
-                            logger.debug("Expired file state: " + state);
-
-                        // Update the expired count
-
-                        expiredCnt++;
+                    	// Check with the state listener before removing the file state, if enabled
+                    	
+                    	if ( hasStateListener() == false || m_stateListener.fileStateExpired( state) == true)
+                    	{
+	                        // Remove the expired file state
+	
+	                        m_stateTable.remove(state.getPath());
+	
+	                        // DEBUG
+	
+	                        if (logger.isDebugEnabled())
+	                            logger.debug("Expired file state: " + state);
+	
+	                        // Update the expired count
+	
+	                        expiredCnt++;
+                    	}
                     }
                 }
             }
@@ -380,5 +393,33 @@ public class FileStateTable
 
             logger.debug("  " + fname + "(" + state.getSecondsToExpire(curTime) + ") : " + state);
         }
+    }
+    
+    /**
+     * Add a file state listener
+     * 
+     * @param l FileStateListener
+     */
+    public final void addStateListener(FileStateListener l) {
+    	m_stateListener = l;
+    }
+    
+    /**
+     * Remove a file state listener
+     * 
+     * @param l FileStateListener
+     */
+    public final void removeStateListener(FileStateListener l) {
+  		if ( m_stateListener == l)
+    		m_stateListener = null;
+    }
+    
+    /**
+     * Check if the file state listener is set
+     * 
+     * @return boolean
+     */
+    public final boolean hasStateListener() {
+    	return m_stateListener != null ? true : false;
     }
 }

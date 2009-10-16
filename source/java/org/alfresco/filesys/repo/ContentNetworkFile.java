@@ -224,6 +224,8 @@ public class ContentNetworkFile extends NodeRefNetworkFile
         StringBuilder str = new StringBuilder();
         
         str.append( "[");
+        str.append(getFullName());
+        str.append(",");
         str.append( getNodeRef().getId());
         str.append( ",channel=");
         str.append( channel);

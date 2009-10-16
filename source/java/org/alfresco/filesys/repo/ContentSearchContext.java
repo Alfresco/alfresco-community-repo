@@ -496,4 +496,40 @@ public class ContentSearchContext extends SearchContext
         
         return false;
     }
+    
+    /**
+     * Check if the search is returning pseudo files or real file entries
+     * 
+     * @return boolean
+     */
+    protected boolean returningPseudoFiles() {
+    	return donePseudoFiles ? true : false;
+    }
+    
+    /**
+     * Return the relative path that is being searched
+     * 
+     * @return String
+     */
+    protected String getRelativePath() {
+    	return m_relPath;
+    }
+    
+    /**
+     * Return the results array size
+     * 
+     * @return int
+     */
+    protected int getResultsSize() {
+    	return results != null ? results.size() : 0;
+    }
+    
+    /**
+     * Return the pseudo file list size
+     * 
+     * @return int
+     */
+    protected int getPseudoListSize() {
+    	return pseudoList != null ? pseudoList.numberOfFiles() : 0;
+    }
 }

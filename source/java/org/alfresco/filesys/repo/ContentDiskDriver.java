@@ -875,7 +875,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
         // Access the device context
         
         ContentContext ctx = (ContentContext) tree.getContext();
-        
+
         try
         {
             String searchFileSpec = searchPath;
@@ -1027,15 +1027,107 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
                 }
             }
             
-            // Build the search context to store the results
+            // Build the search context to store the results, use the cache lookup search for wildcard searches
             
-            SearchContext searchCtx = new ContentSearchContext(cifsHelper, results, searchFileSpec, pseudoList, paths[0]);
+            SearchContext searchCtx = null;
+            
+            if ( searchFileSpec.equals( "*"))
+            {
+            	// Use a cache lookup search context 
+
+            	CacheLookupSearchContext cacheContext = new CacheLookupSearchContext(cifsHelper, results, searchFileSpec, pseudoList, paths[0], ctx.getStateTable());
+            	searchCtx = cacheContext;
+            	
+            	// Set the '.' and '..' pseudo file entry details
+            	
+            	if ( searchFolderState != null && searchFolderState.hasNodeRef())
+            	{
+            		// Get the '.' pseudo entry file details
+            	
+            		FileInfo finfo = cifsHelper.getFileInformation( searchFolderState.getNodeRef());
+            		
+            		// Blend in any cached timestamps
+            		
+            		if ( searchFolderState != null) {
+            			if ( searchFolderState.hasAccessDateTime())
+            				finfo.setAccessDateTime( searchFolderState.getAccessDateTime());
+            			
+            			if ( searchFolderState.hasChangeDateTime())
+            				finfo.setChangeDateTime( searchFolderState.getChangeDateTime());
+            			
+            			if ( searchFolderState.hasModifyDateTime())
+            				finfo.setModifyDateTime( searchFolderState.getModifyDateTime());
+            		}
+            		
+            		// Set the '.' pseudo entry details
+            		
+            		cacheContext.setDotInfo( finfo);
+            		
+            		// Check if the search folder has a parent, if we are at the root of the filesystem then re-use
+            		// the file information
+            		
+            		if ( searchFolderState.getPath().equals( FileName.DOS_SEPERATOR_STR)) {
+            			
+            			// Searching the root folder, re-use the search folder file information for the '..' pseudo entry
+            			
+            			cacheContext.setDotDotInfo( finfo);
+            		}
+            		else {
+            			
+            			// Get the parent folder path
+            			
+            			String parentPath = searchFolderState.getPath();
+            			if ( parentPath.endsWith( FileName.DOS_SEPERATOR_STR) && parentPath.length() > 1)
+            				parentPath = parentPath.substring(0, parentPath.length() - 1);
+            			
+            			int pos = parentPath.lastIndexOf( FileName.DOS_SEPERATOR_STR);
+            			if ( pos != -1)
+            				parentPath = parentPath.substring(0, pos + 1);
+            			
+            			// Get the file state for the parent path, if available
+            			
+            			FileState parentState = ctx.getStateTable().findFileState( parentPath);
+            			NodeRef parentNode = null;
+            			
+            			if ( parentState != null)
+            				parentNode = parentState.getNodeRef();
+            			
+            			if ( parentState == null || parentNode == null)
+            				parentNode = getNodeForPath( tree, parentPath);
+
+            			// Get the file information for the parent folder
+            			
+            			finfo = cifsHelper.getFileInformation( parentNode);
+            			
+            			// Blend in any cached timestamps
+            			
+                		if ( parentState != null) {
+                			if ( parentState.hasAccessDateTime())
+                				finfo.setAccessDateTime( parentState.getAccessDateTime());
+                			
+                			if ( parentState.hasChangeDateTime())
+                				finfo.setChangeDateTime( parentState.getChangeDateTime());
+                			
+                			if ( parentState.hasModifyDateTime())
+                				finfo.setModifyDateTime( parentState.getModifyDateTime());
+                		}
+
+                		// Set the '..' pseudo entry details
+                		
+            			cacheContext.setDotDotInfo( finfo);
+            		}
+           		}
+            }
+            else
+            	searchCtx = new ContentSearchContext(cifsHelper, results, searchFileSpec, pseudoList, paths[0]);
             
             // Debug
             
             if (logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_SEARCH))
-                logger.debug("Started search: search path=" + searchPath + " attributes=" + attributes);
-
+                logger.debug("Started search: search path=" + searchPath + " attributes=" + attributes + ", ctx=" + searchCtx);
+            
+            // Return the search context
+            
             return searchCtx;
         }
         catch (org.alfresco.repo.security.permissions.AccessDeniedException ex)
@@ -1618,7 +1710,9 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
             // Get the device root
 
             NodeRef deviceRootNodeRef = ctx.getRootNode();
+            
             String path = params.getPath();
+            FileState parentState = null;
             
             // If the state table is available then try to find the parent folder node for the new file
             // to save having to walk the path
@@ -1644,6 +1738,12 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
                         if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_FILE))
                             logger.debug("Create file using cached noderef for path " + paths[0]);
                     }
+                    
+                    // Get the file state for the parent folder
+                    
+                    parentState = getStateForPath(tree, paths[0]);
+                    if ( parentState == null && ctx.hasStateTable())
+                    	parentState = ctx.getStateTable().findFileState( paths[0], true, true);
                 }
             }
             
@@ -1695,12 +1795,19 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
                     if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_FILE))
                         logger.debug("Create file, state=" + fstate);
                 }
+                
+                // Update the parent folder file state
+                
+                if ( parentState != null)
+                	parentState.updateModifyDateTime();
             }
             
             // Debug
             
             if (logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_FILE))
                 logger.debug("Created file: path=" + path + " file open parameters=" + params + " node=" + nodeRef + " network file=" + netFile);
+
+            // Return the new network file
             
             return netFile;
         }
@@ -1762,6 +1869,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
             NodeRef deviceRootNodeRef = ctx.getRootNode();
             
             String path = params.getPath(); 
+            FileState parentState = null;
             
             // If the state table is available then try to find the parent folder node for the new folder
             // to save having to walk the path
@@ -1787,6 +1895,12 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
                         if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_FILE))
                             logger.debug("Create file using cached noderef for path " + paths[0]);
                     }
+                    
+                    // Get the file state for the parent folder
+                    
+                    parentState = getStateForPath(tree, paths[0]);
+                    if ( parentState == null && ctx.hasStateTable())
+                    	parentState = ctx.getStateTable().findFileState( paths[0], true, true);
                 }
             }
             
@@ -1809,8 +1923,13 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
                     // DEBUG
                     
                     if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_FILE))
-                        logger.debug("Creaste folder, state=" + fstate);
+                        logger.debug("Create folder, state=" + fstate);
                 }
+                
+                // Update the parent folder file state
+                
+                if ( parentState != null)
+                	parentState.updateModifyDateTime();
             }
             
             // Debug
@@ -1879,7 +1998,27 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
 	                // Remove the file state
 		                
 	                if ( ctx.hasStateTable())
+	                {
+	                	// Remove the file state
+	                
 	                    ctx.getStateTable().removeFileState(dir);
+	                
+	                    // Update, or create, a parent folder file state
+	                    
+	                    String[] paths = FileName.splitPath(dir);
+	                    if ( paths[0] != null && paths[0].length() > 1)
+	                    {
+	                        // Get the file state for the parent folder
+	                        
+	                        FileState parentState = getStateForPath(tree, paths[0]);
+	                        if ( parentState == null && ctx.hasStateTable())
+	                        	parentState = ctx.getStateTable().findFileState( paths[0], true, true);
+	
+	                        // Update the modification timestamp
+	                        
+	                        parentState.updateModifyDateTime();
+	                    }
+	                }
             	}
             	else
             		throw new DirectoryNotEmptyException( dir);
@@ -1970,6 +2109,21 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
             
                 if ( fstate.decrementOpenCount() == 0)
                 	fstate.setSharedAccess( SharingMode.READWRITE + SharingMode.DELETE);
+            
+	            // Check if there is a cached modification timestamp to be written out
+	            
+	            if ( file.hasDeleteOnClose() == false && fstate.hasModifyDateTime() && fstate.hasNodeRef()) {
+	            	
+	            	// Update the modification date on the file/folder node
+	
+	            	Date modifyDate = new Date( fstate.getModifyDateTime());
+	            	nodeService.setProperty( fstate.getNodeRef(), ContentModel.PROP_MODIFIED, modifyDate);
+	
+	            	// Debug
+	                
+	                if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_FILE))
+	                    logger.debug("Updated modifcation timestamp, " + file.getFullName() + ", modTime=" + modifyDate);
+	            }
             }
         }
         
@@ -2087,7 +2241,27 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
                 // Remove the file state
                 
                 if ( ctx.hasStateTable())
+                {
+                	// Remove the file state
+                
                     ctx.getStateTable().removeFileState(name);
+                
+                    // Update, or create, a parent folder file state
+                    
+                    String[] paths = FileName.splitPath(name);
+                    if ( paths[0] != null && paths[0].length() > 1)
+                    {
+                        // Get the file state for the parent folder
+                        
+                        FileState parentState = getStateForPath(tree, paths[0]);
+                        if ( parentState == null && ctx.hasStateTable())
+                        	parentState = ctx.getStateTable().findFileState( paths[0], true, true);
+
+                        // Update the modification timestamp
+                        
+                        parentState.updateModifyDateTime();
+                    }
+                }
             }
             
             // Debug
@@ -2575,15 +2749,17 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
 
             	beginWriteTransaction( sess);
             	
-            	// Set the creation date on the file/folder node
+            	// Set the modification date on the file/folder node
 
             	Date modifyDate = new Date( info.getModifyDateTime());
             	nodeService.setProperty( nodeRef, ContentModel.PROP_MODIFIED, modifyDate);
 
-                // Update the change date/time
+                // Update the change date/time, clear the cached modification date/time
                 
-                if ( fstate != null)
+                if ( fstate != null) {
                 	fstate.updateChangeDateTime();
+                	fstate.updateModifyDateTime( 0L);
+                }
                 
             	// DEBUG
                 

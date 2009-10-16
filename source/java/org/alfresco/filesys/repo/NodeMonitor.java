@@ -551,24 +551,29 @@ public class NodeMonitor extends TransactionListenerAdapter
                             return null;
                         }
                         
+                        // check for a node delete
+                        
+                        if ( nodeEvent instanceof DeleteNodeEvent) {
+
+                            // Node deleted
+                            
+                            processDeleteNode((DeleteNodeEvent) nodeEvent);
+                        }
+                        
                         // Check that the node is still valid
                         
-                        if (!m_nodeService.exists(nodeEvent.getNodeRef()))
+                        else if (!m_nodeService.exists(nodeEvent.getNodeRef()))
                         {
                             return null;
                         }
+                        
+                        // Process the node event, for an existing node
                         
                         if ( nodeEvent instanceof CreateNodeEvent) {
                             
                             // Node created
                             
                             processCreateNode((CreateNodeEvent) nodeEvent);
-                        }
-                        else if ( nodeEvent instanceof DeleteNodeEvent) {
-
-                            // Node deleted
-                            
-                            processDeleteNode((DeleteNodeEvent) nodeEvent);
                         }
                         else if ( nodeEvent instanceof MoveNodeEvent) {
                             
@@ -745,7 +750,7 @@ public class NodeMonitor extends TransactionListenerAdapter
 			
 			if ( m_changeHandler.getGlobalNotifyMask() != 0) {
 				
-				// Send a file created event to the change notification handler
+				// Send a file deleted event to the change notification handler
 				
 				if ( deleteEvent.getFileType() == FileFolderServiceType.FILE)
 					m_changeHandler.notifyFileChanged(NotifyChange.ActionRemoved, relPath);

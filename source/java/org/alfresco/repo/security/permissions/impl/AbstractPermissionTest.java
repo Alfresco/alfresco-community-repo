@@ -35,6 +35,7 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.MutableAuthenticationDao;
 import org.alfresco.repo.security.permissions.PermissionReference;
 import org.alfresco.repo.security.permissions.PermissionServiceSPI;
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -86,6 +87,8 @@ public class AbstractPermissionTest extends BaseSpringTest
     
     protected AclDaoComponent aclDaoComponent;
 
+    protected RetryingTransactionHelper retryingTransactionHelper;
+
     public AbstractPermissionTest()
     {
         super();
@@ -111,6 +114,8 @@ public class AbstractPermissionTest extends BaseSpringTest
         authenticationDAO = (MutableAuthenticationDao) applicationContext.getBean("authenticationDao");
         nodeDaoService = (NodeDaoService) applicationContext.getBean("nodeDaoService");
         aclDaoComponent = (AclDaoComponent) applicationContext.getBean("aclDaoComponent");
+        
+        retryingTransactionHelper = (RetryingTransactionHelper) applicationContext.getBean("retryingTransactionHelper");
         
         
         StoreRef storeRef = nodeService.createStore(StoreRef.PROTOCOL_WORKSPACE, "Test_" + System.nanoTime());

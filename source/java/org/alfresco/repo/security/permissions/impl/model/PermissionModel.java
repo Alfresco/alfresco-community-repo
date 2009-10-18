@@ -29,12 +29,12 @@ import java.io.InputStream;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumMap;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
@@ -100,33 +100,35 @@ public class PermissionModel implements ModelDAO, InitializingBean
     private String model;
 
     // Aprrox 6 - default size OK
-    private Map<QName, PermissionSet> permissionSets = new HashMap<QName, PermissionSet>(128, 1.0f);
+    private ConcurrentHashMap<QName, PermissionSet> permissionSets = new ConcurrentHashMap<QName, PermissionSet>(128, 1.0f, 16);
 
     // Global permissions - default size OK
-    private Set<GlobalPermissionEntry> globalPermissions = new HashSet<GlobalPermissionEntry>();
+    private Set<GlobalPermissionEntry> globalPermissions = Collections.synchronizedSet(new HashSet<GlobalPermissionEntry>());
 
     private AccessStatus defaultPermission;
 
     // Cache granting permissions
-    private HashMap<PermissionReference, Set<PermissionReference>> grantingPermissions = new HashMap<PermissionReference, Set<PermissionReference>>(256, 1.0f);
+    private ConcurrentHashMap<PermissionReference, Set<PermissionReference>> grantingPermissions = new ConcurrentHashMap<PermissionReference, Set<PermissionReference>>(256, 1.0f,
+            32);
 
     // Cache grantees
-    private HashMap<PermissionReference, Set<PermissionReference>> granteePermissions = new HashMap<PermissionReference, Set<PermissionReference>>(256, 1.0f);
+    private ConcurrentHashMap<PermissionReference, Set<PermissionReference>> granteePermissions = new ConcurrentHashMap<PermissionReference, Set<PermissionReference>>(256, 1.0f,
+            32);
 
     // Cache the mapping of extended groups to the base
-    private HashMap<PermissionGroup, PermissionGroup> groupsToBaseGroup = new HashMap<PermissionGroup, PermissionGroup>(256, 1.0f);
+    private ConcurrentHashMap<PermissionGroup, PermissionGroup> groupsToBaseGroup = new ConcurrentHashMap<PermissionGroup, PermissionGroup>(256, 1.0f, 32);
 
-    private HashMap<String, PermissionReference> uniqueMap;
+    private ConcurrentHashMap<String, PermissionReference> uniqueMap;
 
-    private HashMap<PermissionReference, Permission> permissionMap;
+    private ConcurrentHashMap<PermissionReference, Permission> permissionMap;
 
-    private HashMap<PermissionReference, PermissionGroup> permissionGroupMap;
+    private ConcurrentHashMap<PermissionReference, PermissionGroup> permissionGroupMap;
 
-    private HashMap<String, PermissionReference> permissionReferenceMap;
+    private ConcurrentHashMap<String, PermissionReference> permissionReferenceMap;
 
-    private Map<QName, Set<PermissionReference>> cachedTypePermissionsExposed = new HashMap<QName, Set<PermissionReference>>(256, 1.0f);
+    private ConcurrentHashMap<QName, Set<PermissionReference>> cachedTypePermissionsExposed = new ConcurrentHashMap<QName, Set<PermissionReference>>(256, 1.0f, 32);
 
-    private Map<QName, Set<PermissionReference>> cachedTypePermissionsUnexposed = new HashMap<QName, Set<PermissionReference>>(256, 1.0f);
+    private ConcurrentHashMap<QName, Set<PermissionReference>> cachedTypePermissionsUnexposed = new ConcurrentHashMap<QName, Set<PermissionReference>>(256, 1.0f, 32);
 
     private Collection<QName> allAspects;
 
@@ -340,7 +342,7 @@ public class PermissionModel implements ModelDAO, InitializingBean
 
     private Set<PermissionReference> getAllPermissionsImpl(QName type, boolean exposedOnly)
     {
-        Map<QName, Set<PermissionReference>> cache;
+        ConcurrentHashMap<QName, Set<PermissionReference>> cache;
         if (exposedOnly)
         {
             cache = this.cachedTypePermissionsExposed;
@@ -517,6 +519,10 @@ public class PermissionModel implements ModelDAO, InitializingBean
 
     public synchronized Set<PermissionReference> getGrantingPermissions(PermissionReference permissionReference)
     {
+        if(permissionReference == null)
+        {
+            return Collections.<PermissionReference>emptySet();
+        }
         // Cache the results
         Set<PermissionReference> granters = grantingPermissions.get(permissionReference);
         if (granters == null)
@@ -595,6 +601,10 @@ public class PermissionModel implements ModelDAO, InitializingBean
 
     public synchronized Set<PermissionReference> getGranteePermissions(PermissionReference permissionReference)
     {
+        if(permissionReference == null)
+        {
+            return Collections.<PermissionReference>emptySet();
+        }
         // Cache the results
         Set<PermissionReference> grantees = granteePermissions.get(permissionReference);
         if (grantees == null)
@@ -806,6 +816,10 @@ public class PermissionModel implements ModelDAO, InitializingBean
      */
     private synchronized PermissionGroup getBasePermissionGroupOrNull(PermissionGroup pg)
     {
+        if (pg == null)
+        {
+            return null;
+        }
         PermissionGroup permissionGroup = groupsToBaseGroup.get(pg);
         if (permissionGroup == null)
         {
@@ -889,7 +903,7 @@ public class PermissionModel implements ModelDAO, InitializingBean
 
         private static ReadWriteLock lock = new ReentrantReadWriteLock();
 
-        private static HashMap<PermissionReference, HashMap<QName, HashMap<Set<QName>, EnumMap<RequiredPermission.On, RequiredKey>>>> instances = new HashMap<PermissionReference, HashMap<QName, HashMap<Set<QName>, EnumMap<RequiredPermission.On, RequiredKey>>>>();
+        private static ConcurrentHashMap<PermissionReference, ConcurrentHashMap<QName, ConcurrentHashMap<Set<QName>, EnumMap<RequiredPermission.On, RequiredKey>>>> instances = new ConcurrentHashMap<PermissionReference, ConcurrentHashMap<QName, ConcurrentHashMap<Set<QName>, EnumMap<RequiredPermission.On, RequiredKey>>>>();
 
         /**
          * factory for the key
@@ -905,10 +919,10 @@ public class PermissionModel implements ModelDAO, InitializingBean
             lock.readLock().lock();
             try
             {
-                HashMap<QName, HashMap<Set<QName>, EnumMap<RequiredPermission.On, RequiredKey>>> byPermRef = instances.get(required);
+                ConcurrentHashMap<QName, ConcurrentHashMap<Set<QName>, EnumMap<RequiredPermission.On, RequiredKey>>> byPermRef = instances.get(required);
                 if (byPermRef != null)
                 {
-                    HashMap<Set<QName>, EnumMap<RequiredPermission.On, RequiredKey>> byType = byPermRef.get(qName);
+                    ConcurrentHashMap<Set<QName>, EnumMap<RequiredPermission.On, RequiredKey>> byType = byPermRef.get(qName);
                     if (byType != null)
                     {
                         EnumMap<RequiredPermission.On, RequiredKey> byAspects = byType.get(aspectQNames);
@@ -931,16 +945,17 @@ public class PermissionModel implements ModelDAO, InitializingBean
             lock.writeLock().lock();
             try
             {
-                HashMap<QName, HashMap<Set<QName>, EnumMap<RequiredPermission.On, RequiredKey>>> byPermRef = instances.get(required);
+                ConcurrentHashMap<QName, ConcurrentHashMap<Set<QName>, EnumMap<RequiredPermission.On, RequiredKey>>> byPermRef = instances.get(required);
                 if (byPermRef == null)
                 {
-                    byPermRef = new HashMap<QName, HashMap<Set<QName>, EnumMap<RequiredPermission.On, RequiredKey>>>();
+                    byPermRef = new ConcurrentHashMap<QName, ConcurrentHashMap<Set<QName>, EnumMap<RequiredPermission.On, RequiredKey>>>();
                     instances.put(required, byPermRef);
                 }
-                HashMap<Set<QName>, EnumMap<RequiredPermission.On, RequiredKey>> byType = byPermRef.get(qName);
+
+                ConcurrentHashMap<Set<QName>, EnumMap<RequiredPermission.On, RequiredKey>> byType = byPermRef.get(qName);
                 if (byType == null)
                 {
-                    byType = new HashMap<Set<QName>, EnumMap<RequiredPermission.On, RequiredKey>>();
+                    byType = new ConcurrentHashMap<Set<QName>, EnumMap<RequiredPermission.On, RequiredKey>>();
                     byPermRef.put(qName, byType);
                 }
                 EnumMap<RequiredPermission.On, RequiredKey> byAspects = byType.get(aspectQNames);
@@ -1036,12 +1051,16 @@ public class PermissionModel implements ModelDAO, InitializingBean
 
     }
 
-    private HashMap<RequiredKey, Set<PermissionReference>> requiredPermissionsCache = new HashMap<RequiredKey, Set<PermissionReference>>(1024);
+    private ConcurrentHashMap<RequiredKey, Set<PermissionReference>> requiredPermissionsCache = new ConcurrentHashMap<RequiredKey, Set<PermissionReference>>(1024);
 
     public Set<PermissionReference> getRequiredPermissions(PermissionReference required, QName qName, Set<QName> aspectQNames, RequiredPermission.On on)
     {
         // Cache lookup as this is static
-
+        if((required == null) || (qName == null))
+        {
+            return Collections.<PermissionReference>emptySet();
+        }
+        
         RequiredKey key = generateKey(required, qName, aspectQNames, on);
 
         Set<PermissionReference> answer = requiredPermissionsCache.get(key);
@@ -1241,10 +1260,10 @@ public class PermissionModel implements ModelDAO, InitializingBean
     private void buildUniquePermissionMap()
     {
         Set<String> excluded = new HashSet<String>(128, 1.0f);
-        uniqueMap = new HashMap<String, PermissionReference>(256, 1.0f);
-        permissionReferenceMap = new HashMap<String, PermissionReference>(256, 1.0f);
-        permissionGroupMap = new HashMap<PermissionReference, PermissionGroup>(128, 1.0f);
-        permissionMap = new HashMap<PermissionReference, Permission>(64, 1.0f);
+        uniqueMap = new ConcurrentHashMap<String, PermissionReference>(256, 1.0f, 16);
+        permissionReferenceMap = new ConcurrentHashMap<String, PermissionReference>(256, 1.0f, 16);
+        permissionGroupMap = new ConcurrentHashMap<PermissionReference, PermissionGroup>(128, 1.0f, 16);
+        permissionMap = new ConcurrentHashMap<PermissionReference, Permission>(64, 1.0f, 16);
         for (PermissionSet ps : permissionSets.values())
         {
             for (PermissionGroup pg : ps.getPermissionGroups())

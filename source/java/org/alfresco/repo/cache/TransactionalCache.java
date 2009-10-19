@@ -405,27 +405,6 @@ public class TransactionalCache<K extends Serializable, V extends Object>
                             "   value: " + value);
                 }
             }
-            // we have a transaction - add the item into the updated cache for this transaction
-            // are we in an overflow condition?
-            if (txnData.updatedItemsCache.getMemoryStoreSize() >= maxCacheSize)
-            {
-                // overflow about to occur or has occured - we can only guarantee non-stale
-                // data by clearing the shared cache after the transaction.  Also, the
-                // shared cache needs to be ignored for the rest of the transaction.
-                txnData.isClearOn = true;
-                if (!txnData.haveIssuedFullWarning && logger.isWarnEnabled())
-                {
-                    logger.warn("Transactional update cache '" + name + "' is full (" + maxCacheSize + ").");
-                    txnData.haveIssuedFullWarning = true;
-                }
-            }
-            CacheBucket<V> bucket = null;
-            if (sharedCache.contains(key))
-            {
-                V existingValue = sharedCache.get(key);
-                // The value needs to be kept for later checks
-                bucket = new UpdateCacheBucket<V>(existingValue, value);
-            }
             else
             {
                 // we have an active transaction - add the item into the updated cache for this transaction
@@ -437,6 +416,7 @@ public class TransactionalCache<K extends Serializable, V extends Object>
                     // shared cache needs to be ignored for the rest of the transaction.
                     txnData.isClearOn = true;
                 }
+                CacheBucket<V> bucket = null;
                 if (sharedCache.contains(key))
                 {
                     V existingValue = sharedCache.get(key);

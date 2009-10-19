@@ -29,7 +29,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.alfresco.i18n.I18NUtil;
 import org.alfresco.repo.admin.patch.AbstractPatch;
+import org.alfresco.repo.admin.patch.PatchExecuter;
 import org.alfresco.repo.domain.hibernate.HibernateSessionHelper;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.avm.AVMStoreDescriptor;
@@ -37,6 +39,8 @@ import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * Patch to assign users and groups to default zones
@@ -47,6 +51,9 @@ public class AuthorityDefaultZonesPatch extends AbstractPatch
 {
     /** Success message. */
     private static final String MSG_SUCCESS = "patch.authorityDefaultZonesPatch.result";
+    private static final String MSG_UPDATE_USERS = "patch.authorityDefaultZonesPatch.users";
+    private static final String MSG_UPDATE_GROUPS = "patch.authorityDefaultZonesPatch.groups";
+    private static Log progress_logger = LogFactory.getLog(PatchExecuter.class);
 
     /** The authority service. */
     private AuthorityService authorityService;
@@ -97,14 +104,21 @@ public class AuthorityDefaultZonesPatch extends AbstractPatch
     @Override
     protected String applyInternal() throws Exception
     {
-        setZonesForPeople();
-        setZonesForGroups();
+        int count = 0;
+        int total = authorityService.getAllAuthorities(AuthorityType.USER).size() + authorityService.getAllAuthorities(AuthorityType.GROUP).size();
+        reportProgress(total, count);
+        String msg = I18NUtil.getMessage(MSG_UPDATE_USERS);
+        progress_logger.info(msg);
+        count = setZonesForPeople(total, count);
+        msg = I18NUtil.getMessage(MSG_UPDATE_GROUPS);
+        progress_logger.info(msg);
+        setZonesForGroups(total, count);
 
         return MSG_SUCCESS;
 
     }
 
-    private void setZonesForPeople()
+    private int setZonesForPeople(int total, int start)
     {
         Set<String> defaultZones = new HashSet<String>(2, 1.0f);
         defaultZones.add(AuthorityService.ZONE_APP_DEFAULT);
@@ -113,11 +127,11 @@ public class AuthorityDefaultZonesPatch extends AbstractPatch
         List<Action> personActions = new ArrayList<Action>(1);
         personActions.add(new Action(null, defaultZones, ActionType.SET));
 
-        setZones(AuthorityType.USER, personActions);
+        return setZones(AuthorityType.USER, personActions, total, start);
 
     }
 
-    private void setZonesForGroups()
+    private int setZonesForGroups(int total, int start)
     {
         Set<String> defaultZones = new HashSet<String>(2, 1.0f);
         defaultZones.add(AuthorityService.ZONE_APP_DEFAULT);
@@ -152,13 +166,13 @@ public class AuthorityDefaultZonesPatch extends AbstractPatch
         }
         groupActions.add(new Action(null, defaultZones, ActionType.SET));
 
-        setZones(AuthorityType.GROUP, groupActions);
+        return setZones(AuthorityType.GROUP, groupActions, total, start);
 
     }
 
-    private void setZones(AuthorityType authorityType, List<Action> actions)
+    private int setZones(AuthorityType authorityType, List<Action> actions, int total, int start)
     {
-
+        int count = start;
         hibernateSessionHelper.mark();
         Set<String> authorities = authorityService.getAllAuthorities(authorityType);
         hibernateSessionHelper.reset();
@@ -181,7 +195,10 @@ public class AuthorityDefaultZonesPatch extends AbstractPatch
                 }
             }
             hibernateSessionHelper.reset();
+            count++;
+            reportProgress(total, count);
         }
+        return count;
     }
     
 

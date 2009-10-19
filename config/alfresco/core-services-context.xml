@@ -585,29 +585,12 @@
         </property>
     </bean>
 
-    <!-- Indexer and searchers for lucene -->
-    <bean id="admLuceneIndexerAndSearcherFactory"
-        class="org.alfresco.repo.search.impl.lucene.ADMLuceneIndexerAndSearcherFactory">
-        <property name="nodeService">
-            <ref bean="mlAwareNodeService" />
-        </property>
-        <property name="tenantService">
-            <ref bean="tenantService"/>
-        </property>
-        <property name="dictionaryService">
-            <ref bean="dictionaryService" />
-        </property>
-        <property name="nameSpaceService">
-            <ref bean="namespaceService" />
-        </property>
+    <bean id="abstractLuceneIndexerAndSearcherFactory" abstract="true">
         <property name="indexRootLocation">
             <value>${dir.indexes}</value>
         </property>
-        <property name="contentService">
-            <ref bean="contentService" />
-        </property>
-        <property name="queryRegister">
-            <ref bean="queryRegisterComponent" />
+        <property name="lockDirectory">
+            <value>${dir.indexes.lock}</value>
         </property>
         <property name="maxAtomicTransformationTime">
             <value>${lucene.maxAtomicTransformationTime}</value>  <!-- milliseconds allowed for inline text transformation -->
@@ -618,8 +601,76 @@
         <property name="indexerBatchSize">
             <value>${lucene.indexer.batchSize}</value>
         </property>
-        <property name="lockDirectory">
-            <value>${dir.indexes.lock}</value>
+        <!-- cache -->
+        <property name="cacheEnabled">
+            <value>${lucene.indexer.cacheEnabled}</value>
+        </property>
+        <property name="maxDocIdCacheSize">
+            <value>${lucene.indexer.maxDocIdCacheSize}</value>
+        </property>
+        <property name="maxDocumentCacheSize">
+            <value>${lucene.indexer.maxDocumentCacheSize}</value>
+        </property>
+        <property name="maxIsCategoryCacheSize">
+            <value>${lucene.indexer.maxIsCategoryCacheSize}</value>
+        </property>
+        <property name="maxLinkAspectCacheSize">
+            <value>${lucene.indexer.maxLinkAspectCacheSize}</value>
+        </property>
+        <property name="maxParentCacheSize">
+            <value>${lucene.indexer.maxParentCacheSize}</value>
+        </property>
+        <property name="maxPathCacheSize">
+            <value>${lucene.indexer.maxPathCacheSize}</value>
+        </property>
+        <property name="maxTypeCacheSize">
+            <value>${lucene.indexer.maxTypeCacheSize}</value>
+        </property>
+        <!-- merge indexers -->
+        <property name="mergerMaxMergeDocs">
+            <value>${lucene.indexer.mergerMaxMergeDocs}</value>
+        </property>
+        <property name="mergerMergeFactor">
+            <value>${lucene.indexer.mergerMergeFactor}</value>
+        </property>
+        <property name="mergerMinMergeDocs">
+            <value>${lucene.indexer.mergerMinMergeDocs}</value>
+        </property>
+        <!-- delta indexers -->
+        <property name="writerMaxMergeDocs">
+            <value>${lucene.indexer.writerMaxMergeDocs}</value>
+        </property>
+        <property name="writerMergeFactor">
+            <value>${lucene.indexer.writerMergeFactor}</value>
+        </property>
+        <property name="writerMinMergeDocs">
+            <value>${lucene.indexer.writerMinMergeDocs}</value>
+        </property>
+        <!-- target -->
+        <property name="mergerTargetIndexCount">
+            <value>${lucene.indexer.mergerTargetIndexCount}</value>
+        </property>
+        <property name="mergerTargetOverlayCount">
+            <value>${lucene.indexer.mergerTargetOverlayCount}</value>
+        </property>
+        <property name="maxDocsForInMemoryMerge">
+            <value>${lucene.indexer.maxDocsForInMemoryMerge}</value>
+        </property>
+        <!-- other -->    
+        <property name="termIndexInterval">
+            <value>${lucene.indexer.termIndexInterval}</value>
+        </property>
+        <property name="useNioMemoryMapping">
+            <value>${lucene.indexer.useNioMemoryMapping}</value>
+        </property>
+        <property name="postSortDateTime">
+            <value>${lucene.indexer.postSortDateTime}</value>
+        </property>
+        <property name="defaultMLIndexAnalysisMode">
+            <value>${lucene.indexer.defaultMLIndexAnalysisMode}</value>
+        </property>
+        <property name="defaultMLSearchAnalysisMode">
+            <value>${lucene.indexer.defaultMLSearchAnalysisMode}</value>
         </property>
         <property name="indexerMaxFieldLength">
             <value>${lucene.indexer.maxFieldLength}</value>
@@ -633,21 +684,35 @@
         <property name="lockPollInterval">
             <value>${lucene.lock.poll.interval}</value>
         </property>
-         <property name="defaultMLIndexAnalysisMode">
-            <value>EXACT_LANGUAGE_AND_ALL</value>
+    </bean>
+    
+    <!-- Indexer and searchers for lucene -->
+    <bean id="admLuceneIndexerAndSearcherFactory"
+        parent="abstractLuceneIndexerAndSearcherFactory"
+        class="org.alfresco.repo.search.impl.lucene.ADMLuceneIndexerAndSearcherFactory">
+        <property name="nodeService">
+            <ref bean="mlAwareNodeService" />
         </property>
-        <property name="defaultMLSearchAnalysisMode">
-            <value>EXACT_LANGUAGE_AND_ALL</value>
+        <property name="tenantService">
+            <ref bean="tenantService"/>
+        </property>
+        <property name="dictionaryService">
+            <ref bean="dictionaryService" />
+        </property>
+        <property name="nameSpaceService">
+            <ref bean="namespaceService" />
+        </property>
+        <property name="contentService">
+            <ref bean="contentService" />
+        </property>
+        <property name="queryRegister">
+            <ref bean="queryRegisterComponent" />
         </property>
         <property name="threadPoolExecutor">
             <ref bean="indexThreadPoolExecutor"></ref>
         </property>
         <property name="bulkLoader">
             <ref bean="hibernateL1CacheBulkLoader"></ref>
-        </property>
-        <!-- over-ride to false for pre 3.0 behaviour -->
-        <property name="postSortDateTime">
-            <value>true</value>
         </property>
     </bean>
     
@@ -671,6 +736,7 @@
 	
      <!-- Indexer and searchers for lucene -->
     <bean id="admLuceneUnIndexedIndexerAndSearcherFactory"
+        parent="abstractLuceneIndexerAndSearcherFactory"
         class="org.alfresco.repo.search.impl.lucene.ADMLuceneUnIndexedIndexAndSearcherFactory">
         <property name="nodeService">
             <ref bean="mlAwareNodeService" />
@@ -684,44 +750,11 @@
         <property name="nameSpaceService">
             <ref bean="namespaceService" />
         </property>
-        <property name="indexRootLocation">
-            <value>${dir.indexes}</value>
-        </property>
         <property name="contentService">
             <ref bean="contentService" />
         </property>
         <property name="queryRegister">
             <ref bean="queryRegisterComponent" />
-        </property>
-        <property name="maxAtomicTransformationTime">
-            <value>${lucene.maxAtomicTransformationTime}</value>  <!-- milliseconds allowed for inline text transformation -->
-        </property>
-        <property name="queryMaxClauses">
-            <value>${lucene.query.maxClauses}</value>
-        </property>
-        <property name="indexerBatchSize">
-            <value>${lucene.indexer.batchSize}</value>
-        </property>
-        <property name="lockDirectory">
-            <value>${dir.indexes.lock}</value>
-        </property>
-        <property name="indexerMaxFieldLength">
-            <value>${lucene.indexer.maxFieldLength}</value>
-        </property>
-        <property name="writeLockTimeout">
-            <value>${lucene.write.lock.timeout}</value>
-        </property>
-        <property name="commitLockTimeout">
-            <value>${lucene.commit.lock.timeout}</value>
-        </property>
-        <property name="lockPollInterval">
-            <value>${lucene.lock.poll.interval}</value>
-        </property>
-         <property name="defaultMLIndexAnalysisMode">
-            <value>EXACT_LANGUAGE_AND_ALL</value>
-        </property>
-        <property name="defaultMLSearchAnalysisMode">
-            <value>EXACT_LANGUAGE_AND_ALL</value>
         </property>
         <property name="threadPoolExecutor">
             <ref bean="indexThreadPoolExecutor"></ref>
@@ -730,6 +763,7 @@
 
     <!-- Indexer and searchers for lucene -->
     <bean id="avmLuceneIndexerAndSearcherFactory"
+        parent="abstractLuceneIndexerAndSearcherFactory"
         class="org.alfresco.repo.search.impl.lucene.AVMLuceneIndexerAndSearcherFactory">
         <property name="nodeService">
             <ref bean="mlAwareNodeService" />
@@ -742,9 +776,6 @@
         </property>
         <property name="nameSpaceService">
             <ref bean="namespaceService" />
-        </property>
-        <property name="indexRootLocation">
-            <value>${dir.indexes}</value>
         </property>
         <property name="contentService">
             <ref bean="contentService" />
@@ -761,42 +792,8 @@
         <property name="queryRegister">
             <ref bean="queryRegisterComponent" />
         </property>
-        <property name="maxAtomicTransformationTime">
-            <value>${lucene.maxAtomicTransformationTime}</value>  <!-- milliseconds allowed for inline text transformation -->
-        </property>
-        <property name="queryMaxClauses">
-            <value>${lucene.query.maxClauses}</value>
-        </property>
-        <property name="indexerBatchSize">
-            <value>${lucene.indexer.batchSize}</value>
-        </property>
-        <property name="lockDirectory">
-            <value>${dir.indexes.lock}</value>
-        </property>
-        <property name="indexerMaxFieldLength">
-            <value>${lucene.indexer.maxFieldLength}</value>
-        </property>
-        <property name="writeLockTimeout">
-            <value>${lucene.write.lock.timeout}</value>
-        </property>
-        <property name="commitLockTimeout">
-            <value>${lucene.commit.lock.timeout}</value>
-        </property>
-        <property name="lockPollInterval">
-            <value>${lucene.lock.poll.interval}</value>
-        </property>
-         <property name="defaultMLIndexAnalysisMode">
-            <value>EXACT_LANGUAGE_AND_ALL</value>
-        </property>
-        <property name="defaultMLSearchAnalysisMode">
-            <value>EXACT_LANGUAGE_AND_ALL</value>
-        </property>
         <property name="threadPoolExecutor">
             <ref bean="indexThreadPoolExecutor"></ref>
-        </property>
-        <!-- over-ride to false for pre 3.0 behaviour -->
-        <property name="postSortDateTime">
-            <value>true</value>
         </property>
     </bean>
 

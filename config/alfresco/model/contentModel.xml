@@ -80,7 +80,9 @@
             <property name="cm:content">
                <type>d:content</type>
                <mandatory>false</mandatory>
-               <!--- Index content in the background -->
+               <!-- Although content is marked as indexed atomically it may end up asynchronous -->
+               <!-- if the content conversion will take too long. Content that does not require conversion -->
+               <!-- to UTF8 test/plain will always be indexed atomically -->
                <index enabled="true">
                   <atomic>true</atomic>
                   <stored>false</stored>

@@ -24,13 +24,12 @@
  */
 package org.alfresco.web.bean.repository;
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
 import javax.faces.context.FacesContext;
+import javax.transaction.UserTransaction;
 
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -91,10 +90,27 @@ public final class Preferences implements Serializable
    public void setValue(String name, Serializable value)
    {
       QName qname = QName.createQName(NamespaceService.APP_MODEL_1_0_URI, name);
+      
       // persist the property to the repo
-      getNodeService().setProperty(this.preferencesRef, qname, value);
-      // update the cache
-      this.cache.put(name, value);
+      UserTransaction tx = null;
+      try
+      {
+         FacesContext context = FacesContext.getCurrentInstance();
+         tx = Repository.getUserTransaction(context, true);
+         tx.begin();
+         
+         getNodeService().setProperty(this.preferencesRef, qname, value);
+         
+         tx.commit();
+         
+         // update the cache
+         this.cache.put(name, value);
+      }
+      catch (Throwable err)
+      {
+         // we cannot update the properties if a user is no longer authenticated
+         try { if (tx != null) {tx.rollback();} } catch (Exception tex) {}
+      }
    }
    
    /**

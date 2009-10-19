@@ -219,7 +219,17 @@ public class AVMSnapShotTriggeredIndexingMethodInterceptor implements MethodInte
     {
         this.defaultMode = defaultMode;
     }
-
+    
+    /**
+     * Is snapshot triggered indexing enabled
+     * 
+     * @return true if indexing is enabled for AVM
+     */
+    public boolean isIndexingEnabled()
+    {
+        return enableIndexing;
+    }
+    
     /**
      * @param store
      * @param before

@@ -139,6 +139,14 @@ public interface LuceneConfig
     public int getMergerMergeFactor();
     
     /**
+     * The factor by which the merge factor is multiplied to determine the allowable number of indexes before blocking.
+     * 
+     * @return the factor by which the merge factor is multiplied to determine the allowable number of indexes before
+     *         blocking
+     */
+    public int getMergerMergeBlockingFactor();
+
+    /**
      * Lucene merger config
      * @return
      */
@@ -150,6 +158,15 @@ public interface LuceneConfig
      */
     public int getMergerTargetOverlayCount();
     
+    /**
+     * The factor by which the target overlay count is multiplied to determine the allowable number of overlays before
+     * blocking.
+     * 
+     * @return the factor by which the target overlay count is multiplied to determine the allowable number of overlays
+     *         before blocking
+     */
+    public int getMergerTargetOverlaysBlockingFactor();
+
     /**
      * Target index count. Over this indexes will be merged together.
      * @return
@@ -228,4 +245,5 @@ public interface LuceneConfig
      * @return
      */
     public ConfigurableApplicationContext getApplicationContext();
+
 }

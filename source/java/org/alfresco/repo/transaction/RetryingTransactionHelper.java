@@ -418,7 +418,9 @@ public class RetryingTransactionHelper
                 {
                     // Sleep a random amount of time before retrying.
                     // The sleep interval increases with the number of retries.
-                    int sleepIntervalRandom = count > 0 ? random.nextInt(count * retryWaitIncrementMs) : minRetryWaitMs;
+                    int sleepIntervalRandom = (count > 0 &&  retryWaitIncrementMs > 0)
+                                                ? random.nextInt(count * retryWaitIncrementMs)
+                                                : minRetryWaitMs;
                     int sleepInterval = Math.min(maxRetryWaitMs, sleepIntervalRandom);
                     sleepInterval = Math.max(sleepInterval, minRetryWaitMs);
                     if (logger.isInfoEnabled() && !logger.isDebugEnabled())

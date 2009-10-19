@@ -171,11 +171,15 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory implements LuceneI
 
     private int mergerMergeFactor = 5;
 
+    private int mergerMergeBlockingFactor = 1;
+    
     private int mergerMinMergeDocs = 1000;
 
     private int mergerTargetIndexCount = 5;
 
     private int mergerTargetOverlayCount = 5;
+
+    private int mergerTargetOverlaysBlockingFactor = 2;
 
     private int termIndexInterval =IndexWriter.DEFAULT_TERM_INDEX_INTERVAL;
 
@@ -1686,6 +1690,16 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory implements LuceneI
     {
         this.mergerMergeFactor = mergerMergeFactor;
     }
+    
+    public int getMergerMergeBlockingFactor()
+    {
+        return mergerMergeBlockingFactor;
+    }
+
+    public void setMergerMergeBlockingFactor(int mergerMergeBlockingFactor)
+    {
+        this.mergerMergeBlockingFactor = mergerMergeBlockingFactor;
+    }
 
     public int getMergerMinMergeDocs()
     {
@@ -1715,6 +1729,16 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory implements LuceneI
     public void setMergerTargetOverlayCount(int mergerTargetOverlayCount)
     {
         this.mergerTargetOverlayCount = mergerTargetOverlayCount;
+    }
+    
+    public int getMergerTargetOverlaysBlockingFactor()
+    {
+        return mergerTargetOverlaysBlockingFactor;
+    }
+
+    public void setMergerTargetOverlaysBlockingFactor(int mergerTargetOverlaysBlockingFactor)
+    {
+        this.mergerTargetOverlaysBlockingFactor = mergerTargetOverlaysBlockingFactor;
     }
 
     public int getTermIndexInterval()

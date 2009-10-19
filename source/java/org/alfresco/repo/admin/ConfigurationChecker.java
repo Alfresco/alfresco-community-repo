@@ -231,12 +231,23 @@ public class ConfigurationChecker extends AbstractLifecycleBean
             {
                 if (storeRef.getProtocol().equals(StoreRef.PROTOCOL_AVM))
                 {
-                    IndexMode storeIndexMode = avmSnapShotTriggeredIndexingMethodInterceptor.getIndexMode(storeRef.getIdentifier());
-                    if (storeIndexMode.equals(IndexMode.UNINDEXED))
+                    if (avmSnapShotTriggeredIndexingMethodInterceptor.isIndexingEnabled())
+                    {
+                        IndexMode storeIndexMode = avmSnapShotTriggeredIndexingMethodInterceptor.getIndexMode(storeRef.getIdentifier());
+                        if (storeIndexMode.equals(IndexMode.UNINDEXED))
+                        {
+                            if (logger.isDebugEnabled())
+                            {
+                                logger.debug("Skipping index check for store: " + storeRef + " (unindexed AVM store)");
+                            }
+                            continue;
+                        }
+                    }
+                    else
                     {
                         if (logger.isDebugEnabled())
                         {
-                            logger.debug("Skipping index for store: " + storeRef + " (unindexed AVM store)");
+                            logger.debug("Skipping index check for store: " + storeRef + " (AVM indexing is disabled)");
                         }
                         continue;
                     }

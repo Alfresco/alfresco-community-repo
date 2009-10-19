@@ -228,7 +228,7 @@ public class IndexInfo implements IndexMonitor
      * Lock for the index entries
      */
     private ReentrantReadWriteLock readWriteLock = new ReentrantReadWriteLock();
-
+    
     /**
      * Read only index readers that also do reference counting.
      */
@@ -315,11 +315,15 @@ public class IndexInfo implements IndexMonitor
 
     private int mergerMergeFactor = 5;
 
+    private int mergerMergeBlockingFactor = 1;
+
     private int mergerMaxMergeDocs = 1000000;
 
     private boolean mergerUseCompoundFile = true;
 
     private int mergerTargetOverlays = 5;
+
+    private int mergerTargetOverlaysBlockingFactor = 2;
 
     // Common properties for indexers
 
@@ -404,9 +408,11 @@ public class IndexInfo implements IndexMonitor
             this.writerMaxMergeDocs = config.getWriterMaxMergeDocs();
             this.mergerMinMergeDocs = config.getMergerMinMergeDocs();
             this.mergerMergeFactor = config.getMergerMergeFactor();
+            this.mergerMergeBlockingFactor = config.getMergerMergeBlockingFactor();
             this.mergerMaxMergeDocs = config.getMergerMaxMergeDocs();
             this.termIndexInterval = config.getTermIndexInterval();
             this.mergerTargetOverlays = config.getMergerTargetOverlayCount();
+            this.mergerTargetOverlaysBlockingFactor = config.getMergerTargetOverlaysBlockingFactor();
             // Work out the relative path of the index
             try
             {
@@ -1261,7 +1267,38 @@ public class IndexInfo implements IndexMonitor
         getReadLock();
         try
         {
-            transition.beforeWithReadLock(id, toDelete, read);
+            // beforeWithReadLock may indicate that we need to block for the merger to do some work
+            while (!transition.beforeWithReadLock(id, toDelete, read))
+            {
+                synchronized (merger)
+                {
+                    // If the merger is scheduled, let's wait for it...
+                    int count = merger.getScheduledCount();
+                    if (count <= 0)
+                    {
+                        if (s_logger.isDebugEnabled())
+                        {
+                            s_logger.debug("CAN'T THROTTLE: " + indexEntries.size());
+                        }
+                        break;
+                    }
+                    if (s_logger.isDebugEnabled())
+                    {
+                        s_logger.debug("THROTTLING: " + indexEntries.size());
+                    }
+                    releaseReadLock();
+                    try
+                    {
+                        merger.wait();
+                    }
+                    catch (InterruptedException e)
+                    {
+                    }
+                }
+                getReadLock();
+            }
+            
+            
             releaseReadLock();
             getWriteLock();
             try
@@ -1361,7 +1398,7 @@ public class IndexInfo implements IndexMonitor
      */
     private interface Transition
     {
-        void beforeWithReadLock(String id, Set<Term> toDelete, Set<Term> read) throws IOException;
+        boolean beforeWithReadLock(String id, Set<Term> toDelete, Set<Term> read) throws IOException;
 
         void transition(String id, Set<Term> toDelete, Set<Term> read) throws IOException;
 
@@ -1375,9 +1412,9 @@ public class IndexInfo implements IndexMonitor
      */
     private class PreparingTransition implements Transition
     {
-        public void beforeWithReadLock(String id, Set<Term> toDelete, Set<Term> read) throws IOException
+        public boolean beforeWithReadLock(String id, Set<Term> toDelete, Set<Term> read) throws IOException
         {
-            // Nothing to do
+            return true;
         }
 
         public void transition(String id, Set<Term> toDelete, Set<Term> read) throws IOException
@@ -1411,9 +1448,10 @@ public class IndexInfo implements IndexMonitor
      */
     private class PreparedTransition implements Transition
     {
-        public void beforeWithReadLock(String id, Set<Term> toDelete, Set<Term> read) throws IOException
+        public boolean beforeWithReadLock(String id, Set<Term> toDelete, Set<Term> read) throws IOException
         {
-
+            // We want to block until the merger has executed if we have more than a certain number of indexes
+            return indexEntries.size() <= mergerMergeBlockingFactor * mergerMergeFactor + mergerTargetOverlaysBlockingFactor * mergerTargetOverlays;
         }
 
         public void transition(String id, Set<Term> toDelete, Set<Term> read) throws IOException
@@ -1479,9 +1517,9 @@ public class IndexInfo implements IndexMonitor
 
     private class CommittingTransition implements Transition
     {
-        public void beforeWithReadLock(String id, Set<Term> toDelete, Set<Term> read) throws IOException
+        public boolean beforeWithReadLock(String id, Set<Term> toDelete, Set<Term> read) throws IOException
         {
-
+            return true;
         }
 
         public void transition(String id, Set<Term> toDelete, Set<Term> read) throws IOException
@@ -1513,13 +1551,14 @@ public class IndexInfo implements IndexMonitor
 
         ThreadLocal<IndexReader> tl = new ThreadLocal<IndexReader>();
 
-        public void beforeWithReadLock(String id, Set<Term> toDelete, Set<Term> read) throws IOException
+        public boolean beforeWithReadLock(String id, Set<Term> toDelete, Set<Term> read) throws IOException
         {
             // Make sure we have set up the reader for the data
             // ... and close it so we do not up the ref count
             closeDelta(id);
             IndexEntry entry = indexEntries.get(id);
             tl.set(buildReferenceCountingIndexReader(id, entry.getDocumentCount()));
+            return true;
         }
 
         /**
@@ -1594,9 +1633,9 @@ public class IndexInfo implements IndexMonitor
 
     private class RollingBackTransition implements Transition
     {
-        public void beforeWithReadLock(String id, Set<Term> toDelete, Set<Term> read) throws IOException
+        public boolean beforeWithReadLock(String id, Set<Term> toDelete, Set<Term> read) throws IOException
         {
-
+            return true;
         }
 
         public void transition(String id, Set<Term> toDelete, Set<Term> read) throws IOException
@@ -1628,11 +1667,12 @@ public class IndexInfo implements IndexMonitor
     {
         ThreadLocal<IndexReader> tl = new ThreadLocal<IndexReader>();
 
-        public void beforeWithReadLock(String id, Set<Term> toDelete, Set<Term> read) throws IOException
+        public boolean beforeWithReadLock(String id, Set<Term> toDelete, Set<Term> read) throws IOException
         {
             closeDelta(id);
             IndexEntry entry = indexEntries.get(id);
             tl.set(buildReferenceCountingIndexReader(id, entry.getDocumentCount()));
+            return true;
         }
 
         public void transition(String id, Set<Term> toDelete, Set<Term> read) throws IOException
@@ -1682,9 +1722,9 @@ public class IndexInfo implements IndexMonitor
 
     private class DeletableTransition implements Transition
     {
-        public void beforeWithReadLock(String id, Set<Term> toDelete, Set<Term> read) throws IOException
+        public boolean beforeWithReadLock(String id, Set<Term> toDelete, Set<Term> read) throws IOException
         {
-
+            return true;
         }
 
         public void transition(String id, Set<Term> toDelete, Set<Term> read) throws IOException
@@ -1727,9 +1767,9 @@ public class IndexInfo implements IndexMonitor
 
     private class ActiveTransition implements Transition
     {
-        public void beforeWithReadLock(String id, Set<Term> toDelete, Set<Term> read) throws IOException
+        public boolean beforeWithReadLock(String id, Set<Term> toDelete, Set<Term> read) throws IOException
         {
-
+            return true;
         }
 
         public void transition(String id, Set<Term> toDelete, Set<Term> read) throws IOException
@@ -2906,6 +2946,13 @@ public class IndexInfo implements IndexMonitor
     private abstract class AbstractSchedulable implements Schedulable, Runnable
     {
         ScheduledState scheduledState = ScheduledState.UN_SCHEDULED;
+        
+        private int scheduledCount;
+        
+        public synchronized int getScheduledCount()
+        {
+            return scheduledCount;
+        }
 
         public synchronized void schedule()
         {
@@ -2917,6 +2964,7 @@ public class IndexInfo implements IndexMonitor
                 break;
             case UN_SCHEDULED:
                 scheduledState = ScheduledState.SCHEDULED;
+                scheduledCount++;
                 threadPoolExecutor.execute(this);
                 break;
             case RECOVERY_SCHEDULED:
@@ -2931,8 +2979,10 @@ public class IndexInfo implements IndexMonitor
         {
             switch (scheduledState)
             {
-            case RECOVERY_SCHEDULED:
             case SCHEDULED:
+                scheduledCount--;
+                notifyAll();
+            case RECOVERY_SCHEDULED:
                 scheduledState = ScheduledState.UN_SCHEDULED;
                 break;
             case FAILED:
@@ -2977,8 +3027,10 @@ public class IndexInfo implements IndexMonitor
         {
             switch (scheduledState)
             {
-            case RECOVERY_SCHEDULED:
             case SCHEDULED:
+                scheduledCount--;
+                notifyAll();
+            case RECOVERY_SCHEDULED:
                 scheduledState = ScheduledState.FAILED;
                 break;
             case FAILED:

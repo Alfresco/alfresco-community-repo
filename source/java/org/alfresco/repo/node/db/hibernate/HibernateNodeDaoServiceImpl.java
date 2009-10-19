@@ -184,7 +184,8 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
     static
     {
         DUPLICATE_CHILD_NAME_EXCEPTIONS = new Class[] {
-                ConstraintViolationException.class
+                ConstraintViolationException.class,
+                DataIntegrityViolationException.class
                 };
     }
 
@@ -1956,75 +1957,97 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
         }
     }
     
+    /**
+     * Explicitly flushes the session looking out for {@link #DUPLICATE_CHILD_NAME_EXCEPTIONS exceptions}
+     * indicating that the child association name constraint has been violated.
+     * <p/>
+     * <b>NOTE: </b>The Hibernate session will be flushed prior to calling the callback.  This is necessary
+     * to prevent legitimate other contstraint violations from being dressed up as
+     * {@link DuplicateChildNodeNameException}.
+     * 
+     * @param childAssocChangingCallback        the callback in which the child assoc is modified
+     * @return                                  Returns the callback's result
+     */
+    @SuppressWarnings("unchecked")
+    private Object writeChildAssocChanges(
+            HibernateCallback childAssocChangingCallback,
+            NodeRef parentNodeRef,
+            QName assocTypeQName,
+            String childName)
+    {
+        // Make sure there are no outstanding changes to flush
+        DirtySessionMethodInterceptor.flushSession(getSession(false));
+        // Call the callback and dig into any exception
+        try
+        {
+            Object ret = getHibernateTemplate().execute(childAssocChangingCallback);
+            // Now flush.  Note that we *force* it to flush as the dirty flag will not have been set.
+            DirtySessionMethodInterceptor.flushSession(getSession(false), true);
+            // No clashes
+            return ret;
+        }
+        catch (Throwable e)
+        {
+            Throwable constraintViolation = (Throwable) ExceptionStackUtil.getCause(
+                    e,
+                    DUPLICATE_CHILD_NAME_EXCEPTIONS);
+            if (constraintViolation == null)
+            {
+                // It was something else
+                RuntimeException ee = AlfrescoRuntimeException.makeRuntimeException(
+                        e, "Exception while flushing child assoc to database");
+                throw ee;
+            }
+            else
+            {
+                if (isDebugEnabled)
+                {
+                    logger.debug(
+                            "Duplicate child association detected: \n" +
+                            "   Parent node:     " + parentNodeRef + "\n" +
+                            "   Child node name: " + childName,
+                            e);
+                }
+                throw new DuplicateChildNodeNameException(parentNodeRef, assocTypeQName, childName);
+            }
+        }
+    }
+    
     public Pair<Long, ChildAssociationRef> newChildAssoc(
             Long parentNodeId,
             Long childNodeId,
-            boolean isPrimary,
+            final boolean isPrimary,
             final QName assocTypeQName,
-            QName assocQName,
+            final QName assocQName,
             String newName)
     {
         final Node parentNode = (Node) getSession().get(NodeImpl.class, parentNodeId);
-        Node childNode = (Node) getSession().get(NodeImpl.class, childNodeId);
+        final Node childNode = (Node) getSession().get(NodeImpl.class, childNodeId);
         
         final Pair<String, Long> childNameUnique = getChildNameUnique(assocTypeQName, newName);
         
         final ChildAssoc assoc = new ChildAssocImpl();
-        assoc.setTypeQName(qnameDAO, assocTypeQName);
-        assoc.setChildNodeName(childNameUnique.getFirst());
-        assoc.setChildNodeNameCrc(childNameUnique.getSecond());
-        assoc.setQName(qnameDAO, assocQName);
-        assoc.setIsPrimary(isPrimary);
-        assoc.setIndex(-1);
-        // maintain inverse sets
-        assoc.buildAssociation(parentNode, childNode);
-        // Make sure that all changes to the session are persisted so that we know if any
-        // failures are from the constraint or not
-        DirtySessionMethodInterceptor.flushSession(getSession(false));
-        Long assocId = (Long) getHibernateTemplate().execute(new HibernateCallback()
+        HibernateCallback newAssocCallback = new HibernateCallback()
         {
-            @SuppressWarnings("unchecked")
-            public Object doInHibernate(Session session)
+            public Object doInHibernate(Session session) throws HibernateException, SQLException
             {
-                try
-                {
-                    try
-                    {
-                        Object result = session.save(assoc);
-                        DirtySessionMethodInterceptor.flushSession(session, true);
-                        return result;
-                    }
-                    catch (Throwable e)
-                    {
-                        ConstraintViolationException constraintViolation = (ConstraintViolationException) ExceptionStackUtil.getCause(
-                                e,
-                                DUPLICATE_CHILD_NAME_EXCEPTIONS);
-                        if (constraintViolation == null)
-                        {
-                            // It was something else
-                            RuntimeException ee = AlfrescoRuntimeException.makeRuntimeException(
-                                    e, "Exception while flushing child assoc to database");
-                            throw ee;
-                        }
-                        else
-                        {
-                            throw constraintViolation;
-                        }
-                    }
-                }
-                catch (ConstraintViolationException e)
-                {
-                    // There is already an entity
-                    if (isDebugEnabled)
-                    {
-                        logger.debug("Duplicate child association detected: \n" + "   Parent Node:     "
-                                + parentNode.getId() + "\n" + "   Child Name Used:  " + childNameUnique, e);
-                    }
-                    throw new DuplicateChildNodeNameException(parentNode.getNodeRef(), assocTypeQName, childNameUnique
-                            .getFirst());
-                }
+                assoc.setTypeQName(qnameDAO, assocTypeQName);
+                assoc.setChildNodeName(childNameUnique.getFirst());
+                assoc.setChildNodeNameCrc(childNameUnique.getSecond());
+                assoc.setQName(qnameDAO, assocQName);
+                assoc.setIsPrimary(isPrimary);
+                assoc.setIndex(-1);
+                // maintain inverse sets
+                assoc.buildAssociation(parentNode, childNode);
+                // Save it
+                return session.save(assoc);
             }
-        });
+        };
+        Long assocId = (Long) writeChildAssocChanges(
+                newAssocCallback,
+                parentNode.getNodeRef(),
+                assocTypeQName,
+                childNameUnique.getFirst());
         
         // Add it to the cache
         Set<Long> oldParentAssocIds = parentAssocsCache.get(childNode.getId());
@@ -2085,32 +2108,14 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
             {
                 childAssoc.setChildNodeName(childNameUnique.getFirst());
                 childAssoc.setChildNodeNameCrc(childNameUnique.getSecond().longValue());
-                // Flush again to force a DB constraint here
-                try
-                {
-                    DirtySessionMethodInterceptor.flushSession(session, true);
-                    // Done
-                    return null;
-                }
-                catch (ConstraintViolationException e)
-                {
-                    // There is already an entity
-                    if (isDebugEnabled)
-                    {
-                        logger.debug("Duplicate child association detected: \n" + "   Parent Node:     "
-                                + parentNode.getId() + "\n" + "   Child Name Used:  " + childNameUnique, e);
-                    }
-
-                    throw new DuplicateChildNodeNameException(parentNode.getNodeRef(), childAssoc
-                            .getTypeQName(qnameDAO), childNameUnique.getFirst());
-                }
+                return null;
             }
         };
-        
-        // Make sure that all changes to the session are persisted so that we know if any
-        // failures are from the constraint or not
-        DirtySessionMethodInterceptor.flushSession(getSession(false));
-        getHibernateTemplate().execute(callback);
+        writeChildAssocChanges(
+                callback,
+                parentNode.getNodeRef(),
+                childAssoc.getTypeQName(qnameDAO),
+                childName);
         
         // Done
         if (isDebugEnabled)
@@ -2169,9 +2174,9 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
             Long childAssocId,
             Long parentNodeId,
             Long childNodeId,
-            QName assocTypeQName,
-            QName assocQName,
-            int index,
+            final QName assocTypeQName,
+            final QName assocQName,
+            final int index,
             String childName)
     {
         final ChildAssoc childAssoc = getChildAssocNotNull(childAssocId);
@@ -2182,19 +2187,31 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
         final Node newParentNode = getNodeNotNull(parentNodeId);
         final Node newChildNode = getNodeNotNull(childNodeId);
         final NodeRef newChildNodeRef = newChildNode.getNodeRef();
+        final Pair<String, Long> childNameUnique = getChildNameUnique(assocTypeQName, childName);
         
         // Reset the cm:name duplicate handling.  This has to be redone, if required.
-        Pair<String, Long> childNameUnique = getChildNameUnique(assocTypeQName, childName);
-        childAssoc.setChildNodeName(childNameUnique.getFirst());
-        childAssoc.setChildNodeNameCrc(childNameUnique.getSecond());
-
-        childAssoc.buildAssociation(newParentNode, newChildNode);
-        childAssoc.setTypeQName(qnameDAO, assocTypeQName);
-        childAssoc.setQName(qnameDAO, assocQName);
-        if (index >= 0)
+        HibernateCallback updateChildAssocCallback = new HibernateCallback()
         {
-            childAssoc.setIndex(index);
-        }
+            public Object doInHibernate(Session session) throws HibernateException, SQLException
+            {
+                childAssoc.setChildNodeName(childNameUnique.getFirst());
+                childAssoc.setChildNodeNameCrc(childNameUnique.getSecond());
+
+                childAssoc.buildAssociation(newParentNode, newChildNode);
+                childAssoc.setTypeQName(qnameDAO, assocTypeQName);
+                childAssoc.setQName(qnameDAO, assocQName);
+                if (index >= 0)
+                {
+                    childAssoc.setIndex(index);
+                }
+                return null;
+            }
+        };
+        writeChildAssocChanges(
+                updateChildAssocCallback,
+                newParentNode.getNodeRef(),
+                assocTypeQName,
+                childNameUnique.getFirst());
 
         // Record change ID
         if (oldChildNodeRef.equals(newChildNodeRef))
@@ -3446,6 +3463,10 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
             }
         };
         NodeAssoc result = (NodeAssoc) getHibernateTemplate().execute(callback);
+        if (result == null)
+        {
+            return null;
+        }
         Pair<Long, AssociationRef> ret = new Pair<Long, AssociationRef>(result.getId(), result.getNodeAssocRef(qnameDAO));
         return ret;
     }

@@ -64,6 +64,7 @@ import org.alfresco.service.cmr.search.QueryParameterDefinition;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.GUID;
 import org.alfresco.util.SearchLanguageConversion;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -571,23 +572,18 @@ public class FileFolderServiceImpl implements FileFolderService
             targetParentRef = assocRef.getParentRef();
         }
         
+        boolean changedParent = !targetParentRef.equals(assocRef.getParentRef());
         // there is nothing to do if both the name and parent folder haven't changed
-        if (targetParentRef.equals(assocRef.getParentRef()))
+        if (!nameChanged && !changedParent)
         {
-            if (newName.equals(beforeFileInfo.getName()))
+            if (logger.isDebugEnabled())
             {
-                if (logger.isDebugEnabled())
-                {
-                    logger.debug("Doing nothing - neither filename or parent has changed: \n" +
-                            "   parent: " + targetParentRef + "\n" +
-                            "   before: " + beforeFileInfo + "\n" +
-                            "   new name: " + newName);
-                }
-                return beforeFileInfo;
+                logger.debug("Doing nothing - neither filename or parent has changed: \n" +
+                        "   parent: " + targetParentRef + "\n" +
+                        "   before: " + beforeFileInfo + "\n" +
+                        "   new name: " + newName);
             }
-            else if (newName.equalsIgnoreCase(beforeFileInfo.getName()))
-            {
-            }
+            return beforeFileInfo;
         }
         
         QName existingQName = assocRef.getQName();
@@ -629,13 +625,29 @@ public class FileFolderServiceImpl implements FileFolderService
             // TODO: Replace this with a more formal means of identifying "system" folders (i.e. aspect or UUID)
             if (!isSystemPath(sourceNodeRef))
             {
-                // move the node so that the association moves as well
-                ChildAssociationRef newAssocRef = nodeService.moveNode(
-                        sourceNodeRef,
-                        targetParentRef,
-                        assocTypeQname,
-                        qname);
-                targetNodeRef = newAssocRef.getChildRef();
+                // The cm:name might clash with another node in the target location.
+                if (nameChanged)
+                {
+                    // The name will be changing, so we really need to set the node's name to the new
+                    // name.  This can't be done at the same time as the move - to avoid incorrect violations
+                    // of the name constraints, the cm:name is set to something random and will be reset
+                    // to the correct name later.
+                    nodeService.setProperty(sourceNodeRef, ContentModel.PROP_NAME, GUID.generate());
+                }
+                try
+                {
+                    // move the node so that the association moves as well
+                    ChildAssociationRef newAssocRef = nodeService.moveNode(
+                            sourceNodeRef,
+                            targetParentRef,
+                            assocTypeQname,
+                            qname);
+                    targetNodeRef = newAssocRef.getChildRef();
+                }
+                catch (DuplicateChildNodeNameException e)
+                {
+                    throw new FileExistsException(targetParentRef, newName);
+                }
             }
             else
             {
@@ -647,7 +659,7 @@ public class FileFolderServiceImpl implements FileFolderService
         {
             try
             {
-                // copy the node
+                // Copy the node.  The cm:name will be dropped and reset later.
                 targetNodeRef = copyService.copy(
                         sourceNodeRef,
                         targetParentRef,

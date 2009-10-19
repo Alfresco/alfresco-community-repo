@@ -633,6 +633,9 @@
         <property name="mergerMergeFactor">
             <value>${lucene.indexer.mergerMergeFactor}</value>
         </property>
+        <property name="mergerMergeBlockingFactor">
+            <value>${lucene.indexer.mergerMergeBlockingFactor}</value>
+        </property>
         <property name="mergerMinMergeDocs">
             <value>${lucene.indexer.mergerMinMergeDocs}</value>
         </property>
@@ -652,6 +655,9 @@
         </property>
         <property name="mergerTargetOverlayCount">
             <value>${lucene.indexer.mergerTargetOverlayCount}</value>
+        </property>
+        <property name="mergerTargetOverlaysBlockingFactor">
+            <value>${lucene.indexer.mergerTargetOverlaysBlockingFactor}</value>
         </property>
         <property name="maxDocsForInMemoryMerge">
             <value>${lucene.indexer.maxDocsForInMemoryMerge}</value>

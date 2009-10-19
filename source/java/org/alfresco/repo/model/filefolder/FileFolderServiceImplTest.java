@@ -64,13 +64,12 @@ import org.springframework.context.ApplicationContext;
 
 /**
  * @see org.alfresco.repo.model.filefolder.FileFolderServiceImpl
- * 
  * @author Derek Hulley
  */
 public class FileFolderServiceImplTest extends TestCase
 {
     private static final String IMPORT_VIEW = "filefolder/filefolder-test-import.xml";
-    
+
     private static final String NAME_L0_FILE_A = "L0- File A";
     private static final String NAME_L0_FILE_B = "L0- File B";
     private static final String NAME_L0_FOLDER_A = "L0- Folder A";
@@ -83,7 +82,7 @@ public class FileFolderServiceImplTest extends TestCase
     private static final String NAME_L1_FILE_C = "L1- File C (%_)";
     private static final String NAME_CHECK_FILE = "CHECK_FILE";
     private static final String NAME_CHECK_FOLDER = "CHECK_FOLDER";
-    
+
     private static final ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
 
     private TransactionService transactionService;
@@ -93,7 +92,7 @@ public class FileFolderServiceImplTest extends TestCase
     private UserTransaction txn;
     private NodeRef rootNodeRef;
     private NodeRef workingRootNodeRef;
-    
+
     @Override
     public void setUp() throws Exception
     {
@@ -102,29 +101,29 @@ public class FileFolderServiceImplTest extends TestCase
         nodeService = serviceRegistry.getNodeService();
         fileFolderService = serviceRegistry.getFileFolderService();
         dictionaryDAO = (DictionaryDAO) ctx.getBean("dictionaryDAO");
-        AuthenticationComponent authenticationComponent = (AuthenticationComponent) ctx.getBean("authenticationComponent");
+        AuthenticationComponent authenticationComponent = (AuthenticationComponent) ctx
+                .getBean("authenticationComponent");
 
         // start the transaction
         txn = transactionService.getUserTransaction();
         txn.begin();
-        
+
         // downgrade integrity
         IntegrityChecker.setWarnInTransaction();
-        
+
         // authenticate
         authenticationComponent.setCurrentUser(authenticationComponent.getSystemUserName());
-        
+
         // create a test store
-        StoreRef storeRef = nodeService.createStore(StoreRef.PROTOCOL_WORKSPACE, getName() + System.currentTimeMillis());
+        StoreRef storeRef = nodeService
+                .createStore(StoreRef.PROTOCOL_WORKSPACE, getName() + System.currentTimeMillis());
         rootNodeRef = nodeService.getRootNode(storeRef);
-        
+
         // create a folder to import into
-        workingRootNodeRef = nodeService.createNode(
-                rootNodeRef,
-                ContentModel.ASSOC_CHILDREN,
-                QName.createQName(NamespaceService.ALFRESCO_URI, "working root"),
-                ContentModel.TYPE_FOLDER).getChildRef();
-        
+        workingRootNodeRef = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN,
+                QName.createQName(NamespaceService.ALFRESCO_URI, "working root"), ContentModel.TYPE_FOLDER)
+                .getChildRef();
+
         // import the test data
         ImporterService importerService = serviceRegistry.getImporterService();
         Location importLocation = new Location(workingRootNodeRef);
@@ -136,7 +135,7 @@ public class FileFolderServiceImplTest extends TestCase
         Reader reader = new InputStreamReader(is);
         importerService.importView(reader, importLocation, null, null);
     }
-    
+
     public void tearDown() throws Exception
     {
         try
@@ -157,7 +156,11 @@ public class FileFolderServiceImplTest extends TestCase
      * @param expectedFolderCount the number of uniquely named folders expected
      * @param expectedNames the names of the files and folders expected
      */
-    private void checkFileList(List<FileInfo> files, int expectedFileCount, int expectedFolderCount, String[] expectedNames)
+    private void checkFileList(
+            List<FileInfo> files,
+            int expectedFileCount,
+            int expectedFolderCount,
+            String[] expectedNames)
     {
         int fileCount = 0;
         int folderCount = 0;
@@ -182,70 +185,61 @@ public class FileFolderServiceImplTest extends TestCase
         assertEquals("Incorrect number of files", expectedFileCount, fileCount);
         assertEquals("Incorrect number of folders", expectedFolderCount, folderCount);
     }
-    
+
     public void testShallowFilesAndFoldersList() throws Exception
     {
         List<FileInfo> files = fileFolderService.list(workingRootNodeRef);
         // check
-        String[] expectedNames = new String[] {NAME_L0_FILE_A, NAME_L0_FILE_B, NAME_L0_FOLDER_A, NAME_L0_FOLDER_B, NAME_L0_FOLDER_C};
+        String[] expectedNames = new String[]
+        { NAME_L0_FILE_A, NAME_L0_FILE_B, NAME_L0_FOLDER_A, NAME_L0_FOLDER_B, NAME_L0_FOLDER_C };
         checkFileList(files, 2, 3, expectedNames);
     }
-    
+
     public void testShallowFilesOnlyList() throws Exception
     {
         List<FileInfo> files = fileFolderService.listFiles(workingRootNodeRef);
         // check
-        String[] expectedNames = new String[] {NAME_L0_FILE_A, NAME_L0_FILE_B};
+        String[] expectedNames = new String[]
+        { NAME_L0_FILE_A, NAME_L0_FILE_B };
         checkFileList(files, 2, 0, expectedNames);
     }
-    
+
     public void testShallowFoldersOnlyList() throws Exception
     {
         List<FileInfo> files = fileFolderService.listFolders(workingRootNodeRef);
         // check
-        String[] expectedNames = new String[] {NAME_L0_FOLDER_A, NAME_L0_FOLDER_B, NAME_L0_FOLDER_C};
+        String[] expectedNames = new String[]
+        { NAME_L0_FOLDER_A, NAME_L0_FOLDER_B, NAME_L0_FOLDER_C };
         checkFileList(files, 0, 3, expectedNames);
     }
-    
+
     public void testShallowFileSearch() throws Exception
     {
-        List<FileInfo> files = fileFolderService.search(
-                workingRootNodeRef,
-                NAME_L0_FILE_B,
-                true,
-                false,
-                false);
+        List<FileInfo> files = fileFolderService.search(workingRootNodeRef, NAME_L0_FILE_B, true, false, false);
         // check
-        String[] expectedNames = new String[] {NAME_L0_FILE_B};
+        String[] expectedNames = new String[]
+        { NAME_L0_FILE_B };
         checkFileList(files, 1, 0, expectedNames);
     }
-    
+
     public void testDeepFilesAndFoldersSearch() throws Exception
     {
-        List<FileInfo> files = fileFolderService.search(
-                workingRootNodeRef,
-                "?1-*",
-                true,
-                true,
-                true);
+        List<FileInfo> files = fileFolderService.search(workingRootNodeRef, "?1-*", true, true, true);
         // check
-        String[] expectedNames = new String[] {NAME_L1_FOLDER_A, NAME_L1_FOLDER_B, NAME_L1_FILE_A, NAME_L1_FILE_B, NAME_L1_FILE_C};
+        String[] expectedNames = new String[]
+        { NAME_L1_FOLDER_A, NAME_L1_FOLDER_B, NAME_L1_FILE_A, NAME_L1_FILE_B, NAME_L1_FILE_C };
         checkFileList(files, 3, 2, expectedNames);
     }
-    
+
     public void testDeepFilesOnlySearch() throws Exception
     {
-        List<FileInfo> files = fileFolderService.search(
-                workingRootNodeRef,
-                "?1-*",
-                true,
-                false,
-                true);
+        List<FileInfo> files = fileFolderService.search(workingRootNodeRef, "?1-*", true, false, true);
         // check
-        String[] expectedNames = new String[] {NAME_L1_FILE_A, NAME_L1_FILE_B, NAME_L1_FILE_C};
+        String[] expectedNames = new String[]
+        { NAME_L1_FILE_A, NAME_L1_FILE_B, NAME_L1_FILE_C };
         checkFileList(files, 3, 0, expectedNames);
     }
-    
+
     /**
      * Helper to fetch a file or folder by name
      * 
@@ -258,9 +252,8 @@ public class FileFolderServiceImplTest extends TestCase
         List<FileInfo> results = fileFolderService.search(workingRootNodeRef, name, !isFolder, isFolder, true);
         if (results.size() > 1)
         {
-            throw new AlfrescoRuntimeException("Name is not unique in hierarchy: \n" +
-                    "   name: " + name + "\n" +
-                    "   is folder: " + isFolder);
+            throw new AlfrescoRuntimeException("Name is not unique in hierarchy: \n" + "   name: " + name + "\n"
+                    + "   is folder: " + isFolder);
         }
         else if (results.size() == 0)
         {
@@ -287,7 +280,7 @@ public class FileFolderServiceImplTest extends TestCase
         assertNotNull(fileInfo);
         assertFalse(fileInfo.isFolder());
     }
-    
+
     public void testRenameNormal() throws Exception
     {
         FileInfo folderInfo = getByName(NAME_L0_FOLDER_A, true);
@@ -301,7 +294,7 @@ public class FileFolderServiceImplTest extends TestCase
         checkInfo = getByName(newName, true);
         assertNotNull("Folder info for new name is not present", checkInfo);
     }
-    
+
     public void testRenameWithoutAssocQNameChange() throws Exception
     {
         FileInfo folderInfo = getByName(NAME_L0_FOLDER_A, true);
@@ -309,33 +302,25 @@ public class FileFolderServiceImplTest extends TestCase
         NodeRef folderNodeRef = folderInfo.getNodeRef();
         // Create a child file
         QName assocQName = QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "abc");
-        NodeRef newFileNodeRef = fileFolderService.create(
-                folderNodeRef,
-                "AnotherFile.txt",
-                ContentModel.TYPE_CONTENT,
+        NodeRef newFileNodeRef = fileFolderService.create(folderNodeRef, "AnotherFile.txt", ContentModel.TYPE_CONTENT,
                 assocQName).getNodeRef();
         // Make sure that the correct association QName was used
         QName checkQName = nodeService.getPrimaryParent(newFileNodeRef).getQName();
-        assertEquals(
-                "The given assoc QName was not used for the path",
-                assocQName,
-                checkQName);
+        assertEquals("The given assoc QName was not used for the path", assocQName, checkQName);
         // Rename
         String newName = "AnotherFile-new.txt";
         folderInfo = fileFolderService.rename(newFileNodeRef, newName);
         // Make sure that the association QName did not change
         checkQName = nodeService.getPrimaryParent(newFileNodeRef).getQName();
-        assertEquals(
-                "The given assoc QName was not used for the path after a rename",
-                assocQName,
-                nodeService.getPrimaryParent(newFileNodeRef).getQName());
+        assertEquals("The given assoc QName was not used for the path after a rename", assocQName, nodeService
+                .getPrimaryParent(newFileNodeRef).getQName());
     }
-    
+
     public void testRenameDuplicate() throws Exception
     {
         FileInfo folderInfo = getByName(NAME_L0_FOLDER_A, true);
         assertNotNull(folderInfo);
-        // rename duplicate.  A file with that name already exists
+        // rename duplicate. A file with that name already exists
         String newName = NAME_L0_FILE_A;
         try
         {
@@ -347,9 +332,15 @@ public class FileFolderServiceImplTest extends TestCase
             // expected
         }
     }
-    
+
     public void testMove() throws Exception
     {
+        // we are testing failures as well
+        txn.commit();
+        // start a new one
+        txn = transactionService.getNonPropagatingUserTransaction();
+        txn.begin();
+        
         FileInfo folderToMoveInfo = getByName(NAME_L1_FOLDER_A, true);
         assertNotNull(folderToMoveInfo);
         NodeRef folderToMoveRef = folderToMoveInfo.getNodeRef();
@@ -372,8 +363,34 @@ public class FileFolderServiceImplTest extends TestCase
         {
             // expected
         }
+        
+        txn.rollback();
+        txn = transactionService.getNonPropagatingUserTransaction();
+        txn.begin();
+
+        // Move a file to a new location
+        FileInfo fileA = getByName(NAME_L1_FILE_A, false);
+        FileInfo folderB = getByName(NAME_L0_FOLDER_B, true);
+        fileFolderService.copy(fileA.getNodeRef(), folderB.getNodeRef(), null);
+        try
+        {
+            // Move to a target folder without a rename and expecting a name clash
+            fileFolderService.move(fileA.getNodeRef(), folderB.getNodeRef(), null);
+            fail("Duplicately-named file in target folder was not detected");
+        }
+        catch (FileExistsException e)
+        {
+            // Expected
+        }
+
+        txn.rollback();
+        txn = transactionService.getNonPropagatingUserTransaction();
+        txn.begin();
+
+        // Move to a target folder but with a rename to avoid the name clash
+        fileFolderService.move(fileA.getNodeRef(), folderB.getNodeRef(), NAME_L1_FILE_B);
     }
-    
+
     public void testCopy() throws Exception
     {
         FileInfo folderToCopyInfo = getByName(NAME_L1_FOLDER_A, true);
@@ -400,7 +417,7 @@ public class FileFolderServiceImplTest extends TestCase
             // expected
         }
     }
-    
+
     public void testCreateFolder() throws Exception
     {
         // we are testing failures as well
@@ -408,7 +425,7 @@ public class FileFolderServiceImplTest extends TestCase
         // start a new one
         txn = transactionService.getNonPropagatingUserTransaction();
         txn.begin();
-        
+
         FileInfo parentFolderInfo = getByName(NAME_L0_FOLDER_A, true);
         assertNotNull(parentFolderInfo);
         NodeRef parentFolderRef = parentFolderInfo.getNodeRef();
@@ -461,7 +478,8 @@ public class FileFolderServiceImplTest extends TestCase
             M2Type testType = testModel.createType("t111:subfolder");
             testType.setParentName("cm:" + ContentModel.TYPE_FOLDER.getLocalName());
             dictionaryDAO.putModel(testModel);
-            fileFolderService.create(parentFolderRef, "Legal subtype of folder", QName.createQName(testNs, "subfolder"));
+            fileFolderService
+                    .create(parentFolderRef, "Legal subtype of folder", QName.createQName(testNs, "subfolder"));
         }
         catch (Throwable e)
         {
@@ -478,17 +496,17 @@ public class FileFolderServiceImplTest extends TestCase
         assertTrue("Node not created", nodeService.exists(fileInfo.getNodeRef()));
         assertFalse("File type expected", fileInfo.isFolder());
     }
-    
+
     public void testCreateFile() throws Exception
     {
-        
+
     }
-    
+
     public void testCreateInRoot() throws Exception
     {
         fileFolderService.create(rootNodeRef, "New Folder", ContentModel.TYPE_FOLDER);
     }
-    
+
     public void testMakeFolders() throws Exception
     {
         // create a completely new path below the root
@@ -497,12 +515,14 @@ public class FileFolderServiceImplTest extends TestCase
         namePath.add("BBB");
         namePath.add("CCC");
         namePath.add("DDD");
-        
-        FileInfo lastFileInfo = FileFolderServiceImpl.makeFolders(fileFolderService, rootNodeRef, namePath, ContentModel.TYPE_FOLDER);
+
+        FileInfo lastFileInfo = FileFolderServiceImpl.makeFolders(fileFolderService, rootNodeRef, namePath,
+                ContentModel.TYPE_FOLDER);
         assertNotNull("First makeFolder failed", lastFileInfo);
         // check that a repeat works
-        
-        FileInfo lastFileInfoAgain = FileFolderServiceImpl.makeFolders(fileFolderService, rootNodeRef, namePath, ContentModel.TYPE_FOLDER);
+
+        FileInfo lastFileInfoAgain = FileFolderServiceImpl.makeFolders(fileFolderService, rootNodeRef, namePath,
+                ContentModel.TYPE_FOLDER);
         assertNotNull("Repeat makeFolders failed", lastFileInfoAgain);
         assertEquals("Repeat created new leaf", lastFileInfo.getNodeRef(), lastFileInfoAgain.getNodeRef());
         // check that it worked
@@ -518,7 +538,7 @@ public class FileFolderServiceImplTest extends TestCase
             i++;
         }
     }
-    
+
     /**
      * Lucene only indexes terms that are 3 characters or more
      */
@@ -530,34 +550,36 @@ public class FileFolderServiceImplTest extends TestCase
         namePath.add("B");
         namePath.add("C");
         namePath.add("D");
-        
-        FileInfo lastFileInfo = FileFolderServiceImpl.makeFolders(fileFolderService, rootNodeRef, namePath, ContentModel.TYPE_FOLDER);
+
+        FileInfo lastFileInfo = FileFolderServiceImpl.makeFolders(fileFolderService, rootNodeRef, namePath,
+                ContentModel.TYPE_FOLDER);
         assertNotNull("First makeFolder failed", lastFileInfo);
         // check that a repeat works
-        
-        FileInfo lastFileInfoAgain = FileFolderServiceImpl.makeFolders(fileFolderService, rootNodeRef, namePath, ContentModel.TYPE_FOLDER);
+
+        FileInfo lastFileInfoAgain = FileFolderServiceImpl.makeFolders(fileFolderService, rootNodeRef, namePath,
+                ContentModel.TYPE_FOLDER);
         assertNotNull("Repeat makeFolders failed", lastFileInfoAgain);
         assertEquals("Repeat created new leaf", lastFileInfo.getNodeRef(), lastFileInfoAgain.getNodeRef());
     }
-    
+
     public void testGetNamePath() throws Exception
     {
         FileInfo fileInfo = getByName(NAME_L1_FILE_A, false);
         assertNotNull(fileInfo);
         NodeRef nodeRef = fileInfo.getNodeRef();
-        
+
         List<FileInfo> infoPaths = fileFolderService.getNamePath(workingRootNodeRef, nodeRef);
         assertEquals("Not enough elements", 2, infoPaths.size());
         assertEquals("First level incorrent", NAME_L0_FOLDER_A, infoPaths.get(0).getName());
         assertEquals("Second level incorrent", NAME_L1_FILE_A, infoPaths.get(1).getName());
-        
+
         // pass in a null root and make sure that it still works
         infoPaths = fileFolderService.getNamePath(null, nodeRef);
         assertEquals("Not enough elements", 3, infoPaths.size());
         assertEquals("First level incorrent", workingRootNodeRef.getId(), infoPaths.get(0).getName());
         assertEquals("Second level incorrent", NAME_L0_FOLDER_A, infoPaths.get(1).getName());
         assertEquals("Third level incorrent", NAME_L1_FILE_A, infoPaths.get(2).getName());
-        
+
         // check that a non-aligned path is detected
         NodeRef startRef = getByName(NAME_L0_FOLDER_B, true).getNodeRef();
         try
@@ -570,7 +592,7 @@ public class FileFolderServiceImplTest extends TestCase
             // expected
         }
     }
-    
+
     public void testSearchSimple() throws Exception
     {
         FileInfo folderInfo = getByName(NAME_L0_FOLDER_A, true);
@@ -586,28 +608,28 @@ public class FileFolderServiceImplTest extends TestCase
         FileInfo checkInfo = getByName(NAME_L1_FILE_A, false);
         assertEquals("Incorrect node found", checkInfo.getNodeRef(), fileNodeRef);
     }
-    
+
     public void testResolveNamePath() throws Exception
     {
         FileInfo fileInfo = getByName(NAME_L1_FILE_A, false);
         List<String> pathElements = new ArrayList<String>(3);
         pathElements.add(NAME_L0_FOLDER_A);
         pathElements.add(NAME_L1_FILE_A);
-        
+
         FileInfo fileInfoCheck = fileFolderService.resolveNamePath(workingRootNodeRef, pathElements);
         assertNotNull("File info not found", fileInfoCheck);
         assertEquals("Path not resolved to correct node", fileInfo.getNodeRef(), fileInfoCheck.getNodeRef());
     }
-    
+
     public void testGetReaderWriter() throws Exception
     {
         // testing a failure
         txn.commit();
         txn = transactionService.getUserTransaction();
         txn.begin();
-        
+
         FileInfo dirInfo = getByName(NAME_L0_FOLDER_A, true);
-        
+
         UserTransaction rollbackTxn = null;
         try
         {
@@ -624,9 +646,9 @@ public class FileFolderServiceImplTest extends TestCase
         {
             rollbackTxn.rollback();
         }
-        
+
         FileInfo fileInfo = getByName(NAME_L1_FILE_A, false);
-        
+
         ContentWriter writer = fileFolderService.getWriter(fileInfo.getNodeRef());
         assertNotNull("Writer is null", writer);
         // write some content
@@ -638,23 +660,22 @@ public class FileFolderServiceImplTest extends TestCase
         String checkContent = reader.getContentString();
         assertEquals("Content mismatch", content, checkContent);
     }
-    
+
     public void testLongFileNames() throws Exception
     {
-        String fileName = 
-            "12345678901234567890123456789012345678901234567890" +
-            "12345678901234567890123456789012345678901234567890" +
-            "12345678901234567890123456789012345678901234567890" +
-            "12345678901234567890123456789012345678901234567890" +
-            "12345678901234567890123456789012345678901234567890" +
-            "12345678901234567890123456789012345678901234567890";
+        String fileName = "12345678901234567890123456789012345678901234567890"
+                + "12345678901234567890123456789012345678901234567890"
+                + "12345678901234567890123456789012345678901234567890"
+                + "12345678901234567890123456789012345678901234567890"
+                + "12345678901234567890123456789012345678901234567890"
+                + "12345678901234567890123456789012345678901234567890";
         FileInfo fileInfo = fileFolderService.create(workingRootNodeRef, fileName, ContentModel.TYPE_CONTENT);
         // see if we can get it again
         NodeRef fileNodeRef = fileFolderService.searchSimple(workingRootNodeRef, fileName);
         assertNotNull("Long filename not found", fileNodeRef);
         assertEquals(fileInfo.getNodeRef(), fileNodeRef);
     }
-    
+
     /**
      * Validates <a href="https://issues.alfresco.com/jira/browse/ALFCOM-2655">ACT-7225</a>
      */

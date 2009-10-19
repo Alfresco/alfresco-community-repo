@@ -22,7 +22,8 @@ function getContents(user, type, maxResults)
                "-TYPE:\"{http://www.alfresco.org/model/content/1.0}thumbnail\"";
    
    var nodes = search.luceneSearch(query, "cm:"+type, false, maxResults);
-   
+   //reset processed results (in search.lib.js)
+   processedCache = {}
    return processResults(nodes, maxResults);
 }
 

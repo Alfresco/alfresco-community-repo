@@ -27,13 +27,17 @@ package org.alfresco.repo.content.metadata;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Map;
 
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.service.cmr.repository.ContentReader;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDDocumentInformation;
 
@@ -51,6 +55,8 @@ import org.apache.pdfbox.pdmodel.PDDocumentInformation;
  */
 public class PdfBoxMetadataExtracter extends AbstractMappingMetadataExtracter
 {
+    protected static Log pdfLogger = LogFactory.getLog(PdfBoxMetadataExtracter.class);
+
     private static final String KEY_AUTHOR = "author";
     private static final String KEY_TITLE = "title";
     private static final String KEY_SUBJECT = "subject";
@@ -92,10 +98,32 @@ public class PdfBoxMetadataExtracter extends AbstractMappingMetadataExtracter
                         putRawValue(KEY_CREATED, created.getTime(), rawProperties);
                     }
                 }
-                catch (IOException e)
+                catch (IOException iox)
                 {
                     // This sometimes fails because the date is a string: ETHREEOH-1936
-                }
+                    // Alfresco bug ETHREEOH-801 refers to a bug in PDFBox (http://issues.apache.org/jira/browse/PDFBOX-145)
+                    // where the above call to docInfo.getCreationDate() throws an IOException for some PDFs.
+                    //
+                    // The code below is a workaround for that issue.
+                    
+                    // This creationDate has format: D:20080429+01'00'
+                    String creationDate = docInfo.getCustomMetadataValue("CreationDate");
+                    
+                    if (pdfLogger.isWarnEnabled())
+                    {
+                        pdfLogger.warn("IOException caught when extracting metadata from pdf file.");
+                        pdfLogger.warn("This may be caused by a PDFBox bug that can often be worked around. The stack trace below is provided for information purposes only.");
+                        pdfLogger.warn("", iox);
+                    }
+                    
+                    final SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
+                    if (creationDate != null && creationDate.length() > 10) // 10 allows for "D:yyyyMMdd"
+                    {
+                        String dateWithoutLeadingDColon = creationDate.substring(2);
+                        Date parsedDate = sdf.parse(dateWithoutLeadingDColon);
+                        putRawValue(KEY_CREATED, parsedDate, rawProperties);
+                    }
+                } 
             }
         }
         finally

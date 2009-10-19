@@ -41,6 +41,7 @@ import java.util.Set;
 import javax.transaction.UserTransaction;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.dictionary.DictionaryComponent;
 import org.alfresco.repo.dictionary.DictionaryDAO;
@@ -83,6 +84,8 @@ import org.alfresco.util.PropertyMap;
 import org.apache.commons.collections.map.SingletonMap;
 import org.hibernate.Session;
 import org.springframework.context.ApplicationContext;
+
+import sun.security.action.GetBooleanAction;
 
 /**
  * Provides a base set of tests of the various {@link org.alfresco.service.cmr.repository.NodeService}
@@ -1818,6 +1821,39 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
                 n8Ref,
                 ASSOC_TYPE_QNAME_TEST_CHILDREN,
                 RegexQNamePattern.MATCH_ALL);
+    }
+    
+    @SuppressWarnings("unchecked")
+    public void testParentAssocsCacheOnNewChildAssoc() throws Exception
+    {
+        Map<QName, ChildAssociationRef> assocRefs = buildNodeGraph();
+        final ChildAssociationRef n3pn6Ref = assocRefs.get(QName.createQName(BaseNodeServiceTest.NAMESPACE, "n3_p_n6"));
+
+        setComplete();
+        endTransaction();
+        
+        SimpleCache<Serializable, Object> parentAssocsSharedCache =
+            (SimpleCache<Serializable, Object>) applicationContext.getBean("parentAssocsSharedCache");
+        parentAssocsSharedCache.clear();
+
+        // Create a secondary association between two nodes
+        RetryingTransactionCallback<Void> testCallback = new RetryingTransactionCallback<Void>()
+        {
+            public Void execute() throws Throwable
+            {
+                nodeService.addChild(
+                        n3pn6Ref.getParentRef(),
+                        n3pn6Ref.getChildRef(),
+                        ASSOC_TYPE_QNAME_TEST_CHILDREN,
+                        QName.createQName("pathA"));
+                // Now get it back
+                ChildAssociationRef checkRef = nodeService.getPrimaryParent(n3pn6Ref.getChildRef());
+                assertNotNull("ParentAssocsCache not holding primary assoc", checkRef);
+                assertEquals("Primary parent assoc not correct", n3pn6Ref, checkRef);
+                return null;
+            }
+        };
+        retryingTransactionHelper.doInTransaction(testCallback, false, true);
     }
     
     public void testGetChildAssocs() throws Exception

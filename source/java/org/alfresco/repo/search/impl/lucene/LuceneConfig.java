@@ -26,7 +26,7 @@ package org.alfresco.repo.search.impl.lucene;
 
 import java.util.concurrent.ThreadPoolExecutor;
 
-import org.alfresco.repo.domain.hibernate.BulkLoader;
+import org.alfresco.repo.node.NodeBulkLoader;
 import org.alfresco.repo.search.MLAnalysisMode;
 import org.springframework.context.ConfigurableApplicationContext;
 
@@ -90,10 +90,8 @@ public interface LuceneConfig
 
     /**
      * Get preloader - may be null if preloading is not supported
-     * 
-     * @return
      */
-    public BulkLoader getBulkLoader();
+    public NodeBulkLoader getBulkLoader();
 
     /**
      * Use the nio memory mapping (work arounf for bugs with some JVMs)

@@ -32,10 +32,6 @@
         </property>
     </bean>
 
-    <bean id="defaltOnLoadListener" class="org.hibernate.event.def.DefaultLoadEventListener" />
-    
-    <bean id="clearCGLibThreadLocal" class="org.alfresco.repo.domain.hibernate.HibernateLoadListener" />
-    
     <!-- Hibernate session factory -->
     <bean id="sessionFactory" class="org.springframework.orm.hibernate3.LocalSessionFactoryBean" parent="sessionFactoryBase">
         <property name="dataSource">
@@ -53,16 +49,6 @@
     <bean id="sessionFactoryBase" abstract="true">
         <property name="schemaUpdate">
            <value>false</value>
-        </property>
-        <property name="eventListeners" >
-            <map>
-                <entry key="load">
-                    <list>
-                        <ref bean="defaltOnLoadListener" />
-                        <ref bean="clearCGLibThreadLocal" />
-                    </list>
-                </entry>
-            </map>
         </property>
         <property name="mappingResources">
             <list>
@@ -497,9 +483,4 @@
        </property>
    </bean> 
    
-   <bean id="hibernateL1CacheBulkLoader" class="org.alfresco.repo.domain.hibernate.HibernateL1CacheBulkLoader">
-      <property name="sessionFactory">
-         <ref bean="sessionFactory" />
-      </property>
-   </bean>
 </beans>

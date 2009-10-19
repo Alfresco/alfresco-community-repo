@@ -2055,17 +2055,23 @@ public class HibernateNodeDaoServiceImpl
                 childNameUnique.getFirst());
         
         // Add it to the cache
-        Set<Long> parentAssocIds = parentAssocsCache.get(childNode.getId());
+        Set<Long> parentAssocIds = parentAssocsCache.get(childNodeId);
         if (parentAssocIds == null)
         {
+            // There isn't an entry in the cache, so go and make one
+            Collection<ChildAssoc> parentAssocs = getParentAssocsInternal(childNodeId);
             parentAssocIds = new HashSet<Long>(3);
+            for (ChildAssoc childAssoc : parentAssocs)
+            {
+                parentAssocIds.add(childAssoc.getId());
+            }
         }
         else
         {
             // Copy the list when we add to it
             parentAssocIds = new HashSet<Long>(parentAssocIds);
+            parentAssocIds.add(assocId);
         }
-        parentAssocIds.add(assocId);
         parentAssocsCache.put(childNodeId, parentAssocIds);
         if (isDebugParentAssocCacheEnabled)
         {
@@ -2991,10 +2997,29 @@ public class HibernateNodeDaoServiceImpl
     /**
      * {@inheritDoc}
      * <p/>
+     * Clears the L1 cache, the parentAssocsCache and storeAndNodeIdCache
+     */
+    public void clear()
+    {
+        Session session = getSession();
+        DirtySessionMethodInterceptor.flushSession(session, true);
+        session.clear();
+        parentAssocsCache.clear();
+        storeAndNodeIdCache.clear();
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p/>
      * Loads properties, aspects, parent associations and the ID-noderef cache
      */
     public void cacheNodes(List<NodeRef> nodeRefs)
     {
+        if (nodeRefs.size() == 0)
+        {
+            // Nothing to cache
+            return;
+        }
         // Group the nodes by store so that we don't *have* to eagerly join to store to get query performance
         Map<StoreRef, List<String>> uuidsByStore = new HashMap<StoreRef, List<String>>(3);
         for (NodeRef nodeRef : nodeRefs)
@@ -3069,6 +3094,12 @@ public class HibernateNodeDaoServiceImpl
             Long nodeId = node.getId();
             storeAndNodeIdCache.put(node.getNodeRef(), nodeId);
             nodeIds.add(nodeId);
+        }
+        
+        if (nodeIds.size() == 0)
+        {
+            // Can't query
+            return;
         }
         
         criteria = getSession().createCriteria(ChildAssocImpl.class, "parentAssoc");

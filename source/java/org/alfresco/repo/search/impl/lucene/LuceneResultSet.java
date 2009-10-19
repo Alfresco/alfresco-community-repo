@@ -27,7 +27,9 @@ package org.alfresco.repo.search.impl.lucene;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.BitSet;
+import java.util.List;
 
+import org.alfresco.repo.node.NodeBulkLoader;
 import org.alfresco.repo.search.AbstractResultSet;
 import org.alfresco.repo.search.ResultSetRowIterator;
 import org.alfresco.repo.search.SearcherException;
@@ -109,6 +111,7 @@ public class LuceneResultSet extends AbstractResultSet
     {
         try
         {
+            prefetch(n);
             // We have to get the document to resolve this
             // It is possible the store ref is also stored in the index
             if (searcher instanceof ClosingIndexSearcher)
@@ -150,11 +153,8 @@ public class LuceneResultSet extends AbstractResultSet
     {
         try
         {
+            prefetch(n);
             Document doc = hits.doc(n);
-            if (!prefetch.get(n))
-            {
-                fetch(n);
-            }
             return doc;
         }
         catch (IOException e)
@@ -162,48 +162,48 @@ public class LuceneResultSet extends AbstractResultSet
             throw new SearcherException("IO Error reading reading document from the result set", e);
         }
     }
-
-    private void fetch(int n)
+    
+    private void prefetch(int n) throws IOException
     {
-        if (searchParameters.getBulkFetch() && (config.getBulkLoader() != null))
+        NodeBulkLoader bulkLoader = config.getBulkLoader();
+        if (!searchParameters.getBulkFetch() || (bulkLoader == null))
         {
-            while (!prefetch.get(n))
-            {
-                fetch();
-            }
+            // No prefetching
+            return;
         }
-    }
-
-    private void fetch()
-    {
-        try
+        if (prefetch.get(n))
         {
-            if (searchParameters.getBulkFetch() && (config.getBulkLoader() != null))
-            {
-                for (int i = 0; (i < hits.length()); i += searchParameters.getBulkFecthSize())
-                {
-                    if (!prefetch.get(i))
-                    {
-                        ArrayList<NodeRef> fetchList = new ArrayList<NodeRef>(searchParameters.getBulkFecthSize());
-                        for (int j = i; (j < i + searchParameters.getBulkFecthSize()) && (j < hits.length()); j++)
-                        {
-                            Document doc = hits.doc(j);
-                            String id = doc.get("ID");
-                            NodeRef nodeRef = tenantService.getBaseName(new NodeRef(id));
-                            fetchList.add(nodeRef);
-                        }
-                        config.getBulkLoader().loadIntoCache(fetchList);
-                        for (int j = i; j < i + searchParameters.getBulkFecthSize(); j++)
-                        {
-                            prefetch.set(j);
-                        }
-                    }
-                }
-            }
+            // The document was already processed
+            return;
         }
-        catch (IOException e)
+        // Start at 'n' and process the the next bulk set
+        int bulkFetchSize = searchParameters.getBulkFecthSize();
+        List<NodeRef> fetchList = new ArrayList<NodeRef>(bulkFetchSize);
+        int totalHits = hits.length();
+        for (int i = 0; i < bulkFetchSize; i++)
         {
-            throw new SearcherException("IO Error reading reading document from the result set", e);
+            int next = n + i;
+            if (next >= totalHits)
+            {
+                // We've hit the end
+                break;
+            }
+            if (prefetch.get(next))
+            {
+                // This one is in there already
+                continue;
+            }
+            // We store the node and mark it as prefetched
+            prefetch.set(next);
+            Document doc = hits.doc(next);
+            String nodeRefStr = doc.get("ID");
+            NodeRef nodeRef = tenantService.getBaseName(new NodeRef(nodeRefStr));
+            fetchList.add(nodeRef);
+        }
+        // Now bulk fetch
+        if (fetchList.size() > 1)
+        {
+            bulkLoader.cacheNodes(fetchList);
         }
     }
 

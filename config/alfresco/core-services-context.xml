@@ -90,6 +90,12 @@
     <bean id="jgroupsPropertySetter" class="org.alfresco.config.SystemPropertiesSetterBean" init-method="init">
         <property name="propertyMap">
             <map>
+                <entry key="jgroups.bind_addr">
+                    <value>${alfresco.jgroups.bind_address}</value>
+                </entry>
+                <entry key="jgroups.bind_interface">
+                    <value>${alfresco.jgroups.bind_interface}</value>
+                </entry>
                 <entry key="alfresco.tcp.start_port">
                     <value>${alfresco.tcp.start_port}</value>
                 </entry>
@@ -718,7 +724,7 @@
             <ref bean="indexThreadPoolExecutor"></ref>
         </property>
         <property name="bulkLoader">
-            <ref bean="hibernateL1CacheBulkLoader"></ref>
+            <ref bean="nodeDaoServiceImpl"></ref>
         </property>
     </bean>
     

@@ -66,6 +66,7 @@
          <list>
             <value><![CDATA[.*\.tmp]]></value>
             <value><![CDATA[.*\.temp]]></value>
+            <value><![CDATA[.*\.wbk]]></value>
             <value><![CDATA[\~.*]]></value>
          </list>
       </property>

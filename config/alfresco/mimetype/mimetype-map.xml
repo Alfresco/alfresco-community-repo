@@ -258,6 +258,8 @@
          </mimetype>
          <mimetype mimetype="application/vnd.powerpoint" display="Microsoft PowerPoint">
             <extension>ppt</extension>
+            <extension>pps</extension>
+            <extension>pot</extension>
          </mimetype>
          <mimetype mimetype="image/x-cmu-raster" display="Raster Image">
             <extension>ras</extension>

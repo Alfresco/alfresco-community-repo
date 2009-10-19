@@ -2457,9 +2457,15 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
 			                        if ( renState.hasRenameState())
 			                            renState.getRenameState().setNodeRef(nodeToMoveRef);
 			                        
-			                        // Remove the file state for the old file name
 			                        
-			                        ctx.getStateTable().removeFileState(oldName);
+                                                //Fix for ETHREEOH-1951
+                                                //Set delete on close state for a short period to avoid loosing of version history
+                                                //if "always create a backup copy" option is enabled in MS Word. 
+                                                FileState oldState =  ctx.getStateTable().findFileState(oldName, false, true);
+                                                oldState.setNodeRef(nodeToMoveRef);                                    
+                                                oldState.setFileStatus(FileStateStatus.DeleteOnClose);
+                                                oldState.setExpiryTime(System.currentTimeMillis() + FileState.RenameTimeout);
+
 			                        
 			                        // Get, or create, a file state for the new file path
 			                        
@@ -2500,7 +2506,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
                 	String newNameNorm = newName.toLowerCase();
                 	boolean isTempFile = false;
                 	
-                    if ( newNameNorm.endsWith(".tmp") || newNameNorm.endsWith(".temp")) {
+                    if ( newNameNorm.endsWith(".tmp") || newNameNorm.endsWith(".temp") || newNameNorm.endsWith(".wbk")) {
                     	
                     	// Add the temporary aspect, also prevents versioning
                     
@@ -2524,7 +2530,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
             		
             		String oldNameNorm = oldName.toLowerCase();
             		
-            		if ( isTempFile == false && (oldNameNorm.endsWith(".tmp") || oldNameNorm.endsWith(".temp"))) {
+                        if ( isTempFile == false && (oldNameNorm.endsWith(".tmp") || oldNameNorm.endsWith(".temp") || oldNameNorm.endsWith(".wbk"))) {
                     	
                     	// Remove the temporary aspect
                     

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -425,8 +425,12 @@ public class DeploymentServiceImpl implements DeploymentService
             String name = entry.getKey();
             AVMNodeDescriptor srcNode = entry.getValue();
             
-            if(isStale(srcNode))
+            if (isStale(srcNode))
             {
+                if (fgLogger.isDebugEnabled())
+                {
+                    fgLogger.debug("Stale child found: " + srcNode);
+                }
                 srcList.remove(name);
             }
         }
@@ -642,9 +646,12 @@ public class DeploymentServiceImpl implements DeploymentService
                 /**
                  * Temporary work around for staleness.
                  */
-                if(isStale(child))
+                if (isStale(child))
                 {
-                    fgLogger.debug("stale file ignored" + child);
+                    if (fgLogger.isDebugEnabled())
+                    {
+                        fgLogger.debug("Stale child found: " + child);
+                    }
                     continue;
                 }
                 
@@ -1245,11 +1252,11 @@ public class DeploymentServiceImpl implements DeploymentService
                      * Correct fix would be to remove stale files from the snapshot.
                      * Code becomes obsolete once stale files are not part of the snapshot.
                      */
-                    if(isStale(src))
+                    if (isStale(src))
                     {
                         if (fgLogger.isDebugEnabled())
                         {
-                            fgLogger.debug("Stale content found" + src);
+                            fgLogger.debug("Stale child found: " + src);
                         }
                         src = null;
                         continue;
@@ -1433,6 +1440,14 @@ public class DeploymentServiceImpl implements DeploymentService
         {
             if (!excluded(matcher, child.getPath(), null))
             {
+                if (isStale(child))
+                {
+                    if (fgLogger.isDebugEnabled())
+                    {
+                        fgLogger.debug("Stale child found: " + child);
+                    }
+                    continue;
+                }
                 createOnFSR(service, ticket, version, child, dstPath, matcher, sendQueue);
             }
         }

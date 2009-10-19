@@ -46,4 +46,9 @@ public interface NodeBulkLoader
      * @param nodeRefs          the nodes that will be cached.
      */
     public void cacheNodes(List<NodeRef> nodeRefs);
+    
+    /**
+     * Clears the cached nodes
+     */
+    public void clear();
 }

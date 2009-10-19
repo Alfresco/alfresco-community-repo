@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2008 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -46,6 +46,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.security.AuthenticationService;
+import org.alfresco.service.cmr.security.OwnableService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.usage.UsageService;
 import org.alfresco.service.namespace.NamespaceService;
@@ -60,35 +61,23 @@ import org.springframework.context.ApplicationContext;
 public class UserUsageTest extends TestCase
 {
     private static ApplicationContext applicationContext = ApplicationContextHelper.getApplicationContext();
-
+    
     protected NodeService nodeService;
-
     protected FileFolderService fileFolderService;
-    
     protected AuthenticationService authenticationService;
-
     private MutableAuthenticationDao authenticationDAO;
-
     protected NodeRef rootNodeRef;
-
     protected NodeRef systemNodeRef;
-    
     protected NodeRef personNodeRef;
-
     protected AuthenticationComponent authenticationComponent;
-
     private UserTransaction testTX;
-
     private TransactionService transactionService;
-    
     private ContentService contentService;
-    
     private PersonService personService;
-    
     private ContentUsageImpl contentUsageImpl;
-    
     private UsageService usageService;
-
+    private OwnableService ownableService;
+    
     private static final String TEST_USER = "userUsageTestUser";
     
     protected void setUp() throws Exception
@@ -98,7 +87,7 @@ public class UserUsageTest extends TestCase
         
         authenticationService = (AuthenticationService) applicationContext.getBean("authenticationService");
         authenticationComponent = (AuthenticationComponent) applicationContext.getBean("authenticationComponent");
-
+        
         authenticationComponent.setCurrentUser(authenticationComponent.getSystemUserName());
         authenticationDAO = (MutableAuthenticationDao) applicationContext.getBean("authenticationDao");
         transactionService = (TransactionService) applicationContext.getBean("transactionComponent");
@@ -108,11 +97,13 @@ public class UserUsageTest extends TestCase
         
         contentUsageImpl = (ContentUsageImpl) applicationContext.getBean("contentUsageImpl");
         usageService = (UsageService) applicationContext.getBean("usageService");
-
+        
+        ownableService = (OwnableService) applicationContext.getBean("ownableService");
+        
         testTX = transactionService.getUserTransaction();
         testTX.begin();
         this.authenticationComponent.setSystemUserAsCurrentUser();
-
+        
         // get default store (as configured for content usage service)
         StoreRef storeRef = new StoreRef(StoreRef.PROTOCOL_WORKSPACE, "SpacesStore");
         rootNodeRef = nodeService.getRootNode(storeRef);
@@ -125,17 +116,17 @@ public class UserUsageTest extends TestCase
         
         Map<QName, Serializable> props = createPersonProperties(TEST_USER);
         personNodeRef = personService.createPerson(props);
-
+        
         // create an authentication object e.g. the user
         if (authenticationDAO.userExists(TEST_USER))
         {
             authenticationService.deleteAuthentication(TEST_USER);
         }
         authenticationService.createAuthentication(TEST_USER, TEST_USER.toCharArray());
-
+        
         authenticationComponent.clearCurrentSecurityContext();
     }
-
+    
     protected void tearDown() throws Exception
     {
         try
@@ -154,21 +145,21 @@ public class UserUsageTest extends TestCase
             super.tearDown();
         }
     }
-
+    
     protected void runAs(String userName)
     {
         authenticationService.authenticate(userName, userName.toCharArray());
         assertNotNull(authenticationService.getCurrentUserName());
     }
-
+    
     private Map<QName, Serializable> createPersonProperties(String userName)
     {
         HashMap<QName, Serializable> properties = new HashMap<QName, Serializable>();
         properties.put(ContentModel.PROP_USERNAME, userName);
         return properties;
     }
-
-    public void testCreateUpdatedeleteInTx() throws Exception
+    
+    public void testCreateUpdateDeleteInTx() throws Exception
     {
         if(!contentUsageImpl.getEnabled())
         {
@@ -222,7 +213,7 @@ public class UserUsageTest extends TestCase
         assertEquals(0, contentUsageImpl.getUserUsage(TEST_USER));
     }
     
-    public void testCreateUpdatedeleteAcrossTx() throws Exception
+    public void testCreateUpdateDeleteAcrossTx() throws Exception
     {
         if(!contentUsageImpl.getEnabled())
         {
@@ -290,7 +281,7 @@ public class UserUsageTest extends TestCase
         assertEquals(0, contentUsageImpl.getUserUsage(TEST_USER));
     }
     
-    public void testCreateCopydeleteInTx() throws Exception
+    public void testCreateCopyDeleteInTx() throws Exception
     {
         if(!contentUsageImpl.getEnabled())
         {
@@ -325,7 +316,7 @@ public class UserUsageTest extends TestCase
         assertEquals(129, contentUsageImpl.getUserUsage(TEST_USER));
         
         // delete content
-
+        
         delete(content2); // - 43
         assertEquals(86, contentUsageImpl.getUserUsage(TEST_USER));
         
@@ -336,7 +327,7 @@ public class UserUsageTest extends TestCase
         assertEquals(0, contentUsageImpl.getUserUsage(TEST_USER));
     }
     
-    public void testCreateCopydeleteAcrossTx() throws Exception
+    public void testCreateCopyDeleteAcrossTx() throws Exception
     {
         if(!contentUsageImpl.getEnabled())
         {
@@ -385,7 +376,7 @@ public class UserUsageTest extends TestCase
         assertEquals(129, contentUsageImpl.getUserUsage(TEST_USER));
         
         // delete content
-
+        
         delete(content2); // - 43
         assertEquals(86, contentUsageImpl.getUserUsage(TEST_USER));
         
@@ -433,12 +424,12 @@ public class UserUsageTest extends TestCase
         assertEquals(290, contentUsageImpl.getUserUsage(TEST_USER));
         
         // delete copied folder
-
+        
         delete(folder2); // - 145
         assertEquals(145, contentUsageImpl.getUserUsage(TEST_USER));
         
         // delete original folder
-
+        
         delete(folder1); // - 145
         assertEquals(0, contentUsageImpl.getUserUsage(TEST_USER));
     }
@@ -492,7 +483,7 @@ public class UserUsageTest extends TestCase
         runAs(TEST_USER);
         
         // delete copied folder
-
+        
         delete(folder2); // - 145
         assertEquals(145, contentUsageImpl.getUserUsage(TEST_USER));
         
@@ -501,31 +492,161 @@ public class UserUsageTest extends TestCase
         testTX = transactionService.getUserTransaction();
         testTX.begin();
         runAs(TEST_USER);
-
+        
         // delete original folder
-
+        
         delete(folder1); // - 145
         assertEquals(0, contentUsageImpl.getUserUsage(TEST_USER));
+    }
+    
+    public void testCreateTakeOwnershipInTx() throws Exception
+    {
+        if(!contentUsageImpl.getEnabled())
+        {
+            return;
+        }
+        
+        runAs(TEST_USER);
+        
+        assertEquals(0, contentUsageImpl.getUserUsage(TEST_USER));
+        
+        // Create a folder
+        Map<QName, Serializable> folderProps = new HashMap<QName, Serializable>(1);
+        folderProps.put(ContentModel.PROP_NAME, "testFolder");
+        NodeRef folder = this.nodeService.createNode(
+                this.rootNodeRef, 
+                ContentModel.ASSOC_CHILDREN, 
+                QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "testFolder"),
+                ContentModel.TYPE_FOLDER).getChildRef();
+        
+        // add content (in this case, some "panagrams")
+        
+        NodeRef content1 = addTextContent(folder, "text1.txt", "The quick brown fox jumps over the lazy dog"); // + 43
+        assertEquals(43, contentUsageImpl.getUserUsage(TEST_USER));
+        
+        NodeRef content2 = addTextContent(folder, "text2.txt", "Amazingly few discotheques provide jukeboxes"); // + 44
+        assertEquals(87, contentUsageImpl.getUserUsage(TEST_USER));
+        
+        NodeRef content3 = addTextContent(folder, "text3.txt", "All questions asked by five watch experts amazed the judge"); // + 58
+        assertEquals(145, contentUsageImpl.getUserUsage(TEST_USER));
+        
+        String ADMIN = AuthenticationUtil.getAdminUserName();
+        
+        runAs(ADMIN);
+        
+        long before = contentUsageImpl.getUserUsage(ADMIN);
+        
+        takeOwnership(content1); // +/- 43 (test user -> admin)
+        
+        assertEquals(102, contentUsageImpl.getUserUsage(TEST_USER));
+        assertEquals(before+43, contentUsageImpl.getUserUsage(ADMIN));
+        
+        takeOwnership(content2); // +/- 44 (test user -> admin)
+        
+        assertEquals(58, contentUsageImpl.getUserUsage(TEST_USER));
+        assertEquals(before+87, contentUsageImpl.getUserUsage(ADMIN));
+        
+        runAs(TEST_USER);
+        
+        takeOwnership(content1); // +/- 43 (admin -> test user)
+        
+        assertEquals(101, contentUsageImpl.getUserUsage(TEST_USER));
+        assertEquals(before+44, contentUsageImpl.getUserUsage(ADMIN));
+        
+        takeOwnership(content3); // note: already the creator
+        
+        assertEquals(101, contentUsageImpl.getUserUsage(TEST_USER));
+        assertEquals(before+44, contentUsageImpl.getUserUsage(ADMIN));
+    }
+    
+    public void testCreateTakeOwnershipAcrossTx() throws Exception
+    {
+        if(!contentUsageImpl.getEnabled())
+        {
+            return;
+        }
+        
+        runAs(TEST_USER);
+        
+        assertEquals(0, contentUsageImpl.getUserUsage(TEST_USER));
+        
+        // Create a folder
+        Map<QName, Serializable> folderProps = new HashMap<QName, Serializable>(1);
+        folderProps.put(ContentModel.PROP_NAME, "testFolder");
+        NodeRef folder = this.nodeService.createNode(
+                this.rootNodeRef, 
+                ContentModel.ASSOC_CHILDREN, 
+                QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "testFolder"),
+                ContentModel.TYPE_FOLDER).getChildRef();
+        
+        // add content (in this case, some "panagrams")
+        
+        NodeRef content1 = addTextContent(folder, "text1.txt", "The quick brown fox jumps over the lazy dog"); // + 43
+        assertEquals(43, contentUsageImpl.getUserUsage(TEST_USER));
+        
+        NodeRef content2 = addTextContent(folder, "text2.txt", "Amazingly few discotheques provide jukeboxes"); // + 44
+        assertEquals(87, contentUsageImpl.getUserUsage(TEST_USER));
+        
+        NodeRef content3 = addTextContent(folder, "text3.txt", "All questions asked by five watch experts amazed the judge"); // + 58
+        assertEquals(145, contentUsageImpl.getUserUsage(TEST_USER));
+        
+        testTX.commit();
+        
+        String ADMIN = AuthenticationUtil.getAdminUserName();
+        
+        testTX = transactionService.getUserTransaction();
+        testTX.begin();
+        
+        runAs(ADMIN);
+        
+        long before = contentUsageImpl.getUserUsage(ADMIN);
+        
+        takeOwnership(content1); // +/- 43 (test user -> admin)
+        
+        assertEquals(102, contentUsageImpl.getUserUsage(TEST_USER));
+        assertEquals(before+43, contentUsageImpl.getUserUsage(ADMIN));
+        
+        takeOwnership(content2); // +/- 44 (test user -> admin)
+        
+        assertEquals(58, contentUsageImpl.getUserUsage(TEST_USER));
+        assertEquals(before+87, contentUsageImpl.getUserUsage(ADMIN));
+        
+        testTX.commit();
+        
+        testTX = transactionService.getUserTransaction();
+        testTX.begin();
+        
+        runAs(TEST_USER);
+        
+        takeOwnership(content1); // +/- 43 (admin -> test user)
+        
+        assertEquals(101, contentUsageImpl.getUserUsage(TEST_USER));
+        assertEquals(before+44, contentUsageImpl.getUserUsage(ADMIN));
+        
+        takeOwnership(content3); // note: already the creator
+        
+        assertEquals(101, contentUsageImpl.getUserUsage(TEST_USER));
+        assertEquals(before+44, contentUsageImpl.getUserUsage(ADMIN));
     }
     
     private NodeRef addTextContent(NodeRef folderRef, String name, String textData)
     {
         Map<QName, Serializable> contentProps = new HashMap<QName, Serializable>();
         contentProps.put(ContentModel.PROP_NAME, name);
-
+        
         ChildAssociationRef association = nodeService.createNode(folderRef,
                 ContentModel.ASSOC_CONTAINS, 
                 QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, name), 
                 ContentModel.TYPE_CONTENT,
                 contentProps);
-
+        
         NodeRef content = association.getChildRef();
-
+        
         ContentWriter writer = contentService.getWriter(content, ContentModel.PROP_CONTENT, true);
-
+        
         writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
         writer.setEncoding("UTF-8");
-
+        
         writer.putContent(textData);
         
         return content;
@@ -534,10 +655,10 @@ public class UserUsageTest extends TestCase
     private void updateTextContent(NodeRef contentRef, String textData)
     {
         ContentWriter writer = contentService.getWriter(contentRef, ContentModel.PROP_CONTENT, true);
-
+        
         writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
         writer.setEncoding("UTF-8");
-
+        
         writer.putContent(textData);
     }
     
@@ -549,5 +670,10 @@ public class UserUsageTest extends TestCase
     private NodeRef copy(NodeRef sourceFolderOrContentRef, NodeRef targetFolderRef, String newName) throws FileNotFoundException
     {
         return fileFolderService.copy(sourceFolderOrContentRef, targetFolderRef, newName).getNodeRef();
+    }
+    
+    private void takeOwnership(NodeRef nodeRef)
+    {
+        ownableService.takeOwnership(nodeRef);
     }
 }

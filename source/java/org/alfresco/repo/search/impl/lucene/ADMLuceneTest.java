@@ -61,9 +61,9 @@ import org.alfresco.repo.dictionary.DictionaryDAO;
 import org.alfresco.repo.dictionary.DictionaryNamespaceComponent;
 import org.alfresco.repo.dictionary.M2Model;
 import org.alfresco.repo.dictionary.NamespaceDAOImpl;
-import org.alfresco.repo.domain.hibernate.HibernateL1CacheBulkLoader;
 import org.alfresco.repo.domain.hibernate.SessionSizeResourceManager;
 import org.alfresco.repo.node.BaseNodeServiceTest;
+import org.alfresco.repo.node.NodeBulkLoader;
 import org.alfresco.repo.search.MLAnalysisMode;
 import org.alfresco.repo.search.QueryParameterDefImpl;
 import org.alfresco.repo.search.QueryRegisterComponent;
@@ -217,7 +217,7 @@ public class ADMLuceneTest extends TestCase
 
     private Date testDate;
 
-    private HibernateL1CacheBulkLoader hibernateL1CacheBulkLoader;
+    private NodeBulkLoader hibernateL1CacheBulkLoader;
 
     private QueryEngine queryEngine;
 
@@ -245,7 +245,7 @@ public class ADMLuceneTest extends TestCase
         tenantService = (TenantService) ctx.getBean("tenantService");
         queryEngine = (QueryEngine) ctx.getBean("adm.luceneQueryEngineImpl");
 
-        hibernateL1CacheBulkLoader = (HibernateL1CacheBulkLoader) ctx.getBean("hibernateL1CacheBulkLoader");
+        hibernateL1CacheBulkLoader = (NodeBulkLoader) ctx.getBean("nodeDaoServiceImpl");
 
         serviceRegistry = (ServiceRegistry) ctx.getBean(ServiceRegistry.SERVICE_REGISTRY);
 

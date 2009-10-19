@@ -122,31 +122,7 @@ public class MultiTNodeServiceInterceptor extends DelegatingIntroductionIntercep
         for (int i = 0; i < args.length; i++)
         {
             Object arg = args[i];
-            Object newArg = arg;
-            if (arg == null)
-            {
-                // No conversion possible
-            }
-            if (arg instanceof StoreRef)
-            {
-                StoreRef ref = (StoreRef) arg;
-                newArg = tenantService.getName(ref);
-            }
-            else if (arg instanceof NodeRef)
-            {
-                NodeRef ref = (NodeRef) arg;
-                newArg = tenantService.getName(ref);
-            }
-            else if (arg instanceof ChildAssociationRef)
-            {
-                ChildAssociationRef ref = (ChildAssociationRef) arg;
-                newArg = tenantService.getName(ref);
-            }
-            else if (arg instanceof AssociationRef)
-            {
-                AssociationRef ref = (AssociationRef) arg;
-                newArg = tenantService.getName(ref);
-            }
+            Object newArg = convertInboundValue(arg);
             
             if (logger.isDebugEnabled())
             {
@@ -258,8 +234,9 @@ public class MultiTNodeServiceInterceptor extends DelegatingIntroductionIntercep
     }
 
     /**
-     * Convert outbound collection to spoofed (no tenant prefix) values.
+     * Convert outbound collection to spoofed (ie. without tenant prefix) values.
      */
+    @SuppressWarnings("unchecked")
     private Collection<Object> convertOutboundValues(Collection<Object> rawValues)
     {
         /*
@@ -289,7 +266,7 @@ public class MultiTNodeServiceInterceptor extends DelegatingIntroductionIntercep
     }
     
     /**
-     * Convert outbound single value to spoofed (no tenant prefix) value. 
+     * Convert outbound single value to spoofed (ie. without tenant prefix) value.
      */
     @SuppressWarnings("unchecked")
     private Object convertOutboundValue(Object rawValue)
@@ -299,10 +276,10 @@ public class MultiTNodeServiceInterceptor extends DelegatingIntroductionIntercep
             return null;
         }
         
-        // Deal with collections
         Object value = rawValue;
         if (rawValue instanceof Collection)
         {
+            // Deal with collections
             value = convertOutboundValues((Collection<Object>)rawValue);
         }
         else if (rawValue instanceof StoreRef)
@@ -340,6 +317,95 @@ public class MultiTNodeServiceInterceptor extends DelegatingIntroductionIntercep
                 outboundPath.append(pathElement);
             }
             value = outboundPath;
+        }
+        // Done
+        return value;
+    }
+    
+    /**
+     * Convert inbound collection to non-spoofed (ie. with tenant prefix) values.
+     */
+    @SuppressWarnings("unchecked")
+    private Collection<Object> convertInboundValues(Collection<Object> rawValues)
+    {
+        /*
+         * Return types can be Lists or Sets, so cater for both.
+         */
+        final Collection<Object> convertedValues;
+        if (rawValues instanceof List)
+        {
+            convertedValues = new ArrayList<Object>(rawValues.size());
+        }
+        else if (rawValues instanceof Set)
+        {
+            convertedValues = new HashSet<Object>(rawValues.size(), 1.0F);
+        }
+        else
+        {
+            throw new IllegalArgumentException("Interceptor can only handle List and Set return types.");
+        }
+        
+        for (Object rawValue : rawValues)
+        {
+            Object convertedValue = convertInboundValue(rawValue);
+            convertedValues.add(convertedValue);
+        }
+        // Done
+        return convertedValues;
+    }
+    
+    /**
+     * Convert outbound single value to non-spoofed (ie. with tenant prefix) value.
+     */
+    @SuppressWarnings("unchecked")
+    private Object convertInboundValue(Object rawValue)
+    {
+        if (rawValue == null)
+        {
+            return null;
+        }
+
+        Object value = rawValue;
+        if (rawValue instanceof StoreRef)
+        {
+            StoreRef ref = (StoreRef) rawValue;
+            value = tenantService.getName(ref);
+        }
+        else if (rawValue instanceof NodeRef)
+        {
+            NodeRef ref = (NodeRef) rawValue;
+            value = tenantService.getName(ref);
+        }
+        else if (rawValue instanceof ChildAssociationRef)
+        {
+            ChildAssociationRef ref = (ChildAssociationRef) rawValue;
+            value = tenantService.getName(ref);
+        }
+        else if (rawValue instanceof AssociationRef)
+        {
+            AssociationRef ref = (AssociationRef) rawValue;
+            value = tenantService.getName(ref);
+        }
+        else if (rawValue instanceof Collection)
+        {
+            // Deal with collections
+            value = convertInboundValues((Collection<Object>)rawValue);
+        }
+        else if (rawValue instanceof Path)
+        {
+            Path ref = (Path)rawValue;
+            Path inboundPath = new Path();
+            Iterator<Path.Element> itr = ref.iterator();
+            while (itr.hasNext())
+            {
+                Path.Element pathElement = itr.next();
+                if (pathElement instanceof Path.ChildAssocElement)
+                {
+                    pathElement = new Path.ChildAssocElement(tenantService.getName(((Path.ChildAssocElement)pathElement).getRef()));
+                }
+                inboundPath.append(pathElement);
+            }
+            value = inboundPath;
         }
         // Done
         return value;

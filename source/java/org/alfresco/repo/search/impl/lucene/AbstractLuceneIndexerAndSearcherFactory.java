@@ -47,7 +47,7 @@ import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
 
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.repo.domain.hibernate.BulkLoader;
+import org.alfresco.repo.node.NodeBulkLoader;
 import org.alfresco.repo.search.IndexerException;
 import org.alfresco.repo.search.MLAnalysisMode;
 import org.alfresco.repo.search.QueryRegisterComponent;
@@ -149,7 +149,7 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory implements LuceneI
 
     private ThreadPoolExecutor threadPoolExecutor;
 
-    private BulkLoader bulkLoader;
+    private NodeBulkLoader bulkLoader;
 
     private int maxDocIdCacheSize = 10000;
 
@@ -289,12 +289,12 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory implements LuceneI
         return maxAtomicTransformationTime;
     }
 
-    public BulkLoader getBulkLoader()
+    public NodeBulkLoader getBulkLoader()
     {
         return bulkLoader;
     }
 
-    public void setBulkLoader(BulkLoader bulkLoader)
+    public void setBulkLoader(NodeBulkLoader bulkLoader)
     {
         this.bulkLoader = bulkLoader;
     }

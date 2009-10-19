@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -25,6 +25,7 @@
 package org.alfresco.repo.usage;
 
 import java.io.Serializable;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -56,7 +57,8 @@ import org.apache.commons.logging.LogFactory;
  */
 public class ContentUsageImpl implements ContentUsageService,
                                          NodeServicePolicies.OnUpdatePropertiesPolicy,
-                                         NodeServicePolicies.BeforeDeleteNodePolicy
+                                         NodeServicePolicies.BeforeDeleteNodePolicy,
+                                         NodeServicePolicies.OnAddAspectPolicy
 {
     // Logger
     private static Log logger = LogFactory.getLog(ContentUsageImpl.class);
@@ -127,7 +129,7 @@ public class ContentUsageImpl implements ContentUsageService,
     }
     
     /**
-     * The initialise method     
+     * The initialise method
      */
     public void init()
     {    
@@ -135,21 +137,28 @@ public class ContentUsageImpl implements ContentUsageService,
         {
             // Register interest in the onUpdateProperties policy - for content
             policyComponent.bindClassBehaviour(
-                    QName.createQName(NamespaceService.ALFRESCO_URI, "onUpdateProperties"), 
-                    ContentModel.TYPE_CONTENT, 
+                    QName.createQName(NamespaceService.ALFRESCO_URI, "onUpdateProperties"),
+                    ContentModel.TYPE_CONTENT,
                     new JavaBehaviour(this, "onUpdateProperties"));
             
             // Register interest in the beforeDeleteNode policy - for content
             policyComponent.bindClassBehaviour(
-                    QName.createQName(NamespaceService.ALFRESCO_URI, "beforeDeleteNode"), 
+                    QName.createQName(NamespaceService.ALFRESCO_URI, "beforeDeleteNode"),
                     ContentModel.TYPE_CONTENT,
                     new JavaBehaviour(this, "beforeDeleteNode"));
             
             // Register interest in the beforeDeleteNode policy - for folder
             policyComponent.bindClassBehaviour(
-                    QName.createQName(NamespaceService.ALFRESCO_URI, "beforeDeleteNode"), 
+                    QName.createQName(NamespaceService.ALFRESCO_URI, "beforeDeleteNode"),
                     ContentModel.TYPE_FOLDER,
                     new JavaBehaviour(this, "beforeDeleteNode"));
+            
+            // Register interest in the onAddAspect policy - for ownable
+            policyComponent.bindClassBehaviour(
+                    QName.createQName(NamespaceService.ALFRESCO_URI, "onAddAspect"),
+                    ContentModel.ASPECT_OWNABLE,
+                    new JavaBehaviour(this, "onAddAspect"));
+            
         }
     }
     
@@ -260,7 +269,7 @@ public class ContentUsageImpl implements ContentUsageService,
                     {
                         incrementUserUsage(ownerAfter, contentSizeAfter, nodeRef);
                         recordUpdate(nodeRef);
-                    }          
+                    }
                 } 
                 else 
                 {
@@ -282,8 +291,8 @@ public class ContentUsageImpl implements ContentUsageService,
                     else if (ownerBefore != null && ownerAfter != null && ownerBefore.equals(ownerAfter) == false)
                     {
                         // owner has changed (size has not)
-                        if (logger.isDebugEnabled()) logger.debug("onUpdateProperties: updateOwner ("+ownerBefore+" -> "+ownerAfter+"): nodeRef="+nodeRef+", contentSize="+contentSizeBefore);                       
-
+                        if (logger.isDebugEnabled()) logger.debug("onUpdateProperties: updateOwner ("+ownerBefore+" -> "+ownerAfter+"): nodeRef="+nodeRef+", contentSize="+contentSizeBefore);
+                        
                         if (contentSizeBefore != 0)
                         {
                             decrementUserUsage(ownerBefore, contentSizeBefore, nodeRef);
@@ -333,12 +342,44 @@ public class ContentUsageImpl implements ContentUsageService,
                        decrementUserUsage(owner, contentSize, nodeRef);
                        recordDelete(nodeRef);
                     }
-                }          
+                }
             }
             else if (type.equals(ContentModel.TYPE_FOLDER))
             {
                 if (logger.isDebugEnabled()) logger.debug("beforeDeleteNode: folderNodeRef="+nodeRef);
                 AlfrescoTransactionSupport.bindResource(KEY_DELETED_FOLDER, nodeRef);
+            }
+        }
+    }
+    
+    /**
+     * Called after an <b>cm:ownable</b> aspect has been added to a node
+     *
+     * @param nodeRef the node to which the aspect was added
+     * @param aspectTypeQName the type of the aspect
+     */
+    public void onAddAspect(NodeRef nodeRef, QName aspectTypeQName)
+    {
+        if ((stores.contains(tenantService.getBaseName(nodeRef.getStoreRef()).toString())) &&
+            (aspectTypeQName.equals(ContentModel.ASPECT_OWNABLE)))
+        {
+            String newOwner = (String)nodeService.getProperty(nodeRef, ContentModel.PROP_OWNER);
+            String creator = (String)nodeService.getProperty(nodeRef, ContentModel.PROP_CREATOR);
+            
+            if ((newOwner != null) && (! newOwner.equals(creator)))
+            {
+                ContentData content = (ContentData)nodeService.getProperty(nodeRef, ContentModel.PROP_CONTENT);
+                
+                Map<QName, Serializable> before = new HashMap<QName, Serializable>(2);
+                Map<QName, Serializable> after = new HashMap<QName, Serializable>(2);
+                
+                after.put(ContentModel.PROP_OWNER, newOwner);
+                after.put(ContentModel.PROP_CONTENT, content);
+                
+                before.put(ContentModel.PROP_CREATOR, creator);
+                before.put(ContentModel.PROP_CONTENT, content);
+                
+                onUpdateProperties(nodeRef, before, after);
             }
         }
     }
@@ -393,7 +434,7 @@ public class ContentUsageImpl implements ContentUsageService,
                    logger.debug("User (" + userName + ") has negative usage (" + newSize + ") - reset to 0");
                }
             }
-    
+            
             NodeRef personNodeRef = getPerson(userName);
             if (personNodeRef != null)
             {
@@ -417,10 +458,10 @@ public class ContentUsageImpl implements ContentUsageService,
     }
     
     public long getUserStoredUsage(NodeRef personNodeRef)
-    {    
+    {
         Long currentUsage = null;
         if (personNodeRef != null)
-        {       
+        {
             currentUsage = (Long)nodeService.getProperty(personNodeRef, ContentModel.PROP_SIZE_CURRENT);
         }
         
@@ -435,7 +476,7 @@ public class ContentUsageImpl implements ContentUsageService,
         
         NodeRef personNodeRef = getPerson(userName);
         if (personNodeRef != null)
-        {    
+        {
             currentUsage = getUserStoredUsage(personNodeRef);
         }
         
@@ -453,7 +494,7 @@ public class ContentUsageImpl implements ContentUsageService,
                 currentUsage = 0;
             }
         }
-
+        
         return currentUsage;
     }
     
@@ -468,7 +509,7 @@ public class ContentUsageImpl implements ContentUsageService,
     {
         NodeRef personNodeRef = getPerson(userName);
         if (personNodeRef != null)
-        {       
+        {
             nodeService.setProperty(personNodeRef, ContentModel.PROP_SIZE_QUOTA, new Long(currentQuota));
         }
     }
@@ -479,7 +520,7 @@ public class ContentUsageImpl implements ContentUsageService,
         
         NodeRef personNodeRef = getPerson(userName);
         if (personNodeRef != null)
-        {       
+        {
             currentQuota = (Long)nodeService.getProperty(personNodeRef, ContentModel.PROP_SIZE_QUOTA);
         }
         

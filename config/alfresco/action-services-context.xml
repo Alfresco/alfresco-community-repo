@@ -126,7 +126,6 @@
             <list>
                 <value>alfresco.messages.action-service</value>
                 <value>alfresco.messages.action-config</value>
-                <value>alfresco.messages.portlets</value>
             </list>
         </property>
    </bean>

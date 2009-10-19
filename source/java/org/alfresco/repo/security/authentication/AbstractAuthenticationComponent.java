@@ -270,6 +270,12 @@ public abstract class AbstractAuthenticationComponent implements AuthenticationC
                     logger.debug("Setting the current user to \"" + userName + '"');
                 }
                 ud = getUserDetails(userName);
+                if(!userName.equals(ud.getUsername()))
+                {
+                    ud = new User(userName, ud.getPassword(), ud.isEnabled(), ud.isAccountNonExpired(),
+                            ud.isCredentialsNonExpired(), ud.isAccountNonLocked(), ud.getAuthorities());
+                }
+                
             }
             return setUserDetails(ud);
         }

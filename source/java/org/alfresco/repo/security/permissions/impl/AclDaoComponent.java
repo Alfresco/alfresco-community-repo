@@ -25,6 +25,7 @@
 package org.alfresco.repo.security.permissions.impl;
 
 import java.util.List;
+import java.util.Set;
 
 import org.alfresco.repo.domain.DbAccessControlList;
 import org.alfresco.repo.domain.hibernate.AclDaoComponentImpl.Indirection;
@@ -182,4 +183,8 @@ public interface AclDaoComponent extends TransactionalDao
      * @param id
      */
     public void onDeleteAccessControlList(final long id);
+    
+    public void updateAuthority(String before, String after);
+    
+    public void createAuthority(String authority);
 }

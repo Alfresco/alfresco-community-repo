@@ -39,6 +39,10 @@ import java.util.regex.Pattern;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.cache.SimpleCache;
+import org.alfresco.repo.node.NodeServicePolicies;
+import org.alfresco.repo.policy.JavaBehaviour;
+import org.alfresco.repo.policy.PolicyComponent;
+import org.alfresco.repo.security.permissions.impl.AclDaoComponent;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -50,11 +54,14 @@ import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.NoSuchPersonException;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.NamespacePrefixResolver;
+import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
+import org.alfresco.util.EqualsHelper;
 import org.alfresco.util.SearchLanguageConversion;
 
-public class AuthorityDAOImpl implements AuthorityDAO
+public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.OnCreateNodePolicy, NodeServicePolicies.BeforeDeleteNodePolicy,
+        NodeServicePolicies.OnUpdatePropertiesPolicy
 {
     private StoreRef storeRef;
 
@@ -80,6 +87,10 @@ public class AuthorityDAOImpl implements AuthorityDAO
     private Map<String, NodeRef> systemContainerRefs = new ConcurrentHashMap<String, NodeRef>(4);
     
     
+    private AclDaoComponent aclDao;
+
+    private PolicyComponent policyComponent;
+
     public AuthorityDAOImpl()
     {
         super();
@@ -123,6 +134,16 @@ public class AuthorityDAOImpl implements AuthorityDAO
         this.tenantService = tenantService;
     }
     
+    public void setAclDao(AclDaoComponent aclDao)
+    {
+        this.aclDao = aclDao;
+    }
+
+    public void setPolicyComponent(PolicyComponent policyComponent)
+    {
+        this.policyComponent = policyComponent;
+    }
+
     public boolean authorityExists(String name)
     {
         NodeRef ref = getAuthorityOrNull(name);
@@ -719,4 +740,56 @@ public class AuthorityDAOImpl implements AuthorityDAO
             return true;
         }
     }
+
+    public void onCreateNode(ChildAssociationRef childAssocRef)
+    {
+        NodeRef authRef = childAssocRef.getChildRef();
+        String authority = (String) this.nodeService.getProperty(authRef, ContentModel.PROP_AUTHORITY_NAME);
+
+        // Make sure there is an authority entry - with a DB constraint for uniqueness
+        // aclDao.createAuthority(authority);
+
+    }
+
+    public void beforeDeleteNode(NodeRef nodeRef)
+    {
+        authorityLookupCache.clear();
+    }
+
+    public void onUpdateProperties(NodeRef nodeRef, Map<QName, Serializable> before, Map<QName, Serializable> after)
+    {
+        String authBefore = DefaultTypeConverter.INSTANCE.convert(String.class, before.get(ContentModel.PROP_AUTHORITY_NAME));
+        String authAfter = DefaultTypeConverter.INSTANCE.convert(String.class, after.get(ContentModel.PROP_AUTHORITY_NAME));
+        if (!EqualsHelper.nullSafeEquals(authBefore, authAfter))
+        {
+            if ((authBefore == null) || authBefore.equalsIgnoreCase(authAfter))
+            {
+                // Fix any ACLs
+                aclDao.updateAuthority(authBefore, authAfter);
+                // Fix primary association local name
+                // This will need to lower case in 3.2+
+                QName newAssocQName = QName.createQName("cm", authAfter, namespacePrefixResolver);
+                ChildAssociationRef assoc = nodeService.getPrimaryParent(nodeRef);
+                nodeService.moveNode(nodeRef, assoc.getParentRef(), assoc.getTypeQName(), newAssocQName);
+                // Cache is out of date
+                authorityLookupCache.clear();
+            }
+            else
+            {
+                throw new UnsupportedOperationException("The name of an authority can not be changed");
+            }
+        }
+
+    }
+
+    public void init()
+    {
+        this.policyComponent.bindClassBehaviour(QName.createQName(NamespaceService.ALFRESCO_URI, "onCreateNode"), ContentModel.TYPE_AUTHORITY_CONTAINER, new JavaBehaviour(this,
+                "onCreateNode"));
+        this.policyComponent.bindClassBehaviour(QName.createQName(NamespaceService.ALFRESCO_URI, "beforeDeleteNode"), ContentModel.TYPE_AUTHORITY_CONTAINER, new JavaBehaviour(
+                this, "beforeDeleteNode"));
+        this.policyComponent.bindClassBehaviour(QName.createQName(NamespaceService.ALFRESCO_URI, "onUpdateProperties"), ContentModel.TYPE_AUTHORITY_CONTAINER, new JavaBehaviour(
+                this, "onUpdateProperties"));
+    }
+
 }

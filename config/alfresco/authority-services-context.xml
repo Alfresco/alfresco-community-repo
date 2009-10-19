@@ -53,7 +53,8 @@
     <!--                                                                          -->
     <!-- This bean uses the userToAuthorityCache configured in cache-context.xml  -->
     <!--                                                                          -->
-    <bean id="authorityDAO" class="org.alfresco.repo.security.authority.AuthorityDAOImpl">
+
+    <bean id="authorityDAO" class="org.alfresco.repo.security.authority.AuthorityDAOImpl" init-method="init">   
         <property name="storeUrl">
             <value>${spaces.store}</value>
         </property>
@@ -75,6 +76,13 @@
         <property name="userToAuthorityCache">
             <ref bean="userToAuthorityCache" />
         </property>
+        <property name="policyComponent">
+            <ref bean="policyComponent"/>
+        </property>
+        <property name="aclDao">
+            <ref bean="aclDaoComponent" />
+        </property>
+        
     </bean>
     
     

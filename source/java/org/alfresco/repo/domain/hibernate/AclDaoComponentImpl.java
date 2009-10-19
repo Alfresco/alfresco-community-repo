@@ -890,23 +890,10 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
 
         
         // remove authority
-
-        callback = new HibernateCallback()
+        DbAuthority toRemove = getAuthority(authority, false);
+        if(toRemove != null)
         {
-            public Object doInHibernate(Session session)
-            {
-                Query query = session.getNamedQuery(QUERY_GET_AUTHORITY);
-                query.setParameter("authority", authority);
-                return query.list();
-            }
-        };
-        List<DbAuthority> authorities = (List<DbAuthority>) getHibernateTemplate().execute(callback);
-        for (DbAuthority found : authorities)
-        {
-            if (found.getAuthority().equals(authority))
-            {
-                getHibernateTemplate().delete(found);
-            }
+            getHibernateTemplate().delete(toRemove);
         }
 
         // TODO: Remove affected ACLs from the cache
@@ -1378,34 +1365,8 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
             throw new IllegalArgumentException("Invalid position");
         }
 
-        // Find auth
-        HibernateCallback callback = new HibernateCallback()
-        {
-            public Object doInHibernate(Session session)
-            {
-                Query query = session.getNamedQuery(QUERY_GET_AUTHORITY);
-                query.setParameter("authority", ace.getAuthority());
-                return query.list();
-            }
-        };
-        DbAuthority authority = null;
-        List<DbAuthority> authorities = (List<DbAuthority>) getHibernateTemplate().execute(callback);
-        for (DbAuthority found : authorities)
-        {
-            if (found.getAuthority().equals(ace.getAuthority()))
-            {
-                authority = found;
-                break;
-            }
-        }
-        if (authority == null)
-        {
-            DbAuthorityImpl newAuthority = new DbAuthorityImpl();
-            newAuthority.setAuthority(ace.getAuthority());
-            newAuthority.setCrc(getCrc(ace.getAuthority()));
-            authority = newAuthority;
-            getHibernateTemplate().save(newAuthority);
-        }
+        // Find authority
+        DbAuthority authority = getAuthority(ace.getAuthority(), true);
 
         // Find permission
 
@@ -1413,7 +1374,7 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
         final String permissionName = ace.getPermission().getName();
         final Pair<Long, QName> permissionQNamePair = qnameDAO.getOrCreateQName(permissionQName);
 
-        callback = new HibernateCallback()
+        HibernateCallback callback = new HibernateCallback()
         {
             public Object doInHibernate(Session session)
             {
@@ -2219,6 +2180,64 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
         {
             throw new AlfrescoRuntimeException("Failed to set TX isolation level", e);
         }
+    }
+
+    public void updateAuthority(String before, String after)
+    {
+        DbAuthority dbAuthority = getAuthority(before, false);
+        // If there is no entry and alias is not required - there is nothing it would match
+        if(dbAuthority != null)
+        {
+            dbAuthority.setAuthority(after);
+            dbAuthority.setCrc(getCrc(after));
+            aclCache.clear();
+        }
+    }
+
+  
+    
+    private DbAuthority getAuthority(final String authority, boolean create)
+    {
+        // Find auth
+        HibernateCallback callback = new HibernateCallback()
+        {
+            public Object doInHibernate(Session session)
+            {
+                Query query = session.getNamedQuery(QUERY_GET_AUTHORITY);
+                query.setParameter("authority", authority);
+                return query.list();
+            }
+        };
+       
+        DbAuthority dbAuthority = null;
+        List<DbAuthority> authorities = (List<DbAuthority>) getHibernateTemplate().execute(callback);
+        for (DbAuthority found : authorities)
+        {
+            if (found.getAuthority().equals(authority))
+            {
+                dbAuthority = found;
+                break;
+            }
+        }
+        if (create && (dbAuthority == null))
+        {
+           dbAuthority = createDbAuthority(authority);
+        }
+        return dbAuthority;
+    }
+
+    public void createAuthority(String authority)
+    {
+        createDbAuthority(authority);
+    }
+    
+    public DbAuthority createDbAuthority(String authority)
+    {
+        DbAuthority dbAuthority = new DbAuthorityImpl();
+        dbAuthority.setAuthority(authority);
+        dbAuthority.setCrc(getCrc(authority));
+        getHibernateTemplate().save(dbAuthority);
+        return dbAuthority;
     }
 
 }

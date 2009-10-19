@@ -44,6 +44,7 @@ import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.permissions.PermissionServiceSPI;
+import org.alfresco.repo.security.permissions.impl.AclDaoComponent;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.TransactionListenerAdapter;
@@ -69,12 +70,14 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.util.EqualsHelper;
 import org.alfresco.util.GUID;
 import org.alfresco.util.PropertyCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-public class PersonServiceImpl extends TransactionListenerAdapter implements PersonService, NodeServicePolicies.OnCreateNodePolicy, NodeServicePolicies.BeforeDeleteNodePolicy
+public class PersonServiceImpl extends TransactionListenerAdapter implements PersonService, NodeServicePolicies.OnCreateNodePolicy, NodeServicePolicies.BeforeDeleteNodePolicy,
+        NodeServicePolicies.OnUpdatePropertiesPolicy
 {
     private static Log s_logger = LogFactory.getLog(PersonServiceImpl.class);
 
@@ -130,6 +133,8 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
 
     private PersonDao personDao;
 
+    private AclDaoComponent aclDao;
+
     private PermissionsManager permissionsManager;
 
     /** a transactionally-safe cache to be injected */
@@ -177,12 +182,15 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
         PropertyCheck.mandatory(this, "policyComponent", policyComponent);
         PropertyCheck.mandatory(this, "personCache", personCache);
         PropertyCheck.mandatory(this, "personDao", personDao);
+        PropertyCheck.mandatory(this, "aclDao", aclDao);
+        PropertyCheck.mandatory(this, "homeFolderManager", homeFolderManager);
 
         this.policyComponent
                 .bindClassBehaviour(QName.createQName(NamespaceService.ALFRESCO_URI, "onCreateNode"), ContentModel.TYPE_PERSON, new JavaBehaviour(this, "onCreateNode"));
         this.policyComponent.bindClassBehaviour(QName.createQName(NamespaceService.ALFRESCO_URI, "beforeDeleteNode"), ContentModel.TYPE_PERSON, new JavaBehaviour(this,
                 "beforeDeleteNode"));
-
+        this.policyComponent.bindClassBehaviour(QName.createQName(NamespaceService.ALFRESCO_URI, "onUpdateProperties"), ContentModel.TYPE_PERSON, new JavaBehaviour(this,
+                "onUpdateProperties"));
     }
 
     public UserNameMatcher getUserNameMatcher()
@@ -224,10 +232,15 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
     {
         this.homeFolderManager = homeFolderManager;
     }
-
+    
     public void setPersonDao(PersonDao personDao)
     {
         this.personDao = personDao;
+    }
+
+    public void setAclDao(AclDaoComponent aclDao)
+    {
+        this.aclDao = aclDao;
     }
 
     public void setPermissionsManager(PermissionsManager permissionsManager)
@@ -643,6 +656,7 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
                 nodeService.addChild(authorityService.getOrCreateZone(zone), personRef, ContentModel.ASSOC_IN_ZONE, QName.createQName("cm", userName, namespacePrefixResolver));
             }
         }
+
         return personRef;
     }
 
@@ -782,6 +796,12 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
         String username = (String) this.nodeService.getProperty(personRef, ContentModel.PROP_USERNAME);
         this.personCache.put(username, personRef);
         permissionsManager.setPermissions(personRef, username, username);
+
+        // Make sure there is an authority entry - with a DB constraint for uniqueness
+        // aclDao.createAuthority(username);
+
+        // work around for policy bug ...
+        homeFolderManager.onCreateNode(childAssocRef);
     }
 
     /*
@@ -916,4 +936,37 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
         return userNameMatcher.getUserNamesAreCaseSensitive();
     }
 
+    /*
+     * When a uid is changed we need to create an alias for the old uid so permissions are not broken. This can happen
+     * when an already existing user is updated via LDAP e.g. migration to LDAP, or when a user is auto created and then
+     * updated by LDAP This is probably less likely after 3.2 and sync on missing person See
+     * https://issues.alfresco.com/jira/browse/ETWOTWO-389 (non-Javadoc)
+     * 
+     * @see org.alfresco.repo.node.NodeServicePolicies.OnUpdatePropertiesPolicy#onUpdateProperties(org.alfresco.service.cmr.repository.NodeRef,
+     *      java.util.Map, java.util.Map)
+     */
+    public void onUpdateProperties(NodeRef nodeRef, Map<QName, Serializable> before, Map<QName, Serializable> after)
+    {
+        String uidBefore = DefaultTypeConverter.INSTANCE.convert(String.class, before.get(ContentModel.PROP_USERNAME));
+        String uidAfter = DefaultTypeConverter.INSTANCE.convert(String.class, after.get(ContentModel.PROP_USERNAME));
+        if (!EqualsHelper.nullSafeEquals(uidBefore, uidAfter))
+        {
+            if ((uidBefore == null) || uidBefore.equalsIgnoreCase(uidAfter))
+            {
+                // Fix any ACLs
+                aclDao.updateAuthority(uidBefore, uidAfter);
+                // Fix primary association local name
+                QName newAssocQName = QName.createQName("cm", uidAfter.toLowerCase(), namespacePrefixResolver);
+                ChildAssociationRef assoc = nodeService.getPrimaryParent(nodeRef);
+                nodeService.moveNode(nodeRef, assoc.getParentRef(), assoc.getTypeQName(), newAssocQName);
+                // Fix cache
+                personCache.remove(uidBefore);
+                personCache.put(uidAfter, nodeRef);
+            }
+            else
+            {
+                throw new UnsupportedOperationException("The user name on a person can not be changed");
+            }
+        }
+    }
 }

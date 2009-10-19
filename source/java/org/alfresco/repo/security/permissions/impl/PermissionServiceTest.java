@@ -68,6 +68,102 @@ public class PermissionServiceTest extends AbstractPermissionTest
         // TODO Auto-generated constructor stub
     }
 
+    public void testChangePersonUid()
+    {
+        runAs("admin");
+        NodeRef one = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}one"), ContentModel.TYPE_FOLDER).getChildRef();
+        permissionService.setPermission(one, "andy", PermissionService.ALL_PERMISSIONS, true);
+        runAs("andy");
+        assertEquals("andy", authenticationComponent.getCurrentUserName());
+        assertTrue(permissionService.hasPermission(one, PermissionService.EXECUTE_CONTENT) == AccessStatus.ALLOWED);
+        runAs("admin");
+        boolean found = false;
+        Set<AccessPermission> set = permissionService.getAllSetPermissions(one);
+        for (AccessPermission ap : set)
+        {
+            if (ap.getAuthority().equals("Andy"))
+            {
+                found = true;
+            }
+        }
+        assertFalse(found);
+        NodeRef andy = personService.getPerson("andy");
+        nodeService.setProperty(andy, ContentModel.PROP_USERNAME, "Andy");
+        runAs("andy");
+        assertEquals("Andy", authenticationComponent.getCurrentUserName());
+        assertTrue(permissionService.hasPermission(one, PermissionService.EXECUTE_CONTENT) == AccessStatus.ALLOWED);
+        runAs("admin");
+        found = false;
+        set = permissionService.getAllSetPermissions(one);
+        for (AccessPermission ap : set)
+        {
+            if (ap.getAuthority().equals("Andy"))
+            {
+                found = true;
+            }
+        }
+        assertTrue(found);
+        
+        try
+        {
+            nodeService.setProperty(andy, ContentModel.PROP_USERNAME, "Bob");
+            fail("Chainging uid Andy -> Bob should fail");
+        }
+        catch (UnsupportedOperationException e)
+        {
+
+        }
+    }
+
+    public void testChangeGroupUid()
+    {
+        personService.getPerson("andy");
+        runAs("admin");
+        NodeRef one = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}one"), ContentModel.TYPE_FOLDER).getChildRef();
+        authorityService.createAuthority(AuthorityType.GROUP, "ONE");
+        authorityService.addAuthority("GROUP_ONE", "andy");
+        permissionService.setPermission(one, "GROUP_ONE", PermissionService.ALL_PERMISSIONS, true);
+        runAs("andy");
+        assertEquals("andy", authenticationComponent.getCurrentUserName());
+        assertTrue(permissionService.hasPermission(one, PermissionService.EXECUTE_CONTENT) == AccessStatus.ALLOWED);
+        runAs("admin");
+        boolean found = false;
+        Set<AccessPermission> set = permissionService.getAllSetPermissions(one);
+        for (AccessPermission ap : set)
+        {
+            if (ap.getAuthority().equals("GROUP_One"))
+            {
+                found = true;
+            }
+        }
+        assertFalse(found);
+        NodeRef gONE = authorityDAO.getAuthorityNodeRefOrNull("GROUP_ONE");
+        nodeService.setProperty(gONE, ContentModel.PROP_AUTHORITY_NAME, "GROUP_One");
+        runAs("andy");
+        assertTrue(permissionService.hasPermission(one, PermissionService.EXECUTE_CONTENT) == AccessStatus.ALLOWED);
+        runAs("admin");
+        found = false;
+        set = permissionService.getAllSetPermissions(one);
+        for (AccessPermission ap : set)
+        {
+            if (ap.getAuthority().equals("GROUP_One"))
+            {
+                found = true;
+            }
+        }
+        assertTrue(found);
+
+        try
+        {
+            nodeService.setProperty(gONE, ContentModel.PROP_AUTHORITY_NAME, "GROUP_TWO");
+            fail("Chainging gid GROUP_One -> GROUP_TWO should fail");
+        }
+        catch (UnsupportedOperationException e)
+        {
+
+        }
+    }
+
     public void testAuthenticatedRoleIsPresent()
     {
         runAs("andy");

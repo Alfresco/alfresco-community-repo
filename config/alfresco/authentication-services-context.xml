@@ -325,6 +325,12 @@
         <property name="permissionsManager">
             <ref bean="personServicePermissionsManager" />
         </property>
+        <property name="aclDao">
+            <ref bean="aclDaoComponent" />
+        </property>
+        <property name="homeFolderManager">
+            <ref bean="homeFolderManager" />
+        </property>
         <!-- Configurable properties.                                 -->
         <!--                                                          -->
         <!-- TODO:                                                    -->
@@ -362,9 +368,6 @@
         </property>
         <property name="includeAutoCreated">
             <value>false</value>
-        </property>
-        <property name="homeFolderManager">
-             <ref bean="homeFolderManager" />
         </property>
     </bean>
 

@@ -33,6 +33,7 @@ import org.alfresco.repo.node.db.NodeDaoService;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.MutableAuthenticationDao;
+import org.alfresco.repo.security.authority.AuthorityDAO;
 import org.alfresco.repo.security.permissions.PermissionReference;
 import org.alfresco.repo.security.permissions.PermissionServiceSPI;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
@@ -82,6 +83,8 @@ public class AbstractPermissionTest extends BaseSpringTest
     protected PersonService personService;
     
     protected AuthorityService authorityService;
+    
+    protected AuthorityDAO authorityDAO;
 
     protected NodeDaoService nodeDaoService;
     
@@ -109,6 +112,7 @@ public class AbstractPermissionTest extends BaseSpringTest
         permissionModelDAO = (ModelDAO) applicationContext.getBean("permissionsModelDAO");
         personService = (PersonService) applicationContext.getBean("personService");
         authorityService = (AuthorityService) applicationContext.getBean("authorityService");
+        authorityDAO = (AuthorityDAO) applicationContext.getBean("authorityDAO");
         
         authenticationComponent.setCurrentUser(authenticationComponent.getSystemUserName());
         authenticationDAO = (MutableAuthenticationDao) applicationContext.getBean("authenticationDao");

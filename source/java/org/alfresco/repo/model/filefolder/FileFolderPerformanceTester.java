@@ -25,6 +25,7 @@
 package org.alfresco.repo.model.filefolder;
 
 import java.io.File;
+import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -35,6 +36,8 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.transform.AbstractContentTransformerTest;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.ServiceRegistry;
@@ -47,11 +50,17 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchService;
+import org.alfresco.service.cmr.security.AuthenticationService;
+import org.alfresco.service.cmr.security.PermissionService;
+import org.alfresco.service.namespace.QName;
+import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
+import org.alfresco.util.ArgumentHelper;
 import org.alfresco.util.GUID;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.ConfigurableApplicationContext;
 
 /**
  * Tests around some of the data structures that lead to performance
@@ -375,4 +384,187 @@ public class FileFolderPerformanceTester extends TestCase
 //                50000,
 //                new double[] {0.01, 0.02, 0.03, 0.04, 0.05, 0.10, 0.20, 0.30, 0.40, 0.50, 0.60, 0.70, 0.80, 0.90});
 //    }
+
+    
+    /**
+     * Create a bunch of files and folders in a folder and then run multi-threaded directory
+     * listings against it.
+     * 
+     * @param args         <x> <y> where 'x' is the number of files in a folder and 'y' is the 
+     *                     number of threads to list
+     */
+    public static void main(String ... args)
+    {
+        ConfigurableApplicationContext ctx = (ConfigurableApplicationContext) ApplicationContextHelper.getApplicationContext();
+
+        try
+        {
+            run(ctx, args);
+        }
+        catch (Throwable e)
+        {
+            System.out.println("Failed to run CifsHelper performance test");
+            e.printStackTrace();
+        }
+        finally
+        {
+            ctx.close();
+        }
+    }
+    
+    private static void run(ApplicationContext ctx, String ... args) throws Throwable
+    {
+        ArgumentHelper argHelper = new ArgumentHelper(getUsage(), args);
+        final int fileCount = argHelper.getIntegerValue("files", true, 1, 10000);
+        final String folderRefStr = argHelper.getStringValue("folder", false, true);
+        final int threadCount = argHelper.getIntegerValue("threads", false, 1, 100);
+        final NodeRef selectedFolderNodeRef = folderRefStr == null ? null : new NodeRef(folderRefStr);
+        
+        ServiceRegistry serviceRegistry = (ServiceRegistry) ctx.getBean(ServiceRegistry.SERVICE_REGISTRY);
+        final AuthenticationService authenticationService = serviceRegistry.getAuthenticationService();
+        final PermissionService permissionService = serviceRegistry.getPermissionService();
+        final NodeService nodeService = serviceRegistry.getNodeService();
+        final TransactionService transactionService = serviceRegistry.getTransactionService();
+        final FileFolderService fileFolderService = serviceRegistry.getFileFolderService();
+        
+        RunAsWork<String> createUserRunAs = new RunAsWork<String>()
+        {
+            public String doWork() throws Exception
+            {
+                String user = GUID.generate();
+                authenticationService.createAuthentication(user, user.toCharArray());
+                return user;
+            }
+        };
+        final String user = AuthenticationUtil.runAs(createUserRunAs, AuthenticationUtil.getSystemUserName());
+
+        // Create the files
+        final RetryingTransactionCallback<NodeRef> createCallback = new RetryingTransactionCallback<NodeRef>()
+        {
+            public NodeRef execute() throws Throwable
+            {
+                AuthenticationUtil.pushAuthentication();
+                NodeRef folderNodeRef = null;
+                try
+                {
+                    AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getSystemUserName());
+                    if (selectedFolderNodeRef == null)
+                    {
+                        // Create a new store
+                        StoreRef storeRef = nodeService.createStore(StoreRef.PROTOCOL_WORKSPACE, GUID.generate());
+                        NodeRef rootNodeRef = nodeService.getRootNode(storeRef);
+                        // Create a folder
+                        folderNodeRef = nodeService.createNode(
+                                rootNodeRef,
+                                ContentModel.ASSOC_CHILDREN,
+                                ContentModel.ASSOC_CHILDREN,
+                                ContentModel.TYPE_FOLDER,
+                                Collections.<QName, Serializable>singletonMap(ContentModel.PROP_NAME, "TOP FOLDER")
+                                ).getChildRef();
+                        // Grant permissions
+                        permissionService.setPermission(folderNodeRef, user, PermissionService.ALL_PERMISSIONS, true);
+                    }
+                    else
+                    {
+                        folderNodeRef = selectedFolderNodeRef;
+                        // Grant permissions
+                        permissionService.setPermission(folderNodeRef, user, PermissionService.ALL_PERMISSIONS, true);
+                        System.out.println("Reusing folder " + folderNodeRef);
+                    }
+                }
+                finally
+                {
+                    AuthenticationUtil.popAuthentication();
+                }
+                if (selectedFolderNodeRef == null)
+                {
+                    // Create the files
+                    for (int i = 0; i < fileCount; i++)
+                    {
+                        fileFolderService.create(
+                                folderNodeRef,
+                                String.format("FILE-%4d", i),
+                                ContentModel.TYPE_CONTENT);
+                    }
+                    System.out.println("Created " + fileCount + " files in folder " + folderNodeRef);
+                }
+                // Done
+                return folderNodeRef;
+            }
+        };
+        
+        RunAsWork<NodeRef> createRunAs = new RunAsWork<NodeRef>()
+        {
+            public NodeRef doWork() throws Exception
+            {
+                return transactionService.getRetryingTransactionHelper().doInTransaction(createCallback);
+            }
+        };
+        final NodeRef folderNodeRef = AuthenticationUtil.runAs(createRunAs, user);
+        
+        // Now wait for some input before commencing the read run
+        System.out.print("Hit any key to commence directory listing ...");
+        System.in.read();
+        final RunAsWork<List<FileInfo>> readRunAs = new RunAsWork<List<FileInfo>>()
+        {
+            public List<FileInfo> doWork() throws Exception
+            {
+                return fileFolderService.search(folderNodeRef, "*", false);
+            }
+        };
+        
+        Thread[] threads = new Thread[threadCount];
+        for (int i = 0; i < threadCount; i++)
+        {
+            Thread readThread = new Thread("FolderList-" + i)
+            {
+                int iteration = 0;
+                public void run()
+                {
+                    while(++iteration <= 2)
+                    {
+                        runImpl();
+                    }
+                }
+                private void runImpl()
+                {
+                    String threadName = Thread.currentThread().getName();
+                    long start = System.currentTimeMillis();
+                    List<FileInfo> nodeRefs = AuthenticationUtil.runAs(readRunAs, user);
+                    long time = System.currentTimeMillis() - start;
+                    double average = (double) time / (double) (fileCount);
+                    
+                    // Make sure that we have the correct number of entries
+                    if (folderRefStr != null && nodeRefs.size() != fileCount)
+                    {
+                        System.err.println(
+                                "WARNING: Thread " + threadName + " got " + nodeRefs.size() +
+                                " but expected " + fileCount);
+                    }
+                    System.out.print("\n" +
+                            "Thread " + threadName + ": \n" +
+                            "   Read " + String.format("%4d", fileCount) +  " files \n" +
+                            "   Average: " + String.format("%10.2f", average) + " ms per file \n" +
+                            "   Average: " + String.format("%10.2f", 1000.0/average) + " files per second");
+                }
+            };
+            readThread.start();
+            threads[i] = readThread;
+        }
+        
+        for (int i = 0; i < threads.length; i++)
+        {
+            threads[i].join();
+        }
+    }
+    
+    private static String getUsage()
+    {
+        StringBuilder sb = new StringBuilder();
+        sb.append("FileFolderPerformanceTester usage: ").append("\n");
+        sb.append("   FileFolderPerformanceTester --files=<filecount> --threads=<threadcount> --folder=<folderref>").append("\n");
+        sb.append("      filecount: number of files in the folder").append("\n");
+        sb.append("      threadcount: number of threads to do the directory listing").append("\n");
+        return sb.toString();
+    }
 }

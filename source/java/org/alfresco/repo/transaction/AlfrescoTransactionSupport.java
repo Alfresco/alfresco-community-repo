@@ -36,6 +36,7 @@ import java.util.Set;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.cache.TransactionalCache;
 import org.alfresco.repo.domain.hibernate.DirtySessionMethodInterceptor;
+import org.alfresco.repo.domain.hibernate.SessionSizeResourceManager;
 import org.alfresco.repo.node.integrity.IntegrityChecker;
 import org.alfresco.repo.search.impl.lucene.LuceneIndexerAndSearcher;
 import org.alfresco.util.GUID;
@@ -677,6 +678,10 @@ public abstract class AlfrescoTransactionSupport
 
             // These are still considered part of the transaction so are executed here
             doBeforeCommit(readOnly);
+            
+            // HACK: In order to control Hibernate's flush behaviour, we mark the point at which
+            //       we start read-only operations during a commit
+            SessionSizeResourceManager.setCommitStarted();
 
             // Check integrity
             for (IntegrityChecker integrityChecker : integrityCheckers)

@@ -59,7 +59,7 @@
          <value>org.alfresco.cache.qnameEntityTransactionalCache</value>
       </property>
       <property name="maxCacheSize">
-         <value>100</value>
+         <value>500</value>
       </property>
    </bean>
    
@@ -275,7 +275,7 @@
          <value>org.alfresco.storeAndNodeIdTransactionalCache</value>
       </property>
       <property name="maxCacheSize">
-         <value>500</value>
+         <value>10000</value>
       </property>
    </bean>
    
@@ -311,7 +311,7 @@
          <value>org.alfresco.parentAssocsTransactionalCache</value>
       </property>
       <property name="maxCacheSize">
-         <value>1000</value>
+         <value>10000</value>
       </property>
    </bean>
    

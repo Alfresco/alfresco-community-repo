@@ -80,6 +80,7 @@ public class AlfrescoJobExecutor extends JobExecutor
         Thread thread = new AlfrescoJobExecutorThread(threadName, this, jbpmConfiguration, getIdleInterval(), getMaxIdleInterval(), getMaxLockTime(), getHistoryMaxSize());
         getThreads().put(threadName, thread);
         log.debug("starting new job executor thread '" + threadName + "'");
+        thread.setDaemon(true);
         thread.start();
     }
 

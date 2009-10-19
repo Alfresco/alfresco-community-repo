@@ -73,6 +73,7 @@ import org.alfresco.repo.domain.hibernate.ServerImpl;
 import org.alfresco.repo.domain.hibernate.SessionSizeResourceManager;
 import org.alfresco.repo.domain.hibernate.StoreImpl;
 import org.alfresco.repo.domain.hibernate.TransactionImpl;
+import org.alfresco.repo.node.NodeBulkLoader;
 import org.alfresco.repo.node.db.NodeDaoService;
 import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -116,7 +117,9 @@ import org.alfresco.util.GUID;
 import org.alfresco.util.Pair;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.hibernate.CacheMode;
 import org.hibernate.Criteria;
+import org.hibernate.FlushMode;
 import org.hibernate.HibernateException;
 import org.hibernate.LockMode;
 import org.hibernate.ObjectNotFoundException;
@@ -136,7 +139,9 @@ import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
  * 
  * @author Derek Hulley
  */
-public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements NodeDaoService, TransactionalDao
+public class HibernateNodeDaoServiceImpl
+        extends HibernateDaoSupport
+        implements NodeDaoService, TransactionalDao, NodeBulkLoader
 {
     private static final String QUERY_GET_STORE_BY_ALL = "store.GetStoreByAll";
     private static final String QUERY_GET_ALL_STORES = "store.GetAllStores";
@@ -2050,20 +2055,24 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
                 childNameUnique.getFirst());
         
         // Add it to the cache
-        Set<Long> oldParentAssocIds = parentAssocsCache.get(childNode.getId());
-        if (oldParentAssocIds != null)
+        Set<Long> parentAssocIds = parentAssocsCache.get(childNode.getId());
+        if (parentAssocIds == null)
         {
-            Set<Long> newParentAssocIds = new HashSet<Long>(oldParentAssocIds);
-            newParentAssocIds.add(assocId);
-            parentAssocsCache.put(childNodeId, newParentAssocIds);
-            if (isDebugParentAssocCacheEnabled)
-            {
-                loggerParentAssocsCache.debug("\n" +
-                        "Parent associations cache - Updating entry: \n" +
-                        "   Node:   " + childNodeId +  "\n" +
-                        "   Before: " + oldParentAssocIds + "\n" +
-                        "   After:  " + newParentAssocIds);
-            }
+            parentAssocIds = new HashSet<Long>(3);
+        }
+        else
+        {
+            // Copy the list when we add to it
+            parentAssocIds = new HashSet<Long>(parentAssocIds);
+        }
+        parentAssocIds.add(assocId);
+        parentAssocsCache.put(childNodeId, parentAssocIds);
+        if (isDebugParentAssocCacheEnabled)
+        {
+            loggerParentAssocsCache.debug("\n" +
+                    "Parent associations cache - Updating entry: \n" +
+                    "   Node:   " + childNodeId +  "\n" +
+                    "   Assocs: " + parentAssocIds);
         }
         
         // If this is a primary association then update the permissions
@@ -2909,11 +2918,16 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
          9 child.uuid
      * </pre> 
      */
+    @SuppressWarnings("unchecked")
     private void convertToChildAssocRefs(Node parentNode, ScrollableResults results, ChildAssocRefQueryCallback resultsCallback)
     {
         Long parentNodeId = parentNode.getId();
         NodeRef parentNodeRef = parentNode.getNodeRef();
         Pair<Long, NodeRef> parentNodePair = new Pair<Long, NodeRef>(parentNodeId, parentNodeRef);
+        
+        List<Object[]> callbackResults = new ArrayList<Object[]>(128);
+        List<NodeRef> childNodeRefs = new ArrayList<NodeRef>(128);
+        
         while (results.next())
         {
             Object[] row = results.get();
@@ -2956,8 +2970,134 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
                     continue;
                 }
             }
-            // Call back
-            resultsCallback.handle(assocPair, parentNodePair, childNodePair);
+            
+            callbackResults.add(new Object[] {assocPair, parentNodePair, childNodePair});
+            childNodeRefs.add(childNodeRef);
+        }
+        
+        // Cache the nodes
+        cacheNodes(childNodeRefs);
+        
+        // Pass results to callback
+        for (Object[] callbackResult : callbackResults)
+        {
+            resultsCallback.handle(
+                    (Pair<Long, ChildAssociationRef>) callbackResult[0],
+                    (Pair<Long, NodeRef>) callbackResult[1],
+                    (Pair<Long, NodeRef>) callbackResult[2]);
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p/>
+     * Loads properties, aspects, parent associations and the ID-noderef cache
+     */
+    public void cacheNodes(List<NodeRef> nodeRefs)
+    {
+        // Group the nodes by store so that we don't *have* to eagerly join to store to get query performance
+        Map<StoreRef, List<String>> uuidsByStore = new HashMap<StoreRef, List<String>>(3);
+        for (NodeRef nodeRef : nodeRefs)
+        {
+            StoreRef storeRef = nodeRef.getStoreRef();
+            List<String> uuids = (List<String>) uuidsByStore.get(storeRef);
+            if (uuids == null)
+            {
+                uuids = new ArrayList<String>(nodeRefs.size());
+                uuidsByStore.put(storeRef, uuids);
+            }
+            uuids.add(nodeRef.getId());
+        }
+        int size = nodeRefs.size();
+        nodeRefs = null;
+        // Now load all the nodes
+        for (Map.Entry<StoreRef, List<String>> entry : uuidsByStore.entrySet())
+        {
+            StoreRef storeRef = entry.getKey();
+            List<String> uuids = entry.getValue();
+            cacheNodes(storeRef, uuids);
+        }
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Pre-loaded " + size + " nodes.");
+        }
+    }
+    
+    /**
+     * Loads the nodes into cache using batching.
+     */
+    private void cacheNodes(StoreRef storeRef, List<String> uuids)
+    {
+        Store store = getStore(storeRef);           // Be fetched from local caches
+        
+        int batchSize = 256;
+        List<String> batch = new ArrayList<String>(128);
+        for (String uuid : uuids)
+        {
+            batch.add(uuid);
+            if (batch.size() >= batchSize)
+            {
+                // Preload
+                cacheNodesNoBatch(store, batch);
+                batch.clear();
+            }
+        }
+        // Load any remaining nodes
+        if (batch.size() > 0)
+        {
+            cacheNodesNoBatch(store, batch);
+        }
+    }
+    
+    /**
+     * Uses a Critera to preload the nodes without batching
+     */
+    @SuppressWarnings("unchecked")
+    private void cacheNodesNoBatch(Store store, List<String> uuids)
+    {
+        Criteria criteria = getSession().createCriteria(NodeImpl.class, "node");
+        criteria.setResultTransformer(Criteria.ROOT_ENTITY);
+        criteria.add(Restrictions.eq("store.id", store.getId()));
+        criteria.add(Restrictions.in("uuid", uuids));
+        criteria.setCacheMode(CacheMode.PUT);
+        criteria.setFlushMode(FlushMode.MANUAL);
+
+        List<Node> nodeList = criteria.list();
+        List<Long> nodeIds = new ArrayList<Long>(nodeList.size());
+        for (Node node : nodeList)
+        {
+            Long nodeId = node.getId();
+            storeAndNodeIdCache.put(node.getNodeRef(), nodeId);
+            nodeIds.add(nodeId);
+        }
+        
+        criteria = getSession().createCriteria(ChildAssocImpl.class, "parentAssoc");
+        criteria.setResultTransformer(Criteria.ROOT_ENTITY);
+        criteria.add(Restrictions.in("child.id", nodeIds));
+        criteria.setCacheMode(CacheMode.PUT);
+        criteria.setFlushMode(FlushMode.MANUAL);
+        List<ChildAssoc> parentAssocs = criteria.list();
+        for (ChildAssoc parentAssoc : parentAssocs)
+        {
+            Long nodeId = parentAssoc.getChild().getId();
+            Set<Long> parentAssocsOfNode = parentAssocsCache.get(nodeId);
+            if (parentAssocsOfNode == null)
+            {
+                parentAssocsOfNode = new HashSet<Long>(3);
+            }
+            else
+            {
+                parentAssocsOfNode = new HashSet<Long>(parentAssocsOfNode);
+            }
+            parentAssocsOfNode.add(parentAssoc.getId());
+            parentAssocsCache.put(nodeId, parentAssocsOfNode);
+            if (isDebugParentAssocCacheEnabled)
+            {
+                loggerParentAssocsCache.debug("\n" +
+                        "Parent associations cache - Adding entry: \n" +
+                        "   Node:   " + nodeId + "\n" +
+                        "   Assocs: " + parentAssocsOfNode);
+            }
         }
     }
     
@@ -3199,11 +3339,14 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
             Set<Long> newParentAssocIds = new HashSet<Long>(oldParentAssocIds);
             newParentAssocIds.remove(childAssocId);
             parentAssocsCache.put(childNodeId, newParentAssocIds);
-            loggerParentAssocsCache.debug("\n" +
-                    "Parent associations cache - Updating entry: \n" +
-                    "   Node:   " + childNodeId +  "\n" +
-                    "   Before: " + oldParentAssocIds + "\n" +
-                    "   After:  " + newParentAssocIds);
+            if (this.isDebugParentAssocCacheEnabled)
+            {
+                loggerParentAssocsCache.debug("\n" +
+                        "Parent associations cache - Updating entry: \n" +
+                        "   Node:   " + childNodeId +  "\n" +
+                        "   Before: " + oldParentAssocIds + "\n" +
+                        "   After:  " + newParentAssocIds);
+            }
         }
         
         // maintain inverse association sets

@@ -58,9 +58,9 @@
                class="org.alfresco.repo.domain.hibernate.StoreImpl"
                column="store_id"
                not-null="true"
-               lazy="false"
                foreign-key="fk_alf_node_store"
-               fetch="join" />
+               lazy="proxy"
+               fetch="select" />
          <!-- the store-unique identifier -->
          <property name="uuid" column="uuid" type="string" length="36" />
       </natural-id>
@@ -97,9 +97,8 @@
       <map
             name="properties" 
             table="alf_node_properties"
-            lazy="true" 
-            fetch="select"
-            batch-size="128"  
+            lazy="false"
+            fetch="join"
             sort="unsorted"
             inverse="false" 
             optimistic-lock="false"
@@ -125,9 +124,8 @@
       <set
             name="aspects"
             table="alf_node_aspects"
-            lazy="true"
-            fetch="select"
-            batch-size="128"
+            lazy="false"
+            fetch="join"
             inverse="false" 
             sort="unsorted"
             optimistic-lock="false"
@@ -270,9 +268,6 @@
          join assoc.child as child
       where
          child.id = :childId
-      order by
-         assoc.index,
-         assoc.id
    </query>
    
    <query name="node.DeleteParentAssocs">

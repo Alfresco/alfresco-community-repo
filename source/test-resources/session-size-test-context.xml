@@ -24,8 +24,11 @@
         <property name="sessionFactory">
             <ref bean="sessionFactory" />
         </property>
-        <property name="threshold">
+        <property name="writeThreshold">
             <value>2000</value>
+        </property>
+        <property name="readThreshold">
+            <value>50000</value>
         </property>
     </bean>
 

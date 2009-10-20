@@ -28,6 +28,7 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
@@ -44,6 +45,7 @@ import org.alfresco.service.cmr.repository.ScriptLocation;
 import org.alfresco.service.cmr.repository.ScriptService;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
@@ -51,6 +53,7 @@ import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.service.cmr.tagging.TaggingService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.BaseAlfrescoSpringTest;
+import org.alfresco.util.GUID;
 import org.alfresco.util.PropertyMap;
 
 /**
@@ -82,6 +85,7 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
     private PersonService personService;
     private AuthorityService authorityService;
     private FileFolderService fileFolderService;
+    private PermissionService permissionService;
 
     private String groupOne;
     private String groupTwo;
@@ -104,6 +108,7 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
         this.personService = (PersonService)this.applicationContext.getBean("PersonService");
         this.authorityService = (AuthorityService)this.applicationContext.getBean("AuthorityService");
         this.fileFolderService = (FileFolderService)this.applicationContext.getBean("FileFolderService");
+        this.permissionService = (PermissionService)this.applicationContext.getBean("PermissionService");
         
         // Create the test users
         createUser(USER_ONE);
@@ -494,6 +499,8 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
     
     public void testDeleteSite()
     {
+        SiteService smallSiteService = (SiteService)this.applicationContext.getBean("siteService");
+        
         // delete a site that isn't there
         try
         {
@@ -505,14 +512,42 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
             // Expected
         }
         
+        // Create a test group
+        final String testGroupName = "siteServiceImplTestGroup_" + GUID.generate();
+        String testGroup = AuthenticationUtil.runAs(        
+            new AuthenticationUtil.RunAsWork<String>()
+            {
+                public String doWork() throws Exception
+                {
+                    return authorityService.createAuthority(AuthorityType.GROUP, testGroupName);
+                }
+                
+            }, AuthenticationUtil.getAdminUserName());
+        
         // Create a test site
-        this.siteService.createSite(TEST_SITE_PRESET, "testUpdateSite", TEST_TITLE, TEST_DESCRIPTION, SiteVisibility.PUBLIC);
-        assertNotNull(this.siteService.getSite("testUpdateSite"));
+        String siteShortName = "testUpdateSite";
+        this.siteService.createSite(TEST_SITE_PRESET, siteShortName, TEST_TITLE, TEST_DESCRIPTION, SiteVisibility.PUBLIC);
+        assertNotNull(this.siteService.getSite(siteShortName));
+        
+        // Add the test group as a member of the site
+        this.siteService.setMembership(siteShortName, testGroup, SiteModel.SITE_CONTRIBUTOR);
         
         // Delete the site
-        this.siteService.deleteSite("testUpdateSite");
-        assertNull(this.siteService.getSite("testUpdateSite"));
-    }
+        this.siteService.deleteSite(siteShortName);
+        assertNull(this.siteService.getSite(siteShortName));
+        
+        // Ensure that all the related site groups are deleted
+        assertFalse(authorityService.authorityExists(((SiteServiceImpl)smallSiteService).getSiteGroup(siteShortName, true)));
+        Set<String> permissions = permissionService.getSettablePermissions(SiteModel.TYPE_SITE);
+        for (String permission : permissions)
+        {
+            String siteRoleGroup = ((SiteServiceImpl)smallSiteService).getSiteRoleGroup(siteShortName, permission, true);
+            assertFalse(authorityService.authorityExists(siteRoleGroup));
+        }
+        
+        // Ensure that the added "normal" groups have not been deleted
+        assertTrue(authorityService.authorityExists(testGroup));
+    }    
     
     public void testIsPublic()
     {

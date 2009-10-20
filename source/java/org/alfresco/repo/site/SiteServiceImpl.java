@@ -958,7 +958,17 @@ public class SiteServiceImpl implements SiteService, SiteModel
         {
             public Object doWork() throws Exception
             {
-                authorityService.deleteAuthority(getSiteGroup(shortName, true), true);
+                // Delete the master site group
+                authorityService.deleteAuthority(getSiteGroup(shortName, true), false);
+                
+                // Iterate over the role related groups and delete then
+                Set<String> permissions = permissionService.getSettablePermissions(SiteModel.TYPE_SITE);
+                for (String permission : permissions)
+                {
+                    String siteRoleGroup = getSiteRoleGroup(shortName, permission, true);
+                    authorityService.deleteAuthority(siteRoleGroup);
+                }
+                
                 return null;
             }
         }, AuthenticationUtil.getSystemUserName());

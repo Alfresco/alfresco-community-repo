@@ -1418,6 +1418,13 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
         {
             throw new InvalidNodeRefException("Read only store.", nodeRef);
         }
+        
+        Map<QName, Serializable> propsBefore = null;
+        if (fInvokePolicies)
+        {
+            propsBefore = getProperties(nodeRef);
+        }
+        
         if (isBuiltInProperty(qname))
         {
             if (qname.equals(ContentModel.PROP_CONTENT))
@@ -1427,7 +1434,6 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
                     fAVMService.setContentData(avmVersionPath.getSecond(), (ContentData)value);
                     if (fInvokePolicies)
                     {
-                        Map<QName, Serializable> propsBefore = getProperties(nodeRef);
                         Map<QName, Serializable> propsAfter = new HashMap<QName, Serializable>(propsBefore);
                         propsAfter.put(ContentModel.PROP_CONTENT, value);
                         invokeOnUpdateProperties(nodeRef, propsBefore, propsAfter);
@@ -1442,11 +1448,7 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
         }
         try
         {
-            Map<QName, Serializable> propsBefore = null;
-            if (fInvokePolicies)
-            {
-                propsBefore = getProperties(nodeRef);
-            }
+
             PropertyDefinition propertyDef = dictionaryService.getProperty(qname);
             PropertyValue propertyValue = makePropertyValue(propertyDef, value);
             fAVMService.setNodeProperty(avmVersionPath.getSecond(), qname, propertyValue);

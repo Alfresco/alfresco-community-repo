@@ -386,10 +386,16 @@ public class AVMServiceImpl implements AVMService
      */
     public void createFile(String path, String name, InputStream in, List<QName> aspects, Map<QName, PropertyValue> properties)
     {
-        if (path == null || name == null || in == null || !FileNameValidator.isValid(name))
+        if (path == null || name == null || in == null)
         {
             throw new AVMBadArgumentException("Illegal argument.");
         }
+        
+        if(!FileNameValidator.isValid(name))
+        {
+            throw new AVMBadArgumentException("Illegal argument, name:" + name);
+        }
+        
         // Save the contents to temp space.
         File temp;
         try

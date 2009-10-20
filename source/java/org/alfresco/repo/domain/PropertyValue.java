@@ -670,7 +670,8 @@ public class PropertyValue implements Cloneable, Serializable
     /**
      * Construct a new property value.
      * 
-     * @param typeQName the dictionary-defined property type to store the property as
+     * @param typeQName the dictionary-defined property type to store the property as.   
+     * May be null in which case the type will be determined from the value parameter.
      * @param value the value to store.  This will be converted into a format compatible
      *      with the type given
      * 

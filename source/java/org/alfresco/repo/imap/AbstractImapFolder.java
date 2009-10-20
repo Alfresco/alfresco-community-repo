@@ -463,7 +463,7 @@ public abstract class AbstractImapFolder implements MailFolder
                 return null;
             }
         };
-        command.runFeedback(true);
+        command.runFeedback();
     }
 
     

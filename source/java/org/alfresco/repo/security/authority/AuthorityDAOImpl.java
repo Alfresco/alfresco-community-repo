@@ -60,8 +60,7 @@ import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.EqualsHelper;
 import org.alfresco.util.SearchLanguageConversion;
 
-public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.OnCreateNodePolicy, NodeServicePolicies.BeforeDeleteNodePolicy,
-        NodeServicePolicies.OnUpdatePropertiesPolicy
+public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.BeforeDeleteNodePolicy, NodeServicePolicies.OnUpdatePropertiesPolicy
 {
     private StoreRef storeRef;
 
@@ -81,15 +80,15 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.OnCre
     
     private TenantService tenantService;
     
-    private SimpleCache<CacheKey, HashSet<String>> authorityLookupCache;
+    private SimpleCache<CacheKey, Set<String>> authorityLookupCache;
     
     /** System Container ref cache (Tennant aware) */
     private Map<String, NodeRef> systemContainerRefs = new ConcurrentHashMap<String, NodeRef>(4);
     
-    
     private AclDaoComponent aclDao;
 
     private PolicyComponent policyComponent;
+
 
     public AuthorityDAOImpl()
     {
@@ -119,7 +118,7 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.OnCre
         this.nodeService = nodeService;
     }
 
-    public void setUserToAuthorityCache(SimpleCache<CacheKey, HashSet<String>> userToAuthorityCache)
+    public void setUserToAuthorityCache(SimpleCache<CacheKey, Set<String>> userToAuthorityCache)
     {
         this.authorityLookupCache = userToAuthorityCache;
     }
@@ -287,11 +286,12 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.OnCre
 
             CacheKey key = new CacheKey(type, name, tenantService.getCurrentUserDomain(), false, !immediate);
 
-            HashSet<String> authorities = authorityLookupCache.get(key);
+            Set<String> authorities = authorityLookupCache.get(key);
             if (authorities == null)
             {
-                authorities = new HashSet<String>();
+                authorities = new HashSet<String>(64);
                 findAuthorities(type, null, nodeRef, authorities, false, !immediate, false);
+                authorities = (Set<String>)Collections.unmodifiableSet(authorities);
                 authorityLookupCache.put(key, authorities);
             }
             return authorities;
@@ -318,15 +318,15 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.OnCre
     {
         CacheKey key = new CacheKey(type, name, tenantService.getCurrentUserDomain(), true, !immediate);
 
-        HashSet<String> authorities = authorityLookupCache.get(key);
+        Set<String> authorities = authorityLookupCache.get(key);
         if (authorities == null)
         {
-            authorities = new HashSet<String>();
+            authorities = new HashSet<String>(64);
             findAuthorities(type, name, authorities, true, !immediate);
+            authorities = (Set<String>)Collections.unmodifiableSet(authorities);
             authorityLookupCache.put(key, authorities);
         }
         return authorities;
-
     }
 
     private void addAuthorityNameIfMatches(Set<String> authorities, String authorityName, AuthorityType type, Pattern pattern)
@@ -659,7 +659,7 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.OnCre
             return Collections.<String> emptySet();
         }        
         Collection<ChildAssociationRef> childRefs = nodeService.getChildAssocsWithoutParentAssocsOfType(container, ContentModel.ASSOC_MEMBER);
-        Set<String> authorities = new HashSet<String>(childRefs.size() * 2);
+        Set<String> authorities = new HashSet<String>(childRefs.size() << 1);
         for (ChildAssociationRef childRef : childRefs)
         {
             addAuthorityNameIfMatches(authorities, childRef.getQName().getLocalName(), type, null);
@@ -671,7 +671,7 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.OnCre
     /**
      * CacheKey class for getContainedAuthorities() parent Group cache.
      */
-    private static class CacheKey implements Serializable
+    private final static class CacheKey implements Serializable
     {
         private static final long serialVersionUID = -3787608436067567757L;
 
@@ -741,16 +741,6 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.OnCre
         }
     }
 
-    public void onCreateNode(ChildAssociationRef childAssocRef)
-    {
-        NodeRef authRef = childAssocRef.getChildRef();
-        String authority = (String) this.nodeService.getProperty(authRef, ContentModel.PROP_AUTHORITY_NAME);
-
-        // Make sure there is an authority entry - with a DB constraint for uniqueness
-        // aclDao.createAuthority(authority);
-
-    }
-
     public void beforeDeleteNode(NodeRef nodeRef)
     {
         authorityLookupCache.clear();
@@ -779,17 +769,13 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.OnCre
                 throw new UnsupportedOperationException("The name of an authority can not be changed");
             }
         }
-
     }
 
     public void init()
     {
-        this.policyComponent.bindClassBehaviour(QName.createQName(NamespaceService.ALFRESCO_URI, "onCreateNode"), ContentModel.TYPE_AUTHORITY_CONTAINER, new JavaBehaviour(this,
-                "onCreateNode"));
         this.policyComponent.bindClassBehaviour(QName.createQName(NamespaceService.ALFRESCO_URI, "beforeDeleteNode"), ContentModel.TYPE_AUTHORITY_CONTAINER, new JavaBehaviour(
                 this, "beforeDeleteNode"));
         this.policyComponent.bindClassBehaviour(QName.createQName(NamespaceService.ALFRESCO_URI, "onUpdateProperties"), ContentModel.TYPE_AUTHORITY_CONTAINER, new JavaBehaviour(
                 this, "onUpdateProperties"));
     }
-
 }

@@ -748,7 +748,7 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
 
     private Set<String> getDynamicAuthorities(Authentication auth, NodeRef nodeRef, PermissionReference required)
     {
-        HashSet<String> auths = new HashSet<String>();
+        HashSet<String> auths = new HashSet<String>(64);
 
         if (auth == null)
         {
@@ -824,7 +824,6 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
     {
         permissionsDaoComponent.deletePermissions(storeRef, authority);
         accessCache.clear();
-
     }
 
     public void deletePermission(StoreRef storeRef, String authority, String perm)
@@ -832,7 +831,6 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
         deletePermission(storeRef, authority, getPermissionReference(perm));
     }
 
-    
     private void deletePermission(StoreRef storeRef, String authority, PermissionReference perm)
     {
         permissionsDaoComponent.deletePermission(storeRef, authority, perm);
@@ -843,7 +841,6 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
     {
         permissionsDaoComponent.deletePermissions(storeRef);
         accessCache.clear();
-
     }
 
     public void setPermission(StoreRef storeRef, String authority, String perm, boolean allow)

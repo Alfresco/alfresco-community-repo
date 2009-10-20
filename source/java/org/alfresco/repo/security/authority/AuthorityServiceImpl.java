@@ -196,7 +196,7 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
 
     public Set<String> getAuthoritiesForUser(String currentUserName)
     {
-        Set<String> authorities = new HashSet<String>();
+        Set<String> authorities = new HashSet<String>(64);
 
         authorities.addAll(getContainingAuthorities(null, currentUserName, false));
         

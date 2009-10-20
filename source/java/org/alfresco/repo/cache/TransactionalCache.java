@@ -80,14 +80,14 @@ public class TransactionalCache<K extends Serializable, V extends Object>
 {
     private static final String RESOURCE_KEY_TXN_DATA = "TransactionalCache.TxnData"; 
     
-    private static Log logger = LogFactory.getLog(TransactionalCache.class);
-    private static boolean isDebugEnabled = logger.isDebugEnabled();
+    private Log logger;
+    private boolean isDebugEnabled;
 
     /** a name used to uniquely identify the transactional caches */
     private String name;
     
     /** the shared cache that will get updated after commits */
-    private SimpleCache<Serializable, V> sharedCache;
+    private SimpleCache<Serializable, Object> sharedCache;
 
     /** the manager to control Ehcache caches */
     private CacheManager cacheManager;
@@ -103,6 +103,8 @@ public class TransactionalCache<K extends Serializable, V extends Object>
      */
     public TransactionalCache()
     {
+        logger = LogFactory.getLog(TransactionalCache.class);
+        isDebugEnabled = logger.isDebugEnabled();
     }
     
     /**
@@ -143,7 +145,7 @@ public class TransactionalCache<K extends Serializable, V extends Object>
      * 
      * @param sharedCache
      */
-    public void setSharedCache(SimpleCache<Serializable, V> sharedCache)
+    public void setSharedCache(SimpleCache<Serializable, Object> sharedCache)
     {
         this.sharedCache = sharedCache;
     }
@@ -192,6 +194,9 @@ public class TransactionalCache<K extends Serializable, V extends Object>
         Assert.notNull(cacheManager, "cacheManager property not set");
         // generate the resource binding key
         resourceKeyTxnData = RESOURCE_KEY_TXN_DATA + "." + name;
+        // Refine the log category
+        logger = LogFactory.getLog(TransactionalCache.class + "." + name);
+        isDebugEnabled = logger.isDebugEnabled();
     }
 
     /**
@@ -279,6 +284,27 @@ public class TransactionalCache<K extends Serializable, V extends Object>
         // done
         return keys;
     }
+    
+    /**
+     * Fetches a value from the shared cache, checking for {@link NullValueMarker null markers}.
+     * 
+     * @param key           the key
+     * @return              Returns the value or <tt>null</tt>
+     */
+    @SuppressWarnings("unchecked")
+    private V getSharedCacheValue(K key)
+    {
+        Object valueObj = sharedCache.get(key);
+        if (valueObj instanceof NullValueMarker)
+        {
+            // Someone has already marked this as a null
+            return null;
+        }
+        else
+        {
+            return (V) valueObj;
+        }
+    }
 
     /**
      * Checks the per-transaction caches for the object before going to the shared cache.
@@ -345,7 +371,7 @@ public class TransactionalCache<K extends Serializable, V extends Object>
         // no value found - must we ignore the shared cache?
         if (!ignoreSharedCache)
         {
-            V value = sharedCache.get(key);
+            V value = getSharedCacheValue(key);
             // go to the shared cache
             if (isDebugEnabled)
             {
@@ -419,14 +445,17 @@ public class TransactionalCache<K extends Serializable, V extends Object>
                 CacheBucket<V> bucket = null;
                 if (sharedCache.contains(key))
                 {
-                    V existingValue = sharedCache.get(key);
+                    V existingValue = getSharedCacheValue(key);
                     // The value needs to be kept for later checks
                     bucket = new UpdateCacheBucket<V>(existingValue, value);
                 }
                 else
                 {
+                    // Insert a 'null' marker into the shared cache
+                    NullValueMarker nullMarker = new NullValueMarker();
+                    sharedCache.put(key, nullMarker);
                     // The value didn't exist before
-                    bucket = new NewCacheBucket<V>(value);
+                    bucket = new NewCacheBucket<V>(nullMarker, value);
                 }
                 Element element = new Element(key, bucket);
                 txnData.updatedItemsCache.put(element);
@@ -512,7 +541,7 @@ public class TransactionalCache<K extends Serializable, V extends Object>
                     }
                     else
                     {
-                        V existingValue = sharedCache.get(key);
+                        V existingValue = getSharedCacheValue(key);
                         if (existingValue == null)
                         {
                             // There is no point doing a remove for a value that doesn't exist
@@ -692,6 +721,16 @@ public class TransactionalCache<K extends Serializable, V extends Object>
     }
     
     /**
+     * Instances of this class are used to mark the shared cache null values for cases where
+     * new values are going to be inserted into it.
+     * 
+     * @author Derek Hulley
+     */
+    public static class NullValueMarker
+    {
+    }
+    
+    /**
      * Interface for the transactional cache buckets.  These hold the actual values along
      * with some state and behaviour around writing from the in-transaction caches to the
      * shared.
@@ -710,12 +749,12 @@ public class TransactionalCache<K extends Serializable, V extends Object>
          * @param sharedCache       the cache to flush to
          * @param key               the key that the bucket was stored against
          */
-        public void doPostCommit(SimpleCache<Serializable, BV> sharedCache, Serializable key);
+        public void doPostCommit(SimpleCache<Serializable, Object> sharedCache, Serializable key);
     }
     
     /**
      * A bucket class to hold values for the caches.<br/>
-     * The cache ID and timestamp of the bucket is stored to ensure cache consistency.
+     * The cache assumes the presence of a marker object to 
      * 
      * @author Derek Hulley
      */
@@ -724,55 +763,65 @@ public class TransactionalCache<K extends Serializable, V extends Object>
         private static final long serialVersionUID = -8536386687213957425L;
         
         private final BV value;
-        public NewCacheBucket(BV value)
+        private final NullValueMarker nullMarker;
+        public NewCacheBucket(NullValueMarker nullMarker, BV value)
         {
+            this.value = value;
+            this.nullMarker = nullMarker;
+        }
+        public BV getValue()
+        {
+            return value;
+        }
+        public void doPostCommit(SimpleCache<Serializable, Object> sharedCache, Serializable key)
+        {
+            Object sharedValue = sharedCache.get(key);
+            if (sharedValue != null)
+            {
+                if (sharedValue == nullMarker)
+                {
+                    // The shared cache entry didn't change during the txn and is safe for writing
+                    sharedCache.put(key, value);
+                }
+                else
+                {
+                    // The shared value has moved on since
+                    sharedCache.remove(key);
+                }
+            }
+            else
+            {
+                // The shared cache no longer has a value
+            }
+        }
+    }
+    
+    /**
+     * Data holder to keep track of a cached value's ID in order to detect stale
+     * shared cache values.  This bucket assumes the presence of a pre-existing entry in
+     * the shared cache.
+     */
+    private static class UpdateCacheBucket<BV> implements CacheBucket<BV>
+    {
+        private static final long serialVersionUID = 7885689778259779578L;
+        
+        private final BV value;
+        private final BV originalValue;
+        public UpdateCacheBucket(BV originalValue, BV value)
+        {
+            this.originalValue = originalValue;
             this.value = value;
         }
         public BV getValue()
         {
             return value;
         }
-        public void doPostCommit(SimpleCache<Serializable, BV> sharedCache, Serializable key)
+        public void doPostCommit(SimpleCache<Serializable, Object> sharedCache, Serializable key)
         {
-            if (sharedCache.contains(key))
-            {
-                // The shared cache has a value where there wasn't one before.
-                // Just lose both of them.
-                sharedCache.remove(key);
-            }
-            else
-            {
-                // There is nothing in the shared cache, so add this entry
-                sharedCache.put(key, getValue());
-            }
-        }
-    }
-    
-    /**
-     * Data holder to keep track of a cached value's timestamps in order to detect stale
-     * shared cache values.  This bucket assumes the presence of a pre-existing entry in
-     * the shared cache.
-     */
-    private static class UpdateCacheBucket<BV> extends NewCacheBucket<BV>
-    {
-        private static final long serialVersionUID = 7885689778259779578L;
-        
-        private final BV originalValue;
-        public UpdateCacheBucket(BV originalValue, BV value)
-        {
-            super(value);
-            this.originalValue = originalValue;
-        }
-        protected BV getOriginalValue()
-        {
-            return originalValue;
-        }
-        public void doPostCommit(SimpleCache<Serializable, BV> sharedCache, Serializable key)
-        {
-            BV sharedValue = sharedCache.get(key);
+            Object sharedValue = sharedCache.get(key);
             if (sharedValue != null)
             {
-                if (sharedValue == getOriginalValue())
+                if (sharedValue == originalValue)
                 {
                     // The cache entry is safe for writing
                     sharedCache.put(key, getValue());
@@ -802,7 +851,7 @@ public class TransactionalCache<K extends Serializable, V extends Object>
         {
             super(originalValue, null);
         }
-        public void doPostCommit(SimpleCache<Serializable, BV> sharedCache, Serializable key)
+        public void doPostCommit(SimpleCache<Serializable, Object> sharedCache, Serializable key)
         {
             // We remove the shared entry whether it has moved on or not
             sharedCache.remove(key);

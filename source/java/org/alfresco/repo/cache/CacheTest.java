@@ -24,7 +24,6 @@
  */
 package org.alfresco.repo.cache;
 
-import java.io.Serializable;
 import java.sql.SQLException;
 import java.util.Collection;
 
@@ -34,6 +33,7 @@ import javax.transaction.UserTransaction;
 import junit.framework.TestCase;
 import net.sf.ehcache.CacheManager;
 
+import org.alfresco.repo.cache.TransactionalCache.NullValueMarker;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.TransactionListenerAdapter;
@@ -192,7 +192,9 @@ public class CacheTest extends TestCase
             // update 3 in the cache
             transactionalCache.put(updatedTxnThree, "XXX");
             assertEquals("Item not updated in txn cache", "XXX", transactionalCache.get(updatedTxnThree));
-            assertFalse("Item was put into backing cache", backingCache.contains(updatedTxnThree));
+            assertFalse("Item was put into backing cache (excl. NullValueMarker)",
+                    backingCache.contains(updatedTxnThree) &&
+                    !(backingCache.get(updatedTxnThree) instanceof NullValueMarker));
             
             // check that the keys collection is correct
             Collection<String> transactionalKeys = transactionalCache.getKeys();
@@ -437,7 +439,7 @@ public class CacheTest extends TestCase
     }
     
     /** Execute the callback and ensure that the backing cache is left with the expected value */
-    private void executeAndCheck(RetryingTransactionCallback<Object> callback, Serializable key, Object expectedValue) throws Throwable
+    private void executeAndCheck(RetryingTransactionCallback<Object> callback, String key, Object expectedValue) throws Throwable
     {
         TransactionService transactionService = serviceRegistry.getTransactionService();
         UserTransaction txn = transactionService.getUserTransaction();
@@ -450,6 +452,15 @@ public class CacheTest extends TestCase
         finally
         {
             try { txn.rollback(); } catch (Throwable ee) {}
+        }
+        Object actualValue = backingCache.get(key);
+        if (expectedValue == null)
+        {
+            assertNull("Expected backing cache to have null", actualValue);
+        }
+        else
+        {
+            assertEquals("Backing cache value was not correct", expectedValue, actualValue);
         }
     }
     
@@ -493,7 +504,7 @@ public class CacheTest extends TestCase
                 return null;
             }
         };
-        executeAndCheck(callback, COMMON_KEY, commonValue);
+        executeAndCheck(callback, COMMON_KEY, null);
     }
     /**
      * <ul>

@@ -49,6 +49,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.model.WCMAppModel;
 import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.repo.web.scripts.FileTypeImageUtils;
@@ -493,6 +494,10 @@ public class CreateWebContentWizard extends CreateContentWizard
       final String cwd = AVMUtil.getCorrespondingPathInPreviewStore(this.avmBrowseBean.getCurrentPath());
       final Form form = (MimetypeMap.MIMETYPE_XML.equals(this.mimeType) ? this.getForm() : null);
       String path = cwd;
+      
+      final Map<QName, PropertyValue> props = new HashMap<QName, PropertyValue>(1, 1.0f);
+      final List<QName> aspects = new ArrayList<QName>(4);
+
       if (form != null)
       {
          path = form.getOutputPathForFormInstanceData(this.getInstanceDataDocument(), fileName, cwd, this.avmBrowseBean.getWebapp());
@@ -500,7 +505,12 @@ public class CreateWebContentWizard extends CreateContentWizard
          final String[] sb = AVMNodeConverter.SplitBase(path);
          path = sb[0];
          fileName = sb[1];
+         props.put(WCMAppModel.PROP_PARENT_FORM_NAME, new PropertyValue(null, form.getName()));
+         props.put(WCMAppModel.PROP_ORIGINAL_PARENT_PATH, new PropertyValue(null, cwd));
+         aspects.add(WCMAppModel.ASPECT_FORM_INSTANCE_DATA);
       }
+      props.put(ContentModel.PROP_TITLE, new PropertyValue(null, fileName));
+      aspects.add(ContentModel.ASPECT_TITLED);
 
       if (logger.isDebugEnabled())
          logger.debug("creating all directories in path " + path);
@@ -535,9 +545,13 @@ public class CreateWebContentWizard extends CreateContentWizard
             }
          } 
          
-         // create the file
+         /**
+          *  create the new file 
+          */
          getAvmService().createFile(path, fileName, 
-                  new ByteArrayInputStream((this.content == null ? "" : this.content).getBytes("UTF-8")));
+                  new ByteArrayInputStream((this.content == null ? "" : this.content).getBytes("UTF-8")),
+                  aspects,
+                  props);
       }
       catch (AVMExistsException avmee)
       {
@@ -551,16 +565,12 @@ public class CreateWebContentWizard extends CreateContentWizard
 
       // add titled aspect for the read/edit properties screens
       final NodeRef formInstanceDataNodeRef = AVMNodeConverter.ToNodeRef(-1, this.createdPath);
-      final Map<QName, Serializable> props = new HashMap<QName, Serializable>(1, 1.0f);
-      props.put(ContentModel.PROP_TITLE, fileName);
-      this.getNodeService().addAspect(formInstanceDataNodeRef, ContentModel.ASPECT_TITLED, props);
-      
+
+      /**
+       * Generate form renditions.
+       */
       if (form != null)
       {
-         props.clear();
-         props.put(WCMAppModel.PROP_PARENT_FORM_NAME, form.getName());
-         props.put(WCMAppModel.PROP_ORIGINAL_PARENT_PATH, cwd);
-         this.getNodeService().addAspect(formInstanceDataNodeRef, WCMAppModel.ASPECT_FORM_INSTANCE_DATA, props);
 
          this.formInstanceData = getFormsService().getFormInstanceData(formInstanceDataNodeRef);
          this.renditions = new LinkedList<Rendition>();

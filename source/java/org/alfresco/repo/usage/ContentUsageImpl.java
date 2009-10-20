@@ -41,6 +41,7 @@ import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.security.OwnableService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.usage.ContentQuotaException;
 import org.alfresco.service.cmr.usage.ContentUsageService;
@@ -228,16 +229,16 @@ public class ContentUsageImpl implements ContentUsageService,
             
             // Check for change in owner/creator
             String ownerBefore = (String)before.get(ContentModel.PROP_OWNER);
-            if (ownerBefore == null)
+            if ((ownerBefore == null) || (ownerBefore.equals(OwnableService.NO_OWNER)))
             {
                 ownerBefore = (String)before.get(ContentModel.PROP_CREATOR);
             }
             String ownerAfter = (String)after.get(ContentModel.PROP_OWNER);
-            if (ownerAfter == null)
+            if ((ownerAfter == null) || (ownerAfter.equals(OwnableService.NO_OWNER)))
             {
                 ownerAfter = (String)after.get(ContentModel.PROP_CREATOR);
-            }           
-                        
+            }
+            
             // check change in size (and possibly owner)
             if (contentSizeBefore == null && contentSizeAfter != null && contentSizeAfter != 0 && ownerAfter != null)
             {
@@ -330,7 +331,7 @@ public class ContentUsageImpl implements ContentUsageService,
                     
                     // Get owner/creator
                     String owner = (String)nodeService.getProperty(nodeRef, ContentModel.PROP_OWNER);
-                    if (owner == null)
+                    if ((owner == null) || (owner.equals(OwnableService.NO_OWNER)))
                     {
                         owner = (String)nodeService.getProperty(nodeRef, ContentModel.PROP_CREATOR);
                     }
@@ -368,6 +369,12 @@ public class ContentUsageImpl implements ContentUsageService,
             
             if ((newOwner != null) && (! newOwner.equals(creator)))
             {
+                if (newOwner.equals(OwnableService.NO_OWNER))
+                {
+                    // usage has to be applied somewhere, default back to creator for now
+                    newOwner = creator;
+                }
+                
                 ContentData content = (ContentData)nodeService.getProperty(nodeRef, ContentModel.PROP_CONTENT);
                 
                 Map<QName, Serializable> before = new HashMap<QName, Serializable>(2);

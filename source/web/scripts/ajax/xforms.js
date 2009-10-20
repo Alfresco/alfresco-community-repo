@@ -3105,14 +3105,12 @@ alfresco.xforms.SwitchGroup = alfresco.xforms.VGroup.extend({
   _insertChildAt: function(child, position)
   {
     var childDomContainer = this.parent(child, position);
+    
     if (child.id == this._selectedCaseId)
     {
       this._getCaseToggleTriggerByCaseId(this._selectedCaseId).fire();
     }
-    else
-    {
-      childDomContainer.style.display = "none";
-    }
+    
     return childDomContainer;
   },
 
@@ -4145,6 +4143,21 @@ alfresco.xforms.XForm = new Class({
                    " is a prototype, ignoring");
         continue;
       }
+      
+      // fix for ETWOTWO-490, hide elements after rendering
+      if (xformsNode.childNodes[i].nodeName == "chiba:data" &&
+          parentWidget instanceof alfresco.xforms.SwitchGroup)
+      {
+         var selectedCase = parentWidget._selectedCaseId;
+         for (var x = 0; x < parentWidget._children.length; x++)
+         {
+            if (parentWidget._children[x].id != selectedCase)
+            {
+               parentWidget._children[x].domContainer.style.display = "none";
+            }
+         }
+      }
+      
       var w = this.createWidget(xformsNode.childNodes[i]);
       if (w != null)
       {

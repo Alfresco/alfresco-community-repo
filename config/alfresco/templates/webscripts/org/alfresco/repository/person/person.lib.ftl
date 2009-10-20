@@ -42,7 +42,7 @@
 	"groups": [
 	<#list groups as g>
 		<#assign authName = g.properties["cm:authorityName"]>
-		<#assign displayName><#if authName?starts_with("GROUP_site")>${authName?substring(6)}<#else>${g.properties["cm:authorityDisplayName"]}</#if></#assign>
+		<#assign displayName><#if authName?starts_with("GROUP_site")>${authName?substring(6)}<#else>${g.properties["cm:authorityDisplayName"]!authName?substring(6)}</#if></#assign>
 	{
 		"itemName": "${authName}",
 		"displayName": "${displayName}"

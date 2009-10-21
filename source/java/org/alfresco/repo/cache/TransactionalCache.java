@@ -726,8 +726,9 @@ public class TransactionalCache<K extends Serializable, V extends Object>
      * 
      * @author Derek Hulley
      */
-    public static class NullValueMarker
+    public static class NullValueMarker implements Serializable
     {
+        private static final long serialVersionUID = -8384777298845693563L;
     }
     
     /**

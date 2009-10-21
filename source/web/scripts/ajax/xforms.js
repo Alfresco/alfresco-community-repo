@@ -3393,6 +3393,10 @@ alfresco.xforms.Repeat = alfresco.xforms.VGroup.extend({
     var fromChild = this.getChildAt(fromIndex);
     var toChild = this.getChildAt(toIndex);
     this.xform.swapRepeatItems(fromChild, toChild);
+    
+    // set tinymce current instance to null
+    alfresco.xforms.RichTextEditor.currentInstance = null;
+    
     var anim = dojo.lfx.html.fadeOut(fromChild.domContainer, 500);
     anim.onEnd = function()
       {
@@ -3636,6 +3640,9 @@ alfresco.xforms.Repeat = alfresco.xforms.VGroup.extend({
       event.stopPropagation();
       if (this.isInsertRepeatItemEnabled())
       {
+        // set tinymce current instance to null
+        alfresco.xforms.RichTextEditor.currentInstance = null;
+        
         this.setFocusedChild(null);
         var trigger = this._getRepeatItemTrigger("insert", { position: "before" });
         trigger.fire();

@@ -195,7 +195,7 @@ public class TransactionalCache<K extends Serializable, V extends Object>
         // generate the resource binding key
         resourceKeyTxnData = RESOURCE_KEY_TXN_DATA + "." + name;
         // Refine the log category
-        logger = LogFactory.getLog(TransactionalCache.class + "." + name);
+        logger = LogFactory.getLog(TransactionalCache.class.getName() + "." + name);
         isDebugEnabled = logger.isDebugEnabled();
     }
 

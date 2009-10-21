@@ -518,15 +518,7 @@ public class TransactionalCache<K extends Serializable, V extends Object>
                 // is the shared cache going to be cleared?
                 if (txnData.isClearOn)
                 {
-                    // overflow about to occur or has occured - we can only guarantee non-stale
-                    // data by clearing the shared cache after the transaction.  Also, the
-                    // shared cache needs to be ignored for the rest of the transaction.
-                    txnData.isClearOn = true;
-                    if (!txnData.haveIssuedFullWarning && logger.isWarnEnabled())
-                    {
-                        logger.warn("Transactional update cache '" + name + "' is full (" + maxCacheSize + ").");
-                        txnData.haveIssuedFullWarning = true;
-                    }
+                    // don't store removals if we're just going to clear it all out later
                 }
                 else
                 {

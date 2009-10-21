@@ -229,6 +229,11 @@ public class InMemoryTicketComponentImpl implements TicketComponent
         for (String key : ticketsCache.getKeys())
         {
             Ticket ticket = ticketsCache.get(key);
+            // Hack: The getKeys() call might return keys for null marker objects, yielding null values
+            if (ticket == null)
+            {
+                continue;
+            }
             if (ticket.getUserName().equals(userName))
             {
                 toRemove.add(ticket.getTicketId());

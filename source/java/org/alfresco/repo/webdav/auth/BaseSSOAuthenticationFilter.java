@@ -497,7 +497,7 @@ public abstract class BaseSSOAuthenticationFilter extends BaseAuthenticationFilt
                 int pos = m_lastResolvedServerName.indexOf(".");
                 if (pos != -1)
                 {
-                    m_lastResolvedServerName = m_lastResolvedServerName.substring(0, pos - 1);
+                    m_lastResolvedServerName = m_lastResolvedServerName.substring(0, pos);
                 }
             }
             catch (UnknownHostException ex)

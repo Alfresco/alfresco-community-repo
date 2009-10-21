@@ -50,22 +50,23 @@ public interface UserRegistry
     public Collection<NodeDescription> getPersons(Date modifiedSince);
 
     /**
-     * Gets descriptions of all the groups in the user registry or all those changed since a certain date. Group
-     * associations should be restricted to those in the given set of known authorities. Optionally this set is 'pruned'
-     * to contain only those authorities that no longer exist in the user registry, i.e. the deletion candidates.
+     * Gets descriptions of all the groups in the user registry or all those changed since a certain date.
      * 
      * @param modifiedSince
      *            if non-null, then only descriptions of groups modified since this date should be returned; if
      *            <code>null</code> then descriptions of all groups should be returned.
-     * @param knownAuthorities
-     *            the current set of known authorities
-     * @param prune
-     *            should this set be 'pruned' so that it contains only those authorities that do not exist in the
-     *            registry, i.e. the deletion candidates?
      * @return a {@link Collection} of {@link NodeDescription}s of all the groups in the user registry or all those
      *         changed since a certain date. The description properties should correspond to those of an Alfresco
      *         authority node.
      */
-    public Collection<NodeDescription> getGroups(Date modifiedSince, Set<String> knownAuthorities, boolean prune);
+    public Collection<NodeDescription> getGroups(Date modifiedSince);
 
+    /**
+     * Retrieves the complete set of known users and groups from the user registry and removes them from the set of
+     * candidate local authorities to be deleted.
+     * 
+     * @param candidateAuthoritiesForDeletion
+     *            the candidate authorities for deletion
+     */
+    public void processDeletions(final Set<String> candidateAuthoritiesForDeletion);
 }

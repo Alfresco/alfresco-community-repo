@@ -25,12 +25,16 @@
 package org.alfresco.repo.security.sync;
 
 import java.text.DateFormat;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.TreeSet;
 
 import org.alfresco.model.ContentModel;
@@ -55,7 +59,6 @@ import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.AbstractLifecycleBean;
-import org.alfresco.util.Pair;
 import org.alfresco.util.PropertyMap;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -365,17 +368,7 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean impl
                         boolean requiresNew = splitTxns
                                 || AlfrescoTransactionSupport.getTransactionReadState() == TxnReadState.TXN_READ_ONLY;
 
-                        int personsProcessed = syncPersonsWithPlugin(id, plugin, requiresNew, visitedZoneIds,
-                                allZoneIds);
-                        int groupsProcessed = syncGroupsWithPlugin(id, plugin, force, requiresNew, visitedZoneIds,
-                                allZoneIds);
-                        if (ChainingUserRegistrySynchronizer.logger.isInfoEnabled())
-                        {
-                            ChainingUserRegistrySynchronizer.logger
-                                    .info("Finished synchronizing users and groups with user registry '" + id + "'");
-                            ChainingUserRegistrySynchronizer.logger.info(personsProcessed + " user(s) and "
-                                    + groupsProcessed + " group(s) processed");
-                        }
+                        syncWithPlugin(id, plugin, force, requiresNew, visitedZoneIds, allZoneIds);
                     }
                 }
                 catch (NoSuchBeanDefinitionException e)
@@ -431,29 +424,31 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean impl
     }
 
     /**
-     * Synchronizes changes only to local users (persons) with a {@link UserRegistry} for a particular zone.
+     * Synchronizes local groups and users with a {@link UserRegistry} for a particular zone, optionally handling
+     * deletions.
      * 
      * @param zone
-     *            the zone id. This identifier is used to tag all created users, so that in the future we can tell those
-     *            that have been deleted from the registry.
+     *            the zone id. This identifier is used to tag all created groups and users, so that in the future we can
+     *            tell those that have been deleted from the registry.
      * @param userRegistry
      *            the user registry for the zone.
+     * @param force
+     *            <code>true</code> if user and group deletions are to be processed.
      * @param splitTxns
      *            Can the modifications to Alfresco be split across multiple transactions for maximum performance? If
-     *            <code>true</code>, users and groups are created/updated in batches of 10 for increased performance. If
+     *            <code>true</code>, users and groups are created/updated in batches for increased performance. If
      *            <code>false</code>, all users and groups are processed in the current transaction. This is required if
      *            calling synchronously (e.g. in response to an authentication event in the same transaction).
      * @param visitedZoneIds
      *            the set of zone ids already processed. These zones have precedence over the current zone when it comes
-     *            to user name 'collisions'. If a user is queried that already exists locally but is tagged with one of
-     *            the zones in this set, then it will be ignored as this zone has lower priority.
+     *            to group name 'collisions'. If a user or group is queried that already exists locally but is tagged
+     *            with one of the zones in this set, then it will be ignored as this zone has lower priority.
      * @param allZoneIds
      *            the set of all zone ids in the authentication chain. Helps us work out whether the zone information
-     *            recorded against a user is invalid for the current authentication chain and whether the user needs to
-     *            be 're-zoned'.
-     * @return the number of users processed
+     *            recorded against a user or group is invalid for the current authentication chain and whether the user
+     *            or group needs to be 're-zoned'.
      */
-    private int syncPersonsWithPlugin(final String zone, UserRegistry userRegistry, boolean splitTxns,
+    private void syncWithPlugin(final String zone, UserRegistry userRegistry, boolean force, boolean splitTxns,
             final Set<String> visitedZoneIds, final Set<String> allZoneIds)
     {
         // Create a prefixed zone ID for use with the authority service
@@ -462,9 +457,314 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean impl
         // The set of zones we associate with new objects (default plus registry specific)
         final Set<String> zoneSet = getZones(zoneId);
 
-        final long lastModifiedMillis = getMostRecentUpdateTime(
-                ChainingUserRegistrySynchronizer.PERSON_LAST_MODIFIED_ATTRIBUTE, zoneId);
-        final Date lastModified = lastModifiedMillis == -1 ? null : new Date(lastModifiedMillis);
+        long lastModifiedMillis = getMostRecentUpdateTime(
+                ChainingUserRegistrySynchronizer.GROUP_LAST_MODIFIED_ATTRIBUTE, zoneId);
+        Date lastModified = lastModifiedMillis == -1 ? null : new Date(lastModifiedMillis);
+
+        if (ChainingUserRegistrySynchronizer.logger.isInfoEnabled())
+        {
+            if (lastModified == null)
+            {
+                ChainingUserRegistrySynchronizer.logger.info("Retrieving all groups from user registry '" + zone + "'");
+            }
+            else
+            {
+                ChainingUserRegistrySynchronizer.logger.info("Retrieving groups changed since "
+                        + DateFormat.getDateTimeInstance().format(lastModified) + " from user registry '" + zone + "'");
+            }
+        }
+
+        // Get current set of known authorities
+        Set<String> allZoneAuthorities = this.retryingTransactionHelper.doInTransaction(
+                new RetryingTransactionCallback<Set<String>>()
+                {
+                    public Set<String> execute() throws Throwable
+                    {
+                        return ChainingUserRegistrySynchronizer.this.authorityService.getAllAuthoritiesInZone(zoneId,
+                                null);
+                    }
+                }, false, splitTxns);
+
+        // First, analyze the group structure. Create maps of authorities to their parents for associations to create
+        // and delete. Also deal with 'overlaps' with other zones in the authentication chain.
+        final BatchProcessor<NodeDescription> groupProcessor = new BatchProcessor<NodeDescription>(
+                this.retryingTransactionHelper, this.applicationEventPublisher, userRegistry.getGroups(lastModified),
+                zone + " Group Analysis", this.loggingInterval, this.workerThreads, 20);
+        class Analyzer implements Worker<NodeDescription>
+        {
+            private final Set<String> allZoneAuthorities;
+            private final Set<String> groupsToCreate = new TreeSet<String>();
+            private final Map<String, Set<String>> groupAssocsToCreate = new TreeMap<String, Set<String>>();
+            private final Map<String, Set<String>> groupAssocsToDelete = new TreeMap<String, Set<String>>();
+            private long latestTime;
+
+            public Analyzer(final Set<String> allZoneAuthorities, final long latestTime)
+            {
+                this.allZoneAuthorities = allZoneAuthorities;
+                this.latestTime = latestTime;
+            }
+
+            public long getLatestTime()
+            {
+                return this.latestTime;
+            }
+
+            public Set<String> getGroupsToCreate()
+            {
+                return this.groupsToCreate;
+            }
+
+            public Map<String, Set<String>> getGroupAssocsToCreate()
+            {
+                return this.groupAssocsToCreate;
+            }
+
+            public Map<String, Set<String>> getGroupAssocsToDelete()
+            {
+                return this.groupAssocsToDelete;
+            }
+
+            /*
+             * (non-Javadoc)
+             * @see org.alfresco.repo.security.sync.BatchProcessor.Worker#getIdentifier(java.lang.Object)
+             */
+            public String getIdentifier(NodeDescription entry)
+            {
+                return entry.getSourceId();
+            }
+
+            /*
+             * (non-Javadoc)
+             * @see org.alfresco.repo.security.sync.BatchProcessor.Worker#process(java.lang.Object)
+             */
+            public void process(NodeDescription group) throws Throwable
+            {
+                PropertyMap groupProperties = group.getProperties();
+                String groupName = (String) groupProperties.get(ContentModel.PROP_AUTHORITY_NAME);
+                String groupShortName = ChainingUserRegistrySynchronizer.this.authorityService.getShortName(groupName);
+                Set<String> groupZones = ChainingUserRegistrySynchronizer.this.authorityService
+                        .getAuthorityZones(groupName);
+
+                if (groupZones == null)
+                {
+                    // The group did not exist at all
+                    addAssociations(groupName, group.getChildAssociations(), false);
+                }
+                else
+                {
+                    // Check whether the group is in any of the authentication chain zones
+                    Set<String> intersection = new TreeSet<String>(groupZones);
+                    intersection.retainAll(allZoneIds);
+                    if (intersection.isEmpty())
+                    {
+                        // The group exists, but not in a zone that's in the authentication chain. May be due to
+                        // upgrade or zone changes. Let's re-zone them
+                        if (ChainingUserRegistrySynchronizer.logger.isWarnEnabled())
+                        {
+                            ChainingUserRegistrySynchronizer.logger.warn("Updating group '" + groupShortName
+                                    + "'. This group will in future be assumed to originate from user registry '"
+                                    + zone + "'.");
+                        }
+                        ChainingUserRegistrySynchronizer.this.authorityService.removeAuthorityFromZones(groupName,
+                                groupZones);
+                        ChainingUserRegistrySynchronizer.this.authorityService.addAuthorityToZones(groupName, zoneSet);
+                    }
+                    if (groupZones.contains(zoneId) || intersection.isEmpty())
+                    {
+                        // The group already existed in this zone or no valid zone: update the group
+                        updateAssociations(group, groupName);
+                    }
+                    else
+                    {
+                        // Check whether the group is in any of the higher priority authentication chain zones
+                        intersection.retainAll(visitedZoneIds);
+                        if (!intersection.isEmpty())
+                        {
+                            // A group that exists in a different zone with higher precedence
+                            return;
+                        }
+                        // The group existed, but in a zone with lower precedence
+                        if (ChainingUserRegistrySynchronizer.logger.isWarnEnabled())
+                        {
+                            ChainingUserRegistrySynchronizer.logger
+                                    .warn("Recreating occluded group '"
+                                            + groupShortName
+                                            + "'. This group was previously created through synchronization with a lower priority user registry.");
+                        }
+                        ChainingUserRegistrySynchronizer.this.authorityService.deleteAuthority(groupName);
+                        // create the group
+                        addAssociations(groupName, group.getChildAssociations(), false);
+                    }
+                }
+
+                synchronized (this)
+                {
+                    // Maintain the last modified date
+                    Date groupLastModified = group.getLastModified();
+                    if (groupLastModified != null)
+                    {
+                        this.latestTime = Math.max(this.latestTime, groupLastModified.getTime());
+                    }
+                }
+            }
+
+            private synchronized void updateAssociations(NodeDescription group, String groupName)
+            {
+                Set<String> oldChildren = ChainingUserRegistrySynchronizer.this.authorityService
+                        .getContainedAuthorities(null, groupName, true);
+                Set<String> newChildren = group.getChildAssociations();
+                Set<String> toDelete = new TreeSet<String>(oldChildren);
+                Set<String> toAdd = new TreeSet<String>(newChildren);
+                toDelete.removeAll(newChildren);
+                toAdd.removeAll(oldChildren);
+                addAssociations(groupName, toAdd, true);
+                deleteAssociations(groupName, toDelete);
+            }
+
+            private synchronized void addAssociations(String groupName, Set<String> children, boolean existed)
+            {
+                this.allZoneAuthorities.add(groupName);
+                if (!existed)
+                {
+                    this.groupsToCreate.add(groupName);
+                }
+                // Add an entry for the parent itself, in case it is a root group
+                Set<String> parents = this.groupAssocsToCreate.get(groupName);
+                if (parents == null)
+                {
+                    parents = new TreeSet<String>();
+                    this.groupAssocsToCreate.put(groupName, parents);
+                }
+                for (String child : children)
+                {
+                    parents = this.groupAssocsToCreate.get(child);
+                    if (parents == null)
+                    {
+                        parents = new TreeSet<String>();
+                        this.groupAssocsToCreate.put(child, parents);
+                    }
+                    parents.add(groupName);
+                }
+            }
+
+            private synchronized void deleteAssociations(String groupName, Set<String> children)
+            {
+                for (String child : children)
+                {
+                    // Make sure each child features as a key in the creation map
+                    addAssociations(child, Collections.<String> emptySet(), true);
+
+                    Set<String> parents = this.groupAssocsToDelete.get(child);
+                    if (parents == null)
+                    {
+                        parents = new TreeSet<String>();
+                        this.groupAssocsToDelete.put(child, parents);
+                    }
+                    parents.add(groupName);
+                }
+            }
+        }
+
+        Analyzer groupAnalyzer = new Analyzer(allZoneAuthorities, lastModifiedMillis);
+        int groupProcessedCount = groupProcessor.process(groupAnalyzer, splitTxns);
+        final Map<String, Set<String>> groupAssocsToCreate = groupAnalyzer.getGroupAssocsToCreate();
+        final Map<String, Set<String>> groupAssocsToDelete = groupAnalyzer.getGroupAssocsToDelete();
+
+        // Prune our set of authorities according to deletions
+        Set<String> deletionCandidates = null;
+        if (force)
+        {
+            deletionCandidates = new TreeSet<String>(allZoneAuthorities);
+            userRegistry.processDeletions(deletionCandidates);
+            allZoneAuthorities.removeAll(deletionCandidates);
+            groupAssocsToCreate.keySet().removeAll(deletionCandidates);
+            groupAssocsToDelete.keySet().removeAll(deletionCandidates);
+        }
+
+        // Sort the group associations in depth-first order (root groups first)
+        Map<String, Set<String>> sortedGroupAssociations = new LinkedHashMap<String, Set<String>>(groupAssocsToCreate
+                .size() * 2);
+        List<String> authorityPath = new ArrayList<String>(5);
+        for (String authority : groupAssocsToCreate.keySet())
+        {
+            if (allZoneAuthorities.contains(authority))
+            {
+                authorityPath.add(authority);
+                visitGroupAssociations(authorityPath, allZoneAuthorities, groupAssocsToCreate, sortedGroupAssociations);
+                authorityPath.clear();
+            }
+        }
+
+        // Add the groups and their parent associations in depth-first order
+        final Set<String> groupsToCreate = groupAnalyzer.getGroupsToCreate();
+        BatchProcessor<Map.Entry<String, Set<String>>> groupCreator = new BatchProcessor<Map.Entry<String, Set<String>>>(
+                this.retryingTransactionHelper, this.applicationEventPublisher, sortedGroupAssociations.entrySet(),
+                zone + " Group Creation and Association", this.loggingInterval, 1, 20);
+        groupCreator.process(new Worker<Map.Entry<String, Set<String>>>()
+        {
+
+            public String getIdentifier(Map.Entry<String, Set<String>> entry)
+            {
+                return entry.getKey() + " " + entry.getValue();
+            }
+
+            public void process(Map.Entry<String, Set<String>> entry) throws Throwable
+            {
+                Set<String> parents = entry.getValue();
+                String child = entry.getKey();
+
+                if (groupsToCreate.contains(child))
+                {
+                    String groupShortName = ChainingUserRegistrySynchronizer.this.authorityService.getShortName(child);
+                    if (ChainingUserRegistrySynchronizer.logger.isDebugEnabled())
+                    {
+                        ChainingUserRegistrySynchronizer.logger.debug("Creating group '" + groupShortName + "'");
+                    }
+                    // create the group
+                    ChainingUserRegistrySynchronizer.this.authorityService.createAuthority(AuthorityType
+                            .getAuthorityType(child), groupShortName, groupShortName, zoneSet);
+                }
+                if (!parents.isEmpty())
+                {
+                    if (ChainingUserRegistrySynchronizer.logger.isDebugEnabled())
+                    {
+                        for (String groupName : parents)
+                        {
+                            ChainingUserRegistrySynchronizer.logger.debug("Adding '"
+                                    + ChainingUserRegistrySynchronizer.this.authorityService.getShortName(child)
+                                    + "' to group '"
+                                    + ChainingUserRegistrySynchronizer.this.authorityService.getShortName(groupName)
+                                    + "'");
+                        }
+                    }
+                    ChainingUserRegistrySynchronizer.this.authorityService.addAuthority(parents, child);
+                }
+                Set<String> parentsToDelete = groupAssocsToDelete.get(child);
+                if (parentsToDelete != null && !parentsToDelete.isEmpty())
+                {
+                    for (String parent : parentsToDelete)
+                    {
+                        if (ChainingUserRegistrySynchronizer.logger.isDebugEnabled())
+                        {
+                            ChainingUserRegistrySynchronizer.logger
+                                    .debug("Removing '"
+                                            + ChainingUserRegistrySynchronizer.this.authorityService
+                                                    .getShortName(child)
+                                            + "' from group '"
+                                            + ChainingUserRegistrySynchronizer.this.authorityService
+                                                    .getShortName(parent) + "'");
+                        }
+                        ChainingUserRegistrySynchronizer.this.authorityService.removeAuthority(parent, child);
+                    }
+                }
+            }
+        }, splitTxns);
+
+        // Process persons and their parent associations
+
+        lastModifiedMillis = getMostRecentUpdateTime(ChainingUserRegistrySynchronizer.PERSON_LAST_MODIFIED_ATTRIBUTE,
+                zoneId);
+        lastModified = lastModifiedMillis == -1 ? null : new Date(lastModifiedMillis);
         if (ChainingUserRegistrySynchronizer.logger.isInfoEnabled())
         {
             if (lastModified == null)
@@ -479,10 +779,15 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean impl
         }
         final BatchProcessor<NodeDescription> personProcessor = new BatchProcessor<NodeDescription>(
                 this.retryingTransactionHelper, this.applicationEventPublisher, userRegistry.getPersons(lastModified),
-                zone + " User Creation", this.loggingInterval, this.workerThreads, 10);
-        class CreationWorker implements Worker<NodeDescription>
+                zone + " User Creation and Association", this.loggingInterval, this.workerThreads, 10);
+        class PersonWorker implements Worker<NodeDescription>
         {
-            private long latestTime = lastModifiedMillis;
+            private long latestTime;
+
+            public PersonWorker(final long latestTime)
+            {
+                this.latestTime = latestTime;
+            }
 
             public long getLatestTime()
             {
@@ -562,6 +867,42 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean impl
                         ChainingUserRegistrySynchronizer.this.personService.createPerson(personProperties, zoneSet);
                     }
                 }
+                // Maintain associations
+                Set<String> parents = groupAssocsToCreate.get(personName);
+                if (parents != null && !parents.isEmpty())
+                {
+                    if (ChainingUserRegistrySynchronizer.logger.isDebugEnabled())
+                    {
+                        for (String groupName : parents)
+                        {
+                            ChainingUserRegistrySynchronizer.logger.debug("Adding '"
+                                    + ChainingUserRegistrySynchronizer.this.authorityService.getShortName(personName)
+                                    + "' to group '"
+                                    + ChainingUserRegistrySynchronizer.this.authorityService.getShortName(groupName)
+                                    + "'");
+                        }
+                    }
+                    ChainingUserRegistrySynchronizer.this.authorityService.addAuthority(parents, personName);
+                }
+                Set<String> parentsToDelete = groupAssocsToDelete.get(personName);
+                if (parentsToDelete != null && !parentsToDelete.isEmpty())
+                {
+                    for (String parent : parentsToDelete)
+                    {
+                        if (ChainingUserRegistrySynchronizer.logger.isDebugEnabled())
+                        {
+                            ChainingUserRegistrySynchronizer.logger
+                                    .debug("Removing '"
+                                            + ChainingUserRegistrySynchronizer.this.authorityService
+                                                    .getShortName(personName)
+                                            + "' from group '"
+                                            + ChainingUserRegistrySynchronizer.this.authorityService
+                                                    .getShortName(parent) + "'");
+                        }
+                        ChainingUserRegistrySynchronizer.this.authorityService.removeAuthority(parent, personName);
+                    }
+                }
+
                 synchronized (this)
                 {
                     // Maintain the last modified date
@@ -574,293 +915,22 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean impl
             }
         }
 
-        CreationWorker creations = new CreationWorker();
-        int processedCount = personProcessor.process(creations, splitTxns);
-        long latestTime = creations.getLatestTime();
-        if (latestTime != -1)
-        {
-            setMostRecentUpdateTime(ChainingUserRegistrySynchronizer.PERSON_LAST_MODIFIED_ATTRIBUTE, zoneId,
-                    latestTime, splitTxns);
-        }
+        PersonWorker persons = new PersonWorker(lastModifiedMillis);
+        int personProcessedCount = personProcessor.process(persons, splitTxns);
 
-        // Remember we have visited this zone
-        visitedZoneIds.add(zoneId);
-
-        return processedCount;
-    }
-
-    /**
-     * Synchronizes local groups with a {@link UserRegistry} for a particular zone and also handles deletions of local
-     * groups and users.
-     * 
-     * @param zone
-     *            the zone id. This identifier is used to tag all created groups, so that in the future we can tell
-     *            those that have been deleted from the registry.
-     * @param userRegistry
-     *            the user registry for the zone.
-     * @param force
-     *            <code>true</code> if user and group deletions are to be processed.
-     * @param splitTxns
-     *            Can the modifications to Alfresco be split across multiple transactions for maximum performance? If
-     *            <code>true</code>, users and groups are created/updated in batches of 10 for increased performance. If
-     *            <code>false</code>, all users and groups are processed in the current transaction. This is required if
-     *            calling synchronously (e.g. in response to an authentication event in the same transaction).
-     * @param visitedZoneIds
-     *            the set of zone ids already processed. These zones have precedence over the current zone when it comes
-     *            to group name 'collisions'. If a group is queried that already exists locally but is tagged with one
-     *            of the zones in this set, then it will be ignored as this zone has lower priority.
-     * @param allZoneIds
-     *            the set of all zone ids in the authentication chain. Helps us work out whether the zone information
-     *            recorded against a group is invalid for the current authentication chain and whether the group needs
-     *            to be 're-zoned'.
-     * @return the number of groups processed
-     */
-    private int syncGroupsWithPlugin(final String zone, UserRegistry userRegistry, boolean force, boolean splitTxns,
-            final Set<String> visitedZoneIds, final Set<String> allZoneIds)
-    {
-        // Create a prefixed zone ID for use with the authority service
-        final String zoneId = AuthorityService.ZONE_AUTH_EXT_PREFIX + zone;
-
-        // The set of zones we associate with new objects (default plus registry specific)
-        final Set<String> zoneSet = getZones(zoneId);
-
-        final long lastModifiedMillis = getMostRecentUpdateTime(
-                ChainingUserRegistrySynchronizer.GROUP_LAST_MODIFIED_ATTRIBUTE, zoneId);
-        final Date lastModified = lastModifiedMillis == -1 ? null : new Date(lastModifiedMillis);
-
-        if (ChainingUserRegistrySynchronizer.logger.isInfoEnabled())
-        {
-            if (lastModified == null)
-            {
-                ChainingUserRegistrySynchronizer.logger.info("Retrieving all groups from user registry '" + zone + "'");
-            }
-            else
-            {
-                ChainingUserRegistrySynchronizer.logger.info("Retrieving groups changed since "
-                        + DateFormat.getDateTimeInstance().format(lastModified) + " from user registry '" + zone + "'");
-            }
-        }
-
-        // Get current set of known authorities
-        Set<String> deletionCandidates = this.retryingTransactionHelper.doInTransaction(
-                new RetryingTransactionCallback<Set<String>>()
-                {
-                    public Set<String> execute() throws Throwable
-                    {
-                        return ChainingUserRegistrySynchronizer.this.authorityService.getAllAuthoritiesInZone(zoneId,
-                                null);
-                    }
-                }, false, splitTxns);
-
-        final BatchProcessor<NodeDescription> groupProcessor = new BatchProcessor<NodeDescription>(
-                this.retryingTransactionHelper, this.applicationEventPublisher, userRegistry.getGroups(lastModified,
-                        deletionCandidates, force), zone + " Group Creation", this.loggingInterval, this.workerThreads,
-                20);
-        class CreationWorker implements Worker<NodeDescription>
-        {
-            private final Set<Pair<String, String>> groupAssocsToCreate = new TreeSet<Pair<String, String>>(
-                    new Comparator<Pair<String, String>>()
-                    {
-
-                        public int compare(Pair<String, String> o1, Pair<String, String> o2)
-                        {
-                            int result = o1.getFirst().compareTo(o2.getFirst());
-                            if (result == 0)
-                            {
-                                return o1.getSecond().compareTo(o2.getSecond());
-                            }
-                            return result;
-                        }
-                    });
-            private long latestTime = lastModifiedMillis;
-
-            public long getLatestTime()
-            {
-                return this.latestTime;
-            }
-
-            public Set<Pair<String, String>> getGroupAssocsToCreate()
-            {
-                return this.groupAssocsToCreate;
-            }
-
-            /*
-             * (non-Javadoc)
-             * @see org.alfresco.repo.security.sync.BatchProcessor.Worker#getIdentifier(java.lang.Object)
-             */
-            public String getIdentifier(NodeDescription entry)
-            {
-                return entry.getSourceId();
-            }
-
-            /*
-             * (non-Javadoc)
-             * @see org.alfresco.repo.security.sync.BatchProcessor.Worker#process(java.lang.Object)
-             */
-            public void process(NodeDescription group) throws Throwable
-            {
-                PropertyMap groupProperties = group.getProperties();
-                String groupName = (String) groupProperties.get(ContentModel.PROP_AUTHORITY_NAME);
-                String groupShortName = ChainingUserRegistrySynchronizer.this.authorityService.getShortName(groupName);
-                Set<String> groupZones = ChainingUserRegistrySynchronizer.this.authorityService
-                        .getAuthorityZones(groupName);
-
-                if (groupZones == null)
-                {
-                    // The group did not exist at all
-                    if (ChainingUserRegistrySynchronizer.logger.isDebugEnabled())
-                    {
-                        ChainingUserRegistrySynchronizer.logger.debug("Creating group '" + groupShortName + "'");
-                    }
-                    // create the group
-                    ChainingUserRegistrySynchronizer.this.authorityService.createAuthority(AuthorityType
-                            .getAuthorityType(groupName), groupShortName, (String) groupProperties
-                            .get(ContentModel.PROP_AUTHORITY_DISPLAY_NAME), zoneSet);
-                    Set<String> children = group.getChildAssociations();
-                    if (!children.isEmpty())
-                    {
-                        synchronized (this)
-                        {
-                            for (String child : children)
-                            {
-                                this.groupAssocsToCreate.add(new Pair<String, String>(groupName, child));
-                            }
-                        }
-                    }
-                }
-                else
-                {
-                    // Check whether the group is in any of the authentication chain zones
-                    Set<String> intersection = new TreeSet<String>(groupZones);
-                    intersection.retainAll(allZoneIds);
-                    if (intersection.isEmpty())
-                    {
-                        // The group exists, but not in a zone that's in the authentication chain. May be due to
-                        // upgrade or zone changes. Let's re-zone them
-                        if (ChainingUserRegistrySynchronizer.logger.isWarnEnabled())
-                        {
-                            ChainingUserRegistrySynchronizer.logger.warn("Updating group '" + groupShortName
-                                    + "'. This group will in future be assumed to originate from user registry '"
-                                    + zone + "'.");
-                        }
-                        ChainingUserRegistrySynchronizer.this.authorityService.removeAuthorityFromZones(groupName,
-                                groupZones);
-                        ChainingUserRegistrySynchronizer.this.authorityService.addAuthorityToZones(groupName, zoneSet);
-                    }
-                    if (groupZones.contains(zoneId) || intersection.isEmpty())
-                    {
-                        // The group already existed in this zone or no valid zone: update the group
-                        Set<String> oldChildren = ChainingUserRegistrySynchronizer.this.authorityService
-                                .getContainedAuthorities(null, groupName, true);
-                        Set<String> newChildren = group.getChildAssociations();
-                        Set<String> toDelete = new TreeSet<String>(oldChildren);
-                        Set<String> toAdd = new TreeSet<String>(newChildren);
-                        toDelete.removeAll(newChildren);
-                        toAdd.removeAll(oldChildren);
-                        if (!toAdd.isEmpty())
-                        {
-                            synchronized (this)
-                            {
-                                for (String child : toAdd)
-                                {
-                                    this.groupAssocsToCreate.add(new Pair<String, String>(groupName, child));
-                                }
-                            }
-                        }
-                        for (String child : toDelete)
-                        {
-                            if (ChainingUserRegistrySynchronizer.logger.isDebugEnabled())
-                            {
-                                ChainingUserRegistrySynchronizer.logger.debug("Removing '"
-                                        + ChainingUserRegistrySynchronizer.this.authorityService.getShortName(child)
-                                        + "' from group '" + groupShortName + "'");
-                            }
-                            ChainingUserRegistrySynchronizer.this.authorityService.removeAuthority(groupName, child);
-                        }
-                    }
-                    else
-                    {
-                        // Check whether the group is in any of the higher priority authentication chain zones
-                        intersection.retainAll(visitedZoneIds);
-                        if (!intersection.isEmpty())
-                        {
-                            // A group that exists in a different zone with higher precedence
-                            return;
-                        }
-                        // The group existed, but in a zone with lower precedence
-                        if (ChainingUserRegistrySynchronizer.logger.isWarnEnabled())
-                        {
-                            ChainingUserRegistrySynchronizer.logger
-                                    .warn("Recreating occluded group '"
-                                            + groupShortName
-                                            + "'. This group was previously created through synchronization with a lower priority user registry.");
-                        }
-                        ChainingUserRegistrySynchronizer.this.authorityService.deleteAuthority(groupName);
-                        // create the group
-                        ChainingUserRegistrySynchronizer.this.authorityService.createAuthority(AuthorityType
-                                .getAuthorityType(groupName), groupShortName, (String) groupProperties
-                                .get(ContentModel.PROP_AUTHORITY_DISPLAY_NAME), zoneSet);
-                        Set<String> children = group.getChildAssociations();
-                        if (!children.isEmpty())
-                        {
-                            synchronized (this)
-                            {
-                                for (String child : children)
-                                {
-                                    this.groupAssocsToCreate.add(new Pair<String, String>(groupName, child));
-                                }
-                            }
-                        }
-                    }
-                }
-
-                synchronized (this)
-                {
-                    // Maintain the last modified date
-                    Date groupLastModified = group.getLastModified();
-                    if (groupLastModified != null)
-                    {
-                        this.latestTime = Math.max(this.latestTime, groupLastModified.getTime());
-                    }
-                }
-            }
-        }
-
-        CreationWorker creations = new CreationWorker();
-        int processedCount = groupProcessor.process(creations, splitTxns);
-        long latestTime = creations.getLatestTime();
+        // Only now that the whole tree has been processed is it safe to persist the last modified dates
+        long latestTime = groupAnalyzer.getLatestTime();
         if (latestTime != -1)
         {
             setMostRecentUpdateTime(ChainingUserRegistrySynchronizer.GROUP_LAST_MODIFIED_ATTRIBUTE, zoneId, latestTime,
                     splitTxns);
         }
-
-        // Add the new associations, now that we have created everything
-        BatchProcessor<Pair<String, String>> groupAssocProcessor = new BatchProcessor<Pair<String, String>>(
-                this.retryingTransactionHelper, this.applicationEventPublisher, creations.getGroupAssocsToCreate(),
-                zone + " Group Association Creation", this.loggingInterval, this.workerThreads, 20);
-        groupAssocProcessor.process(new Worker<Pair<String, String>>()
+        latestTime = persons.getLatestTime();
+        if (latestTime != -1)
         {
-
-            public String getIdentifier(Pair<String, String> entry)
-            {
-                return entry.toString();
-            }
-
-            public void process(Pair<String, String> entry) throws Throwable
-            {
-                String groupName = entry.getFirst();
-                String child = entry.getSecond();
-                if (ChainingUserRegistrySynchronizer.logger.isDebugEnabled())
-                {
-                    ChainingUserRegistrySynchronizer.logger.debug("Adding '"
-                            + ChainingUserRegistrySynchronizer.this.authorityService.getShortName(child)
-                            + "' to group '"
-                            + ChainingUserRegistrySynchronizer.this.authorityService.getShortName(groupName) + "'");
-                }
-                ChainingUserRegistrySynchronizer.this.authorityService.addAuthority(groupName, child);
-            }
-        }, splitTxns);
+            setMostRecentUpdateTime(ChainingUserRegistrySynchronizer.PERSON_LAST_MODIFIED_ATTRIBUTE, zoneId,
+                    latestTime, splitTxns);
+        }
 
         // Delete authorities if we have complete information for the zone
         if (force)
@@ -868,8 +938,20 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean impl
             BatchProcessor<String> authorityDeletionProcessor = new BatchProcessor<String>(
                     this.retryingTransactionHelper, this.applicationEventPublisher, deletionCandidates, zone
                             + " Authority Deletion", this.loggingInterval, this.workerThreads, 10);
-            processedCount += authorityDeletionProcessor.process(new Worker<String>()
+            class AuthorityDeleter implements Worker<String>
             {
+                private int personProcessedCount;
+                private int groupProcessedCount;
+
+                public int getPersonProcessedCount()
+                {
+                    return this.personProcessedCount;
+                }
+
+                public int getGroupProcessedCount()
+                {
+                    return this.groupProcessedCount;
+                }
 
                 public String getIdentifier(String entry)
                 {
@@ -885,6 +967,10 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean impl
                             ChainingUserRegistrySynchronizer.logger.debug("Deleting user '" + authority + "'");
                         }
                         ChainingUserRegistrySynchronizer.this.personService.deletePerson(authority);
+                        synchronized (this)
+                        {
+                            this.personProcessedCount++;
+                        }
                     }
                     else
                     {
@@ -895,15 +981,76 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean impl
                                     + "'");
                         }
                         ChainingUserRegistrySynchronizer.this.authorityService.deleteAuthority(authority);
+                        synchronized (this)
+                        {
+                            this.groupProcessedCount++;
+                        }
                     }
                 }
-            }, splitTxns);
+            }
+            AuthorityDeleter authorityDeleter = new AuthorityDeleter();
+            authorityDeletionProcessor.process(authorityDeleter, splitTxns);
+            groupProcessedCount += authorityDeleter.getGroupProcessedCount();
+            personProcessedCount += authorityDeleter.getPersonProcessedCount();
         }
 
         // Remember we have visited this zone
         visitedZoneIds.add(zoneId);
 
-        return processedCount;
+        if (ChainingUserRegistrySynchronizer.logger.isInfoEnabled())
+        {
+            ChainingUserRegistrySynchronizer.logger.info("Finished synchronizing users and groups with user registry '"
+                    + zone + "'");
+            ChainingUserRegistrySynchronizer.logger.info(personProcessedCount + " user(s) and " + groupProcessedCount
+                    + " group(s) processed");
+        }
+    }
+
+    /**
+     * Visits the last authority in the given list by recursively visiting its parents in associationsOld and then
+     * adding the authority to associationsNew. Used to sort associationsOld into 'depth-first' order.
+     * 
+     * @param authorityPath
+     *            The authority to visit, preceeded by all its descendants. Allows detection of cyclic child
+     *            associations.
+     * @param allAuthorities
+     *            the set of all known authorities
+     * @param associationsOld
+     *            the association map to sort
+     * @param associationsNew
+     *            the association map to add to in depth first order
+     */
+    private void visitGroupAssociations(List<String> authorityPath, Set<String> allAuthorities,
+            Map<String, Set<String>> associationsOld, Map<String, Set<String>> associationsNew)
+    {
+        String authorityName = authorityPath.get(authorityPath.size() - 1);
+        if (!associationsNew.containsKey(authorityName))
+        {
+            Set<String> associations = associationsOld.get(authorityName);
+
+            if (!associations.isEmpty())
+            {
+                // Filter out associations to unknown parent authorities
+                associations.retainAll(allAuthorities);
+                int insertIndex = authorityPath.size();
+                for (String parentAuthority : associations)
+                {
+                    // Prevent cyclic paths
+                    if (!authorityPath.contains(parentAuthority))
+                    {
+                        authorityPath.add(parentAuthority);
+                        visitGroupAssociations(authorityPath, allAuthorities, associationsOld, associationsNew);
+                        authorityPath.remove(insertIndex);
+                    }
+                }
+            }
+
+            // Omit associations from users from this map, as they will be processed separately
+            if (AuthorityType.getAuthorityType(authorityName) != AuthorityType.USER)
+            {
+                associationsNew.put(authorityName, associations);
+            }
+        }
     }
 
     /**

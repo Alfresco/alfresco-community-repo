@@ -24,6 +24,7 @@
  */
 package org.alfresco.repo.security.authority;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -204,7 +205,12 @@ public class SimpleAuthorityServiceImpl implements AuthorityService
     {
         
     }
-    
+
+    public void addAuthority(Collection<String> parentNames, String childName)
+    {
+
+    }
+
     public String createAuthority(AuthorityType type, String shortName)
     {
        return "";

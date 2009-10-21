@@ -325,6 +325,26 @@ public interface NodeService
             QName qname) throws InvalidNodeRefException;
     
     /**
+     * Associates a given child node with a given collection of parents.  All nodes must belong to the same store.
+     * <p>
+     * 
+     * 
+     * @param parentRefs
+     * @param childRef 
+     * @param assocTypeQName the qualified name of the association type as defined in the datadictionary
+     * @param qname the qualified name of the association
+     * @return Returns a reference to the newly created child association
+     * @throws InvalidNodeRefException if the parent or child nodes could not be found
+     * @throws CyclicChildRelationshipException if the child partakes in a cyclic relationship after the add
+     */
+    @Auditable(key = Auditable.Key.ARG_0 ,parameters = {"parentRefs", "childRef", "assocTypeQName", "qname"})
+    public List<ChildAssociationRef> addChild(
+            Collection<NodeRef> parentRefs,
+            NodeRef childRef,
+            QName assocTypeQName,
+            QName qname) throws InvalidNodeRefException;
+
+    /**
      * Severs all parent-child relationships between two nodes.
      * <p>
      * The child node will be cascade deleted if one of the associations was the

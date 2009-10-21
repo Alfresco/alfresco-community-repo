@@ -852,48 +852,63 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
 //            invokeOnDeleteNode(childParentAssocRef, childNodeType, childNodeQNames, true);
         }
     }
-    
+
     public ChildAssociationRef addChild(NodeRef parentRef, NodeRef childRef, QName assocTypeQName, QName assocQName)
     {
-        Pair<Long, NodeRef> parentNodePair = getNodePairNotNull(parentRef);
-        Long parentNodeId = parentNodePair.getFirst();
+        return addChild(Collections.singletonList(parentRef), childRef, assocTypeQName, assocQName).get(0);
+    }
+
+    public List<ChildAssociationRef> addChild(Collection<NodeRef> parentRefs, NodeRef childRef, QName assocTypeQName, QName assocQName)
+    {
+        // Get the node's name, if present
         Pair<Long, NodeRef> childNodePair = getNodePairNotNull(childRef);
         Long childNodeId = childNodePair.getFirst();
-
-        // Invoke policy behaviours
-        invokeBeforeCreateChildAssociation(parentRef, childRef, assocTypeQName, assocQName, false);
-        
-        // Get the node's name, if present
         Map<QName, Serializable> childNodeProperties = nodeDaoService.getNodeProperties(childNodePair.getFirst());
         String childNodeName = extractNameProperty(childNodeProperties);
-        
-        // make the association
-        Pair<Long, ChildAssociationRef> childAssocPair =  nodeDaoService.newChildAssoc(
-                parentNodeId,
-                childNodeId,
-                false,
-                assocTypeQName,
-                assocQName,
-                childNodeName);
-        ChildAssociationRef childAssocRef = childAssocPair.getSecond();
-        // ensure name uniqueness
-        setChildNameUnique(childAssocPair, childNodePair);
-        NodeRef childNodeRef = childAssocRef.getChildRef();
+
+        List <ChildAssociationRef> childAssociationRefs = new ArrayList<ChildAssociationRef>(parentRefs.size());
+        List<Pair<Long, NodeRef>> parentNodePairs = new ArrayList<Pair<Long, NodeRef>>(parentRefs.size());
+        for (NodeRef parentRef : parentRefs)
+        {
+            Pair<Long, NodeRef> parentNodePair = getNodePairNotNull(parentRef);
+            Long parentNodeId = parentNodePair.getFirst();
+            parentNodePairs.add(parentNodePair);
+
+            // Invoke policy behaviours
+            invokeBeforeCreateChildAssociation(parentRef, childRef, assocTypeQName, assocQName, false);
+
+            // make the association
+            Pair<Long, ChildAssociationRef> childAssocPair = nodeDaoService.newChildAssoc(parentNodeId, childNodeId,
+                    false, assocTypeQName, assocQName, childNodeName);
+            // ensure name uniqueness
+            setChildNameUnique(childAssocPair, childNodePair);
+
+            childAssociationRefs.add(childAssocPair.getSecond());
+        }
         
         // check that the child addition of the child has not created a cyclic relationship
         // this functionality is provided for free in getPath
-        getPaths(childNodeRef, false);
+        getPaths(childRef, false);
 
         // Invoke policy behaviours
-        invokeOnCreateChildAssociation(childAssocRef, false);
+        for (ChildAssociationRef childAssocRef : childAssociationRefs)
+        {
+            invokeOnCreateChildAssociation(childAssocRef, false);
+        }
         
         // Add missing aspects
-        addMissingAspects(parentNodePair, assocTypeQName);
+        for (Pair<Long, NodeRef> parentNodePair : parentNodePairs)
+        {
+            addMissingAspects(parentNodePair, assocTypeQName);
+        }
 
         // Index
-        nodeIndexer.indexCreateChildAssociation(childAssocRef);
+        for (ChildAssociationRef childAssocRef : childAssociationRefs)
+        {
+            nodeIndexer.indexCreateChildAssociation(childAssocRef);
+        }
 
-        return childAssocRef;
+        return childAssociationRefs;
     }
 
     public void removeChild(NodeRef parentRef, NodeRef childRef) throws InvalidNodeRefException

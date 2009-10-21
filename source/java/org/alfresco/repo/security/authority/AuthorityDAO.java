@@ -24,21 +24,21 @@
  */
 package org.alfresco.repo.security.authority;
 
+import java.util.Collection;
 import java.util.Set;
 
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
 
 public interface AuthorityDAO
 {
     /**
-     * Add an authority to another.
+     * Add a child authority to the given parent authorities
      * 
-     * @param parentName
+     * @param parentNames
      * @param childName
      */
-    void addAuthority(String parentName, String childName);
+    void addAuthority(Collection<String> parentNames, String childName);
 
     /**
      * Create an authority.

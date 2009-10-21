@@ -149,26 +149,34 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
         return ref != null;
     }
 
-    public void addAuthority(String parentName, String childName)
+    public void addAuthority(Collection<String> parentNames, String childName)
     {
-        NodeRef parentRef = getAuthorityOrNull(parentName);
-        if (parentRef == null)
-        {
-            throw new UnknownAuthorityException("An authority was not found for " + parentName);
-        }
+        Set<NodeRef> parentRefs = new HashSet<NodeRef>(parentNames.size() * 2);
         AuthorityType authorityType = AuthorityType.getAuthorityType(childName);
-        if (!authorityType.equals(AuthorityType.USER)
-                && !authorityType.equals(AuthorityType.GROUP)
-                && !(authorityType.equals(AuthorityType.ROLE) && AuthorityType.getAuthorityType(parentName).equals(AuthorityType.ROLE)))
+        boolean notUserOrGroup = !authorityType.equals(AuthorityType.USER) && !authorityType.equals(AuthorityType.GROUP);
+        for (String parentName : parentNames)
         {
-            throw new AlfrescoRuntimeException("Authorities of the type " + authorityType + " may not be added to other authorities");
+            NodeRef parentRef = getAuthorityOrNull(parentName);
+            if (parentRef == null)
+            {
+                throw new UnknownAuthorityException("An authority was not found for " + parentName);
+            }
+            if (notUserOrGroup
+                    && !(authorityType.equals(AuthorityType.ROLE) && AuthorityType.getAuthorityType(parentName).equals(
+                            AuthorityType.ROLE)))
+            {
+                throw new AlfrescoRuntimeException("Authorities of the type " + authorityType
+                        + " may not be added to other authorities");
+            }
+            parentRefs.add(parentRef);
         }
         NodeRef childRef = getAuthorityOrNull(childName);
         if (childRef == null)
         {
             throw new UnknownAuthorityException("An authority was not found for " + childName);
         }
-        nodeService.addChild(parentRef, childRef, ContentModel.ASSOC_MEMBER, QName.createQName("cm", childName, namespacePrefixResolver));
+        nodeService.addChild(parentRefs, childRef, ContentModel.ASSOC_MEMBER, QName.createQName("cm", childName,
+                namespacePrefixResolver));
         authorityLookupCache.clear();
     }
 
@@ -183,10 +191,12 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
                 ContentModel.TYPE_AUTHORITY_CONTAINER, props).getChildRef();
         if (authorityZones != null)
         {
+            Set<NodeRef> zoneRefs = new HashSet<NodeRef>(authorityZones.size() * 2);
             for (String authorityZone : authorityZones)
             {
-                nodeService.addChild(getOrCreateZone(authorityZone), childRef, ContentModel.ASSOC_IN_ZONE, QName.createQName("cm", name, namespacePrefixResolver));
+                zoneRefs.add(getOrCreateZone(authorityZone));
             }
+            nodeService.addChild(zoneRefs, childRef, ContentModel.ASSOC_IN_ZONE, QName.createQName("cm", name, namespacePrefixResolver));
         }
         authorityLookupCache.clear();
     }
@@ -607,15 +617,15 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
     {
         if ((zones != null) && (zones.size() > 0))
         {
+            Set<NodeRef> zoneRefs = new HashSet<NodeRef>(zones.size() * 2);
+            for (String authorityZone : zones)
+            {
+                zoneRefs.add(getOrCreateZone(authorityZone));
+            }
             NodeRef authRef = getAuthorityOrNull(authorityName);
             if (authRef != null)
             {
-                for (String zone : zones)
-                {
-                    // Add the person to an authentication zone (corresponding to an external user registry)
-                    // Let's preserve case on this child association
-                    nodeService.addChild(getOrCreateZone(zone), authRef, ContentModel.ASSOC_IN_ZONE, QName.createQName("cm", authorityName, namespacePrefixResolver));
-                }
+                nodeService.addChild(zoneRefs, authRef, ContentModel.ASSOC_IN_ZONE, QName.createQName("cm", authorityName, namespacePrefixResolver));
             }
         }
     }

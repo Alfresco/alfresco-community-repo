@@ -631,25 +631,29 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
         {
             return this.zoneId;
         }
+        
+        
 
-        /*
-         * (non-Javadoc)
-         * @see org.alfresco.repo.security.sync.UserRegistry#getGroups(java.util.Date, java.util.Set, boolean)
+        /* (non-Javadoc)
+         * @see org.alfresco.repo.security.sync.UserRegistry#processDeletions(java.util.Set)
          */
-        public Collection<NodeDescription> getGroups(Date modifiedSince, Set<String> candidateAuthoritiesForDeletion,
-                boolean prune)
+        public void processDeletions(Set<String> candidateAuthoritiesForDeletion)
         {
-            if (prune)
+            for (NodeDescription person : this.persons)
             {
-                for (NodeDescription person : this.persons)
-                {
-                    candidateAuthoritiesForDeletion.remove(person.getProperties().get(ContentModel.PROP_USERNAME));
-                }
-                for (NodeDescription group : this.groups)
-                {
-                    candidateAuthoritiesForDeletion.remove(group.getProperties().get(ContentModel.PROP_AUTHORITY_NAME));
-                }
+                candidateAuthoritiesForDeletion.remove(person.getProperties().get(ContentModel.PROP_USERNAME));
             }
+            for (NodeDescription group : this.groups)
+            {
+                candidateAuthoritiesForDeletion.remove(group.getProperties().get(ContentModel.PROP_AUTHORITY_NAME));
+            }
+        }
+
+        /* (non-Javadoc)
+         * @see org.alfresco.repo.security.sync.UserRegistry#getGroups(java.util.Date)
+         */
+        public Collection<NodeDescription> getGroups(Date modifiedSince)
+        {
             return this.groups;
         }
 

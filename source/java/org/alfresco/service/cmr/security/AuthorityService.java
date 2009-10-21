@@ -24,6 +24,7 @@
  */
 package org.alfresco.service.cmr.security;
 
+import java.util.Collection;
 import java.util.Set;
 
 import org.alfresco.service.Auditable;
@@ -214,6 +215,18 @@ public interface AuthorityService
      */
     @Auditable(parameters = {"parentName", "childName"})
     public void addAuthority(String parentName, String childName);
+
+    /**
+     * Set a given child authority to be included by the given parent authorities. For example, adding a
+     * group to groups or adding a user to groups.
+     * 
+     * @param parentNames -
+     *            the full name string identifier for the parents.
+     * @param childName -
+     *            the string identifier for the child.
+     */
+    @Auditable(parameters = {"parentNames", "childName"})
+    public void addAuthority(Collection<String> parentNames, String childName);
 
     /**
      * Remove an authority as a member of another authority. The child authority

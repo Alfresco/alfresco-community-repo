@@ -237,6 +237,18 @@ public class NodeServiceImpl implements NodeService, VersionModel
     /**
      * @throws UnsupportedOperationException always
      */
+    public List<ChildAssociationRef> addChild(Collection<NodeRef> parentRefs,
+            NodeRef childRef,
+            QName assocTypeQName,
+            QName qname) throws InvalidNodeRefException
+    {
+        // This operation is not supported for a version store
+        throw new UnsupportedOperationException(MSG_UNSUPPORTED);
+    }
+
+    /**
+     * @throws UnsupportedOperationException always
+     */
     public void removeChild(NodeRef parentRef, NodeRef childRef) throws InvalidNodeRefException
     {
         // This operation is not supported for a version store

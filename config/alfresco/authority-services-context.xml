@@ -25,6 +25,9 @@
         <property name="authorityDAO">
             <ref bean="authorityDAO" />
         </property>
+        <property name="userNameMatcher">
+            <ref bean="userNameMatcher" />
+        </property>
         <property name="authenticationService">
             <ref bean="authenticationService" />
         </property>

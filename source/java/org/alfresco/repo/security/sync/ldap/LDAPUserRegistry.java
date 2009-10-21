@@ -480,14 +480,11 @@ public class LDAPUserRegistry implements UserRegistry, LDAPNameResolver, Initial
         return new PersonCollection(modifiedSince);
     }
 
-    /**
-     * Retrieves the complete set of known users and groups from the LDAP directory and removes them from the set of
-     * candidate local authorities to be deleted.
-     * 
-     * @param candidateAuthoritiesForDeletion
-     *            the candidate authorities for deletion
+    /*
+     * (non-Javadoc)
+     * @see org.alfresco.repo.security.sync.UserRegistry#processDeletions(java.util.Set)
      */
-    private void processDeletions(final Set<String> candidateAuthoritiesForDeletion)
+    public void processDeletions(final Set<String> candidateAuthoritiesForDeletion)
     {
         processQuery(new SearchCallback()
         {
@@ -562,20 +559,8 @@ public class LDAPUserRegistry implements UserRegistry, LDAPNameResolver, Initial
      * (non-Javadoc)
      * @see org.alfresco.repo.security.sync.UserRegistry#getGroups(java.util.Date)
      */
-    public Collection<NodeDescription> getGroups(Date modifiedSince, final Set<String> candidateAuthoritiesForDeletion,
-            boolean prune)
+    public Collection<NodeDescription> getGroups(Date modifiedSince)
     {
-        // Take the given set of authorities as a starting point for the set of all authorities
-        final Set<String> allAuthorities = new TreeSet<String>(candidateAuthoritiesForDeletion);
-
-        // If required, work out what authority deletions are required by pruning down the deletion set and the set of
-        // all authorities
-        if (prune)
-        {
-            processDeletions(candidateAuthoritiesForDeletion);
-            allAuthorities.removeAll(candidateAuthoritiesForDeletion);
-        }
-
         // Work out whether the user and group trees are disjoint. This may allow us to optimize reverse DN
         // resolution.
         final LdapName groupDistinguishedNamePrefix;
@@ -636,7 +621,6 @@ public class LDAPUserRegistry implements UserRegistry, LDAPNameResolver, Initial
                     group = new NodeDescription(result.getNameInNamespace());
                     group.getProperties().put(ContentModel.PROP_AUTHORITY_NAME, gid);
                     lookup.put(gid, group);
-                    allAuthorities.add(gid);
                 }
                 else if (LDAPUserRegistry.this.errorOnDuplicateGID)
                 {
@@ -799,12 +783,6 @@ public class LDAPUserRegistry implements UserRegistry, LDAPNameResolver, Initial
             LDAPUserRegistry.logger.debug("Found " + lookup.size());
         }
 
-        // Post-process the group associations to filter out those that point to excluded users or groups (now that we
-        // know the full set of groups)
-        for (NodeDescription group : lookup.values())
-        {
-            group.getChildAssociations().retainAll(allAuthorities);
-        }
         return lookup.values();
     }
 

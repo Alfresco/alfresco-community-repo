@@ -950,6 +950,28 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
             QName assocTypeQName,
             QName qname) throws InvalidNodeRefException
     {
+        return addChild(Collections.singletonList(parentRef), childRef, assocTypeQName, qname).get(0);
+    }
+
+    /**
+     * Associates a given child node with a given collection of parents.  All nodes must belong to the same store.
+     * <p>
+     * 
+     * 
+     * @param parentRefs
+     * @param childRef 
+     * @param assocTypeQName the qualified name of the association type as defined in the datadictionary
+     * @param qname the qualified name of the association
+     * @return Returns a reference to the newly created child association
+     * @throws InvalidNodeRefException if the parent or child nodes could not be found
+     * @throws CyclicChildRelationshipException if the child partakes in a cyclic relationship after the add
+     */
+    public List<ChildAssociationRef> addChild(
+            Collection<NodeRef> parentRefs,
+            NodeRef childRef,
+            QName assocTypeQName,
+            QName qname) throws InvalidNodeRefException
+    {
         Pair<Integer, String> childVersionPath = AVMNodeConverter.ToAVMVersionPath(childRef);
         AVMNodeDescriptor child = fAVMService.lookup(childVersionPath.getFirst(), 
                                                      childVersionPath.getSecond());
@@ -957,24 +979,29 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
         {
             throw new InvalidNodeRefException(childVersionPath.getSecond() + " not found.", childRef);
         }
-        Pair<Integer, String> parentVersionPath = AVMNodeConverter.ToAVMVersionPath(parentRef);
-        if (parentVersionPath.getFirst() >= 0)
+        
+        List<ChildAssociationRef> childAssociationRefs = new ArrayList<ChildAssociationRef>(parentRefs.size());
+        for (NodeRef parentRef : parentRefs)
         {
-            throw new InvalidNodeRefException("Read Only.", parentRef);
+            Pair<Integer, String> parentVersionPath = AVMNodeConverter.ToAVMVersionPath(parentRef);
+            if (parentVersionPath.getFirst() >= 0)
+            {
+                throw new InvalidNodeRefException("Read Only.", parentRef);
+            }
+            try
+            {
+                fAVMService.link(parentVersionPath.getSecond(), qname.getLocalName(), child);
+                ChildAssociationRef newChild = new ChildAssociationRef(assocTypeQName, parentRef, qname,
+                        AVMNodeConverter.ToNodeRef(-1, AVMNodeConverter.ExtendAVMPath(parentVersionPath.getSecond(),
+                                qname.getLocalName())));
+                childAssociationRefs.add(newChild);
+            }
+            catch (AVMException e)
+            {
+                throw new InvalidNodeRefException("Could not link.", childRef);
+            }
         }
-        try
-        {
-            fAVMService.link(parentVersionPath.getSecond(), qname.getLocalName(), child);
-            ChildAssociationRef newChild =
-                new ChildAssociationRef(assocTypeQName, parentRef, qname, 
-                    AVMNodeConverter.ToNodeRef(-1,
-                       AVMNodeConverter.ExtendAVMPath(parentVersionPath.getSecond(), qname.getLocalName())));
-            return newChild;
-        }
-        catch (AVMException e)
-        {
-            throw new InvalidNodeRefException("Could not link.", childRef);
-        }
+        return childAssociationRefs;
     }
     
     /**

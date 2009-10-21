@@ -24,6 +24,7 @@
  */
 package org.alfresco.repo.security.authority;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -31,6 +32,7 @@ import java.util.Set;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.permissions.PermissionServiceSPI;
+import org.alfresco.repo.security.person.UserNameMatcher;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -59,6 +61,8 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
 
     private AuthorityDAO authorityDAO;
     
+    private UserNameMatcher userNameMatcher;
+	
     private AuthenticationService authenticationService;
     
     private PermissionServiceSPI permissionServiceSPI;
@@ -102,8 +106,13 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
     public void setAuthorityDAO(AuthorityDAO authorityDAO)
     {
         this.authorityDAO = authorityDAO;
-    }
+    }        
         
+    public void setUserNameMatcher(UserNameMatcher userNameMatcher)
+    {
+        this.userNameMatcher = userNameMatcher;
+    }
+
     public void setAuthenticationService(AuthenticationService authenticationService)
     {
         this.authenticationService = authenticationService;
@@ -206,44 +215,9 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
         Set<String> adminUsers = this.authenticationService.getDefaultAdministratorUserNames();
         Set<String> guestUsers = this.authenticationService.getDefaultGuestUserNames();
 
-        // note: for multi-tenancy, this currently relies on a naming convention which assumes that all tenant admins will 
-        // have the same base name as the default non-tenant specific admin. Typically "admin" is the default required admin user, 
-        // although, if for example "bob" is also listed as an admin then all tenant-specific bob's will also have admin authority
-        String currentUserBaseName = tenantService.getBaseNameUser(currentUserName);
-        
-        boolean isAdminUser = false;
-        boolean isGuestUser = false;
-        if (tenantService.isEnabled())
-        {
-            // note: for multi-tenancy, this currently relies on a naming convention which assumes that all tenant admins will 
-            // have the same base name as the default non-tenant specific admin. Typically "admin" is the default required admin user, 
-            // although, if for example "bob" is also listed as an admin then all tenant-specific bob's will also have admin authority
-            
-            for (String adminUser : adminUsers)
-            {
-                if (adminUser.equals(currentUserName) || tenantService.getBaseNameUser(adminUser).equals(currentUserBaseName))
-                {
-                    isAdminUser = true;
-                    break;
-                }
-            }
-            if (!isAdminUser)
-            {
-                for (String guestUser : guestUsers)
-                {
-                    if (guestUser.equals(currentUserName) || tenantService.getBaseNameUser(guestUser).equals(currentUserBaseName))
-                    {
-                        isGuestUser = true;
-                        break;
-                    }
-                }
-            }
-        }
-        else
-        {
-            isAdminUser = (adminUsers.contains(currentUserName) || adminUsers.contains(currentUserBaseName));
-            isGuestUser = (guestUsers.contains(currentUserName) || guestUsers.contains(currentUserBaseName));
-        }
+        // Check for name matches using MT + case sensitivity rules
+        boolean isAdminUser = containsMatch(adminUsers, currentUserName);
+        boolean isGuestUser = containsMatch(guestUsers, currentUserName);
         
         // Check if any of the user's groups are listed as admin groups
         if (!isAdminUser && !adminGroups.isEmpty())
@@ -338,7 +312,43 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
 
     public void addAuthority(String parentName, String childName)
     {
-        authorityDAO.addAuthority(parentName, childName);
+        addAuthority(Collections.singleton(parentName), childName);
+    }
+
+    public void addAuthority(Collection<String> parentNames, String childName)
+    {
+        authorityDAO.addAuthority(parentNames, childName);
+    }
+
+    private boolean containsMatch(Set<String> names, String name)
+    {
+        String baseName = this.tenantService.getBaseNameUser(name);
+        if (this.tenantService.isEnabled())
+        {
+            // note: for multi-tenancy, this currently relies on a naming convention which assumes that all tenant
+            // admins will have the same base name as the default non-tenant specific admin. Typically "admin" is the
+            // default required admin user, although, if for example "bob" is also listed as an admin then all
+            // tenant-specific bob's will also have admin authority
+            for (String candidate : names)
+            {
+                if (this.userNameMatcher.matches(candidate, name)
+                        || this.userNameMatcher.matches(this.tenantService.getBaseNameUser(candidate), baseName))
+                {
+                    return true;
+                }
+            }
+        }
+        else
+        {
+            for (String candidate : names)
+            {
+                if (this.userNameMatcher.matches(candidate, name) || this.userNameMatcher.matches(candidate, baseName))
+                {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     private void checkTypeIsMutable(AuthorityType type)

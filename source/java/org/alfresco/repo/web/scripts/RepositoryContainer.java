@@ -462,8 +462,9 @@ public class RepositoryContainer extends AbstractRuntimeContainer implements Ten
         Registry registry = webScriptsRegistryCache.get(tenantDomain);
         if (registry == null)
         {
-            init();
-            registry = webScriptsRegistryCache.get(tenantDomain);
+            registry = (Registry)registryFactory.getObject();
+            registry.reset();
+            webScriptsRegistryCache.put(tenantDomain, registry);
         }
         return registry;
     }
@@ -555,9 +556,6 @@ public class RepositoryContainer extends AbstractRuntimeContainer implements Ten
     public void init()
     {
         tenantAdminService.register(this);
-        
-        Registry registry = (Registry)registryFactory.getObject();
-        webScriptsRegistryCache.put(tenantAdminService.getCurrentUserDomain(), registry);
         
         super.reset();
     }

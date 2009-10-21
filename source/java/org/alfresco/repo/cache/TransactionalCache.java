@@ -441,6 +441,11 @@ public class TransactionalCache<K extends Serializable, V extends Object>
                     // data by clearing the shared cache after the transaction.  Also, the
                     // shared cache needs to be ignored for the rest of the transaction.
                     txnData.isClearOn = true;
+                    if (!txnData.haveIssuedFullWarning && logger.isWarnEnabled())
+                    {
+                        logger.warn("Transactional update cache '" + name + "' is full (" + maxCacheSize + ").");
+                        txnData.haveIssuedFullWarning = true;
+                    }
                 }
                 CacheBucket<V> bucket = null;
                 if (sharedCache.contains(key))
@@ -532,11 +537,10 @@ public class TransactionalCache<K extends Serializable, V extends Object>
                         // data by clearing the shared cache after the transaction.  Also, the
                         // shared cache needs to be ignored for the rest of the transaction.
                         txnData.isClearOn = true;
-                        if (isDebugEnabled)
+                        if (!txnData.haveIssuedFullWarning && logger.isWarnEnabled())
                         {
-                            logger.debug("In transaction - removal cache reach capacity reached: \n" +
-                                    "   cache: " + this + "\n" +
-                                    "   txn: " + AlfrescoTransactionSupport.getTransactionId());
+                            logger.warn("Transactional removal cache '" + name + "' is full (" + maxCacheSize + ").");
+                            txnData.haveIssuedFullWarning = true;
                         }
                     }
                     else

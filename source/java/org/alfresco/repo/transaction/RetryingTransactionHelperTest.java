@@ -47,6 +47,7 @@ import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
 import org.apache.commons.lang.mutable.MutableInt;
 import org.hibernate.SessionFactory;
+import org.hibernate.engine.TransactionHelper;
 import org.springframework.context.ApplicationContext;
 import org.springframework.dao.ConcurrencyFailureException;
 import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
@@ -376,6 +377,8 @@ public class RetryingTransactionHelperTest extends TestCase
     @SuppressWarnings("unchecked")
     public void testNestedWithoutPropogationConcurrentUntilFailure()
     {
+        final RetryingTransactionHelper txnHelperForTest = transactionService.getRetryingTransactionHelper();
+        txnHelperForTest.setMaxRetries(1);
         RetryingTransactionCallback<Long> callback = new RetryingTransactionCallback<Long>()
         {
             public Long execute() throws Throwable
@@ -389,13 +392,13 @@ public class RetryingTransactionHelperTest extends TestCase
                     }
                 };
                 incrementCheckValue();
-                txnHelper.doInTransaction(callbackInner, false, true);
+                txnHelperForTest.doInTransaction(callbackInner, false, true);
                 return getCheckValue();
             }
         };
         try
         {
-            txnHelper.doInTransaction(callback);
+            txnHelperForTest.doInTransaction(callback);
             fail("Concurrent nested access not leading to failure");
         }
         catch (Throwable e)
@@ -403,46 +406,6 @@ public class RetryingTransactionHelperTest extends TestCase
             Throwable validCause = ExceptionStackUtil.getCause(e, RetryingTransactionHelper.RETRY_EXCEPTIONS);
             assertNotNull("Unexpected cause of the failure", validCause);
         }
-    }
-    
-    /**
-     * Checks nesting of two transactions with <code>requiresNew == true</code>,
-     * but where the inner transaction fails writes values that the outer transaction
-     * fails on.
-     */
-    public void testNestedWithoutPropogationOuterFailing()
-    {
-        RetryingTransactionCallback<Long> callback = new RetryingTransactionCallback<Long>()
-        {
-            private int maxCalls = 3;
-            private int callCount = 0;
-            public Long execute() throws Throwable
-            {
-                callCount++;
-                RetryingTransactionCallback<Long> callbackInner = new RetryingTransactionCallback<Long>()
-                {
-                    public Long execute() throws Throwable
-                    {
-                        for (int i = 0; i < 5; i++)
-                        {
-                            incrementCheckValue();
-                        }
-                        return getCheckValue();
-                    }
-                };
-                // Increment the value so that the outer transaction is bound to the particular
-                // version of the data
-                incrementCheckValue();
-                // Don't execute the inner transaction the last time around
-                if (callCount < maxCalls)
-                {
-                    txnHelper.doInTransaction(callbackInner, false, true);
-                }
-                return getCheckValue();
-            }
-        };
-        long checkValue = txnHelper.doInTransaction(callback);
-        assertEquals("Check value not incremented", 11, checkValue);
     }
     
     public void testLostConnectionRecovery()

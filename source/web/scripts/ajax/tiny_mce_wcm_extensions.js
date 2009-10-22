@@ -74,6 +74,12 @@ function alfresco_TinyMCE_urlconverter_callback(href, element, onsave)
 
 function alfresco_TinyMCE_file_browser_callback(field_name, url, type, win)
 {
+  // remove url prefix ready for picker
+  if (url.startsWith(alfresco.constants.AVM_WEBAPP_URL))
+  {
+    url = url.replace(alfresco.constants.AVM_WEBAPP_URL, ""); 
+  }
+  
   //tinyMCE.loadCSS doesn't seem to work with plugins so add css manually
   //tinyMCE.activeEditor.dom.loadCSS(alfresco.constants.WEBAPP_CONTEXT + "/css/xforms.css");
   var headEl = win.document.getElementsByTagName("head")[0];         

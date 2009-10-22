@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.alfresco.repo.domain.DbAccessControlList;
+import org.alfresco.repo.domain.hibernate.DirtySessionAnnotation;
 import org.alfresco.repo.domain.hibernate.AclDaoComponentImpl.Indirection;
 import org.alfresco.repo.security.permissions.ACLCopyMode;
 import org.alfresco.repo.security.permissions.AccessControlEntry;
@@ -48,6 +49,7 @@ public interface AclDaoComponent extends TransactionalDao
      * @param id
      * @return
      */
+    @DirtySessionAnnotation(markDirty=false)
     DbAccessControlList getDbAccessControlList(Long id);
     
     
@@ -57,6 +59,7 @@ public interface AclDaoComponent extends TransactionalDao
      * @param id
      * @return
      */
+    @DirtySessionAnnotation(markDirty=false)
     public AccessControlList getAccessControlList(Long id);
 
     /**
@@ -65,6 +68,7 @@ public interface AclDaoComponent extends TransactionalDao
      * @param id
      * @return - the id of all ACLs affected
      */
+    @DirtySessionAnnotation(markDirty=false)
     public List<AclChange> deleteAccessControlList(Long id);
 
     /**
@@ -73,6 +77,7 @@ public interface AclDaoComponent extends TransactionalDao
      * @param id
      * @return - the id of all ACLs affected
      */
+    @DirtySessionAnnotation(markDirty=false)
     public List<AclChange> deleteLocalAccessControlEntries(Long id);
 
     /**
@@ -81,6 +86,7 @@ public interface AclDaoComponent extends TransactionalDao
      * @param id
      * @return - the id of all ACLs affected
      */
+    @DirtySessionAnnotation(markDirty=false)
     public List<AclChange> deleteInheritedAccessControlEntries(Long id);
 
     /**
@@ -89,6 +95,7 @@ public interface AclDaoComponent extends TransactionalDao
      * @param authority
      * @return - the id of all ACLs affected
      */
+    @DirtySessionAnnotation(markDirty=false)
     public List<AclChange> invalidateAccessControlEntries(String authority);
 
     /**
@@ -97,6 +104,7 @@ public interface AclDaoComponent extends TransactionalDao
      * @param authority
      * @return - the id of all ACLs affected
      */
+    @DirtySessionAnnotation(markDirty=false)
     public List<AclChange> deleteAccessControlEntries(String authority);
 
     /**
@@ -107,6 +115,7 @@ public interface AclDaoComponent extends TransactionalDao
      *            non null elements are used for the match
      * @return - the id of all ACLs affected
      */
+    @DirtySessionAnnotation(markDirty=false)
     public List<AclChange> deleteAccessControlEntries(Long id, AccessControlEntry pattern);
 
     /**
@@ -116,7 +125,18 @@ public interface AclDaoComponent extends TransactionalDao
      * @param ace
      * @return - the id of all ACLs affected
      */
+    @DirtySessionAnnotation(markDirty=false)
     public List<AclChange> setAccessControlEntry(Long id, AccessControlEntry ace);
+    
+    /**
+     * Add an access control entry
+     * 
+     * @param id
+     * @param ace
+     * @return - the id of all ACLs affected
+     */
+    @DirtySessionAnnotation(markDirty=false)
+    public List<AclChange> setAccessControlEntries(Long id, List<AccessControlEntry> aces);
 
     /**
      * Enable inheritance
@@ -125,6 +145,7 @@ public interface AclDaoComponent extends TransactionalDao
      * @param parent
      * @return
      */
+    @DirtySessionAnnotation(markDirty=false)
     public List<AclChange> enableInheritance(Long id, Long parent);
 
     /**
@@ -134,6 +155,7 @@ public interface AclDaoComponent extends TransactionalDao
      * @param setInheritedOnAcl
      * @return
      */
+    @DirtySessionAnnotation(markDirty=false)
     public List<AclChange> disableInheritance(Long id, boolean setInheritedOnAcl);
 
     /**
@@ -142,15 +164,20 @@ public interface AclDaoComponent extends TransactionalDao
      * @param id
      * @return - the id of all ACLs affected
      */
+    @DirtySessionAnnotation(markDirty=false)
     public AccessControlListProperties getAccessControlListProperties(Long id);
 
     /**
-     * Create a bew ACL with teh given properties. Unset ones are assigned defaults.
+     * Create a new ACL with the given properties. Unset properties are assigned defaults.
      * 
      * @param properties
      * @return
      */
+    @DirtySessionAnnotation(markDirty=false)
     public Long createAccessControlList(AccessControlListProperties properties);
+
+    @DirtySessionAnnotation(markDirty=false)
+    public Long createAccessControlList(AccessControlListProperties properties, List<AccessControlEntry> aces, Long inherited);
 
     /**
      * Get the id of the ACL inherited from the one given
@@ -159,6 +186,7 @@ public interface AclDaoComponent extends TransactionalDao
      * @param id
      * @return
      */
+    @DirtySessionAnnotation(markDirty=false)
     public Long getInheritedAccessControlList(Long id);
 
     /**
@@ -168,23 +196,67 @@ public interface AclDaoComponent extends TransactionalDao
      * @param target
      * @return
      */
+    @DirtySessionAnnotation(markDirty=false)
     public List<AclChange> mergeInheritedAccessControlList(Long inherited, Long target);
     
+    @DirtySessionAnnotation(markDirty=false)
     public DbAccessControlList getDbAccessControlListCopy(Long toCopy, Long toInheritFrom, ACLCopyMode mode);
     
+    @DirtySessionAnnotation(markDirty=false)
     public Long getCopy(Long toCopy, Long toInheritFrom, ACLCopyMode mode);
     
+    @DirtySessionAnnotation(markDirty=false)
     public List<Long> getAvmNodesByACL(Long id);
     
+    @DirtySessionAnnotation(markDirty=false)
     public List<Indirection> getAvmIndirections();
     
     /**
      * hibernate lifecycle support
      * @param id
      */
+    @DirtySessionAnnotation(markDirty=false)
     public void onDeleteAccessControlList(final long id);
     
+    @DirtySessionAnnotation(markDirty=false)
     public void updateAuthority(String before, String after);
     
+    @DirtySessionAnnotation(markDirty=false)
     public void createAuthority(String authority);
+
+
+    /**
+     * @return
+     */
+    @DirtySessionAnnotation(markDirty=false)
+    boolean supportsProgressTracking();
+
+
+    /**
+     * @return
+     */
+    @DirtySessionAnnotation(markDirty=false)
+    Long getDmNodeCount();
+
+
+    /**
+     * @return
+     */
+    @DirtySessionAnnotation(markDirty=false)
+    Long getMaxAclId();
+
+
+    /**
+     * @param max
+     * @return
+     */
+    @DirtySessionAnnotation(markDirty=false)
+    Long getDmNodeCountWithNewACLS(Long max);
+
+
+    /**
+     * @return
+     */
+    @DirtySessionAnnotation(markDirty=false)
+    Long getNewInStore();
 }

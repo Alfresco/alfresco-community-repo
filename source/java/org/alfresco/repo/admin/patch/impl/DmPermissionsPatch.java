@@ -31,6 +31,7 @@ import org.alfresco.repo.admin.patch.AbstractPatch;
 import org.alfresco.repo.domain.AccessControlListDAO;
 import org.alfresco.repo.domain.hibernate.AclDaoComponentImpl;
 import org.alfresco.repo.security.permissions.ACLType;
+import org.alfresco.repo.security.permissions.impl.AclDaoComponent;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 
@@ -44,7 +45,7 @@ public class DmPermissionsPatch extends AbstractPatch
 
     private AccessControlListDAO accessControlListDao;
 
-    private AclDaoComponentImpl aclDaoComponent;
+    private AclDaoComponent aclDaoComponent;
 
     @Override
     protected String applyInternal() throws Exception
@@ -85,7 +86,7 @@ public class DmPermissionsPatch extends AbstractPatch
      * 
      * @param aclDaoComponent
      */
-    public void setAclDaoComponent(AclDaoComponentImpl aclDaoComponent)
+    public void setAclDaoComponent(AclDaoComponent aclDaoComponent)
     {
         this.aclDaoComponent = aclDaoComponent;
     }

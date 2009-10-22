@@ -29,9 +29,9 @@ import java.util.List;
 
 import org.alfresco.i18n.I18NUtil;
 import org.alfresco.repo.admin.patch.AbstractPatch;
-import org.alfresco.repo.domain.hibernate.AclDaoComponentImpl;
 import org.alfresco.repo.search.AVMSnapShotTriggeredIndexingMethodInterceptor;
 import org.alfresco.repo.search.impl.lucene.AVMLuceneIndexer;
+import org.alfresco.repo.security.permissions.impl.AclDaoComponent;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.avm.AVMStoreDescriptor;
 
@@ -48,7 +48,7 @@ public class WCMPostPermissionSnapshotPatch extends AbstractPatch
 
     AVMService avmService;
 
-    AclDaoComponentImpl aclDaoComponent;
+    AclDaoComponent aclDaoComponent;
 
     public void setAvmService(AVMService avmService)
     {
@@ -60,7 +60,7 @@ public class WCMPostPermissionSnapshotPatch extends AbstractPatch
         this.avmSnapShotTriggeredIndexingMethodInterceptor = avmSnapShotTriggeredIndexingMethodInterceptor;
     }
 
-    public void setAclDaoComponent(AclDaoComponentImpl aclDaoComponent)
+    public void setAclDaoComponent(AclDaoComponent aclDaoComponent)
     {
         this.aclDaoComponent = aclDaoComponent;
     }

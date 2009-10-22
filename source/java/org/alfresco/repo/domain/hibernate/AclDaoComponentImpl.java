@@ -29,6 +29,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -53,6 +54,7 @@ import org.alfresco.repo.security.permissions.ACLType;
 import org.alfresco.repo.security.permissions.AccessControlEntry;
 import org.alfresco.repo.security.permissions.AccessControlList;
 import org.alfresco.repo.security.permissions.AccessControlListProperties;
+import org.alfresco.repo.security.permissions.PermissionReference;
 import org.alfresco.repo.security.permissions.SimpleAccessControlEntry;
 import org.alfresco.repo.security.permissions.SimpleAccessControlEntryContext;
 import org.alfresco.repo.security.permissions.SimpleAccessControlList;
@@ -71,6 +73,7 @@ import org.hibernate.CacheMode;
 import org.hibernate.Criteria;
 import org.hibernate.Query;
 import org.hibernate.Session;
+import org.hibernate.criterion.Criterion;
 import org.hibernate.criterion.Restrictions;
 import org.springframework.orm.hibernate3.HibernateCallback;
 import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
@@ -95,7 +98,7 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
     // static String QUERY_GET_AUTHORITY_ALIASES = "permission.GetAuthorityAliases";
 
     static String QUERY_GET_ACES_AND_ACLS_BY_AUTHORITY = "permission.GetAcesAndAclsByAuthority";
-    
+
     static String QUERY_GET_ACES_BY_AUTHORITY = "permission.GetAcesByAuthority";
 
     static String QUERY_GET_ACES_FOR_ACL = "permission.GetAcesForAcl";
@@ -149,7 +152,7 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
         /**
          * Simlpe copy
          */
-        COPY_ONLY;
+        COPY_ONLY, CREATE_AND_INHERIT;
     }
 
     /**
@@ -235,10 +238,10 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
         default:
             break;
         }
-        return createAccessControlListImpl(properties);
+        return createAccessControlListImpl(properties, null, null);
     }
 
-    private Long createAccessControlListImpl(AccessControlListProperties properties)
+    private Long createAccessControlListImpl(AccessControlListProperties properties, List<AccessControlEntry> aces, Long inherited)
     {
         DbAccessControlListImpl acl = new DbAccessControlListImpl();
         if (properties.getAclId() != null)
@@ -300,11 +303,64 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
         acl.setAclChangeSet(getCurrentChangeSet());
         acl.setRequiresVersion(false);
         Long created = (Long) getHibernateTemplate().save(acl);
+        DirtySessionMethodInterceptor.flushSession(getSession(), true);
+
+        if ((aces != null) && aces.size() > 0)
+        {
+            List<AclChange> changes = new ArrayList<AclChange>();
+
+            List<DbAccessControlEntry> toAdd = new ArrayList<DbAccessControlEntry>(aces.size());
+            List<AccessControlEntry> excluded = new ArrayList<AccessControlEntry>(aces.size());
+            for (AccessControlEntry ace : aces)
+            {
+
+                if ((ace.getPosition() != null) && (ace.getPosition() != 0))
+                {
+                    throw new IllegalArgumentException("Invalid position");
+                }
+
+                // Find authority
+                DbAuthority authority = getAuthority(ace.getAuthority(), true);
+                DbPermission permission = getPermission(ace.getPermission(), true);
+
+                // Find context
+
+                if (ace.getContext() != null)
+                {
+                    throw new UnsupportedOperationException();
+                }
+
+                // Find ACE
+                DbAccessControlEntry entry = getAccessControlEntry(permission, authority, ace, true);
+
+                // Wire up
+                // COW and remove any existing matches
+
+                SimpleAccessControlEntry exclude = new SimpleAccessControlEntry();
+                // match any access status
+                exclude.setAceType(ace.getAceType());
+                exclude.setAuthority(ace.getAuthority());
+                exclude.setPermission(ace.getPermission());
+                exclude.setPosition(0);
+
+                toAdd.add(entry);
+                excluded.add(exclude);
+                // Will remove from the cache
+
+            }
+            Long toInherit = null;
+            if (inherited != null)
+            {
+                toInherit = getInheritedAccessControlList(inherited);
+            }
+            getWritable(created, toInherit, excluded, toAdd, toInherit, false, changes, WriteMode.CREATE_AND_INHERIT);
+        }
+
         return created;
     }
 
     @SuppressWarnings("unchecked")
-    private void getWritable(final Long id, final Long parent, AccessControlEntry exclude, List<DbAccessControlEntry> toAdd, Long inheritsFrom, boolean cascade,
+    private void getWritable(final Long id, final Long parent, List<? extends AccessControlEntry> exclude, List<DbAccessControlEntry> toAdd, Long inheritsFrom, boolean cascade,
             List<AclChange> changes, WriteMode mode)
     {
         List<DbAccessControlEntry> inherited = null;
@@ -321,6 +377,7 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
                 {
                     Query query = session.getNamedQuery(QUERY_GET_ACES_FOR_ACL);
                     query.setParameter("id", parent);
+                    DirtySessionMethodInterceptor.setQueryFlushMode(session, query);
                     return query.list();
                 }
             };
@@ -358,7 +415,7 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
      * @param changes
      */
     @SuppressWarnings("unchecked")
-    private void getWritable(final Long id, final Long parent, AccessControlEntry exclude, List<DbAccessControlEntry> toAdd, Long inheritsFrom,
+    private void getWritable(final Long id, final Long parent, List<? extends AccessControlEntry> exclude, List<DbAccessControlEntry> toAdd, Long inheritsFrom,
             List<DbAccessControlEntry> inherited, List<Integer> positions, boolean cascade, int depth, List<AclChange> changes, WriteMode mode, boolean requiresVersion)
     {
         AclChange current = getWritable(id, parent, exclude, toAdd, inheritsFrom, inherited, positions, depth, mode, requiresVersion);
@@ -378,6 +435,7 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
                 {
                     Query query = session.getNamedQuery(QUERY_GET_ACLS_THAT_INHERIT_FROM_THIS_ACL);
                     query.setParameter("id", id);
+                    DirtySessionMethodInterceptor.setQueryFlushMode(session, query);
                     return query.list();
                 }
             };
@@ -405,7 +463,7 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
      * @return - an AclChange
      */
     @SuppressWarnings("unchecked")
-    private AclChange getWritable(final Long id, final Long parent, AccessControlEntry exclude, List<DbAccessControlEntry> toAdd, Long inheritsFrom,
+    private AclChange getWritable(final Long id, final Long parent, List<? extends AccessControlEntry> exclude, List<DbAccessControlEntry> toAdd, Long inheritsFrom,
             List<DbAccessControlEntry> inherited, List<Integer> positions, int depth, WriteMode mode, boolean requiresVersion)
     {
         DbAccessControlList acl = (DbAccessControlList) getHibernateTemplate().get(DbAccessControlListImpl.class, id);
@@ -438,6 +496,9 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
             case REMOVE_INHERITED:
                 removeInherited(id, depth);
                 break;
+            case CREATE_AND_INHERIT:
+                addAcesToAcl(acl, toAdd, depth);
+                addInherited(acl, inherited, positions, depth);
             case COPY_ONLY:
             default:
                 break;
@@ -472,6 +533,9 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
             case REMOVE_INHERITED:
                 removeInherited(id, depth);
                 break;
+            case CREATE_AND_INHERIT:
+                addAcesToAcl(acl, toAdd, depth);
+                addInherited(acl, inherited, positions, depth);
             case COPY_ONLY:
             default:
                 break;
@@ -497,6 +561,7 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
             newAcl.setVersioned(Boolean.TRUE);
             newAcl.setRequiresVersion(Boolean.FALSE);
             Long created = (Long) getHibernateTemplate().save(newAcl);
+            DirtySessionMethodInterceptor.flushSession(getSession(), true);
 
             // Create new membership entries - excluding those in the given pattern
 
@@ -507,6 +572,7 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
                 {
                     Query query = session.getNamedQuery(QUERY_GET_ACES_FOR_ACL);
                     query.setParameter("id", id);
+                    DirtySessionMethodInterceptor.setQueryFlushMode(session, query);
                     return query.list();
                 }
             };
@@ -533,6 +599,7 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
                 newMember.setAccessControlEntry(member.getAccessControlEntry());
                 newMember.setPosition(member.getPosition());
                 getHibernateTemplate().save(newMember);
+                DirtySessionMethodInterceptor.flushSession(getSession(), true);
 
             }
 
@@ -560,6 +627,9 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
             case REMOVE_INHERITED:
                 removeInherited(newAcl.getId(), depth);
                 break;
+            case CREATE_AND_INHERIT:
+                addAcesToAcl(acl, toAdd, depth);
+                addInherited(acl, inherited, positions, depth);
             case COPY_ONLY:
             default:
                 break;
@@ -594,7 +664,7 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
      * @param depth
      */
     @SuppressWarnings("unchecked")
-    private void removeAcesFromAcl(final Long id, final AccessControlEntry exclude, final int depth)
+    private void removeAcesFromAcl(final Long id, final List<? extends AccessControlEntry> exclude, final int depth)
     {
         AcePatternMatcher excluder = new AcePatternMatcher(exclude);
         HibernateCallback callback = new HibernateCallback()
@@ -610,6 +680,7 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
                     criteria.createAlias("ace.authority", "authority");
                     criteria.createAlias("ace.permission", "permission");
                     criteria.setResultTransformer(Criteria.ALIAS_TO_ENTITY_MAP);
+                    DirtySessionMethodInterceptor.setCriteriaFlushMode(session, criteria);
                     return criteria.list();
                 }
                 else
@@ -617,35 +688,118 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
                     Criteria criteria = session.createCriteria(DbAccessControlListMemberImpl.class, "member");
                     criteria.createAlias("accessControlList", "acl");
                     criteria.add(Restrictions.eq("acl.id", id));
-                    if ((exclude.getPosition() != null) && exclude.getPosition() >= 0)
+                    // build or
+                    if (exclude.size() == 1)
                     {
-                        criteria.add(Restrictions.eq("position", Integer.valueOf(depth)));
+                        AccessControlEntry excluded = exclude.get(0);
+                        if ((excluded.getPosition() != null) && excluded.getPosition() >= 0)
+                        {
+                            criteria.add(Restrictions.eq("position", Integer.valueOf(depth)));
+                        }
+                        if ((excluded.getAccessStatus() != null) || (excluded.getAceType() != null) || (excluded.getAuthority() != null) || (excluded.getPermission() != null))
+                        {
+                            criteria.createAlias("accessControlEntry", "ace");
+                            if (excluded.getAccessStatus() != null)
+                            {
+                                criteria.add(Restrictions.eq("ace.allowed", excluded.getAccessStatus() == AccessStatus.ALLOWED ? Boolean.TRUE : Boolean.FALSE));
+                            }
+                            if (excluded.getAceType() != null)
+                            {
+                                criteria.add(Restrictions.eq("ace.applies", Integer.valueOf(excluded.getAceType().getId())));
+                            }
+                            if (excluded.getAuthority() != null)
+                            {
+                                criteria.createAlias("ace.authority", "authority");
+                                criteria.add(Restrictions.eq("authority.authority", excluded.getAuthority()));
+                            }
+                            if (excluded.getPermission() != null)
+                            {
+                                criteria.createAlias("ace.permission", "permission");
+                                criteria.add(Restrictions.eq("permission.name", excluded.getPermission().getName()));
+                                // TODO: Add typeQname
+                            }
+                        }
                     }
-                    if ((exclude.getAccessStatus() != null) || (exclude.getAceType() != null) || (exclude.getAuthority() != null) || (exclude.getPermission() != null))
+                    else
                     {
+
                         criteria.createAlias("accessControlEntry", "ace");
-                        if (exclude.getAccessStatus() != null)
+                        criteria.createAlias("ace.authority", "authority");
+                        criteria.createAlias("ace.permission", "permission");
+                        List<Criterion> toOr = new LinkedList<Criterion>();
+                        LOOP: for (AccessControlEntry excluded : exclude)
                         {
-                            criteria.add(Restrictions.eq("ace.allowed", exclude.getAccessStatus() == AccessStatus.ALLOWED ? Boolean.TRUE : Boolean.FALSE));
+                            List<Criterion> toAnd = new LinkedList<Criterion>();
+                            if ((excluded.getPosition() != null) && excluded.getPosition() >= 0)
+                            {
+                                toAnd.add(Restrictions.eq("position", Integer.valueOf(depth)));
+                            }
+                            if (excluded.getAccessStatus() != null)
+                            {
+                                toAnd.add(Restrictions.eq("ace.allowed", excluded.getAccessStatus() == AccessStatus.ALLOWED ? Boolean.TRUE : Boolean.FALSE));
+                            }
+                            if (excluded.getAceType() != null)
+                            {
+                                toAnd.add(Restrictions.eq("ace.applies", Integer.valueOf(excluded.getAceType().getId())));
+                            }
+                            if (excluded.getAuthority() != null)
+                            {
+                                toAnd.add(Restrictions.eq("authority.authority", excluded.getAuthority()));
+                            }
+                            if (excluded.getPermission() != null)
+                            {
+                                toAnd.add(Restrictions.eq("permission.name", excluded.getPermission().getName()));
+                                // TODO: Add typeQname
+                            }
+
+                            Criterion accumulated = null;
+                            for (Criterion current : toAnd)
+                            {
+                                if (accumulated == null)
+                                {
+                                    accumulated = current;
+                                }
+                                else
+                                {
+                                    accumulated = Restrictions.and(accumulated, current);
+                                }
+                            }
+                            if (accumulated == null)
+                            {
+                                // matches all
+                                toOr = null;
+                                break LOOP;
+                            }
+                            else
+                            {
+                                toOr.add(accumulated);
+                            }
                         }
-                        if (exclude.getAceType() != null)
+                        Criterion accumulated = null;
+                        for (Criterion current : toOr)
                         {
-                            criteria.add(Restrictions.eq("ace.applies", Integer.valueOf(exclude.getAceType().getId())));
+                            if (accumulated == null)
+                            {
+                                accumulated = current;
+                            }
+                            else
+                            {
+                                accumulated = Restrictions.or(accumulated, current);
+                            }
                         }
-                        if (exclude.getAuthority() != null)
+                        if (accumulated == null)
                         {
-                            criteria.createAlias("ace.authority", "authority");
-                            criteria.add(Restrictions.eq("authority.authority", exclude.getAuthority()));
+                            // no action
                         }
-                        if (exclude.getPermission() != null)
+                        else
                         {
-                            criteria.createAlias("ace.permission", "permission");
-                            criteria.add(Restrictions.eq("permission.name", exclude.getPermission().getName()));
-                            // TODO: Add typeQname
+                            criteria.add(accumulated);
                         }
+
                     }
 
                     criteria.setResultTransformer(Criteria.ALIAS_TO_ENTITY_MAP);
+                    DirtySessionMethodInterceptor.setCriteriaFlushMode(session, criteria);
                     return criteria.list();
 
                 }
@@ -666,7 +820,7 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
         }
         if (removed)
         {
-            getHibernateTemplate().flush();
+            DirtySessionMethodInterceptor.flushSession(getSession(), true);
         }
 
     }
@@ -690,6 +844,7 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
                 newMember.setPosition(depth);
                 getHibernateTemplate().save(newMember);
             }
+            DirtySessionMethodInterceptor.flushSession(getSession(), true);
         }
     }
 
@@ -708,6 +863,7 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
             {
                 Query query = session.getNamedQuery(QUERY_GET_ACES_FOR_ACL);
                 query.setParameter("id", id);
+                DirtySessionMethodInterceptor.setQueryFlushMode(session, query);
                 return query.list();
             }
         };
@@ -724,7 +880,7 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
         }
         if (removed)
         {
-            getHibernateTemplate().flush();
+            DirtySessionMethodInterceptor.flushSession(getSession(), true);
         }
     }
 
@@ -737,6 +893,7 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
             {
                 Query query = session.getNamedQuery(QUERY_GET_ACES_FOR_ACL);
                 query.setParameter("id", id);
+                DirtySessionMethodInterceptor.setQueryFlushMode(session, query);
                 return query.list();
             }
         };
@@ -758,25 +915,28 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
         }
         if (changed)
         {
-            getHibernateTemplate().flush();
+            DirtySessionMethodInterceptor.flushSession(getSession(), true);
         }
     }
 
     private void addInherited(DbAccessControlList acl, List<DbAccessControlEntry> inherited, List<Integer> positions, int depth)
     {
-        for (int i = 0; i < inherited.size(); i++)
+        if (inherited != null)
         {
-            DbAccessControlEntry add = inherited.get(i);
-            Integer position = positions.get(i);
+            for (int i = 0; i < inherited.size(); i++)
+            {
+                DbAccessControlEntry add = inherited.get(i);
+                Integer position = positions.get(i);
 
-            DbAccessControlListMemberImpl newMember = new DbAccessControlListMemberImpl();
-            newMember.setAccessControlList(acl);
-            newMember.setAccessControlEntry(add);
-            newMember.setPosition(position.intValue() + depth + 1);
-            getHibernateTemplate().save(newMember);
+                DbAccessControlListMemberImpl newMember = new DbAccessControlListMemberImpl();
+                newMember.setAccessControlList(acl);
+                newMember.setAccessControlEntry(add);
+                newMember.setPosition(position.intValue() + depth + 1);
+                getHibernateTemplate().save(newMember);
 
+            }
+            DirtySessionMethodInterceptor.flushSession(getSession(), true);
         }
-
     }
 
     @SuppressWarnings("unchecked")
@@ -788,6 +948,7 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
             {
                 Query query = session.getNamedQuery(QUERY_GET_ACES_FOR_ACL);
                 query.setParameter("id", id);
+                DirtySessionMethodInterceptor.setQueryFlushMode(session, query);
                 return query.list();
             }
         };
@@ -804,7 +965,7 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
         }
         if (changed)
         {
-            getHibernateTemplate().flush();
+            DirtySessionMethodInterceptor.flushSession(getSession(), true);
         }
 
         for (int i = 0; i < inherited.size(); i++)
@@ -819,6 +980,7 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
             getHibernateTemplate().save(newMember);
 
         }
+        DirtySessionMethodInterceptor.flushSession(getSession(), true);
 
     }
 
@@ -837,6 +999,7 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
             {
                 Query query = session.getNamedQuery(QUERY_GET_ACES_AND_ACLS_BY_AUTHORITY);
                 query.setParameter("authority", authority);
+                DirtySessionMethodInterceptor.setQueryFlushMode(session, query);
                 return query.list();
             }
         };
@@ -869,35 +1032,34 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
             getHibernateTemplate().delete(ace);
         }
 
-        
         // Tidy up any unreferenced ACEs
-        
+
         callback = new HibernateCallback()
         {
             public Object doInHibernate(Session session)
             {
                 Query query = session.getNamedQuery(QUERY_GET_ACES_BY_AUTHORITY);
                 query.setParameter("authority", authority);
+                DirtySessionMethodInterceptor.setQueryFlushMode(session, query);
                 return query.list();
             }
         };
         List<DbAccessControlEntry> unreferenced = (List<DbAccessControlEntry>) getHibernateTemplate().execute(callback);
-        
+
         for (DbAccessControlEntry ace : unreferenced)
         {
             getHibernateTemplate().delete(ace);
         }
 
-        
         // remove authority
         DbAuthority toRemove = getAuthority(authority, false);
-        if(toRemove != null)
+        if (toRemove != null)
         {
             getHibernateTemplate().delete(toRemove);
         }
 
         // TODO: Remove affected ACLs from the cache
-
+        DirtySessionMethodInterceptor.flushSession(getSession(), true);
         return acls;
     }
 
@@ -911,6 +1073,7 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
             {
                 Query query = session.getNamedQuery(QUERY_GET_ACES_FOR_ACL);
                 query.setParameter("id", id);
+                DirtySessionMethodInterceptor.setQueryFlushMode(session, query);
                 return query.list();
             }
         };
@@ -920,6 +1083,7 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
         {
             getHibernateTemplate().delete(member);
         }
+        DirtySessionMethodInterceptor.flushSession(getSession(), true);
         aclCache.remove(id);
     }
 
@@ -936,6 +1100,7 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
                     criteria.createAlias("node.accessControlList", "acl");
                     criteria.add(Restrictions.eq("acl.id", id));
                     criteria.setResultTransformer(Criteria.DISTINCT_ROOT_ENTITY);
+                    DirtySessionMethodInterceptor.setCriteriaFlushMode(session, criteria);
                     return criteria.list();
                 }
             };
@@ -981,6 +1146,7 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
                     {
                         Query query = session.getNamedQuery(QUERY_GET_ACLS_THAT_INHERIT_FROM_THIS_ACL);
                         query.setParameter("id", newId);
+                        DirtySessionMethodInterceptor.setQueryFlushMode(session, query);
                         return query.list();
                     }
                 };
@@ -997,6 +1163,7 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
                     {
                         Query query = session.getNamedQuery(QUERY_GET_ACES_FOR_ACL);
                         query.setParameter("id", newId);
+                        DirtySessionMethodInterceptor.setQueryFlushMode(session, query);
                         return query.list();
                     }
                 };
@@ -1026,6 +1193,7 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
                 {
                     Query query = session.getNamedQuery(QUERY_GET_ACLS_THAT_INHERIT_FROM_THIS_ACL);
                     query.setParameter("id", id);
+                    DirtySessionMethodInterceptor.setQueryFlushMode(session, query);
                     return query.list();
                 }
             };
@@ -1050,6 +1218,7 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
                 {
                     Query query = session.getNamedQuery(QUERY_GET_ACES_FOR_ACL);
                     query.setParameter("id", id);
+                    DirtySessionMethodInterceptor.setQueryFlushMode(session, query);
                     return query.list();
                 }
             };
@@ -1061,7 +1230,7 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
             }
 
             getHibernateTemplate().delete(acl);
-            getSession().flush();
+            DirtySessionMethodInterceptor.flushSession(getSession(), true);
         }
 
         // remove the deleted acl from the cache
@@ -1076,7 +1245,7 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
         SimpleAccessControlEntry pattern = new SimpleAccessControlEntry();
         pattern.setPosition(Integer.valueOf(0));
         // Will remove from the cache
-        getWritable(id, null, pattern, null, null, true, changes, WriteMode.COPY_UPDATE_AND_INHERIT);
+        getWritable(id, null, Collections.singletonList(pattern), null, null, true, changes, WriteMode.COPY_UPDATE_AND_INHERIT);
         return changes;
     }
 
@@ -1086,7 +1255,7 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
         SimpleAccessControlEntry pattern = new SimpleAccessControlEntry();
         pattern.setPosition(Integer.valueOf(-1));
         // Will remove from the cache
-        getWritable(id, null, pattern, null, null, true, changes, WriteMode.COPY_UPDATE_AND_INHERIT);
+        getWritable(id, null, Collections.singletonList(pattern), null, null, true, changes, WriteMode.COPY_UPDATE_AND_INHERIT);
         return changes;
     }
 
@@ -1094,7 +1263,7 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
     {
         List<AclChange> changes = new ArrayList<AclChange>();
         // Will remove from the cache
-        getWritable(id, null, pattern, null, null, true, changes, WriteMode.COPY_UPDATE_AND_INHERIT);
+        getWritable(id, null, Collections.singletonList(pattern), null, null, true, changes, WriteMode.COPY_UPDATE_AND_INHERIT);
         return changes;
     }
 
@@ -1147,6 +1316,7 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
                 Query query = session.getNamedQuery(QUERY_LOAD_ACL);
                 query.setParameter("id", id);
                 query.setCacheMode(CacheMode.IGNORE);
+                DirtySessionMethodInterceptor.setQueryFlushMode(session, query);
                 return query.list();
             }
         };
@@ -1172,10 +1342,10 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
             // context.setClassContext(entry.getContext().getClassContext());
             // context.setKVPContext(entry.getContext().getKvpContext());
             // context.setPropertyContext(entry.getContext().getPropertyContext());
-            //                sacEntry.setContext(context);
-            //            }
-            DbPermission perm = (DbPermission)getSession().get(DbPermissionImpl.class, permissionId);
-            QName permTypeQName = qnameDAO.getQName(perm.getTypeQNameId()).getSecond();           // Has an ID so must exist
+            // sacEntry.setContext(context);
+            // }
+            DbPermission perm = (DbPermission) getSession().get(DbPermissionImpl.class, permissionId);
+            QName permTypeQName = qnameDAO.getQName(perm.getTypeQNameId()).getSecond(); // Has an ID so must exist
             SimplePermissionReference permissionRefernce = SimplePermissionReference.getPermissionReference(permTypeQName, perm.getName());
             sacEntry.setPermission(permissionRefernce);
             sacEntry.setPosition(position);
@@ -1229,7 +1399,7 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
             properties.setAclType(ACLType.SHARED);
             properties.setInherits(Boolean.TRUE);
             properties.setVersioned(acl.isVersioned());
-            Long sharedId = createAccessControlListImpl(properties);
+            Long sharedId = createAccessControlListImpl(properties, null, null);
             @SuppressWarnings("unused")
             DbAccessControlList shared = (DbAccessControlList) getHibernateTemplate().get(DbAccessControlListImpl.class, sharedId);
             getWritable(sharedId, id, null, null, id, true, changes, WriteMode.ADD_INHERITED);
@@ -1285,6 +1455,7 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
                             {
                                 Query query = session.getNamedQuery(QUERY_GET_LATEST_ACL_BY_ACLID);
                                 query.setParameter("aclId", searchAclId);
+                                DirtySessionMethodInterceptor.setQueryFlushMode(session, query);
                                 return query.uniqueResult();
                             }
                         };
@@ -1367,32 +1538,7 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
 
         // Find authority
         DbAuthority authority = getAuthority(ace.getAuthority(), true);
-
-        // Find permission
-
-        final QName permissionQName = ace.getPermission().getQName();
-        final String permissionName = ace.getPermission().getName();
-        final Pair<Long, QName> permissionQNamePair = qnameDAO.getOrCreateQName(permissionQName);
-
-        HibernateCallback callback = new HibernateCallback()
-        {
-            public Object doInHibernate(Session session)
-            {
-                Query query = session.getNamedQuery(QUERY_GET_PERMISSION);
-                query.setParameter("permissionTypeQNameId", permissionQNamePair.getFirst());
-                query.setParameter("permissionName", permissionName);
-                return query.uniqueResult();
-            }
-        };
-        DbPermission permission = (DbPermission) getHibernateTemplate().execute(callback);
-        if (permission == null)
-        {
-            DbPermissionImpl newPermission = new DbPermissionImpl();
-            newPermission.setTypeQNameId(permissionQNamePair.getFirst());
-            newPermission.setName(permissionName);
-            permission = newPermission;
-            getHibernateTemplate().save(newPermission);
-        }
+        DbPermission permission = getPermission(ace.getPermission(), true);
 
         // Find context
 
@@ -1402,32 +1548,7 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
         }
 
         // Find ACE
-
-        final DbAuthority finalAuthority = authority;
-        final DbPermission finalPermission = permission;
-        callback = new HibernateCallback()
-        {
-            public Object doInHibernate(Session session)
-            {
-                Query query = session.getNamedQuery(QUERY_GET_ACE_WITH_NO_CONTEXT);
-                query.setParameter("permissionId", finalPermission.getId());
-                query.setParameter("authorityId", finalAuthority.getId());
-                query.setParameter("allowed", (ace.getAccessStatus() == AccessStatus.ALLOWED) ? true : false);
-                query.setParameter("applies", ace.getAceType().getId());
-                return query.uniqueResult();
-            }
-        };
-        DbAccessControlEntry entry = (DbAccessControlEntry) getHibernateTemplate().execute(callback);
-        if (entry == null)
-        {
-            DbAccessControlEntryImpl newEntry = new DbAccessControlEntryImpl();
-            newEntry.setAceType(ace.getAceType());
-            newEntry.setAllowed((ace.getAccessStatus() == AccessStatus.ALLOWED) ? true : false);
-            newEntry.setAuthority(authority);
-            newEntry.setPermission(permission);
-            entry = newEntry;
-            getHibernateTemplate().save(newEntry);
-        }
+        DbAccessControlEntry entry = getAccessControlEntry(permission, authority, ace, true);
 
         // Wire up
         // COW and remove any existing matches
@@ -1441,7 +1562,7 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
         List<DbAccessControlEntry> toAdd = new ArrayList<DbAccessControlEntry>(1);
         toAdd.add(entry);
         // Will remove from the cache
-        getWritable(id, null, exclude, toAdd, null, true, changes, WriteMode.COPY_UPDATE_AND_INHERIT);
+        getWritable(id, null, Collections.singletonList(exclude), toAdd, null, true, changes, WriteMode.COPY_UPDATE_AND_INHERIT);
 
         return changes;
     }
@@ -1550,7 +1671,7 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
             }
             return toCopy;
         case REDIRECT:
-            if((toInheritFrom != null) && (toInheritFrom == toCopy))
+            if ((toInheritFrom != null) && (toInheritFrom == toCopy))
             {
                 return getInheritedAccessControlList(toInheritFrom);
             }
@@ -1663,6 +1784,7 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
     
     public List<Long> getAvmNodesByACL(final Long id)
     {
+
         List<Long> avmNodeIds = avmNodeDAO.getAVMNodesByAclId(id);
         return avmNodeIds;
     }
@@ -1696,6 +1818,7 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
                 {
                     Query query = session.getNamedQuery(QUERY_GET_ACES_FOR_ACL);
                     query.setParameter("id", inheritsFrom);
+                    DirtySessionMethodInterceptor.setQueryFlushMode(session, query);
                     return query.list();
                 }
             };
@@ -1716,7 +1839,7 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
                     entry.setContext(context);
                 }
                 DbPermission perm = member.getAccessControlEntry().getPermission();
-                QName permTypeQName = qnameDAO.getQName(perm.getTypeQNameId()).getSecond();           // Has an ID so must exist
+                QName permTypeQName = qnameDAO.getQName(perm.getTypeQNameId()).getSecond(); // Has an ID so must exist
                 SimplePermissionReference permissionRefernce = SimplePermissionReference.getPermissionReference(permTypeQName, perm.getName());
                 entry.setPermission(permissionRefernce);
                 entry.setPosition(Integer.valueOf(0));
@@ -1743,6 +1866,7 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
         {
             changeSet = new DbAccessControlListChangeSetImpl();
             changeSetId = getHibernateTemplate().save(changeSet);
+            DirtySessionMethodInterceptor.flushSession(getSession(), true);
             changeSet = (DbAccessControlListChangeSetImpl) getHibernateTemplate().get(DbAccessControlListChangeSetImpl.class, changeSetId);
             // bind the id
             AlfrescoTransactionSupport.bindResource(RESOURCE_KEY_ACL_CHANGE_SET_ID, changeSetId);
@@ -1764,16 +1888,16 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
 
     private static class AcePatternMatcher
     {
-        private AccessControlEntry pattern;
+        private List<? extends AccessControlEntry> patterns;
 
-        AcePatternMatcher(AccessControlEntry pattern)
+        AcePatternMatcher(List<? extends AccessControlEntry> patterns)
         {
-            this.pattern = pattern;
+            this.patterns = patterns;
         }
 
         boolean matches(QNameDAO qnameDAO, Map<String, Object> result, int position)
         {
-            if (pattern == null)
+            if (patterns == null)
             {
                 return true;
             }
@@ -1781,6 +1905,28 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
             DbAccessControlListMember member = (DbAccessControlListMember) result.get("member");
             DbAccessControlEntry entry = (DbAccessControlEntry) result.get("ace");
 
+            for (AccessControlEntry pattern : patterns)
+            {
+                if (checkPattern(qnameDAO, result, position, member, entry, pattern))
+                {
+                    return true;
+                }
+            }
+            return false;
+
+        }
+
+        /**
+         * @param qnameDAO
+         * @param result
+         * @param position
+         * @param member
+         * @param entry
+         * @return
+         */
+        private boolean checkPattern(QNameDAO qnameDAO, Map<String, Object> result, int position, DbAccessControlListMember member, DbAccessControlEntry entry,
+                AccessControlEntry pattern)
+        {
             if (pattern.getAccessStatus() != null)
             {
                 if (pattern.getAccessStatus() != (entry.isAllowed() ? AccessStatus.ALLOWED : AccessStatus.DENIED))
@@ -1815,7 +1961,8 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
             {
                 DbPermission permission = (DbPermission) result.get("permission");
                 final QName patternQName = pattern.getPermission().getQName();
-                final QName permTypeQName = qnameDAO.getQName(permission.getTypeQNameId()).getSecond();           // Has an ID so must exist
+                final QName permTypeQName = qnameDAO.getQName(permission.getTypeQNameId()).getSecond(); // Has an ID so
+                // must exist
                 if ((patternQName != null) && (!patternQName.equals(permTypeQName)))
                 {
                     return false;
@@ -1958,6 +2105,40 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
     }
 
     /**
+<<<<<<< .working
+=======
+     * Get the total number of head nodes in the repository
+     * 
+     * @return count
+     */
+    public Long getAVMHeadNodeCount()
+    {
+        try
+        {
+            Session session = getSession();
+            int isolationLevel = session.connection().getTransactionIsolation();
+            try
+            {
+                session.connection().setTransactionIsolation(1);
+                Query query = getSession().getNamedQuery("permission.GetAVMHeadNodeCount");
+                DirtySessionMethodInterceptor.setQueryFlushMode(session, query);
+                Long answer = (Long) query.uniqueResult();
+                return answer;
+            }
+            finally
+            {
+                session.connection().setTransactionIsolation(isolationLevel);
+            }
+        }
+        catch (SQLException e)
+        {
+            throw new AlfrescoRuntimeException("Failed to set TX isolation level", e);
+        }
+
+    }
+
+    /**
+>>>>>>> .merge-right.r17076
      * Get the max acl id
      * 
      * @return - max acl id
@@ -1972,6 +2153,7 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
             {
                 session.connection().setTransactionIsolation(1);
                 Query query = getSession().getNamedQuery("permission.GetMaxAclId");
+                DirtySessionMethodInterceptor.setQueryFlushMode(session, query);
                 Long answer = (Long) query.uniqueResult();
                 return answer;
             }
@@ -2006,6 +2188,41 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
     }
 
     /**
+<<<<<<< .working
+=======
+     * Get the acl count canges so far for progress tracking
+     * 
+     * @param above
+     * @return - the count
+     */
+    public Long getAVMNodeCountWithNewACLS(Long above)
+    {
+        try
+        {
+            Session session = getSession();
+            int isolationLevel = session.connection().getTransactionIsolation();
+            try
+            {
+                session.connection().setTransactionIsolation(1);
+                Query query = getSession().getNamedQuery("permission.GetAVMHeadNodeCountWherePermissionsHaveChanged");
+                query.setParameter("above", above);
+                DirtySessionMethodInterceptor.setQueryFlushMode(session, query);
+                Long answer = (Long) query.uniqueResult();
+                return answer;
+            }
+            finally
+            {
+                session.connection().setTransactionIsolation(isolationLevel);
+            }
+        }
+        catch (SQLException e)
+        {
+            throw new AlfrescoRuntimeException("Failed to set TX isolation level", e);
+        }
+    }
+
+    /**
+>>>>>>> .merge-right.r17076
      * How many nodes are noew in store (approximate)
      * 
      * @return - the number of new nodes - approximate
@@ -2030,6 +2247,7 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
         
         for (AVMNodeEntity ldNodeEntity : ldNodeEntities)
         {
+
             Long from = ldNodeEntity.getId();
             String to = ldNodeEntity.getIndirection();
             Integer version = ldNodeEntity.getIndirectionVersion();
@@ -2136,6 +2354,7 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
             {
                 session.connection().setTransactionIsolation(1);
                 Query query = getSession().getNamedQuery("permission.GetDmNodeCount");
+                DirtySessionMethodInterceptor.setQueryFlushMode(session, query);
                 Long answer = (Long) query.uniqueResult();
                 return answer;
             }
@@ -2168,6 +2387,7 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
                 session.connection().setTransactionIsolation(1);
                 Query query = getSession().getNamedQuery("permission.GetDmNodeCountWherePermissionsHaveChanged");
                 query.setParameter("above", above);
+                DirtySessionMethodInterceptor.setQueryFlushMode(session, query);
                 Long answer = (Long) query.uniqueResult();
                 return answer;
             }
@@ -2186,7 +2406,7 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
     {
         DbAuthority dbAuthority = getAuthority(before, false);
         // If there is no entry and alias is not required - there is nothing it would match
-        if(dbAuthority != null)
+        if (dbAuthority != null)
         {
             dbAuthority.setAuthority(after);
             dbAuthority.setCrc(getCrc(after));
@@ -2194,8 +2414,6 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
         }
     }
 
-  
-    
     private DbAuthority getAuthority(final String authority, boolean create)
     {
         // Find auth
@@ -2205,10 +2423,11 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
             {
                 Query query = session.getNamedQuery(QUERY_GET_AUTHORITY);
                 query.setParameter("authority", authority);
+                DirtySessionMethodInterceptor.setQueryFlushMode(session, query);
                 return query.list();
             }
         };
-       
+
         DbAuthority dbAuthority = null;
         List<DbAuthority> authorities = (List<DbAuthority>) getHibernateTemplate().execute(callback);
         for (DbAuthority found : authorities)
@@ -2221,23 +2440,109 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
         }
         if (create && (dbAuthority == null))
         {
-           dbAuthority = createDbAuthority(authority);
+            dbAuthority = createDbAuthority(authority);
         }
         return dbAuthority;
+    }
+
+    private DbPermission getPermission(final PermissionReference permissionReference, boolean create)
+    {
+        // Find permission
+
+        final QName permissionQName = permissionReference.getQName();
+        final String permissionName = permissionReference.getName();
+        final Pair<Long, QName> permissionQNamePair = qnameDAO.getOrCreateQName(permissionQName);
+
+        HibernateCallback callback = new HibernateCallback()
+        {
+            public Object doInHibernate(Session session)
+            {
+                Query query = session.getNamedQuery(QUERY_GET_PERMISSION);
+                query.setParameter("permissionTypeQNameId", permissionQNamePair.getFirst());
+                query.setParameter("permissionName", permissionName);
+                DirtySessionMethodInterceptor.setQueryFlushMode(session, query);
+                return query.uniqueResult();
+            }
+        };
+        DbPermission dbPermission = (DbPermission) getHibernateTemplate().execute(callback);
+        if (create && (dbPermission == null))
+        {
+            DbPermissionImpl newPermission = new DbPermissionImpl();
+            newPermission.setTypeQNameId(permissionQNamePair.getFirst());
+            newPermission.setName(permissionName);
+            dbPermission = newPermission;
+            getHibernateTemplate().save(newPermission);
+            DirtySessionMethodInterceptor.flushSession(getSession(), true);
+        }
+        return dbPermission;
+    }
+
+    private DbAccessControlEntry getAccessControlEntry(final DbPermission permission, final DbAuthority authority, final AccessControlEntry ace, boolean create)
+    {
+
+        HibernateCallback callback = new HibernateCallback()
+        {
+            public Object doInHibernate(Session session)
+            {
+                Query query = session.getNamedQuery(QUERY_GET_ACE_WITH_NO_CONTEXT);
+                query.setParameter("permissionId", permission.getId());
+                query.setParameter("authorityId", authority.getId());
+                query.setParameter("allowed", (ace.getAccessStatus() == AccessStatus.ALLOWED) ? true : false);
+                query.setParameter("applies", ace.getAceType().getId());
+                DirtySessionMethodInterceptor.setQueryFlushMode(session, query);
+                return query.uniqueResult();
+            }
+        };
+        DbAccessControlEntry entry = (DbAccessControlEntry) getHibernateTemplate().execute(callback);
+        if (create && (entry == null))
+        {
+            DbAccessControlEntryImpl newEntry = new DbAccessControlEntryImpl();
+            newEntry.setAceType(ace.getAceType());
+            newEntry.setAllowed((ace.getAccessStatus() == AccessStatus.ALLOWED) ? true : false);
+            newEntry.setAuthority(authority);
+            newEntry.setPermission(permission);
+            entry = newEntry;
+            getHibernateTemplate().save(newEntry);
+            DirtySessionMethodInterceptor.flushSession(getSession(), true);
+        }
+        return entry;
     }
 
     public void createAuthority(String authority)
     {
         createDbAuthority(authority);
     }
-    
+
     public DbAuthority createDbAuthority(String authority)
     {
         DbAuthority dbAuthority = new DbAuthorityImpl();
         dbAuthority.setAuthority(authority);
         dbAuthority.setCrc(getCrc(authority));
         getHibernateTemplate().save(dbAuthority);
+        DirtySessionMethodInterceptor.flushSession(getSession(), true);
         return dbAuthority;
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.alfresco.repo.security.permissions.impl.AclDaoComponent#setAccessControlEntries(java.lang.Long,
+     *      java.util.List)
+     */
+    public List<AclChange> setAccessControlEntries(Long id, List<AccessControlEntry> aces)
+    {
+        throw new UnsupportedOperationException();
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.alfresco.repo.security.permissions.impl.AclDaoComponent#createAccessControlList(org.alfresco.repo.security.permissions.AccessControlListProperties,
+     *      java.util.List, long)
+     */
+    public Long createAccessControlList(AccessControlListProperties properties, List<AccessControlEntry> aces, Long inherited)
+    {
+        return createAccessControlListImpl(properties, aces, inherited);
     }
 
 }

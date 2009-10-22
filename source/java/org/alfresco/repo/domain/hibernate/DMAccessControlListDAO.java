@@ -110,7 +110,7 @@ public class DMAccessControlListDAO implements AccessControlListDAO
     {
         // Nothing to do
     }
-    
+
     private Node getNodeNotNull(NodeRef nodeRef)
     {
         Pair<Long, NodeRef> nodePair = nodeDaoService.getNodePair(nodeRef);
@@ -215,25 +215,18 @@ public class DMAccessControlListDAO implements AccessControlListDAO
                 result.increment(ACLType.DEFINING);
                 SimpleAccessControlListProperties properties = DMPermissionsDaoComponentImpl.getDefaultProperties();
                 properties.setInherits(existingAcl.getInherits());
-                Long id = aclDaoComponent.createAccessControlList(properties);
-
-                DbAccessControlList newAcl = aclDaoComponent.getDbAccessControlList(id);
-
                 AccessControlList existing = aclDaoComponent.getAccessControlList(existingAcl.getId());
-                for (AccessControlEntry entry : existing.getEntries())
-                {
-                    if (entry.getPosition() == 0)
-                    {
-                        aclDaoComponent.setAccessControlEntry(id, entry);
-                    }
-                }
+                Long actuallyInherited = null;
                 if (existingAcl.getInherits())
                 {
                     if (inherited != null)
                     {
-                        aclDaoComponent.enableInheritance(id, inherited);
+                        actuallyInherited = inherited;
                     }
                 }
+                Long id = aclDaoComponent.createAccessControlList(properties, existing.getEntries(), actuallyInherited);
+
+                DbAccessControlList newAcl = aclDaoComponent.getDbAccessControlList(id);
 
                 idToInheritFrom = id;
 
@@ -268,12 +261,15 @@ public class DMAccessControlListDAO implements AccessControlListDAO
             }
         }
 
-        for (ChildAssociationRef child : nodeService.getChildAssocs(nodeRef))
+        List<ChildAssociationRef> children = nodeService.getChildAssocs(nodeRef);
+        if (children.size() > 0)
         {
+            hibernateSessionHelper.reset();
+            
             // Only make inherited if required
-            if(toInherit == null)
+            if (toInherit == null)
             {
-                if(idToInheritFrom == null)
+                if (idToInheritFrom == null)
                 {
                     toInherit = inherited;
                 }
@@ -282,6 +278,10 @@ public class DMAccessControlListDAO implements AccessControlListDAO
                     toInherit = aclDaoComponent.getInheritedAccessControlList(idToInheritFrom);
                 }
             }
+
+        }
+        for (ChildAssociationRef child : children)
+        {
             
             if (child.isPrimary())
             {

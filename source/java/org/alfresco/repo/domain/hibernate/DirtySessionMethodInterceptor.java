@@ -39,6 +39,7 @@ import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.hibernate.Criteria;
 import org.hibernate.FlushMode;
 import org.hibernate.Query;
 import org.hibernate.Session;
@@ -260,6 +261,43 @@ public class DirtySessionMethodInterceptor implements MethodInterceptor
         }
         // Adjust the query flush mode
         query.setFlushMode(FlushMode.MANUAL);
+    }
+    
+    public static void setCriteriaFlushMode(Session session, Criteria criteria)
+    {
+        FlushData flushData = DirtySessionMethodInterceptor.getFlushData();
+        
+        // If all the methods in the method stack are annotated, then we can adjust the query and
+        // play with the session
+        if (!flushData.isStackAnnotated())
+        {
+            if (loggerDebugEnabled)
+            {
+                logger.debug(
+                        "Method stack is not annotated.  Not setting query flush mode: \n" +
+                        "   Flush Data: " + flushData);
+            }
+            return;
+        }
+        
+        // The stack is fully annotated, so flush if required and set the flush mode on the query
+        if (loggerDebugEnabled)
+        {
+            logger.debug(
+                    "Setting query flush mode: \n" +
+                    "   Criteria: " + criteria.toString() + "\n" +
+                    "   Dirty: " + flushData);
+        }
+        
+        if (flushData.isDirty())
+        {
+            // Flush the session
+            session.flush();
+            // Reset the dirty state
+            flushData.resetDirtyCount();
+        }
+        // Adjust the query flush mode
+        criteria.setFlushMode(FlushMode.MANUAL);
     }
     
     /**

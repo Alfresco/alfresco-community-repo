@@ -276,7 +276,18 @@
        </property>
    </bean>
     
-   <bean id="aclDaoComponent" class="org.alfresco.repo.domain.hibernate.AclDaoComponentImpl">
+   <bean id="aclDaoComponent" class="org.springframework.aop.framework.ProxyFactoryBean">
+      <property name="target">
+         <ref bean="aclDaoComponentImpl" />
+      </property>
+      <property name="interceptorNames">
+         <list>
+            <value>daoServiceDirtySessionInterceptor</value>
+         </list>
+      </property>
+   </bean>
+    
+   <bean id="aclDaoComponentImpl" class="org.alfresco.repo.domain.hibernate.AclDaoComponentImpl">
       <property name="sessionFactory">
          <ref bean="sessionFactory" />
       </property>

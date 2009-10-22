@@ -38,10 +38,10 @@ import org.springframework.orm.ibatis.SqlMapClientTemplate;
  */
 public class PatchDAOImpl extends AbstractPatchDAOImpl
 {
-    private static final String SELECT_AVM_NODE_ENTITIES_COUNT_WHERE_NEW_IN_STORE = "select.AVMNodeEntitiesCountWhereNewInStore";
-    private static final String SELECT_AVM_NODE_ENTITIES_WITH_EMPTY_GUID = "select.AVMNodesWithEmptyGUID";
-    private static final String SELECT_AVM_LD_NODE_ENTITIES_NULL_VERSION = "select.AVMNodes.nullVersionLayeredDirectories";
-    private static final String SELECT_AVM_LF_NODE_ENTITIES_NULL_VERSION = "select.AVMNodes.nullVersionLayeredFiles";
+    private static final String SELECT_AVM_NODE_ENTITIES_COUNT_WHERE_NEW_IN_STORE = "alfresco.avm.select_AVMNodeEntitiesCountWhereNewInStore";
+    private static final String SELECT_AVM_NODE_ENTITIES_WITH_EMPTY_GUID = "alfresco.avm.select_AVMNodesWithEmptyGUID";
+    private static final String SELECT_AVM_LD_NODE_ENTITIES_NULL_VERSION = "alfresco.avm.select_AVMNodes_nullVersionLayeredDirectories";
+    private static final String SELECT_AVM_LF_NODE_ENTITIES_NULL_VERSION = "alfresco.avm.select_AVMNodes_nullVersionLayeredFiles";
     
     private SqlMapClientTemplate avmTemplate;
     

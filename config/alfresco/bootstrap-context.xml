@@ -94,6 +94,7 @@
              <ref bean="patch.db-V2.1-NotNullColumns" />
              <ref bean="patch.db-V2.2-ACL-From-2.1-A" />
              <ref bean="patch.db-V2.2-ACL" />
+             <ref bean="patch.db-V2.2-CleanNodeStatuses" />
              <ref bean="patch.db-V2.2-0-CreateMissingTables" />
              <ref bean="patch.db-V2.2-Upgrade-From-2.1" />
              <ref bean="patch.db-V2.2-Upgrade-From-2.2SP1" />

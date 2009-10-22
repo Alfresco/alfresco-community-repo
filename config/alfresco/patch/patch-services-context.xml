@@ -1148,6 +1148,21 @@
         </property>
     </bean>
     
+    <bean id="patch.db-V2.2-CleanNodeStatuses" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
+        <property name="id"><value>patch.db-V2.2-CleanNodeStatuses</value></property>
+        <property name="description"><value>patch.schemaUpgradeScript.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>89</value></property>
+        <property name="targetSchema"><value>90</value></property>
+        <property name="scriptUrl">
+            <value>classpath:alfresco/dbscripts/upgrade/2.2/${db.script.dialect}/AlfrescoSchemaUpdate-2.2-CleanNodeStatuses.sql</value>
+        </property>
+        <property name="alternatives" >
+            <list>
+                <ref bean="patch.db-V2.2-Upgrade-From-2.1" />
+            </list>
+        </property>
+    </bean>
     <bean id="patch.db-V2.2-0-CreateMissingTables" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
         <property name="id"><value>patch.db-V2.2-0-CreateMissingTables</value></property>
         <property name="description"><value>patch.schemaUpgradeScript.description</value></property>
@@ -1159,6 +1174,7 @@
         </property>
         <property name="dependsOn" >
             <list>
+                <ref bean="patch.db-V2.2-CleanNodeStatuses" />
                 <ref bean="patch.db-V2.2-ACL" />
             </list>
         </property>
@@ -1181,6 +1197,7 @@
         </property>
         <property name="dependsOn" >
             <list>
+                <ref bean="patch.db-V2.2-CleanNodeStatuses" />
                 <ref bean="patch.db-V2.2-0-CreateMissingTables" />
             </list>
         </property>

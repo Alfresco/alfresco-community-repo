@@ -889,6 +889,8 @@ public class SchemaBootstrap extends AbstractLifecycleBean
             File scriptFile,
             String scriptUrl) throws Exception
     {
+        final Dialect dialect = Dialect.getDialect(cfg.getProperties());
+        
         StringBuilder executedStatements = executedStatementsThreadLocal.get();
         if (executedStatements == null)
         {
@@ -917,6 +919,24 @@ public class SchemaBootstrap extends AbstractLifecycleBean
             String fetchVarName = null;
             String fetchColumnName = null;
             Map<String, Object> varAssignments = new HashMap<String, Object>(13);
+            // Special variable assignments:
+            if (dialect instanceof PostgreSQLDialect)
+            {
+                // Needs 1/0 for true/false
+                varAssignments.put("true", "true");
+                varAssignments.put("false", "false");
+                varAssignments.put("TRUE", "TRUE");
+                varAssignments.put("FALSE", "FALSE");
+            }
+            else
+            {
+                // Needs true/false as strings
+                varAssignments.put("true", "1");
+                varAssignments.put("false", "0");
+                varAssignments.put("TRUE", "1");
+                varAssignments.put("FALSE", "0");
+            }
+            
             while(true)
             {
                 String sqlOriginal = reader.readLine();

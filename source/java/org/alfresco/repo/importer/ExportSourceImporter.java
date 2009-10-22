@@ -149,12 +149,22 @@ public class ExportSourceImporter implements ImporterJobSPI
             AuthenticationUtil.setRunAsUserSystem();
             if (clearAllChildren)
             {
+                logger.debug("clear all children");
                 List<NodeRef> refs = searchService.selectNodes(nodeService.getRootNode(storeRef), path, null,
                         namespacePrefixResolver, false);
+                
                 for (NodeRef ref : refs)
                 {
+                    if(logger.isDebugEnabled())
+                    {
+                        logger.debug("clear node ref" + ref);
+                    }
                     for (ChildAssociationRef car : nodeService.getChildAssocs(ref))
                     {
+                        if(logger.isDebugEnabled())
+                        {
+                            logger.debug("delete child" + car.getChildRef());
+                        }
                         nodeService.deleteNode(car.getChildRef());
                     }
                 }
@@ -162,6 +172,7 @@ public class ExportSourceImporter implements ImporterJobSPI
 
             if (caches != null)
             {
+                logger.debug("clearing caches");
                 for (SimpleCache cache : caches)
                 {
 
@@ -190,7 +201,7 @@ public class ExportSourceImporter implements ImporterJobSPI
                     cache.clear();
                 }
             }
-
+            logger.debug("about to commit");
             userTransaction.commit();
         }
         catch (Throwable t)
@@ -199,11 +210,13 @@ public class ExportSourceImporter implements ImporterJobSPI
             {
                 if (userTransaction != null)
                 {
+                    logger.debug("rolling back due to exception", t);
                     userTransaction.rollback();
                 }
             }
             catch (Exception ex)
             {
+                logger.debug("exception during rollback", ex);
             }
             throw new ExportSourceImporterException("Failed to import", t);
         }

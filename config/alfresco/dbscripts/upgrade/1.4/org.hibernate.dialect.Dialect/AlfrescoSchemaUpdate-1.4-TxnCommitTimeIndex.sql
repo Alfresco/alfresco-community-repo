@@ -13,5 +13,5 @@ insert into alf_applied_patch
   values
   (
     'patch.db-V1.4-TxnCommitTimeIndex', 'Executed script AlfrescoSchemaUpdate-1.4-TxnCommitTimeIndex.sql',
-    0, 75, -1, 76, null, 'UNKOWN', 1, 1, 'Script completed'
+    0, 75, -1, 76, null, 'UNKOWN', ${TRUE}, ${TRUE}, 'Script completed'
   );

@@ -31,5 +31,5 @@ INSERT INTO alf_applied_patch
   VALUES
   (
     'patch.db-V2.1-RemoveWcmSubmittedAspect', 'Manually executed script upgrade V2.1: Remove wcmwf:submitted aspect',
-    0, 72, -1, 73, null, 'UNKOWN', 1, 1, 'Script completed'
+    0, 72, -1, 73, null, 'UNKOWN', ${TRUE}, ${TRUE}, 'Script completed'
   );

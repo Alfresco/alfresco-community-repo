@@ -20,5 +20,5 @@ INSERT INTO alf_applied_patch
   VALUES
   (
     'patch.db-V2.0-ContentUrls', 'Manually executed script upgrade V2.0: Indexes for alf_content_url table',
-    0, 123, -1, 124, null, 'UNKOWN', 1, 1, 'Script completed'
+    0, 123, -1, 124, null, 'UNKOWN', ${TRUE}, ${TRUE}, 'Script completed'
   );

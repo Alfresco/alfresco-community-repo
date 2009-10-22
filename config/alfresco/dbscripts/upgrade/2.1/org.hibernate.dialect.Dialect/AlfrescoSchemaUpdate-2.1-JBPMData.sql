@@ -8,7 +8,7 @@
 --
 
 UPDATE JBPM_TASK SET PRIORITY_ = 2;
-UPDATE JBPM_NODE SET ISASYNCEXCL_ = 0;
+UPDATE JBPM_NODE SET ISASYNCEXCL_ = ${FALSE};
 UPDATE JBPM_MODULEINSTANCE SET VERSION_ = 0;
 UPDATE JBPM_POOLEDACTOR SET VERSION_ = 0;
 UPDATE JBPM_SWIMLANEINSTANCE SET VERSION_ = 0;
@@ -25,5 +25,5 @@ INSERT INTO alf_applied_patch
   VALUES
   (
     'patch.db-V2.1-JBPMUpdate', 'Manually executed script upgrade V2.1: JBPM 3.1.2 to 3.2 Data Upgrade',
-    0, 51, -1, 52, null, 'UNKOWN', 1, 1, 'Script completed'
+    0, 51, -1, 52, null, 'UNKOWN', ${TRUE}, ${TRUE}, 'Script completed'
   );

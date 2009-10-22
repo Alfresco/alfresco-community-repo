@@ -17,5 +17,5 @@ INSERT INTO alf_applied_patch
   VALUES
   (
     'patch.db-V2.1-NotNullColumns', 'Manually executed script upgrade V2.1: Add nullable columns',
-    0, 63, -1, 64, null, 'UNKOWN', 1, 1, 'Script completed'
+    0, 63, -1, 64, null, 'UNKOWN', ${TRUE}, ${TRUE}, 'Script completed'
   );

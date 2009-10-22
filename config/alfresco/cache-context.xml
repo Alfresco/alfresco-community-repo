@@ -503,7 +503,10 @@
    <!-- ===================================== -->
    
    <!-- The cross-transaction shared cache for AVM Store entities -->
-
+   
+   <bean name="avmStoreSharedCache" class="org.alfresco.repo.cache.NullCache"/>
+   
+   <!--
    <bean name="avmStoreSharedCache" class="org.alfresco.repo.cache.EhCacheAdapter">
       <property name="cache">
          <bean class="org.springframework.cache.ehcache.EhCacheFactoryBean" >
@@ -516,7 +519,7 @@
          </bean>
       </property>
    </bean>
-   
+   -->
    
    <!-- The transactional cache for AVM Store entities -->
    
@@ -563,7 +566,7 @@
          <value>org.alfresco.cache.avmEntityTransactionalCache</value>
       </property>
       <property name="maxCacheSize">
-         <value>1000</value>
+         <value>5000</value>
       </property>
    </bean>
    
@@ -627,7 +630,7 @@
          <value>org.alfresco.cache.avmNodeTransactionalCache</value>
       </property>
       <property name="maxCacheSize">
-         <value>1000</value>
+         <value>5000</value>
       </property>
    </bean>
    
@@ -660,7 +663,7 @@
          <value>org.alfresco.cache.avmNodeAspectsTransactionalCache</value>
       </property>
       <property name="maxCacheSize">
-         <value>100</value>
+         <value>5000</value>
       </property>
    </bean>
    

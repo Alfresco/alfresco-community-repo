@@ -198,7 +198,7 @@
     
     <cache
         name="org.alfresco.cache.avm.avmEntityCache"
-        maxElementsInMemory="10000"
+        maxElementsInMemory="5000"
         eternal="true"
         overflowToDisk="false"
         />
@@ -212,7 +212,7 @@
         
     <cache
         name="org.alfresco.cache.avm.avmNodeCache"
-        maxElementsInMemory="1000"
+        maxElementsInMemory="5000"
         eternal="true"
         overflowToDisk="false"
         />
@@ -226,7 +226,7 @@
         
     <cache
         name="org.alfresco.cache.avm.avmNodeAspectsCache"
-        maxElementsInMemory="1000"
+        maxElementsInMemory="5000"
         eternal="true"
         overflowToDisk="false"
         />

@@ -1223,7 +1223,19 @@ public class CreateWebsiteWizard extends BaseWizardBean
          item.setLabel(form.getTitle());
          item.setDescription(form.getDescription());
          item.setImage(WebResources.IMAGE_WEBFORM_32);
-         items.add(item);
+         boolean skip = false;
+         for (FormWrapper formWrapper : this.forms)
+         {
+            if (formWrapper.getTitle().equals(form.getTitle()))
+            {
+               skip = true;
+               break;
+            }
+         }
+         if (!skip)
+         {
+            items.add(item);
+         }
       }
       this.formsList = items;
       return items;
@@ -1368,9 +1380,21 @@ public class CreateWebsiteWizard extends BaseWizardBean
          item.setLabel(workflowDef.title);
          item.setDescription(workflowDef.description);
          item.setImage(WebResources.IMAGE_WORKFLOW_32);
-         items.add(item);
+         boolean skip = false;
+         for (WorkflowWrapper workflowWrapper : this.workflows)
+         {
+            if (workflowWrapper.getTitle().equals(workflowDef.getTitle()))
+            {
+               skip = true;
+               break;
+            }
+         }
+         if (!skip)
+         {
+            items.add(item);
+         }
       }
-      
+
       return items;
    }
    

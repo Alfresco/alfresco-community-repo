@@ -60,6 +60,7 @@ public class UIAssociationEditor extends BaseAssociationEditor
    private static final Log logger = LogFactory.getLog(UIAssociationEditor.class);
    
    public static final String MSG_WARN_CANNOT_VIEW_TARGET_DETAILS = "warn_cannot_view_target_details";
+   public static final String MSG_WARN_USER_WAS_DELETED = "warn_user_was_deleted"; 
 
    // ------------------------------------------------------------------------------
    // Component implementation
@@ -171,42 +172,51 @@ public class UIAssociationEditor extends BaseAssociationEditor
             out.write("<tr><td>");
             AssociationRef assoc = (AssociationRef)iter.next();
             NodeRef targetNode = assoc.getTargetRef();
-            if (ContentModel.TYPE_PERSON.equals(nodeService.getType(targetNode)))
-            {
-               // if the node represents a person, show the username instead of the name
-               out.write(Utils.encode(User.getFullNameAndUserId(nodeService, targetNode)));
-            }
-            else if (ContentModel.TYPE_AUTHORITY_CONTAINER.equals(nodeService.getType(targetNode)))
-            {
-               // if the node represents a group, show the group display name instead of the name
-               String groupDisplayName = (String)nodeService.getProperty(targetNode, 
-                        ContentModel.PROP_AUTHORITY_DISPLAY_NAME);
-               if (groupDisplayName == null || groupDisplayName.length() == 0)
+            
+            if (nodeService.exists(targetNode))
+            { 
+               if (ContentModel.TYPE_PERSON.equals(nodeService.getType(targetNode)))
                {
-                  String group = (String)nodeService.getProperty(targetNode, 
-                           ContentModel.PROP_AUTHORITY_NAME);
-                  groupDisplayName = group.substring(PermissionService.GROUP_PREFIX.length());
+                  // if the node represents a person, show the username instead of the name
+                  out.write(Utils.encode(User.getFullNameAndUserId(nodeService, targetNode)));
                }
-               
-               out.write(groupDisplayName);
+               else if (ContentModel.TYPE_AUTHORITY_CONTAINER.equals(nodeService.getType(targetNode)))
+               {
+                  // if the node represents a group, show the group display name instead of the name
+                  String groupDisplayName = (String)nodeService.getProperty(targetNode, 
+                        ContentModel.PROP_AUTHORITY_DISPLAY_NAME);
+                  if (groupDisplayName == null || groupDisplayName.length() == 0)
+                  {
+                     String group = (String)nodeService.getProperty(targetNode, 
+                           ContentModel.PROP_AUTHORITY_NAME);
+                     groupDisplayName = group.substring(PermissionService.GROUP_PREFIX.length());
+                  }
+                  
+                  out.write(groupDisplayName);
+               }
+               else
+               {
+                  // use the standard cm:name property
+                  
+                  // Fix AWC-1301
+                  String displayString = null;
+                  try
+                  {
+                     displayString = Repository.getDisplayPath(nodeService.getPath(targetNode)) + "/" + Repository.getNameForNode(nodeService, targetNode);
+                  }
+                  catch (AccessDeniedException ade)
+                  {
+                     displayString = Application.getMessage(context, MSG_WARN_CANNOT_VIEW_TARGET_DETAILS);
+                  }
+                  
+                  out.write(Utils.encode(displayString));
+               }
             }
             else
             {
-               // use the standard cm:name property
-            	
-               // Fix AWC-1301
-               String displayString = null;
-               try
-               {
-            	   displayString = Repository.getDisplayPath(nodeService.getPath(targetNode)) + "/" + Repository.getNameForNode(nodeService, targetNode);
-               }
-               catch (AccessDeniedException ade)
-               {
-            	   displayString = Application.getMessage(context, MSG_WARN_CANNOT_VIEW_TARGET_DETAILS);
-               }
-            
-               out.write(Utils.encode(displayString));
-            }
+               String message = Application.getMessage(context, MSG_WARN_USER_WAS_DELETED);
+               out.write(message);
+            } 
             out.write("</td></tr>");
          }
          

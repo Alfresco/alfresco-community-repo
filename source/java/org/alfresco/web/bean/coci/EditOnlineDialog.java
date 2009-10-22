@@ -192,9 +192,7 @@ public class EditOnlineDialog extends CCCheckoutFileDialog
          catch (Throwable err)
          {
             try { if (tx != null) {tx.rollback();} } catch (Exception tex) {}
-            
-            Utils.addErrorMessage(Application.getMessage(FacesContext.getCurrentInstance(), 
-                     MSG_ERROR_CHECKOUT) + err.getMessage(), err);
+            property.setDocument(null);
          }
       }
    }

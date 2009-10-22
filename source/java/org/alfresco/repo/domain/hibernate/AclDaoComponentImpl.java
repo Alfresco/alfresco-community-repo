@@ -1589,6 +1589,7 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
             acl.setInherits(Boolean.TRUE);
             aclCache.remove(id);
             changes.add(new AclChangeImpl(id, id, acl.getAclType(), acl.getAclType()));
+            DirtySessionMethodInterceptor.flushSession(getSession(), true);
             return changes;
         case SHARED:
             // TODO support a list of children and casacade if given
@@ -1603,6 +1604,7 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
                 getWritable(id, null, null, null, null, false, changes, WriteMode.COPY_ONLY);
                 acl = (DbAccessControlList) getHibernateTemplate().get(DbAccessControlListImpl.class, changes.get(0).getAfter());
                 acl.setInherits(Boolean.TRUE);
+                DirtySessionMethodInterceptor.flushSession(getSession(), true);
             }
             else
             {
@@ -1630,6 +1632,7 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
             acl.setInherits(Boolean.FALSE);
             aclCache.remove(id);
             changes.add(new AclChangeImpl(id, id, acl.getAclType(), acl.getAclType()));
+            DirtySessionMethodInterceptor.flushSession(getSession(), true);
             return changes;
         case SHARED:
             // TODO support a list of children and casacade if given
@@ -1669,6 +1672,7 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
                 inheritedAcl.setRequiresVersion(true);
                 aclCache.remove(inheritedId);
             }
+            DirtySessionMethodInterceptor.flushSession(getSession(), true);
             return toCopy;
         case REDIRECT:
             if ((toInheritFrom != null) && (toInheritFrom == toCopy))
@@ -1747,6 +1751,7 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
                 {
                     mergeInheritedAccessControlList(toInheritFrom, id);
                 }
+                DirtySessionMethodInterceptor.flushSession(getSession(), true);
                 return id;
             case SHARED:
                 if (aclToInheritFrom != null)
@@ -1847,7 +1852,7 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
                 setAccessControlEntry(id, entry);
             }
         }
-
+        DirtySessionMethodInterceptor.flushSession(getSession(), true);
         return changes;
 
     }
@@ -2105,8 +2110,6 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
     }
 
     /**
-<<<<<<< .working
-=======
      * Get the total number of head nodes in the repository
      * 
      * @return count
@@ -2138,7 +2141,6 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
     }
 
     /**
->>>>>>> .merge-right.r17076
      * Get the max acl id
      * 
      * @return - max acl id
@@ -2188,8 +2190,6 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
     }
 
     /**
-<<<<<<< .working
-=======
      * Get the acl count canges so far for progress tracking
      * 
      * @param above
@@ -2222,7 +2222,6 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
     }
 
     /**
->>>>>>> .merge-right.r17076
      * How many nodes are noew in store (approximate)
      * 
      * @return - the number of new nodes - approximate
@@ -2340,7 +2339,7 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
     }
 
     /**
-     * Ho many DM nodes are there?
+     * How many DM nodes are there?
      * 
      * @return - the count
      */
@@ -2410,6 +2409,7 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
         {
             dbAuthority.setAuthority(after);
             dbAuthority.setCrc(getCrc(after));
+            DirtySessionMethodInterceptor.flushSession(getSession(), true);
             aclCache.clear();
         }
     }

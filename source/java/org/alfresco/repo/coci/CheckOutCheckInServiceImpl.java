@@ -201,7 +201,7 @@ public class CheckOutCheckInServiceImpl implements CheckOutCheckInService
             QName destinationAssocQName) 
     {
     	LockType lockType = this.lockService.getLockType(nodeRef);
-    	if (LockType.READ_ONLY_LOCK.equals(lockType) == true)
+        if (LockType.READ_ONLY_LOCK.equals(lockType) == true || getWorkingCopy(nodeRef) != null)
     	{
     		throw new CheckOutCheckInServiceException(MSG_ALREADY_CHECKEDOUT);
     	}

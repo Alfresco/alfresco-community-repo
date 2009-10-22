@@ -72,6 +72,11 @@ public class SchemaUtil
          return this.isUnbounded() || this.maximum > 1;
       }
       
+      public boolean isOptional()
+      {
+          return this.minimum == 0 && this.maximum == 1;
+      }
+      
       public boolean isUnbounded()
       {
          return this.maximum == UNBOUNDED;

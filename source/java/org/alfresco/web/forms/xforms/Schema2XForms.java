@@ -1283,9 +1283,10 @@ public class Schema2XForms implements Serializable
                       " occurs " + occurs);
 
          // create the <xforms:bind> element and add it to the model.
+         boolean isRepeated = occurs.isRepeated() || (occurs.isOptional() && (controlType instanceof XSSimpleTypeDefinition == false));
          final Element bindElement = 
             this.createBind(xformsDocument, 
-                            pathToRoot + (occurs.isRepeated() ? "[position() != last()]" : ""));
+                            pathToRoot + (isRepeated ? "[position() != last()]" : ""));
          final String bindId = bindElement.getAttributeNS(null, "id");
 
          modelSection.appendChild(bindElement);
@@ -1715,7 +1716,7 @@ public class Schema2XForms implements Serializable
                    " default instance element for " + elementName +
                    " at path " + path);
       // update the default instance
-      if (occurs.isRepeated())
+      if (occurs.isRepeated() || (occurs.isOptional() && (element.getTypeDefinition() instanceof XSSimpleTypeDefinition == false)))
       {
          LOGGER.debug("adding " + (occurs.minimum + 1) +
                       " default instance elements for " + elementName +
@@ -1758,7 +1759,8 @@ public class Schema2XForms implements Serializable
    {
 
       // add xforms:repeat section if this element re-occurs
-      if (o.maximum == 1)
+      if ((o.isOptional() && controlType instanceof XSSimpleTypeDefinition) ||
+          (o.maximum == 1 && o.minimum == 1))
       {
          return formSection;
       }
@@ -1854,14 +1856,15 @@ public class Schema2XForms implements Serializable
       }
 
       // create the <xforms:bind> element and add it to the model.
+      boolean isRepeated = occurs.isRepeated() || (occurs.isOptional() && (controlType instanceof XSSimpleTypeDefinition == false));
       Element bindElement = 
-         this.createBind(xformsDocument, pathToRoot + (occurs.isRepeated() ? "[position() != last()]" : ""));
+         this.createBind(xformsDocument, pathToRoot + (isRepeated ? "[position() != last()]" : ""));
       String bindId = bindElement.getAttributeNS(null, "id");
       modelSection.appendChild(bindElement);
       bindElement = this.startBindElement(bindElement, schema, controlType, owner, occurs);
 
       // add a group if a repeat !
-      if (owner instanceof XSElementDeclaration && occurs.maximum != 1)
+      if (owner instanceof XSElementDeclaration && occurs.isRepeated())
       {
          final Element groupElement = this.createGroup(xformsDocument,
                                                        modelSection,

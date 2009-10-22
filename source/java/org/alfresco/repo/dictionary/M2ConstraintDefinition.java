@@ -160,6 +160,8 @@ import org.springframework.beans.PropertyAccessException;
             constraintDef.resolveDependencies(query);
             // just use the constraint provided by the referenced definition
             this.constraint = constraintDef.getConstraint();
+            //use real constraint name instead of anonymous name
+            this.name = constraintDef.getName();
             
             if (m2Constraint.getTitle() == null)
             {

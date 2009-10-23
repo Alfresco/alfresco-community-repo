@@ -934,12 +934,23 @@ public class Schema2XForms implements Serializable
          }
          else
          {
+            String attrNamespace = currentAttribute.getNamespace();
+            String namespacePrefix = "";
+            if (attrNamespace != null && attrNamespace.length() > 0)
+            {
+               String prefix =NamespaceResolver.getPrefix(xformsDocument.getDocumentElement(), attrNamespace);
+               if (prefix!= null && prefix.length() > 0)
+               {
+                  namespacePrefix =  prefix + ":";
+               }
+            }
+            
             final String newPathToRoot =
                (pathToRoot == null || pathToRoot.length() == 0
-                ? "@" + currentAttribute.getName()
+                ? "@" + namespacePrefix + currentAttribute.getName()
                 : (pathToRoot.endsWith("/")
-                   ? pathToRoot + "@" + currentAttribute.getName()
-                   : pathToRoot + "/@" + currentAttribute.getName()));
+                   ? pathToRoot + "@" + namespacePrefix + currentAttribute.getName()
+                   : pathToRoot + "/@"+ namespacePrefix + currentAttribute.getName()));
 
             LOGGER.debug("adding attribute " + attributeName +
                          " at " + newPathToRoot);
@@ -948,9 +959,16 @@ public class Schema2XForms implements Serializable
                final String defaultValue = (currentAttributeUse.getConstraintType() == XSConstants.VC_NONE
                                             ? null
                                             : currentAttributeUse.getConstraintValue());
-               defaultInstanceElement.setAttributeNS(this.targetNamespace,
+               if (namespacePrefix.length() > 0)
+               {
+                  defaultInstanceElement.setAttributeNS(this.targetNamespace,
                                                      attributeName,
                                                      defaultValue);
+               }
+               else
+               {
+                  defaultInstanceElement.setAttribute(attributeName, defaultValue);
+               }
             }
             catch (Exception e)
             {

@@ -420,6 +420,11 @@ class AVMNodeDAOIbatis extends HibernateDaoSupport implements AVMNodeDAO
     
     private AVMNode convertNodeEntityToNode(AVMNodeEntity nodeEntity, boolean withStore)
     {
+        if (nodeEntity == null)
+        {
+            return null;
+        }
+        
         AVMNodeImpl node = null;
         if (nodeEntity.getType() == AVMNodeType.PLAIN_FILE)
         {

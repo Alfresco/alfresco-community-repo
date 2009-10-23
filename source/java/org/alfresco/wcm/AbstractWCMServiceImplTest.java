@@ -58,11 +58,10 @@ public class AbstractWCMServiceImplTest extends TestCase
     
     private static final String PREVIEW_CONFIG_LOCATION = "classpath:wcm/wcm-test-preview-context.xml";
     
-    // override jbpm.job.executor idleInterval to 5s (was 1.5m) for WCM unit tests
+    // override jbpm.job.executor idleInterval to 1s (was 1.5m) for WCM unit tests
     private static final String SUBMIT_CONFIG_LOCATION = "classpath:wcm/wcm-jbpm-context.xml";
-    protected static final long SUBMIT_DELAY = 15000L; // (in millis) 15s - to allow async submit direct workflow to complete (as per 5s idleInterval above)
     
-    protected static final long POLL_DELAY = 5000L; // (in millis) 5s
+    protected static final long POLL_DELAY = 1500L; // (in millis) 1.5s
     protected static final int POLL_MAX_ATTEMPTS = 5;
     
     // note: all tests share same context (when run via WCMTestSuite)

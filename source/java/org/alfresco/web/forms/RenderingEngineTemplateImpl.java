@@ -54,6 +54,7 @@ import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.remote.AVMRemote;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
+import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.TemplateException;
@@ -68,6 +69,7 @@ import org.alfresco.web.app.Application;
 import org.alfresco.web.app.servlet.FacesHelper;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.bean.wcm.AVMUtil;
+import org.alfresco.web.forms.RenderingEngine.TemplateNotFoundException;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -91,7 +93,7 @@ public class RenderingEngineTemplateImpl
 {
    private static final long serialVersionUID = -1656812676972437532L;
    
-   private static final Log LOGGER = LogFactory.getLog(RenderingEngineTemplateImpl.class);
+   private static final Log logger = LogFactory.getLog(RenderingEngineTemplateImpl.class);
 
    private static final DynamicNamespacePrefixResolver namespacePrefixResolver = 
       new DynamicNamespacePrefixResolver();
@@ -192,10 +194,17 @@ public class RenderingEngineTemplateImpl
     */
    public RenderingEngine getRenderingEngine()
    {
-      final NodeService nodeService = this.getServiceRegistry().getNodeService();
-      final String renderingEngineName = (String)
-         nodeService.getProperty(this.nodeRef,
-                                 WCMAppModel.PROP_PARENT_RENDERING_ENGINE_NAME);
+      NodeService nodeService = this.getServiceRegistry().getNodeService();
+      String renderingEngineName = null;
+      try
+      {
+         renderingEngineName = (String)nodeService.getProperty(this.nodeRef, WCMAppModel.PROP_PARENT_RENDERING_ENGINE_NAME);
+      }
+      catch (InvalidNodeRefException e)
+      {
+          logger.warn("RenderingEngineTemplate not found: "+e);
+          throw new TemplateNotFoundException("RenderingEngineTemplate not found", e);
+      }
       return this.getFormsService().getRenderingEngine(renderingEngineName);
    }
 
@@ -236,7 +245,7 @@ public class RenderingEngineTemplateImpl
       }
       catch (Exception e)
       {
-         LOGGER.error(e);
+         logger.error(e);
          throw new AlfrescoRuntimeException(e.getMessage(), e);
       }
       final String parentAVMPath = AVMNodeConverter.SplitBase(formInstanceDataAVMPath)[0];
@@ -257,7 +266,7 @@ public class RenderingEngineTemplateImpl
       }
       catch (final TemplateException te)
       {
-         LOGGER.error(te.getMessage(), te);
+         logger.error(te.getMessage(), te);
          throw new AlfrescoRuntimeException("Error processing output path pattern " + outputPathPattern + 
                                             " for " + formInstanceDataName + 
                                             " in webapp " + webappName +
@@ -268,8 +277,11 @@ public class RenderingEngineTemplateImpl
       result = AVMUtil.buildPath(parentAVMPath, 
                                       result,
                                       AVMUtil.PathRelation.SANDBOX_RELATIVE);
-      if (LOGGER.isDebugEnabled())
-         LOGGER.debug("processed pattern " + outputPathPattern + " as " + result);
+      
+      if (logger.isDebugEnabled())
+      {
+         logger.debug("processed pattern " + outputPathPattern + " as " + result);
+      }
       
       return result;
    }
@@ -299,9 +311,9 @@ public class RenderingEngineTemplateImpl
          avmService.createFile(parentAVMPath,
                                AVMNodeConverter.SplitBase(renditionAvmPath)[1]);
          
-         if (LOGGER.isDebugEnabled())
+         if (logger.isDebugEnabled())
          {
-            LOGGER.debug("Created file node for file: " + renditionAvmPath);
+            logger.debug("Created file node for file: " + renditionAvmPath);
          }
          
          avmService.addAspect(renditionAvmPath, ContentModel.ASPECT_TITLED);
@@ -346,10 +358,16 @@ public class RenderingEngineTemplateImpl
       SAXException,
       RenderingEngine.RenderingException
    {
+      RenderingEngine re = this.getRenderingEngine();
+      if (re == null)
+      {
+          return;
+      }
+      
       final OutputStream out = rendition.getOutputStream();
       try
       {
-         this.getRenderingEngine().render(this.buildModel(formInstanceData, rendition), 
+         re.render(this.buildModel(formInstanceData, rendition), 
                                           this, 
                                           out);
       }
@@ -418,12 +436,14 @@ public class RenderingEngineTemplateImpl
                          RenderingEngineTemplateImpl.this.getServiceRegistry().getNodeService();
                       final NodeRef parentNodeRef = 
                          nodeService.getPrimaryParent(RenderingEngineTemplateImpl.this.getNodeRef()).getParentRef();
-                      if (LOGGER.isDebugEnabled())
+                      
+                      if (logger.isDebugEnabled())
                       {
-                         LOGGER.debug("request to resolve resource " + name +
+                         logger.debug("request to resolve resource " + name +
                                       " webapp url is " + webappUrl +
                                       " and data dictionary workspace is " + parentNodeRef);
                       }
+                      
                       final NodeRef result = nodeService.getChildByName(parentNodeRef, ContentModel.ASSOC_CONTAINS, name);
                       if (result != null)
                       {
@@ -431,14 +451,16 @@ public class RenderingEngineTemplateImpl
                             RenderingEngineTemplateImpl.this.getServiceRegistry().getContentService();
                          try
                          {
-                            if (LOGGER.isDebugEnabled())
-                               LOGGER.debug("found " + name + " in data dictonary: " + result);
+                            if (logger.isDebugEnabled())
+                            {
+                               logger.debug("found " + name + " in data dictonary: " + result);
+                            }
                             
                             return contentService.getReader(result, ContentModel.PROP_CONTENT).getContentInputStream();
                          }
                          catch (Exception e)
                          {
-                            LOGGER.debug(e);
+                            logger.warn(e);
                          }
                       }
                       
@@ -487,19 +509,20 @@ public class RenderingEngineTemplateImpl
                                                            request.getContextPath() + "/wcservice/" +
                                                            rewrittenName);
                               
-                              if (LOGGER.isDebugEnabled())
-                                  LOGGER.debug("loading webscript: " + webscriptURI);
+                              if (logger.isDebugEnabled())
+                              {
+                                  logger.debug("loading webscript: " + webscriptURI);
+                              }
                               
                               final URI uri = new URI(webscriptURI);
                               return uri.toURL().openStream();
                           }
                           catch (Exception e)
                           {
-                             if (LOGGER.isDebugEnabled())
-                                LOGGER.debug(e);
+                             logger.warn(e);
                           }
                       }
-
+                      
                       try
                       {
                          final String[] path = (name.startsWith("/") ? name.substring(1) : name).split("/");
@@ -510,16 +533,16 @@ public class RenderingEngineTemplateImpl
                          
                          final URI uri = new URI(webappUrl + '/' + StringUtils.join(path, '/'));
                          
-                         if (LOGGER.isDebugEnabled())
-                            LOGGER.debug("loading " + uri);
+                         if (logger.isDebugEnabled())
+                         {
+                            logger.debug("loading " + uri);
+                         }
                          
                          return uri.toURL().openStream();
                       }
                       catch (Exception e)
                       {
-                         if (LOGGER.isDebugEnabled())
-                            LOGGER.debug(e);
-                         
+                         logger.warn(e);
                          return null;
                       }
                    }
@@ -567,8 +590,10 @@ public class RenderingEngineTemplateImpl
                          }
                          String text = (String)arguments[0];
                          
-                         if (LOGGER.isDebugEnabled())
-                            LOGGER.debug("tpm_encodeQuotes('" + text + "'), parentPath = " + parentPath);
+                         if (logger.isDebugEnabled())
+                         {
+                            logger.debug("tpm_encodeQuotes('" + text + "'), parentPath = " + parentPath);
+                         }
                          
                          final String result = fdf.encodeQuotes(text);
                          return result;
@@ -601,8 +626,10 @@ public class RenderingEngineTemplateImpl
                                                     path,
                                                     AVMUtil.PathRelation.WEBAPP_RELATIVE);
                       
-                      if (LOGGER.isDebugEnabled())
-                         LOGGER.debug("tpm_parseXMLDocument('" + path + "'), parentPath = " + parentPath);
+                      if (logger.isDebugEnabled())
+                      {
+                         logger.debug("tpm_parseXMLDocument('" + path + "'), parentPath = " + parentPath);
+                      }
                       
                       final Document d = fdf.parseXMLDocument(path);
                       return d != null ? d.getDocumentElement() : null;
@@ -640,17 +667,21 @@ public class RenderingEngineTemplateImpl
                                                     AVMUtil.PathRelation.WEBAPP_RELATIVE);
                       final String formName = (String)arguments[0];
                       
-                      if (LOGGER.isDebugEnabled())
-                         LOGGER.debug("tpm_parseXMLDocuments('" + formName + "','" + path + 
+                      if (logger.isDebugEnabled())
+                      {
+                         logger.debug("tpm_parseXMLDocuments('" + formName + "','" + path + 
                                       "'), parentPath = " + parentPath);
+                      }
                       
                       final Map<String, Document> resultMap = fdf.parseXMLDocuments(formName, path);
                       
-                      if (LOGGER.isDebugEnabled())
-                         LOGGER.debug("received " + resultMap.size() + 
+                      if (logger.isDebugEnabled())
+                      {
+                         logger.debug("received " + resultMap.size() + 
                                       " documents in " + path +
                                       " with form name " + formName);
-
+                      }
+                      
                       // create a root document for rooting all the results.  we do this
                       // so that each document root element has a common parent node
                       // and so that xpath axes work properly
@@ -698,8 +729,10 @@ public class RenderingEngineTemplateImpl
 
                       final String path = (String)arguments[0];
                       
-                      if (LOGGER.isDebugEnabled())
-                         LOGGER.debug("tpm_getAVMPAth('" + path + "'), parentPath = " + parentPath);
+                      if (logger.isDebugEnabled())
+                      {
+                         logger.debug("tpm_getAVMPAth('" + path + "'), parentPath = " + parentPath);
+                      }
                       
                       return AVMUtil.buildPath(parentPath,
                                                     path,

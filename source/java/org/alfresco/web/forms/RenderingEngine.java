@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -22,14 +22,14 @@
  * http://www.alfresco.com/legal/licensing" */
 package org.alfresco.web.forms;
 
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.namespace.QName;
-import java.io.InputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
 import java.util.Map;
-import org.w3c.dom.Document;
+
+import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.service.namespace.QName;
 import org.xml.sax.SAXException;
 
 /**
@@ -42,21 +42,36 @@ public interface RenderingEngine
 {
    /////////////////////////////////////////////////////////////////////////////
 
-   public static class RenderingException
-      extends Exception
+   public static class RenderingException extends Exception
    {
-
+      private static final long serialVersionUID = 6831222399250770060L;
+      
       public RenderingException(final String msg)
       {
          super(msg);
       }
-
+      
       public RenderingException(final Exception cause)
       {
          super(cause);
       }
-
+      
       public RenderingException(final String msg, final Exception cause)
+      {
+         super(msg, cause);
+      }
+   }
+   
+   public static class TemplateNotFoundException extends AlfrescoRuntimeException
+   {
+      private static final long serialVersionUID = 3232973289475043471L;
+      
+      public TemplateNotFoundException(final String msg)
+      {
+         super(msg);
+      }
+      
+      public TemplateNotFoundException(final String msg, final Exception cause)
       {
          super(msg, cause);
       }

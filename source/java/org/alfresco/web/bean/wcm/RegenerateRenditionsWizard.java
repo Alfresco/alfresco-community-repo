@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -62,6 +62,7 @@ import org.alfresco.web.forms.FormsService;
 import org.alfresco.web.forms.RenderingEngineTemplate;
 import org.alfresco.web.forms.RenderingEngineTemplateImpl;
 import org.alfresco.web.forms.Rendition;
+import org.alfresco.web.forms.RenderingEngine.TemplateNotFoundException;
 import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.common.component.UIListItem;
 import org.alfresco.web.ui.common.component.UIListItems;
@@ -82,7 +83,7 @@ public class RegenerateRenditionsWizard
    public final String REGENERATE_SCOPE_FORM = "form";
    public final String REGENERATE_SCOPE_RENDERING_ENGINE_TEMPLATE = "rendering_engine_template";
 
-   private final static Log LOGGER = LogFactory.getLog(RegenerateRenditionsWizard.class); 
+   private final static Log logger = LogFactory.getLog(RegenerateRenditionsWizard.class); 
 
    transient protected WebProjectService wpService;
    transient private AVMLockingService avmLockingService;
@@ -114,8 +115,12 @@ public class RegenerateRenditionsWizard
                                            -1, AVMUtil.getCorrespondingPathInMainStore(r.getPath()), 
                                            AVMDifference.NEWER));
          }
-         if (LOGGER.isDebugEnabled())
-            LOGGER.debug("updating " + diffList.size() + " renditions in staging");
+         
+         if (logger.isDebugEnabled())
+         {
+            logger.debug("updating " + diffList.size() + " renditions in staging");
+         }
+         
          getAvmSyncService().update(diffList, null, true, true, true, true, null, null);
          String description = null;
          final ResourceBundle bundle = Application.getBundle(FacesContext.getCurrentInstance());
@@ -488,8 +493,11 @@ public class RegenerateRenditionsWizard
       query.append(" +@" + Repository.escapeQName(WCMAppModel.PROP_PARENT_FORM_NAME) + 
                    ":\"" + f.getName() + "\"");
       
-      if (LOGGER.isDebugEnabled())
-         LOGGER.debug("running query " + query);
+      if (logger.isDebugEnabled())
+      {
+         logger.debug("running query " + query);
+      }
+      
       sp.setQuery(query.toString());
       final ResultSet rs = getSearchService().query(sp);
       try
@@ -520,8 +528,12 @@ public class RegenerateRenditionsWizard
       query.append("+ASPECT:\"" + WCMAppModel.ASPECT_RENDITION + "\"");
       query.append(" +@" + Repository.escapeQName(WCMAppModel.PROP_PARENT_RENDERING_ENGINE_TEMPLATE) + 
                    ":\"" + ((RenderingEngineTemplateImpl)ret).getNodeRef() + "\"");
-      if (LOGGER.isDebugEnabled())
-         LOGGER.debug("running query " + query);
+      
+      if (logger.isDebugEnabled())
+      {
+         logger.debug("running query " + query);
+      }
+      
       sp.setQuery(query.toString());
       final ResultSet rs = getSearchService().query(sp);
       try
@@ -585,14 +597,17 @@ public class RegenerateRenditionsWizard
          query.append(" +(");
          for (int i = 0; i < this.selectedRenderingEngineTemplates.length; i++)
          {
+            String[] parts = this.selectedRenderingEngineTemplates[i].split(":");
+            String formName = parts[0];
+            String templateName = parts[1];
             try
             {
-               final String formName = this.selectedRenderingEngineTemplates[i].split(":")[0];
-               final Form f = this.selectedWebProject.getForm(formName);
-               final RenderingEngineTemplate ret = 
-                  f.getRenderingEngineTemplate((String)this.selectedRenderingEngineTemplates[i].split(":")[1]);
+               Form f = this.selectedWebProject.getForm(formName);
+               RenderingEngineTemplate ret = 
+                  f.getRenderingEngineTemplate(templateName);
                query.append("@" + Repository.escapeQName(WCMAppModel.PROP_PARENT_RENDERING_ENGINE_TEMPLATE) + 
                             ":\"" + ((RenderingEngineTemplateImpl)ret).getNodeRef() + "\"");
+               
                if (i != this.selectedRenderingEngineTemplates.length - 1)
                {
                   query.append(" OR ");
@@ -600,22 +615,26 @@ public class RegenerateRenditionsWizard
             }
             catch (FormNotFoundException fnfe)
             {
-               if (LOGGER.isDebugEnabled())
-                  LOGGER.debug(fnfe);
+               logger.warn("regenerating renditions of template " + templateName + ": " + fnfe.getMessage(), fnfe);
             }
          }
          query.append(") ");
       }
 
-      if (LOGGER.isDebugEnabled())
-         LOGGER.debug("running query " + query);
+      if (logger.isDebugEnabled())
+      {
+         logger.debug("running query " + query);
+      }
+      
       sp.setQuery(query.toString());
       final ResultSet rs = getSearchService().query(sp);
       try
       {
-         if (LOGGER.isDebugEnabled())
-            LOGGER.debug("received " + rs.length() + " results");
-
+         if (logger.isDebugEnabled())
+         {
+            logger.debug("received " + rs.length() + " results");
+         }
+         
          final List<Rendition> result = new ArrayList<Rendition>(rs.length());
          for (final ResultSetRow row : rs)
          {
@@ -650,9 +669,7 @@ public class RegenerateRenditionsWizard
                }
                catch (FormNotFoundException fnfe)
                {
-                  Utils.addErrorMessage("error regenerating renditions of " + fid.getPath() + 
-                        ": " + fnfe.getMessage(), 
-                        fnfe);
+                  logger.warn("regenerating renditions of " + fid.getPath() + ": " + fnfe.getMessage(), fnfe);
                }
             }
             else
@@ -662,6 +679,14 @@ public class RegenerateRenditionsWizard
                {
                   r.regenerate();
                   result.add(r);
+               }
+               catch (TemplateNotFoundException tnfe)
+               {
+                   logger.warn("regenerating renditions of " + previewAvmPath + ": " + tnfe.getMessage(), tnfe);
+               }
+               catch (IllegalArgumentException iae)
+               {
+                   logger.warn("regenerating renditions of " + previewAvmPath + ": " + iae.getMessage(), iae);
                }
                catch (Exception e)
                {

@@ -1261,7 +1261,9 @@ public class AVMBrowseBean implements IContextListener
          results = getSearchService().query(sp);
          
          if (logger.isDebugEnabled())
+         {
             logger.debug("Search results returned: " + results.length());
+         }
          
          // filter hidden folders above the web app
          boolean isStagingStore = getIsStagingStore();
@@ -1539,8 +1541,10 @@ public class AVMBrowseBean implements IContextListener
    /*package*/ void setupContentAction(String path, boolean refresh)
    {
       if (logger.isDebugEnabled())
+      {
          logger.debug("Setup content action for path: " + path);
-
+      }
+      
       if (path == null || path.length() == 0)
       {
          setAvmActionNode(null);
@@ -1608,28 +1612,39 @@ public class AVMBrowseBean implements IContextListener
       if (getAvmService().hasAspect(-1, avmPath, WCMAppModel.ASPECT_RENDITION))
       {
          if (logger.isDebugEnabled())
+         {
             logger.debug(avmPath + " is a rendition, editing primary rendition instead");
-
+         }
+         
          try
          {
             final FormInstanceData fid = this.getFormsService().getRendition(-1, avmPath).getPrimaryFormInstanceData();
             avmPath = fid.getPath();
-
+            
             if (logger.isDebugEnabled())
+            {
                logger.debug("Editing primary form instance data " + avmPath);
-
+            }
+            
             this.setAvmActionNode(new AVMNode(getAvmService().lookup(-1, avmPath)));
+         }
+         catch (IllegalArgumentException iae)
+         {
+            //Utils.addErrorMessage(iae.getMessage(), iae);
+            logger.warn(iae);
          }
          catch (FileNotFoundException fnfe)
          {
-            getAvmService().removeAspect(avmPath, WCMAppModel.ASPECT_RENDITION);
-            getAvmService().removeAspect(avmPath, WCMAppModel.ASPECT_FORM_INSTANCE_DATA);
-            Utils.addErrorMessage(fnfe.getMessage(), fnfe);
+            //Utils.addErrorMessage(fnfe.getMessage(), fnfe);
+            logger.warn(fnfe);
          }
       }
-
+      
       if (logger.isDebugEnabled())
+      {
          logger.debug("Editing AVM node: " + avmPath);
+      }
+      
       String outcome = null;
       // calculate which editor screen to display
       if (getAvmService().hasAspect(-1, avmPath, WCMAppModel.ASPECT_FORM_INSTANCE_DATA))
@@ -1645,12 +1660,14 @@ public class AVMBrowseBean implements IContextListener
          }
          catch (FormNotFoundException fnfe)
          {
-            logger.debug(fnfe.getMessage(), fnfe);
+            //Utils.addErrorMessage(fnfe.getMessage(), fnfe);
+            logger.warn(fnfe);
+            
             final Map<String, String> params = new HashMap<String, String>(2, 1.0f);
             params.put("finishOutcome", "wizard:editWebContent");
             params.put("cancelOutcome", "dialog:editAvmFile");
             Application.getDialogManager().setupParameters(params);
-
+            
             outcome = "dialog:promptForWebForm";
          }
       }
@@ -1663,8 +1680,11 @@ public class AVMBrowseBean implements IContextListener
          this.getAvmService().forceCopy(avmPath);
       }
       
-      logger.debug("outcome " + outcome + " for path " + path);
-         
+      if (logger.isDebugEnabled())
+      {
+          logger.debug("outcome " + outcome + " for path " + path);
+      }
+      
       FacesContext fc = FacesContext.getCurrentInstance();
       fc.getApplication().getNavigationHandler().handleNavigation(fc, null, outcome);
    }

@@ -66,7 +66,9 @@ import org.alfresco.web.app.servlet.FacesHelper;
 import org.alfresco.web.bean.BrowseBean;
 import org.alfresco.web.bean.dialog.BaseDialogBean;
 import org.alfresco.web.bean.repository.Repository;
+import org.alfresco.web.forms.Form;
 import org.alfresco.web.forms.FormInstanceData;
+import org.alfresco.web.forms.FormNotFoundException;
 import org.alfresco.web.forms.FormsService;
 import org.alfresco.web.forms.Rendition;
 import org.alfresco.web.ui.common.Utils;
@@ -751,6 +753,7 @@ public class SubmitDialog extends BaseDialogBean
                   this.submitItems.add(new ItemWrapper(node));
                   submittedPaths.add(node.getPath());
                }
+               
                // lookup if this item was created via a form - then lookup the workflow defaults
                // for that form and store into the list of available workflows
                else if (!getNodeService().hasAspect(ref, WCMAppModel.ASPECT_FORM_INSTANCE_DATA))
@@ -773,14 +776,27 @@ public class SubmitDialog extends BaseDialogBean
                   {
                      fid = getFormsService().getFormInstanceData(ref);
                   }
-
+                  
+                  // check form's default workflow (if any)
+                  Form f = null;
+                  try
+                  {
+                      f = fid.getForm();
+                  }
+                  catch (FormNotFoundException fnfe)
+                  {
+                      String formName = (String)getNodeService().getProperty(ref, WCMAppModel.PROP_PARENT_FORM_NAME);
+                      logger.warn("Cannot check default workflow (if any) for missing form '"+formName+"' (may have been deleted) - when submitting '"+node.getPath()+"'");
+                      //Utils.addErrorMessage(fnfe.getMessage(), fnfe);
+                  }
+                  
                   // add the form instance data file to the list for submission
                   if (!submittedPaths.contains(fid.getPath()))
                   {
                      this.submitItems.add(new ItemWrapper(getAvmService().lookup(-1, fid.getPath())));
                      submittedPaths.add(fid.getPath());
                   }
-
+                  
                   // locate renditions for this form instance data file and add to list for submission
                   for (final Rendition rendition : fid.getRenditions())
                   {
@@ -791,11 +807,15 @@ public class SubmitDialog extends BaseDialogBean
                         submittedPaths.add(renditionPath);
                      }
                   }
-                  WorkflowDefinition defaultWfDef = fid.getForm().getDefaultWorkflow();
-                  if (defaultWfDef != null)
+                  
+                  if (f != null)
                   {
-                     this.workflows.add(new FormWorkflowWrapper(defaultWfDef.getName(),
-                              fid.getForm().getDefaultWorkflowParameters()));
+                      WorkflowDefinition defaultWfDef = f.getDefaultWorkflow();
+                      if (defaultWfDef != null)
+                      {
+                         this.workflows.add(new FormWorkflowWrapper(defaultWfDef.getName(),
+                                  f.getDefaultWorkflowParameters()));
+                      }
                   }
                   
                   // See WCM-1090 ACT-1551

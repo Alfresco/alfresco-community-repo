@@ -182,6 +182,15 @@ public class PromptForWebFormDialog extends BaseDialogBean
    }
    
    @Override
+   public String cancel()
+   {
+      getAvmService().removeAspect(this.getAvmNode().getPath(), WCMAppModel.ASPECT_RENDITION);
+      getAvmService().removeAspect(this.getAvmNode().getPath(), WCMAppModel.ASPECT_FORM_INSTANCE_DATA);
+       
+      return super.cancel();
+   }
+   
+   @Override
    protected String finishImpl(final FacesContext context, String outcome)
       throws Exception
    {

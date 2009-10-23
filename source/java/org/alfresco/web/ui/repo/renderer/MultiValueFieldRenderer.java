@@ -55,7 +55,7 @@ public class MultiValueFieldRenderer extends BaseMultiValueRenderer
    protected void renderPostWrappedComponent(FacesContext context, ResponseWriter out, 
          UIMultiValueEditor editor) throws IOException
    {
-      out.write("&nbsp;<input type='submit' value='");
+      out.write("&nbsp;<input type='button' value='");
       out.write(Application.getMessage(context, MSG_ADD_TO_LIST_BUTTON));
       out.write("' onclick=\"");
       out.write(generateFormSubmit(context, editor, Integer.toString(UIMultiValueEditor.ACTION_ADD)));

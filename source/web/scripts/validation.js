@@ -12,7 +12,7 @@ function informUser(control, message, showMessage)
 	if (showMessage)
    {
       alert(message);
-      control.focus();
+      if (control.type != "hidden") control.focus();
    }
 }
 
@@ -85,6 +85,38 @@ function validateStringLength(control, min, max, message, showMessage)
       result = false;
    }
    
+   return result;
+}
+
+/**
+ * Ensures the value of the 'control' matches the 'expression' if 'requiresMatch' is true. 
+ * Ensures the value of the 'control' does not match the 'expression' if 'requiresMatch' is false.
+ * 
+ * @return true if the regex validation passed
+ */
+function validateMultivalueRegex(control, expression, requiresMatch, matchMessage, noMatchMessage, showMessage)
+{
+   var result = true;
+   var pattern = new RegExp(decode(expression));
+   
+   var arrayOfStrings = control.value.substring(1, control.value.length - 1).split(", ");
+   for (var i=0; i < arrayOfStrings.length; i++)
+   {
+       var matches = pattern.test(arrayOfStrings[i]);
+       if (matches != requiresMatch)
+       {
+           if (requiresMatch)
+           {
+               informUser(control, noMatchMessage, showMessage);
+               return false;
+           }
+           else
+           {
+               informUser(control, matchMessage, showMessage);
+               return false;
+           }
+      }
+   }
    return result;
 }
 

@@ -52,6 +52,7 @@ import org.alfresco.web.bean.repository.DataDictionary;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.ui.common.ComponentConstants;
 import org.alfresco.web.ui.repo.RepoConstants;
+import org.alfresco.web.ui.repo.component.UIMultiValueEditor;
 import org.alfresco.web.ui.repo.component.property.BaseAssociationEditor;
 import org.alfresco.web.ui.repo.component.property.PropertySheetItem;
 import org.alfresco.web.ui.repo.component.property.UIProperty;
@@ -526,7 +527,9 @@ public abstract class BaseComponentGenerator implements IComponentGenerator
       
       // add the value parameter
       String value = "document.getElementById('" +
-            component.getClientId(context) + "')";
+            component.getClientId(context) +
+            (component instanceof UIMultiValueEditor ? "_current_value" : "") +
+            "')";
       params.add(value);
       
       // add the regular expression parameter
@@ -554,7 +557,7 @@ public abstract class BaseComponentGenerator implements IComponentGenerator
             MessageFormat.format(noMatchMsg, new Object[] {property.getResolvedDisplayLabel()}));
       
       // add the validation case to the property sheet
-      propertySheet.addClientValidation(new ClientValidation("validateRegex",
+      propertySheet.addClientValidation(new ClientValidation((component instanceof UIMultiValueEditor ? "validateMultivalueRegex" : "validateRegex"),
          params, realTimeChecking));
    }
    

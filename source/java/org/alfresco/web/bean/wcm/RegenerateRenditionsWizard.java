@@ -662,7 +662,7 @@ public class RegenerateRenditionsWizard
                      }
                      if (rr.getRendition() != null)
                      {
-                        this.avmLockingService.removeLock(AVMUtil.getStoreId(rr.getRendition().getPath()),
+                         getAvmLockingService().removeLock(AVMUtil.getStoreId(rr.getRendition().getPath()),
                               AVMUtil.getStoreRelativePath(rr.getRendition().getPath()));
                      }
                   }
@@ -679,6 +679,8 @@ public class RegenerateRenditionsWizard
                {
                   r.regenerate();
                   result.add(r);
+                  
+                  getAvmLockingService().removeLock(AVMUtil.getStoreId(r.getPath()), AVMUtil.getStoreRelativePath(r.getPath()));
                }
                catch (TemplateNotFoundException tnfe)
                {

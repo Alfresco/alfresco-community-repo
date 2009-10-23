@@ -73,12 +73,8 @@ public class FormImpl implements Form
    private transient FormsService formsService;
    private transient Map<String, RenderingEngineTemplate> renderingEngineTemplates;
 
-   private final static LinkedList<FormProcessor> PROCESSORS = new LinkedList<FormProcessor>();
+   private transient static LinkedList<FormProcessor> PROCESSORS = null;
    
-   static 
-   {
-      FormImpl.PROCESSORS.add(new XFormsProcessor());
-   }
    
    protected FormImpl(final NodeRef folderNodeRef, final FormsService formsService)
    {
@@ -255,6 +251,14 @@ public class FormImpl implements Form
 
    public List<FormProcessor> getFormProcessors()
    {
+      synchronized (FormImpl.class)
+      {
+         if (PROCESSORS == null)
+         {
+             PROCESSORS = new LinkedList<FormProcessor>();
+             PROCESSORS.add(new XFormsProcessor());
+         }
+      }
       return PROCESSORS;
    }
 

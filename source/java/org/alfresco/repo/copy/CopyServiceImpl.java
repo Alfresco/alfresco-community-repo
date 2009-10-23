@@ -554,8 +554,7 @@ public class CopyServiceImpl implements CopyService
             copyProperties.put(ContentModel.PROP_COPY_REFERENCE, sourceNodeRef);
             internalNodeService.addAspect(targetNodeRef, ContentModel.ASPECT_COPIEDFROM, copyProperties);
 
-            // Copy permissions
-            copyPermissions(sourceNodeRef, targetNodeRef);
+            // Do not copy permissions
             
             // We present the recursion option regardless of what the client chooses
             copyChildren(
@@ -682,48 +681,6 @@ public class CopyServiceImpl implements CopyService
         }
     }
 
-    /**
-     * Copies the permissions of the source node reference onto the destination node reference
-     * 
-     * @param sourceNodeRef            the source node reference
-     * @param destinationNodeRef    the destination node reference
-     */
-    private void copyPermissions(final NodeRef sourceNodeRef, final NodeRef destinationNodeRef) 
-    {
-        AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
-        {
-            public Object doWork() throws Exception
-            {
-
-                if(permissionService.hasPermission(sourceNodeRef, PermissionService.READ_PERMISSIONS) == AccessStatus.ALLOWED)
-                {
-                    // Get the permission details of the source node reference
-                    Set<AccessPermission> permissions = permissionService.getAllSetPermissions(sourceNodeRef);
-                    boolean includeInherited = permissionService.getInheritParentPermissions(sourceNodeRef);
-                    
-                    AccessStatus writePermission = permissionService.hasPermission(destinationNodeRef, PermissionService.CHANGE_PERMISSIONS);
-                    if (writePermission.equals(AccessStatus.ALLOWED) || authenticationService.isCurrentUserTheSystemUser() )
-                    {
-                        // Set the permission values on the destination node        
-                        for (AccessPermission permission : permissions) 
-                        {
-                            if(permission.isSetDirectly())
-                            {
-                                permissionService.setPermission(
-                                    destinationNodeRef, 
-                                    permission.getAuthority(), 
-                                    permission.getPermission(), 
-                                    permission.getAccessStatus().equals(AccessStatus.ALLOWED));
-                            }
-                        }
-                        permissionService.setInheritParentPermissions(destinationNodeRef, includeInherited);
-                    }
-                }
-                
-                return null;
-            }
-       }, AuthenticationUtil.getAdminUserName());               
-    }
 
     /**
      * Gets the copy details.  This calls the appropriate policies that have been registered

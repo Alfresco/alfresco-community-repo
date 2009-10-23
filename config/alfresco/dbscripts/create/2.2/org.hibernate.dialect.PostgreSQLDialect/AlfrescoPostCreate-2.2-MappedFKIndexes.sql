@@ -1,0 +1,10 @@
+--
+-- Title:      Post-Create Indexes
+-- Database:   PostgreSQL
+-- Since:      V2.2 Schema 86
+-- Author:     Pavel Yurkevich
+--
+-- Hibernate only generates indexes on foreign key columns for Oracle.
+--
+-- Please contact support@alfresco.com if you need assistance with the upgrade.
+--

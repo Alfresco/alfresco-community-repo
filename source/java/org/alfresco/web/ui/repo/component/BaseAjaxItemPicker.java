@@ -68,7 +68,9 @@ public abstract class BaseAjaxItemPicker extends UIInput
    protected static final String ID_ID = "id";
    protected static final String ID_NAME = "name";
    protected static final String ID_ICON = "icon";
-
+   
+   protected static final String EMPTY = "empty";
+   
    protected static final String FOLDER_IMAGE_PREFIX = "/images/icons/";
    
    /** label to be displayed before an item is selected */
@@ -142,9 +144,9 @@ public abstract class BaseAjaxItemPicker extends UIInput
       String value = (String)requestMap.get(fieldId);
       if (value != null)
       {
-         if (value.equals("empty"))
+         if (value.equals(EMPTY))
          {
-            this.setSubmittedValue(new String("empty"));
+            this.setSubmittedValue(new String(EMPTY));
          }
          else if (value.length() != 0)
          {
@@ -210,15 +212,23 @@ public abstract class BaseAjaxItemPicker extends UIInput
       }
       else
       {
-         submitted = (List<NodeRef>)getSubmittedValue();
-         if (submitted == null)
+         Object value = getSubmittedValue();
+         if (value == null)
          {
-            submitted = (List<NodeRef>)getValue();
+            value = getValue();
          }
-         // special case to submit empty lists on multi-select values
-         else if (submitted.equals("empty"))
+         if (value instanceof List)
          {
-            submitted = null;
+            submitted = (List<NodeRef>)value;
+         }
+         else if (value instanceof String)
+         {
+            // special case for "empty" submitted value
+            if (!value.equals(EMPTY))
+            {
+                submitted = new ArrayList<NodeRef>(1);
+                submitted.add(new NodeRef(value.toString()));
+            }
          }
       }
       if (submitted != null)

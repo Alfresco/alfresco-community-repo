@@ -243,31 +243,6 @@
         </property>    
     </bean>
     -->
-    <bean id="personDaoImpl" class="org.alfresco.repo.security.person.PersonDaoImpl">
-        <property name="sessionFactory">
-         <ref bean="sessionFactory" />
-        </property>
-        <property name="localeDAO">
-            <ref bean="localeDAO" />
-        </property>
-        <property name="qnameDAO">
-            <ref bean="qnameDAO" />
-        </property>
-        <property name="contentDataDAO">
-            <ref bean="contentDataDAO" />
-        </property>
-        <property name="dictionaryService">
-            <ref bean="dictionaryService" />
-        </property>
-        <property name="tenantService">
-            <ref bean="tenantService"/>
-        </property>
-        <!-- The store in which people are persisted. -->
-        <property name="storeUrl">
-           <value>${spaces.store}</value>
-        </property>
-    </bean>
-
 
     <!-- support to match user names -->
     
@@ -318,9 +293,6 @@
         </property>
         <property name="personCache">
             <ref bean="personCache" />
-        </property>
-        <property name="personDao">
-            <ref bean="personDaoImpl" />
         </property>
         <property name="permissionsManager">
             <ref bean="personServicePermissionsManager" />

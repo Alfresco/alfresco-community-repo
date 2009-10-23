@@ -288,13 +288,7 @@
     <bean id="multiTenantBootstrap" class="org.alfresco.repo.tenant.MultiTenantBootstrap" >
         <property name="tenantAdminService" ref="tenantAdminService" />
     </bean>
-    
-    <bean id="personDaoBootstrap" class="org.alfresco.repo.security.person.PersonDaoBootstrap" >
-       <property name="personDaoImpl">
-         <ref bean="personDaoImpl"/>
-       </property>
-    </bean>
-   
+       
     <!-- Bootstrap any extensions -->
    
     <import resource="classpath*:alfresco/extension/bootstrap/*-context.xml" />

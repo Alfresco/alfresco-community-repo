@@ -25,15 +25,19 @@
 package org.alfresco.repo.security.person;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
@@ -131,14 +135,15 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
 
     private boolean includeAutoCreated = false;
 
-    private PersonDao personDao;
-
     private AclDaoComponent aclDao;
 
     private PermissionsManager permissionsManager;
 
     /** a transactionally-safe cache to be injected */
-    private SimpleCache<String, NodeRef> personCache;
+    private SimpleCache<String, Map<String, NodeRef>> personCache;
+    
+    /** People Container ref cache (Tennant aware) */
+    private Map<String, NodeRef> peopleContainerRefs = new ConcurrentHashMap<String, NodeRef>(4);    
 
     private UserNameMatcher userNameMatcher;
 
@@ -181,7 +186,6 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
         PropertyCheck.mandatory(this, "namespacePrefixResolver", namespacePrefixResolver);
         PropertyCheck.mandatory(this, "policyComponent", policyComponent);
         PropertyCheck.mandatory(this, "personCache", personCache);
-        PropertyCheck.mandatory(this, "personDao", personDao);
         PropertyCheck.mandatory(this, "aclDao", aclDao);
         PropertyCheck.mandatory(this, "homeFolderManager", homeFolderManager);
 
@@ -233,11 +237,6 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
         this.homeFolderManager = homeFolderManager;
     }
     
-    public void setPersonDao(PersonDao personDao)
-    {
-        this.personDao = personDao;
-    }
-
     public void setAclDao(AclDaoComponent aclDao)
     {
         this.aclDao = aclDao;
@@ -254,7 +253,7 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
      * @param personCache
      *            a transactionally safe cache
      */
-    public void setPersonCache(SimpleCache<String, NodeRef> personCache)
+    public void setPersonCache(SimpleCache<String, Map<String, NodeRef>> personCache)
     {
         this.personCache = personCache;
     }
@@ -345,21 +344,41 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
 
     private NodeRef getPersonOrNull(String searchUserName)
     {
-        NodeRef returnRef = this.personCache.get(searchUserName);
-        if (returnRef == null)
+        String cacheKey = searchUserName.toLowerCase();
+        Map<String, NodeRef> allRefs = this.personCache.get(cacheKey);
+        if (allRefs == null)
         {
-            List<NodeRef> refs = personDao.getPersonOrNull(searchUserName, userNameMatcher);
-            if (refs.size() > 1)
-            {
-                returnRef = handleDuplicates(refs, searchUserName);
-            }
-            else if (refs.size() == 1)
-            {
-                returnRef = refs.get(0);
-            }
-
+            List<ChildAssociationRef> childRefs = nodeService.getChildAssocs(getPeopleContainer(),
+                    ContentModel.ASSOC_CHILDREN, QName.createQName("cm", searchUserName.toLowerCase(),
+                            namespacePrefixResolver));
+            allRefs = new LinkedHashMap<String, NodeRef>(childRefs.size() * 2);
             // add to cache
-            this.personCache.put(searchUserName, returnRef);
+            personCache.put(cacheKey, allRefs);
+
+            for (ChildAssociationRef childRef : childRefs)
+            {
+                NodeRef nodeRef = childRef.getChildRef();
+                Serializable value = nodeService.getProperty(nodeRef, ContentModel.PROP_USERNAME);
+                String realUserName = DefaultTypeConverter.INSTANCE.convert(String.class, value);
+                allRefs.put(realUserName, nodeRef);
+            }
+        }
+        List<NodeRef> refs = new ArrayList<NodeRef>(allRefs.size());
+        for (Entry<String, NodeRef> entry : allRefs.entrySet())
+        {
+            if (userNameMatcher.matches(searchUserName, entry.getKey()))
+            {
+                refs.add(entry.getValue());
+            }
+        }
+        NodeRef returnRef = null;
+        if (refs.size() > 1)
+        {
+            returnRef = handleDuplicates(refs, searchUserName);
+        }
+        else if (refs.size() == 1)
+        {
+            returnRef = refs.get(0);
         }
         return returnRef;
     }
@@ -657,30 +676,40 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
             }
         }
 
+        personCache.remove(userName.toLowerCase());
         return personRef;
     }
 
     public NodeRef getPeopleContainer()
     {
-        NodeRef rootNodeRef = nodeService.getRootNode(tenantService.getName(storeRef));
-        List<ChildAssociationRef> children = nodeService.getChildAssocs(rootNodeRef, RegexQNamePattern.MATCH_ALL, QName.createQName(SYSTEM_FOLDER_SHORT_QNAME,
-                namespacePrefixResolver));
-
-        if (children.size() == 0)
+        String cacheKey = tenantService.getCurrentUserDomain();
+        NodeRef peopleNodeRef = peopleContainerRefs.get(cacheKey);
+        if (peopleNodeRef == null)
         {
-            throw new AlfrescoRuntimeException("Required people system path not found: " + SYSTEM_FOLDER_SHORT_QNAME);
+            NodeRef rootNodeRef = nodeService.getRootNode(tenantService.getName(storeRef));
+            List<ChildAssociationRef> children = nodeService.getChildAssocs(rootNodeRef, RegexQNamePattern.MATCH_ALL,
+                    QName.createQName(SYSTEM_FOLDER_SHORT_QNAME, namespacePrefixResolver));
+
+            if (children.size() == 0)
+            {
+                throw new AlfrescoRuntimeException("Required people system path not found: "
+                        + SYSTEM_FOLDER_SHORT_QNAME);
+            }
+
+            NodeRef systemNodeRef = children.get(0).getChildRef();
+
+            children = nodeService.getChildAssocs(systemNodeRef, RegexQNamePattern.MATCH_ALL, QName.createQName(
+                    PEOPLE_FOLDER_SHORT_QNAME, namespacePrefixResolver));
+
+            if (children.size() == 0)
+            {
+                throw new AlfrescoRuntimeException("Required people system path not found: "
+                        + PEOPLE_FOLDER_SHORT_QNAME);
+            }
+
+            peopleNodeRef = children.get(0).getChildRef();
+            peopleContainerRefs.put(cacheKey, peopleNodeRef);
         }
-
-        NodeRef systemNodeRef = children.get(0).getChildRef();
-
-        children = nodeService.getChildAssocs(systemNodeRef, RegexQNamePattern.MATCH_ALL, QName.createQName(PEOPLE_FOLDER_SHORT_QNAME, namespacePrefixResolver));
-
-        if (children.size() == 0)
-        {
-            throw new AlfrescoRuntimeException("Required people system path not found: " + PEOPLE_FOLDER_SHORT_QNAME);
-        }
-
-        NodeRef peopleNodeRef = children.get(0).getChildRef();
         return peopleNodeRef;
     }
 
@@ -733,7 +762,14 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
 
     public Set<NodeRef> getAllPeople()
     {
-        return personDao.getAllPeople();
+        List<ChildAssociationRef> childRefs = nodeService.getChildAssocs(getPeopleContainer(),
+                ContentModel.ASSOC_CHILDREN, RegexQNamePattern.MATCH_ALL);
+        Set<NodeRef> refs = new HashSet<NodeRef>(childRefs.size()*2);
+        for (ChildAssociationRef childRef : childRefs)
+        {
+            refs.add(childRef.getChildRef());
+        }
+        return refs;
     }
 
     public Set<NodeRef> getPeopleFilteredByProperty(QName propertyKey, Serializable propertyValue)
@@ -794,7 +830,6 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
     {
         NodeRef personRef = childAssocRef.getChildRef();
         String username = (String) this.nodeService.getProperty(personRef, ContentModel.PROP_USERNAME);
-        this.personCache.put(username, personRef);
         permissionsManager.setPermissions(personRef, username, username);
 
         // Make sure there is an authority entry - with a DB constraint for uniqueness
@@ -812,7 +847,7 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
     public void beforeDeleteNode(NodeRef nodeRef)
     {
         String username = (String) this.nodeService.getProperty(nodeRef, ContentModel.PROP_USERNAME);
-        this.personCache.remove(username);
+        this.personCache.remove(username.toLowerCase());
     }
 
     // IOC Setters
@@ -960,8 +995,10 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
                 ChildAssociationRef assoc = nodeService.getPrimaryParent(nodeRef);
                 nodeService.moveNode(nodeRef, assoc.getParentRef(), assoc.getTypeQName(), newAssocQName);
                 // Fix cache
-                personCache.remove(uidBefore);
-                personCache.put(uidAfter, nodeRef);
+                if (uidBefore != null)
+                {
+                    personCache.remove(uidBefore.toLowerCase());
+                }
             }
             else
             {

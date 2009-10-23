@@ -351,6 +351,7 @@ public abstract class BaseWebScriptTest extends TestCase
         else
         {
             // send request in context of specified user
+            getServer();
             return AuthenticationUtil.runAs(new RunAsWork<Response>()
             {
                 @SuppressWarnings("synthetic-access")

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -677,7 +677,7 @@ public abstract class AbstractLuceneIndexerImpl<T> extends AbstractLuceneBase
     {
         if (commandList.size() > 0)
         {
-            Command last = commandList.get(commandList.size() - 1);
+            Command<T> last = commandList.get(commandList.size() - 1);
             if ((last.action == command.action) && (last.ref.equals(command.ref)))
             {
                 return;
@@ -692,7 +692,7 @@ public abstract class AbstractLuceneIndexerImpl<T> extends AbstractLuceneBase
         }
     }
 
-    private void purgeCommandList(Command command)
+    private void purgeCommandList(Command<T> command)
     {
         if (command.action == Action.DELETE)
         {
@@ -712,17 +712,27 @@ public abstract class AbstractLuceneIndexerImpl<T> extends AbstractLuceneBase
         }
     }
 
-    private void removeFromCommandList(Command command, boolean matchExact)
+    private void removeFromCommandList(Command<T> command, boolean matchExact)
     {
         for (ListIterator<Command<T>> it = commandList.listIterator(commandList.size()); it.hasPrevious(); /**/)
         {
             Command<T> current = it.previous();
             if (matchExact)
             {
-                if ((current.action == command.action) && (current.ref.equals(command.ref)))
+                if (current.ref.equals(command.ref))
                 {
-                    it.remove();
-                    return;
+                    if ((current.action == command.action))
+                    {
+                        it.remove();
+                        return;
+                    }
+                    // If there is an INDEX in this same transaction and the current command is a reindex, remove it and
+                    // replace the current command with it
+                    else if (command.action != Action.DELETE && current.action == Action.INDEX)
+                    {
+                        it.remove();
+                        command.action = Action.INDEX;
+                    }
                 }
             }
             else
@@ -746,7 +756,7 @@ public abstract class AbstractLuceneIndexerImpl<T> extends AbstractLuceneBase
             mainReader = getReader();
             Set<String> forIndex = new LinkedHashSet<String>();
 
-            for (Command command : commandList)
+            for (Command<T> command : commandList)
             {
                 if (command.action == Action.INDEX)
                 {

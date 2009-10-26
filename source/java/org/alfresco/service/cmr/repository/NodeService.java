@@ -520,6 +520,32 @@ public interface NodeService
             throws InvalidNodeRefException;
     
     /**
+     * Gets all child associations where the pattern of the association qualified
+     * name is a match.  Using a {@link org.alfresco.service.namespace.RegexQNamePattern#MATCH_ALL wildcard}
+     * for the type and a specific {@link QName qualified name} for the association is
+     * akin to using the XPath browse expression <b>./{url}localname</b> in the context of the
+     * parent node.
+     * 
+     * @param nodeRef the parent node - usually a <b>container</b>
+     * @param typeQNamePattern the pattern that the type qualified name of the association must match
+     * @param qnamePattern the pattern that the qnames of the assocs must match
+     * @param preload should the nodes be preloaded into the cache?
+     * @return Returns a list of <code>ChildAssociationRef</code> instances.  If the
+     *      node is not a <b>container</b> then the result will be empty.
+     * @throws InvalidNodeRefException if the node could not be found
+     * 
+     * @see QName
+     * @see org.alfresco.service.namespace.RegexQNamePattern#MATCH_ALL
+     */
+    @Auditable(key = Auditable.Key.ARG_0 ,parameters = {"nodeRef", "typeQNamePattern", "qnamePattern"})
+    public List<ChildAssociationRef> getChildAssocs(
+            NodeRef nodeRef,
+            QNamePattern typeQNamePattern,
+            QNamePattern qnamePattern,
+            boolean preload)
+            throws InvalidNodeRefException;
+
+    /**
      * Retrieve immediate children of a given node where the child nodes are in the given inclusive list
      * and not in the given exclusive list.
      * 

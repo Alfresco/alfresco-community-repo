@@ -121,6 +121,11 @@
         <property name="messageSource">
             <ref bean="bootstrapSpacesMessageSource" />
         </property>   
+        <property name="dependsOn" >
+            <list>
+                <ref bean="patch.fixNameCrcValues-2" />
+            </list>
+        </property>
     </bean>
     <bean id="patch.savedSearchesPermission" class="org.alfresco.repo.admin.patch.impl.SavedSearchPermissionPatch" parent="basePatch" >
         <property name="id"><value>patch.savedSearchesPermission</value></property>
@@ -1790,6 +1795,11 @@
                 <prop key="location">alfresco/bootstrap/alfrescoAuthorityStore.xml</prop>
             </props>
         </property>
+        <property name="dependsOn" >
+            <list>
+                <ref bean="patch.fixNameCrcValues-2" />
+            </list>
+        </property>
     </bean>
 
     <bean id="patch.authorityMigration" class="org.alfresco.repo.admin.patch.impl.AuthorityMigrationPatch" parent="basePatch" >
@@ -1836,30 +1846,6 @@
         </property>
     </bean>
     
-    <bean id="patch.fixNameCrcValues" class="org.alfresco.repo.admin.patch.impl.FixNameCrcValuesPatch" parent="basePatch" >
-        <property name="id"><value>patch.fixNameCrcValues</value></property>
-        <property name="description"><value>patch.fixNameCrcValues.description</value></property>
-        <property name="fixesFromSchema"><value>0</value></property>
-        <property name="fixesToSchema"><value>2014</value></property>
-        <property name="targetSchema"><value>2015</value></property>
-        <property name="dependsOn" >
-            <list>
-                <ref bean="patch.uniqueChildName" />
-                <ref bean="patch.InvalidNameEnding" />
-            </list>
-        </property>
-        <!-- helper beans -->
-        <property name="sessionFactory">
-            <ref bean="sessionFactory" />
-        </property>
-        <property name="nodeDaoService">
-            <ref bean="nodeDaoService" />
-        </property>
-        <property name="qnameDAO">
-            <ref bean="qnameDAO" />
-        </property>
-    </bean>
-
     <bean id="patch.db-V3.2-ContentTables" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
         <property name="id"><value>patch.db-V3.2-ContentTables</value></property>
         <property name="description"><value>patch.schemaUpgradeScript.description</value></property>
@@ -1968,4 +1954,45 @@
         </property>
     </bean>
     
+    <bean id="patch.db-V3.2-Child-Assoc-QName-CRC" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
+        <property name="id"><value>patch.db-V3.2-Child-Assoc-QName-CRC</value></property>
+        <property name="description"><value>patch.schemaUpgradeScript.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>3005</value></property>
+        <property name="targetSchema"><value>3006</value></property>
+        <property name="scriptUrl">
+            <value>classpath:alfresco/dbscripts/upgrade/3.2/${db.script.dialect}/child-assoc-qname-crc.sql</value>
+        </property>
+    </bean>
+
+    <!--                   -->
+    <!-- Patch definitions -->
+    <!--                   -->
+    
+    <bean id="patch.fixNameCrcValues-2" class="org.alfresco.repo.admin.patch.impl.FixNameCrcValuesPatch" parent="basePatch" >
+        <property name="id"><value>patch.fixNameCrcValues-2</value></property>
+        <property name="description"><value>patch.fixNameCrcValues.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>3006</value></property>
+        <property name="targetSchema"><value>3007</value></property>
+        <property name="dependsOn" >
+            <list>
+                <ref bean="patch.uniqueChildName" />
+                <ref bean="patch.InvalidNameEnding" />
+            </list>
+        </property>
+        <!-- helper beans -->
+        <property name="sessionFactory">
+            <ref bean="sessionFactory" />
+        </property>
+        <property name="nodeDaoService">
+            <ref bean="nodeDaoService" />
+        </property>
+        <property name="qnameDAO">
+            <ref bean="qnameDAO" />
+        </property>
+        <property name="ruleService">
+            <ref bean="ruleService" />
+        </property>
+    </bean>
 </beans>

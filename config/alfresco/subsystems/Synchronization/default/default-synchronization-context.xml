@@ -16,7 +16,7 @@
                 <property name="jobDataAsMap">
                     <map>
                         <entry key="userRegistrySynchronizer">
-                            <ref bean="UserRegistrySynchronizer" />
+                            <ref bean="userRegistrySynchronizer" />
                         </entry>
                         <entry key="synchronizeChangesOnly">
                             <value>${synchronization.synchronizeChangesOnly}</value>
@@ -58,6 +58,9 @@
         </property>
         <property name="retryingTransactionHelper">
             <ref bean="retryingTransactionHelper" />
+        </property>
+        <property name="ruleService">
+            <ref bean="ruleService" />
         </property>
         <property name="jobLockService">
             <ref bean="jobLockService" />

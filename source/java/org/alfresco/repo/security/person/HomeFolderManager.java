@@ -116,9 +116,20 @@ public class HomeFolderManager implements NodeServicePolicies.OnCreateNodePolicy
     }
 
     /**
-     * Find the provider and call.
+     * Find the provider and call if eager home folder creation is enabled.
      */
     public void onCreateNode(ChildAssociationRef childAssocRef)
+    {
+        if (enableHomeFolderCreationAsPeopleAreCreated)
+        {
+            makeHomeFolder(childAssocRef);
+        }
+    }
+
+    /**
+     * Find the provider and call.
+     */
+    public void makeHomeFolder(ChildAssociationRef childAssocRef)
     {
         HomeFolderProvider provider = defaultProvider;
         String providerName = DefaultTypeConverter.INSTANCE.convert(String.class, nodeService.getProperty(childAssocRef

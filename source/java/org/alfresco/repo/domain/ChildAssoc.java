@@ -158,6 +158,16 @@ public interface ChildAssoc extends Comparable<ChildAssoc>
      */
     public void setQnameLocalName(String localName);
     
+    /**
+     * @return Returns the crc value for the association's local QName
+     */
+    public long getQnameCrc();
+    
+    /**
+     * @param crc the crc value
+     */
+    public void setQnameCrc(long crc);
+
     public boolean getIsPrimary();
 
     public void setIsPrimary(boolean isPrimary);

@@ -185,7 +185,8 @@
          <column name="child_node_id" not-null="true"/>
       </many-to-one>
       <property name="qnameNamespaceId" column="qname_ns_id" type="long" not-null="true" />  <!-- fk_alf_cass_qnns -->
-      <property name="qnameLocalName" column="qname_localname" type="string" length="255" not-null="true" index="idx_alf_cass_qnln" />
+      <property name="qnameLocalName" column="qname_localname" type="string" length="255" not-null="true" />
+      <property name="qnameCrc" column="qname_crc" type="long" not-null="true"/>
       <property name="isPrimary" column="is_primary" />
       <property name="index" column="assoc_index" />
    </class>
@@ -260,14 +261,12 @@
    <query name="node.GetParentAssocs">
       select
          assoc,
-         parent,
-         child
+         parent
       from
          org.alfresco.repo.domain.hibernate.ChildAssocImpl as assoc
          join assoc.parent as parent
-         join assoc.child as child
       where
-         child.id = :childId
+         assoc.child.id = :childId
    </query>
    
    <query name="node.DeleteParentAssocs">
@@ -317,7 +316,8 @@
          assoc.child.id = :childId and
          assoc.typeQNameId = :typeQNameId and
          assoc.qnameNamespaceId = :qnameNamespaceId and
-         assoc.qnameLocalName = :qnameLocalName
+         assoc.qnameLocalName = :qnameLocalName and
+         assoc.qnameCrc = :qnameCrc
       order by
          assoc.index,
          assoc.id
@@ -356,6 +356,7 @@
          assoc.typeQNameId,
          assoc.qnameNamespaceId,
          assoc.qnameLocalName,
+         assoc.qnameCrc,
          assoc.childNodeName,
          assoc.childNodeNameCrc,
          assoc.isPrimary,
@@ -366,11 +367,10 @@
          child.uuid
       from
          org.alfresco.repo.domain.hibernate.ChildAssocImpl as assoc
-         join assoc.parent as parent
          join assoc.child as child
          join child.store as store
       where
-         parent.id = :parentId and
+         assoc.parent.id = :parentId and
          assoc.typeQNameId = :typeQNameId and
          assoc.childNodeName in (:childNodeNames)
       order by
@@ -384,6 +384,7 @@
          assoc.typeQNameId,
          assoc.qnameNamespaceId,
          assoc.qnameLocalName,
+         assoc.qnameCrc,
          assoc.childNodeName,
          assoc.childNodeNameCrc,
          assoc.isPrimary,
@@ -394,11 +395,10 @@
          child.uuid
       from
          org.alfresco.repo.domain.hibernate.ChildAssocImpl as assoc
-         join assoc.parent as parent
          join assoc.child as child
          join child.store as store
       where
-         parent.id = :parentId
+         assoc.parent.id = :parentId
       order by
          assoc.index,
          assoc.id
@@ -410,6 +410,7 @@
          assoc.typeQNameId,
          assoc.qnameNamespaceId,
          assoc.qnameLocalName,
+         assoc.qnameCrc,
          assoc.childNodeName,
          assoc.childNodeNameCrc,
          assoc.isPrimary,
@@ -420,13 +421,13 @@
          child.uuid
       from
          org.alfresco.repo.domain.hibernate.ChildAssocImpl as assoc
-         join assoc.parent as parent
          join assoc.child as child
          join child.store as store
       where
-         parent.id = :parentId and
+         assoc.parent.id = :parentId and
          assoc.qnameNamespaceId = :qnameNamespaceId and
-         assoc.qnameLocalName = :qnameLocalName
+         assoc.qnameLocalName = :qnameLocalName and
+         assoc.qnameCrc = :qnameCrc
       order by
          assoc.index,
          assoc.id
@@ -437,6 +438,7 @@
       <return-scalar column="type_qname_id" type="long"/>
       <return-scalar column="qname_ns_id" type="long"/>
       <return-scalar column="qname_localname" type="string"/>
+      <return-scalar column="qname_crc" type="long"/>
       <return-scalar column="child_node_name" type="string"/>
       <return-scalar column="child_node_name_crc" type="long"/>
       <return-scalar column="is_primary" type="boolean"/>
@@ -450,6 +452,7 @@
          a.type_qname_id,
          a.qname_ns_id,
          a.qname_localname,
+         a.qname_crc,
          a.child_node_name,
          a.child_node_name_crc,
          a.is_primary,
@@ -471,6 +474,7 @@
          assoc.typeQNameId,
          assoc.qnameNamespaceId,
          assoc.qnameLocalName,
+         assoc.qnameCrc,
          assoc.childNodeName,
          assoc.childNodeNameCrc,
          assoc.isPrimary,
@@ -481,14 +485,14 @@
          child.uuid
       from
          org.alfresco.repo.domain.hibernate.ChildAssocImpl as assoc
-         join assoc.parent as parent
          join assoc.child as child
          join child.store as store
       where
-         parent.id = :parentId and
+         assoc.parent.id = :parentId and
          assoc.typeQNameId = :typeQNameId and
          assoc.qnameNamespaceId = :qnameNamespaceId and
-         assoc.qnameLocalName = :qnameLocalName
+         assoc.qnameLocalName = :qnameLocalName and
+         assoc.qnameCrc = :qnameCrc
       order by
          assoc.index,
          assoc.id
@@ -500,6 +504,7 @@
          assoc.typeQNameId,
          assoc.qnameNamespaceId,
          assoc.qnameLocalName,
+         assoc.qnameCrc,
          assoc.childNodeName,
          assoc.childNodeNameCrc,
          assoc.isPrimary,
@@ -510,11 +515,10 @@
          child.uuid
       from
          org.alfresco.repo.domain.hibernate.ChildAssocImpl as assoc
-         join assoc.parent as parent
          join assoc.child as child
          join child.store as store
       where
-         parent.id = :parentId and
+         assoc.parent.id = :parentId and
          child.typeQNameId in (:childTypeQNameIds)
       order by
          assoc.index,
@@ -527,6 +531,7 @@
          assoc.typeQNameId,
          assoc.qnameNamespaceId,
          assoc.qnameLocalName,
+         assoc.qnameCrc,
          assoc.childNodeName,
          assoc.childNodeNameCrc,
          assoc.isPrimary,
@@ -537,7 +542,6 @@
          child.uuid
       from
          org.alfresco.repo.domain.hibernate.ChildAssocImpl as assoc
-         join assoc.parent as parent
          join assoc.child as child
          join child.store as store
       where
@@ -554,6 +558,7 @@
          assoc.typeQNameId,
          assoc.qnameNamespaceId,
          assoc.qnameLocalName,
+         assoc.qnameCrc,
          assoc.childNodeName,
          assoc.childNodeNameCrc,
          assoc.isPrimary,
@@ -834,6 +839,7 @@
       <return-scalar column="type_qname_id" type="long"/>
       <return-scalar column="qname_ns_id" type="long"/>
       <return-scalar column="qname_localname" type="string"/>
+      <return-scalar column="qname_crc" type="long"/>
       <return-scalar column="child_node_name" type="string"/>
       <return-scalar column="child_node_name_crc" type="long"/>
       <return-scalar column="is_primary" type="boolean"/>
@@ -847,6 +853,7 @@
          z1.type_qname_id,
          z1.qname_ns_id,
          z1.qname_localname,
+         z1.qname_crc,
          z1.child_node_name,
          z1.child_node_name_crc,
          z1.is_primary,

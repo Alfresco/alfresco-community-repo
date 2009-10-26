@@ -1648,6 +1648,14 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
         return result;
     }
     
+    
+    
+    public List<ChildAssociationRef> getChildAssocs(NodeRef nodeRef, QNamePattern typeQNamePattern,
+            QNamePattern qnamePattern, boolean preload) throws InvalidNodeRefException
+    {
+        return getChildAssocs(nodeRef, typeQNamePattern, qnamePattern);
+    }
+
     public List<ChildAssociationRef> getChildAssocs(NodeRef nodeRef, Set<QName> childNodeTypes)
     {
         /*

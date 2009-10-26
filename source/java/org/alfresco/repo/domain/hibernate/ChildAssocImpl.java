@@ -25,9 +25,11 @@
 package org.alfresco.repo.domain.hibernate;
 
 import java.io.Serializable;
+import java.io.UnsupportedEncodingException;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
+import java.util.zip.CRC32;
 
 import org.alfresco.repo.domain.ChildAssoc;
 import org.alfresco.repo.domain.Node;
@@ -50,6 +52,7 @@ public class ChildAssocImpl implements ChildAssoc, Serializable
     private Long typeQNameId;
     private Long qnameNamespaceId;
     private String qnameLocalName;
+    private long qnameCrc;
     private String childNodeName;
     private long childNodeNameCrc;
     private boolean isPrimary;
@@ -230,17 +233,35 @@ public class ChildAssocImpl implements ChildAssoc, Serializable
         String assocQNameNamespace = qname.getNamespaceURI();
         String assocQNameLocalName = qname.getLocalName();
         Long assocQNameNamespaceId = qnameDAO.getOrCreateNamespace(assocQNameNamespace).getFirst();
+        Long assocQNameCrc = getCrc(qname);
         // get write lock
         refWriteLock.lock();
         try
         {
             setQnameNamespaceId(assocQNameNamespaceId);
             setQnameLocalName(assocQNameLocalName);
+            setQnameCrc(assocQNameCrc);
         }
         finally
         {
             refWriteLock.unlock();
         }
+    }
+    
+    public static long getCrc(QName qname)
+    {
+        CRC32 crc = new CRC32();
+        try
+        {
+            crc.update(qname.getNamespaceURI().getBytes("UTF-8"));
+            crc.update(qname.getLocalName().getBytes("UTF-8"));
+        }
+        catch (UnsupportedEncodingException e)
+        {
+            throw new RuntimeException("UTF-8 encoding is not supported");
+        }
+        return crc.getValue();
+        
     }
 
     public boolean equals(Object obj)
@@ -290,6 +311,7 @@ public class ChildAssocImpl implements ChildAssoc, Serializable
           .append(", assoc type=").append(typeQNameId)
           .append(", assoc qname ns=").append(qnameNamespaceId)
           .append(", assoc qname localname=").append(qnameLocalName)
+          .append(", assoc qname crc=").append(qnameCrc)
           .append(", isPrimary=").append(isPrimary)
           .append("]");
         return sb.toString();
@@ -460,6 +482,16 @@ public class ChildAssocImpl implements ChildAssoc, Serializable
         {
             refWriteLock.unlock();
         }
+    }
+    
+    public long getQnameCrc()
+    {
+        return qnameCrc;
+    }
+
+    public void setQnameCrc(long crc)
+    {
+        this.qnameCrc = crc;
     }
 
     public String getChildNodeName()

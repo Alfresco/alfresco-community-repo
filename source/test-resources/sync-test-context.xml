@@ -18,6 +18,9 @@
         <property name="retryingTransactionHelper">
             <ref bean="retryingTransactionHelper" />
         </property>
+        <property name="ruleService">
+            <ref bean="ruleService" />
+        </property>
         <property name="jobLockService">
             <ref bean="jobLockService" />
         </property>
@@ -25,7 +28,7 @@
             <value>userRegistry</value>
         </property>
         <property name="loggingInterval">
-            <value>10</value>
+            <value>100</value>
         </property>
     </bean>
 

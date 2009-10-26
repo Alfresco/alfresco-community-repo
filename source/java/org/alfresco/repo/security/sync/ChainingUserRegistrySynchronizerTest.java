@@ -171,15 +171,7 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
         {
             newGroup("G2", "U1", "U3", "U4"), newGroup("G6", "U3", "U4", "G7"), newGroup("G7", "U5")
         }));
-        this.retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Object>()
-        {
-
-            public Object execute() throws Throwable
-            {
-                ChainingUserRegistrySynchronizerTest.this.synchronizer.synchronize(true, true);
-                return null;
-            }
-        });
+        this.synchronizer.synchronize(true, true);
         this.retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Object>()
         {
 
@@ -200,7 +192,7 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
                 assertExists("Z2", "G7", "U5");
                 return null;
             }
-        });
+        }, false, true);
     }
 
     /**
@@ -209,22 +201,14 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
      * @throws Exception
      *             the exception
      */
-    private void tearDownTestUsersAndGroups() throws Exception
+    public void tearDownTestUsersAndGroups() throws Exception
     {
         // Wipe out everything that was in Z1 and Z2
         this.applicationContextManager.setUserRegistries(new MockUserRegistry("Z0", new NodeDescription[] {},
                 new NodeDescription[] {}), new MockUserRegistry("Z1", new NodeDescription[] {},
                 new NodeDescription[] {}), new MockUserRegistry("Z2", new NodeDescription[] {},
                 new NodeDescription[] {}));
-        this.retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Object>()
-        {
-
-            public Object execute() throws Throwable
-            {
-                ChainingUserRegistrySynchronizerTest.this.synchronizer.synchronize(true, true);
-                return null;
-            }
-        });
+        this.synchronizer.synchronize(true, true);
         this.retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Object>()
         {
 
@@ -245,7 +229,7 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
                 assertNotExists("G7");
                 return null;
             }
-        });
+        }, false, true);
     }
 
     /**
@@ -348,15 +332,7 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
         {
             newGroup("G2", "U1", "U3", "U4", "U6"), newGroup("G6", "U3", "U4", "G7"), newGroup("G7", "U4", "U5")
         }));
-        this.retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Object>()
-        {
-
-            public Object execute() throws Throwable
-            {
-                ChainingUserRegistrySynchronizerTest.this.synchronizer.synchronize(true, true);
-                return null;
-            }
-        });
+        this.synchronizer.synchronize(true, true);
         this.retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Object>()
         {
 
@@ -378,7 +354,7 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
                 assertExists("Z2", "G7");
                 return null;
             }
-        });
+        }, false, true);
         tearDownTestUsersAndGroups();
     }
 
@@ -393,15 +369,7 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
         List<NodeDescription> persons = new ArrayList<NodeDescription>(new RandomPersonCollection(100));
         List<NodeDescription> groups = new ArrayList<NodeDescription>(new RandomGroupCollection(100, persons));
         this.applicationContextManager.setUserRegistries(new MockUserRegistry("Z0", persons, groups));
-        this.retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Object>()
-        {
-
-            public Object execute() throws Throwable
-            {
-                ChainingUserRegistrySynchronizerTest.this.synchronizer.synchronize(true, true);
-                return null;
-            }
-        });
+        this.synchronizer.synchronize(true, true);
         tearDownTestUsersAndGroups();
     }
 
@@ -413,20 +381,20 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
      */
     public void dontTestAssocs() throws Exception
     {
-        this.retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Object>()
-        {
-            public Object execute() throws Throwable
-            {
-                List<NodeDescription> groups = new ArrayList<NodeDescription>(new RandomGroupCollection(1000,
-                        ChainingUserRegistrySynchronizerTest.this.authorityService.getAllAuthoritiesInZone(
-                                AuthorityService.ZONE_AUTH_EXT_PREFIX + "Z0", null)));
-                ChainingUserRegistrySynchronizerTest.this.applicationContextManager
-                        .setUserRegistries(new MockUserRegistry("Z0", Collections.<NodeDescription> emptyList(), groups));
-                ;
-                ChainingUserRegistrySynchronizerTest.this.synchronizer.synchronize(true, true);
-                return null;
-            }
-        });
+        List<NodeDescription> groups = this.retryingTransactionHelper.doInTransaction(
+                new RetryingTransactionCallback<List<NodeDescription>>()
+                {
+
+                    public List<NodeDescription> execute() throws Throwable
+                    {
+                        return new ArrayList<NodeDescription>(new RandomGroupCollection(1000,
+                                ChainingUserRegistrySynchronizerTest.this.authorityService.getAllAuthoritiesInZone(
+                                        AuthorityService.ZONE_AUTH_EXT_PREFIX + "Z0", null)));
+                    }
+                }, true, true);
+        ChainingUserRegistrySynchronizerTest.this.applicationContextManager.setUserRegistries(new MockUserRegistry(
+                "Z0", Collections.<NodeDescription> emptyList(), groups));
+        ChainingUserRegistrySynchronizerTest.this.synchronizer.synchronize(true, true);
         tearDownTestUsersAndGroups();
     }
 
@@ -631,10 +599,9 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
         {
             return this.zoneId;
         }
-        
-        
 
-        /* (non-Javadoc)
+        /*
+         * (non-Javadoc)
          * @see org.alfresco.repo.security.sync.UserRegistry#processDeletions(java.util.Set)
          */
         public void processDeletions(Set<String> candidateAuthoritiesForDeletion)
@@ -649,7 +616,8 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
             }
         }
 
-        /* (non-Javadoc)
+        /*
+         * (non-Javadoc)
          * @see org.alfresco.repo.security.sync.UserRegistry#getGroups(java.util.Date)
          */
         public Collection<NodeDescription> getGroups(Date modifiedSince)

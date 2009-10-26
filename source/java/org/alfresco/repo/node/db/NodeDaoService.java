@@ -29,6 +29,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Stack;
 
 import org.alfresco.repo.domain.ChildAssoc;
 import org.alfresco.repo.domain.NodeAssoc;
@@ -40,7 +41,9 @@ import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.InvalidTypeException;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
+import org.alfresco.service.cmr.repository.CyclicChildRelationshipException;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.repository.StoreExistsException;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.QName;
@@ -243,6 +246,8 @@ public interface NodeDaoService
                 Pair<Long, NodeRef> parentNodePair,
                 Pair<Long, NodeRef> childNodePair
                 );
+        
+        boolean preLoadNodes();
     }
 
     /**
@@ -652,4 +657,9 @@ public interface NodeDaoService
     
     @DirtySessionAnnotation(markDirty=false)
     public Long getMaxTxnCommitTime();
+
+    @DirtySessionAnnotation(markDirty=false)
+    public void prependPaths(Pair<Long, NodeRef> currentNodePair, Pair<StoreRef, NodeRef> currentRootNodePair,
+            Path currentPath, Collection<Path> completedPaths, Stack<Long> assocIdStack, boolean primaryOnly)
+            throws CyclicChildRelationshipException;
 }

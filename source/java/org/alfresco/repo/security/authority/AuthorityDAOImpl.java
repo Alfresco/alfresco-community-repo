@@ -251,7 +251,7 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
                 if (container != null)
                 {
                     for (ChildAssociationRef childRef : nodeService.getChildAssocs(container,
-                            ContentModel.ASSOC_CHILDREN, RegexQNamePattern.MATCH_ALL))
+                            ContentModel.ASSOC_CHILDREN, RegexQNamePattern.MATCH_ALL, false))
                     {
                         addAuthorityNameIfMatches(authorities, childRef.getQName().getLocalName(), type, pattern);
                     }
@@ -267,7 +267,7 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
                         if (container != null)
                         {
                             for (ChildAssociationRef childRef : nodeService.getChildAssocs(container,
-                                    ContentModel.ASSOC_IN_ZONE, RegexQNamePattern.MATCH_ALL))
+                                    ContentModel.ASSOC_IN_ZONE, RegexQNamePattern.MATCH_ALL, false))
                             {
                                 addAuthorityNameIfMatches(authorities, childRef.getQName().getLocalName(), type,
                                         pattern);
@@ -427,7 +427,7 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
             else
             {
                 List<ChildAssociationRef> results = nodeService.getChildAssocs(getAuthorityContainer(),
-                        ContentModel.ASSOC_CHILDREN, QName.createQName("cm", name, namespacePrefixResolver));
+                        ContentModel.ASSOC_CHILDREN, QName.createQName("cm", name, namespacePrefixResolver), false);
                 return results.isEmpty() ? null : results.get(0).getChildRef();
             }
         }
@@ -468,13 +468,13 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
         if (systemContainerRef == null)
         {
             NodeRef rootNodeRef = nodeService.getRootNode(this.storeRef);
-            List<ChildAssociationRef> results = nodeService.getChildAssocs(rootNodeRef, RegexQNamePattern.MATCH_ALL, qnameAssocSystem);
+            List<ChildAssociationRef> results = nodeService.getChildAssocs(rootNodeRef, RegexQNamePattern.MATCH_ALL, qnameAssocSystem, false);
             if (results.size() == 0)
             {
                 throw new AlfrescoRuntimeException("Required system path not found: " + qnameAssocSystem);
             }
             NodeRef sysNodeRef = results.get(0).getChildRef();
-            results = nodeService.getChildAssocs(sysNodeRef, RegexQNamePattern.MATCH_ALL, assocQName);
+            results = nodeService.getChildAssocs(sysNodeRef, RegexQNamePattern.MATCH_ALL, assocQName, false);
             if (results.size() == 0)
             {
                 throw new AlfrescoRuntimeException("Required path not found: " + assocQName);
@@ -543,7 +543,7 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
     {
         NodeRef zoneContainerRef = getZoneContainer();
         QName zoneQName = QName.createQName("cm", zoneName, namespacePrefixResolver);
-        List<ChildAssociationRef> results = nodeService.getChildAssocs(zoneContainerRef, ContentModel.ASSOC_CHILDREN, zoneQName);
+        List<ChildAssociationRef> results = nodeService.getChildAssocs(zoneContainerRef, ContentModel.ASSOC_CHILDREN, zoneQName, false);
         if (results.isEmpty())
         {
             if (create)
@@ -605,7 +605,7 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
         NodeRef zoneRef = getZone(zoneName);
         if (zoneRef != null)
         {
-            for (ChildAssociationRef childRef : nodeService.getChildAssocs(zoneRef, ContentModel.ASSOC_IN_ZONE, RegexQNamePattern.MATCH_ALL))
+            for (ChildAssociationRef childRef : nodeService.getChildAssocs(zoneRef, ContentModel.ASSOC_IN_ZONE, RegexQNamePattern.MATCH_ALL, false))
             {
                 addAuthorityNameIfMatches(authorities, childRef.getQName().getLocalName(), type, null);
             }

@@ -311,7 +311,7 @@
          <value>org.alfresco.parentAssocsTransactionalCache</value>
       </property>
       <property name="maxCacheSize">
-         <value>10000</value>
+         <value>80000</value>
       </property>
    </bean>
    

@@ -323,7 +323,7 @@ public class IndexInfo implements IndexMonitor
 
     private int mergerTargetOverlays = 5;
 
-    private int mergerTargetOverlaysBlockingFactor = 2;
+    private int mergerTargetOverlaysBlockingFactor = 1;
 
     // Common properties for indexers
 

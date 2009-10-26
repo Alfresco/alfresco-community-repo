@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -18,7 +18,7 @@
  * As a special exception to the terms and conditions of version 2.0 of 
  * the GPL, you may redistribute this Program in connection with Free/Libre 
  * and Open Source Software ("FLOSS") applications as described in Alfresco's 
- * FLOSS exception.  You should have recieved a copy of the text describing 
+ * FLOSS exception.  You should have received a copy of the text describing 
  * the FLOSS exception, and it is also available here: 
  * http://www.alfresco.com/legal/licensing"
  */
@@ -59,7 +59,6 @@ import org.alfresco.service.cmr.dictionary.TypeDefinition;
 import org.alfresco.service.cmr.repository.AssociationExistsException;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
-import org.alfresco.service.cmr.repository.CyclicChildRelationshipException;
 import org.alfresco.service.cmr.repository.InvalidChildAssociationRefException;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.InvalidStoreRefException;
@@ -655,6 +654,11 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
                     // No recurse
                     return false;
                 }
+
+                public boolean preLoadNodes()
+                {
+                    return true;
+                }                               
             };
             // Get all the QNames to remove
             List<QName> assocTypeQNamesToRemove = new ArrayList<QName>(aspectDef.getChildAssociations().keySet());
@@ -825,8 +829,14 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
                 // No recurse
                 return false;
             }
-        };
-        // Get all the QNames to remove
+
+            public boolean preLoadNodes()
+            {
+                return true;
+            }
+       };
+
+       // Get all the QNames to remove
         nodeDaoService.getPrimaryChildAssocs(nodeId, callback);
         // Each child must be deleted
         for (Pair<Long, NodeRef> childNodePair : childNodePairs)
@@ -950,6 +960,11 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
                 assocsToDelete.add(childAssocPair);
                 // No recurse
                 return false;
+            }
+
+            public boolean preLoadNodes()
+            {
+                return true;
             }
         };
         nodeDaoService.getChildAssocs(parentNodeId, callback, false);
@@ -1466,18 +1481,34 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
      */
     public List<ChildAssociationRef> getChildAssocs(NodeRef nodeRef, final QNamePattern typeQNamePattern, final QNamePattern qnamePattern)
     {
+       return getChildAssocs(nodeRef, typeQNamePattern, qnamePattern, true) ;
+    }
+
+    /**
+     * Filters out any associations if their qname is not a match to the given pattern.
+     */
+    public List<ChildAssociationRef> getChildAssocs(NodeRef nodeRef, final QNamePattern typeQNamePattern, final QNamePattern qnamePattern, final boolean preload)
+    {
         // Get the node
         Pair<Long, NodeRef> nodePair = getNodePairNotNull(nodeRef);
         Long nodeId = nodePair.getFirst();
 
         final List<ChildAssociationRef> results = new ArrayList<ChildAssociationRef>(100);
+        
+        abstract class BaseCallback implements NodeDaoService.ChildAssocRefQueryCallback
+        {
+            public boolean preLoadNodes()
+            {
+                return preload;
+            }
+        }
 
         if (qnamePattern instanceof QName)
         {
             // Both explicit QNames
             if (typeQNamePattern instanceof QName)
             {
-                NodeDaoService.ChildAssocRefQueryCallback callback = new NodeDaoService.ChildAssocRefQueryCallback()
+                NodeDaoService.ChildAssocRefQueryCallback callback = new BaseCallback()
                 {
                     public boolean handle(Pair<Long, ChildAssociationRef> childAssocPair,
                             Pair<Long, NodeRef> parentNodePair, Pair<Long, NodeRef> childNodePair)
@@ -1496,7 +1527,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
                 NodeDaoService.ChildAssocRefQueryCallback callback;
                 if (typeQNamePattern.equals(RegexQNamePattern.MATCH_ALL))
                 {
-                    callback = new NodeDaoService.ChildAssocRefQueryCallback()
+                    callback = new BaseCallback()
                     {
                         public boolean handle(Pair<Long, ChildAssociationRef> childAssocPair,
                                 Pair<Long, NodeRef> parentNodePair, Pair<Long, NodeRef> childNodePair)
@@ -1508,7 +1539,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
                 }
                 else
                 {
-                    callback = new NodeDaoService.ChildAssocRefQueryCallback()
+                    callback = new BaseCallback()
                     {
                         public boolean handle(Pair<Long, ChildAssociationRef> childAssocPair,
                                 Pair<Long, NodeRef> parentNodePair, Pair<Long, NodeRef> childNodePair)
@@ -1540,7 +1571,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
                 // if the type is the wildcard type, and the qname is not a search, then use a shortcut query
                 if (qnamePattern.equals(RegexQNamePattern.MATCH_ALL))
                 {
-                    callback = new NodeDaoService.ChildAssocRefQueryCallback()
+                    callback = new BaseCallback()
                     {
                         public boolean handle(Pair<Long, ChildAssociationRef> childAssocPair,
                                 Pair<Long, NodeRef> parentNodePair, Pair<Long, NodeRef> childNodePair)
@@ -1553,7 +1584,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
                 else
                 {
 
-                    callback = new NodeDaoService.ChildAssocRefQueryCallback()
+                    callback = new BaseCallback()
                     {
                         public boolean handle(Pair<Long, ChildAssociationRef> childAssocPair,
                                 Pair<Long, NodeRef> parentNodePair, Pair<Long, NodeRef> childNodePair)
@@ -1579,7 +1610,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
             // Local qname is pattern, type name is pattern
             else
             {
-                NodeDaoService.ChildAssocRefQueryCallback callback = new NodeDaoService.ChildAssocRefQueryCallback()
+                NodeDaoService.ChildAssocRefQueryCallback callback = new BaseCallback()
                 {
                     public boolean handle(Pair<Long, ChildAssociationRef> childAssocPair,
                             Pair<Long, NodeRef> parentNodePair, Pair<Long, NodeRef> childNodePair)
@@ -1624,6 +1655,11 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
             {
                 results.add(childAssocPair.getSecond());
                 return false;
+            }
+
+            public boolean preLoadNodes()
+            {
+                return true;
             }
         };
         // Get all child associations with the specific qualified name
@@ -1693,6 +1729,11 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
                 results.add(childAssocPair.getSecond());
                 return false;
             }
+
+            public boolean preLoadNodes()
+            {
+                return true;
+            }            
         };
         // Get all child associations with the specific qualified name
         nodeDaoService.getChildAssocs(nodeId, assocTypeQName, childNames, callback);
@@ -1760,6 +1801,11 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
             {
                 results.add(childAssocPair.getSecond());
                 return true;
+            }
+
+            public boolean preLoadNodes()
+            {
+                return false;
             }
         };
 
@@ -1839,146 +1885,6 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
     }
     
     /**
-     * Recursive method used to build up paths from a given node to the root.
-     * <p>
-     * Whilst walking up the hierarchy to the root, some nodes may have a <b>root</b> aspect.
-     * Everytime one of these is encountered, a new path is farmed off, but the method
-     * continues to walk up the hierarchy.
-     * 
-     * @param currentNode the node to start from, i.e. the child node to work upwards from
-     * @param currentPath the path from the current node to the descendent that we started from
-     * @param completedPaths paths that have reached the root are added to this collection
-     * @param assocStack the parent-child relationships traversed whilst building the path.
-     *      Used to detected cyclic relationships.
-     * @param primaryOnly true if only the primary parent association must be traversed.
-     *      If this is true, then the only root is the top level node having no parents.
-     * @throws CyclicChildRelationshipException
-     */
-    private void prependPaths(
-            Pair<Long, NodeRef> currentNodePair,
-            Pair<StoreRef, NodeRef> currentRootNodePair,
-            Path currentPath,
-            Collection<Path> completedPaths,
-            Stack<Long> assocIdStack,
-            boolean primaryOnly)
-        throws CyclicChildRelationshipException
-    {
-        Long currentNodeId = currentNodePair.getFirst();
-        NodeRef currentNodeRef = currentNodePair.getSecond();
-        
-        // Check if we have changed root nodes
-        StoreRef currentStoreRef = currentNodeRef.getStoreRef();
-        if (currentRootNodePair == null || !currentStoreRef.equals(currentRootNodePair.getFirst()))
-        {
-            // We've changed stores
-            Pair<Long, NodeRef> rootNodePair = nodeDaoService.getRootNode(currentStoreRef);
-            currentRootNodePair = new Pair<StoreRef, NodeRef>(currentStoreRef, rootNodePair.getSecond());
-        }
-        
-        // get the parent associations of the given node
-        Collection<Pair<Long, ChildAssociationRef>> parentAssocPairs = nodeDaoService.getParentAssocs(currentNodeId);
-        // does the node have parents
-        boolean hasParents = parentAssocPairs.size() > 0;
-        // does the current node have a root aspect?
-        boolean isRoot = nodeDaoService.hasNodeAspect(currentNodeId, ContentModel.ASPECT_ROOT);
-        boolean isStoreRoot = nodeDaoService.getNodeType(currentNodeId).equals(ContentModel.TYPE_STOREROOT);
-        
-        // look for a root.  If we only want the primary root, then ignore all but the top-level root.
-        if (isRoot && !(primaryOnly && hasParents))  // exclude primary search with parents present
-        {
-            // create a one-sided assoc ref for the root node and prepend to the stack
-            // this effectively spoofs the fact that the current node is not below the root
-            // - we put this assoc in as the first assoc in the path must be a one-sided
-            //   reference pointing to the root node
-            ChildAssociationRef assocRef = new ChildAssociationRef(
-                    null,
-                    null,
-                    null,
-                    currentRootNodePair.getSecond());
-            // create a path to save and add the 'root' assoc
-            Path pathToSave = new Path();
-            Path.ChildAssocElement first = null;
-            for (Path.Element element: currentPath)
-            {
-                if (first == null)
-                {
-                    first = (Path.ChildAssocElement) element;
-                }
-                else
-                {
-                    pathToSave.append(element);
-                }
-            }
-            if (first != null)
-            {
-                // mimic an association that would appear if the current node was below the root node
-                // or if first beneath the root node it will make the real thing 
-                ChildAssociationRef updateAssocRef = new ChildAssociationRef(
-                       isStoreRoot ? ContentModel.ASSOC_CHILDREN : first.getRef().getTypeQName(),
-                       currentRootNodePair.getSecond(),
-                       first.getRef().getQName(),
-                       first.getRef().getChildRef());
-                Path.Element newFirst =  new Path.ChildAssocElement(updateAssocRef);
-                pathToSave.prepend(newFirst);
-            }
-            
-            Path.Element element = new Path.ChildAssocElement(assocRef);
-            pathToSave.prepend(element);
-            
-            // store the path just built
-            completedPaths.add(pathToSave);
-        }
-
-        if (parentAssocPairs.size() == 0 && !isRoot)
-        {
-            throw new RuntimeException("Node without parents does not have root aspect: " +
-                    currentNodeRef);
-        }
-        // walk up each parent association
-        for (Pair<Long, ChildAssociationRef> assocPair : parentAssocPairs)
-        {
-            Long assocId = assocPair.getFirst();
-            ChildAssociationRef assocRef = assocPair.getSecond();
-            // do we consider only primary assocs?
-            if (primaryOnly && !assocRef.isPrimary())
-            {
-                continue;
-            }
-            // Ordering is meaningless here as we are constructing a path upwards
-            // and have no idea where the node comes in the sibling order or even
-            // if there are like-pathed siblings.
-            assocRef.setNthSibling(-1);
-            // build a path element
-            Path.Element element = new Path.ChildAssocElement(assocRef);
-            // create a new path that builds on the current path
-            Path path = new Path();
-            path.append(currentPath);
-            // prepend element
-            path.prepend(element);
-            // get parent node
-            NodeRef parentRef = assocRef.getParentRef();
-            Pair<Long, NodeRef> parentNodePair = getNodePairNotNull(parentRef);
-            // does the association already exist in the stack
-            if (assocIdStack.contains(assocId))
-            {
-                // the association was present already
-                throw new CyclicChildRelationshipException(
-                        "Cyclic parent-child relationship detected: \n" +
-                        "   current node: " + currentNodeId + "\n" +
-                        "   current path: " + currentPath + "\n" +
-                        "   next assoc: " + assocId,
-                        assocRef);
-            }
-            
-            // push the assoc stack, recurse and pop
-            assocIdStack.push(assocId);
-            prependPaths(parentNodePair, currentRootNodePair, path, completedPaths, assocIdStack, primaryOnly);
-            assocIdStack.pop();
-        }
-        // done
-    }
-
-    /**
      * @see #getPaths(NodeRef, boolean)
      * @see #prependPaths(Node, Path, Collection, Stack, boolean)
      */
@@ -2008,7 +1914,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         // create storage for touched associations
         Stack<Long> assocIdStack = new Stack<Long>();
         // call recursive method to sort it out
-        prependPaths(nodePair, null, currentPath, paths, assocIdStack, primaryOnly);
+        nodeDaoService.prependPaths(nodePair, null, currentPath, paths, assocIdStack, primaryOnly);
         
         // check that for the primary only case we have exactly one path
         if (primaryOnly && paths.size() != 1)
@@ -2320,6 +2226,11 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
                 childNodePairs.add(childNodePair);
                 return false;
             }
+
+            public boolean preLoadNodes()
+            {
+                return true;
+            }
         };
         // We only need to move child nodes that are not already in the same store
         nodeDaoService.getPrimaryChildAssocsNotInSameStore(nodeId, callback);
@@ -2392,7 +2303,13 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
                 childNodePairs.add(childNodePair);
                 return false;
             }
+
+            public boolean preLoadNodes()
+            {
+                return true;
+            }
         };
+
         nodeDaoService.getPrimaryChildAssocs(nodeId, callback);
         // Each child must be moved to the same store as the parent
         for (Pair<Long, NodeRef> oldChildNodePair : childNodePairs)

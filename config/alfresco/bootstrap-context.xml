@@ -81,6 +81,7 @@
              <value>classpath:alfresco/dbscripts/create/3.2/${db.script.dialect}/AlfrescoPostCreate-3.2-PropertyValueTables.sql</value>
              <value>classpath:alfresco/dbscripts/create/3.2/${db.script.dialect}/AlfrescoPostCreate-3.2-AuditTables.sql</value>
              <value>classpath:alfresco/dbscripts/create/3.2/${db.script.dialect}/AlfrescoPostCreate-3.2-AvmTables.sql</value>
+             <value>classpath:alfresco/dbscripts/create/3.2/${db.script.dialect}/AlfrescoPostCreate-3.2-Indexes.sql</value>
           </list>
        </property>
        <property name="validateUpdateScriptPatches">
@@ -103,6 +104,7 @@
              <ref bean="patch.db-V3.2-ContentTables" />
              <ref bean="patch.db-V3.2-PropertyValueTables" />
              <ref bean="patch.db-V3.2-AuditTables" />
+             <ref bean="patch.db-V3.2-Child-Assoc-QName-CRC" />
           </list>
        </property>
        <property name="postUpdateScriptPatches">

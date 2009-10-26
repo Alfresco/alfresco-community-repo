@@ -43,7 +43,11 @@ import org.alfresco.repo.domain.Node;
 import org.alfresco.repo.domain.QNameDAO;
 import org.alfresco.repo.domain.hibernate.ChildAssocImpl;
 import org.alfresco.repo.node.db.NodeDaoService;
+import org.alfresco.repo.security.sync.BatchProcessor;
+import org.alfresco.repo.security.sync.BatchProcessor.Worker;
 import org.alfresco.service.cmr.admin.PatchException;
+import org.alfresco.service.cmr.rule.RuleService;
+import org.alfresco.service.namespace.QName;
 import org.hibernate.SQLQuery;
 import org.hibernate.ScrollMode;
 import org.hibernate.ScrollableResults;
@@ -51,17 +55,19 @@ import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.type.LongType;
 import org.hibernate.type.StringType;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.ApplicationEventPublisherAware;
 import org.springframework.orm.hibernate3.HibernateCallback;
 import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
 
 /**
  * Fixes <a href=https://issues.alfresco.com/jira/browse/ETWOTWO-1133>ETWOTWO-1133</a>.
- * Checks all CRC values for <b>alf_child_assoc.child_node_name_crc</b>.
+ * Checks all CRC values for <b>alf_child_assoc.child_node_name_crc and alf_child_assoc.qname_crc</b>.
  * 
  * @author Derek Hulley
  * @since V2.2SP4
  */
-public class FixNameCrcValuesPatch extends AbstractPatch
+public class FixNameCrcValuesPatch extends AbstractPatch implements ApplicationEventPublisherAware
 {
     private static final String MSG_SUCCESS = "patch.fixNameCrcValues.result";
     private static final String MSG_REWRITTEN = "patch.fixNameCrcValues.fixed";
@@ -70,6 +76,8 @@ public class FixNameCrcValuesPatch extends AbstractPatch
     private SessionFactory sessionFactory;
     private NodeDaoService nodeDaoService;
     private QNameDAO qnameDAO;
+    private RuleService ruleService;
+    private ApplicationEventPublisher applicationEventPublisher;
     
     public FixNameCrcValuesPatch()
     {
@@ -95,6 +103,22 @@ public class FixNameCrcValuesPatch extends AbstractPatch
     {
         this.qnameDAO = qnameDAO;
     }
+    
+    /**
+     * @param ruleService the rule service
+     */
+    public void setRuleService(RuleService ruleService)
+    {
+        this.ruleService = ruleService;
+    }
+
+    /* (non-Javadoc)
+     * @see org.springframework.context.ApplicationEventPublisherAware#setApplicationEventPublisher(org.springframework.context.ApplicationEventPublisher)
+     */
+    public void setApplicationEventPublisher(ApplicationEventPublisher applicationEventPublisher)
+    {
+        this.applicationEventPublisher = applicationEventPublisher;
+    }
 
     @Override
     protected void checkProperties()
@@ -103,6 +127,7 @@ public class FixNameCrcValuesPatch extends AbstractPatch
         checkPropertyNotNull(sessionFactory, "sessionFactory");
         checkPropertyNotNull(nodeDaoService, "nodeDaoService");
         checkPropertyNotNull(qnameDAO, "qnameDAO");
+        checkPropertyNotNull(applicationEventPublisher, "applicationEventPublisher");
     }
 
     @Override
@@ -111,7 +136,7 @@ public class FixNameCrcValuesPatch extends AbstractPatch
         // initialise the helper
         HibernateHelper helper = new HibernateHelper();
         helper.setSessionFactory(sessionFactory);
-
+        
         try
         {
             String msg = helper.fixCrcValues();
@@ -161,66 +186,79 @@ public class FixNameCrcValuesPatch extends AbstractPatch
         public String fixCrcValues() throws Exception
         {
             // get the association types to check
-            @SuppressWarnings("unused")
-            List<Long> childAssocIds = findMismatchedCrcs();
+            BatchProcessor<Long> batchProcessor = new BatchProcessor<Long>(transactionService
+                    .getRetryingTransactionHelper(), ruleService, applicationEventPublisher, findMismatchedCrcs(),
+                    "FixNameCrcValuesPatch", 100, 2, 20);
 
             // Precautionary flush and clear so that we have an empty session
             getSession().flush();
             getSession().clear();
 
-            int updated = 0;
-            for (Long childAssocId : childAssocIds)
-            {
-                ChildAssoc assoc = (ChildAssoc) getHibernateTemplate().get(ChildAssocImpl.class, childAssocId);
-                if (assoc == null)
+
+            int updated = batchProcessor.process(new Worker<Long>(){
+
+                public String getIdentifier(Long entry)
                 {
-                    // Missing now ...
-                    continue;
+                    return entry.toString();
                 }
-                // Get the old CRC
-                long oldCrc = assoc.getChildNodeNameCrc();
-                // Get the child node
-                Node childNode = assoc.getChild();
-                // Get the name
-                String childName = (String) nodeDaoService.getNodeProperty(childNode.getId(), ContentModel.PROP_NAME);
-                if (childName == null)
+
+                public void process(Long childAssocId) throws Throwable
                 {
-                    childName = childNode.getUuid();
-                }
-                // Update the CRC
-                long crc = getCrc(childName);
-                // Update the assoc
-                assoc.setChildNodeNameCrc(crc);
-                // Persist
-                updated++;
-                try
-                {
-                    getSession().flush();
-                }
-                catch (Throwable e)
-                {
-                    String msg = I18NUtil.getMessage(MSG_UNABLE_TO_CHANGE, childNode.getId(), childName, oldCrc, crc, e.getMessage());
-                    // We just log this and add details to the message file
-                    if (logger.isDebugEnabled())
+                    ChildAssoc assoc = (ChildAssoc) getHibernateTemplate().get(ChildAssocImpl.class, childAssocId);
+                    if (assoc == null)
                     {
-                        logger.debug(msg, e);
+                        // Missing now ...
+                        return;
                     }
-                    else
+                    // Get the old CRCs
+                    long oldChildCrc = assoc.getChildNodeNameCrc();
+                    long oldQNameCrc = assoc.getQnameCrc();
+                    
+                    // Get the child node
+                    Node childNode = assoc.getChild();
+                    // Get the name
+                    String childName = (String) nodeDaoService.getNodeProperty(childNode.getId(), ContentModel.PROP_NAME);
+                    if (childName == null)
                     {
-                        logger.warn(msg);
+                        childName = childNode.getUuid();
                     }
-                    writeLine(msg);
-                }
-                getSession().clear();
-                // Record
-                writeLine(I18NUtil.getMessage(MSG_REWRITTEN, childNode.getId(), childName, oldCrc, crc));
-            }
+                    // Update the CRCs
+                    long childCrc = getCrc(childName);
+                    long qnameCrc = ChildAssocImpl.getCrc(assoc.getQName(qnameDAO));
+                    
+                    // Update the assoc
+                    assoc.setChildNodeNameCrc(childCrc);
+                    assoc.setQnameCrc(qnameCrc);
+                    // Persist
+                    try
+                    {
+                        getSession().flush();
+                    }
+                    catch (Throwable e)
+                    {
+                        String msg = I18NUtil.getMessage(MSG_UNABLE_TO_CHANGE, childNode.getId(), childName, oldChildCrc,
+                                childCrc, oldQNameCrc, qnameCrc, e.getMessage());
+                        // We just log this and add details to the message file
+                        if (logger.isDebugEnabled())
+                        {
+                            logger.debug(msg, e);
+                        }
+                        else
+                        {
+                            logger.warn(msg);
+                        }
+                        writeLine(msg);
+                    }
+                    getSession().clear();
+                    // Record
+                    writeLine(I18NUtil.getMessage(MSG_REWRITTEN, childNode.getId(), childName, oldChildCrc, childCrc, oldQNameCrc, qnameCrc));
+                }}, true);
+
             
             String msg = I18NUtil.getMessage(MSG_SUCCESS, updated, logFile);
             return msg;
         }
         
-        @SuppressWarnings("unchecked")
         private List<Long> findMismatchedCrcs() throws Exception
         {
             final Long qnameId = qnameDAO.getOrCreateQName(ContentModel.PROP_NAME).getFirst();
@@ -236,17 +274,23 @@ public class FixNameCrcValuesPatch extends AbstractPatch
                                     "    ca.id AS child_assoc_id," +
                                     "    ca.child_node_name_crc AS child_assoc_crc," +
                                     "    np.string_value AS node_name," +
-                                    "    n.uuid as node_uuid" +
+                                    "    n.uuid as node_uuid," +
+                                    "    ca.qname_crc AS qname_crc," +
+                                    "    ca.qname_ns_id AS qname_ns_id," +
+                                    "    ca.qname_localname AS qname_localname" +
                                     " FROM" +
                                     "    alf_child_assoc ca" +
-                                    "    JOIN alf_node n ON (ca.child_node_id = n.id AND ca.child_node_name_crc > 0)" +
-                                    "    JOIN alf_node_properties np on (np.node_id = n.id AND np.qname_id = :qnameId)" +
+                                    "    JOIN alf_node n ON (ca.child_node_id = n.id)" +
+                                    "    LEFT OUTER JOIN alf_node_properties np on (np.node_id = n.id AND np.qname_id = :qnameId)" +
                                     "");
                     query.setLong("qnameId", qnameId);
                     query.addScalar("child_assoc_id", new LongType());
                     query.addScalar("child_assoc_crc", new LongType());
                     query.addScalar("node_name", new StringType());
                     query.addScalar("node_uuid", new StringType());
+                    query.addScalar("qname_crc", new LongType());
+                    query.addScalar("qname_ns_id", new LongType());
+                    query.addScalar("qname_localname", new StringType());
                     return query.scroll(ScrollMode.FORWARD_ONLY);
                 }
             };
@@ -256,21 +300,31 @@ public class FixNameCrcValuesPatch extends AbstractPatch
                 rs = (ScrollableResults) getHibernateTemplate().execute(callback);
                 while (rs.next())
                 {
+                    // Compute child name crc
                     Long assocId = (Long) rs.get(0);
-                    Long dbCrc = (Long) rs.get(1);
+                    Long dbChildCrc = (Long) rs.get(1);
                     String name = (String) rs.get(2);
                     String uuid = (String) rs.get(3);
-                    long utf8Crc = -1L;
+                    long utf8ChildCrc;
                     if (name != null)
                     {
-                        utf8Crc = getCrc(name);
+                        utf8ChildCrc = getCrc(name);
                     }
                     else
                     {
-                        utf8Crc = getCrc(uuid);
+                        utf8ChildCrc = getCrc(uuid);
                     }
+
+                    // Compute qname crc
+                    Long dbQNameCrc = (Long) rs.get(4);
+                    Long namespaceId = (Long) rs.get(5);
+                    String namespace = qnameDAO.getNamespace(namespaceId).getSecond();
+                    String localName = (String) rs.get(6);
+                    QName qname = QName.createQName(namespace, localName);
+                    long utf8QNameCrc = ChildAssocImpl.getCrc(qname);
+
                     // Check
-                    if (dbCrc != null && utf8Crc == dbCrc.longValue())
+                    if (dbChildCrc != null && utf8ChildCrc == dbChildCrc.longValue() && dbQNameCrc != null && utf8QNameCrc == dbQNameCrc.longValue())
                     {
                         // It is a match, so ignore
                         continue;

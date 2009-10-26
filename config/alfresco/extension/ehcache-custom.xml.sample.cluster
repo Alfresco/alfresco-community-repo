@@ -537,7 +537,7 @@
 
     <cache
         name="org.alfresco.cache.storeAndNodeIdCache"
-        maxElementsInMemory="50000"
+        maxElementsInMemory="80000"
         eternal="true"
         overflowToDisk="false">
 
@@ -642,7 +642,7 @@
 
     <cache
         name="org.alfresco.cache.parentAssocsCache"
-        maxElementsInMemory="50000"
+        maxElementsInMemory="80000"
         eternal="true"
         overflowToDisk="false">
 

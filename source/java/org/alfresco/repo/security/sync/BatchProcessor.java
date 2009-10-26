@@ -41,6 +41,7 @@ import java.util.concurrent.TimeUnit;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
+import org.alfresco.service.cmr.rule.RuleService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.context.ApplicationEventPublisher;
@@ -64,6 +65,9 @@ public class BatchProcessor<T> implements BatchMonitor
 
     /** The retrying transaction helper. */
     private RetryingTransactionHelper retryingTransactionHelper;
+
+    /** The rule service. */
+    private RuleService ruleService;
 
     /** The collection. */
     private Collection<T> collection;
@@ -106,6 +110,8 @@ public class BatchProcessor<T> implements BatchMonitor
      * 
      * @param retryingTransactionHelper
      *            the retrying transaction helper
+     * @param ruleService
+     *            the rule service
      * @param collection
      *            the collection
      * @param processName
@@ -119,11 +125,12 @@ public class BatchProcessor<T> implements BatchMonitor
      * @param batchSize
      *            the number of entries we process at a time in a transaction
      */
-    public BatchProcessor(RetryingTransactionHelper retryingTransactionHelper,
+    public BatchProcessor(RetryingTransactionHelper retryingTransactionHelper, RuleService ruleService,
             ApplicationEventPublisher applicationEventPublisher, Collection<T> collection, String processName,
             int loggingInterval, int workerThreads, int batchSize)
     {
         this.retryingTransactionHelper = retryingTransactionHelper;
+        this.ruleService = ruleService;
         this.collection = collection;
         this.processName = processName;
         this.loggingInterval = loggingInterval;
@@ -272,7 +279,7 @@ public class BatchProcessor<T> implements BatchMonitor
         // Create a thread pool executor with the specified number of threads and a finite blocking queue of jobs
         ExecutorService executorService = splitTxns && this.workerThreads > 1 ? new ThreadPoolExecutor(
                 this.workerThreads, this.workerThreads, 0L, TimeUnit.MILLISECONDS, new ArrayBlockingQueue<Runnable>(
-                        this.workerThreads * 10)
+                        this.workerThreads * batchSize * 10)
                 {
                     // Add blocking behaviour to work queue
                     @Override
@@ -378,10 +385,10 @@ public class BatchProcessor<T> implements BatchMonitor
                         NumberFormat.getPercentInstance().format(
                                 totalResults == 0 ? 1.0F : (float) processed / totalResults)).append(" complete");
             }
-            long duration = System.currentTimeMillis() - startTime.getTime();
+            long duration = System.currentTimeMillis() - this.startTime.getTime();
             if (duration > 0)
             {
-                message.append(". Rate: ").append(processed * 1000 / duration).append(" per second");
+                message.append(". Rate: ").append(processed * 1000L / duration).append(" per second");
             }
             message.append(". " + this.totalErrors + " failures detected.");
             BatchProcessor.logger.info(message);
@@ -454,13 +461,13 @@ public class BatchProcessor<T> implements BatchMonitor
 
         /** The current entry being processed in the transaction */
         private String txnEntryId;
-        
+
         /** The last error. */
         private Throwable txnLastError;
-        
+
         /** The last error entry id. */
         private String txnLastErrorEntryId;
-
+        
         /*
          * (non-Javadoc)
          * @see org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback#execute ()
@@ -473,7 +480,7 @@ public class BatchProcessor<T> implements BatchMonitor
                 this.txnEntryId = this.worker.getIdentifier(entry);
                 synchronized (BatchProcessor.this)
                 {
-                    BatchProcessor.this.currentEntryId = txnEntryId;
+                    BatchProcessor.this.currentEntryId = this.txnEntryId;
                 }
                 try
                 {
@@ -486,11 +493,11 @@ public class BatchProcessor<T> implements BatchMonitor
                     {
                         if (BatchProcessor.logger.isWarnEnabled())
                         {
-                            BatchProcessor.logger.warn(getProcessName() + ": Failed to process entry \"" + txnEntryId
-                                    + "\".", t);
+                            BatchProcessor.logger.warn(getProcessName() + ": Failed to process entry \""
+                                    + this.txnEntryId + "\".", t);
                         }
                         this.txnLastError = t;
-                        this.txnLastErrorEntryId = txnEntryId;
+                        this.txnLastErrorEntryId = this.txnEntryId;
                         this.txnErrors++;
                     }
                     else
@@ -508,6 +515,8 @@ public class BatchProcessor<T> implements BatchMonitor
          */
         public void run()
         {
+            // Disable rules for this thread
+            BatchProcessor.this.ruleService.disableRules();
             try
             {
                 BatchProcessor.this.retryingTransactionHelper.doInTransaction(this, false, this.splitTxns);
@@ -540,6 +549,12 @@ public class BatchProcessor<T> implements BatchMonitor
                     throw new AlfrescoRuntimeException("Transactional error during " + getProcessName(), t);
                 }
             }
+            finally
+            {
+                // Re-enable rules
+                BatchProcessor.this.ruleService.enableRules();
+            }
+
             commitProgress();
         }
 
@@ -606,6 +621,7 @@ public class BatchProcessor<T> implements BatchMonitor
                     BatchProcessor.this.lastError = this.txnLastError;
                     BatchProcessor.this.lastErrorEntryId = this.txnLastErrorEntryId;
                 }
+                
                 reset();
             }
         }

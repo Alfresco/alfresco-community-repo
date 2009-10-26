@@ -350,7 +350,7 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
         {
             List<ChildAssociationRef> childRefs = nodeService.getChildAssocs(getPeopleContainer(),
                     ContentModel.ASSOC_CHILDREN, QName.createQName("cm", searchUserName.toLowerCase(),
-                            namespacePrefixResolver));
+                            namespacePrefixResolver), false);
             allRefs = new LinkedHashMap<String, NodeRef>(childRefs.size() * 2);
             // add to cache
             personCache.put(cacheKey, allRefs);
@@ -570,6 +570,11 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
 
     public void setPersonProperties(String userName, Map<QName, Serializable> properties)
     {
+        setPersonProperties(userName, properties, true);
+    }
+
+    public void setPersonProperties(String userName, Map<QName, Serializable> properties, boolean autoCreate)
+    {
         NodeRef personNode = getPersonOrNull(userName);
         if (personNode == null)
         {
@@ -584,7 +589,10 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
         }
         else
         {
-            makeHomeFolderIfRequired(personNode);
+            if (autoCreate)
+            {
+                makeHomeFolderIfRequired(personNode);                
+            }
             String realUserName = DefaultTypeConverter.INSTANCE.convert(String.class, nodeService.getProperty(personNode, ContentModel.PROP_USERNAME));
             properties.put(ContentModel.PROP_USERNAME, realUserName);
         }
@@ -603,7 +611,6 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
     {
         HashMap<QName, Serializable> properties = getDefaultProperties(userName);
         NodeRef person = createPerson(properties);
-        makeHomeFolderIfRequired(person);
         return person;
     }
 
@@ -619,7 +626,7 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
                 {
                     public Object execute() throws Throwable
                     {
-                        homeFolderManager.onCreateNode(ref);
+                        homeFolderManager.makeHomeFolder(ref);
                         return null;
                     }
                 }, transactionService.isReadOnly(), false);
@@ -688,7 +695,7 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
         {
             NodeRef rootNodeRef = nodeService.getRootNode(tenantService.getName(storeRef));
             List<ChildAssociationRef> children = nodeService.getChildAssocs(rootNodeRef, RegexQNamePattern.MATCH_ALL,
-                    QName.createQName(SYSTEM_FOLDER_SHORT_QNAME, namespacePrefixResolver));
+                    QName.createQName(SYSTEM_FOLDER_SHORT_QNAME, namespacePrefixResolver), false);
 
             if (children.size() == 0)
             {
@@ -699,7 +706,7 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
             NodeRef systemNodeRef = children.get(0).getChildRef();
 
             children = nodeService.getChildAssocs(systemNodeRef, RegexQNamePattern.MATCH_ALL, QName.createQName(
-                    PEOPLE_FOLDER_SHORT_QNAME, namespacePrefixResolver));
+                    PEOPLE_FOLDER_SHORT_QNAME, namespacePrefixResolver), false);
 
             if (children.size() == 0)
             {
@@ -763,7 +770,7 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
     public Set<NodeRef> getAllPeople()
     {
         List<ChildAssociationRef> childRefs = nodeService.getChildAssocs(getPeopleContainer(),
-                ContentModel.ASSOC_CHILDREN, RegexQNamePattern.MATCH_ALL);
+                ContentModel.ASSOC_CHILDREN, RegexQNamePattern.MATCH_ALL, false);
         Set<NodeRef> refs = new HashSet<NodeRef>(childRefs.size()*2);
         for (ChildAssociationRef childRef : childRefs)
         {

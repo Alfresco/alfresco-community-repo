@@ -137,6 +137,20 @@ public interface PersonService
     @Auditable(parameters = {"userName", "properties"})
     public void setPersonProperties(String userName, Map<QName, Serializable> properties);
 
+
+    /**
+     * Set the properties on a person - some of these may be persisted in different locations.
+     * 
+     * @param userName
+     *            - the user for which the properties should be set.
+     * @param properties
+     *            - the map of properties to set (as the NodeService)
+     * @param autoCreate
+     *            should we auto-create the home folder if it doesn't exist? (and configuration allows us to)
+     */
+    @Auditable(parameters = {"userName", "properties", "autoCreate"})
+    public void setPersonProperties(String userName, Map<QName, Serializable> properties, boolean autoCreate);
+    
     /**
      * Can this service create, delete and update person information?
      * 

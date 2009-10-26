@@ -179,7 +179,7 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory implements LuceneI
 
     private int mergerTargetOverlayCount = 5;
 
-    private int mergerTargetOverlaysBlockingFactor = 2;
+    private int mergerTargetOverlaysBlockingFactor = 1;
 
     private int termIndexInterval =IndexWriter.DEFAULT_TERM_INDEX_INTERVAL;
 

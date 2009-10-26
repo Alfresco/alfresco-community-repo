@@ -1488,34 +1488,6 @@
             </props>
         </property>
     </bean>
-
-    <!-- The public user registry synchronizer.                                      -->
-    <bean id="userRegistrySynchronizerWriteTxnAdvisor" class="org.springframework.aop.support.NameMatchMethodPointcutAdvisor">
-        <property name="advice">
-            <ref bean="retryingWriteTxnAdvice"/>
-        </property>
-        <property name="mappedNames">
-            <list>
-                <value>synchronize</value>
-            </list>
-        </property>
-    </bean>
-
-    <bean id="UserRegistrySynchronizer" class="org.springframework.aop.framework.ProxyFactoryBean">
-        <property name="proxyInterfaces">
-            <value>org.alfresco.repo.security.sync.UserRegistrySynchronizer</value>
-        </property>
-        <property name="target">
-            <ref bean="userRegistrySynchronizer" />
-        </property>
-        <property name="interceptorNames">
-            <list>
-                <value>userRegistrySynchronizerWriteTxnAdvisor</value>
-                <!--value>userRegistrySynchronizerReadTxnAdvisor</value-->
-                <value>checkTxnAdvisor</value>
-            </list>
-        </property>
-    </bean>
 	
 	<bean id="PublicServiceAccessService" class="org.springframework.aop.framework.ProxyFactoryBean">
         <property name="proxyInterfaces">

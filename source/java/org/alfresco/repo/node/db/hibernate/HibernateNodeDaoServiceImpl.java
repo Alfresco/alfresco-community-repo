@@ -26,6 +26,7 @@ package org.alfresco.repo.node.db.hibernate;
 
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
+import java.lang.reflect.Array;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.sql.SQLException;
@@ -41,6 +42,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
+import java.util.Stack;
 import java.util.TreeMap;
 import java.util.zip.CRC32;
 
@@ -99,12 +101,14 @@ import org.alfresco.service.cmr.repository.AssociationExistsException;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
+import org.alfresco.service.cmr.repository.CyclicChildRelationshipException;
 import org.alfresco.service.cmr.repository.DuplicateChildNodeNameException;
 import org.alfresco.service.cmr.repository.EntityRef;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.InvalidStoreRefException;
 import org.alfresco.service.cmr.repository.MLText;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.repository.StoreExistsException;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
@@ -207,7 +211,7 @@ public class HibernateNodeDaoServiceImpl
     /** A cache mapping StoreRef and NodeRef instances to the entity IDs (primary key) */
     private SimpleCache<EntityRef, Long> storeAndNodeIdCache;
     /** A cache for more performant lookups of the parent associations */
-    private SimpleCache<Long, Set<Long>> parentAssocsCache;
+    private SimpleCache<Long, NodeInfo> parentAssocsCache;
     private boolean isDebugEnabled = logger.isDebugEnabled();
     private boolean isDebugParentAssocCacheEnabled = loggerParentAssocsCache.isDebugEnabled();
     
@@ -357,7 +361,7 @@ public class HibernateNodeDaoServiceImpl
      * 
      * @param parentAssocsCache     the cache
      */
-    public void setParentAssocsCache(SimpleCache<Long, Set<Long>> parentAssocsCache)
+    public void setParentAssocsCache(SimpleCache<Long, NodeInfo> parentAssocsCache)
     {
         this.parentAssocsCache = parentAssocsCache;
     }
@@ -646,7 +650,7 @@ public class HibernateNodeDaoServiceImpl
         ChildAssoc assoc = (ChildAssoc) getHibernateTemplate().get(ChildAssocImpl.class, childAssocId);
         if (assoc == null)
         {
-            throw new AlfrescoRuntimeException("ChildAssoc ID " + childAssocId + " is invalid");
+            throw new ObjectNotFoundException(childAssocId, ChildAssocImpl.class.getName());
         }
         return assoc;
     }
@@ -737,6 +741,7 @@ public class HibernateNodeDaoServiceImpl
         // Add the root aspect
         Pair<Long, QName> rootAspectQNamePair = qnameDAO.getOrCreateQName(ContentModel.ASPECT_ROOT);
         rootNode.getAspects().add(rootAspectQNamePair.getFirst());
+        parentAssocsCache.remove(rootNode.getId());
         
         // Assign permissions to the root node
         SimpleAccessControlListProperties properties = DMPermissionsDaoComponentImpl.getDefaultProperties();
@@ -955,8 +960,8 @@ public class HibernateNodeDaoServiceImpl
             return;
         }
         Long nodeId = node.getId();
-        Collection<ChildAssoc> parentAssocs = getParentAssocsInternal(nodeId);
-        for (ChildAssoc parentAssoc : parentAssocs)
+        NodeInfo parentAssocs = getParentAssocsInternal(nodeId);
+        for (ParentAssocInfo parentAssoc : parentAssocs.getParentAssocs().values())
         {
             propagateTimestamps(parentAssoc);
         }
@@ -1004,7 +1009,6 @@ public class HibernateNodeDaoServiceImpl
             }
         }
 
-        public static final String QUERY_UPDATE_AUDITABLE_MODIFIED = "node.UpdateAuditableModified";
         public Integer execute() throws Throwable
         {
             long now = System.currentTimeMillis();
@@ -1060,14 +1064,14 @@ public class HibernateNodeDaoServiceImpl
      * Ensures that the timestamps are propogated to the parent node of the association, but only
      * if the association requires it.
      */
-    private void propagateTimestamps(ChildAssoc parentAssoc)
+    private void propagateTimestamps(ParentAssocInfo parentAssocPair)
     {
         // Shortcut
         if (!enableTimestampPropagation)
         {
             return;
         }
-        QName assocTypeQName = parentAssoc.getTypeQName(qnameDAO);
+        QName assocTypeQName = parentAssocPair.getChildAssociationRef().getTypeQName();
         AssociationDefinition assocDef = dictionaryService.getAssociation(assocTypeQName);
         if (assocDef == null)
         {
@@ -1093,7 +1097,7 @@ public class HibernateNodeDaoServiceImpl
             propagator = new TimestampPropagator();
             AlfrescoTransactionSupport.bindListener(propagator);
         }
-        propagator.addNode(parentAssoc.getParent().getId());
+        propagator.addNode(parentAssocPair.getParentNodeId());
     }
 
     public Pair<Long, NodeRef> newNode(StoreRef storeRef, String uuid, QName nodeTypeQName) throws InvalidTypeException
@@ -1165,6 +1169,7 @@ public class HibernateNodeDaoServiceImpl
         // Update the node
         updateNode(nodeId, storeRef, null, null);
         NodeRef nodeRef = node.getNodeRef();
+        this.parentAssocsCache.remove(nodeId);
         
         return new Pair<Long, NodeRef>(node.getId(), nodeRef);
     }
@@ -1511,7 +1516,6 @@ public class HibernateNodeDaoServiceImpl
                 Collections.singletonMap(qname, propertyValue));
     }
     
-    @SuppressWarnings("unchecked")
     public void addNodeProperties(Long nodeId, Map<QName, Serializable> properties)
     {
         Node node = getNodeNotNull(nodeId);
@@ -1681,6 +1685,11 @@ public class HibernateNodeDaoServiceImpl
         // Add them
         Set<Long> nodeAspects = node.getAspects();
         nodeAspects.addAll(aspectQNameIds);
+        
+        if (hasNodeAspect(node, ContentModel.ASPECT_ROOT))
+        {
+            parentAssocsCache.remove(nodeId);
+        }
 
         // Record change ID
         recordNodeUpdate(node);
@@ -1702,6 +1711,11 @@ public class HibernateNodeDaoServiceImpl
         // Remove them
         Set<Long> nodeAspects = node.getAspects();
         nodeAspects.removeAll(aspectQNameIds);
+        
+        if (aspectQNames.contains(ContentModel.ASPECT_ROOT))
+        {
+            parentAssocsCache.remove(nodeId);
+        }
 
         // Record change ID
         recordNodeUpdate(node);
@@ -1719,6 +1733,11 @@ public class HibernateNodeDaoServiceImpl
     }
 
     private boolean hasNodeAspect(Node node, QName aspectQName)
+    {
+        return hasNodeAspect(qnameDAO, node, aspectQName);        
+    }
+    
+    private static boolean hasNodeAspect(QNameDAO qnameDAO, Node node, QName aspectQName)
     {
         Pair<Long, QName> aspectQNamePair = qnameDAO.getQName(aspectQName);
         if (aspectQNamePair == null)
@@ -2055,30 +2074,24 @@ public class HibernateNodeDaoServiceImpl
                 childNameUnique.getFirst());
         
         // Add it to the cache
-        Set<Long> parentAssocIds = parentAssocsCache.get(childNodeId);
-        if (parentAssocIds == null)
+        NodeInfo nodeInfo = parentAssocsCache.get(childNodeId);
+        if (nodeInfo == null)
         {
             // There isn't an entry in the cache, so go and make one
-            Collection<ChildAssoc> parentAssocs = getParentAssocsInternal(childNodeId);
-            parentAssocIds = new HashSet<Long>(3);
-            for (ChildAssoc childAssoc : parentAssocs)
-            {
-                parentAssocIds.add(childAssoc.getId());
-            }
+            nodeInfo = getParentAssocsInternal(childNodeId);
         }
         else
         {
             // Copy the list when we add to it
-            parentAssocIds = new HashSet<Long>(parentAssocIds);
-            parentAssocIds.add(assocId);
+            nodeInfo = nodeInfo.addAssoc(assocId, assoc, qnameDAO);
+            parentAssocsCache.put(childNodeId, nodeInfo);
         }
-        parentAssocsCache.put(childNodeId, parentAssocIds);
         if (isDebugParentAssocCacheEnabled)
         {
             loggerParentAssocsCache.debug("\n" +
                     "Parent associations cache - Updating entry: \n" +
                     "   Node:   " + childNodeId +  "\n" +
-                    "   Assocs: " + parentAssocIds);
+                    "   Assocs: " + nodeInfo.getParentAssocs().keySet());
         }
         
         // If this is a primary association then update the permissions
@@ -2294,7 +2307,10 @@ public class HibernateNodeDaoServiceImpl
         }
 
         // Done
-        return new Pair<Long, ChildAssociationRef>(childAssocId, childAssoc.getChildAssocRef(qnameDAO));
+        parentAssocsCache.remove(oldChildNode.getId());
+        parentAssocsCache.remove(childNodeId);
+        ParentAssocInfo parentAssocInfo = new ParentAssocInfo(childAssoc, qnameDAO);
+        return new Pair<Long, ChildAssociationRef>(childAssocId, parentAssocInfo.getChildAssociationRef());
     }
 
     /**
@@ -2335,6 +2351,11 @@ public class HibernateNodeDaoServiceImpl
                 childNodeIds.add(childNodePair.getFirst());
                 return false;
             }
+
+            public boolean preLoadNodes()
+            {
+                return true;
+            }                        
         };
         // Get all child associations with the specific qualified name
         getChildAssocs(nodeId, callback, false);
@@ -2364,7 +2385,6 @@ public class HibernateNodeDaoServiceImpl
         }
     }
 
-    @SuppressWarnings("unchecked")
     public void getChildAssocs(final Long parentNodeId, final ChildAssocRefQueryCallback resultsCallback, final boolean recurse)
     {
         Node parentNode = getNodeNotNull(parentNodeId);
@@ -2391,6 +2411,11 @@ public class HibernateNodeDaoServiceImpl
                     }
                     return false;
                 }
+
+                public boolean preLoadNodes()
+                {
+                    return resultsCallback.preLoadNodes();
+                }                                
             };
         }
         
@@ -2431,7 +2456,6 @@ public class HibernateNodeDaoServiceImpl
         // Done
     }
     
-    @SuppressWarnings("unchecked")
     public void getChildAssocs(final Long parentNodeId, final QName assocQName, ChildAssocRefQueryCallback resultsCallback)
     {
         final Pair<Long, String> assocQNameNamespacePair = qnameDAO.getNamespace(assocQName.getNamespaceURI());
@@ -2451,7 +2475,8 @@ public class HibernateNodeDaoServiceImpl
                     .getNamedQuery(HibernateNodeDaoServiceImpl.QUERY_GET_CHILD_ASSOC_REFS_BY_QNAME)
                     .setLong("parentId", parentNodeId)
                     .setLong("qnameNamespaceId", assocQNameNamespacePair.getFirst())
-                    .setString("qnameLocalName", assocQNameLocalName);
+                    .setString("qnameLocalName", assocQNameLocalName)
+                    .setLong("qnameCrc", ChildAssocImpl.getCrc(assocQName));
                 DirtySessionMethodInterceptor.setQueryFlushMode(session, query);
                 return query.scroll(ScrollMode.FORWARD_ONLY);
             }
@@ -2541,6 +2566,11 @@ public class HibernateNodeDaoServiceImpl
             {
                 return resultsCallback.handle(childAssocPair, parentNodePair, childNodePair);
             }
+
+            public boolean preLoadNodes()
+            {
+                return resultsCallback.preLoadNodes();
+            }                        
         };
         
         ScrollableResults queryResults = null;
@@ -2628,7 +2658,8 @@ public class HibernateNodeDaoServiceImpl
                     .setLong("parentId", parentNodeId)
                     .setLong("typeQNameId", assocTypeQNamePair.getFirst())
                     .setLong("qnameNamespaceId", assocQNameNamespacePair.getFirst())
-                    .setString("qnameLocalName", assocQNameLocalName);
+                    .setString("qnameLocalName", assocQNameLocalName)
+                    .setLong("qnameCrc", ChildAssocImpl.getCrc(assocQName));
                 DirtySessionMethodInterceptor.setQueryFlushMode(session, query);
                 return query.scroll(ScrollMode.FORWARD_ONLY);
             }
@@ -2816,12 +2847,12 @@ public class HibernateNodeDaoServiceImpl
                     .setLong("childId", childNodeId)
                     .setLong("typeQNameId", assocTypeQNamePair.getFirst())
                     .setParameter("qnameNamespaceId", assocQNameNamespacePair.getFirst())
-                    .setParameter("qnameLocalName", assocQNameLocalName);
+                    .setParameter("qnameLocalName", assocQNameLocalName)
+                    .setLong("qnameCrc", ChildAssocImpl.getCrc(assocQName));
                 DirtySessionMethodInterceptor.setQueryFlushMode(session, query);
                 return query.list();
             }
         };
-        @SuppressWarnings("unchecked")
         List<ChildAssoc> childAssocs = (List<ChildAssoc>) getHibernateTemplate().execute(callback);
         Pair<Long, ChildAssociationRef> ret = null;
         for (ChildAssoc childAssoc : childAssocs)
@@ -2912,16 +2943,19 @@ public class HibernateNodeDaoServiceImpl
     /**
      * Columns returned are:
      * <pre>
-         0 assoc.id,
-         1 assoc.typeQName,
-         2 assoc.qnameNamespace,
-         3 assoc.qnameLocalName,
-         4 assoc.isPrimary,
-         5 assoc.index,
-         6 child.id,
-         7 child.store.key.protocol,
-         8 child.store.key.identifier,
-         9 child.uuid
+          0 assoc.id,
+          1 assoc.typeQName,
+          2 assoc.qnameNamespace,
+          3 assoc.qnameLocalName,
+          4 assoc.qnameCrc,
+          5 assoc.childNodeName
+          6 assoc.childNodeNameCrc
+          7 assoc.isPrimary,
+          8 assoc.index,
+          9 child.id,
+         10 child.store.key.protocol,
+         11 child.store.key.identifier,
+         12 child.uuid
      * </pre> 
      */
     @SuppressWarnings("unchecked")
@@ -2942,14 +2976,14 @@ public class HibernateNodeDaoServiceImpl
             String assocQNameNamespace = qnameDAO.getNamespace((Long) row[2]).getSecond();
             String assocQNameLocalName = (String) row[3];
             QName assocQName = QName.createQName(assocQNameNamespace, assocQNameLocalName);
-            String assocChildNodeName = (String) row[4];
-            Long assocChildNodeNameCrc = (Long) row[5];
-            Boolean assocIsPrimary = (Boolean) row[6];
-            Integer assocIndex = (Integer) row[7];
-            Long childNodeId = (Long) row[8];
-            String childProtocol = (String) row[9];
-            String childIdentifier = (String) row[10];
-            String childUuid = (String) row[11];
+            String assocChildNodeName = (String) row[5];
+            Long assocChildNodeNameCrc = (Long) row[6];
+            Boolean assocIsPrimary = (Boolean) row[7];
+            Integer assocIndex = (Integer) row[8];
+            Long childNodeId = (Long) row[9];
+            String childProtocol = (String) row[10];
+            String childIdentifier = (String) row[11];
+            String childUuid = (String) row[12];
             NodeRef childNodeRef = new NodeRef(new StoreRef(childProtocol, childIdentifier), childUuid);
             ChildAssociationRef assocRef = new ChildAssociationRef(
                     assocTypeQName,
@@ -2982,7 +3016,10 @@ public class HibernateNodeDaoServiceImpl
         }
         
         // Cache the nodes
-        cacheNodes(childNodeRefs);
+        if (resultsCallback.preLoadNodes() && !childNodeRefs.isEmpty())
+        {
+            cacheNodes(childNodeRefs);
+        }
         
         // Pass results to callback
         for (Object[] callbackResult : callbackResults)
@@ -3094,7 +3131,7 @@ public class HibernateNodeDaoServiceImpl
             Long nodeId = node.getId();
             storeAndNodeIdCache.put(node.getNodeRef(), nodeId);
             nodeIds.add(nodeId);
-        }
+        }        
         
         if (nodeIds.size() == 0)
         {
@@ -3108,20 +3145,17 @@ public class HibernateNodeDaoServiceImpl
         criteria.setCacheMode(CacheMode.PUT);
         criteria.setFlushMode(FlushMode.MANUAL);
         List<ChildAssoc> parentAssocs = criteria.list();
+        Map<Long, List<ChildAssoc>> parentAssocMap = new HashMap<Long, List<ChildAssoc>>(nodeIds.size() * 2);
         for (ChildAssoc parentAssoc : parentAssocs)
         {
             Long nodeId = parentAssoc.getChild().getId();
-            Set<Long> parentAssocsOfNode = parentAssocsCache.get(nodeId);
+            List<ChildAssoc> parentAssocsOfNode = parentAssocMap.get(nodeId);
             if (parentAssocsOfNode == null)
             {
-                parentAssocsOfNode = new HashSet<Long>(3);
+                parentAssocsOfNode = new ArrayList<ChildAssoc>(3);
+                parentAssocMap.put(nodeId, parentAssocsOfNode);
             }
-            else
-            {
-                parentAssocsOfNode = new HashSet<Long>(parentAssocsOfNode);
-            }
-            parentAssocsOfNode.add(parentAssoc.getId());
-            parentAssocsCache.put(nodeId, parentAssocsOfNode);
+            parentAssocsOfNode.add(parentAssoc);
             if (isDebugParentAssocCacheEnabled)
             {
                 loggerParentAssocsCache.debug("\n" +
@@ -3130,6 +3164,17 @@ public class HibernateNodeDaoServiceImpl
                         "   Assocs: " + parentAssocsOfNode);
             }
         }
+        // Cache NodeInfo for each node
+        for (Node node : nodeList)
+        {
+            Long nodeId = node.getId();
+            List<ChildAssoc> parentAsssocsOfNode = parentAssocMap.get(nodeId);
+            if (parentAsssocsOfNode == null)
+            {
+                parentAsssocsOfNode = Collections.emptyList();
+            }
+            parentAssocsCache.put(nodeId, new NodeInfo(node, qnameDAO, parentAsssocsOfNode));
+        }        
     }
     
     private Collection<Pair<Long, AssociationRef>> convertToAssocRefs(List<NodeAssoc> queryResults)
@@ -3364,19 +3409,18 @@ public class HibernateNodeDaoServiceImpl
         Long childNodeId = childNode.getId();
         
         // Add remove the child association from the cache
-        Set<Long> oldParentAssocIds = parentAssocsCache.get(childNodeId);
-        if (oldParentAssocIds != null)
+        NodeInfo oldNodeInfo = parentAssocsCache.get(childNodeId);
+        if (oldNodeInfo != null)
         {
-            Set<Long> newParentAssocIds = new HashSet<Long>(oldParentAssocIds);
-            newParentAssocIds.remove(childAssocId);
-            parentAssocsCache.put(childNodeId, newParentAssocIds);
+            NodeInfo newNodeInfo = oldNodeInfo.removeAssoc(childAssocId);
+            parentAssocsCache.put(childNodeId, newNodeInfo);
             if (this.isDebugParentAssocCacheEnabled)
             {
                 loggerParentAssocsCache.debug("\n" +
-                        "Parent associations cache - Updating entry: \n" +
-                        "   Node:   " + childNodeId +  "\n" +
-                        "   Before: " + oldParentAssocIds + "\n" +
-                        "   After:  " + newParentAssocIds);
+                            "Parent associations cache - Updating entry: \n" +
+                            "   Node:   " + childNodeId +  "\n" +
+                            "   Before: " + oldNodeInfo.getParentAssocs().keySet() + "\n" +
+                            "   After:  " + newNodeInfo.getParentAssocs().keySet());
             }
         }
         
@@ -3404,45 +3448,47 @@ public class HibernateNodeDaoServiceImpl
      * @return                  Returns the parent associations without any interpretation
      */
     @SuppressWarnings("unchecked")
-    private Collection<ChildAssoc> getParentAssocsInternal(final Long childNodeId)
+    private NodeInfo getParentAssocsInternal(final Long childNodeId)
     {
-        List<ChildAssoc> parentAssocs = null;
         // First check the cache
-        Set<Long> parentAssocIds = parentAssocsCache.get(childNodeId);
-        if (parentAssocIds != null)
+        NodeInfo nodeInfo = parentAssocsCache.get(childNodeId);
+        if (nodeInfo != null)
         {
-            if (isDebugParentAssocCacheEnabled)
+            // Let's ensure this ref hasn't become stale due to a concurrent cascade delete
+            try
             {
-                loggerParentAssocsCache.debug("\n" +
-                        "Parent associations cache - Hit: \n" +
-                        "   Node:   " + childNodeId + "\n" +
-                        "   Assocs: " + parentAssocIds);
-            }
-            parentAssocs = new ArrayList<ChildAssoc>(parentAssocIds.size());
-            for (Long parentAssocId : parentAssocIds)
-            {
-                ChildAssoc parentAssoc = (ChildAssoc) getSession().get(ChildAssocImpl.class, parentAssocId);
-                if (parentAssoc == null)
+                for (Long assocId : nodeInfo.getParentAssocs().keySet())
                 {
-                    // The cache is out of date, so just repopulate it
-                    parentAssocs = null;
-                    break;
+                    getChildAssocNotNull(assocId);
                 }
-                else
+                if (isDebugParentAssocCacheEnabled)
                 {
-                    parentAssocs.add(parentAssoc);
+                    loggerParentAssocsCache.debug("\n" + "Parent associations cache - Hit: \n" + "   Node:   "
+                            + childNodeId + "\n" + "   Assocs: " + nodeInfo.getParentAssocs().keySet());
                 }
             }
+            catch (ObjectNotFoundException e)
+            {
+                parentAssocsCache.remove(childNodeId);
+                nodeInfo = null;
+            }            
         }
         // Did we manage to get the parent assocs
-        if (parentAssocs == null)
+        if (nodeInfo == null)
         {
+            // Assume stale data if the node has been deleted 
+            Node node = getNodeNotNull(childNodeId);
+            if (node.getDeleted())
+            {
+                throw new ObjectNotFoundException(childNodeId, NodeImpl.class.getName());
+            }
+
             if (isDebugParentAssocCacheEnabled)
             {
                 loggerParentAssocsCache.debug("\n" +
                         "Parent associations cache - Miss: \n" +
                         "   Node:   " + childNodeId + "\n" +
-                        "   Assocs: " + parentAssocIds);
+                        "   Assocs: null");
             }
             HibernateCallback callback = new HibernateCallback()
             {
@@ -3456,29 +3502,163 @@ public class HibernateNodeDaoServiceImpl
                 }
             };
             List<Object[]> rows = (List<Object[]>) getHibernateTemplate().execute(callback);
-            parentAssocs = new ArrayList<ChildAssoc>(rows.size());
-            parentAssocIds = new HashSet<Long>(parentAssocs.size());
-            for (Object[] row : rows)
-            {
-                ChildAssoc parentAssoc = (ChildAssoc) row[0];
-                // Populate the results
-                parentAssocs.add(parentAssoc);
-                parentAssocIds.add(parentAssoc.getId());
-            }
+
+            nodeInfo = new NodeInfo(node, qnameDAO, rows);
             // Populate the cache
-            parentAssocsCache.put(childNodeId, parentAssocIds);
+            parentAssocsCache.put(childNodeId, nodeInfo);
             if (isDebugParentAssocCacheEnabled)
             {
                 loggerParentAssocsCache.debug("\n" +
                         "Parent associations cache - Adding entry: \n" +
                         "   Node:   " + childNodeId + "\n" +
-                        "   Assocs: " + parentAssocIds);
+                        "   Assocs: " + nodeInfo.getParentAssocs().keySet());
             }
         }
+
         // Done
-        return parentAssocs;
+        return nodeInfo;
     }
     
+    /**
+     * Recursive method used to build up paths from a given node to the root.
+     * <p>
+     * Whilst walking up the hierarchy to the root, some nodes may have a <b>root</b> aspect.
+     * Everytime one of these is encountered, a new path is farmed off, but the method
+     * continues to walk up the hierarchy.
+     * 
+     * @param currentNode the node to start from, i.e. the child node to work upwards from
+     * @param currentPath the path from the current node to the descendent that we started from
+     * @param completedPaths paths that have reached the root are added to this collection
+     * @param assocStack the parent-child relationships traversed whilst building the path.
+     *      Used to detected cyclic relationships.
+     * @param primaryOnly true if only the primary parent association must be traversed.
+     *      If this is true, then the only root is the top level node having no parents.
+     * @throws CyclicChildRelationshipException
+     */
+    public void prependPaths(
+            Pair<Long, NodeRef> currentNodePair,
+            Pair<StoreRef, NodeRef> currentRootNodePair,
+            Path currentPath,
+            Collection<Path> completedPaths,
+            Stack<Long> assocIdStack,
+            boolean primaryOnly)
+        throws CyclicChildRelationshipException
+    {
+        Long currentNodeId = currentNodePair.getFirst();
+        NodeRef currentNodeRef = currentNodePair.getSecond();
+        
+        // Check if we have changed root nodes
+        StoreRef currentStoreRef = currentNodeRef.getStoreRef();
+        if (currentRootNodePair == null || !currentStoreRef.equals(currentRootNodePair.getFirst()))
+        {
+            // We've changed stores
+            Pair<Long, NodeRef> rootNodePair = getRootNode(currentStoreRef);
+            currentRootNodePair = new Pair<StoreRef, NodeRef>(currentStoreRef, rootNodePair.getSecond());
+        }
+        
+        // get the parent associations of the given node
+        NodeInfo nodeInfo = getParentAssocsInternal(currentNodeId);
+        
+        // does the node have parents
+        boolean hasParents = nodeInfo.getParentAssocs().size() > 0;
+        // does the current node have a root aspect?
+        
+        // look for a root.  If we only want the primary root, then ignore all but the top-level root.
+        if (!(primaryOnly && hasParents) && nodeInfo.isRoot())  // exclude primary search with parents present
+        {
+            // create a one-sided assoc ref for the root node and prepend to the stack
+            // this effectively spoofs the fact that the current node is not below the root
+            // - we put this assoc in as the first assoc in the path must be a one-sided
+            //   reference pointing to the root node
+            ChildAssociationRef assocRef = new ChildAssociationRef(
+                    null,
+                    null,
+                    null,
+                    currentRootNodePair.getSecond());
+            // create a path to save and add the 'root' assoc
+            Path pathToSave = new Path();
+            Path.ChildAssocElement first = null;
+            for (Path.Element element: currentPath)
+            {
+                if (first == null)
+                {
+                    first = (Path.ChildAssocElement) element;
+                }
+                else
+                {
+                    pathToSave.append(element);
+                }
+            }
+            if (first != null)
+            {
+                // mimic an association that would appear if the current node was below the root node
+                // or if first beneath the root node it will make the real thing 
+                ChildAssociationRef updateAssocRef = new ChildAssociationRef(
+                       nodeInfo.isStoreRoot() ? ContentModel.ASSOC_CHILDREN : first.getRef().getTypeQName(),
+                       currentRootNodePair.getSecond(),
+                       first.getRef().getQName(),
+                       first.getRef().getChildRef());
+                Path.Element newFirst =  new Path.ChildAssocElement(updateAssocRef);
+                pathToSave.prepend(newFirst);
+            }
+            
+            Path.Element element = new Path.ChildAssocElement(assocRef);
+            pathToSave.prepend(element);
+            
+            // store the path just built
+            completedPaths.add(pathToSave);
+        }
+
+        if (!hasParents && !nodeInfo.isRoot())
+        {
+            throw new RuntimeException("Node without parents does not have root aspect: " +
+                    currentNodeRef);
+        }
+        // walk up each parent association
+        for (Map.Entry<Long, ParentAssocInfo> entry: nodeInfo.getParentAssocs().entrySet())
+        {
+            Long assocId = entry.getKey();
+            ParentAssocInfo parentAssocInfo = entry.getValue();
+            ChildAssociationRef assocRef = parentAssocInfo.getChildAssociationRef();
+            // do we consider only primary assocs?
+            if (primaryOnly && !assocRef.isPrimary())
+            {
+                continue;
+            }
+            // Ordering is meaningless here as we are constructing a path upwards
+            // and have no idea where the node comes in the sibling order or even
+            // if there are like-pathed siblings.
+            assocRef.setNthSibling(-1);
+            // build a path element
+            Path.Element element = new Path.ChildAssocElement(assocRef);
+            // create a new path that builds on the current path
+            Path path = new Path();
+            path.append(currentPath);
+            // prepend element
+            path.prepend(element);
+            // get parent node pair
+            Pair<Long, NodeRef> parentNodePair = new Pair<Long, NodeRef>(parentAssocInfo.getParentNodeId(), assocRef.getParentRef());
+            
+            // does the association already exist in the stack
+            if (assocIdStack.contains(assocId))
+            {
+                // the association was present already
+                throw new CyclicChildRelationshipException(
+                        "Cyclic parent-child relationship detected: \n" +
+                        "   current node: " + currentNodeId + "\n" +
+                        "   current path: " + currentPath + "\n" +
+                        "   next assoc: " + assocId,
+                        assocRef);
+            }
+            
+            // push the assoc stack, recurse and pop
+            assocIdStack.push(assocId);
+            prependPaths(parentNodePair, currentRootNodePair, path, completedPaths, assocIdStack, primaryOnly);
+            assocIdStack.pop();
+        }
+        // done
+    }
+
     /**
      * {@inheritDoc}
      * 
@@ -3486,14 +3666,14 @@ public class HibernateNodeDaoServiceImpl
      */
     public Collection<Pair<Long, ChildAssociationRef>> getParentAssocs(final Long childNodeId)
     {
-        Collection<ChildAssoc> parentAssocs = getParentAssocsInternal(childNodeId);
+        NodeInfo nodeInfo = getParentAssocsInternal(childNodeId);
+        Map <Long, ParentAssocInfo> parentAssocs = nodeInfo.getParentAssocs();
         Collection<Pair<Long, ChildAssociationRef>> ret = new ArrayList<Pair<Long, ChildAssociationRef>>(parentAssocs.size());
         
-        for (ChildAssoc childAssoc : parentAssocs)
+        for (Map.Entry<Long, ParentAssocInfo> entry : parentAssocs.entrySet())
         {
-            Long childAssocId = childAssoc.getId();
-            ChildAssociationRef childAssocRef = childAssoc.getChildAssocRef(qnameDAO);
-            Pair<Long, ChildAssociationRef> childAssocPair = new Pair<Long, ChildAssociationRef>(childAssocId, childAssocRef);
+            Pair<Long, ChildAssociationRef> childAssocPair = new Pair<Long, ChildAssociationRef>(entry.getKey(), entry
+                    .getValue().getChildAssociationRef());
             ret.add(childAssocPair);
         }
         // Done
@@ -3512,12 +3692,13 @@ public class HibernateNodeDaoServiceImpl
     public Pair<Long, ChildAssociationRef> getPrimaryParentAssoc(Long childNodeId)
     {
         // get the assocs pointing to the node
-        Collection<ChildAssoc> parentAssocs = getParentAssocsInternal(childNodeId);
-        ChildAssoc primaryAssoc = null;
-        for (ChildAssoc assoc : parentAssocs)
+        NodeInfo nodeInfo = getParentAssocsInternal(childNodeId);
+        Pair<Long, ChildAssociationRef> primaryAssoc = null;
+        for (Map.Entry<Long, ParentAssocInfo> entry : nodeInfo.getParentAssocs().entrySet())
         {
+            ChildAssociationRef assoc = entry.getValue().getChildAssociationRef();
             // ignore non-primary assocs
-            if (!assoc.getIsPrimary())
+            if (!assoc.isPrimary())
             {
                 continue;
             }
@@ -3537,7 +3718,7 @@ public class HibernateNodeDaoServiceImpl
                     }
                 }
             }
-            primaryAssoc = assoc;
+            primaryAssoc = new Pair<Long, ChildAssociationRef>(entry.getKey(), assoc);
             // we keep looping to hunt out data integrity issues
         }
         // done
@@ -3547,7 +3728,7 @@ public class HibernateNodeDaoServiceImpl
         }
         else
         {
-            return new Pair<Long, ChildAssociationRef>(primaryAssoc.getId(), primaryAssoc.getChildAssocRef(qnameDAO));
+            return primaryAssoc;
         }
     }
 
@@ -4092,7 +4273,6 @@ public class HibernateNodeDaoServiceImpl
         }
     }
     
-    @SuppressWarnings("unchecked")
     public void getNodesDeletedInOldTxns(
             final Long minNodeId,
             long maxCommitTime,
@@ -4243,7 +4423,6 @@ public class HibernateNodeDaoServiceImpl
         return txns;
     }
 
-    @SuppressWarnings("unchecked")
     public int getTxnUpdateCount(final long txnId)
     {
         HibernateCallback callback = new HibernateCallback()
@@ -4262,7 +4441,6 @@ public class HibernateNodeDaoServiceImpl
         return count.intValue();
     }
     
-    @SuppressWarnings("unchecked")
     public int getTxnDeleteCount(final long txnId)
     {
         HibernateCallback callback = new HibernateCallback()
@@ -4281,7 +4459,6 @@ public class HibernateNodeDaoServiceImpl
         return count.intValue();
     }
     
-    @SuppressWarnings("unchecked")
     public int getTransactionCount()
     {
         HibernateCallback callback = new HibernateCallback()
@@ -4669,7 +4846,7 @@ public class HibernateNodeDaoServiceImpl
         if (propertyTypeQName.equals(DataTypeDefinition.ANY))
         {
             // It is multi-valued if required (we are not in a collection and the property is a new collection)
-            isMultiValued = (value != null) && (value instanceof Collection) && (collectionIndex == IDX_NO_COLLECTION);
+            isMultiValued = (value != null) && (value instanceof Collection<?>) && (collectionIndex == IDX_NO_COLLECTION);
         }
         else
         {
@@ -4679,7 +4856,7 @@ public class HibernateNodeDaoServiceImpl
         // Handle different scenarios.
         // - Do we need to explode a collection?
         // - Does the property allow collections?
-        if (collectionIndex == IDX_NO_COLLECTION && isMultiValued && !(value instanceof Collection))
+        if (collectionIndex == IDX_NO_COLLECTION && isMultiValued && !(value instanceof Collection<?>))
         {
             // We are not (yet) processing a collection but the property should be part of a collection
             HibernateNodeDaoServiceImpl.addValueToPersistedProperties(
@@ -4692,7 +4869,7 @@ public class HibernateNodeDaoServiceImpl
                     localeDAO,
                     contentDataDAO);
         }
-        else if (collectionIndex == IDX_NO_COLLECTION && value instanceof Collection)
+        else if (collectionIndex == IDX_NO_COLLECTION && value instanceof Collection<?>)
         {
             // We are not (yet) processing a collection and the property is a collection i.e. needs exploding
             // Check that multi-valued properties are supported if the property is a collection
@@ -4762,7 +4939,7 @@ public class HibernateNodeDaoServiceImpl
         {
             // We are either processing collection elements OR the property is not a collection
             // Collections of collections are only supported by type d:any
-            if (value instanceof Collection && !propertyTypeQName.equals(DataTypeDefinition.ANY))
+            if (value instanceof Collection<?> && !propertyTypeQName.equals(DataTypeDefinition.ANY))
             {
                 throw new DictionaryException(
                         "Collections of collections (Serializable) are only supported by type 'd:any': \n" +
@@ -4959,7 +5136,7 @@ public class HibernateNodeDaoServiceImpl
                 // If the property is multi-valued then the output property must be a collection
                 if (currentPropertyDef != null && currentPropertyDef.isMultiValued())
                 {
-                    if (collapsedValue != null && !(collapsedValue instanceof Collection))
+                    if (collapsedValue != null && !(collapsedValue instanceof Collection<?>))
                     {
                         // Can't use Collections.singletonList: ETHREEOH-1172
                         ArrayList<Serializable> collection = new ArrayList<Serializable>(1);
@@ -5059,7 +5236,7 @@ public class HibernateNodeDaoServiceImpl
             }
         }
         // Make sure that multi-valued properties are returned as a collection
-        if (propertyDef != null && propertyDef.isMultiValued() && result != null && !(result instanceof Collection))
+        if (propertyDef != null && propertyDef.isMultiValued() && result != null && !(result instanceof Collection<?>))
         {
             // Can't use Collections.singletonList: ETHREEOH-1172
             ArrayList<Serializable> collection = new ArrayList<Serializable>(1);
@@ -5198,4 +5375,104 @@ public class HibernateNodeDaoServiceImpl
         }
         
     }
+    
+    private static class NodeInfo implements Serializable
+    {
+        private static final long serialVersionUID = -2167221525380802365L;
+        private final boolean isRoot;
+        private final boolean isStoreRoot;
+        private final Map<Long, ParentAssocInfo> parentAssocInfo;
+
+        public NodeInfo(Node node, QNameDAO qnameDAO, List<? extends Object> parents)
+        {
+            this.isRoot = hasNodeAspect(qnameDAO, node, ContentModel.ASPECT_ROOT);
+            this.isStoreRoot = node.getTypeQName(qnameDAO).equals(ContentModel.TYPE_STOREROOT);
+            this.parentAssocInfo = new HashMap<Long, ParentAssocInfo>(5);
+            for (Object parent : parents)
+            {
+                ChildAssoc parentAssoc = null;
+                if (parent instanceof ChildAssoc)
+                {
+                    parentAssoc = (ChildAssoc) parent;
+                }
+                else if (parent.getClass().isArray())
+                {
+                    parentAssoc = (ChildAssoc) Array.get(parent, 0);
+                }
+                if (parentAssoc != null)
+                {
+                    // Populate the results
+                    parentAssocInfo.put(parentAssoc.getId(), new ParentAssocInfo(parentAssoc, qnameDAO));
+                }
+            }
+        }
+
+        private NodeInfo(NodeInfo copy)
+        {
+            this.isRoot = copy.isRoot;
+            this.isStoreRoot = copy.isStoreRoot;
+            this.parentAssocInfo = new HashMap<Long, ParentAssocInfo>(copy.parentAssocInfo);
+        }
+
+        public boolean isRoot()
+        {
+            return isRoot;
+        }
+
+        public boolean isStoreRoot()
+        {
+            return isStoreRoot;
+        }
+
+        public Map<Long, ParentAssocInfo> getParentAssocs()
+        {
+            return parentAssocInfo;
+        }
+
+        public NodeInfo addAssoc(Long assocId, ChildAssoc parentAssoc, QNameDAO qnameDAO)
+        {
+            return addAssoc(assocId, new ParentAssocInfo(parentAssoc, qnameDAO));
+        }
+
+        public NodeInfo addAssoc(Long assocId, ParentAssocInfo parentAssocInfo)
+        {
+            NodeInfo copy = new NodeInfo(this);
+            copy.parentAssocInfo.put(assocId, parentAssocInfo);
+            return copy;
+        }
+
+        public NodeInfo removeAssoc(Long assocId)
+        {
+            NodeInfo copy = new NodeInfo(this);
+            copy.parentAssocInfo.remove(assocId);
+            return copy;
+        }
+
+    }
+
+    private static class ParentAssocInfo implements Serializable
+    {
+        private static final long serialVersionUID = -3888870827401574704L;
+        private final ChildAssociationRef childAssociationRef;
+        private final Long parentNodeId;
+
+        public ParentAssocInfo(ChildAssoc parentAssoc, QNameDAO qnameDAO)
+        {
+            this.childAssociationRef = parentAssoc.getChildAssocRef(qnameDAO);
+            this.parentNodeId = parentAssoc.getParent().getId();
+        }
+
+        public ChildAssociationRef getChildAssociationRef()
+        {
+            // Return a copy, as it's mutated by prependPaths
+            return new ChildAssociationRef(childAssociationRef.getTypeQName(), childAssociationRef.getParentRef(),
+                    childAssociationRef.getQName(), childAssociationRef.getChildRef(), childAssociationRef.isPrimary(),
+                    childAssociationRef.getNthSibling());
+        }
+
+        public Long getParentNodeId()
+        {
+            return parentNodeId;
+        }
+    }       
 }

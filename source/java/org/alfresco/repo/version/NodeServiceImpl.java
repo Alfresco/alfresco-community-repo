@@ -489,6 +489,13 @@ public class NodeServiceImpl implements NodeService, VersionModel
         return getChildAssocs(VersionUtil.convertNodeRef(nodeRef), RegexQNamePattern.MATCH_ALL, RegexQNamePattern.MATCH_ALL);
     }
 
+    
+    public List<ChildAssociationRef> getChildAssocs(NodeRef nodeRef, QNamePattern typeQNamePattern,
+            QNamePattern qnamePattern, boolean preload) throws InvalidNodeRefException
+    {
+        return getChildAssocs(nodeRef, typeQNamePattern, qnamePattern);
+    }
+
     /**
      * Performs conversion from version store properties to <i>real</i> associations
      */

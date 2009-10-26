@@ -134,17 +134,18 @@ var ParseArgs =
             */
          }
 
-         // Path input
-         path = url.templateArgs.path;
-         if ((path !== null) && (path !== ""))
-         {
-            parentNode = rootNode.childByNamePath(path);
-         }
-         else
-         {
-            parentNode = rootNode;
-            path = "";
-         }
+      }
+
+      // Path input
+      path = url.templateArgs.path;
+      if ((path !== null) && (path !== ""))
+      {
+         parentNode = rootNode.childByNamePath(path);
+      }
+      else
+      {
+         parentNode = rootNode;
+         path = "";
       }
 
       if (parentNode === null)
@@ -164,7 +165,7 @@ var ParseArgs =
       var qnamePaths = search.ISO9075Decode(parentNode.qnamePath).split("/"),
          displayPaths = parentNode.displayPath.split("/");
 
-      if (parentNode.isContainer)
+      if (parentNode.isContainer && type != "node")
       {
          displayPaths = displayPaths.concat([parentNode.name]);
       }

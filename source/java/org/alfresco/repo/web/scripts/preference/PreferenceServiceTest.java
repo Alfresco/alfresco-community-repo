@@ -33,6 +33,7 @@ import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.util.PropertyMap;
 import org.alfresco.web.scripts.TestWebScriptServer.GetRequest;
 import org.alfresco.web.scripts.TestWebScriptServer.PostRequest;
+import org.alfresco.web.scripts.TestWebScriptServer.DeleteRequest;
 import org.alfresco.web.scripts.TestWebScriptServer.Response;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -158,9 +159,24 @@ public class PreferenceServiceTest extends BaseWebScriptTest
         assertFalse(jsonResult.has("stringValue"));
         
         // Clear some of the preferences
+        sendRequest(new DeleteRequest(URL + "?pf=comp1"), 200);
+        
+        resp = sendRequest(new GetRequest(URL), 200);
+        jsonResult = new JSONObject(resp.getContentAsString());
+        assertNotNull(jsonResult);
+        assertTrue(jsonResult.keys().hasNext());
+        
+        checkJSONObject(jsonResult.getJSONObject("comp2"));
+        assertFalse(jsonResult.has("comp1")); 
         
         // Clear all the preferences
+        sendRequest(new DeleteRequest(URL), 200);
         
+        resp = sendRequest(new GetRequest(URL), 200);
+        jsonResult = new JSONObject(resp.getContentAsString());
+        assertNotNull(jsonResult);
+        assertFalse(jsonResult.keys().hasNext());
+
         // Test trying to update another user's permissions
         sendRequest(new PostRequest("/api/people/" + USER_BAD + "/preferences", jsonObject.toString(), "application/json"), 500);
         

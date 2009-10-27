@@ -9,6 +9,8 @@ function main()
 	   status.setCode(status.STATUS_NOT_FOUND, "The user " + userid + " could not be found");
 	   return;
 	}
+	
+	preferenceService.clearPreferences(userid, args["pf"]);
 }
 
 main();

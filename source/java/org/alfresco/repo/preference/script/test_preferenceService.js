@@ -25,14 +25,31 @@ function testPreferences()
 	
 	preferenceService.setPreferences("userOne", preferences);
 	
-	result = preferenceService.getPreferences("userOne");
-	
+	result = preferenceService.getPreferences("userOne");	
 	test.assertNotNull(result);
 	test.assertEquals("myValue", result.myValue);
 	test.assertEquals("changed", result.comp1.value1);
 	test.assertEquals(1001, result.comp1.value2);
 	test.assertEquals("value1", result.comp2.value1);
 	test.assertEquals(3.142, result.comp2.value2);
+	
+	preferenceService.clearPreferences("userOne", "comp1");
+	
+	result = preferenceService.getPreferences("userOne");	
+	test.assertNotNull(result);
+	test.assertEquals("myValue", result.myValue);
+	test.assertEquals("undefined", result.comp1);
+	test.assertEquals("value1", result.comp2.value1);
+	test.assertEquals(3.142, result.comp2.value2);
+	
+	preferenceService.clearPreferences("userOne");
+	
+	result = preferenceService.getPreferences("userOne");	
+	test.assertNotNull(result);
+	test.assertEquals("undefined", result.myValue);
+	test.assertEquals("undefined", result.comp1);
+	test.assertEquals("undefined", result.comp2);
+	
 }
 
 // Execute test's

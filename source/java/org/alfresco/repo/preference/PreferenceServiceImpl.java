@@ -132,6 +132,7 @@ public class PreferenceServiceImpl implements PreferenceService
     /**
      * @see org.alfresco.repo.person.PersonService#getPreferences(java.lang.String, java.lang.String)
      */
+    @SuppressWarnings("unchecked")
     public Map<String, Serializable> getPreferences(String userName, String preferenceFilter)
     {
         Map<String, Serializable> preferences = new HashMap<String, Serializable>(20);

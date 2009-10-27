@@ -31,7 +31,6 @@ import java.util.Map;
 import org.alfresco.repo.jscript.BaseScopableProcessorExtension;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.preference.PreferenceService;
-import org.mozilla.javascript.IdScriptableObject;
 import org.mozilla.javascript.NativeObject;
 
 /**
@@ -39,6 +38,7 @@ import org.mozilla.javascript.NativeObject;
  */
 public class ScriptPreferenceService extends BaseScopableProcessorExtension
 {
+    @SuppressWarnings("unused")
     private ServiceRegistry services;
     
     /** Preference Service */
@@ -127,6 +127,23 @@ public class ScriptPreferenceService extends BaseScopableProcessorExtension
                 values.put(key, (Serializable)value);
             }
         }
+    }
+    
+    public void clearPreferences(String userName)
+    {
+        this.preferenceService.clearPreferences(userName, null);
+    }
+    
+    
+    /**
+     * Clear the preference values
+     * 
+     * @param userName
+     * @param preferenceFilter
+     */
+    public void clearPreferences(String userName, String preferenceFilter)
+    {
+        this.preferenceService.clearPreferences(userName, preferenceFilter);
     }
     
     private String getAppendedKey(String currentKey, String key)

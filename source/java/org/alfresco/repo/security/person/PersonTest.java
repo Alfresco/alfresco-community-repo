@@ -29,6 +29,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -576,7 +577,7 @@ public class PersonTest extends BaseSpringTest
         int threadCount = 10;
         final CountDownLatch startLatch = new CountDownLatch(threadCount);
         final CountDownLatch endLatch = new CountDownLatch(threadCount);
-        final Map<String, NodeRef> cleanableNodeRefs = new HashMap<String, NodeRef>(17);
+        final Map<String, NodeRef> cleanableNodeRefs = new ConcurrentHashMap<String, NodeRef>(17);
         Runnable createPersonRunnable = new Runnable()
         {
             public void run()
@@ -642,19 +643,26 @@ public class PersonTest extends BaseSpringTest
                 return personService.getPerson(duplicateUsername);
             }
         };
-        NodeRef remainingNodeRef = transactionService.getRetryingTransactionHelper().doInTransaction(getPersonWork, false, true);
-        // Should all be cleaned up now, but no way to check
-        for (NodeRef nodeRef : cleanableNodeRefs.values())
-        {
-            if (nodeRef.equals(remainingNodeRef))
+        final NodeRef remainingNodeRef = transactionService.getRetryingTransactionHelper().doInTransaction(getPersonWork, false, true);
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Object>(){
+
+            public Object execute() throws Throwable
             {
-                // This one should still be around
-                continue;
+                // Should all be cleaned up now, but no way to check
+                for (NodeRef nodeRef : cleanableNodeRefs.values())
+                {
+                    if (nodeRef.equals(remainingNodeRef))
+                    {
+                        // This one should still be around
+                        continue;
+                    }
+                    if (nodeService.exists(nodeRef))
+                    {
+                        fail("Expected unused person noderef to have been cleaned up: " + nodeRef);
+                    }
+                }
+                return null;
             }
-            if (nodeService.exists(nodeRef))
-            {
-                fail("Expected unused person noderef to have been cleaned up: " + nodeRef);
-            }
-        }
+        }, true, true);        
     }
 }

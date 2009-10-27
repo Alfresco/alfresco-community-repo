@@ -34,6 +34,7 @@ import org.alfresco.repo.avm.ChildEntryImpl;
 import org.alfresco.repo.avm.ChildKey;
 import org.alfresco.repo.avm.DirectoryNode;
 import org.alfresco.repo.domain.avm.AVMChildEntryEntity;
+import org.springframework.dao.ConcurrencyFailureException;
 
 /**
  * iBATIS DAO wrapper for ChildEntry
@@ -147,9 +148,12 @@ class ChildEntryDAOIbatis implements ChildEntryDAO
         
         AVMNode childNode = AVMDAOs.Instance().fAVMNodeDAO.getByID(childEntryEntity.getChildId());
         
+        if (childNode == null)
+        {
+            throw new ConcurrencyFailureException("Child node (" + childEntryEntity.getParentNodeId() + ", " + childEntryEntity.getChildId() + ") no longer exists");
+        }
+        
         ChildEntry ce = new ChildEntryImpl(new ChildKey(parentNode, childEntryEntity.getName()), childNode);
-        ce.setKey(new ChildKey(parentNode, childEntryEntity.getName()));
-        ce.setChild(childNode);
         return ce;
     }
     
@@ -162,9 +166,12 @@ class ChildEntryDAOIbatis implements ChildEntryDAO
         
         DirectoryNode parentNode = (DirectoryNode)AVMDAOs.Instance().fAVMNodeDAO.getByID(childEntryEntity.getParentNodeId());
         
+        if (parentNode == null)
+        {
+            throw new ConcurrencyFailureException("Parent node (" + childEntryEntity.getParentNodeId() + ", " + childEntryEntity.getChildId() + ") no longer exists");
+        }
+        
         ChildEntry ce = new ChildEntryImpl(new ChildKey(parentNode, childEntryEntity.getName()), childNode);
-        ce.setKey(new ChildKey(parentNode, childEntryEntity.getName()));
-        ce.setChild(childNode);
         return ce;
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2008 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -39,9 +39,12 @@ import net.sf.acegisecurity.Authentication;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.avm.AVMException;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
+import org.alfresco.service.cmr.avm.AVMNotFoundException;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.avm.AVMStoreDescriptor;
 import org.alfresco.service.cmr.repository.ContentIOException;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 
 /**
@@ -50,6 +53,8 @@ import org.alfresco.service.cmr.repository.ContentIOException;
  */
 class AVMCrawler implements Runnable
 {
+    private static Log logger = LogFactory.getLog(AVMCrawler.class);
+    
     /**
      * The AVMService to use.
      */
@@ -158,7 +163,7 @@ class AVMCrawler implements Runnable
             
             if (reps.size() == 0)
             {
-                System.out.println("No AVM stores");
+                logger.warn("No AVM stores");
                 return;
             }
             
@@ -177,7 +182,7 @@ class AVMCrawler implements Runnable
             
             if (dirs.size() == 0)
             {
-                System.out.println("No dirs in root: "+repDesc.getName() + ":/");
+                logger.warn("No dirs in root: "+repDesc.getName() + ":/");
             }
             else
             {
@@ -205,20 +210,25 @@ class AVMCrawler implements Runnable
                     {
                         for (int i = 0; i < 6; i++)
                         {
+                            String path = files.get(fRandom.nextInt(files.size())).getPath();
+                            logger.info("Reading: " + path);
                             BufferedReader
                                 reader = new BufferedReader
                                 (new InputStreamReader
-                                 (fService.getFileInputStream(-1, files.get(fRandom.nextInt(files.size())).getPath())));
+                                 (fService.getFileInputStream(-1, path)));
                             fOpCount++;
                             String line = reader.readLine();
-                            System.out.println(line);
+                            if (logger.isDebugEnabled())
+                            {
+                                logger.debug(line);
+                            }
                             reader.close();
                         }
                         // Modify some files.
                         for (int i = 0; i < 2; i++)
                         {
                             String path = files.get(fRandom.nextInt(files.size())).getPath();
-                            System.out.println("Modifying: " + path);
+                            logger.info("Modifying: " + path);
                             PrintStream out = new PrintStream(fService.getFileOutputStream(path));
                             out.println("I am " + path);
                             out.close();
@@ -235,7 +245,7 @@ class AVMCrawler implements Runnable
                             {
                                 break;
                             }
-                            System.out.println("Creating File: " + name);
+                            logger.info("Creating File: " + name);
                             fService.createFile(dir.getPath(), name, 
                                 new ByteArrayInputStream(("I am " + name).getBytes()));
                             fOpCount++;
@@ -249,7 +259,7 @@ class AVMCrawler implements Runnable
                         {
                             break;
                         }
-                        System.out.println("Creating Directory: " + name);
+                        logger.info("Creating Directory: " + name);
                         fService.createDirectory(dir.getPath(), name);
                         fOpCount++;
                     }
@@ -260,7 +270,7 @@ class AVMCrawler implements Runnable
                         {
                             List<String> names = new ArrayList<String>(listing.keySet());
                             String name = names.get(fRandom.nextInt(names.size()));
-                            System.out.println("Removing: " + name);
+                            logger.info("Removing: " + name);
                             fService.removeNode(dir.getPath(), 
                                                 name);
                             fOpCount++;
@@ -280,13 +290,18 @@ class AVMCrawler implements Runnable
             
             if (fRandom.nextInt(16) == 0)
             {
-                System.out.println("Snapshotting: " + repDesc.getName());
+                logger.info("Snapshotting: " + repDesc.getName());
                 fService.createSnapshot(repDesc.getName(), null, null);
                 fOpCount++;
             }
         }
         catch (Exception e)
         {
+            if (e instanceof AVMNotFoundException)
+            {
+                logger.info(e.getMessage());
+                return;
+            }
             e.printStackTrace(System.err);
             if (e instanceof AVMException)
             {
@@ -320,5 +335,3 @@ class AVMCrawler implements Runnable
         return fOpCount;
     }
 }
-
-                

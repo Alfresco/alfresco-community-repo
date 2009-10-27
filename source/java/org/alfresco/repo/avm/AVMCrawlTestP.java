@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2008 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -54,6 +54,16 @@ public class AVMCrawlTestP extends AVMServiceTestBase
                   2,
                   30000); // 30 secs
     }
+    
+    /*
+    public void xtestCrawlC()
+    {
+        testCrawl(10,
+                  "source/java/org/alfresco/repo/avm", // relative from .../repository
+                  2,
+                  60000); // 1 min
+    }
+    */
     
     /*
     public void xtestCrawlZ()

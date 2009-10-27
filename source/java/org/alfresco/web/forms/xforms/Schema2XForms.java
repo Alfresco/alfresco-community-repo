@@ -1301,7 +1301,7 @@ public class Schema2XForms implements Serializable
                       " occurs " + occurs);
 
          // create the <xforms:bind> element and add it to the model.
-         boolean isRepeated = occurs.isRepeated() || (occurs.isOptional() && (controlType instanceof XSSimpleTypeDefinition == false));
+         boolean isRepeated = isRepeated(occurs, controlType);
          final Element bindElement = 
             this.createBind(xformsDocument, 
                             pathToRoot + (isRepeated ? "[position() != last()]" : ""));
@@ -1734,7 +1734,7 @@ public class Schema2XForms implements Serializable
                    " default instance element for " + elementName +
                    " at path " + path);
       // update the default instance
-      if (occurs.isRepeated() || (occurs.isOptional() && (element.getTypeDefinition() instanceof XSSimpleTypeDefinition == false)))
+      if (isRepeated(occurs, element.getTypeDefinition()))
       {
          LOGGER.debug("adding " + (occurs.minimum + 1) +
                       " default instance elements for " + elementName +
@@ -1777,7 +1777,7 @@ public class Schema2XForms implements Serializable
    {
 
       // add xforms:repeat section if this element re-occurs
-      if ((o.isOptional() && controlType instanceof XSSimpleTypeDefinition) ||
+      if ((o.isOptional() && (controlType instanceof XSSimpleTypeDefinition || "anyType".equals(controlType.getName()))) ||
           (o.maximum == 1 && o.minimum == 1))
       {
          return formSection;
@@ -1874,7 +1874,7 @@ public class Schema2XForms implements Serializable
       }
 
       // create the <xforms:bind> element and add it to the model.
-      boolean isRepeated = occurs.isRepeated() || (occurs.isOptional() && (controlType instanceof XSSimpleTypeDefinition == false));
+      boolean isRepeated = isRepeated(occurs, controlType);
       Element bindElement = 
          this.createBind(xformsDocument, pathToRoot + (isRepeated ? "[position() != last()]" : ""));
       String bindId = bindElement.getAttributeNS(null, "id");
@@ -3233,5 +3233,30 @@ public class Schema2XForms implements Serializable
                             nodeset);
       LOGGER.debug("created bind " + id + " for nodeset " + nodeset);
       return result;
+   }
+   
+   private boolean isRepeated(SchemaUtil.Occurrence occurs, XSTypeDefinition type)
+   {
+      // return immediately if occurs signifies repeat
+      if (occurs.isRepeated())
+      {
+         return true;
+      }
+      
+      boolean repeated = false;
+      
+      if (occurs.isOptional())
+      {
+         // if element is optional check the type, for
+         // simple and 'any' types return false
+             
+         if ((type instanceof XSSimpleTypeDefinition == false) && 
+             ("anyType".equals(type.getName()) == false))
+         {
+             repeated = true;
+         }
+      }
+      
+      return repeated;
    }
 }

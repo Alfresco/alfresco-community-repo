@@ -24,11 +24,60 @@ script:
         break script;
     }
 
-    // create node
-    var node = createNode(model.parent, entry, slug);
-    if (node == null)
+    // is this a create or move? 
+    var object = entry.getExtension(atom.names.cmisra_object);
+    var objectIdProp = (object !== null) ? object.objectId : null;
+    var objectId = (objectIdProp !== null) ? objectIdProp.nativeValue : null;
+    var node = null;
+
+    if (objectId == null)
     {
-        break script;
+        // create node
+        node = createNode(model.parent, entry, slug);
+        if (node == null)
+        {
+            break script;
+        }
+    }
+    else
+    {
+        // move node
+        var sourceFolderId = args[cmis.ARG_SOURCE_FOLDER_ID];
+        if (sourceFolderId == null)
+        {
+            status.code = 400;
+            status.message = "Move of object " + objectId + " requires sourceFolderId argument";
+            status.redirect = true;
+            break script;
+        }
+        
+        // locate node and its source folder
+        node = search.findNode(objectId);
+        if (node == null)
+        {
+            status.code = 400;
+            status.message = "Object " + objectId + " does not exist";
+            status.redirect = true;
+            break script;
+        }
+        sourceFolder = search.findNode(sourceFolderId);
+        if (sourceFolder == null || !(sourceFolder.nodeRef.equals(node.parent.nodeRef)))
+        {
+            status.code = 400;
+            status.message = "Source Folder " + sourceFolderId + " is not valid for object " + objectId;
+            status.redirect = true;
+            break script;
+        }
+
+        // perform move
+        var success = node.move(model.parent);
+        if (!success)
+        {
+            status.code = 500;
+            status.message = "Failed to move object " + objectId + " from folder " + sourceFolderId + " to folder " + model.parent.nodeRef;
+            status.redirect = true;
+            break script;
+        }
     }
     
     // success

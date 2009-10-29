@@ -96,6 +96,8 @@ public class CMISScript extends BaseScopableProcessorExtension
     public static final String ARG_TYPES = "types";
     public static final String ARG_UNFILE_MULTIFILE_DOCUMENTS = "unfileMultiFiledDocuments";
     public static final String ARG_VERSIONING_STATE = "versioningState";
+    public static final String ARG_SOURCE_FOLDER_ID = "sourceFolderId";
+    
 
     // service dependencies
     private ServiceRegistry services;

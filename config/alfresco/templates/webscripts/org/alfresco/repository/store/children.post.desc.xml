@@ -39,10 +39,10 @@ ID objectId: Id of the created folder object<br>
 Notes:<br>
 If the to-be-created Folder’s Object Type is not one of the “Allowed_Child_Object_Types” for the parent Folder, throw ConstraintViolationException.<br>
 Root folder can not be created using this service.<br>
-]]>  
+]]>
   </description>
-  <url>/api/node/{store_type}/{store_id}/{id}/children</url>
-  <url>/api/path/{store_type}/{store_id}/{id}/children</url>
+  <url>/api/node/{store_type}/{store_id}/{id}/children?sourceFolderId={sourceFolderId}</url>
+  <url>/api/path/{store_type}/{store_id}/{id}/children?sourceFolderId={sourceFolderId}</url>
   <authentication>user</authentication>
   <format default="atomentry"/>
   <family>CMIS</family>

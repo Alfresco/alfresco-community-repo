@@ -7,25 +7,25 @@
         <property name="cmisQueryService">
             <ref bean="CMISQueryService" />
         </property>
-	    <property name="factories">
-			<list>
-			    <ref bean="admLuceneIndexerAndSearcherFactory" />	
-				<ref bean="admLuceneUnIndexedIndexerAndSearcherFactory" />	
-				<ref bean="avmLuceneIndexerAndSearcherFactory" />	
-			</list>
+        <property name="factories">
+            <list>
+                <ref bean="admLuceneIndexerAndSearcherFactory" />
+                <ref bean="admLuceneUnIndexedIndexerAndSearcherFactory" />
+                <ref bean="avmLuceneIndexerAndSearcherFactory" />
+            </list>
         </property>
     </bean>
-	
-	<bean id="lucene.sql.alfresco" class="org.alfresco.repo.search.impl.lucene.LuceneAlfrescoSqlQueryLanguage" >
+
+    <bean id="lucene.sql.alfresco" class="org.alfresco.repo.search.impl.lucene.LuceneAlfrescoSqlQueryLanguage">
         <property name="cmisQueryService">
             <ref bean="CMISQueryService" />
         </property>
-	    <property name="factories">
-			<list>
-			    <ref bean="admLuceneIndexerAndSearcherFactory" />	
-				<ref bean="admLuceneUnIndexedIndexerAndSearcherFactory" />	
-				<ref bean="avmLuceneIndexerAndSearcherFactory" />	
-			</list>
+        <property name="factories">
+            <list>
+                <ref bean="admLuceneIndexerAndSearcherFactory" />
+                <ref bean="admLuceneUnIndexedIndexerAndSearcherFactory" />
+                <ref bean="avmLuceneIndexerAndSearcherFactory" />
+            </list>
         </property>
     </bean>
 	
@@ -39,7 +39,7 @@
     </bean>
 
     <bean id="CMISService" class="org.alfresco.cmis.mapping.CMISServicesImpl">
-        <property name="CMISSpecVersion"><value>0.62</value></property>
+        <property name="CMISSpecVersion"><value>0.7</value></property>
         <property name="defaultRootPath"><value>workspace/SpacesStore/Company Home</value></property>
         <property name="dictionaryService" ref="dictionaryService" />
         <property name="CMISDictionaryService" ref="CMISDictionaryService" />
@@ -86,7 +86,7 @@
         <property name="nodeService">
             <ref bean="nodeService" />
         </property>
-		<property name="alfrescoDictionaryService">
+        <property name="alfrescoDictionaryService">
             <ref bean="dictionaryService" />
         </property>
     </bean>

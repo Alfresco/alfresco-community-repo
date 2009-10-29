@@ -39,7 +39,7 @@ public class DMRelationshipServiceTest extends AbstractServiceTest
     @SuppressWarnings("unused")
     private String relationshipId;
     private String document2Id;
-    
+
     public DMRelationshipServiceTest()
     {
         super();
@@ -102,20 +102,20 @@ public class DMRelationshipServiceTest extends AbstractServiceTest
     public void testGetRelationships() throws Exception
     {
         // TODO: uncomment
-//        GetRelationships request = cmisObjectFactory.createGetRelationships();
-//        request.setRepositoryId(repositoryId);
-//        request.setObjectId(documentId);
-//        request.setFilter(cmisObjectFactory.createGetRelationshipsFilter("*"));
-//        request.setTypeId(cmisObjectFactory.createGetRelationshipsTypeId(CMISMapping.RELATIONSHIP_TYPE_ID.getTypeId()));
-//        request.setIncludeAllowableActions(cmisObjectFactory.createGetRelationshipsIncludeAllowableActions(true));
-//        request.setIncludeSubRelationshipTypes(cmisObjectFactory.createGetRelationshipsIncludeSubRelationshipTypes(true));
-//        request.setMaxItems(cmisObjectFactory.createGetRelationshipsMaxItems(BigInteger.valueOf(0)));
-//        request.setSkipCount(cmisObjectFactory.createGetRelationshipsSkipCount(BigInteger.valueOf(0)));
-//        request.setDirection(cmisObjectFactory.createGetRelationshipsDirection(EnumRelationshipDirection.SOURCE));
-//
-//        // public GetRelationshipsResponse getRelationships(GetRelationships parameters)
-//        GetRelationshipsResponse responce = ((RelationshipServicePort) servicePort).getRelationships(request);
-//        assertNotNull(responce.getObject());
+        // GetRelationships request = cmisObjectFactory.createGetRelationships();
+        // request.setRepositoryId(repositoryId);
+        // request.setObjectId(documentId);
+        // request.setFilter(cmisObjectFactory.createGetRelationshipsFilter("*"));
+        // request.setTypeId(cmisObjectFactory.createGetRelationshipsTypeId(CMISMapping.RELATIONSHIP_TYPE_ID.getTypeId()));
+        // request.setIncludeAllowableActions(cmisObjectFactory.createGetRelationshipsIncludeAllowableActions(true));
+        // request.setIncludeSubRelationshipTypes(cmisObjectFactory.createGetRelationshipsIncludeSubRelationshipTypes(true));
+        // request.setMaxItems(cmisObjectFactory.createGetRelationshipsMaxItems(BigInteger.valueOf(0)));
+        // request.setSkipCount(cmisObjectFactory.createGetRelationshipsSkipCount(BigInteger.valueOf(0)));
+        // request.setDirection(cmisObjectFactory.createGetRelationshipsDirection(EnumRelationshipDirection.SOURCE));
+        //
+        // // public GetRelationshipsResponse getRelationships(GetRelationships parameters)
+        // GetRelationshipsResponse responce = ((RelationshipServicePort) servicePort).getRelationships(request);
+        // assertNotNull(responce.getObject());
     }
 
     public void testGetRelationshipObjectProperties() throws Exception
@@ -136,4 +136,3 @@ public class DMRelationshipServiceTest extends AbstractServiceTest
         // CMISMapping.PROP_OBJECT_ID)));
     }
 }
-

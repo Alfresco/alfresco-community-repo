@@ -79,9 +79,9 @@ public class DMMultiFilingServiceTest extends AbstractServiceTest
     {
         ((MultiFilingServicePort) servicePort).addObjectToFolder(repositoryId, documentId, anotherFolderId);
         boolean found = false;
-        for (CmisObjectType cmisObjectType : helper.getChildren(anotherFolderId, EnumTypesOfFileableObjects.DOCUMENTS, 0, CMISDictionaryModel.PROP_OBJECT_ID).getObject())
+        for (CmisObjectType cmisObjectType : helper.getChildren(anotherFolderId, 0, CMISDictionaryModel.PROP_OBJECT_ID))
         {
-            if ((found = propertiesUtil.getCmisPropertyValue(cmisObjectType.getProperties(), CMISDictionaryModel.PROP_OBJECT_ID, null).equals(documentId)))
+            if ((found = documentId.equals(getIdProperty(cmisObjectType.getProperties(), CMISDictionaryModel.PROP_OBJECT_ID))))
             {
                 break;
             }

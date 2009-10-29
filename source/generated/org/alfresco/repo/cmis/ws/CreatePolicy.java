@@ -21,7 +21,6 @@ import javax.xml.bind.annotation.XmlType;
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
  *         &lt;element name="repositoryId" type="{http://www.w3.org/2001/XMLSchema}string"/>
- *         &lt;element name="typeId" type="{http://www.w3.org/2001/XMLSchema}string"/>
  *         &lt;element name="properties" type="{http://docs.oasis-open.org/ns/cmis/core/200901}cmisPropertiesType"/>
  *         &lt;element name="folderId" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
  *       &lt;/sequence>
@@ -35,7 +34,6 @@ import javax.xml.bind.annotation.XmlType;
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "", propOrder = {
     "repositoryId",
-    "typeId",
     "properties",
     "folderId"
 })
@@ -44,8 +42,6 @@ public class CreatePolicy {
 
     @XmlElement(required = true)
     protected String repositoryId;
-    @XmlElement(required = true)
-    protected String typeId;
     @XmlElement(required = true)
     protected CmisPropertiesType properties;
     @XmlElementRef(name = "folderId", namespace = "http://docs.oasis-open.org/ns/cmis/messaging/200901", type = JAXBElement.class)
@@ -73,30 +69,6 @@ public class CreatePolicy {
      */
     public void setRepositoryId(String value) {
         this.repositoryId = value;
-    }
-
-    /**
-     * Gets the value of the typeId property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getTypeId() {
-        return typeId;
-    }
-
-    /**
-     * Sets the value of the typeId property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setTypeId(String value) {
-        this.typeId = value;
     }
 
     /**

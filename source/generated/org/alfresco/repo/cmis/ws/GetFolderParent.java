@@ -1,11 +1,9 @@
 
 package org.alfresco.repo.cmis.ws;
 
-import javax.xml.bind.JAXBElement;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlElementRef;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
@@ -23,9 +21,6 @@ import javax.xml.bind.annotation.XmlType;
  *         &lt;element name="repositoryId" type="{http://www.w3.org/2001/XMLSchema}string"/>
  *         &lt;element name="folderId" type="{http://www.w3.org/2001/XMLSchema}string"/>
  *         &lt;element name="filter" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
- *         &lt;element name="includeAllowableActions" type="{http://www.w3.org/2001/XMLSchema}boolean" minOccurs="0"/>
- *         &lt;element name="includeRelationships" type="{http://docs.oasis-open.org/ns/cmis/core/200901}enumIncludeRelationships" minOccurs="0"/>
- *         &lt;element name="returnToRoot" type="{http://www.w3.org/2001/XMLSchema}boolean" minOccurs="0"/>
  *       &lt;/sequence>
  *     &lt;/restriction>
  *   &lt;/complexContent>
@@ -38,10 +33,7 @@ import javax.xml.bind.annotation.XmlType;
 @XmlType(name = "", propOrder = {
     "repositoryId",
     "folderId",
-    "filter",
-    "includeAllowableActions",
-    "includeRelationships",
-    "returnToRoot"
+    "filter"
 })
 @XmlRootElement(name = "getFolderParent")
 public class GetFolderParent {
@@ -51,12 +43,6 @@ public class GetFolderParent {
     @XmlElement(required = true)
     protected String folderId;
     protected String filter;
-    @XmlElementRef(name = "includeAllowableActions", namespace = "http://docs.oasis-open.org/ns/cmis/messaging/200901", type = JAXBElement.class)
-    protected JAXBElement<Boolean> includeAllowableActions;
-    @XmlElementRef(name = "includeRelationships", namespace = "http://docs.oasis-open.org/ns/cmis/messaging/200901", type = JAXBElement.class)
-    protected JAXBElement<EnumIncludeRelationships> includeRelationships;
-    @XmlElementRef(name = "returnToRoot", namespace = "http://docs.oasis-open.org/ns/cmis/messaging/200901", type = JAXBElement.class)
-    protected JAXBElement<Boolean> returnToRoot;
 
     /**
      * Gets the value of the repositoryId property.
@@ -128,78 +114,6 @@ public class GetFolderParent {
      */
     public void setFilter(String value) {
         this.filter = value;
-    }
-
-    /**
-     * Gets the value of the includeAllowableActions property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link JAXBElement }{@code <}{@link Boolean }{@code >}
-     *     
-     */
-    public JAXBElement<Boolean> getIncludeAllowableActions() {
-        return includeAllowableActions;
-    }
-
-    /**
-     * Sets the value of the includeAllowableActions property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link JAXBElement }{@code <}{@link Boolean }{@code >}
-     *     
-     */
-    public void setIncludeAllowableActions(JAXBElement<Boolean> value) {
-        this.includeAllowableActions = ((JAXBElement<Boolean> ) value);
-    }
-
-    /**
-     * Gets the value of the includeRelationships property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link JAXBElement }{@code <}{@link EnumIncludeRelationships }{@code >}
-     *     
-     */
-    public JAXBElement<EnumIncludeRelationships> getIncludeRelationships() {
-        return includeRelationships;
-    }
-
-    /**
-     * Sets the value of the includeRelationships property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link JAXBElement }{@code <}{@link EnumIncludeRelationships }{@code >}
-     *     
-     */
-    public void setIncludeRelationships(JAXBElement<EnumIncludeRelationships> value) {
-        this.includeRelationships = ((JAXBElement<EnumIncludeRelationships> ) value);
-    }
-
-    /**
-     * Gets the value of the returnToRoot property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link JAXBElement }{@code <}{@link Boolean }{@code >}
-     *     
-     */
-    public JAXBElement<Boolean> getReturnToRoot() {
-        return returnToRoot;
-    }
-
-    /**
-     * Sets the value of the returnToRoot property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link JAXBElement }{@code <}{@link Boolean }{@code >}
-     *     
-     */
-    public void setReturnToRoot(JAXBElement<Boolean> value) {
-        this.returnToRoot = ((JAXBElement<Boolean> ) value);
     }
 
 }

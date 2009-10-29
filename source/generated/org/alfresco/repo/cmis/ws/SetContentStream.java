@@ -23,7 +23,8 @@ import javax.xml.bind.annotation.XmlType;
  *         &lt;element name="repositoryId" type="{http://www.w3.org/2001/XMLSchema}string"/>
  *         &lt;element name="documentId" type="{http://www.w3.org/2001/XMLSchema}string"/>
  *         &lt;element name="overwriteFlag" type="{http://www.w3.org/2001/XMLSchema}boolean" minOccurs="0"/>
- *         &lt;element name="contentStream" type="{http://docs.oasis-open.org/ns/cmis/core/200901}cmisContentStreamType"/>
+ *         &lt;element name="changeToken" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
+ *         &lt;element name="contentStream" type="{http://docs.oasis-open.org/ns/cmis/messaging/200901}cmisContentStreamType"/>
  *       &lt;/sequence>
  *     &lt;/restriction>
  *   &lt;/complexContent>
@@ -37,6 +38,7 @@ import javax.xml.bind.annotation.XmlType;
     "repositoryId",
     "documentId",
     "overwriteFlag",
+    "changeToken",
     "contentStream"
 })
 @XmlRootElement(name = "setContentStream")
@@ -48,6 +50,7 @@ public class SetContentStream {
     protected String documentId;
     @XmlElementRef(name = "overwriteFlag", namespace = "http://docs.oasis-open.org/ns/cmis/messaging/200901", type = JAXBElement.class)
     protected JAXBElement<Boolean> overwriteFlag;
+    protected String changeToken;
     @XmlElement(required = true)
     protected CmisContentStreamType contentStream;
 
@@ -121,6 +124,30 @@ public class SetContentStream {
      */
     public void setOverwriteFlag(JAXBElement<Boolean> value) {
         this.overwriteFlag = ((JAXBElement<Boolean> ) value);
+    }
+
+    /**
+     * Gets the value of the changeToken property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getChangeToken() {
+        return changeToken;
+    }
+
+    /**
+     * Sets the value of the changeToken property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setChangeToken(String value) {
+        this.changeToken = value;
     }
 
     /**

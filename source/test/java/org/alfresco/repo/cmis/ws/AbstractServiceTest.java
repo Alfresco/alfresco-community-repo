@@ -29,14 +29,11 @@ import java.util.List;
 import junit.framework.TestCase;
 
 import org.alfresco.cmis.CMISDictionaryModel;
-import org.alfresco.repo.cmis.ws.utils.PropertyUtil;
 
 /**
  * @author Michael Shavnev
  * @author Alexander Tsvetkov
- * 
  */
-
 public abstract class AbstractServiceTest extends TestCase
 {
     // protected ServiceRegistry serviceRegistry;
@@ -53,7 +50,6 @@ public abstract class AbstractServiceTest extends TestCase
 
     protected Object servicePort = null;
     protected CmisServiceTestHelper helper;
-    protected PropertyUtil propertiesUtil = new PropertyUtil();
 
     private static boolean testAsUser = false;
 
@@ -103,15 +99,14 @@ public abstract class AbstractServiceTest extends TestCase
 
     }
 
-    public String getObjectName(GetPropertiesResponse response)
+    public String getObjectName(CmisObjectType response)
     {
         String property = null;
 
-        if (response != null && response.getObject() != null)
+        if (response != null)
         {
-            CmisObjectType object = response.getObject();
-            CmisPropertiesType properties = object.getProperties();
-            property = (String) propertiesUtil.getCmisPropertyValue(properties, CMISDictionaryModel.PROP_NAME, null);
+            CmisPropertiesType properties = response.getProperties();
+            property = getStringProperty(properties, CMISDictionaryModel.PROP_NAME);
         }
         else
         {
@@ -120,44 +115,78 @@ public abstract class AbstractServiceTest extends TestCase
         return property;
     }
 
-    public String getPropertyValue(GetPropertiesResponse response, String propertyName)
+    protected String getIdProperty(CmisPropertiesType properties, String propertyName)
     {
-        String property = null;
-
-        if (response != null && response.getObject() != null)
+        if (null == propertyName)
         {
-            CmisObjectType object = response.getObject();
-            CmisPropertiesType properties = object.getProperties();
-            if (propertiesUtil.getCmisPropertyValue(properties, propertyName, null) != null)
+            return null;
+        }
+
+        for (CmisProperty property : properties.getProperty())
+        {
+            if ((property instanceof CmisPropertyId) && propertyName.equals(getPropertyName(property)))
             {
-                property = (String) propertiesUtil.getCmisPropertyValue(properties, propertyName, null);
+                return ((CmisPropertyId) property).getValue().iterator().next();
             }
         }
-        else
-        {
-            fail("Response has no results.");
-        }
-        return property;
+
+        return null;
     }
 
-    public Boolean getPropertyBooleanValue(GetPropertiesResponse response, String propertyName)
+    protected String getStringProperty(CmisPropertiesType properties, String propertyName)
     {
-        Boolean property = null;
-
-        if (response != null && response.getObject() != null)
+        if (null == propertyName)
         {
-            CmisObjectType object = response.getObject();
-            CmisPropertiesType properties = object.getProperties();
-            if (propertiesUtil.getCmisPropertyValue(properties, propertyName, null) != null)
+            return null;
+        }
+
+        for (CmisProperty property : properties.getProperty())
+        {
+            if ((property instanceof CmisPropertyString) && propertyName.equals(getPropertyName(property)))
             {
-                property = (Boolean) propertiesUtil.getCmisPropertyValue(properties, propertyName, null);
+                return ((CmisPropertyString) property).getValue().iterator().next();
             }
         }
-        else
+
+        return null;
+    }
+
+    protected Boolean getBooleanProperty(CmisPropertiesType properties, String propertyName)
+    {
+        if (null == propertyName)
         {
-            fail("Response has no results.");
+            return null;
         }
-        return property;
+
+        for (CmisProperty property : properties.getProperty())
+        {
+            if ((property instanceof CmisPropertyBoolean) && propertyName.equals(getPropertyName(property)))
+            {
+                return ((CmisPropertyBoolean) property).getValue().iterator().next();
+            }
+        }
+
+        return null;
+    }
+
+    private String getPropertyName(CmisProperty property)
+    {
+        String propertyName = (null != property) ? (property.getPdid()) : (null);
+        if (null == propertyName)
+        {
+            propertyName = property.getLocalname();
+            if (null == propertyName)
+            {
+                propertyName = property.getDisplayname();
+            }
+        }
+        return propertyName;
+    }
+
+    protected void assertObjectPropertiesNotNull(CmisObjectType propertiesObject)
+    {
+        assertNotNull(propertiesObject);
+        assertNotNull(propertiesObject.getProperties());
     }
 
     public String getObjectId(GetPropertiesResponse response)
@@ -168,7 +197,7 @@ public abstract class AbstractServiceTest extends TestCase
         {
             CmisObjectType object = response.getObject();
             CmisPropertiesType properties = object.getProperties();
-            property = (String) propertiesUtil.getCmisPropertyValue(properties, CMISDictionaryModel.PROP_OBJECT_ID, null);
+            property = getIdProperty(properties, CMISDictionaryModel.PROP_OBJECT_ID);
         }
         else
         {
@@ -182,7 +211,8 @@ public abstract class AbstractServiceTest extends TestCase
         for (CmisObjectType object : objects)
         {
             CmisPropertiesType properties = object.getProperties();
-            String name = (String) propertiesUtil.getCmisPropertyValue(properties, CMISDictionaryModel.PROP_NAME, null);
+            String name = null;
+            name = getStringProperty(properties, CMISDictionaryModel.PROP_NAME);
             assertNotNull(name);
         }
 
@@ -194,7 +224,8 @@ public abstract class AbstractServiceTest extends TestCase
         for (CmisObjectType object : objects)
         {
             CmisPropertiesType properties = object.getProperties();
-            String property = (String) propertiesUtil.getCmisPropertyValue(properties, propertyName, null);
+            String property = null;
+            property = getStringProperty(properties, propertyName);
             if (property.equals(propertyValue))
             {
                 isFound = true;

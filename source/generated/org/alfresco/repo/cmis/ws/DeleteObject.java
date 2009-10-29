@@ -1,9 +1,11 @@
 
 package org.alfresco.repo.cmis.ws;
 
+import javax.xml.bind.JAXBElement;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlElementRef;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
@@ -20,6 +22,7 @@ import javax.xml.bind.annotation.XmlType;
  *       &lt;sequence>
  *         &lt;element name="repositoryId" type="{http://www.w3.org/2001/XMLSchema}string"/>
  *         &lt;element name="objectId" type="{http://www.w3.org/2001/XMLSchema}string"/>
+ *         &lt;element name="allVersions" type="{http://www.w3.org/2001/XMLSchema}boolean" minOccurs="0"/>
  *       &lt;/sequence>
  *     &lt;/restriction>
  *   &lt;/complexContent>
@@ -31,7 +34,8 @@ import javax.xml.bind.annotation.XmlType;
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "", propOrder = {
     "repositoryId",
-    "objectId"
+    "objectId",
+    "allVersions"
 })
 @XmlRootElement(name = "deleteObject")
 public class DeleteObject {
@@ -40,6 +44,8 @@ public class DeleteObject {
     protected String repositoryId;
     @XmlElement(required = true)
     protected String objectId;
+    @XmlElementRef(name = "allVersions", namespace = "http://docs.oasis-open.org/ns/cmis/messaging/200901", type = JAXBElement.class)
+    protected JAXBElement<Boolean> allVersions;
 
     /**
      * Gets the value of the repositoryId property.
@@ -87,6 +93,30 @@ public class DeleteObject {
      */
     public void setObjectId(String value) {
         this.objectId = value;
+    }
+
+    /**
+     * Gets the value of the allVersions property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link JAXBElement }{@code <}{@link Boolean }{@code >}
+     *     
+     */
+    public JAXBElement<Boolean> getAllVersions() {
+        return allVersions;
+    }
+
+    /**
+     * Sets the value of the allVersions property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link JAXBElement }{@code <}{@link Boolean }{@code >}
+     *     
+     */
+    public void setAllVersions(JAXBElement<Boolean> value) {
+        this.allVersions = ((JAXBElement<Boolean> ) value);
     }
 
 }

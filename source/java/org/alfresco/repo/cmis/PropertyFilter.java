@@ -44,7 +44,7 @@ public class PropertyFilter
 
     private static final int MINIMAL_ALLOWED_STRUCTURE_SIZE = 1;
     private static final String MATCH_ALL_FILTER = "*";
-    private static final Pattern PROPERTY_FILTER_REGEX = Pattern.compile("^(\\*)|([\\p{Alpha}\\p{Digit}_]+((,){1}( )*[\\p{Alpha}\\p{Digit}_]+)*)$");
+    private static final Pattern PROPERTY_FILTER_REGEX = Pattern.compile("^(\\*)|(((cmis\\:)?[\\p{Alpha}\\p{Digit}_]+)((,){1}( )*((cmis\\:)?[\\p{Alpha}\\p{Digit}_]+))*)$");
 
     private Set<String> properties;
 

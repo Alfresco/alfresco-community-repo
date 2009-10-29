@@ -25,7 +25,10 @@
 package org.alfresco.repo.cmis.ws;
 
 import java.math.BigInteger;
+import java.util.LinkedList;
 import java.util.List;
+
+import javax.xml.ws.Holder;
 
 import org.alfresco.cmis.CMISScope;
 import org.alfresco.cmis.CMISTypeDefinition;
@@ -62,48 +65,60 @@ public class DMRelationshipServicePort extends DMAbstractServicePort implements 
      * @return collection of CmisObjectType and boolean hasMoreItems
      * @throws CmisException (with following {@link EnumServiceException} : INVALID_ARGUMENT, OBJECT_NOT_FOUND, NOT_SUPPORTED, PERMISSION_DENIED, RUNTIME, FILTER_NOT_VALID)
      */
-    public GetRelationshipsResponse getRelationships(GetRelationships parameters) throws CmisException
+    public void getRelationships(String repositoryId, String objectId, EnumRelationshipDirection direction, String typeId, Boolean includeSubRelationshipTypes, String filter,
+            Boolean includeAllowableActions, EnumIncludeRelationships includeRelationships, BigInteger maxItems, BigInteger skipCount, Holder<List<CmisObjectType>> object,
+            Holder<Boolean> hasMoreItems) throws CmisException
     {
-        checkRepositoryId(parameters.getRepositoryId());
+        checkRepositoryId(repositoryId);
 
-        EnumRelationshipDirection direction = ((parameters.getDirection() != null) && (parameters.getDirection().getValue() != null)) ? parameters.getDirection().getValue()
-                : EnumRelationshipDirection.SOURCE;
-        Boolean includingSubtypes = ((parameters.getIncludeSubRelationshipTypes() != null) && (parameters.getIncludeSubRelationshipTypes().getValue() != null)) ? parameters
-                .getIncludeSubRelationshipTypes().getValue() : false;
-        String typeId = ((parameters.getTypeId() != null) && (parameters.getTypeId().getValue() != null)) ? parameters.getTypeId().getValue() : null;
-        BigInteger skipCount = ((parameters.getSkipCount() != null) && (parameters.getSkipCount().getValue() != null)) ? parameters.getSkipCount().getValue() : BigInteger.ZERO;
-        BigInteger maxItems = ((parameters.getMaxItems() != null) && (parameters.getMaxItems().getValue() != null)) ? parameters.getMaxItems().getValue() : BigInteger.ZERO;
+        direction = (null != direction) ? direction : EnumRelationshipDirection.SOURCE;
+        if (null == includeSubRelationshipTypes)
+        {
+            throw cmisObjectsUtils.createCmisException("includeSubRelationshipTypes input parameter is required", EnumServiceException.INVALID_ARGUMENT);
+        }
+        skipCount = (null != skipCount) ? skipCount : BigInteger.ZERO;
+        maxItems = (null != maxItems) ? maxItems : BigInteger.ZERO;
 
         QName associationType = null;
-        if ((parameters.getTypeId() != null) && (parameters.getTypeId().getValue() != null) && !parameters.getTypeId().getValue().equals(""))
+        if ((null != typeId) && !typeId.equals(""))
         {
             CMISTypeDefinition cmisTypeDef = cmisDictionaryService.findType(typeId);
             associationType = cmisTypeDef.getTypeId().getQName();
         }
 
         // TODO: process 'includeAllowableActions' param, see DMObjectServicePort->determineObjectAllowableActions
-        PropertyFilter propertyFilter = createPropertyFilter(parameters.getFilter());
-        NodeRef objectNodeRef = cmisObjectsUtils.getIdentifierInstance(parameters.getObjectId(), AlfrescoObjectType.DOCUMENT_OR_FOLDER_OBJECT);
+        PropertyFilter propertyFilter = createPropertyFilter(filter);
+        NodeRef objectNodeRef = cmisObjectsUtils.getIdentifierInstance(objectId, AlfrescoObjectType.DOCUMENT_OR_FOLDER_OBJECT);
         List<AssociationRef> assocs = null;
         try
         {
-            assocs = cmisObjectsUtils.receiveAssociations(objectNodeRef, new RelationshipTypeFilter(associationType, includingSubtypes), direction);
+            assocs = cmisObjectsUtils.receiveAssociations(objectNodeRef, new RelationshipTypeFilter(associationType, includeSubRelationshipTypes), direction);
         }
         catch (Exception e)
         {
             throw cmisObjectsUtils.createCmisException("Can't receive associations", e);
         }
-        return formatResponse(propertyFilter, assocs.toArray(), new GetRelationshipsResponse(), skipCount, maxItems);
+        if (null == object)
+        {
+            object = new Holder<List<CmisObjectType>>();
+        }
+        object.value = formatResponse(propertyFilter, assocs.toArray(), skipCount, maxItems, hasMoreItems);
     }
 
-    private GetRelationshipsResponse formatResponse(PropertyFilter filter, Object[] sourceArray, GetRelationshipsResponse result, BigInteger skipCount, BigInteger maxItems)
+    private List<CmisObjectType> formatResponse(PropertyFilter filter, Object[] sourceArray, BigInteger skipCount, BigInteger maxItems, Holder<Boolean> hasMoreItems)
             throws CmisException
     {
         Cursor cursor = createCursor(sourceArray.length, skipCount, maxItems);
+        List<CmisObjectType> result = new LinkedList<CmisObjectType>();
         for (int i = cursor.getStartRow(); i < cursor.getEndRow(); i++)
         {
-            result.getObject().add(createCmisObject(sourceArray[i].toString(), filter));
+            result.add(createCmisObject(sourceArray[i].toString(), filter));
         }
+        if (null == hasMoreItems)
+        {
+            hasMoreItems = new Holder<Boolean>();
+        }
+        hasMoreItems.value = cursor.getEndRow() < sourceArray.length;
         return result;
     }
 
@@ -126,6 +141,7 @@ public class DMRelationshipServicePort extends DMAbstractServicePort implements 
             }
             else if (includeSubtypes)
             {
+                // TODO: it is necessary introduce checking on descendants
                 return dictionaryService.getAssociation(qname) != null;
             }
             else

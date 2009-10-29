@@ -15,8 +15,8 @@ import javax.xml.bind.annotation.XmlType;
  * &lt;simpleType name="enumCapabilityACL">
  *   &lt;restriction base="{http://www.w3.org/2001/XMLSchema}string">
  *     &lt;enumeration value="none"/>
- *     &lt;enumeration value="read"/>
- *     &lt;enumeration value="set"/>
+ *     &lt;enumeration value="discover"/>
+ *     &lt;enumeration value="manage"/>
  *   &lt;/restriction>
  * &lt;/simpleType>
  * </pre>
@@ -28,10 +28,10 @@ public enum EnumCapabilityACL {
 
     @XmlEnumValue("none")
     NONE("none"),
-    @XmlEnumValue("read")
-    READ("read"),
-    @XmlEnumValue("set")
-    SET("set");
+    @XmlEnumValue("discover")
+    DISCOVER("discover"),
+    @XmlEnumValue("manage")
+    MANAGE("manage");
     private final String value;
 
     EnumCapabilityACL(String v) {

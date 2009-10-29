@@ -19,8 +19,22 @@
 		<part name="fault" element="cmism:cmisFault" />
 	</message>
 
+	<message name="getACLRequest">
+		<part name="parameters" element="cmism:getACL" />
+	</message>
+	<message name="getACLResponse">
+		<part name="parameters" element="cmism:getACLResponse" />
+	</message>
+
+	<message name="applyACLRequest">
+		<part name="parameters" element="cmism:applyACL" />
+	</message>
+	<message name="applyACLResponse">
+		<part name="parameters" element="cmism:applyACLResponse" />
+	</message>
+
 	<message name="queryRequest">
-		<part name="parameters" element="cmis:query" />
+		<part name="parameters" element="cmism:query" />
 	</message>
 	<message name="queryResponse">
 		<part name="parameters" element="cmism:queryResponse" />
@@ -69,11 +83,17 @@
 	<message name="getObjectParentsResponse">
 		<part name="parameters" element="cmism:getObjectParentsResponse" />
 	</message>
-	<message name="getCheckedoutDocsRequest">
-		<part name="parameters" element="cmism:getCheckedoutDocs" />
+	<message name="getRenditionsRequest">
+		<part name="parameters" element="cmism:getRenditions" />
 	</message>
-	<message name="getCheckedoutDocsResponse">
-		<part name="parameters" element="cmism:getCheckedoutDocsResponse" />
+	<message name="getRenditionsResponse">
+		<part name="parameters" element="cmism:getRenditionsResponse" />
+	</message>
+	<message name="getCheckedOutDocsRequest">
+		<part name="parameters" element="cmism:getCheckedOutDocs" />
+	</message>
+	<message name="getCheckedOutDocsResponse">
+		<part name="parameters" element="cmism:getCheckedOutDocsResponse" />
 	</message>
 
 	<message name="createDocumentRequest">
@@ -112,6 +132,14 @@
 	<message name="getPropertiesResponse">
 		<part name="parameters" element="cmism:getPropertiesResponse" />
 	</message>
+
+	<message name="getFolderByPathRequest">
+		<part name="parameters" element="cmism:getFolderByPath" />
+	</message>
+	<message name="getFolderByPathResponse">
+		<part name="parameters" element="cmism:getFolderByPathResponse" />
+	</message>
+
 	<message name="getContentStreamRequest">
 		<part name="parameters" element="cmism:getContentStream" />
 	</message>
@@ -193,11 +221,17 @@
 	<message name="getRepositoryInfoResponse">
 		<part name="parameters" element="cmism:getRepositoryInfoResponse" />
 	</message>
-	<message name="getTypesRequest">
-		<part name="parameters" element="cmism:getTypes" />
+	<message name="getTypeChildrenRequest">
+		<part name="parameters" element="cmism:getTypeChildren" />
 	</message>
-	<message name="getTypesResponse">
-		<part name="parameters" element="cmism:getTypesResponse" />
+	<message name="getTypeChildrenResponse">
+		<part name="parameters" element="cmism:getTypeChildrenResponse" />
+	</message>
+	<message name="getTypeDescendantsRequest">
+		<part name="parameters" element="cmism:getTypeDescendants" />
+	</message>
+	<message name="getTypeDescendantsResponse">
+		<part name="parameters" element="cmism:getTypeDescendantsResponse" />
 	</message>
 	<message name="getTypeDefinitionRequest">
 		<part name="parameters" element="cmism:getTypeDefinition" />
@@ -236,11 +270,12 @@
 	<message name="getAllVersionsResponse">
 		<part name="parameters" element="cmism:getAllVersionsResponse" />
 	</message>
-	<message name="deleteAllVersionsRequest">
-		<part name="parameters" element="cmism:deleteAllVersions" />
+
+	<message name="getFolderTreeRequest">
+		<part name="parameters" element="cmism:getFolderTree" />
 	</message>
-	<message name="deleteAllVersionsResponse">
-		<part name="parameters" element="cmism:deleteAllVersionsResponse" />
+	<message name="getFolderTreeResponse">
+		<part name="parameters" element="cmism:getFolderTreeResponse" />
 	</message>
 
 	<portType name="DiscoveryServicePort">
@@ -284,14 +319,19 @@
 			<output message="cmisw:getFolderParentResponse" />
 			<fault message="cmisw:cmisException" name="cmisException" />
 		</operation>
+		<operation name="getFolderTree">
+			<input message="cmisw:getFolderTreeRequest" />
+			<output message="cmisw:getFolderTreeResponse" />
+			<fault message="cmisw:cmisException" name="cmisException" />
+		</operation>
 		<operation name="getObjectParents">
 			<input message="cmisw:getObjectParentsRequest" />
 			<output message="cmisw:getObjectParentsResponse" />
 			<fault message="cmisw:cmisException" name="cmisException" />
 		</operation>
-		<operation name="getCheckedoutDocs">
-			<input message="cmisw:getCheckedoutDocsRequest" />
-			<output message="cmisw:getCheckedoutDocsResponse" />
+		<operation name="getCheckedOutDocs">
+			<input message="cmisw:getCheckedOutDocsRequest" />
+			<output message="cmisw:getCheckedOutDocsResponse" />
 			<fault message="cmisw:cmisException" name="cmisException" />
 		</operation>
 	</portType>
@@ -324,6 +364,16 @@
 		<operation name="getProperties">
 			<input message="cmisw:getPropertiesRequest" />
 			<output message="cmisw:getPropertiesResponse" />
+			<fault message="cmisw:cmisException" name="cmisException" />
+		</operation>
+		<operation name="getRenditions">
+			<input message="cmisw:getRenditionsRequest" />
+			<output message="cmisw:getRenditionsResponse" />
+			<fault message="cmisw:cmisException" name="cmisException" />
+		</operation>
+		<operation name="getFolderByPath">
+			<input message="cmisw:getFolderByPathRequest" />
+			<output message="cmisw:getFolderByPathResponse" />
 			<fault message="cmisw:cmisException" name="cmisException" />
 		</operation>
 		<operation name="getContentStream">
@@ -398,9 +448,14 @@
 			<output message="cmisw:getRepositoryInfoResponse" />
 			<fault message="cmisw:cmisException" name="cmisException" />
 		</operation>
-		<operation name="getTypes">
-			<input message="cmisw:getTypesRequest" />
-			<output message="cmisw:getTypesResponse" />
+		<operation name="getTypeChildren">
+			<input message="cmisw:getTypeChildrenRequest" />
+			<output message="cmisw:getTypeChildrenResponse" />
+			<fault message="cmisw:cmisException" name="cmisException" />
+		</operation>
+		<operation name="getTypeDescendants">
+			<input message="cmisw:getTypeDescendantsRequest" />
+			<output message="cmisw:getTypeDescendantsResponse" />
 			<fault message="cmisw:cmisException" name="cmisException" />
 		</operation>
 		<operation name="getTypeDefinition">
@@ -435,9 +490,16 @@
 			<output message="cmisw:getAllVersionsResponse" />
 			<fault message="cmisw:cmisException" name="cmisException" />
 		</operation>
-		<operation name="deleteAllVersions">
-			<input message="cmisw:deleteAllVersionsRequest" />
-			<output message="cmisw:deleteAllVersionsResponse" />
+	</portType>
+	<portType name="ACLServicePort">
+		<operation name="getACL">
+			<input message="cmisw:getACLRequest" />
+			<output message="cmisw:getACLResponse" />
+			<fault message="cmisw:cmisException" name="cmisException" />
+		</operation>
+		<operation name="applyACL">
+			<input message="cmisw:applyACLRequest" />
+			<output message="cmisw:applyACLResponse" />
 			<fault message="cmisw:cmisException" name="cmisException" />
 		</operation>
 	</portType>
@@ -538,6 +600,18 @@
 				<soap:fault name="cmisException" use="literal" />
 			</fault>
 		</operation>
+		<operation name="getFolderTree">
+			<soap:operation soapAction="" />
+			<input>
+				<soap:body use="literal" />
+			</input>
+			<output>
+				<soap:body use="literal" />
+			</output>
+			<fault name="cmisException">
+				<soap:fault name="cmisException" use="literal" />
+			</fault>
+		</operation>
 		<operation name="getObjectParents">
 			<soap:operation soapAction="" />
 			<input>
@@ -550,7 +624,7 @@
 				<soap:fault name="cmisException" use="literal" />
 			</fault>
 		</operation>
-		<operation name="getCheckedoutDocs">
+		<operation name="getCheckedOutDocs">
 			<soap:operation soapAction="" />
 			<input>
 				<soap:body use="literal" />
@@ -627,6 +701,30 @@
 			</fault>
 		</operation>
 		<operation name="getProperties">
+			<soap:operation soapAction="" />
+			<input>
+				<soap:body use="literal" />
+			</input>
+			<output>
+				<soap:body use="literal" />
+			</output>
+			<fault name="cmisException">
+				<soap:fault name="cmisException" use="literal" />
+			</fault>
+		</operation>
+		<operation name="getRenditions">
+			<soap:operation soapAction="" />
+			<input>
+				<soap:body use="literal" />
+			</input>
+			<output>
+				<soap:body use="literal" />
+			</output>
+			<fault name="cmisException">
+				<soap:fault name="cmisException" use="literal" />
+			</fault>
+		</operation>
+		<operation name="getFolderByPath">
 			<soap:operation soapAction="" />
 			<input>
 				<soap:body use="literal" />
@@ -806,7 +904,19 @@
 				<soap:fault name="cmisException" use="literal" />
 			</fault>
 		</operation>
-		<operation name="getTypes">
+		<operation name="getTypeChildren">
+			<soap:operation soapAction="" />
+			<input>
+				<soap:body use="literal" />
+			</input>
+			<output>
+				<soap:body use="literal" />
+			</output>
+			<fault name="cmisException">
+				<soap:fault name="cmisException" use="literal" />
+			</fault>
+		</operation>
+		<operation name="getTypeDescendants">
 			<soap:operation soapAction="" />
 			<input>
 				<soap:body use="literal" />
@@ -894,7 +1004,23 @@
 				<soap:fault name="cmisException" use="literal" />
 			</fault>
 		</operation>
-		<operation name="deleteAllVersions">
+	</binding>
+	<binding name="ACLServicePortBinding" type="cmisw:ACLServicePort">
+		<soap:binding style="document"
+			transport="http://schemas.xmlsoap.org/soap/http" />
+		<operation name="getACL">
+			<soap:operation soapAction="" />
+			<input>
+				<soap:body use="literal" />
+			</input>
+			<output>
+				<soap:body use="literal" />
+			</output>
+			<fault name="cmisException">
+				<soap:fault name="cmisException" use="literal" />
+			</fault>
+		</operation>
+		<operation name="applyACL">
 			<soap:operation soapAction="" />
 			<input>
 				<soap:body use="literal" />
@@ -953,6 +1079,11 @@
 		<port name="VersioningServicePort" binding="cmisw:VersioningServicePortBinding">
 			<soap:address
 				location="http://cmis/services/VersioningService.VersioningServicePort" />
+		</port>
+	</service>
+	<service name="ACLService">
+		<port name="ACLServicePort" binding="cmisw:ACLServicePortBinding">
+			<soap:address location="http://cmis/services/ACLService.ACLServicePort" />
 		</port>
 	</service>
 

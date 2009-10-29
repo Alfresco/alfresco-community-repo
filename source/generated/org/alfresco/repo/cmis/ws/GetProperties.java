@@ -22,10 +22,10 @@ import javax.xml.bind.annotation.XmlType;
  *       &lt;sequence>
  *         &lt;element name="repositoryId" type="{http://www.w3.org/2001/XMLSchema}string"/>
  *         &lt;element name="objectId" type="{http://www.w3.org/2001/XMLSchema}string"/>
- *         &lt;element name="returnVersion" type="{http://docs.oasis-open.org/ns/cmis/core/200901}enumReturnVersion" minOccurs="0"/>
  *         &lt;element name="filter" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
  *         &lt;element name="includeAllowableActions" type="{http://www.w3.org/2001/XMLSchema}boolean" minOccurs="0"/>
  *         &lt;element name="includeRelationships" type="{http://docs.oasis-open.org/ns/cmis/core/200901}enumIncludeRelationships" minOccurs="0"/>
+ *         &lt;element name="includeACL" type="{http://www.w3.org/2001/XMLSchema}boolean" minOccurs="0"/>
  *       &lt;/sequence>
  *     &lt;/restriction>
  *   &lt;/complexContent>
@@ -38,10 +38,10 @@ import javax.xml.bind.annotation.XmlType;
 @XmlType(name = "", propOrder = {
     "repositoryId",
     "objectId",
-    "returnVersion",
     "filter",
     "includeAllowableActions",
-    "includeRelationships"
+    "includeRelationships",
+    "includeACL"
 })
 @XmlRootElement(name = "getProperties")
 public class GetProperties {
@@ -50,14 +50,14 @@ public class GetProperties {
     protected String repositoryId;
     @XmlElement(required = true)
     protected String objectId;
-    @XmlElementRef(name = "returnVersion", namespace = "http://docs.oasis-open.org/ns/cmis/messaging/200901", type = JAXBElement.class)
-    protected JAXBElement<EnumReturnVersion> returnVersion;
     @XmlElementRef(name = "filter", namespace = "http://docs.oasis-open.org/ns/cmis/messaging/200901", type = JAXBElement.class)
     protected JAXBElement<String> filter;
     @XmlElementRef(name = "includeAllowableActions", namespace = "http://docs.oasis-open.org/ns/cmis/messaging/200901", type = JAXBElement.class)
     protected JAXBElement<Boolean> includeAllowableActions;
     @XmlElementRef(name = "includeRelationships", namespace = "http://docs.oasis-open.org/ns/cmis/messaging/200901", type = JAXBElement.class)
     protected JAXBElement<EnumIncludeRelationships> includeRelationships;
+    @XmlElementRef(name = "includeACL", namespace = "http://docs.oasis-open.org/ns/cmis/messaging/200901", type = JAXBElement.class)
+    protected JAXBElement<Boolean> includeACL;
 
     /**
      * Gets the value of the repositoryId property.
@@ -105,30 +105,6 @@ public class GetProperties {
      */
     public void setObjectId(String value) {
         this.objectId = value;
-    }
-
-    /**
-     * Gets the value of the returnVersion property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link JAXBElement }{@code <}{@link EnumReturnVersion }{@code >}
-     *     
-     */
-    public JAXBElement<EnumReturnVersion> getReturnVersion() {
-        return returnVersion;
-    }
-
-    /**
-     * Sets the value of the returnVersion property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link JAXBElement }{@code <}{@link EnumReturnVersion }{@code >}
-     *     
-     */
-    public void setReturnVersion(JAXBElement<EnumReturnVersion> value) {
-        this.returnVersion = ((JAXBElement<EnumReturnVersion> ) value);
     }
 
     /**
@@ -201,6 +177,30 @@ public class GetProperties {
      */
     public void setIncludeRelationships(JAXBElement<EnumIncludeRelationships> value) {
         this.includeRelationships = ((JAXBElement<EnumIncludeRelationships> ) value);
+    }
+
+    /**
+     * Gets the value of the includeACL property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link JAXBElement }{@code <}{@link Boolean }{@code >}
+     *     
+     */
+    public JAXBElement<Boolean> getIncludeACL() {
+        return includeACL;
+    }
+
+    /**
+     * Sets the value of the includeACL property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link JAXBElement }{@code <}{@link Boolean }{@code >}
+     *     
+     */
+    public void setIncludeACL(JAXBElement<Boolean> value) {
+        this.includeACL = ((JAXBElement<Boolean> ) value);
     }
 
 }

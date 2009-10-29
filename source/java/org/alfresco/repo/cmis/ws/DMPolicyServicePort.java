@@ -24,11 +24,12 @@
  */
 package org.alfresco.repo.cmis.ws;
 
+import java.util.List;
 
 @javax.jws.WebService(name = "PolicyServicePort", serviceName = "PolicyServicePort", portName = "PolicyServicePort", targetNamespace = "http://docs.oasis-open.org/ns/cmis/ws/200901", endpointInterface = "org.alfresco.repo.cmis.ws.PolicyServicePort")
 public class DMPolicyServicePort extends DMAbstractServicePort implements PolicyServicePort
 {
-    private static final String POLICY_NOT_SUPPORTED_MESSAGE = "PolicyService not supported";
+    private static final String POLICY_NOT_SUPPORTED_MESSAGE = "PolicyService not implemented";
 
     /**
      * Applies a policy object to a target object.
@@ -40,7 +41,7 @@ public class DMPolicyServicePort extends DMAbstractServicePort implements Policy
      */
     public void applyPolicy(String repositoryId, String policyId, String objectId) throws CmisException
     {
-        throw cmisObjectsUtils.createCmisException(POLICY_NOT_SUPPORTED_MESSAGE, EnumServiceException.NOT_SUPPORTED);
+        throw cmisObjectsUtils.createCmisException(POLICY_NOT_SUPPORTED_MESSAGE, EnumServiceException.RUNTIME);
     }
 
     /**
@@ -49,9 +50,9 @@ public class DMPolicyServicePort extends DMAbstractServicePort implements Policy
      * @param parameters repositoryId: repository Id; objectId: target object Id; filter: filter specifying which properties to return
      * @throws CmisException (with following {@link EnumServiceException} : INVALID_ARGUMENT, OBJECT_NOT_FOUND, NOT_SUPPORTED, PERMISSION_DENIED, RUNTIME, FILTER_NOT_VALID)
      */
-    public GetAppliedPoliciesResponse getAppliedPolicies(GetAppliedPolicies parameters) throws CmisException
+    public List<CmisObjectType> getAppliedPolicies(String repositoryId, String objectId, String filter) throws CmisException
     {
-        throw cmisObjectsUtils.createCmisException(POLICY_NOT_SUPPORTED_MESSAGE, EnumServiceException.NOT_SUPPORTED);
+        throw cmisObjectsUtils.createCmisException(POLICY_NOT_SUPPORTED_MESSAGE, EnumServiceException.RUNTIME);
     }
 
     /**
@@ -64,6 +65,6 @@ public class DMPolicyServicePort extends DMAbstractServicePort implements Policy
      */
     public void removePolicy(String repositoryId, String policyId, String objectId) throws CmisException
     {
-        throw cmisObjectsUtils.createCmisException(POLICY_NOT_SUPPORTED_MESSAGE, EnumServiceException.NOT_SUPPORTED);
+        throw cmisObjectsUtils.createCmisException(POLICY_NOT_SUPPORTED_MESSAGE, EnumServiceException.RUNTIME);
     }
 }

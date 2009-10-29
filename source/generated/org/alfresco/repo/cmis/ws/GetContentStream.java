@@ -20,6 +20,7 @@ import javax.xml.bind.annotation.XmlType;
  *       &lt;sequence>
  *         &lt;element name="repositoryId" type="{http://www.w3.org/2001/XMLSchema}string"/>
  *         &lt;element name="documentId" type="{http://www.w3.org/2001/XMLSchema}string"/>
+ *         &lt;element name="streamId" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
  *       &lt;/sequence>
  *     &lt;/restriction>
  *   &lt;/complexContent>
@@ -31,7 +32,8 @@ import javax.xml.bind.annotation.XmlType;
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "", propOrder = {
     "repositoryId",
-    "documentId"
+    "documentId",
+    "streamId"
 })
 @XmlRootElement(name = "getContentStream")
 public class GetContentStream {
@@ -40,6 +42,7 @@ public class GetContentStream {
     protected String repositoryId;
     @XmlElement(required = true)
     protected String documentId;
+    protected String streamId;
 
     /**
      * Gets the value of the repositoryId property.
@@ -87,6 +90,30 @@ public class GetContentStream {
      */
     public void setDocumentId(String value) {
         this.documentId = value;
+    }
+
+    /**
+     * Gets the value of the streamId property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getStreamId() {
+        return streamId;
+    }
+
+    /**
+     * Sets the value of the streamId property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setStreamId(String value) {
+        this.streamId = value;
     }
 
 }

@@ -25,6 +25,8 @@
 package org.alfresco.repo.cmis.ws;
 
 import java.math.BigInteger;
+import java.util.Collections;
+import java.util.List;
 
 import javax.xml.ws.Holder;
 
@@ -81,40 +83,35 @@ public class DMNavigationServiceTest extends AbstractServiceTest
         helper.versioningServicePort.checkOut(repositoryId, documentIdHolder1, contentCopied);
         assertTrue(contentCopied.value);
 
-        GetCheckedoutDocsResponse response;
-        response = getCheckedoutDocs(null, 0, 0);
+        List<CmisObjectType> result = getCheckedoutDocs(null, 0, 0);
 
-        if (response.getObject().size() < 2)
+        if (result == null || result.size() < 2)
         {
             // check in
-            helper.versioningServicePort.checkIn(repositoryId, documentIdHolder, null, null, null, null);
+            helper.versioningServicePort.checkIn(repositoryId, documentIdHolder, null, null, null, null, null, null, null);
             fail("Not all checkout docs have been found");
         }
-        validateResponse(response.getObject());
+        validateResponse(result);
 
-        // assertTrue("Checked out document has not been found ", isExistItemWithProperty(response.getObject(), CMISMapping.PROP_OBJECT_ID, documentId));
-        // assertTrue("Checked out document has not been found ", isExistItemWithProperty(response.getObject(), CMISMapping.PROP_OBJECT_ID, documentId1));
-
-        response = getCheckedoutDocs(null, 1, 0);
-        assertTrue(response.getObject().size() == 1);
-        assertTrue(response.hasMoreItems);
+        result = getCheckedoutDocs(null, 1, 0);
+        assertNotNull(result);
+        assertTrue(result.size() == 1);
 
         // check in
-        helper.versioningServicePort.checkIn(repositoryId, documentIdHolder, null, null, null, null);
+        helper.versioningServicePort.checkIn(repositoryId, documentIdHolder, null, null, null, null, null, null, null);
 
-        response = getCheckedoutDocs(companyHomeId, 0, 0);
-        assertFalse("Wrong results", isExistItemWithProperty(response.getObject(), CMISDictionaryModel.PROP_NAME, documentName));
+        result = getCheckedoutDocs(companyHomeId, 0, 0);
+        assertFalse("Wrong results", isExistItemWithProperty(result, CMISDictionaryModel.PROP_NAME, documentName));
 
     }
 
     public void testGetChildren() throws Exception
     {
-        GetChildrenResponse response;
-        response = getChildren(companyHomeId, EnumTypesOfFileableObjects.ANY, 0);
+        List<CmisObjectType> response = getChildren(companyHomeId, 100);
 
-        if ((response != null) && (response.getObject() != null))
+        if ((response != null))
         {
-            validateResponse(response.getObject());
+            validateResponse(response);
         }
         else
         {
@@ -128,29 +125,10 @@ public class DMNavigationServiceTest extends AbstractServiceTest
         @SuppressWarnings("unused")
         String documentId1 = helper.createDocument(documentName1, folderId, CMISDictionaryModel.DOCUMENT_TYPE_ID, EnumVersioningState.MAJOR);
 
-        response = getChildren(folderId, EnumTypesOfFileableObjects.ANY, 0);
-        assertEquals(2, response.getObject().size());
-        assertTrue(propertiesUtil.getCmisPropertyValue(response.getObject().get(0).getProperties(), CMISDictionaryModel.PROP_NAME, null).equals(folderName1));
-        assertTrue(propertiesUtil.getCmisPropertyValue(response.getObject().get(1).getProperties(), CMISDictionaryModel.PROP_NAME, null).equals(documentName1));
-
-        response = getChildren(folderId, EnumTypesOfFileableObjects.FOLDERS, 0);
-        assertTrue(response.getObject().size() == 1);
-        assertTrue(propertiesUtil.getCmisPropertyValue(response.getObject().get(0).getProperties(), CMISDictionaryModel.PROP_NAME, null).equals(folderName1));
-
-        response = getChildren(folderId, EnumTypesOfFileableObjects.DOCUMENTS, 0);
-        assertTrue(response.getObject().size() == 1);
-        assertTrue(propertiesUtil.getCmisPropertyValue(response.getObject().get(0).getProperties(), CMISDictionaryModel.PROP_NAME, null).equals(documentName1));
-
-        // FIXME: bug • If maxItems > 0, Bool hasMoreItems
-        // Should return 1 item
-        response = getChildren(folderId, EnumTypesOfFileableObjects.ANY, 1);
-        assertTrue("Actual size is: " + response.getObject().size(), response.getObject().size() == 1);
-        assertTrue(response.hasMoreItems);
-
-        // • If “includeAllowableActions” is TRUE, the repository will return the allowable actions for the current user for each child object as part of the output.
-        // • "IncludeRelationships" indicates whether relationships are also returned for each returned object. If it is set to "source" or "target", relationships for which the
-        // returned object is a source, or respectively a target, will also be returned. If it is set to "both", relationships for which the returned object is either a source or a
-        // target will be returned. If it is set to "none", relationships are not returned.
+        response = getChildren(folderId, 2);
+        assertEquals(2, response.size());
+        assertTrue(getStringProperty(response.get(0).getProperties(), CMISDictionaryModel.PROP_NAME).equals(folderName1));
+        assertTrue(getStringProperty(response.get(1).getProperties(), CMISDictionaryModel.PROP_NAME).equals(documentName1));
 
         // TODO: not implemented
         // assertNotNull(response.getObject().get(0).getAllowableActions());
@@ -160,19 +138,16 @@ public class DMNavigationServiceTest extends AbstractServiceTest
         // response = getChildren(folderId, EnumTypesOfFileableObjects.DOCUMENTS, 0, CMISMapping.PROP_NAME);
         // assertNotNull(propertiesUtil.getCmisPropertyValue(response.getObject().get(0).getProperties(), CMISMapping.PROP_NAME));
 
-        response = getChildren(folderId);
-        assertTrue(response.getObject().size() == 2);
-
     }
 
     public void testGetDescendants() throws Exception
     {
 
-        GetDescendantsResponse response = getDescendants(companyHomeId, EnumTypesOfFileableObjects.DOCUMENTS, 10);
+        List<CmisObjectType> response = getDescendants(companyHomeId, BigInteger.valueOf(5));
 
-        if ((response != null) && (response.getObject() != null))
+        if ((response != null))
         {
-            validateResponse(response.getObject());
+            validateResponse(response);
         }
         else
         {
@@ -185,48 +160,60 @@ public class DMNavigationServiceTest extends AbstractServiceTest
         @SuppressWarnings("unused")
         String documentId1 = helper.createDocument(documentName, folderId1, CMISDictionaryModel.DOCUMENT_TYPE_ID, EnumVersioningState.MAJOR);
 
-        response = getDescendants(folderId, EnumTypesOfFileableObjects.FOLDERS, 1);
-        assertTrue(response.getObject().size() == 1);
-        assertTrue(propertiesUtil.getCmisPropertyValue(response.getObject().get(0).getProperties(), CMISDictionaryModel.PROP_NAME, null).equals(folderName));
-
-        response = getDescendants(folderId, EnumTypesOfFileableObjects.DOCUMENTS, 2);
-        assertTrue(response.getObject().size() == 1);
-        assertTrue(propertiesUtil.getCmisPropertyValue(response.getObject().get(0).getProperties(), CMISDictionaryModel.PROP_NAME, null).equals(documentName));
-
-        response = getDescendants(folderId, EnumTypesOfFileableObjects.ANY, 2);
-        assertTrue(response.getObject().size() == 2);
-        assertTrue(propertiesUtil.getCmisPropertyValue(response.getObject().get(0).getProperties(), CMISDictionaryModel.PROP_NAME, null).equals(folderName));
-        assertTrue(propertiesUtil.getCmisPropertyValue(response.getObject().get(1).getProperties(), CMISDictionaryModel.PROP_NAME, null).equals(documentName));
-
-        response = getDescendants(folderId, EnumTypesOfFileableObjects.ANY, -1);
-        assertTrue(response.getObject().size() == 2);
+        response = getDescendants(folderId1, null);
+        assertTrue(response.size() == 1);
+        assertTrue(getStringProperty(response.get(0).getProperties(), CMISDictionaryModel.PROP_NAME).equals(documentName));
 
         // test with out option parameters
-        response = getDescendants(folderId);
-        assertTrue(response.getObject().size() == 1);
+        response = getDescendants(folderId1, BigInteger.TEN);
+        assertTrue(response.size() == 1);
+        assertTrue(getStringProperty(response.get(0).getProperties(), CMISDictionaryModel.PROP_NAME).equals(documentName));
 
-        response = getDescendants(folderId, EnumTypesOfFileableObjects.DOCUMENTS, 2);
         // TODO: not implemented
         // assertNotNull(response.getObject().get(0).getAllowableActions());
         // assertNotNull(response.getObject().get(0).getRelationship());
 
-        // Filter test
-        // response = getDescendants(folderId, EnumTypesOfFileableObjects.DOCUMENTS, 2, CMISMapping.PROP_NAME);
-        // assertTrue(response.getObject().size() == 1);
-        // assertTrue(propertiesUtil.getCmisPropertyValue(response.getObject().get(0).getProperties(), CMISMapping.PROP_NAME).equals(documentName));
+        helper.deleteFolder(folderId1);
+    }
+
+    public void testGetFolderTree() throws Exception
+    {
+
+        List<CmisObjectType> response = getFolderTree(companyHomeId, BigInteger.valueOf(5));
+
+        if ((response != null))
+        {
+            validateResponse(response);
+        }
+        else
+        {
+            fail("response is null");
+        }
+
+        folderName = "Test Cmis Folder (" + System.currentTimeMillis() + ")";
+        String folderId1 = helper.createFolder(folderName, folderId);
+        documentName = "Test cmis document (" + System.currentTimeMillis() + ")";
+        @SuppressWarnings("unused")
+        String documentId1 = helper.createDocument(documentName, folderId1, CMISDictionaryModel.DOCUMENT_TYPE_ID, EnumVersioningState.MAJOR);
+
+        response = getFolderTree(folderId, null);
+        assertTrue(response.size() == 1);
+        assertTrue(getStringProperty(response.get(0).getProperties(), CMISDictionaryModel.PROP_NAME).equals(folderName));
+
+        // TODO: not implemented
+        // assertNotNull(response.getObject().get(0).getAllowableActions());
+        // assertNotNull(response.getObject().get(0).getRelationship());
 
         helper.deleteFolder(folderId1);
-
     }
 
     public void testGetFolderParent() throws Exception
     {
-        GetFolderParentResponse response;
-        response = getFolderParent(folderId, false);
+        CmisObjectType response = getFolderParent(folderId);
 
-        if ((response != null) && (response.getObject() != null))
+        if ((response != null))
         {
-            validateResponse(response.getObject());
+            validateResponse(Collections.singletonList(response));
         }
         else
         {
@@ -238,26 +225,23 @@ public class DMNavigationServiceTest extends AbstractServiceTest
         String folderName1 = "Test Cmis Folder (" + System.currentTimeMillis() + ")";
         folderId1 = helper.createFolder(folderName1, folderId);
 
-        response = getFolderParent(folderId1, false);
-        assertTrue(propertiesUtil.getCmisPropertyValue(response.getObject().get(0).getProperties(), CMISDictionaryModel.PROP_NAME, null).equals(folderName));
+        response = getFolderParent(folderId1);
+        assertTrue(getStringProperty(response.getProperties(), CMISDictionaryModel.PROP_NAME).equals(folderName));
 
         String folderName2 = "Test Cmis Folder (" + System.currentTimeMillis() + ")";
         String folderId2 = helper.createFolder(folderName2, folderId1);
 
-        response = getFolderParent(folderId2, true);
-        assertTrue(propertiesUtil.getCmisPropertyValue(response.getObject().get(0).getProperties(), CMISDictionaryModel.PROP_NAME, null).equals(folderName1));
-        assertTrue(propertiesUtil.getCmisPropertyValue(response.getObject().get(1).getProperties(), CMISDictionaryModel.PROP_NAME, null).equals(folderName));
-        assertTrue(response.getObject().size() >= 3);
-
+        response = getFolderParent(folderId2, CMISDictionaryModel.PROP_NAME);
+        assertTrue(getStringProperty(response.getProperties(), CMISDictionaryModel.PROP_NAME).equals(folderName1));
     }
 
     public void testGetObjectParents() throws Exception
     {
-        GetObjectParentsResponse response = helper.getObjectParents(documentId, "*");
+        List<CmisObjectType> response = helper.getObjectParents(documentId, "*");
 
-        if ((response != null) && (response.getObject() != null))
+        if ((response != null))
         {
-            validateResponse(response.getObject());
+            validateResponse(response);
         }
         else
         {
@@ -273,118 +257,41 @@ public class DMNavigationServiceTest extends AbstractServiceTest
         documentId1 = helper.createDocument(documentName1, folderId1, CMISDictionaryModel.DOCUMENT_TYPE_ID, EnumVersioningState.MAJOR);
 
         response = helper.getObjectParents(documentId1, "*");
-        assertTrue(response.getObject().size() == 1);
-        assertTrue(propertiesUtil.getCmisPropertyValue(response.getObject().get(0).getProperties(), CMISDictionaryModel.PROP_NAME, null).equals(folderName1));
-
-        // TODO: not implemented
-        // assertNotNull(response.getObject().get(0).getAllowableActions());
-        // assertNotNull(response.getObject().get(0).getRelationship());
-
-        // filters
-        // response = getObjectParents(documentId1, CMISMapping.PROP_NAME);
-        // assertTrue(response.getObject().size() >= 2);
-        // assertNotNull(propertiesUtil.getCmisPropertyValue(response.getObject().get(0).getProperties(), CMISMapping.PROP_NAME));
+        assertTrue(response.size() == 1);
+        assertTrue(getStringProperty(response.get(0).getProperties(), CMISDictionaryModel.PROP_NAME).equals(folderName1));
 
         response = helper.getObjectParents(documentId1);
-        assertTrue(response.getObject().size() == 1);
-        assertTrue(propertiesUtil.getCmisPropertyValue(response.getObject().get(0).getProperties(), CMISDictionaryModel.PROP_NAME, null).equals(folderName1));
-        // assertTrue(propertiesUtil.getCmisPropertyValue(response.getObject().get(1).getProperties(), CMISMapping.PROP_NAME).equals(folderName));
+        assertTrue(response.size() == 1);
+        assertTrue(getStringProperty(response.get(0).getProperties(), CMISDictionaryModel.PROP_NAME).equals(folderName1));
 
     }
 
-    private GetDescendantsResponse getDescendants(String folderId, EnumTypesOfFileableObjects type, long depth) throws Exception
+    private List<CmisObjectType> getDescendants(String folderId, BigInteger depth) throws Exception
     {
-        GetDescendants request = cmisObjectFactory.createGetDescendants();
-
-        request.setRepositoryId(repositoryId);
-        request.setFolderId(folderId);
-        request.setType(type);
-        request.setDepth(cmisObjectFactory.createGetDescendantsDepth(BigInteger.valueOf(depth)));
-        request.setFilter(cmisObjectFactory.createGetPropertiesFilter("*"));
-        request.setIncludeAllowableActions(cmisObjectFactory.createGetDescendantsIncludeAllowableActions(true));
-        request.setIncludeRelationships(cmisObjectFactory.createGetDescendantsIncludeRelationships(EnumIncludeRelationships.BOTH));
-
-        GetDescendantsResponse response = ((NavigationServicePort) servicePort).getDescendants(request);
-        return response;
+        List<CmisObjectType> result = ((NavigationServicePort) servicePort).getDescendants(repositoryId, folderId, depth, "*", null, null, null, null);
+        return result;
     }
 
-    private GetDescendantsResponse getDescendants(String folderId) throws Exception
+    private List<CmisObjectType> getFolderTree(String folderId, BigInteger depth) throws Exception
     {
-        GetDescendants request = cmisObjectFactory.createGetDescendants();
-
-        request.setRepositoryId(repositoryId);
-        request.setFolderId(folderId);
-
-        GetDescendantsResponse response = ((NavigationServicePort) servicePort).getDescendants(request);
-        return response;
+        List<CmisObjectType> result = ((NavigationServicePort) servicePort).getFolderTree(repositoryId, folderId, "*", depth, null, null);
+        return result;
     }
 
-    private GetChildrenResponse getChildren(String folderId, EnumTypesOfFileableObjects type, long maxItems) throws Exception
+    private List<CmisObjectType> getChildren(String folderId, int maxItems) throws Exception
     {
-
-        GetChildren request = cmisObjectFactory.createGetChildren();
-
-        request.setRepositoryId(repositoryId);
-        request.setFolderId(folderId);
-
-        request.setFilter(cmisObjectFactory.createGetChildrenFilter("*"));
-        request.setMaxItems(cmisObjectFactory.createGetChildrenMaxItems(BigInteger.valueOf(maxItems)));
-        request.setSkipCount(cmisObjectFactory.createGetChildrenSkipCount(BigInteger.valueOf(0)));
-        request.setType(cmisObjectFactory.createGetChildrenType(type));
-
-        GetChildrenResponse response = ((NavigationServicePort) servicePort).getChildren(request);
-
-        return response;
+        Holder<List<CmisObjectType>> resultHolder = new Holder<List<CmisObjectType>>();
+        ((NavigationServicePort) servicePort).getChildren(repositoryId, folderId, "*", false, null, null, null, BigInteger.valueOf(maxItems), BigInteger.valueOf(0), null,
+                resultHolder, new Holder<Boolean>());
+        return resultHolder.value;
     }
 
-    private GetChildrenResponse getChildren(String folderId) throws Exception
+    public CmisObjectType getFolderParent(String folderId, String filter) throws Exception
     {
-
-        GetChildren request = cmisObjectFactory.createGetChildren();
-
-        request.setRepositoryId(repositoryId);
-        request.setFolderId(folderId);
-
-        GetChildrenResponse response = ((NavigationServicePort) servicePort).getChildren(request);
-
-        return response;
-    }
-
-    public GetFolderParentResponse getFolderParent(String folderId, boolean setReturnToRoot) throws Exception
-    {
-        GetFolderParent request = cmisObjectFactory.createGetFolderParent();
-
-        request.setRepositoryId(repositoryId);
-
-        request.setFolderId(folderId);
-
-        request.setFilter("*");
-        request.setReturnToRoot(cmisObjectFactory.createGetFolderParentReturnToRoot(setReturnToRoot));
-
-        request.setIncludeAllowableActions(cmisObjectFactory.createGetFolderParentIncludeAllowableActions(true));
-        request.setIncludeRelationships(cmisObjectFactory.createGetFolderParentIncludeRelationships(EnumIncludeRelationships.BOTH));
-
-        GetFolderParentResponse response = ((NavigationServicePort) servicePort).getFolderParent(request);
-        return response;
-    }
-
-    public GetFolderParentResponse getFolderParent(String folderId, String filter) throws Exception
-    {
-        GetFolderParent request = cmisObjectFactory.createGetFolderParent();
-
-        request.setRepositoryId(repositoryId);
-
-        request.setFolderId(folderId);
-
-        request.setFilter(filter);
-
-        request.setIncludeAllowableActions(cmisObjectFactory.createGetFolderParentIncludeAllowableActions(true));
-        request.setIncludeRelationships(cmisObjectFactory.createGetFolderParentIncludeRelationships(EnumIncludeRelationships.BOTH));
-
-        GetFolderParentResponse response = null;
+        CmisObjectType response = null;
         try
         {
-            response = ((NavigationServicePort) servicePort).getFolderParent(request);
+            response = ((NavigationServicePort) servicePort).getFolderParent(repositoryId, folderId, "*");
         }
         catch (Exception e)
         {
@@ -393,34 +300,17 @@ public class DMNavigationServiceTest extends AbstractServiceTest
         return response;
     }
 
-    public GetFolderParentResponse getFolderParent(String folderId) throws Exception
+    public CmisObjectType getFolderParent(String folderId) throws Exception
     {
-        GetFolderParent request = cmisObjectFactory.createGetFolderParent();
-
-        request.setRepositoryId(repositoryId);
-        request.setFolderId(folderId);
-
-        GetFolderParentResponse response = ((NavigationServicePort) servicePort).getFolderParent(request);
-
+        CmisObjectType response = ((NavigationServicePort) servicePort).getFolderParent(repositoryId, folderId, "*");
         return response;
     }
 
-    private GetCheckedoutDocsResponse getCheckedoutDocs(String folderId, long maxItems, long skipCount) throws Exception
+    private List<CmisObjectType> getCheckedoutDocs(String folderId, long maxItems, long skipCount) throws Exception
     {
-        GetCheckedoutDocs request = cmisObjectFactory.createGetCheckedoutDocs();
-
-        request.setRepositoryId(repositoryId);
-
-        request.setFolderId(cmisObjectFactory.createGetCheckedoutDocsFolderId(folderId));
-        request.setFilter(cmisObjectFactory.createGetCheckedoutDocsFilter("*"));
-        request.setMaxItems(cmisObjectFactory.createGetCheckedoutDocsMaxItems(BigInteger.valueOf(maxItems)));
-        request.setSkipCount(cmisObjectFactory.createGetCheckedoutDocsSkipCount(BigInteger.valueOf(skipCount)));
-
-        request.setIncludeAllowableActions(cmisObjectFactory.createGetCheckedoutDocsIncludeAllowableActions(true));
-        request.setIncludeRelationships(cmisObjectFactory.createGetCheckedoutDocsIncludeRelationships(EnumIncludeRelationships.BOTH));
-
-        GetCheckedoutDocsResponse response = ((NavigationServicePort) servicePort).getCheckedoutDocs(request);
-
-        return response;
+        Holder<List<CmisObjectType>> resultHolder = new Holder<List<CmisObjectType>>();
+        ((NavigationServicePort) servicePort).getCheckedOutDocs(repositoryId, folderId, "*", null, false, null, BigInteger.valueOf(maxItems), BigInteger.valueOf(skipCount),
+                resultHolder, new Holder<Boolean>());
+        return resultHolder.value;
     }
 }

@@ -18,7 +18,7 @@ import javax.xml.bind.annotation.XmlType;
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
- *         &lt;element ref="{http://docs.oasis-open.org/ns/cmis/core/200901}object"/>
+ *         &lt;element name="object" type="{http://docs.oasis-open.org/ns/cmis/core/200901}cmisObjectType"/>
  *       &lt;/sequence>
  *     &lt;/restriction>
  *   &lt;/complexContent>
@@ -34,7 +34,7 @@ import javax.xml.bind.annotation.XmlType;
 @XmlRootElement(name = "getPropertiesOfLatestVersionResponse")
 public class GetPropertiesOfLatestVersionResponse {
 
-    @XmlElement(namespace = "http://docs.oasis-open.org/ns/cmis/core/200901", required = true)
+    @XmlElement(required = true)
     protected CmisObjectType object;
 
     /**

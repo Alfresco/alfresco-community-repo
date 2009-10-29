@@ -24,6 +24,8 @@
  */
 package org.alfresco.repo.cmis.ws;
 
+import java.util.List;
+
 import javax.activation.DataHandler;
 import javax.xml.ws.Holder;
 
@@ -79,9 +81,9 @@ public class DMVersioningServiceTest extends AbstractServiceTest
         DataHandler dataHandler = new DataHandler("Test content string: " + System.currentTimeMillis(), MimetypeMap.MIMETYPE_TEXT_PLAIN);
         contentStream.setStream(dataHandler);
         String checkinComment = "Test checkin" + System.currentTimeMillis();
-        ((VersioningServicePort) servicePort).checkIn(repositoryId, documentIdHolder, Boolean.TRUE, properties, contentStream, checkinComment);
+        ((VersioningServicePort) servicePort).checkIn(repositoryId, documentIdHolder, Boolean.TRUE, properties, contentStream, checkinComment, null, null, null);
 
-        assertEquals(checkinComment, propertiesUtil.getCmisPropertyValue(helper.getObjectProperties(documentId).getObject().getProperties(), CMISDictionaryModel.PROP_CHECKIN_COMMENT, null));
+        assertEquals(checkinComment, getStringProperty(helper.getObjectProperties(documentIdHolder.value).getProperties(), CMISDictionaryModel.PROP_CHECKIN_COMMENT));
     }
 
     public void testCheckOutCheckInDefault() throws Exception
@@ -94,7 +96,7 @@ public class DMVersioningServiceTest extends AbstractServiceTest
         assertFalse(documentId.equals(documentIdHolder.value));
 
         // check in
-        ((VersioningServicePort) servicePort).checkIn(repositoryId, documentIdHolder, null, null, null, null);
+        ((VersioningServicePort) servicePort).checkIn(repositoryId, documentIdHolder, null, null, null, null, null, null, null);
     }
 
     public void testCheckOutCancelCheckOut() throws Exception
@@ -108,7 +110,7 @@ public class DMVersioningServiceTest extends AbstractServiceTest
 
         // Cancel check out
         ((VersioningServicePort) servicePort).cancelCheckOut(repositoryId, documentIdHolder.value);
-        assertFalse((Boolean) propertiesUtil.getCmisPropertyValue(helper.getObjectProperties(documentId).getObject().getProperties(), CMISDictionaryModel.PROP_IS_VERSION_SERIES_CHECKED_OUT, null));
+        assertFalse(getBooleanProperty(helper.getObjectProperties(documentId).getProperties(), CMISDictionaryModel.PROP_IS_VERSION_SERIES_CHECKED_OUT));
     }
 
     public void testCheckinNoExistsCheckOut() throws Exception
@@ -122,13 +124,13 @@ public class DMVersioningServiceTest extends AbstractServiceTest
             DataHandler dataHandler = new DataHandler("Test content string: " + System.currentTimeMillis(), MimetypeMap.MIMETYPE_TEXT_PLAIN);
             contentStream.setStream(dataHandler);
             String checkinComment = "Test checkin";
-            ((VersioningServicePort) servicePort).checkIn(repositoryId, documentIdHolder, Boolean.TRUE, properties, contentStream, checkinComment);
+            ((VersioningServicePort) servicePort).checkIn(repositoryId, documentIdHolder, Boolean.TRUE, properties, contentStream, checkinComment, null, null, null);
             fail("Expects exception");
 
         }
         catch (CmisException e)
         {
-            assertTrue(e.getFaultInfo().getType().equals(EnumServiceException.NOT_SUPPORTED));
+            assertTrue(e.getFaultInfo().getType().equals(EnumServiceException.UPDATE_CONFLICT));
         }
     }
 
@@ -143,42 +145,28 @@ public class DMVersioningServiceTest extends AbstractServiceTest
         }
         catch (CmisException e)
         {
-            assertTrue(e.getFaultInfo().getType().equals(EnumServiceException.NOT_SUPPORTED));
+            assertTrue(e.getFaultInfo().getType().equals(EnumServiceException.UPDATE_CONFLICT));
         }
     }
 
     public void testGetPropertiesOfLatestVersion() throws Exception
     {
-        GetPropertiesOfLatestVersion request = new GetPropertiesOfLatestVersion();
-        request.setRepositoryId(repositoryId);
-        request.setFilter(cmisObjectFactory.createGetPropertiesOfLatestVersionFilter("*"));
-        request.setMajorVersion(Boolean.TRUE);
-        request.setVersionSeriesId(documentId);
-        GetPropertiesOfLatestVersionResponse response = ((VersioningServicePort) servicePort).getPropertiesOfLatestVersion(request);
-        assertNotNull(response);
-        assertNotNull(response.getObject());
-        CmisObjectType objectType = response.getObject();
+        CmisObjectType objectType = ((VersioningServicePort) servicePort).getPropertiesOfLatestVersion(repositoryId, documentId, true, "*", false);
+        assertNotNull(objectType);
         assertNotNull(objectType.getProperties());
-        assertTrue((Boolean) propertiesUtil.getCmisPropertyValue(objectType.getProperties(), CMISDictionaryModel.PROP_IS_LATEST_VERSION, null));
+        assertTrue(getBooleanProperty(objectType.getProperties(), CMISDictionaryModel.PROP_IS_LATEST_VERSION));
     }
 
     public void testGetPropertiesOfLatestVersionDefault() throws Exception
     {
-        GetPropertiesOfLatestVersion request = new GetPropertiesOfLatestVersion();
-        request.setRepositoryId(repositoryId);
-        request.setVersionSeriesId(documentId);
-        GetPropertiesOfLatestVersionResponse response = ((VersioningServicePort) servicePort).getPropertiesOfLatestVersion(request);
-        assertNotNull(response);
-        assertNotNull(response.getObject());
-        CmisObjectType objectType = response.getObject();
-        assertNotNull(objectType.getProperties());
-        assertTrue((Boolean) propertiesUtil.getCmisPropertyValue(objectType.getProperties(), CMISDictionaryModel.PROP_IS_LATEST_VERSION, null));
+        CmisObjectType cmisObjectType = ((VersioningServicePort) servicePort).getPropertiesOfLatestVersion(repositoryId, documentId, true, "", null);
+        assertNotNull(cmisObjectType);
+        assertNotNull(cmisObjectType.getProperties());
+        assertTrue(getBooleanProperty(cmisObjectType.getProperties(), CMISDictionaryModel.PROP_IS_LATEST_VERSION));
     }
 
     public void testGetAllVersionsDefault() throws Exception
     {
-        GetAllVersions request = new GetAllVersions();
-
         Holder<String> documentIdHolder = new Holder<String>(documentId);
         Holder<Boolean> contentCopied = new Holder<Boolean>();
         String checkinComment = "Test checkin" + System.currentTimeMillis();
@@ -186,19 +174,16 @@ public class DMVersioningServiceTest extends AbstractServiceTest
         helper.checkOut(documentIdHolder, contentCopied);
         helper.checkIn(documentIdHolder, checkinComment, true);
 
-        request.setRepositoryId(repositoryId);
-        request.setVersionSeriesId(documentId);
-
-        GetAllVersionsResponse response = ((VersioningServicePort) servicePort).getAllVersions(request);
+        List<CmisObjectType> response = ((VersioningServicePort) servicePort).getAllVersions(repositoryId, documentId, "", null, null);
         assertNotNull(response);
-        assertNotNull(response.getObject());
-        assertEquals(checkinComment, propertiesUtil.getCmisPropertyValue(response.getObject().get(0).getProperties(), CMISDictionaryModel.PROP_CHECKIN_COMMENT, null));
+        assertFalse(response.isEmpty());
+        CmisObjectType firstElement = response.iterator().next();
+        assertNotNull(firstElement);
+        assertEquals(checkinComment, getStringProperty(firstElement.getProperties(), CMISDictionaryModel.PROP_CHECKIN_COMMENT));
     }
 
     public void testGetAllVersions() throws Exception
     {
-        GetAllVersions request = new GetAllVersions();
-
         Holder<String> documentIdHolder = new Holder<String>(documentId);
         Holder<Boolean> contentCopied = new Holder<Boolean>();
         String checkinComment = "Test checkin" + System.currentTimeMillis();
@@ -206,36 +191,22 @@ public class DMVersioningServiceTest extends AbstractServiceTest
         helper.checkOut(documentIdHolder, contentCopied);
         helper.checkIn(documentIdHolder, checkinComment, true);
 
-        request.setRepositoryId(repositoryId);
-        request.setVersionSeriesId(documentId);
-        request.setFilter(cmisObjectFactory.createGetAllVersionsFilter("*"));
-        request.setIncludeAllowableActions(cmisObjectFactory.createGetAllVersionsIncludeAllowableActions(Boolean.FALSE));
-        request.setIncludeRelationships(cmisObjectFactory.createGetAllVersionsIncludeRelationships(EnumIncludeRelationships.NONE));
-
-        GetAllVersionsResponse response = ((VersioningServicePort) servicePort).getAllVersions(request);
+        List<CmisObjectType> response = ((VersioningServicePort) servicePort).getAllVersions(repositoryId, documentId, "*", false, EnumIncludeRelationships.NONE);
         assertNotNull(response);
-        assertNotNull(response.getObject());
-        assertEquals(checkinComment, propertiesUtil.getCmisPropertyValue(response.getObject().get(0).getProperties(), CMISDictionaryModel.PROP_CHECKIN_COMMENT, null));
+        assertFalse(response.isEmpty());
+        CmisObjectType firstElement = response.iterator().next();
+        assertNotNull(firstElement);
+        assertEquals(checkinComment, getStringProperty(firstElement.getProperties(), CMISDictionaryModel.PROP_CHECKIN_COMMENT));
     }
 
     public void testGetAllVersionsForNoVersionHistory() throws Exception
     {
-        GetAllVersions request = new GetAllVersions();
-
-        request.setRepositoryId(repositoryId);
-        request.setVersionSeriesId(documentId);
-        request.setFilter(cmisObjectFactory.createGetAllVersionsFilter("*"));
-        request.setIncludeAllowableActions(cmisObjectFactory.createGetAllVersionsIncludeAllowableActions(Boolean.FALSE));
-        request.setIncludeRelationships(cmisObjectFactory.createGetAllVersionsIncludeRelationships(EnumIncludeRelationships.NONE));
-
-        GetAllVersionsResponse response = ((VersioningServicePort) servicePort).getAllVersions(request);
+        List<CmisObjectType> response = ((VersioningServicePort) servicePort).getAllVersions(repositoryId, documentId, "*", false, EnumIncludeRelationships.NONE);
         assertNotNull(response);
-        assertNotNull(response.getObject());
     }
 
     public void testGetAllVersionsCheckedOutAndPWC() throws Exception
     {
-        GetAllVersions request = new GetAllVersions();
         Holder<String> documentIdHolder = new Holder<String>(documentId);
         Holder<Boolean> contentCopied = new Holder<Boolean>();
         boolean checkedOutfound = false;
@@ -243,24 +214,18 @@ public class DMVersioningServiceTest extends AbstractServiceTest
         try
         {
             helper.checkOut(documentIdHolder, contentCopied);
-            request.setRepositoryId(repositoryId);
-            request.setVersionSeriesId(documentId);
-            request.setFilter(cmisObjectFactory.createGetAllVersionsFilter("*"));
-            request.setIncludeAllowableActions(cmisObjectFactory.createGetAllVersionsIncludeAllowableActions(Boolean.FALSE));
-            request.setIncludeRelationships(cmisObjectFactory.createGetAllVersionsIncludeRelationships(EnumIncludeRelationships.NONE));
 
-            GetAllVersionsResponse response = ((VersioningServicePort) servicePort).getAllVersions(request);
+            List<CmisObjectType> response = ((VersioningServicePort) servicePort).getAllVersions(repositoryId, documentId, "*", false, EnumIncludeRelationships.NONE);
             assertNotNull(response);
-            assertNotNull(response.getObject());
-            for (CmisObjectType cmisObjectType : response.getObject())
+            for (CmisObjectType cmisObjectType : response)
             {
                 if (!checkedOutfound)
                 {
-                    checkedOutfound = (Boolean) propertiesUtil.getCmisPropertyValue(cmisObjectType.getProperties(), CMISDictionaryModel.PROP_IS_VERSION_SERIES_CHECKED_OUT, null);
+                    checkedOutfound = getBooleanProperty(cmisObjectType.getProperties(), CMISDictionaryModel.PROP_IS_VERSION_SERIES_CHECKED_OUT);
                 }
                 if (!pwcFound)
                 {
-                    pwcFound = ((String) propertiesUtil.getCmisPropertyValue(cmisObjectType.getProperties(), CMISDictionaryModel.PROP_OBJECT_ID, null)).startsWith(documentIdHolder.value);
+                    pwcFound = (getIdProperty(cmisObjectType.getProperties(), CMISDictionaryModel.PROP_OBJECT_ID)).startsWith(documentIdHolder.value);
                 }
             }
             assertTrue("No checked out version found", checkedOutfound);
@@ -274,6 +239,7 @@ public class DMVersioningServiceTest extends AbstractServiceTest
 
     public void testDeleteAllVersions() throws Exception
     {
-        ((VersioningServicePort) servicePort).deleteAllVersions(repositoryId, documentId);
+        // TODO: Schema bug. It possible should be returned
+        // ((VersioningServicePort) servicePort).deleteAllVersions(repositoryId, documentId);
     }
 }

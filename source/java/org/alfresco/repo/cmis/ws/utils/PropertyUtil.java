@@ -136,26 +136,6 @@ public class PropertyUtil
     }
 
     /**
-     * @return <b>String</b> value that contains standard not updatable properties filter token
-     */
-    public String createStandardNotUpdatablePropertiesFilter()
-    {
-        StringBuilder filter = new StringBuilder(CMISDictionaryModel.PROP_OBJECT_ID);
-        filter.append(PropertyFilter.PROPERTY_NAME_TOKENS_DELIMETER);
-        filter.append(CMISDictionaryModel.PROP_OBJECT_TYPE_ID);
-        filter.append(PropertyFilter.PROPERTY_NAME_TOKENS_DELIMETER);
-        filter.append(CMISDictionaryModel.PROP_ALLOWED_CHILD_OBJECT_TYPE_IDS);
-        filter.append(PropertyFilter.PROPERTY_NAME_TOKENS_DELIMETER);
-        filter.append(CMISDictionaryModel.PROP_PARENT_ID);
-        filter.append(PropertyFilter.PROPERTY_NAME_TOKENS_DELIMETER);
-        filter.append(CMISDictionaryModel.PROP_VERSION_SERIES_CHECKED_OUT_ID);
-        filter.append(PropertyFilter.PROPERTY_NAME_TOKENS_DELIMETER);
-        filter.append(CMISDictionaryModel.PROP_VERSION_SERIES_ID);
-
-        return filter.toString();
-    }
-
-    /**
      * Gets property value by its name from Node Reference object
      * 
      * @param objectNodeRef - <b>NodeRef</b> instance that represents Id of the source object
@@ -190,7 +170,7 @@ public class PropertyUtil
      * @return value instance of the appropriate type if specified <i>cmisProperties</i> contains specified properties and <i>defaultValue</i> if requested property value or
      *         <i>cmisProperties</i> or <i>property</i> are <b>null</b> or if some exception occurred during property searching and receiving
      */
-    public <ResultType> ResultType getCmisPropertyValue(CmisPropertiesType cmisProperties, String property, ResultType defaultValue)
+    public <ResultType> ResultType getCmisPropertyValue(CmisPropertiesType cmisProperties, String property, ResultType defaultValue) throws CmisException
     {
         if ((null == property) || (null == cmisProperties))
         {
@@ -199,7 +179,7 @@ public class PropertyUtil
 
         for (CmisProperty cmisProperty : cmisProperties.getProperty())
         {
-            if ((null != cmisProperty) && property.equals(cmisProperty.getName()))
+            if ((null != cmisProperty) && property.equals(getPropertyName(cmisProperty)))
             {
                 return convertPropertyValue(getValue(cmisProperty), defaultValue);
             }
@@ -226,183 +206,130 @@ public class PropertyUtil
         }
     }
 
-    private Object getValue(CmisProperty cmisProperty)
+    private Object getValue(CmisProperty cmisProperty) throws CmisException
     {
         Object value = null;
+        String propertyName = getPropertyName(cmisProperty);
+        if ((null == cmisProperty) || (null == propertyName))
+        {
+            return value;
+        }
+
+        PropertyMultiValueStateEnum multivaluedState = getPropertyMultiValuedState(null, propertyName);
+        Collection<?> convertedValue = null;
 
         if (cmisProperty instanceof CmisPropertyBoolean)
         {
-            Collection<Boolean> convertedValue = ((CmisPropertyBoolean) cmisProperty).getValue();
-
-            if (null != convertedValue)
-            {
-                if (1 == convertedValue.size())
-                {
-                    value = convertedValue.iterator().next();
-                }
-                else
-                {
-                    if (convertedValue.size() > 1)
-            {
-                        value = convertedValue;
-                    }
-                }
-            }
+            convertedValue = ((CmisPropertyBoolean) cmisProperty).getValue();
         }
         else if (cmisProperty instanceof CmisPropertyDateTime)
         {
-            Collection<XMLGregorianCalendar> convertedValue = ((CmisPropertyDateTime) cmisProperty).getValue();
-
-            if (null != convertedValue)
-            {
-                if (1 == convertedValue.size())
-                {
-                    value = convertedValue.iterator().next();
-                }
-                else
-            {
-                    if (convertedValue.size() > 1)
-                    {
-                        value = convertedValue;
-                    }
-                }
-            }
+            convertedValue = ((CmisPropertyDateTime) cmisProperty).getValue();
         }
         else if (cmisProperty instanceof CmisPropertyDecimal)
         {
-            Collection<BigDecimal> convertedValue = ((CmisPropertyDecimal) cmisProperty).getValue();
-
-            if (null != convertedValue)
-            {
-                if (1 == convertedValue.size())
-                {
-                    value = convertedValue.iterator().next();
-                }
-                else
-                {
-                    if (convertedValue.size() > 1)
-            {
-                        value = convertedValue;
-                    }
-                }
-            }
+            convertedValue = ((CmisPropertyDecimal) cmisProperty).getValue();
         }
         else if (cmisProperty instanceof CmisPropertyHtml)
         {
-            Collection<CmisPropertyHtml.Value> convertedValue = ((CmisPropertyHtml) cmisProperty).getValue();
-
-            if (null != convertedValue)
-            {
-                if (1 == convertedValue.size())
-                {
-                    value = convertedValue.iterator().next();
-                }
-                else
-                {
-                    if (convertedValue.size() > 1)
-                    {
-                        value = convertedValue;
-                    }
-                }
-            }
+            convertedValue = ((CmisPropertyHtml) cmisProperty).getValue();
         }
         else if (cmisProperty instanceof CmisPropertyId)
         {
-            Collection<String> convertedValue = ((CmisPropertyId) cmisProperty).getValue();
-
-            if (null != convertedValue)
-            {
-                if (1 == convertedValue.size())
-                {
-                    value = convertedValue.iterator().next();
-                }
-                else
-                {
-                    if (convertedValue.size() > 1)
-            {
-                        value = convertedValue;
-                    }
-                }
-            }
+            convertedValue = ((CmisPropertyId) cmisProperty).getValue();
         }
         else if (cmisProperty instanceof CmisPropertyInteger)
         {
-            Collection<BigInteger> convertedValue = ((CmisPropertyInteger) cmisProperty).getValue();
-
-            if (null != convertedValue)
-            {
-                if (1 == convertedValue.size())
-            {
-                    value = convertedValue.iterator().next();
-                }
-                else
-                {
-                    if (convertedValue.size() > 1)
-                    {
-                        value = convertedValue;
-                    }
-                }
-            }
+            convertedValue = ((CmisPropertyInteger) cmisProperty).getValue();
         }
         else if (cmisProperty instanceof CmisPropertyString)
         {
-            Collection<String> convertedValue = ((CmisPropertyString) cmisProperty).getValue();
-
-            if (null != convertedValue)
-            {
-                if (1 == convertedValue.size())
-                {
-                    value = convertedValue.iterator().next();
-                }
-                else
-                {
-                    if (convertedValue.size() > 1)
-            {
-                        value = convertedValue;
-                    }
-                }
-            }
+            convertedValue = ((CmisPropertyString) cmisProperty).getValue();
         }
         else if (cmisProperty instanceof CmisPropertyUri)
         {
-            Collection<String> convertedValue = ((CmisPropertyUri) cmisProperty).getValue();
-
-            if (null != convertedValue)
-            {
-                if (1 == convertedValue.size())
-                {
-                    value = convertedValue.iterator().next();
-                }
-                else
-                {
-                    if (convertedValue.size() > 1)
-                    {
-                        value = convertedValue;
-                    }
-                }
-            }
+            convertedValue = ((CmisPropertyUri) cmisProperty).getValue();
         }
         else if (cmisProperty instanceof CmisPropertyXml)
         {
-            Collection<CmisPropertyXml.Value> convertedValue = ((CmisPropertyXml) cmisProperty).getValue();
+            convertedValue = ((CmisPropertyXml) cmisProperty).getValue();
+        }
 
-            if (null != convertedValue)
+        if (null != convertedValue)
+        {
+            if (isMultiValued(propertyName, multivaluedState, convertedValue))
             {
-                if (1 == convertedValue.size())
-                {
-                    value = convertedValue.iterator().next();
-                }
-                else
-                {
-                    if (convertedValue.size() > 1)
-                    {
-                        value = convertedValue;
-                    }
-                }
+                value = (convertedValue.size() > 0) ? (convertedValue) : (null);
+            }
+            else
+            {
+                value = convertedValue.iterator().next();
             }
         }
 
         return value;
+    }
+
+    private boolean isMultiValued(String propertyName, PropertyMultiValueStateEnum state, Collection<?> values) throws CmisException
+    {
+        // TODO: WARNING!!! This is invalid behavior! Multi valued property state can't be identified in this way!!!
+        if (PropertyMultiValueStateEnum.PROPERTY_NOT_FOUND == state)
+        {
+            return (values.size() > 0) ? (values.size() > 1) : (true);
+        }
+
+        if ((PropertyMultiValueStateEnum.PROPERTY_NOT_MULTIVALUED == state) && (values.size() > 1))
+        {
+            throw cmisObjectsUtils.createCmisException("\"" + propertyName + "\" property is not Multi Valued", EnumServiceException.INVALID_ARGUMENT);
+        }
+
+        return PropertyMultiValueStateEnum.PROPERTY_MULTIVALUED == state;
+    }
+
+    private PropertyMultiValueStateEnum getPropertyMultiValuedState(String typeId, String cmisPropertyName)
+    {
+        if ((null == cmisPropertyName) || cmisPropertyName.equals(""))
+        {
+            return PropertyMultiValueStateEnum.PROPERTY_NOT_FOUND;
+        }
+
+        CMISTypeDefinition typeDefinition = ((null != typeId) && !typeId.equals("")) ? (cmisDictionaryService.findType(typeId)) : (null);
+        CMISPropertyDefinition propertyDefinition = null;
+        if ((null != typeDefinition) && (null != typeDefinition.getOwnedPropertyDefinitions()))
+        {
+            propertyDefinition = typeDefinition.getOwnedPropertyDefinitions().get(cmisPropertyName);
+        }
+        else
+        {
+            propertyDefinition = cmisDictionaryService.findProperty(cmisPropertyName, null);
+        }
+
+        if ((null == propertyDefinition) || (null == propertyDefinition.getPropertyAccessor()))
+        {
+            return PropertyMultiValueStateEnum.PROPERTY_NOT_FOUND;
+        }
+
+        PropertyDefinition nativePropertyDefinition = null;
+        if (null != propertyDefinition.getPropertyAccessor().getMappedProperty())
+        {
+            nativePropertyDefinition = dictionaryService.getProperty(propertyDefinition.getPropertyAccessor().getMappedProperty());
+        }
+        else
+        {
+            nativePropertyDefinition = dictionaryService.getProperty(createQName(cmisPropertyName));
+        }
+
+        if (null == nativePropertyDefinition)
+        {
+            return PropertyMultiValueStateEnum.PROPERTY_NOT_FOUND;
+        }
+
+        return (nativePropertyDefinition.isMultiValued()) ? (PropertyMultiValueStateEnum.PROPERTY_MULTIVALUED) : (PropertyMultiValueStateEnum.PROPERTY_NOT_MULTIVALUED);
+    }
+
+    private enum PropertyMultiValueStateEnum
+    {
+        PROPERTY_MULTIVALUED, PROPERTY_NOT_MULTIVALUED, PROPERTY_NOT_FOUND;
     }
 
     /**
@@ -425,8 +352,8 @@ public class PropertyUtil
         {
             if (null != cmisProperty)
             {
-                String name = cmisProperty.getName();
-                properties.put(name, getValue(cmisProperty));
+                String pdid = getPropertyName(cmisProperty);
+                properties.put(pdid, getValue(cmisProperty));
             }
         }
 
@@ -438,11 +365,12 @@ public class PropertyUtil
      * 
      * @param nodeRef - <b>NodeRef</b> for node for those properties must be setted
      * @param properties - <b>CmisPropertiesType</b> instance that contains all the necessary properties' fields
-     * @param updateOptional - <b>boolean</b> value. If <b>true</b> - optionally updatable properties will be updated and will be ignored in other case
+     * @param ignoringPropertiesFilter - <b>PropertyFilter</b> instance. This filter determines which properties should be ignored and not setted without exception. If this
+     *        parameter is <b>null</b> all properties will be processed in common flow
      */
-    public void setProperties(NodeRef nodeRef, CmisPropertiesType properties, PropertyFilter notUpdatablePropertiesFilter) throws CmisException
+    public void setProperties(NodeRef nodeRef, CmisPropertiesType properties, PropertyFilter ignoringPropertiesFilter) throws CmisException
     {
-        // TODO: WARINING!!! This is WRONG behavior!!! Each CMIS object type and each property MUST be described in appropriate CMIS manner
+        // TODO: WARINING!!! This is WRONG behavior!!! Each CMIS object type and each property MUST be described in appropriate to CMIS manner
         if ((null == nodeRef) || (null == properties) || (null == properties.getProperty()))
         {
             return;
@@ -461,31 +389,48 @@ public class PropertyUtil
 
         for (CmisProperty property : properties.getProperty())
         {
-            String propertyName = (null != property) ? (property.getName()) : (null);
-            if ((null != propertyName) && !notUpdatablePropertiesFilter.allow(propertyName))
+            String propertyName = getPropertyName(property);
+            if ((null == propertyName) || ((null != ignoringPropertiesFilter) && ignoringPropertiesFilter.allow(propertyName)))
             {
-                Object value = getValue(property);
-                QName alfrescoPropertyName = null;
-                switch (checkProperty(nativeObjectType, cmisObjectType, propertyName, value, checkedOut))
-                {
-                case PROPERTY_CHECKED:
-                    {
-                    alfrescoPropertyName = cmisDictionaryService.findProperty(propertyName, cmisObjectType).getPropertyAccessor().getMappedProperty();
-                    break;
-                }
-                case PROPERTY_NATIVE:
-                {
-                    alfrescoPropertyName = createQName(propertyName);
-                    break;
-                }
-                case PROPERTY_NOT_UPDATABLE:
-                {
-                    continue;
-                    }
-                }
-                nodeService.setProperty(nodeRef, alfrescoPropertyName, (Serializable) value);
+                continue;
+            }
+
+            Object value = getValue(property);
+            QName alfrescoPropertyName = null;
+            switch (checkProperty(nativeObjectType, cmisObjectType, propertyName, value, checkedOut))
+            {
+            case PROPERTY_CHECKED:
+            {
+                alfrescoPropertyName = cmisDictionaryService.findProperty(propertyName, cmisObjectType).getPropertyAccessor().getMappedProperty();
+                break;
+            }
+            case PROPERTY_NATIVE:
+            {
+                alfrescoPropertyName = createQName(propertyName);
+                break;
+            }
+            case PROPERTY_NOT_UPDATABLE:
+            {
+                throw cmisObjectsUtils.createCmisException(("\"" + propertyName + "\" property is not updatable by repository for specified Object id"),
+                        EnumServiceException.CONSTRAINT);
+            }
+            }
+            nodeService.setProperty(nodeRef, alfrescoPropertyName, (Serializable) value);
+        }
+    }
+
+    public String getPropertyName(CmisProperty property)
+    {
+        String propertyName = (null != property) ? (property.getPdid()) : (null);
+        if (null == propertyName)
+        {
+            propertyName = property.getLocalname();
+            if (null == propertyName)
+            {
+                propertyName = property.getDisplayname();
             }
         }
+        return propertyName;
     }
 
     private QName createQName(String s)
@@ -516,7 +461,7 @@ public class PropertyUtil
     {
         CMISPropertyDefinition propertyDefinition = cmisDictionaryService.findProperty(propertyName, cmisObjectType);
 
-        if ((null == propertyDefinition) || ((null != propertyDefinition) && (null == propertyDefinition.getPropertyAccessor().getMappedProperty())))
+        if (null == propertyDefinition)
         {
             // TODO: WARINING!!! This is WRONG behavior!!! Each CMIS object type and each property MUST be described in appropriate CMIS manner
             QName qualifiedName = createQName(propertyName);
@@ -531,7 +476,12 @@ public class PropertyUtil
         boolean updatable = ((checkedOut) ? (CMISUpdatabilityEnum.READ_AND_WRITE_WHEN_CHECKED_OUT == propertyDefinition.getUpdatability())
                 : (CMISUpdatabilityEnum.READ_AND_WRITE == propertyDefinition.getUpdatability()));
 
-        if (updatable && propertyDefinition.isRequired() && (value == null))
+        if (!updatable)
+        {
+            return PropertyCheckingStateEnum.PROPERTY_NOT_UPDATABLE;
+        }
+
+        if (propertyDefinition.isRequired() && (value == null))
         {
             throw cmisObjectsUtils.createCmisException((propertyName + " property required"), EnumServiceException.CONSTRAINT);
         }
@@ -637,20 +587,20 @@ public class PropertyUtil
     /**
      * Creates and initializes appropriate <b>CmisProperty</b> instance by name and data type
      * 
-     * @param name - <b>String</b> value that represents CMIS property name
+     * @param pdid - <b>String</b> value that represents CMIS property name
      * @param dataType - <b>CMISDataTypeEnum</b> value that specifies real type of the property
      * @param value - some instance of appropriate type or some <b>Collection</b> that contains several values of the type
      * @return appropriate <b>CmisProperty</b> instance
      */
     @SuppressWarnings("unchecked")
-    public CmisProperty createProperty(String name, CMISDataTypeEnum dataType, Serializable value)
+    public CmisProperty createProperty(String pdid, CMISDataTypeEnum dataType, Serializable value)
     {
         switch (dataType)
         {
         case BOOLEAN:
         {
             CmisPropertyBoolean property = new CmisPropertyBoolean();
-            property.setName(name);
+            property.setPdid(pdid);
 
             if (value instanceof Collection)
             {
@@ -669,7 +619,7 @@ public class PropertyUtil
         case STRING:
         {
             CmisPropertyString property = new CmisPropertyString();
-            property.setName(name);
+            property.setPdid(pdid);
 
             if (value instanceof Collection)
             {
@@ -688,7 +638,7 @@ public class PropertyUtil
         case INTEGER:
         {
             CmisPropertyInteger property = new CmisPropertyInteger();
-            property.setName(name);
+            property.setPdid(pdid);
 
             if (value instanceof Collection)
             {
@@ -707,7 +657,7 @@ public class PropertyUtil
         case DATETIME:
         {
             CmisPropertyDateTime property = new CmisPropertyDateTime();
-            property.setName(name);
+            property.setPdid(pdid);
 
             if (value instanceof Collection)
             {
@@ -734,7 +684,7 @@ public class PropertyUtil
         case ID:
         {
             CmisPropertyId property = new CmisPropertyId();
-            property.setName(name);
+            property.setPdid(pdid);
 
             if (value instanceof Collection)
             {
@@ -753,7 +703,7 @@ public class PropertyUtil
         case URI:
         {
             CmisPropertyUri property = new CmisPropertyUri();
-            property.setName(name);
+            property.setPdid(pdid);
 
             if (value instanceof Collection)
             {
@@ -772,7 +722,7 @@ public class PropertyUtil
         case DECIMAL:
         {
             CmisPropertyDecimal property = new CmisPropertyDecimal();
-            property.setName(name);
+            property.setPdid(pdid);
 
             if (value instanceof Collection)
             {
@@ -791,7 +741,7 @@ public class PropertyUtil
         case XML:
         {
             CmisPropertyXml property = new CmisPropertyXml();
-            property.setName(name);
+            property.setPdid(pdid);
 
             if (value instanceof Collection)
             {
@@ -810,7 +760,7 @@ public class PropertyUtil
         case HTML:
         {
             CmisPropertyHtml property = new CmisPropertyHtml();
-            property.setName(name);
+            property.setPdid(pdid);
 
             if (value instanceof Collection)
             {

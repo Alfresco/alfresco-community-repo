@@ -1,6 +1,7 @@
 
 package org.alfresco.repo.cmis.ws;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -10,6 +11,7 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAnyAttribute;
 import javax.xml.bind.annotation.XmlAnyElement;
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.namespace.QName;
 import org.w3c.dom.Element;
@@ -33,9 +35,12 @@ import org.w3c.dom.Element;
  *         &lt;element name="productName" type="{http://www.w3.org/2001/XMLSchema}string"/>
  *         &lt;element name="productVersion" type="{http://www.w3.org/2001/XMLSchema}string"/>
  *         &lt;element name="rootFolderId" type="{http://www.w3.org/2001/XMLSchema}string"/>
+ *         &lt;element name="latestChangeToken" type="{http://www.w3.org/2001/XMLSchema}string"/>
  *         &lt;element name="capabilities" type="{http://docs.oasis-open.org/ns/cmis/core/200901}cmisRepositoryCapabilitiesType"/>
- *         &lt;element name="cmisVersionSupported" type="{http://www.w3.org/2001/XMLSchema}string"/>
- *         &lt;element name="repositorySpecificInformation" type="{http://docs.oasis-open.org/ns/cmis/core/200901}cmisAnyXml" minOccurs="0"/>
+ *         &lt;element name="aclCapability" type="{http://docs.oasis-open.org/ns/cmis/core/200901}cmisACLCapabilityType" minOccurs="0"/>
+ *         &lt;element name="cmisVersionSupported" type="{http://www.w3.org/2001/XMLSchema}decimal"/>
+ *         &lt;element name="thinClientURI" type="{http://www.w3.org/2001/XMLSchema}anyURI" minOccurs="0"/>
+ *         &lt;element name="changesIncomplete" type="{http://www.w3.org/2001/XMLSchema}boolean" minOccurs="0"/>
  *         &lt;any/>
  *       &lt;/sequence>
  *       &lt;attGroup ref="{http://docs.oasis-open.org/ns/cmis/core/200901}cmisUndefinedAttribute"/>
@@ -56,9 +61,12 @@ import org.w3c.dom.Element;
     "productName",
     "productVersion",
     "rootFolderId",
+    "latestChangeToken",
     "capabilities",
+    "aclCapability",
     "cmisVersionSupported",
-    "repositorySpecificInformation",
+    "thinClientURI",
+    "changesIncomplete",
     "any"
 })
 public class CmisRepositoryInfoType {
@@ -80,10 +88,15 @@ public class CmisRepositoryInfoType {
     @XmlElement(required = true)
     protected String rootFolderId;
     @XmlElement(required = true)
-    protected CmisRepositoryCapabilitiesType capabilities;
+    protected String latestChangeToken;
     @XmlElement(required = true)
-    protected String cmisVersionSupported;
-    protected CmisAnyXml repositorySpecificInformation;
+    protected CmisRepositoryCapabilitiesType capabilities;
+    protected CmisACLCapabilityType aclCapability;
+    @XmlElement(required = true)
+    protected BigDecimal cmisVersionSupported;
+    @XmlSchemaType(name = "anyURI")
+    protected String thinClientURI;
+    protected Boolean changesIncomplete;
     @XmlAnyElement(lax = true)
     protected List<Object> any;
     @XmlAnyAttribute
@@ -282,6 +295,30 @@ public class CmisRepositoryInfoType {
     }
 
     /**
+     * Gets the value of the latestChangeToken property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getLatestChangeToken() {
+        return latestChangeToken;
+    }
+
+    /**
+     * Sets the value of the latestChangeToken property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setLatestChangeToken(String value) {
+        this.latestChangeToken = value;
+    }
+
+    /**
      * Gets the value of the capabilities property.
      * 
      * @return
@@ -306,14 +343,38 @@ public class CmisRepositoryInfoType {
     }
 
     /**
+     * Gets the value of the aclCapability property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link CmisACLCapabilityType }
+     *     
+     */
+    public CmisACLCapabilityType getAclCapability() {
+        return aclCapability;
+    }
+
+    /**
+     * Sets the value of the aclCapability property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link CmisACLCapabilityType }
+     *     
+     */
+    public void setAclCapability(CmisACLCapabilityType value) {
+        this.aclCapability = value;
+    }
+
+    /**
      * Gets the value of the cmisVersionSupported property.
      * 
      * @return
      *     possible object is
-     *     {@link String }
+     *     {@link BigDecimal }
      *     
      */
-    public String getCmisVersionSupported() {
+    public BigDecimal getCmisVersionSupported() {
         return cmisVersionSupported;
     }
 
@@ -322,35 +383,59 @@ public class CmisRepositoryInfoType {
      * 
      * @param value
      *     allowed object is
-     *     {@link String }
+     *     {@link BigDecimal }
      *     
      */
-    public void setCmisVersionSupported(String value) {
+    public void setCmisVersionSupported(BigDecimal value) {
         this.cmisVersionSupported = value;
     }
 
     /**
-     * Gets the value of the repositorySpecificInformation property.
+     * Gets the value of the thinClientURI property.
      * 
      * @return
      *     possible object is
-     *     {@link CmisAnyXml }
+     *     {@link String }
      *     
      */
-    public CmisAnyXml getRepositorySpecificInformation() {
-        return repositorySpecificInformation;
+    public String getThinClientURI() {
+        return thinClientURI;
     }
 
     /**
-     * Sets the value of the repositorySpecificInformation property.
+     * Sets the value of the thinClientURI property.
      * 
      * @param value
      *     allowed object is
-     *     {@link CmisAnyXml }
+     *     {@link String }
      *     
      */
-    public void setRepositorySpecificInformation(CmisAnyXml value) {
-        this.repositorySpecificInformation = value;
+    public void setThinClientURI(String value) {
+        this.thinClientURI = value;
+    }
+
+    /**
+     * Gets the value of the changesIncomplete property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link Boolean }
+     *     
+     */
+    public Boolean isChangesIncomplete() {
+        return changesIncomplete;
+    }
+
+    /**
+     * Sets the value of the changesIncomplete property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link Boolean }
+     *     
+     */
+    public void setChangesIncomplete(Boolean value) {
+        this.changesIncomplete = value;
     }
 
     /**
@@ -371,8 +456,8 @@ public class CmisRepositoryInfoType {
      * 
      * <p>
      * Objects of the following type(s) are allowed in the list
-     * {@link Object }
      * {@link Element }
+     * {@link Object }
      * 
      * 
      */

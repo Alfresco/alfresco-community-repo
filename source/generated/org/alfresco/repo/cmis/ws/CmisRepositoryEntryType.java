@@ -26,9 +26,10 @@ import org.w3c.dom.Element;
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
- *         &lt;element name="repositoryId" type="{http://www.w3.org/2001/XMLSchema}string"/>
- *         &lt;element name="repositoryName" type="{http://www.w3.org/2001/XMLSchema}string"/>
- *         &lt;element name="repositoryURI" type="{http://www.w3.org/2001/XMLSchema}anyURI"/>
+ *         &lt;element name="id" type="{http://www.w3.org/2001/XMLSchema}string"/>
+ *         &lt;element name="name" type="{http://www.w3.org/2001/XMLSchema}string"/>
+ *         &lt;element name="relationship" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
+ *         &lt;element name="thinClientURI" type="{http://www.w3.org/2001/XMLSchema}anyURI" minOccurs="0"/>
  *         &lt;any/>
  *       &lt;/sequence>
  *       &lt;attGroup ref="{http://docs.oasis-open.org/ns/cmis/core/200901}cmisUndefinedAttribute"/>
@@ -40,96 +41,121 @@ import org.w3c.dom.Element;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "cmisRepositoryEntryType", namespace = "http://docs.oasis-open.org/ns/cmis/core/200901", propOrder = {
-    "repositoryId",
-    "repositoryName",
-    "repositoryURI",
+@XmlType(name = "cmisRepositoryEntryType", propOrder = {
+    "id",
+    "name",
+    "relationship",
+    "thinClientURI",
     "any"
 })
 public class CmisRepositoryEntryType {
 
     @XmlElement(required = true)
-    protected String repositoryId;
+    protected String id;
     @XmlElement(required = true)
-    protected String repositoryName;
-    @XmlElement(required = true)
+    protected String name;
+    protected String relationship;
     @XmlSchemaType(name = "anyURI")
-    protected String repositoryURI;
+    protected String thinClientURI;
     @XmlAnyElement(lax = true)
     protected List<Object> any;
     @XmlAnyAttribute
     private Map<QName, String> otherAttributes = new HashMap<QName, String>();
 
     /**
-     * Gets the value of the repositoryId property.
+     * Gets the value of the id property.
      * 
      * @return
      *     possible object is
      *     {@link String }
      *     
      */
-    public String getRepositoryId() {
-        return repositoryId;
+    public String getId() {
+        return id;
     }
 
     /**
-     * Sets the value of the repositoryId property.
+     * Sets the value of the id property.
      * 
      * @param value
      *     allowed object is
      *     {@link String }
      *     
      */
-    public void setRepositoryId(String value) {
-        this.repositoryId = value;
+    public void setId(String value) {
+        this.id = value;
     }
 
     /**
-     * Gets the value of the repositoryName property.
+     * Gets the value of the name property.
      * 
      * @return
      *     possible object is
      *     {@link String }
      *     
      */
-    public String getRepositoryName() {
-        return repositoryName;
+    public String getName() {
+        return name;
     }
 
     /**
-     * Sets the value of the repositoryName property.
+     * Sets the value of the name property.
      * 
      * @param value
      *     allowed object is
      *     {@link String }
      *     
      */
-    public void setRepositoryName(String value) {
-        this.repositoryName = value;
+    public void setName(String value) {
+        this.name = value;
     }
 
     /**
-     * Gets the value of the repositoryURI property.
+     * Gets the value of the relationship property.
      * 
      * @return
      *     possible object is
      *     {@link String }
      *     
      */
-    public String getRepositoryURI() {
-        return repositoryURI;
+    public String getRelationship() {
+        return relationship;
     }
 
     /**
-     * Sets the value of the repositoryURI property.
+     * Sets the value of the relationship property.
      * 
      * @param value
      *     allowed object is
      *     {@link String }
      *     
      */
-    public void setRepositoryURI(String value) {
-        this.repositoryURI = value;
+    public void setRelationship(String value) {
+        this.relationship = value;
+    }
+
+    /**
+     * Gets the value of the thinClientURI property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getThinClientURI() {
+        return thinClientURI;
+    }
+
+    /**
+     * Sets the value of the thinClientURI property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setThinClientURI(String value) {
+        this.thinClientURI = value;
     }
 
     /**
@@ -150,8 +176,8 @@ public class CmisRepositoryEntryType {
      * 
      * <p>
      * Objects of the following type(s) are allowed in the list
-     * {@link Object }
      * {@link Element }
+     * {@link Object }
      * 
      * 
      */

@@ -27,15 +27,16 @@ import org.w3c.dom.Element;
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
  *         &lt;choice maxOccurs="unbounded" minOccurs="0">
- *           &lt;element ref="{http://docs.oasis-open.org/ns/cmis/core/200901}propertyBoolean"/>
- *           &lt;element ref="{http://docs.oasis-open.org/ns/cmis/core/200901}propertyId"/>
- *           &lt;element ref="{http://docs.oasis-open.org/ns/cmis/core/200901}propertyInteger"/>
- *           &lt;element ref="{http://docs.oasis-open.org/ns/cmis/core/200901}propertyDateTime"/>
- *           &lt;element ref="{http://docs.oasis-open.org/ns/cmis/core/200901}propertyDecimal"/>
- *           &lt;element ref="{http://docs.oasis-open.org/ns/cmis/core/200901}propertyHtml"/>
- *           &lt;element ref="{http://docs.oasis-open.org/ns/cmis/core/200901}propertyString"/>
- *           &lt;element ref="{http://docs.oasis-open.org/ns/cmis/core/200901}propertyUri"/>
- *           &lt;element ref="{http://docs.oasis-open.org/ns/cmis/core/200901}propertyXml"/>
+ *           &lt;element name="propertyBoolean" type="{http://docs.oasis-open.org/ns/cmis/core/200901}cmisPropertyBoolean"/>
+ *           &lt;element name="propertyId" type="{http://docs.oasis-open.org/ns/cmis/core/200901}cmisPropertyId"/>
+ *           &lt;element name="propertyInteger" type="{http://docs.oasis-open.org/ns/cmis/core/200901}cmisPropertyInteger"/>
+ *           &lt;element name="propertyDateTime" type="{http://docs.oasis-open.org/ns/cmis/core/200901}cmisPropertyDateTime"/>
+ *           &lt;element name="propertyDecimal" type="{http://docs.oasis-open.org/ns/cmis/core/200901}cmisPropertyDecimal"/>
+ *           &lt;element name="propertyHtml" type="{http://docs.oasis-open.org/ns/cmis/core/200901}cmisPropertyHtml"/>
+ *           &lt;element name="propertyXhtml" type="{http://docs.oasis-open.org/ns/cmis/core/200901}cmisPropertyXhtml"/>
+ *           &lt;element name="propertyString" type="{http://docs.oasis-open.org/ns/cmis/core/200901}cmisPropertyString"/>
+ *           &lt;element name="propertyUri" type="{http://docs.oasis-open.org/ns/cmis/core/200901}cmisPropertyUri"/>
+ *           &lt;element name="propertyXml" type="{http://docs.oasis-open.org/ns/cmis/core/200901}cmisPropertyXml"/>
  *         &lt;/choice>
  *         &lt;any/>
  *       &lt;/sequence>
@@ -55,15 +56,16 @@ import org.w3c.dom.Element;
 public class CmisPropertiesType {
 
     @XmlElements({
-        @XmlElement(name = "propertyBoolean", type = CmisPropertyBoolean.class, nillable = true),
-        @XmlElement(name = "propertyDecimal", type = CmisPropertyDecimal.class, nillable = true),
-        @XmlElement(name = "propertyXml", type = CmisPropertyXml.class, nillable = true),
-        @XmlElement(name = "propertyDateTime", type = CmisPropertyDateTime.class, nillable = true),
+        @XmlElement(name = "propertyXhtml", type = CmisPropertyXhtml.class, nillable = true),
+        @XmlElement(name = "propertyHtml", type = CmisPropertyHtml.class, nillable = true),
         @XmlElement(name = "propertyInteger", type = CmisPropertyInteger.class, nillable = true),
         @XmlElement(name = "propertyString", type = CmisPropertyString.class, nillable = true),
-        @XmlElement(name = "propertyHtml", type = CmisPropertyHtml.class, nillable = true),
         @XmlElement(name = "propertyUri", type = CmisPropertyUri.class, nillable = true),
-        @XmlElement(name = "propertyId", type = CmisPropertyId.class, nillable = true)
+        @XmlElement(name = "propertyId", type = CmisPropertyId.class, nillable = true),
+        @XmlElement(name = "propertyDateTime", type = CmisPropertyDateTime.class, nillable = true),
+        @XmlElement(name = "propertyXml", type = CmisPropertyXml.class, nillable = true),
+        @XmlElement(name = "propertyDecimal", type = CmisPropertyDecimal.class, nillable = true),
+        @XmlElement(name = "propertyBoolean", type = CmisPropertyBoolean.class, nillable = true)
     })
     protected List<CmisProperty> property;
     @XmlAnyElement(lax = true)
@@ -89,15 +91,16 @@ public class CmisPropertiesType {
      * 
      * <p>
      * Objects of the following type(s) are allowed in the list
-     * {@link CmisPropertyBoolean }
-     * {@link CmisPropertyDecimal }
-     * {@link CmisPropertyXml }
-     * {@link CmisPropertyDateTime }
+     * {@link CmisPropertyXhtml }
+     * {@link CmisPropertyHtml }
      * {@link CmisPropertyInteger }
      * {@link CmisPropertyString }
-     * {@link CmisPropertyHtml }
      * {@link CmisPropertyUri }
      * {@link CmisPropertyId }
+     * {@link CmisPropertyDateTime }
+     * {@link CmisPropertyXml }
+     * {@link CmisPropertyDecimal }
+     * {@link CmisPropertyBoolean }
      * 
      * 
      */
@@ -126,8 +129,8 @@ public class CmisPropertiesType {
      * 
      * <p>
      * Objects of the following type(s) are allowed in the list
-     * {@link Object }
      * {@link Element }
+     * {@link Object }
      * 
      * 
      */

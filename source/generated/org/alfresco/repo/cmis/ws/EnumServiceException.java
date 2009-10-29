@@ -17,12 +17,9 @@ import javax.xml.bind.annotation.XmlType;
  *     &lt;enumeration value="constraint"/>
  *     &lt;enumeration value="contentAlreadyExists"/>
  *     &lt;enumeration value="filterNotValid"/>
- *     &lt;enumeration value="folderNotValid"/>
  *     &lt;enumeration value="invalidArgument"/>
- *     &lt;enumeration value="notInFolder"/>
- *     &lt;enumeration value="objectNotFound"/>
- *     &lt;enumeration value="offset"/>
  *     &lt;enumeration value="notSupported"/>
+ *     &lt;enumeration value="objectNotFound"/>
  *     &lt;enumeration value="permissionDenied"/>
  *     &lt;enumeration value="runtime"/>
  *     &lt;enumeration value="storage"/>
@@ -45,18 +42,12 @@ public enum EnumServiceException {
     CONTENT_ALREADY_EXISTS("contentAlreadyExists"),
     @XmlEnumValue("filterNotValid")
     FILTER_NOT_VALID("filterNotValid"),
-    @XmlEnumValue("folderNotValid")
-    FOLDER_NOT_VALID("folderNotValid"),
     @XmlEnumValue("invalidArgument")
     INVALID_ARGUMENT("invalidArgument"),
-    @XmlEnumValue("notInFolder")
-    NOT_IN_FOLDER("notInFolder"),
-    @XmlEnumValue("objectNotFound")
-    OBJECT_NOT_FOUND("objectNotFound"),
-    @XmlEnumValue("offset")
-    OFFSET("offset"),
     @XmlEnumValue("notSupported")
     NOT_SUPPORTED("notSupported"),
+    @XmlEnumValue("objectNotFound")
+    OBJECT_NOT_FOUND("objectNotFound"),
     @XmlEnumValue("permissionDenied")
     PERMISSION_DENIED("permissionDenied"),
     @XmlEnumValue("runtime")

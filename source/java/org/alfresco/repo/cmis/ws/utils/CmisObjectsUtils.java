@@ -37,7 +37,7 @@ import org.alfresco.cmis.CMISTypeDefinition;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.cmis.ws.CmisException;
 import org.alfresco.repo.cmis.ws.CmisFaultType;
-import org.alfresco.repo.cmis.ws.EnumObjectType;
+import org.alfresco.repo.cmis.ws.EnumBaseObjectTypeIds;
 import org.alfresco.repo.cmis.ws.EnumRelationshipDirection;
 import org.alfresco.repo.cmis.ws.EnumServiceException;
 import org.alfresco.repo.cmis.ws.utils.DescendantsQueueManager.DescendantElement;
@@ -344,25 +344,25 @@ public class CmisObjectsUtils
         return false;
     }
 
-    public EnumObjectType determineObjectType(String identifier)
+    public EnumBaseObjectTypeIds determineObjectType(String identifier)
     {
         if (isRelationship(identifier))
         {
-            return EnumObjectType.RELATIONSHIP;
+            return EnumBaseObjectTypeIds.CMIS_RELATIONSHIP;
         }
 
         NodeRef objectNodeReference = new NodeRef(identifier);
         if (isFolder(objectNodeReference))
         {
-            return EnumObjectType.FOLDER;
+            return EnumBaseObjectTypeIds.CMIS_FOLDER;
         }
 
         if (isDocument(objectNodeReference))
         {
-            return EnumObjectType.DOCUMENT;
+            return EnumBaseObjectTypeIds.CMIS_DOCUMENT;
         }
 
-        return EnumObjectType.POLICY;
+        return EnumBaseObjectTypeIds.CMIS_POLICY;
     }
 
     public boolean isChildOfThisFolder(NodeRef objectNodeReference, NodeRef folderNodeReference)
@@ -422,13 +422,12 @@ public class CmisObjectsUtils
                 if ((null != latestVersion) && (VersionType.MAJOR != latestVersion.getVersionType()))
                 {
                     VersionHistory versionHistory = versionService.getVersionHistory(latestVersion.getFrozenStateNodeRef());
-
                     if (null != versionHistory)
                     {
-                        do
+                        for (latestVersion = versionHistory.getPredecessor(latestVersion); (null != latestVersion) && (VersionType.MAJOR != latestVersion.getVersionType()); latestVersion = versionHistory
+                                .getPredecessor(latestVersion))
                         {
-                            latestVersion = versionHistory.getPredecessor(latestVersion);
-                        } while ((null != latestVersion) && (VersionType.MAJOR != latestVersion.getVersionType()));
+                        }
                     }
 
                     if ((null != latestVersion) && (null != latestVersion.getFrozenStateNodeRef()))
@@ -527,11 +526,11 @@ public class CmisObjectsUtils
             {
                 result = getNodeRefFromVersion(result, nodeRefAndVersionLabel.getSecond());
 
-                if ((null != result) || !nodeService.exists(result))
+                if ((null != result) && nodeService.exists(result))
                 {
-                return result;
+                    return result;
+                }
             }
-        }
         }
 
         throw createCmisException(INVALID_OBJECT_IDENTIFIER_MESSAGE, EnumServiceException.OBJECT_NOT_FOUND);
@@ -575,7 +574,7 @@ public class CmisObjectsUtils
                 }
 
                 result = version.getFrozenStateNodeRef();
-        }
+            }
         }
 
         return result;
@@ -616,6 +615,7 @@ public class CmisObjectsUtils
             this.children = children;
         }
 
+        @SuppressWarnings("unused")
         protected UnlinkOperationStatus()
         {
         }

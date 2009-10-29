@@ -14,18 +14,8 @@ import javax.xml.bind.annotation.XmlType;
  * <pre>
  * &lt;simpleType name="enumPropertiesRelationship">
  *   &lt;restriction base="{http://www.w3.org/2001/XMLSchema}string">
- *     &lt;enumeration value="Name"/>
- *     &lt;enumeration value="ObjectId"/>
- *     &lt;enumeration value="Uri"/>
- *     &lt;enumeration value="ObjectTypeId"/>
- *     &lt;enumeration value="BaseTypeId"/>
- *     &lt;enumeration value="CreatedBy"/>
- *     &lt;enumeration value="CreationDate"/>
- *     &lt;enumeration value="LastModifiedBy"/>
- *     &lt;enumeration value="LastModificationDate"/>
- *     &lt;enumeration value="ChangeToken"/>
- *     &lt;enumeration value="SourceId"/>
- *     &lt;enumeration value="TargetId"/>
+ *     &lt;enumeration value="cmis:SourceId"/>
+ *     &lt;enumeration value="cmis:TargetId"/>
  *   &lt;/restriction>
  * &lt;/simpleType>
  * </pre>
@@ -35,30 +25,10 @@ import javax.xml.bind.annotation.XmlType;
 @XmlEnum
 public enum EnumPropertiesRelationship {
 
-    @XmlEnumValue("Name")
-    NAME("Name"),
-    @XmlEnumValue("ObjectId")
-    OBJECT_ID("ObjectId"),
-    @XmlEnumValue("Uri")
-    URI("Uri"),
-    @XmlEnumValue("ObjectTypeId")
-    OBJECT_TYPE_ID("ObjectTypeId"),
-    @XmlEnumValue("BaseTypeId")
-    BASE_TYPE_ID("BaseTypeId"),
-    @XmlEnumValue("CreatedBy")
-    CREATED_BY("CreatedBy"),
-    @XmlEnumValue("CreationDate")
-    CREATION_DATE("CreationDate"),
-    @XmlEnumValue("LastModifiedBy")
-    LAST_MODIFIED_BY("LastModifiedBy"),
-    @XmlEnumValue("LastModificationDate")
-    LAST_MODIFICATION_DATE("LastModificationDate"),
-    @XmlEnumValue("ChangeToken")
-    CHANGE_TOKEN("ChangeToken"),
-    @XmlEnumValue("SourceId")
-    SOURCE_ID("SourceId"),
-    @XmlEnumValue("TargetId")
-    TARGET_ID("TargetId");
+    @XmlEnumValue("cmis:SourceId")
+    CMIS_SOURCE_ID("cmis:SourceId"),
+    @XmlEnumValue("cmis:TargetId")
+    CMIS_TARGET_ID("cmis:TargetId");
     private final String value;
 
     EnumPropertiesRelationship(String v) {

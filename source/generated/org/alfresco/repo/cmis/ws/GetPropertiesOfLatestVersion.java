@@ -22,8 +22,9 @@ import javax.xml.bind.annotation.XmlType;
  *       &lt;sequence>
  *         &lt;element name="repositoryId" type="{http://www.w3.org/2001/XMLSchema}string"/>
  *         &lt;element name="versionSeriesId" type="{http://www.w3.org/2001/XMLSchema}string"/>
- *         &lt;element name="majorVersion" type="{http://www.w3.org/2001/XMLSchema}boolean"/>
+ *         &lt;element name="major" type="{http://www.w3.org/2001/XMLSchema}boolean"/>
  *         &lt;element name="filter" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
+ *         &lt;element name="includeACL" type="{http://www.w3.org/2001/XMLSchema}boolean" minOccurs="0"/>
  *       &lt;/sequence>
  *     &lt;/restriction>
  *   &lt;/complexContent>
@@ -36,8 +37,9 @@ import javax.xml.bind.annotation.XmlType;
 @XmlType(name = "", propOrder = {
     "repositoryId",
     "versionSeriesId",
-    "majorVersion",
-    "filter"
+    "major",
+    "filter",
+    "includeACL"
 })
 @XmlRootElement(name = "getPropertiesOfLatestVersion")
 public class GetPropertiesOfLatestVersion {
@@ -46,9 +48,11 @@ public class GetPropertiesOfLatestVersion {
     protected String repositoryId;
     @XmlElement(required = true)
     protected String versionSeriesId;
-    protected boolean majorVersion;
+    protected boolean major;
     @XmlElementRef(name = "filter", namespace = "http://docs.oasis-open.org/ns/cmis/messaging/200901", type = JAXBElement.class)
     protected JAXBElement<String> filter;
+    @XmlElementRef(name = "includeACL", namespace = "http://docs.oasis-open.org/ns/cmis/messaging/200901", type = JAXBElement.class)
+    protected JAXBElement<Boolean> includeACL;
 
     /**
      * Gets the value of the repositoryId property.
@@ -99,19 +103,19 @@ public class GetPropertiesOfLatestVersion {
     }
 
     /**
-     * Gets the value of the majorVersion property.
+     * Gets the value of the major property.
      * 
      */
-    public boolean isMajorVersion() {
-        return majorVersion;
+    public boolean isMajor() {
+        return major;
     }
 
     /**
-     * Sets the value of the majorVersion property.
+     * Sets the value of the major property.
      * 
      */
-    public void setMajorVersion(boolean value) {
-        this.majorVersion = value;
+    public void setMajor(boolean value) {
+        this.major = value;
     }
 
     /**
@@ -136,6 +140,30 @@ public class GetPropertiesOfLatestVersion {
      */
     public void setFilter(JAXBElement<String> value) {
         this.filter = ((JAXBElement<String> ) value);
+    }
+
+    /**
+     * Gets the value of the includeACL property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link JAXBElement }{@code <}{@link Boolean }{@code >}
+     *     
+     */
+    public JAXBElement<Boolean> getIncludeACL() {
+        return includeACL;
+    }
+
+    /**
+     * Sets the value of the includeACL property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link JAXBElement }{@code <}{@link Boolean }{@code >}
+     *     
+     */
+    public void setIncludeACL(JAXBElement<Boolean> value) {
+        this.includeACL = ((JAXBElement<Boolean> ) value);
     }
 
 }

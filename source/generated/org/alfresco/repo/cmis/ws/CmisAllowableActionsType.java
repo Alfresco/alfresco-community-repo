@@ -24,27 +24,24 @@ import org.w3c.dom.Element;
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
- *         &lt;element name="parentId" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
- *         &lt;element name="parentUrl" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
- *         &lt;element name="canDelete" type="{http://www.w3.org/2001/XMLSchema}boolean" minOccurs="0"/>
+ *         &lt;element name="canDeleteObject" type="{http://www.w3.org/2001/XMLSchema}boolean" minOccurs="0"/>
  *         &lt;element name="canUpdateProperties" type="{http://www.w3.org/2001/XMLSchema}boolean" minOccurs="0"/>
  *         &lt;element name="canGetProperties" type="{http://www.w3.org/2001/XMLSchema}boolean" minOccurs="0"/>
  *         &lt;element name="canGetRelationships" type="{http://www.w3.org/2001/XMLSchema}boolean" minOccurs="0"/>
- *         &lt;element name="canGetParents" type="{http://www.w3.org/2001/XMLSchema}boolean" minOccurs="0"/>
+ *         &lt;element name="canGetObjectParents" type="{http://www.w3.org/2001/XMLSchema}boolean" minOccurs="0"/>
  *         &lt;element name="canGetFolderParent" type="{http://www.w3.org/2001/XMLSchema}boolean" minOccurs="0"/>
  *         &lt;element name="canGetDescendants" type="{http://www.w3.org/2001/XMLSchema}boolean" minOccurs="0"/>
- *         &lt;element name="canMove" type="{http://www.w3.org/2001/XMLSchema}boolean" minOccurs="0"/>
- *         &lt;element name="canDeleteVersion" type="{http://www.w3.org/2001/XMLSchema}boolean" minOccurs="0"/>
- *         &lt;element name="canDeleteContent" type="{http://www.w3.org/2001/XMLSchema}boolean" minOccurs="0"/>
- *         &lt;element name="canCheckout" type="{http://www.w3.org/2001/XMLSchema}boolean" minOccurs="0"/>
- *         &lt;element name="canCancelCheckout" type="{http://www.w3.org/2001/XMLSchema}boolean" minOccurs="0"/>
- *         &lt;element name="canCheckin" type="{http://www.w3.org/2001/XMLSchema}boolean" minOccurs="0"/>
- *         &lt;element name="canSetContent" type="{http://www.w3.org/2001/XMLSchema}boolean" minOccurs="0"/>
+ *         &lt;element name="canMoveObject" type="{http://www.w3.org/2001/XMLSchema}boolean" minOccurs="0"/>
+ *         &lt;element name="canDeleteContentStream" type="{http://www.w3.org/2001/XMLSchema}boolean" minOccurs="0"/>
+ *         &lt;element name="canCheckOut" type="{http://www.w3.org/2001/XMLSchema}boolean" minOccurs="0"/>
+ *         &lt;element name="canCancelCheckOut" type="{http://www.w3.org/2001/XMLSchema}boolean" minOccurs="0"/>
+ *         &lt;element name="canCheckIn" type="{http://www.w3.org/2001/XMLSchema}boolean" minOccurs="0"/>
+ *         &lt;element name="canSetContentStream" type="{http://www.w3.org/2001/XMLSchema}boolean" minOccurs="0"/>
  *         &lt;element name="canGetAllVersions" type="{http://www.w3.org/2001/XMLSchema}boolean" minOccurs="0"/>
- *         &lt;element name="canAddToFolder" type="{http://www.w3.org/2001/XMLSchema}boolean" minOccurs="0"/>
- *         &lt;element name="canRemoveFromFolder" type="{http://www.w3.org/2001/XMLSchema}boolean" minOccurs="0"/>
- *         &lt;element name="canViewContent" type="{http://www.w3.org/2001/XMLSchema}boolean" minOccurs="0"/>
- *         &lt;element name="canAddPolicy" type="{http://www.w3.org/2001/XMLSchema}boolean" minOccurs="0"/>
+ *         &lt;element name="canAddObjectToFolder" type="{http://www.w3.org/2001/XMLSchema}boolean" minOccurs="0"/>
+ *         &lt;element name="canRemoveObjectFromFolder" type="{http://www.w3.org/2001/XMLSchema}boolean" minOccurs="0"/>
+ *         &lt;element name="canGetContentStream" type="{http://www.w3.org/2001/XMLSchema}boolean" minOccurs="0"/>
+ *         &lt;element name="canApplyPolicy" type="{http://www.w3.org/2001/XMLSchema}boolean" minOccurs="0"/>
  *         &lt;element name="canGetAppliedPolicies" type="{http://www.w3.org/2001/XMLSchema}boolean" minOccurs="0"/>
  *         &lt;element name="canRemovePolicy" type="{http://www.w3.org/2001/XMLSchema}boolean" minOccurs="0"/>
  *         &lt;element name="canGetChildren" type="{http://www.w3.org/2001/XMLSchema}boolean" minOccurs="0"/>
@@ -53,6 +50,9 @@ import org.w3c.dom.Element;
  *         &lt;element name="canCreateRelationship" type="{http://www.w3.org/2001/XMLSchema}boolean" minOccurs="0"/>
  *         &lt;element name="canCreatePolicy" type="{http://www.w3.org/2001/XMLSchema}boolean" minOccurs="0"/>
  *         &lt;element name="canDeleteTree" type="{http://www.w3.org/2001/XMLSchema}boolean" minOccurs="0"/>
+ *         &lt;element name="canGetRenditions" type="{http://www.w3.org/2001/XMLSchema}boolean" minOccurs="0"/>
+ *         &lt;element name="canGetACL" type="{http://www.w3.org/2001/XMLSchema}boolean" minOccurs="0"/>
+ *         &lt;element name="canApplyACL" type="{http://www.w3.org/2001/XMLSchema}boolean" minOccurs="0"/>
  *         &lt;any/>
  *       &lt;/sequence>
  *       &lt;attGroup ref="{http://docs.oasis-open.org/ns/cmis/core/200901}cmisUndefinedAttribute"/>
@@ -65,27 +65,24 @@ import org.w3c.dom.Element;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "cmisAllowableActionsType", namespace = "http://docs.oasis-open.org/ns/cmis/core/200901", propOrder = {
-    "parentId",
-    "parentUrl",
-    "canDelete",
+    "canDeleteObject",
     "canUpdateProperties",
     "canGetProperties",
     "canGetRelationships",
-    "canGetParents",
+    "canGetObjectParents",
     "canGetFolderParent",
     "canGetDescendants",
-    "canMove",
-    "canDeleteVersion",
-    "canDeleteContent",
-    "canCheckout",
-    "canCancelCheckout",
-    "canCheckin",
-    "canSetContent",
+    "canMoveObject",
+    "canDeleteContentStream",
+    "canCheckOut",
+    "canCancelCheckOut",
+    "canCheckIn",
+    "canSetContentStream",
     "canGetAllVersions",
-    "canAddToFolder",
-    "canRemoveFromFolder",
-    "canViewContent",
-    "canAddPolicy",
+    "canAddObjectToFolder",
+    "canRemoveObjectFromFolder",
+    "canGetContentStream",
+    "canApplyPolicy",
     "canGetAppliedPolicies",
     "canRemovePolicy",
     "canGetChildren",
@@ -94,31 +91,31 @@ import org.w3c.dom.Element;
     "canCreateRelationship",
     "canCreatePolicy",
     "canDeleteTree",
+    "canGetRenditions",
+    "canGetACL",
+    "canApplyACL",
     "any"
 })
 public class CmisAllowableActionsType {
 
-    protected String parentId;
-    protected String parentUrl;
-    protected Boolean canDelete;
+    protected Boolean canDeleteObject;
     protected Boolean canUpdateProperties;
     protected Boolean canGetProperties;
     protected Boolean canGetRelationships;
-    protected Boolean canGetParents;
+    protected Boolean canGetObjectParents;
     protected Boolean canGetFolderParent;
     protected Boolean canGetDescendants;
-    protected Boolean canMove;
-    protected Boolean canDeleteVersion;
-    protected Boolean canDeleteContent;
-    protected Boolean canCheckout;
-    protected Boolean canCancelCheckout;
-    protected Boolean canCheckin;
-    protected Boolean canSetContent;
+    protected Boolean canMoveObject;
+    protected Boolean canDeleteContentStream;
+    protected Boolean canCheckOut;
+    protected Boolean canCancelCheckOut;
+    protected Boolean canCheckIn;
+    protected Boolean canSetContentStream;
     protected Boolean canGetAllVersions;
-    protected Boolean canAddToFolder;
-    protected Boolean canRemoveFromFolder;
-    protected Boolean canViewContent;
-    protected Boolean canAddPolicy;
+    protected Boolean canAddObjectToFolder;
+    protected Boolean canRemoveObjectFromFolder;
+    protected Boolean canGetContentStream;
+    protected Boolean canApplyPolicy;
     protected Boolean canGetAppliedPolicies;
     protected Boolean canRemovePolicy;
     protected Boolean canGetChildren;
@@ -127,81 +124,36 @@ public class CmisAllowableActionsType {
     protected Boolean canCreateRelationship;
     protected Boolean canCreatePolicy;
     protected Boolean canDeleteTree;
+    protected Boolean canGetRenditions;
+    protected Boolean canGetACL;
+    protected Boolean canApplyACL;
     @XmlAnyElement(lax = true)
     protected List<Object> any;
     @XmlAnyAttribute
     private Map<QName, String> otherAttributes = new HashMap<QName, String>();
 
     /**
-     * Gets the value of the parentId property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getParentId() {
-        return parentId;
-    }
-
-    /**
-     * Sets the value of the parentId property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setParentId(String value) {
-        this.parentId = value;
-    }
-
-    /**
-     * Gets the value of the parentUrl property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getParentUrl() {
-        return parentUrl;
-    }
-
-    /**
-     * Sets the value of the parentUrl property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setParentUrl(String value) {
-        this.parentUrl = value;
-    }
-
-    /**
-     * Gets the value of the canDelete property.
+     * Gets the value of the canDeleteObject property.
      * 
      * @return
      *     possible object is
      *     {@link Boolean }
      *     
      */
-    public Boolean isCanDelete() {
-        return canDelete;
+    public Boolean isCanDeleteObject() {
+        return canDeleteObject;
     }
 
     /**
-     * Sets the value of the canDelete property.
+     * Sets the value of the canDeleteObject property.
      * 
      * @param value
      *     allowed object is
      *     {@link Boolean }
      *     
      */
-    public void setCanDelete(Boolean value) {
-        this.canDelete = value;
+    public void setCanDeleteObject(Boolean value) {
+        this.canDeleteObject = value;
     }
 
     /**
@@ -277,27 +229,27 @@ public class CmisAllowableActionsType {
     }
 
     /**
-     * Gets the value of the canGetParents property.
+     * Gets the value of the canGetObjectParents property.
      * 
      * @return
      *     possible object is
      *     {@link Boolean }
      *     
      */
-    public Boolean isCanGetParents() {
-        return canGetParents;
+    public Boolean isCanGetObjectParents() {
+        return canGetObjectParents;
     }
 
     /**
-     * Sets the value of the canGetParents property.
+     * Sets the value of the canGetObjectParents property.
      * 
      * @param value
      *     allowed object is
      *     {@link Boolean }
      *     
      */
-    public void setCanGetParents(Boolean value) {
-        this.canGetParents = value;
+    public void setCanGetObjectParents(Boolean value) {
+        this.canGetObjectParents = value;
     }
 
     /**
@@ -349,171 +301,147 @@ public class CmisAllowableActionsType {
     }
 
     /**
-     * Gets the value of the canMove property.
+     * Gets the value of the canMoveObject property.
      * 
      * @return
      *     possible object is
      *     {@link Boolean }
      *     
      */
-    public Boolean isCanMove() {
-        return canMove;
+    public Boolean isCanMoveObject() {
+        return canMoveObject;
     }
 
     /**
-     * Sets the value of the canMove property.
+     * Sets the value of the canMoveObject property.
      * 
      * @param value
      *     allowed object is
      *     {@link Boolean }
      *     
      */
-    public void setCanMove(Boolean value) {
-        this.canMove = value;
+    public void setCanMoveObject(Boolean value) {
+        this.canMoveObject = value;
     }
 
     /**
-     * Gets the value of the canDeleteVersion property.
+     * Gets the value of the canDeleteContentStream property.
      * 
      * @return
      *     possible object is
      *     {@link Boolean }
      *     
      */
-    public Boolean isCanDeleteVersion() {
-        return canDeleteVersion;
+    public Boolean isCanDeleteContentStream() {
+        return canDeleteContentStream;
     }
 
     /**
-     * Sets the value of the canDeleteVersion property.
+     * Sets the value of the canDeleteContentStream property.
      * 
      * @param value
      *     allowed object is
      *     {@link Boolean }
      *     
      */
-    public void setCanDeleteVersion(Boolean value) {
-        this.canDeleteVersion = value;
+    public void setCanDeleteContentStream(Boolean value) {
+        this.canDeleteContentStream = value;
     }
 
     /**
-     * Gets the value of the canDeleteContent property.
+     * Gets the value of the canCheckOut property.
      * 
      * @return
      *     possible object is
      *     {@link Boolean }
      *     
      */
-    public Boolean isCanDeleteContent() {
-        return canDeleteContent;
+    public Boolean isCanCheckOut() {
+        return canCheckOut;
     }
 
     /**
-     * Sets the value of the canDeleteContent property.
+     * Sets the value of the canCheckOut property.
      * 
      * @param value
      *     allowed object is
      *     {@link Boolean }
      *     
      */
-    public void setCanDeleteContent(Boolean value) {
-        this.canDeleteContent = value;
+    public void setCanCheckOut(Boolean value) {
+        this.canCheckOut = value;
     }
 
     /**
-     * Gets the value of the canCheckout property.
+     * Gets the value of the canCancelCheckOut property.
      * 
      * @return
      *     possible object is
      *     {@link Boolean }
      *     
      */
-    public Boolean isCanCheckout() {
-        return canCheckout;
+    public Boolean isCanCancelCheckOut() {
+        return canCancelCheckOut;
     }
 
     /**
-     * Sets the value of the canCheckout property.
+     * Sets the value of the canCancelCheckOut property.
      * 
      * @param value
      *     allowed object is
      *     {@link Boolean }
      *     
      */
-    public void setCanCheckout(Boolean value) {
-        this.canCheckout = value;
+    public void setCanCancelCheckOut(Boolean value) {
+        this.canCancelCheckOut = value;
     }
 
     /**
-     * Gets the value of the canCancelCheckout property.
+     * Gets the value of the canCheckIn property.
      * 
      * @return
      *     possible object is
      *     {@link Boolean }
      *     
      */
-    public Boolean isCanCancelCheckout() {
-        return canCancelCheckout;
+    public Boolean isCanCheckIn() {
+        return canCheckIn;
     }
 
     /**
-     * Sets the value of the canCancelCheckout property.
+     * Sets the value of the canCheckIn property.
      * 
      * @param value
      *     allowed object is
      *     {@link Boolean }
      *     
      */
-    public void setCanCancelCheckout(Boolean value) {
-        this.canCancelCheckout = value;
+    public void setCanCheckIn(Boolean value) {
+        this.canCheckIn = value;
     }
 
     /**
-     * Gets the value of the canCheckin property.
+     * Gets the value of the canSetContentStream property.
      * 
      * @return
      *     possible object is
      *     {@link Boolean }
      *     
      */
-    public Boolean isCanCheckin() {
-        return canCheckin;
+    public Boolean isCanSetContentStream() {
+        return canSetContentStream;
     }
 
     /**
-     * Sets the value of the canCheckin property.
+     * Sets the value of the canSetContentStream property.
      * 
      * @param value
      *     allowed object is
      *     {@link Boolean }
      *     
      */
-    public void setCanCheckin(Boolean value) {
-        this.canCheckin = value;
-    }
-
-    /**
-     * Gets the value of the canSetContent property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link Boolean }
-     *     
-     */
-    public Boolean isCanSetContent() {
-        return canSetContent;
-    }
-
-    /**
-     * Sets the value of the canSetContent property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link Boolean }
-     *     
-     */
-    public void setCanSetContent(Boolean value) {
-        this.canSetContent = value;
+    public void setCanSetContentStream(Boolean value) {
+        this.canSetContentStream = value;
     }
 
     /**
@@ -541,99 +469,99 @@ public class CmisAllowableActionsType {
     }
 
     /**
-     * Gets the value of the canAddToFolder property.
+     * Gets the value of the canAddObjectToFolder property.
      * 
      * @return
      *     possible object is
      *     {@link Boolean }
      *     
      */
-    public Boolean isCanAddToFolder() {
-        return canAddToFolder;
+    public Boolean isCanAddObjectToFolder() {
+        return canAddObjectToFolder;
     }
 
     /**
-     * Sets the value of the canAddToFolder property.
+     * Sets the value of the canAddObjectToFolder property.
      * 
      * @param value
      *     allowed object is
      *     {@link Boolean }
      *     
      */
-    public void setCanAddToFolder(Boolean value) {
-        this.canAddToFolder = value;
+    public void setCanAddObjectToFolder(Boolean value) {
+        this.canAddObjectToFolder = value;
     }
 
     /**
-     * Gets the value of the canRemoveFromFolder property.
+     * Gets the value of the canRemoveObjectFromFolder property.
      * 
      * @return
      *     possible object is
      *     {@link Boolean }
      *     
      */
-    public Boolean isCanRemoveFromFolder() {
-        return canRemoveFromFolder;
+    public Boolean isCanRemoveObjectFromFolder() {
+        return canRemoveObjectFromFolder;
     }
 
     /**
-     * Sets the value of the canRemoveFromFolder property.
+     * Sets the value of the canRemoveObjectFromFolder property.
      * 
      * @param value
      *     allowed object is
      *     {@link Boolean }
      *     
      */
-    public void setCanRemoveFromFolder(Boolean value) {
-        this.canRemoveFromFolder = value;
+    public void setCanRemoveObjectFromFolder(Boolean value) {
+        this.canRemoveObjectFromFolder = value;
     }
 
     /**
-     * Gets the value of the canViewContent property.
+     * Gets the value of the canGetContentStream property.
      * 
      * @return
      *     possible object is
      *     {@link Boolean }
      *     
      */
-    public Boolean isCanViewContent() {
-        return canViewContent;
+    public Boolean isCanGetContentStream() {
+        return canGetContentStream;
     }
 
     /**
-     * Sets the value of the canViewContent property.
+     * Sets the value of the canGetContentStream property.
      * 
      * @param value
      *     allowed object is
      *     {@link Boolean }
      *     
      */
-    public void setCanViewContent(Boolean value) {
-        this.canViewContent = value;
+    public void setCanGetContentStream(Boolean value) {
+        this.canGetContentStream = value;
     }
 
     /**
-     * Gets the value of the canAddPolicy property.
+     * Gets the value of the canApplyPolicy property.
      * 
      * @return
      *     possible object is
      *     {@link Boolean }
      *     
      */
-    public Boolean isCanAddPolicy() {
-        return canAddPolicy;
+    public Boolean isCanApplyPolicy() {
+        return canApplyPolicy;
     }
 
     /**
-     * Sets the value of the canAddPolicy property.
+     * Sets the value of the canApplyPolicy property.
      * 
      * @param value
      *     allowed object is
      *     {@link Boolean }
      *     
      */
-    public void setCanAddPolicy(Boolean value) {
-        this.canAddPolicy = value;
+    public void setCanApplyPolicy(Boolean value) {
+        this.canApplyPolicy = value;
     }
 
     /**
@@ -829,6 +757,78 @@ public class CmisAllowableActionsType {
     }
 
     /**
+     * Gets the value of the canGetRenditions property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link Boolean }
+     *     
+     */
+    public Boolean isCanGetRenditions() {
+        return canGetRenditions;
+    }
+
+    /**
+     * Sets the value of the canGetRenditions property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link Boolean }
+     *     
+     */
+    public void setCanGetRenditions(Boolean value) {
+        this.canGetRenditions = value;
+    }
+
+    /**
+     * Gets the value of the canGetACL property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link Boolean }
+     *     
+     */
+    public Boolean isCanGetACL() {
+        return canGetACL;
+    }
+
+    /**
+     * Sets the value of the canGetACL property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link Boolean }
+     *     
+     */
+    public void setCanGetACL(Boolean value) {
+        this.canGetACL = value;
+    }
+
+    /**
+     * Gets the value of the canApplyACL property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link Boolean }
+     *     
+     */
+    public Boolean isCanApplyACL() {
+        return canApplyACL;
+    }
+
+    /**
+     * Sets the value of the canApplyACL property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link Boolean }
+     *     
+     */
+    public void setCanApplyACL(Boolean value) {
+        this.canApplyACL = value;
+    }
+
+    /**
      * Gets the value of the any property.
      * 
      * <p>
@@ -846,8 +846,8 @@ public class CmisAllowableActionsType {
      * 
      * <p>
      * Objects of the following type(s) are allowed in the list
-     * {@link Object }
      * {@link Element }
+     * {@link Object }
      * 
      * 
      */

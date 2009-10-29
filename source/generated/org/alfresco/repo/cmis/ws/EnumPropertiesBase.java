@@ -14,16 +14,15 @@ import javax.xml.bind.annotation.XmlType;
  * <pre>
  * &lt;simpleType name="enumPropertiesBase">
  *   &lt;restriction base="{http://www.w3.org/2001/XMLSchema}string">
- *     &lt;enumeration value="ObjectId"/>
- *     &lt;enumeration value="Uri"/>
- *     &lt;enumeration value="ObjectTypeId"/>
- *     &lt;enumeration value="BaseTypeId"/>
- *     &lt;enumeration value="CreatedBy"/>
- *     &lt;enumeration value="CreationDate"/>
- *     &lt;enumeration value="LastModifiedBy"/>
- *     &lt;enumeration value="LastModificationDate"/>
- *     &lt;enumeration value="ChangeToken"/>
- *     &lt;enumeration value="Name"/>
+ *     &lt;enumeration value="cmis:Name"/>
+ *     &lt;enumeration value="cmis:ObjectId"/>
+ *     &lt;enumeration value="cmis:ObjectTypeId"/>
+ *     &lt;enumeration value="cmis:BaseTypeId"/>
+ *     &lt;enumeration value="cmis:CreatedBy"/>
+ *     &lt;enumeration value="cmis:CreationDate"/>
+ *     &lt;enumeration value="cmis:LastModifiedBy"/>
+ *     &lt;enumeration value="cmis:LastModificationDate"/>
+ *     &lt;enumeration value="cmis:ChangeToken"/>
  *   &lt;/restriction>
  * &lt;/simpleType>
  * </pre>
@@ -33,26 +32,24 @@ import javax.xml.bind.annotation.XmlType;
 @XmlEnum
 public enum EnumPropertiesBase {
 
-    @XmlEnumValue("ObjectId")
-    OBJECT_ID("ObjectId"),
-    @XmlEnumValue("Uri")
-    URI("Uri"),
-    @XmlEnumValue("ObjectTypeId")
-    OBJECT_TYPE_ID("ObjectTypeId"),
-    @XmlEnumValue("BaseTypeId")
-    BASE_TYPE_ID("BaseTypeId"),
-    @XmlEnumValue("CreatedBy")
-    CREATED_BY("CreatedBy"),
-    @XmlEnumValue("CreationDate")
-    CREATION_DATE("CreationDate"),
-    @XmlEnumValue("LastModifiedBy")
-    LAST_MODIFIED_BY("LastModifiedBy"),
-    @XmlEnumValue("LastModificationDate")
-    LAST_MODIFICATION_DATE("LastModificationDate"),
-    @XmlEnumValue("ChangeToken")
-    CHANGE_TOKEN("ChangeToken"),
-    @XmlEnumValue("Name")
-    NAME("Name");
+    @XmlEnumValue("cmis:Name")
+    CMIS_NAME("cmis:Name"),
+    @XmlEnumValue("cmis:ObjectId")
+    CMIS_OBJECT_ID("cmis:ObjectId"),
+    @XmlEnumValue("cmis:ObjectTypeId")
+    CMIS_OBJECT_TYPE_ID("cmis:ObjectTypeId"),
+    @XmlEnumValue("cmis:BaseTypeId")
+    CMIS_BASE_TYPE_ID("cmis:BaseTypeId"),
+    @XmlEnumValue("cmis:CreatedBy")
+    CMIS_CREATED_BY("cmis:CreatedBy"),
+    @XmlEnumValue("cmis:CreationDate")
+    CMIS_CREATION_DATE("cmis:CreationDate"),
+    @XmlEnumValue("cmis:LastModifiedBy")
+    CMIS_LAST_MODIFIED_BY("cmis:LastModifiedBy"),
+    @XmlEnumValue("cmis:LastModificationDate")
+    CMIS_LAST_MODIFICATION_DATE("cmis:LastModificationDate"),
+    @XmlEnumValue("cmis:ChangeToken")
+    CMIS_CHANGE_TOKEN("cmis:ChangeToken");
     private final String value;
 
     EnumPropertiesBase(String v) {

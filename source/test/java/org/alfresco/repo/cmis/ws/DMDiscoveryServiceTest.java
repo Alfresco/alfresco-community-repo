@@ -26,16 +26,17 @@ package org.alfresco.repo.cmis.ws;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.List;
 
 import javax.xml.namespace.QName;
+import javax.xml.ws.Holder;
 import javax.xml.ws.Service;
 
 public class DMDiscoveryServiceTest extends AbstractServiceTest
 {
-
     public final static String SERVICE_WSDL_LOCATION = CmisServiceTestHelper.ALFRESCO_URL + "/cmis/DiscoveryService?wsdl";
     public final static QName SERVICE_NAME = new QName("http://docs.oasis-open.org/ns/cmis/ws/200901", "DiscoveryService");
-    public final static String STATEMENT = "SELECT * FROM Document";
+    public final static String STATEMENT = "SELECT * FROM cmis:document";
 
     public DMDiscoveryServiceTest()
     {
@@ -65,7 +66,7 @@ public class DMDiscoveryServiceTest extends AbstractServiceTest
 
     public void testQuery() throws Exception
     {
-        CmisQueryType request = new CmisQueryType();
+        Query request = new Query();
         request.setRepositoryId(repositoryId);
         request.setStatement(STATEMENT);
         QueryResponse response = ((DiscoveryServicePort) servicePort).query(request);
@@ -84,6 +85,18 @@ public class DMDiscoveryServiceTest extends AbstractServiceTest
         else
         {
             fail("The query returned no results");
+        }
+    }
+
+    public void testGetContentChanges() throws Exception
+    {
+        try
+        {
+            ((DiscoveryServicePort) servicePort).getContentChanges(repositoryId, null, null, null, null, null, new Holder<List<CmisObjectType>>());
+        }
+        catch (CmisException e)
+        {
+            assertTrue(e.getFaultInfo().getType().equals(EnumServiceException.RUNTIME));
         }
     }
 }

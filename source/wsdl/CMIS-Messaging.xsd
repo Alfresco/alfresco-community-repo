@@ -3,8 +3,7 @@
 	targetNamespace="http://docs.oasis-open.org/ns/cmis/messaging/200901"
 	xmlns:cmis="http://docs.oasis-open.org/ns/cmis/core/200901"
 	xmlns:cmism="http://docs.oasis-open.org/ns/cmis/messaging/200901"
-	xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
-	version="0.61" 
+	xmlns:jaxb="http://java.sun.com/xml/ns/jaxb" version="0.62g"
 	xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc"
 	jaxb:extensionBindingPrefixes="xjc" jaxb:version="2.1"
 	elementFormDefault="qualified">
@@ -26,12 +25,9 @@
 			<xs:enumeration value="constraint" />
 			<xs:enumeration value="contentAlreadyExists" />
 			<xs:enumeration value="filterNotValid" />
-			<xs:enumeration value="folderNotValid" />
 			<xs:enumeration value="invalidArgument" />
-			<xs:enumeration value="notInFolder" />
-			<xs:enumeration value="objectNotFound" />
-			<xs:enumeration value="offset" />
 			<xs:enumeration value="notSupported" />
+			<xs:enumeration value="objectNotFound" />
 			<xs:enumeration value="permissionDenied" />
 			<xs:enumeration value="runtime" />
 			<xs:enumeration value="storage" />
@@ -42,6 +38,46 @@
 		</xs:restriction>
 	</xs:simpleType>
 
+
+	<!-- types for WS -->
+	<xs:complexType name="cmisTypeContainer">
+		<xs:sequence>
+			<xs:element name="type" type="cmis:cmisTypeDefinitionType" />
+			<xs:element name="children" type="cmism:cmisTypeContainer"
+				minOccurs="0" maxOccurs="unbounded" />
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:complexType name="cmisRepositoryEntryType">
+		<xs:sequence>
+			<xs:element name="id" type="xs:string" minOccurs="1"
+				maxOccurs="1" />
+			<xs:element name="name" type="xs:string" minOccurs="1"
+				maxOccurs="1" />
+			<xs:element name="relationship" type="xs:string"
+				minOccurs="0" maxOccurs="1" />
+			<xs:element name="thinClientURI" type="xs:anyURI"
+				minOccurs="0" maxOccurs="1" />
+			<xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded"
+				processContents="lax" />
+		</xs:sequence>
+		<xs:attributeGroup ref="cmis:cmisUndefinedAttribute" />
+	</xs:complexType>
+
+	<xs:complexType name="cmisContentStreamType">
+		<xs:sequence>
+			<xs:element name="length" type="xs:integer" />
+			<xs:element name="mimeType" type="xs:string" minOccurs="0" />
+			<xs:element name="filename" type="xs:string" minOccurs="0" />
+			<xs:element name="uri" type="xs:anyURI" minOccurs="0" />
+			<xs:element name="stream" type="xs:base64Binary"
+				xmime:expectedContentTypes="application/octet-stream" xmlns:xmime="http://www.w3.org/2005/05/xmlmime" />
+			<xs:any namespace="##other" processContents="lax" minOccurs="0"
+				maxOccurs="unbounded" />
+		</xs:sequence>
+		<xs:attributeGroup ref="cmis:cmisUndefinedAttribute" />
+	</xs:complexType>
+
 	<!--[Repository Services]-->
 	<xs:element name="getRepositories">
 		<xs:complexType>
@@ -51,7 +87,7 @@
 	<xs:element name="getRepositoriesResponse">
 		<xs:complexType>
 			<xs:sequence>
-				<xs:element name="repository" type="cmis:cmisRepositoryEntryType"
+				<xs:element name="repository" type="cmism:cmisRepositoryEntryType"
 					minOccurs="0" maxOccurs="unbounded" nillable="true" />
 			</xs:sequence>
 		</xs:complexType>
@@ -75,8 +111,8 @@
 		</xs:complexType>
 	</xs:element>
 
-	<!-- getTypes Operation -->
-	<xs:element name="getTypes">
+	<!-- getTypeChildren Operation -->
+	<xs:element name="getTypeChildren">
 		<xs:complexType>
 			<xs:sequence>
 				<xs:element name="repositoryId" type="xs:string"
@@ -92,13 +128,37 @@
 			</xs:sequence>
 		</xs:complexType>
 	</xs:element>
-	<xs:element name="getTypesResponse">
+	<xs:element name="getTypeChildrenResponse">
 		<xs:complexType>
 			<xs:sequence>
 				<xs:element name="type" type="cmis:cmisTypeDefinitionType"
 					minOccurs="0" maxOccurs="unbounded" />
 				<xs:element name="hasMoreItems" type="xs:boolean"
 					minOccurs="1" maxOccurs="1" />
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+
+	<!-- getTypeDescendants Operation -->
+	<xs:element name="getTypeDescendants">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="repositoryId" type="xs:string"
+					minOccurs="1" maxOccurs="1" />
+				<xs:element name="typeId" type="xs:string" minOccurs="0"
+					maxOccurs="1" nillable="true" />
+				<xs:element name="depth" type="xs:integer" minOccurs="0"
+					maxOccurs="1" nillable="true" />
+				<xs:element name="includePropertyDefinitions" type="xs:boolean"
+					minOccurs="0" maxOccurs="1" nillable="true" />
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="getTypeDescendantsResponse">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="type" type="cmism:cmisTypeContainer"
+					minOccurs="0" maxOccurs="unbounded" />
 			</xs:sequence>
 		</xs:complexType>
 	</xs:element>
@@ -132,8 +192,6 @@
 					minOccurs="1" maxOccurs="1" />
 				<xs:element name="folderId" type="xs:string" minOccurs="1"
 					maxOccurs="1" />
-				<xs:element name="type" type="cmis:enumTypesOfFileableObjects"
-					minOccurs="0" maxOccurs="1" />
 				<xs:element name="depth" type="xs:integer" minOccurs="0"
 					maxOccurs="1" nillable="true" />
 				<xs:element name="filter" type="xs:string" minOccurs="0"
@@ -142,6 +200,8 @@
 					minOccurs="0" maxOccurs="1" nillable="true" />
 				<xs:element name="includeRelationships" type="cmis:enumIncludeRelationships"
 					minOccurs="0" maxOccurs="1" nillable="true" />
+				<xs:element name="includeRenditions" type="xs:boolean"
+					minOccurs="0" maxOccurs="1" nillable="true" />
 				<xs:element name="orderBy" type="xs:string" minOccurs="0" />
 			</xs:sequence>
 		</xs:complexType>
@@ -149,7 +209,36 @@
 	<xs:element name="getDescendantsResponse">
 		<xs:complexType>
 			<xs:sequence>
-				<xs:element ref="cmis:object" minOccurs="0" maxOccurs="unbounded" />
+				<xs:element name="object" type="cmis:cmisObjectType"
+					minOccurs="0" maxOccurs="unbounded" />
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+
+	<!-- getDescendants Operation -->
+	<xs:element name="getFolderTree">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="repositoryId" type="xs:string"
+					minOccurs="1" maxOccurs="1" />
+				<xs:element name="folderId" type="xs:string" minOccurs="1"
+					maxOccurs="1" />
+				<xs:element name="filter" type="xs:string" minOccurs="0"
+					maxOccurs="1" nillable="true" />
+				<xs:element name="depth" type="xs:integer" minOccurs="0"
+					maxOccurs="1" nillable="true" />
+				<xs:element name="includeAllowableActions" type="xs:boolean"
+					minOccurs="0" maxOccurs="1" nillable="true" />
+				<xs:element name="includeRelationships" type="cmis:enumIncludeRelationships"
+					minOccurs="0" maxOccurs="1" nillable="true" />
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="getFolderTreeResponse">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="object" type="cmis:cmisObjectType"
+					minOccurs="0" maxOccurs="unbounded" />
 			</xs:sequence>
 		</xs:complexType>
 	</xs:element>
@@ -162,13 +251,15 @@
 					minOccurs="1" maxOccurs="1" />
 				<xs:element name="folderId" type="xs:string" minOccurs="1"
 					maxOccurs="1" />
-				<xs:element name="type" type="cmis:enumTypesOfFileableObjects"
-					minOccurs="0" maxOccurs="1" nillable="true" />
 				<xs:element name="filter" type="xs:string" minOccurs="0"
 					maxOccurs="1" nillable="true" />
 				<xs:element name="includeAllowableActions" type="xs:boolean"
 					minOccurs="0" maxOccurs="1" nillable="true" />
 				<xs:element name="includeRelationships" type="cmis:enumIncludeRelationships"
+					minOccurs="0" maxOccurs="1" nillable="true" />
+				<xs:element name="includeRenditions" type="xs:boolean"
+					minOccurs="0" maxOccurs="1" nillable="true" />
+				<xs:element name="includeACL" type="xs:boolean"
 					minOccurs="0" maxOccurs="1" nillable="true" />
 				<xs:element name="maxItems" type="xs:integer" minOccurs="0"
 					maxOccurs="1" nillable="true" />
@@ -181,7 +272,8 @@
 	<xs:element name="getChildrenResponse">
 		<xs:complexType>
 			<xs:sequence>
-				<xs:element ref="cmis:object" minOccurs="0" maxOccurs="unbounded" />
+				<xs:element name="object" type="cmis:cmisObjectType"
+					minOccurs="0" maxOccurs="unbounded" />
 				<xs:element name="hasMoreItems" type="xs:boolean"
 					minOccurs="1" maxOccurs="1" />
 			</xs:sequence>
@@ -198,19 +290,14 @@
 					maxOccurs="1" />
 				<xs:element name="filter" type="xs:string" minOccurs="0"
 					maxOccurs="1" />
-				<xs:element name="includeAllowableActions" type="xs:boolean"
-					minOccurs="0" maxOccurs="1" nillable="true" />
-				<xs:element name="includeRelationships" type="cmis:enumIncludeRelationships"
-					minOccurs="0" maxOccurs="1" nillable="true" />
-				<xs:element name="returnToRoot" type="xs:boolean"
-					minOccurs="0" maxOccurs="1" nillable="true" />
 			</xs:sequence>
 		</xs:complexType>
 	</xs:element>
 	<xs:element name="getFolderParentResponse">
 		<xs:complexType>
 			<xs:sequence>
-				<xs:element ref="cmis:object" minOccurs="0" maxOccurs="unbounded" />
+				<xs:element name="object" type="cmis:cmisObjectType"
+					minOccurs="0" maxOccurs="1" />
 			</xs:sequence>
 		</xs:complexType>
 	</xs:element>
@@ -225,23 +312,46 @@
 					maxOccurs="1" />
 				<xs:element name="filter" type="xs:string" minOccurs="0"
 					maxOccurs="1" />
-				<xs:element name="includeAllowableActions" type="xs:boolean"
-					minOccurs="0" maxOccurs="1" nillable="true" />
-				<xs:element name="includeRelationships" type="cmis:enumIncludeRelationships"
-					minOccurs="0" maxOccurs="1" nillable="true" />
 			</xs:sequence>
 		</xs:complexType>
 	</xs:element>
 	<xs:element name="getObjectParentsResponse">
 		<xs:complexType>
 			<xs:sequence>
-				<xs:element ref="cmis:object" minOccurs="0" maxOccurs="unbounded" />
+				<xs:element name="object" type="cmis:cmisObjectType"
+					minOccurs="0" maxOccurs="unbounded" />
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+
+	<!-- getObjectParents Operation-->
+	<xs:element name="getRenditions">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="repositoryId" type="xs:string"
+					minOccurs="1" maxOccurs="1" />
+				<xs:element name="objectId" type="xs:string" minOccurs="1"
+					maxOccurs="1" />
+				<xs:element name="renditionFilter" type="xs:string"
+					minOccurs="0" maxOccurs="1" />
+				<xs:element name="maxItems" type="xs:integer" minOccurs="0"
+					maxOccurs="1" nillable="true" />
+				<xs:element name="skipCount" type="xs:integer" minOccurs="0"
+					maxOccurs="1" nillable="true" />
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="getRenditionsResponse">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="rendition" type="cmis:cmisRenditionType"
+					minOccurs="0" maxOccurs="unbounded" />
 			</xs:sequence>
 		</xs:complexType>
 	</xs:element>
 
 	<!-- getCheckedoutDocs Operation -->
-	<xs:element name="getCheckedoutDocs">
+	<xs:element name="getCheckedOutDocs">
 		<xs:complexType>
 			<xs:sequence>
 				<xs:element name="repositoryId" type="xs:string"
@@ -263,10 +373,11 @@
 			</xs:sequence>
 		</xs:complexType>
 	</xs:element>
-	<xs:element name="getCheckedoutDocsResponse">
+	<xs:element name="getCheckedOutDocsResponse">
 		<xs:complexType>
 			<xs:sequence>
-				<xs:element ref="cmis:object" minOccurs="0" maxOccurs="unbounded" />
+				<xs:element name="object" type="cmis:cmisObjectType"
+					minOccurs="0" maxOccurs="unbounded" />
 				<xs:element name="hasMoreItems" type="xs:boolean"
 					minOccurs="1" maxOccurs="1" />
 			</xs:sequence>
@@ -281,15 +392,19 @@
 			<xs:sequence>
 				<xs:element name="repositoryId" type="xs:string"
 					minOccurs="1" maxOccurs="1" />
-				<xs:element name="typeId" type="xs:string" minOccurs="1"
-					maxOccurs="1" />
 				<xs:element name="properties" type="cmis:cmisPropertiesType"
 					minOccurs="1" maxOccurs="1" />
 				<xs:element name="folderId" type="xs:string" minOccurs="0"
 					maxOccurs="1" />
-				<xs:element name="contentStream" type="cmis:cmisContentStreamType"
+				<xs:element name="contentStream" type="cmism:cmisContentStreamType"
 					minOccurs="0" maxOccurs="1" nillable="true" />
 				<xs:element name="versioningState" type="cmis:enumVersioningState"
+					minOccurs="0" maxOccurs="1" nillable="true" />
+				<xs:element name="applyPolicies" type="xs:string"
+					minOccurs="0" maxOccurs="unbounded" nillable="true" />
+				<xs:element name="addACEs" type="cmis:cmisAccessControlListType"
+					minOccurs="0" maxOccurs="1" nillable="true" />
+				<xs:element name="removeACEs" type="cmis:cmisAccessControlListType"
 					minOccurs="0" maxOccurs="1" nillable="true" />
 			</xs:sequence>
 		</xs:complexType>
@@ -309,13 +424,17 @@
 			<xs:sequence>
 				<xs:element name="repositoryId" type="xs:string"
 					minOccurs="1" maxOccurs="1" />
-				<xs:element name="typeId" type="xs:string" minOccurs="1"
-					maxOccurs="1" />
 				<xs:element name="properties" type="cmis:cmisPropertiesType"
 					minOccurs="1" maxOccurs="1" />
 				<!-- must match the type attribute value of the properties object -->
 				<xs:element name="folderId" type="xs:string" minOccurs="1"
 					maxOccurs="1" />
+				<xs:element name="applyPolicies" type="xs:string"
+					minOccurs="0" maxOccurs="unbounded" nillable="true" />
+				<xs:element name="addACEs" type="cmis:cmisAccessControlListType"
+					minOccurs="0" maxOccurs="1" nillable="true" />
+				<xs:element name="removeACEs" type="cmis:cmisAccessControlListType"
+					minOccurs="0" maxOccurs="1" nillable="true" />
 			</xs:sequence>
 		</xs:complexType>
 	</xs:element>
@@ -334,8 +453,6 @@
 			<xs:sequence>
 				<xs:element name="repositoryId" type="xs:string"
 					minOccurs="1" maxOccurs="1" />
-				<xs:element name="typeId" type="xs:string" minOccurs="1"
-					maxOccurs="1" />
 				<xs:element name="properties" type="cmis:cmisPropertiesType"
 					minOccurs="1" maxOccurs="1" />
 				<!-- must match the type attribute value of the properties object -->
@@ -351,6 +468,13 @@
 					if targetObjectId exist in the properties passed in then their
 					values MUST match
 				-->
+
+				<xs:element name="applyPolicies" type="xs:string"
+					minOccurs="0" maxOccurs="unbounded" nillable="true" />
+				<xs:element name="addACEs" type="cmis:cmisAccessControlListType"
+					minOccurs="0" maxOccurs="1" nillable="true" />
+				<xs:element name="removeACEs" type="cmis:cmisAccessControlListType"
+					minOccurs="0" maxOccurs="1" nillable="true" />
 			</xs:sequence>
 		</xs:complexType>
 	</xs:element>
@@ -369,8 +493,6 @@
 			<xs:sequence>
 				<xs:element name="repositoryId" type="xs:string"
 					minOccurs="1" maxOccurs="1" />
-				<xs:element name="typeId" type="xs:string" minOccurs="1"
-					maxOccurs="1" />
 				<xs:element name="properties" type="cmis:cmisPropertiesType"
 					minOccurs="1" maxOccurs="1" />
 				<!--
@@ -379,6 +501,7 @@
 				-->
 				<xs:element name="folderId" type="xs:string" minOccurs="0"
 					maxOccurs="1" nillable="true" />
+
 			</xs:sequence>
 		</xs:complexType>
 	</xs:element>
@@ -428,13 +551,13 @@
 					minOccurs="1" maxOccurs="1" />
 				<xs:element name="objectId" type="xs:string" minOccurs="1"
 					maxOccurs="1" />
-				<xs:element name="returnVersion" type="cmis:enumReturnVersion"
-					minOccurs="0" maxOccurs="1" nillable="true" />
 				<xs:element name="filter" type="xs:string" minOccurs="0"
 					maxOccurs="1" nillable="true" />
 				<xs:element name="includeAllowableActions" type="xs:boolean"
 					minOccurs="0" maxOccurs="1" nillable="true" />
 				<xs:element name="includeRelationships" type="cmis:enumIncludeRelationships"
+					minOccurs="0" maxOccurs="1" nillable="true" />
+				<xs:element name="includeACL" type="xs:boolean"
 					minOccurs="0" maxOccurs="1" nillable="true" />
 			</xs:sequence>
 		</xs:complexType>
@@ -442,10 +565,44 @@
 	<xs:element name="getPropertiesResponse">
 		<xs:complexType>
 			<xs:sequence>
-				<xs:element ref="cmis:object" minOccurs="1" maxOccurs="1" />
+				<xs:element name="object" type="cmis:cmisObjectType"
+					minOccurs="1" maxOccurs="1" />
 			</xs:sequence>
 		</xs:complexType>
 	</xs:element>
+
+	<!--
+		- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+		- - - - - - - - - - - - - - - - -
+	-->
+	<!-- getFolderByPath Operation -->
+	<xs:element name="getFolderByPath">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="repositoryId" type="xs:string"
+					minOccurs="1" maxOccurs="1" />
+				<xs:element name="folderPath" type="xs:string" minOccurs="1"
+					maxOccurs="1" />
+				<xs:element name="filter" type="xs:string" minOccurs="0"
+					maxOccurs="1" nillable="true" />
+				<xs:element name="includeAllowableActions" type="xs:boolean"
+					minOccurs="0" maxOccurs="1" nillable="true" />
+				<xs:element name="includeRelationships" type="cmis:enumIncludeRelationships"
+					minOccurs="0" maxOccurs="1" nillable="true" />
+				<xs:element name="includeACL" type="xs:boolean"
+					minOccurs="0" maxOccurs="1" nillable="true" />
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="getFolderByPathResponse">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="object" type="cmis:cmisObjectType"
+					minOccurs="1" maxOccurs="1" />
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+
 	<!--
 		- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 		- - - - - - - - - - - - - - - - -
@@ -458,13 +615,15 @@
 					minOccurs="1" maxOccurs="1" />
 				<xs:element name="documentId" type="xs:string" minOccurs="1"
 					maxOccurs="1" />
+				<xs:element name="streamId" type="xs:string" minOccurs="0"
+					maxOccurs="1" />
 			</xs:sequence>
 		</xs:complexType>
 	</xs:element>
 	<xs:element name="getContentStreamResponse">
 		<xs:complexType>
 			<xs:sequence>
-				<xs:element name="contentStream" type="cmis:cmisContentStreamType"
+				<xs:element name="contentStream" type="cmism:cmisContentStreamType"
 					minOccurs="1" maxOccurs="1" />
 			</xs:sequence>
 		</xs:complexType>
@@ -497,9 +656,12 @@
 			<xs:sequence>
 				<xs:element name="objectId" type="xs:string" minOccurs="1"
 					maxOccurs="1" />
+				<xs:element name="changeToken" type="xs:string"
+					minOccurs="0" maxOccurs="1" />
 			</xs:sequence>
 		</xs:complexType>
 	</xs:element>
+
 	<!--
 		- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 		- - - - - - - - - - - - - - - - -
@@ -515,13 +677,16 @@
 				<xs:element name="targetFolderId" type="xs:string"
 					minOccurs="1" maxOccurs="1" />
 				<xs:element name="sourceFolderId" type="xs:string"
-					minOccurs="0" maxOccurs="1" nillable="true" />
+					minOccurs="1" maxOccurs="1" />
 			</xs:sequence>
 		</xs:complexType>
 	</xs:element>
 	<xs:element name="moveObjectResponse">
 		<xs:complexType>
-			<xs:sequence />
+			<xs:sequence>
+				<xs:element name="objectId" type="xs:string" minOccurs="1"
+					maxOccurs="1" />
+			</xs:sequence>
 		</xs:complexType>
 	</xs:element>
 	<!--
@@ -536,6 +701,8 @@
 					minOccurs="1" maxOccurs="1" />
 				<xs:element name="objectId" type="xs:string" minOccurs="1"
 					maxOccurs="1" />
+				<xs:element name="allVersions" type="xs:boolean"
+					minOccurs="0" maxOccurs="1" nillable="true" />
 			</xs:sequence>
 		</xs:complexType>
 	</xs:element>
@@ -556,7 +723,7 @@
 					minOccurs="1" maxOccurs="1" />
 				<xs:element name="folderId" type="xs:string" minOccurs="1"
 					maxOccurs="1" />
-				<xs:element name="unfileNonfolderObjects" type="cmis:enumUnfileNonfolderObjects"
+				<xs:element name="unfileObject" type="cmis:enumUnfileObject"
 					minOccurs="1" maxOccurs="1" />
 				<xs:element name="continueOnFailure" type="xs:boolean"
 					minOccurs="0" maxOccurs="1" nillable="true" />
@@ -591,7 +758,10 @@
 					maxOccurs="1" />
 				<xs:element name="overwriteFlag" type="xs:boolean"
 					minOccurs="0" maxOccurs="1" nillable="true" />
-				<xs:element name="contentStream" type="cmis:cmisContentStreamType"
+				<xs:element name="changeToken" type="xs:string"
+					minOccurs="0" maxOccurs="1" />
+
+				<xs:element name="contentStream" type="cmism:cmisContentStreamType"
 					minOccurs="1" maxOccurs="1" />
 			</xs:sequence>
 		</xs:complexType>
@@ -616,12 +786,16 @@
 					minOccurs="1" maxOccurs="1" />
 				<xs:element name="documentId" type="xs:string" minOccurs="1"
 					maxOccurs="1" />
+				<xs:element name="changeToken" type="xs:string"
+					minOccurs="0" maxOccurs="1" />
 			</xs:sequence>
 		</xs:complexType>
 	</xs:element>
 	<xs:element name="deleteContentStreamResponse">
 		<xs:complexType>
-			<xs:sequence />
+			<xs:sequence>
+				<xs:element name="documentId" type="xs:string" />
+			</xs:sequence>
 		</xs:complexType>
 	</xs:element>
 	<!--
@@ -687,10 +861,35 @@
 		This already provided in CMIS-Core <xs:element name="query"
 		type="cmis:cmisQueryType" />
 	-->
+	<xs:element name="query">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="repositoryId" type="xs:string"
+					minOccurs="0" maxOccurs="1" />
+				<xs:element name="statement" type="xs:string" minOccurs="1"
+					maxOccurs="1" />
+				<xs:element name="searchAllVersions" type="xs:boolean"
+					minOccurs="0" maxOccurs="1" />
+				<xs:element name="maxItems" type="xs:integer" minOccurs="0"
+					maxOccurs="1" />
+				<xs:element name="skipCount" type="xs:integer" minOccurs="0"
+					maxOccurs="1" />
+
+				<xs:element name="includeAllowableActions" type="xs:boolean"
+					minOccurs="0" maxOccurs="1" nillable="true" />
+				<xs:element name="includeRelationships" type="cmis:enumIncludeRelationships"
+					minOccurs="0" maxOccurs="1" nillable="true" />
+				<xs:element name="includeRenditions" type="xs:boolean"
+					minOccurs="0" maxOccurs="1" nillable="true" />
+			</xs:sequence>
+			<xs:attributeGroup ref="cmis:cmisUndefinedAttribute" />
+		</xs:complexType>
+	</xs:element>
 	<xs:element name="queryResponse">
 		<xs:complexType>
 			<xs:sequence>
-				<xs:element ref="cmis:object" minOccurs="0" maxOccurs="unbounded" />
+				<xs:element name="object" type="cmis:cmisObjectType"
+					minOccurs="0" maxOccurs="unbounded" />
 				<xs:element name="hasMoreItems" type="xs:boolean"
 					minOccurs="1" maxOccurs="1" />
 			</xs:sequence>
@@ -790,9 +989,16 @@
 					maxOccurs="1" nillable="true" />
 				<xs:element name="properties" type="cmis:cmisPropertiesType"
 					minOccurs="0" maxOccurs="1" nillable="true" />
-				<xs:element name="contentStream" type="cmis:cmisContentStreamType"
+				<xs:element name="contentStream" type="cmism:cmisContentStreamType"
 					minOccurs="0" maxOccurs="1" nillable="true" />
 				<xs:element name="checkinComment" type="xs:string"
+					minOccurs="0" maxOccurs="1" nillable="true" />
+
+				<xs:element name="applyPolicies" type="xs:string"
+					minOccurs="0" maxOccurs="unbounded" nillable="true" />
+				<xs:element name="addACEs" type="cmis:cmisAccessControlListType"
+					minOccurs="0" maxOccurs="1" nillable="true" />
+				<xs:element name="removeACEs" type="cmis:cmisAccessControlListType"
 					minOccurs="0" maxOccurs="1" nillable="true" />
 			</xs:sequence>
 		</xs:complexType>
@@ -817,17 +1023,20 @@
 					minOccurs="1" maxOccurs="1" />
 				<xs:element name="versionSeriesId" type="xs:string"
 					minOccurs="1" maxOccurs="1" />
-				<xs:element name="majorVersion" type="xs:boolean"
-					minOccurs="1" maxOccurs="1" />
+				<xs:element name="major" type="xs:boolean" minOccurs="1"
+					maxOccurs="1" />
 				<xs:element name="filter" type="xs:string" minOccurs="0"
 					maxOccurs="1" nillable="true" />
+				<xs:element name="includeACL" type="xs:boolean"
+					minOccurs="0" maxOccurs="1" nillable="true" />
 			</xs:sequence>
 		</xs:complexType>
 	</xs:element>
 	<xs:element name="getPropertiesOfLatestVersionResponse">
 		<xs:complexType>
 			<xs:sequence>
-				<xs:element ref="cmis:object" minOccurs="1" maxOccurs="1" />
+				<xs:element name="object" type="cmis:cmisObjectType"
+					minOccurs="1" maxOccurs="1" />
 			</xs:sequence>
 		</xs:complexType>
 	</xs:element>
@@ -855,7 +1064,8 @@
 	<xs:element name="getAllVersionsResponse">
 		<xs:complexType>
 			<xs:sequence>
-				<xs:element ref="cmis:object" minOccurs="0" maxOccurs="unbounded" />
+				<xs:element name="object" type="cmis:cmisObjectType"
+					minOccurs="0" maxOccurs="unbounded" />
 			</xs:sequence>
 		</xs:complexType>
 	</xs:element>
@@ -863,22 +1073,7 @@
 		- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 		- - - - - - - - - - - - - - - - -
 	-->
-	<!-- deleteAllVersions Operation -->
-	<xs:element name="deleteAllVersions">
-		<xs:complexType>
-			<xs:sequence>
-				<xs:element name="repositoryId" type="xs:string"
-					minOccurs="1" maxOccurs="1" />
-				<xs:element name="versionSeriesId" type="xs:string"
-					minOccurs="1" maxOccurs="1" />
-			</xs:sequence>
-		</xs:complexType>
-	</xs:element>
-	<xs:element name="deleteAllVersionsResponse">
-		<xs:complexType>
-			<xs:sequence />
-		</xs:complexType>
-	</xs:element>
+
 	<!--
 		- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 		- - - - - - - - - - - - - - - - -
@@ -918,7 +1113,8 @@
 	<xs:element name="getRelationshipsResponse">
 		<xs:complexType>
 			<xs:sequence>
-				<xs:element ref="cmis:object" minOccurs="0" maxOccurs="unbounded" />
+				<xs:element name="object" type="cmis:cmisObjectType"
+					minOccurs="0" maxOccurs="unbounded" />
 				<xs:element name="hasMoreItems" type="xs:boolean"
 					minOccurs="1" maxOccurs="1" />
 			</xs:sequence>
@@ -993,8 +1189,61 @@
 	<xs:element name="getAppliedPoliciesResponse">
 		<xs:complexType>
 			<xs:sequence>
-				<xs:element ref="cmis:object" minOccurs="0" maxOccurs="unbounded" />
+				<xs:element name="object" type="cmis:cmisObjectType"
+					minOccurs="0" maxOccurs="unbounded" />
 			</xs:sequence>
 		</xs:complexType>
 	</xs:element>
+
+
+	<!--
+		- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+		- - - - - - - - - - - - - - - - -
+	-->
+	<xs:element name="getACL">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="repositoryId" type="xs:string"
+					minOccurs="1" maxOccurs="1" />
+				<xs:element name="objectId" type="xs:string" minOccurs="1"
+					maxOccurs="1" />
+				<xs:element name="onlyBasicPermissions" type="xs:boolean"
+					minOccurs="1" maxOccurs="1" />
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="getACLResponse">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="acl" type="cmis:cmisAccessControlListType" />
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="applyACL">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="repositoryId" type="xs:string"
+					minOccurs="1" maxOccurs="1" />
+				<xs:element name="objectId" type="xs:string" minOccurs="1"
+					maxOccurs="1" />
+				<xs:element name="addACEs" type="cmis:cmisAccessControlListType"
+					minOccurs="1" maxOccurs="1" />
+				<xs:element name="removeACEs" type="cmis:cmisAccessControlListType"
+					minOccurs="1" maxOccurs="1" />
+				<xs:element name="propogationType" type="cmis:enumACLPropagation"
+					minOccurs="0" maxOccurs="1" nillable="true" />
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="applyACLResponse">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="ACL" type="cmis:cmisAccessControlListType"
+					minOccurs="1" maxOccurs="unbounded" />
+				<xs:element name="exact" type="xs:boolean" />
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+
+
 </xs:schema>

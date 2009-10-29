@@ -20,6 +20,7 @@ import javax.xml.bind.annotation.XmlType;
  *     &lt;enumeration value="datetime"/>
  *     &lt;enumeration value="decimal"/>
  *     &lt;enumeration value="html"/>
+ *     &lt;enumeration value="xhtml"/>
  *     &lt;enumeration value="string"/>
  *     &lt;enumeration value="uri"/>
  *     &lt;enumeration value="xml"/>
@@ -44,6 +45,8 @@ public enum EnumPropertyType {
     DECIMAL("decimal"),
     @XmlEnumValue("html")
     HTML("html"),
+    @XmlEnumValue("xhtml")
+    XHTML("xhtml"),
     @XmlEnumValue("string")
     STRING("string"),
     @XmlEnumValue("uri")

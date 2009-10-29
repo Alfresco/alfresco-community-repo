@@ -7,6 +7,7 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAnyAttribute;
 import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlSeeAlso;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.namespace.QName;
@@ -22,7 +23,9 @@ import javax.xml.namespace.QName;
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;attGroup ref="{http://docs.oasis-open.org/ns/cmis/core/200901}cmisUndefinedAttribute"/>
- *       &lt;attribute ref="{http://docs.oasis-open.org/ns/cmis/core/200901}name use="required""/>
+ *       &lt;attribute name="pdid" use="required" type="{http://www.w3.org/2001/XMLSchema}anySimpleType" />
+ *       &lt;attribute name="localname" type="{http://www.w3.org/2001/XMLSchema}anySimpleType" />
+ *       &lt;attribute name="displayname" type="{http://www.w3.org/2001/XMLSchema}anySimpleType" />
  *     &lt;/restriction>
  *   &lt;/complexContent>
  * &lt;/complexType>
@@ -33,45 +36,101 @@ import javax.xml.namespace.QName;
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "cmisProperty", namespace = "http://docs.oasis-open.org/ns/cmis/core/200901")
 @XmlSeeAlso({
-    CmisPropertyXml.class,
-    CmisPropertyDateTime.class,
-    CmisPropertyString.class,
-    CmisPropertyInteger.class,
-    CmisPropertyBoolean.class,
-    CmisPropertyId.class,
-    CmisPropertyUri.class,
     CmisPropertyDecimal.class,
-    CmisPropertyHtml.class
+    CmisPropertyInteger.class,
+    CmisPropertyXhtml.class,
+    CmisPropertyDateTime.class,
+    CmisPropertyUri.class,
+    CmisPropertyXml.class,
+    CmisPropertyHtml.class,
+    CmisPropertyBoolean.class,
+    CmisPropertyString.class,
+    CmisPropertyId.class
 })
 public class CmisProperty {
 
-    @XmlAttribute(namespace = "http://docs.oasis-open.org/ns/cmis/core/200901", required = true)
-    protected String name;
+    @XmlAttribute(required = true)
+    @XmlSchemaType(name = "anySimpleType")
+    protected String pdid;
+    @XmlAttribute
+    @XmlSchemaType(name = "anySimpleType")
+    protected String localname;
+    @XmlAttribute
+    @XmlSchemaType(name = "anySimpleType")
+    protected String displayname;
     @XmlAnyAttribute
     private Map<QName, String> otherAttributes = new HashMap<QName, String>();
 
     /**
-     * Gets the value of the name property.
+     * Gets the value of the pdid property.
      * 
      * @return
      *     possible object is
      *     {@link String }
      *     
      */
-    public String getName() {
-        return name;
+    public String getPdid() {
+        return pdid;
     }
 
     /**
-     * Sets the value of the name property.
+     * Sets the value of the pdid property.
      * 
      * @param value
      *     allowed object is
      *     {@link String }
      *     
      */
-    public void setName(String value) {
-        this.name = value;
+    public void setPdid(String value) {
+        this.pdid = value;
+    }
+
+    /**
+     * Gets the value of the localname property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getLocalname() {
+        return localname;
+    }
+
+    /**
+     * Sets the value of the localname property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setLocalname(String value) {
+        this.localname = value;
+    }
+
+    /**
+     * Gets the value of the displayname property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getDisplayname() {
+        return displayname;
+    }
+
+    /**
+     * Sets the value of the displayname property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setDisplayname(String value) {
+        this.displayname = value;
     }
 
     /**

@@ -23,10 +23,11 @@ import javax.xml.bind.annotation.XmlType;
  *       &lt;sequence>
  *         &lt;element name="repositoryId" type="{http://www.w3.org/2001/XMLSchema}string"/>
  *         &lt;element name="folderId" type="{http://www.w3.org/2001/XMLSchema}string"/>
- *         &lt;element name="type" type="{http://docs.oasis-open.org/ns/cmis/core/200901}enumTypesOfFileableObjects" minOccurs="0"/>
  *         &lt;element name="filter" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
  *         &lt;element name="includeAllowableActions" type="{http://www.w3.org/2001/XMLSchema}boolean" minOccurs="0"/>
  *         &lt;element name="includeRelationships" type="{http://docs.oasis-open.org/ns/cmis/core/200901}enumIncludeRelationships" minOccurs="0"/>
+ *         &lt;element name="includeRenditions" type="{http://www.w3.org/2001/XMLSchema}boolean" minOccurs="0"/>
+ *         &lt;element name="includeACL" type="{http://www.w3.org/2001/XMLSchema}boolean" minOccurs="0"/>
  *         &lt;element name="maxItems" type="{http://www.w3.org/2001/XMLSchema}integer" minOccurs="0"/>
  *         &lt;element name="skipCount" type="{http://www.w3.org/2001/XMLSchema}integer" minOccurs="0"/>
  *         &lt;element name="orderBy" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
@@ -42,10 +43,11 @@ import javax.xml.bind.annotation.XmlType;
 @XmlType(name = "", propOrder = {
     "repositoryId",
     "folderId",
-    "type",
     "filter",
     "includeAllowableActions",
     "includeRelationships",
+    "includeRenditions",
+    "includeACL",
     "maxItems",
     "skipCount",
     "orderBy"
@@ -57,14 +59,16 @@ public class GetChildren {
     protected String repositoryId;
     @XmlElement(required = true)
     protected String folderId;
-    @XmlElementRef(name = "type", namespace = "http://docs.oasis-open.org/ns/cmis/messaging/200901", type = JAXBElement.class)
-    protected JAXBElement<EnumTypesOfFileableObjects> type;
     @XmlElementRef(name = "filter", namespace = "http://docs.oasis-open.org/ns/cmis/messaging/200901", type = JAXBElement.class)
     protected JAXBElement<String> filter;
     @XmlElementRef(name = "includeAllowableActions", namespace = "http://docs.oasis-open.org/ns/cmis/messaging/200901", type = JAXBElement.class)
     protected JAXBElement<Boolean> includeAllowableActions;
     @XmlElementRef(name = "includeRelationships", namespace = "http://docs.oasis-open.org/ns/cmis/messaging/200901", type = JAXBElement.class)
     protected JAXBElement<EnumIncludeRelationships> includeRelationships;
+    @XmlElementRef(name = "includeRenditions", namespace = "http://docs.oasis-open.org/ns/cmis/messaging/200901", type = JAXBElement.class)
+    protected JAXBElement<Boolean> includeRenditions;
+    @XmlElementRef(name = "includeACL", namespace = "http://docs.oasis-open.org/ns/cmis/messaging/200901", type = JAXBElement.class)
+    protected JAXBElement<Boolean> includeACL;
     @XmlElementRef(name = "maxItems", namespace = "http://docs.oasis-open.org/ns/cmis/messaging/200901", type = JAXBElement.class)
     protected JAXBElement<BigInteger> maxItems;
     @XmlElementRef(name = "skipCount", namespace = "http://docs.oasis-open.org/ns/cmis/messaging/200901", type = JAXBElement.class)
@@ -117,30 +121,6 @@ public class GetChildren {
      */
     public void setFolderId(String value) {
         this.folderId = value;
-    }
-
-    /**
-     * Gets the value of the type property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link JAXBElement }{@code <}{@link EnumTypesOfFileableObjects }{@code >}
-     *     
-     */
-    public JAXBElement<EnumTypesOfFileableObjects> getType() {
-        return type;
-    }
-
-    /**
-     * Sets the value of the type property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link JAXBElement }{@code <}{@link EnumTypesOfFileableObjects }{@code >}
-     *     
-     */
-    public void setType(JAXBElement<EnumTypesOfFileableObjects> value) {
-        this.type = ((JAXBElement<EnumTypesOfFileableObjects> ) value);
     }
 
     /**
@@ -213,6 +193,54 @@ public class GetChildren {
      */
     public void setIncludeRelationships(JAXBElement<EnumIncludeRelationships> value) {
         this.includeRelationships = ((JAXBElement<EnumIncludeRelationships> ) value);
+    }
+
+    /**
+     * Gets the value of the includeRenditions property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link JAXBElement }{@code <}{@link Boolean }{@code >}
+     *     
+     */
+    public JAXBElement<Boolean> getIncludeRenditions() {
+        return includeRenditions;
+    }
+
+    /**
+     * Sets the value of the includeRenditions property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link JAXBElement }{@code <}{@link Boolean }{@code >}
+     *     
+     */
+    public void setIncludeRenditions(JAXBElement<Boolean> value) {
+        this.includeRenditions = ((JAXBElement<Boolean> ) value);
+    }
+
+    /**
+     * Gets the value of the includeACL property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link JAXBElement }{@code <}{@link Boolean }{@code >}
+     *     
+     */
+    public JAXBElement<Boolean> getIncludeACL() {
+        return includeACL;
+    }
+
+    /**
+     * Sets the value of the includeACL property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link JAXBElement }{@code <}{@link Boolean }{@code >}
+     *     
+     */
+    public void setIncludeACL(JAXBElement<Boolean> value) {
+        this.includeACL = ((JAXBElement<Boolean> ) value);
     }
 
     /**

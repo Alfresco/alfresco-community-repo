@@ -22,7 +22,7 @@ import javax.xml.bind.annotation.XmlType;
  *       &lt;sequence>
  *         &lt;element name="repositoryId" type="{http://www.w3.org/2001/XMLSchema}string"/>
  *         &lt;element name="folderId" type="{http://www.w3.org/2001/XMLSchema}string"/>
- *         &lt;element name="unfileNonfolderObjects" type="{http://docs.oasis-open.org/ns/cmis/core/200901}enumUnfileNonfolderObjects"/>
+ *         &lt;element name="unfileObject" type="{http://docs.oasis-open.org/ns/cmis/core/200901}enumUnfileObject"/>
  *         &lt;element name="continueOnFailure" type="{http://www.w3.org/2001/XMLSchema}boolean" minOccurs="0"/>
  *       &lt;/sequence>
  *     &lt;/restriction>
@@ -36,7 +36,7 @@ import javax.xml.bind.annotation.XmlType;
 @XmlType(name = "", propOrder = {
     "repositoryId",
     "folderId",
-    "unfileNonfolderObjects",
+    "unfileObject",
     "continueOnFailure"
 })
 @XmlRootElement(name = "deleteTree")
@@ -47,7 +47,7 @@ public class DeleteTree {
     @XmlElement(required = true)
     protected String folderId;
     @XmlElement(required = true)
-    protected EnumUnfileNonfolderObjects unfileNonfolderObjects;
+    protected EnumUnfileObject unfileObject;
     @XmlElementRef(name = "continueOnFailure", namespace = "http://docs.oasis-open.org/ns/cmis/messaging/200901", type = JAXBElement.class)
     protected JAXBElement<Boolean> continueOnFailure;
 
@@ -100,27 +100,27 @@ public class DeleteTree {
     }
 
     /**
-     * Gets the value of the unfileNonfolderObjects property.
+     * Gets the value of the unfileObject property.
      * 
      * @return
      *     possible object is
-     *     {@link EnumUnfileNonfolderObjects }
+     *     {@link EnumUnfileObject }
      *     
      */
-    public EnumUnfileNonfolderObjects getUnfileNonfolderObjects() {
-        return unfileNonfolderObjects;
+    public EnumUnfileObject getUnfileObject() {
+        return unfileObject;
     }
 
     /**
-     * Sets the value of the unfileNonfolderObjects property.
+     * Sets the value of the unfileObject property.
      * 
      * @param value
      *     allowed object is
-     *     {@link EnumUnfileNonfolderObjects }
+     *     {@link EnumUnfileObject }
      *     
      */
-    public void setUnfileNonfolderObjects(EnumUnfileNonfolderObjects value) {
-        this.unfileNonfolderObjects = value;
+    public void setUnfileObject(EnumUnfileObject value) {
+        this.unfileObject = value;
     }
 
     /**

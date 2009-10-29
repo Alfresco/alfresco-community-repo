@@ -44,7 +44,6 @@ import org.alfresco.cmis.CMISResultSetRow;
 @javax.jws.WebService(name = "DiscoveryServicePort", serviceName = "DiscoveryService", portName = "DiscoveryServicePort", targetNamespace = "http://docs.oasis-open.org/ns/cmis/ws/200901", endpointInterface = "org.alfresco.repo.cmis.ws.DiscoveryServicePort")
 public class DMDiscoveryServicePort extends DMAbstractServicePort implements DiscoveryServicePort
 {
-
     /**
      * Queries the repository for queryable object based on properties or an optional full-text string. Relationship objects are not queryable. Content-streams are not returned as
      * part of query
@@ -52,11 +51,11 @@ public class DMDiscoveryServicePort extends DMAbstractServicePort implements Dis
      * @param parameters query parameters
      * @throws CmisException (with following {@link EnumServiceException} : INVALID_ARGUMENT, OBJECT_NOT_FOUND, NOT_SUPPORTED, PERMISSION_DENIED, RUNTIME)
      */
-    public QueryResponse query(CmisQueryType parameters) throws CmisException
+    public QueryResponse query(Query parameters) throws CmisException
     {
         checkRepositoryId(parameters.getRepositoryId());
 
-        // TODO: searchAllVersions, returnAllowableActions
+        // TODO: searchAllVersions, includeRelationships, includeAllowableActions, includeRenditions
         CMISQueryOptions options = new CMISQueryOptions(parameters.getStatement(), cmisService.getDefaultRootStoreRef());
 
         if (parameters.getSkipCount() != null)
@@ -64,12 +63,14 @@ public class DMDiscoveryServicePort extends DMAbstractServicePort implements Dis
             options.setSkipCount(parameters.getSkipCount().intValue());
         }
 
-        if (parameters.getPageSize() != null)
+        if (parameters.getMaxItems() != null)
         {
-            options.setMaxItems(parameters.getPageSize().intValue());
+            options.setMaxItems(parameters.getMaxItems().intValue());
         }
 
         // execute query
+        // TODO: If the select clause includes properties from more than a single type reference, then the repository SHOULD throw an exception if includeRelationships or
+        // includeAllowableActions is specified as true.
         CMISResultSet resultSet = cmisQueryService.query(options);
         CMISResultSetColumn[] columns = resultSet.getMetaData().getColumns();
 
@@ -105,5 +106,6 @@ public class DMDiscoveryServicePort extends DMAbstractServicePort implements Dis
             Holder<List<CmisObjectType>> changedObject) throws CmisException
     {
         // TODO
+        throw cmisObjectsUtils.createCmisException("Not implemented", EnumServiceException.RUNTIME);
     }
 }

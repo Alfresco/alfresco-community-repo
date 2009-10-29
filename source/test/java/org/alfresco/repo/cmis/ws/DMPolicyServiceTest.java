@@ -26,6 +26,7 @@ package org.alfresco.repo.cmis.ws;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.List;
 
 import javax.xml.namespace.QName;
 import javax.xml.ws.Service;
@@ -72,7 +73,7 @@ public class DMPolicyServiceTest extends AbstractServiceTest
         }
         catch (CmisException e)
         {
-            assertTrue(e.getFaultInfo().getType().equals(EnumServiceException.NOT_SUPPORTED));
+            assertTrue(e.getFaultInfo().getType().equals(EnumServiceException.RUNTIME));
         }
     }
 
@@ -80,18 +81,12 @@ public class DMPolicyServiceTest extends AbstractServiceTest
     {
         try
         {
-
-            GetAppliedPolicies request = new GetAppliedPolicies();
-            request.setRepositoryId(repositoryId);
-            request.setObjectId(documentId);
-            request.setFilter(cmisObjectFactory.createGetAppliedPoliciesFilter(""));
             @SuppressWarnings("unused")
-            GetAppliedPoliciesResponse response = ((PolicyServicePort) servicePort).getAppliedPolicies(request);
-
+            List<CmisObjectType> response = ((PolicyServicePort) servicePort).getAppliedPolicies(repositoryId, documentId, "");
         }
         catch (CmisException e)
         {
-            assertTrue(e.getFaultInfo().getType().equals(EnumServiceException.NOT_SUPPORTED));
+            assertTrue(e.getFaultInfo().getType().equals(EnumServiceException.RUNTIME));
         }
     }
 
@@ -103,7 +98,7 @@ public class DMPolicyServiceTest extends AbstractServiceTest
         }
         catch (CmisException e)
         {
-            assertTrue(e.getFaultInfo().getType().equals(EnumServiceException.NOT_SUPPORTED));
+            assertTrue(e.getFaultInfo().getType().equals(EnumServiceException.RUNTIME));
         }
     }
 }

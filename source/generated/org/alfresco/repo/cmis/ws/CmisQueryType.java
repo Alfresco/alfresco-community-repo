@@ -2,14 +2,20 @@
 package org.alfresco.repo.cmis.ws;
 
 import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import javax.xml.bind.JAXBElement;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAnyAttribute;
+import javax.xml.bind.annotation.XmlAnyElement;
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlElementRef;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.namespace.QName;
+import org.w3c.dom.Element;
 
 
 /**
@@ -25,10 +31,12 @@ import javax.xml.namespace.QName;
  *         &lt;element name="repositoryId" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
  *         &lt;element name="statement" type="{http://www.w3.org/2001/XMLSchema}string"/>
  *         &lt;element name="searchAllVersions" type="{http://www.w3.org/2001/XMLSchema}boolean" minOccurs="0"/>
- *         &lt;element name="pageSize" type="{http://www.w3.org/2001/XMLSchema}integer" minOccurs="0"/>
+ *         &lt;element name="maxItems" type="{http://www.w3.org/2001/XMLSchema}integer" minOccurs="0"/>
  *         &lt;element name="skipCount" type="{http://www.w3.org/2001/XMLSchema}integer" minOccurs="0"/>
- *         &lt;element name="returnAllowableActions" type="{http://www.w3.org/2001/XMLSchema}boolean" minOccurs="0"/>
- *         &lt;element name="extension" type="{http://docs.oasis-open.org/ns/cmis/core/200901}cmisAnyXml" minOccurs="0"/>
+ *         &lt;element name="includeAllowableActions" type="{http://www.w3.org/2001/XMLSchema}boolean" minOccurs="0"/>
+ *         &lt;element name="includeRelationships" type="{http://docs.oasis-open.org/ns/cmis/core/200901}enumIncludeRelationships" minOccurs="0"/>
+ *         &lt;element name="includeRenditions" type="{http://www.w3.org/2001/XMLSchema}boolean" minOccurs="0"/>
+ *         &lt;any/>
  *       &lt;/sequence>
  *       &lt;attGroup ref="{http://docs.oasis-open.org/ns/cmis/core/200901}cmisUndefinedAttribute"/>
  *     &lt;/restriction>
@@ -43,10 +51,12 @@ import javax.xml.namespace.QName;
     "repositoryId",
     "statement",
     "searchAllVersions",
-    "pageSize",
+    "maxItems",
     "skipCount",
-    "returnAllowableActions",
-    "extension"
+    "includeAllowableActions",
+    "includeRelationships",
+    "includeRenditions",
+    "any"
 })
 public class CmisQueryType {
 
@@ -54,10 +64,16 @@ public class CmisQueryType {
     @XmlElement(required = true)
     protected String statement;
     protected Boolean searchAllVersions;
-    protected BigInteger pageSize;
+    protected BigInteger maxItems;
     protected BigInteger skipCount;
-    protected Boolean returnAllowableActions;
-    protected CmisAnyXml extension;
+    @XmlElementRef(name = "includeAllowableActions", namespace = "http://docs.oasis-open.org/ns/cmis/core/200901", type = JAXBElement.class)
+    protected JAXBElement<Boolean> includeAllowableActions;
+    @XmlElementRef(name = "includeRelationships", namespace = "http://docs.oasis-open.org/ns/cmis/core/200901", type = JAXBElement.class)
+    protected JAXBElement<EnumIncludeRelationships> includeRelationships;
+    @XmlElementRef(name = "includeRenditions", namespace = "http://docs.oasis-open.org/ns/cmis/core/200901", type = JAXBElement.class)
+    protected JAXBElement<Boolean> includeRenditions;
+    @XmlAnyElement(lax = true)
+    protected List<Object> any;
     @XmlAnyAttribute
     private Map<QName, String> otherAttributes = new HashMap<QName, String>();
 
@@ -134,27 +150,27 @@ public class CmisQueryType {
     }
 
     /**
-     * Gets the value of the pageSize property.
+     * Gets the value of the maxItems property.
      * 
      * @return
      *     possible object is
      *     {@link BigInteger }
      *     
      */
-    public BigInteger getPageSize() {
-        return pageSize;
+    public BigInteger getMaxItems() {
+        return maxItems;
     }
 
     /**
-     * Sets the value of the pageSize property.
+     * Sets the value of the maxItems property.
      * 
      * @param value
      *     allowed object is
      *     {@link BigInteger }
      *     
      */
-    public void setPageSize(BigInteger value) {
-        this.pageSize = value;
+    public void setMaxItems(BigInteger value) {
+        this.maxItems = value;
     }
 
     /**
@@ -182,51 +198,105 @@ public class CmisQueryType {
     }
 
     /**
-     * Gets the value of the returnAllowableActions property.
+     * Gets the value of the includeAllowableActions property.
      * 
      * @return
      *     possible object is
-     *     {@link Boolean }
+     *     {@link JAXBElement }{@code <}{@link Boolean }{@code >}
      *     
      */
-    public Boolean isReturnAllowableActions() {
-        return returnAllowableActions;
+    public JAXBElement<Boolean> getIncludeAllowableActions() {
+        return includeAllowableActions;
     }
 
     /**
-     * Sets the value of the returnAllowableActions property.
+     * Sets the value of the includeAllowableActions property.
      * 
      * @param value
      *     allowed object is
-     *     {@link Boolean }
+     *     {@link JAXBElement }{@code <}{@link Boolean }{@code >}
      *     
      */
-    public void setReturnAllowableActions(Boolean value) {
-        this.returnAllowableActions = value;
+    public void setIncludeAllowableActions(JAXBElement<Boolean> value) {
+        this.includeAllowableActions = ((JAXBElement<Boolean> ) value);
     }
 
     /**
-     * Gets the value of the extension property.
+     * Gets the value of the includeRelationships property.
      * 
      * @return
      *     possible object is
-     *     {@link CmisAnyXml }
+     *     {@link JAXBElement }{@code <}{@link EnumIncludeRelationships }{@code >}
      *     
      */
-    public CmisAnyXml getExtension() {
-        return extension;
+    public JAXBElement<EnumIncludeRelationships> getIncludeRelationships() {
+        return includeRelationships;
     }
 
     /**
-     * Sets the value of the extension property.
+     * Sets the value of the includeRelationships property.
      * 
      * @param value
      *     allowed object is
-     *     {@link CmisAnyXml }
+     *     {@link JAXBElement }{@code <}{@link EnumIncludeRelationships }{@code >}
      *     
      */
-    public void setExtension(CmisAnyXml value) {
-        this.extension = value;
+    public void setIncludeRelationships(JAXBElement<EnumIncludeRelationships> value) {
+        this.includeRelationships = ((JAXBElement<EnumIncludeRelationships> ) value);
+    }
+
+    /**
+     * Gets the value of the includeRenditions property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link JAXBElement }{@code <}{@link Boolean }{@code >}
+     *     
+     */
+    public JAXBElement<Boolean> getIncludeRenditions() {
+        return includeRenditions;
+    }
+
+    /**
+     * Sets the value of the includeRenditions property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link JAXBElement }{@code <}{@link Boolean }{@code >}
+     *     
+     */
+    public void setIncludeRenditions(JAXBElement<Boolean> value) {
+        this.includeRenditions = ((JAXBElement<Boolean> ) value);
+    }
+
+    /**
+     * Gets the value of the any property.
+     * 
+     * <p>
+     * This accessor method returns a reference to the live list,
+     * not a snapshot. Therefore any modification you make to the
+     * returned list will be present inside the JAXB object.
+     * This is why there is not a <CODE>set</CODE> method for the any property.
+     * 
+     * <p>
+     * For example, to add a new item, do as follows:
+     * <pre>
+     *    getAny().add(newItem);
+     * </pre>
+     * 
+     * 
+     * <p>
+     * Objects of the following type(s) are allowed in the list
+     * {@link Element }
+     * {@link Object }
+     * 
+     *     
+     */
+    public List<Object> getAny() {
+        if (any == null) {
+            any = new ArrayList<Object>();
+        }
+        return this.any;
     }
 
     /**

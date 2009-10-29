@@ -1,11 +1,9 @@
 
 package org.alfresco.repo.cmis.ws;
 
-import javax.xml.bind.JAXBElement;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlElementRef;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
@@ -23,7 +21,7 @@ import javax.xml.bind.annotation.XmlType;
  *         &lt;element name="repositoryId" type="{http://www.w3.org/2001/XMLSchema}string"/>
  *         &lt;element name="objectId" type="{http://www.w3.org/2001/XMLSchema}string"/>
  *         &lt;element name="targetFolderId" type="{http://www.w3.org/2001/XMLSchema}string"/>
- *         &lt;element name="sourceFolderId" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
+ *         &lt;element name="sourceFolderId" type="{http://www.w3.org/2001/XMLSchema}string"/>
  *       &lt;/sequence>
  *     &lt;/restriction>
  *   &lt;/complexContent>
@@ -48,8 +46,8 @@ public class MoveObject {
     protected String objectId;
     @XmlElement(required = true)
     protected String targetFolderId;
-    @XmlElementRef(name = "sourceFolderId", namespace = "http://docs.oasis-open.org/ns/cmis/messaging/200901", type = JAXBElement.class)
-    protected JAXBElement<String> sourceFolderId;
+    @XmlElement(required = true)
+    protected String sourceFolderId;
 
     /**
      * Gets the value of the repositoryId property.
@@ -128,10 +126,10 @@ public class MoveObject {
      * 
      * @return
      *     possible object is
-     *     {@link JAXBElement }{@code <}{@link String }{@code >}
+     *     {@link String }
      *     
      */
-    public JAXBElement<String> getSourceFolderId() {
+    public String getSourceFolderId() {
         return sourceFolderId;
     }
 
@@ -140,11 +138,11 @@ public class MoveObject {
      * 
      * @param value
      *     allowed object is
-     *     {@link JAXBElement }{@code <}{@link String }{@code >}
+     *     {@link String }
      *     
      */
-    public void setSourceFolderId(JAXBElement<String> value) {
-        this.sourceFolderId = ((JAXBElement<String> ) value);
+    public void setSourceFolderId(String value) {
+        this.sourceFolderId = value;
     }
 
 }

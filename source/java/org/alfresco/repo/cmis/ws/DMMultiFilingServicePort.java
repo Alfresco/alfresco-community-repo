@@ -62,7 +62,8 @@ public class DMMultiFilingServicePort extends DMAbstractServicePort implements M
 
         if (!folderType.getAllowedTargetTypes().isEmpty() && !folderType.getAllowedTargetTypes().contains(objectType))
         {
-            throw cmisObjectsUtils.createCmisException("The typeID of Object is not in the list of AllowedChildObjectTypeIds of the parent-folder specified by folderId", EnumServiceException.CONSTRAINT);
+            throw cmisObjectsUtils.createCmisException("The typeId of Object is not in the list of AllowedChildObjectTypeIds of the parent-folder specified by folderId",
+                    EnumServiceException.CONSTRAINT);
         }
         cmisObjectsUtils.addObjectToFolder(objectNodeRef, parentFolderNodeRef);
     }

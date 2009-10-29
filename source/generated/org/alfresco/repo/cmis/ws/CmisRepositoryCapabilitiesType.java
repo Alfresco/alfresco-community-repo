@@ -25,18 +25,20 @@ import org.w3c.dom.Element;
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
+ *         &lt;element name="capabilityACL" type="{http://docs.oasis-open.org/ns/cmis/core/200901}enumCapabilityACL" minOccurs="0"/>
+ *         &lt;element name="capabilityAllVersionsSearchable" type="{http://www.w3.org/2001/XMLSchema}boolean"/>
+ *         &lt;element name="capabilityChanges" type="{http://docs.oasis-open.org/ns/cmis/core/200901}enumCapabilityChanges"/>
+ *         &lt;element name="capabilityChangesOnType" type="{http://docs.oasis-open.org/ns/cmis/core/200901}enumBaseObjectTypeIds" maxOccurs="unbounded"/>
+ *         &lt;element name="capabilityContentStreamUpdatability" type="{http://docs.oasis-open.org/ns/cmis/core/200901}enumCapabilityContentStreamUpdates"/>
+ *         &lt;element name="capabilityGetDescendants" type="{http://www.w3.org/2001/XMLSchema}boolean"/>
  *         &lt;element name="capabilityMultifiling" type="{http://www.w3.org/2001/XMLSchema}boolean"/>
+ *         &lt;element name="capabilityPWCSearchable" type="{http://www.w3.org/2001/XMLSchema}boolean"/>
+ *         &lt;element name="capabilityPWCUpdateable" type="{http://www.w3.org/2001/XMLSchema}boolean"/>
+ *         &lt;element name="capabilityQuery" type="{http://docs.oasis-open.org/ns/cmis/core/200901}enumCapabilityQuery"/>
+ *         &lt;element name="capabilityRenditions" type="{http://docs.oasis-open.org/ns/cmis/core/200901}enumCapabilityRendition"/>
  *         &lt;element name="capabilityUnfiling" type="{http://www.w3.org/2001/XMLSchema}boolean"/>
  *         &lt;element name="capabilityVersionSpecificFiling" type="{http://www.w3.org/2001/XMLSchema}boolean"/>
- *         &lt;element name="capabilityPWCUpdateable" type="{http://www.w3.org/2001/XMLSchema}boolean"/>
- *         &lt;element name="capabilityPWCSearchable" type="{http://www.w3.org/2001/XMLSchema}boolean"/>
- *         &lt;element name="capabilityAllVersionsSearchable" type="{http://www.w3.org/2001/XMLSchema}boolean"/>
- *         &lt;element name="capabilityQuery" type="{http://docs.oasis-open.org/ns/cmis/core/200901}enumCapabilityQuery"/>
  *         &lt;element name="capabilityJoin" type="{http://docs.oasis-open.org/ns/cmis/core/200901}enumCapabilityJoin"/>
- *         &lt;element name="capabilityChanges" type="{http://docs.oasis-open.org/ns/cmis/core/200901}enumCapabilityChanges" maxOccurs="unbounded"/>
- *         &lt;element name="changesIncomplete" type="{http://www.w3.org/2001/XMLSchema}boolean" minOccurs="0"/>
- *         &lt;element name="capabilityACL" type="{http://docs.oasis-open.org/ns/cmis/core/200901}enumCapabilityACL"/>
- *         &lt;element name="permissionsSupported" type="{http://docs.oasis-open.org/ns/cmis/core/200901}cmisPermissionSetType" maxOccurs="unbounded" minOccurs="0"/>
  *         &lt;any/>
  *       &lt;/sequence>
  *       &lt;attGroup ref="{http://docs.oasis-open.org/ns/cmis/core/200901}cmisUndefinedAttribute"/>
@@ -49,42 +51,181 @@ import org.w3c.dom.Element;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "cmisRepositoryCapabilitiesType", namespace = "http://docs.oasis-open.org/ns/cmis/core/200901", propOrder = {
+    "capabilityACL",
+    "capabilityAllVersionsSearchable",
+    "capabilityChanges",
+    "capabilityChangesOnType",
+    "capabilityContentStreamUpdatability",
+    "capabilityGetDescendants",
     "capabilityMultifiling",
+    "capabilityPWCSearchable",
+    "capabilityPWCUpdateable",
+    "capabilityQuery",
+    "capabilityRenditions",
     "capabilityUnfiling",
     "capabilityVersionSpecificFiling",
-    "capabilityPWCUpdateable",
-    "capabilityPWCSearchable",
-    "capabilityAllVersionsSearchable",
-    "capabilityQuery",
     "capabilityJoin",
-    "capabilityChanges",
-    "changesIncomplete",
-    "capabilityACL",
-    "permissionsSupported",
     "any"
 })
 public class CmisRepositoryCapabilitiesType {
 
-    protected boolean capabilityMultifiling;
-    protected boolean capabilityUnfiling;
-    protected boolean capabilityVersionSpecificFiling;
-    protected boolean capabilityPWCUpdateable;
-    protected boolean capabilityPWCSearchable;
+    protected EnumCapabilityACL capabilityACL;
     protected boolean capabilityAllVersionsSearchable;
+    @XmlElement(required = true)
+    protected EnumCapabilityChanges capabilityChanges;
+    @XmlElement(required = true)
+    protected List<EnumBaseObjectTypeIds> capabilityChangesOnType;
+    @XmlElement(required = true)
+    protected EnumCapabilityContentStreamUpdates capabilityContentStreamUpdatability;
+    protected boolean capabilityGetDescendants;
+    protected boolean capabilityMultifiling;
+    protected boolean capabilityPWCSearchable;
+    protected boolean capabilityPWCUpdateable;
     @XmlElement(required = true)
     protected EnumCapabilityQuery capabilityQuery;
     @XmlElement(required = true)
+    protected EnumCapabilityRendition capabilityRenditions;
+    protected boolean capabilityUnfiling;
+    protected boolean capabilityVersionSpecificFiling;
+    @XmlElement(required = true)
     protected EnumCapabilityJoin capabilityJoin;
-    @XmlElement(required = true)
-    protected List<EnumCapabilityChanges> capabilityChanges;
-    protected Boolean changesIncomplete;
-    @XmlElement(required = true)
-    protected EnumCapabilityACL capabilityACL;
-    protected List<CmisPermissionSetType> permissionsSupported;
     @XmlAnyElement
     protected List<Element> any;
     @XmlAnyAttribute
     private Map<QName, String> otherAttributes = new HashMap<QName, String>();
+
+    /**
+     * Gets the value of the capabilityACL property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link EnumCapabilityACL }
+     *     
+     */
+    public EnumCapabilityACL getCapabilityACL() {
+        return capabilityACL;
+    }
+
+    /**
+     * Sets the value of the capabilityACL property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link EnumCapabilityACL }
+     *     
+     */
+    public void setCapabilityACL(EnumCapabilityACL value) {
+        this.capabilityACL = value;
+    }
+
+    /**
+     * Gets the value of the capabilityAllVersionsSearchable property.
+     * 
+     */
+    public boolean isCapabilityAllVersionsSearchable() {
+        return capabilityAllVersionsSearchable;
+    }
+
+    /**
+     * Sets the value of the capabilityAllVersionsSearchable property.
+     * 
+     */
+    public void setCapabilityAllVersionsSearchable(boolean value) {
+        this.capabilityAllVersionsSearchable = value;
+    }
+
+    /**
+     * Gets the value of the capabilityChanges property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link EnumCapabilityChanges }
+     *     
+     */
+    public EnumCapabilityChanges getCapabilityChanges() {
+        return capabilityChanges;
+    }
+
+    /**
+     * Sets the value of the capabilityChanges property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link EnumCapabilityChanges }
+     * 
+     */
+    public void setCapabilityChanges(EnumCapabilityChanges value) {
+        this.capabilityChanges = value;
+    }
+
+    /**
+     * Gets the value of the capabilityChangesOnType property.
+     * 
+     * <p>
+     * This accessor method returns a reference to the live list,
+     * not a snapshot. Therefore any modification you make to the
+     * returned list will be present inside the JAXB object.
+     * This is why there is not a <CODE>set</CODE> method for the capabilityChangesOnType property.
+     * 
+     * <p>
+     * For example, to add a new item, do as follows:
+     * <pre>
+     *    getCapabilityChangesOnType().add(newItem);
+     * </pre>
+     * 
+     * 
+     * <p>
+     * Objects of the following type(s) are allowed in the list
+     * {@link EnumBaseObjectTypeIds }
+     * 
+     * 
+     */
+    public List<EnumBaseObjectTypeIds> getCapabilityChangesOnType() {
+        if (capabilityChangesOnType == null) {
+            capabilityChangesOnType = new ArrayList<EnumBaseObjectTypeIds>();
+        }
+        return this.capabilityChangesOnType;
+    }
+
+    /**
+     * Gets the value of the capabilityContentStreamUpdatability property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link EnumCapabilityContentStreamUpdates }
+     * 
+     */
+    public EnumCapabilityContentStreamUpdates getCapabilityContentStreamUpdatability() {
+        return capabilityContentStreamUpdatability;
+    }
+
+    /**
+     * Sets the value of the capabilityContentStreamUpdatability property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link EnumCapabilityContentStreamUpdates }
+     * 
+     */
+    public void setCapabilityContentStreamUpdatability(EnumCapabilityContentStreamUpdates value) {
+        this.capabilityContentStreamUpdatability = value;
+    }
+
+    /**
+     * Gets the value of the capabilityGetDescendants property.
+     * 
+     */
+    public boolean isCapabilityGetDescendants() {
+        return capabilityGetDescendants;
+    }
+
+    /**
+     * Sets the value of the capabilityGetDescendants property.
+     * 
+     */
+    public void setCapabilityGetDescendants(boolean value) {
+        this.capabilityGetDescendants = value;
+    }
 
     /**
      * Gets the value of the capabilityMultifiling property.
@@ -100,54 +241,6 @@ public class CmisRepositoryCapabilitiesType {
      */
     public void setCapabilityMultifiling(boolean value) {
         this.capabilityMultifiling = value;
-    }
-
-    /**
-     * Gets the value of the capabilityUnfiling property.
-     * 
-     */
-    public boolean isCapabilityUnfiling() {
-        return capabilityUnfiling;
-    }
-
-    /**
-     * Sets the value of the capabilityUnfiling property.
-     * 
-     */
-    public void setCapabilityUnfiling(boolean value) {
-        this.capabilityUnfiling = value;
-    }
-
-    /**
-     * Gets the value of the capabilityVersionSpecificFiling property.
-     * 
-     */
-    public boolean isCapabilityVersionSpecificFiling() {
-        return capabilityVersionSpecificFiling;
-    }
-
-    /**
-     * Sets the value of the capabilityVersionSpecificFiling property.
-     * 
-     */
-    public void setCapabilityVersionSpecificFiling(boolean value) {
-        this.capabilityVersionSpecificFiling = value;
-    }
-
-    /**
-     * Gets the value of the capabilityPWCUpdateable property.
-     * 
-     */
-    public boolean isCapabilityPWCUpdateable() {
-        return capabilityPWCUpdateable;
-    }
-
-    /**
-     * Sets the value of the capabilityPWCUpdateable property.
-     * 
-     */
-    public void setCapabilityPWCUpdateable(boolean value) {
-        this.capabilityPWCUpdateable = value;
     }
 
     /**
@@ -167,19 +260,19 @@ public class CmisRepositoryCapabilitiesType {
     }
 
     /**
-     * Gets the value of the capabilityAllVersionsSearchable property.
+     * Gets the value of the capabilityPWCUpdateable property.
      * 
      */
-    public boolean isCapabilityAllVersionsSearchable() {
-        return capabilityAllVersionsSearchable;
+    public boolean isCapabilityPWCUpdateable() {
+        return capabilityPWCUpdateable;
     }
 
     /**
-     * Sets the value of the capabilityAllVersionsSearchable property.
+     * Sets the value of the capabilityPWCUpdateable property.
      * 
      */
-    public void setCapabilityAllVersionsSearchable(boolean value) {
-        this.capabilityAllVersionsSearchable = value;
+    public void setCapabilityPWCUpdateable(boolean value) {
+        this.capabilityPWCUpdateable = value;
     }
 
     /**
@@ -207,6 +300,62 @@ public class CmisRepositoryCapabilitiesType {
     }
 
     /**
+     * Gets the value of the capabilityRenditions property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link EnumCapabilityRendition }
+     *     
+     */
+    public EnumCapabilityRendition getCapabilityRenditions() {
+        return capabilityRenditions;
+    }
+
+    /**
+     * Sets the value of the capabilityRenditions property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link EnumCapabilityRendition }
+     *     
+     */
+    public void setCapabilityRenditions(EnumCapabilityRendition value) {
+        this.capabilityRenditions = value;
+    }
+
+    /**
+     * Gets the value of the capabilityUnfiling property.
+     * 
+     */
+    public boolean isCapabilityUnfiling() {
+        return capabilityUnfiling;
+    }
+
+    /**
+     * Sets the value of the capabilityUnfiling property.
+     * 
+     */
+    public void setCapabilityUnfiling(boolean value) {
+        this.capabilityUnfiling = value;
+    }
+
+    /**
+     * Gets the value of the capabilityVersionSpecificFiling property.
+     *     
+     */
+    public boolean isCapabilityVersionSpecificFiling() {
+        return capabilityVersionSpecificFiling;
+    }
+
+    /**
+     * Sets the value of the capabilityVersionSpecificFiling property.
+     *     
+     */
+    public void setCapabilityVersionSpecificFiling(boolean value) {
+        this.capabilityVersionSpecificFiling = value;
+    }
+
+    /**
      * Gets the value of the capabilityJoin property.
      * 
      * @return
@@ -224,116 +373,10 @@ public class CmisRepositoryCapabilitiesType {
      * @param value
      *     allowed object is
      *     {@link EnumCapabilityJoin }
-     *     
+     * 
      */
     public void setCapabilityJoin(EnumCapabilityJoin value) {
         this.capabilityJoin = value;
-    }
-
-    /**
-     * Gets the value of the capabilityChanges property.
-     * 
-     * <p>
-     * This accessor method returns a reference to the live list,
-     * not a snapshot. Therefore any modification you make to the
-     * returned list will be present inside the JAXB object.
-     * This is why there is not a <CODE>set</CODE> method for the capabilityChanges property.
-     * 
-     * <p>
-     * For example, to add a new item, do as follows:
-     * <pre>
-     *    getCapabilityChanges().add(newItem);
-     * </pre>
-     * 
-     * 
-     * <p>
-     * Objects of the following type(s) are allowed in the list
-     * {@link EnumCapabilityChanges }
-     * 
-     * 
-     */
-    public List<EnumCapabilityChanges> getCapabilityChanges() {
-        if (capabilityChanges == null) {
-            capabilityChanges = new ArrayList<EnumCapabilityChanges>();
-        }
-        return this.capabilityChanges;
-    }
-
-    /**
-     * Gets the value of the changesIncomplete property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link Boolean }
-     *     
-     */
-    public Boolean isChangesIncomplete() {
-        return changesIncomplete;
-    }
-
-    /**
-     * Sets the value of the changesIncomplete property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link Boolean }
-     *     
-     */
-    public void setChangesIncomplete(Boolean value) {
-        this.changesIncomplete = value;
-    }
-
-    /**
-     * Gets the value of the capabilityACL property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link EnumCapabilityACL }
-     *     
-     */
-    public EnumCapabilityACL getCapabilityACL() {
-        return capabilityACL;
-    }
-
-    /**
-     * Sets the value of the capabilityACL property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link EnumCapabilityACL }
-     *     
-     */
-    public void setCapabilityACL(EnumCapabilityACL value) {
-        this.capabilityACL = value;
-    }
-
-    /**
-     * Gets the value of the permissionsSupported property.
-     * 
-     * <p>
-     * This accessor method returns a reference to the live list,
-     * not a snapshot. Therefore any modification you make to the
-     * returned list will be present inside the JAXB object.
-     * This is why there is not a <CODE>set</CODE> method for the permissionsSupported property.
-     * 
-     * <p>
-     * For example, to add a new item, do as follows:
-     * <pre>
-     *    getPermissionsSupported().add(newItem);
-     * </pre>
-     * 
-     * 
-     * <p>
-     * Objects of the following type(s) are allowed in the list
-     * {@link CmisPermissionSetType }
-     * 
-     * 
-     */
-    public List<CmisPermissionSetType> getPermissionsSupported() {
-        if (permissionsSupported == null) {
-            permissionsSupported = new ArrayList<CmisPermissionSetType>();
-        }
-        return this.permissionsSupported;
     }
 
     /**

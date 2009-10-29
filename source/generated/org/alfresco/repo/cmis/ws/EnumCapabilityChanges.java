@@ -15,12 +15,8 @@ import javax.xml.bind.annotation.XmlType;
  * &lt;simpleType name="enumCapabilityChanges">
  *   &lt;restriction base="{http://www.w3.org/2001/XMLSchema}string">
  *     &lt;enumeration value="none"/>
- *     &lt;enumeration value="includeACL"/>
- *     &lt;enumeration value="includeProperties"/>
- *     &lt;enumeration value="includeFolders"/>
- *     &lt;enumeration value="includeDocuments"/>
- *     &lt;enumeration value="includeRelationships"/>
- *     &lt;enumeration value="includePolicies"/>
+ *     &lt;enumeration value="objectIdsOnly"/>
+ *     &lt;enumeration value="properties"/>
  *     &lt;enumeration value="all"/>
  *   &lt;/restriction>
  * &lt;/simpleType>
@@ -33,18 +29,10 @@ public enum EnumCapabilityChanges {
 
     @XmlEnumValue("none")
     NONE("none"),
-    @XmlEnumValue("includeACL")
-    INCLUDE_ACL("includeACL"),
-    @XmlEnumValue("includeProperties")
-    INCLUDE_PROPERTIES("includeProperties"),
-    @XmlEnumValue("includeFolders")
-    INCLUDE_FOLDERS("includeFolders"),
-    @XmlEnumValue("includeDocuments")
-    INCLUDE_DOCUMENTS("includeDocuments"),
-    @XmlEnumValue("includeRelationships")
-    INCLUDE_RELATIONSHIPS("includeRelationships"),
-    @XmlEnumValue("includePolicies")
-    INCLUDE_POLICIES("includePolicies"),
+    @XmlEnumValue("objectIdsOnly")
+    OBJECT_IDS_ONLY("objectIdsOnly"),
+    @XmlEnumValue("properties")
+    PROPERTIES("properties"),
     @XmlEnumValue("all")
     ALL("all");
     private final String value;

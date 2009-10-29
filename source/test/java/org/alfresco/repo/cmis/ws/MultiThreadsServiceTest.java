@@ -95,9 +95,9 @@ public class MultiThreadsServiceTest extends AbstractServiceTest
         {
             assertTrue("All threads done their work normally", anyFailed(threads));
 
-            GetPropertiesResponse propertiesResponse;
-            propertiesResponse = helper.getObjectProperties(documentId);
-            assertEquals(lastName, getPropertyValue(propertiesResponse, CMISDictionaryModel.PROP_NAME));
+            CmisObjectType propertiesObject = helper.getObjectProperties(documentId);
+            assertObjectPropertiesNotNull(propertiesObject);
+            assertEquals(lastName, getStringProperty(propertiesObject.getProperties(), CMISDictionaryModel.PROP_NAME));
         }
     }
 

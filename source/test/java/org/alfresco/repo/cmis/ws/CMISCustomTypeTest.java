@@ -25,12 +25,16 @@
 package org.alfresco.repo.cmis.ws;
 
 import java.math.BigInteger;
+import java.util.LinkedList;
+import java.util.List;
 
 import javax.activation.DataHandler;
 import javax.xml.ws.Holder;
 
 import junit.framework.TestCase;
 
+import org.alfresco.cmis.CMISDictionaryModel;
+import org.alfresco.repo.cmis.ws.utils.PropertyUtil;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.security.AuthenticationService;
@@ -51,6 +55,7 @@ public class CMISCustomTypeTest extends TestCase
     private static ObjectServicePort objectServicePort;
     private static DiscoveryServicePort discoveryServicePort;
     private static NavigationServicePort navigationServicePort;
+    private static PropertyUtil propertiesUtil;
 
     @Override
     protected void setUp() throws Exception
@@ -64,6 +69,9 @@ public class CMISCustomTypeTest extends TestCase
 
         authenticationService.authenticate(USERNAME, PASSWORD.toCharArray());
 
+        if(null == propertiesUtil) {
+            propertiesUtil = (PropertyUtil) applicationContext.getBean("propertiesUtils");
+        }
         if (repositoryServicePort == null)
         {
             repositoryServicePort = (RepositoryServicePort) applicationContext.getBean("dmRepositoryService");
@@ -80,17 +88,16 @@ public class CMISCustomTypeTest extends TestCase
         {
             discoveryServicePort = (DiscoveryServicePort) applicationContext.getBean("dmDiscoveryService");
         }
-        repositoryId = repositoryId == null ? repositoryServicePort.getRepositories().get(0).getRepositoryId() : repositoryId;
+        repositoryId = repositoryId == null ? repositoryServicePort.getRepositories().get(0).getId() : repositoryId;
         if (folderId == null)
         {
             String rootFolderId = repositoryServicePort.getRepositoryInfo(repositoryId).getRootFolderId();
-            GetChildren getChildren = new GetChildren();
-            getChildren.setRepositoryId(repositoryId);
-            getChildren.setFolderId(rootFolderId);
-            GetChildrenResponse response = navigationServicePort.getChildren(getChildren);
+            Holder<List<CmisObjectType>> response = new Holder<List<CmisObjectType>>(new LinkedList<CmisObjectType>());
+            Holder<Boolean> hasMoreItems = new Holder<Boolean>();
+            navigationServicePort.getChildren(repositoryId, folderId, "*", false, EnumIncludeRelationships.NONE, false, false, BigInteger.ZERO, BigInteger.ZERO, "", response, hasMoreItems);
             assertNotNull(response);
-            assertNotNull(response.getObject());
-            for (CmisObjectType cmisObjectType : response.getObject())
+            assertNotNull(response.value);
+            for (CmisObjectType cmisObjectType : response.value)
             {
                 CmisPropertyString propertyString = (CmisPropertyString) getCmisProperty(cmisObjectType.getProperties(), "Name");
                 if (propertyString != null && propertyString.getValue() != null && propertyString.getValue().size() > 0 && "CMIS Tests".equals(propertyString.getValue().get(0)))
@@ -118,14 +125,11 @@ public class CMISCustomTypeTest extends TestCase
         String folderId1 = createTestFolder(repositoryId, "testCreateCustomFolder" + System.currentTimeMillis(), folderId, true);
         assertNotNull(folderId1);
 
-        GetProperties getProperties = new GetProperties();
-        getProperties.setRepositoryId(repositoryId);
-        getProperties.setObjectId(folderId1);
-        GetPropertiesResponse propertiesResponse = objectServicePort.getProperties(getProperties);
-        assertNotNull(propertiesResponse);
-        CmisPropertyId objectTypeId = (CmisPropertyId) getCmisProperty(propertiesResponse.getObject().getProperties(), "ObjectTypeId");
+        CmisObjectType propertiesObject = objectServicePort.getProperties(repositoryId, folderId1, "*", false, EnumIncludeRelationships.NONE, false);
+        assertNotNull(propertiesObject);
+        CmisPropertyId objectTypeId = (CmisPropertyId) getCmisProperty(propertiesObject.getProperties(), "ObjectTypeId");
         assertTrue(objectTypeId != null && objectTypeId.getValue() != null && objectTypeId.getValue().size() == 1 && "F/cmiscustom_folder".equals(objectTypeId.getValue().get(0)));
-        CmisPropertyString customProp = (CmisPropertyString) getCmisProperty(propertiesResponse.getObject().getProperties(), "cmiscustom_folderprop_string");
+        CmisPropertyString customProp = (CmisPropertyString) getCmisProperty(propertiesObject.getProperties(), "cmiscustom_folderprop_string");
         assertTrue(customProp != null && customProp.getValue() != null && customProp.getValue().size() == 1 && "custom string".equals(customProp.getValue().get(0)));
     }
 
@@ -134,18 +138,15 @@ public class CMISCustomTypeTest extends TestCase
         String documentId = createTestDocument(repositoryId, "testCreateCustomDocument" + System.currentTimeMillis(), folderId, true);
         assertNotNull(documentId);
 
-        GetProperties getProperties = new GetProperties();
-        getProperties.setRepositoryId(repositoryId);
-        getProperties.setObjectId(documentId);
-        GetPropertiesResponse propertiesResponse = objectServicePort.getProperties(getProperties);
-        assertNotNull(propertiesResponse);
+        CmisObjectType propertiesObject = objectServicePort.getProperties(repositoryId, documentId, "*", false, EnumIncludeRelationships.NONE, false);
+        assertNotNull(propertiesObject);
 
-        CmisPropertyId objectTypeId = (CmisPropertyId) getCmisProperty(propertiesResponse.getObject().getProperties(), "ObjectTypeId");
+        CmisPropertyId objectTypeId = (CmisPropertyId) getCmisProperty(propertiesObject.getProperties(), "ObjectTypeId");
         assertTrue(objectTypeId != null && objectTypeId.getValue() != null && objectTypeId.getValue().size() == 1 && "D/cmiscustom_document".equals(objectTypeId.getValue().get(0)));
-        CmisPropertyString customProp = (CmisPropertyString) getCmisProperty(propertiesResponse.getObject().getProperties(), "cmiscustom_docprop_string");
+        CmisPropertyString customProp = (CmisPropertyString) getCmisProperty(propertiesObject.getProperties(), "cmiscustom_docprop_string");
         assertTrue(customProp != null && customProp.getValue() != null && customProp.getValue().size() == 1 && "custom string".equals(customProp.getValue().get(0)));
 
-        CmisPropertyBoolean propertyMulti = (CmisPropertyBoolean) getCmisProperty(propertiesResponse.getObject().getProperties(), "cmiscustom_docprop_boolean_multi");
+        CmisPropertyBoolean propertyMulti = (CmisPropertyBoolean) getCmisProperty(propertiesObject.getProperties(), "cmiscustom_docprop_boolean_multi");
         assertTrue(propertyMulti != null && propertyMulti.getValue() != null && propertyMulti.getValue().size() == 2 && propertyMulti.getValue().get(0) && !propertyMulti.getValue().get(1));
     }
 
@@ -159,33 +160,30 @@ public class CMISCustomTypeTest extends TestCase
         String newName = "Updated Title " + System.currentTimeMillis();
         String customProp = "custom " + System.currentTimeMillis();
         CmisPropertyString cmisPropertyString = new CmisPropertyString();
-        cmisPropertyString.setName("Name");
+        cmisPropertyString.setPdid("Name");
         cmisPropertyString.getValue().add(newName);
         properties.getProperty().add(cmisPropertyString);
         cmisPropertyString = new CmisPropertyString();
-        cmisPropertyString.setName("cmiscustom_docprop_string");
+        cmisPropertyString.setPdid("cmiscustom_docprop_string");
         cmisPropertyString.getValue().add(customProp);
         properties.getProperty().add(cmisPropertyString);
         CmisPropertyBoolean cmisPropertymulti = new CmisPropertyBoolean();
-        cmisPropertymulti.setName("cmiscustom_docprop_boolean_multi");
+        cmisPropertymulti.setPdid("cmiscustom_docprop_boolean_multi");
         cmisPropertymulti.getValue().add(false);
         cmisPropertymulti.getValue().add(true);
         properties.getProperty().add(cmisPropertymulti);
         objectServicePort.updateProperties(repositoryId, holder, null, properties);
 
-        GetProperties getProperties = new GetProperties();
-        getProperties.setRepositoryId(repositoryId);
-        getProperties.setObjectId(documentId);
-        GetPropertiesResponse propertiesResponse = objectServicePort.getProperties(getProperties);
-        assertNotNull(propertiesResponse);
+        CmisObjectType propertiesObject = objectServicePort.getProperties(repositoryId, documentId, "*", false, EnumIncludeRelationships.NONE, false);
+        assertNotNull(propertiesObject);
 
-        CmisPropertyId objectTypeId = (CmisPropertyId) getCmisProperty(propertiesResponse.getObject().getProperties(), "ObjectTypeId");
+        CmisPropertyId objectTypeId = (CmisPropertyId) getCmisProperty(propertiesObject.getProperties(), "ObjectTypeId");
         assertTrue(objectTypeId != null && objectTypeId.getValue() != null && objectTypeId.getValue().size() == 1 && "D/cmiscustom_document".equals(objectTypeId.getValue().get(0)));
-        CmisPropertyString propertyString = (CmisPropertyString) getCmisProperty(propertiesResponse.getObject().getProperties(), "Name");
+        CmisPropertyString propertyString = (CmisPropertyString) getCmisProperty(propertiesObject.getProperties(), "Name");
         assertTrue(propertyString != null && propertyString.getValue() != null && propertyString.getValue().size() == 1 && newName.equals(propertyString.getValue().get(0)));
-        propertyString = (CmisPropertyString) getCmisProperty(propertiesResponse.getObject().getProperties(), "cmiscustom_docprop_string");
+        propertyString = (CmisPropertyString) getCmisProperty(propertiesObject.getProperties(), "cmiscustom_docprop_string");
         assertTrue(propertyString != null && propertyString.getValue() != null && propertyString.getValue().size() == 1 && customProp.equals(propertyString.getValue().get(0)));
-        CmisPropertyBoolean propertyMulti = (CmisPropertyBoolean) getCmisProperty(propertiesResponse.getObject().getProperties(), "cmiscustom_docprop_boolean_multi");
+        CmisPropertyBoolean propertyMulti = (CmisPropertyBoolean) getCmisProperty(propertiesObject.getProperties(), "cmiscustom_docprop_boolean_multi");
         assertTrue(propertyMulti != null && propertyMulti.getValue() != null && propertyMulti.getValue().size() == 2 && !propertyMulti.getValue().get(0) && propertyMulti.getValue().get(1));
     }
 
@@ -196,7 +194,7 @@ public class CMISCustomTypeTest extends TestCase
 
         assertTrue(isObjectInFolder(repositoryId, documentId, folderId));
 
-        objectServicePort.deleteObject(repositoryId, documentId);
+        objectServicePort.deleteObject(repositoryId, documentId, true);
 
         assertFalse(isObjectInFolder(repositoryId, documentId, folderId));
     }
@@ -215,11 +213,11 @@ public class CMISCustomTypeTest extends TestCase
         String query = "SELECT ObjectId, Name, ObjectTypeId, cmiscustom_docprop_string, cmiscustom_docprop_boolean_multi FROM cmiscustom_document " +
         "WHERE IN_FOLDER('" + folderId1 + "') " +
         "AND cmiscustom_docprop_string = 'custom string' ";
-        CmisQueryType queryType = new CmisQueryType();
+        Query queryType = new Query();
         queryType.setRepositoryId(repositoryId);
         queryType.setStatement(query);
         queryType.setSkipCount(BigInteger.valueOf(0));
-        queryType.setPageSize(BigInteger.valueOf(5));
+        queryType.setMaxItems(BigInteger.valueOf(5));
 
         QueryResponse response = discoveryServicePort.query(queryType);
         assertNotNull(response);
@@ -269,7 +267,7 @@ public class CMISCustomTypeTest extends TestCase
     {
         for (CmisProperty property : cmisPropertiesType.getProperty())
         {
-            if (property.getName().equals(propertyName))
+            if (propertiesUtil.getPropertyName(property).equals(propertyName))
             {
                 return property;
             }
@@ -279,13 +277,12 @@ public class CMISCustomTypeTest extends TestCase
 
     private boolean isObjectInFolder(String repositoryId, String objectId, String folderId) throws CmisException
     {
-        GetChildren getChildren = new GetChildren();
-        getChildren.setRepositoryId(repositoryId);
-        getChildren.setFolderId(folderId);
-        GetChildrenResponse response = navigationServicePort.getChildren(getChildren);
+        Holder<List<CmisObjectType>> response = new Holder<List<CmisObjectType>>(new LinkedList<CmisObjectType>());
+        Holder<Boolean> hasMoreItems = new Holder<Boolean>();
+        navigationServicePort.getChildren(repositoryId, folderId, "*", false, EnumIncludeRelationships.NONE, false, false, BigInteger.ZERO, BigInteger.ZERO, "", response, hasMoreItems);
         assertNotNull(response);
-        assertNotNull(response.getObject());
-        for (CmisObjectType cmisObjectType : response.getObject())
+        assertNotNull(response.value);
+        for (CmisObjectType cmisObjectType : response.value)
         {
             CmisPropertyId propertyId = (CmisPropertyId) getCmisProperty(cmisObjectType.getProperties(), "ObjectId");
             if (propertyId != null && propertyId.getValue() != null && propertyId.getValue().size() > 0 && objectId.equals(propertyId.getValue().get(0)))
@@ -300,42 +297,52 @@ public class CMISCustomTypeTest extends TestCase
     {
         CmisPropertiesType properties = new CmisPropertiesType();
         CmisPropertyString cmisPropertyString = new CmisPropertyString();
-        cmisPropertyString.setName("Name");
+        cmisPropertyString.setPdid("Name");
         cmisPropertyString.getValue().add(name);
         properties.getProperty().add(cmisPropertyString);
         if (custom)
         {
             cmisPropertyString = new CmisPropertyString();
-            cmisPropertyString.setName("cmiscustom_docprop_string");
+            cmisPropertyString.setPdid("cmiscustom_docprop_string");
             cmisPropertyString.getValue().add("custom string");
             properties.getProperty().add(cmisPropertyString);
             CmisPropertyBoolean cmisPropertyBoolean = new CmisPropertyBoolean();
-            cmisPropertyBoolean.setName("cmiscustom_docprop_boolean_multi");
+            cmisPropertyBoolean.setPdid("cmiscustom_docprop_boolean_multi");
             cmisPropertyBoolean.getValue().add(true);
             cmisPropertyBoolean.getValue().add(false);
             properties.getProperty().add(cmisPropertyBoolean);
         }
+        CmisPropertyId idProperty = new CmisPropertyId();
+        idProperty.setPdid(CMISDictionaryModel.PROP_OBJECT_TYPE_ID);
+        idProperty.getValue().add(custom ? "D/cmiscustom_document" : "document");
+        properties.getProperty().add(idProperty);
+
         CmisContentStreamType cmisStream = new CmisContentStreamType();
         cmisStream.setFilename(name);
         cmisStream.setMimeType(MimetypeMap.MIMETYPE_TEXT_PLAIN);
         cmisStream.setStream(new DataHandler(name, MimetypeMap.MIMETYPE_TEXT_PLAIN));
-        return objectServicePort.createDocument(repositoryId, custom ? "D/cmiscustom_document" : "document", properties, folderId, cmisStream, null);
+        return objectServicePort.createDocument(repositoryId, properties, folderId, cmisStream, null, null, null, null);
     }
 
     private String createTestFolder(String repositoryId, String name, String folderId, boolean custom) throws CmisException
     {
         CmisPropertiesType properties = new CmisPropertiesType();
         CmisPropertyString cmisPropertyString = new CmisPropertyString();
-        cmisPropertyString.setName("Name");
+        cmisPropertyString.setPdid("Name");
         cmisPropertyString.getValue().add(name);
         properties.getProperty().add(cmisPropertyString);
         if (custom)
         {
             cmisPropertyString = new CmisPropertyString();
-            cmisPropertyString.setName("cmiscustom_folderprop_string");
+            cmisPropertyString.setPdid("cmiscustom_folderprop_string");
             cmisPropertyString.getValue().add("custom string");
             properties.getProperty().add(cmisPropertyString);
         }
-        return objectServicePort.createFolder(repositoryId, custom ? "F/cmiscustom_folder" : "folder", properties, folderId);
+        CmisPropertyId idProperty = new CmisPropertyId();
+        idProperty.setPdid(CMISDictionaryModel.PROP_OBJECT_TYPE_ID);
+        idProperty.getValue().add(custom ? "F/cmiscustom_folder" : "folder");
+        properties.getProperty().add(idProperty);
+
+        return objectServicePort.createFolder(repositoryId, properties, folderId, null, null, null);
     }
 }

@@ -27,8 +27,11 @@ import org.w3c.dom.Element;
  *         &lt;element name="properties" type="{http://docs.oasis-open.org/ns/cmis/core/200901}cmisPropertiesType" minOccurs="0"/>
  *         &lt;element ref="{http://docs.oasis-open.org/ns/cmis/core/200901}allowableActions" minOccurs="0"/>
  *         &lt;element name="relationship" type="{http://docs.oasis-open.org/ns/cmis/core/200901}cmisObjectType" maxOccurs="unbounded" minOccurs="0"/>
- *         &lt;element name="changeObject" type="{http://docs.oasis-open.org/ns/cmis/core/200901}cmisChangedObjectType" minOccurs="0"/>
  *         &lt;element name="child" type="{http://docs.oasis-open.org/ns/cmis/core/200901}cmisObjectType" maxOccurs="unbounded" minOccurs="0"/>
+ *         &lt;element name="changeEventInfo" type="{http://docs.oasis-open.org/ns/cmis/core/200901}cmisChangeEventType" minOccurs="0"/>
+ *         &lt;element name="acl" type="{http://docs.oasis-open.org/ns/cmis/core/200901}cmisAccessControlListType" minOccurs="0"/>
+ *         &lt;element name="exactACL" type="{http://www.w3.org/2001/XMLSchema}boolean" minOccurs="0"/>
+ *         &lt;element name="rendition" type="{http://docs.oasis-open.org/ns/cmis/core/200901}cmisRenditionType" maxOccurs="unbounded" minOccurs="0"/>
  *         &lt;any/>
  *       &lt;/sequence>
  *       &lt;attGroup ref="{http://docs.oasis-open.org/ns/cmis/core/200901}cmisUndefinedAttribute"/>
@@ -44,8 +47,11 @@ import org.w3c.dom.Element;
     "properties",
     "allowableActions",
     "relationship",
-    "changeObject",
     "child",
+    "changeEventInfo",
+    "acl",
+    "exactACL",
+    "rendition",
     "any"
 })
 public class CmisObjectType {
@@ -53,8 +59,11 @@ public class CmisObjectType {
     protected CmisPropertiesType properties;
     protected CmisAllowableActionsType allowableActions;
     protected List<CmisObjectType> relationship;
-    protected CmisChangedObjectType changeObject;
     protected List<CmisObjectType> child;
+    protected CmisChangeEventType changeEventInfo;
+    protected CmisAccessControlListType acl;
+    protected Boolean exactACL;
+    protected List<CmisRenditionType> rendition;
     @XmlAnyElement(lax = true)
     protected List<Object> any;
     @XmlAnyAttribute
@@ -138,30 +147,6 @@ public class CmisObjectType {
     }
 
     /**
-     * Gets the value of the changeObject property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link CmisChangedObjectType }
-     *     
-     */
-    public CmisChangedObjectType getChangeObject() {
-        return changeObject;
-    }
-
-    /**
-     * Sets the value of the changeObject property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link CmisChangedObjectType }
-     *     
-     */
-    public void setChangeObject(CmisChangedObjectType value) {
-        this.changeObject = value;
-    }
-
-    /**
      * Gets the value of the child property.
      * 
      * <p>
@@ -191,6 +176,107 @@ public class CmisObjectType {
     }
 
     /**
+     * Gets the value of the changeEventInfo property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link CmisChangeEventType }
+     *     
+     */
+    public CmisChangeEventType getChangeEventInfo() {
+        return changeEventInfo;
+    }
+
+    /**
+     * Sets the value of the changeEventInfo property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link CmisChangeEventType }
+     *     
+     */
+    public void setChangeEventInfo(CmisChangeEventType value) {
+        this.changeEventInfo = value;
+    }
+
+    /**
+     * Gets the value of the acl property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link CmisAccessControlListType }
+     *     
+     */
+    public CmisAccessControlListType getAcl() {
+        return acl;
+    }
+
+    /**
+     * Sets the value of the acl property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link CmisAccessControlListType }
+     *     
+     */
+    public void setAcl(CmisAccessControlListType value) {
+        this.acl = value;
+    }
+
+    /**
+     * Gets the value of the exactACL property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link Boolean }
+     *     
+     */
+    public Boolean isExactACL() {
+        return exactACL;
+    }
+
+    /**
+     * Sets the value of the exactACL property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link Boolean }
+     *     
+     */
+    public void setExactACL(Boolean value) {
+        this.exactACL = value;
+    }
+
+    /**
+     * Gets the value of the rendition property.
+     * 
+     * <p>
+     * This accessor method returns a reference to the live list,
+     * not a snapshot. Therefore any modification you make to the
+     * returned list will be present inside the JAXB object.
+     * This is why there is not a <CODE>set</CODE> method for the rendition property.
+     * 
+     * <p>
+     * For example, to add a new item, do as follows:
+     * <pre>
+     *    getRendition().add(newItem);
+     * </pre>
+     * 
+     * 
+     * <p>
+     * Objects of the following type(s) are allowed in the list
+     * {@link CmisRenditionType }
+     * 
+     * 
+     */
+    public List<CmisRenditionType> getRendition() {
+        if (rendition == null) {
+            rendition = new ArrayList<CmisRenditionType>();
+        }
+        return this.rendition;
+    }
+
+    /**
      * Gets the value of the any property.
      * 
      * <p>
@@ -208,8 +294,8 @@ public class CmisObjectType {
      * 
      * <p>
      * Objects of the following type(s) are allowed in the list
-     * {@link Object }
      * {@link Element }
+     * {@link Object }
      * 
      * 
      */

@@ -38,6 +38,7 @@ import org.alfresco.cmis.CMISServices;
 import org.alfresco.cmis.CMISTypeDefinition;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.cmis.PropertyFilter;
+import org.alfresco.repo.cmis.ws.utils.AlfrescoObjectType;
 import org.alfresco.repo.cmis.ws.utils.CmisObjectsUtils;
 import org.alfresco.repo.cmis.ws.utils.PropertyUtil;
 import org.alfresco.repo.version.VersionModel;
@@ -262,6 +263,10 @@ public class DMAbstractServicePort
 
     protected CmisAllowableActionsType determineObjectAllowableActions(Object objectIdentifier) throws CmisException
     {
+        if (objectIdentifier instanceof String)
+        {
+            objectIdentifier = cmisObjectsUtils.getIdentifierInstance(objectIdentifier.toString(), AlfrescoObjectType.ANY_OBJECT);
+        }
         if (objectIdentifier instanceof AssociationRef)
         {
             return determineRelationshipAllowableActions((AssociationRef) objectIdentifier);

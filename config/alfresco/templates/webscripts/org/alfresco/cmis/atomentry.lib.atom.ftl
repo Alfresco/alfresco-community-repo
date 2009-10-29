@@ -15,7 +15,7 @@
   [#assign typedef = cmistype(object)]
   
   [#list typedef.propertyDefinitions?values as propdef]
-    [@filter propfilter propdef.propertyId.id][@prop propdef.propertyId.id object propdef.dataType.label/][/@filter]
+    [@filter propfilter propdef.queryName][@prop propdef.propertyId.id object propdef.dataType.label/][/@filter]
   [/#list]
 </cmis:properties>
 [/#macro]
@@ -45,6 +45,7 @@
 [@objectCMISProps node propfilter/]
 [#if includeallowableactions][@allowableactions node/][/#if]
 </cmisra:object>
+<cmisra:pathSegment>${node.name}</cmisra:pathSegment>
 [/@entry]
 [/#macro]
 
@@ -108,6 +109,7 @@
 [@objectCMISProps node propfilter/]
 [#if includeallowableactions][@allowableactions node/][/#if]
 </cmisra:object>
+<cmisra:pathSegment>${node.name}</cmisra:pathSegment>
 [/@entry]
 [/#macro]
 
@@ -117,10 +119,10 @@
 [#--                       --]
 
 [#macro foldertree node propfilter="*" includeallowableactions=false includerelationships="none" ns="" maxdepth=-1]
-[@folder node propfilter "folders" includeallowableactions includerelationships ns 1 maxdepth "tree"/]
+[@folder node propfilter "folders" includeallowableactions includerelationships ns 1 maxdepth "" "tree"/]
 [/#macro]
 
-[#macro folder node propfilter="*" typesfilter="any" includeallowableactions=false includerelationships="none" ns="" depth=1 maxdepth=1 nestedkind=""]
+[#macro folder node propfilter="*" typesfilter="any" includeallowableactions=false includerelationships="none" ns="" depth=1 maxdepth=1 relativePathSegment="" nestedkind=""]
 [@entry ns]
 <author><name>${node.properties.creator}</name></author>
 <content>${node.id}</content>  [#-- TODO --]
@@ -138,6 +140,10 @@
 [@objectCMISProps node propfilter/]
 [#if includeallowableactions][@allowableactions node/][/#if]
 </cmisra:object>
+<cmisra:pathSegment>${node.name}</cmisra:pathSegment>
+[#if relativePathSegment != ""]
+<cmisra:relativePathSegment>${relativePathSegment}</cmisra:relativePathSegment>
+[/#if]
 [#-- recurse for depth greater than 1 --]
 [#if maxdepth == -1 || depth &lt; maxdepth]
 [#assign nested = cmischildren(node, typesfilter)/]
@@ -150,7 +156,7 @@
   [#if child.isDocument]
     [@document child propfilter includeallowableactions includerelationships/]
   [#else]
-    [@folder child propfilter typesfilter includeallowableactions includerelationships ns depth+1 maxdepth nestedkind/]
+    [@folder child propfilter typesfilter includeallowableactions includerelationships ns depth+1 maxdepth "" nestedkind/]
   [/#if]
 [/#list]
 </cmisra:children>

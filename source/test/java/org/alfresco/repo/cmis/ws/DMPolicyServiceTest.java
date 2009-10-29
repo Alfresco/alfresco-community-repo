@@ -35,7 +35,7 @@ public class DMPolicyServiceTest extends AbstractServiceTest
 {
 
     public final static String SERVICE_WSDL_LOCATION = CmisServiceTestHelper.ALFRESCO_URL + "/cmis/PolicyService?wsdl";
-    public final static QName SERVICE_NAME = new QName("http://docs.oasis-open.org/ns/cmis/ws/200901", "PolicyServicePort");
+    public final static QName SERVICE_NAME = new QName("http://docs.oasis-open.org/ns/cmis/ws/200908/", "PolicyServicePort");
 
     public DMPolicyServiceTest()
     {

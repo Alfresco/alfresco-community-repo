@@ -70,13 +70,23 @@
     </cmisra:repositoryInfo>
 
     <cmisra:uritemplate>
-        <cmisra:template>${absurl(url.serviceContext)}/api/node/{id}?filter={filter}&amp;includeAllowableActions={includeAllowableActions}&amp;includeRelationships={includeRelationships}</cmisra:template>
-        <cmisra:type>entrybyid</cmisra:type>
+        <cmisra:template>${absurl(url.serviceContext)}/api/node/{id}?filter={filter}&amp;includeAllowableActions={includeAllowableActions}&amp;includePolicyIds={includePolicyIds}&amp;includeRelationships={includeRelationships}&amp;includeACL={includeACL}&amp;renditionFilter={renditionFilter}</cmisra:template>
+        <cmisra:type>${cmisconstants.URI_OBJECT_BY_ID}</cmisra:type>
+        <cmisra:mediatype>${cmisconstants.MIMETYPE_ENTRY}</cmisra:mediatype>
+    </cmisra:uritemplate>
+    <cmisra:uritemplate>
+        <cmisra:template>${absurl(url.serviceContext)}/api/path/{path}?filter={filter}&amp;includeAllowableActions={includeAllowableActions}&amp;includePolicyIds={includePolicyIds}&amp;includeRelationships={includeRelationships}&amp;includeACL={includeACL}&amp;renditionFilter={renditionFilter}</cmisra:template>
+        <cmisra:type>${cmisconstants.URI_OBJECT_BY_PATH}</cmisra:type>
+        <cmisra:mediatype>${cmisconstants.MIMETYPE_ENTRY}</cmisra:mediatype>
+    </cmisra:uritemplate>
+    <cmisra:uritemplate>
+        <cmisra:template>${absurl(url.serviceContext)}/api/type/{id}</cmisra:template>
+        <cmisra:type>${cmisconstants.URI_TYPE_BY_ID}</cmisra:type>
         <cmisra:mediatype>${cmisconstants.MIMETYPE_ENTRY}</cmisra:mediatype>
     </cmisra:uritemplate>
     <cmisra:uritemplate>
         <cmisra:template>${absurl(url.serviceContext)}/api/query?q={q}&amp;includeAllowableActions={includeAllowableActions?}&amp;searchAllVersions={searchAllVersions?}&amp;skipCount={skipCount?}&amp;maxItems={maxItems?}</cmisra:template>
-        <cmisra:type>query</cmisra:type>
+        <cmisra:type>${cmisconstants.URI_QUERY}</cmisra:type>
         <cmisra:mediatype>${cmisconstants.MIMETYPE_FEED}</cmisra:mediatype>
     </cmisra:uritemplate>
 

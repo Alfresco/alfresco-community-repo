@@ -35,7 +35,7 @@ import javax.xml.ws.Service;
 public class DMDiscoveryServiceTest extends AbstractServiceTest
 {
     public final static String SERVICE_WSDL_LOCATION = CmisServiceTestHelper.ALFRESCO_URL + "/cmis/DiscoveryService?wsdl";
-    public final static QName SERVICE_NAME = new QName("http://docs.oasis-open.org/ns/cmis/ws/200901", "DiscoveryService");
+    public final static QName SERVICE_NAME = new QName("http://docs.oasis-open.org/ns/cmis/ws/200908/", "DiscoveryService");
     public final static String STATEMENT = "SELECT * FROM cmis:document";
 
     public DMDiscoveryServiceTest()

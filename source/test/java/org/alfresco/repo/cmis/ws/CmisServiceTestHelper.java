@@ -339,7 +339,7 @@ public class CmisServiceTestHelper extends TestCase
 
     public void deleteDocument(String documentId) throws Exception
     {
-        objectServicePort.deleteObject(repositoryId, documentId, true, null);
+        objectServicePort.deleteObject(repositoryId, documentId, true, new Holder<CmisExtensionType>());
         assertNull("Document has not been deleted", getObjectProperties(documentId));
     }
 
@@ -356,16 +356,17 @@ public class CmisServiceTestHelper extends TestCase
     public CmisObjectType getObjectProperties(String objectId, String filter)
     {
         CmisPropertiesType response = null;
+        CmisObjectType result = null;
         try
         {
             response = objectServicePort.getProperties(repositoryId, objectId, filter, null);
+            result = new CmisObjectType();
+            result.setProperties(response);            
         }
         catch (Exception e)
         {
 
         }
-        CmisObjectType result = new CmisObjectType();
-        result.setProperties(response);
         return result;
     }
 
@@ -540,7 +541,7 @@ public class CmisServiceTestHelper extends TestCase
             contentStream.setMimeType(MimetypeMap.MIMETYPE_TEXT_PLAIN);
             DataHandler dataHandler = new DataHandler("Test content string :" + System.currentTimeMillis(), MimetypeMap.MIMETYPE_TEXT_PLAIN);
             contentStream.setStream(dataHandler);
-            versioningServicePort.checkIn(repositoryId, documentId, isMajor, properties, contentStream, checkinComment, null, null, null, null);
+            versioningServicePort.checkIn(repositoryId, documentId, isMajor, properties, contentStream, checkinComment, null, null, null, new Holder<CmisExtensionType>());
         }
         catch (Throwable e)
         {
@@ -553,7 +554,7 @@ public class CmisServiceTestHelper extends TestCase
     {
         try
         {
-            versioningServicePort.checkOut(repositoryId, documentId, null, contentCopied);
+            versioningServicePort.checkOut(repositoryId, documentId, new Holder<CmisExtensionType>(), contentCopied);
         }
         catch (Throwable e)
         {
@@ -639,7 +640,7 @@ public class CmisServiceTestHelper extends TestCase
     {
         try
         {
-            multiFilingServicePort.addObjectToFolder(repositoryId, documentId, anotherFolderId, false, null);
+            multiFilingServicePort.addObjectToFolder(repositoryId, documentId, anotherFolderId, false, new Holder<CmisExtensionType>());
         }
         catch (Throwable e)
         {
@@ -651,7 +652,7 @@ public class CmisServiceTestHelper extends TestCase
     {
         try
         {
-            multiFilingServicePort.removeObjectFromFolder(repositoryId, documentId, folderId, null);
+            multiFilingServicePort.removeObjectFromFolder(repositoryId, documentId, folderId, new Holder<CmisExtensionType>());
         }
         catch (Exception e)
         {

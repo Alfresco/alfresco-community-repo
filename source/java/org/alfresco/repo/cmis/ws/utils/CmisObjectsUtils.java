@@ -206,16 +206,18 @@ public class CmisObjectsUtils
 
     public List<String> deleteFolder(NodeRef folderNodeReference, boolean continueOnFailure, EnumUnfileObject unfillingStrategy, boolean deleteAllVersions) throws CmisException
     {
-        CmisObjectIterator iterator = new CmisObjectIterator(folderNodeReference, unfillingStrategy, continueOnFailure, deleteAllVersions, nodeService, fileFolderService,
-                versionService, checkOutCheckInService, this);
-        if (iterator.hasNext())
-        {
-            for (; iterator.hasNext(); iterator.next())
-            {
-                iterator.remove();
-            }
-        }
-        return iterator.getFailToDelete();
+//        TODO: DC 16Oct09 - commented out due to missing CmisObjectIterator
+//        CmisObjectIterator iterator = new CmisObjectIterator(folderNodeReference, unfillingStrategy, continueOnFailure, deleteAllVersions, nodeService, fileFolderService,
+//                versionService, checkOutCheckInService, this);
+//        if (iterator.hasNext())
+//        {
+//            for (; iterator.hasNext(); iterator.next())
+//            {
+//                iterator.remove();
+//            }
+//        }
+//        return iterator.getFailToDelete();
+        return null;
     }
 
     public boolean deleteObject(NodeRef objectNodeReference)

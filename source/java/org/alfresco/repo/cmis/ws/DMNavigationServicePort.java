@@ -277,7 +277,7 @@ public class DMNavigationServicePort extends DMAbstractServicePort implements Na
         while (!descedantsStack.isEmpty())
         {
             RecursiveElement element = descedantsStack.pop();
-            CmisObjectInFolderContainerType currentContainer = createObjectInFolderContainer(folderNodeRef, propertyFilter, includeAllowableActions, includeRelationships,
+            CmisObjectInFolderContainerType currentContainer = createObjectInFolderContainer(element.getCurrentNodeRef(), propertyFilter, includeAllowableActions, includeRelationships,
                     renditionFilter, includePathSegments);
             element.getParentContainerType().getChildren().add(currentContainer);
             if (element.getDepth() <= maxDepth)

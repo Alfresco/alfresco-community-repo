@@ -25,6 +25,7 @@
 package org.alfresco.repo.cmis.ws;
 
 import javax.xml.namespace.QName;
+import javax.xml.ws.Holder;
 
 import org.alfresco.cmis.CMISDictionaryModel;
 
@@ -77,7 +78,10 @@ public class DMMultiFilingServiceTest extends AbstractServiceTest
 
     public void testAddObjectToFolder() throws Exception
     {
-        ((MultiFilingServicePort) servicePort).addObjectToFolder(repositoryId, documentId, anotherFolderId, false, null);
+        MultiFilingServicePort multiFilingServicePort = helper.getMultiFilingServicePort();
+        helper.authenticateServicePort(multiFilingServicePort, CmisServiceTestHelper.USERNAME_ADMIN, CmisServiceTestHelper.PASSWORD_ADMIN);
+        Holder<CmisExtensionType> holder = new Holder<CmisExtensionType>();
+        multiFilingServicePort.addObjectToFolder(repositoryId, documentId, anotherFolderId, false, holder);
         boolean found = false;
         for (CmisObjectInFolderType cmisObjectType : helper.getChildren(anotherFolderId, 0, CMISDictionaryModel.PROP_OBJECT_ID))
         {
@@ -94,13 +98,12 @@ public class DMMultiFilingServiceTest extends AbstractServiceTest
 
     public void testRemoveObjectFromFolder() throws Exception
     {
-
         helper.addObjectToFolder(documentId, anotherFolderId);
 
         try
         {
             // remove object from all folders expects Exception
-            ((MultiFilingServicePort) servicePort).removeObjectFromFolder(repositoryId, documentId, null, null);
+            ((MultiFilingServicePort) servicePort).removeObjectFromFolder(repositoryId, documentId, null, new Holder<CmisExtensionType>());
             fail("Expects exception");
         }
         catch (CmisException e)
@@ -113,18 +116,18 @@ public class DMMultiFilingServiceTest extends AbstractServiceTest
         try
         {
             // remove object from folder where it is not situated expects Exception
-            ((MultiFilingServicePort) servicePort).removeObjectFromFolder(repositoryId, documentId, folderId, null);
+            ((MultiFilingServicePort) servicePort).removeObjectFromFolder(repositoryId, documentId, folderId, new Holder<CmisExtensionType>());
             fail("Expected exception");
         }
         catch (CmisException e)
         {
-            assertTrue(e.getFaultInfo().getType().equals(EnumServiceException.INVALID_ARGUMENT));
+            assertTrue(e.toString(), e.getFaultInfo().getType().equals(EnumServiceException.STORAGE));
         }
 
         try
         {
             // remove object from last folder expects Exception
-            ((MultiFilingServicePort) servicePort).removeObjectFromFolder(repositoryId, documentId, companyHomeId, null);
+            ((MultiFilingServicePort) servicePort).removeObjectFromFolder(repositoryId, documentId, companyHomeId, new Holder<CmisExtensionType>());
             fail("Expected exception");
         }
         catch (CmisException e)

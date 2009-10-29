@@ -34,7 +34,7 @@ public class DMRelationshipServiceTest extends AbstractServiceTest
 {
 
     public final static String SERVICE_WSDL_LOCATION = CmisServiceTestHelper.ALFRESCO_URL + "/cmis/RelationshipService?wsdl";
-    public final static QName SERVICE_NAME = new QName("http://docs.oasis-open.org/ns/cmis/ws/200901", "RelationshipService");
+    public final static QName SERVICE_NAME = new QName("http://docs.oasis-open.org/ns/cmis/ws/200908/", "RelationshipService");
 
     @SuppressWarnings("unused")
     private String relationshipId;
@@ -83,20 +83,18 @@ public class DMRelationshipServiceTest extends AbstractServiceTest
 
     protected Object getServicePort()
     {
+        URL serviceWsdlURL;
+        try
         {
-            URL serviceWsdlURL;
-            try
-            {
-                serviceWsdlURL = new URL(SERVICE_WSDL_LOCATION);
-            }
-            catch (MalformedURLException e)
-            {
-                throw new java.lang.RuntimeException("Cannot get service Wsdl URL", e);
-            }
-
-            Service service = Service.create(serviceWsdlURL, SERVICE_NAME);
-            return service.getPort(RelationshipServicePort.class);
+            serviceWsdlURL = new URL(SERVICE_WSDL_LOCATION);
         }
+        catch (MalformedURLException e)
+        {
+            throw new java.lang.RuntimeException("Cannot get service Wsdl URL", e);
+        }
+
+        Service service = Service.create(serviceWsdlURL, SERVICE_NAME);
+        return service.getPort(RelationshipServicePort.class);
     }
 
     public void testGetRelationships() throws Exception

@@ -17,7 +17,7 @@
 [/@feedLib.node]
 
 [#if parent?? && parent.isContainer]
-  [@entryLib.folder node=parent propfilter=filter includeallowableactions=includeAllowableActions includerelationships="none"/]
+  [@entryLib.folder node=parent propfilter=filter includeallowableactions=includeAllowableActions includerelationships="none" relativePathSegment=node.name/]
 [/#if]
 
 </feed>

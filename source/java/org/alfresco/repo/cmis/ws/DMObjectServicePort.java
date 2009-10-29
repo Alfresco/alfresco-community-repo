@@ -131,7 +131,8 @@ public class DMObjectServicePort extends DMAbstractServicePort implements Object
             }
             writer.putContent(inputstream);
         }
-        appendDataToDocument(newDocumentNodeRef, properties, versioningState, policies, addACEs, removeACEs, objectId);
+        PropertyFilter propertyFilter = createPropertyFilter(createIgnoringFilter(new String[] { CMISDictionaryModel.PROP_NAME, CMISDictionaryModel.PROP_OBJECT_TYPE_ID }));
+        appendDataToDocument(newDocumentNodeRef, properties, versioningState, policies, addACEs, removeACEs, objectId, propertyFilter);
     }
     
     /**
@@ -167,7 +168,8 @@ public class DMObjectServicePort extends DMAbstractServicePort implements Object
         {
             throw cmisObjectsUtils.createCmisException("Source document not found", EnumServiceException.INVALID_ARGUMENT);
         }
-        appendDataToDocument(newDocumentNodeRef, properties, versioningState, policies, addACEs, removeACEs, objectId);
+        PropertyFilter propertyFilter = createPropertyFilter(createIgnoringFilter(new String[] { CMISDictionaryModel.PROP_OBJECT_TYPE_ID }));
+        appendDataToDocument(newDocumentNodeRef, properties, versioningState, policies, addACEs, removeACEs, objectId, propertyFilter);
     }
     
     /**
@@ -673,13 +675,12 @@ public class DMObjectServicePort extends DMAbstractServicePort implements Object
     }
     
     private void appendDataToDocument(NodeRef targetDocumentNodeRef, CmisPropertiesType properties, EnumVersioningState versioningState,
-            List<String> policies, CmisAccessControlListType addACEs, CmisAccessControlListType removeACEs, Holder<String> objectId)
+            List<String> policies, CmisAccessControlListType addACEs, CmisAccessControlListType removeACEs, Holder<String> objectId, PropertyFilter propertyFilter)
             throws CmisException
     {
         // TODO: process Policies and ACE
 
-        propertiesUtil.setProperties(targetDocumentNodeRef, properties, createPropertyFilter(createIgnoringFilter(new String[] { CMISDictionaryModel.PROP_NAME,
-                CMISDictionaryModel.PROP_OBJECT_TYPE_ID })));
+        propertiesUtil.setProperties(targetDocumentNodeRef, properties, propertyFilter);
 
         String versionLabel = null;
 

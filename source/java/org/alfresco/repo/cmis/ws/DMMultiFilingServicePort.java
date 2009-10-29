@@ -91,8 +91,15 @@ public class DMMultiFilingServicePort extends DMAbstractServicePort implements M
         if (!cmisObjectsUtils.removeObject(objectNodeReference, folderNodeReference))
         {
             Throwable exception = cmisObjectsUtils.getLastOperationException();
-            throw cmisObjectsUtils.createCmisException(("Can't remove specified Object from specified Folder. Cause exception message: " + exception.toString()),
-                    EnumServiceException.STORAGE, exception);
+            if (null != exception)
+            {
+                throw cmisObjectsUtils.createCmisException(("Can't remove specified Object from specified Folder. Cause exception message: " + exception.toString()),
+                        EnumServiceException.STORAGE, exception);
+            }
+            else
+            {
+                throw cmisObjectsUtils.createCmisException("Can't remove specified Object from specified Folder", EnumServiceException.STORAGE, exception);
+            }
         }
     }
 

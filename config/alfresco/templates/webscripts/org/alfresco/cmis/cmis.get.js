@@ -1,6 +1,6 @@
+var testRunner = Packages.org.alfresco.repo.cmis.rest.test.CMISTestRunner();
+model.tests = testRunner.getTestNames("*");
 model.cmisVersion = cmis.version;
-model.defaultRootFolder = cmis.defaultRootFolder;
-model.defaultRootFolderPath = cmis.defaultRootFolderPath;
 model.querySupport = cmis.querySupport.label;
 model.joinSupport = cmis.joinSupport.label;
 model.pwcSearchable = cmis.pwcSearchable;

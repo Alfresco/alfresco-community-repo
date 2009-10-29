@@ -7,6 +7,9 @@
         <property name="serviceRegistry">
             <ref bean="ServiceRegistry" />
         </property>
+        <property name="CMISService">
+            <ref bean="CMISService" />
+        </property>
     </bean>
 
     <bean id="CMISService" class="org.alfresco.cmis.mapping.CMISServicesImpl">

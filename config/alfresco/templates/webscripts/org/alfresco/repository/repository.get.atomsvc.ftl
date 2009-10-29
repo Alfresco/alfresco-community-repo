@@ -37,7 +37,7 @@
       <cmis:vendorName>Alfresco</cmis:vendorName> 
       <cmis:productName>Alfresco Repository (${server.edition})</cmis:productName>
       <cmis:productVersion>${server.version}</cmis:productVersion>
-      <cmis:rootFolderId>${absurl(url.serviceContext)}[@linksLib.nodeuri defaultRootFolder/]</cmis:rootFolderId>
+      <cmis:rootFolderId>[@linksLib.noderef defaultRootFolder/]</cmis:rootFolderId>
       [#-- TODO: implement change log --]
       <cmis:latestChangeToken></cmis:latestChangeToken>
       <cmis:capabilities>

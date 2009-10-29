@@ -1,0 +1,9 @@
+<webscript>
+  <shortname>CMIS Front Page</shortname>
+  <description>
+  </description>
+  <url>/cmis</url>
+  <format default="html"/>
+  <authentication>none</authentication>
+  <family>CMIS</family>
+</webscript>

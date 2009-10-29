@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<ns1:query xmlns:ns1="http://docs.oasis-open.org/ns/cmis/core/200901" xmlns:ns2="http://docs.oasis-open.org/ns/cmis/messaging/200901" xmlns:ns3="http://www.w3.org/2005/Atom" xmlns:ns4="http://www.w3.org/2007/app">
-    <ns1:statement>SELECT * FROM Document</ns1:statement>
-    <ns1:searchAllVersions>true</ns1:searchAllVersions>
-    <ns1:pageSize>50</ns1:pageSize>
-    <ns1:skipCount>0</ns1:skipCount>
-    <ns1:returnAllowableActions>true</ns1:returnAllowableActions>
-</ns1:query>

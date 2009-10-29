@@ -125,112 +125,141 @@ public class CMISSchemaTest extends TestCase
     public void testAllowableActions()
         throws Exception
     {
-        String xml = getXML("Ex-AllowableActions.xml");
+        String xml = getXML("examples/AllowableActions.xml");
         assertValidXML(xml, cmisValidator.getCMISAtomValidator());
     }
 
     public void testChangeLog()
         throws Exception
     {
-        String xml = getXML("Ex-ChangeLog.xml");
-        // Spec Issue - document is invalid
-        //assertValidXML(xml, cmisValidator.getCMISAtomValidator());
+        String xml = getXML("examples/ChangeLog.xml");
+        assertValidXML(xml, cmisValidator.getCMISAtomValidator());
     }
 
     public void testDocumentEntry()
         throws Exception
     {
-        String xml = getXML("Ex-DocumentEntry.xml");
+        String xml = getXML("examples/DocumentEntry.xml");
         assertValidXML(xml, cmisValidator.getCMISAtomValidator());
     }
 
     public void testDocumentEntryPWC()
         throws Exception
     {
-        String xml = getXML("Ex-DocumentEntryPWC.xml");
+        String xml = getXML("examples/DocumentEntryPWC.xml");
         assertValidXML(xml, cmisValidator.getCMISAtomValidator());
     }
 
     public void testDocumentEntryWithChanges()
         throws Exception
     {
-        String xml = getXML("Ex-DocumentEntryWithChanges.xml");
-        // Spec Issue - document is invalid
-        //assertValidXML(xml, cmisValidator.getCMISAtomValidator());
+        String xml = getXML("examples/DocumentEntryWithChanges.xml");
+        assertValidXML(xml, cmisValidator.getCMISAtomValidator());
     }
     
     public void testFolderChildren()
         throws Exception
     {
-        String xml = getXML("Ex-FolderChildren.xml");
+        String xml = getXML("examples/FolderChildren.xml");
+        assertValidXML(xml, cmisValidator.getCMISAtomValidator());
+    }
+
+    public void testFolderDescendants()
+        throws Exception
+    {
+        String xml = getXML("examples/FolderDescendants.xml");
         assertValidXML(xml, cmisValidator.getCMISAtomValidator());
     }
 
     public void testFolderEntry()
         throws Exception
     {
-        String xml = getXML("Ex-FolderEntry.xml");
+        String xml = getXML("examples/FolderEntry.xml");
         assertValidXML(xml, cmisValidator.getCMISAtomValidator());
     }
 
     public void testPolicyEntry()
         throws Exception
     {
-        String xml = getXML("Ex-PolicyEntry.xml");
+        String xml = getXML("examples/PolicyEntry.xml");
         assertValidXML(xml, cmisValidator.getCMISAtomValidator());
     }
 
     public void testQuery()
         throws Exception
     {
-        String xml = getXML("Ex-Query.xml");
+        String xml = getXML("examples/Query.xml");
         assertValidXML(xml, cmisValidator.getCMISAtomValidator());
     }
 
     public void testRelationshipEntry()
         throws Exception
     {
-        String xml = getXML("Ex-RelationshipEntry.xml");
+        String xml = getXML("examples/RelationshipEntry.xml");
         assertValidXML(xml, cmisValidator.getCMISAtomValidator());
     }
 
     public void testService()
         throws Exception
     {
-        String xml = getXML("Ex-Service.xml");
+        String xml = getXML("examples/Service.xml");
         assertValidXML(xml, cmisValidator.getAppValidator());
     }
 
+    public void testTypeDocumentWith()
+        throws Exception
+    {
+        String xml = getXML("examples/TypeDocumentWith.xml");
+        assertValidXML(xml, cmisValidator.getCMISAtomValidator());
+    }
+
+    public void testTypeDocumentWithout()
+        throws Exception
+    {
+        String xml = getXML("examples/TypeDocumentWithout.xml");
+        assertValidXML(xml, cmisValidator.getCMISAtomValidator());
+    }
+
+    public void testTypeFolderWith()
+        throws Exception
+    {
+        String xml = getXML("examples/TypeFolderWith.xml");
+        assertValidXML(xml, cmisValidator.getCMISAtomValidator());
+    }
+
+    public void testTypeFolderWithOut()
+        throws Exception
+    {
+        String xml = getXML("examples/TypeFolderWithOut.xml");
+        assertValidXML(xml, cmisValidator.getCMISAtomValidator());
+    }
+
+    public void testTypeRelationshipWith()
+        throws Exception
+    {
+        String xml = getXML("examples/TypeRelationshipWith.xml");
+        assertValidXML(xml, cmisValidator.getCMISAtomValidator());
+    }
+
+    public void testTypeRelationshipWithOut()
+        throws Exception
+    {
+        String xml = getXML("examples/TypeRelationshipWithout.xml");
+        assertValidXML(xml, cmisValidator.getCMISAtomValidator());
+    }
+    
     public void testFolderChildrenAlfresco()
         throws Exception
     {
-        String xml = getXML("example_folderchildren_alfresco.xml");
+        String xml = getXML("examples/example_folderchildren_alfresco.xml");
         assertValidXML(xml, cmisValidator.getCMISAtomValidator());
     }
 
     public void testAtomEntry()
         throws Exception
     {
-        String xml = getXML("example_atomentry.xml");
+        String xml = getXML("examples/example_atomentry.xml");
         assertValidXML(xml, cmisValidator.getCMISAtomValidator());
     }
-
-    //
-    //  Missing from v0.61
-    //
-    
-//    public void testType()
-//        throws Exception
-//    {
-//        String xml = getXML("Example-Type.xml");
-//        assertValidXML(xml, cmisValidator.getCMISAtomValidator());
-//    }
-//
-//    public void testFolderDescendants()
-//        throws Exception
-//    {
-//        String xml = getXML("Example-FolderDescendants.xml");
-//        assertValidXML(xml, cmisValidator.getCMISAtomValidator());
-//    }
 
 }

@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<atom:entry xmlns:cmis="http://docs.oasis-open.org/ns/cmis/core/200901" xmlns:cmism="http://docs.oasis-open.org/ns/cmis/messaging/200901" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:app="http://www.w3.org/2007/app" xmlns:cmisra="http://docs.oasis-open.org/ns/cmis/restatom/200901">
+    <atom:author>
+        <atom:name>Al Brown</atom:name>
+        <atom:uri>http://www.ibm.com/</atom:uri>
+        <atom:email>albertcbrown@us.ibm.com</atom:email>
+    </atom:author>
+    <atom:content src="http://cmisexample.oasis-open.org/rep1/b86561c5-33ca-4852-918a-a4814160f974"/>
+    <atom:id>urn:uuid:b86561c5-33ca-4852-918a-a4814160f974</atom:id>
+    <atom:link rel="self" href="http://cmisexample.oasis-open.org/rep1/b86561c5-33ca-4852-918a-a4814160f974"/>
+    <atom:link rel="edit" href="http://cmisexample.oasis-open.org/rep1/b86561c5-33ca-4852-918a-a4814160f974"/>
+    <atom:link type="application/cmis+xml;type=allowableActions" rel="allowableactions" href="http://cmisexample.oasis-open.org/rep1/b86561c5-33ca-4852-918a-a4814160f974/allowableactions"/>
+    <atom:link type="application/atom+xml;type=entry" rel="type" href="http://cmisexample.oasis-open.org/rep1/b86561c5-33ca-4852-918a-a4814160f974/type"/>
+    <atom:link type="application/atom+xml;type=entry" rel="source" href="http://cmisexample.oasis-open.org/rep1/b86561c5-33ca-4852-918a-a4814160f974/source"/>
+    <atom:link type="application/atom+xml;type=entry" rel="target" href="http://cmisexample.oasis-open.org/rep1/b86561c5-33ca-4852-918a-a4814160f974/target"/>
+    <atom:published>2009-07-13T22:50:03.875-07:00</atom:published>
+    <atom:summary type="html">HTML summary of Entry  b86561c5-33ca-4852-918a-a4814160f974</atom:summary>
+    <atom:title type="text">CMIS Example Relationship as Compound Document type</atom:title>
+    <atom:updated>2009-07-13T22:50:03.875-07:00</atom:updated>
+    <cmis:object>
+        <cmis:properties>
+            <cmis:propertyBoolean id="cmis:IsImmutable">
+                <cmis:value>false</cmis:value>
+            </cmis:propertyBoolean>
+            <cmis:propertyDateTime id="cmis:CreationDate">
+                <cmis:value>2009-07-13T22:50:03.875-07:00</cmis:value>
+            </cmis:propertyDateTime>
+            <cmis:propertyDateTime id="cmis:LastModificationDate">
+                <cmis:value>2009-07-13T22:50:03.875-07:00</cmis:value>
+            </cmis:propertyDateTime>
+            <cmis:propertyId id="cmis:ObjectId">
+                <cmis:value>b86561c5-33ca-4852-918a-a4814160f974</cmis:value>
+            </cmis:propertyId>
+            <cmis:propertyId id="cmis:ObjectTypeId">
+                <cmis:value>compounddocument</cmis:value>
+            </cmis:propertyId>
+            <cmis:propertyId id="cmis:BaseTypeId">
+                <cmis:value>cmis:relationship</cmis:value>
+            </cmis:propertyId>
+            <cmis:propertyString id="cmis:LastModifiedBy">
+                <cmis:value>Al Brown</cmis:value>
+            </cmis:propertyString>
+            <cmis:propertyString id="cmis:CreatedBy">
+                <cmis:value>Al Brown</cmis:value>
+            </cmis:propertyString>
+        </cmis:properties>
+        <cmis:allowableActions>
+            <cmis:canDelete>true</cmis:canDelete>
+            <cmis:canUpdateProperties>true</cmis:canUpdateProperties>
+            <cmis:canGetProperties>true</cmis:canGetProperties>
+            <cmis:canGetRelationships>true</cmis:canGetRelationships>
+            <cmis:canMoveObject>true</cmis:canMoveObject>
+            <cmis:canAddObjectToFolder>true</cmis:canAddObjectToFolder>
+            <cmis:canRemoveObjectFromFolder>true</cmis:canRemoveObjectFromFolder>
+            <cmis:canApplyPolicy>true</cmis:canApplyPolicy>
+            <cmis:canGetAppliedPolicies>true</cmis:canGetAppliedPolicies>
+            <cmis:canRemovePolicy>true</cmis:canRemovePolicy>
+            <cmis:canCreateRelationship>true</cmis:canCreateRelationship>
+        </cmis:allowableActions>
+    </cmis:object>
+</atom:entry>

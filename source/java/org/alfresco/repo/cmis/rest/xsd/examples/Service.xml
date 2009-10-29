@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<app:service xmlns:cmis="http://docs.oasis-open.org/ns/cmis/core/200901" xmlns:cmism="http://docs.oasis-open.org/ns/cmis/messaging/200901" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:app="http://www.w3.org/2007/app" xmlns:cmisra="http://docs.oasis-open.org/ns/cmis/restatom/200901">
+    <app:workspace>
+        <atom:title type="text">CMIS Repository</atom:title>
+        <app:collection href="http://cmisexample.oasis-open.org/rep1//checkedout" cmisra:CollectionType="checkedout">
+            <atom:title type="text">Checkedout collection</atom:title>
+            <app:accept>application/atom+xml;type=entry</app:accept>
+        </app:collection>
+        <app:collection href="http://cmisexample.oasis-open.org/rep1//query" cmisra:CollectionType="query">
+            <atom:title type="text">Query collection</atom:title>
+            <app:accept>application/cmisquery+xml</app:accept>
+        </app:collection>
+        <app:collection href="http://cmisexample.oasis-open.org/rep1//rootc" cmisra:CollectionType="root">
+            <atom:title type="text">Root children collection</atom:title>
+        </app:collection>
+        <app:collection href="http://cmisexample.oasis-open.org/rep1//typec" cmisra:CollectionType="types">
+            <atom:title type="text">Types children collection</atom:title>
+        </app:collection>
+        <app:collection href="http://cmisexample.oasis-open.org/rep1//unfiled" cmisra:CollectionType="unfiled">
+            <atom:title type="text">Unfiled collection</atom:title>
+            <app:accept>application/atom+xml;type=entry</app:accept>
+        </app:collection>
+        <app:collection href="http://cmisexample.oasis-open.org/rep1//changes" cmisra:CollectionType="changes">
+            <atom:title type="text">changes collection</atom:title>
+        </app:collection>
+        <atom:link title="Folder Tree feed for root folder" type="application/atom+xml;type=feed" rel="http://docs.oasis-open.org/ns/cmis/link/200901/foldertree" href="http://cmisexample.oasis-open.org/rep1//foldertree"/>
+        <cmisra:repositoryInfo>
+            <cmis:repositoryId>repid1</cmis:repositoryId>
+            <cmis:repositoryName>Repository1</cmis:repositoryName>
+            <cmis:repositoryRelationship>self</cmis:repositoryRelationship>
+            <cmis:repositoryDescription>CMIS Repository Description</cmis:repositoryDescription>
+            <cmis:vendorName>CMIS Vendor 1</cmis:vendorName>
+            <cmis:productName>CMIS Prototype for VendorX</cmis:productName>
+            <cmis:productVersion>0.62</cmis:productVersion>
+            <cmis:rootFolderId>rootfolder</cmis:rootFolderId>
+            <cmis:latestChangeToken></cmis:latestChangeToken>
+            <cmis:capabilities>
+                <cmis:capabilityACL>manage</cmis:capabilityACL>
+                <cmis:capabilityAllVersionsSearchable>true</cmis:capabilityAllVersionsSearchable>
+                <cmis:capabilityChanges>all</cmis:capabilityChanges>
+                <cmis:capabilityChangesOnType>cmis:document</cmis:capabilityChangesOnType>
+                <cmis:capabilityChangesOnType>cmis:folder</cmis:capabilityChangesOnType>
+                <cmis:capabilityContentStreamUpdates>anytime</cmis:capabilityContentStreamUpdates>
+                <cmis:capabilityMultifiling>true</cmis:capabilityMultifiling>
+                <cmis:capabilityPWCSearchable>true</cmis:capabilityPWCSearchable>
+                <cmis:capabilityPWCUpdateable>true</cmis:capabilityPWCUpdateable>
+                <cmis:capabilityQuery>bothcombined</cmis:capabilityQuery>
+                <cmis:capabilityRenditions>false</cmis:capabilityRenditions>
+                <cmis:capabilityUnfiling>true</cmis:capabilityUnfiling>
+                <cmis:capabilityVersionSpecificFiling>true</cmis:capabilityVersionSpecificFiling>
+                <cmis:capabilityJoin>innerandouter</cmis:capabilityJoin>
+            </cmis:capabilities>
+            <cmis:cmisVersionSupported>0.62</cmis:cmisVersionSupported>
+            <cmis:changesIncomplete>true</cmis:changesIncomplete>
+        </cmisra:repositoryInfo>
+        <cmisra:uritemplate>
+            <cmisra:template>http://cmisexample.oasis-open.org/rep1/entrybyid/{id}</cmisra:template>
+            <cmisra:type>entrybyid</cmisra:type>
+            <cmisra:mediatype>application/atom+xml;type=entry</cmisra:mediatype>
+        </cmisra:uritemplate>
+        <cmisra:uritemplate>
+            <cmisra:template>http://cmisexample.oasis-open.org/rep1/folderbypath/{path}</cmisra:template>
+            <cmisra:type>folderbypath</cmisra:type>
+            <cmisra:mediatype>application/atom+xml;type=entry</cmisra:mediatype>
+        </cmisra:uritemplate>
+        <cmisra:uritemplate>
+            <cmisra:template>http://cmisexample.oasis-open.org/rep1/query?q={path}&amp;searchAllVersions={searchAllVersions}&amp;maxItems={maxItems}&amp;skipCount={skipCount}</cmisra:template>
+            <cmisra:type>query</cmisra:type>
+            <cmisra:mediatype>application/atom+xml;type=entry</cmisra:mediatype>
+        </cmisra:uritemplate>
+    </app:workspace>
+</app:service>

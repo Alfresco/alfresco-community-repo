@@ -9,6 +9,9 @@
 <link rel="last" href="http://localhost:80/alfresco/service/api/path/workspace/SpacesStore/Company%20Home/children?pageNo=1&amp;guest=&amp;format=atomfeed" type="application/atom+xml;type=feed"/>
 <title>Company Home</title>
 <updated>2008-07-11T16:51:03.508+01:00</updated>
+<opensearch:totalResults>6</opensearch:totalResults>
+<opensearch:startIndex>0</opensearch:startIndex>
+<opensearch:itemsPerPage>0</opensearch:itemsPerPage>
 <entry>
 <author><name>System</name></author>
 <content>b09bc7f5-19c3-4ad1-9c5d-8f3a95a3417d</content>
@@ -24,24 +27,19 @@
 <summary>Site Collaboration Spaces</summary>
 <title>Sites</title>
 <updated>2008-07-11T16:51:03.854+01:00</updated>
-<cmis:object>
-<cmis:properties>
-<cmis:propertyDateTime cmis:name="creationDate"><cmis:value>2008-07-11T16:51:03.086+01:00</cmis:value></cmis:propertyDateTime>
-<cmis:propertyDateTime cmis:name="lastModificationDate"><cmis:value>2008-07-11T16:51:03.854+01:00</cmis:value></cmis:propertyDateTime>
-<cmis:propertyId cmis:name="objectId"><cmis:value>workspace://SpacesStore/b09bc7f5-19c3-4ad1-9c5d-8f3a95a3417d</cmis:value></cmis:propertyId>
-<cmis:propertyId cmis:name="parent"><cmis:value>workspace://SpacesStore/ffddcc48-0c6a-4aa3-b9e2-1121c35f6504</cmis:value></cmis:propertyId>
-<cmis:propertyString cmis:name="baseType"><cmis:value>document</cmis:value></cmis:propertyString>
-<cmis:propertyString cmis:name="createdBy"><cmis:value>System</cmis:value></cmis:propertyString>
-<cmis:propertyString cmis:name="lastModifiedBy"><cmis:value>System</cmis:value></cmis:propertyString>
-<cmis:propertyString cmis:name="name"><cmis:value>Sites</cmis:value></cmis:propertyString>
-</cmis:properties>
-</cmis:object>
-<cmis:terminator/>
 <app:edited>2008-07-11T16:51:03.854+01:00</app:edited>
 <alf:icon>http://localhost:80/alfresco/images/icons/space-icon-default-16.gif</alf:icon>
+<cmis:object>
+<cmis:properties>
+<cmis:propertyDateTime id="creationDate"><cmis:value>2008-07-11T16:51:03.086+01:00</cmis:value></cmis:propertyDateTime>
+<cmis:propertyDateTime id="lastModificationDate"><cmis:value>2008-07-11T16:51:03.854+01:00</cmis:value></cmis:propertyDateTime>
+<cmis:propertyId id="objectId"><cmis:value>workspace://SpacesStore/b09bc7f5-19c3-4ad1-9c5d-8f3a95a3417d</cmis:value></cmis:propertyId>
+<cmis:propertyId id="parent"><cmis:value>workspace://SpacesStore/ffddcc48-0c6a-4aa3-b9e2-1121c35f6504</cmis:value></cmis:propertyId>
+<cmis:propertyString id="baseType"><cmis:value>document</cmis:value></cmis:propertyString>
+<cmis:propertyString id="createdBy"><cmis:value>System</cmis:value></cmis:propertyString>
+<cmis:propertyString id="lastModifiedBy"><cmis:value>System</cmis:value></cmis:propertyString>
+<cmis:propertyString id="name"><cmis:value>Sites</cmis:value></cmis:propertyString>
+</cmis:properties>
+</cmis:object>
 </entry>
-<cmis:hasMoreItems>false</cmis:hasMoreItems>
-<opensearch:totalResults>6</opensearch:totalResults>
-<opensearch:startIndex>0</opensearch:startIndex>
-<opensearch:itemsPerPage>0</opensearch:itemsPerPage>
 </feed>

@@ -470,7 +470,7 @@ public abstract class CMISAbstractDictionaryService extends AbstractLifecycleBea
         registryMap.put(tenantService.getCurrentUserDomain(), registry);
         
         if (logger.isInfoEnabled())
-            logger.info("Initialized CMIS Dictionary. Types:" + registry.typeDefsByTypeId.size() + ", Base Types: " + registry.baseTypes.size() + ", Properties:" + registry.propDefsByPropId.size());
+            logger.info("Initialized CMIS Dictionary. Types:" + registry.typeDefsByTypeId.size() + ", Base Types:" + registry.baseTypes.size() + ", Properties:" + registry.propDefsByPropId.size());
     }
 
     /*

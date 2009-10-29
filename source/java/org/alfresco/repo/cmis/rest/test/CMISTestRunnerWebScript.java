@@ -26,12 +26,14 @@ package org.alfresco.repo.cmis.rest.test;
 
 import java.io.IOException;
 import java.io.PrintStream;
+import java.util.Properties;
 
-import org.alfresco.repo.cmis.rest.test.BaseCMISWebScriptTest.CMISTestListener;
-import org.alfresco.repo.web.scripts.BaseWebScriptTest.WebScriptTestListener;
 import org.alfresco.web.scripts.AbstractWebScript;
 import org.alfresco.web.scripts.WebScriptRequest;
 import org.alfresco.web.scripts.WebScriptResponse;
+import org.apache.chemistry.tck.atompub.TCKMessageWriter;
+import org.apache.chemistry.tck.atompub.tools.TCKRunner;
+import org.apache.chemistry.tck.atompub.tools.TCKRunnerOptions;
 
 /**
  * Execute CMIS Tests
@@ -46,37 +48,47 @@ public class CMISTestRunnerWebScript extends AbstractWebScript
     public void execute(WebScriptRequest req, WebScriptResponse res)
         throws IOException
     {
-        // setup CMIS tests
-        PrintStream printStream = new PrintStream(res.getOutputStream(), true, "UTF-8");
-        WebScriptTestListener testListener = new CMISTestListener(printStream);
-        CMISTestRunner runner = new CMISTestRunner();
-        runner.setListener(testListener);
+        // setup default values
+        Properties properties = new Properties();
+        properties.put(TCKRunnerOptions.PROP_VALIDATE, "false");
+        properties.put(TCKRunnerOptions.PROP_FAIL_ON_VALIDATION_ERROR, "false");
+        properties.put(TCKRunnerOptions.PROP_TRACE_REQUESTS, "false");
 
-        // process test parameters
-        String serviceUrl = req.getParameter("url");
-        if (serviceUrl != null && serviceUrl.length() > 0)
+        // apply form provided values
+        TCKRunnerOptions options = new TCKRunnerOptions(properties);
+        String[] names = req.getParameterNames();
+        for (String name : names)
         {
-            runner.setServiceUrl(serviceUrl);
-        }
-        String userpass = req.getParameter("user");
-        if (userpass != null && userpass.length() > 0)
-        {
-            runner.setUserPass(userpass);
-        }
-        String validate = req.getParameter("validate");
-        runner.setValidateResponse(Boolean.valueOf(validate));
-            
-        String trace = req.getParameter("trace");
-        runner.setTraceReqRes(Boolean.valueOf(trace));
-
-        String match = req.getParameter("tests");
-        if (match != null && match.length() > 0)
-        {
-            runner.setMatch(match);
+            properties.setProperty(name, req.getParameter(name));
         }
         
-        // execute tests
-        runner.execute();
+        // execute tck
+        TCKRunner runner = new TCKRunner(options, new ResponseMessageWriter(res));
+        runner.execute(properties);
     }
 
+    private static class ResponseMessageWriter implements TCKMessageWriter
+    {
+        private PrintStream printStream;
+        
+        public ResponseMessageWriter(WebScriptResponse res) throws IOException
+        {
+            printStream = new PrintStream(res.getOutputStream(), true, "UTF-8");
+        }
+        
+        public void info(String message)
+        {
+            printStream.println("INFO  " + message);
+        }
+
+        public void trace(String message)
+        {
+            printStream.println("TRACE " + message);
+        }
+
+        public void warn(String message)
+        {
+            printStream.println("WARN  " + message);
+        }
+    }
 }

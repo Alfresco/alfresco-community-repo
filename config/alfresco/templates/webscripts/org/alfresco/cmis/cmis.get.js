@@ -1,5 +1,6 @@
-var testRunner = Packages.org.alfresco.repo.cmis.rest.test.CMISTestRunner();
-model.tests = testRunner.getTestNames("*");
+var tckRunner = Packages.org.apache.chemistry.tck.atompub.tools.TCKRunner();
+model.tckTests = tckRunner.getTestNames();
+model.tckOptions = tckRunner.getOptions();
 model.cmisVersion = cmis.version;
 model.querySupport = cmis.querySupport.label;
 model.joinSupport = cmis.joinSupport.label;

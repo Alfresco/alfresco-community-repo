@@ -1,8 +1,0 @@
-<?xml version="1.0" ?>
-<entry xmlns="http://www.w3.org/2005/Atom">
-    <title>${NAME}</title>
-    <author>
-        <name>CMIS Test</name>
-    </author>
-    <content type="html">${CONTENT}</content>
-</entry>

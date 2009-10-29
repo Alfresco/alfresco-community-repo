@@ -5,8 +5,8 @@
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
   <title>Alfresco CMIS</title>
-  <link rel="stylesheet" href="/css-boilerplate/screen.css" type="text/css" media="screen" charset="utf-8">
-  <!--[if lte IE 6]><link rel="stylesheet" href="/css-boilerplate/lib/ie.css" type="text/css" media="screen" charset="utf-8"><![endif]-->
+  <link rel="stylesheet" href="${url.context}/css-boilerplate/screen.css" type="text/css" media="screen" charset="utf-8">
+  <!--[if lte IE 6]><link rel="stylesheet" href="${url.context}/css-boilerplate/lib/ie.css" type="text/css" media="screen" charset="utf-8"><![endif]-->
   <script type="text/javascript">
     function toggleDisplay(toggle)
     {
@@ -30,7 +30,7 @@
 
 <div id="page">
   <div id="header">
-    <a href="http://www.alfresco.com"><img id="alflogo" src="/images/logo/AlfrescoLogo200.png"/></a><a href="http://www.oasis-open.org/committees/cmis"><img id="alflogo" height="55px" src="/images/logo/cmis_logo_100.png"/></a>
+    <a href="http://www.alfresco.com"><img id="alflogo" src="${url.context}/images/logo/AlfrescoLogo200.png"/></a><a href="http://www.oasis-open.org/committees/cmis"><img id="alflogo" height="55px" src="${url.context}/images/logo/cmis_logo_100.png"/></a>
   </div>
   
   <div id="body" class="wrapper">
@@ -83,22 +83,24 @@
       <h3>CMIS AtomPub TCK</h3>
       <p>Point the TCK (Test Compatibility Kit) at your CMIS Repository AtomPub Service Document. Provide credentials (or leave blank, if authentication not required) and adjust options as necessary. Hit the '<strong>Start TCK</strong>' button for a test report.</p>
       <p><em>Tip: Enable the 'Trace Reqs/Responses' option for examples of conversations with a CMIS Repository via AtomPub.</em></p>
-      <p><em>Note: We have re-packaged and contributed this TCK to <a href="http://incubator.apache.org/chemistry/">Apache Chemistry</a>. We'll very soon replace this TCK with the Apache Chemistry version.</em></p>
+      <p><em>Note: This TCK is now contributed to <a href="http://incubator.apache.org/chemistry/">Apache Chemistry</a>.</em></p>
 
       <form action="${url.serviceContext}/api/cmis/test" method="post" class="hform">
       <fieldset>
         <legend>CMIS Repository</legend>
-        <p><label>Service Document</label><input type="text" name="url" size="50" value="${absurl(url.serviceContext)}/api/cmis"></p>
-        <p><label>Username/Password</label><input type="text" name="user" value="admin/admin"></p>
+        <p><label>Service Document</label><input type="text" name="chemistry.tck.serviceUrl" size="50" value="${absurl(url.serviceContext)}/api/cmis"></p>
+        <p><label>Username</label><input type="text" name="chemistry.tck.user" value="admin"></p>
+        <p><label>Password</label><input type="text" name="chemistry.tck.password" value="admin"></p>
       </fieldset>
       <fieldset>
         <legend>Options</legend>
-        <p class="checkbox"><label>Validate Responses</label><input type="checkbox" name="validate" value="true" checked="checked"></p>
-        <p class="checkbox"><label>Trace Reqs/Responses</label><input type="checkbox" name="trace" value="true"><p>
-        <p><label>Tests (use * for wildcard)</label><input name="tests" value="*"></p>
-        <p><label><span id="availtests" class="toggle" onclick="return toggleDisplay(this)">+</span> Available Tests</label>
+        <p class="checkbox"><label>Validate Responses</label><input type="checkbox" name="chemistry.tck.validate" value="true"[#if tckOptions.validate] checked="checked"[/#if]></p>
+        <p class="checkbox"><label>Fail on Validation Error</label><input type="checkbox" name="chemistry.tck.failOnValidationError" value="true"[#if tckOptions.failOnValidationError] checked="checked"[/#if]></p>
+        <p class="checkbox"><label>Trace Reqs/Responses</label><input type="checkbox" name="chemistry.tck.traceRequests" value="true"[#if tckOptions.traceRequests] checked="checked"[/#if]><p>
+        <p><label>Tests</label><input name="chemistry.tck.tests" value="RepositoryServiceTest.testRepository"></p>
+        <p><label><span id="availtests" class="toggle" onclick="return toggleDisplay(this)">[+]</span> Available Tests</label>
         <table id="availtests_body" style="display: none;">
-        [#list tests as test]<tr><td>${test}</td></tr>[/#list]
+        [#list tckTests as test]<tr><td>${test}</td></tr>[/#list]
         </table></p>
       </fieldset>
       <p><input type="submit" name="submit" value="Start TCK" class="button"></p>
@@ -116,8 +118,13 @@
       <ul>
         <li><a href="http://wiki.alfresco.com/wiki/CMIS">CMIS Wiki</a></li>
         <li><a href="http://blogs.alfresco.com/cmis/">CMIS Blog</a></li>
-        <li><a href="http://wiki.alfresco.com/wiki/Download_Community_Edition">Download</a> Repository and TCK</a></li>
-        <li><a href="http://wiki.alfresco.com/wiki/Alfresco_SVN_Development_Environment">Source Code</a> for Repository and TCK</li>
+        <li><a href="http://wiki.alfresco.com/wiki/Download_Community_Edition">Download</a> Repository</a></li>
+        <li><a href="http://wiki.alfresco.com/wiki/Alfresco_SVN_Development_Environment">Source Code</a> for Repository</li>
+      </ul>
+      <h3>Apache Chemistry</h3>
+      <ul>
+        <li><a href="http://incubator.apache.org/chemistry/">Home Page</a></li>
+        <li><a href="http://svn.apache.org/viewvc/incubator/chemistry/trunk/chemistry/chemistry-tck-atompub/">Source Code</a> for TCK</li>
       </ul>
       <h3>Provide Feedback</h3>
       <ul>

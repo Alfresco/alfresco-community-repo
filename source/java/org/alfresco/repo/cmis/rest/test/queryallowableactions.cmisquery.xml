@@ -1,6 +1,0 @@
-<cmis:query xmlns:cmis="http://docs.oasis-open.org/ns/cmis/core/200901" >
-  <cmis:statement><![CDATA[${STATEMENT}]]></cmis:statement>
-  <cmis:includeAllowableActions>${INCLUDEALLOWABLEACTIONS}</cmis:includeAllowableActions>
-  <cmis:skipCount>${SKIPCOUNT}</cmis:skipCount>
-  <cmis:maxItems>${MAXITEMS}</cmis:maxItems>
-</cmis:query>

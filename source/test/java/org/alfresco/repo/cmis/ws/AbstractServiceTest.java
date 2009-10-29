@@ -171,13 +171,13 @@ public abstract class AbstractServiceTest extends TestCase
 
     private String getPropertyName(CmisProperty property)
     {
-        String propertyName = (null != property) ? (property.getPdid()) : (null);
+        String propertyName = (null != property) ? (property.getPropertyDefinitionId()) : (null);
         if (null == propertyName)
         {
-            propertyName = property.getLocalname();
+            propertyName = property.getLocalName();
             if (null == propertyName)
             {
-                propertyName = property.getDisplayname();
+                propertyName = property.getDisplayName();
             }
         }
         return propertyName;
@@ -193,10 +193,9 @@ public abstract class AbstractServiceTest extends TestCase
     {
         String property = null;
 
-        if (response != null && response.getObject() != null)
+        if (response != null && response.getProperties() != null)
         {
-            CmisObjectType object = response.getObject();
-            CmisPropertiesType properties = object.getProperties();
+            CmisPropertiesType properties = response.getProperties();
             property = getIdProperty(properties, CMISDictionaryModel.PROP_OBJECT_ID);
         }
         else
@@ -206,16 +205,38 @@ public abstract class AbstractServiceTest extends TestCase
         return property;
     }
 
-    public void validateResponse(List<CmisObjectType> objects)
+    protected void validateResponse(List<CmisObjectType> objects)
     {
         for (CmisObjectType object : objects)
         {
-            CmisPropertiesType properties = object.getProperties();
-            String name = null;
-            name = getStringProperty(properties, CMISDictionaryModel.PROP_NAME);
-            assertNotNull(name);
+            validateCmisObjectType(object);
         }
 
+    }
+
+    protected void validateCmisObjectType(CmisObjectType object)
+    {
+        assertNotNull(object);
+        assertNotNull(object.getProperties());
+        assertNotNull(object.getProperties().getProperty());
+        assertFalse(object.getProperties().getProperty().isEmpty());
+        CmisPropertiesType properties = object.getProperties();
+        String name = getStringProperty(properties, CMISDictionaryModel.PROP_NAME);
+        assertNotNull(name);
+    }
+
+    protected void validateResponse(List<CmisObjectInFolderContainerType> objects, boolean validateChildrent)
+    {
+        for (CmisObjectInFolderContainerType object : objects)
+        {
+            assertNotNull(object);
+            assertNotNull(object.getObjectInFolder());
+            validateCmisObjectType(object.getObjectInFolder().getObject());
+            if (validateChildrent && (null != object.getChildren()))
+            {
+                validateResponse(object.getChildren(), validateChildrent);
+            }
+        }
     }
 
     public boolean isExistItemWithProperty(List<CmisObjectType> objects, String propertyName, String propertyValue)

@@ -18,7 +18,7 @@ import javax.xml.bind.annotation.XmlType;
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
- *         &lt;element name="allowableActions" type="{http://docs.oasis-open.org/ns/cmis/core/200901}cmisAllowableActionsType"/>
+ *         &lt;element name="allowableActions" type="{http://docs.oasis-open.org/ns/cmis/core/200908/}cmisAllowableActionsType"/>
  *       &lt;/sequence>
  *     &lt;/restriction>
  *   &lt;/complexContent>

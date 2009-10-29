@@ -14,7 +14,7 @@ import javax.xml.bind.annotation.XmlType;
  * <pre>
  * &lt;complexType name="cmisTypePolicyDefinitionType">
  *   &lt;complexContent>
- *     &lt;extension base="{http://docs.oasis-open.org/ns/cmis/core/200901}cmisTypeDefinitionType">
+ *     &lt;extension base="{http://docs.oasis-open.org/ns/cmis/core/200908/}cmisTypeDefinitionType">
  *       &lt;sequence>
  *       &lt;/sequence>
  *     &lt;/extension>
@@ -25,7 +25,7 @@ import javax.xml.bind.annotation.XmlType;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "cmisTypePolicyDefinitionType", namespace = "http://docs.oasis-open.org/ns/cmis/core/200901")
+@XmlType(name = "cmisTypePolicyDefinitionType", namespace = "http://docs.oasis-open.org/ns/cmis/core/200908/")
 public class CmisTypePolicyDefinitionType
     extends CmisTypeDefinitionType
 {

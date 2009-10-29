@@ -18,13 +18,13 @@ import javax.xml.bind.annotation.XmlType;
  * <pre>
  * &lt;complexType name="cmisPropertyDecimalDefinitionType">
  *   &lt;complexContent>
- *     &lt;extension base="{http://docs.oasis-open.org/ns/cmis/core/200901}cmisPropertyDefinitionType">
+ *     &lt;extension base="{http://docs.oasis-open.org/ns/cmis/core/200908/}cmisPropertyDefinitionType">
  *       &lt;sequence>
- *         &lt;element name="defaultValue" type="{http://docs.oasis-open.org/ns/cmis/core/200901}cmisPropertyDecimal" minOccurs="0"/>
+ *         &lt;element name="defaultValue" type="{http://docs.oasis-open.org/ns/cmis/core/200908/}cmisPropertyDecimal" minOccurs="0"/>
  *         &lt;element name="maxValue" type="{http://www.w3.org/2001/XMLSchema}decimal" minOccurs="0"/>
  *         &lt;element name="minValue" type="{http://www.w3.org/2001/XMLSchema}decimal" minOccurs="0"/>
- *         &lt;element name="precision" type="{http://docs.oasis-open.org/ns/cmis/core/200901}enumDecimalPrecision" minOccurs="0"/>
- *         &lt;element name="choice" type="{http://docs.oasis-open.org/ns/cmis/core/200901}cmisChoiceDecimal" maxOccurs="unbounded" minOccurs="0"/>
+ *         &lt;element name="precision" type="{http://docs.oasis-open.org/ns/cmis/core/200908/}enumDecimalPrecision" minOccurs="0"/>
+ *         &lt;element name="choice" type="{http://docs.oasis-open.org/ns/cmis/core/200908/}cmisChoiceDecimal" maxOccurs="unbounded" minOccurs="0"/>
  *       &lt;/sequence>
  *     &lt;/extension>
  *   &lt;/complexContent>
@@ -34,7 +34,7 @@ import javax.xml.bind.annotation.XmlType;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "cmisPropertyDecimalDefinitionType", namespace = "http://docs.oasis-open.org/ns/cmis/core/200901", propOrder = {
+@XmlType(name = "cmisPropertyDecimalDefinitionType", namespace = "http://docs.oasis-open.org/ns/cmis/core/200908/", propOrder = {
     "defaultValue",
     "maxValue",
     "minValue",
@@ -81,7 +81,7 @@ public class CmisPropertyDecimalDefinitionType
      * @return
      *     possible object is
      *     {@link BigDecimal }
-     * 
+     *     
      */
     public BigDecimal getMaxValue() {
         return maxValue;
@@ -93,7 +93,7 @@ public class CmisPropertyDecimalDefinitionType
      * @param value
      *     allowed object is
      *     {@link BigDecimal }
-     * 
+     *     
      */
     public void setMaxValue(BigDecimal value) {
         this.maxValue = value;
@@ -105,11 +105,11 @@ public class CmisPropertyDecimalDefinitionType
      * @return
      *     possible object is
      *     {@link BigDecimal }
-     * 
+     *     
      */
     public BigDecimal getMinValue() {
         return minValue;
-        }
+    }
 
     /**
      * Sets the value of the minValue property.

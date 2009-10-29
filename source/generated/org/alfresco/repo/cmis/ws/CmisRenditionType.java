@@ -2,11 +2,14 @@
 package org.alfresco.repo.cmis.ws;
 
 import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.List;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAnyElement;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
+import org.w3c.dom.Element;
 
 
 /**
@@ -20,10 +23,10 @@ import javax.xml.bind.annotation.XmlType;
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
  *         &lt;element name="streamId" type="{http://www.w3.org/2001/XMLSchema}string"/>
- *         &lt;element name="mimetype" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
- *         &lt;element name="length" type="{http://www.w3.org/2001/XMLSchema}integer" minOccurs="0"/>
+ *         &lt;element name="mimetype" type="{http://www.w3.org/2001/XMLSchema}string"/>
+ *         &lt;element name="length" type="{http://www.w3.org/2001/XMLSchema}integer"/>
+ *         &lt;element name="kind" type="{http://www.w3.org/2001/XMLSchema}string"/>
  *         &lt;element name="title" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
- *         &lt;element name="kind" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
  *         &lt;element name="height" type="{http://www.w3.org/2001/XMLSchema}integer" minOccurs="0"/>
  *         &lt;element name="width" type="{http://www.w3.org/2001/XMLSchema}integer" minOccurs="0"/>
  *         &lt;element name="renditionDocumentId" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
@@ -37,12 +40,12 @@ import javax.xml.bind.annotation.XmlType;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "cmisRenditionType", namespace = "http://docs.oasis-open.org/ns/cmis/core/200901", propOrder = {
+@XmlType(name = "cmisRenditionType", namespace = "http://docs.oasis-open.org/ns/cmis/core/200908/", propOrder = {
     "streamId",
     "mimetype",
     "length",
-    "title",
     "kind",
+    "title",
     "height",
     "width",
     "renditionDocumentId",
@@ -52,15 +55,18 @@ public class CmisRenditionType {
 
     @XmlElement(required = true)
     protected String streamId;
+    @XmlElement(required = true)
     protected String mimetype;
+    @XmlElement(required = true)
     protected BigInteger length;
-    protected String title;
+    @XmlElement(required = true)
     protected String kind;
+    protected String title;
     protected BigInteger height;
     protected BigInteger width;
     protected String renditionDocumentId;
     @XmlAnyElement(lax = true)
-    protected Object any;
+    protected List<Object> any;
 
     /**
      * Gets the value of the streamId property.
@@ -135,30 +141,6 @@ public class CmisRenditionType {
     }
 
     /**
-     * Gets the value of the title property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getTitle() {
-        return title;
-    }
-
-    /**
-     * Sets the value of the title property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setTitle(String value) {
-        this.title = value;
-    }
-
-    /**
      * Gets the value of the kind property.
      * 
      * @return
@@ -180,6 +162,30 @@ public class CmisRenditionType {
      */
     public void setKind(String value) {
         this.kind = value;
+    }
+
+    /**
+     * Gets the value of the title property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getTitle() {
+        return title;
+    }
+
+    /**
+     * Sets the value of the title property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setTitle(String value) {
+        this.title = value;
     }
 
     /**
@@ -257,25 +263,31 @@ public class CmisRenditionType {
     /**
      * Gets the value of the any property.
      * 
-     * @return
-     *     possible object is
-     *     {@link Object }
-     *     
-     */
-    public Object getAny() {
-        return any;
-    }
-
-    /**
-     * Sets the value of the any property.
+     * <p>
+     * This accessor method returns a reference to the live list,
+     * not a snapshot. Therefore any modification you make to the
+     * returned list will be present inside the JAXB object.
+     * This is why there is not a <CODE>set</CODE> method for the any property.
      * 
-     * @param value
-     *     allowed object is
-     *     {@link Object }
-     *     
+     * <p>
+     * For example, to add a new item, do as follows:
+     * <pre>
+     *    getAny().add(newItem);
+     * </pre>
+     * 
+     * 
+     * <p>
+     * Objects of the following type(s) are allowed in the list
+     * {@link Element }
+     * {@link Object }
+     * 
+     * 
      */
-    public void setAny(Object value) {
-        this.any = value;
+    public List<Object> getAny() {
+        if (any == null) {
+            any = new ArrayList<Object>();
+        }
+        return this.any;
     }
 
 }

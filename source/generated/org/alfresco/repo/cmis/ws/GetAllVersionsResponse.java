@@ -19,7 +19,7 @@ import javax.xml.bind.annotation.XmlType;
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
- *         &lt;element name="object" type="{http://docs.oasis-open.org/ns/cmis/core/200901}cmisObjectType" maxOccurs="unbounded" minOccurs="0"/>
+ *         &lt;element name="objects" type="{http://docs.oasis-open.org/ns/cmis/core/200908/}cmisObjectType" maxOccurs="unbounded" minOccurs="0"/>
  *       &lt;/sequence>
  *     &lt;/restriction>
  *   &lt;/complexContent>
@@ -30,26 +30,26 @@ import javax.xml.bind.annotation.XmlType;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "", propOrder = {
-    "object"
+    "objects"
 })
 @XmlRootElement(name = "getAllVersionsResponse")
 public class GetAllVersionsResponse {
 
-    protected List<CmisObjectType> object;
+    protected List<CmisObjectType> objects;
 
     /**
-     * Gets the value of the object property.
+     * Gets the value of the objects property.
      * 
      * <p>
      * This accessor method returns a reference to the live list,
      * not a snapshot. Therefore any modification you make to the
      * returned list will be present inside the JAXB object.
-     * This is why there is not a <CODE>set</CODE> method for the object property.
+     * This is why there is not a <CODE>set</CODE> method for the objects property.
      * 
      * <p>
      * For example, to add a new item, do as follows:
      * <pre>
-     *    getObject().add(newItem);
+     *    getObjects().add(newItem);
      * </pre>
      * 
      * 
@@ -59,11 +59,11 @@ public class GetAllVersionsResponse {
      * 
      * 
      */
-    public List<CmisObjectType> getObject() {
-        if (object == null) {
-            object = new ArrayList<CmisObjectType>();
+    public List<CmisObjectType> getObjects() {
+        if (objects == null) {
+            objects = new ArrayList<CmisObjectType>();
         }
-        return this.object;
+        return this.objects;
     }
 
 }

@@ -17,12 +17,12 @@ import javax.xml.bind.annotation.XmlType;
  * <pre>
  * &lt;complexType name="cmisPropertyIntegerDefinitionType">
  *   &lt;complexContent>
- *     &lt;extension base="{http://docs.oasis-open.org/ns/cmis/core/200901}cmisPropertyDefinitionType">
+ *     &lt;extension base="{http://docs.oasis-open.org/ns/cmis/core/200908/}cmisPropertyDefinitionType">
  *       &lt;sequence>
- *         &lt;element name="defaultValue" type="{http://docs.oasis-open.org/ns/cmis/core/200901}cmisPropertyInteger" minOccurs="0"/>
+ *         &lt;element name="defaultValue" type="{http://docs.oasis-open.org/ns/cmis/core/200908/}cmisPropertyInteger" minOccurs="0"/>
  *         &lt;element name="maxValue" type="{http://www.w3.org/2001/XMLSchema}integer" minOccurs="0"/>
  *         &lt;element name="minValue" type="{http://www.w3.org/2001/XMLSchema}integer" minOccurs="0"/>
- *         &lt;element name="choice" type="{http://docs.oasis-open.org/ns/cmis/core/200901}cmisChoiceInteger" maxOccurs="unbounded" minOccurs="0"/>
+ *         &lt;element name="choice" type="{http://docs.oasis-open.org/ns/cmis/core/200908/}cmisChoiceInteger" maxOccurs="unbounded" minOccurs="0"/>
  *       &lt;/sequence>
  *     &lt;/extension>
  *   &lt;/complexContent>
@@ -32,7 +32,7 @@ import javax.xml.bind.annotation.XmlType;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "cmisPropertyIntegerDefinitionType", namespace = "http://docs.oasis-open.org/ns/cmis/core/200901", propOrder = {
+@XmlType(name = "cmisPropertyIntegerDefinitionType", namespace = "http://docs.oasis-open.org/ns/cmis/core/200908/", propOrder = {
     "defaultValue",
     "maxValue",
     "minValue",
@@ -53,7 +53,7 @@ public class CmisPropertyIntegerDefinitionType
      * @return
      *     possible object is
      *     {@link CmisPropertyInteger }
-     * 
+     *     
      */
     public CmisPropertyInteger getDefaultValue() {
         return defaultValue;
@@ -65,7 +65,7 @@ public class CmisPropertyIntegerDefinitionType
      * @param value
      *     allowed object is
      *     {@link CmisPropertyInteger }
-     * 
+     *     
      */
     public void setDefaultValue(CmisPropertyInteger value) {
         this.defaultValue = value;

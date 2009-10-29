@@ -16,10 +16,10 @@ import javax.xml.bind.annotation.XmlType;
  * <pre>
  * &lt;complexType name="cmisPropertyHtmlDefinitionType">
  *   &lt;complexContent>
- *     &lt;extension base="{http://docs.oasis-open.org/ns/cmis/core/200901}cmisPropertyDefinitionType">
+ *     &lt;extension base="{http://docs.oasis-open.org/ns/cmis/core/200908/}cmisPropertyDefinitionType">
  *       &lt;sequence>
- *         &lt;element name="defaultValue" type="{http://docs.oasis-open.org/ns/cmis/core/200901}cmisPropertyHtml" minOccurs="0"/>
- *         &lt;element name="choice" type="{http://docs.oasis-open.org/ns/cmis/core/200901}cmisChoiceHtml" maxOccurs="unbounded" minOccurs="0"/>
+ *         &lt;element name="defaultValue" type="{http://docs.oasis-open.org/ns/cmis/core/200908/}cmisPropertyHtml" minOccurs="0"/>
+ *         &lt;element name="choice" type="{http://docs.oasis-open.org/ns/cmis/core/200908/}cmisChoiceHtml" maxOccurs="unbounded" minOccurs="0"/>
  *       &lt;/sequence>
  *     &lt;/extension>
  *   &lt;/complexContent>
@@ -29,7 +29,7 @@ import javax.xml.bind.annotation.XmlType;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "cmisPropertyHtmlDefinitionType", namespace = "http://docs.oasis-open.org/ns/cmis/core/200901", propOrder = {
+@XmlType(name = "cmisPropertyHtmlDefinitionType", namespace = "http://docs.oasis-open.org/ns/cmis/core/200908/", propOrder = {
     "defaultValue",
     "choice"
 })

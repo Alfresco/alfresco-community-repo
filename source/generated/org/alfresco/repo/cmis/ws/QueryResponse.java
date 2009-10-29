@@ -1,10 +1,9 @@
 
 package org.alfresco.repo.cmis.ws;
 
-import java.util.ArrayList;
-import java.util.List;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
@@ -19,8 +18,7 @@ import javax.xml.bind.annotation.XmlType;
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
- *         &lt;element name="object" type="{http://docs.oasis-open.org/ns/cmis/core/200901}cmisObjectType" maxOccurs="unbounded" minOccurs="0"/>
- *         &lt;element name="hasMoreItems" type="{http://www.w3.org/2001/XMLSchema}boolean"/>
+ *         &lt;element name="objects" type="{http://docs.oasis-open.org/ns/cmis/messaging/200908/}cmisObjectListType"/>
  *       &lt;/sequence>
  *     &lt;/restriction>
  *   &lt;/complexContent>
@@ -31,58 +29,36 @@ import javax.xml.bind.annotation.XmlType;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "", propOrder = {
-    "object",
-    "hasMoreItems"
+    "objects"
 })
 @XmlRootElement(name = "queryResponse")
 public class QueryResponse {
 
-    protected List<CmisObjectType> object;
-    protected boolean hasMoreItems;
+    @XmlElement(required = true)
+    protected CmisObjectListType objects;
 
     /**
-     * Gets the value of the object property.
+     * Gets the value of the objects property.
      * 
-     * <p>
-     * This accessor method returns a reference to the live list,
-     * not a snapshot. Therefore any modification you make to the
-     * returned list will be present inside the JAXB object.
-     * This is why there is not a <CODE>set</CODE> method for the object property.
-     * 
-     * <p>
-     * For example, to add a new item, do as follows:
-     * <pre>
-     *    getObject().add(newItem);
-     * </pre>
-     * 
-     * 
-     * <p>
-     * Objects of the following type(s) are allowed in the list
-     * {@link CmisObjectType }
-     * 
-     * 
+     * @return
+     *     possible object is
+     *     {@link CmisObjectListType }
+     *     
      */
-    public List<CmisObjectType> getObject() {
-        if (object == null) {
-            object = new ArrayList<CmisObjectType>();
-        }
-        return this.object;
+    public CmisObjectListType getObjects() {
+        return objects;
     }
 
     /**
-     * Gets the value of the hasMoreItems property.
+     * Sets the value of the objects property.
      * 
+     * @param value
+     *     allowed object is
+     *     {@link CmisObjectListType }
+     *     
      */
-    public boolean isHasMoreItems() {
-        return hasMoreItems;
-    }
-
-    /**
-     * Sets the value of the hasMoreItems property.
-     * 
-     */
-    public void setHasMoreItems(boolean value) {
-        this.hasMoreItems = value;
+    public void setObjects(CmisObjectListType value) {
+        this.objects = value;
     }
 
 }

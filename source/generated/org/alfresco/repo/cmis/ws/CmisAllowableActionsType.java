@@ -27,7 +27,7 @@ import org.w3c.dom.Element;
  *         &lt;element name="canDeleteObject" type="{http://www.w3.org/2001/XMLSchema}boolean" minOccurs="0"/>
  *         &lt;element name="canUpdateProperties" type="{http://www.w3.org/2001/XMLSchema}boolean" minOccurs="0"/>
  *         &lt;element name="canGetProperties" type="{http://www.w3.org/2001/XMLSchema}boolean" minOccurs="0"/>
- *         &lt;element name="canGetRelationships" type="{http://www.w3.org/2001/XMLSchema}boolean" minOccurs="0"/>
+ *         &lt;element name="canGetObjectRelationships" type="{http://www.w3.org/2001/XMLSchema}boolean" minOccurs="0"/>
  *         &lt;element name="canGetObjectParents" type="{http://www.w3.org/2001/XMLSchema}boolean" minOccurs="0"/>
  *         &lt;element name="canGetFolderParent" type="{http://www.w3.org/2001/XMLSchema}boolean" minOccurs="0"/>
  *         &lt;element name="canGetDescendants" type="{http://www.w3.org/2001/XMLSchema}boolean" minOccurs="0"/>
@@ -55,7 +55,7 @@ import org.w3c.dom.Element;
  *         &lt;element name="canApplyACL" type="{http://www.w3.org/2001/XMLSchema}boolean" minOccurs="0"/>
  *         &lt;any/>
  *       &lt;/sequence>
- *       &lt;attGroup ref="{http://docs.oasis-open.org/ns/cmis/core/200901}cmisUndefinedAttribute"/>
+ *       &lt;attGroup ref="{http://docs.oasis-open.org/ns/cmis/core/200908/}cmisUndefinedAttribute"/>
  *     &lt;/restriction>
  *   &lt;/complexContent>
  * &lt;/complexType>
@@ -64,11 +64,11 @@ import org.w3c.dom.Element;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "cmisAllowableActionsType", namespace = "http://docs.oasis-open.org/ns/cmis/core/200901", propOrder = {
+@XmlType(name = "cmisAllowableActionsType", namespace = "http://docs.oasis-open.org/ns/cmis/core/200908/", propOrder = {
     "canDeleteObject",
     "canUpdateProperties",
     "canGetProperties",
-    "canGetRelationships",
+    "canGetObjectRelationships",
     "canGetObjectParents",
     "canGetFolderParent",
     "canGetDescendants",
@@ -101,7 +101,7 @@ public class CmisAllowableActionsType {
     protected Boolean canDeleteObject;
     protected Boolean canUpdateProperties;
     protected Boolean canGetProperties;
-    protected Boolean canGetRelationships;
+    protected Boolean canGetObjectRelationships;
     protected Boolean canGetObjectParents;
     protected Boolean canGetFolderParent;
     protected Boolean canGetDescendants;
@@ -205,27 +205,27 @@ public class CmisAllowableActionsType {
     }
 
     /**
-     * Gets the value of the canGetRelationships property.
+     * Gets the value of the canGetObjectRelationships property.
      * 
      * @return
      *     possible object is
      *     {@link Boolean }
      *     
      */
-    public Boolean isCanGetRelationships() {
-        return canGetRelationships;
+    public Boolean isCanGetObjectRelationships() {
+        return canGetObjectRelationships;
     }
 
     /**
-     * Sets the value of the canGetRelationships property.
+     * Sets the value of the canGetObjectRelationships property.
      * 
      * @param value
      *     allowed object is
      *     {@link Boolean }
      *     
      */
-    public void setCanGetRelationships(Boolean value) {
-        this.canGetRelationships = value;
+    public void setCanGetObjectRelationships(Boolean value) {
+        this.canGetObjectRelationships = value;
     }
 
     /**

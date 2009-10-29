@@ -23,6 +23,7 @@ import javax.xml.bind.annotation.XmlType;
  *         &lt;element name="repositoryId" type="{http://www.w3.org/2001/XMLSchema}string"/>
  *         &lt;element name="objectId" type="{http://www.w3.org/2001/XMLSchema}string"/>
  *         &lt;element name="folderId" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
+ *         &lt;element name="extension" type="{http://docs.oasis-open.org/ns/cmis/messaging/200908/}cmisExtensionType" minOccurs="0"/>
  *       &lt;/sequence>
  *     &lt;/restriction>
  *   &lt;/complexContent>
@@ -35,7 +36,8 @@ import javax.xml.bind.annotation.XmlType;
 @XmlType(name = "", propOrder = {
     "repositoryId",
     "objectId",
-    "folderId"
+    "folderId",
+    "extension"
 })
 @XmlRootElement(name = "removeObjectFromFolder")
 public class RemoveObjectFromFolder {
@@ -44,8 +46,10 @@ public class RemoveObjectFromFolder {
     protected String repositoryId;
     @XmlElement(required = true)
     protected String objectId;
-    @XmlElementRef(name = "folderId", namespace = "http://docs.oasis-open.org/ns/cmis/messaging/200901", type = JAXBElement.class)
+    @XmlElementRef(name = "folderId", namespace = "http://docs.oasis-open.org/ns/cmis/messaging/200908/", type = JAXBElement.class)
     protected JAXBElement<String> folderId;
+    @XmlElementRef(name = "extension", namespace = "http://docs.oasis-open.org/ns/cmis/messaging/200908/", type = JAXBElement.class)
+    protected JAXBElement<CmisExtensionType> extension;
 
     /**
      * Gets the value of the repositoryId property.
@@ -117,6 +121,30 @@ public class RemoveObjectFromFolder {
      */
     public void setFolderId(JAXBElement<String> value) {
         this.folderId = ((JAXBElement<String> ) value);
+    }
+
+    /**
+     * Gets the value of the extension property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link JAXBElement }{@code <}{@link CmisExtensionType }{@code >}
+     *     
+     */
+    public JAXBElement<CmisExtensionType> getExtension() {
+        return extension;
+    }
+
+    /**
+     * Sets the value of the extension property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link JAXBElement }{@code <}{@link CmisExtensionType }{@code >}
+     *     
+     */
+    public void setExtension(JAXBElement<CmisExtensionType> value) {
+        this.extension = ((JAXBElement<CmisExtensionType> ) value);
     }
 
 }

@@ -14,6 +14,7 @@ import javax.xml.bind.annotation.XmlType;
  * <pre>
  * &lt;simpleType name="enumVersioningState">
  *   &lt;restriction base="{http://www.w3.org/2001/XMLSchema}string">
+ *     &lt;enumeration value="none"/>
  *     &lt;enumeration value="checkedout"/>
  *     &lt;enumeration value="minor"/>
  *     &lt;enumeration value="major"/>
@@ -22,10 +23,12 @@ import javax.xml.bind.annotation.XmlType;
  * </pre>
  * 
  */
-@XmlType(name = "enumVersioningState", namespace = "http://docs.oasis-open.org/ns/cmis/core/200901")
+@XmlType(name = "enumVersioningState", namespace = "http://docs.oasis-open.org/ns/cmis/core/200908/")
 @XmlEnum
 public enum EnumVersioningState {
 
+    @XmlEnumValue("none")
+    NONE("none"),
     @XmlEnumValue("checkedout")
     CHECKEDOUT("checkedout"),
     @XmlEnumValue("minor")

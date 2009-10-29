@@ -18,7 +18,7 @@ import javax.xml.bind.annotation.XmlType;
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
- *         &lt;element name="repositoryInfo" type="{http://docs.oasis-open.org/ns/cmis/core/200901}cmisRepositoryInfoType"/>
+ *         &lt;element name="repositoryInfo" type="{http://docs.oasis-open.org/ns/cmis/core/200908/}cmisRepositoryInfoType"/>
  *       &lt;/sequence>
  *     &lt;/restriction>
  *   &lt;/complexContent>

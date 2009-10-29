@@ -15,6 +15,7 @@ import javax.xml.bind.annotation.XmlType;
  * &lt;simpleType name="enumServiceException">
  *   &lt;restriction base="{http://www.w3.org/2001/XMLSchema}string">
  *     &lt;enumeration value="constraint"/>
+ *     &lt;enumeration value="nameConstraintViolation"/>
  *     &lt;enumeration value="contentAlreadyExists"/>
  *     &lt;enumeration value="filterNotValid"/>
  *     &lt;enumeration value="invalidArgument"/>
@@ -24,7 +25,6 @@ import javax.xml.bind.annotation.XmlType;
  *     &lt;enumeration value="runtime"/>
  *     &lt;enumeration value="storage"/>
  *     &lt;enumeration value="streamNotSupported"/>
- *     &lt;enumeration value="type"/>
  *     &lt;enumeration value="updateConflict"/>
  *     &lt;enumeration value="versioning"/>
  *   &lt;/restriction>
@@ -38,6 +38,8 @@ public enum EnumServiceException {
 
     @XmlEnumValue("constraint")
     CONSTRAINT("constraint"),
+    @XmlEnumValue("nameConstraintViolation")
+    NAME_CONSTRAINT_VIOLATION("nameConstraintViolation"),
     @XmlEnumValue("contentAlreadyExists")
     CONTENT_ALREADY_EXISTS("contentAlreadyExists"),
     @XmlEnumValue("filterNotValid")
@@ -56,8 +58,6 @@ public enum EnumServiceException {
     STORAGE("storage"),
     @XmlEnumValue("streamNotSupported")
     STREAM_NOT_SUPPORTED("streamNotSupported"),
-    @XmlEnumValue("type")
-    TYPE("type"),
     @XmlEnumValue("updateConflict")
     UPDATE_CONFLICT("updateConflict"),
     @XmlEnumValue("versioning")

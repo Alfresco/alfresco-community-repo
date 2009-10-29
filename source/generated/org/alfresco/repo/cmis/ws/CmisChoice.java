@@ -22,7 +22,7 @@ import javax.xml.namespace.QName;
  * &lt;complexType name="cmisChoice">
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;attGroup ref="{http://docs.oasis-open.org/ns/cmis/core/200901}cmisUndefinedAttribute"/>
+ *       &lt;attGroup ref="{http://docs.oasis-open.org/ns/cmis/core/200908/}cmisUndefinedAttribute"/>
  *       &lt;attribute name="displayName" use="required" type="{http://www.w3.org/2001/XMLSchema}anySimpleType" />
  *     &lt;/restriction>
  *   &lt;/complexContent>
@@ -32,15 +32,13 @@ import javax.xml.namespace.QName;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "cmisChoice", namespace = "http://docs.oasis-open.org/ns/cmis/core/200901")
+@XmlType(name = "cmisChoice", namespace = "http://docs.oasis-open.org/ns/cmis/core/200908/")
 @XmlSeeAlso({
     CmisChoiceId.class,
     CmisChoiceDateTime.class,
     CmisChoiceDecimal.class,
     CmisChoiceBoolean.class,
-    CmisChoiceXml.class,
     CmisChoiceHtml.class,
-    CmisChoiceXhtml.class,
     CmisChoiceUri.class,
     CmisChoiceInteger.class,
     CmisChoiceString.class

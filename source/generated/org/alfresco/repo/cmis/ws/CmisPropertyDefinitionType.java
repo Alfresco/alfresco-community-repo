@@ -33,9 +33,9 @@ import org.w3c.dom.Element;
  *         &lt;element name="displayName" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
  *         &lt;element name="queryName" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
  *         &lt;element name="description" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
- *         &lt;element name="propertyType" type="{http://docs.oasis-open.org/ns/cmis/core/200901}enumPropertyType"/>
- *         &lt;element name="cardinality" type="{http://docs.oasis-open.org/ns/cmis/core/200901}enumCardinality"/>
- *         &lt;element name="updatability" type="{http://docs.oasis-open.org/ns/cmis/core/200901}enumUpdatability"/>
+ *         &lt;element name="propertyType" type="{http://docs.oasis-open.org/ns/cmis/core/200908/}enumPropertyType"/>
+ *         &lt;element name="cardinality" type="{http://docs.oasis-open.org/ns/cmis/core/200908/}enumCardinality"/>
+ *         &lt;element name="updatability" type="{http://docs.oasis-open.org/ns/cmis/core/200908/}enumUpdatability"/>
  *         &lt;element name="inherited" type="{http://www.w3.org/2001/XMLSchema}boolean" minOccurs="0"/>
  *         &lt;element name="required" type="{http://www.w3.org/2001/XMLSchema}boolean"/>
  *         &lt;element name="queryable" type="{http://www.w3.org/2001/XMLSchema}boolean"/>
@@ -43,7 +43,7 @@ import org.w3c.dom.Element;
  *         &lt;element name="openChoice" type="{http://www.w3.org/2001/XMLSchema}boolean" minOccurs="0"/>
  *         &lt;any/>
  *       &lt;/sequence>
- *       &lt;attGroup ref="{http://docs.oasis-open.org/ns/cmis/core/200901}cmisUndefinedAttribute"/>
+ *       &lt;attGroup ref="{http://docs.oasis-open.org/ns/cmis/core/200908/}cmisUndefinedAttribute"/>
  *     &lt;/restriction>
  *   &lt;/complexContent>
  * &lt;/complexType>
@@ -52,7 +52,7 @@ import org.w3c.dom.Element;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "cmisPropertyDefinitionType", namespace = "http://docs.oasis-open.org/ns/cmis/core/200901", propOrder = {
+@XmlType(name = "cmisPropertyDefinitionType", namespace = "http://docs.oasis-open.org/ns/cmis/core/200908/", propOrder = {
     "id",
     "localName",
     "localNamespace",
@@ -70,12 +70,10 @@ import org.w3c.dom.Element;
     "any"
 })
 @XmlSeeAlso({
-    CmisPropertyXhtmlDefinitionType.class,
     CmisPropertyHtmlDefinitionType.class,
     CmisPropertyUriDefinitionType.class,
     CmisPropertyIdDefinitionType.class,
     CmisPropertyBooleanDefinitionType.class,
-    CmisPropertyXmlDefinitionType.class,
     CmisPropertyIntegerDefinitionType.class,
     CmisPropertyDateTimeDefinitionType.class,
     CmisPropertyDecimalDefinitionType.class,

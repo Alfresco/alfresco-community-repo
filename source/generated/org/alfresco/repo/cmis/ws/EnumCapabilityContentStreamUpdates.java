@@ -15,20 +15,23 @@ import javax.xml.bind.annotation.XmlType;
  * &lt;simpleType name="enumCapabilityContentStreamUpdates">
  *   &lt;restriction base="{http://www.w3.org/2001/XMLSchema}string">
  *     &lt;enumeration value="anytime"/>
- *     &lt;enumeration value="pwc-only"/>
+ *     &lt;enumeration value="pwconly"/>
+ *     &lt;enumeration value="none"/>
  *   &lt;/restriction>
  * &lt;/simpleType>
  * </pre>
  * 
  */
-@XmlType(name = "enumCapabilityContentStreamUpdates", namespace = "http://docs.oasis-open.org/ns/cmis/core/200901")
+@XmlType(name = "enumCapabilityContentStreamUpdates", namespace = "http://docs.oasis-open.org/ns/cmis/core/200908/")
 @XmlEnum
 public enum EnumCapabilityContentStreamUpdates {
 
     @XmlEnumValue("anytime")
     ANYTIME("anytime"),
-    @XmlEnumValue("pwc-only")
-    PWC_ONLY("pwc-only");
+    @XmlEnumValue("pwconly")
+    PWCONLY("pwconly"),
+    @XmlEnumValue("none")
+    NONE("none");
     private final String value;
 
     EnumCapabilityContentStreamUpdates(String v) {

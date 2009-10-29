@@ -77,11 +77,14 @@ public class DMMultiFilingServiceTest extends AbstractServiceTest
 
     public void testAddObjectToFolder() throws Exception
     {
-        ((MultiFilingServicePort) servicePort).addObjectToFolder(repositoryId, documentId, anotherFolderId);
+        ((MultiFilingServicePort) servicePort).addObjectToFolder(repositoryId, documentId, anotherFolderId, false, null);
         boolean found = false;
-        for (CmisObjectType cmisObjectType : helper.getChildren(anotherFolderId, 0, CMISDictionaryModel.PROP_OBJECT_ID))
+        for (CmisObjectInFolderType cmisObjectType : helper.getChildren(anotherFolderId, 0, CMISDictionaryModel.PROP_OBJECT_ID))
         {
-            if ((found = documentId.equals(getIdProperty(cmisObjectType.getProperties(), CMISDictionaryModel.PROP_OBJECT_ID))))
+            assertNotNull(cmisObjectType);
+            assertNotNull(cmisObjectType.getObject());
+            assertNotNull(cmisObjectType.getObject().getProperties());
+            if ((found = documentId.equals(getIdProperty(cmisObjectType.getObject().getProperties(), CMISDictionaryModel.PROP_OBJECT_ID))))
             {
                 break;
             }
@@ -97,7 +100,7 @@ public class DMMultiFilingServiceTest extends AbstractServiceTest
         try
         {
             // remove object from all folders expects Exception
-            ((MultiFilingServicePort) servicePort).removeObjectFromFolder(repositoryId, documentId, null);
+            ((MultiFilingServicePort) servicePort).removeObjectFromFolder(repositoryId, documentId, null, null);
             fail("Expects exception");
         }
         catch (CmisException e)
@@ -110,7 +113,7 @@ public class DMMultiFilingServiceTest extends AbstractServiceTest
         try
         {
             // remove object from folder where it is not situated expects Exception
-            ((MultiFilingServicePort) servicePort).removeObjectFromFolder(repositoryId, documentId, folderId);
+            ((MultiFilingServicePort) servicePort).removeObjectFromFolder(repositoryId, documentId, folderId, null);
             fail("Expected exception");
         }
         catch (CmisException e)
@@ -121,7 +124,7 @@ public class DMMultiFilingServiceTest extends AbstractServiceTest
         try
         {
             // remove object from last folder expects Exception
-            ((MultiFilingServicePort) servicePort).removeObjectFromFolder(repositoryId, documentId, companyHomeId);
+            ((MultiFilingServicePort) servicePort).removeObjectFromFolder(repositoryId, documentId, companyHomeId, null);
             fail("Expected exception");
         }
         catch (CmisException e)

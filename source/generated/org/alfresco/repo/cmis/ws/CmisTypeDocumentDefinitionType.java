@@ -15,10 +15,10 @@ import javax.xml.bind.annotation.XmlType;
  * <pre>
  * &lt;complexType name="cmisTypeDocumentDefinitionType">
  *   &lt;complexContent>
- *     &lt;extension base="{http://docs.oasis-open.org/ns/cmis/core/200901}cmisTypeDefinitionType">
+ *     &lt;extension base="{http://docs.oasis-open.org/ns/cmis/core/200908/}cmisTypeDefinitionType">
  *       &lt;sequence>
  *         &lt;element name="versionable" type="{http://www.w3.org/2001/XMLSchema}boolean"/>
- *         &lt;element name="contentStreamAllowed" type="{http://docs.oasis-open.org/ns/cmis/core/200901}enumContentStreamAllowed"/>
+ *         &lt;element name="contentStreamAllowed" type="{http://docs.oasis-open.org/ns/cmis/core/200908/}enumContentStreamAllowed"/>
  *       &lt;/sequence>
  *     &lt;/extension>
  *   &lt;/complexContent>
@@ -28,7 +28,7 @@ import javax.xml.bind.annotation.XmlType;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "cmisTypeDocumentDefinitionType", namespace = "http://docs.oasis-open.org/ns/cmis/core/200901", propOrder = {
+@XmlType(name = "cmisTypeDocumentDefinitionType", namespace = "http://docs.oasis-open.org/ns/cmis/core/200908/", propOrder = {
     "versionable",
     "contentStreamAllowed"
 })

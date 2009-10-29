@@ -24,14 +24,10 @@
  */
 package org.alfresco.repo.cmis.ws;
 
-import java.util.List;
-
-import javax.xml.ws.Holder;
-
 /**
  * @author Dmitry Velichkevich
  */
-@javax.jws.WebService(name = "ACLServicePort", serviceName = "ACLService", portName = "ACLServicePort", targetNamespace = "http://docs.oasis-open.org/ns/cmis/ws/200901", endpointInterface = "org.alfresco.repo.cmis.ws.ACLServicePort")
+@javax.jws.WebService(name = "ACLServicePort", serviceName = "ACLService", portName = "ACLServicePort", targetNamespace = "http://docs.oasis-open.org/ns/cmis/ws/200908/", endpointInterface = "org.alfresco.repo.cmis.ws.ACLServicePort")
 public class DMAclServicePort extends DMAbstractServicePort implements ACLServicePort
 {
     private static final String ACL_SERVICE_NOT_IMPLEMENTED_MESSAGE = "ACLService not implemented";
@@ -40,13 +36,13 @@ public class DMAclServicePort extends DMAbstractServicePort implements ACLServic
     {
     }
 
-    public void applyACL(String repositoryId, String objectId, CmisAccessControlListType addACEs, CmisAccessControlListType removeACEs, EnumACLPropagation propogationType,
-            Holder<List<CmisAccessControlListType>> acl, Holder<Boolean> exact) throws CmisException
+    public CmisACLType applyACL(String repositoryId, String objectId, CmisAccessControlListType addACEs, CmisAccessControlListType removeACEs, EnumACLPropagation aclPropagation,
+            CmisExtensionType extension) throws CmisException
     {
         throw cmisObjectsUtils.createCmisException(ACL_SERVICE_NOT_IMPLEMENTED_MESSAGE, EnumServiceException.RUNTIME);
     }
 
-    public CmisAccessControlListType getACL(String repositoryId, String objectId, boolean onlyBasicPermissions) throws CmisException
+    public CmisACLType getACL(String repositoryId, String objectId, Boolean onlyBasicPermissions, CmisExtensionType extension) throws CmisException
     {
         throw cmisObjectsUtils.createCmisException(ACL_SERVICE_NOT_IMPLEMENTED_MESSAGE, EnumServiceException.RUNTIME);
     }

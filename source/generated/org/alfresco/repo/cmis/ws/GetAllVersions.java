@@ -21,10 +21,10 @@ import javax.xml.bind.annotation.XmlType;
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
  *         &lt;element name="repositoryId" type="{http://www.w3.org/2001/XMLSchema}string"/>
- *         &lt;element name="versionSeriesId" type="{http://www.w3.org/2001/XMLSchema}string"/>
+ *         &lt;element name="objectId" type="{http://www.w3.org/2001/XMLSchema}string"/>
  *         &lt;element name="filter" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
  *         &lt;element name="includeAllowableActions" type="{http://www.w3.org/2001/XMLSchema}boolean" minOccurs="0"/>
- *         &lt;element name="includeRelationships" type="{http://docs.oasis-open.org/ns/cmis/core/200901}enumIncludeRelationships" minOccurs="0"/>
+ *         &lt;element name="extension" type="{http://docs.oasis-open.org/ns/cmis/messaging/200908/}cmisExtensionType" minOccurs="0"/>
  *       &lt;/sequence>
  *     &lt;/restriction>
  *   &lt;/complexContent>
@@ -36,10 +36,10 @@ import javax.xml.bind.annotation.XmlType;
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "", propOrder = {
     "repositoryId",
-    "versionSeriesId",
+    "objectId",
     "filter",
     "includeAllowableActions",
-    "includeRelationships"
+    "extension"
 })
 @XmlRootElement(name = "getAllVersions")
 public class GetAllVersions {
@@ -47,13 +47,13 @@ public class GetAllVersions {
     @XmlElement(required = true)
     protected String repositoryId;
     @XmlElement(required = true)
-    protected String versionSeriesId;
-    @XmlElementRef(name = "filter", namespace = "http://docs.oasis-open.org/ns/cmis/messaging/200901", type = JAXBElement.class)
+    protected String objectId;
+    @XmlElementRef(name = "filter", namespace = "http://docs.oasis-open.org/ns/cmis/messaging/200908/", type = JAXBElement.class)
     protected JAXBElement<String> filter;
-    @XmlElementRef(name = "includeAllowableActions", namespace = "http://docs.oasis-open.org/ns/cmis/messaging/200901", type = JAXBElement.class)
+    @XmlElementRef(name = "includeAllowableActions", namespace = "http://docs.oasis-open.org/ns/cmis/messaging/200908/", type = JAXBElement.class)
     protected JAXBElement<Boolean> includeAllowableActions;
-    @XmlElementRef(name = "includeRelationships", namespace = "http://docs.oasis-open.org/ns/cmis/messaging/200901", type = JAXBElement.class)
-    protected JAXBElement<EnumIncludeRelationships> includeRelationships;
+    @XmlElementRef(name = "extension", namespace = "http://docs.oasis-open.org/ns/cmis/messaging/200908/", type = JAXBElement.class)
+    protected JAXBElement<CmisExtensionType> extension;
 
     /**
      * Gets the value of the repositoryId property.
@@ -80,27 +80,27 @@ public class GetAllVersions {
     }
 
     /**
-     * Gets the value of the versionSeriesId property.
+     * Gets the value of the objectId property.
      * 
      * @return
      *     possible object is
      *     {@link String }
      *     
      */
-    public String getVersionSeriesId() {
-        return versionSeriesId;
+    public String getObjectId() {
+        return objectId;
     }
 
     /**
-     * Sets the value of the versionSeriesId property.
+     * Sets the value of the objectId property.
      * 
      * @param value
      *     allowed object is
      *     {@link String }
      *     
      */
-    public void setVersionSeriesId(String value) {
-        this.versionSeriesId = value;
+    public void setObjectId(String value) {
+        this.objectId = value;
     }
 
     /**
@@ -152,27 +152,27 @@ public class GetAllVersions {
     }
 
     /**
-     * Gets the value of the includeRelationships property.
+     * Gets the value of the extension property.
      * 
      * @return
      *     possible object is
-     *     {@link JAXBElement }{@code <}{@link EnumIncludeRelationships }{@code >}
+     *     {@link JAXBElement }{@code <}{@link CmisExtensionType }{@code >}
      *     
      */
-    public JAXBElement<EnumIncludeRelationships> getIncludeRelationships() {
-        return includeRelationships;
+    public JAXBElement<CmisExtensionType> getExtension() {
+        return extension;
     }
 
     /**
-     * Sets the value of the includeRelationships property.
+     * Sets the value of the extension property.
      * 
      * @param value
      *     allowed object is
-     *     {@link JAXBElement }{@code <}{@link EnumIncludeRelationships }{@code >}
+     *     {@link JAXBElement }{@code <}{@link CmisExtensionType }{@code >}
      *     
      */
-    public void setIncludeRelationships(JAXBElement<EnumIncludeRelationships> value) {
-        this.includeRelationships = ((JAXBElement<EnumIncludeRelationships> ) value);
+    public void setExtension(JAXBElement<CmisExtensionType> value) {
+        this.extension = ((JAXBElement<CmisExtensionType> ) value);
     }
 
 }

@@ -69,7 +69,7 @@ public class DMPolicyServiceTest extends AbstractServiceTest
     {
         try
         {
-            ((PolicyServicePort) servicePort).applyPolicy(repositoryId, "policyId", documentId);
+            ((PolicyServicePort) servicePort).applyPolicy(repositoryId, "policyId", documentId, null);
         }
         catch (CmisException e)
         {
@@ -82,7 +82,7 @@ public class DMPolicyServiceTest extends AbstractServiceTest
         try
         {
             @SuppressWarnings("unused")
-            List<CmisObjectType> response = ((PolicyServicePort) servicePort).getAppliedPolicies(repositoryId, documentId, "");
+            List<CmisObjectType> response = ((PolicyServicePort) servicePort).getAppliedPolicies(repositoryId, documentId, "", null);
         }
         catch (CmisException e)
         {
@@ -94,7 +94,7 @@ public class DMPolicyServiceTest extends AbstractServiceTest
     {
         try
         {
-            ((PolicyServicePort) servicePort).removePolicy(repositoryId, "policyId", documentId); // TODO policyId
+            ((PolicyServicePort) servicePort).removePolicy(repositoryId, "policyId", documentId, null); // TODO policyId
         }
         catch (CmisException e)
         {

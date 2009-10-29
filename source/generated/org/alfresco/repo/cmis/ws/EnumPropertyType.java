@@ -20,16 +20,14 @@ import javax.xml.bind.annotation.XmlType;
  *     &lt;enumeration value="datetime"/>
  *     &lt;enumeration value="decimal"/>
  *     &lt;enumeration value="html"/>
- *     &lt;enumeration value="xhtml"/>
  *     &lt;enumeration value="string"/>
  *     &lt;enumeration value="uri"/>
- *     &lt;enumeration value="xml"/>
  *   &lt;/restriction>
  * &lt;/simpleType>
  * </pre>
  * 
  */
-@XmlType(name = "enumPropertyType", namespace = "http://docs.oasis-open.org/ns/cmis/core/200901")
+@XmlType(name = "enumPropertyType", namespace = "http://docs.oasis-open.org/ns/cmis/core/200908/")
 @XmlEnum
 public enum EnumPropertyType {
 
@@ -45,14 +43,10 @@ public enum EnumPropertyType {
     DECIMAL("decimal"),
     @XmlEnumValue("html")
     HTML("html"),
-    @XmlEnumValue("xhtml")
-    XHTML("xhtml"),
     @XmlEnumValue("string")
     STRING("string"),
     @XmlEnumValue("uri")
-    URI("uri"),
-    @XmlEnumValue("xml")
-    XML("xml");
+    URI("uri");
     private final String value;
 
     EnumPropertyType(String v) {

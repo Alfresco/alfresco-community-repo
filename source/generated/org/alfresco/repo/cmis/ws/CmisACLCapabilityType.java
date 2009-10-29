@@ -19,9 +19,9 @@ import javax.xml.bind.annotation.XmlType;
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
- *         &lt;element name="setType" type="{http://docs.oasis-open.org/ns/cmis/core/200901}enumACLPropagation"/>
- *         &lt;element name="permissions" type="{http://docs.oasis-open.org/ns/cmis/core/200901}cmisPermissionDefinition" maxOccurs="unbounded"/>
- *         &lt;element name="mapping" type="{http://docs.oasis-open.org/ns/cmis/core/200901}cmisPermissionMapping" maxOccurs="unbounded" minOccurs="0"/>
+ *         &lt;element name="propagation" type="{http://docs.oasis-open.org/ns/cmis/core/200908/}enumACLPropagation"/>
+ *         &lt;element name="permissions" type="{http://docs.oasis-open.org/ns/cmis/core/200908/}cmisPermissionDefinition" maxOccurs="unbounded"/>
+ *         &lt;element name="mapping" type="{http://docs.oasis-open.org/ns/cmis/core/200908/}cmisPermissionMapping" maxOccurs="unbounded" minOccurs="0"/>
  *       &lt;/sequence>
  *     &lt;/restriction>
  *   &lt;/complexContent>
@@ -31,41 +31,41 @@ import javax.xml.bind.annotation.XmlType;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "cmisACLCapabilityType", namespace = "http://docs.oasis-open.org/ns/cmis/core/200901", propOrder = {
-    "setType",
+@XmlType(name = "cmisACLCapabilityType", namespace = "http://docs.oasis-open.org/ns/cmis/core/200908/", propOrder = {
+    "propagation",
     "permissions",
     "mapping"
 })
 public class CmisACLCapabilityType {
 
     @XmlElement(required = true)
-    protected EnumACLPropagation setType;
+    protected EnumACLPropagation propagation;
     @XmlElement(required = true)
     protected List<CmisPermissionDefinition> permissions;
     protected List<CmisPermissionMapping> mapping;
 
     /**
-     * Gets the value of the setType property.
+     * Gets the value of the propagation property.
      * 
      * @return
      *     possible object is
      *     {@link EnumACLPropagation }
      *     
      */
-    public EnumACLPropagation getSetType() {
-        return setType;
+    public EnumACLPropagation getPropagation() {
+        return propagation;
     }
 
     /**
-     * Sets the value of the setType property.
+     * Sets the value of the propagation property.
      * 
      * @param value
      *     allowed object is
      *     {@link EnumACLPropagation }
      *     
      */
-    public void setSetType(EnumACLPropagation value) {
-        this.setType = value;
+    public void setPropagation(EnumACLPropagation value) {
+        this.propagation = value;
     }
 
     /**

@@ -24,17 +24,17 @@ import org.w3c.dom.Element;
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
- *         &lt;element name="properties" type="{http://docs.oasis-open.org/ns/cmis/core/200901}cmisPropertiesType" minOccurs="0"/>
- *         &lt;element ref="{http://docs.oasis-open.org/ns/cmis/core/200901}allowableActions" minOccurs="0"/>
- *         &lt;element name="relationship" type="{http://docs.oasis-open.org/ns/cmis/core/200901}cmisObjectType" maxOccurs="unbounded" minOccurs="0"/>
- *         &lt;element name="child" type="{http://docs.oasis-open.org/ns/cmis/core/200901}cmisObjectType" maxOccurs="unbounded" minOccurs="0"/>
- *         &lt;element name="changeEventInfo" type="{http://docs.oasis-open.org/ns/cmis/core/200901}cmisChangeEventType" minOccurs="0"/>
- *         &lt;element name="acl" type="{http://docs.oasis-open.org/ns/cmis/core/200901}cmisAccessControlListType" minOccurs="0"/>
+ *         &lt;element name="properties" type="{http://docs.oasis-open.org/ns/cmis/core/200908/}cmisPropertiesType" minOccurs="0"/>
+ *         &lt;element name="allowableActions" type="{http://docs.oasis-open.org/ns/cmis/core/200908/}cmisAllowableActionsType" minOccurs="0"/>
+ *         &lt;element name="relationship" type="{http://docs.oasis-open.org/ns/cmis/core/200908/}cmisObjectType" maxOccurs="unbounded" minOccurs="0"/>
+ *         &lt;element name="changeEventInfo" type="{http://docs.oasis-open.org/ns/cmis/core/200908/}cmisChangeEventType" minOccurs="0"/>
+ *         &lt;element name="acl" type="{http://docs.oasis-open.org/ns/cmis/core/200908/}cmisAccessControlListType" minOccurs="0"/>
  *         &lt;element name="exactACL" type="{http://www.w3.org/2001/XMLSchema}boolean" minOccurs="0"/>
- *         &lt;element name="rendition" type="{http://docs.oasis-open.org/ns/cmis/core/200901}cmisRenditionType" maxOccurs="unbounded" minOccurs="0"/>
+ *         &lt;element name="policyIds" type="{http://docs.oasis-open.org/ns/cmis/core/200908/}cmisListOfIdsType" minOccurs="0"/>
+ *         &lt;element name="rendition" type="{http://docs.oasis-open.org/ns/cmis/core/200908/}cmisRenditionType" maxOccurs="unbounded" minOccurs="0"/>
  *         &lt;any/>
  *       &lt;/sequence>
- *       &lt;attGroup ref="{http://docs.oasis-open.org/ns/cmis/core/200901}cmisUndefinedAttribute"/>
+ *       &lt;attGroup ref="{http://docs.oasis-open.org/ns/cmis/core/200908/}cmisUndefinedAttribute"/>
  *     &lt;/restriction>
  *   &lt;/complexContent>
  * &lt;/complexType>
@@ -43,14 +43,14 @@ import org.w3c.dom.Element;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "cmisObjectType", namespace = "http://docs.oasis-open.org/ns/cmis/core/200901", propOrder = {
+@XmlType(name = "cmisObjectType", namespace = "http://docs.oasis-open.org/ns/cmis/core/200908/", propOrder = {
     "properties",
     "allowableActions",
     "relationship",
-    "child",
     "changeEventInfo",
     "acl",
     "exactACL",
+    "policyIds",
     "rendition",
     "any"
 })
@@ -59,10 +59,10 @@ public class CmisObjectType {
     protected CmisPropertiesType properties;
     protected CmisAllowableActionsType allowableActions;
     protected List<CmisObjectType> relationship;
-    protected List<CmisObjectType> child;
     protected CmisChangeEventType changeEventInfo;
     protected CmisAccessControlListType acl;
     protected Boolean exactACL;
+    protected CmisListOfIdsType policyIds;
     protected List<CmisRenditionType> rendition;
     @XmlAnyElement(lax = true)
     protected List<Object> any;
@@ -147,35 +147,6 @@ public class CmisObjectType {
     }
 
     /**
-     * Gets the value of the child property.
-     * 
-     * <p>
-     * This accessor method returns a reference to the live list,
-     * not a snapshot. Therefore any modification you make to the
-     * returned list will be present inside the JAXB object.
-     * This is why there is not a <CODE>set</CODE> method for the child property.
-     * 
-     * <p>
-     * For example, to add a new item, do as follows:
-     * <pre>
-     *    getChild().add(newItem);
-     * </pre>
-     * 
-     * 
-     * <p>
-     * Objects of the following type(s) are allowed in the list
-     * {@link CmisObjectType }
-     * 
-     * 
-     */
-    public List<CmisObjectType> getChild() {
-        if (child == null) {
-            child = new ArrayList<CmisObjectType>();
-        }
-        return this.child;
-    }
-
-    /**
      * Gets the value of the changeEventInfo property.
      * 
      * @return
@@ -245,6 +216,30 @@ public class CmisObjectType {
      */
     public void setExactACL(Boolean value) {
         this.exactACL = value;
+    }
+
+    /**
+     * Gets the value of the policyIds property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link CmisListOfIdsType }
+     *     
+     */
+    public CmisListOfIdsType getPolicyIds() {
+        return policyIds;
+    }
+
+    /**
+     * Sets the value of the policyIds property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link CmisListOfIdsType }
+     *     
+     */
+    public void setPolicyIds(CmisListOfIdsType value) {
+        this.policyIds = value;
     }
 
     /**

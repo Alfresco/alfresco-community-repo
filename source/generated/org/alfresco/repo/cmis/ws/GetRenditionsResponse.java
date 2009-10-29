@@ -19,7 +19,7 @@ import javax.xml.bind.annotation.XmlType;
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
- *         &lt;element name="rendition" type="{http://docs.oasis-open.org/ns/cmis/core/200901}cmisRenditionType" maxOccurs="unbounded" minOccurs="0"/>
+ *         &lt;element name="renditions" type="{http://docs.oasis-open.org/ns/cmis/core/200908/}cmisRenditionType" maxOccurs="unbounded" minOccurs="0"/>
  *       &lt;/sequence>
  *     &lt;/restriction>
  *   &lt;/complexContent>
@@ -30,26 +30,26 @@ import javax.xml.bind.annotation.XmlType;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "", propOrder = {
-    "rendition"
+    "renditions"
 })
 @XmlRootElement(name = "getRenditionsResponse")
 public class GetRenditionsResponse {
 
-    protected List<CmisRenditionType> rendition;
+    protected List<CmisRenditionType> renditions;
 
     /**
-     * Gets the value of the rendition property.
+     * Gets the value of the renditions property.
      * 
      * <p>
      * This accessor method returns a reference to the live list,
      * not a snapshot. Therefore any modification you make to the
      * returned list will be present inside the JAXB object.
-     * This is why there is not a <CODE>set</CODE> method for the rendition property.
+     * This is why there is not a <CODE>set</CODE> method for the renditions property.
      * 
      * <p>
      * For example, to add a new item, do as follows:
      * <pre>
-     *    getRendition().add(newItem);
+     *    getRenditions().add(newItem);
      * </pre>
      * 
      * 
@@ -59,11 +59,11 @@ public class GetRenditionsResponse {
      * 
      * 
      */
-    public List<CmisRenditionType> getRendition() {
-        if (rendition == null) {
-            rendition = new ArrayList<CmisRenditionType>();
+    public List<CmisRenditionType> getRenditions() {
+        if (renditions == null) {
+            renditions = new ArrayList<CmisRenditionType>();
         }
-        return this.rendition;
+        return this.renditions;
     }
 
 }

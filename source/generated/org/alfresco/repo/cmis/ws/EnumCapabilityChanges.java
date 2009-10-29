@@ -15,7 +15,7 @@ import javax.xml.bind.annotation.XmlType;
  * &lt;simpleType name="enumCapabilityChanges">
  *   &lt;restriction base="{http://www.w3.org/2001/XMLSchema}string">
  *     &lt;enumeration value="none"/>
- *     &lt;enumeration value="objectIdsOnly"/>
+ *     &lt;enumeration value="objectidsonly"/>
  *     &lt;enumeration value="properties"/>
  *     &lt;enumeration value="all"/>
  *   &lt;/restriction>
@@ -23,14 +23,14 @@ import javax.xml.bind.annotation.XmlType;
  * </pre>
  * 
  */
-@XmlType(name = "enumCapabilityChanges", namespace = "http://docs.oasis-open.org/ns/cmis/core/200901")
+@XmlType(name = "enumCapabilityChanges", namespace = "http://docs.oasis-open.org/ns/cmis/core/200908/")
 @XmlEnum
 public enum EnumCapabilityChanges {
 
     @XmlEnumValue("none")
     NONE("none"),
-    @XmlEnumValue("objectIdsOnly")
-    OBJECT_IDS_ONLY("objectIdsOnly"),
+    @XmlEnumValue("objectidsonly")
+    OBJECTIDSONLY("objectidsonly"),
     @XmlEnumValue("properties")
     PROPERTIES("properties"),
     @XmlEnumValue("all")

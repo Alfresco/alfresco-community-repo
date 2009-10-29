@@ -24,9 +24,9 @@
  */
 package org.alfresco.repo.cmis.ws;
 
+import java.math.BigInteger;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.List;
 
 import javax.xml.namespace.QName;
 import javax.xml.ws.Holder;
@@ -72,11 +72,12 @@ public class DMDiscoveryServiceTest extends AbstractServiceTest
         QueryResponse response = ((DiscoveryServicePort) servicePort).query(request);
         assertNotNull(response);
 
-        assertNotNull(response.getObject());
+        assertNotNull(response.getObjects());
+        assertNotNull(response.getObjects().getObjects());
 
-        if (!response.getObject().isEmpty())
+        if (!response.getObjects().getObjects().isEmpty())
         {
-            for (CmisObjectType object : response.getObject())
+            for (CmisObjectType object : response.getObjects().getObjects())
             {
                 assertNotNull(object.getProperties());
             }
@@ -92,7 +93,11 @@ public class DMDiscoveryServiceTest extends AbstractServiceTest
     {
         try
         {
-            ((DiscoveryServicePort) servicePort).getContentChanges(repositoryId, null, null, null, null, null, new Holder<List<CmisObjectType>>());
+            Holder<String> changeLogToken = new Holder<String>();
+            Holder<CmisObjectListType> resultHolder = new Holder<CmisObjectListType>();
+            // TODO: includeACL
+            // TODO: includePolicyIds
+            ((DiscoveryServicePort) servicePort).getContentChanges(repositoryId, changeLogToken, false, "", false, false, BigInteger.ZERO, null, resultHolder);
         }
         catch (CmisException e)
         {

@@ -40,7 +40,7 @@ import org.alfresco.repo.cmis.ws.CmisFaultType;
 import org.alfresco.repo.cmis.ws.EnumBaseObjectTypeIds;
 import org.alfresco.repo.cmis.ws.EnumRelationshipDirection;
 import org.alfresco.repo.cmis.ws.EnumServiceException;
-import org.alfresco.repo.cmis.ws.utils.DescendantsQueueManager.DescendantElement;
+import org.alfresco.repo.cmis.ws.EnumUnfileObject;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.service.cmr.coci.CheckOutCheckInService;
@@ -102,7 +102,7 @@ public class CmisObjectsUtils
     private NodeService nodeService;
     private LockService lockService;
 
-    private Throwable lastOperationException;
+    private Throwable lastException;
 
     public void setCmisDictionaryService(CMISDictionaryService cmisDictionaryService)
     {
@@ -204,41 +204,18 @@ public class CmisObjectsUtils
         throw createCmisException(("Unexpected object type of the specified Object with \"" + identifier + "\" identifier"), EnumServiceException.INVALID_ARGUMENT);
     }
 
-    public void deleteFolder(NodeRef folderNodeReference, boolean continueOnFailure, boolean totalDeletion, List<String> resultList) throws CmisException
+    public List<String> deleteFolder(NodeRef folderNodeReference, boolean continueOnFailure, EnumUnfileObject unfillingStrategy, boolean deleteAllVersions) throws CmisException
     {
-        DescendantsQueueManager queueManager = new DescendantsQueueManager(new ChildAssociationRef(ContentModel.ASSOC_CONTAINS, null, null, folderNodeReference));
-
-        do
+        CmisObjectIterator iterator = new CmisObjectIterator(folderNodeReference, unfillingStrategy, continueOnFailure, deleteAllVersions, nodeService, fileFolderService,
+                versionService, checkOutCheckInService, this);
+        if (iterator.hasNext())
         {
-            DescendantElement currentElement = queueManager.getNextElement();
-            if (!nodeService.exists(currentElement.getChildAssoc().getChildRef()))
+            for (; iterator.hasNext(); iterator.next())
             {
-                continue;
+                iterator.remove();
             }
-
-            UnlinkOperationStatus unlinkStatus = unlinkObject(currentElement.getChildAssoc().getChildRef(), currentElement.getChildAssoc().getParentRef(), totalDeletion);
-            if (!unlinkStatus.isObjectUnlinked())
-            {
-                processUnlinkStatus(currentElement, unlinkStatus, queueManager, resultList, continueOnFailure);
-            }
-        } while (!queueManager.isEmpty() && (continueOnFailure || resultList.isEmpty()));
-    }
-
-    private void processUnlinkStatus(DescendantElement currentElement, UnlinkOperationStatus unlinkStatus, DescendantsQueueManager queueManager, List<String> resultList,
-            boolean addAllFailedToDelete)
-    {
-        if (!unlinkStatus.getChildren().isEmpty())
-        {
-            queueManager.addLast(currentElement);
-            queueManager.addFirst(currentElement, unlinkStatus.getChildren());
-            return;
         }
-
-        resultList.add(currentElement.getChildAssoc().getChildRef().toString());
-        if (addAllFailedToDelete)
-        {
-            queueManager.removeParents(currentElement, resultList);
-        }
+        return iterator.getFailToDelete();
     }
 
     public boolean deleteObject(NodeRef objectNodeReference)
@@ -279,7 +256,7 @@ public class CmisObjectsUtils
             }
             catch (Throwable e)
             {
-                this.lastOperationException = e;
+                lastException = e;
                 return false;
             }
             return true;
@@ -298,7 +275,7 @@ public class CmisObjectsUtils
         }
         catch (Throwable e)
         {
-            this.lastOperationException = e;
+            lastException = e;
             return false;
         }
     }
@@ -472,6 +449,7 @@ public class CmisObjectsUtils
         }
         catch (Throwable e)
         {
+            lastException = e;
             return false;
         }
         return true;
@@ -481,27 +459,6 @@ public class CmisObjectsUtils
     {
         String currentUserName = AuthenticationUtil.getFullyAuthenticatedUser();
         return (this.lockService.getLockStatus(objectNodeReference, currentUserName) != LockStatus.LOCKED) || authorityService.isAdminAuthority(currentUserName);
-    }
-
-    private UnlinkOperationStatus unlinkObject(NodeRef objectNodeReference, NodeRef parentFolderNodeReference, boolean totalDeletion)
-    {
-        if (isFolder(objectNodeReference))
-        {
-            List<ChildAssociationRef> children = nodeService.getChildAssocs(objectNodeReference);
-            boolean objectUnlinked = (children == null || children.isEmpty()) && deleteObject(objectNodeReference);
-            return new UnlinkOperationStatus(objectUnlinked, children != null ? children : new LinkedList<ChildAssociationRef>());
-        }
-
-        boolean objectUnlinked = false;
-        if (totalDeletion)
-        {
-            objectUnlinked = deleteObject(objectNodeReference);
-        }
-        else
-        {
-            objectUnlinked = !isPrimaryObjectParent(parentFolderNodeReference, objectNodeReference) && removeObject(objectNodeReference, parentFolderNodeReference);
-        }
-        return new UnlinkOperationStatus(objectUnlinked, new LinkedList<ChildAssociationRef>());
     }
 
     private AssociationRef safeGetAssociationRef(String identifier) throws CmisException
@@ -604,36 +561,10 @@ public class CmisObjectsUtils
         }
     }
 
-    private class UnlinkOperationStatus
-    {
-        private boolean objectUnlinked;
-        private List<ChildAssociationRef> children;
-
-        public UnlinkOperationStatus(boolean objectUnlinked, List<ChildAssociationRef> children)
-        {
-            this.objectUnlinked = objectUnlinked;
-            this.children = children;
-        }
-
-        @SuppressWarnings("unused")
-        protected UnlinkOperationStatus()
-        {
-        }
-
-        public boolean isObjectUnlinked()
-        {
-            return objectUnlinked;
-        }
-
-        public List<ChildAssociationRef> getChildren()
-        {
-            return this.children;
-        }
-    }
-
     public Throwable getLastOperationException()
     {
-        return lastOperationException;
+        Throwable result = lastException;
+        lastException = null;
+        return result;
     }
-
 }

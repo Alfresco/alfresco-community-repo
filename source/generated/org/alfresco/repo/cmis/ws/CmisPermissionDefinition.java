@@ -33,7 +33,7 @@ import org.w3c.dom.Element;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "cmisPermissionDefinition", namespace = "http://docs.oasis-open.org/ns/cmis/core/200901", propOrder = {
+@XmlType(name = "cmisPermissionDefinition", namespace = "http://docs.oasis-open.org/ns/cmis/core/200908/", propOrder = {
     "permission",
     "description",
     "any"

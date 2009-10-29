@@ -29,21 +29,23 @@ import org.w3c.dom.Element;
  *       &lt;sequence>
  *         &lt;element name="repositoryId" type="{http://www.w3.org/2001/XMLSchema}string"/>
  *         &lt;element name="repositoryName" type="{http://www.w3.org/2001/XMLSchema}string"/>
- *         &lt;element name="repositoryRelationship" type="{http://www.w3.org/2001/XMLSchema}string"/>
  *         &lt;element name="repositoryDescription" type="{http://www.w3.org/2001/XMLSchema}string"/>
  *         &lt;element name="vendorName" type="{http://www.w3.org/2001/XMLSchema}string"/>
  *         &lt;element name="productName" type="{http://www.w3.org/2001/XMLSchema}string"/>
  *         &lt;element name="productVersion" type="{http://www.w3.org/2001/XMLSchema}string"/>
  *         &lt;element name="rootFolderId" type="{http://www.w3.org/2001/XMLSchema}string"/>
- *         &lt;element name="latestChangeToken" type="{http://www.w3.org/2001/XMLSchema}string"/>
- *         &lt;element name="capabilities" type="{http://docs.oasis-open.org/ns/cmis/core/200901}cmisRepositoryCapabilitiesType"/>
- *         &lt;element name="aclCapability" type="{http://docs.oasis-open.org/ns/cmis/core/200901}cmisACLCapabilityType" minOccurs="0"/>
+ *         &lt;element name="latestChangeLogToken" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
+ *         &lt;element name="capabilities" type="{http://docs.oasis-open.org/ns/cmis/core/200908/}cmisRepositoryCapabilitiesType"/>
+ *         &lt;element name="aclCapability" type="{http://docs.oasis-open.org/ns/cmis/core/200908/}cmisACLCapabilityType" minOccurs="0"/>
  *         &lt;element name="cmisVersionSupported" type="{http://www.w3.org/2001/XMLSchema}decimal"/>
  *         &lt;element name="thinClientURI" type="{http://www.w3.org/2001/XMLSchema}anyURI" minOccurs="0"/>
  *         &lt;element name="changesIncomplete" type="{http://www.w3.org/2001/XMLSchema}boolean" minOccurs="0"/>
+ *         &lt;element name="changesOnType" type="{http://docs.oasis-open.org/ns/cmis/core/200908/}enumBaseObjectTypeIds" maxOccurs="unbounded" minOccurs="0"/>
+ *         &lt;element name="principalAnonymous" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
+ *         &lt;element name="principalAnyone" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
  *         &lt;any/>
  *       &lt;/sequence>
- *       &lt;attGroup ref="{http://docs.oasis-open.org/ns/cmis/core/200901}cmisUndefinedAttribute"/>
+ *       &lt;attGroup ref="{http://docs.oasis-open.org/ns/cmis/core/200908/}cmisUndefinedAttribute"/>
  *     &lt;/restriction>
  *   &lt;/complexContent>
  * &lt;/complexType>
@@ -52,21 +54,23 @@ import org.w3c.dom.Element;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "cmisRepositoryInfoType", namespace = "http://docs.oasis-open.org/ns/cmis/core/200901", propOrder = {
+@XmlType(name = "cmisRepositoryInfoType", namespace = "http://docs.oasis-open.org/ns/cmis/core/200908/", propOrder = {
     "repositoryId",
     "repositoryName",
-    "repositoryRelationship",
     "repositoryDescription",
     "vendorName",
     "productName",
     "productVersion",
     "rootFolderId",
-    "latestChangeToken",
+    "latestChangeLogToken",
     "capabilities",
     "aclCapability",
     "cmisVersionSupported",
     "thinClientURI",
     "changesIncomplete",
+    "changesOnType",
+    "principalAnonymous",
+    "principalAnyone",
     "any"
 })
 public class CmisRepositoryInfoType {
@@ -75,8 +79,6 @@ public class CmisRepositoryInfoType {
     protected String repositoryId;
     @XmlElement(required = true)
     protected String repositoryName;
-    @XmlElement(required = true)
-    protected String repositoryRelationship;
     @XmlElement(required = true)
     protected String repositoryDescription;
     @XmlElement(required = true)
@@ -87,8 +89,7 @@ public class CmisRepositoryInfoType {
     protected String productVersion;
     @XmlElement(required = true)
     protected String rootFolderId;
-    @XmlElement(required = true)
-    protected String latestChangeToken;
+    protected String latestChangeLogToken;
     @XmlElement(required = true)
     protected CmisRepositoryCapabilitiesType capabilities;
     protected CmisACLCapabilityType aclCapability;
@@ -97,6 +98,9 @@ public class CmisRepositoryInfoType {
     @XmlSchemaType(name = "anyURI")
     protected String thinClientURI;
     protected Boolean changesIncomplete;
+    protected List<EnumBaseObjectTypeIds> changesOnType;
+    protected String principalAnonymous;
+    protected String principalAnyone;
     @XmlAnyElement(lax = true)
     protected List<Object> any;
     @XmlAnyAttribute
@@ -148,30 +152,6 @@ public class CmisRepositoryInfoType {
      */
     public void setRepositoryName(String value) {
         this.repositoryName = value;
-    }
-
-    /**
-     * Gets the value of the repositoryRelationship property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getRepositoryRelationship() {
-        return repositoryRelationship;
-    }
-
-    /**
-     * Sets the value of the repositoryRelationship property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setRepositoryRelationship(String value) {
-        this.repositoryRelationship = value;
     }
 
     /**
@@ -295,27 +275,27 @@ public class CmisRepositoryInfoType {
     }
 
     /**
-     * Gets the value of the latestChangeToken property.
+     * Gets the value of the latestChangeLogToken property.
      * 
      * @return
      *     possible object is
      *     {@link String }
      *     
      */
-    public String getLatestChangeToken() {
-        return latestChangeToken;
+    public String getLatestChangeLogToken() {
+        return latestChangeLogToken;
     }
 
     /**
-     * Sets the value of the latestChangeToken property.
+     * Sets the value of the latestChangeLogToken property.
      * 
      * @param value
      *     allowed object is
      *     {@link String }
      *     
      */
-    public void setLatestChangeToken(String value) {
-        this.latestChangeToken = value;
+    public void setLatestChangeLogToken(String value) {
+        this.latestChangeLogToken = value;
     }
 
     /**
@@ -436,6 +416,83 @@ public class CmisRepositoryInfoType {
      */
     public void setChangesIncomplete(Boolean value) {
         this.changesIncomplete = value;
+    }
+
+    /**
+     * Gets the value of the changesOnType property.
+     * 
+     * <p>
+     * This accessor method returns a reference to the live list,
+     * not a snapshot. Therefore any modification you make to the
+     * returned list will be present inside the JAXB object.
+     * This is why there is not a <CODE>set</CODE> method for the changesOnType property.
+     * 
+     * <p>
+     * For example, to add a new item, do as follows:
+     * <pre>
+     *    getChangesOnType().add(newItem);
+     * </pre>
+     * 
+     * 
+     * <p>
+     * Objects of the following type(s) are allowed in the list
+     * {@link EnumBaseObjectTypeIds }
+     * 
+     * 
+     */
+    public List<EnumBaseObjectTypeIds> getChangesOnType() {
+        if (changesOnType == null) {
+            changesOnType = new ArrayList<EnumBaseObjectTypeIds>();
+        }
+        return this.changesOnType;
+    }
+
+    /**
+     * Gets the value of the principalAnonymous property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getPrincipalAnonymous() {
+        return principalAnonymous;
+    }
+
+    /**
+     * Sets the value of the principalAnonymous property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setPrincipalAnonymous(String value) {
+        this.principalAnonymous = value;
+    }
+
+    /**
+     * Gets the value of the principalAnyone property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getPrincipalAnyone() {
+        return principalAnyone;
+    }
+
+    /**
+     * Sets the value of the principalAnyone property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setPrincipalAnyone(String value) {
+        this.principalAnyone = value;
     }
 
     /**

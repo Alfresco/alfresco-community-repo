@@ -6,13 +6,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import javax.xml.bind.JAXBElement;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAnyAttribute;
 import javax.xml.bind.annotation.XmlAnyElement;
 import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlElementRef;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.namespace.QName;
 import org.w3c.dom.Element;
@@ -31,14 +29,14 @@ import org.w3c.dom.Element;
  *         &lt;element name="repositoryId" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
  *         &lt;element name="statement" type="{http://www.w3.org/2001/XMLSchema}string"/>
  *         &lt;element name="searchAllVersions" type="{http://www.w3.org/2001/XMLSchema}boolean" minOccurs="0"/>
+ *         &lt;element name="includeAllowableActions" type="{http://www.w3.org/2001/XMLSchema}boolean" minOccurs="0"/>
+ *         &lt;element name="includeRelationships" type="{http://docs.oasis-open.org/ns/cmis/core/200908/}enumIncludeRelationships" minOccurs="0"/>
+ *         &lt;element name="renditionFilter" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
  *         &lt;element name="maxItems" type="{http://www.w3.org/2001/XMLSchema}integer" minOccurs="0"/>
  *         &lt;element name="skipCount" type="{http://www.w3.org/2001/XMLSchema}integer" minOccurs="0"/>
- *         &lt;element name="includeAllowableActions" type="{http://www.w3.org/2001/XMLSchema}boolean" minOccurs="0"/>
- *         &lt;element name="includeRelationships" type="{http://docs.oasis-open.org/ns/cmis/core/200901}enumIncludeRelationships" minOccurs="0"/>
- *         &lt;element name="includeRenditions" type="{http://www.w3.org/2001/XMLSchema}boolean" minOccurs="0"/>
  *         &lt;any/>
  *       &lt;/sequence>
- *       &lt;attGroup ref="{http://docs.oasis-open.org/ns/cmis/core/200901}cmisUndefinedAttribute"/>
+ *       &lt;attGroup ref="{http://docs.oasis-open.org/ns/cmis/core/200908/}cmisUndefinedAttribute"/>
  *     &lt;/restriction>
  *   &lt;/complexContent>
  * &lt;/complexType>
@@ -47,15 +45,15 @@ import org.w3c.dom.Element;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "cmisQueryType", namespace = "http://docs.oasis-open.org/ns/cmis/core/200901", propOrder = {
+@XmlType(name = "cmisQueryType", namespace = "http://docs.oasis-open.org/ns/cmis/core/200908/", propOrder = {
     "repositoryId",
     "statement",
     "searchAllVersions",
-    "maxItems",
-    "skipCount",
     "includeAllowableActions",
     "includeRelationships",
-    "includeRenditions",
+    "renditionFilter",
+    "maxItems",
+    "skipCount",
     "any"
 })
 public class CmisQueryType {
@@ -64,14 +62,11 @@ public class CmisQueryType {
     @XmlElement(required = true)
     protected String statement;
     protected Boolean searchAllVersions;
+    protected Boolean includeAllowableActions;
+    protected EnumIncludeRelationships includeRelationships;
+    protected String renditionFilter;
     protected BigInteger maxItems;
     protected BigInteger skipCount;
-    @XmlElementRef(name = "includeAllowableActions", namespace = "http://docs.oasis-open.org/ns/cmis/core/200901", type = JAXBElement.class)
-    protected JAXBElement<Boolean> includeAllowableActions;
-    @XmlElementRef(name = "includeRelationships", namespace = "http://docs.oasis-open.org/ns/cmis/core/200901", type = JAXBElement.class)
-    protected JAXBElement<EnumIncludeRelationships> includeRelationships;
-    @XmlElementRef(name = "includeRenditions", namespace = "http://docs.oasis-open.org/ns/cmis/core/200901", type = JAXBElement.class)
-    protected JAXBElement<Boolean> includeRenditions;
     @XmlAnyElement(lax = true)
     protected List<Object> any;
     @XmlAnyAttribute
@@ -150,6 +145,78 @@ public class CmisQueryType {
     }
 
     /**
+     * Gets the value of the includeAllowableActions property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link Boolean }
+     *     
+     */
+    public Boolean isIncludeAllowableActions() {
+        return includeAllowableActions;
+    }
+
+    /**
+     * Sets the value of the includeAllowableActions property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link Boolean }
+     *     
+     */
+    public void setIncludeAllowableActions(Boolean value) {
+        this.includeAllowableActions = value;
+    }
+
+    /**
+     * Gets the value of the includeRelationships property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link EnumIncludeRelationships }
+     *     
+     */
+    public EnumIncludeRelationships getIncludeRelationships() {
+        return includeRelationships;
+    }
+
+    /**
+     * Sets the value of the includeRelationships property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link EnumIncludeRelationships }
+     *     
+     */
+    public void setIncludeRelationships(EnumIncludeRelationships value) {
+        this.includeRelationships = value;
+    }
+
+    /**
+     * Gets the value of the renditionFilter property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getRenditionFilter() {
+        return renditionFilter;
+    }
+
+    /**
+     * Sets the value of the renditionFilter property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setRenditionFilter(String value) {
+        this.renditionFilter = value;
+    }
+
+    /**
      * Gets the value of the maxItems property.
      * 
      * @return
@@ -198,78 +265,6 @@ public class CmisQueryType {
     }
 
     /**
-     * Gets the value of the includeAllowableActions property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link JAXBElement }{@code <}{@link Boolean }{@code >}
-     *     
-     */
-    public JAXBElement<Boolean> getIncludeAllowableActions() {
-        return includeAllowableActions;
-    }
-
-    /**
-     * Sets the value of the includeAllowableActions property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link JAXBElement }{@code <}{@link Boolean }{@code >}
-     *     
-     */
-    public void setIncludeAllowableActions(JAXBElement<Boolean> value) {
-        this.includeAllowableActions = ((JAXBElement<Boolean> ) value);
-    }
-
-    /**
-     * Gets the value of the includeRelationships property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link JAXBElement }{@code <}{@link EnumIncludeRelationships }{@code >}
-     *     
-     */
-    public JAXBElement<EnumIncludeRelationships> getIncludeRelationships() {
-        return includeRelationships;
-    }
-
-    /**
-     * Sets the value of the includeRelationships property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link JAXBElement }{@code <}{@link EnumIncludeRelationships }{@code >}
-     *     
-     */
-    public void setIncludeRelationships(JAXBElement<EnumIncludeRelationships> value) {
-        this.includeRelationships = ((JAXBElement<EnumIncludeRelationships> ) value);
-    }
-
-    /**
-     * Gets the value of the includeRenditions property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link JAXBElement }{@code <}{@link Boolean }{@code >}
-     *     
-     */
-    public JAXBElement<Boolean> getIncludeRenditions() {
-        return includeRenditions;
-    }
-
-    /**
-     * Sets the value of the includeRenditions property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link JAXBElement }{@code <}{@link Boolean }{@code >}
-     *     
-     */
-    public void setIncludeRenditions(JAXBElement<Boolean> value) {
-        this.includeRenditions = ((JAXBElement<Boolean> ) value);
-    }
-
-    /**
      * Gets the value of the any property.
      * 
      * <p>
@@ -290,7 +285,7 @@ public class CmisQueryType {
      * {@link Element }
      * {@link Object }
      * 
-     *     
+     * 
      */
     public List<Object> getAny() {
         if (any == null) {

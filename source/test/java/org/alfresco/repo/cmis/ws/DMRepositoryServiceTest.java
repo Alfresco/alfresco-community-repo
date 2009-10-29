@@ -27,8 +27,6 @@ package org.alfresco.repo.cmis.ws;
 import java.math.BigInteger;
 import java.util.List;
 
-import javax.xml.ws.Holder;
-
 public class DMRepositoryServiceTest extends AbstractServiceTest
 {
     public final static String TYPE_ID = "F/wca:webfolder";
@@ -50,23 +48,23 @@ public class DMRepositoryServiceTest extends AbstractServiceTest
 
     public void testGetRepositories() throws Exception
     {
-        List<CmisRepositoryEntryType> repositories = ((RepositoryServicePort) servicePort).getRepositories();
+        List<CmisRepositoryEntryType> repositories = ((RepositoryServicePort) servicePort).getRepositories(null);
         assertTrue(repositories.size() == 1);
-        assertFalse(repositories.get(0).getId() == null);
-        assertFalse(repositories.get(0).getName() == null);
+        assertFalse(repositories.get(0).getRepositoryId() == null);
+        assertFalse(repositories.get(0).getRepositoryName() == null);
     }
 
     public void testGetRepositoryInfo() throws Exception
     {
-        List<CmisRepositoryEntryType> repositories = ((RepositoryServicePort) servicePort).getRepositories();
+        List<CmisRepositoryEntryType> repositories = ((RepositoryServicePort) servicePort).getRepositories(null);
         GetRepositoryInfo parameters = new GetRepositoryInfo();
-        parameters.setRepositoryId(repositories.get(0).getId());
-        CmisRepositoryInfoType cmisRepositoryInfoType = ((RepositoryServicePort) servicePort).getRepositoryInfo(repositoryId);
+        parameters.setRepositoryId(repositories.get(0).getRepositoryId());
+        CmisRepositoryInfoType cmisRepositoryInfoType = ((RepositoryServicePort) servicePort).getRepositoryInfo(repositoryId, null);
 
-        assertTrue(cmisRepositoryInfoType.getRepositoryId().equals(repositories.get(0).getId()));
-        assertTrue(cmisRepositoryInfoType.getRepositoryName().equals(repositories.get(0).getName()));
+        assertTrue(cmisRepositoryInfoType.getRepositoryId().equals(repositories.get(0).getRepositoryId()));
+        assertTrue(cmisRepositoryInfoType.getRepositoryName().equals(repositories.get(0).getRepositoryName()));
         CmisRepositoryCapabilitiesType capabilities = cmisRepositoryInfoType.getCapabilities();
-        assertTrue(capabilities.isCapabilityMultifiling() && capabilities.isCapabilityPWCUpdateable());
+        assertTrue(capabilities.isCapabilityMultifiling() && capabilities.isCapabilityPWCUpdatable());
         assertFalse(capabilities.isCapabilityUnfiling() && capabilities.isCapabilityVersionSpecificFiling());
     }
 
@@ -74,27 +72,26 @@ public class DMRepositoryServiceTest extends AbstractServiceTest
     {
         BigInteger maxItems = BigInteger.valueOf(0);
         BigInteger skipItems = BigInteger.valueOf(0);
-        Holder<List<CmisTypeDefinitionType>> typeHolder = new Holder<List<CmisTypeDefinitionType>>();
-        Holder<Boolean> hasMoreElementsHolder = new Holder<Boolean>();
-        ((RepositoryServicePort) servicePort).getTypeChildren(repositoryId, "", Boolean.FALSE, maxItems, skipItems, typeHolder, hasMoreElementsHolder);
-        assertNotNull(typeHolder.value);
-        assertFalse(typeHolder.value.isEmpty());
-        CmisTypeDefinitionType element = typeHolder.value.get(0);
+        CmisTypeDefinitionListType response = ((RepositoryServicePort) servicePort).getTypeChildren(repositoryId, "", false, maxItems, skipItems, null);
+        assertNotNull(response);
+        assertNotNull(response.getTypes());
+        assertFalse(response.getTypes().isEmpty());
+        CmisTypeDefinitionType element = response.getTypes().get(0);
         assertNotNull(element);
     }
 
     public void testGetTypeDescedants() throws Exception
     {
-        List<CmisTypeContainer> result = ((RepositoryServicePort) servicePort).getTypeDescendants(repositoryId, "", null, true);
+        List<CmisTypeContainer> result = ((RepositoryServicePort) servicePort).getTypeDescendants(repositoryId, "", null, true, null);
         assertNotNull(result);
         assertFalse(result.isEmpty());
         CmisTypeContainer element = result.get(0);
         assertNotNull(element);
-        result = ((RepositoryServicePort) servicePort).getTypeDescendants(repositoryId, "", BigInteger.valueOf(1), true);
+        result = ((RepositoryServicePort) servicePort).getTypeDescendants(repositoryId, "", BigInteger.valueOf(1), true, null);
         assertNotNull(result);
         assertFalse(result.isEmpty());
         assertNotNull(result.get(0));
-        result = ((RepositoryServicePort) servicePort).getTypeDescendants(repositoryId, TYPE_ID, null, false);
+        result = ((RepositoryServicePort) servicePort).getTypeDescendants(repositoryId, TYPE_ID, null, false, null);
         assertNotNull(result);
         assertTrue(result.size() == 1);
         assertNotNull(result.get(0));
@@ -102,7 +99,7 @@ public class DMRepositoryServiceTest extends AbstractServiceTest
 
     public void testGetTypeDefinition() throws Exception
     {
-        CmisTypeDefinitionType type = ((RepositoryServicePort) servicePort).getTypeDefinition(repositoryId, TYPE_ID);
+        CmisTypeDefinitionType type = ((RepositoryServicePort) servicePort).getTypeDefinition(repositoryId, TYPE_ID, null);
         assertNotNull(type);
     }
 }

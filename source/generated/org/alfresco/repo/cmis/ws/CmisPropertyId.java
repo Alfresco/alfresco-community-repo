@@ -5,8 +5,6 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlType;
 
 
@@ -18,11 +16,10 @@ import javax.xml.bind.annotation.XmlType;
  * <pre>
  * &lt;complexType name="cmisPropertyId">
  *   &lt;complexContent>
- *     &lt;extension base="{http://docs.oasis-open.org/ns/cmis/core/200901}cmisProperty">
+ *     &lt;extension base="{http://docs.oasis-open.org/ns/cmis/core/200908/}cmisProperty">
  *       &lt;sequence>
  *         &lt;element name="value" type="{http://www.w3.org/2001/XMLSchema}string" maxOccurs="unbounded" minOccurs="0"/>
  *       &lt;/sequence>
- *       &lt;attribute ref="{http://docs.oasis-open.org/ns/cmis/core/200901}href"/>
  *     &lt;/extension>
  *   &lt;/complexContent>
  * &lt;/complexType>
@@ -31,7 +28,7 @@ import javax.xml.bind.annotation.XmlType;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "cmisPropertyId", namespace = "http://docs.oasis-open.org/ns/cmis/core/200901", propOrder = {
+@XmlType(name = "cmisPropertyId", namespace = "http://docs.oasis-open.org/ns/cmis/core/200908/", propOrder = {
     "value"
 })
 public class CmisPropertyId
@@ -39,9 +36,6 @@ public class CmisPropertyId
 {
 
     protected List<String> value;
-    @XmlAttribute(namespace = "http://docs.oasis-open.org/ns/cmis/core/200901")
-    @XmlSchemaType(name = "anyURI")
-    protected String href;
 
     /**
      * Gets the value of the value property.
@@ -70,30 +64,6 @@ public class CmisPropertyId
             value = new ArrayList<String>();
         }
         return this.value;
-    }
-
-    /**
-     * Gets the value of the href property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getHref() {
-        return href;
-    }
-
-    /**
-     * Sets the value of the href property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setHref(String value) {
-        this.href = value;
     }
 
 }

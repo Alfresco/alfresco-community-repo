@@ -23,9 +23,7 @@ import javax.xml.bind.annotation.XmlType;
  *         &lt;element name="repositoryId" type="{http://www.w3.org/2001/XMLSchema}string"/>
  *         &lt;element name="objectId" type="{http://www.w3.org/2001/XMLSchema}string"/>
  *         &lt;element name="filter" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
- *         &lt;element name="includeAllowableActions" type="{http://www.w3.org/2001/XMLSchema}boolean" minOccurs="0"/>
- *         &lt;element name="includeRelationships" type="{http://docs.oasis-open.org/ns/cmis/core/200901}enumIncludeRelationships" minOccurs="0"/>
- *         &lt;element name="includeACL" type="{http://www.w3.org/2001/XMLSchema}boolean" minOccurs="0"/>
+ *         &lt;element name="extension" type="{http://docs.oasis-open.org/ns/cmis/messaging/200908/}cmisExtensionType" minOccurs="0"/>
  *       &lt;/sequence>
  *     &lt;/restriction>
  *   &lt;/complexContent>
@@ -39,9 +37,7 @@ import javax.xml.bind.annotation.XmlType;
     "repositoryId",
     "objectId",
     "filter",
-    "includeAllowableActions",
-    "includeRelationships",
-    "includeACL"
+    "extension"
 })
 @XmlRootElement(name = "getProperties")
 public class GetProperties {
@@ -50,14 +46,10 @@ public class GetProperties {
     protected String repositoryId;
     @XmlElement(required = true)
     protected String objectId;
-    @XmlElementRef(name = "filter", namespace = "http://docs.oasis-open.org/ns/cmis/messaging/200901", type = JAXBElement.class)
+    @XmlElementRef(name = "filter", namespace = "http://docs.oasis-open.org/ns/cmis/messaging/200908/", type = JAXBElement.class)
     protected JAXBElement<String> filter;
-    @XmlElementRef(name = "includeAllowableActions", namespace = "http://docs.oasis-open.org/ns/cmis/messaging/200901", type = JAXBElement.class)
-    protected JAXBElement<Boolean> includeAllowableActions;
-    @XmlElementRef(name = "includeRelationships", namespace = "http://docs.oasis-open.org/ns/cmis/messaging/200901", type = JAXBElement.class)
-    protected JAXBElement<EnumIncludeRelationships> includeRelationships;
-    @XmlElementRef(name = "includeACL", namespace = "http://docs.oasis-open.org/ns/cmis/messaging/200901", type = JAXBElement.class)
-    protected JAXBElement<Boolean> includeACL;
+    @XmlElementRef(name = "extension", namespace = "http://docs.oasis-open.org/ns/cmis/messaging/200908/", type = JAXBElement.class)
+    protected JAXBElement<CmisExtensionType> extension;
 
     /**
      * Gets the value of the repositoryId property.
@@ -132,75 +124,27 @@ public class GetProperties {
     }
 
     /**
-     * Gets the value of the includeAllowableActions property.
+     * Gets the value of the extension property.
      * 
      * @return
      *     possible object is
-     *     {@link JAXBElement }{@code <}{@link Boolean }{@code >}
+     *     {@link JAXBElement }{@code <}{@link CmisExtensionType }{@code >}
      *     
      */
-    public JAXBElement<Boolean> getIncludeAllowableActions() {
-        return includeAllowableActions;
+    public JAXBElement<CmisExtensionType> getExtension() {
+        return extension;
     }
 
     /**
-     * Sets the value of the includeAllowableActions property.
+     * Sets the value of the extension property.
      * 
      * @param value
      *     allowed object is
-     *     {@link JAXBElement }{@code <}{@link Boolean }{@code >}
+     *     {@link JAXBElement }{@code <}{@link CmisExtensionType }{@code >}
      *     
      */
-    public void setIncludeAllowableActions(JAXBElement<Boolean> value) {
-        this.includeAllowableActions = ((JAXBElement<Boolean> ) value);
-    }
-
-    /**
-     * Gets the value of the includeRelationships property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link JAXBElement }{@code <}{@link EnumIncludeRelationships }{@code >}
-     *     
-     */
-    public JAXBElement<EnumIncludeRelationships> getIncludeRelationships() {
-        return includeRelationships;
-    }
-
-    /**
-     * Sets the value of the includeRelationships property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link JAXBElement }{@code <}{@link EnumIncludeRelationships }{@code >}
-     *     
-     */
-    public void setIncludeRelationships(JAXBElement<EnumIncludeRelationships> value) {
-        this.includeRelationships = ((JAXBElement<EnumIncludeRelationships> ) value);
-    }
-
-    /**
-     * Gets the value of the includeACL property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link JAXBElement }{@code <}{@link Boolean }{@code >}
-     *     
-     */
-    public JAXBElement<Boolean> getIncludeACL() {
-        return includeACL;
-    }
-
-    /**
-     * Sets the value of the includeACL property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link JAXBElement }{@code <}{@link Boolean }{@code >}
-     *     
-     */
-    public void setIncludeACL(JAXBElement<Boolean> value) {
-        this.includeACL = ((JAXBElement<Boolean> ) value);
+    public void setExtension(JAXBElement<CmisExtensionType> value) {
+        this.extension = ((JAXBElement<CmisExtensionType> ) value);
     }
 
 }

@@ -18,7 +18,7 @@ import javax.xml.bind.annotation.XmlType;
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
- *         &lt;element name="acl" type="{http://docs.oasis-open.org/ns/cmis/core/200901}cmisAccessControlListType"/>
+ *         &lt;element name="ACL" type="{http://docs.oasis-open.org/ns/cmis/messaging/200908/}cmisACLType"/>
  *       &lt;/sequence>
  *     &lt;/restriction>
  *   &lt;/complexContent>
@@ -34,18 +34,18 @@ import javax.xml.bind.annotation.XmlType;
 @XmlRootElement(name = "getACLResponse")
 public class GetACLResponse {
 
-    @XmlElement(required = true)
-    protected CmisAccessControlListType acl;
+    @XmlElement(name = "ACL", required = true)
+    protected CmisACLType acl;
 
     /**
      * Gets the value of the acl property.
      * 
      * @return
      *     possible object is
-     *     {@link CmisAccessControlListType }
+     *     {@link CmisACLType }
      *     
      */
-    public CmisAccessControlListType getAcl() {
+    public CmisACLType getACL() {
         return acl;
     }
 
@@ -54,10 +54,10 @@ public class GetACLResponse {
      * 
      * @param value
      *     allowed object is
-     *     {@link CmisAccessControlListType }
+     *     {@link CmisACLType }
      *     
      */
-    public void setAcl(CmisAccessControlListType value) {
+    public void setACL(CmisACLType value) {
         this.acl = value;
     }
 

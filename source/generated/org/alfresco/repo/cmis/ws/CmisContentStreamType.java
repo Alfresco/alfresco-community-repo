@@ -13,7 +13,6 @@ import javax.xml.bind.annotation.XmlAnyAttribute;
 import javax.xml.bind.annotation.XmlAnyElement;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlMimeType;
-import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.namespace.QName;
 import org.w3c.dom.Element;
@@ -29,14 +28,13 @@ import org.w3c.dom.Element;
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
- *         &lt;element name="length" type="{http://www.w3.org/2001/XMLSchema}integer"/>
+ *         &lt;element name="length" type="{http://www.w3.org/2001/XMLSchema}integer" minOccurs="0"/>
  *         &lt;element name="mimeType" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
  *         &lt;element name="filename" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
- *         &lt;element name="uri" type="{http://www.w3.org/2001/XMLSchema}anyURI" minOccurs="0"/>
  *         &lt;element name="stream" type="{http://www.w3.org/2001/XMLSchema}base64Binary"/>
  *         &lt;any/>
  *       &lt;/sequence>
- *       &lt;attGroup ref="{http://docs.oasis-open.org/ns/cmis/core/200901}cmisUndefinedAttribute"/>
+ *       &lt;attGroup ref="{http://docs.oasis-open.org/ns/cmis/core/200908/}cmisUndefinedAttribute"/>
  *     &lt;/restriction>
  *   &lt;/complexContent>
  * &lt;/complexType>
@@ -49,18 +47,14 @@ import org.w3c.dom.Element;
     "length",
     "mimeType",
     "filename",
-    "uri",
     "stream",
     "any"
 })
 public class CmisContentStreamType {
 
-    @XmlElement(required = true)
     protected BigInteger length;
     protected String mimeType;
     protected String filename;
-    @XmlSchemaType(name = "anyURI")
-    protected String uri;
     @XmlElement(required = true)
     @XmlMimeType("application/octet-stream")
     protected DataHandler stream;
@@ -139,30 +133,6 @@ public class CmisContentStreamType {
      */
     public void setFilename(String value) {
         this.filename = value;
-    }
-
-    /**
-     * Gets the value of the uri property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getUri() {
-        return uri;
-    }
-
-    /**
-     * Sets the value of the uri property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setUri(String value) {
-        this.uri = value;
     }
 
     /**

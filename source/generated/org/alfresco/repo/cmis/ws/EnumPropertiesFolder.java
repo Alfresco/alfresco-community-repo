@@ -14,21 +14,24 @@ import javax.xml.bind.annotation.XmlType;
  * <pre>
  * &lt;simpleType name="enumPropertiesFolder">
  *   &lt;restriction base="{http://www.w3.org/2001/XMLSchema}string">
- *     &lt;enumeration value="cmis:ParentId"/>
- *     &lt;enumeration value="cmis:AllowedChildObjectTypeNames"/>
+ *     &lt;enumeration value="cmis:parentId"/>
+ *     &lt;enumeration value="cmis:allowedChildObjectTypeIds"/>
+ *     &lt;enumeration value="cmis:path"/>
  *   &lt;/restriction>
  * &lt;/simpleType>
  * </pre>
  * 
  */
-@XmlType(name = "enumPropertiesFolder", namespace = "http://docs.oasis-open.org/ns/cmis/core/200901")
+@XmlType(name = "enumPropertiesFolder", namespace = "http://docs.oasis-open.org/ns/cmis/core/200908/")
 @XmlEnum
 public enum EnumPropertiesFolder {
 
-    @XmlEnumValue("cmis:ParentId")
-    CMIS_PARENT_ID("cmis:ParentId"),
-    @XmlEnumValue("cmis:AllowedChildObjectTypeNames")
-    CMIS_ALLOWED_CHILD_OBJECT_TYPE_NAMES("cmis:AllowedChildObjectTypeNames");
+    @XmlEnumValue("cmis:parentId")
+    CMIS_PARENT_ID("cmis:parentId"),
+    @XmlEnumValue("cmis:allowedChildObjectTypeIds")
+    CMIS_ALLOWED_CHILD_OBJECT_TYPE_IDS("cmis:allowedChildObjectTypeIds"),
+    @XmlEnumValue("cmis:path")
+    CMIS_PATH("cmis:path");
     private final String value;
 
     EnumPropertiesFolder(String v) {

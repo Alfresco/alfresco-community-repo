@@ -22,7 +22,7 @@ import javax.xml.bind.annotation.XmlType;
  * </pre>
  * 
  */
-@XmlType(name = "enumContentStreamAllowed", namespace = "http://docs.oasis-open.org/ns/cmis/core/200901")
+@XmlType(name = "enumContentStreamAllowed", namespace = "http://docs.oasis-open.org/ns/cmis/core/200908/")
 @XmlEnum
 public enum EnumContentStreamAllowed {
 

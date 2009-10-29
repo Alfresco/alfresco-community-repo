@@ -23,11 +23,12 @@ import javax.xml.bind.annotation.XmlType;
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
  *         &lt;element name="repositoryId" type="{http://www.w3.org/2001/XMLSchema}string"/>
- *         &lt;element name="properties" type="{http://docs.oasis-open.org/ns/cmis/core/200901}cmisPropertiesType"/>
+ *         &lt;element name="properties" type="{http://docs.oasis-open.org/ns/cmis/core/200908/}cmisPropertiesType"/>
  *         &lt;element name="folderId" type="{http://www.w3.org/2001/XMLSchema}string"/>
- *         &lt;element name="applyPolicies" type="{http://www.w3.org/2001/XMLSchema}string" maxOccurs="unbounded" minOccurs="0"/>
- *         &lt;element name="addACEs" type="{http://docs.oasis-open.org/ns/cmis/core/200901}cmisAccessControlListType" minOccurs="0"/>
- *         &lt;element name="removeACEs" type="{http://docs.oasis-open.org/ns/cmis/core/200901}cmisAccessControlListType" minOccurs="0"/>
+ *         &lt;element name="policies" type="{http://www.w3.org/2001/XMLSchema}string" maxOccurs="unbounded" minOccurs="0"/>
+ *         &lt;element name="addACEs" type="{http://docs.oasis-open.org/ns/cmis/core/200908/}cmisAccessControlListType" minOccurs="0"/>
+ *         &lt;element name="removeACEs" type="{http://docs.oasis-open.org/ns/cmis/core/200908/}cmisAccessControlListType" minOccurs="0"/>
+ *         &lt;element name="extension" type="{http://docs.oasis-open.org/ns/cmis/messaging/200908/}cmisExtensionType" minOccurs="0"/>
  *       &lt;/sequence>
  *     &lt;/restriction>
  *   &lt;/complexContent>
@@ -41,9 +42,10 @@ import javax.xml.bind.annotation.XmlType;
     "repositoryId",
     "properties",
     "folderId",
-    "applyPolicies",
+    "policies",
     "addACEs",
-    "removeACEs"
+    "removeACEs",
+    "extension"
 })
 @XmlRootElement(name = "createFolder")
 public class CreateFolder {
@@ -55,11 +57,13 @@ public class CreateFolder {
     @XmlElement(required = true)
     protected String folderId;
     @XmlElement(nillable = true)
-    protected List<String> applyPolicies;
-    @XmlElementRef(name = "addACEs", namespace = "http://docs.oasis-open.org/ns/cmis/messaging/200901", type = JAXBElement.class)
+    protected List<String> policies;
+    @XmlElementRef(name = "addACEs", namespace = "http://docs.oasis-open.org/ns/cmis/messaging/200908/", type = JAXBElement.class)
     protected JAXBElement<CmisAccessControlListType> addACEs;
-    @XmlElementRef(name = "removeACEs", namespace = "http://docs.oasis-open.org/ns/cmis/messaging/200901", type = JAXBElement.class)
+    @XmlElementRef(name = "removeACEs", namespace = "http://docs.oasis-open.org/ns/cmis/messaging/200908/", type = JAXBElement.class)
     protected JAXBElement<CmisAccessControlListType> removeACEs;
+    @XmlElementRef(name = "extension", namespace = "http://docs.oasis-open.org/ns/cmis/messaging/200908/", type = JAXBElement.class)
+    protected JAXBElement<CmisExtensionType> extension;
 
     /**
      * Gets the value of the repositoryId property.
@@ -134,18 +138,18 @@ public class CreateFolder {
     }
 
     /**
-     * Gets the value of the applyPolicies property.
+     * Gets the value of the policies property.
      * 
      * <p>
      * This accessor method returns a reference to the live list,
      * not a snapshot. Therefore any modification you make to the
      * returned list will be present inside the JAXB object.
-     * This is why there is not a <CODE>set</CODE> method for the applyPolicies property.
+     * This is why there is not a <CODE>set</CODE> method for the policies property.
      * 
      * <p>
      * For example, to add a new item, do as follows:
      * <pre>
-     *    getApplyPolicies().add(newItem);
+     *    getPolicies().add(newItem);
      * </pre>
      * 
      * 
@@ -155,11 +159,11 @@ public class CreateFolder {
      * 
      * 
      */
-    public List<String> getApplyPolicies() {
-        if (applyPolicies == null) {
-            applyPolicies = new ArrayList<String>();
+    public List<String> getPolicies() {
+        if (policies == null) {
+            policies = new ArrayList<String>();
         }
-        return this.applyPolicies;
+        return this.policies;
     }
 
     /**
@@ -208,6 +212,30 @@ public class CreateFolder {
      */
     public void setRemoveACEs(JAXBElement<CmisAccessControlListType> value) {
         this.removeACEs = ((JAXBElement<CmisAccessControlListType> ) value);
+    }
+
+    /**
+     * Gets the value of the extension property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link JAXBElement }{@code <}{@link CmisExtensionType }{@code >}
+     *     
+     */
+    public JAXBElement<CmisExtensionType> getExtension() {
+        return extension;
+    }
+
+    /**
+     * Sets the value of the extension property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link JAXBElement }{@code <}{@link CmisExtensionType }{@code >}
+     *     
+     */
+    public void setExtension(JAXBElement<CmisExtensionType> value) {
+        this.extension = ((JAXBElement<CmisExtensionType> ) value);
     }
 
 }

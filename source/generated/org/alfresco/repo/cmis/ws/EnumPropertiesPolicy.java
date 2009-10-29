@@ -14,18 +14,18 @@ import javax.xml.bind.annotation.XmlType;
  * <pre>
  * &lt;simpleType name="enumPropertiesPolicy">
  *   &lt;restriction base="{http://www.w3.org/2001/XMLSchema}string">
- *     &lt;enumeration value="cmis:PolicyText"/>
+ *     &lt;enumeration value="cmis:policyText"/>
  *   &lt;/restriction>
  * &lt;/simpleType>
  * </pre>
  * 
  */
-@XmlType(name = "enumPropertiesPolicy", namespace = "http://docs.oasis-open.org/ns/cmis/core/200901")
+@XmlType(name = "enumPropertiesPolicy", namespace = "http://docs.oasis-open.org/ns/cmis/core/200908/")
 @XmlEnum
 public enum EnumPropertiesPolicy {
 
-    @XmlEnumValue("cmis:PolicyText")
-    CMIS_POLICY_TEXT("cmis:PolicyText");
+    @XmlEnumValue("cmis:policyText")
+    CMIS_POLICY_TEXT("cmis:policyText");
     private final String value;
 
     EnumPropertiesPolicy(String v) {

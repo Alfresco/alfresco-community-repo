@@ -14,21 +14,21 @@ import javax.xml.bind.annotation.XmlType;
  * <pre>
  * &lt;simpleType name="enumPropertiesRelationship">
  *   &lt;restriction base="{http://www.w3.org/2001/XMLSchema}string">
- *     &lt;enumeration value="cmis:SourceId"/>
- *     &lt;enumeration value="cmis:TargetId"/>
+ *     &lt;enumeration value="cmis:sourceId"/>
+ *     &lt;enumeration value="cmis:targetId"/>
  *   &lt;/restriction>
  * &lt;/simpleType>
  * </pre>
  * 
  */
-@XmlType(name = "enumPropertiesRelationship", namespace = "http://docs.oasis-open.org/ns/cmis/core/200901")
+@XmlType(name = "enumPropertiesRelationship", namespace = "http://docs.oasis-open.org/ns/cmis/core/200908/")
 @XmlEnum
 public enum EnumPropertiesRelationship {
 
-    @XmlEnumValue("cmis:SourceId")
-    CMIS_SOURCE_ID("cmis:SourceId"),
-    @XmlEnumValue("cmis:TargetId")
-    CMIS_TARGET_ID("cmis:TargetId");
+    @XmlEnumValue("cmis:sourceId")
+    CMIS_SOURCE_ID("cmis:sourceId"),
+    @XmlEnumValue("cmis:targetId")
+    CMIS_TARGET_ID("cmis:targetId");
     private final String value;
 
     EnumPropertiesRelationship(String v) {

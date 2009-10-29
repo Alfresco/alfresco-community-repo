@@ -18,7 +18,7 @@ import javax.xml.bind.annotation.XmlType;
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
- *         &lt;element name="object" type="{http://docs.oasis-open.org/ns/cmis/core/200901}cmisObjectType"/>
+ *         &lt;element name="properties" type="{http://docs.oasis-open.org/ns/cmis/core/200908/}cmisPropertiesType"/>
  *       &lt;/sequence>
  *     &lt;/restriction>
  *   &lt;/complexContent>
@@ -29,36 +29,36 @@ import javax.xml.bind.annotation.XmlType;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "", propOrder = {
-    "object"
+    "properties"
 })
 @XmlRootElement(name = "getPropertiesOfLatestVersionResponse")
 public class GetPropertiesOfLatestVersionResponse {
 
     @XmlElement(required = true)
-    protected CmisObjectType object;
+    protected CmisPropertiesType properties;
 
     /**
-     * Gets the value of the object property.
+     * Gets the value of the properties property.
      * 
      * @return
      *     possible object is
-     *     {@link CmisObjectType }
+     *     {@link CmisPropertiesType }
      *     
      */
-    public CmisObjectType getObject() {
-        return object;
+    public CmisPropertiesType getProperties() {
+        return properties;
     }
 
     /**
-     * Sets the value of the object property.
+     * Sets the value of the properties property.
      * 
      * @param value
      *     allowed object is
-     *     {@link CmisObjectType }
+     *     {@link CmisPropertiesType }
      *     
      */
-    public void setObject(CmisObjectType value) {
-        this.object = value;
+    public void setProperties(CmisPropertiesType value) {
+        this.properties = value;
     }
 
 }

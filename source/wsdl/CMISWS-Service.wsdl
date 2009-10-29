@@ -1,17 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
-<definitions xmlns:cmis="http://docs.oasis-open.org/ns/cmis/core/200901"
-	xmlns:cmism="http://docs.oasis-open.org/ns/cmis/messaging/200901"
-	xmlns:cmisw="http://docs.oasis-open.org/ns/cmis/ws/200901" xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+	<!--
+		$Revision: 65 $
+		$Date: 2009-08-30 08:18:30 -0700 (Sun, 30 Aug 2009) $
+		$Author: fmueller $
+		$HeadURL: http://tools.oasis-open.org/version-control/svn/cmis/trunk/SchemaProject/schema/CMISWS-Service.wsdl $
+	-->
+<definitions xmlns:cmis="http://docs.oasis-open.org/ns/cmis/core/200908/"
+	xmlns:cmism="http://docs.oasis-open.org/ns/cmis/messaging/200908/"
+	xmlns:cmisw="http://docs.oasis-open.org/ns/cmis/ws/200908/" xmlns:xsd="http://www.w3.org/2001/XMLSchema"
 	xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns="http://schemas.xmlsoap.org/wsdl/"
-	xmlns:ns="http://schemas.xmlsoap.org/soap/encoding/" targetNamespace="http://docs.oasis-open.org/ns/cmis/ws/200901"
+	xmlns:ns="http://schemas.xmlsoap.org/soap/encoding/" targetNamespace="http://docs.oasis-open.org/ns/cmis/ws/200908/"
 	xmlns:jaxws="http://java.sun.com/xml/ns/jaxws" name="CMISWebServices">
 	<types>
 		<xsd:schema elementFormDefault="qualified"
-			targetNamespace="http://docs.oasis-open.org/ns/cmis/ws/200901">
+			targetNamespace="http://docs.oasis-open.org/ns/cmis/ws/200908/">
 			<xsd:import schemaLocation="CMIS-Core.xsd"
-				namespace="http://docs.oasis-open.org/ns/cmis/core/200901" />
+				namespace="http://docs.oasis-open.org/ns/cmis/core/200908/" />
 			<xsd:import schemaLocation="CMIS-Messaging.xsd"
-				namespace="http://docs.oasis-open.org/ns/cmis/messaging/200901" />
+				namespace="http://docs.oasis-open.org/ns/cmis/messaging/200908/" />
 		</xsd:schema>
 	</types>
 
@@ -102,6 +108,12 @@
 	<message name="createDocumentResponse">
 		<part name="parameters" element="cmism:createDocumentResponse" />
 	</message>
+	<message name="createDocumentFromSourceRequest">
+		<part name="parameters" element="cmism:createDocumentFromSource" />
+	</message>
+	<message name="createDocumentFromSourceResponse">
+		<part name="parameters" element="cmism:createDocumentFromSourceResponse" />
+	</message>
 	<message name="createFolderRequest">
 		<part name="parameters" element="cmism:createFolder" />
 	</message>
@@ -126,6 +138,12 @@
 	<message name="getAllowableActionsResponse">
 		<part name="parameters" element="cmism:getAllowableActionsResponse" />
 	</message>
+	<message name="getObjectRequest">
+		<part name="parameters" element="cmism:getObject" />
+	</message>
+	<message name="getObjectResponse">
+		<part name="parameters" element="cmism:getObjectResponse" />
+	</message>
 	<message name="getPropertiesRequest">
 		<part name="parameters" element="cmism:getProperties" />
 	</message>
@@ -133,11 +151,11 @@
 		<part name="parameters" element="cmism:getPropertiesResponse" />
 	</message>
 
-	<message name="getFolderByPathRequest">
-		<part name="parameters" element="cmism:getFolderByPath" />
+	<message name="getObjectByPathRequest">
+		<part name="parameters" element="cmism:getObjectByPath" />
 	</message>
-	<message name="getFolderByPathResponse">
-		<part name="parameters" element="cmism:getFolderByPathResponse" />
+	<message name="getObjectByPathResponse">
+		<part name="parameters" element="cmism:getObjectByPathResponse" />
 	</message>
 
 	<message name="getContentStreamRequest">
@@ -202,11 +220,11 @@
 		<part name="parameters" element="cmism:getAppliedPoliciesResponse" />
 	</message>
 
-	<message name="getRelationshipsRequest">
-		<part name="parameters" element="cmism:getRelationships" />
+	<message name="getObjectRelationshipsRequest">
+		<part name="parameters" element="cmism:getObjectRelationships" />
 	</message>
-	<message name="getRelationshipsResponse">
-		<part name="parameters" element="cmism:getRelationshipsResponse" />
+	<message name="getObjectRelationshipsResponse">
+		<part name="parameters" element="cmism:getObjectRelationshipsResponse" />
 	</message>
 
 	<message name="getRepositoriesRequest">
@@ -258,6 +276,12 @@
 	<message name="checkInResponse">
 		<part name="parameters" element="cmism:checkInResponse" />
 	</message>
+	<message name="getObjectOfLatestVersionRequest">
+		<part name="parameters" element="cmism:getObjectOfLatestVersion" />
+	</message>
+	<message name="getObjectOfLatestVersionResponse">
+		<part name="parameters" element="cmism:getObjectOfLatestVersionResponse" />
+	</message>	
 	<message name="getPropertiesOfLatestVersionRequest">
 		<part name="parameters" element="cmism:getPropertiesOfLatestVersion" />
 	</message>
@@ -341,6 +365,11 @@
 			<output message="cmisw:createDocumentResponse" />
 			<fault message="cmisw:cmisException" name="cmisException" />
 		</operation>
+		<operation name="createDocumentFromSource">
+			<input message="cmisw:createDocumentFromSourceRequest" />
+			<output message="cmisw:createDocumentFromSourceResponse" />
+			<fault message="cmisw:cmisException" name="cmisException" />
+		</operation>
 		<operation name="createFolder">
 			<input message="cmisw:createFolderRequest" />
 			<output message="cmisw:createFolderResponse" />
@@ -361,6 +390,11 @@
 			<output message="cmisw:getAllowableActionsResponse" />
 			<fault message="cmisw:cmisException" name="cmisException" />
 		</operation>
+		<operation name="getObject">
+			<input message="cmisw:getObjectRequest" />
+			<output message="cmisw:getObjectResponse" />
+			<fault message="cmisw:cmisException" name="cmisException" />
+		</operation>
 		<operation name="getProperties">
 			<input message="cmisw:getPropertiesRequest" />
 			<output message="cmisw:getPropertiesResponse" />
@@ -371,9 +405,9 @@
 			<output message="cmisw:getRenditionsResponse" />
 			<fault message="cmisw:cmisException" name="cmisException" />
 		</operation>
-		<operation name="getFolderByPath">
-			<input message="cmisw:getFolderByPathRequest" />
-			<output message="cmisw:getFolderByPathResponse" />
+		<operation name="getObjectByPath">
+			<input message="cmisw:getObjectByPathRequest" />
+			<output message="cmisw:getObjectByPathResponse" />
 			<fault message="cmisw:cmisException" name="cmisException" />
 		</operation>
 		<operation name="getContentStream">
@@ -431,9 +465,9 @@
 	</portType>
 
 	<portType name="RelationshipServicePort">
-		<operation name="getRelationships">
-			<input message="cmisw:getRelationshipsRequest" />
-			<output message="cmisw:getRelationshipsResponse" />
+		<operation name="getObjectRelationships">
+			<input message="cmisw:getObjectRelationshipsRequest" />
+			<output message="cmisw:getObjectRelationshipsResponse" />
 			<fault message="cmisw:cmisException" name="cmisException" />
 		</operation>
 	</portType>
@@ -478,6 +512,11 @@
 		<operation name="checkIn">
 			<input message="cmisw:checkInRequest" />
 			<output message="cmisw:checkInResponse" />
+			<fault message="cmisw:cmisException" name="cmisException" />
+		</operation>
+		<operation name="getObjectOfLatestVersion">
+			<input message="cmisw:getObjectOfLatestVersionRequest" />
+			<output message="cmisw:getObjectOfLatestVersionResponse" />
 			<fault message="cmisw:cmisException" name="cmisException" />
 		</operation>
 		<operation name="getPropertiesOfLatestVersion">
@@ -652,6 +691,18 @@
 				<soap:fault name="cmisException" use="literal" />
 			</fault>
 		</operation>
+		<operation name="createDocumentFromSource">
+			<soap:operation soapAction="" />
+			<input>
+				<soap:body use="literal" />
+			</input>
+			<output>
+				<soap:body use="literal" />
+			</output>
+			<fault name="cmisException">
+				<soap:fault name="cmisException" use="literal" />
+			</fault>
+		</operation>
 		<operation name="createFolder">
 			<soap:operation soapAction="" />
 			<input>
@@ -700,6 +751,18 @@
 				<soap:fault name="cmisException" use="literal" />
 			</fault>
 		</operation>
+		<operation name="getObject">
+			<soap:operation soapAction="" />
+			<input>
+				<soap:body use="literal" />
+			</input>
+			<output>
+				<soap:body use="literal" />
+			</output>
+			<fault name="cmisException">
+				<soap:fault name="cmisException" use="literal" />
+			</fault>
+		</operation>
 		<operation name="getProperties">
 			<soap:operation soapAction="" />
 			<input>
@@ -724,7 +787,7 @@
 				<soap:fault name="cmisException" use="literal" />
 			</fault>
 		</operation>
-		<operation name="getFolderByPath">
+		<operation name="getObjectByPath">
 			<soap:operation soapAction="" />
 			<input>
 				<soap:body use="literal" />
@@ -864,7 +927,7 @@
 	<binding name="RelationshipServicePortBinding" type="cmisw:RelationshipServicePort">
 		<soap:binding style="document"
 			transport="http://schemas.xmlsoap.org/soap/http" />
-		<operation name="getRelationships">
+		<operation name="getObjectRelationships">
 			<soap:operation soapAction="" />
 			<input>
 				<soap:body use="literal" />
@@ -969,6 +1032,18 @@
 			</fault>
 		</operation>
 		<operation name="checkIn">
+			<soap:operation soapAction="" />
+			<input>
+				<soap:body use="literal" />
+			</input>
+			<output>
+				<soap:body use="literal" />
+			</output>
+			<fault name="cmisException">
+				<soap:fault name="cmisException" use="literal" />
+			</fault>
+		</operation>
+		<operation name="getObjectOfLatestVersion">
 			<soap:operation soapAction="" />
 			<input>
 				<soap:body use="literal" />

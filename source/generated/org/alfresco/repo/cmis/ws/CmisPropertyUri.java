@@ -17,7 +17,7 @@ import javax.xml.bind.annotation.XmlType;
  * <pre>
  * &lt;complexType name="cmisPropertyUri">
  *   &lt;complexContent>
- *     &lt;extension base="{http://docs.oasis-open.org/ns/cmis/core/200901}cmisProperty">
+ *     &lt;extension base="{http://docs.oasis-open.org/ns/cmis/core/200908/}cmisProperty">
  *       &lt;sequence>
  *         &lt;element name="value" type="{http://www.w3.org/2001/XMLSchema}anyURI" maxOccurs="unbounded" minOccurs="0"/>
  *       &lt;/sequence>
@@ -29,7 +29,7 @@ import javax.xml.bind.annotation.XmlType;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "cmisPropertyUri", namespace = "http://docs.oasis-open.org/ns/cmis/core/200901", propOrder = {
+@XmlType(name = "cmisPropertyUri", namespace = "http://docs.oasis-open.org/ns/cmis/core/200908/", propOrder = {
     "value"
 })
 public class CmisPropertyUri

@@ -22,10 +22,11 @@ import javax.xml.namespace.QName;
  * &lt;complexType name="cmisProperty">
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;attGroup ref="{http://docs.oasis-open.org/ns/cmis/core/200901}cmisUndefinedAttribute"/>
- *       &lt;attribute name="pdid" use="required" type="{http://www.w3.org/2001/XMLSchema}anySimpleType" />
- *       &lt;attribute name="localname" type="{http://www.w3.org/2001/XMLSchema}anySimpleType" />
- *       &lt;attribute name="displayname" type="{http://www.w3.org/2001/XMLSchema}anySimpleType" />
+ *       &lt;attGroup ref="{http://docs.oasis-open.org/ns/cmis/core/200908/}cmisUndefinedAttribute"/>
+ *       &lt;attribute name="propertyDefinitionId" type="{http://www.w3.org/2001/XMLSchema}anySimpleType" />
+ *       &lt;attribute name="localName" type="{http://www.w3.org/2001/XMLSchema}anySimpleType" />
+ *       &lt;attribute name="displayName" type="{http://www.w3.org/2001/XMLSchema}anySimpleType" />
+ *       &lt;attribute name="queryName" type="{http://www.w3.org/2001/XMLSchema}anySimpleType" />
  *     &lt;/restriction>
  *   &lt;/complexContent>
  * &lt;/complexType>
@@ -34,14 +35,12 @@ import javax.xml.namespace.QName;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "cmisProperty", namespace = "http://docs.oasis-open.org/ns/cmis/core/200901")
+@XmlType(name = "cmisProperty", namespace = "http://docs.oasis-open.org/ns/cmis/core/200908/")
 @XmlSeeAlso({
     CmisPropertyDecimal.class,
     CmisPropertyInteger.class,
-    CmisPropertyXhtml.class,
     CmisPropertyDateTime.class,
     CmisPropertyUri.class,
-    CmisPropertyXml.class,
     CmisPropertyHtml.class,
     CmisPropertyBoolean.class,
     CmisPropertyString.class,
@@ -49,88 +48,115 @@ import javax.xml.namespace.QName;
 })
 public class CmisProperty {
 
-    @XmlAttribute(required = true)
-    @XmlSchemaType(name = "anySimpleType")
-    protected String pdid;
     @XmlAttribute
     @XmlSchemaType(name = "anySimpleType")
-    protected String localname;
+    protected String propertyDefinitionId;
     @XmlAttribute
     @XmlSchemaType(name = "anySimpleType")
-    protected String displayname;
+    protected String localName;
+    @XmlAttribute
+    @XmlSchemaType(name = "anySimpleType")
+    protected String displayName;
+    @XmlAttribute
+    @XmlSchemaType(name = "anySimpleType")
+    protected String queryName;
     @XmlAnyAttribute
     private Map<QName, String> otherAttributes = new HashMap<QName, String>();
 
     /**
-     * Gets the value of the pdid property.
+     * Gets the value of the propertyDefinitionId property.
      * 
      * @return
      *     possible object is
      *     {@link String }
      *     
      */
-    public String getPdid() {
-        return pdid;
+    public String getPropertyDefinitionId() {
+        return propertyDefinitionId;
     }
 
     /**
-     * Sets the value of the pdid property.
+     * Sets the value of the propertyDefinitionId property.
      * 
      * @param value
      *     allowed object is
      *     {@link String }
      *     
      */
-    public void setPdid(String value) {
-        this.pdid = value;
+    public void setPropertyDefinitionId(String value) {
+        this.propertyDefinitionId = value;
     }
 
     /**
-     * Gets the value of the localname property.
+     * Gets the value of the localName property.
      * 
      * @return
      *     possible object is
      *     {@link String }
      *     
      */
-    public String getLocalname() {
-        return localname;
+    public String getLocalName() {
+        return localName;
     }
 
     /**
-     * Sets the value of the localname property.
+     * Sets the value of the localName property.
      * 
      * @param value
      *     allowed object is
      *     {@link String }
      *     
      */
-    public void setLocalname(String value) {
-        this.localname = value;
+    public void setLocalName(String value) {
+        this.localName = value;
     }
 
     /**
-     * Gets the value of the displayname property.
+     * Gets the value of the displayName property.
      * 
      * @return
      *     possible object is
      *     {@link String }
      *     
      */
-    public String getDisplayname() {
-        return displayname;
+    public String getDisplayName() {
+        return displayName;
     }
 
     /**
-     * Sets the value of the displayname property.
+     * Sets the value of the displayName property.
      * 
      * @param value
      *     allowed object is
      *     {@link String }
      *     
      */
-    public void setDisplayname(String value) {
-        this.displayname = value;
+    public void setDisplayName(String value) {
+        this.displayName = value;
+    }
+
+    /**
+     * Gets the value of the queryName property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getQueryName() {
+        return queryName;
+    }
+
+    /**
+     * Sets the value of the queryName property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setQueryName(String value) {
+        this.queryName = value;
     }
 
     /**

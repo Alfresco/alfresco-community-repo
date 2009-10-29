@@ -57,7 +57,6 @@ import org.alfresco.repo.cmis.ws.CmisPropertyId;
 import org.alfresco.repo.cmis.ws.CmisPropertyInteger;
 import org.alfresco.repo.cmis.ws.CmisPropertyString;
 import org.alfresco.repo.cmis.ws.CmisPropertyUri;
-import org.alfresco.repo.cmis.ws.CmisPropertyXml;
 import org.alfresco.repo.cmis.ws.EnumServiceException;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -250,10 +249,6 @@ public class PropertyUtil
         {
             convertedValue = ((CmisPropertyUri) cmisProperty).getValue();
         }
-        else if (cmisProperty instanceof CmisPropertyXml)
-        {
-            convertedValue = ((CmisPropertyXml) cmisProperty).getValue();
-        }
 
         if (null != convertedValue)
         {
@@ -421,13 +416,13 @@ public class PropertyUtil
 
     public String getPropertyName(CmisProperty property)
     {
-        String propertyName = (null != property) ? (property.getPdid()) : (null);
+        String propertyName = (null != property) ? (property.getPropertyDefinitionId()) : (null);
         if (null == propertyName)
         {
-            propertyName = property.getLocalname();
+            propertyName = property.getLocalName();
             if (null == propertyName)
             {
-                propertyName = property.getDisplayname();
+                propertyName = property.getDisplayName();
             }
         }
         return propertyName;
@@ -600,7 +595,7 @@ public class PropertyUtil
         case BOOLEAN:
         {
             CmisPropertyBoolean property = new CmisPropertyBoolean();
-            property.setPdid(pdid);
+            property.setPropertyDefinitionId(pdid);
 
             if (value instanceof Collection)
             {
@@ -619,7 +614,7 @@ public class PropertyUtil
         case STRING:
         {
             CmisPropertyString property = new CmisPropertyString();
-            property.setPdid(pdid);
+            property.setPropertyDefinitionId(pdid);
 
             if (value instanceof Collection)
             {
@@ -638,7 +633,7 @@ public class PropertyUtil
         case INTEGER:
         {
             CmisPropertyInteger property = new CmisPropertyInteger();
-            property.setPdid(pdid);
+            property.setPropertyDefinitionId(pdid);
 
             if (value instanceof Collection)
             {
@@ -657,7 +652,7 @@ public class PropertyUtil
         case DATETIME:
         {
             CmisPropertyDateTime property = new CmisPropertyDateTime();
-            property.setPdid(pdid);
+            property.setPropertyDefinitionId(pdid);
 
             if (value instanceof Collection)
             {
@@ -684,7 +679,7 @@ public class PropertyUtil
         case ID:
         {
             CmisPropertyId property = new CmisPropertyId();
-            property.setPdid(pdid);
+            property.setPropertyDefinitionId(pdid);
 
             if (value instanceof Collection)
             {
@@ -703,7 +698,7 @@ public class PropertyUtil
         case URI:
         {
             CmisPropertyUri property = new CmisPropertyUri();
-            property.setPdid(pdid);
+            property.setPropertyDefinitionId(pdid);
 
             if (value instanceof Collection)
             {
@@ -722,7 +717,7 @@ public class PropertyUtil
         case DECIMAL:
         {
             CmisPropertyDecimal property = new CmisPropertyDecimal();
-            property.setPdid(pdid);
+            property.setPropertyDefinitionId(pdid);
 
             if (value instanceof Collection)
             {
@@ -760,18 +755,18 @@ public class PropertyUtil
         case HTML:
         {
             CmisPropertyHtml property = new CmisPropertyHtml();
-            property.setPdid(pdid);
+            property.setPropertyDefinitionId(pdid);
 
             if (value instanceof Collection)
             {
-                for (CmisPropertyHtml.Value propertyValue : (Collection<CmisPropertyHtml.Value>) value)
+                for (String propertyValue : (Collection<String>) value)
                 {
                     property.getValue().add(propertyValue);
                 }
             }
             else
             {
-                property.getValue().add((CmisPropertyHtml.Value) value);
+                property.getValue().add((String) value);
             }
 
             return property;

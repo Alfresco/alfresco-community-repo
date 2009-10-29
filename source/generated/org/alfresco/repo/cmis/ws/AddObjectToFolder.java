@@ -1,9 +1,11 @@
 
 package org.alfresco.repo.cmis.ws;
 
+import javax.xml.bind.JAXBElement;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlElementRef;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
@@ -21,6 +23,8 @@ import javax.xml.bind.annotation.XmlType;
  *         &lt;element name="repositoryId" type="{http://www.w3.org/2001/XMLSchema}string"/>
  *         &lt;element name="objectId" type="{http://www.w3.org/2001/XMLSchema}string"/>
  *         &lt;element name="folderId" type="{http://www.w3.org/2001/XMLSchema}string"/>
+ *         &lt;element name="allVersions" type="{http://www.w3.org/2001/XMLSchema}boolean" minOccurs="0"/>
+ *         &lt;element name="extension" type="{http://docs.oasis-open.org/ns/cmis/messaging/200908/}cmisExtensionType" minOccurs="0"/>
  *       &lt;/sequence>
  *     &lt;/restriction>
  *   &lt;/complexContent>
@@ -33,7 +37,9 @@ import javax.xml.bind.annotation.XmlType;
 @XmlType(name = "", propOrder = {
     "repositoryId",
     "objectId",
-    "folderId"
+    "folderId",
+    "allVersions",
+    "extension"
 })
 @XmlRootElement(name = "addObjectToFolder")
 public class AddObjectToFolder {
@@ -44,6 +50,9 @@ public class AddObjectToFolder {
     protected String objectId;
     @XmlElement(required = true)
     protected String folderId;
+    protected Boolean allVersions;
+    @XmlElementRef(name = "extension", namespace = "http://docs.oasis-open.org/ns/cmis/messaging/200908/", type = JAXBElement.class)
+    protected JAXBElement<CmisExtensionType> extension;
 
     /**
      * Gets the value of the repositoryId property.
@@ -115,6 +124,54 @@ public class AddObjectToFolder {
      */
     public void setFolderId(String value) {
         this.folderId = value;
+    }
+
+    /**
+     * Gets the value of the allVersions property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link Boolean }
+     *     
+     */
+    public Boolean isAllVersions() {
+        return allVersions;
+    }
+
+    /**
+     * Sets the value of the allVersions property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link Boolean }
+     *     
+     */
+    public void setAllVersions(Boolean value) {
+        this.allVersions = value;
+    }
+
+    /**
+     * Gets the value of the extension property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link JAXBElement }{@code <}{@link CmisExtensionType }{@code >}
+     *     
+     */
+    public JAXBElement<CmisExtensionType> getExtension() {
+        return extension;
+    }
+
+    /**
+     * Sets the value of the extension property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link JAXBElement }{@code <}{@link CmisExtensionType }{@code >}
+     *     
+     */
+    public void setExtension(JAXBElement<CmisExtensionType> value) {
+        this.extension = ((JAXBElement<CmisExtensionType> ) value);
     }
 
 }

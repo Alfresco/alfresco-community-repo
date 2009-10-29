@@ -44,7 +44,7 @@ import javax.xml.bind.annotation.XmlType;
  *     &lt;enumeration value="canCancelCheckout.Document"/>
  *     &lt;enumeration value="canCheckin.Document"/>
  *     &lt;enumeration value="canGetAllVersions.VersionSeries"/>
- *     &lt;enumeration value="canGetRelationship.Object"/>
+ *     &lt;enumeration value="canGetObjectRelationships.Object"/>
  *     &lt;enumeration value="canAddPolicy.Object"/>
  *     &lt;enumeration value="canAddPolicy.Policy"/>
  *     &lt;enumeration value="canRemovePolicy.Object"/>
@@ -57,7 +57,7 @@ import javax.xml.bind.annotation.XmlType;
  * </pre>
  * 
  */
-@XmlType(name = "enumAllowableActionsKey", namespace = "http://docs.oasis-open.org/ns/cmis/core/200901")
+@XmlType(name = "enumAllowableActionsKey", namespace = "http://docs.oasis-open.org/ns/cmis/core/200908/")
 @XmlEnum
 public enum EnumAllowableActionsKey {
 
@@ -121,8 +121,8 @@ public enum EnumAllowableActionsKey {
     CAN_CHECKIN_DOCUMENT("canCheckin.Document"),
     @XmlEnumValue("canGetAllVersions.VersionSeries")
     CAN_GET_ALL_VERSIONS_VERSION_SERIES("canGetAllVersions.VersionSeries"),
-    @XmlEnumValue("canGetRelationship.Object")
-    CAN_GET_RELATIONSHIP_OBJECT("canGetRelationship.Object"),
+    @XmlEnumValue("canGetObjectRelationships.Object")
+    CAN_GET_OBJECT_RELATIONSHIPS_OBJECT("canGetObjectRelationships.Object"),
     @XmlEnumValue("canAddPolicy.Object")
     CAN_ADD_POLICY_OBJECT("canAddPolicy.Object"),
     @XmlEnumValue("canAddPolicy.Policy")

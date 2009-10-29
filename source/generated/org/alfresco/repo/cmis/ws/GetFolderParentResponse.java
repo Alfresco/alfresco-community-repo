@@ -3,6 +3,7 @@ package org.alfresco.repo.cmis.ws;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
@@ -17,7 +18,7 @@ import javax.xml.bind.annotation.XmlType;
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
- *         &lt;element name="object" type="{http://docs.oasis-open.org/ns/cmis/core/200901}cmisObjectType" minOccurs="0"/>
+ *         &lt;element name="object" type="{http://docs.oasis-open.org/ns/cmis/core/200908/}cmisObjectType"/>
  *       &lt;/sequence>
  *     &lt;/restriction>
  *   &lt;/complexContent>
@@ -33,6 +34,7 @@ import javax.xml.bind.annotation.XmlType;
 @XmlRootElement(name = "getFolderParentResponse")
 public class GetFolderParentResponse {
 
+    @XmlElement(required = true)
     protected CmisObjectType object;
 
     /**
@@ -41,7 +43,7 @@ public class GetFolderParentResponse {
      * @return
      *     possible object is
      *     {@link CmisObjectType }
-     * 
+     *     
      */
     public CmisObjectType getObject() {
         return object;
@@ -52,8 +54,8 @@ public class GetFolderParentResponse {
      * 
      * @param value
      *     allowed object is
-     * {@link CmisObjectType }
-     * 
+     *     {@link CmisObjectType }
+     *     
      */
     public void setObject(CmisObjectType value) {
         this.object = value;

@@ -23,7 +23,7 @@ import org.w3c.dom.Element;
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
- *         &lt;element name="changeType" type="{http://docs.oasis-open.org/ns/cmis/core/200901}enumTypeOfChanges"/>
+ *         &lt;element name="changeType" type="{http://docs.oasis-open.org/ns/cmis/core/200908/}enumTypeOfChanges"/>
  *         &lt;element name="changeTime" type="{http://www.w3.org/2001/XMLSchema}dateTime"/>
  *         &lt;any/>
  *       &lt;/sequence>
@@ -35,7 +35,7 @@ import org.w3c.dom.Element;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "cmisChangeEventType", namespace = "http://docs.oasis-open.org/ns/cmis/core/200901", propOrder = {
+@XmlType(name = "cmisChangeEventType", namespace = "http://docs.oasis-open.org/ns/cmis/core/200908/", propOrder = {
     "changeType",
     "changeTime",
     "any"

@@ -46,9 +46,12 @@ import org.alfresco.repo.web.util.paging.Page;
 import org.alfresco.repo.web.util.paging.Paging;
 import org.alfresco.service.cmr.coci.CheckOutCheckInService;
 import org.alfresco.service.cmr.model.FileFolderService;
+import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.search.SearchService;
+import org.alfresco.service.cmr.security.AccessStatus;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.version.Version;
 import org.alfresco.service.cmr.version.VersionService;
 import org.alfresco.service.cmr.version.VersionType;
@@ -82,6 +85,7 @@ public class DMAbstractServicePort
     protected SearchService searchService;
     protected CmisObjectsUtils cmisObjectsUtils;
     protected PropertyUtil propertiesUtil;
+    protected PermissionService permissionService;
 
     public void setCmisService(CMISServices cmisService)
     {
@@ -139,6 +143,11 @@ public class DMAbstractServicePort
         this.searchService = searchService;
     }
 
+    public void setPermissionService(PermissionService permissionService)
+    {
+        this.permissionService = permissionService;
+    }
+
     protected PropertyFilter createPropertyFilter(String filter) throws CmisException
     {
         return (filter == null) ? (new PropertyFilter()) : (new PropertyFilter(filter, cmisObjectsUtils));
@@ -168,11 +177,11 @@ public class DMAbstractServicePort
      * @param resultList the list of <b>CmisObjectType</b> values for end response result collecting
      * @throws CmisException
      */
-    protected void createCmisObjectList(PropertyFilter filter, List<NodeRef> sourceList, List<CmisObjectType> resultList) throws CmisException
+    protected void createCmisObjectList(PropertyFilter filter, boolean includeAllowableActions, List<NodeRef> sourceList, List<CmisObjectType> resultList) throws CmisException
     {
         for (NodeRef objectNodeRef : sourceList)
         {
-            resultList.add(createCmisObject(objectNodeRef, filter));
+            resultList.add(createCmisObject(objectNodeRef, filter, includeAllowableActions));
         }
     }
 
@@ -183,10 +192,14 @@ public class DMAbstractServicePort
      * @param filter accepted properties filter
      * @return converted to CMIS object Alfresco object
      */
-    protected CmisObjectType createCmisObject(Object identifier, PropertyFilter filter) throws CmisException
+    protected CmisObjectType createCmisObject(Object identifier, PropertyFilter filter, boolean includeAllowableActions) throws CmisException
     {
         CmisObjectType result = new CmisObjectType();
         result.setProperties(propertiesUtil.getPropertiesType(identifier.toString(), filter));
+        if (includeAllowableActions)
+        {
+            result.setAllowableActions(determineObjectAllowableActions(identifier));
+        }
         return result;
     }
 
@@ -245,5 +258,88 @@ public class DMAbstractServicePort
         {
             throw new CmisException(("Invalid typeId " + typeId), cmisObjectsUtils.createCmisException(("Invalid typeId " + typeId), EnumServiceException.INVALID_ARGUMENT));
         }
+    }
+
+    protected CmisAllowableActionsType determineObjectAllowableActions(Object objectIdentifier) throws CmisException
+    {
+        if (objectIdentifier instanceof AssociationRef)
+        {
+            return determineRelationshipAllowableActions((AssociationRef) objectIdentifier);
+        }
+
+        switch (cmisObjectsUtils.determineObjectType(objectIdentifier.toString()))
+        {
+        case CMIS_DOCUMENT:
+        {
+            return determineDocumentAllowableActions((NodeRef) objectIdentifier);
+        }
+        case CMIS_FOLDER:
+        {
+            return determineFolderAllowableActions((NodeRef) objectIdentifier);
+        }
+        }
+
+        // TODO: determinePolicyAllowableActions() when Policy functionality is ready
+        throw cmisObjectsUtils.createCmisException("It is impossible to get Allowable actions for the specified Object", EnumServiceException.NOT_SUPPORTED);
+    }
+
+    private CmisAllowableActionsType determineBaseAllowableActions(NodeRef objectNodeReference)
+    {
+        CmisAllowableActionsType result = new CmisAllowableActionsType();
+        result.setCanGetProperties(this.permissionService.hasPermission(objectNodeReference, PermissionService.READ_PROPERTIES) == AccessStatus.ALLOWED);
+        result.setCanUpdateProperties(this.permissionService.hasPermission(objectNodeReference, PermissionService.WRITE_PROPERTIES) == AccessStatus.ALLOWED);
+        result.setCanDeleteObject(this.permissionService.hasPermission(objectNodeReference, PermissionService.DELETE) == AccessStatus.ALLOWED);
+
+        // TODO: response.setCanAddPolicy(value);
+        // TODO: response.setCanRemovePolicy(value);
+        // TODO: response.setCanGetAppliedPolicies(value);
+
+        return result;
+    }
+
+    private CmisAllowableActionsType determineDocumentAllowableActions(NodeRef objectNodeReference)
+    {
+        CmisAllowableActionsType result = determineBaseAllowableActions(objectNodeReference);
+        determineCommonFolderDocumentAllowableActions(objectNodeReference, result);
+        result.setCanGetObjectParents(this.permissionService.hasPermission(objectNodeReference, PermissionService.READ_ASSOCIATIONS) == AccessStatus.ALLOWED);
+        result.setCanGetContentStream(this.permissionService.hasPermission(objectNodeReference, PermissionService.READ_CONTENT) == AccessStatus.ALLOWED);
+        result.setCanSetContentStream(this.permissionService.hasPermission(objectNodeReference, PermissionService.WRITE_CONTENT) == AccessStatus.ALLOWED);
+        result.setCanCheckOut(this.permissionService.hasPermission(objectNodeReference, PermissionService.CHECK_OUT) == AccessStatus.ALLOWED);
+        result.setCanCheckIn(this.permissionService.hasPermission(objectNodeReference, PermissionService.CHECK_IN) == AccessStatus.ALLOWED);
+        result.setCanCancelCheckOut(this.permissionService.hasPermission(objectNodeReference, PermissionService.CANCEL_CHECK_OUT) == AccessStatus.ALLOWED);
+        result.setCanDeleteContentStream(result.isCanUpdateProperties() && result.isCanSetContentStream());
+        return result;
+    }
+
+    private CmisAllowableActionsType determineFolderAllowableActions(NodeRef objectNodeReference)
+    {
+        CmisAllowableActionsType result = determineBaseAllowableActions(objectNodeReference);
+        determineCommonFolderDocumentAllowableActions(objectNodeReference, result);
+
+        result.setCanGetChildren(this.permissionService.hasPermission(objectNodeReference, PermissionService.READ_CHILDREN) == AccessStatus.ALLOWED);
+        result.setCanCreateDocument(this.permissionService.hasPermission(objectNodeReference, PermissionService.ADD_CHILDREN) == AccessStatus.ALLOWED);
+        result.setCanGetDescendants(result.isCanGetChildren() && (this.permissionService.hasPermission(objectNodeReference, PermissionService.READ) == AccessStatus.ALLOWED));
+        result.setCanDeleteTree(this.permissionService.hasPermission(objectNodeReference, PermissionService.DELETE_CHILDREN) == AccessStatus.ALLOWED);
+        result.setCanGetFolderParent(result.isCanGetObjectRelationships());
+        result.setCanCreateFolder(result.isCanCreateDocument());
+        // TODO: response.setCanCreatePolicy(value);
+        return result;
+    }
+
+    private void determineCommonFolderDocumentAllowableActions(NodeRef objectNodeReference, CmisAllowableActionsType allowableActions)
+    {
+        allowableActions.setCanAddObjectToFolder(this.permissionService.hasPermission(objectNodeReference, PermissionService.CREATE_ASSOCIATIONS) == AccessStatus.ALLOWED);
+        allowableActions.setCanGetObjectRelationships(this.permissionService.hasPermission(objectNodeReference, PermissionService.READ_ASSOCIATIONS) == AccessStatus.ALLOWED);
+        allowableActions.setCanMoveObject(allowableActions.isCanUpdateProperties() && allowableActions.isCanAddObjectToFolder());
+        allowableActions.setCanRemoveObjectFromFolder(allowableActions.isCanUpdateProperties());
+        allowableActions.setCanCreateRelationship(allowableActions.isCanAddObjectToFolder());
+    }
+
+    private CmisAllowableActionsType determineRelationshipAllowableActions(AssociationRef association)
+    {
+        CmisAllowableActionsType result = new CmisAllowableActionsType();
+        result.setCanDeleteObject(this.permissionService.hasPermission(association.getSourceRef(), PermissionService.DELETE_ASSOCIATIONS) == AccessStatus.ALLOWED);
+        result.setCanGetObjectRelationships(this.permissionService.hasPermission(association.getSourceRef(), PermissionService.READ_ASSOCIATIONS) == AccessStatus.ALLOWED);
+        return result;
     }
 }

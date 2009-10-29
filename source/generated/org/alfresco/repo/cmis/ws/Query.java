@@ -25,16 +25,17 @@ import javax.xml.namespace.QName;
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
- *         &lt;element name="repositoryId" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
+ *         &lt;element name="repositoryId" type="{http://www.w3.org/2001/XMLSchema}string"/>
  *         &lt;element name="statement" type="{http://www.w3.org/2001/XMLSchema}string"/>
  *         &lt;element name="searchAllVersions" type="{http://www.w3.org/2001/XMLSchema}boolean" minOccurs="0"/>
+ *         &lt;element name="includeAllowableActions" type="{http://www.w3.org/2001/XMLSchema}boolean" minOccurs="0"/>
+ *         &lt;element name="includeRelationships" type="{http://docs.oasis-open.org/ns/cmis/core/200908/}enumIncludeRelationships" minOccurs="0"/>
+ *         &lt;element name="renditionFilter" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
  *         &lt;element name="maxItems" type="{http://www.w3.org/2001/XMLSchema}integer" minOccurs="0"/>
  *         &lt;element name="skipCount" type="{http://www.w3.org/2001/XMLSchema}integer" minOccurs="0"/>
- *         &lt;element name="includeAllowableActions" type="{http://www.w3.org/2001/XMLSchema}boolean" minOccurs="0"/>
- *         &lt;element name="includeRelationships" type="{http://docs.oasis-open.org/ns/cmis/core/200901}enumIncludeRelationships" minOccurs="0"/>
- *         &lt;element name="includeRenditions" type="{http://www.w3.org/2001/XMLSchema}boolean" minOccurs="0"/>
+ *         &lt;element name="extension" type="{http://docs.oasis-open.org/ns/cmis/messaging/200908/}cmisExtensionType" minOccurs="0"/>
  *       &lt;/sequence>
- *       &lt;attGroup ref="{http://docs.oasis-open.org/ns/cmis/core/200901}cmisUndefinedAttribute"/>
+ *       &lt;attGroup ref="{http://docs.oasis-open.org/ns/cmis/core/200908/}cmisUndefinedAttribute"/>
  *     &lt;/restriction>
  *   &lt;/complexContent>
  * &lt;/complexType>
@@ -47,27 +48,34 @@ import javax.xml.namespace.QName;
     "repositoryId",
     "statement",
     "searchAllVersions",
-    "maxItems",
-    "skipCount",
     "includeAllowableActions",
     "includeRelationships",
-    "includeRenditions"
+    "renditionFilter",
+    "maxItems",
+    "skipCount",
+    "extension"
 })
 @XmlRootElement(name = "query")
 public class Query {
 
+    @XmlElement(required = true)
     protected String repositoryId;
     @XmlElement(required = true)
     protected String statement;
-    protected Boolean searchAllVersions;
-    protected BigInteger maxItems;
-    protected BigInteger skipCount;
-    @XmlElementRef(name = "includeAllowableActions", namespace = "http://docs.oasis-open.org/ns/cmis/messaging/200901", type = JAXBElement.class)
+    @XmlElementRef(name = "searchAllVersions", namespace = "http://docs.oasis-open.org/ns/cmis/messaging/200908/", type = JAXBElement.class)
+    protected JAXBElement<Boolean> searchAllVersions;
+    @XmlElementRef(name = "includeAllowableActions", namespace = "http://docs.oasis-open.org/ns/cmis/messaging/200908/", type = JAXBElement.class)
     protected JAXBElement<Boolean> includeAllowableActions;
-    @XmlElementRef(name = "includeRelationships", namespace = "http://docs.oasis-open.org/ns/cmis/messaging/200901", type = JAXBElement.class)
+    @XmlElementRef(name = "includeRelationships", namespace = "http://docs.oasis-open.org/ns/cmis/messaging/200908/", type = JAXBElement.class)
     protected JAXBElement<EnumIncludeRelationships> includeRelationships;
-    @XmlElementRef(name = "includeRenditions", namespace = "http://docs.oasis-open.org/ns/cmis/messaging/200901", type = JAXBElement.class)
-    protected JAXBElement<Boolean> includeRenditions;
+    @XmlElementRef(name = "renditionFilter", namespace = "http://docs.oasis-open.org/ns/cmis/messaging/200908/", type = JAXBElement.class)
+    protected JAXBElement<String> renditionFilter;
+    @XmlElementRef(name = "maxItems", namespace = "http://docs.oasis-open.org/ns/cmis/messaging/200908/", type = JAXBElement.class)
+    protected JAXBElement<BigInteger> maxItems;
+    @XmlElementRef(name = "skipCount", namespace = "http://docs.oasis-open.org/ns/cmis/messaging/200908/", type = JAXBElement.class)
+    protected JAXBElement<BigInteger> skipCount;
+    @XmlElementRef(name = "extension", namespace = "http://docs.oasis-open.org/ns/cmis/messaging/200908/", type = JAXBElement.class)
+    protected JAXBElement<CmisExtensionType> extension;
     @XmlAnyAttribute
     private Map<QName, String> otherAttributes = new HashMap<QName, String>();
 
@@ -124,10 +132,10 @@ public class Query {
      * 
      * @return
      *     possible object is
-     *     {@link Boolean }
+     *     {@link JAXBElement }{@code <}{@link Boolean }{@code >}
      *     
      */
-    public Boolean isSearchAllVersions() {
+    public JAXBElement<Boolean> getSearchAllVersions() {
         return searchAllVersions;
     }
 
@@ -136,59 +144,11 @@ public class Query {
      * 
      * @param value
      *     allowed object is
-     *     {@link Boolean }
+     *     {@link JAXBElement }{@code <}{@link Boolean }{@code >}
      *     
      */
-    public void setSearchAllVersions(Boolean value) {
-        this.searchAllVersions = value;
-    }
-
-    /**
-     * Gets the value of the maxItems property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link BigInteger }
-     *     
-     */
-    public BigInteger getMaxItems() {
-        return maxItems;
-    }
-
-    /**
-     * Sets the value of the maxItems property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link BigInteger }
-     *     
-     */
-    public void setMaxItems(BigInteger value) {
-        this.maxItems = value;
-    }
-
-    /**
-     * Gets the value of the skipCount property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link BigInteger }
-     *     
-     */
-    public BigInteger getSkipCount() {
-        return skipCount;
-    }
-
-    /**
-     * Sets the value of the skipCount property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link BigInteger }
-     *     
-     */
-    public void setSkipCount(BigInteger value) {
-        this.skipCount = value;
+    public void setSearchAllVersions(JAXBElement<Boolean> value) {
+        this.searchAllVersions = ((JAXBElement<Boolean> ) value);
     }
 
     /**
@@ -240,27 +200,99 @@ public class Query {
     }
 
     /**
-     * Gets the value of the includeRenditions property.
+     * Gets the value of the renditionFilter property.
      * 
      * @return
      *     possible object is
-     *     {@link JAXBElement }{@code <}{@link Boolean }{@code >}
+     *     {@link JAXBElement }{@code <}{@link String }{@code >}
      *     
      */
-    public JAXBElement<Boolean> getIncludeRenditions() {
-        return includeRenditions;
+    public JAXBElement<String> getRenditionFilter() {
+        return renditionFilter;
     }
 
     /**
-     * Sets the value of the includeRenditions property.
+     * Sets the value of the renditionFilter property.
      * 
      * @param value
      *     allowed object is
-     *     {@link JAXBElement }{@code <}{@link Boolean }{@code >}
+     *     {@link JAXBElement }{@code <}{@link String }{@code >}
      *     
      */
-    public void setIncludeRenditions(JAXBElement<Boolean> value) {
-        this.includeRenditions = ((JAXBElement<Boolean> ) value);
+    public void setRenditionFilter(JAXBElement<String> value) {
+        this.renditionFilter = ((JAXBElement<String> ) value);
+    }
+
+    /**
+     * Gets the value of the maxItems property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link JAXBElement }{@code <}{@link BigInteger }{@code >}
+     *     
+     */
+    public JAXBElement<BigInteger> getMaxItems() {
+        return maxItems;
+    }
+
+    /**
+     * Sets the value of the maxItems property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link JAXBElement }{@code <}{@link BigInteger }{@code >}
+     *     
+     */
+    public void setMaxItems(JAXBElement<BigInteger> value) {
+        this.maxItems = ((JAXBElement<BigInteger> ) value);
+    }
+
+    /**
+     * Gets the value of the skipCount property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link JAXBElement }{@code <}{@link BigInteger }{@code >}
+     *     
+     */
+    public JAXBElement<BigInteger> getSkipCount() {
+        return skipCount;
+    }
+
+    /**
+     * Sets the value of the skipCount property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link JAXBElement }{@code <}{@link BigInteger }{@code >}
+     *     
+     */
+    public void setSkipCount(JAXBElement<BigInteger> value) {
+        this.skipCount = ((JAXBElement<BigInteger> ) value);
+    }
+
+    /**
+     * Gets the value of the extension property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link JAXBElement }{@code <}{@link CmisExtensionType }{@code >}
+     *     
+     */
+    public JAXBElement<CmisExtensionType> getExtension() {
+        return extension;
+    }
+
+    /**
+     * Sets the value of the extension property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link JAXBElement }{@code <}{@link CmisExtensionType }{@code >}
+     *     
+     */
+    public void setExtension(JAXBElement<CmisExtensionType> value) {
+        this.extension = ((JAXBElement<CmisExtensionType> ) value);
     }
 
     /**

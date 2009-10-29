@@ -310,7 +310,6 @@
 
     <bean id="dmObjectService" parent="dmAbstractService" class="org.alfresco.repo.cmis.ws.DMObjectServicePort">
         <property name="dictionaryService" ref="DictionaryService" />
-        <property name="permissionService" ref="PermissionService" />
     </bean>
 
     <bean id="dmMultiFilingService" parent="dmAbstractService" class="org.alfresco.repo.cmis.ws.DMMultiFilingServicePort" />
@@ -337,6 +336,7 @@
         <property name="fileFolderService" ref="FileFolderService" />
         <property name="checkOutCheckInService" ref="CheckoutCheckinService" />
         <property name="searchService" ref="SearchService" />
+        <property name="permissionService" ref="PermissionService" />
 
         <property name="cmisObjectsUtils" ref="cmisObjectsUtils" />
         <property name="propertiesUtil" ref="propertiesUtils" />

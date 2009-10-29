@@ -21,7 +21,7 @@ import javax.xml.bind.annotation.XmlType;
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
- *         &lt;element name="type" type="{http://docs.oasis-open.org/ns/cmis/messaging/200901}enumServiceException"/>
+ *         &lt;element name="type" type="{http://docs.oasis-open.org/ns/cmis/messaging/200908/}enumServiceException"/>
  *         &lt;element name="code" type="{http://www.w3.org/2001/XMLSchema}integer"/>
  *         &lt;element name="message" type="{http://www.w3.org/2001/XMLSchema}string"/>
  *         &lt;any/>

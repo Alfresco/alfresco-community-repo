@@ -22,8 +22,10 @@ import javax.xml.bind.annotation.XmlType;
  *       &lt;sequence>
  *         &lt;element name="repositoryId" type="{http://www.w3.org/2001/XMLSchema}string"/>
  *         &lt;element name="folderId" type="{http://www.w3.org/2001/XMLSchema}string"/>
- *         &lt;element name="unfileObject" type="{http://docs.oasis-open.org/ns/cmis/core/200901}enumUnfileObject"/>
+ *         &lt;element name="allVersions" type="{http://www.w3.org/2001/XMLSchema}boolean" minOccurs="0"/>
+ *         &lt;element name="unfileObject" type="{http://docs.oasis-open.org/ns/cmis/core/200908/}enumUnfileObject" minOccurs="0"/>
  *         &lt;element name="continueOnFailure" type="{http://www.w3.org/2001/XMLSchema}boolean" minOccurs="0"/>
+ *         &lt;element name="extension" type="{http://docs.oasis-open.org/ns/cmis/messaging/200908/}cmisExtensionType" minOccurs="0"/>
  *       &lt;/sequence>
  *     &lt;/restriction>
  *   &lt;/complexContent>
@@ -36,8 +38,10 @@ import javax.xml.bind.annotation.XmlType;
 @XmlType(name = "", propOrder = {
     "repositoryId",
     "folderId",
+    "allVersions",
     "unfileObject",
-    "continueOnFailure"
+    "continueOnFailure",
+    "extension"
 })
 @XmlRootElement(name = "deleteTree")
 public class DeleteTree {
@@ -46,10 +50,14 @@ public class DeleteTree {
     protected String repositoryId;
     @XmlElement(required = true)
     protected String folderId;
-    @XmlElement(required = true)
-    protected EnumUnfileObject unfileObject;
-    @XmlElementRef(name = "continueOnFailure", namespace = "http://docs.oasis-open.org/ns/cmis/messaging/200901", type = JAXBElement.class)
+    @XmlElementRef(name = "allVersions", namespace = "http://docs.oasis-open.org/ns/cmis/messaging/200908/", type = JAXBElement.class)
+    protected JAXBElement<Boolean> allVersions;
+    @XmlElementRef(name = "unfileObject", namespace = "http://docs.oasis-open.org/ns/cmis/messaging/200908/", type = JAXBElement.class)
+    protected JAXBElement<EnumUnfileObject> unfileObject;
+    @XmlElementRef(name = "continueOnFailure", namespace = "http://docs.oasis-open.org/ns/cmis/messaging/200908/", type = JAXBElement.class)
     protected JAXBElement<Boolean> continueOnFailure;
+    @XmlElementRef(name = "extension", namespace = "http://docs.oasis-open.org/ns/cmis/messaging/200908/", type = JAXBElement.class)
+    protected JAXBElement<CmisExtensionType> extension;
 
     /**
      * Gets the value of the repositoryId property.
@@ -100,14 +108,38 @@ public class DeleteTree {
     }
 
     /**
+     * Gets the value of the allVersions property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link JAXBElement }{@code <}{@link Boolean }{@code >}
+     *     
+     */
+    public JAXBElement<Boolean> getAllVersions() {
+        return allVersions;
+    }
+
+    /**
+     * Sets the value of the allVersions property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link JAXBElement }{@code <}{@link Boolean }{@code >}
+     *     
+     */
+    public void setAllVersions(JAXBElement<Boolean> value) {
+        this.allVersions = ((JAXBElement<Boolean> ) value);
+    }
+
+    /**
      * Gets the value of the unfileObject property.
      * 
      * @return
      *     possible object is
-     *     {@link EnumUnfileObject }
+     *     {@link JAXBElement }{@code <}{@link EnumUnfileObject }{@code >}
      *     
      */
-    public EnumUnfileObject getUnfileObject() {
+    public JAXBElement<EnumUnfileObject> getUnfileObject() {
         return unfileObject;
     }
 
@@ -116,11 +148,11 @@ public class DeleteTree {
      * 
      * @param value
      *     allowed object is
-     *     {@link EnumUnfileObject }
+     *     {@link JAXBElement }{@code <}{@link EnumUnfileObject }{@code >}
      *     
      */
-    public void setUnfileObject(EnumUnfileObject value) {
-        this.unfileObject = value;
+    public void setUnfileObject(JAXBElement<EnumUnfileObject> value) {
+        this.unfileObject = ((JAXBElement<EnumUnfileObject> ) value);
     }
 
     /**
@@ -145,6 +177,30 @@ public class DeleteTree {
      */
     public void setContinueOnFailure(JAXBElement<Boolean> value) {
         this.continueOnFailure = ((JAXBElement<Boolean> ) value);
+    }
+
+    /**
+     * Gets the value of the extension property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link JAXBElement }{@code <}{@link CmisExtensionType }{@code >}
+     *     
+     */
+    public JAXBElement<CmisExtensionType> getExtension() {
+        return extension;
+    }
+
+    /**
+     * Sets the value of the extension property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link JAXBElement }{@code <}{@link CmisExtensionType }{@code >}
+     *     
+     */
+    public void setExtension(JAXBElement<CmisExtensionType> value) {
+        this.extension = ((JAXBElement<CmisExtensionType> ) value);
     }
 
 }

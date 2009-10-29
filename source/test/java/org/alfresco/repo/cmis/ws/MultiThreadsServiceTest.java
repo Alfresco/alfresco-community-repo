@@ -127,7 +127,7 @@ public class MultiThreadsServiceTest extends AbstractServiceTest
         if (isRunning == false)
         {
             CmisContentStreamType result;
-            result = helper.getContentStream(documentId);
+            result = helper.getContentStream(documentId, 0, 0);
             if (result.getLength().intValue() == 0)
             {
                 fail("Content Stream is empty");

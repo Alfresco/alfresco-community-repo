@@ -26,12 +26,10 @@ package org.alfresco.repo.cmis.ws;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Stack;
 import java.util.regex.Pattern;
-
-import javax.xml.ws.Holder;
 
 import org.alfresco.cmis.CMISDictionaryModel;
 import org.alfresco.cmis.CMISTypesFilterEnum;
@@ -43,15 +41,13 @@ import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.util.Pair;
 
-import com.sun.star.auth.InvalidArgumentException;
-
 /**
  * Port for navigation service
- *
+ * 
  * @author Dmitry Lazurkin
  * @author Dmitry Velichkevich
  */
-@javax.jws.WebService(name = "NavigationServicePort", serviceName = "NavigationService", portName = "NavigationServicePort", targetNamespace = "http://docs.oasis-open.org/ns/cmis/ws/200901", endpointInterface = "org.alfresco.repo.cmis.ws.NavigationServicePort")
+@javax.jws.WebService(name = "NavigationServicePort", serviceName = "NavigationService", portName = "NavigationServicePort", targetNamespace = "http://docs.oasis-open.org/ns/cmis/ws/200908/", endpointInterface = "org.alfresco.repo.cmis.ws.NavigationServicePort")
 public class DMNavigationServicePort extends DMAbstractServicePort implements NavigationServicePort
 {
     private static final int EQUALS_CONDITION_VALUE = 0;
@@ -69,9 +65,8 @@ public class DMNavigationServicePort extends DMAbstractServicePort implements Na
      *        skipCount: 0 = start at beginning
      * @throws CmisException (with following {@link EnumServiceException} : INVALID_ARGUMENT, OBJECT_NOT_FOUND, NOT_SUPPORTED, PERMISSION_DENIED, RUNTIME, FILTER_NOT_VALID)
      */
-    public void getCheckedOutDocs(String repositoryId, String folderId, String filter, String orderBy, Boolean includeAllowableActions,
-            EnumIncludeRelationships includeRelationships, BigInteger maxItems, BigInteger skipCount, Holder<List<CmisObjectType>> object, Holder<Boolean> hasMoreItems)
-            throws CmisException
+    public CmisObjectListType getCheckedOutDocs(String repositoryId, String folderId, String filter, String orderBy, Boolean includeAllowableActions,
+            EnumIncludeRelationships includeRelationships, String renditionFilter, BigInteger maxItems, BigInteger skipCount, CmisExtensionType extension) throws CmisException
     {
         checkRepositoryId(repositoryId);
         PropertyFilter propertyFilter = createPropertyFilter(filter);
@@ -93,18 +88,18 @@ public class DMNavigationServicePort extends DMAbstractServicePort implements Na
         NodeRef[] nodeRefs = cmisService.getCheckedOut(AuthenticationUtil.getFullyAuthenticatedUser(), folderRef, (folderRef == null));
         Cursor cursor = createCursor(nodeRefs.length, skipCount, maxItems);
 
-        object.value = new ArrayList<CmisObjectType>();
-        List<CmisObjectType> resultListing = object.value;
+        CmisObjectListType result = new CmisObjectListType();
+        List<CmisObjectType> resultListing = result.getObjects();
 
         for (int index = cursor.getStartRow(); index <= cursor.getEndRow(); index++)
         {
-            resultListing.add(createCmisObject(nodeRefs[index].toString(), propertyFilter));
+            resultListing.add(createCmisObject(nodeRefs[index].toString(), propertyFilter, includeAllowableActions));
         }
+        result.setHasMoreItems(new Boolean(cursor.getEndRow() < (nodeRefs.length - 1)));
 
-        hasMoreItems.value = new Boolean(cursor.getEndRow() < (nodeRefs.length - 1));
-
-        // TODO: includeAllowableActions, includeRelationships
-
+        // TODO: includeAllowableActions, includeRelationships, renditions
+        
+        return result;
     }
 
     /**
@@ -116,9 +111,9 @@ public class DMNavigationServicePort extends DMAbstractServicePort implements Na
      * @return collection of CmisObjectType and boolean hasMoreItems
      * @throws CmisException (with following {@link EnumServiceException} : INVALID_ARGUMENT, OBJECT_NOT_FOUND, NOT_SUPPORTED, PERMISSION_DENIED, RUNTIME, FILTER_NOT_VALID)
      */
-    public void getChildren(String repositoryId, String folderId, String filter, Boolean includeAllowableActions, EnumIncludeRelationships includeRelationships,
-            Boolean includeRenditions, Boolean includeACL, BigInteger maxItems, BigInteger skipCount, String orderBy, Holder<List<CmisObjectType>> object,
-            Holder<Boolean> hasMoreItems) throws CmisException
+    public CmisObjectInFolderListType getChildren(String repositoryId, String folderId, String filter, String orderBy, Boolean includeAllowableActions,
+            EnumIncludeRelationships includeRelationships, String renditionFilter, Boolean includePathSegments, BigInteger maxItems, BigInteger skipCount,
+            CmisExtensionType extension) throws CmisException
     {
         checkRepositoryId(repositoryId);
         PropertyFilter propertyFilter = createPropertyFilter(filter);
@@ -131,27 +126,194 @@ public class DMNavigationServicePort extends DMAbstractServicePort implements Na
         {
             orderingFields = checkAndParseOrderByClause(orderBy);
         }
-
+      
         // TODO: Ordering functionality SHOULD be moved to getChildren service method
-        NodeRef[] listing = cmisService.getChildren(folderNodeRef, CMISTypesFilterEnum.ANY);
+        NodeRef[] listing = cmisService.getChildren(folderNodeRef, CMISTypesFilterEnum.ANY);        
 
+        CmisObjectInFolderListType result = new CmisObjectInFolderListType();        
+        
         Cursor cursor = createCursor(listing.length, skipCount, maxItems);
-
-        object.value = new ArrayList<CmisObjectType>();
-        List<CmisObjectType> resultListing = object.value;
 
         for (int index = cursor.getStartRow(); index <= cursor.getEndRow(); index++)
         {
-            resultListing.add(createCmisObject(listing[index].toString(), propertyFilter));
+            CmisObjectType cmisObject = createCmisObject(listing[index].toString(), propertyFilter, includeAllowableActions);
+            CmisObjectInFolderType cmisObjectInFolder = new CmisObjectInFolderType();
+            cmisObjectInFolder.setObject(cmisObject);
+            if (includePathSegments != null && includePathSegments)
+            {
+                cmisObjectInFolder.setPathSegment(propertiesUtil.getProperty(listing[index], CMISDictionaryModel.PROP_NAME, ""));
+            }
+            result.getObjects().add(cmisObjectInFolder);
         }
 
-        hasMoreItems.value = new Boolean(cursor.getEndRow() < (listing.length - 1));
+        result.setHasMoreItems(cursor.getEndRow() < (listing.length - 1));
+        result.setNumItems(BigInteger.valueOf(listing.length));
 
-        // TODO: Process includeAllowableActions, includeRelationships, includeRenditions, includeACL 
-
+        // TODO: Process includeAllowableActions, includeRelationships, includeRenditions, includeACL
+        return result;
     }
 
-    // TODO: This method will create appropriate Ordering fields
+    /**
+     * Gets the list of descendant objects contained at one or more levels in the tree rooted at the specified folder. Only the filter-selected properties associated with each
+     * object are returned. The content-stream is not returned. For paging through the children (depth of 1) only use {@link #getChildren(GetChildren parameters)}.
+     * 
+     * @param parameters repositoryId: repository Id; folderId: folder Id; depth: 1 this folder only (Default), N folders deep, -1 for all levels; filter: property filter;
+     *        includeAllowableActions; includeRelationships;
+     * @return collection of CmisObjectType
+     * @throws CmisException (with following {@link EnumServiceException} : INVALID_ARGUMENT, OBJECT_NOT_FOUND, NOT_SUPPORTED, PERMISSION_DENIED, RUNTIME, FILTER_NOT_VALID)
+     */
+    public List<CmisObjectInFolderContainerType> getDescendants(String repositoryId, String folderId, BigInteger depth, String filter, Boolean includeAllowableActions,
+            EnumIncludeRelationships includeRelationships, String renditionFilter, Boolean includePathSegments, CmisExtensionType extension) throws CmisException
+    {
+        CmisObjectInFolderContainerType objectInFolderContainerType = getDescedantsTree(repositoryId, folderId, depth, filter, includeAllowableActions, includeRelationships,
+                renditionFilter, includePathSegments, CMISTypesFilterEnum.ANY);
+        return objectInFolderContainerType.getChildren();
+    }
+
+    /**
+     * Gets the list of descendant objects contained at one or more levels in the tree rooted at the specified folder. Only the filter-selected properties associated with each
+     * object are returned. The content-stream is not returned. For paging through the children (depth of 1) only use {@link #getChildren(GetChildren parameters)}.
+     * 
+     * @param parameters repositoryId: repository Id; folderId: folder Id; depth: 1 this folder only (Default), N folders deep, -1 for all levels; filter: property filter;
+     *        includeAllowableActions; includeRelationships;
+     * @return collection of CmisObjectType
+     * @throws CmisException (with following {@link EnumServiceException} : INVALID_ARGUMENT, OBJECT_NOT_FOUND, NOT_SUPPORTED, PERMISSION_DENIED, RUNTIME, FILTER_NOT_VALID)
+     */
+    public List<CmisObjectInFolderContainerType> getFolderTree(String repositoryId, String folderId, BigInteger depth, String filter, Boolean includeAllowableActions,
+            EnumIncludeRelationships includeRelationships, String renditionFilter, Boolean includePathSegments, CmisExtensionType extension) throws CmisException
+    {
+        CmisObjectInFolderContainerType objectInFolderContainerType = getDescedantsTree(repositoryId, folderId, depth, filter, includeAllowableActions, includeRelationships,
+                renditionFilter, includePathSegments, CMISTypesFilterEnum.FOLDERS);
+        return objectInFolderContainerType.getChildren();
+    }
+
+    /**
+     * Returns the parent folder object, and optionally all ancestor folder objects, above a specified folder object.
+     * 
+     * @param parameters repositoryId: repository Id; folderId: folder Id; filter: property filter; includeAllowableActions; includeRelationships; returnToRoot: If false, return
+     *        only the immediate parent of the folder. If true, return an ordered list of all ancestor folders from the specified folder to the root folder
+     * @return collection of CmisObjectType
+     * @throws CmisException (with following {@link EnumServiceException} : INVALID_ARGUMENT, OBJECT_NOT_FOUND, NOT_SUPPORTED, PERMISSION_DENIED, RUNTIME, FILTER_NOT_VALID)
+     */
+    public CmisObjectType getFolderParent(String repositoryId, String folderId, String filter, CmisExtensionType extension) throws CmisException
+    {
+        checkRepositoryId(repositoryId);
+
+        if ((filter != null) && !filter.equals("") && !filter.equals("*"))
+        {
+            if (!filter.contains(CMISDictionaryModel.PROP_PARENT_ID))
+            {
+                filter = CMISDictionaryModel.PROP_PARENT_ID + FILTER_TOKENS_DELIMETER + filter;
+            }
+
+            if (!filter.contains(CMISDictionaryModel.PROP_OBJECT_ID))
+            {
+                filter = CMISDictionaryModel.PROP_OBJECT_ID + FILTER_TOKENS_DELIMETER + filter;
+            }
+        }
+
+        PropertyFilter propertyFilter = createPropertyFilter(filter);
+
+        NodeRef parentRef = receiveParent(folderId);
+        CmisObjectType result = createCmisObject(parentRef, propertyFilter, false);
+
+        return result;
+    }
+
+    /**
+     * Returns the parent folders for the specified non-folder, fileable object.
+     * 
+     * @param parameters repositoryId: repository Id; objectId: object Id; filter: property filter; includeAllowableActions; includeRelationships;
+     * @return collection of CmisObjectType
+     * @throws CmisException (with following {@link EnumServiceException} : INVALID_ARGUMENT, OBJECT_NOT_FOUND, NOT_SUPPORTED, PERMISSION_DENIED, RUNTIME, CONSTRAINT,
+     *         FILTER_NOT_VALID)
+     */
+    public List<CmisObjectParentsType> getObjectParents(String repositoryId, String objectId, String filter, Boolean includeAllowableActions,
+            EnumIncludeRelationships includeRelationships, String renditionFilter, Boolean includeRelativePathSegment, CmisExtensionType extension) throws CmisException
+    {
+        checkRepositoryId(repositoryId);
+        PropertyFilter propertyFilter = createPropertyFilter(filter);
+
+        NodeRef childNode = (NodeRef) cmisObjectsUtils.getIdentifierInstance(objectId, AlfrescoObjectType.DOCUMENT_OBJECT);
+        List<NodeRef> parents = receiveObjectParents(childNode);
+
+        List<CmisObjectParentsType> result = new ArrayList<CmisObjectParentsType>();
+        String relativePathSegment = propertiesUtil.getProperty(childNode, CMISDictionaryModel.PROP_NAME, "");
+        for (NodeRef objectNodeRef : parents)
+        {
+            CmisObjectType cmisObject = createCmisObject(objectNodeRef, propertyFilter, includeAllowableActions);
+            //TODO: includeRelationship, renditions
+            CmisObjectParentsType cmisObjectParentsType = new CmisObjectParentsType();
+            cmisObjectParentsType.setObject(cmisObject);
+            if (includeRelativePathSegment != null && includeRelativePathSegment)
+            {
+                cmisObjectParentsType.setRelativePathSegment(relativePathSegment);
+            }
+            result.add(cmisObjectParentsType);
+
+        }
+        return result;
+    }
+    
+    private CmisObjectInFolderContainerType getDescedantsTree(String repositoryId, String folderId, BigInteger depth, String filter, Boolean includeAllowableActions,
+            EnumIncludeRelationships includeRelationships, String renditionFilter, Boolean includePathSegments,
+            CMISTypesFilterEnum types) throws CmisException
+    {
+        checkRepositoryId(repositoryId);
+        PropertyFilter propertyFilter = createPropertyFilter(filter);
+        depth = (depth == null) ? (BigInteger.ONE.add(BigInteger.ONE)) : depth;
+        depth = depth.equals(BigInteger.valueOf(-1)) ? BigInteger.valueOf(Integer.MAX_VALUE) : depth;
+        long maxDepth = depth.longValue(); 
+        checkDepthParameter(depth);
+        
+        NodeRef folderNodeRef = cmisObjectsUtils.getIdentifierInstance(folderId, AlfrescoObjectType.FOLDER_OBJECT);
+        Stack<RecursiveElement> descedantsStack = new Stack<RecursiveElement>();        
+        CmisObjectInFolderContainerType objectInFolderContainer = createObjectInFolderContainer(folderNodeRef, propertyFilter, includeAllowableActions, includeRelationships, renditionFilter, includePathSegments);
+        NodeRef[] children = cmisService.getChildren(folderNodeRef, types);
+        for (NodeRef childRef : children)
+        {
+            descedantsStack.push(new RecursiveElement(objectInFolderContainer, 1, childRef));
+        }        
+        while (!descedantsStack.isEmpty())
+        {
+            RecursiveElement element = descedantsStack.pop();
+            CmisObjectInFolderContainerType currentContainer = createObjectInFolderContainer(folderNodeRef, propertyFilter, includeAllowableActions, includeRelationships,
+                    renditionFilter, includePathSegments);
+            element.getParentContainerType().getChildren().add(currentContainer);
+            if (element.getDepth() <= maxDepth)
+            {
+                children = cmisService.getChildren(element.getCurrentNodeRef(), types);
+                if (children != null)
+                {
+                    for (NodeRef childRef : children)
+                    {
+                        descedantsStack.push(new RecursiveElement(currentContainer, element.getDepth() + 1, childRef));
+                    }
+                }
+            }
+        }
+        return objectInFolderContainer;
+    }
+    
+    private CmisObjectInFolderContainerType createObjectInFolderContainer(NodeRef nodeRef, PropertyFilter filter, Boolean includeAllowableActions,
+            EnumIncludeRelationships includeRelationships, String renditionFilter, Boolean includePathSegments) throws CmisException
+    {
+        includeAllowableActions = includeAllowableActions == null ? Boolean.FALSE : includeAllowableActions;
+        CmisObjectType cmisObject = createCmisObject(nodeRef, filter, includeAllowableActions);
+        //TODO: add relationships and renditions
+        
+        CmisObjectInFolderType objectInFolderType = new CmisObjectInFolderType();
+        objectInFolderType.setObject(cmisObject);
+        if (includePathSegments != null && includePathSegments)
+        {
+            String path = propertiesUtil.getProperty(nodeRef, CMISDictionaryModel.PROP_NAME, "");
+            objectInFolderType.setPathSegment(path);
+        }
+        CmisObjectInFolderContainerType result = new CmisObjectInFolderContainerType();
+        result.setObjectInFolder(objectInFolderType);
+        return result;
+    }
+
     private List<Pair<String, Boolean>> checkAndParseOrderByClause(String orderByClause) throws CmisException
     {
         List<Pair<String, Boolean>> result = new LinkedList<Pair<String, Boolean>>();
@@ -174,88 +336,6 @@ public class DMNavigationServicePort extends DMAbstractServicePort implements Na
         return result;
     }
 
-    /**
-     * Gets the list of descendant objects contained at one or more levels in the tree rooted at the specified folder. Only the filter-selected properties associated with each
-     * object are returned. The content-stream is not returned. For paging through the children (depth of 1) only use {@link #getChildren(GetChildren parameters)}.
-     * 
-     * @param parameters repositoryId: repository Id; folderId: folder Id; depth: 1 this folder only (Default), N folders deep, -1 for all levels; filter: property filter;
-     *        includeAllowableActions; includeRelationships;
-     * @return collection of CmisObjectType
-     * @throws CmisException (with following {@link EnumServiceException} : INVALID_ARGUMENT, OBJECT_NOT_FOUND, NOT_SUPPORTED, PERMISSION_DENIED, RUNTIME, FILTER_NOT_VALID)
-     */
-    public List<CmisObjectType> getDescendants(String repositoryId, String folderId, BigInteger depth, String filter, Boolean includeAllowableActions,
-            EnumIncludeRelationships includeRelationships, Boolean includeRenditions, String orderBy) throws CmisException
-    {
-        return getDescendants(repositoryId, folderId, depth, filter, includeAllowableActions, includeRelationships, includeRenditions, orderBy, null);
-    }
-
-    /**
-     * Gets the list of descendant objects contained at one or more levels in the tree rooted at the specified folder. Only the filter-selected properties associated with each
-     * object are returned. The content-stream is not returned. For paging through the children (depth of 1) only use {@link #getChildren(GetChildren parameters)}.
-     * 
-     * @param parameters repositoryId: repository Id; folderId: folder Id; depth: 1 this folder only (Default), N folders deep, -1 for all levels; filter: property filter;
-     *        includeAllowableActions; includeRelationships;
-     * @return collection of CmisObjectType
-     * @throws CmisException (with following {@link EnumServiceException} : INVALID_ARGUMENT, OBJECT_NOT_FOUND, NOT_SUPPORTED, PERMISSION_DENIED, RUNTIME, FILTER_NOT_VALID)
-     */
-    public List<CmisObjectType> getFolderTree(String repositoryId, String folderId, String filter, BigInteger depth, Boolean includeAllowableActions,
-            EnumIncludeRelationships includeRelationships) throws CmisException
-    {
-        return getDescendants(repositoryId, folderId, depth, filter, includeAllowableActions, includeRelationships, null, null, CMISTypesFilterEnum.FOLDERS);
-    }
-
-    /**
-     * Returns the parent folder object, and optionally all ancestor folder objects, above a specified folder object.
-     * 
-     * @param parameters repositoryId: repository Id; folderId: folder Id; filter: property filter; includeAllowableActions; includeRelationships; returnToRoot: If false, return
-     *        only the immediate parent of the folder. If true, return an ordered list of all ancestor folders from the specified folder to the root folder
-     * @return collection of CmisObjectType
-     * @throws CmisException (with following {@link EnumServiceException} : INVALID_ARGUMENT, OBJECT_NOT_FOUND, NOT_SUPPORTED, PERMISSION_DENIED, RUNTIME, FILTER_NOT_VALID)
-     */
-    public CmisObjectType getFolderParent(String repositoryId, String folderId, String filter) throws CmisException
-    {
-        checkRepositoryId(repositoryId);
-
-        if ((filter != null) && !filter.equals("") && !filter.equals("*"))
-        {
-            if (!filter.contains(CMISDictionaryModel.PROP_PARENT_ID))
-            {
-                filter = CMISDictionaryModel.PROP_PARENT_ID + FILTER_TOKENS_DELIMETER + filter;
-            }
-
-            if (!filter.contains(CMISDictionaryModel.PROP_OBJECT_ID))
-            {
-                filter = CMISDictionaryModel.PROP_OBJECT_ID + FILTER_TOKENS_DELIMETER + filter;
-            }
-        }
-
-        PropertyFilter propertyFilter = createPropertyFilter(filter);
-
-        NodeRef parentRef = receiveParent(folderId);
-        CmisObjectType result = createCmisObject(parentRef, propertyFilter);
-
-        return result;
-    }
-
-    /**
-     * Returns the parent folders for the specified non-folder, fileable object.
-     * 
-     * @param parameters repositoryId: repository Id; objectId: object Id; filter: property filter; includeAllowableActions; includeRelationships;
-     * @return collection of CmisObjectType
-     * @throws CmisException (with following {@link EnumServiceException} : INVALID_ARGUMENT, OBJECT_NOT_FOUND, NOT_SUPPORTED, PERMISSION_DENIED, RUNTIME, CONSTRAINT,
-     *         FILTER_NOT_VALID)
-     */
-    public List<CmisObjectType> getObjectParents(String repositoryId, String objectId, String filter) throws CmisException
-    {
-        checkRepositoryId(repositoryId);
-        PropertyFilter propertyFilter = createPropertyFilter(filter);
-
-        List<NodeRef> parents = receiveObjectParents((NodeRef) cmisObjectsUtils.getIdentifierInstance(objectId, AlfrescoObjectType.DOCUMENT_OBJECT));
-        List<CmisObjectType> result = new ArrayList<CmisObjectType>();
-        createCmisObjectList(propertyFilter, parents, result);
-        return result;
-    }
-
     private NodeRef receiveParent(String targetChildIdentifier) throws CmisException
     {
         if (targetChildIdentifier.equals(cmisService.getDefaultRootNodeRef().toString()))
@@ -264,32 +344,7 @@ public class DMNavigationServicePort extends DMAbstractServicePort implements Na
         }
         return receiveNextParentNodeReference((NodeRef) cmisObjectsUtils.getIdentifierInstance(targetChildIdentifier, AlfrescoObjectType.FOLDER_OBJECT), new ArrayList<NodeRef>());
     }
-
-    private List<CmisObjectType> getDescendants(String repositoryId, String folderId, BigInteger depth, String filter, Boolean includeAllowableActions,
-            EnumIncludeRelationships includeRelationships, Boolean includeRenditions, String orderBy, CMISTypesFilterEnum type) throws CmisException
-    {
-        checkRepositoryId(repositoryId);
-        PropertyFilter propertyFilter = createPropertyFilter(filter);
-        depth = (depth == null) ? (BigInteger.ONE) : depth;
-        checkDepthParameter(depth);
-
-        HierarchyReceiverStrategy receiver = createHierarchyReceiver(type, depth);
-
-        List<Pair<String, Boolean>> orderingFields = null;
-        if ((orderBy != null) && !orderBy.equals(""))
-        {
-            orderingFields = checkAndParseOrderByClause(orderBy);
-        }
-
-        List<CmisObjectType> result = new ArrayList<CmisObjectType>();
-        // TODO: Ordering functionality SHOULD be moved to getChildren service method
-        createCmisObjectList(propertyFilter, receiver.receiveHierarchy(folderId, orderingFields), result);
-
-        // TODO: includeAllowableActions, includeRelationships, includeRenditions
-
-        return result;
-    }
-
+        
     private void checkDepthParameter(BigInteger depth) throws CmisException
     {
         if (depth.equals(BigInteger.ZERO) || (depth.compareTo(FULL_DESCENDANTS_HIERARCHY_CONDITION) < EQUALS_CONDITION_VALUE))
@@ -318,133 +373,33 @@ public class DMNavigationServicePort extends DMAbstractServicePort implements Na
         }
         return parents;
     }
-
-    private HierarchyReceiverStrategy createHierarchyReceiver(CMISTypesFilterEnum type, BigInteger finalDepth)
+    
+    private class RecursiveElement
     {
-        if (finalDepth.equals(FULL_DESCENDANTS_HIERARCHY_CONDITION))
+        private CmisObjectInFolderContainerType parentContainerType;
+        private int depth;
+        private NodeRef currentNodeRef;
+        
+        public RecursiveElement(CmisObjectInFolderContainerType parentContainerType, int depth, NodeRef currentNodeRef)
         {
-            return new FullHierarchyReceiver(type);
+            this.parentContainerType = parentContainerType;
+            this.depth = depth;
+            this.currentNodeRef = currentNodeRef;
         }
-        else
+
+        public CmisObjectInFolderContainerType getParentContainerType()
         {
-            return new LayerConstrainedHierarchyReceiver(type, finalDepth);
+            return parentContainerType;
+        }
+
+        public int getDepth()
+        {
+            return depth;
+        }
+
+        public NodeRef getCurrentNodeRef()
+        {
+            return currentNodeRef;
         }
     }
-
-    private void separateDescendantsObjects(List<NodeRef> descendantsFolders, List<NodeRef> currentLayerFolders, List<NodeRef> currentLayerDocuments,
-            List<Pair<String, Boolean>> orderingFields)
-    {
-        for (NodeRef element : descendantsFolders)
-        {
-            // TODO: Ordering functionality SHOULD be moved to getChildren service method
-            currentLayerFolders.addAll(Arrays.asList(cmisService.getChildren(element, CMISTypesFilterEnum.FOLDERS)));
-
-            // TODO: Ordering functionality SHOULD be moved to getChildren service method
-            currentLayerDocuments.addAll(Arrays.asList(cmisService.getChildren(element, CMISTypesFilterEnum.DOCUMENTS)));
-        }
-    }
-
-    private List<NodeRef> performDescendantsResultObjectsStoring(List<NodeRef> resultList, List<NodeRef> descendantsFolders, List<NodeRef> currentLayerFolders,
-            List<NodeRef> currentLayerDocuments, List<Pair<String, Boolean>> orderingFields, CMISTypesFilterEnum type)
-    {
-        separateDescendantsObjects(descendantsFolders, currentLayerFolders, currentLayerDocuments, orderingFields);
-        if (CMISTypesFilterEnum.ANY.equals(type) || CMISTypesFilterEnum.FOLDERS.equals(type))
-        {
-            resultList.addAll(currentLayerFolders);
-        }
-        if (CMISTypesFilterEnum.ANY.equals(type) || CMISTypesFilterEnum.DOCUMENTS.equals(type))
-        {
-            resultList.addAll(currentLayerDocuments);
-        }
-        return currentLayerFolders;
-    }
-
-    /**
-     * This interface introduce common type for Alfresco objects hierarchy receiving
-     */
-    private interface HierarchyReceiverStrategy
-    {
-        /**
-         * @param rootFolderIdentifier the source folder Id from whose hierarchy bypassing will be started
-         * @return <b>List</b> that contains all appropriates layers of Alfresco objects
-         * @throws InvalidArgumentException
-         */
-        public List<NodeRef> receiveHierarchy(String rootFolderIdentifier, List<Pair<String, Boolean>> orderFields) throws CmisException;
-    }
-
-    /**
-     * @see HierarchyReceiverStrategy
-     */
-    private class FullHierarchyReceiver implements HierarchyReceiverStrategy
-    {
-        private List<NodeRef> descendantsFolders = new LinkedList<NodeRef>();
-        private List<NodeRef> resultList = new LinkedList<NodeRef>();
-        private CMISTypesFilterEnum type = CMISTypesFilterEnum.ANY;
-
-        public FullHierarchyReceiver(CMISTypesFilterEnum type)
-        {
-            if (type != null)
-            {
-                this.type = type;
-            }
-        }
-
-        /**
-         * Traverse Alfresco objects hierarchy until there is some Folder-objects can be found
-         */
-        public List<NodeRef> receiveHierarchy(String rootFolderIdentifier, List<Pair<String, Boolean>> orderingFields) throws CmisException
-        {
-            descendantsFolders.add((NodeRef) cmisObjectsUtils.getIdentifierInstance(rootFolderIdentifier, AlfrescoObjectType.FOLDER_OBJECT));
-            while (!descendantsFolders.isEmpty())
-            {
-                descendantsFolders = performDescendantsResultObjectsStoring(resultList, descendantsFolders, new LinkedList<NodeRef>(), new LinkedList<NodeRef>(), orderingFields,
-                        type);
-            }
-
-            return resultList;
-        }
-    }
-
-    /**
-     * @see HierarchyReceiverStrategy
-     */
-    private class LayerConstrainedHierarchyReceiver implements HierarchyReceiverStrategy
-    {
-        private List<NodeRef> descendantsFolders = new LinkedList<NodeRef>();
-        private BigInteger finalDepth;
-        private BigInteger currentDepth = BigInteger.ZERO;
-        private List<NodeRef> resultList = new LinkedList<NodeRef>();
-        private CMISTypesFilterEnum type = CMISTypesFilterEnum.ANY;
-
-        /**
-         * @param returnObjectsType flag that specifies objects of which type are need to be returned
-         * @param finalDepth the number of final Alfresco hierarchy layer: 1 - only children of specified folder; -1 - full descendants hierarchy
-         */
-        public LayerConstrainedHierarchyReceiver(CMISTypesFilterEnum type, BigInteger finalDepth)
-        {
-            this.finalDepth = finalDepth;
-            if (type != null)
-            {
-                this.type = type;
-            }
-        }
-
-        /**
-         * This method of this class receives Alfresco objects hierarchy until specified layer number
-         */
-        public List<NodeRef> receiveHierarchy(String rootFolderIdentifier, List<Pair<String, Boolean>> orderingFields) throws CmisException
-        {
-            descendantsFolders.add((NodeRef) cmisObjectsUtils.getIdentifierInstance(rootFolderIdentifier, AlfrescoObjectType.FOLDER_OBJECT));
-
-            do
-            {
-                descendantsFolders = performDescendantsResultObjectsStoring(this.resultList, this.descendantsFolders, new LinkedList<NodeRef>(), new LinkedList<NodeRef>(),
-                        orderingFields, type);
-                currentDepth = currentDepth.add(BigInteger.ONE);
-            } while (!descendantsFolders.isEmpty() && (currentDepth.compareTo(this.finalDepth) < EQUALS_CONDITION_VALUE));
-
-            return this.resultList;
-        }
-    }
-
 }

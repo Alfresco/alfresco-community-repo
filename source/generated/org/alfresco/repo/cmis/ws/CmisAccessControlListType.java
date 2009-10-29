@@ -8,6 +8,7 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAnyElement;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
+import org.w3c.dom.Element;
 
 
 /**
@@ -20,7 +21,7 @@ import javax.xml.bind.annotation.XmlType;
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
- *         &lt;element name="permission" type="{http://docs.oasis-open.org/ns/cmis/core/200901}cmisAccessControlEntryType" maxOccurs="unbounded"/>
+ *         &lt;element name="permission" type="{http://docs.oasis-open.org/ns/cmis/core/200908/}cmisAccessControlEntryType" maxOccurs="unbounded"/>
  *         &lt;any/>
  *       &lt;/sequence>
  *     &lt;/restriction>
@@ -31,7 +32,7 @@ import javax.xml.bind.annotation.XmlType;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "cmisAccessControlListType", namespace = "http://docs.oasis-open.org/ns/cmis/core/200901", propOrder = {
+@XmlType(name = "cmisAccessControlListType", namespace = "http://docs.oasis-open.org/ns/cmis/core/200908/", propOrder = {
     "permission",
     "any"
 })
@@ -56,12 +57,12 @@ public class CmisAccessControlListType {
      * <pre>
      *    getPermission().add(newItem);
      * </pre>
-     *     
+     * 
      * 
      * <p>
      * Objects of the following type(s) are allowed in the list
-     *     {@link CmisAccessControlEntryType }
-     *     
+     * {@link CmisAccessControlEntryType }
+     * 
      * 
      */
     public List<CmisAccessControlEntryType> getPermission() {
@@ -85,12 +86,13 @@ public class CmisAccessControlListType {
      * <pre>
      *    getAny().add(newItem);
      * </pre>
-     *     
+     * 
      * 
      * <p>
      * Objects of the following type(s) are allowed in the list
-     *     {@link Object }
-     *     
+     * {@link Element }
+     * {@link Object }
+     * 
      * 
      */
     public List<Object> getAny() {

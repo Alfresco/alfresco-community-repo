@@ -29,7 +29,6 @@ import java.math.BigInteger;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -196,10 +195,10 @@ public class CmisServiceTestHelper extends TestCase
         CmisPropertiesType properties = new CmisPropertiesType();
         List<CmisProperty> propertiesList = properties.getProperty();
         CmisPropertyString cmisProperty = new CmisPropertyString();
-        cmisProperty.setPdid(CMISDictionaryModel.PROP_NAME);
+        cmisProperty.setPropertyDefinitionId(CMISDictionaryModel.PROP_NAME);
         cmisProperty.getValue().add(name);
         CmisPropertyId idProperty = new CmisPropertyId();
-        idProperty.setPdid(CMISDictionaryModel.PROP_OBJECT_TYPE_ID);
+        idProperty.setPropertyDefinitionId(CMISDictionaryModel.PROP_OBJECT_TYPE_ID);
         idProperty.getValue().add(CMISDictionaryModel.DOCUMENT_TYPE_ID.getId());
 
         propertiesList.add(cmisProperty);
@@ -212,11 +211,13 @@ public class CmisServiceTestHelper extends TestCase
         DataHandler dataHandler = new DataHandler(content, MimetypeMap.MIMETYPE_TEXT_PLAIN);
         cmisStream.setStream(dataHandler);
 
+        Holder<CmisExtensionType> extensions = new Holder<CmisExtensionType>();
+        Holder<String> idHolder = new Holder<String>();
         // public String createDocument(String repositoryId, String typeId, CmisPropertiesType properties, String folderId, CmisContentStreamType contentStream,
         // EnumVersioningState versioningState)
-        String objectId = objectServicePort.createDocument(repositoryId, properties, parentFolderId, cmisStream, EnumVersioningState.MAJOR, null, null, null);
+        objectServicePort.createDocument(repositoryId, properties, parentFolderId, cmisStream, EnumVersioningState.MAJOR, null, null, null, extensions, idHolder);
         // assertNotNull(objectId);
-        return objectId;
+        return idHolder.value;
     }
 
     public String createDocument(String name, String parentFolderId, CMISTypeId typeId, EnumVersioningState enumVersioningState) throws Exception
@@ -226,10 +227,10 @@ public class CmisServiceTestHelper extends TestCase
         CmisPropertiesType properties = new CmisPropertiesType();
         List<CmisProperty> propertiesList = properties.getProperty();
         CmisPropertyString cmisProperty = new CmisPropertyString();
-        cmisProperty.setPdid(CMISDictionaryModel.PROP_NAME);
+        cmisProperty.setPropertyDefinitionId(CMISDictionaryModel.PROP_NAME);
         cmisProperty.getValue().add(name);
         CmisPropertyId idProperty = new CmisPropertyId();
-        idProperty.setPdid(CMISDictionaryModel.PROP_OBJECT_TYPE_ID);
+        idProperty.setPropertyDefinitionId(CMISDictionaryModel.PROP_OBJECT_TYPE_ID);
         idProperty.getValue().add(typeId.getId());
 
         propertiesList.add(cmisProperty);
@@ -242,11 +243,13 @@ public class CmisServiceTestHelper extends TestCase
         DataHandler dataHandler = new DataHandler(content, MimetypeMap.MIMETYPE_TEXT_PLAIN);
         cmisStream.setStream(dataHandler);
 
+        Holder<CmisExtensionType> extensions = new Holder<CmisExtensionType>();
+        Holder<String> idHolder = new Holder<String>();
         // public String createDocument(String repositoryId, String typeId, CmisPropertiesType properties, String folderId, CmisContentStreamType contentStream,
         // EnumVersioningState versioningState)
-        String objectId = objectServicePort.createDocument(repositoryId, properties, parentFolderId, cmisStream, enumVersioningState, null, null, null);
+        objectServicePort.createDocument(repositoryId, properties, parentFolderId, cmisStream, enumVersioningState, null, null, null, extensions, idHolder);
         // assertNotNull(objectId);
-        return objectId;
+        return idHolder.value;
     }
 
     public String createDocumentImage(String name, String parentFolderId) throws Exception
@@ -262,20 +265,22 @@ public class CmisServiceTestHelper extends TestCase
         CmisPropertiesType properties = new CmisPropertiesType();
         List<CmisProperty> propertiesList = properties.getProperty();
         CmisPropertyString cmisProperty = new CmisPropertyString();
-        cmisProperty.setPdid(CMISDictionaryModel.PROP_NAME);
+        cmisProperty.setPropertyDefinitionId(CMISDictionaryModel.PROP_NAME);
         cmisProperty.getValue().add(name + dataSource.getName());
         CmisPropertyId idProperty = new CmisPropertyId();
-        idProperty.setPdid(CMISDictionaryModel.PROP_OBJECT_TYPE_ID);
+        idProperty.setPropertyDefinitionId(CMISDictionaryModel.PROP_OBJECT_TYPE_ID);
         idProperty.getValue().add(CMISDictionaryModel.DOCUMENT_TYPE_ID.getId());
 
         propertiesList.add(cmisProperty);
         propertiesList.add(idProperty);
 
+        Holder<CmisExtensionType> extensions = new Holder<CmisExtensionType>();
+        Holder<String> idHolder = new Holder<String>();
         // public String createDocument(String repositoryId, String typeId, CmisPropertiesType properties, String folderId, CmisContentStreamType contentStream,
         // EnumVersioningState versioningState)
-        String objectId = objectServicePort.createDocument(repositoryId, properties, parentFolderId, cmisStream, EnumVersioningState.MAJOR, null, null, null);
+        objectServicePort.createDocument(repositoryId, properties, parentFolderId, cmisStream, EnumVersioningState.MAJOR, null, null, null, extensions, idHolder);
         // assertNotNull(objectId);
-        return objectId;
+        return idHolder.value;
 
     }
 
@@ -291,19 +296,21 @@ public class CmisServiceTestHelper extends TestCase
         List<CmisProperty> propertiesList = properties.getProperty();
 
         CmisPropertyString cmisProperty = new CmisPropertyString();
-        cmisProperty.setPdid(CMISDictionaryModel.PROP_NAME);
+        cmisProperty.setPropertyDefinitionId(CMISDictionaryModel.PROP_NAME);
         cmisProperty.getValue().add(name);
         CmisPropertyId idProperty = new CmisPropertyId();
-        idProperty.setPdid(CMISDictionaryModel.PROP_OBJECT_TYPE_ID);
+        idProperty.setPropertyDefinitionId(CMISDictionaryModel.PROP_OBJECT_TYPE_ID);
         idProperty.getValue().add(CMISDictionaryModel.FOLDER_TYPE_ID.getId());
 
         propertiesList.add(cmisProperty);
         propertiesList.add(idProperty);
 
+        Holder<CmisExtensionType> extensions = new Holder<CmisExtensionType>();
+        Holder<String> idHolder = new Holder<String>();
         // public String createFolder(String repositoryId, String typeId, CmisPropertiesType properties, String folderId)
-        String objectId = objectServicePort.createFolder(repositoryId, properties, parentFolderId, null, null, null);
+        objectServicePort.createFolder(repositoryId, properties, parentFolderId, null, null, null, extensions, idHolder);
         // assertNotNull(objectId);
-        return objectId;
+        return idHolder.value;
     }
 
     public String createFolder(String name, String parentFolderId, CMISTypeId cmisTypeId) throws Exception
@@ -313,58 +320,53 @@ public class CmisServiceTestHelper extends TestCase
         List<CmisProperty> propertiesList = properties.getProperty();
 
         CmisPropertyString cmisProperty = new CmisPropertyString();
-        cmisProperty.setPdid(CMISDictionaryModel.PROP_NAME);
+        cmisProperty.setPropertyDefinitionId(CMISDictionaryModel.PROP_NAME);
         cmisProperty.getValue().add(name);
         CmisPropertyId idProperty = new CmisPropertyId();
-        idProperty.setPdid(CMISDictionaryModel.PROP_OBJECT_TYPE_ID);
+        idProperty.setPropertyDefinitionId(CMISDictionaryModel.PROP_OBJECT_TYPE_ID);
         idProperty.getValue().add(cmisTypeId.getId());
 
         propertiesList.add(cmisProperty);
         propertiesList.add(idProperty);
 
+        Holder<CmisExtensionType> extensions = new Holder<CmisExtensionType>();
+        Holder<String> idHolder = new Holder<String>();
         // public String createFolder(String repositoryId, String typeId, CmisPropertiesType properties, String folderId)
-        String objectId = objectServicePort.createFolder(repositoryId, properties, parentFolderId, null, null, null);
+        objectServicePort.createFolder(repositoryId, properties, parentFolderId, null, null, null, extensions, idHolder);
         // assertNotNull(objectId);
-        return objectId;
+        return idHolder.value;
     }
 
     public void deleteDocument(String documentId) throws Exception
     {
-        objectServicePort.deleteObject(repositoryId, documentId, true);
+        objectServicePort.deleteObject(repositoryId, documentId, true, null);
         assertNull("Document has not been deleted", getObjectProperties(documentId));
     }
 
     public void deleteFolder(String folderId) throws Exception
     {
-        objectServicePort.deleteTree(repositoryId, folderId, EnumUnfileObject.DELETE, true);
+        objectServicePort.deleteTree(repositoryId, folderId, true, EnumUnfileObject.DELETE, true, null);
     }
 
     public CmisObjectType getObjectProperties(String objectId)
     {
-        CmisObjectType response = null;
-        try
-        {
-            response = objectServicePort.getProperties(repositoryId, objectId, "*", true, EnumIncludeRelationships.BOTH, false);
-        }
-        catch (Exception e)
-        {
-
-        }
-        return response;
+        return getObjectProperties(objectId, "*");
     }
 
     public CmisObjectType getObjectProperties(String objectId, String filter)
     {
-        CmisObjectType response = null;
+        CmisPropertiesType response = null;
         try
         {
-            response = objectServicePort.getProperties(repositoryId, objectId, filter, true, EnumIncludeRelationships.BOTH, false);
+            response = objectServicePort.getProperties(repositoryId, objectId, filter, null);
         }
         catch (Exception e)
         {
-            fail(e.getMessage());
+
         }
-        return response;
+        CmisObjectType result = new CmisObjectType();
+        result.setProperties(response);
+        return result;
     }
 
     /**
@@ -379,7 +381,7 @@ public class CmisServiceTestHelper extends TestCase
         String rootFolder = null;
         try
         {
-            rootFolder = repositoryServicePort.getRepositoryInfo(repositoryId).getRootFolderId();
+            rootFolder = repositoryServicePort.getRepositoryInfo(repositoryId, null).getRootFolderId();
         }
         catch (Exception e)
         {
@@ -394,16 +396,19 @@ public class CmisServiceTestHelper extends TestCase
         PropertyUtil propertiesUtil = new PropertyUtil();
         try
         {
-            List<CmisObjectType> response = getChildren(companyHomeId, 0, "*");
-            for (CmisObjectType object : response)
+            List<CmisObjectInFolderType> response = getChildren(companyHomeId, 0, "*");
+            for (CmisObjectInFolderType object : response)
             {
-                if (propertiesUtil.getCmisPropertyValue(object.getProperties(), CMISDictionaryModel.PROP_NAME, null).equals("User Homes"))
+                assertNotNull(object);
+                assertNotNull(object.getObject());
+                assertNotNull(object.getObject().getProperties());
+                if (propertiesUtil.getCmisPropertyValue(object.getObject().getProperties(), CMISDictionaryModel.PROP_NAME, null).equals("User Homes"))
                 {
-                    return (String) propertiesUtil.getCmisPropertyValue(object.getProperties(), CMISDictionaryModel.PROP_OBJECT_ID, null);
+                    return (String) propertiesUtil.getCmisPropertyValue(object.getObject().getProperties(), CMISDictionaryModel.PROP_OBJECT_ID, null);
                 }
             }
 
-            userHomeFolder = repositoryServicePort.getRepositoryInfo(repositoryId).getRootFolderId();
+            userHomeFolder = repositoryServicePort.getRepositoryInfo(repositoryId, null).getRootFolderId();
         }
         catch (Exception e)
         {
@@ -413,7 +418,7 @@ public class CmisServiceTestHelper extends TestCase
     }
 
     public final static String REPOSITORY_SERVICE_WSDL_LOCATION = ALFRESCO_URL + "/cmis/RepositoryService?wsdl";
-    public final static QName REPOSITORY_SERVICE_NAME = new QName("http://docs.oasis-open.org/ns/cmis/ws/200901", "RepositoryService");
+    public final static QName REPOSITORY_SERVICE_NAME = new QName("http://docs.oasis-open.org/ns/cmis/ws/200908/", "RepositoryService");
 
     protected RepositoryServicePort getRepositoryServicePort()
     {
@@ -434,7 +439,7 @@ public class CmisServiceTestHelper extends TestCase
     }
 
     public final static String OBJECT_SERVICE_WSDL_LOCATION = ALFRESCO_URL + "/cmis/ObjectService?wsdl";
-    public final static QName OBJECT_SERVICE_NAME = new QName("http://docs.oasis-open.org/ns/cmis/ws/200901", "ObjectService");
+    public final static QName OBJECT_SERVICE_NAME = new QName("http://docs.oasis-open.org/ns/cmis/ws/200908/", "ObjectService");
 
     protected ObjectServicePort getObjectServicePort()
     {
@@ -455,7 +460,7 @@ public class CmisServiceTestHelper extends TestCase
     }
 
     public final static String VERSIONING_SERVICE_WSDL_LOCATION = ALFRESCO_URL + "/cmis/VersioningService?wsdl";
-    public final static QName VERSIONING_SERVICE_NAME = new QName("http://docs.oasis-open.org/ns/cmis/ws/200901", "VersioningService");
+    public final static QName VERSIONING_SERVICE_NAME = new QName("http://docs.oasis-open.org/ns/cmis/ws/200908/", "VersioningService");
 
     protected VersioningServicePort getVersioningServicePort()
     {
@@ -474,7 +479,7 @@ public class CmisServiceTestHelper extends TestCase
     }
 
     public final static String MULTIFILING_SERVICE_WSDL_LOCATION = ALFRESCO_URL + "/cmis/MultiFilingService?wsdl";
-    public final static QName MULTIFILING_SERVICE_NAME = new QName("http://docs.oasis-open.org/ns/cmis/ws/200901", "MultiFilingService");
+    public final static QName MULTIFILING_SERVICE_NAME = new QName("http://docs.oasis-open.org/ns/cmis/ws/200908/", "MultiFilingService");
 
     protected MultiFilingServicePort getMultiFilingServicePort()
     {
@@ -493,7 +498,7 @@ public class CmisServiceTestHelper extends TestCase
     }
 
     public final static String NAVIGATION_SERVICE_WSDL_LOCATION = ALFRESCO_URL + "/cmis/NavigationService?wsdl";
-    public final static QName NAVIGATION_SERVICE_NAME = new QName("http://docs.oasis-open.org/ns/cmis/ws/200901", "NavigationService");
+    public final static QName NAVIGATION_SERVICE_NAME = new QName("http://docs.oasis-open.org/ns/cmis/ws/200908/", "NavigationService");
 
     protected NavigationServicePort getNavigationServicePort()
     {
@@ -518,7 +523,7 @@ public class CmisServiceTestHelper extends TestCase
     {
         try
         {
-            return repositoryServicePort.getRepositories().get(0).getId();
+            return repositoryServicePort.getRepositories(null).get(0).getRepositoryId();
         }
         catch (Exception e)
         {
@@ -535,7 +540,7 @@ public class CmisServiceTestHelper extends TestCase
             contentStream.setMimeType(MimetypeMap.MIMETYPE_TEXT_PLAIN);
             DataHandler dataHandler = new DataHandler("Test content string :" + System.currentTimeMillis(), MimetypeMap.MIMETYPE_TEXT_PLAIN);
             contentStream.setStream(dataHandler);
-            versioningServicePort.checkIn(repositoryId, documentId, isMajor, properties, contentStream, checkinComment, null, null, null);
+            versioningServicePort.checkIn(repositoryId, documentId, isMajor, properties, contentStream, checkinComment, null, null, null, null);
         }
         catch (Throwable e)
         {
@@ -548,7 +553,7 @@ public class CmisServiceTestHelper extends TestCase
     {
         try
         {
-            versioningServicePort.checkOut(repositoryId, documentId, contentCopied);
+            versioningServicePort.checkOut(repositoryId, documentId, null, contentCopied);
         }
         catch (Throwable e)
         {
@@ -562,7 +567,7 @@ public class CmisServiceTestHelper extends TestCase
         List<CmisObjectType> response = null;
         try
         {
-            response = versioningServicePort.getAllVersions(repositoryId, documentId, "*", false, EnumIncludeRelationships.NONE);
+            response = versioningServicePort.getAllVersions(repositoryId, documentId, "*", false, null);
             assertNotNull(response);
             assertFalse(response.isEmpty());
         }
@@ -576,27 +581,38 @@ public class CmisServiceTestHelper extends TestCase
 
     public String createRelationship(String name, String folderId, String documentId) throws Exception
     {
-        String objectId = null;
         CmisPropertiesType properties = new CmisPropertiesType();
         List<CmisProperty> propertiesList = properties.getProperty();
-
-        CmisPropertyString cmisProperty = new CmisPropertyString();
-        cmisProperty.setPdid(CMISDictionaryModel.PROP_NAME);
-        cmisProperty.getValue().add(name);
-        CmisPropertyId idProperty = new CmisPropertyId();
-        idProperty.setPdid(CMISDictionaryModel.PROP_OBJECT_TYPE_ID);
-        idProperty.getValue().add(CMISDictionaryModel.RELATIONSHIP_TYPE_ID.getId());
-
-        propertiesList.add(cmisProperty);
-        propertiesList.add(idProperty);
-
+        propertiesList.add(createCmisPropertyString(CMISDictionaryModel.PROP_NAME, name));
+        propertiesList.add(createCmisPropertyId(CMISDictionaryModel.PROP_SOURCE_ID, folderId));
+        propertiesList.add(createCmisPropertyId(CMISDictionaryModel.PROP_TARGET_ID, documentId));
+        propertiesList.add(createCmisPropertyId(CMISDictionaryModel.PROP_OBJECT_TYPE_ID, CMISDictionaryModel.RELATIONSHIP_TYPE_ID.getId()));
         // TODO: it need reimplementation according to valid Relationship type searching
         // createRelationship(String repositoryId, String typeId, CmisPropertiesType properties, String sourceObjectId, String targetObjectId)
-        objectId = objectServicePort.createRelationship(repositoryId, properties, documentId, folderId, null, null, null);
-        assertNotNull(objectId);
+        Holder<String> idHolder = new Holder<String>();
+        objectServicePort.createRelationship(repositoryId, properties, null, null, null, null, idHolder);
+        assertNotNull(idHolder.value);
+        return idHolder.value;
+    }
 
-        return objectId;
+    private CmisProperty createCmisPropertyId(String propertyName, String propertyValue)
+    {
+        CmisPropertyId result = new CmisPropertyId();
+        result.setPropertyDefinitionId(propertyName);
+        result.setLocalName(propertyName);
+        result.setDisplayName(propertyName);
+        result.getValue().add(propertyValue);
+        return result;
+    }
 
+    private CmisProperty createCmisPropertyString(String propertyName, String propertyValue)
+    {
+        CmisPropertyString result = new CmisPropertyString();
+        result.setPropertyDefinitionId(propertyName);
+        result.setLocalName(propertyName);
+        result.setDisplayName(propertyName);
+        result.getValue().add(propertyValue);
+        return result;
     }
 
     public String updateProperty(String documentId, String propName, String propValue) throws Exception
@@ -606,14 +622,14 @@ public class CmisServiceTestHelper extends TestCase
         CmisPropertiesType properties = new CmisPropertiesType();
         List<CmisProperty> propertiesList = properties.getProperty();
         CmisPropertyString cmisProperty = new CmisPropertyString();
-        cmisProperty.setPdid(propName);
+        cmisProperty.setPropertyDefinitionId(propName);
         cmisProperty.getValue().add(propValue);
         propertiesList.add(cmisProperty);
 
         Holder<String> documentIdHolder = new Holder<String>(documentId);
         Holder<String> changeToken = new Holder<String>("");
         // public void updateProperties(String repositoryId, Holder<String> objectId, String changeToken, CmisPropertiesType properties)
-        objectServicePort.updateProperties(repositoryId, documentIdHolder, changeToken, properties);
+        objectServicePort.updateProperties(repositoryId, documentIdHolder, changeToken, properties, null);
         assertEquals(documentId, documentIdHolder.value);
 
         return documentIdHolder.value;
@@ -623,7 +639,7 @@ public class CmisServiceTestHelper extends TestCase
     {
         try
         {
-            multiFilingServicePort.addObjectToFolder(repositoryId, documentId, anotherFolderId);
+            multiFilingServicePort.addObjectToFolder(repositoryId, documentId, anotherFolderId, false, null);
         }
         catch (Throwable e)
         {
@@ -635,7 +651,7 @@ public class CmisServiceTestHelper extends TestCase
     {
         try
         {
-            multiFilingServicePort.removeObjectFromFolder(repositoryId, documentId, folderId);
+            multiFilingServicePort.removeObjectFromFolder(repositoryId, documentId, folderId, null);
         }
         catch (Exception e)
         {
@@ -643,12 +659,12 @@ public class CmisServiceTestHelper extends TestCase
         }
     }
 
-    public List<CmisObjectType> getObjectParents(String objectId, String filter) throws Exception
+    public List<CmisObjectParentsType> getObjectParents(String objectId, String filter) throws Exception
     {
-        List<CmisObjectType> response = null;
+        List<CmisObjectParentsType> response = null;
         try
         {
-            response = navigationServicePort.getObjectParents(repositoryId, objectId, filter);
+            response = navigationServicePort.getObjectParents(repositoryId, objectId, filter, false, null, null, false, null);
         }
         catch (Exception e)
         {
@@ -657,9 +673,9 @@ public class CmisServiceTestHelper extends TestCase
         return response;
     }
 
-    public List<CmisObjectType> getObjectParents(String objectId) throws Exception
+    public List<CmisObjectParentsType> getObjectParents(String objectId) throws Exception
     {
-        return navigationServicePort.getObjectParents(repositoryId, objectId, "");
+        return navigationServicePort.getObjectParents(repositoryId, objectId, "", false, null, null, false, null);
     }
 
     public void setTextContentStream(String documentId, String newContent) throws Exception
@@ -674,30 +690,32 @@ public class CmisServiceTestHelper extends TestCase
 
         Holder<String> documentIdHolder = new Holder<String>(documentId);
         // public void setContentStream(String repositoryId, Holder<String> documentId, Boolean overwriteFlag, CmisContentStreamType contentStream)
-        objectServicePort.setContentStream(repositoryId, documentIdHolder, true, "", contentStream);
+        // TODO: changeToken
+        objectServicePort.setContentStream(repositoryId, documentIdHolder, true, null, contentStream, null);
     }
 
-    public CmisContentStreamType getContentStream(String documentId) throws Exception
+    public CmisContentStreamType getContentStream(String documentId, long offset, long length) throws Exception
     {
         CmisContentStreamType result = null;
-        result = objectServicePort.getContentStream(repositoryId, documentId, "");
+        result = objectServicePort.getContentStream(repositoryId, documentId, "", BigInteger.valueOf(offset), BigInteger.valueOf(length), null);
         return result;
     }
 
-    public List<CmisObjectType> getChildren(String folderId, long maxItems, String filter) throws Exception
+    public List<CmisObjectInFolderType> getChildren(String folderId, long maxItems, String filter) throws Exception
     {
-        Holder<List<CmisObjectType>> response = new Holder<List<CmisObjectType>>(new LinkedList<CmisObjectType>());
-        Holder<Boolean> hasMoreItems = new Holder<Boolean>();
+        CmisObjectInFolderListType response = null;
         try
         {
-            navigationServicePort.getChildren(repositoryId, folderId, filter, false, EnumIncludeRelationships.NONE, false, false, BigInteger.valueOf(maxItems), BigInteger.ZERO,
-                    null, response, hasMoreItems);
+            // TODO: orderBy
+            // TODO: renditionFilter
+            response = navigationServicePort.getChildren(repositoryId, folderId, filter, "", false, EnumIncludeRelationships.NONE, "", false, BigInteger.valueOf(maxItems),
+                    BigInteger.ZERO, null);
         }
         catch (Exception e)
         {
             fail(e.getMessage());
         }
 
-        return response.value;
+        return response.getObjects();
     }
 }

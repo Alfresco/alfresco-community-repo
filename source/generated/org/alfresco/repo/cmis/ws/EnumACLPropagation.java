@@ -14,22 +14,22 @@ import javax.xml.bind.annotation.XmlType;
  * <pre>
  * &lt;simpleType name="enumACLPropagation">
  *   &lt;restriction base="{http://www.w3.org/2001/XMLSchema}string">
- *     &lt;enumeration value="repository-determined"/>
- *     &lt;enumeration value="object-only"/>
+ *     &lt;enumeration value="repositorydetermined"/>
+ *     &lt;enumeration value="objectonly"/>
  *     &lt;enumeration value="propagate"/>
  *   &lt;/restriction>
  * &lt;/simpleType>
  * </pre>
  * 
  */
-@XmlType(name = "enumACLPropagation", namespace = "http://docs.oasis-open.org/ns/cmis/core/200901")
+@XmlType(name = "enumACLPropagation", namespace = "http://docs.oasis-open.org/ns/cmis/core/200908/")
 @XmlEnum
 public enum EnumACLPropagation {
 
-    @XmlEnumValue("repository-determined")
-    REPOSITORY_DETERMINED("repository-determined"),
-    @XmlEnumValue("object-only")
-    OBJECT_ONLY("object-only"),
+    @XmlEnumValue("repositorydetermined")
+    REPOSITORYDETERMINED("repositorydetermined"),
+    @XmlEnumValue("objectonly")
+    OBJECTONLY("objectonly"),
     @XmlEnumValue("propagate")
     PROPAGATE("propagate");
     private final String value;

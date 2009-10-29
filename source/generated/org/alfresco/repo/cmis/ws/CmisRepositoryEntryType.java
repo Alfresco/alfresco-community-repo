@@ -10,7 +10,6 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAnyAttribute;
 import javax.xml.bind.annotation.XmlAnyElement;
 import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.namespace.QName;
 import org.w3c.dom.Element;
@@ -26,13 +25,11 @@ import org.w3c.dom.Element;
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
- *         &lt;element name="id" type="{http://www.w3.org/2001/XMLSchema}string"/>
- *         &lt;element name="name" type="{http://www.w3.org/2001/XMLSchema}string"/>
- *         &lt;element name="relationship" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
- *         &lt;element name="thinClientURI" type="{http://www.w3.org/2001/XMLSchema}anyURI" minOccurs="0"/>
+ *         &lt;element name="repositoryId" type="{http://www.w3.org/2001/XMLSchema}string"/>
+ *         &lt;element name="repositoryName" type="{http://www.w3.org/2001/XMLSchema}string"/>
  *         &lt;any/>
  *       &lt;/sequence>
- *       &lt;attGroup ref="{http://docs.oasis-open.org/ns/cmis/core/200901}cmisUndefinedAttribute"/>
+ *       &lt;attGroup ref="{http://docs.oasis-open.org/ns/cmis/core/200908/}cmisUndefinedAttribute"/>
  *     &lt;/restriction>
  *   &lt;/complexContent>
  * &lt;/complexType>
@@ -42,120 +39,67 @@ import org.w3c.dom.Element;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "cmisRepositoryEntryType", propOrder = {
-    "id",
-    "name",
-    "relationship",
-    "thinClientURI",
+    "repositoryId",
+    "repositoryName",
     "any"
 })
 public class CmisRepositoryEntryType {
 
     @XmlElement(required = true)
-    protected String id;
+    protected String repositoryId;
     @XmlElement(required = true)
-    protected String name;
-    protected String relationship;
-    @XmlSchemaType(name = "anyURI")
-    protected String thinClientURI;
+    protected String repositoryName;
     @XmlAnyElement(lax = true)
     protected List<Object> any;
     @XmlAnyAttribute
     private Map<QName, String> otherAttributes = new HashMap<QName, String>();
 
     /**
-     * Gets the value of the id property.
+     * Gets the value of the repositoryId property.
      * 
      * @return
      *     possible object is
      *     {@link String }
      *     
      */
-    public String getId() {
-        return id;
+    public String getRepositoryId() {
+        return repositoryId;
     }
 
     /**
-     * Sets the value of the id property.
+     * Sets the value of the repositoryId property.
      * 
      * @param value
      *     allowed object is
      *     {@link String }
      *     
      */
-    public void setId(String value) {
-        this.id = value;
+    public void setRepositoryId(String value) {
+        this.repositoryId = value;
     }
 
     /**
-     * Gets the value of the name property.
+     * Gets the value of the repositoryName property.
      * 
      * @return
      *     possible object is
      *     {@link String }
      *     
      */
-    public String getName() {
-        return name;
+    public String getRepositoryName() {
+        return repositoryName;
     }
 
     /**
-     * Sets the value of the name property.
+     * Sets the value of the repositoryName property.
      * 
      * @param value
      *     allowed object is
      *     {@link String }
      *     
      */
-    public void setName(String value) {
-        this.name = value;
-    }
-
-    /**
-     * Gets the value of the relationship property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getRelationship() {
-        return relationship;
-    }
-
-    /**
-     * Sets the value of the relationship property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setRelationship(String value) {
-        this.relationship = value;
-    }
-
-    /**
-     * Gets the value of the thinClientURI property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getThinClientURI() {
-        return thinClientURI;
-    }
-
-    /**
-     * Sets the value of the thinClientURI property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setThinClientURI(String value) {
-        this.thinClientURI = value;
+    public void setRepositoryName(String value) {
+        this.repositoryName = value;
     }
 
     /**

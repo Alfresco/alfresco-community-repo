@@ -17,12 +17,13 @@ import javax.xml.bind.annotation.XmlType;
  *     &lt;enumeration value="readonly"/>
  *     &lt;enumeration value="readwrite"/>
  *     &lt;enumeration value="whencheckedout"/>
+ *     &lt;enumeration value="oncreate"/>
  *   &lt;/restriction>
  * &lt;/simpleType>
  * </pre>
  * 
  */
-@XmlType(name = "enumUpdatability", namespace = "http://docs.oasis-open.org/ns/cmis/core/200901")
+@XmlType(name = "enumUpdatability", namespace = "http://docs.oasis-open.org/ns/cmis/core/200908/")
 @XmlEnum
 public enum EnumUpdatability {
 
@@ -31,7 +32,9 @@ public enum EnumUpdatability {
     @XmlEnumValue("readwrite")
     READWRITE("readwrite"),
     @XmlEnumValue("whencheckedout")
-    WHENCHECKEDOUT("whencheckedout");
+    WHENCHECKEDOUT("whencheckedout"),
+    @XmlEnumValue("oncreate")
+    ONCREATE("oncreate");
     private final String value;
 
     EnumUpdatability(String v) {

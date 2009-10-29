@@ -8,6 +8,7 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAnyElement;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
+import org.w3c.dom.Element;
 
 
 /**
@@ -20,8 +21,8 @@ import javax.xml.bind.annotation.XmlType;
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
- *         &lt;element name="principal" type="{http://docs.oasis-open.org/ns/cmis/core/200901}cmisAccessControlPrincipalType"/>
- *         &lt;element name="permission" type="{http://www.w3.org/2001/XMLSchema}string"/>
+ *         &lt;element name="principal" type="{http://docs.oasis-open.org/ns/cmis/core/200908/}cmisAccessControlPrincipalType"/>
+ *         &lt;element name="permission" type="{http://www.w3.org/2001/XMLSchema}string" maxOccurs="unbounded"/>
  *         &lt;element name="direct" type="{http://www.w3.org/2001/XMLSchema}boolean"/>
  *         &lt;any/>
  *       &lt;/sequence>
@@ -33,7 +34,7 @@ import javax.xml.bind.annotation.XmlType;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "cmisAccessControlEntryType", namespace = "http://docs.oasis-open.org/ns/cmis/core/200901", propOrder = {
+@XmlType(name = "cmisAccessControlEntryType", namespace = "http://docs.oasis-open.org/ns/cmis/core/200908/", propOrder = {
     "principal",
     "permission",
     "direct",
@@ -44,7 +45,7 @@ public class CmisAccessControlEntryType {
     @XmlElement(required = true)
     protected CmisAccessControlPrincipalType principal;
     @XmlElement(required = true)
-    protected String permission;
+    protected List<String> permission;
     protected boolean direct;
     @XmlAnyElement(lax = true)
     protected List<Object> any;
@@ -76,25 +77,30 @@ public class CmisAccessControlEntryType {
     /**
      * Gets the value of the permission property.
      * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getPermission() {
-        return permission;
-    }
-
-    /**
-     * Sets the value of the permission property.
+     * <p>
+     * This accessor method returns a reference to the live list,
+     * not a snapshot. Therefore any modification you make to the
+     * returned list will be present inside the JAXB object.
+     * This is why there is not a <CODE>set</CODE> method for the permission property.
      * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
+     * <p>
+     * For example, to add a new item, do as follows:
+     * <pre>
+     *    getPermission().add(newItem);
+     * </pre>
+     * 
+     * 
+     * <p>
+     * Objects of the following type(s) are allowed in the list
+     * {@link String }
+     * 
+     * 
      */
-    public void setPermission(String value) {
-        this.permission = value;
+    public List<String> getPermission() {
+        if (permission == null) {
+            permission = new ArrayList<String>();
+        }
+        return this.permission;
     }
 
     /**
@@ -127,12 +133,13 @@ public class CmisAccessControlEntryType {
      * <pre>
      *    getAny().add(newItem);
      * </pre>
-     *     
+     * 
      * 
      * <p>
      * Objects of the following type(s) are allowed in the list
-     *     {@link Object }
-     *     
+     * {@link Element }
+     * {@link Object }
+     * 
      * 
      */
     public List<Object> getAny() {

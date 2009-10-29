@@ -26,22 +26,23 @@ package org.alfresco.repo.cmis.ws;
 
 import java.io.Serializable;
 import java.math.BigInteger;
-import java.util.List;
 import java.util.Map;
 
 import javax.xml.ws.Holder;
 
+import org.alfresco.cmis.CMISDictionaryModel;
 import org.alfresco.cmis.CMISQueryOptions;
 import org.alfresco.cmis.CMISResultSet;
 import org.alfresco.cmis.CMISResultSetColumn;
 import org.alfresco.cmis.CMISResultSetRow;
+import org.alfresco.repo.cmis.ws.utils.AlfrescoObjectType;
 
 /**
  * Port for Discovery service.
  * 
  * @author Dmitry Lazurkin
  */
-@javax.jws.WebService(name = "DiscoveryServicePort", serviceName = "DiscoveryService", portName = "DiscoveryServicePort", targetNamespace = "http://docs.oasis-open.org/ns/cmis/ws/200901", endpointInterface = "org.alfresco.repo.cmis.ws.DiscoveryServicePort")
+@javax.jws.WebService(name = "DiscoveryServicePort", serviceName = "DiscoveryService", portName = "DiscoveryServicePort", targetNamespace = "http://docs.oasis-open.org/ns/cmis/ws/200908/", endpointInterface = "org.alfresco.repo.cmis.ws.DiscoveryServicePort")
 public class DMDiscoveryServicePort extends DMAbstractServicePort implements DiscoveryServicePort
 {
     /**
@@ -58,15 +59,16 @@ public class DMDiscoveryServicePort extends DMAbstractServicePort implements Dis
         // TODO: searchAllVersions, includeRelationships, includeAllowableActions, includeRenditions
         CMISQueryOptions options = new CMISQueryOptions(parameters.getStatement(), cmisService.getDefaultRootStoreRef());
 
-        if (parameters.getSkipCount() != null)
+        if (parameters.getSkipCount() != null && parameters.getSkipCount().getValue() != null)
         {
-            options.setSkipCount(parameters.getSkipCount().intValue());
+            options.setSkipCount(parameters.getSkipCount().getValue().intValue());
         }
 
-        if (parameters.getMaxItems() != null)
+        if (parameters.getMaxItems() != null && parameters.getMaxItems().getValue() != null)
         {
-            options.setMaxItems(parameters.getMaxItems().intValue());
+            options.setMaxItems(parameters.getMaxItems().getValue().intValue());
         }
+        boolean includeAllowableActions = (null != parameters.getIncludeAllowableActions()) ? (parameters.getIncludeAllowableActions().getValue()) : (false);
 
         // execute query
         // TODO: If the select clause includes properties from more than a single type reference, then the repository SHOULD throw an exception if includeRelationships or
@@ -76,6 +78,7 @@ public class DMDiscoveryServicePort extends DMAbstractServicePort implements Dis
 
         // build query response
         QueryResponse response = new QueryResponse();
+        response.setObjects(new CmisObjectListType());
 
         // for each row...
         for (CMISResultSetRow row : resultSet)
@@ -95,17 +98,23 @@ public class DMDiscoveryServicePort extends DMAbstractServicePort implements Dis
 
             CmisObjectType object = new CmisObjectType();
             object.setProperties(properties);
-            response.getObject().add(object);
+            if (includeAllowableActions)
+            {
+                Object identifier = cmisObjectsUtils.getIdentifierInstance((String) values.get(CMISDictionaryModel.PROP_OBJECT_ID), AlfrescoObjectType.DOCUMENT_OR_FOLDER_OBJECT);
+                object.setAllowableActions(determineObjectAllowableActions(identifier));
+            }
+            response.getObjects().getObjects().add(object);
         }
-
-        response.setHasMoreItems(resultSet.hasMore());
+        //TODO: response.getObjects().setNumItems(value);
+        response.getObjects().setHasMoreItems(resultSet.hasMore());
         return response;
     }
 
-    public void getContentChanges(String repositoryId, Holder<String> changeToken, BigInteger maxItems, Boolean includeACL, Boolean includeProperties, String filter,
-            Holder<List<CmisObjectType>> changedObject) throws CmisException
+    public void getContentChanges(String repositoryId, Holder<String> changeLogToken, Boolean includeProperties, String filter, Boolean includePolicyIds, Boolean includeACL,
+            BigInteger maxItems, CmisExtensionType extension, Holder<CmisObjectListType> objects) throws CmisException
     {
-        // TODO
+        // TODO: implement me
         throw cmisObjectsUtils.createCmisException("Not implemented", EnumServiceException.RUNTIME);
     }
+
 }

@@ -14,42 +14,42 @@ import javax.xml.bind.annotation.XmlType;
  * <pre>
  * &lt;simpleType name="enumPropertiesBase">
  *   &lt;restriction base="{http://www.w3.org/2001/XMLSchema}string">
- *     &lt;enumeration value="cmis:Name"/>
- *     &lt;enumeration value="cmis:ObjectId"/>
- *     &lt;enumeration value="cmis:ObjectTypeId"/>
- *     &lt;enumeration value="cmis:BaseTypeId"/>
- *     &lt;enumeration value="cmis:CreatedBy"/>
- *     &lt;enumeration value="cmis:CreationDate"/>
- *     &lt;enumeration value="cmis:LastModifiedBy"/>
- *     &lt;enumeration value="cmis:LastModificationDate"/>
- *     &lt;enumeration value="cmis:ChangeToken"/>
+ *     &lt;enumeration value="cmis:name"/>
+ *     &lt;enumeration value="cmis:objectId"/>
+ *     &lt;enumeration value="cmis:objectTypeId"/>
+ *     &lt;enumeration value="cmis:baseTypeId"/>
+ *     &lt;enumeration value="cmis:createdBy"/>
+ *     &lt;enumeration value="cmis:creationDate"/>
+ *     &lt;enumeration value="cmis:lastModifiedBy"/>
+ *     &lt;enumeration value="cmis:lastModificationDate"/>
+ *     &lt;enumeration value="cmis:changeToken"/>
  *   &lt;/restriction>
  * &lt;/simpleType>
  * </pre>
  * 
  */
-@XmlType(name = "enumPropertiesBase", namespace = "http://docs.oasis-open.org/ns/cmis/core/200901")
+@XmlType(name = "enumPropertiesBase", namespace = "http://docs.oasis-open.org/ns/cmis/core/200908/")
 @XmlEnum
 public enum EnumPropertiesBase {
 
-    @XmlEnumValue("cmis:Name")
-    CMIS_NAME("cmis:Name"),
-    @XmlEnumValue("cmis:ObjectId")
-    CMIS_OBJECT_ID("cmis:ObjectId"),
-    @XmlEnumValue("cmis:ObjectTypeId")
-    CMIS_OBJECT_TYPE_ID("cmis:ObjectTypeId"),
-    @XmlEnumValue("cmis:BaseTypeId")
-    CMIS_BASE_TYPE_ID("cmis:BaseTypeId"),
-    @XmlEnumValue("cmis:CreatedBy")
-    CMIS_CREATED_BY("cmis:CreatedBy"),
-    @XmlEnumValue("cmis:CreationDate")
-    CMIS_CREATION_DATE("cmis:CreationDate"),
-    @XmlEnumValue("cmis:LastModifiedBy")
-    CMIS_LAST_MODIFIED_BY("cmis:LastModifiedBy"),
-    @XmlEnumValue("cmis:LastModificationDate")
-    CMIS_LAST_MODIFICATION_DATE("cmis:LastModificationDate"),
-    @XmlEnumValue("cmis:ChangeToken")
-    CMIS_CHANGE_TOKEN("cmis:ChangeToken");
+    @XmlEnumValue("cmis:name")
+    CMIS_NAME("cmis:name"),
+    @XmlEnumValue("cmis:objectId")
+    CMIS_OBJECT_ID("cmis:objectId"),
+    @XmlEnumValue("cmis:objectTypeId")
+    CMIS_OBJECT_TYPE_ID("cmis:objectTypeId"),
+    @XmlEnumValue("cmis:baseTypeId")
+    CMIS_BASE_TYPE_ID("cmis:baseTypeId"),
+    @XmlEnumValue("cmis:createdBy")
+    CMIS_CREATED_BY("cmis:createdBy"),
+    @XmlEnumValue("cmis:creationDate")
+    CMIS_CREATION_DATE("cmis:creationDate"),
+    @XmlEnumValue("cmis:lastModifiedBy")
+    CMIS_LAST_MODIFIED_BY("cmis:lastModifiedBy"),
+    @XmlEnumValue("cmis:lastModificationDate")
+    CMIS_LAST_MODIFICATION_DATE("cmis:lastModificationDate"),
+    @XmlEnumValue("cmis:changeToken")
+    CMIS_CHANGE_TOKEN("cmis:changeToken");
     private final String value;
 
     EnumPropertiesBase(String v) {

@@ -5,9 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlAnyElement;
 import javax.xml.bind.annotation.XmlType;
-import org.w3c.dom.Element;
 
 
 /**
@@ -18,19 +16,10 @@ import org.w3c.dom.Element;
  * <pre>
  * &lt;complexType name="cmisChoiceHtml">
  *   &lt;complexContent>
- *     &lt;extension base="{http://docs.oasis-open.org/ns/cmis/core/200901}cmisChoice">
+ *     &lt;extension base="{http://docs.oasis-open.org/ns/cmis/core/200908/}cmisChoice">
  *       &lt;sequence>
- *         &lt;element name="value" maxOccurs="unbounded" minOccurs="0">
- *           &lt;complexType>
- *             &lt;complexContent>
- *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *                 &lt;sequence>
- *                   &lt;any/>
- *                 &lt;/sequence>
- *               &lt;/restriction>
- *             &lt;/complexContent>
- *           &lt;/complexType>
- *         &lt;/element>
+ *         &lt;element name="value" type="{http://www.w3.org/2001/XMLSchema}string" maxOccurs="unbounded" minOccurs="0"/>
+ *         &lt;element name="choice" type="{http://docs.oasis-open.org/ns/cmis/core/200908/}cmisChoiceHtml" maxOccurs="unbounded" minOccurs="0"/>
  *       &lt;/sequence>
  *     &lt;/extension>
  *   &lt;/complexContent>
@@ -40,14 +29,16 @@ import org.w3c.dom.Element;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "cmisChoiceHtml", namespace = "http://docs.oasis-open.org/ns/cmis/core/200901", propOrder = {
-    "value"
+@XmlType(name = "cmisChoiceHtml", namespace = "http://docs.oasis-open.org/ns/cmis/core/200908/", propOrder = {
+    "value",
+    "choice"
 })
 public class CmisChoiceHtml
     extends CmisChoice
 {
 
-    protected List<CmisChoiceHtml.Value> value;
+    protected List<String> value;
+    protected List<CmisChoiceHtml> choice;
 
     /**
      * Gets the value of the value property.
@@ -67,76 +58,44 @@ public class CmisChoiceHtml
      * 
      * <p>
      * Objects of the following type(s) are allowed in the list
-     * {@link CmisChoiceHtml.Value }
+     * {@link String }
      * 
      * 
      */
-    public List<CmisChoiceHtml.Value> getValue() {
+    public List<String> getValue() {
         if (value == null) {
-            value = new ArrayList<CmisChoiceHtml.Value>();
+            value = new ArrayList<String>();
         }
         return this.value;
     }
 
-
     /**
-     * <p>Java class for anonymous complex type.
+     * Gets the value of the choice property.
      * 
-     * <p>The following schema fragment specifies the expected content contained within this class.
+     * <p>
+     * This accessor method returns a reference to the live list,
+     * not a snapshot. Therefore any modification you make to the
+     * returned list will be present inside the JAXB object.
+     * This is why there is not a <CODE>set</CODE> method for the choice property.
      * 
+     * <p>
+     * For example, to add a new item, do as follows:
      * <pre>
-     * &lt;complexType>
-     *   &lt;complexContent>
-     *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
-     *       &lt;sequence>
-     *         &lt;any/>
-     *       &lt;/sequence>
-     *     &lt;/restriction>
-     *   &lt;/complexContent>
-     * &lt;/complexType>
+     *    getChoice().add(newItem);
      * </pre>
      * 
      * 
+     * <p>
+     * Objects of the following type(s) are allowed in the list
+     * {@link CmisChoiceHtml }
+     * 
+     * 
      */
-    @XmlAccessorType(XmlAccessType.FIELD)
-    @XmlType(name = "", propOrder = {
-        "any"
-    })
-    public static class Value {
-
-        @XmlAnyElement(lax = true)
-        protected List<Object> any;
-
-        /**
-         * Gets the value of the any property.
-         * 
-         * <p>
-         * This accessor method returns a reference to the live list,
-         * not a snapshot. Therefore any modification you make to the
-         * returned list will be present inside the JAXB object.
-         * This is why there is not a <CODE>set</CODE> method for the any property.
-         * 
-         * <p>
-         * For example, to add a new item, do as follows:
-         * <pre>
-         *    getAny().add(newItem);
-         * </pre>
-         * 
-         * 
-         * <p>
-         * Objects of the following type(s) are allowed in the list
-         * {@link Element }
-         * {@link Object }
-         * 
-         * 
-         */
-        public List<Object> getAny() {
-            if (any == null) {
-                any = new ArrayList<Object>();
-            }
-            return this.any;
+    public List<CmisChoiceHtml> getChoice() {
+        if (choice == null) {
+            choice = new ArrayList<CmisChoiceHtml>();
         }
-
+        return this.choice;
     }
 
 }

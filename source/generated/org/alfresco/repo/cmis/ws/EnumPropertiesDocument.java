@@ -14,57 +14,57 @@ import javax.xml.bind.annotation.XmlType;
  * <pre>
  * &lt;simpleType name="enumPropertiesDocument">
  *   &lt;restriction base="{http://www.w3.org/2001/XMLSchema}string">
- *     &lt;enumeration value="cmis:IsImmutable"/>
- *     &lt;enumeration value="cmis:IsLatestVersion"/>
- *     &lt;enumeration value="cmis:IsMajorVersion"/>
- *     &lt;enumeration value="cmis:IsLatestMajorVersion"/>
- *     &lt;enumeration value="cmis:VersionLabel"/>
- *     &lt;enumeration value="cmis:VersionSeriesId"/>
- *     &lt;enumeration value="cmis:IsVersionSeriesCheckedOut"/>
- *     &lt;enumeration value="cmis:VersionSeriesCheckedOutBy"/>
- *     &lt;enumeration value="cmis:VersionSeriesCheckedOutId"/>
- *     &lt;enumeration value="cmis:CheckinComment"/>
- *     &lt;enumeration value="cmis:ContentStreamLength"/>
- *     &lt;enumeration value="cmis:ContentStreamMimeType"/>
- *     &lt;enumeration value="cmis:ContentStreamFileName"/>
- *     &lt;enumeration value="cmis:ContentStreamId"/>
+ *     &lt;enumeration value="cmis:isImmutable"/>
+ *     &lt;enumeration value="cmis:isLatestVersion"/>
+ *     &lt;enumeration value="cmis:isMajorVersion"/>
+ *     &lt;enumeration value="cmis:isLatestMajorVersion"/>
+ *     &lt;enumeration value="cmis:versionLabel"/>
+ *     &lt;enumeration value="cmis:versionSeriesId"/>
+ *     &lt;enumeration value="cmis:isVersionSeriesCheckedOut"/>
+ *     &lt;enumeration value="cmis:versionSeriesCheckedOutBy"/>
+ *     &lt;enumeration value="cmis:versionSeriesCheckedOutId"/>
+ *     &lt;enumeration value="cmis:checkinComment"/>
+ *     &lt;enumeration value="cmis:contentStreamLength"/>
+ *     &lt;enumeration value="cmis:contentStreamMimeType"/>
+ *     &lt;enumeration value="cmis:contentStreamFileName"/>
+ *     &lt;enumeration value="cmis:contentStreamId"/>
  *   &lt;/restriction>
  * &lt;/simpleType>
  * </pre>
  * 
  */
-@XmlType(name = "enumPropertiesDocument", namespace = "http://docs.oasis-open.org/ns/cmis/core/200901")
+@XmlType(name = "enumPropertiesDocument", namespace = "http://docs.oasis-open.org/ns/cmis/core/200908/")
 @XmlEnum
 public enum EnumPropertiesDocument {
 
-    @XmlEnumValue("cmis:IsImmutable")
-    CMIS_IS_IMMUTABLE("cmis:IsImmutable"),
-    @XmlEnumValue("cmis:IsLatestVersion")
-    CMIS_IS_LATEST_VERSION("cmis:IsLatestVersion"),
-    @XmlEnumValue("cmis:IsMajorVersion")
-    CMIS_IS_MAJOR_VERSION("cmis:IsMajorVersion"),
-    @XmlEnumValue("cmis:IsLatestMajorVersion")
-    CMIS_IS_LATEST_MAJOR_VERSION("cmis:IsLatestMajorVersion"),
-    @XmlEnumValue("cmis:VersionLabel")
-    CMIS_VERSION_LABEL("cmis:VersionLabel"),
-    @XmlEnumValue("cmis:VersionSeriesId")
-    CMIS_VERSION_SERIES_ID("cmis:VersionSeriesId"),
-    @XmlEnumValue("cmis:IsVersionSeriesCheckedOut")
-    CMIS_IS_VERSION_SERIES_CHECKED_OUT("cmis:IsVersionSeriesCheckedOut"),
-    @XmlEnumValue("cmis:VersionSeriesCheckedOutBy")
-    CMIS_VERSION_SERIES_CHECKED_OUT_BY("cmis:VersionSeriesCheckedOutBy"),
-    @XmlEnumValue("cmis:VersionSeriesCheckedOutId")
-    CMIS_VERSION_SERIES_CHECKED_OUT_ID("cmis:VersionSeriesCheckedOutId"),
-    @XmlEnumValue("cmis:CheckinComment")
-    CMIS_CHECKIN_COMMENT("cmis:CheckinComment"),
-    @XmlEnumValue("cmis:ContentStreamLength")
-    CMIS_CONTENT_STREAM_LENGTH("cmis:ContentStreamLength"),
-    @XmlEnumValue("cmis:ContentStreamMimeType")
-    CMIS_CONTENT_STREAM_MIME_TYPE("cmis:ContentStreamMimeType"),
-    @XmlEnumValue("cmis:ContentStreamFileName")
-    CMIS_CONTENT_STREAM_FILE_NAME("cmis:ContentStreamFileName"),
-    @XmlEnumValue("cmis:ContentStreamId")
-    CMIS_CONTENT_STREAM_ID("cmis:ContentStreamId");
+    @XmlEnumValue("cmis:isImmutable")
+    CMIS_IS_IMMUTABLE("cmis:isImmutable"),
+    @XmlEnumValue("cmis:isLatestVersion")
+    CMIS_IS_LATEST_VERSION("cmis:isLatestVersion"),
+    @XmlEnumValue("cmis:isMajorVersion")
+    CMIS_IS_MAJOR_VERSION("cmis:isMajorVersion"),
+    @XmlEnumValue("cmis:isLatestMajorVersion")
+    CMIS_IS_LATEST_MAJOR_VERSION("cmis:isLatestMajorVersion"),
+    @XmlEnumValue("cmis:versionLabel")
+    CMIS_VERSION_LABEL("cmis:versionLabel"),
+    @XmlEnumValue("cmis:versionSeriesId")
+    CMIS_VERSION_SERIES_ID("cmis:versionSeriesId"),
+    @XmlEnumValue("cmis:isVersionSeriesCheckedOut")
+    CMIS_IS_VERSION_SERIES_CHECKED_OUT("cmis:isVersionSeriesCheckedOut"),
+    @XmlEnumValue("cmis:versionSeriesCheckedOutBy")
+    CMIS_VERSION_SERIES_CHECKED_OUT_BY("cmis:versionSeriesCheckedOutBy"),
+    @XmlEnumValue("cmis:versionSeriesCheckedOutId")
+    CMIS_VERSION_SERIES_CHECKED_OUT_ID("cmis:versionSeriesCheckedOutId"),
+    @XmlEnumValue("cmis:checkinComment")
+    CMIS_CHECKIN_COMMENT("cmis:checkinComment"),
+    @XmlEnumValue("cmis:contentStreamLength")
+    CMIS_CONTENT_STREAM_LENGTH("cmis:contentStreamLength"),
+    @XmlEnumValue("cmis:contentStreamMimeType")
+    CMIS_CONTENT_STREAM_MIME_TYPE("cmis:contentStreamMimeType"),
+    @XmlEnumValue("cmis:contentStreamFileName")
+    CMIS_CONTENT_STREAM_FILE_NAME("cmis:contentStreamFileName"),
+    @XmlEnumValue("cmis:contentStreamId")
+    CMIS_CONTENT_STREAM_ID("cmis:contentStreamId");
     private final String value;
 
     EnumPropertiesDocument(String v) {

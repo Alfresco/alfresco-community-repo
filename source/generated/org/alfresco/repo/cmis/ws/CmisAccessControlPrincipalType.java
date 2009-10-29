@@ -8,6 +8,7 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAnyElement;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
+import org.w3c.dom.Element;
 
 
 /**
@@ -31,7 +32,7 @@ import javax.xml.bind.annotation.XmlType;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "cmisAccessControlPrincipalType", namespace = "http://docs.oasis-open.org/ns/cmis/core/200901", propOrder = {
+@XmlType(name = "cmisAccessControlPrincipalType", namespace = "http://docs.oasis-open.org/ns/cmis/core/200908/", propOrder = {
     "principalId",
     "any"
 })
@@ -80,12 +81,13 @@ public class CmisAccessControlPrincipalType {
      * <pre>
      *    getAny().add(newItem);
      * </pre>
-     *     
+     * 
      * 
      * <p>
      * Objects of the following type(s) are allowed in the list
-     *     {@link Object }
-     *     
+     * {@link Element }
+     * {@link Object }
+     * 
      * 
      */
     public List<Object> getAny() {

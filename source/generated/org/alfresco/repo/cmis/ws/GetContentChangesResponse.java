@@ -1,8 +1,6 @@
 
 package org.alfresco.repo.cmis.ws;
 
-import java.util.ArrayList;
-import java.util.List;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
@@ -20,8 +18,8 @@ import javax.xml.bind.annotation.XmlType;
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
- *         &lt;element name="changedObject" type="{http://docs.oasis-open.org/ns/cmis/core/200901}cmisObjectType" maxOccurs="unbounded" minOccurs="0"/>
- *         &lt;element name="changeToken" type="{http://www.w3.org/2001/XMLSchema}string"/>
+ *         &lt;element name="objects" type="{http://docs.oasis-open.org/ns/cmis/messaging/200908/}cmisObjectListType"/>
+ *         &lt;element name="changeLogToken" type="{http://www.w3.org/2001/XMLSchema}string"/>
  *       &lt;/sequence>
  *     &lt;/restriction>
  *   &lt;/complexContent>
@@ -32,68 +30,63 @@ import javax.xml.bind.annotation.XmlType;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "", propOrder = {
-    "changedObject",
-    "changeToken"
+    "objects",
+    "changeLogToken"
 })
 @XmlRootElement(name = "getContentChangesResponse")
 public class GetContentChangesResponse {
 
-    @XmlElement(nillable = true)
-    protected List<CmisObjectType> changedObject;
     @XmlElement(required = true)
-    protected String changeToken;
+    protected CmisObjectListType objects;
+    @XmlElement(required = true)
+    protected String changeLogToken;
 
     /**
-     * Gets the value of the changedObject property.
+     * Gets the value of the objects property.
      * 
-     * <p>
-     * This accessor method returns a reference to the live list,
-     * not a snapshot. Therefore any modification you make to the
-     * returned list will be present inside the JAXB object.
-     * This is why there is not a <CODE>set</CODE> method for the changedObject property.
-     * 
-     * <p>
-     * For example, to add a new item, do as follows:
-     * <pre>
-     *    getChangedObject().add(newItem);
-     * </pre>
-     * 
-     * 
-     * <p>
-     * Objects of the following type(s) are allowed in the list
-     * {@link CmisObjectType }
-     * 
-     * 
+     * @return
+     *     possible object is
+     *     {@link CmisObjectListType }
+     *     
      */
-    public List<CmisObjectType> getChangedObject() {
-        if (changedObject == null) {
-            changedObject = new ArrayList<CmisObjectType>();
-        }
-        return this.changedObject;
+    public CmisObjectListType getObjects() {
+        return objects;
     }
 
     /**
-     * Gets the value of the changeToken property.
+     * Sets the value of the objects property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link CmisObjectListType }
+     *     
+     */
+    public void setObjects(CmisObjectListType value) {
+        this.objects = value;
+    }
+
+    /**
+     * Gets the value of the changeLogToken property.
      * 
      * @return
      *     possible object is
      *     {@link String }
      *     
      */
-    public String getChangeToken() {
-        return changeToken;
+    public String getChangeLogToken() {
+        return changeLogToken;
     }
 
     /**
-     * Sets the value of the changeToken property.
+     * Sets the value of the changeLogToken property.
      * 
      * @param value
      *     allowed object is
      *     {@link String }
      *     
      */
-    public void setChangeToken(String value) {
-        this.changeToken = value;
+    public void setChangeLogToken(String value) {
+        this.changeLogToken = value;
     }
 
 }

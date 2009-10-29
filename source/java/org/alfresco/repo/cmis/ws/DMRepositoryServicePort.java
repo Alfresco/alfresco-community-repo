@@ -149,6 +149,7 @@ public class DMRepositoryServicePort extends DMAbstractServicePort implements Re
         repositoryInfoType.setProductName("Alfresco Repository (" + serverDescriptor.getEdition() + ")");
         repositoryInfoType.setProductVersion(serverDescriptor.getVersion());
         repositoryInfoType.setRootFolderId(propertiesUtil.getProperty(cmisService.getDefaultRootNodeRef(), CMISDictionaryModel.PROP_OBJECT_ID, (String) null));
+        repositoryInfoType.setThinClientURI(repositoryId);
         CmisRepositoryCapabilitiesType capabilities = new CmisRepositoryCapabilitiesType();
         capabilities.setCapabilityMultifiling(true);
         capabilities.setCapabilityUnfiling(false);
@@ -180,7 +181,15 @@ public class DMRepositoryServicePort extends DMAbstractServicePort implements Re
     public CmisTypeDefinitionType getTypeDefinition(String repositoryId, String typeId) throws CmisException
     {
         checkRepositoryId(repositoryId);
-        CMISTypeDefinition typeDef = cmisDictionaryService.findType(typeId);
+        CMISTypeDefinition typeDef;
+        try
+        {
+            typeDef = cmisDictionaryService.findType(typeId);
+        }
+        catch (Exception e)
+        {
+            throw cmisObjectsUtils.createCmisException(e.toString(), EnumServiceException.INVALID_ARGUMENT);
+        }
         return getCmisTypeDefinition(typeDef, true);
     }
 
@@ -202,7 +211,15 @@ public class DMRepositoryServicePort extends DMAbstractServicePort implements Re
         }
         else
         {
-            CMISTypeDefinition typeDef = cmisDictionaryService.findType(typeId);
+            CMISTypeDefinition typeDef = null;
+            try
+            {
+                typeDef = cmisDictionaryService.findType(typeId);
+            }
+            catch (Exception e)
+            {
+                throw cmisObjectsUtils.createCmisException(e.toString(), EnumServiceException.INVALID_ARGUMENT);
+            }
 
             if (null == typeDef)
             {
@@ -573,22 +590,38 @@ public class DMRepositoryServicePort extends DMAbstractServicePort implements Re
         case DOCUMENT:
             CmisTypeDocumentDefinitionType documentDefinitionType = new CmisTypeDocumentDefinitionType();
             setCmisTypeDefinitionProperties(documentDefinitionType, typeDef, includeProperties);
-            documentDefinitionType.setVersionable(typeDef.isVersionable());
+            if ((null != typeDef.getParentType()) && (null != typeDef.getParentType().getTypeId()))
+            {
+                documentDefinitionType.setParentId(typeDef.getParentType().getTypeId().getId());
+            }
+            documentDefinitionType.setVersionable(true); // FIXME: this attribute MUST be setted with typeDef.isVersionable()
             documentDefinitionType.setContentStreamAllowed(contentStreamAllowedEnumMapping.get(typeDef.getContentStreamAllowed()));
             result = documentDefinitionType;
             break;
         case FOLDER:
             CmisTypeFolderDefinitionType folderDefinitionType = new CmisTypeFolderDefinitionType();
+            if ((null != typeDef.getParentType()) && (null != typeDef.getParentType().getTypeId()))
+            {
+                folderDefinitionType.setParentId(typeDef.getParentType().getTypeId().getId());
+            }
             setCmisTypeDefinitionProperties(folderDefinitionType, typeDef, includeProperties);
             result = folderDefinitionType;
             break;
         case POLICY:
             CmisTypePolicyDefinitionType policyDefinitionType = new CmisTypePolicyDefinitionType();
+            if ((null != typeDef.getParentType()) && (null != typeDef.getParentType().getTypeId()))
+            {
+                policyDefinitionType.setParentId(typeDef.getParentType().getTypeId().getId());
+            }
             setCmisTypeDefinitionProperties(policyDefinitionType, typeDef, includeProperties);
             result = policyDefinitionType;
             break;
         case RELATIONSHIP:
             CmisTypeRelationshipDefinitionType relationshipDefinitionType = new CmisTypeRelationshipDefinitionType();
+            if ((null != typeDef.getParentType()) && (null != typeDef.getParentType().getTypeId()))
+            {
+                relationshipDefinitionType.setParentId(typeDef.getParentType().getTypeId().getId());
+            }
             setCmisTypeDefinitionProperties(relationshipDefinitionType, typeDef, includeProperties);
             result = relationshipDefinitionType;
             break;

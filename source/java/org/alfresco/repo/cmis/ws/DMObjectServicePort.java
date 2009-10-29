@@ -281,7 +281,7 @@ public class DMObjectServicePort extends DMAbstractServicePort implements Object
         NodeRef targetNodeRef = cmisObjectsUtils.getIdentifierInstance(targetObjectId, AlfrescoObjectType.ANY_OBJECT);
 
         Map<String, Object> propertiesMap = propertiesUtil.getPropertiesMap(properties);
-        String typeId = (String) propertiesMap.get(CMISDictionaryModel.DOCUMENT_TYPE_ID);
+        String typeId = (String) propertiesMap.get(CMISDictionaryModel.PROP_OBJECT_TYPE_ID);
 
         CMISTypeDefinition relationshipType = cmisDictionaryService.findType(typeId);
         if (relationshipType == null || relationshipType.getTypeId() == null || relationshipType.getTypeId().getScope() != CMISScope.RELATIONSHIP)

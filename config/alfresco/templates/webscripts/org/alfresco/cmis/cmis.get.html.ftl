@@ -36,7 +36,7 @@
   <div id="body" class="wrapper">
     <div id="introduction">
       <h2>Explore and Test CMIS</h2>
-      <p>The CMIS (Content Management Interoperability Services) specification is under development but close to Public Review.</p>
+      <p>The CMIS (Content Management Interoperability Services) specification is now very close to Public Review.</p>
       <p>This site hosts a <a href="#repo">CMIS Repository</a> and <a href="#testatompub">CMIS AtomPub TCK</a> to assist the development of the specification and promote interoperability between up-and-coming implementations. Feel free to use them for building and testing your own CMIS clients and servers.</p>
       <p>Frequent updates are made to both the Repository and TCK as issues are resolved or new capabilities added. Currently, <strong class="highlight">version ${cmisVersion}</strong> of the CMIS specification is supported.</p>
       
@@ -55,7 +55,6 @@
         <tr><td>Version Supported</td><td>${cmisVersion}</td></tr>
         <tr><td>Repository Id</td><td>${server.id}</td></tr>
         <tr><td>Repository Name</td><td>${server.name}</td></tr>
-        <tr><td>Repository Relationship</td><td>Self</td></tr>
         <tr><td>Repository Description</td><td>[none]</td></tr>
         <tr><td>Vendor Name</td><td>Alfresco</td></tr>
         <tr><td>Product Name</td><td>Alfresco Repository (${server.edition})</td></tr>
@@ -69,6 +68,7 @@
         <tr><td>Changes</td><td>[#-- TODO --]none</td></tr>
         <tr><td>ContentStreamUpdatability</td><td>anytime</td></tr>
         <tr><td>GetDescendants</td><td>true</td></tr>
+        <tr><td>GetFolderTree</td><td>true</td></tr>
         <tr><td>Multifiling</td><td>true</td></tr>
         <tr><td>PWCSearchable</td><td>${pwcSearchable?string}</td></tr>
         <tr><td>PWCUpdateable</td><td>true</td></tr>
@@ -114,7 +114,7 @@
       <ul>
         <li><a href="http://www.oasis-open.org/committees/cmis">OASIS Technical Committee</a></li>
         <li><a href="http://xml.coverpages.org/cmis.html">Cover Pages</a></li>
-        <li><a href="http://www.oasis-open.org/apps/org/workgroup/cmis/download.php/33431/Draft%2062f.zip"><strong>Specification v0.62</strong></a></li>
+        <li><a href="http://www.oasis-open.org/committees/download.php/34413/CMIS-70b3.zip"><strong>Specification v0.7</strong></a></li>
       </ul>
       <h3>Alfresco Resources</h3>
       <ul>
@@ -122,6 +122,7 @@
         <li><a href="http://blogs.alfresco.com/cmis/">CMIS Blog</a></li>
         <li><a href="http://wiki.alfresco.com/wiki/Download_Community_Edition">Download</a> Repository</a></li>
         <li><a href="http://wiki.alfresco.com/wiki/Alfresco_SVN_Development_Environment">Source Code</a> for Repository</li>
+        <li><a href="http://svn.alfresco.com/repos/alfresco-open-mirror/alfresco/HEAD/root/design/changes_v0.62f_to_v0.7.txt">Changes from v0.62 to v0.7</li>
       </ul>
       <h3>Apache Chemistry</h3>
       <ul>

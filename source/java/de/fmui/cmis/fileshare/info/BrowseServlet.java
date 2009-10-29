@@ -59,13 +59,15 @@ public class BrowseServlet extends HttpServlet {
 
 	private static final long serialVersionUID = 1L;
 
-    private static final String PARAM_URL = "url";
-	private static final String INIT_PARAM_WEBCONTENTROOT = "webcontentroot";
+	private static final String PARAM_URL = "url";
+	private static final String INIT_PARAM_AUXROOT = "auxroot";
+	private static final String INIT_PARAM_ALLOW = "allow";
 	private static final String INIT_PARAM_STYLESHEET = "stylesheet:";
 
 	private static final int BUFFER_SIZE = 64 * 1024;
 
-	private String webContentRoot = "";
+	private String fAuxRoot = "";
+	private String fAllow = ".*";
 	private Map<String, Source> fStyleSheets;
 
 	@Override
@@ -100,10 +102,15 @@ public class BrowseServlet extends HttpServlet {
 				}
 			}
 		}
-		
-		String initWebContentRoot = config.getInitParameter(INIT_PARAM_WEBCONTENTROOT);
-		if (initWebContentRoot != null) {
-		    webContentRoot = initWebContentRoot;
+
+		String initAuxRoot = config.getInitParameter(INIT_PARAM_AUXROOT);
+		if (initAuxRoot != null) {
+			fAuxRoot = initAuxRoot;
+		}
+
+		String initAllow = config.getInitParameter(INIT_PARAM_ALLOW);
+		if (initAllow != null) {
+			fAllow = initAllow;
 		}
 	}
 
@@ -119,6 +126,12 @@ public class BrowseServlet extends HttpServlet {
 
 	protected void doBrowse(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		String browseUrl = req.getParameter(PARAM_URL);
+
+		// check URL
+		if (!browseUrl.matches(fAllow)) {
+			printError(req, resp, "Prohibited URL!", null);
+			return;
+		}
 
 		try {
 			// get content
@@ -161,7 +174,7 @@ public class BrowseServlet extends HttpServlet {
 				TransformerFactory f = TransformerFactory.newInstance();
 				Transformer t = f.newTransformer(stylesheet);
 				t.setParameter("browseUrl", InfoUtil.getServletUrl(req) + "?url=");
-				t.setParameter("webContentRoot", webContentRoot);
+				t.setParameter("auxRoot", InfoUtil.getAuxRoot(req, fAuxRoot));
 
 				resp.setContentType("text/html");
 				out = new BufferedOutputStream(resp.getOutputStream(), BUFFER_SIZE);
@@ -225,24 +238,24 @@ public class BrowseServlet extends HttpServlet {
 	}
 
 	private void addStylesheet(String contentType, Source source) {
-	    fStyleSheets.put(contentType, source);
+		fStyleSheets.put(contentType, source);
 	}
 
 	private Source getStylesheet(String contentType) {
-        String[] ctp = contentType.split(";");
-        
-        Source source = null;
-        String match = "";
-        int i = 0;
-        while (source == null && i < ctp.length)
-        {
-            if (i > 0) {
-                match += ";";
-            }
-            match += ctp[i];
-            source = fStyleSheets.get(match);
-            i++;
-        }
-        return source;
+		String[] ctp = contentType.split(";");
+		Source source = null;
+
+		String match = "";
+		int i = 0;
+		while (source == null && i < ctp.length) {
+			if (i > 0) {
+				match += ";";
+			}
+			match += ctp[i];
+			source = fStyleSheets.get(match);
+			i++;
+		}
+
+		return source;
 	}
 }

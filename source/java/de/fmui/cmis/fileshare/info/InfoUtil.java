@@ -6,6 +6,8 @@ import javax.servlet.http.HttpServletRequest;
 
 public class InfoUtil {
 
+	public static final String CONTEXT_PREFIX = "{ctx}";
+
 	private InfoUtil() {
 	}
 
@@ -25,6 +27,16 @@ public class InfoUtil {
 
 	public static String getServletUrl(HttpServletRequest request) {
 		return getContextUrl(request) + request.getServletPath();
+	}
+
+	public static String getAuxRoot(HttpServletRequest request, String auxRoot) {
+		if (auxRoot == null) {
+			return getContextUrl(request);
+		} else if (auxRoot.startsWith(CONTEXT_PREFIX)) {
+			return getContextUrl(request) + auxRoot.substring(CONTEXT_PREFIX.length());
+		} else {
+			return auxRoot;
+		}
 	}
 
 	public static void printHeader(PrintWriter pw, String title) {

@@ -102,6 +102,9 @@
       </property>
       <property name="templateObjects">
          <map merge="true">
+           <entry key="cmisconstants">
+              <bean class="org.alfresco.repo.cmis.rest.CMISConstantsFactory"/>
+           </entry>
            <entry key="cmistype">
               <bean class="org.alfresco.repo.cmis.rest.CMISTypeDefinitionMethod">
                  <constructor-arg><ref bean="CMISDictionaryService"/></constructor-arg>

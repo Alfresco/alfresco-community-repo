@@ -82,7 +82,7 @@ public class CMISCustomTypeTest extends BaseCMISWebScriptTest
         throws Exception
     {
         Entry testFolder = createTestFolder("testCreateCustomFolder");
-        Link childrenLink = testFolder.getLink(CMISConstants.REL_CHILDREN);
+        Link childrenLink = getChildrenLink(testFolder);
         assertNotNull(childrenLink);
         Feed children = getFeed(childrenLink.getHref());
         assertNotNull(children);
@@ -93,8 +93,8 @@ public class CMISCustomTypeTest extends BaseCMISWebScriptTest
         assertEquals(entriesBefore +1, entriesAfter);
         Entry entry = feedFolderAfter.getEntry(folder.getId().toString());
         CMISObject object = entry.getExtension(CMISConstants.OBJECT);
-        assertEquals("F/cmiscustom_folder", object.getObjectTypeId().getStringValue());
-        CMISProperty customProp = object.getProperties().find("cmiscustom_folderprop_string");
+        assertEquals("F/cmiscustom:folder", object.getObjectTypeId().getStringValue());
+        CMISProperty customProp = object.getProperties().find("cmiscustom:folderprop_string");
         assertNotNull(customProp);
         assertEquals("custom string", customProp.getStringValue());
     }
@@ -103,7 +103,7 @@ public class CMISCustomTypeTest extends BaseCMISWebScriptTest
         throws Exception
     {
         Entry testFolder = createTestFolder("testCreateCustomDocument");
-        Link childrenLink = testFolder.getLink(CMISConstants.REL_CHILDREN);
+        Link childrenLink = getChildrenLink(testFolder);
         assertNotNull(childrenLink);
         Feed children = getFeed(childrenLink.getHref());
         assertNotNull(children);
@@ -114,11 +114,11 @@ public class CMISCustomTypeTest extends BaseCMISWebScriptTest
         assertEquals(entriesBefore +1, entriesAfter);
         Entry entry = feedFolderAfter.getEntry(document.getId().toString());
         CMISObject object = entry.getExtension(CMISConstants.OBJECT);
-        assertEquals("D/cmiscustom_document", object.getObjectTypeId().getStringValue());
-        CMISProperty customProp = object.getProperties().find("cmiscustom_docprop_string");
+        assertEquals("D/cmiscustom:document", object.getObjectTypeId().getStringValue());
+        CMISProperty customProp = object.getProperties().find("cmiscustom:docprop_string");
         assertNotNull(customProp);
         assertEquals("custom string", customProp.getStringValue());
-        CMISProperty multiProp = object.getProperties().find("cmiscustom_docprop_boolean_multi");
+        CMISProperty multiProp = object.getProperties().find("cmiscustom:docprop_boolean_multi");
         assertNotNull(multiProp);
         List<Object> multiValues = multiProp.getNativeValues();
         assertNotNull(multiValues);
@@ -132,7 +132,7 @@ public class CMISCustomTypeTest extends BaseCMISWebScriptTest
     {
         // retrieve test folder for update
         Entry testFolder = createTestFolder("testUpdatePatchCustomDocument");
-        Link childrenLink = testFolder.getLink(CMISConstants.REL_CHILDREN);
+        Link childrenLink = getChildrenLink(testFolder);
         
         // create document for update
         Entry document = createDocument(childrenLink.getHref(), "testUpdatePatchCustomDocument", "/org/alfresco/repo/cmis/rest/test/createcustomdocument.atomentry.xml");
@@ -151,11 +151,11 @@ public class CMISCustomTypeTest extends BaseCMISWebScriptTest
         assertEquals(document.getPublished(), updated.getPublished());
         assertEquals("Updated Title " + guid, updated.getTitle());
         CMISObject object = updated.getExtension(CMISConstants.OBJECT);
-        assertEquals("D/cmiscustom_document", object.getObjectTypeId().getStringValue());
-        CMISProperty customProp = object.getProperties().find("cmiscustom_docprop_string");
+        assertEquals("D/cmiscustom:document", object.getObjectTypeId().getStringValue());
+        CMISProperty customProp = object.getProperties().find("cmiscustom:docprop_string");
         assertNotNull(customProp);
         assertEquals("custom " + guid, customProp.getStringValue());
-        CMISProperty multiProp = object.getProperties().find("cmiscustom_docprop_boolean_multi");
+        CMISProperty multiProp = object.getProperties().find("cmiscustom:docprop_boolean_multi");
         assertNotNull(multiProp);
         List<Object> multiValues = multiProp.getNativeValues();
         assertNotNull(multiValues);
@@ -169,7 +169,7 @@ public class CMISCustomTypeTest extends BaseCMISWebScriptTest
     {
         // retrieve test folder for update
         Entry testFolder = createTestFolder("testUpdatePutCustomDocument");
-        Link childrenLink = testFolder.getLink(CMISConstants.REL_CHILDREN);
+        Link childrenLink = getChildrenLink(testFolder);
         
         // create document for update
         Entry document = createDocument(childrenLink.getHref(), "testUpdatePutCustomDocument", "/org/alfresco/repo/cmis/rest/test/createcustomdocument.atomentry.xml");
@@ -188,11 +188,11 @@ public class CMISCustomTypeTest extends BaseCMISWebScriptTest
         assertEquals(document.getPublished(), updated.getPublished());
         assertEquals("Updated Title " + guid, updated.getTitle());
         CMISObject object = updated.getExtension(CMISConstants.OBJECT);
-        assertEquals("D/cmiscustom_document", object.getObjectTypeId().getStringValue());
-        CMISProperty customProp = object.getProperties().find("cmiscustom_docprop_string");
+        assertEquals("D/cmiscustom:document", object.getObjectTypeId().getStringValue());
+        CMISProperty customProp = object.getProperties().find("cmiscustom:docprop_string");
         assertNotNull(customProp);
         assertEquals("custom " + guid, customProp.getStringValue());
-        CMISProperty multiProp = object.getProperties().find("cmiscustom_docprop_boolean_multi");
+        CMISProperty multiProp = object.getProperties().find("cmiscustom:docprop_boolean_multi");
         assertNotNull(multiProp);
         List<Object> multiValues = multiProp.getNativeValues();
         assertNotNull(multiValues);
@@ -206,7 +206,7 @@ public class CMISCustomTypeTest extends BaseCMISWebScriptTest
     {
         // retrieve test folder for deletes
         Entry testFolder = createTestFolder("testDeleteCustom");
-        Link childrenLink = testFolder.getLink(CMISConstants.REL_CHILDREN);
+        Link childrenLink = getChildrenLink(testFolder);
         Feed children = getFeed(childrenLink.getHref());
         int entriesBefore = children.getEntries().size();
         
@@ -241,7 +241,7 @@ public class CMISCustomTypeTest extends BaseCMISWebScriptTest
         // retrieve test folder for query
         Entry testFolder = createTestFolder("testQueryCustom");
         CMISObject testFolderObject = testFolder.getExtension(CMISConstants.OBJECT);
-        Link childrenLink = testFolder.getLink(CMISConstants.REL_CHILDREN);
+        Link childrenLink = getChildrenLink(testFolder);
         
         // create documents to query
         // Standard root document
@@ -287,10 +287,10 @@ public class CMISCustomTypeTest extends BaseCMISWebScriptTest
             assertEquals(document2Object.getObjectTypeId().getStringValue(), result1.getObjectTypeId().getStringValue());
             CMISProperties result1properties = result1.getProperties();
             assertNotNull(result1properties);
-            CMISProperty result1property = result1properties.find("cmiscustom_docprop_string");
+            CMISProperty result1property = result1properties.find("cmiscustom:docprop_string");
             assertNotNull(result1property);
             assertEquals("custom string", result1property.getStringValue());
-            CMISProperty result1multiproperty = result1properties.find("cmiscustom_docprop_boolean_multi");
+            CMISProperty result1multiproperty = result1properties.find("cmiscustom:docprop_boolean_multi");
             assertNotNull(result1multiproperty);
             List<Object> result1multiValues = result1multiproperty.getNativeValues();
             assertNotNull(result1multiValues);
@@ -306,10 +306,10 @@ public class CMISCustomTypeTest extends BaseCMISWebScriptTest
             assertEquals(document3Object.getObjectTypeId().getStringValue(), result2.getObjectTypeId().getStringValue());
             CMISProperties result2properties = result2.getProperties();
             assertNotNull(result2properties);
-            CMISProperty result2property = result2properties.find("cmiscustom_docprop_string");
+            CMISProperty result2property = result2properties.find("cmiscustom:docprop_string");
             assertNotNull(result2property);
             assertEquals("custom string", result2property.getStringValue());
-            CMISProperty result2multiproperty = result1properties.find("cmiscustom_docprop_boolean_multi");
+            CMISProperty result2multiproperty = result1properties.find("cmiscustom:docprop_boolean_multi");
             assertNotNull(result2multiproperty);
             List<Object> result2multiValues = result2multiproperty.getNativeValues();
             assertNotNull(result2multiValues);
@@ -323,7 +323,7 @@ public class CMISCustomTypeTest extends BaseCMISWebScriptTest
         throws Exception
     {
         Entry testFolder = createTestFolder("testCreateCustomRelationship");
-        Link childrenLink = testFolder.getLink(CMISConstants.REL_CHILDREN);
+        Link childrenLink = getChildrenLink(testFolder);
         assertNotNull(childrenLink);
         Feed children = getFeed(childrenLink.getHref());
         assertNotNull(children);
@@ -344,7 +344,7 @@ public class CMISCustomTypeTest extends BaseCMISWebScriptTest
         assertNotNull(targetObject);
         String targetId = targetObject.getObjectId().getStringValue();
         assertNotNull(targetId);
-        Entry rel = createRelationship(relsLink.getHref(), "R/cmiscustom_assoc", targetId);
+        Entry rel = createRelationship(relsLink.getHref(), "R/cmiscustom:assoc", targetId);
         assertNotNull(rel);
 
         // check created relationship
@@ -354,11 +354,11 @@ public class CMISCustomTypeTest extends BaseCMISWebScriptTest
         assertNotNull(sourceId);
         CMISObject relObject = rel.getExtension(CMISConstants.OBJECT);
         assertNotNull(relObject);
-        assertEquals("R/cmiscustom_assoc", relObject.getObjectTypeId().getStringValue());
+        assertEquals("R/cmiscustom:assoc", relObject.getObjectTypeId().getStringValue());
         assertEquals(sourceId, relObject.getSourceId().getStringValue());
         assertEquals(targetId, relObject.getTargetId().getStringValue());
-        assertEquals(source.getSelfLink().getHref(), rel.getLink(CMISConstants.REL_SOURCE).getHref());
-        assertEquals(target.getSelfLink().getHref(), rel.getLink(CMISConstants.REL_TARGET).getHref());
+        assertEquals(source.getSelfLink().getHref(), rel.getLink(CMISConstants.REL_ASSOC_SOURCE).getHref());
+        assertEquals(target.getSelfLink().getHref(), rel.getLink(CMISConstants.REL_ASSOC_TARGET).getHref());
 
         // check relationships for created item
         Map<String, String> args = new HashMap<String, String>();
@@ -372,7 +372,7 @@ public class CMISCustomTypeTest extends BaseCMISWebScriptTest
         throws Exception
     {
         Entry testFolder = createTestFolder("testGetCustomRelationship");
-        Link childrenLink = testFolder.getLink(CMISConstants.REL_CHILDREN);
+        Link childrenLink = getChildrenLink(testFolder);
         assertNotNull(childrenLink);
         Feed children = getFeed(childrenLink.getHref());
         assertNotNull(children);
@@ -390,7 +390,7 @@ public class CMISCustomTypeTest extends BaseCMISWebScriptTest
         assertNotNull(targetObject);
         String targetId = targetObject.getObjectId().getStringValue();
         assertNotNull(targetId);
-        Entry rel = createRelationship(relsLink.getHref(), "R/cmiscustom_assoc", targetId);
+        Entry rel = createRelationship(relsLink.getHref(), "R/cmiscustom:assoc", targetId);
         assertNotNull(rel);
     
         // get created relationship
@@ -401,15 +401,15 @@ public class CMISCustomTypeTest extends BaseCMISWebScriptTest
         assertEquals(relObject.getObjectTypeId().getStringValue(), relEntryObject.getObjectTypeId().getStringValue());
         assertEquals(relObject.getSourceId().getStringValue(), relEntryObject.getSourceId().getStringValue());
         assertEquals(relObject.getTargetId().getStringValue(), relEntryObject.getTargetId().getStringValue());
-        assertEquals(source.getSelfLink().getHref(), relEntry.getLink(CMISConstants.REL_SOURCE).getHref());
-        assertEquals(target.getSelfLink().getHref(), relEntry.getLink(CMISConstants.REL_TARGET).getHref());
+        assertEquals(source.getSelfLink().getHref(), relEntry.getLink(CMISConstants.REL_ASSOC_SOURCE).getHref());
+        assertEquals(target.getSelfLink().getHref(), relEntry.getLink(CMISConstants.REL_ASSOC_TARGET).getHref());
     }
     
     public void testDeleteRelationship()
         throws Exception
     {
         Entry testFolder = createTestFolder("testDeleteCustomRelationship");
-        Link childrenLink = testFolder.getLink(CMISConstants.REL_CHILDREN);
+        Link childrenLink = getChildrenLink(testFolder);
         assertNotNull(childrenLink);
         Feed children = getFeed(childrenLink.getHref());
         assertNotNull(children);
@@ -430,7 +430,7 @@ public class CMISCustomTypeTest extends BaseCMISWebScriptTest
         assertNotNull(targetObject);
         String targetId = targetObject.getObjectId().getStringValue();
         assertNotNull(targetId);
-        Entry rel = createRelationship(relsLink.getHref(), "R/cmiscustom_assoc", targetId);
+        Entry rel = createRelationship(relsLink.getHref(), "R/cmiscustom:assoc", targetId);
         assertNotNull(rel);
     
         // check relationships for created item

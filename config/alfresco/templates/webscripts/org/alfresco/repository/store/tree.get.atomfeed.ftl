@@ -5,13 +5,14 @@
 [#compress]
 
 <?xml version="1.0" encoding="UTF-8"?>
-
 <feed [@nsLib.feedNS/]>
 
-[@feedLib.node node "parents"/]
+[@feedLib.node node "tree"/]
 
-[#if parent?? && parent.isContainer]
-  [@entryLib.folder node=parent propfilter=filter includeallowableactions=includeAllowableActions includerelationships="none"/]
+[#if depth &gt; 0 || depth == -1]
+[#list cmischildren(node, "folders") as child]
+  [@entryLib.foldertree node=child propfilter=propFilter includeallowableactions=includeAllowableActions includerelationships=false maxdepth=depth/]
+[/#list]
 [/#if]
 
 </feed>

@@ -8,12 +8,12 @@
 //
 function createNode(parent, entry, slug)
 {
-    var object = entry.getExtension(atom.names.cmis_object);
+    var object = entry.getExtension(atom.names.cmisra_object);
     var typeId = (object !== null) ? object.objectTypeId.nativeValue : null;
 
     // locate type definition
     // TODO: check this against spec - default to Document, if not specified
-    var type = cmis.queryType(typeId === null ? "document" : typeId);
+    var type = cmis.queryType(typeId === null ? DOCUMENT_TYPE_ID.id : typeId);
     if (type === null)
     {
         status.code = 400;
@@ -24,13 +24,13 @@ function createNode(parent, entry, slug)
 
     // construct node of folder or file
     var name = (slug !== null) ? slug : entry.title;
-    var baseType = type.typeId.baseTypeId.id;
-    if (baseType == "document")
+    var baseType = type.typeId.baseTypeId;
+    if (baseType == DOCUMENT_TYPE_ID)
     {
         node = parent.createFile(name);
         // TODO: versioningState argument (CheckedOut/CheckedInMinor/CheckedInMajor)
     }
-    else if (baseType == "folder")
+    else if (baseType == FOLDER_TYPE_ID)
     {
         node = parent.createFolder(name);
     }
@@ -43,8 +43,7 @@ function createNode(parent, entry, slug)
     }
 
     // specialize to required custom type
-    var objectType = type.typeId.id;
-    if (objectType != "document" && objectType != "folder")
+    if (type.typeId != DOCUMENT_TYPE_ID && type.typeId != FOLDER_TYPE_ID)
     {
         if (!node.specializeType(type.typeId.QName))
         {
@@ -56,7 +55,7 @@ function createNode(parent, entry, slug)
     }
     
     // update node properties (excluding object type & name)
-    var exclude = [ "ObjectTypeId", "Name" ];
+    var exclude = [ PROP_OBJECT_TYPE_ID, PROP_NAME ];
     var updated = updateNode(node, entry, exclude, function(propDef) {return patchValidator(propDef, true);});
 
     // only return node if updated successfully
@@ -85,16 +84,16 @@ function updateNode(node, entry, exclude, validator)
     }
     
     var updated = false;
-    var object = entry.getExtension(atom.names.cmis_object);
+    var object = entry.getExtension(atom.names.cmisra_object);
     var props = (object == null) ? null : object.properties;
     var vals = new Object();
 
     // calculate list of properties to update
     // TODO: consider array form of properties.names
-    var updateProps = (props == null) ? new Array() : props.names.toArray().filter(function(element, index, array) {return true;});
-    updateProps.push("Name");   // mapped to entry.title
+    var updateProps = (props == null) ? new Array() : props.ids.toArray().filter(function(element, index, array) {return true;});
+    updateProps.push(PROP_NAME);   // mapped to entry.title
     var exclude = (exclude == null) ? new Array() : exclude;
-    exclude.push("BaseType");   // TODO: CMIS Issue where BaseType is not a property
+    exclude.push(PROP_BASE_TYPE_ID);
     updateProps = updateProps.filter(includeProperty, exclude);
     
     // build values to update
@@ -134,7 +133,7 @@ function updateNode(node, entry, exclude, validator)
             {
                 if (prop.isMultiValued())
                 {
-                    if (propDef.updatability === Packages.org.alfresco.cmis.CMISCardinalityEnum.MULTI_VALUED)
+                    if (propDef.updatability === CMISCardinalityEnum.MULTI_VALUED)
                     {
                         status.code = 500;
                         status.message = "Property " + propName + " is single valued."
@@ -150,7 +149,7 @@ function updateNode(node, entry, exclude, validator)
             }
             
             // NOTE: special case name: entry.title overrides cmis:name
-            if (propName === "Name")
+            if (propName === PROP_NAME)
             {
                 val = entry.title;
             }
@@ -207,18 +206,18 @@ function updateNode(node, entry, exclude, validator)
 //
 function createAssociation(source, entry)
 {
-    var object = entry.getExtension(atom.names.cmis_object);
+    var object = entry.getExtension(atom.names.cmisra_object);
     var typeId = (object !== null) ? object.objectTypeId.nativeValue : null;
 
     // locate relationship type definition
     // TODO: check this against spec - default to Relationship, if not specified
-    var type = cmis.queryType(typeId === null ? "relationship" : typeId);
+    var type = cmis.queryType(typeId === null ? RELATIONSHIP_TYPE_ID.id : typeId);
     if (type === null)
     {
         status.setCode(400, "CMIS object type " + typeId + " not understood");
         return null;
     }
-    if (type.typeId.baseTypeId.id != "relationship")
+    if (type.typeId.baseTypeId != RELATIONSHIP_TYPE_ID)
     {
         status.setCode(400, "CMIS object type " + typeId + " is not a relationship type");
         return null;
@@ -256,14 +255,14 @@ function createAssociation(source, entry)
 function patchValidator(propDef, pwc)
 {
     // is the property write-able?
-    if (propDef.updatability === Packages.org.alfresco.cmis.CMISUpdatabilityEnum.READ_ONLY)
+    if (propDef.updatability === CMISUpdatabilityEnum.READ_ONLY)
     {
         status.code = 500;
         status.message = "Property " + propName + " cannot be updated. It is read only."
         status.redirect = true;
         return null;
     }
-    if (!pwc && propDef.updatability === Packages.org.alfresco.cmis.CMISUpdatabilityEnum.READ_AND_WRITE_WHEN_CHECKED_OUT)
+    if (!pwc && propDef.updatability === CMISUpdatabilityEnum.READ_AND_WRITE_WHEN_CHECKED_OUT)
     {
         status.code = 500;
         status.message = "Property " + propName + " can only be updated on a private working copy.";
@@ -288,11 +287,11 @@ function patchValidator(propDef, pwc)
 function putValidator(propDef, pwc)
 {
     // is the property write-able?
-    if (propDef.updatability === Packages.org.alfresco.cmis.CMISUpdatabilityEnum.READ_ONLY)
+    if (propDef.updatability === CMISUpdatabilityEnum.READ_ONLY)
     {
         return false;
     }
-    if (!pwc && propDef.updatability === Packages.org.alfresco.cmis.CMISUpdatabilityEnum.READ_AND_WRITE_WHEN_CHECKED_OUT)
+    if (!pwc && propDef.updatability === CMISUpdatabilityEnum.READ_AND_WRITE_WHEN_CHECKED_OUT)
     {
         return false;
     }

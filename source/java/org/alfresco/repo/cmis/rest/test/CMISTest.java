@@ -25,6 +25,7 @@
 package org.alfresco.repo.cmis.rest.test;
 
 import java.io.StringReader;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -34,6 +35,7 @@ import java.util.Set;
 
 import org.alfresco.abdera.ext.cmis.CMISAllowableAction;
 import org.alfresco.abdera.ext.cmis.CMISAllowableActions;
+import org.alfresco.abdera.ext.cmis.CMISChildren;
 import org.alfresco.abdera.ext.cmis.CMISConstants;
 import org.alfresco.abdera.ext.cmis.CMISObject;
 import org.alfresco.util.GUID;
@@ -90,7 +92,7 @@ public class CMISTest extends BaseCMISWebScriptTest
         throws Exception
     {
         Entry testFolder = createTestFolder("testCreateDocument");
-        Link childrenLink = testFolder.getLink(CMISConstants.REL_CHILDREN);
+        Link childrenLink = getChildrenLink(testFolder);
         assertNotNull(childrenLink);
         Feed children = getFeed(childrenLink.getHref());
         assertNotNull(children);
@@ -110,7 +112,7 @@ public class CMISTest extends BaseCMISWebScriptTest
         throws Exception
     {
         Entry testFolder = createTestFolder("testCreateAtomEntry");
-        Link childrenLink = testFolder.getLink(CMISConstants.REL_CHILDREN);
+        Link childrenLink = getChildrenLink(testFolder);
         assertNotNull(childrenLink);
         Feed children = getFeed(childrenLink.getHref());
         assertNotNull(children);
@@ -130,7 +132,7 @@ public class CMISTest extends BaseCMISWebScriptTest
         throws Exception
     {
         Entry testFolder = createTestFolder("testCreateFolder");
-        Link childrenLink = testFolder.getLink(CMISConstants.REL_CHILDREN);
+        Link childrenLink = getChildrenLink(testFolder);
         assertNotNull(childrenLink);
         Feed children = getFeed(childrenLink.getHref());
         assertNotNull(children);
@@ -140,26 +142,6 @@ public class CMISTest extends BaseCMISWebScriptTest
         int entriesAfter = feedFolderAfter.getEntries().size();
         assertEquals(entriesBefore +1, entriesAfter);
         Entry entry = feedFolderAfter.getEntry(folder.getId().toString());
-        assertNotNull(entry);
-    }
-    
-    public void testCreateDocumentViaDescendants()
-        throws Exception
-    {
-        Entry testFolder = createTestFolder("testCreateDocumentViaDescendants");
-        Link descendantsLink = testFolder.getLink(CMISConstants.REL_DESCENDANTS);
-        assertNotNull(descendantsLink);
-        Feed descendants = getFeed(descendantsLink.getHref());
-        assertNotNull(descendants);
-        int entriesBefore = descendants.getEntries().size();
-        Entry document = createDocument(descendants.getSelfLink().getHref(), "testCreateDocumentViaDescendants");
-        Response documentContentRes = sendRequest(new GetRequest(document.getContentSrc().toString()), 200);
-        String resContent = documentContentRes.getContentAsString();
-        assertEquals(document.getTitle(), resContent);
-        Feed feedFolderAfter = getFeed(descendantsLink.getHref());
-        int entriesAfter = feedFolderAfter.getEntries().size();
-        assertEquals(entriesBefore +1, entriesAfter);
-        Entry entry = feedFolderAfter.getEntry(document.getId().toString());
         assertNotNull(entry);
     }
     
@@ -175,7 +157,7 @@ public class CMISTest extends BaseCMISWebScriptTest
         assertEquals(testFolder.getSummary(), testFolderFromGet.getSummary());
         
         // get document
-        Link childrenLink = testFolder.getLink(CMISConstants.REL_CHILDREN);
+        Link childrenLink = getChildrenLink(testFolder);
         assertNotNull(childrenLink);
         Entry testDocument = createDocument(childrenLink.getHref(), "testGet");
         assertNotNull(testDocument);
@@ -194,7 +176,7 @@ public class CMISTest extends BaseCMISWebScriptTest
     {
         // create multiple children
         Entry testFolder = createTestFolder("testGetChildren");
-        Link childrenLink = testFolder.getLink(CMISConstants.REL_CHILDREN);
+        Link childrenLink = getChildrenLink(testFolder);
         assertNotNull(childrenLink);
         Entry document1 = createDocument(childrenLink.getHref(), "testGetChildren1");
         assertNotNull(document1);
@@ -229,7 +211,7 @@ public class CMISTest extends BaseCMISWebScriptTest
         // create multiple children
         Set<IRI> docIds = new HashSet<IRI>();
         Entry testFolder = createTestFolder("testGetChildrenPaging");
-        Link childrenLink = testFolder.getLink(CMISConstants.REL_CHILDREN);
+        Link childrenLink = getChildrenLink(testFolder);
         assertNotNull(childrenLink);
         for (int i = 0; i < 15; i++)
         {
@@ -273,7 +255,7 @@ public class CMISTest extends BaseCMISWebScriptTest
     {
         // create multiple children
         Entry testFolder = createTestFolder("testChildrenTypeFilter");
-        Link childrenLink = testFolder.getLink(CMISConstants.REL_CHILDREN);
+        Link childrenLink = getChildrenLink(testFolder);
         assertNotNull(childrenLink);
         Entry document = createDocument(childrenLink.getHref(), "testChildren1");
         assertNotNull(document);
@@ -318,7 +300,7 @@ public class CMISTest extends BaseCMISWebScriptTest
     {
         // create children
         Entry testFolder = createTestFolder("testGetChildrenPropertyFilter");
-        Link childrenLink = testFolder.getLink(CMISConstants.REL_CHILDREN);
+        Link childrenLink = getChildrenLink(testFolder);
         assertNotNull(childrenLink);
         Entry document1 = createDocument(childrenLink.getHref(), "testGetChildrenPropertyFilter1");
         assertNotNull(document1);
@@ -337,7 +319,7 @@ public class CMISTest extends BaseCMISWebScriptTest
         {
             // get children with object_id only
             Map<String, String> args = new HashMap<String, String>();
-            args.put("filter", "ObjectId");
+            args.put("filter", CMISConstants.PROP_OBJECT_ID);
             Feed children = getFeed(childrenLink.getHref(), args);
             for (Entry entry : children.getEntries())
             {
@@ -353,13 +335,13 @@ public class CMISTest extends BaseCMISWebScriptTest
     {
         // create multiple nested children
         Entry testFolder = createTestFolder("testGetDescendants");
-        Link childrenLink = testFolder.getLink(CMISConstants.REL_CHILDREN);
+        Link childrenLink = getChildrenLink(testFolder);
         assertNotNull(childrenLink);
         Entry document1 = createDocument(childrenLink.getHref(), "testGetDescendants1");
         assertNotNull(document1);
         Entry folder2 = createFolder(childrenLink.getHref(), "testGetDescendants2");
         assertNotNull(folder2);
-        Link childrenLink2 = folder2.getLink(CMISConstants.REL_CHILDREN);
+        Link childrenLink2 = getChildrenLink(folder2);
         assertNotNull(childrenLink2);
         Entry document3 = createDocument(childrenLink2.getHref(), "testGetDescendants3");
         assertNotNull(document3);
@@ -368,7 +350,9 @@ public class CMISTest extends BaseCMISWebScriptTest
             // get descendants (depth = 1, equivalent to getChildren)
             Map<String, String> args = new HashMap<String, String>();
             args.put("depth", "1");
-            Link descendantsLink = testFolder.getLink(CMISConstants.REL_DESCENDANTS);
+            Link descendantsLink = getDescendantsLink(testFolder);
+            assertNotNull(descendantsLink);
+            
             Feed descendants = getFeed(descendantsLink.getHref(), args);
             assertNotNull(descendants);
             assertEquals(2, descendants.getEntries().size());
@@ -376,28 +360,83 @@ public class CMISTest extends BaseCMISWebScriptTest
             assertNotNull(descendants.getEntry(folder2.getId().toString()));
             
             Entry getFolder2 = descendants.getEntry(folder2.getId().toString());
-            Entry getFolder2Child = getFolder2.getFirstChild(CMISConstants.NESTED_ENTRY);
-            assertNull(getFolder2Child);
+            CMISChildren folder2Children = getFolder2.getFirstChild(CMISConstants.CHILDREN);
+            assertNull(folder2Children);
         }
         
         {
             // get nested children
             Map<String, String> args = new HashMap<String, String>();
             args.put("depth", "2");
-            Link descendantsLink = testFolder.getLink(CMISConstants.REL_DESCENDANTS);
+            Link descendantsLink = getDescendantsLink(testFolder);
             Feed descendants = getFeed(descendantsLink.getHref(), args);
             assertNotNull(descendants);
             assertEquals(2, descendants.getEntries().size());
             assertNotNull(descendants.getEntry(document1.getId().toString()));
             assertNotNull(descendants.getEntry(folder2.getId().toString()));
-            
             Entry getFolder2 = descendants.getEntry(folder2.getId().toString());
-            List<Entry> getFolder2Children = getFolder2.getExtensions(CMISConstants.NESTED_ENTRY);
-            assertNotNull(getFolder2Children);
-            assertEquals(1, getFolder2Children.size());
-            Entry getFolder2Child = getFolder2Children.get(0);
+            CMISChildren folder2Children = getFolder2.getFirstChild(CMISConstants.CHILDREN);
+            assertNotNull(folder2Children);
+            assertEquals(1, folder2Children.size());
+            Entry getFolder2Child = folder2Children.getEntries().get(0);
             assertEquals(document3.getId(), getFolder2Child.getId());
             assertEquals(document3.getEditLink().getHref().toString(), getFolder2Child.getEditLink().getHref().toString());
+        }
+    }
+
+    public void testGetFolderTree()
+        throws Exception
+    {
+        // create multiple nested children
+        Entry testFolder = createTestFolder("testGetFolderTree");
+        Link childrenLink = getChildrenLink(testFolder);
+        assertNotNull(childrenLink);
+        Entry document1 = createDocument(childrenLink.getHref(), "testGetFolderTree1");
+        assertNotNull(document1);
+        Entry folder2 = createFolder(childrenLink.getHref(), "testGetFolderTree2");
+        assertNotNull(folder2);
+        Link childrenLink2 = getChildrenLink(folder2);
+        assertNotNull(childrenLink2);
+        Entry folder3 = createFolder(childrenLink2.getHref(), "testGetFolderTree2");
+        assertNotNull(folder3);
+        Entry document4 = createDocument(childrenLink2.getHref(), "testGetFolderTree3");
+        assertNotNull(document4);
+        
+        {
+            // get tree (depth = 1, equivalent to getChildren)
+            Map<String, String> args = new HashMap<String, String>();
+            args.put("depth", "1");
+            Link treeLink = getFolderTreeLink(testFolder);
+            assertNotNull(treeLink);
+            
+            Feed tree = getFeed(treeLink.getHref(), args);
+            assertNotNull(tree);
+            assertEquals(1, tree.getEntries().size());
+            assertNotNull(tree.getEntry(folder2.getId().toString()));
+            assertNull(tree.getEntry(document1.getId().toString()));
+            
+            Entry getFolder2 = tree.getEntry(folder2.getId().toString());
+            CMISChildren folder2Children = getFolder2.getFirstChild(CMISConstants.CHILDREN);
+            assertNull(folder2Children);
+        }
+        
+        {
+            // get full tree
+            Map<String, String> args = new HashMap<String, String>();
+            args.put("depth", "-1");
+            Link treeLink = getFolderTreeLink(testFolder);
+            Feed tree = getFeed(treeLink.getHref(), args);
+            assertNotNull(treeLink);
+            assertEquals(1, tree.getEntries().size());
+            assertNotNull(tree.getEntry(folder2.getId().toString()));
+            assertNull(tree.getEntry(document1.getId().toString()));
+            
+            Entry getFolder2 = tree.getEntry(folder2.getId().toString());
+            CMISChildren folder2Children = getFolder2.getFirstChild(CMISConstants.CHILDREN);
+            assertNotNull(folder2Children);
+            assertEquals(1, folder2Children.size());
+            assertNotNull(folder2Children.getEntry(folder3.getId().toString()));
+            assertNull(folder2Children.getEntry(document4.getId().toString()));
         }
     }
     
@@ -405,72 +444,35 @@ public class CMISTest extends BaseCMISWebScriptTest
         throws Exception
     {
         Entry testFolder = createTestFolder("testParent");
-        Link childrenLink = testFolder.getLink(CMISConstants.REL_CHILDREN);
+        Link childrenLink = getChildrenLink(testFolder);
         assertNotNull(childrenLink);
         Entry childFolder = createFolder(childrenLink.getHref(), "testParentChild");
         assertNotNull(childFolder);
-        Link parentLink = childFolder.getLink(CMISConstants.REL_PARENTS);
+        Link parentLink = getFolderParentLink(childFolder);
         assertNotNull(parentLink);
 
         // ensure there is parent 'testParent'
-        Feed parent = getFeed(parentLink.getHref());
+        Entry parent = getEntry(parentLink.getHref());
         assertNotNull(parent);
-        assertEquals(1, parent.getEntries().size());
-        assertEquals(testFolder.getId(), parent.getEntries().get(0).getId());
-
-        // TODO: compare identity using OBJECT_ID property, not atom:id
-        
-        // ensure there are ancestors 'testParent', "test run folder", "tests folder" and "root folder"
-        Map<String, String> args = new HashMap<String, String>();
-        args.put("returnToRoot", "true");
-        Feed parentsToRoot = getFeed(new IRI(parentLink.getHref().toString()), args);
-        assertNotNull(parentsToRoot);
-        assertEquals(4, parentsToRoot.getEntries().size());
-        assertEquals(testFolder.getId(), parentsToRoot.getEntries().get(0).getId());
-        assertNotNull(parentsToRoot.getEntries().get(0).getLink(CMISConstants.REL_PARENTS));
-        assertEquals(getTestRunFolder().getId(), parentsToRoot.getEntries().get(1).getId());
-        assertNotNull(parentsToRoot.getEntries().get(1).getLink(CMISConstants.REL_PARENTS));
-        assertEquals(getTestRootFolder().getId(), parentsToRoot.getEntries().get(2).getId());
-        assertNotNull(parentsToRoot.getEntries().get(2).getLink(CMISConstants.REL_PARENTS));
-        Feed root = getFeed(getRootCollection(getWorkspace(getRepository())));
-        Entry rootEntry = getEntry(root.getLink(CMISConstants.REL_SOURCE).getHref());
-        assertEquals(rootEntry.getId(), parentsToRoot.getEntries().get(3).getId());
-        assertNull(parentsToRoot.getEntries().get(3).getLink(CMISConstants.REL_PARENTS));
+        assertEquals(testFolder.getId(), parent.getId());
     }
 
     public void testGetParents()
         throws Exception
     {
         Entry testFolder = createTestFolder("testParents");
-        Link childrenLink = testFolder.getLink(CMISConstants.REL_CHILDREN);
+        Link childrenLink = getChildrenLink(testFolder);
         assertNotNull(childrenLink);
         Entry childDocs = createDocument(childrenLink.getHref(), "testParentsChild");
         assertNotNull(childDocs);
-        Link parentLink = childDocs.getLink(CMISConstants.REL_PARENTS);
-        assertNotNull(parentLink);
+        Link parentsLink = getObjectParentsLink(childDocs);
+        assertNotNull(parentsLink);
         
         // ensure there is parent 'testParent'
-        Feed parent = getFeed(parentLink.getHref());
+        Feed parent = getFeed(parentsLink.getHref());
         assertNotNull(parent);
         assertEquals(1, parent.getEntries().size());
         assertEquals(testFolder.getId(), parent.getEntries().get(0).getId());
-
-        // ensure there are ancestors 'testParent', "test run folder" and "root folder"
-        Map<String, String> args = new HashMap<String, String>();
-        args.put("returnToRoot", "true");
-        Feed parentsToRoot = getFeed(new IRI(parentLink.getHref().toString()), args);
-        assertNotNull(parentsToRoot);
-        assertEquals(4, parentsToRoot.getEntries().size());
-        assertEquals(testFolder.getId(), parentsToRoot.getEntries().get(0).getId());
-        //assertNotNull(parentsToRoot.getEntries().get(0).getLink(CMISConstants.REL_PARENT));
-        assertEquals(getTestRunFolder().getId(), parentsToRoot.getEntries().get(1).getId());
-        //assertNotNull(parentsToRoot.getEntries().get(1).getLink(CMISConstants.REL_PARENT));
-        assertEquals(getTestRootFolder().getId(), parentsToRoot.getEntries().get(2).getId());
-        //assertNotNull(parentsToRoot.getEntries().get(2).getLink(CMISConstants.REL_PARENT));
-        Feed root = getFeed(getRootCollection(getWorkspace(getRepository())));
-        Entry rootEntry = getEntry(root.getLink(CMISConstants.REL_SOURCE).getHref());
-        assertEquals(rootEntry.getId(), parentsToRoot.getEntries().get(3).getId());
-        assertNull(parentsToRoot.getEntries().get(3).getLink(CMISConstants.REL_PARENTS));
     }
     
     public void testDelete()
@@ -478,7 +480,7 @@ public class CMISTest extends BaseCMISWebScriptTest
     {
         // retrieve test folder for deletes
         Entry testFolder = createTestFolder("testDelete");
-        Link childrenLink = testFolder.getLink(CMISConstants.REL_CHILDREN);
+        Link childrenLink = getChildrenLink(testFolder);
         Feed children = getFeed(childrenLink.getHref());
         int entriesBefore = children.getEntries().size();
         
@@ -504,12 +506,78 @@ public class CMISTest extends BaseCMISWebScriptTest
         assertEquals(entriesBefore, entriesAfterDelete);
     }
 
+    public void testDeleteDescendants()
+        throws Exception
+    {
+        // create multiple nested children
+        Entry testFolder = createTestFolder("testDeleteDescendants");
+        Link childrenLink = getChildrenLink(testFolder);
+        assertNotNull(childrenLink);
+        Entry document1 = createDocument(childrenLink.getHref(), "testDeleteDescendants1");
+        assertNotNull(document1);
+        Entry folder2 = createFolder(childrenLink.getHref(), "testDeleteDescendants2");
+        assertNotNull(folder2);
+        Link childrenLink2 = getChildrenLink(folder2);
+        assertNotNull(childrenLink2);
+        Entry document3 = createDocument(childrenLink2.getHref(), "testDeleteDescendants3");
+        assertNotNull(document3);
+        
+        // delete on root of created tree
+        Link descendantsLink = getDescendantsLink(testFolder);
+        assertNotNull(descendantsLink);
+        Response deleteRes = sendRequest(new DeleteRequest(descendantsLink.getHref().toString()), 204);
+        assertNotNull(deleteRes);
+    
+        // ensure all have been deleted
+        Response getRes1 = sendRequest(new GetRequest(testFolder.getSelfLink().getHref().toString()), 404);
+        assertNotNull(getRes1);
+        Response getRes2 = sendRequest(new GetRequest(document1.getSelfLink().getHref().toString()), 404);
+        assertNotNull(getRes2);
+        Response getRes3 = sendRequest(new GetRequest(folder2.getSelfLink().getHref().toString()), 404);
+        assertNotNull(getRes3);
+        Response getRes4 = sendRequest(new GetRequest(document3.getSelfLink().getHref().toString()), 404);
+        assertNotNull(getRes4);
+    }
+
+    public void testDeleteFolderTree()
+        throws Exception
+    {
+        // create multiple nested children
+        Entry testFolder = createTestFolder("testDeleteFolderTree");
+        Link childrenLink = getChildrenLink(testFolder);
+        assertNotNull(childrenLink);
+        Entry document1 = createDocument(childrenLink.getHref(), "testDeleteDescendants1");
+        assertNotNull(document1);
+        Entry folder2 = createFolder(childrenLink.getHref(), "testDeleteDescendants2");
+        assertNotNull(folder2);
+        Link childrenLink2 = getChildrenLink(folder2);
+        assertNotNull(childrenLink2);
+        Entry document3 = createDocument(childrenLink2.getHref(), "testDeleteDescendants3");
+        assertNotNull(document3);
+        
+        // delete on root of created tree
+        Link treeLink = getFolderTreeLink(testFolder);
+        assertNotNull(treeLink);
+        Response deleteRes = sendRequest(new DeleteRequest(treeLink.getHref().toString()), 204);
+        assertNotNull(deleteRes);
+    
+        // ensure all have been deleted
+        Response getRes1 = sendRequest(new GetRequest(testFolder.getSelfLink().getHref().toString()), 404);
+        assertNotNull(getRes1);
+        Response getRes2 = sendRequest(new GetRequest(document1.getSelfLink().getHref().toString()), 404);
+        assertNotNull(getRes2);
+        Response getRes3 = sendRequest(new GetRequest(folder2.getSelfLink().getHref().toString()), 404);
+        assertNotNull(getRes3);
+        Response getRes4 = sendRequest(new GetRequest(document3.getSelfLink().getHref().toString()), 404);
+        assertNotNull(getRes4);
+    }
+    
     public void testUpdatePatch()
         throws Exception
     {
         // retrieve test folder for update
         Entry testFolder = createTestFolder("testUpdatePatch");
-        Link childrenLink = testFolder.getLink(CMISConstants.REL_CHILDREN);
+        Link childrenLink = getChildrenLink(testFolder);
         
         // create document for update
         Entry document = createDocument(childrenLink.getHref(), "testUpdatePatch");
@@ -546,7 +614,7 @@ public class CMISTest extends BaseCMISWebScriptTest
     {
         // retrieve test folder for update
         Entry testFolder = createTestFolder("testUpdatePut");
-        Link childrenLink = testFolder.getLink(CMISConstants.REL_CHILDREN);
+        Link childrenLink = getChildrenLink(testFolder);
         
         // create document for update
         Entry document = createDocument(childrenLink.getHref(), "testUpdatePut");
@@ -583,18 +651,23 @@ public class CMISTest extends BaseCMISWebScriptTest
     {
         // retrieve test folder for update
         Entry testFolder = createTestFolder("testUpdatePutAtomEntry");
-        Link childrenLink = testFolder.getLink(CMISConstants.REL_CHILDREN);
+        Link childrenLink = getChildrenLink(testFolder);
         
         // create document for update
         Entry document = createDocument(childrenLink.getHref(), "testUpdatePutAtomEntry");
         assertNotNull(document);
-    
-        // update
-        String updateFile = loadString("/org/alfresco/repo/cmis/rest/test/updateatomentry.atomentry.xml");
-        Response res = sendRequest(new PutRequest(document.getSelfLink().getHref().toString(), updateFile, Format.ATOMENTRY.mimetype()), 200, getAtomValidator());
+
+        // edit title
+        String updatedTitle = "Iñtërnâtiônàlizætiøn - 2";
+        document.setTitle(updatedTitle);
+        StringWriter writer = new StringWriter();
+        document.writeTo(writer);
+
+        // put document
+        Response res = sendRequest(new PutRequest(document.getSelfLink().getHref().toString(), writer.toString(), Format.ATOMENTRY.mimetype()), 200, getAtomValidator());
         assertNotNull(res);
         Entry updated = getAbdera().parseEntry(new StringReader(res.getContentAsString()), null);
-        assertEquals("Iñtërnâtiônàlizætiøn - 2", updated.getTitle());
+        assertEquals(updatedTitle, updated.getTitle());
     }
 
     public void testContentStreamEmpty()
@@ -602,7 +675,7 @@ public class CMISTest extends BaseCMISWebScriptTest
     {
         // retrieve test folder for content stream tests
         Entry testFolder = createTestFolder("testContentStreamEmpty");
-        Link childrenLink = testFolder.getLink(CMISConstants.REL_CHILDREN);
+        Link childrenLink = getChildrenLink(testFolder);
         
         // create document for setting / getting content
         Entry document = createDocument(childrenLink.getHref(), "testContent", "createdocumentNoContent.atomentry.xml");
@@ -616,7 +689,7 @@ public class CMISTest extends BaseCMISWebScriptTest
     {
         // retrieve test folder for content stream tests
         Entry testFolder = createTestFolder("testContentStream");
-        Link childrenLink = testFolder.getLink(CMISConstants.REL_CHILDREN);
+        Link childrenLink = getChildrenLink(testFolder);
         
         // create document for setting / getting content
         Entry document = createDocument(childrenLink.getHref(), "testContent");
@@ -644,7 +717,7 @@ public class CMISTest extends BaseCMISWebScriptTest
     {
         // retrieve test folder for content stream tests
         Entry testFolder = createTestFolder("testContentStreamEmpty");
-        Link childrenLink = testFolder.getLink(CMISConstants.REL_CHILDREN);
+        Link childrenLink = getChildrenLink(testFolder);
 
         // create document for setting / getting content
         Entry document = createDocument(childrenLink.getHref(), "testContent");
@@ -669,14 +742,14 @@ public class CMISTest extends BaseCMISWebScriptTest
     {
         // retrieve test folder for allowable actions
         Entry testFolder = createTestFolder("testAllowableActions");
-        Link childrenLink = testFolder.getLink(CMISConstants.REL_CHILDREN);
+        Link childrenLink = getChildrenLink(testFolder);
         assertNotNull(childrenLink);
         
         // test allowable actions for folder
         {
             Entry child = createFolder(childrenLink.getHref(), "testFolderAllowableActions");
             assertNotNull(child);
-            Link allowableActionsLink = child.getLink(CMISConstants.REL_ALLOWABLEACTIONS);
+            Link allowableActionsLink = child.getLink(CMISConstants.REL_ALLOWABLE_ACTIONS);
             Response allowableActionsRes = sendRequest(new GetRequest(allowableActionsLink.getHref().toString()), 200, getAtomValidator());
             assertNotNull(allowableActionsRes);
             Element allowableActions = getAbdera().parse(new StringReader(allowableActionsRes.getContentAsString()), null);
@@ -684,9 +757,7 @@ public class CMISTest extends BaseCMISWebScriptTest
             assertTrue(allowableActions instanceof CMISAllowableActions);
             CMISObject childObject = child.getExtension(CMISConstants.OBJECT);
             assertNotNull(childObject);
-            assertEquals(((CMISAllowableActions)allowableActions).getParentUrl(), child.getSelfLink().getHref().toString());
-            assertEquals(((CMISAllowableActions)allowableActions).getParentId(), childObject.getObjectId().getStringValue());
-            CMISAllowableActions objectAllowableActions = childObject.getExtension(CMISConstants.ALLOWABLEACTIONS);
+            CMISAllowableActions objectAllowableActions = childObject.getExtension(CMISConstants.ALLOWABLE_ACTIONS);
             assertNotNull(objectAllowableActions);
             compareAllowableActions((CMISAllowableActions)allowableActions, objectAllowableActions);
 
@@ -697,7 +768,7 @@ public class CMISTest extends BaseCMISWebScriptTest
             assertNotNull(properties);
             CMISObject propObject = properties.getExtension(CMISConstants.OBJECT);
             assertNotNull(propObject);
-            CMISAllowableActions propAllowableActions = propObject.getExtension(CMISConstants.ALLOWABLEACTIONS);
+            CMISAllowableActions propAllowableActions = propObject.getExtension(CMISConstants.ALLOWABLE_ACTIONS);
             assertNotNull(propAllowableActions);
             compareAllowableActions((CMISAllowableActions)allowableActions, propAllowableActions);
         }
@@ -706,7 +777,7 @@ public class CMISTest extends BaseCMISWebScriptTest
         {
             Entry child = createDocument(childrenLink.getHref(), "testDocumentAllowableActions");
             assertNotNull(child);
-            Link allowableActionsLink = child.getLink(CMISConstants.REL_ALLOWABLEACTIONS);
+            Link allowableActionsLink = child.getLink(CMISConstants.REL_ALLOWABLE_ACTIONS);
             Response allowableActionsRes = sendRequest(new GetRequest(allowableActionsLink.getHref().toString()), 200, getAtomValidator());
             assertNotNull(allowableActionsRes);
             Element allowableActions = getAbdera().parse(new StringReader(allowableActionsRes.getContentAsString()), null);
@@ -714,9 +785,7 @@ public class CMISTest extends BaseCMISWebScriptTest
             assertTrue(allowableActions instanceof CMISAllowableActions);
             CMISObject childObject = child.getExtension(CMISConstants.OBJECT);
             assertNotNull(childObject);
-            assertEquals(((CMISAllowableActions)allowableActions).getParentUrl(), child.getSelfLink().getHref().toString());
-            assertEquals(((CMISAllowableActions)allowableActions).getParentId(), childObject.getObjectId().getStringValue());
-            CMISAllowableActions objectAllowableActions = childObject.getExtension(CMISConstants.ALLOWABLEACTIONS);
+            CMISAllowableActions objectAllowableActions = childObject.getExtension(CMISConstants.ALLOWABLE_ACTIONS);
             assertNotNull(objectAllowableActions);
             compareAllowableActions((CMISAllowableActions)allowableActions, objectAllowableActions);
 
@@ -727,7 +796,7 @@ public class CMISTest extends BaseCMISWebScriptTest
             assertNotNull(properties);
             CMISObject propObject = properties.getExtension(CMISConstants.OBJECT);
             assertNotNull(propObject);
-            CMISAllowableActions propAllowableActions = propObject.getExtension(CMISConstants.ALLOWABLEACTIONS);
+            CMISAllowableActions propAllowableActions = propObject.getExtension(CMISConstants.ALLOWABLE_ACTIONS);
             assertNotNull(propAllowableActions);
             compareAllowableActions((CMISAllowableActions)allowableActions, propAllowableActions);
         }
@@ -743,11 +812,11 @@ public class CMISTest extends BaseCMISWebScriptTest
                 // extract allowable actions from child
                 CMISObject childObject = child.getExtension(CMISConstants.OBJECT);
                 assertNotNull(childObject);
-                CMISAllowableActions objectAllowableActions = childObject.getExtension(CMISConstants.ALLOWABLEACTIONS);
+                CMISAllowableActions objectAllowableActions = childObject.getExtension(CMISConstants.ALLOWABLE_ACTIONS);
                 assertNotNull(objectAllowableActions);
                 
                 // retrieve allowable actions from link
-                Link allowableActionsLink = child.getLink(CMISConstants.REL_ALLOWABLEACTIONS);
+                Link allowableActionsLink = child.getLink(CMISConstants.REL_ALLOWABLE_ACTIONS);
                 Response allowableActionsRes = sendRequest(new GetRequest(allowableActionsLink.getHref().toString()), 200, getAtomValidator());
                 assertNotNull(allowableActionsRes);
                 Element allowableActions = getAbdera().parse(new StringReader(allowableActionsRes.getContentAsString()), null);
@@ -755,8 +824,6 @@ public class CMISTest extends BaseCMISWebScriptTest
                 assertTrue(allowableActions instanceof CMISAllowableActions);
                 
                 // compare the two
-                assertEquals(((CMISAllowableActions)allowableActions).getParentUrl(), child.getSelfLink().getHref().toString());
-                assertEquals(((CMISAllowableActions)allowableActions).getParentId(), childObject.getObjectId().getStringValue());
                 compareAllowableActions((CMISAllowableActions)allowableActions, objectAllowableActions);
             }
         }
@@ -787,7 +854,7 @@ public class CMISTest extends BaseCMISWebScriptTest
     {
         // retrieve test folder for checkouts
         Entry testFolder = createTestFolder("testCheckout");
-        Link childrenLink = testFolder.getLink(CMISConstants.REL_CHILDREN);
+        Link childrenLink = getChildrenLink(testFolder);
         
         // create document for checkout
         Entry document = createDocument(childrenLink.getHref(), "testCheckout");
@@ -840,7 +907,7 @@ public class CMISTest extends BaseCMISWebScriptTest
     {
         // retrieve test folder for checkouts
         Entry testFolder = createTestFolder("testCancelCheckout");
-        Link childrenLink = testFolder.getLink(CMISConstants.REL_CHILDREN);
+        Link childrenLink = getChildrenLink(testFolder);
         
         // create document for checkout
         Entry document = createDocument(childrenLink.getHref(), "testCancelCheckout");
@@ -885,7 +952,7 @@ public class CMISTest extends BaseCMISWebScriptTest
     {
         // retrieve test folder for checkins
         Entry testFolder = createTestFolder("testCheckIn");
-        Link childrenLink = testFolder.getLink(CMISConstants.REL_CHILDREN);
+        Link childrenLink = getChildrenLink(testFolder);
         
         // create document for checkout
         Entry document = createDocument(childrenLink.getHref(), "testCheckin");
@@ -978,7 +1045,7 @@ public class CMISTest extends BaseCMISWebScriptTest
     {
         // retrieve test folder for checkins
         Entry testFolder = createTestFolder("testUpdateOnCheckIn");
-        Link childrenLink = testFolder.getLink(CMISConstants.REL_CHILDREN);
+        Link childrenLink = getChildrenLink(testFolder);
         
         // create document for checkout
         Entry document = createDocument(childrenLink.getHref(), "testUpdateOnCheckIn");
@@ -1041,7 +1108,7 @@ public class CMISTest extends BaseCMISWebScriptTest
         
         // retrieve test folder for checkins
         Entry testFolder = createTestFolder("testGetAllVersions");
-        Link childrenLink = testFolder.getLink(CMISConstants.REL_CHILDREN);
+        Link childrenLink = getChildrenLink(testFolder);
         
         // create document for checkout
         Entry document = createDocument(childrenLink.getHref(), "testGetAllVersions");
@@ -1075,7 +1142,7 @@ public class CMISTest extends BaseCMISWebScriptTest
         }
 
         // get all versions
-        Link allVersionsLink = document.getLink(CMISConstants.REL_ALLVERSIONS);
+        Link allVersionsLink = document.getLink(CMISConstants.REL_VERSION_HISTORY);
         assertNotNull(allVersionsLink);
         Feed allVersions = getFeed(allVersionsLink.getHref());
         assertNotNull(allVersions);
@@ -1145,7 +1212,7 @@ public class CMISTest extends BaseCMISWebScriptTest
     {
         // retrieve test folder for type definitions
         Entry testFolder = createTestFolder("testGetEntryTypeDefinition");
-        Link childrenLink = testFolder.getLink(CMISConstants.REL_CHILDREN);
+        Link childrenLink = getChildrenLink(testFolder);
         
         // create document
         Entry document = createDocument(childrenLink.getHref(), "testGetEntryTypeDefinitionDoc");
@@ -1162,7 +1229,7 @@ public class CMISTest extends BaseCMISWebScriptTest
         for (Entry entry : children.getEntries())
         {
             // get type definition
-            Link typeLink = entry.getLink(CMISConstants.REL_TYPE);
+            Link typeLink = entry.getLink(CMISConstants.REL_DESCRIBED_BY);
             assertNotNull(typeLink);
             Entry type = getEntry(typeLink.getHref());
             assertNotNull(type);
@@ -1185,7 +1252,7 @@ public class CMISTest extends BaseCMISWebScriptTest
         // retrieve test folder for query
         Entry testFolder = createTestFolder("testQuery");
         CMISObject testFolderObject = testFolder.getExtension(CMISConstants.OBJECT);
-        Link childrenLink = testFolder.getLink(CMISConstants.REL_CHILDREN);
+        Link childrenLink = getChildrenLink(testFolder);
         
         // create documents to query
         Entry document1 = createDocument(childrenLink.getHref(), "apple1");
@@ -1306,7 +1373,7 @@ public class CMISTest extends BaseCMISWebScriptTest
         // create multiple children
         Set<IRI> docIds = new HashSet<IRI>();
         Entry testFolder = createTestFolder("testQueryPaging");
-        Link childrenLink = testFolder.getLink(CMISConstants.REL_CHILDREN);
+        Link childrenLink = getChildrenLink(testFolder);
         assertNotNull(childrenLink);
         for (int i = 0; i < 15; i++)
         {
@@ -1357,7 +1424,7 @@ public class CMISTest extends BaseCMISWebScriptTest
         // retrieve test folder for query
         Entry testFolder = createTestFolder("testQueryAllowableAcrtions");
         CMISObject testFolderObject = testFolder.getExtension(CMISConstants.OBJECT);
-        Link childrenLink = testFolder.getLink(CMISConstants.REL_CHILDREN);
+        Link childrenLink = getChildrenLink(testFolder);
         
         // create documents to query
         Entry document1 = createDocument(childrenLink.getHref(), "apple1");
@@ -1396,7 +1463,7 @@ public class CMISTest extends BaseCMISWebScriptTest
                 // extract allowable actions from child
                 CMISObject childObject = child.getExtension(CMISConstants.OBJECT);
                 assertNotNull(childObject);
-                CMISAllowableActions childAllowableActions = childObject.getExtension(CMISConstants.ALLOWABLEACTIONS);
+                CMISAllowableActions childAllowableActions = childObject.getExtension(CMISConstants.ALLOWABLE_ACTIONS);
                 assertNotNull(childAllowableActions);
                 
                 // retrieve allowable actions from link
@@ -1405,7 +1472,7 @@ public class CMISTest extends BaseCMISWebScriptTest
                 Entry entry = getEntry(child.getSelfLink().getHref(), args);
                 CMISObject entryObject = entry.getExtension(CMISConstants.OBJECT);
                 assertNotNull(entryObject);
-                CMISAllowableActions entryAllowableActions = entryObject.getExtension(CMISConstants.ALLOWABLEACTIONS);
+                CMISAllowableActions entryAllowableActions = entryObject.getExtension(CMISConstants.ALLOWABLE_ACTIONS);
                 
                 // compare the two
                 compareAllowableActions(childAllowableActions, entryAllowableActions);

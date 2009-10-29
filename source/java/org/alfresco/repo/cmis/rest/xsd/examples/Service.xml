@@ -23,6 +23,7 @@
         <app:collection href="http://cmisexample.oasis-open.org/rep1//changes" cmisra:CollectionType="changes">
             <atom:title type="text">changes collection</atom:title>
         </app:collection>
+        <atom:link title="Types Descendants feed" type="application/atom+xml;type=feed" rel="http://docs.oasis-open.org/ns/cmis/link/200901/typesdescendants" href="http://cmisexample.oasis-open.org/rep1//typesdescendants"/>
         <atom:link title="Folder Tree feed for root folder" type="application/atom+xml;type=feed" rel="http://docs.oasis-open.org/ns/cmis/link/200901/foldertree" href="http://cmisexample.oasis-open.org/rep1//foldertree"/>
         <cmisra:repositoryInfo>
             <cmis:repositoryId>repid1</cmis:repositoryId>
@@ -33,19 +34,20 @@
             <cmis:productName>CMIS Prototype for VendorX</cmis:productName>
             <cmis:productVersion>0.62</cmis:productVersion>
             <cmis:rootFolderId>rootfolder</cmis:rootFolderId>
-            <cmis:latestChangeToken></cmis:latestChangeToken>
+            <cmis:latestChangeToken>token-Fri Jul 17 09:13:33 PDT 2009</cmis:latestChangeToken>
             <cmis:capabilities>
                 <cmis:capabilityACL>manage</cmis:capabilityACL>
                 <cmis:capabilityAllVersionsSearchable>true</cmis:capabilityAllVersionsSearchable>
                 <cmis:capabilityChanges>all</cmis:capabilityChanges>
                 <cmis:capabilityChangesOnType>cmis:document</cmis:capabilityChangesOnType>
                 <cmis:capabilityChangesOnType>cmis:folder</cmis:capabilityChangesOnType>
-                <cmis:capabilityContentStreamUpdates>anytime</cmis:capabilityContentStreamUpdates>
+                <cmis:capabilityContentStreamUpdatability>anytime</cmis:capabilityContentStreamUpdatability>
+                <cmis:capabilityGetDescendants>true</cmis:capabilityGetDescendants>
                 <cmis:capabilityMultifiling>true</cmis:capabilityMultifiling>
                 <cmis:capabilityPWCSearchable>true</cmis:capabilityPWCSearchable>
                 <cmis:capabilityPWCUpdateable>true</cmis:capabilityPWCUpdateable>
                 <cmis:capabilityQuery>bothcombined</cmis:capabilityQuery>
-                <cmis:capabilityRenditions>false</cmis:capabilityRenditions>
+                <cmis:capabilityRenditions>read</cmis:capabilityRenditions>
                 <cmis:capabilityUnfiling>true</cmis:capabilityUnfiling>
                 <cmis:capabilityVersionSpecificFiling>true</cmis:capabilityVersionSpecificFiling>
                 <cmis:capabilityJoin>innerandouter</cmis:capabilityJoin>

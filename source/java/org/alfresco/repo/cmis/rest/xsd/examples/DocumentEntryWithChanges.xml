@@ -5,77 +5,77 @@
         <atom:uri>http://www.ibm.com/</atom:uri>
         <atom:email>albertcbrown@us.ibm.com</atom:email>
     </atom:author>
-    <atom:content src="http://cmisexample.oasis-open.org/rep1/ba01e3b4-498e-4c37-a9ce-ce49afac7ce3"/>
-    <atom:id>urn:uuid:ba01e3b4-498e-4c37-a9ce-ce49afac7ce3</atom:id>
-    <atom:link rel="self" href="http://cmisexample.oasis-open.org/rep1/ba01e3b4-498e-4c37-a9ce-ce49afac7ce3"/>
-    <atom:link rel="edit" href="http://cmisexample.oasis-open.org/rep1/ba01e3b4-498e-4c37-a9ce-ce49afac7ce3"/>
-    <atom:link type="application/cmis+xml;type=allowableActions" rel="allowableactions" href="http://cmisexample.oasis-open.org/rep1/ba01e3b4-498e-4c37-a9ce-ce49afac7ce3/allowableactions"/>
-    <atom:link type="application/atom+xml;type=entry" rel="type" href="http://cmisexample.oasis-open.org/rep1/ba01e3b4-498e-4c37-a9ce-ce49afac7ce3/type"/>
-    <atom:link rel="edit-media" href="http://cmisexample.oasis-open.org/rep1/ba01e3b4-498e-4c37-a9ce-ce49afac7ce3/edit-media"/>
-    <atom:link rel="alternate" href="http://cmisexample.oasis-open.org/rep1/ba01e3b4-498e-4c37-a9ce-ce49afac7ce3/alternate"/>
-    <atom:link type="application/atom+xml;type=feed" rel="parents" href="http://cmisexample.oasis-open.org/rep1/ba01e3b4-498e-4c37-a9ce-ce49afac7ce3/parents"/>
-    <atom:link type="application/atom+xml;type=feed" rel="allversions" href="http://cmisexample.oasis-open.org/rep1/ba01e3b4-498e-4c37-a9ce-ce49afac7ce3/allversions"/>
-    <atom:link type="application/atom+xml;type=entry" rel="latestversion" href="http://cmisexample.oasis-open.org/rep1/ba01e3b4-498e-4c37-a9ce-ce49afac7ce3/latestversions"/>
-    <atom:link length="4123" type="text/plain" rel="stream" href="http://cmisexample.oasis-open.org/rep1/ba01e3b4-498e-4c37-a9ce-ce49afac7ce3media"/>
-    <atom:link type="application/atom+xml;type=feed" rel="relationships" href="http://cmisexample.oasis-open.org/rep1/ba01e3b4-498e-4c37-a9ce-ce49afac7ce3/relationships"/>
-    <atom:published>2009-07-13T22:50:03.984-07:00</atom:published>
-    <atom:summary type="html">HTML summary of Entry  ba01e3b4-498e-4c37-a9ce-ce49afac7ce3</atom:summary>
+    <atom:content src="http://cmisexample.oasis-open.org/rep1/fb7b8894-bf63-4f61-bcb6-8678d3af7b64"/>
+    <atom:id>urn:uuid:fb7b8894-bf63-4f61-bcb6-8678d3af7b64</atom:id>
+    <atom:link rel="self" href="http://cmisexample.oasis-open.org/rep1/fb7b8894-bf63-4f61-bcb6-8678d3af7b64"/>
+    <atom:link rel="edit" href="http://cmisexample.oasis-open.org/rep1/fb7b8894-bf63-4f61-bcb6-8678d3af7b64"/>
+    <atom:link type="application/cmis+xml;type=allowableActions" rel="allowableactions" href="http://cmisexample.oasis-open.org/rep1/fb7b8894-bf63-4f61-bcb6-8678d3af7b64/allowableactions"/>
+    <atom:link type="application/atom+xml;type=entry" rel="type" href="http://cmisexample.oasis-open.org/rep1/fb7b8894-bf63-4f61-bcb6-8678d3af7b64/type"/>
+    <atom:published>2009-07-17T09:13:33.156-07:00</atom:published>
+    <atom:summary type="html">HTML summary of Entry  fb7b8894-bf63-4f61-bcb6-8678d3af7b64</atom:summary>
     <atom:title type="text">CMIS Example Document - Loan</atom:title>
-    <atom:updated>2009-07-13T22:50:03.984-07:00</atom:updated>
-    <cmis:object>
+    <atom:updated>2009-07-17T09:13:33.156-07:00</atom:updated>
+    <atom:link rel="edit-media" href="http://cmisexample.oasis-open.org/rep1/fb7b8894-bf63-4f61-bcb6-8678d3af7b64/edit-media"/>
+    <atom:link rel="alternate" href="http://cmisexample.oasis-open.org/rep1/fb7b8894-bf63-4f61-bcb6-8678d3af7b64/alternate"/>
+    <atom:link type="application/atom+xml;type=feed" rel="parents" href="http://cmisexample.oasis-open.org/rep1/fb7b8894-bf63-4f61-bcb6-8678d3af7b64/parents"/>
+    <atom:link type="application/atom+xml;type=feed" rel="allversions" href="http://cmisexample.oasis-open.org/rep1/fb7b8894-bf63-4f61-bcb6-8678d3af7b64/allversions"/>
+    <atom:link type="application/atom+xml;type=entry" rel="latestversion" href="http://cmisexample.oasis-open.org/rep1/fb7b8894-bf63-4f61-bcb6-8678d3af7b64/latestversions"/>
+    <atom:link length="4123" type="text/plain" rel="stream" href="http://cmisexample.oasis-open.org/rep1/fb7b8894-bf63-4f61-bcb6-8678d3af7b64media"/>
+    <atom:link type="application/atom+xml;type=feed" rel="relationships" href="http://cmisexample.oasis-open.org/rep1/fb7b8894-bf63-4f61-bcb6-8678d3af7b64/relationships"/>
+    <cmisra:object>
         <cmis:properties>
-            <cmis:propertyBoolean id="cmis:IsImmutable">
+            <cmis:propertyBoolean localname="rep-cmis:IsImmutable" pdid="cmis:IsImmutable">
                 <cmis:value>false</cmis:value>
             </cmis:propertyBoolean>
-            <cmis:propertyDateTime id="cmis:CreationDate">
-                <cmis:value>2009-07-13T22:50:03.984-07:00</cmis:value>
+            <cmis:propertyDateTime localname="rep-cmis:CreationDate" pdid="cmis:CreationDate">
+                <cmis:value>2009-07-17T09:13:33.156-07:00</cmis:value>
             </cmis:propertyDateTime>
-            <cmis:propertyDateTime id="cmis:LastModificationDate">
-                <cmis:value>2009-07-13T22:50:03.984-07:00</cmis:value>
+            <cmis:propertyDateTime localname="rep-cmis:LastModificationDate" pdid="cmis:LastModificationDate">
+                <cmis:value>2009-07-17T09:13:33.156-07:00</cmis:value>
             </cmis:propertyDateTime>
-            <cmis:propertyId id="cmis:ObjectId">
-                <cmis:value>ba01e3b4-498e-4c37-a9ce-ce49afac7ce3</cmis:value>
+            <cmis:propertyId localname="rep-cmis:ObjectId" pdid="cmis:ObjectId">
+                <cmis:value>fb7b8894-bf63-4f61-bcb6-8678d3af7b64</cmis:value>
             </cmis:propertyId>
-            <cmis:propertyId id="cmis:ObjectTypeId">
+            <cmis:propertyId localname="rep-cmis:ObjectTypeId" pdid="cmis:ObjectTypeId">
                 <cmis:value>loan</cmis:value>
             </cmis:propertyId>
-            <cmis:propertyId id="cmis:BaseTypeId">
+            <cmis:propertyId localname="rep-cmis:BaseTypeId" pdid="cmis:BaseTypeId">
                 <cmis:value>cmis:document</cmis:value>
             </cmis:propertyId>
-            <cmis:propertyString id="cmis:LastModifiedBy">
+            <cmis:propertyString localname="rep-cmis:LastModifiedBy" pdid="cmis:LastModifiedBy">
                 <cmis:value>Al Brown</cmis:value>
             </cmis:propertyString>
-            <cmis:propertyString id="cmis:CreatedBy">
+            <cmis:propertyString localname="rep-cmis:CreatedBy" pdid="cmis:CreatedBy">
                 <cmis:value>Al Brown</cmis:value>
             </cmis:propertyString>
-            <cmis:propertyBoolean id="cmis:IsLatestVersion">
+            <cmis:propertyBoolean localname="rep-cmis:IsLatestVersion" pdid="cmis:IsLatestVersion">
                 <cmis:value>true</cmis:value>
             </cmis:propertyBoolean>
-            <cmis:propertyBoolean id="cmis:IsVersionSeriesCheckedOut">
+            <cmis:propertyBoolean localname="rep-cmis:IsVersionSeriesCheckedOut" pdid="cmis:IsVersionSeriesCheckedOut">
                 <cmis:value>false</cmis:value>
             </cmis:propertyBoolean>
-            <cmis:propertyBoolean id="cmis:IsMajorVersion">
+            <cmis:propertyBoolean localname="rep-cmis:IsMajorVersion" pdid="cmis:IsMajorVersion">
                 <cmis:value>false</cmis:value>
             </cmis:propertyBoolean>
-            <cmis:propertyBoolean id="cmis:IsLatestMajorVersion">
+            <cmis:propertyBoolean localname="rep-cmis:IsLatestMajorVersion" pdid="cmis:IsLatestMajorVersion">
                 <cmis:value>false</cmis:value>
             </cmis:propertyBoolean>
-            <cmis:propertyString id="cmis:CheckinComment">
+            <cmis:propertyString localname="rep-cmis:CheckinComment" pdid="cmis:CheckinComment">
                 <cmis:value>Checkin comment</cmis:value>
             </cmis:propertyString>
-            <cmis:propertyString id="cmis:VersionLabel">
+            <cmis:propertyString localname="rep-cmis:VersionLabel" pdid="cmis:VersionLabel">
                 <cmis:value>0.1</cmis:value>
             </cmis:propertyString>
-            <cmis:propertyString id="cmis:ContentStreamMimeType">
+            <cmis:propertyString localname="rep-cmis:ContentStreamMimeType" pdid="cmis:ContentStreamMimeType">
                 <cmis:value>text/plain</cmis:value>
             </cmis:propertyString>
-            <cmis:propertyString id="cmis:ContentStreamFilename">
+            <cmis:propertyString localname="rep-cmis:ContentStreamFileName" pdid="cmis:ContentStreamFileName">
                 <cmis:value>text.txt</cmis:value>
             </cmis:propertyString>
-            <cmis:propertyInteger id="cmis:ContentStreamLength">
+            <cmis:propertyInteger localname="rep-cmis:ContentStreamLength" pdid="cmis:ContentStreamLength">
                 <cmis:value>4234</cmis:value>
             </cmis:propertyInteger>
-            <cmis:propertyString id="keywords">
+            <cmis:propertyString displayname="Keywords for Document" localname="keywords" pdid="keywords">
                 <cmis:value>document</cmis:value>
                 <cmis:value>example</cmis:value>
                 <cmis:value>sample</cmis:value>
@@ -83,7 +83,7 @@
             </cmis:propertyString>
         </cmis:properties>
         <cmis:allowableActions>
-            <cmis:canDelete>true</cmis:canDelete>
+            <cmis:canDeleteObject>true</cmis:canDeleteObject>
             <cmis:canUpdateProperties>true</cmis:canUpdateProperties>
             <cmis:canGetProperties>true</cmis:canGetProperties>
             <cmis:canGetRelationships>true</cmis:canGetRelationships>
@@ -105,7 +105,7 @@
         </cmis:allowableActions>
         <cmis:changeEventInfo>
             <cmis:changeType>updated</cmis:changeType>
-            <cmis:changeTime>2009-07-13T22:50:03.984-07:00</cmis:changeTime>
+            <cmis:changeTime>2009-07-17T09:13:33.156-07:00</cmis:changeTime>
         </cmis:changeEventInfo>
-    </cmis:object>
+    </cmisra:object>
 </atom:entry>

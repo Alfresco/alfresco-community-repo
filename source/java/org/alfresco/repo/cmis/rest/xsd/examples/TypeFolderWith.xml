@@ -13,18 +13,18 @@
     <atom:link type="application/atom+xml;type=entry" rel="up" href="http://cmisexample.oasis-open.org/rep1/type/folder-invoice/parent"/>
     <atom:link type="application/atom+xml;type=feed" rel="down" href="http://cmisexample.oasis-open.org/rep1/type/folder-invoice/children/flat"/>
     <atom:link type="application/cmistree+xml" rel="down" href="http://cmisexample.oasis-open.org/rep1/type/folder-invoice/children/tree"/>
-    <atom:published>2009-07-13T22:50:04.031-07:00</atom:published>
+    <atom:published>2009-07-17T09:13:33.187-07:00</atom:published>
     <atom:summary type="html">HTML summary of Type Definition  folder-invoice</atom:summary>
     <atom:title type="text">Type Definition - folder-invoice</atom:title>
-    <atom:updated>2009-07-13T22:50:04.031-07:00</atom:updated>
-    <app:edited>2009-07-13T22:50:04.031-07:00</app:edited>
-    <cmis:type xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="cmis:cmisTypeFolderDefinitionType">
+    <atom:updated>2009-07-17T09:13:33.187-07:00</atom:updated>
+    <app:edited>2009-07-17T09:13:33.187-07:00</app:edited>
+    <cmisra:type xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="cmis:cmisTypeFolderDefinitionType">
         <cmis:id>dtfolder-invoice</cmis:id>
         <cmis:localName>myrepname-folder-invoice</cmis:localName>
         <cmis:displayName>folder-invoice</cmis:displayName>
         <cmis:queryName>folder-invoice</cmis:queryName>
         <cmis:description>Description for type definition folder-invoice</cmis:description>
-        <cmis:baseTypeId>cmis:folder</cmis:baseTypeId>
+        <cmis:baseTypeId>cmis:document</cmis:baseTypeId>
         <cmis:parentId>parent</cmis:parentId>
         <cmis:creatable>true</cmis:creatable>
         <cmis:fileable>true</cmis:fileable>
@@ -34,10 +34,10 @@
         <cmis:controllablePolicy>true</cmis:controllablePolicy>
         <cmis:controllableACL>true</cmis:controllableACL>
         <cmis:propertyIdDefinition>
-            <cmis:id>cmis:ParentId</cmis:id>
-            <cmis:localName>cmis:ParentId</cmis:localName>
-            <cmis:displayName>cmis:ParentId</cmis:displayName>
-            <cmis:description>Description for cmis:ParentId</cmis:description>
+            <cmis:id>cmis:BaseTypeId</cmis:id>
+            <cmis:localName>rep-cmis:BaseTypeId</cmis:localName>
+            <cmis:displayName>cmis:BaseTypeId</cmis:displayName>
+            <cmis:description>Description for cmis:BaseTypeId</cmis:description>
             <cmis:propertyType>id</cmis:propertyType>
             <cmis:cardinality>single</cmis:cardinality>
             <cmis:updatability>readonly</cmis:updatability>
@@ -47,23 +47,9 @@
             <cmis:orderable>true</cmis:orderable>
             <cmis:openChoice>false</cmis:openChoice>
         </cmis:propertyIdDefinition>
-        <cmis:propertyIdDefinition>
-            <cmis:id>cmis:AllowedChildObjectTypeNames</cmis:id>
-            <cmis:localName>cmis:AllowedChildObjectTypeNames</cmis:localName>
-            <cmis:displayName>cmis:AllowedChildObjectTypeNames</cmis:displayName>
-            <cmis:description>Description for cmis:AllowedChildObjectTypeNames</cmis:description>
-            <cmis:propertyType>id</cmis:propertyType>
-            <cmis:cardinality>multi</cmis:cardinality>
-            <cmis:updatability>readwrite</cmis:updatability>
-            <cmis:inherited>true</cmis:inherited>
-            <cmis:required>false</cmis:required>
-            <cmis:queryable>true</cmis:queryable>
-            <cmis:orderable>true</cmis:orderable>
-            <cmis:openChoice>false</cmis:openChoice>
-        </cmis:propertyIdDefinition>
         <cmis:propertyStringDefinition>
             <cmis:id>cmis:Name</cmis:id>
-            <cmis:localName>cmis:Name</cmis:localName>
+            <cmis:localName>rep-cmis:Name</cmis:localName>
             <cmis:displayName>cmis:Name</cmis:displayName>
             <cmis:description>Description for cmis:Name</cmis:description>
             <cmis:propertyType>string</cmis:propertyType>
@@ -78,7 +64,7 @@
         </cmis:propertyStringDefinition>
         <cmis:propertyIdDefinition>
             <cmis:id>cmis:ObjectId</cmis:id>
-            <cmis:localName>cmis:ObjectId</cmis:localName>
+            <cmis:localName>rep-cmis:ObjectId</cmis:localName>
             <cmis:displayName>cmis:ObjectId</cmis:displayName>
             <cmis:description>Description for cmis:ObjectId</cmis:description>
             <cmis:propertyType>id</cmis:propertyType>
@@ -92,7 +78,7 @@
         </cmis:propertyIdDefinition>
         <cmis:propertyStringDefinition>
             <cmis:id>cmis:ObjectTypeId</cmis:id>
-            <cmis:localName>cmis:ObjectTypeId</cmis:localName>
+            <cmis:localName>rep-cmis:ObjectTypeId</cmis:localName>
             <cmis:displayName>cmis:ObjectTypeId</cmis:displayName>
             <cmis:description>Description for cmis:ObjectTypeId</cmis:description>
             <cmis:propertyType>string</cmis:propertyType>
@@ -107,7 +93,7 @@
         </cmis:propertyStringDefinition>
         <cmis:propertyStringDefinition>
             <cmis:id>cmis:BaseTypeId</cmis:id>
-            <cmis:localName>cmis:BaseTypeId</cmis:localName>
+            <cmis:localName>rep-cmis:BaseTypeId</cmis:localName>
             <cmis:displayName>cmis:BaseTypeId</cmis:displayName>
             <cmis:description>Description for cmis:BaseTypeId</cmis:description>
             <cmis:propertyType>string</cmis:propertyType>
@@ -122,7 +108,7 @@
         </cmis:propertyStringDefinition>
         <cmis:propertyStringDefinition>
             <cmis:id>cmis:CreatedBy</cmis:id>
-            <cmis:localName>cmis:CreatedBy</cmis:localName>
+            <cmis:localName>rep-cmis:CreatedBy</cmis:localName>
             <cmis:displayName>cmis:CreatedBy</cmis:displayName>
             <cmis:description>Description for cmis:CreatedBy</cmis:description>
             <cmis:propertyType>string</cmis:propertyType>
@@ -137,7 +123,7 @@
         </cmis:propertyStringDefinition>
         <cmis:propertyDateTimeDefinition>
             <cmis:id>cmis:CreationDate</cmis:id>
-            <cmis:localName>cmis:CreationDate</cmis:localName>
+            <cmis:localName>rep-cmis:CreationDate</cmis:localName>
             <cmis:displayName>cmis:CreationDate</cmis:displayName>
             <cmis:description>Description for cmis:CreationDate</cmis:description>
             <cmis:propertyType>datetime</cmis:propertyType>
@@ -151,7 +137,7 @@
         </cmis:propertyDateTimeDefinition>
         <cmis:propertyStringDefinition>
             <cmis:id>cmis:LastModifiedBy</cmis:id>
-            <cmis:localName>cmis:LastModifiedBy</cmis:localName>
+            <cmis:localName>rep-cmis:LastModifiedBy</cmis:localName>
             <cmis:displayName>cmis:LastModifiedBy</cmis:displayName>
             <cmis:description>Description for cmis:LastModifiedBy</cmis:description>
             <cmis:propertyType>string</cmis:propertyType>
@@ -166,7 +152,7 @@
         </cmis:propertyStringDefinition>
         <cmis:propertyDateTimeDefinition>
             <cmis:id>cmis:LastModificationDate</cmis:id>
-            <cmis:localName>cmis:LastModificationDate</cmis:localName>
+            <cmis:localName>rep-cmis:LastModificationDate</cmis:localName>
             <cmis:displayName>cmis:LastModificationDate</cmis:displayName>
             <cmis:description>Description for cmis:LastModificationDate</cmis:description>
             <cmis:propertyType>datetime</cmis:propertyType>
@@ -180,7 +166,7 @@
         </cmis:propertyDateTimeDefinition>
         <cmis:propertyStringDefinition>
             <cmis:id>cmis:ChangeToken</cmis:id>
-            <cmis:localName>cmis:ChangeToken</cmis:localName>
+            <cmis:localName>rep-cmis:ChangeToken</cmis:localName>
             <cmis:displayName>cmis:ChangeToken</cmis:displayName>
             <cmis:description>Description for cmis:ChangeToken</cmis:description>
             <cmis:propertyType>string</cmis:propertyType>
@@ -193,5 +179,33 @@
             <cmis:openChoice>false</cmis:openChoice>
             <cmis:maxLength>128</cmis:maxLength>
         </cmis:propertyStringDefinition>
-    </cmis:type>
+        <cmis:propertyIdDefinition>
+            <cmis:id>cmis:ParentId</cmis:id>
+            <cmis:localName>rep-cmis:ParentId</cmis:localName>
+            <cmis:displayName>cmis:ParentId</cmis:displayName>
+            <cmis:description>Description for cmis:ParentId</cmis:description>
+            <cmis:propertyType>id</cmis:propertyType>
+            <cmis:cardinality>single</cmis:cardinality>
+            <cmis:updatability>readonly</cmis:updatability>
+            <cmis:inherited>true</cmis:inherited>
+            <cmis:required>false</cmis:required>
+            <cmis:queryable>true</cmis:queryable>
+            <cmis:orderable>true</cmis:orderable>
+            <cmis:openChoice>false</cmis:openChoice>
+        </cmis:propertyIdDefinition>
+        <cmis:propertyIdDefinition>
+            <cmis:id>cmis:AllowedChildObjectTypeNames</cmis:id>
+            <cmis:localName>rep-cmis:AllowedChildObjectTypeNames</cmis:localName>
+            <cmis:displayName>cmis:AllowedChildObjectTypeNames</cmis:displayName>
+            <cmis:description>Description for cmis:AllowedChildObjectTypeNames</cmis:description>
+            <cmis:propertyType>id</cmis:propertyType>
+            <cmis:cardinality>multi</cmis:cardinality>
+            <cmis:updatability>readwrite</cmis:updatability>
+            <cmis:inherited>true</cmis:inherited>
+            <cmis:required>false</cmis:required>
+            <cmis:queryable>true</cmis:queryable>
+            <cmis:orderable>true</cmis:orderable>
+            <cmis:openChoice>false</cmis:openChoice>
+        </cmis:propertyIdDefinition>
+    </cmisra:type>
 </atom:entry>

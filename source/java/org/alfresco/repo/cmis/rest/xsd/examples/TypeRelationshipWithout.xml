@@ -13,18 +13,18 @@
     <atom:link type="application/atom+xml;type=entry" rel="up" href="http://cmisexample.oasis-open.org/rep1/type/security-policy/parent"/>
     <atom:link type="application/atom+xml;type=feed" rel="down" href="http://cmisexample.oasis-open.org/rep1/type/security-policy/children/flat"/>
     <atom:link type="application/cmistree+xml" rel="down" href="http://cmisexample.oasis-open.org/rep1/type/security-policy/children/tree"/>
-    <atom:published>2009-07-13T22:50:04.046-07:00</atom:published>
+    <atom:published>2009-07-17T09:13:33.218-07:00</atom:published>
     <atom:summary type="html">HTML summary of Type Definition  security-policy</atom:summary>
     <atom:title type="text">Type Definition - security-policy</atom:title>
-    <atom:updated>2009-07-13T22:50:04.046-07:00</atom:updated>
-    <app:edited>2009-07-13T22:50:04.062-07:00</app:edited>
-    <cmis:type xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="cmis:cmisTypePolicyDefinitionType">
+    <atom:updated>2009-07-17T09:13:33.218-07:00</atom:updated>
+    <app:edited>2009-07-17T09:13:33.218-07:00</app:edited>
+    <cmisra:type xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="cmis:cmisTypePolicyDefinitionType">
         <cmis:id>dtsecurity-policy</cmis:id>
         <cmis:localName>myrepname-security-policy</cmis:localName>
         <cmis:displayName>security-policy</cmis:displayName>
         <cmis:queryName>security-policy</cmis:queryName>
         <cmis:description>Description for type definition security-policy</cmis:description>
-        <cmis:baseTypeId>cmis:relationship</cmis:baseTypeId>
+        <cmis:baseTypeId>cmis:document</cmis:baseTypeId>
         <cmis:parentId>parent</cmis:parentId>
         <cmis:creatable>true</cmis:creatable>
         <cmis:fileable>false</cmis:fileable>
@@ -33,5 +33,5 @@
         <cmis:includedInSupertypeQuery>true</cmis:includedInSupertypeQuery>
         <cmis:controllablePolicy>true</cmis:controllablePolicy>
         <cmis:controllableACL>true</cmis:controllableACL>
-    </cmis:type>
+    </cmisra:type>
 </atom:entry>

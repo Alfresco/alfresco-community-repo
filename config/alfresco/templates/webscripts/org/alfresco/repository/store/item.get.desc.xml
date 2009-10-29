@@ -26,8 +26,8 @@ PropertyCollection includes changeToken (if applicable to repository)<br>
 ]]>
   </description>
   <!-- TODO: spec issue: returnVersion or returnCurrent? -->
-  <url>/api/node/{store_type}/{store_id}/{id}?filter={filter?}&amp;returnVersion={returnVersion?}&amp;filter={filter?}&amp;includeAllowableActions={includeAllowableActions?}</url>
-  <url>/api/path/{store_type}/{store_id}/{id}?filter={filter?}&amp;returnVersion={returnVersion?}&amp;filter={filter?}&amp;includeAllowableActions={includeAllowableActions?}</url>
+  <url>/api/node/{store_type}/{store_id}/{id}?filter={filter?}&amp;returnVersion={returnVersion?}&amp;includeAllowableActions={includeAllowableActions?}</url>
+  <url>/api/path/{store_type}/{store_id}/{id}?filter={filter?}&amp;returnVersion={returnVersion?}&amp;includeAllowableActions={includeAllowableActions?}</url>
   <!-- TODO: consider /api/node/{store_type}/{store_id}/{id}/{child_node} for atom relative paths -->
   <authentication>guest</authentication>
   <transaction allow="readonly"/>

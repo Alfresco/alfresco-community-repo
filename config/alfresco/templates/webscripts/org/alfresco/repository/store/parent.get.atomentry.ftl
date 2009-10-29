@@ -5,6 +5,7 @@
 
 <?xml version="1.0" encoding="UTF-8"?>
 [#assign namespace][@nsLib.entryNS/][/#assign]
-[@entryLib.typedef typedefn=typedef includeProperties=true includeInheritedProperties=includeInheritedProperties ns=namespace/]
+
+[@entryLib.folder node=node propfilter=filter includeallowableactions=includeAllowableActions includerelationships="none" ns=namespace/]
 
 [/#compress]

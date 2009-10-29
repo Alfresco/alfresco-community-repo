@@ -87,7 +87,6 @@ public class CMISScript extends BaseScopableProcessorExtension
     public static final String ARG_REMOVE_FROM = "removeFrom";
     public static final String ARG_RELATIONSHIP_TYPE = "relationshipType";
     public static final String ARG_REPOSITORY_ID = "repositoryId";
-    public static final String ARG_RETURN_TO_ROOT = "returnToRoot";
     public static final String ARG_RETURN_VERSION = "returnVersion";
     public static final String ARG_SKIP_COUNT = "skipCount";
     public static final String ARG_THIS_VERSION = "thisVersion";
@@ -390,20 +389,21 @@ public class CMISScript extends BaseScopableProcessorExtension
         PagedResults results = paging.createPagedResults(nodes, cursor);
         return results;
     }
-    
+
     /**
-     * Query for all Type Definitions
+     * Query for child types (of a given type), or the base types (if no type given)
      * 
+     * @param typeDef
      * @param page
-     * @return  paged result set of types
+     * @return
      */
-    public PagedResults queryTypes(Page page)
+    public PagedResults queryTypeChildren(CMISTypeDefinition typeDef, Page page)
     {
-        Collection<CMISTypeDefinition> typeDefs = cmisDictionaryService.getAllTypes();
-        Cursor cursor = paging.createCursor(typeDefs.size(), page);
+        Collection<CMISTypeDefinition> children = (typeDef == null) ? cmisDictionaryService.getBaseTypes() : typeDef.getSubTypes(false);
+        Cursor cursor = paging.createCursor(children.size(), page);
         
         // skip
-        Iterator<CMISTypeDefinition> iterTypeDefs = typeDefs.iterator();
+        Iterator<CMISTypeDefinition> iterTypeDefs = children.iterator();
         for (int i = 0; i < cursor.getStartRow(); i++)
         {
             iterTypeDefs.next();
@@ -419,35 +419,35 @@ public class CMISScript extends BaseScopableProcessorExtension
         PagedResults results = paging.createPagedResults(types, cursor);
         return results;
     }
-
+    
     /**
      * Query for all Type Definitions in a type hierarchy
      * 
      * @param page
      * @return  paged result set of types
      */
-    public PagedResults queryTypeHierarchy(CMISTypeDefinition typeDef, boolean descendants, Page page)
-    {
-        Collection<CMISTypeDefinition> subTypes = typeDef.getSubTypes(descendants);
-        Cursor cursor = paging.createCursor(subTypes.size(), page);
-        
-        // skip
-        Iterator<CMISTypeDefinition> iterSubTypes = subTypes.iterator();
-        for (int i = 0; i < cursor.getStartRow(); i++)
-        {
-            iterSubTypes.next();
-        }
-
-        // get types for page
-        CMISTypeDefinition[] types = new CMISTypeDefinition[cursor.getRowCount()];
-        for (int i = cursor.getStartRow(); i <= cursor.getEndRow(); i++)
-        {
-            types[i - cursor.getStartRow()] = iterSubTypes.next();
-        }
-        
-        PagedResults results = paging.createPagedResults(types, cursor);
-        return results;
-    }
+//    public PagedResults queryTypeHierarchy(CMISTypeDefinition typeDef, boolean descendants, Page page)
+//    {
+//        Collection<CMISTypeDefinition> subTypes = typeDef.getSubTypes(descendants);
+//        Cursor cursor = paging.createCursor(subTypes.size(), page);
+//        
+//        // skip
+//        Iterator<CMISTypeDefinition> iterSubTypes = subTypes.iterator();
+//        for (int i = 0; i < cursor.getStartRow(); i++)
+//        {
+//            iterSubTypes.next();
+//        }
+//
+//        // get types for page
+//        CMISTypeDefinition[] types = new CMISTypeDefinition[cursor.getRowCount()];
+//        for (int i = cursor.getStartRow(); i <= cursor.getEndRow(); i++)
+//        {
+//            types[i - cursor.getStartRow()] = iterSubTypes.next();
+//        }
+//        
+//        PagedResults results = paging.createPagedResults(types, cursor);
+//        return results;
+//    }
 
     /**
      * Query for a Type Definition given a CMIS Type Id

@@ -9,7 +9,7 @@
 	xmlns:cmis="http://docs.oasis-open.org/ns/cmis/core/200901" xmlns:xml="http://www.w3.org/XML/1998/namespace"
 	xmlns:jaxb="http://java.sun.com/xml/ns/jaxb" xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc"
 	xmlns:cmisra="http://docs.oasis-open.org/ns/cmis/restatom/200901"
-	jaxb:extensionBindingPrefixes="xjc" jaxb:version="2.1" version="0.62a">
+	jaxb:extensionBindingPrefixes="xjc" jaxb:version="2.1" version="0.62d">
 
 	<xs:import namespace="http://www.w3.org/XML/1998/namespace"
 		schemaLocation="xml.xsd" />
@@ -89,27 +89,31 @@
 	<!-- atom:feed -->
 	<xs:element name="feed" type="atom:feedType"></xs:element>
 	<xs:complexType name="feedType">
-	   <!-- <xs:choice>, issue CMIS 337 -->
 		<xs:sequence>
-			<xs:element ref="atom:author" minOccurs="0" maxOccurs="unbounded" />
-			<xs:element ref="atom:category" minOccurs="0" maxOccurs="unbounded" />
-			<xs:element ref="atom:contributor" minOccurs="0"
-				maxOccurs="1" />
-			<xs:element ref="atom:generator" minOccurs="0" maxOccurs="unbounded" />
-			<xs:element ref="atom:icon" minOccurs="0" maxOccurs="unbounded" />
-			<xs:element ref="atom:id" minOccurs="1" maxOccurs="1" />
-			<xs:element ref="atom:link" minOccurs="0" maxOccurs="unbounded" />
-			<xs:element ref="atom:logo" minOccurs="0" maxOccurs="1" />
-			<xs:element ref="atom:rights" minOccurs="0" maxOccurs="1" />
-			<xs:element ref="atom:subtitle" minOccurs="0" maxOccurs="1" />
-			<xs:element ref="atom:title" minOccurs="1" maxOccurs="1" />
-			<xs:element ref="atom:updated" minOccurs="1" maxOccurs="1" />
+			<xs:choice maxOccurs="unbounded">
+				<xs:annotation>
+					<xs:appinfo>
+						<jaxb:property name="items" />
+					</xs:appinfo>
+				</xs:annotation>
+				<xs:element ref="atom:author" />
+				<xs:element ref="atom:category" />
+				<xs:element ref="atom:contributor" />
+				<xs:element ref="atom:generator" />
+				<xs:element ref="atom:icon" />
+				<xs:element ref="atom:id" />
+				<xs:element ref="atom:link" />
+				<xs:element ref="atom:logo" />
+				<xs:element ref="atom:rights" />
+				<xs:element ref="atom:subtitle" />
+				<xs:element ref="atom:title" />
+				<xs:element ref="atom:updated" />
+			</xs:choice>
 
 			<!--  original atom extension element -->
 			<xs:group ref="atom:extensionElement" />
 
 			<xs:element minOccurs="0" maxOccurs="unbounded" ref="atom:entry" />
-	   <!-- </xs:choice>, issue CMIS 337 -->			
 		</xs:sequence>
 		<xs:attributeGroup ref="atom:atomCommonAttributes" />
 	</xs:complexType>
@@ -117,26 +121,30 @@
 	<xs:element name="entry" type="atom:entryType">
 	</xs:element>
 	<xs:complexType name="entryType">
-	   <!-- <xs:choice>, issue CMIS 337 -->
-			<xs:sequence>
-				<xs:element ref="atom:author" minOccurs="0" maxOccurs="unbounded" />
-				<xs:element ref="atom:category" minOccurs="0" maxOccurs="unbounded" />
-				<xs:element ref="atom:content" minOccurs="0" maxOccurs="1" />
-				<xs:element ref="atom:contributor" minOccurs="0"
-					maxOccurs="1" />
-				<xs:element ref="atom:id" minOccurs="1" maxOccurs="1" />
-				<xs:element ref="atom:link" minOccurs="0" maxOccurs="unbounded" />
-				<xs:element ref="atom:published" minOccurs="0" maxOccurs="1" />
-				<xs:element ref="atom:rights" minOccurs="0" maxOccurs="1" />
-				<xs:element ref="atom:source" minOccurs="0" maxOccurs="1" />
-				<xs:element ref="atom:summary" minOccurs="0" maxOccurs="1" />
-				<xs:element ref="atom:title" minOccurs="1" maxOccurs="1" />
-				<xs:element ref="atom:updated" minOccurs="1" maxOccurs="1" />
+		<xs:sequence>
+			<xs:choice maxOccurs="unbounded">
+				<xs:annotation>
+					<xs:appinfo>
+						<jaxb:property name="items" />
+					</xs:appinfo>
+				</xs:annotation>
+				<xs:element ref="atom:author" />
+				<xs:element ref="atom:category" />
+				<xs:element ref="atom:content" />
+				<xs:element ref="atom:contributor" />
+				<xs:element ref="atom:id" />
+				<xs:element ref="atom:link" />
+				<xs:element ref="atom:published" />
+				<xs:element ref="atom:rights" />
+				<xs:element ref="atom:source" />
+				<xs:element ref="atom:summary" />
+				<xs:element ref="atom:title" />
+				<xs:element ref="atom:updated" />
+			</xs:choice>
 
-				<!-- Normal ATOM extension element -->
-				<xs:group ref="atom:extensionElement" />
-	   <!-- </xs:choice>, issue CMIS 337 -->			
-			</xs:sequence>
+			<!-- Normal ATOM extension element -->
+			<xs:group ref="atom:extensionElement" />
+		</xs:sequence>
 		<xs:attributeGroup ref="atom:atomCommonAttributes" />
 	</xs:complexType>
 
@@ -392,8 +400,8 @@
 	<xs:attributeGroup name="undefinedAttribute">
 		<xs:anyAttribute namespace="##other" processContents="lax" />
 	</xs:attributeGroup>
-	<xs:complexType name="undefinedContent" >
-			<xs:sequence>
+	<xs:complexType name="undefinedContent">
+		<xs:sequence>
 			<xs:any namespace="##other" processContents="lax" minOccurs="0"
 				maxOccurs="unbounded">
 				<xs:annotation>
@@ -411,8 +419,11 @@
 				</xs:annotation>
 			</xs:any>
 		</xs:sequence>
-	
-		<!--  <xs:group minOccurs="0" maxOccurs="unbounded" ref="atom:anyForeignElement" /> -->
+
+		<!--
+			<xs:group minOccurs="0" maxOccurs="unbounded"
+			ref="atom:anyForeignElement" />
+		-->
 	</xs:complexType>
 	<xs:group name="anyElement">
 		<xs:sequence>

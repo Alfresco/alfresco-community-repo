@@ -1,3 +1,4 @@
+<import resource="classpath:alfresco/templates/webscripts/org/alfresco/cmis/constants.lib.js">
 <import resource="classpath:alfresco/templates/webscripts/org/alfresco/cmis/atomentry.lib.js">
 
 script:

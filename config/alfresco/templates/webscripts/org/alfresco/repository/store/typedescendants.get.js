@@ -1,23 +1,37 @@
 script:
 {
-    // query type
-    var typeId = url.templateArgs.typeId;
-    model.typedef = cmis.queryType(typeId);
-    if (model.typedef === null)
+    // extract type
+    var typeId = args[cmis.ARG_TYPE_ID];
+    if (typeId === null)
     {
-        status.code = 404;
-        status.message = "Type " + typeId + " not found";
-        status.redirect = true;
-        break script;   
+        typeId = url.templateArgs[cmis.ARG_TYPE_ID];
+    }
+    
+    // descend from root
+    if (typeId === null)
+    {
+        var paged = cmis.queryTypeChildren(null, paging.createUnlimitedPage());
+        model.basetypes = paged.results;
+    }
+    else
+    {
+        // query a specific type
+        var typedef = cmis.queryType(typeId);
+        if (typedef === null)
+        {
+            status.code = 404;
+            status.message = "Type " + typeId + " not found";
+            status.redirect = true;
+            break script;
+        }
+        model.typedef = typedef;
     }
 
-    // query type descendants    
-    var page = paging.createPageOrWindow(args);
-    var paged = cmis.queryTypeHierarchy(model.typedef, true, page);
-    model.results = paged.results;
-    model.cursor = paged.cursor;
+    // depth
+    var depth = args[cmis.ARG_DEPTH];
+    model.depth = (depth === null) ? 1 : parseInt(depth);
 
     // handle property definitions
-    var returnPropertyDefinitions = args[cmis.ARG_INCLUDE_PROPERTY_DEFINITIONS];
-    model.returnPropertyDefinitions = returnPropertyDefinitions == "true" ? true : false;
+    var includePropertyDefinitions = args[cmis.ARG_INCLUDE_PROPERTY_DEFINITIONS];
+    model.includePropertyDefinitions = includePropertyDefinitions == "true" ? true : false;
 }

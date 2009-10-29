@@ -7,7 +7,7 @@
 	xmlns:atom="http://www.w3.org/2005/Atom" xmlns:xhtml="http://www.w3.org/1999/xhtml"
 	xmlns:jaxb="http://java.sun.com/xml/ns/jaxb" xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc"
 	jaxb:extensionBindingPrefixes="xjc" jaxb:version="2.1"
-	xmlns:cmis="http://docs.oasis-open.org/ns/cmis/core/200901" version="0.61c">
+	xmlns:cmis="http://docs.oasis-open.org/ns/cmis/core/200901" version="0.62f">
 	<xs:import namespace="http://www.w3.org/XML/1998/namespace"
 		schemaLocation="xml.xsd" />
 
@@ -55,10 +55,10 @@
 	</xs:simpleType>
 	<xs:simpleType name="enumBaseObjectTypeIds">
 		<xs:restriction base="xs:string">
-			<xs:enumeration value="cmis:Document" />
-			<xs:enumeration value="cmis:Folder" />
-			<xs:enumeration value="cmis:Relationship" />
-			<xs:enumeration value="cmis:Policy" />
+			<xs:enumeration value="cmis:document" />
+			<xs:enumeration value="cmis:folder" />
+			<xs:enumeration value="cmis:relationship" />
+			<xs:enumeration value="cmis:policy" />
 		</xs:restriction>
 	</xs:simpleType>
 	<xs:simpleType name="enumCapabilityQuery">
@@ -159,7 +159,7 @@
 			<xs:enumeration value="cmis:CheckinComment" />
 			<xs:enumeration value="cmis:ContentStreamLength" />
 			<xs:enumeration value="cmis:ContentStreamMimeType" />
-			<xs:enumeration value="cmis:ContentStreamFilename" />
+			<xs:enumeration value="cmis:ContentStreamFileName" />
 			<xs:enumeration value="cmis:ContentStreamId" />
 		</xs:restriction>
 	</xs:simpleType>
@@ -200,12 +200,20 @@
 			<xs:element name="relationship" type="cmis:cmisObjectType"
 				minOccurs="0" maxOccurs="unbounded" />
 
+			<xs:element name="child" type="cmis:cmisObjectType"
+				minOccurs="0" maxOccurs="unbounded">
+				<xs:annotation>
+					<xs:documentation>
+						This holds the children objects of this folder. This is used only in
+						the Web Service binding. In the REST/AtomPub binding, an atom
+						extension element is used.
+				</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+
 			<!--  if change log -->
 			<xs:element name="changeEventInfo" type="cmis:cmisChangeEventType"
 				minOccurs="0" maxOccurs="1" />
-
-			<xs:element name="child" type="cmis:cmisObjectType"
-				minOccurs="0" maxOccurs="unbounded" />
 
 			<!--  ACL -->
 			<xs:element name="acl" type="cmis:cmisAccessControlListType"
@@ -223,16 +231,7 @@
 		<xs:attributeGroup ref="cmis:cmisUndefinedAttribute" />
 	</xs:complexType>
 
-	<xs:complexType name="objectTreeCollectionType">
-		<xs:sequence>
-			<xs:element name="object" type="cmis:cmisObjectType"
-				minOccurs="0" maxOccurs="unbounded" />
-			<xs:any namespace="##other" />
-		</xs:sequence>
-		<xs:attributeGroup ref="cmis:cmisUndefinedAttribute" />
-	</xs:complexType>
-
-	<!--  anyother tag -->
+	<!--  anyther tag -->
 	<xs:complexType name="cmisAnyXml">
 		<xs:sequence>
 			<xs:any minOccurs="0" maxOccurs="unbounded" processContents="lax"
@@ -240,26 +239,6 @@
 		</xs:sequence>
 		<xs:attributeGroup ref="cmis:cmisUndefinedAttribute" />
 	</xs:complexType>
-
-	<!-- Entry tag for tree Type -->
-	<xs:element name="object" type="cmis:cmisObjectType" />
-
-	<!--  type and type sub group -->
-	<xs:element name="type" type="cmis:cmisTypeDefinitionType">
-		<!--
-			<xs:annotation> <xs:appinfo> <jaxb:property
-			generateElementProperty="false" /> </xs:appinfo> </xs:annotation>
-		-->
-	</xs:element>
-	<xs:element name="documentType" type="cmis:cmisTypeDocumentDefinitionType"
-		substitutionGroup="cmis:type" />
-	<xs:element name="folderType" type="cmis:cmisTypeFolderDefinitionType"
-		substitutionGroup="cmis:type" />
-	<xs:element name="relationshipType" type="cmis:cmisTypeRelationshipDefinitionType"
-		substitutionGroup="cmis:type" />
-	<xs:element name="policyType" type="cmis:cmisTypePolicyDefinitionType"
-		substitutionGroup="cmis:type" />
-
 
 	<!-- property bag -->
 	<xs:attribute name="key" type="xs:string" />
@@ -303,8 +282,8 @@
 
 	<!-- start the prop definitions -->
 	<xs:complexType name="cmisProperty">
-		<xs:attribute name="id" use="required" />
-		<xs:attribute name="name" use="optional" />
+		<xs:attribute name="pdid" use="required" />
+		<xs:attribute name="localname" use="optional" />
 		<xs:attribute name="displayname" use="optional" />
 		<xs:attributeGroup ref="cmis:cmisUndefinedAttribute" />
 	</xs:complexType>
@@ -429,11 +408,136 @@
 		</xs:complexContent>
 	</xs:complexType>
 
+	<!-- cmis choice -->
+	<xs:complexType name="cmisChoice">
+		<xs:attribute name="displayName" use="required" />
+		<xs:attributeGroup ref="cmis:cmisUndefinedAttribute" />
+	</xs:complexType>
+	<xs:complexType name="cmisChoiceBoolean">
+		<xs:complexContent>
+			<xs:extension base="cmis:cmisChoice">
+				<xs:sequence>
+					<xs:element minOccurs="0" maxOccurs="unbounded" name="value"
+						type="xs:boolean" />
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="cmisChoiceId">
+		<xs:complexContent>
+			<xs:extension base="cmis:cmisChoice">
+				<xs:sequence>
+					<xs:element minOccurs="0" maxOccurs="unbounded" name="value"
+						type="xs:string" />
+				</xs:sequence>
+				<xs:attribute ref="cmis:href" use="optional" />
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="cmisChoiceInteger">
+		<xs:complexContent>
+			<xs:extension base="cmis:cmisChoice">
+				<xs:sequence>
+					<xs:element minOccurs="0" maxOccurs="unbounded" name="value"
+						type="xs:integer" />
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="cmisChoiceDateTime">
+		<xs:complexContent>
+			<xs:extension base="cmis:cmisChoice">
+				<xs:sequence>
+					<xs:element minOccurs="0" maxOccurs="unbounded" name="value"
+						type="xs:dateTime" />
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="cmisChoiceDecimal">
+		<xs:complexContent>
+			<xs:extension base="cmis:cmisChoice">
+				<xs:sequence>
+					<xs:element minOccurs="0" maxOccurs="unbounded" name="value"
+						type="xs:decimal" />
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="cmisChoiceHtml">
+		<xs:complexContent>
+			<xs:extension base="cmis:cmisChoice">
+				<xs:sequence>
+					<xs:element minOccurs="0" maxOccurs="unbounded" name="value">
+						<xs:complexType>
+							<xs:sequence>
+								<xs:any minOccurs="0" maxOccurs="unbounded"
+									processContents="lax" namespace="##other" />
+							</xs:sequence>
+						</xs:complexType>
+					</xs:element>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="cmisChoiceXhtml">
+		<xs:complexContent>
+			<xs:extension base="cmis:cmisChoice">
+				<xs:sequence>
+					<xs:element minOccurs="0" maxOccurs="unbounded" name="value">
+						<xs:complexType>
+							<xs:sequence>
+								<xs:any minOccurs="0" maxOccurs="unbounded"
+									processContents="lax" namespace="##other" />
+							</xs:sequence>
+						</xs:complexType>
+					</xs:element>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="cmisChoiceString">
+		<xs:complexContent>
+			<xs:extension base="cmis:cmisChoice">
+				<xs:sequence>
+					<xs:element minOccurs="0" maxOccurs="unbounded" name="value"
+						type="xs:string" />
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="cmisChoiceUri">
+		<xs:complexContent>
+			<xs:extension base="cmis:cmisChoice">
+				<xs:sequence>
+					<xs:element minOccurs="0" maxOccurs="unbounded" name="value"
+						type="xs:anyURI" />
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="cmisChoiceXml">
+		<xs:complexContent>
+			<xs:extension base="cmis:cmisChoice">
+				<xs:sequence>
+					<xs:element minOccurs="0" maxOccurs="unbounded" name="value">
+						<xs:complexType>
+							<xs:sequence>
+								<xs:any minOccurs="0" maxOccurs="unbounded"
+									processContents="lax" namespace="##other" />
+							</xs:sequence>
+						</xs:complexType>
+					</xs:element>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+
 	<!--  allowable actions -->
 	<xs:complexType name="cmisAllowableActionsType">
 		<xs:sequence>
-			<xs:element name="canDelete" type="xs:boolean" minOccurs="0"
-				maxOccurs="1" />
+			<xs:element name="canDeleteObject" type="xs:boolean"
+				minOccurs="0" maxOccurs="1" />
 			<xs:element name="canUpdateProperties" type="xs:boolean"
 				minOccurs="0" maxOccurs="1" />
 			<xs:element name="canGetProperties" type="xs:boolean"
@@ -446,8 +550,8 @@
 				minOccurs="0" maxOccurs="1" />
 			<xs:element name="canGetDescendants" type="xs:boolean"
 				minOccurs="0" maxOccurs="1" />
-			<xs:element name="canMoveObject" type="xs:boolean" minOccurs="0"
-				maxOccurs="1" />
+			<xs:element name="canMoveObject" type="xs:boolean"
+				minOccurs="0" maxOccurs="1" />
 			<xs:element name="canDeleteContentStream" type="xs:boolean"
 				minOccurs="0" maxOccurs="1" />
 			<xs:element name="canCheckOut" type="xs:boolean"
@@ -501,155 +605,6 @@
 		<xs:attributeGroup ref="cmis:cmisUndefinedAttribute" />
 	</xs:complexType>
 
-	<!--  main allowable actions element -->
-	<xs:element name="allowableActions" type="cmis:cmisAllowableActionsType" />
-
-
-	<!-- subgroup -->
-	<xs:element name="choice" type="cmis:cmisChoiceType" />
-	<xs:element name="choiceBoolean" type="cmis:cmisChoiceBooleanType"
-		substitutionGroup="cmis:choice" />
-	<xs:element name="choiceId" type="cmis:cmisChoiceIdType"
-		substitutionGroup="cmis:choice" />
-	<xs:element name="choiceInteger" type="cmis:cmisChoiceIntegerType"
-		substitutionGroup="cmis:choice" />
-	<xs:element name="choiceDateTime" type="cmis:cmisChoiceDateTimeType"
-		substitutionGroup="cmis:choice" />
-	<xs:element name="choiceDecimal" type="cmis:cmisChoiceDecimalType"
-		substitutionGroup="cmis:choice" />
-	<xs:element name="choiceHtml" type="cmis:cmisChoiceHtmlType"
-		substitutionGroup="cmis:choice" />
-	<xs:element name="choiceXhtml" type="cmis:cmisChoiceXhtmlType"
-		substitutionGroup="cmis:choice" />
-	<xs:element name="choiceString" type="cmis:cmisChoiceStringType"
-		substitutionGroup="cmis:choice" />
-	<xs:element name="choiceUri" type="cmis:cmisChoiceUriType"
-		substitutionGroup="cmis:choice" />
-	<xs:element name="choiceXml" type="cmis:cmisChoiceXmlType"
-		substitutionGroup="cmis:choice" />
-
-	<!-- type for choices -->
-	<xs:complexType name="cmisChoiceType" abstract="true">
-		<xs:sequence>
-			<xs:element ref="cmis:choice" minOccurs="0" maxOccurs="unbounded" />
-		</xs:sequence>
-		<xs:attribute ref="cmis:key" use="optional" />
-		<xs:attributeGroup ref="cmis:cmisUndefinedAttribute" />
-	</xs:complexType>
-
-	<!-- do the property type specific choice entry -->
-	<xs:complexType name="cmisChoiceBooleanType">
-		<xs:complexContent>
-			<xs:extension base="cmis:cmisChoiceType">
-				<xs:sequence>
-					<xs:element minOccurs="0" maxOccurs="unbounded" name="value"
-						type="xs:boolean" />
-				</xs:sequence>
-			</xs:extension>
-		</xs:complexContent>
-	</xs:complexType>
-	<xs:complexType name="cmisChoiceIdType">
-		<xs:complexContent>
-			<xs:extension base="cmis:cmisChoiceType">
-				<xs:sequence>
-					<xs:element minOccurs="0" maxOccurs="unbounded" name="value"
-						type="xs:string" />
-				</xs:sequence>
-			</xs:extension>
-		</xs:complexContent>
-	</xs:complexType>
-	<xs:complexType name="cmisChoiceIntegerType">
-		<xs:complexContent>
-			<xs:extension base="cmis:cmisChoiceType">
-				<xs:sequence>
-					<xs:element minOccurs="0" maxOccurs="unbounded" name="value"
-						type="xs:integer" />
-				</xs:sequence>
-			</xs:extension>
-		</xs:complexContent>
-	</xs:complexType>
-	<xs:complexType name="cmisChoiceDateTimeType">
-		<xs:complexContent>
-			<xs:extension base="cmis:cmisChoiceType">
-				<xs:sequence>
-					<xs:element minOccurs="0" maxOccurs="unbounded" name="value"
-						type="xs:dateTime" />
-				</xs:sequence>
-			</xs:extension>
-		</xs:complexContent>
-	</xs:complexType>
-	<xs:complexType name="cmisChoiceDecimalType">
-		<xs:complexContent>
-			<xs:extension base="cmis:cmisChoiceType">
-				<xs:sequence>
-					<xs:element minOccurs="0" maxOccurs="unbounded" name="value"
-						type="xs:decimal" />
-				</xs:sequence>
-			</xs:extension>
-		</xs:complexContent>
-	</xs:complexType>
-	<xs:complexType name="cmisChoiceHtmlType">
-		<xs:complexContent>
-			<xs:extension base="cmis:cmisChoiceType">
-				<xs:sequence>
-					<xs:element minOccurs="0" maxOccurs="unbounded" name="value">
-						<xs:complexType>
-							<xs:sequence>
-								<xs:any minOccurs="0" maxOccurs="unbounded"
-									processContents="lax" namespace="##other" />
-							</xs:sequence>
-						</xs:complexType>
-					</xs:element>
-				</xs:sequence>
-			</xs:extension>
-		</xs:complexContent>
-	</xs:complexType>
-	<xs:complexType name="cmisChoiceXhtmlType">
-		<xs:complexContent>
-			<xs:extension base="cmis:cmisChoiceType">
-				<xs:sequence>
-					<xs:element minOccurs="0" maxOccurs="unbounded" name="value">
-						<xs:complexType>
-							<xs:sequence>
-								<xs:any minOccurs="0" maxOccurs="unbounded"
-									processContents="lax" namespace="##other" />
-							</xs:sequence>
-						</xs:complexType>
-					</xs:element>
-				</xs:sequence>
-			</xs:extension>
-		</xs:complexContent>
-	</xs:complexType>
-	<xs:complexType name="cmisChoiceStringType">
-		<xs:complexContent>
-			<xs:extension base="cmis:cmisChoiceType">
-				<xs:sequence>
-					<xs:element minOccurs="0" maxOccurs="unbounded" name="value"
-						type="xs:string" />
-				</xs:sequence>
-			</xs:extension>
-		</xs:complexContent>
-	</xs:complexType>
-	<xs:complexType name="cmisChoiceUriType">
-		<xs:complexContent>
-			<xs:extension base="cmis:cmisChoiceType">
-				<xs:sequence>
-					<xs:element minOccurs="0" maxOccurs="unbounded" name="value"
-						type="xs:anyURI" />
-				</xs:sequence>
-			</xs:extension>
-		</xs:complexContent>
-	</xs:complexType>
-	<xs:complexType name="cmisChoiceXmlType">
-		<xs:complexContent>
-			<xs:extension base="cmis:cmisChoiceType">
-				<xs:sequence>
-					<xs:any minOccurs="0" maxOccurs="unbounded" processContents="lax"
-						namespace="##other" />
-				</xs:sequence>
-			</xs:extension>
-		</xs:complexContent>
-	</xs:complexType>
 
 
 	<!-- Property Attributes -->
@@ -684,24 +639,6 @@
 			<xs:element name="orderable" type="xs:boolean" minOccurs="1"
 				maxOccurs="1" />
 
-			<!--  choices -->
-			<xs:choice minOccurs="0" maxOccurs="unbounded">
-				<xs:annotation>
-					<xs:appinfo>
-						<jaxb:property name="choice" />
-					</xs:appinfo>
-				</xs:annotation>
-				<xs:element ref="cmis:choiceBoolean" />
-				<xs:element ref="cmis:choiceDateTime" />
-				<xs:element ref="cmis:choiceDecimal" />
-				<xs:element ref="cmis:choiceHtml" />
-				<xs:element ref="cmis:choiceXhtml" />
-				<xs:element ref="cmis:choiceId" />
-				<xs:element ref="cmis:choiceInteger" />
-				<xs:element ref="cmis:choiceString" />
-				<xs:element ref="cmis:choiceUri" />
-				<xs:element ref="cmis:choiceXml" />
-			</xs:choice>
 			<xs:element name="openChoice" type="xs:boolean" minOccurs="0"
 				maxOccurs="1" />
 
@@ -717,8 +654,10 @@
 		<xs:complexContent>
 			<xs:extension base="cmis:cmisPropertyDefinitionType">
 				<xs:sequence>
-					<xs:element minOccurs="0" maxOccurs="unbounded" name="defaultValue"
-						type="cmis:cmisChoiceBooleanType" />
+					<xs:element minOccurs="0" maxOccurs="1" name="defaultValue"
+						type="cmis:cmisPropertyBoolean" />
+					<xs:element minOccurs="0" maxOccurs="unbounded" name="choice"
+						type="cmis:cmisChoiceBoolean" />
 				</xs:sequence>
 			</xs:extension>
 		</xs:complexContent>
@@ -727,8 +666,11 @@
 		<xs:complexContent>
 			<xs:extension base="cmis:cmisPropertyDefinitionType">
 				<xs:sequence>
-					<xs:element minOccurs="0" maxOccurs="unbounded" name="defaultValue"
-						type="cmis:cmisChoiceIdType" />
+					<xs:element minOccurs="0" maxOccurs="1" name="defaultValue"
+						type="cmis:cmisPropertyId" />
+					<xs:element minOccurs="0" maxOccurs="unbounded" name="choice"
+						type="cmis:cmisChoiceId" />
+
 				</xs:sequence>
 			</xs:extension>
 		</xs:complexContent>
@@ -737,12 +679,15 @@
 		<xs:complexContent>
 			<xs:extension base="cmis:cmisPropertyDefinitionType">
 				<xs:sequence>
-					<xs:element minOccurs="0" maxOccurs="unbounded" name="defaultValue"
-						type="cmis:cmisChoiceIntegerType" />
+					<xs:element minOccurs="0" maxOccurs="1" name="defaultValue"
+						type="cmis:cmisPropertyInteger" />
 					<xs:element name="maxValue" type="xs:integer" minOccurs="0"
 						maxOccurs="1" />
 					<xs:element name="minValue" type="xs:integer" minOccurs="0"
 						maxOccurs="1" />
+					<xs:element minOccurs="0" maxOccurs="unbounded" name="choice"
+						type="cmis:cmisChoiceInteger" />
+
 				</xs:sequence>
 			</xs:extension>
 		</xs:complexContent>
@@ -751,8 +696,11 @@
 		<xs:complexContent>
 			<xs:extension base="cmis:cmisPropertyDefinitionType">
 				<xs:sequence>
-					<xs:element minOccurs="0" maxOccurs="unbounded" name="defaultValue"
-						type="cmis:cmisChoiceDateTimeType" />
+					<xs:element minOccurs="0" maxOccurs="1" name="defaultValue"
+						type="cmis:cmisPropertyDateTime" />
+					<xs:element minOccurs="0" maxOccurs="unbounded" name="choice"
+						type="cmis:cmisChoiceDateTime" />
+
 				</xs:sequence>
 			</xs:extension>
 		</xs:complexContent>
@@ -761,14 +709,17 @@
 		<xs:complexContent>
 			<xs:extension base="cmis:cmisPropertyDefinitionType">
 				<xs:sequence>
-					<xs:element minOccurs="0" maxOccurs="unbounded" name="defaultValue"
-						type="cmis:cmisChoiceDecimalType" />
+					<xs:element minOccurs="0" maxOccurs="1" name="defaultValue"
+						type="cmis:cmisPropertyDecimal" />
 					<xs:element name="maxValue" type="xs:decimal" minOccurs="0"
 						maxOccurs="1" />
 					<xs:element name="minValue" type="xs:decimal" minOccurs="0"
 						maxOccurs="1" />
 					<xs:element name="precision" type="cmis:enumDecimalPrecision"
 						minOccurs="0" maxOccurs="1" />
+					<xs:element minOccurs="0" maxOccurs="unbounded" name="choice"
+						type="cmis:cmisChoiceDecimal" />
+
 				</xs:sequence>
 			</xs:extension>
 		</xs:complexContent>
@@ -777,8 +728,11 @@
 		<xs:complexContent>
 			<xs:extension base="cmis:cmisPropertyDefinitionType">
 				<xs:sequence>
-					<xs:element minOccurs="0" maxOccurs="unbounded" name="defaultValue"
-						type="cmis:cmisChoiceHtmlType" />
+					<xs:element minOccurs="0" maxOccurs="1" name="defaultValue"
+						type="cmis:cmisPropertyHtml" />
+					<xs:element minOccurs="0" maxOccurs="unbounded" name="choice"
+						type="cmis:cmisChoiceHtml" />
+
 				</xs:sequence>
 			</xs:extension>
 		</xs:complexContent>
@@ -787,8 +741,11 @@
 		<xs:complexContent>
 			<xs:extension base="cmis:cmisPropertyDefinitionType">
 				<xs:sequence>
-					<xs:element minOccurs="0" maxOccurs="unbounded" name="defaultValue"
-						type="cmis:cmisChoiceXhtmlType" />
+					<xs:element minOccurs="0" maxOccurs="1" name="defaultValue"
+						type="cmis:cmisPropertyXhtml" />
+					<xs:element minOccurs="0" maxOccurs="unbounded" name="choice"
+						type="cmis:cmisChoiceXhtml" />
+
 				</xs:sequence>
 			</xs:extension>
 		</xs:complexContent>
@@ -797,10 +754,13 @@
 		<xs:complexContent>
 			<xs:extension base="cmis:cmisPropertyDefinitionType">
 				<xs:sequence>
-					<xs:element minOccurs="0" maxOccurs="unbounded" name="defaultValue"
-						type="cmis:cmisChoiceStringType" />
+					<xs:element minOccurs="0" maxOccurs="1" name="defaultValue"
+						type="cmis:cmisPropertyString" />
 					<xs:element name="maxLength" type="xs:integer"
 						minOccurs="0" maxOccurs="1" />
+					<xs:element minOccurs="0" maxOccurs="unbounded" name="choice"
+						type="cmis:cmisChoiceString" />
+
 				</xs:sequence>
 			</xs:extension>
 		</xs:complexContent>
@@ -809,8 +769,11 @@
 		<xs:complexContent>
 			<xs:extension base="cmis:cmisPropertyDefinitionType">
 				<xs:sequence>
-					<xs:element minOccurs="0" maxOccurs="unbounded" name="defaultValue"
-						type="cmis:cmisChoiceUriType" />
+					<xs:element minOccurs="0" maxOccurs="1" name="defaultValue"
+						type="cmis:cmisPropertyUri" />
+					<xs:element minOccurs="0" maxOccurs="unbounded" name="choice"
+						type="cmis:cmisChoiceUri" />
+
 				</xs:sequence>
 			</xs:extension>
 		</xs:complexContent>
@@ -819,10 +782,13 @@
 		<xs:complexContent>
 			<xs:extension base="cmis:cmisPropertyDefinitionType">
 				<xs:sequence>
-					<xs:element minOccurs="0" maxOccurs="unbounded" name="defaultValue"
-						type="cmis:cmisChoiceXmlType" />
+					<xs:element minOccurs="0" maxOccurs="1" name="defaultValue"
+						type="cmis:cmisPropertyXml" />
 					<xs:element name="schemaURI" type="xs:anyURI" minOccurs="0"
 						maxOccurs="1" />
+					<xs:element minOccurs="0" maxOccurs="unbounded" name="choice"
+						type="cmis:cmisChoiceXml" />
+
 				</xs:sequence>
 			</xs:extension>
 		</xs:complexContent>
@@ -889,7 +855,6 @@
 				<xs:element name="propertyStringDefinition" type="cmis:cmisPropertyStringDefinitionType" />
 				<xs:element name="propertyXmlDefinition" type="cmis:cmisPropertyXmlDefinitionType" />
 				<xs:element name="propertyUriDefinition" type="cmis:cmisPropertyUriDefinitionType" />
-
 			</xs:choice>
 
 			<!-- extension -->
@@ -943,7 +908,6 @@
 	</xs:complexType>
 
 	<!--  query -->
-
 	<xs:complexType name="cmisQueryType">
 		<xs:sequence>
 			<xs:element name="repositoryId" type="xs:string"
@@ -964,16 +928,15 @@
 			<xs:element name="includeRenditions" type="xs:boolean"
 				minOccurs="0" maxOccurs="1" nillable="true" />
 
-			<xs:element name="extension" type="cmis:cmisAnyXml"
-				minOccurs="0" maxOccurs="1" />
+			<xs:any maxOccurs="unbounded" minOccurs="1" namespace="##other"
+				processContents="lax" />
 		</xs:sequence>
 		<xs:attributeGroup ref="cmis:cmisUndefinedAttribute" />
 	</xs:complexType>
-	<xs:element name="query" type="cmis:cmisQueryType" />
+
 
 
 	<!--  repository info -->
-	<xs:element name="repositoryInfo" type="cmis:cmisRepositoryInfoType" />
 	<xs:complexType name="cmisRepositoryInfoType">
 		<xs:sequence minOccurs="1">
 			<xs:element name="repositoryId" type="xs:string"
@@ -1003,7 +966,7 @@
 
 			<xs:element name="changesIncomplete" type="xs:boolean"
 				maxOccurs="1" minOccurs="0" />
-				
+
 			<xs:any namespace="##other" processContents="lax" minOccurs="0"
 				maxOccurs="unbounded" />
 		</xs:sequence>
@@ -1019,10 +982,11 @@
 			<xs:element name="capabilityChanges" type="cmis:enumCapabilityChanges" />
 			<xs:element name="capabilityChangesOnType" type="cmis:enumBaseObjectTypeIds"
 				minOccurs="1" maxOccurs="unbounded" />
-			<xs:element name="capabilityContentStreamUpdates" type="cmis:enumCapabilityContentStreamUpdates"
-				minOccurs="1" maxOccurs="1" />
-			<xs:element name="capabilityDescendantNavigation" type="xs:boolean"
-				maxOccurs="1" minOccurs="0" />
+			<xs:element name="capabilityContentStreamUpdatability"
+				type="cmis:enumCapabilityContentStreamUpdates" minOccurs="1"
+				maxOccurs="1" />
+			<xs:element name="capabilityGetDescendants" type="xs:boolean"
+				maxOccurs="1" minOccurs="1" />
 			<xs:element name="capabilityMultifiling" type="xs:boolean"
 				minOccurs="1" maxOccurs="1" />
 			<xs:element name="capabilityPWCSearchable" type="xs:boolean"
@@ -1031,7 +995,7 @@
 				minOccurs="1" maxOccurs="1" />
 			<xs:element name="capabilityQuery" type="cmis:enumCapabilityQuery"
 				minOccurs="1" maxOccurs="1" />
-			<xs:element name="capabilityRenditions" type="xs:boolean"
+			<xs:element name="capabilityRenditions" type="cmis:enumCapabilityRendition"
 				minOccurs="1" maxOccurs="1" />
 			<xs:element name="capabilityUnfiling" type="xs:boolean"
 				minOccurs="1" maxOccurs="1" />
@@ -1102,10 +1066,10 @@
 
 	<xs:simpleType name="enumBasicPermissions">
 		<xs:restriction base="xs:string">
-			<xs:enumeration value="cmis:Read" />
-			<xs:enumeration value="cmis:Write" />
-			<xs:enumeration value="cmis:Delete" />
-			<xs:enumeration value="cmis:All" />
+			<xs:enumeration value="cmis:read" />
+			<xs:enumeration value="cmis:write" />
+			<xs:enumeration value="cmis:delete" />
+			<xs:enumeration value="cmis:all" />
 		</xs:restriction>
 	</xs:simpleType>
 
@@ -1120,8 +1084,8 @@
 
 	<xs:complexType name="cmisPermissionMapping">
 		<xs:sequence>
-			<xs:element name="key" type="cmis:enumAllowableActionsKey" />
-			<xs:element name="permission" type="xs:string" maxOccurs="unbounded" />
+			<xs:element name="key" type="cmis:enumAllowableActionsKey" minOccurs="1" maxOccurs="1" />
+			<xs:element name="permission" type="xs:string" minOccurs="1" maxOccurs="1" />
 			<xs:any namespace="##other" />
 		</xs:sequence>
 	</xs:complexType>
@@ -1174,7 +1138,7 @@
 	<xs:complexType name="cmisAccessControlPrincipalType">
 		<xs:sequence>
 			<xs:element name="principalId" type="xs:string" />
-			
+
 			<xs:any namespace="##other" maxOccurs="unbounded" />
 		</xs:sequence>
 	</xs:complexType>
@@ -1184,14 +1148,15 @@
 			<xs:element name="principal" type="cmis:cmisAccessControlPrincipalType" />
 			<xs:element name="permission" type="xs:string" />
 			<xs:element name="direct" type="xs:boolean" />
-			
+
 			<xs:any namespace="##other" maxOccurs="unbounded" />
 		</xs:sequence>
 	</xs:complexType>
 
 	<xs:complexType name="cmisAccessControlListType">
 		<xs:sequence>
-			<xs:element name="permission" type="cmis:cmisAccessControlEntryType" />
+			<xs:element name="permission" type="cmis:cmisAccessControlEntryType"
+				minOccurs="1" maxOccurs="unbounded" />
 			<xs:any namespace="##other" maxOccurs="unbounded" />
 		</xs:sequence>
 	</xs:complexType>
@@ -1206,10 +1171,6 @@
 		</xs:sequence>
 	</xs:complexType>
 
-	<!-- element -->
-	<xs:element name="cmisObject" type="cmis:cmisObjectType" />
-
-
 	<!-- renditions -->
 	<xs:simpleType name="enumCapabilityRendition">
 		<xs:restriction base="xs:string">
@@ -1220,7 +1181,7 @@
 
 	<xs:simpleType name="enumRenditionKind">
 		<xs:restriction base="xs:string">
-			<xs:enumeration value="CMIS.Thumbnail" />
+			<xs:enumeration value="cmis:thumbnail" />
 		</xs:restriction>
 	</xs:simpleType>
 
@@ -1240,5 +1201,29 @@
 	</xs:complexType>
 
 
+	<!-- elements -->
+	<xs:element name="allowableActions" type="cmis:cmisAllowableActionsType">
+		<xs:annotation>
+			<xs:documentation>
+				This is the root tag for a CMIS AllowableActions
+				Document Type
+			</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+
+	<xs:element name="query" type="cmis:cmisQueryType">
+		<xs:annotation>
+			<xs:documentation>
+				This is the root tag for a CMIS Query Document Type
+			</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+	<xs:element name="acl" type="cmis:cmisAccessControlListType">
+		<xs:annotation>
+			<xs:documentation>
+				This is the root tag for a CMIS ACL Document Type
+			</xs:documentation>
+		</xs:annotation>
+	</xs:element>
 </xs:schema>
 	<!-- EOF -->

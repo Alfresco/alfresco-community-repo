@@ -5,47 +5,47 @@
         <atom:uri>http://www.ibm.com/</atom:uri>
         <atom:email>albertcbrown@us.ibm.com</atom:email>
     </atom:author>
-    <atom:content src="http://cmisexample.oasis-open.org/rep1/169251b0-40b4-4c83-b0b8-4d4d77f7199e"/>
-    <atom:id>urn:uuid:169251b0-40b4-4c83-b0b8-4d4d77f7199e</atom:id>
-    <atom:link rel="self" href="http://cmisexample.oasis-open.org/rep1/169251b0-40b4-4c83-b0b8-4d4d77f7199e"/>
-    <atom:link rel="edit" href="http://cmisexample.oasis-open.org/rep1/169251b0-40b4-4c83-b0b8-4d4d77f7199e"/>
-    <atom:link type="application/cmis+xml;type=allowableActions" rel="allowableactions" href="http://cmisexample.oasis-open.org/rep1/169251b0-40b4-4c83-b0b8-4d4d77f7199e/allowableactions"/>
-    <atom:link type="application/atom+xml;type=entry" rel="type" href="http://cmisexample.oasis-open.org/rep1/169251b0-40b4-4c83-b0b8-4d4d77f7199e/type"/>
-    <atom:link type="application/atom+xml;type=feed" rel="parents" href="http://cmisexample.oasis-open.org/rep1/169251b0-40b4-4c83-b0b8-4d4d77f7199e/parents"/>
-    <atom:link type="application/atom+xml;type=feed" rel="relationships" href="http://cmisexample.oasis-open.org/rep1/169251b0-40b4-4c83-b0b8-4d4d77f7199e/relationships"/>
-    <atom:published>2009-07-13T22:50:03.859-07:00</atom:published>
-    <atom:summary type="html">HTML summary of Entry  169251b0-40b4-4c83-b0b8-4d4d77f7199e</atom:summary>
+    <atom:content src="http://cmisexample.oasis-open.org/rep1/7910ee91-6201-4868-bcd9-1c72edf6161f"/>
+    <atom:id>urn:uuid:7910ee91-6201-4868-bcd9-1c72edf6161f</atom:id>
+    <atom:link rel="self" href="http://cmisexample.oasis-open.org/rep1/7910ee91-6201-4868-bcd9-1c72edf6161f"/>
+    <atom:link rel="edit" href="http://cmisexample.oasis-open.org/rep1/7910ee91-6201-4868-bcd9-1c72edf6161f"/>
+    <atom:link type="application/cmis+xml;type=allowableActions" rel="allowableactions" href="http://cmisexample.oasis-open.org/rep1/7910ee91-6201-4868-bcd9-1c72edf6161f/allowableactions"/>
+    <atom:link type="application/atom+xml;type=entry" rel="type" href="http://cmisexample.oasis-open.org/rep1/7910ee91-6201-4868-bcd9-1c72edf6161f/type"/>
+    <atom:published>2009-07-17T09:13:32.953-07:00</atom:published>
+    <atom:summary type="html">HTML summary of Entry  7910ee91-6201-4868-bcd9-1c72edf6161f</atom:summary>
     <atom:title type="text">CMIS Example Policy</atom:title>
-    <atom:updated>2009-07-13T22:50:03.859-07:00</atom:updated>
-    <cmis:object>
+    <atom:updated>2009-07-17T09:13:32.968-07:00</atom:updated>
+    <atom:link type="application/atom+xml;type=feed" rel="parents" href="http://cmisexample.oasis-open.org/rep1/7910ee91-6201-4868-bcd9-1c72edf6161f/parents"/>
+    <atom:link type="application/atom+xml;type=feed" rel="relationships" href="http://cmisexample.oasis-open.org/rep1/7910ee91-6201-4868-bcd9-1c72edf6161f/relationships"/>
+    <cmisra:object>
         <cmis:properties>
-            <cmis:propertyBoolean id="cmis:IsImmutable">
+            <cmis:propertyBoolean localname="rep-cmis:IsImmutable" pdid="cmis:IsImmutable">
                 <cmis:value>false</cmis:value>
             </cmis:propertyBoolean>
-            <cmis:propertyDateTime id="cmis:CreationDate">
-                <cmis:value>2009-07-13T22:50:03.859-07:00</cmis:value>
+            <cmis:propertyDateTime localname="rep-cmis:CreationDate" pdid="cmis:CreationDate">
+                <cmis:value>2009-07-17T09:13:32.968-07:00</cmis:value>
             </cmis:propertyDateTime>
-            <cmis:propertyDateTime id="cmis:LastModificationDate">
-                <cmis:value>2009-07-13T22:50:03.859-07:00</cmis:value>
+            <cmis:propertyDateTime localname="rep-cmis:LastModificationDate" pdid="cmis:LastModificationDate">
+                <cmis:value>2009-07-17T09:13:32.968-07:00</cmis:value>
             </cmis:propertyDateTime>
-            <cmis:propertyId id="cmis:ObjectId">
-                <cmis:value>169251b0-40b4-4c83-b0b8-4d4d77f7199e</cmis:value>
+            <cmis:propertyId localname="rep-cmis:ObjectId" pdid="cmis:ObjectId">
+                <cmis:value>7910ee91-6201-4868-bcd9-1c72edf6161f</cmis:value>
             </cmis:propertyId>
-            <cmis:propertyId id="cmis:ObjectTypeId">
+            <cmis:propertyId localname="rep-cmis:ObjectTypeId" pdid="cmis:ObjectTypeId">
                 <cmis:value>policy</cmis:value>
             </cmis:propertyId>
-            <cmis:propertyId id="cmis:BaseTypeId">
+            <cmis:propertyId localname="rep-cmis:BaseTypeId" pdid="cmis:BaseTypeId">
                 <cmis:value>cmis:policy</cmis:value>
             </cmis:propertyId>
-            <cmis:propertyString id="cmis:LastModifiedBy">
+            <cmis:propertyString localname="rep-cmis:LastModifiedBy" pdid="cmis:LastModifiedBy">
                 <cmis:value>Al Brown</cmis:value>
             </cmis:propertyString>
-            <cmis:propertyString id="cmis:CreatedBy">
+            <cmis:propertyString localname="rep-cmis:CreatedBy" pdid="cmis:CreatedBy">
                 <cmis:value>Al Brown</cmis:value>
             </cmis:propertyString>
         </cmis:properties>
         <cmis:allowableActions>
-            <cmis:canDelete>true</cmis:canDelete>
+            <cmis:canDeleteObject>true</cmis:canDeleteObject>
             <cmis:canUpdateProperties>true</cmis:canUpdateProperties>
             <cmis:canGetProperties>true</cmis:canGetProperties>
             <cmis:canGetRelationships>true</cmis:canGetRelationships>
@@ -57,5 +57,5 @@
             <cmis:canRemovePolicy>true</cmis:canRemovePolicy>
             <cmis:canCreatePolicy>true</cmis:canCreatePolicy>
         </cmis:allowableActions>
-    </cmis:object>
+    </cmisra:object>
 </atom:entry>

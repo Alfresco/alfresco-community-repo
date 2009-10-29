@@ -1,3 +1,5 @@
+<import resource="classpath:alfresco/templates/webscripts/org/alfresco/cmis/constants.lib.js">
+
 script:
 {
     // relationship type
@@ -8,7 +10,7 @@ script:
         status.setCode(400, "Relationship type " + relType + " unknown");
         break script;
     }
-    if (model.relTypeDef.baseType.typeId != "relationship")
+    if (model.relTypeDef.baseType.typeId != RELATIONSHIP_TYPE_ID)
     {
         status.setCode(400, "Type + " + relType + " is not a relationship type");
         break script;

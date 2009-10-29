@@ -1,8 +1,8 @@
 <webscript>
   <shortname>Retrieve Allowable Actions</shortname>
   <description>Retrieve Allowable Actions</description>
-  <url>/api/node/{store_type}/{store_id}/{id}/permissions</url>
-  <url>/api/path/{store_type}/{store_id}/{id}/permissions</url>
+  <url>/api/node/{store_type}/{store_id}/{id}/allowableactions</url>
+  <url>/api/path/{store_type}/{store_id}/{id}/allowableactions</url>
   <authentication>guest</authentication>
   <transaction allow="readonly"/>
   <format default="cmisallowableactions">argument</format>

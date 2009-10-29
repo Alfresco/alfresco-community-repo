@@ -8,7 +8,7 @@
 	xmlns:atom="http://www.w3.org/2005/Atom" xmlns:app="http://www.w3.org/2007/app"
 	xmlns:cmisc="http://docs.oasis-open.org/ns/cmis/core/200901"
 	xmlns:cmisra="http://docs.oasis-open.org/ns/cmis/restatom/200901"
-	version="0.62a">
+	version="0.62d">
 	<xs:import namespace="http://www.w3.org/2005/Atom"
 		schemaLocation="ATOM.xsd" />
 	<xs:import namespace="http://docs.oasis-open.org/ns/cmis/core/200901"
@@ -65,7 +65,7 @@
 	</xs:complexType>
 
 	<!--  -->
-	<xs:element name="edited" type="xs:dateTime" />
+	<xs:element name="edited" type="atom:atomDateConstruct" />
 	<xs:complexType name="appControlType">
 		<xs:sequence>
 			<xs:element name="draft" type="app:enumYesNo" minOccurs="0"

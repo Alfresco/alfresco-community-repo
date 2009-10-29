@@ -4,4 +4,5 @@
     <cmis:searchAllVersions>true</cmis:searchAllVersions>
     <cmis:maxItems>50</cmis:maxItems>
     <cmis:skipCount>0</cmis:skipCount>
+    <x:invalidschema xmlns:x="http://invalid"></x:invalidschema>
 </cmis:query>

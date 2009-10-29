@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<entry xmlns="http://www.w3.org/2005/Atom" xmlns:cmis="http://docs.oasis-open.org/ns/cmis/core/200901">
+<entry xmlns="http://www.w3.org/2005/Atom" xmlns:cmisra="http://docs.oasis-open.org/ns/cmis/restatom/200901" xmlns:cmis="http://docs.oasis-open.org/ns/cmis/core/200901">
     <title>${NAME}</title>
     <summary>${NAME} (summary)</summary>
     <content type="text/plain">
@@ -13,9 +13,9 @@
 		ZCBmb2xkZXIuICBJZiB0aGUgY29udGVudCBzdHJlYW0gaXMgc3BlY2lmaWVkIG9uIGNyZWF0ZSwg
 		aXQgc2hvdWxkIGJlIGJhc2U2NCBlbmNvZGVkIGluIHRoZSBhdG9tIGVudHJ5Lg==
     </content>
-    <cmis:object>
+    <cmisra:object>
        <cmis:properties>
-          <cmis:propertyString cmis:name="ObjectTypeId"><cmis:value>document</cmis:value></cmis:propertyString>
+          <cmis:propertyId pdid="cmis:ObjectTypeId"><cmis:value>cmis:document</cmis:value></cmis:propertyId>
        </cmis:properties>
-    </cmis:object>
+    </cmisra:object>
 </entry>

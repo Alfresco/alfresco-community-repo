@@ -8,11 +8,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <feed [@nsLib.feedNS/]>
 
-[@feedLib.generic "urn:uuid:type-${typedef.objectTypeId}-children" "Child types of ${typedef.objectTypeId}" "${person.properties.userName}"]
+[#assign title][#if type = "base"]Base Types[#else]Type ${type}[/#if][/#assign]
+[@feedLib.generic "urn:uuid:types-${type}" "${title}" "${person.properties.userName}"]
   [@pagingLib.links cursor/]
 [/@feedLib.generic]
 [@pagingLib.opensearch cursor/]
-
 
 [#list results as child]
 [@entryLib.typedef child returnPropertyDefinitions/]

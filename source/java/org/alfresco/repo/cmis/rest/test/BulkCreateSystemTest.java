@@ -79,10 +79,10 @@ public class BulkCreateSystemTest
 
         CMISObject cmisObject = entry.addExtension(CMISConstants.OBJECT);
         CMISProperties properties = cmisObject.addExtension(CMISConstants.PROPERTIES);
-        CMISProperty property = properties.addExtension(CMISConstants.PROPERTY_STRING);
-        property.setAttributeValue(CMISConstants.PROPERTY_NAME, CMISConstants.PROP_OBJECT_TYPE_ID);
+        CMISProperty property = properties.addExtension(CMISConstants.ID_PROPERTY);
+        property.setAttributeValue(CMISConstants.PROPERTY_ID, CMISConstants.PROP_OBJECT_TYPE_ID);
         Element value = property.addExtension(CMISConstants.PROPERTY_VALUE);
-        value.setText("folder");
+        value.setText("cmis:Folder");
 
         ClientResponse resp = client.post(parent, entry);
 
@@ -116,8 +116,8 @@ public class BulkCreateSystemTest
 
         CMISObject cmisObject = entry.addExtension(CMISConstants.OBJECT);
         CMISProperties properties = cmisObject.addExtension(CMISConstants.PROPERTIES);
-        CMISProperty property = properties.addExtension(CMISConstants.PROPERTY_STRING);
-        property.setAttributeValue(CMISConstants.PROPERTY_NAME, CMISConstants.PROP_OBJECT_TYPE_ID);
+        CMISProperty property = properties.addExtension(CMISConstants.ID_PROPERTY);
+        property.setAttributeValue(CMISConstants.PROPERTY_ID, CMISConstants.PROP_OBJECT_TYPE_ID);
         Element value = property.addExtension(CMISConstants.PROPERTY_VALUE);
         value.setText("document");
 

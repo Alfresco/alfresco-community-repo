@@ -1,35 +1,11 @@
 <webscript>
   <shortname>Retrieve Parent Folder (getFolderParent)</shortname>
   <description>
-<![CDATA[
-Returns the parent folder object, and optionally all ancestor folder objects, above a specified folder object.<br>
-<br>
-Inputs:<br>
-<br>
-ID folderId: Source folder to get the parent or ancestors of<br>
-(Optional) String filter: Property filter specifying which properties to return.<br>
-(Optional) Boolean includeAllowableActions: False (default)<br>
-(Optional) Enum includeRelationships: none (default), source, target, both<br>
-(Optional) Bool returnToRoot: If false, return only the immediate parent of the folder. If true, return an ordered list of all ancestor folders from the specified folder to the root folder. Default=False<br>
-<br>
-Outputs:<br>
-<br>
-ResultSet resultSet of folders<br>
-Parent Folder ID + Specified properties<br>
-Can be a list of folders<br>
-<br>
-Notes:<br>
-<br>
-Output is ordered by ancestry, closest to specified folder first. However XML clients may not always respect ordering.  For that reason repositories SHOULD always include the parent and the ObjectID property in the filter to allow re-ordering if necessary.<br>
-No parent folder is returned if the specified folder is the root folder.<br>
-If “includeAllowableActions” is TRUE, the repository will return the allowable actions for the current user for each parent or ancestor folder as part of the output.<br>
-"IncludeRelationships" indicates whether relationships are also returned for each returned object. If it is set to "source" or "target", relationships for which the returned object is a source, or respectively a target, will also be returned. If it is set to "both", relationships for which the returned object is either a source or a target will be returned. If it is set to "none", relationships are not returned.<br>
-]]>  
   </description>
-  <url>/api/node/{store_type}/{store_id}/{id}/parent?returnToRoot={returnToRoot}&amp;filter={filter?}&amp;includeAllowableActions={includeAllowableActions?}</url>
-  <url>/api/path/{store_type}/{store_id}/{id}/parent?returnToRoot={returnToRoot}&amp;filter={filter?}&amp;includeAllowableActions={includeAllowableActions?}</url>
+  <url>/api/node/{store_type}/{store_id}/{id}/parent?filter={filter?}&amp;includeAllowableActions={includeAllowableActions?}</url>
+  <url>/api/path/{store_type}/{store_id}/{id}/parent?filter={filter?}&amp;includeAllowableActions={includeAllowableActions?}</url>
   <authentication>guest</authentication>
   <transaction allow="readonly"/>
-  <format default="atomfeed">argument</format>
+  <format default="atomentry">argument</format>
   <family>CMIS</family>
 </webscript>

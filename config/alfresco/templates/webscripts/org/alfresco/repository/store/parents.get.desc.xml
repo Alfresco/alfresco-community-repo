@@ -23,7 +23,6 @@ If “includeAllowableActions” is TRUE, the repository will return the allowab
 "IncludeRelationships" indicates whether relationships are also returned for each returned object. If it is set to "source" or "target", relationships for which the returned object is a source, or respectively a target, will also be returned. If it is set to "both", relationships for which the returned object is either a source or a target will be returned. If it is set to "none", relationships are not returned.<br>
 ]]>  
   </description>
-  <!-- TODO: returnToRoot argument required? -->
   <url>/api/node/{store_type}/{store_id}/{id}/parents?filter={filter?}&amp;includeAllowableActions={includeAllowableActions?}</url>
   <url>/api/path/{store_type}/{store_id}/{id}/parents?filter={filter?}&amp;includeAllowableActions={includeAllowableActions?}</url>
   <authentication>guest</authentication>

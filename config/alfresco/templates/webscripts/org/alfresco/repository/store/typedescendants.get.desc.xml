@@ -1,7 +1,8 @@
 <webscript>
   <shortname>Retrieve list of descendant Types</shortname>
   <description>Retrieve list of all descendant Types</description>
-  <url>/api/type/{typeId}/descendants?includePropertyDefinitions={includePropertyDefinitions?}&amp;skipCount={skipCount?}&amp;maxItems={maxItems?}</url>
+  <url>/api/type/{typeId}/descendants?includePropertyDefinitions={includePropertyDefinitions?}&amp;depth={depth?}</url>
+  <url>/api/types/descendants?typeId={typeId?}&amp;includePropertyDefinitions={includePropertyDefinitions?}&amp;depth={depth?}</url>
   <authentication>user</authentication>
   <transaction allow="readonly"/>
   <format default="atomfeed"/>

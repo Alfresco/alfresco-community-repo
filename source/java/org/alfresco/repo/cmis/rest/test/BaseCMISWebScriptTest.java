@@ -34,6 +34,7 @@ import java.util.List;
 import java.util.Map;
 
 import javax.activation.MimeType;
+import javax.activation.MimeTypeParseException;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.validation.Validator;
@@ -444,6 +445,70 @@ public class BaseCMISWebScriptTest extends BaseWebScriptTest
         return rootHREF;
     }
 
+    protected Link getLink(Entry entry, String rel, String... matchesMimetypes)
+    {
+        List<Link> links = entry.getLinks(rel);
+        if (links != null)
+        {
+            for (Link link : links)
+            {
+                MimeType mimetype = link.getMimeType();
+                if (matchesMimetypes.length == 0)
+                {
+                    if (links.size() == 1)
+                    {
+                        // take the single link regardless of type
+                        return link;
+                    }
+                    else if (mimetype == null)
+                    {
+                        // take the link if it doesn't have a type
+                        return link;
+                    }
+                }
+                for (String matchesMimetype : matchesMimetypes)
+                {
+                    try
+                    {
+                        if (mimetype != null && mimetype.match(matchesMimetype))
+                        {
+                            return link;
+                        }
+                    }
+                    catch (MimeTypeParseException e)
+                    {
+                        // note: not a match
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    protected Link getChildrenLink(Entry entry)
+    {
+        return getLink(entry, CMISConstants.REL_DOWN, CMISConstants.MIMETYPE_FEED);
+    }
+
+    protected Link getDescendantsLink(Entry entry)
+    {
+        return getLink(entry, CMISConstants.REL_DOWN, CMISConstants.MIMETYPE_CMISTREE);
+    }
+
+    protected Link getFolderTreeLink(Entry entry)
+    {
+        return getLink(entry, CMISConstants.REL_FOLDER_TREE, CMISConstants.MIMETYPE_CMISTREE);
+    }
+
+    protected Link getObjectParentsLink(Entry entry)
+    {
+        return getLink(entry, CMISConstants.REL_UP, CMISConstants.MIMETYPE_FEED);
+    }
+
+    protected Link getFolderParentLink(Entry entry)
+    {
+        return getLink(entry, CMISConstants.REL_UP, CMISConstants.MIMETYPE_ENTRY);
+    }
 
     protected Entry createFolder(IRI parent, String name)
         throws Exception
@@ -464,7 +529,7 @@ public class BaseCMISWebScriptTest extends BaseWebScriptTest
         assertEquals(name, entry.getTitle());
         //assertEquals(name + " (summary)", entry.getSummary());
         CMISObject object = entry.getExtension(CMISConstants.OBJECT);
-        assertEquals("folder", object.getBaseType().getStringValue());
+        assertEquals(CMISConstants.TYPE_FOLDER, object.getBaseTypeId().getStringValue());
         String testFolderHREF = (String)res.getHeader("Location");
         assertNotNull(testFolderHREF);
         return entry;
@@ -495,7 +560,7 @@ public class BaseCMISWebScriptTest extends BaseWebScriptTest
         //assertEquals(name + " (summary)", entry.getSummary());
         assertNotNull(entry.getContentSrc());
         CMISObject object = entry.getExtension(CMISConstants.OBJECT);
-        assertEquals("document", object.getBaseType().getStringValue());
+        assertEquals(CMISConstants.TYPE_DOCUMENT, object.getBaseTypeId().getStringValue());
         String testFileHREF = (String)res.getHeader("Location");
         assertNotNull(testFileHREF);
         return entry;
@@ -519,7 +584,7 @@ public class BaseCMISWebScriptTest extends BaseWebScriptTest
         Entry entry = abdera.parseEntry(new StringReader(xml), null);
         assertNotNull(entry);
         CMISObject object = entry.getExtension(CMISConstants.OBJECT);
-        assertEquals("relationship", object.getBaseType().getStringValue());
+        assertEquals(CMISConstants.TYPE_RELATIONSHIP, object.getBaseTypeId().getStringValue());
         assertEquals(targetId, object.getTargetId().getStringValue());
         String testFileHREF = (String)res.getHeader("Location");
         assertNotNull(testFileHREF);
@@ -574,7 +639,7 @@ public class BaseCMISWebScriptTest extends BaseWebScriptTest
         throws Exception
     {
         Entry testRootFolder = getTestRootFolder();
-        Link testsChildrenLink = testRootFolder.getLink(CMISConstants.REL_CHILDREN);
+        Link testsChildrenLink = getChildrenLink(testRootFolder);
         return createFolder(testsChildrenLink.getHref(), "Test Run " + System.currentTimeMillis());
     }
     
@@ -582,7 +647,7 @@ public class BaseCMISWebScriptTest extends BaseWebScriptTest
         throws Exception
     {
         Entry testRunFolder = getTestRunFolder();
-        Link childrenLink = testRunFolder.getLink(CMISConstants.REL_CHILDREN);
+        Link childrenLink = getChildrenLink(testRunFolder);
         assertNotNull(childrenLink);
         Entry testFolder = createFolder(childrenLink.getHref(), name + " " + System.currentTimeMillis());
         return testFolder;

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<entry xmlns="http://www.w3.org/2005/Atom" xmlns:cmis="http://docs.oasis-open.org/ns/cmis/core/200901">
+<entry xmlns="http://www.w3.org/2005/Atom">
     <title>Updated Title ${NAME}</title>
     <content>updated content ${NAME}</content>
 </entry>

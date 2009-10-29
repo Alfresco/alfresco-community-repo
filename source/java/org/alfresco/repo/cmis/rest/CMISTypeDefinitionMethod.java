@@ -29,7 +29,6 @@ import java.util.List;
 import org.alfresco.cmis.CMISDictionaryService;
 import org.alfresco.cmis.CMISScope;
 import org.alfresco.cmis.CMISTypeDefinition;
-import org.alfresco.cmis.mapping.CMISMapping;
 import org.alfresco.repo.template.TemplateAssociation;
 import org.alfresco.repo.template.TemplateNode;
 import org.alfresco.service.namespace.QName;
@@ -93,6 +92,10 @@ public class CMISTypeDefinitionMethod implements TemplateMethodModelEx
                     else if (wrapped instanceof QName)
                     {
                         nodeType = (QName)wrapped;
+                    }
+                    else if (wrapped instanceof CMISTypeDefinition)
+                    {
+                        result = ((CMISTypeDefinition)wrapped).getBaseType();
                     }
                 }
                 

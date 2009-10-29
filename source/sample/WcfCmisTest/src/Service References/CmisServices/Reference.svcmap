@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ReferenceGroup xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" ID="4a3c557b-a8ba-4621-9a5e-c690f67090f4" xmlns="urn:schemas-microsoft-com:xml-wcfservicemap">
+  <ClientOptions>
+    <GenerateAsynchronousMethods>false</GenerateAsynchronousMethods>
+    <EnableDataBinding>true</EnableDataBinding>
+    <ExcludedTypes />
+    <ImportXmlTypes>false</ImportXmlTypes>
+    <GenerateInternalTypes>false</GenerateInternalTypes>
+    <GenerateMessageContracts>false</GenerateMessageContracts>
+    <NamespaceMappings />
+    <CollectionMappings />
+    <GenerateSerializableTypes>true</GenerateSerializableTypes>
+    <Serializer>Auto</Serializer>
+    <ReferenceAllAssemblies>true</ReferenceAllAssemblies>
+    <ReferencedAssemblies />
+    <ReferencedDataContractTypes />
+    <ServiceContractMappings />
+  </ClientOptions>
+  <MetadataSources>
+    <MetadataSource Address="D:\java\eclipse\workspace\WS-Binding-062f\source\wsdl\CMISWS-Service.wsdl" Protocol="file" SourceId="1" />
+  </MetadataSources>
+  <Metadata>
+    <MetadataFile FileName="CMISWebServices.wsdl" MetadataType="Wsdl" ID="f59d91c9-6c5a-4290-b94d-cb2183bbaa6e" SourceId="1" SourceUrl="file:///D:/java/eclipse/workspace/WS-Binding-062f/source/wsdl/CMISWS-Service.wsdl" />
+    <MetadataFile FileName="CMIS-Core.xsd" MetadataType="Schema" ID="685b1f15-3921-42f6-a839-6c2837ee5213" SourceId="1" SourceUrl="file:///D:/java/eclipse/workspace/WS-Binding-062f/source/wsdl/CMIS-Core.xsd" />
+    <MetadataFile FileName="xml.xsd" MetadataType="Schema" ID="f913b66c-8e40-4455-8cbe-51370ac16079" SourceId="1" SourceUrl="file:///D:/java/eclipse/workspace/WS-Binding-062f/source/wsdl/xml.xsd" />
+    <MetadataFile FileName="CMIS-Messaging.xsd" MetadataType="Schema" ID="7fc77d40-3e61-4ce3-97ae-98607c7f656c" SourceId="1" SourceUrl="file:///D:/java/eclipse/workspace/WS-Binding-062f/source/wsdl/CMIS-Messaging.xsd" />
+  </Metadata>
+  <Extensions>
+    <ExtensionFile FileName="configuration91.svcinfo" Name="configuration91.svcinfo" />
+    <ExtensionFile FileName="configuration.svcinfo" Name="configuration.svcinfo" />
+  </Extensions>
+</ReferenceGroup>

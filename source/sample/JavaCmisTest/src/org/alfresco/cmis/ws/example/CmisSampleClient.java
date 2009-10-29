@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2008 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -29,30 +29,29 @@ import java.util.List;
 import org.alfresco.repo.cmis.ws.CmisObjectType;
 import org.alfresco.repo.cmis.ws.CmisPropertiesType;
 import org.alfresco.repo.cmis.ws.CmisProperty;
+import org.alfresco.repo.cmis.ws.CmisPropertyId;
 import org.alfresco.repo.cmis.ws.CmisPropertyString;
 
 /**
- * This class executes simple processing for prompting server address and user name and password for authentication this user on specified server. After successful connection this
- * class print contents of Company Home.<br />
- * <br />
  * This class expects next command-line parameters:<nobr />
  * <ul>
  * <li><b>Server Address</b> - with form: (IP_ADDRESS|DOMAIN_NAME):PORT;</li>
  * <li><b>Username</b> - login name of the existent user;</li>
  * <li><b>Password</b> - appropriate password for specified user.</li>
  * </ul>
- * <b>Example: <font color=green>192.168.0.1:8080 admin admin</font></b> - authenticate an user as admin on <font color=gray><b>http://192.168.0.1:8080/alfresco/</b></font>
- * server
- *
+ * <b>Example: <font color=green>192.168.0.1:8080 admin admin</font></b> - authenticate an user as admin on <font color=gray><b>http://192.168.0.1:8080/alfresco/</b></font> server
+ * 
  * @author Dmitry Velichkevich
  */
-public class SimpleExecutableCmisServicesUtilizer
+public class CmisSampleClient
 {
+    private static final String NAME_PROPERTY = "cmis:Name";
+    private static final String BASE_TYPE_ID_PROPERTY = "cmis:BaseTypeId";
+
     /**
-     * Executable entry point - represents main life cycle
-     *
-     * @param args - not used
-     * @see SimpleCmisWsTest description
+     * Executable entry point - represents main life-cycle
+     * 
+     * @param args - <b>String[]</b> array that contains command line arguments
      */
     public static void main(String[] args)
     {
@@ -73,15 +72,15 @@ public class SimpleExecutableCmisServicesUtilizer
             password = args[2];
         }
 
-        ExecutableServicesHelper servicesHelper;
+        CmisUtils servicesHelper;
 
         try
         {
-            servicesHelper = new ExecutableServicesHelper(username, password, serverUrl);
+            servicesHelper = new CmisUtils(username, password, serverUrl);
         }
         catch (Exception e)
         {
-            System.out.println("Can't connect to specified server. Message: " + e.getMessage());
+            System.out.println("Can't connect to specified server. Cause error message: " + e.getMessage());
             return;
         }
 
@@ -89,7 +88,7 @@ public class SimpleExecutableCmisServicesUtilizer
 
         try
         {
-            response = servicesHelper.receiveSpaceContent(servicesHelper.receiveAuthorizedNavigationServicePort());
+            response = servicesHelper.receiveFolderEntry(servicesHelper.getRootFolderId());
         }
         catch (Exception e)
         {
@@ -101,8 +100,8 @@ public class SimpleExecutableCmisServicesUtilizer
         System.out.println("Outing Company Home contents:");
         for (CmisObjectType item : response)
         {
-            boolean thisIsFolder = ((CmisPropertyString) getCmisProperty(item.getProperties(), "BaseType")).getValue().contains("folder");
-            String itemName = ((CmisPropertyString) getCmisProperty(item.getProperties(), "Name")).getValue().get(0);
+            boolean thisIsFolder = ((CmisPropertyId) getCmisProperty(item.getProperties(), BASE_TYPE_ID_PROPERTY)).getValue().get(0).contains("folder");
+            String itemName = ((CmisPropertyString) getCmisProperty(item.getProperties(), NAME_PROPERTY)).getValue().get(0);
 
             System.out.println(((thisIsFolder) ? ("[") : ("")) + itemName + ((thisIsFolder) ? ("]") : ("")));
         }
@@ -112,12 +111,23 @@ public class SimpleExecutableCmisServicesUtilizer
     {
         for (CmisProperty cmisProperty : properties.getProperty())
         {
-            if (cmisProperty.getName().equalsIgnoreCase(cmisPropertyName))
+            if (cmisPropertyName.equals(getPropertyName(cmisProperty)))
             {
                 return cmisProperty;
             }
         }
 
         return null;
+    }
+
+    private static String getPropertyName(CmisProperty property)
+    {
+        String result = null;
+        if (null != property)
+        {
+            result = (null != property.getPdid()) ? (property.getPdid()):(property.getLocalname());
+            result = (null != result) ? (result) : (property.getDisplayname());
+        }
+        return result;
     }
 }

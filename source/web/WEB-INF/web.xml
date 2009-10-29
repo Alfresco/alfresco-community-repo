@@ -435,6 +435,39 @@
       <servlet-class>org.alfresco.web.app.servlet.JBPMDeployProcessServlet</servlet-class>
    </servlet>
 
+    <servlet>
+        <servlet-name>CMISFileShareServlet</servlet-name>
+        <servlet-class>de.fmui.cmis.fileshare.info.BrowseServlet</servlet-class>
+        <init-param>
+            <param-name>webcontentroot</param-name>
+            <param-value>cmisfs/</param-value>
+        </init-param>
+        <init-param>
+            <param-name>stylesheet:application/atomsvc+xml</param-name>
+            <param-value>/cmisfs/stylesheets/service.xsl</param-value>
+        </init-param>
+        <init-param>
+            <param-name>stylesheet:application/atom+xml;type=feed</param-name>
+            <param-value>/cmisfs/stylesheets/feed.xsl</param-value>
+        </init-param>
+        <init-param>
+            <param-name>stylesheet:application/cmistree+xml</param-name>
+            <param-value>/cmisfs/stylesheets/feed.xsl</param-value>
+        </init-param>
+        <init-param>
+            <param-name>stylesheet:application/atom+xml;type=entry</param-name>
+            <param-value>/cmisfs/stylesheets/entry.xsl</param-value>
+        </init-param>
+        <init-param>
+            <param-name>stylesheet:application/cmisallowableactions+xml</param-name>
+            <param-value>/cmisfs/stylesheets/actions.xsl</param-value>
+        </init-param>
+        <init-param>
+            <param-name>stylesheet:application/cmisacl+xml</param-name>
+            <param-value>/cmisfs/stylesheets/acl.xsl</param-value>
+        </init-param>
+    </servlet>
+
    <servlet-mapping>
       <servlet-name>Faces Servlet</servlet-name>
       <url-pattern>/faces/*</url-pattern>
@@ -598,6 +631,11 @@
    <servlet-mapping>
       <servlet-name>workflowDefinitionImageServlet</servlet-name>
       <url-pattern>/workflowdefinitionimage/*</url-pattern>
+   </servlet-mapping>
+
+   <servlet-mapping>
+      <servlet-name>CMISFileShareServlet</servlet-name>
+      <url-pattern>/cmisbrowse</url-pattern>
    </servlet-mapping>
 
    <session-config>

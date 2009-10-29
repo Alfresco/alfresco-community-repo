@@ -23,6 +23,7 @@
   [@pagingLib.links cursor/]
 [/@feedLib.generic]
 [@pagingLib.opensearch cursor/]
+[@pagingLib.cmis cursor/]
 
 [#list results as child]
 [@entryLib.typedef child includePropertyDefinitions/]

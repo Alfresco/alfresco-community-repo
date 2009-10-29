@@ -168,7 +168,8 @@ public class ContentSet extends AbstractWebScript
             ContentReader reader = contentService.getReader(nodeRef, propertyQName);
             if (reader != null)
             {
-                throw new WebScriptException(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Content already exists.");
+                // error code as per CMIS specification
+                throw new WebScriptException(HttpServletResponse.SC_CONFLICT, "Content already exists.");
             }
         }
         

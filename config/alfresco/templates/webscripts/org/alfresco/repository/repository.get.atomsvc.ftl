@@ -3,7 +3,7 @@
 [#import "/org/alfresco/cmis/links.lib.atom.ftl" as linksLib/]
 <?xml version="1.0" encoding="utf-8"?> 
 <service [@nsLib.serviceNS/]>
-  <workspace cmis:id="${server.id}" cmis:repositoryRelationship="self">
+  <workspace cmis:id="${server.id}">
     <atom:title>${server.name}</atom:title>
 
     <collection href="${absurl(url.serviceContext)}[@linksLib.nodeuri defaultRootFolder/]/children"> 

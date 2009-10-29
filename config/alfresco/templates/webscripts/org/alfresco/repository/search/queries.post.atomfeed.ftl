@@ -16,6 +16,7 @@
   [@pagingLib.linksredirect cursor "${queryUri}" "${queryArgs}" "${cmisconstants.MIMETYPE_FEED}"/]
 [/@feedLib.generic]
 [@pagingLib.opensearch cursor/]
+[@pagingLib.cmis cursor/]
 
 [#assign rs = cmisresultset(resultset)]
 [#list rs.rows as row]

@@ -29,7 +29,14 @@ script:
 
     // depth
     var depth = args[cmis.ARG_DEPTH];
-    model.depth = (depth === null) ? 1 : parseInt(depth);
+    if (depth == 0)
+    {
+        status.code = 500;
+        status.message = "Depth cannot be 0";
+        status.redirect = true;
+        break script;
+    }
+    model.depth = (depth === null) ? -1 : parseInt(depth);
 
     // handle property definitions
     var includePropertyDefinitions = args[cmis.ARG_INCLUDE_PROPERTY_DEFINITIONS];

@@ -22,6 +22,7 @@
   [@pagingLib.links cursor/]
 [/@feedLib.node]
 [@pagingLib.opensearch cursor/]
+[@pagingLib.cmis cursor/]
 
 [#list results as child]
   [#if child.isDocument]

@@ -16,6 +16,7 @@
   [@pagingLib.links cursor/]
 [/@feedLib.generic]
 [@pagingLib.opensearch cursor/]
+[@pagingLib.cmis cursor/]
 
 [#assign rs = cmisresultset(resultset)]
 [#list rs.rows as row]

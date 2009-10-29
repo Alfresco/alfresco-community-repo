@@ -17,6 +17,7 @@
   [@pagingLib.links cursor/]
 [/@feedLib.node]
 [@pagingLib.opensearch cursor/]
+[@pagingLib.cmis cursor/]
 
 [#list results as assoc]
   [@entryLib.assoc assoc=assoc propfilter=filter includeallowableactions=includeAllowableActions/]

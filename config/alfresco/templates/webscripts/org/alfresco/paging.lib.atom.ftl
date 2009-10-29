@@ -67,3 +67,9 @@
 <opensearch:startIndex>${cursor.startRow}</opensearch:startIndex>
 <opensearch:itemsPerPage>${cursor.pageSize}</opensearch:itemsPerPage>
 [/#macro]
+
+[#macro cmis cursor]
+[#-- NOTE: this macro requires the definition of xmlns:cmisra="http://docs.oasis-open.org/ns/cmis/restatom/200908/" in --]
+[#--       the enclosing document                                                                                      --]
+<cmisra:numItems>${cursor.totalRows}</cmisra:numItems>
+[/#macro]

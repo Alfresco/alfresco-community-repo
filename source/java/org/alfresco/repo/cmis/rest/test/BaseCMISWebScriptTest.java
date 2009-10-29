@@ -408,9 +408,9 @@ public class BaseCMISWebScriptTest extends BaseWebScriptTest
         return null;
     }
     
-    protected IRI getRootChildrenCollection(Workspace workspace)
+    protected IRI getRootCollection(Workspace workspace)
     {
-        Collection root = getCMISCollection(workspace, CMISConstants.COLLECTION_ROOT_CHILDREN);
+        Collection root = getCMISCollection(workspace, CMISConstants.COLLECTION_ROOT);
         assertNotNull(root);
         IRI rootHREF = root.getHref();
         assertNotNull(rootHREF);
@@ -428,7 +428,7 @@ public class BaseCMISWebScriptTest extends BaseWebScriptTest
 
     protected IRI getTypesChildrenCollection(Workspace workspace)
     {
-        Collection root = getCMISCollection(workspace, CMISConstants.COLLECTION_TYPES_CHILDREN);
+        Collection root = getCMISCollection(workspace, CMISConstants.COLLECTION_TYPES);
         assertNotNull(root);
         IRI rootHREF = root.getHref();
         assertNotNull(rootHREF);
@@ -544,7 +544,7 @@ public class BaseCMISWebScriptTest extends BaseWebScriptTest
         throws Exception
     {
         Service service = getRepository();
-        IRI rootFolderHREF = getRootChildrenCollection(getWorkspace(service));
+        IRI rootFolderHREF = getRootCollection(getWorkspace(service));
         
         // TODO: Convert to query
         Feed children = getFeed(rootFolderHREF);

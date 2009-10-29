@@ -14,8 +14,6 @@
   [@entryLib.version version versions[version_index]/]
 [/#list]
 
-[@feedLib.hasMore false/]
-
 </feed>
 
 [/#compress]

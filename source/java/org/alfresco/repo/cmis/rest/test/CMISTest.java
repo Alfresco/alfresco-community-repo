@@ -72,8 +72,8 @@ public class CMISTest extends BaseCMISWebScriptTest
 //        setRemoteServer(server);
 //        setServiceUrl("http://localhost:8080/alfresco/service/api/cmis");
 //        setValidateResponse(false);
-//        setListener(new CMISTestListener(System.out));
-//        setTraceReqRes(true);
+        setListener(new CMISTestListener(System.out));
+        setTraceReqRes(true);
         
         super.setUp();
     }
@@ -82,7 +82,7 @@ public class CMISTest extends BaseCMISWebScriptTest
     public void testRepository()
         throws Exception
     {
-        IRI rootHREF = getRootChildrenCollection(getWorkspace(getRepository()));
+        IRI rootHREF = getRootCollection(getWorkspace(getRepository()));
         sendRequest(new GetRequest(rootHREF.toString()), 200, getAtomValidator());
     }
     
@@ -432,7 +432,7 @@ public class CMISTest extends BaseCMISWebScriptTest
         assertNotNull(parentsToRoot.getEntries().get(1).getLink(CMISConstants.REL_PARENTS));
         assertEquals(getTestRootFolder().getId(), parentsToRoot.getEntries().get(2).getId());
         assertNotNull(parentsToRoot.getEntries().get(2).getLink(CMISConstants.REL_PARENTS));
-        Feed root = getFeed(getRootChildrenCollection(getWorkspace(getRepository())));
+        Feed root = getFeed(getRootCollection(getWorkspace(getRepository())));
         Entry rootEntry = getEntry(root.getLink(CMISConstants.REL_SOURCE).getHref());
         assertEquals(rootEntry.getId(), parentsToRoot.getEntries().get(3).getId());
         assertNull(parentsToRoot.getEntries().get(3).getLink(CMISConstants.REL_PARENTS));
@@ -467,7 +467,7 @@ public class CMISTest extends BaseCMISWebScriptTest
         //assertNotNull(parentsToRoot.getEntries().get(1).getLink(CMISConstants.REL_PARENT));
         assertEquals(getTestRootFolder().getId(), parentsToRoot.getEntries().get(2).getId());
         //assertNotNull(parentsToRoot.getEntries().get(2).getLink(CMISConstants.REL_PARENT));
-        Feed root = getFeed(getRootChildrenCollection(getWorkspace(getRepository())));
+        Feed root = getFeed(getRootCollection(getWorkspace(getRepository())));
         Entry rootEntry = getEntry(root.getLink(CMISConstants.REL_SOURCE).getHref());
         assertEquals(rootEntry.getId(), parentsToRoot.getEntries().get(3).getId());
         assertNull(parentsToRoot.getEntries().get(3).getLink(CMISConstants.REL_PARENTS));
@@ -1096,7 +1096,7 @@ public class CMISTest extends BaseCMISWebScriptTest
         }
     }
     
-    public void testGetAllTypeDefinitions()
+    public void testGetTypeDefinitionsAll()
         throws Exception
     {
         IRI typesHREF = getTypesChildrenCollection(getWorkspace(getRepository()));
@@ -1113,7 +1113,7 @@ public class CMISTest extends BaseCMISWebScriptTest
         }
     }
 
-    public void testGetHierarchyTypeDefinitions()
+    public void testGetTypeDefinitionHierarchy()
         throws Exception
     {
         IRI typesHREF = getTypesChildrenCollection(getWorkspace(getRepository()));

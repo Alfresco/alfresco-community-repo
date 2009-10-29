@@ -10,7 +10,6 @@
 
 [@feedLib.node node "parent"/]
 [@parent node.parent returnToRoot/]
-[@feedLib.hasMore false/]
 
 </feed>
 

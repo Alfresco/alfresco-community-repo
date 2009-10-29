@@ -11,13 +11,11 @@
 [@feedLib.node node "relationships"]
   [@pagingLib.links cursor/]
 [/@feedLib.node]
+[@pagingLib.opensearch cursor/]
 
 [#list results as assoc]
   [@entryLib.assoc assoc=assoc propfilter=filter includeallowableactions=includeAllowableActions/]
 [/#list]
-
-[@feedLib.hasMore cursor/]
-[@pagingLib.opensearch cursor/]
 
 </feed>
 

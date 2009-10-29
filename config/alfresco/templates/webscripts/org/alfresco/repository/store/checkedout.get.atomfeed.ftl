@@ -18,8 +18,6 @@
   [/#if]
 [/#list]
 
-[@feedLib.hasMore cursor/]
-
 </feed>
 
 [/#compress]

@@ -55,10 +55,10 @@
 	</xs:simpleType>
 	<xs:simpleType name="enumBaseObjectTypeIds">
 		<xs:restriction base="xs:string">
-			<xs:enumeration value="cmis:document" />
-			<xs:enumeration value="cmis:folder" />
-			<xs:enumeration value="cmis:relationship" />
-			<xs:enumeration value="cmis:policy" />
+			<xs:enumeration value="cmis:Document" />
+			<xs:enumeration value="cmis:Folder" />
+			<xs:enumeration value="cmis:Relationship" />
+			<xs:enumeration value="cmis:Policy" />
 		</xs:restriction>
 	</xs:simpleType>
 	<xs:simpleType name="enumCapabilityQuery">

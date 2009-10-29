@@ -12,14 +12,12 @@
 [@feedLib.generic "urn:uuid:resultset" "Result set for ${statement}" "${person.properties.userName}"]
   [@pagingLib.links cursor/]
 [/@feedLib.generic]
+[@pagingLib.opensearch cursor/]
 
 [#assign rs = cmisresultset(resultset)]
 [#list rs.rows as row]
 [@entryLib.row row=row includeallowableactions=includeAllowableActions/]
 [/#list]
-
-[@feedLib.hasMore cursor/]
-[@pagingLib.opensearch cursor/]
 
 </feed>
 

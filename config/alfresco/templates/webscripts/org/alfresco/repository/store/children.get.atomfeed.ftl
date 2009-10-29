@@ -11,6 +11,7 @@
 [@feedLib.node node "children"]
   [@pagingLib.links cursor/]
 [/@feedLib.node]
+[@pagingLib.opensearch cursor/]
 
 [#list results as child]
   [#if child.isDocument]
@@ -19,9 +20,6 @@
     [@entryLib.folder node=child propfilter=filter includeallowableactions=includeAllowableActions/]
   [/#if]
 [/#list]
-
-[@feedLib.hasMore cursor/]
-[@pagingLib.opensearch cursor/]
 
 </feed>
 

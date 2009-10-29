@@ -14,11 +14,8 @@
 <cmis:properties>
   [#assign typedef = cmistype(object)]
   
-  [#-- TODO: Spec issue: BaseType not a property --]
-  [@filter propfilter "BaseType"][@propvalue "BaseType" typedef.typeId.baseTypeId.id "STRING"/][/@filter]
-
   [#list typedef.propertyDefinitions?values as propdef]
-    [@filter propfilter propdef.propertyId.name][@prop propdef.propertyId.name object propdef.dataType/][/@filter]
+    [@filter propfilter propdef.propertyId.id][@prop propdef.propertyId.id object propdef.dataType/][/@filter]
   [/#list]
 </cmis:properties>
 [/#macro]
@@ -42,13 +39,12 @@
 <summary>[@contentsummary node/]</summary>
 <title>${node.name}</title>
 <updated>${xmldate(node.properties.modified)}</updated>
+<app:edited>${xmldate(node.properties.modified)}</app:edited>
+<alf:icon>${absurl(url.context)}${node.icon16}</alf:icon>
 <cmis:object>
 [@objectCMISProps node propfilter/]
 [#if includeallowableactions][@allowableactions node/][/#if]
 </cmis:object>
-<cmis:terminator/>
-<app:edited>${xmldate(node.properties.modified)}</app:edited>
-<alf:icon>${absurl(url.context)}${node.icon16}</alf:icon>
 [/@entry]
 [/#macro]
 
@@ -79,12 +75,11 @@
 <summary>[@contentsummary node/]</summary>
 <title>${node.name}</title>
 <updated>${xmldate(node.properties.modified)}</updated>
+<app:edited>${xmldate(node.properties.modified)}</app:edited>
+<alf:icon>${absurl(url.context)}${node.icon16}</alf:icon>
 <cmis:object>
 [@objectCMISProps node propfilter/]
 </cmis:object>
-<cmis:terminator/>
-<app:edited>${xmldate(node.properties.modified)}</app:edited>
-<alf:icon>${absurl(url.context)}${node.icon16}</alf:icon>
 [/@entry]
 [/#macro]
 
@@ -107,14 +102,13 @@
 <summary>[@contentsummary node/]</summary>
 <title>${node.name}</title>
 <updated>${xmldate(node.properties.modified)}</updated>
+<app:edited>${xmldate(node.properties.modified)}</app:edited>
+[#-- TODO: the edit link refers to the updatable node resource, allowing updates on PWCs without checkin --]
+<alf:icon>${absurl(url.context)}${node.icon16}</alf:icon>
 <cmis:object>
 [@objectCMISProps node propfilter/]
 [#if includeallowableactions][@allowableactions node/][/#if]
 </cmis:object>
-<cmis:terminator/>
-<app:edited>${xmldate(node.properties.modified)}</app:edited>
-[#-- TODO: the edit link refers to the updatable node resource, allowing updates on PWCs without checkin --]
-<alf:icon>${absurl(url.context)}${node.icon16}</alf:icon>
 [/@entry]
 [/#macro]
 
@@ -135,6 +129,8 @@
 <summary>${node.properties.description!node.properties.title!""}</summary>  [#-- TODO --]
 <title>${node.name}</title>
 <updated>${xmldate(node.properties.modified)}</updated>
+<app:edited>${xmldate(node.properties.modified)}</app:edited>
+<alf:icon>${absurl(url.context)}${node.icon16}</alf:icon>
 <cmis:object>
 [#-- recurse for depth greater than 1 --]
 [@objectCMISProps node propfilter/]
@@ -150,16 +146,13 @@
   [/#if]
 [/#list]
 [/#if]
-<cmis:terminator/>
-<app:edited>${xmldate(node.properties.modified)}</app:edited>
-<alf:icon>${absurl(url.context)}${node.icon16}</alf:icon>
 [/@entry]
 [/#macro]
 
 [#macro folderCMISLinks node]
 <link rel="allowableactions" href="${absurl(url.serviceContext)}/api/node/${node.nodeRef.storeRef.protocol}/${node.nodeRef.storeRef.identifier}/${node.nodeRef.id}/permissions"/>
 <link rel="relationships" href="${absurl(url.serviceContext)}/api/node/${node.nodeRef.storeRef.protocol}/${node.nodeRef.storeRef.identifier}/${node.nodeRef.id}/rels"/>
-[#if cmisproperty(node, "ParentId")?is_string]
+[#if cmisproperty(node, "cmis:ParentId")?is_string]
 <link rel="parents" href="${absurl(url.serviceContext)}/api/node/${node.nodeRef.storeRef.protocol}/${node.nodeRef.storeRef.identifier}/${node.nodeRef.id}/parent"/>
 [/#if]
 <link rel="children" href="${absurl(url.serviceContext)}/api/node/${node.nodeRef.storeRef.protocol}/${node.nodeRef.storeRef.identifier}/${node.nodeRef.id}/children"/>
@@ -175,22 +168,21 @@
 
 [#macro assoc assoc propfilter="*" includeallowableactions=false ns=""]
 [@entry ns]
-<author><name>${xmldate(date)}</name></author>  [#-- TODO: [@namedvalue "CreatedBy" assoc "STRING"/] --]
-<content>[@namedvalue "ObjectId" assoc "ID"/]</content>  [#-- TODO: spec id, how to map? --]
-<id>[@namedvalue "ObjectId" assoc "ID"/]</id>   [#-- TODO: id compliant --]
+<author><name>${xmldate(date)}</name></author>  [#-- TODO: [@namedvalue "cmis:CreatedBy" assoc "STRING"/] --]
+<content>[@namedvalue "cmis:ObjectId" assoc "ID"/]</content>  [#-- TODO: spec id, how to map? --]
+<id>[@namedvalue "cmis:ObjectId" assoc "ID"/]</id>   [#-- TODO: id compliant --]
 <link rel="self" href="${absurl(url.serviceContext)}[@assocuri assoc/]"/>
 <link rel="edit" href="${absurl(url.serviceContext)}[@assocuri assoc/]"/>
 [@assocCMISLinks assoc=assoc/]
-<published>${xmldate(date)}</published>  [#-- TODO: [@namedvalue "CreationDate" assoc "DATETIME"/] --]
-<summary>[@namedvalue "ObjectId" assoc "ID"/]</summary>  [#-- TODO: spec id, how to map? --]
-<title>[@namedvalue "ObjectId" assoc "ID"/]</title>  [#-- TODO: spec id, how to map? --]
-<updated>${xmldate(date)}</updated>  [#-- TODO: [@namedvalue "LastModificationDate" assoc "DATETIME"/] --]
+<published>${xmldate(date)}</published>  [#-- TODO: [@namedvalue "cmis:CreationDate" assoc "DATETIME"/] --]
+<summary>[@namedvalue "cmis:ObjectId" assoc "ID"/]</summary>  [#-- TODO: spec id, how to map? --]
+<title>[@namedvalue "cmis:ObjectId" assoc "ID"/]</title>  [#-- TODO: spec id, how to map? --]
+<updated>${xmldate(date)}</updated>  [#-- TODO: [@namedvalue "cmis:LastModificationDate" assoc "DATETIME"/] --]
+<app:edited>${xmldate(date)}</app:edited>  [#-- TODO: [@namedvalue "cmis:LastModificationDate" assoc "DATETIME"/] --]
 <cmis:object>
 [@objectCMISProps assoc propfilter/]
 [#-- TODO: [#if includeallowableactions][@allowableactions node/][/#if] --]
 </cmis:object>
-<cmis:terminator/>
-<app:edited>${xmldate(date)}</app:edited>  [#-- TODO: [@namedvalue "LastModificationDate" assoc "DATETIME"/] --]
 [/@entry]
 [/#macro]
 
@@ -233,16 +225,10 @@
 [/#if]
 <title>${node.name}</title>
 <updated>${xmldate(node.properties.modified)}</updated>
+<alf:icon>${absurl(url.context)}${node.icon16}</alf:icon>
 [/#if]
 <cmis:object>
 <cmis:properties>
-
-[#-- TODO: spec issue: baseType to become formal property --]
-[#if row.nodes?? && node.isDocument]
-  [@propvalue "BaseType" "document" "STRING"/]
-[#else]
-  [@propvalue "BaseType" "folder" "STRING"/]
-[/#if]    
 
 [#assign rowvalues = row.values]
 [#list rowvalues?keys as colname]
@@ -256,8 +242,6 @@
 </cmis:properties>
 [#if row.nodes?? && includeallowableactions][@allowableactions node/][/#if]
 </cmis:object>
-<cmis:terminator/>
-[#if row.nodes??]<alf:icon>${absurl(url.context)}${node.icon16}</alf:icon>[/#if]
 [/@entry]
 [/#macro]
 
@@ -281,39 +265,39 @@
 
 [#macro propvalue name value type]
 [#if type == "STRING"]
-<cmis:propertyString cmis:name="${name}">[@values value;v]<cmis:value>[@stringvalue v/]</cmis:value>[/@values]</cmis:propertyString>
+<cmis:propertyString id="${name}">[@values value;v]<cmis:value>[@stringvalue v/]</cmis:value>[/@values]</cmis:propertyString>
 [#elseif type == "INTEGER"]
-<cmis:propertyInteger cmis:name="${name}">[@values value;v]<cmis:value>[@integervalue v/]</cmis:value>[/@values]</cmis:propertyInteger>
+<cmis:propertyInteger id="${name}">[@values value;v]<cmis:value>[@integervalue v/]</cmis:value>[/@values]</cmis:propertyInteger>
 [#elseif type == "DECIMAL"]
-<cmis:propertyDecimal cmis:name="${name}">[@values value;v]<cmis:value>[@decimalvalue v/]</cmis:value>[/@values]</cmis:propertyDecimal>
+<cmis:propertyDecimal id="${name}">[@values value;v]<cmis:value>[@decimalvalue v/]</cmis:value>[/@values]</cmis:propertyDecimal>
 [#elseif type == "BOOLEAN"]
-<cmis:propertyBoolean cmis:name="${name}">[@values value;v]<cmis:value>[@booleanvalue v/]</cmis:value>[/@values]</cmis:propertyBoolean>
+<cmis:propertyBoolean id="${name}">[@values value;v]<cmis:value>[@booleanvalue v/]</cmis:value>[/@values]</cmis:propertyBoolean>
 [#elseif type == "DATETIME"]
-<cmis:propertyDateTime cmis:name="${name}">[@values value;v]<cmis:value>[@datetimevalue v/]</cmis:value>[/@values]</cmis:propertyDateTime>
+<cmis:propertyDateTime id="${name}">[@values value;v]<cmis:value>[@datetimevalue v/]</cmis:value>[/@values]</cmis:propertyDateTime>
 [#elseif type == "URI"]
 [#-- TODO: check validity of abs url prefix --]
-<cmis:propertyUri cmis:name="${name}">[@values value;v]<cmis:value>[@urivalue absurl(url.serviceContext) + v/]</cmis:value>[/@values]</cmis:propertyUri>
+<cmis:propertyUri id="${name}">[@values value;v]<cmis:value>[@urivalue absurl(url.serviceContext) + v/]</cmis:value>[/@values]</cmis:propertyUri>
 [#elseif type == "ID"]
-<cmis:propertyId cmis:name="${name}">[@values value;v]<cmis:value>[@idvalue v/]</cmis:value>[/@values]</cmis:propertyId>
+<cmis:propertyId id="${name}">[@values value;v]<cmis:value>[@idvalue v/]</cmis:value>[/@values]</cmis:propertyId>
 [#-- TODO: remaining property types --]
 [/#if]
 [/#macro]
 
 [#macro propnull name type]
 [#if type == "STRING"]
-<cmis:propertyString cmis:name="${name}"/>
+<cmis:propertyString id="${name}"/>
 [#elseif type == "INTEGER"]
-<cmis:propertyInteger cmis:name="${name}"/>
+<cmis:propertyInteger id="${name}"/>
 [#elseif type == "DECIMAL"]
-<cmis:propertyDecimal cmis:name="${name}"/>
+<cmis:propertyDecimal id="${name}"/>
 [#elseif type == "BOOLEAN"]
-<cmis:propertyBoolean cmis:name="${name}"/>
+<cmis:propertyBoolean id="${name}"/>
 [#elseif type == "DATETIME"]
-<cmis:propertyDateTime cmis:name="${name}"/>
+<cmis:propertyDateTime id="${name}"/>
 [#elseif type == "URI"]
-<cmis:propertyUri cmis:name="${name}"/>
+<cmis:propertyUri id="${name}"/>
 [#elseif type == "ID"]
-<cmis:propertyId cmis:name="${name}"/>
+<cmis:propertyId id="${name}"/>
 [#-- TODO: remaining property types --]
 [/#if]
 [/#macro]
@@ -393,7 +377,6 @@
 <title>${typedef.displayName}</title>
 <updated>${xmldate(date)}</updated>  [#-- TODO --]
 [@typedefCMISProps typedef includeProperties/]
-<cmis:terminator/>
 [/@entry]
 [/#macro]
 
@@ -408,13 +391,13 @@
 [/#macro]
 
 [#macro typedefCMISProps typedef includeProperties=true includeInheritedProperties=true]
-[#if typedef.baseType.typeId.id = "document"]
+[#if typedef.baseType.typeId.id = "cmis:Document"]
 [@documenttypedefCMISProps typedef includeProperties includeInheritedProperties/]
-[#elseif typedef.baseType.typeId.id = "folder"]
+[#elseif typedef.baseType.typeId.id = "cmis:Folder"]
 [@foldertypedefCMISProps typedef includeProperties includeInheritedProperties/]
-[#elseif typedef.baseType.typeId.id = "relationship"]
+[#elseif typedef.baseType.typeId.id = "cmis:Relationship"]
 [@relationshiptypedefCMISProps typedef includeProperties includeInheritedProperties/]
-[#elseif typedef.baseType.typeId.id = "policy"]
+[#elseif typedef.baseType.typeId.id = "cmis:Policy"]
 [@policytypedefCMISProps typedef includeProperties includeInheritedProperties/]
 [/#if]
 [/#macro]
@@ -447,20 +430,23 @@
 [/#macro]
 
 [#macro objecttypedefCMISProps typedef includeProperties=true includeInheritedProperties=true]
-  <cmis:typeId>${typedef.typeId.id}</cmis:typeId>
-  <cmis:queryName>${typedef.queryName}</cmis:queryName>
+  <cmis:id>${typedef.typeId.id}</cmis:id>
+  <cmis:localName>${typedef.typeId.localName}</cmis:localName>
+  <cmis:localNamespace>${typedef.typeId.localNamespace}</cmis:localNamespace>
   <cmis:displayName>[#if typedef.displayName??]${typedef.displayName?xml}[/#if]</cmis:displayName>
-  <cmis:baseType>${typedef.baseType.typeId.id}</cmis:baseType>  [#-- TODO: remove spec issue 36 --]
-  <cmis:baseTypeQueryName>${typedef.baseType.queryName}</cmis:baseTypeQueryName>
+  <cmis:queryName>${typedef.queryName}</cmis:queryName>
+  <cmis:description>[#if typedef.description??]${typedef.description?xml}[/#if]</cmis:description>
+  <cmis:baseTypeId>${typedef.baseType.typeId.id}</cmis:baseTypeId>
 [#if typedef.parentType??]  
   <cmis:parentId>${typedef.parentType.typeId.id}</cmis:parentId>
 [/#if]
-  <cmis:description>[#if typedef.description??]${typedef.description?xml}[/#if]</cmis:description>
   <cmis:creatable>${typedef.creatable?string}</cmis:creatable>
   <cmis:fileable>${typedef.fileable?string}</cmis:fileable>
   <cmis:queryable>${typedef.queryable?string}</cmis:queryable>
-  <cmis:controllable>${typedef.controllable?string}</cmis:controllable>
+  <cmis:fulltextindexed>${typedef.fullTextIndexed?string}</cmis:fulltextindexed>
   <cmis:includedInSupertypeQuery>${typedef.includeInSuperTypeQuery?string}</cmis:includedInSupertypeQuery>
+  <cmis:controllablePolicy>${typedef.controllablePolicy?string}</cmis:controllablePolicy>
+  <cmis:controllableACL>${typedef.controllableACL?string}</cmis:controllableACL>
   [#if includeProperties]
     [#assign ownedprops = typedef.ownedPropertyDefinitions?keys]
     [#list typedef.propertyDefinitions?values as propdef]
@@ -554,11 +540,11 @@
 [/#macro]
 
 [#macro abstractpropdefCMISProps propdef inherited=false]
-  <cmis:name>${propdef.propertyId.name}</cmis:name>
-  <cmis:id>${propdef.propertyId}</cmis:id>
-  [#-- TODO: CMIS spec issue: wait for definition of this --]
-  <cmis:package>TODO</cmis:package>
+  <cmis:id>${propdef.propertyId.id}</cmis:id>
+  <cmis:localName>${propdef.propertyId.localName}</cmis:localName>
+  <cmis:localNamespace>${propdef.propertyId.localNamespace}</cmis:localNamespace>
   <cmis:displayName>[#if propdef.displayName??]${propdef.displayName?xml}[/#if]</cmis:displayName>
+  <cmis:queryName>${propdef.queryName}</cmis:queryName>
 [#if propdef.description??]
   <cmis:description>${propdef.description?xml}</cmis:description>
 [/#if]

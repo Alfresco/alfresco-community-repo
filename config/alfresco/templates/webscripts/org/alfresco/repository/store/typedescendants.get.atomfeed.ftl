@@ -11,13 +11,11 @@
 [@feedLib.generic "urn:uuid:type-${typedef.objectTypeId}-descendants" "Descendant types of ${typedef.objectTypeId}" "${person.properties.userName}"]
   [@pagingLib.links cursor/]
 [/@feedLib.generic]
+[@pagingLib.opensearch cursor/]
 
 [#list results as child]
 [@entryLib.typedef child returnPropertyDefinitions/]
 [/#list]
-
-[@feedLib.hasMore cursor/]
-[@pagingLib.opensearch cursor/]
 
 </feed>
 

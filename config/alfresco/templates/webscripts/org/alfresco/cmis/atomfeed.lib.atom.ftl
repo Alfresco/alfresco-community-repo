@@ -42,18 +42,3 @@
 <title>${node.name}[#if title != ""] ${title?capitalize}[/#if]</title>
 <updated>${xmldate(node.properties.modified)}</updated>
 [/#macro]
-
-
-[#--             --]
-[#-- CMIS Paging --]
-[#--             --]
-
-[#macro hasMore more]
-[#if more?is_boolean && more]
-  <cmis:hasMoreItems>true</cmis:hasMoreItems>
-[#elseif more?is_boolean && !more]
-  <cmis:hasMoreItems>false</cmis:hasMoreItems>
-[#else]  
-  <cmis:hasMoreItems>${more.hasNextPage?string}</cmis:hasMoreItems>
-[/#if]
-[/#macro]

@@ -19,8 +19,6 @@
 [/#list]
 [/#if]
 
-[@feedLib.hasMore false/]
-
 </feed>
 
 [/#compress]

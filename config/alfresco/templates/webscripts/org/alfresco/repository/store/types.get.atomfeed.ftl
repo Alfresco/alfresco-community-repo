@@ -12,13 +12,11 @@
 [@feedLib.generic "urn:uuid:types-${type}" "${title}" "${person.properties.userName}"]
   [@pagingLib.links cursor/]
 [/@feedLib.generic]
+[@pagingLib.opensearch cursor/]
 
 [#list results as child]
 [@entryLib.typedef child returnPropertyDefinitions/]
 [/#list]
-
-[@feedLib.hasMore cursor/]
-[@pagingLib.opensearch cursor/]
 
 </feed>
 

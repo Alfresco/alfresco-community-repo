@@ -275,7 +275,6 @@ public class DMRepositoryServicePort extends DMAbstractServicePort implements Re
             throws CmisException
     {
         CmisPropertyDefinitionType wsPropertyDef = createPropertyDefinitionType(propertyDefinition.getDataType());
-        wsPropertyDef.setName(propertyDefinition.getPropertyId().getName());
         wsPropertyDef.setId(propertyDefinition.getPropertyId().getId());
         wsPropertyDef.setDisplayName(propertyDefinition.getDisplayName());
         wsPropertyDef.setDescription(propertyDefinition.getDescription());
@@ -358,7 +357,7 @@ public class DMRepositoryServicePort extends DMAbstractServicePort implements Re
         cmisTypeDefinition.setCreatable(typeDefinition.isCreatable());
         cmisTypeDefinition.setFileable(typeDefinition.isFileable());
         cmisTypeDefinition.setQueryable(typeDefinition.isQueryable());
-        cmisTypeDefinition.setControllable(typeDefinition.isControllable());
+        cmisTypeDefinition.setControllable(typeDefinition.isControllablePolicy());
         cmisTypeDefinition.setIncludedInSupertypeQuery(typeDefinition.isIncludeInSuperTypeQuery());
 
         if (includeProperties)

@@ -1279,7 +1279,7 @@ public class QueryTest extends BaseCMISTest
         testQuery("SELECT cmis:objectTypeId FROM cmis:folder WHERE cmis:objectTypeId >  'cmis:folder'", 0, false, "cmis:objectId", new String(), true);
         testQuery("SELECT cmis:objectTypeId FROM cmis:folder WHERE cmis:objectTypeId >= 'cmis:folder'", 0, false, "cmis:objectId", new String(), true);
 
-        testQuery("SELECT cmis:objectTypeId FROM cmis:folder WHEcmis:folderectTypeId IN     ('cmis:folder')", 10, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT cmis:objectTypeId FROM cmis:folder WHERE cmis:objectTypeId IN     ('cmis:folder')", 10, false, "cmis:objectId", new String(), false);
         testQuery("SELECT cmis:objectTypeId FROM cmis:folder WHERE cmis:objectTypeId NOT IN ('cmis:folder')", 0, false, "cmis:objectId", new String(), false);
 
         testQuery("SELECT cmis:objectTypeId FROM cmis:folder WHERE cmis:objectTypeId     LIKE 'cmis:folder'", 10, false, "cmis:objectId", new String(), false);
@@ -1345,7 +1345,7 @@ public class QueryTest extends BaseCMISTest
 
     public void testOrderBy()
     {
-        String query = "SELECT  cmis:objectId FROM cmis:document ORDER cmis:objectId";
+        String query = "SELECT  cmis:objectId FROM cmis:document ORDER BY cmis:objectId";
         CMISResultSet rs = cmisQueryService.query(query);
         // assertEquals(1, rs.getLength());
         for (CMISResultSetRow row : rs)
@@ -1355,7 +1355,7 @@ public class QueryTest extends BaseCMISTest
         rs.close();
         rs = null;
 
-        query = "SELECT  cmis:objectId FROM cmis:document ORDER cmis:objectId ASC";
+        query = "SELECT  cmis:objectId FROM cmis:document ORDER BY cmis:objectId ASC";
         rs = cmisQueryService.query(query);
         // assertEquals(1, rs.getLength());
         for (CMISResultSetRow row : rs)
@@ -1365,7 +1365,7 @@ public class QueryTest extends BaseCMISTest
         rs.close();
         rs = null;
 
-        query = "SELECT  cmis:objectId FROM cmis:document ORDER cmis:objectId DESC";
+        query = "SELECT  cmis:objectId FROM cmis:document ORDER BY cmis:objectId DESC";
         rs = cmisQueryService.query(query);
         // assertEquals(1, rs.getLength());
         for (CMISResultSetRow row : rs)
@@ -1635,22 +1635,21 @@ public class QueryTest extends BaseCMISTest
     public void testFunctionColumns()
     {
         CMISQueryOptions options = new CMISQueryOptions(
-                "SELECT DOC.cmis:name AS cmis:name, \nLOWER(\tDOC.cmis:name \n), LOWER ( DOC.cmis:name )  AS Lcmis:name, UPPER ( DOC.cmis:name ) , UPPER(DOC.cmis:name) AS Ucmis:name, Score(), SCORE(DOC), SCORE() AS SCORED, SCORE(DOC) AS DOCSCORE FROM cmis:folder AS DOC",
+                "SELECT DOC.cmis:name AS cmis:name, \nLOWER(\tDOC.cmis:name \n), LOWER ( DOC.cmis:name )  AS Lcmis:name, UPPER ( DOC.cmis:name ) , UPPER(DOC.cmis:name) AS Ucmis:name, Score(), SCORE() AS S1, SCORE() AS SCORED FROM cmis:folder AS DOC",
                 rootNodeRef.getStoreRef());
         CMISResultSet rs = cmisQueryService.query(options);
 
         CMISResultSetMetaData md = rs.getMetaData();
         assertNotNull(md.getQueryOptions());
-        assertEquals(9, md.getColumnNames().length);
+        assertEquals(8, md.getColumnNames().length);
         assertNotNull(md.getColumn("cmis:name"));
         assertNotNull(md.getColumn("LOWER(\tDOC.cmis:name \n)"));
         assertNotNull(md.getColumn("Lcmis:name"));
         assertNotNull(md.getColumn("UPPER ( DOC.cmis:name )"));
         assertNotNull(md.getColumn("Ucmis:name"));
-        assertNotNull(md.getColumn("Score()"));
-        assertNotNull(md.getColumn("SCORE(DOC)"));
+        assertNotNull(md.getColumn("SEARCH_SCORE"));
+        assertNotNull(md.getColumn("S1"));
         assertNotNull(md.getColumn("SCORED"));
-        assertNotNull(md.getColumn("DOCSCORE"));
         assertEquals(1, md.getSelectors().length);
         assertNotNull(md.getSelector("DOC"));
         for (CMISResultSetRow row : rs)
@@ -1664,7 +1663,7 @@ public class QueryTest extends BaseCMISTest
 
     public void testParse1() throws RecognitionException
     {
-        String query = "SELECT UPPER(1.0) AS WOOF FROM cmis:document AS DOC LEFT OUTER JOIN cmis:folder AS FOLDER ON (DOC.cmis:name = FOLDER.cmis:name) WHERE LOWER(DOC.cmis:name = ' woof' AND CONTAINS(, 'one two three') AND  CONTAINS(, 'DOC.cmis:name:lemur AND woof') AND (DOC.cmis:name in ('one', 'two') AND IN_FOLDER('meep') AND DOC.cmis:name like 'woof' and DOC.cmis:name = 'woof' and DOC.cmis:objectId = 'meep') ORDER BY DOC.cmis:name DESC, WOOF";
+        String query = "SELECT UPPER(1.0) AS WOOF FROM cmis:document AS DOC LEFT OUTER JOIN cmis:folder AS FOLDER ON DOC.cmis:name = FOLDER.cmis:name WHERE LOWER(DOC.cmis:name) = ' woof' AND CONTAINS('one two three') AND  CONTAINS('DOC.cmis:name:lemur AND woof') AND (DOC.cmis:name in ('one', 'two') AND IN_FOLDER('meep') AND DOC.cmis:name like 'woof' and DOC.cmis:name = 'woof' and DOC.cmis:objectId = 'meep') ORDER BY DOC.cmis:name DESC, WOOF";
         parse(query);
     }
 
@@ -1688,7 +1687,7 @@ public class QueryTest extends BaseCMISTest
 
     public void testParse5() throws RecognitionException
     {
-        String query = "SELECT Y.CLAIM_NUM, X.PROPERTY_ADDRESS, Y.DAMAGE_ESTIMATES FROM POLICY AS X JOIN CLAIMS AS Y ON ( X.POLICY_NUM = Y.POLICY_NUM ) WHERE ( 100000 <= ANY Y.DAMAGE_ESTIMATES ) AND ( Y.CAUSE NOT LIKE '%Katrina%' )";
+        String query = "SELECT Y.CLAIM_NUM, X.PROPERTY_ADDRESS, Y.DAMAGE_ESTIMATES FROM POLICY AS X JOIN CLAIMS AS Y ON X.POLICY_NUM = Y.POLICY_NUM WHERE ( 100000 <= ANY Y.DAMAGE_ESTIMATES ) AND ( Y.CAUSE NOT LIKE '%Katrina%' )";
         parse(query);
     }
 
@@ -1696,19 +1695,17 @@ public class QueryTest extends BaseCMISTest
     {
         String query = "SELECT * FROM CM_TITLED";
         parse(query);
-        query = "SELECT D.*, T.* FROM DOCUMENT AS D JOIN CM_TITLED AS T ON (D.OBJECTID = T.OBJECTID)";
+        query = "SELECT D.*, T.* FROM DOCUMENT AS D JOIN CM_TITLED AS T ON D.OBJECTID = T.OBJECTID";
         parse(query);
-        query = "SELECT D.*, T.* FROM CM_TITLED T JOIN DOCUMENT D ON (D.OBJECTID = T.OBJECTID)";
+        query = "SELECT D.*, T.* FROM CM_TITLED T JOIN DOCUMENT D ON D.OBJECTID = T.OBJECTID";
         parse(query);
     }
     
-    public void testParseIssues() throws RecognitionException
+    public void testParse7() throws RecognitionException
     {
-        String query = "SELECT cmis:name, cmis:objectId, asdf asdfasdf asdfasdf asdfasdfasdf FROM DOCUMENT";
+        String query = "SELECT * from DOCUMENT D JOIN DOCUMENT DD ON D.ID = DD.ID ";
         parse(query);
-    }
-
-    
+    }   
     
     public void testAspectProperties()
     {
@@ -1735,7 +1732,7 @@ public class QueryTest extends BaseCMISTest
     public void testAspectJoin()
     {
         testQuery(
-                "select o.*, t.* from ( cm:ownable o join cm:titled t on o.cmis:objectId = t.cmis:objectId JOIN CMIS:DOCUMENT AS D ON D.cmis:objectId = o.cmis:objectId  ) where o.cm:owner = 'andy' and t.cm:title = 'Alfresco tutorial' and CONTAINS(D, '\"jumped\"') and 2 <> D.cmis:contentStreamLength",
+                "select o.*, t.* from ( cm:ownable o join cm:titled t on o.cmis:objectId = t.cmis:objectId JOIN CMIS:DOCUMENT AS D ON D.cmis:objectId = o.cmis:objectId  ) where o.cm:owner = 'andy' and t.cm:title = 'Alfresco tutorial' and CONTAINS(D, '\"jumped\"') and D.cmis:contentStreamLength <> 2",
                 1, false, "cmis:objectId", new String(), false, CMISQueryMode.CMS_WITH_ALFRESCO_EXTENSIONS);
         
         testQuery("SELECT * FROM CM:OWNABLE", 1, false, "cmis:objectId", new String(), false, CMISQueryMode.CMS_WITH_ALFRESCO_EXTENSIONS);
@@ -1762,10 +1759,10 @@ public class QueryTest extends BaseCMISTest
         testQuery("select o.*, t.* from ( cm:ownable o join cm:titled t on o.cmis:objectId = t.cmis:objectId  JOIN CMIS:DOCUMENT AS D ON D.cmis:objectId = o.cmis:objectId  )", 1, false, "cmis:objectId",
                 new String(), false, CMISQueryMode.CMS_WITH_ALFRESCO_EXTENSIONS);
         testQuery(
-                "select o.*, t.* from ( cm:ownable o join cm:titled t on o.cmis:objectId = t.cmis:objectId JOIN CMIS:DOCUMENT AS D ON D.cmis:objectId = o.cmis:objectId ) where o.cm:owner = 'andy' and t.cm:title = 'Alfresco tutorial' and CONTAINS(D, '\"jumped\"') and 2 <> D.cmis:contentStreamLength",
+                "select o.*, t.* from ( cm:ownable o join cm:titled t on o.cmis:objectId = t.cmis:objectId JOIN CMIS:DOCUMENT AS D ON D.cmis:objectId = o.cmis:objectId ) where o.cm:owner = 'andy' and t.cm:title = 'Alfresco tutorial' and CONTAINS(D, '\"jumped\"') and D.cmis:contentStreamLength <> 2",
                 1, false, "cmis:objectId", new String(), false, CMISQueryMode.CMS_WITH_ALFRESCO_EXTENSIONS);
         testQuery(
-                "select o.*, t.* from ( cm:ownable o join cm:titled t on o.cmis:objectId = t.cmis:objectId JOIN CMIS:DOCUMENT AS D ON D.cmis:objectId = o.cmis:objectId ) where o.cm:owner = 'andy' and t.cm:title = 'Alfresco tutorial' and CONTAINS(D, 'jumped') and 2 <> D.cmis:contentStreamLength",
+                "select o.*, t.* from ( cm:ownable o join cm:titled t on o.cmis:objectId = t.cmis:objectId JOIN CMIS:DOCUMENT AS D ON D.cmis:objectId = o.cmis:objectId ) where o.cm:owner = 'andy' and t.cm:title = 'Alfresco tutorial' and CONTAINS(D, 'jumped') and D.cmis:contentStreamLength <> 2",
                 1, false, "cmis:objectId", new String(), false, CMISQueryMode.CMS_WITH_ALFRESCO_EXTENSIONS);
     }
 

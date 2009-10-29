@@ -79,11 +79,9 @@ import org.alfresco.repo.search.impl.querymodel.impl.functions.In;
 import org.alfresco.repo.search.impl.querymodel.impl.functions.LessThan;
 import org.alfresco.repo.search.impl.querymodel.impl.functions.LessThanOrEquals;
 import org.alfresco.repo.search.impl.querymodel.impl.functions.Like;
-import org.alfresco.repo.search.impl.querymodel.impl.functions.Lower;
 import org.alfresco.repo.search.impl.querymodel.impl.functions.NotEquals;
 import org.alfresco.repo.search.impl.querymodel.impl.functions.PropertyAccessor;
 import org.alfresco.repo.search.impl.querymodel.impl.functions.Score;
-import org.alfresco.repo.search.impl.querymodel.impl.functions.Upper;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.namespace.QName;
@@ -732,7 +730,20 @@ public class CMISQueryParser
                         int start = getStringPosition(query, functionNode.getLine(), functionNode.getCharPositionInLine());
                         int end = getStringPosition(query, rparenNode.getLine(), rparenNode.getCharPositionInLine());
 
-                        String alias = query.substring(start, end + 1);
+                        String alias;
+                        if(function.getName().equals(Score.NAME))
+                        {
+                            alias = "SEARCH_SCORE";
+                            // check no args
+                            if (functionNode.getChildCount() > 3)
+                            {
+                                throw new CMISQueryException("The function SCORE() is not allowed any arguments");
+                            }
+                        }
+                        else
+                        {
+                            alias = query.substring(start, end + 1);
+                        }
                         if (columnNode.getChildCount() > 1)
                         {
                             alias = columnNode.getChild(1).getText();

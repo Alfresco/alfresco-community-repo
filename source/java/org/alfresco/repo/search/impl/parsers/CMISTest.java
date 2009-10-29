@@ -48,7 +48,7 @@ public class CMISTest extends TestCase
         System.out.print(executer.execTest());  // unit test result
         
         assertEquals("Failures ", 0, executer.failures.size()); 
-        assertEquals("Invalids ", 1, executer.invalids.size()); 
+        assertEquals("Invalids ", 0, executer.invalids.size()); 
     }
 
     private GrammarInfo parse(CharStream input) throws RecognitionException

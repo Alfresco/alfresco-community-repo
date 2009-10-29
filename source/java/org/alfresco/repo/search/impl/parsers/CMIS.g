@@ -70,9 +70,18 @@ tokens
 	BOOLEAN_LITERAL;
 }
 
-@lexer::header{package org.alfresco.repo.search.impl.parsers;} 
+@lexer::header
+{
+    package org.alfresco.repo.search.impl.parsers;
+    import org.alfresco.cmis.CMISQueryException;
+} 
 
-@header {package org.alfresco.repo.search.impl.parsers;}
+@header
+{
+    package org.alfresco.repo.search.impl.parsers;
+    import org.alfresco.cmis.CMISQueryException;
+}
+
 
 /*
  * Instance methods and properties for the parser.
@@ -83,68 +92,197 @@ tokens
 {
     private Stack<String> paraphrases = new Stack<String>();
     
-    private boolean strict = true;
+    private boolean strict = false;
 
     /**
      * CMIS strict
      */
-	public boolean strict()
-	{
-	   return strict;
-	}
+    public boolean strict()
+    {
+        return strict;
+    }
 	
-	public void setStrict(boolean strict)
-  {
-     this.strict = strict;
-  }
+    public void setStrict(boolean strict)
+    {
+        this.strict = strict;
+    }
+        
+    protected Object recoverFromMismatchedToken(IntStream input, int ttype, BitSet follow) throws RecognitionException
+    {
+        throw new MismatchedTokenException(ttype, input);
+    }
 	
-	protected void mismatch(IntStream input, int ttype, BitSet follow) throws RecognitionException
-	{
-	   throw new MismatchedTokenException(ttype, input);
-	}
+    public Object recoverFromMismatchedSet(IntStream input, RecognitionException e, BitSet follow) throws RecognitionException
+    {
+        throw e;
+    }
 	
-	public Object recoverFromMismatchedSet(IntStream input, RecognitionException e, BitSet follow) throws RecognitionException
-	{
-	   throw e;
-	}
+    public String getErrorMessage(RecognitionException e, String[] tokenNames) 
+    {
+        List stack = getRuleInvocationStack(e, this.getClass().getName());
+        String msg = e.getMessage();
+        if ( e instanceof UnwantedTokenException ) 
+	    {
+            UnwantedTokenException ute = (UnwantedTokenException)e;
+            String tokenName="<unknown>";
+            if ( ute.expecting== Token.EOF ) 
+            {
+                tokenName = "EOF";
+            }
+            else 
+            {
+                tokenName = tokenNames[ute.expecting];
+            }
+            msg = "extraneous input " + getTokenErrorDisplay(ute.getUnexpectedToken())
+                + " expecting "+tokenName;
+        }
+        else if ( e instanceof MissingTokenException ) 
+        {
+            MissingTokenException mte = (MissingTokenException)e;
+            String tokenName="<unknown>";
+            if ( mte.expecting== Token.EOF ) 
+            {
+                tokenName = "EOF";
+            }
+            else 
+            {
+                tokenName = tokenNames[mte.expecting];
+            }
+            msg = "missing " + tokenName+" at " + getTokenErrorDisplay(e.token)
+                + "  (" + getLongTokenErrorDisplay(e.token) +")";
+        }
+        else if ( e instanceof MismatchedTokenException ) 
+        {
+            MismatchedTokenException mte = (MismatchedTokenException)e;
+            String tokenName="<unknown>";
+            if ( mte.expecting== Token.EOF ) 
+            {
+                tokenName = "EOF";
+            }
+            else
+            {
+                tokenName = tokenNames[mte.expecting];
+            }
+            msg = "mismatched input " + getTokenErrorDisplay(e.token)
+                + " expecting " + tokenName +"  (" + getLongTokenErrorDisplay(e.token) + ")";
+        }
+        else if ( e instanceof MismatchedTreeNodeException ) 
+        {
+            MismatchedTreeNodeException mtne = (MismatchedTreeNodeException)e;
+            String tokenName="<unknown>";
+            if ( mtne.expecting==Token.EOF )  
+            {
+                tokenName = "EOF";
+            }
+            else 
+            {
+                tokenName = tokenNames[mtne.expecting];
+            }
+            msg = "mismatched tree node: " + mtne.node + " expecting " + tokenName;
+        }
+        else if ( e instanceof NoViableAltException ) 
+        {
+            NoViableAltException nvae = (NoViableAltException)e;
+            msg = "no viable alternative at input " + getTokenErrorDisplay(e.token)
+                + "\n\t (decision=" + nvae.decisionNumber
+                + " state " + nvae.stateNumber + ")" 
+                + " decision=<<" + nvae.grammarDecisionDescription + ">>";
+        }
+        else if ( e instanceof EarlyExitException ) 
+        {
+            //EarlyExitException eee = (EarlyExitException)e;
+            // for development, can add "(decision="+eee.decisionNumber+")"
+            msg = "required (...)+ loop did not match anything at input " + getTokenErrorDisplay(e.token);
+        }
+	    else if ( e instanceof MismatchedSetException ) 
+	    {
+	        MismatchedSetException mse = (MismatchedSetException)e;
+	        msg = "mismatched input " + getTokenErrorDisplay(e.token)
+                + " expecting set " + mse.expecting;
+        }
+        else if ( e instanceof MismatchedNotSetException ) 
+        {
+            MismatchedNotSetException mse = (MismatchedNotSetException)e;
+            msg = "mismatched input " + getTokenErrorDisplay(e.token)
+                + " expecting set " + mse.expecting;
+        }
+        else if ( e instanceof FailedPredicateException ) 
+        {
+            FailedPredicateException fpe = (FailedPredicateException)e;
+            msg = "rule " + fpe.ruleName + " failed predicate: {" + fpe.predicateText + "}?";
+        }
+		
+        if(paraphrases.size() > 0)
+        {
+            String paraphrase = (String)paraphrases.peek();
+            msg = msg+" "+paraphrase;
+        }
+        return msg +"\n\t"+stack;
+    }
 	
-	public String getErrorMessage(RecognitionException e, String[] tokenNames)
-	{
-       List stack = getRuleInvocationStack(e, this.getClass().getName());
-	   String msg = null;
-	   if(e instanceof NoViableAltException)
-	   {
-	        NoViableAltException nvae = (NoViableAltException)e;
-	        msg = "No viable alt; token="+e.token+
-	         " (decision="+nvae.decisionNumber+
-	         " state "+nvae.stateNumber+")"+
-	         " decision=<<"+nvae.grammarDecisionDescription+">>";
-	   }
-	   else
-	   {
-	       msg = super.getErrorMessage(e, tokenNames);
-	   }
-	   if(paraphrases.size() > 0)
-	   {
-	       String paraphrase = (String)paraphrases.peek();
-	       msg = msg+" "+paraphrase;
-	   }
-	   
-	   return stack+" "+msg;
-	}
-	
-	public String getTokenErrorDisplay(Token t)
-	{
-	   return t.toString();
-	}
+    public String getLongTokenErrorDisplay(Token t)
+    {
+        return t.toString();
+    }
+    
+
+    public String getErrorString(RecognitionException e)
+    {
+        String hdr = getErrorHeader(e);
+        String msg = getErrorMessage(e, this.getTokenNames());
+        return hdr+" "+msg;
+    }
 }
 
 @rulecatch
 {
-catch(RecognitionException e)
-{
-   throw e;
+    catch(RecognitionException e)
+    {
+        throw new CMISQueryException(getErrorString(e), e);
+    }
 }
+
+@lexer::members
+{
+    public Token nextToken() {
+        while (true) 
+        {
+            state.token = null;
+            state.channel = Token.DEFAULT_CHANNEL;
+            state.tokenStartCharIndex = input.index();
+            state.tokenStartCharPositionInLine = input.getCharPositionInLine();
+            state.tokenStartLine = input.getLine();
+            state.text = null;
+            if ( input.LA(1)==CharStream.EOF ) 
+            {
+                return Token.EOF_TOKEN;
+            }
+            try 
+            {
+                mTokens();
+                if ( state.token==null ) 
+                {
+                    emit();
+                }
+                else if ( state.token==Token.SKIP_TOKEN ) 
+                {
+                    continue;
+                }
+                return state.token;
+            }
+            catch (RecognitionException re) 
+            {
+                throw new CMISQueryException(getErrorString(re), re);
+            }
+        }
+    }
+    
+    public String getErrorString(RecognitionException e)
+    {
+        String hdr = getErrorHeader(e);
+        String msg = getErrorMessage(e, this.getTokenNames());
+        return hdr+" "+msg;
+    }
 }
 
 
@@ -155,14 +293,16 @@ catch(RecognitionException e)
  * The top level rule for the parser
  */
 query
+        @init {    paraphrases.push("in query"); }
+        @after{    paraphrases.pop(); } 
 	:	SELECT selectList fromClause whereClause? orderByClause? EOF
 		-> ^(QUERY selectList fromClause whereClause? orderByClause?)
 	;
 
 	
 selectList
-    @init {    paraphrases.push("in select list"); }
-    @after{    paraphrases.pop(); } 
+        @init {    paraphrases.push("in select list"); }
+        @after{    paraphrases.pop(); } 
 	:	STAR  
 		-> ^(ALL_COLUMNS)
 	| 	selectSubList ( COMMA selectSubList )*  
@@ -180,6 +320,8 @@ selectSubList
 	;
 	
 valueExpression
+        @init {    paraphrases.push("in value expression"); }
+        @after{    paraphrases.pop(); } 
 	:	columnReference 
 		-> columnReference
 	| 	valueFunction
@@ -187,6 +329,8 @@ valueExpression
 	;				
 
 columnReference
+        @init {    paraphrases.push("in column reference"); }
+        @after{    paraphrases.pop(); } 
 	:	( qualifier DOT )? columnName
 		-> ^(COLUMN_REF columnName qualifier?)
 	;
@@ -196,12 +340,18 @@ columnReference
  * TODO Add look a head and perform the test
  */	
 multiValuedColumnReference
+        @init {    paraphrases.push("in column reference"); }
+        @after{    paraphrases.pop(); } 
 	:       ( qualifier DOT )?  multiValuedColumnName
 		-> ^(COLUMN_REF multiValuedColumnName qualifier?)
 	;
 	
 valueFunction
-	:	functionName=keyWordOrId LPAREN functionArgument* RPAREN
+        @init {    paraphrases.push("in function"); }
+        @after{    paraphrases.pop(); } 
+        :       cmisFunctionName=cmisFunction LPAREN functionArgument* RPAREN
+		-> ^(FUNCTION $cmisFunctionName LPAREN functionArgument* RPAREN)
+	|	{strict == false}? =>functionName=keyWordOrId LPAREN functionArgument* RPAREN
 		-> ^(FUNCTION $functionName LPAREN functionArgument* RPAREN)
 	;
 	
@@ -220,14 +370,14 @@ qualifier
 	;
 	
 fromClause
-    @init {    paraphrases.push("in from"); }
-    @after{    paraphrases.pop(); } 
+        @init {    paraphrases.push("in from"); }
+        @after{    paraphrases.pop(); } 
 	:	FROM tableReference
 		-> tableReference
 	;
 	
-tableReference
-	:	singleTable ((joinedTable) => joinedTable)*
+tableReference   
+	:	singleTable joinedTable*
 		-> ^(SOURCE singleTable joinedTable*)
 	;
 	
@@ -242,7 +392,9 @@ singleTable
 	;
 	
 joinedTable
-	:	joinType? JOIN tableReference (joinSpecification) => joinSpecification
+        @init {    paraphrases.push("in join"); }
+        @after{    paraphrases.pop(); } 
+	:	joinType? JOIN tableReference joinSpecification
 		-> ^(JOIN tableReference joinType? joinSpecification)
 	;
 
@@ -260,6 +412,8 @@ joinType
 	;
 	
 joinSpecification
+        @init {    paraphrases.push("in join condition"); }
+        @after{    paraphrases.pop(); } 
 	:	ON lhs=columnReference EQUALS rhs=columnReference 
 		->	^(ON $lhs EQUALS $rhs)
 	;
@@ -269,8 +423,8 @@ joinSpecification
  * Broken out the left recursion from the spec 
  */
 whereClause
-    @init {    paraphrases.push("in where"); }
-    @after{    paraphrases.pop(); } 
+        @init {    paraphrases.push("in where"); }
+        @after{    paraphrases.pop(); } 
 	:	WHERE searchOrCondition
 		-> searchOrCondition
 	;
@@ -509,7 +663,12 @@ keyWord
 	| TIMESTAMP
 	| TRUE
 	| FALSE
+	| cmisFunction
 	;
+	
+cmisFunction : SCORE 
+	-> SCORE
+;
 	
 keyWordOrId 
 	:	keyWord 
@@ -556,9 +715,11 @@ ORDER	:	('O'|'o')('R'|'r')('D'|'d')('E'|'e')('R'|'r');
 BY	:	('B'|'b')('Y'|'y');
 ASC	:	('A'|'a')('S'|'s')('C'|'c');
 DESC	:	('D'|'d')('E'|'e')('S'|'s')('C'|'c');
-TIMESTAMP : ('T'|'t')('I'|'i')('M'|'m')('E'|'e')('S'|'s')('T'|'s')('A'|'a')('M'|'m')('P'|'p');
-TRUE: ('T'|'t')('R'|'r')('U'|'u')('E'|'e');
-FALSE: ('F'|'f')('A'|'a')('L'|'l')('S'|'s')('E'|'e');
+TIMESTAMP 
+        :       ('T'|'t')('I'|'i')('M'|'m')('E'|'e')('S'|'s')('T'|'s')('A'|'a')('M'|'m')('P'|'p');
+TRUE    :       ('T'|'t')('R'|'r')('U'|'u')('E'|'e');
+FALSE   :       ('F'|'f')('A'|'a')('L'|'l')('S'|'s')('E'|'e');
+SCORE   :       ('S'|'s')('C'|'c')('O'|'o')('R'|'r')('E'|'e');
 LPAREN	:	'(' ;
 RPAREN	:	')' ;
 STAR	:	'*' ;

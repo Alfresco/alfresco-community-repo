@@ -7,6 +7,6 @@ gunit CMIS;
 /** Parser */
 
 query:
-"SELECT Name, ObjectId, asdf asdfasdf asdfasdf asdfasdfasdf FROM DOCUMENT" FAIL
+"SELECT * from DOCUMENT D JION DOCUMENT DD ON (D.ID = DD.ID)" FAIL
 
 

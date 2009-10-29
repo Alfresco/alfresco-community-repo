@@ -102,7 +102,7 @@ public class LuceneQueryModelFactory implements QueryModelFactory
     private HashMap<String, Function> functions = new HashMap<String, Function>();
 
     /**
-     * Default lucene query model factory and functions 
+     * Default lucene query model factory and functions
      */
     public LuceneQueryModelFactory()
     {
@@ -269,7 +269,15 @@ public class LuceneQueryModelFactory implements QueryModelFactory
         }
         else
         {
-            throw new UnsupportedOperationException("Missing function " + functionName);
+            // scan
+            for (String key : functions.keySet())
+            {
+                if (key.equalsIgnoreCase(functionName))
+                {
+                    return functions.get(key);
+                }
+            }
+           return null;
         }
     }
 

@@ -66,6 +66,8 @@ tokens
 	
 	NUMERIC_LITERAL;
 	STRING_LITERAL;
+	DATETIME_LITERAL;
+	BOOLEAN_LITERAL;
 }
 
 @lexer::header{package org.alfresco.repo.search.impl.parsers;} 
@@ -80,14 +82,21 @@ tokens
 @members
 {
     private Stack<String> paraphrases = new Stack<String>();
+    
+    private boolean strict = true;
 
     /**
      * CMIS strict
      */
 	public boolean strict()
 	{
-	   return true;
+	   return strict;
 	}
+	
+	public void setStrict(boolean strict)
+  {
+     this.strict = strict;
+  }
 	
 	protected void mismatch(IntStream input, int ttype, BitSet follow) throws RecognitionException
 	{
@@ -233,8 +242,8 @@ singleTable
 	;
 	
 joinedTable
-	:	joinType? JOIN tableReference ((joinSpecification) => joinSpecification)?
-		-> ^(JOIN tableReference joinType? joinSpecification?)
+	:	joinType? JOIN tableReference (joinSpecification) => joinSpecification
+		-> ^(JOIN tableReference joinType? joinSpecification)
 	;
 
 	
@@ -251,7 +260,7 @@ joinType
 	;
 	
 joinSpecification
-	:	ON LPAREN lhs=columnReference EQUALS rhs=columnReference RPAREN
+	:	ON lhs=columnReference EQUALS rhs=columnReference 
 		->	^(ON $lhs EQUALS $rhs)
 	;
 	
@@ -302,7 +311,7 @@ predicate
 	|	inPredicate
 	|	likePredicate
 	|	nullPredicate
-	| 	quantifiedComparisonPredicate
+	|       quantifiedComparisonPredicate
 	|	quantifiedInPredicate
 	|	textSearchPredicate
 	|	folderPredicate
@@ -324,12 +333,14 @@ compOp
 	
 literalOrParameterName
 	:	literal
-	|	parameterName
+	|	{strict == false}?=> parameterName
 	;
 	
 literal	
 	:	signedNumericLiteral
 	|	characterStringLiteral
+	| booleanLiteral
+	| datetimeLiteral
 	;
 	
 inPredicate
@@ -366,7 +377,7 @@ quantifiedInPredicate
 	;
 	
 textSearchPredicate
-	:	CONTAINS LPAREN (qualifier COMMA | COMMA)? textSearchExpression RPAREN
+	:	CONTAINS LPAREN (qualifier COMMA)? textSearchExpression RPAREN
 		-> ^(PRED_FTS textSearchExpression qualifier?)
 	;
 	
@@ -378,7 +389,7 @@ folderPredicate
 	;
 	
 folderPredicateArgs
-	:	LPAREN (qualifier COMMA | COMMA)? folderId RPAREN
+	:	LPAREN (qualifier COMMA)? folderId RPAREN
 		-> folderId qualifier?
 	;
 	
@@ -436,7 +447,7 @@ textSearchExpression
 identifier
 	:	ID
 		-> ID
-	|	DOUBLE_QUOTE keyWordOrId DOUBLE_QUOTE
+	|	{strict == false}? => DOUBLE_QUOTE keyWordOrId DOUBLE_QUOTE
 		-> ^(keyWordOrId)
 	;
 	
@@ -452,39 +463,52 @@ integerLiteral
 		-> ^(NUMERIC_LITERAL DECIMAL_INTEGER_LITERAL)
 	;	
 	
+booleanLiteral
+  : TRUE 
+  -> 	^(BOOLEAN_LITERAL TRUE)
+  | FALSE
+  ->  ^(BOOLEAN_LITERAL FALSE)
+  ;
+	
+datetimeLiteral
+  : TIMESTAMP QUOTED_STRING
+  -> ^(DATETIME_LITERAL QUOTED_STRING)
+  ;
+	
 characterStringLiteral
 	:	QUOTED_STRING
 		-> ^(STRING_LITERAL QUOTED_STRING)
 	;
 	
 	
-keyWord	:	SELECT
-	|	AS
-	|	UPPER
-	|	LOWER
-	|	FROM 
-	| 	JOIN 
-	| 	INNER 
-	| 	LEFT 
-	| 	OUTER 
-	| 	ON 
-	| 	WHERE 
-	| 	OR 
-	| 	AND 
-	| 	NOT 
-	| 	IN 
-	| 	LIKE 
-	| 	IS 
-	| 	NULL 
-	| 	ANY 
-	| 	CONTAINS	 
-	| 	IN_FOLDER 
-	| 	IN_TREE 
-	| 	ORDER
-	| 	BY 
-	| 	ASC 
-	| 	DESC
-	| 	SCORE
+keyWord	
+  :	SELECT
+	| AS
+	| FROM 
+	| JOIN 
+	| INNER 
+	| LEFT 
+	| OUTER 
+	| ON 
+	| WHERE 
+	| OR 
+	| AND 
+	| NOT 
+	| IN 
+	| LIKE 
+	| IS 
+	| NULL 
+	| ANY 
+	| CONTAINS	 
+	| IN_FOLDER 
+	| IN_TREE 
+	| ORDER
+	| BY 
+	| ASC 
+	| DESC
+	| TIMESTAMP
+	| TRUE
+	| FALSE
 	;
 	
 keyWordOrId 
@@ -509,8 +533,6 @@ QUOTED_STRING
 	
 SELECT	:	('S'|'s')('E'|'e')('L'|'l')('E'|'e')('C'|'c')('T'|'t');
 AS	:	('A'|'a')('S'|'s');
-UPPER	:	('U'|'u')('P'|'p')('P'|'p')('E'|'e')('R'|'r');
-LOWER	:	('L'|'l')('O'|'o')('W'|'w')('E'|'e')('R'|'r');
 FROM	:	('F'|'f')('R'|'r')('O'|'o')('M'|'m');
 JOIN	:	('J'|'j')('O'|'o')('I'|'i')('N'|'n');
 INNER	:	('I'|'i')('N'|'n')('N'|'n')('E'|'e')('R'|'r');
@@ -534,7 +556,9 @@ ORDER	:	('O'|'o')('R'|'r')('D'|'d')('E'|'e')('R'|'r');
 BY	:	('B'|'b')('Y'|'y');
 ASC	:	('A'|'a')('S'|'s')('C'|'c');
 DESC	:	('D'|'d')('E'|'e')('S'|'s')('C'|'c');
-SCORE	:	('S'|'s')('C'|'c')('O'|'o')('R'|'r')('E'|'e');
+TIMESTAMP : ('T'|'t')('I'|'i')('M'|'m')('E'|'e')('S'|'s')('T'|'s')('A'|'a')('M'|'m')('P'|'p');
+TRUE: ('T'|'t')('R'|'r')('U'|'u')('E'|'e');
+FALSE: ('F'|'f')('A'|'a')('L'|'l')('S'|'s')('E'|'e');
 LPAREN	:	'(' ;
 RPAREN	:	')' ;
 STAR	:	'*' ;

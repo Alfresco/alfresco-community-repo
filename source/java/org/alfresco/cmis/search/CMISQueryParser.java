@@ -24,8 +24,11 @@
  */
 package org.alfresco.cmis.search;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -82,7 +85,9 @@ import org.alfresco.repo.search.impl.querymodel.impl.functions.PropertyAccessor;
 import org.alfresco.repo.search.impl.querymodel.impl.functions.Score;
 import org.alfresco.repo.search.impl.querymodel.impl.functions.Upper;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
+import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.CachingDateFormat;
 import org.antlr.runtime.ANTLRStringStream;
 import org.antlr.runtime.CharStream;
 import org.antlr.runtime.CommonTokenStream;
@@ -150,7 +155,8 @@ public class CMISQueryParser
 
             Query query = factory.createQuery(columns, source, constraint, orderings);
 
-            // TODO: validate query and use of ID, function arguments matching up etc
+            // TODO: validate query and use of ID, function arguments matching
+            // up etc
 
             return query;
         }
@@ -382,7 +388,8 @@ public class CMISQueryParser
                     throw new CMISQueryException("A selector must be specified when there are two or more selectors");
                 }
             }
-            return ftsQueryParser.buildFTS(ftsExpression.substring(1, ftsExpression.length() - 1), factory, functionEvaluationContext, selector, columns, Connective.OR, Connective.OR, null);
+            return ftsQueryParser.buildFTS(ftsExpression.substring(1, ftsExpression.length() - 1), factory, functionEvaluationContext, selector, columns, Connective.OR,
+                    Connective.OR, null);
         case CMISParser.PRED_IN:
             functionName = In.NAME;
             function = factory.getFunction(functionName);
@@ -622,8 +629,7 @@ public class CMISQueryParser
                                     definition.getPropertyId().getId());
                             Map<String, Argument> functionArguments = new LinkedHashMap<String, Argument>();
                             functionArguments.put(arg.getName(), arg);
-                            String alias = (selector.getAlias().length() > 0) ? selector.getAlias() + "." + definition.getPropertyId().getId() : definition.getPropertyId()
-                                    .getId();
+                            String alias = (selector.getAlias().length() > 0) ? selector.getAlias() + "." + definition.getPropertyId().getId() : definition.getPropertyId().getId();
                             Column column = factory.createColumn(function, functionArguments, alias);
                             columns.add(column);
                         }
@@ -685,8 +691,12 @@ public class CMISQueryParser
                     CommonTree functionNode = (CommonTree) columnNode.getFirstChildWithType(CMISParser.FUNCTION);
                     if (functionNode != null)
                     {
-                        String functionName = getFunctionName((CommonTree) functionNode.getChild(0));
-                        Function function = factory.getFunction(functionName);
+                        CommonTree functionNameNode = (CommonTree) functionNode.getChild(0);
+                        Function function = factory.getFunction(functionNameNode.getText());
+                        if(function == null)
+                        {
+                            throw new CMISQueryException("Unknown function: " + functionNameNode.getText()); 
+                        }
                         Collection<ArgumentDefinition> definitions = function.getArgumentDefinitions().values();
                         Map<String, Argument> functionArguments = new LinkedHashMap<String, Argument>();
 
@@ -703,7 +713,9 @@ public class CMISQueryParser
                             {
                                 if (definition.isMandatory())
                                 {
-                                    // throw new CMISQueryException("Insufficient aruments for function " +
+                                    // throw new
+                                    // CMISQueryException("Insufficient aruments
+                                    // for function " +
                                     // ((CommonTree)
                                     // functionNode.getChild(0)).getText() );
                                     break;
@@ -847,6 +859,58 @@ public class CMISQueryParser
             LiteralArgument arg = factory.createLiteralArgument(definition.getName(), DataTypeDefinition.TEXT, text);
             return arg;
         }
+        else if (argNode.getType() == CMISParser.DATETIME_LITERAL)
+        {
+            String text = argNode.getChild(0).getText();
+            text = text.substring(1, text.length() - 1);
+            StringBuilder builder = new StringBuilder();
+            if(text.endsWith("Z"))
+            {                
+                builder.append(text.substring(0,  text.length() - 1));
+                builder.append("+0000");
+            }
+            else
+            {
+                if(text.charAt( text.length() - 3) != ':')
+                {
+                    throw new CMISQueryException("Invalid datetime literal " + text);
+                }
+                // remove TZ colon ....
+                builder.append(text.substring(0,  text.length() - 3));
+                builder.append(text.substring(text.length() - 2, text.length()));
+            }
+            text = builder.toString();
+            
+            
+            SimpleDateFormat df = CachingDateFormat.getCmisSqlDatetimeFormat();
+            Date date;
+            try
+            {
+                date = df.parse(text);
+            }
+            catch (ParseException e)
+            {
+                throw new CMISQueryException("Invalid datetime literal " + text);
+            }
+            // Convert back :-)
+            String alfrescoDate = DefaultTypeConverter.INSTANCE.convert(String.class, date);
+            LiteralArgument arg = factory.createLiteralArgument(definition.getName(), DataTypeDefinition.TEXT, alfrescoDate);
+            return arg;
+        }
+        else if (argNode.getType() == CMISParser.BOOLEAN_LITERAL)
+        {
+            String text = argNode.getChild(0).getText();
+            if(text.equalsIgnoreCase("TRUE") || text.equalsIgnoreCase("FALSE"))
+            {
+                LiteralArgument arg = factory.createLiteralArgument(definition.getName(), DataTypeDefinition.TEXT, text);
+                return arg; 
+            }
+            else
+            {
+                throw new CMISQueryException("Invalid boolean literal " + text);
+            }
+           
+        }
         else if (argNode.getType() == CMISParser.LIST)
         {
             ArrayList<Argument> arguments = new ArrayList<Argument>();
@@ -874,8 +938,12 @@ public class CMISQueryParser
         }
         else if (argNode.getType() == CMISParser.FUNCTION)
         {
-            String functionName = getFunctionName((CommonTree) argNode.getChild(0));
-            Function function = factory.getFunction(functionName);
+            CommonTree functionNameNode = (CommonTree) argNode.getChild(0);
+            Function function = factory.getFunction(functionNameNode.getText());
+            if(function == null)
+            {
+                throw new CMISQueryException("Unknown function: " + functionNameNode.getText()); 
+            }
             Collection<ArgumentDefinition> definitions = function.getArgumentDefinitions().values();
             Map<String, Argument> functionArguments = new LinkedHashMap<String, Argument>();
 
@@ -892,7 +960,8 @@ public class CMISQueryParser
                 {
                     if (definition.isMandatory())
                     {
-                        // throw new CMISQueryException("Insufficient aruments for function " + ((CommonTree)
+                        // throw new CMISQueryException("Insufficient aruments
+                        // for function " + ((CommonTree)
                         // functionNode.getChild(0)).getText() );
                         break;
                     }
@@ -1017,13 +1086,21 @@ public class CMISQueryParser
                         {
                             throw new CMISQueryException("No table with alias " + arg1.getSelector());
                         }
-                        String functionName = getFunctionName((CommonTree) joinConditionNode.getChild(1));
+                        CommonTree functionNameNode = (CommonTree) joinConditionNode.getChild(1);
+                        if(functionNameNode.getType()!= CMISParser.EQUALS)
+                        {
+                            throw new CMISQueryException("Only Equi-join is supported " + functionNameNode.getText()); 
+                        }
+                        Function function = factory.getFunction(Equals.NAME);
+                        if(function == null)
+                        {
+                            throw new CMISQueryException("Unknown function: " + functionNameNode.getText()); 
+                        }
                         PropertyArgument arg2 = buildColumnReference(Equals.ARG_RHS, (CommonTree) joinConditionNode.getChild(2), factory);
                         if (!lhs.getSelectors().containsKey(arg2.getSelector()) && !rhs.getSelectors().containsKey(arg2.getSelector()))
                         {
                             throw new CMISQueryException("No table with alias " + arg2.getSelector());
                         }
-                        Function function = factory.getFunction(functionName);
                         Map<String, Argument> functionArguments = new LinkedHashMap<String, Argument>();
                         functionArguments.put(arg1.getName(), arg1);
                         functionArguments.put(arg2.getName(), arg2);
@@ -1049,28 +1126,11 @@ public class CMISQueryParser
             qualifer = columnReferenceNode.getChild(1).getText();
         }
         CMISPropertyDefinition propDef = cmisDictionaryService.findProperty(cmisPropertyName, null);
-        if(propDef == null)
+        if (propDef == null)
         {
             throw new CMISQueryException("Unknown column/property " + cmisPropertyName);
         }
         return factory.createPropertyArgument(argumentName, propDef.isQueryable(), propDef.isOrderable(), qualifer, propDef.getPropertyId().getId());
-    }
-
-    public String getFunctionName(CommonTree functionNameNode)
-    {
-        switch (functionNameNode.getType())
-        {
-        case CMISParser.EQUALS:
-            return Equals.NAME;
-        case CMISParser.UPPER:
-            return Upper.NAME;
-        case CMISParser.SCORE:
-            return Score.NAME;
-        case CMISParser.LOWER:
-            return Lower.NAME;
-        default:
-            throw new CMISQueryException("Unknown function: " + functionNameNode.getText());
-        }
     }
 
 }

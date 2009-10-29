@@ -29,7 +29,6 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
-import org.alfresco.cmis.CMISContentStreamAllowedEnum;
 import org.alfresco.cmis.CMISDictionaryModel;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
@@ -48,8 +47,8 @@ public class CMISPropertyServiceTest extends BaseCMISTest
         NodeRef folder = fileFolderService.create(rootNodeRef, "BaseFolder", ContentModel.TYPE_FOLDER).getNodeRef();
         Map<String, Serializable> properties = cmisService.getProperties(folder);
         assertEquals(folder.toString(), properties.get(CMISDictionaryModel.PROP_OBJECT_ID));
-        assertNull(properties.get(CMISDictionaryModel.PROP_URI));
         assertEquals(CMISDictionaryModel.FOLDER_TYPE_ID.getId(), properties.get(CMISDictionaryModel.PROP_OBJECT_TYPE_ID));
+        assertEquals(CMISDictionaryModel.FOLDER_TYPE_ID.getId(), properties.get(CMISDictionaryModel.PROP_BASE_TYPE_ID));
         assertEquals(authenticationComponent.getCurrentUserName(), properties.get(CMISDictionaryModel.PROP_CREATED_BY));
         assertNotNull(properties.get(CMISDictionaryModel.PROP_CREATION_DATE));
         assertEquals(authenticationComponent.getCurrentUserName(), properties.get(CMISDictionaryModel.PROP_LAST_MODIFIED_BY));
@@ -68,26 +67,13 @@ public class CMISPropertyServiceTest extends BaseCMISTest
         assertNull(properties.get(CMISDictionaryModel.PROP_VERSION_SERIES_CHECKED_OUT_BY));
         assertNull(properties.get(CMISDictionaryModel.PROP_VERSION_SERIES_CHECKED_OUT_ID));
         assertNull(properties.get(CMISDictionaryModel.PROP_CHECKIN_COMMENT));
-        assertNull(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_ALLOWED));
         assertNull(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_LENGTH));
         assertNull(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_MIME_TYPE));
         assertNull(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_FILENAME));
-        assertNull(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_URI));
+        assertNull(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_ID));
 
         assertEquals(rootNodeRef.toString(), properties.get(CMISDictionaryModel.PROP_PARENT_ID));
         assertNull(properties.get(CMISDictionaryModel.PROP_ALLOWED_CHILD_OBJECT_TYPE_IDS));
-    }
-
-    private String createContentUri(NodeRef nodeRef)
-    {
-        String uri = "/api/node/" + nodeRef.getStoreRef().getProtocol() + "/" + nodeRef.getStoreRef().getIdentifier() + "/" + nodeRef.getId() + "/content";
-        String name = (String)nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
-        int dotIndex = name.indexOf('.');
-        if (dotIndex != -1)
-        {
-            uri += "." + name.substring(dotIndex);
-        }
-        return uri;
     }
 
     public void testBasicDocument()
@@ -96,8 +82,8 @@ public class CMISPropertyServiceTest extends BaseCMISTest
 
         Map<String, Serializable> properties = cmisService.getProperties(content);
         assertEquals(properties.get(CMISDictionaryModel.PROP_OBJECT_ID), content.toString());
-        assertNull(properties.get(CMISDictionaryModel.PROP_URI));
         assertEquals(properties.get(CMISDictionaryModel.PROP_OBJECT_TYPE_ID), CMISDictionaryModel.DOCUMENT_TYPE_ID.getId());
+        assertEquals(properties.get(CMISDictionaryModel.PROP_BASE_TYPE_ID), CMISDictionaryModel.DOCUMENT_TYPE_ID.getId());
         assertEquals(properties.get(CMISDictionaryModel.PROP_CREATED_BY), authenticationComponent.getCurrentUserName());
         assertNotNull(properties.get(CMISDictionaryModel.PROP_CREATION_DATE));
         assertEquals(properties.get(CMISDictionaryModel.PROP_LAST_MODIFIED_BY), authenticationComponent.getCurrentUserName());
@@ -116,11 +102,10 @@ public class CMISPropertyServiceTest extends BaseCMISTest
         assertEquals(properties.get(CMISDictionaryModel.PROP_VERSION_SERIES_CHECKED_OUT_BY), null);
         assertEquals(properties.get(CMISDictionaryModel.PROP_VERSION_SERIES_CHECKED_OUT_ID), null);
         assertEquals(properties.get(CMISDictionaryModel.PROP_CHECKIN_COMMENT), null);
-        assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_ALLOWED), CMISContentStreamAllowedEnum.ALLOWED.toString());
         assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_LENGTH), 0L);
         assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_MIME_TYPE), "application/octet-stream");
         assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_FILENAME), "BaseContent");
-        assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_URI), createContentUri(content));
+        assertNotNull(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_ID));
         assertNull(properties.get(CMISDictionaryModel.PROP_PARENT_ID));
         assertNull(properties.get(CMISDictionaryModel.PROP_ALLOWED_CHILD_OBJECT_TYPE_IDS));
     }
@@ -131,8 +116,8 @@ public class CMISPropertyServiceTest extends BaseCMISTest
 
         Map<String, Serializable> properties = cmisService.getProperties(content);
         assertEquals(properties.get(CMISDictionaryModel.PROP_OBJECT_ID), content.toString());
-        assertNull(properties.get(CMISDictionaryModel.PROP_URI));
         assertEquals(properties.get(CMISDictionaryModel.PROP_OBJECT_TYPE_ID), CMISDictionaryModel.DOCUMENT_TYPE_ID.getId());
+        assertEquals(properties.get(CMISDictionaryModel.PROP_BASE_TYPE_ID), CMISDictionaryModel.DOCUMENT_TYPE_ID.getId());
         assertEquals(properties.get(CMISDictionaryModel.PROP_CREATED_BY), authenticationComponent.getCurrentUserName());
         assertNotNull(properties.get(CMISDictionaryModel.PROP_CREATION_DATE));
         assertEquals(properties.get(CMISDictionaryModel.PROP_LAST_MODIFIED_BY), authenticationComponent.getCurrentUserName());
@@ -151,11 +136,10 @@ public class CMISPropertyServiceTest extends BaseCMISTest
         assertEquals(properties.get(CMISDictionaryModel.PROP_VERSION_SERIES_CHECKED_OUT_BY), null);
         assertEquals(properties.get(CMISDictionaryModel.PROP_VERSION_SERIES_CHECKED_OUT_ID), null);
         assertEquals(properties.get(CMISDictionaryModel.PROP_CHECKIN_COMMENT), null);
-        assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_ALLOWED), CMISContentStreamAllowedEnum.ALLOWED.toString());
         assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_LENGTH), 0L);
         assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_MIME_TYPE), "application/octet-stream");
         assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_FILENAME), "BaseContent");
-        assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_URI), createContentUri(content));
+        assertNotNull(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_ID));
 
         assertNull(properties.get(CMISDictionaryModel.PROP_PARENT_ID));
         assertNull(properties.get(CMISDictionaryModel.PROP_ALLOWED_CHILD_OBJECT_TYPE_IDS));
@@ -172,11 +156,10 @@ public class CMISPropertyServiceTest extends BaseCMISTest
         long size = writer.getSize();
 
         properties = cmisService.getProperties(content);
-        assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_ALLOWED), CMISContentStreamAllowedEnum.ALLOWED.toString());
         assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_LENGTH), size);
         assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_MIME_TYPE), "text/plain");
         assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_FILENAME), "BaseContent");
-        assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_URI), createContentUri(content));
+        assertNotNull(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_ID));
     }
 
     public void testLock()
@@ -185,8 +168,8 @@ public class CMISPropertyServiceTest extends BaseCMISTest
 
         Map<String, Serializable> properties = cmisService.getProperties(content);
         assertEquals(properties.get(CMISDictionaryModel.PROP_OBJECT_ID), content.toString());
-        assertNull(properties.get(CMISDictionaryModel.PROP_URI));
         assertEquals(properties.get(CMISDictionaryModel.PROP_OBJECT_TYPE_ID), CMISDictionaryModel.DOCUMENT_TYPE_ID.getId());
+        assertEquals(properties.get(CMISDictionaryModel.PROP_BASE_TYPE_ID), CMISDictionaryModel.DOCUMENT_TYPE_ID.getId());
         assertEquals(properties.get(CMISDictionaryModel.PROP_CREATED_BY), authenticationComponent.getCurrentUserName());
         assertNotNull(properties.get(CMISDictionaryModel.PROP_CREATION_DATE));
         assertEquals(properties.get(CMISDictionaryModel.PROP_LAST_MODIFIED_BY), authenticationComponent.getCurrentUserName());
@@ -205,11 +188,10 @@ public class CMISPropertyServiceTest extends BaseCMISTest
         assertEquals(properties.get(CMISDictionaryModel.PROP_VERSION_SERIES_CHECKED_OUT_BY), null);
         assertEquals(properties.get(CMISDictionaryModel.PROP_VERSION_SERIES_CHECKED_OUT_ID), null);
         assertEquals(properties.get(CMISDictionaryModel.PROP_CHECKIN_COMMENT), null);
-        assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_ALLOWED), CMISContentStreamAllowedEnum.ALLOWED.toString());
         assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_LENGTH), 0L);
         assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_MIME_TYPE), "application/octet-stream");
         assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_FILENAME), "BaseContent");
-        assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_URI), createContentUri(content));
+        assertNotNull(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_ID));
 
         assertNull(properties.get(CMISDictionaryModel.PROP_PARENT_ID));
         assertNull(properties.get(CMISDictionaryModel.PROP_ALLOWED_CHILD_OBJECT_TYPE_IDS));
@@ -232,8 +214,8 @@ public class CMISPropertyServiceTest extends BaseCMISTest
         properties = cmisService.getProperties(content);
 
         assertEquals(properties.get(CMISDictionaryModel.PROP_OBJECT_ID), content.toString());
-        assertNull(properties.get(CMISDictionaryModel.PROP_URI));
         assertEquals(properties.get(CMISDictionaryModel.PROP_OBJECT_TYPE_ID), CMISDictionaryModel.DOCUMENT_TYPE_ID.getId());
+        assertEquals(properties.get(CMISDictionaryModel.PROP_BASE_TYPE_ID), CMISDictionaryModel.DOCUMENT_TYPE_ID.getId());
         assertEquals(properties.get(CMISDictionaryModel.PROP_CREATED_BY), authenticationComponent.getCurrentUserName());
         assertNotNull(properties.get(CMISDictionaryModel.PROP_CREATION_DATE));
         assertEquals(properties.get(CMISDictionaryModel.PROP_LAST_MODIFIED_BY), authenticationComponent.getCurrentUserName());
@@ -252,11 +234,10 @@ public class CMISPropertyServiceTest extends BaseCMISTest
         assertEquals(properties.get(CMISDictionaryModel.PROP_VERSION_SERIES_CHECKED_OUT_BY), null);
         assertEquals(properties.get(CMISDictionaryModel.PROP_VERSION_SERIES_CHECKED_OUT_ID), null);
         assertEquals(properties.get(CMISDictionaryModel.PROP_CHECKIN_COMMENT), null);
-        assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_ALLOWED), CMISContentStreamAllowedEnum.ALLOWED.toString());
         assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_LENGTH), 0L);
         assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_MIME_TYPE), "application/octet-stream");
         assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_FILENAME), "BaseContent");
-        assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_URI), createContentUri(content));
+        assertNotNull(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_ID));
 
         assertNull(properties.get(CMISDictionaryModel.PROP_PARENT_ID));
         assertNull(properties.get(CMISDictionaryModel.PROP_ALLOWED_CHILD_OBJECT_TYPE_IDS));
@@ -268,8 +249,8 @@ public class CMISPropertyServiceTest extends BaseCMISTest
 
         Map<String, Serializable> properties = cmisService.getProperties(content);
         assertEquals(properties.get(CMISDictionaryModel.PROP_OBJECT_ID), content.toString());
-        assertNull(properties.get(CMISDictionaryModel.PROP_URI));
         assertEquals(properties.get(CMISDictionaryModel.PROP_OBJECT_TYPE_ID), CMISDictionaryModel.DOCUMENT_TYPE_ID.getId());
+        assertEquals(properties.get(CMISDictionaryModel.PROP_BASE_TYPE_ID), CMISDictionaryModel.DOCUMENT_TYPE_ID.getId());
         assertEquals(properties.get(CMISDictionaryModel.PROP_CREATED_BY), authenticationComponent.getCurrentUserName());
         assertNotNull(properties.get(CMISDictionaryModel.PROP_CREATION_DATE));
         assertEquals(properties.get(CMISDictionaryModel.PROP_LAST_MODIFIED_BY), authenticationComponent.getCurrentUserName());
@@ -288,11 +269,10 @@ public class CMISPropertyServiceTest extends BaseCMISTest
         assertEquals(properties.get(CMISDictionaryModel.PROP_VERSION_SERIES_CHECKED_OUT_BY), null);
         assertEquals(properties.get(CMISDictionaryModel.PROP_VERSION_SERIES_CHECKED_OUT_ID), null);
         assertEquals(properties.get(CMISDictionaryModel.PROP_CHECKIN_COMMENT), null);
-        assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_ALLOWED), CMISContentStreamAllowedEnum.ALLOWED.toString());
         assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_LENGTH), 0L);
         assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_MIME_TYPE), "application/octet-stream");
         assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_FILENAME), "BaseContent");
-        assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_URI), createContentUri(content));
+        assertNotNull(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_ID));
 
         assertNull(properties.get(CMISDictionaryModel.PROP_PARENT_ID));
         assertNull(properties.get(CMISDictionaryModel.PROP_ALLOWED_CHILD_OBJECT_TYPE_IDS));
@@ -314,8 +294,8 @@ public class CMISPropertyServiceTest extends BaseCMISTest
         properties = cmisService.getProperties(pwc);
 
         assertEquals(properties.get(CMISDictionaryModel.PROP_OBJECT_ID), pwc.toString());
-        assertNull(properties.get(CMISDictionaryModel.PROP_URI));
         assertEquals(properties.get(CMISDictionaryModel.PROP_OBJECT_TYPE_ID), CMISDictionaryModel.DOCUMENT_TYPE_ID.getId());
+        assertEquals(properties.get(CMISDictionaryModel.PROP_BASE_TYPE_ID), CMISDictionaryModel.DOCUMENT_TYPE_ID.getId());
         assertEquals(properties.get(CMISDictionaryModel.PROP_CREATED_BY), authenticationComponent.getCurrentUserName());
         assertNotNull(properties.get(CMISDictionaryModel.PROP_CREATION_DATE));
         assertEquals(properties.get(CMISDictionaryModel.PROP_LAST_MODIFIED_BY), authenticationComponent.getCurrentUserName());
@@ -334,11 +314,10 @@ public class CMISPropertyServiceTest extends BaseCMISTest
         assertEquals(properties.get(CMISDictionaryModel.PROP_VERSION_SERIES_CHECKED_OUT_BY), authenticationComponent.getCurrentUserName());
         assertEquals(properties.get(CMISDictionaryModel.PROP_VERSION_SERIES_CHECKED_OUT_ID), pwc.toString());
         assertEquals(properties.get(CMISDictionaryModel.PROP_CHECKIN_COMMENT), null);
-        assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_ALLOWED), CMISContentStreamAllowedEnum.ALLOWED.toString());
         assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_LENGTH), 0L);
         assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_MIME_TYPE), "application/octet-stream");
         assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_FILENAME), "BaseContent (Working Copy)");
-        assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_URI), createContentUri(pwc));
+        assertNotNull(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_ID));
 
         assertNull(properties.get(CMISDictionaryModel.PROP_PARENT_ID));
         assertNull(properties.get(CMISDictionaryModel.PROP_ALLOWED_CHILD_OBJECT_TYPE_IDS));
@@ -347,8 +326,8 @@ public class CMISPropertyServiceTest extends BaseCMISTest
 
         properties = cmisService.getProperties(content);
         assertEquals(properties.get(CMISDictionaryModel.PROP_OBJECT_ID), content.toString());
-        assertNull(properties.get(CMISDictionaryModel.PROP_URI));
         assertEquals(properties.get(CMISDictionaryModel.PROP_OBJECT_TYPE_ID), CMISDictionaryModel.DOCUMENT_TYPE_ID.getId());
+        assertEquals(properties.get(CMISDictionaryModel.PROP_BASE_TYPE_ID), CMISDictionaryModel.DOCUMENT_TYPE_ID.getId());
         assertEquals(properties.get(CMISDictionaryModel.PROP_CREATED_BY), authenticationComponent.getCurrentUserName());
         assertNotNull(properties.get(CMISDictionaryModel.PROP_CREATION_DATE));
         assertEquals(properties.get(CMISDictionaryModel.PROP_LAST_MODIFIED_BY), authenticationComponent.getCurrentUserName());
@@ -367,11 +346,10 @@ public class CMISPropertyServiceTest extends BaseCMISTest
         assertEquals(properties.get(CMISDictionaryModel.PROP_VERSION_SERIES_CHECKED_OUT_BY), null);
         assertEquals(properties.get(CMISDictionaryModel.PROP_VERSION_SERIES_CHECKED_OUT_ID), null);
         assertEquals(properties.get(CMISDictionaryModel.PROP_CHECKIN_COMMENT), null);
-        assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_ALLOWED), CMISContentStreamAllowedEnum.ALLOWED.toString());
         assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_LENGTH), 0L);
         assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_MIME_TYPE), "application/octet-stream");
         assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_FILENAME), "BaseContent");
-        assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_URI), createContentUri(content));
+        assertNotNull(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_ID));
 
         assertNull(properties.get(CMISDictionaryModel.PROP_PARENT_ID));
         assertNull(properties.get(CMISDictionaryModel.PROP_ALLOWED_CHILD_OBJECT_TYPE_IDS));
@@ -393,8 +371,8 @@ public class CMISPropertyServiceTest extends BaseCMISTest
         properties = cmisService.getProperties(pwc);
 
         assertEquals(properties.get(CMISDictionaryModel.PROP_OBJECT_ID), pwc.toString());
-        assertNull(properties.get(CMISDictionaryModel.PROP_URI));
         assertEquals(properties.get(CMISDictionaryModel.PROP_OBJECT_TYPE_ID), CMISDictionaryModel.DOCUMENT_TYPE_ID.getId());
+        assertEquals(properties.get(CMISDictionaryModel.PROP_BASE_TYPE_ID), CMISDictionaryModel.DOCUMENT_TYPE_ID.getId());
         assertEquals(properties.get(CMISDictionaryModel.PROP_CREATED_BY), authenticationComponent.getCurrentUserName());
         assertNotNull(properties.get(CMISDictionaryModel.PROP_CREATION_DATE));
         assertEquals(properties.get(CMISDictionaryModel.PROP_LAST_MODIFIED_BY), authenticationComponent.getCurrentUserName());
@@ -413,11 +391,10 @@ public class CMISPropertyServiceTest extends BaseCMISTest
         assertEquals(properties.get(CMISDictionaryModel.PROP_VERSION_SERIES_CHECKED_OUT_BY), authenticationComponent.getCurrentUserName());
         assertEquals(properties.get(CMISDictionaryModel.PROP_VERSION_SERIES_CHECKED_OUT_ID), pwc.toString());
         assertEquals(properties.get(CMISDictionaryModel.PROP_CHECKIN_COMMENT), null);
-        assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_ALLOWED), CMISContentStreamAllowedEnum.ALLOWED.toString());
         assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_LENGTH), 0L);
         assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_MIME_TYPE), "application/octet-stream");
         assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_FILENAME), "BaseContent (Working Copy)");
-        assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_URI), createContentUri(pwc));
+        assertNotNull(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_ID));
 
         assertNull(properties.get(CMISDictionaryModel.PROP_PARENT_ID));
         assertNull(properties.get(CMISDictionaryModel.PROP_ALLOWED_CHILD_OBJECT_TYPE_IDS));
@@ -426,8 +403,8 @@ public class CMISPropertyServiceTest extends BaseCMISTest
 
         properties = cmisService.getProperties(content);
         assertEquals(properties.get(CMISDictionaryModel.PROP_OBJECT_ID), content.toString());
-        assertNull(properties.get(CMISDictionaryModel.PROP_URI));
         assertEquals(properties.get(CMISDictionaryModel.PROP_OBJECT_TYPE_ID), CMISDictionaryModel.DOCUMENT_TYPE_ID.getId());
+        assertEquals(properties.get(CMISDictionaryModel.PROP_BASE_TYPE_ID), CMISDictionaryModel.DOCUMENT_TYPE_ID.getId());
         assertEquals(properties.get(CMISDictionaryModel.PROP_CREATED_BY), authenticationComponent.getCurrentUserName());
         assertNotNull(properties.get(CMISDictionaryModel.PROP_CREATION_DATE));
         assertEquals(properties.get(CMISDictionaryModel.PROP_LAST_MODIFIED_BY), authenticationComponent.getCurrentUserName());
@@ -446,11 +423,10 @@ public class CMISPropertyServiceTest extends BaseCMISTest
         assertEquals(properties.get(CMISDictionaryModel.PROP_VERSION_SERIES_CHECKED_OUT_BY), null);
         assertEquals(properties.get(CMISDictionaryModel.PROP_VERSION_SERIES_CHECKED_OUT_ID), null);
         assertEquals(properties.get(CMISDictionaryModel.PROP_CHECKIN_COMMENT), null);
-        assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_ALLOWED), CMISContentStreamAllowedEnum.ALLOWED.toString());
         assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_LENGTH), 0L);
         assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_MIME_TYPE), "application/octet-stream");
         assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_FILENAME), "BaseContent");
-        assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_URI), createContentUri(content));
+        assertNotNull(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_ID));
 
         assertNull(properties.get(CMISDictionaryModel.PROP_PARENT_ID));
         assertNull(properties.get(CMISDictionaryModel.PROP_ALLOWED_CHILD_OBJECT_TYPE_IDS));
@@ -462,8 +438,8 @@ public class CMISPropertyServiceTest extends BaseCMISTest
 
         Map<String, Serializable> properties = cmisService.getProperties(content);
         assertEquals(properties.get(CMISDictionaryModel.PROP_OBJECT_ID), content.toString());
-        assertNull(properties.get(CMISDictionaryModel.PROP_URI));
         assertEquals(properties.get(CMISDictionaryModel.PROP_OBJECT_TYPE_ID), CMISDictionaryModel.DOCUMENT_TYPE_ID.getId());
+        assertEquals(properties.get(CMISDictionaryModel.PROP_BASE_TYPE_ID), CMISDictionaryModel.DOCUMENT_TYPE_ID.getId());
         assertEquals(properties.get(CMISDictionaryModel.PROP_CREATED_BY), authenticationComponent.getCurrentUserName());
         assertNotNull(properties.get(CMISDictionaryModel.PROP_CREATION_DATE));
         assertEquals(properties.get(CMISDictionaryModel.PROP_LAST_MODIFIED_BY), authenticationComponent.getCurrentUserName());
@@ -482,11 +458,10 @@ public class CMISPropertyServiceTest extends BaseCMISTest
         assertEquals(properties.get(CMISDictionaryModel.PROP_VERSION_SERIES_CHECKED_OUT_BY), null);
         assertEquals(properties.get(CMISDictionaryModel.PROP_VERSION_SERIES_CHECKED_OUT_ID), null);
         assertEquals(properties.get(CMISDictionaryModel.PROP_CHECKIN_COMMENT), null);
-        assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_ALLOWED), CMISContentStreamAllowedEnum.ALLOWED.toString());
         assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_LENGTH), 0L);
         assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_MIME_TYPE), "application/octet-stream");
         assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_FILENAME), "BaseContent");
-        assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_URI), createContentUri(content));
+        assertNotNull(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_ID));
 
         assertNull(properties.get(CMISDictionaryModel.PROP_PARENT_ID));
         assertNull(properties.get(CMISDictionaryModel.PROP_ALLOWED_CHILD_OBJECT_TYPE_IDS));
@@ -495,8 +470,8 @@ public class CMISPropertyServiceTest extends BaseCMISTest
 
         properties = cmisService.getProperties(content);
         assertEquals(properties.get(CMISDictionaryModel.PROP_OBJECT_ID), content.toString());
-        assertNull(properties.get(CMISDictionaryModel.PROP_URI));
         assertEquals(properties.get(CMISDictionaryModel.PROP_OBJECT_TYPE_ID), CMISDictionaryModel.DOCUMENT_TYPE_ID.getId());
+        assertEquals(properties.get(CMISDictionaryModel.PROP_BASE_TYPE_ID), CMISDictionaryModel.DOCUMENT_TYPE_ID.getId());
         assertEquals(properties.get(CMISDictionaryModel.PROP_CREATED_BY), authenticationComponent.getCurrentUserName());
         assertNotNull(properties.get(CMISDictionaryModel.PROP_CREATION_DATE));
         assertEquals(properties.get(CMISDictionaryModel.PROP_LAST_MODIFIED_BY), authenticationComponent.getCurrentUserName());
@@ -515,11 +490,10 @@ public class CMISPropertyServiceTest extends BaseCMISTest
         assertEquals(properties.get(CMISDictionaryModel.PROP_VERSION_SERIES_CHECKED_OUT_BY), null);
         assertEquals(properties.get(CMISDictionaryModel.PROP_VERSION_SERIES_CHECKED_OUT_ID), null);
         assertEquals(properties.get(CMISDictionaryModel.PROP_CHECKIN_COMMENT), null);
-        assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_ALLOWED), CMISContentStreamAllowedEnum.ALLOWED.toString());
         assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_LENGTH), 0L);
         assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_MIME_TYPE), "application/octet-stream");
         assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_FILENAME), "BaseContent");
-        assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_URI), createContentUri(content));
+        assertNotNull(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_ID));
 
         assertNull(properties.get(CMISDictionaryModel.PROP_PARENT_ID));
         assertNull(properties.get(CMISDictionaryModel.PROP_ALLOWED_CHILD_OBJECT_TYPE_IDS));
@@ -541,8 +515,8 @@ public class CMISPropertyServiceTest extends BaseCMISTest
         properties = cmisService.getProperties(pwc);
 
         assertEquals(properties.get(CMISDictionaryModel.PROP_OBJECT_ID), pwc.toString());
-        assertNull(properties.get(CMISDictionaryModel.PROP_URI));
         assertEquals(properties.get(CMISDictionaryModel.PROP_OBJECT_TYPE_ID), CMISDictionaryModel.DOCUMENT_TYPE_ID.getId());
+        assertEquals(properties.get(CMISDictionaryModel.PROP_BASE_TYPE_ID), CMISDictionaryModel.DOCUMENT_TYPE_ID.getId());
         assertEquals(properties.get(CMISDictionaryModel.PROP_CREATED_BY), authenticationComponent.getCurrentUserName());
         assertNotNull(properties.get(CMISDictionaryModel.PROP_CREATION_DATE));
         assertEquals(properties.get(CMISDictionaryModel.PROP_LAST_MODIFIED_BY), authenticationComponent.getCurrentUserName());
@@ -561,11 +535,10 @@ public class CMISPropertyServiceTest extends BaseCMISTest
         assertEquals(properties.get(CMISDictionaryModel.PROP_VERSION_SERIES_CHECKED_OUT_BY), authenticationComponent.getCurrentUserName());
         assertEquals(properties.get(CMISDictionaryModel.PROP_VERSION_SERIES_CHECKED_OUT_ID), pwc.toString());
         assertEquals(properties.get(CMISDictionaryModel.PROP_CHECKIN_COMMENT), null);
-        assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_ALLOWED), CMISContentStreamAllowedEnum.ALLOWED.toString());
         assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_LENGTH), 0L);
         assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_MIME_TYPE), "application/octet-stream");
         assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_FILENAME), "BaseContent (Working Copy)");
-        assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_URI), createContentUri(pwc));
+        assertNotNull(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_ID));
 
         assertNull(properties.get(CMISDictionaryModel.PROP_PARENT_ID));
         assertNull(properties.get(CMISDictionaryModel.PROP_ALLOWED_CHILD_OBJECT_TYPE_IDS));
@@ -574,8 +547,8 @@ public class CMISPropertyServiceTest extends BaseCMISTest
 
         properties = cmisService.getProperties(content);
         assertEquals(properties.get(CMISDictionaryModel.PROP_OBJECT_ID), content.toString());
-        assertNull(properties.get(CMISDictionaryModel.PROP_URI));
         assertEquals(properties.get(CMISDictionaryModel.PROP_OBJECT_TYPE_ID), CMISDictionaryModel.DOCUMENT_TYPE_ID.getId());
+        assertEquals(properties.get(CMISDictionaryModel.PROP_BASE_TYPE_ID), CMISDictionaryModel.DOCUMENT_TYPE_ID.getId());
         assertEquals(properties.get(CMISDictionaryModel.PROP_CREATED_BY), authenticationComponent.getCurrentUserName());
         assertNotNull(properties.get(CMISDictionaryModel.PROP_CREATION_DATE));
         assertEquals(properties.get(CMISDictionaryModel.PROP_LAST_MODIFIED_BY), authenticationComponent.getCurrentUserName());
@@ -594,11 +567,10 @@ public class CMISPropertyServiceTest extends BaseCMISTest
         assertEquals(properties.get(CMISDictionaryModel.PROP_VERSION_SERIES_CHECKED_OUT_BY), null);
         assertEquals(properties.get(CMISDictionaryModel.PROP_VERSION_SERIES_CHECKED_OUT_ID), null);
         assertEquals(properties.get(CMISDictionaryModel.PROP_CHECKIN_COMMENT), null);
-        assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_ALLOWED), CMISContentStreamAllowedEnum.ALLOWED.toString());
         assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_LENGTH), 0L);
         assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_MIME_TYPE), "application/octet-stream");
         assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_FILENAME), "BaseContent");
-        assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_URI), createContentUri(content));
+        assertNotNull(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_ID));
 
         assertNull(properties.get(CMISDictionaryModel.PROP_PARENT_ID));
         assertNull(properties.get(CMISDictionaryModel.PROP_ALLOWED_CHILD_OBJECT_TYPE_IDS));
@@ -620,8 +592,8 @@ public class CMISPropertyServiceTest extends BaseCMISTest
         properties = cmisService.getProperties(pwc);
 
         assertEquals(properties.get(CMISDictionaryModel.PROP_OBJECT_ID), pwc.toString());
-        assertNull(properties.get(CMISDictionaryModel.PROP_URI));
         assertEquals(properties.get(CMISDictionaryModel.PROP_OBJECT_TYPE_ID), CMISDictionaryModel.DOCUMENT_TYPE_ID.getId());
+        assertEquals(properties.get(CMISDictionaryModel.PROP_BASE_TYPE_ID), CMISDictionaryModel.DOCUMENT_TYPE_ID.getId());
         assertEquals(properties.get(CMISDictionaryModel.PROP_CREATED_BY), authenticationComponent.getCurrentUserName());
         assertNotNull(properties.get(CMISDictionaryModel.PROP_CREATION_DATE));
         assertEquals(properties.get(CMISDictionaryModel.PROP_LAST_MODIFIED_BY), authenticationComponent.getCurrentUserName());
@@ -640,11 +612,10 @@ public class CMISPropertyServiceTest extends BaseCMISTest
         assertEquals(properties.get(CMISDictionaryModel.PROP_VERSION_SERIES_CHECKED_OUT_BY), authenticationComponent.getCurrentUserName());
         assertEquals(properties.get(CMISDictionaryModel.PROP_VERSION_SERIES_CHECKED_OUT_ID), pwc.toString());
         assertEquals(properties.get(CMISDictionaryModel.PROP_CHECKIN_COMMENT), null);
-        assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_ALLOWED), CMISContentStreamAllowedEnum.ALLOWED.toString());
         assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_LENGTH), 0L);
         assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_MIME_TYPE), "application/octet-stream");
         assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_FILENAME), "BaseContent (Working Copy)");
-        assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_URI), createContentUri(pwc));
+        assertNotNull(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_ID));
 
         assertNull(properties.get(CMISDictionaryModel.PROP_PARENT_ID));
         assertNull(properties.get(CMISDictionaryModel.PROP_ALLOWED_CHILD_OBJECT_TYPE_IDS));
@@ -656,8 +627,8 @@ public class CMISPropertyServiceTest extends BaseCMISTest
 
         properties = cmisService.getProperties(content);
         assertEquals(properties.get(CMISDictionaryModel.PROP_OBJECT_ID), content.toString()+"/1.0");
-        assertNull(properties.get(CMISDictionaryModel.PROP_URI));
         assertEquals(properties.get(CMISDictionaryModel.PROP_OBJECT_TYPE_ID), CMISDictionaryModel.DOCUMENT_TYPE_ID.getId());
+        assertEquals(properties.get(CMISDictionaryModel.PROP_BASE_TYPE_ID), CMISDictionaryModel.DOCUMENT_TYPE_ID.getId());
         assertEquals(properties.get(CMISDictionaryModel.PROP_CREATED_BY), authenticationComponent.getCurrentUserName());
         assertNotNull(properties.get(CMISDictionaryModel.PROP_CREATION_DATE));
         assertEquals(properties.get(CMISDictionaryModel.PROP_LAST_MODIFIED_BY), authenticationComponent.getCurrentUserName());
@@ -676,11 +647,10 @@ public class CMISPropertyServiceTest extends BaseCMISTest
         assertEquals(properties.get(CMISDictionaryModel.PROP_VERSION_SERIES_CHECKED_OUT_BY), null);
         assertEquals(properties.get(CMISDictionaryModel.PROP_VERSION_SERIES_CHECKED_OUT_ID), null);
         assertEquals(properties.get(CMISDictionaryModel.PROP_CHECKIN_COMMENT), "Meep");
-        assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_ALLOWED), CMISContentStreamAllowedEnum.ALLOWED.toString());
         assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_LENGTH), 0L);
         assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_MIME_TYPE), "application/octet-stream");
         assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_FILENAME), "BaseContent");
-        assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_URI), createContentUri(content));
+        assertNotNull(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_ID));
 
         assertNull(properties.get(CMISDictionaryModel.PROP_PARENT_ID));
         assertNull(properties.get(CMISDictionaryModel.PROP_ALLOWED_CHILD_OBJECT_TYPE_IDS));
@@ -702,8 +672,8 @@ public class CMISPropertyServiceTest extends BaseCMISTest
         properties = cmisService.getProperties(pwc);
 
         assertEquals(properties.get(CMISDictionaryModel.PROP_OBJECT_ID), pwc.toString());
-        assertNull(properties.get(CMISDictionaryModel.PROP_URI));
         assertEquals(properties.get(CMISDictionaryModel.PROP_OBJECT_TYPE_ID), CMISDictionaryModel.DOCUMENT_TYPE_ID.getId());
+        assertEquals(properties.get(CMISDictionaryModel.PROP_BASE_TYPE_ID), CMISDictionaryModel.DOCUMENT_TYPE_ID.getId());
         assertEquals(properties.get(CMISDictionaryModel.PROP_CREATED_BY), authenticationComponent.getCurrentUserName());
         assertNotNull(properties.get(CMISDictionaryModel.PROP_CREATION_DATE));
         assertEquals(properties.get(CMISDictionaryModel.PROP_LAST_MODIFIED_BY), authenticationComponent.getCurrentUserName());
@@ -722,11 +692,10 @@ public class CMISPropertyServiceTest extends BaseCMISTest
         assertEquals(properties.get(CMISDictionaryModel.PROP_VERSION_SERIES_CHECKED_OUT_BY), authenticationComponent.getCurrentUserName());
         assertEquals(properties.get(CMISDictionaryModel.PROP_VERSION_SERIES_CHECKED_OUT_ID), pwc.toString());
         assertEquals(properties.get(CMISDictionaryModel.PROP_CHECKIN_COMMENT), null);
-        assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_ALLOWED), CMISContentStreamAllowedEnum.ALLOWED.toString());
         assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_LENGTH), 0L);
         assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_MIME_TYPE), "application/octet-stream");
         assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_FILENAME), "BaseContent (Working Copy)");
-        assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_URI), createContentUri(pwc));
+        assertNotNull(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_ID));
 
         assertNull(properties.get(CMISDictionaryModel.PROP_PARENT_ID));
         assertNull(properties.get(CMISDictionaryModel.PROP_ALLOWED_CHILD_OBJECT_TYPE_IDS));
@@ -738,8 +707,8 @@ public class CMISPropertyServiceTest extends BaseCMISTest
 
         properties = cmisService.getProperties(content);
         assertEquals(properties.get(CMISDictionaryModel.PROP_OBJECT_ID), content.toString()+"/1.1");
-        assertNull(properties.get(CMISDictionaryModel.PROP_URI));
         assertEquals(properties.get(CMISDictionaryModel.PROP_OBJECT_TYPE_ID), CMISDictionaryModel.DOCUMENT_TYPE_ID.getId());
+        assertEquals(properties.get(CMISDictionaryModel.PROP_BASE_TYPE_ID), CMISDictionaryModel.DOCUMENT_TYPE_ID.getId());
         assertEquals(properties.get(CMISDictionaryModel.PROP_CREATED_BY), authenticationComponent.getCurrentUserName());
         assertNotNull(properties.get(CMISDictionaryModel.PROP_CREATION_DATE));
         assertEquals(properties.get(CMISDictionaryModel.PROP_LAST_MODIFIED_BY), authenticationComponent.getCurrentUserName());
@@ -758,11 +727,10 @@ public class CMISPropertyServiceTest extends BaseCMISTest
         assertEquals(properties.get(CMISDictionaryModel.PROP_VERSION_SERIES_CHECKED_OUT_BY), null);
         assertEquals(properties.get(CMISDictionaryModel.PROP_VERSION_SERIES_CHECKED_OUT_ID), null);
         assertEquals(properties.get(CMISDictionaryModel.PROP_CHECKIN_COMMENT), "Woof");
-        assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_ALLOWED), CMISContentStreamAllowedEnum.ALLOWED.toString());
         assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_LENGTH), 0L);
         assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_MIME_TYPE), "application/octet-stream");
         assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_FILENAME), "BaseContent");
-        assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_URI), createContentUri(content));
+        assertNotNull(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_ID));
 
         assertNull(properties.get(CMISDictionaryModel.PROP_PARENT_ID));
         assertNull(properties.get(CMISDictionaryModel.PROP_ALLOWED_CHILD_OBJECT_TYPE_IDS));
@@ -772,8 +740,8 @@ public class CMISPropertyServiceTest extends BaseCMISTest
     {   
         NodeRef folder = fileFolderService.create(rootNodeRef, "BaseFolder", ContentModel.TYPE_FOLDER).getNodeRef();
         assertEquals(cmisService.getProperty(folder, CMISDictionaryModel.PROP_OBJECT_ID), folder.toString());
-        assertNull(cmisService.getProperty(folder, CMISDictionaryModel.PROP_URI));
         assertEquals(cmisService.getProperty(folder, CMISDictionaryModel.PROP_OBJECT_TYPE_ID), CMISDictionaryModel.FOLDER_TYPE_ID.getId());
+        assertEquals(cmisService.getProperty(folder, CMISDictionaryModel.PROP_BASE_TYPE_ID), CMISDictionaryModel.FOLDER_TYPE_ID.getId());
         assertEquals(cmisService.getProperty(folder, CMISDictionaryModel.PROP_CREATED_BY), authenticationComponent.getCurrentUserName());
         assertNotNull(cmisService.getProperty(folder, CMISDictionaryModel.PROP_CREATION_DATE));
         assertEquals(cmisService.getProperty(folder, CMISDictionaryModel.PROP_LAST_MODIFIED_BY), authenticationComponent.getCurrentUserName());
@@ -794,11 +762,10 @@ public class CMISPropertyServiceTest extends BaseCMISTest
             cmisService.getProperty(folder, CMISDictionaryModel.PROP_VERSION_SERIES_CHECKED_OUT_BY);
             cmisService.getProperty(folder, CMISDictionaryModel.PROP_VERSION_SERIES_CHECKED_OUT_ID);
             cmisService.getProperty(folder, CMISDictionaryModel.PROP_CHECKIN_COMMENT);
-            cmisService.getProperty(folder, CMISDictionaryModel.PROP_CONTENT_STREAM_ALLOWED);
             cmisService.getProperty(folder, CMISDictionaryModel.PROP_CONTENT_STREAM_LENGTH);
             cmisService.getProperty(folder, CMISDictionaryModel.PROP_CONTENT_STREAM_MIME_TYPE);
             cmisService.getProperty(folder, CMISDictionaryModel.PROP_CONTENT_STREAM_FILENAME);
-            cmisService.getProperty(folder, CMISDictionaryModel.PROP_CONTENT_STREAM_URI);
+            cmisService.getProperty(folder, CMISDictionaryModel.PROP_CONTENT_STREAM_ID);
             fail("Failed to catch invalid property on type folder");
         }
         catch(AlfrescoRuntimeException e)
@@ -809,7 +776,7 @@ public class CMISPropertyServiceTest extends BaseCMISTest
         assertEquals(cmisService.getProperty(folder, CMISDictionaryModel.PROP_PARENT_ID), rootNodeRef.toString());
         assertNull(cmisService.getProperty(folder, CMISDictionaryModel.PROP_ALLOWED_CHILD_OBJECT_TYPE_IDS));
 
-        assertEquals(cmisService.getProperty(folder, "NAME"), "BaseFolder");
-        assertEquals(cmisService.getProperty(folder, "name"), "BaseFolder");
+        assertEquals(cmisService.getProperty(folder, CMISDictionaryModel.PROP_NAME.toUpperCase()), "BaseFolder");
+        assertEquals(cmisService.getProperty(folder, CMISDictionaryModel.PROP_NAME.toLowerCase()), "BaseFolder");
     }
 }

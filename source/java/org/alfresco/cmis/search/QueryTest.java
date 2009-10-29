@@ -426,7 +426,7 @@ public class QueryTest extends BaseCMISTest
 
     public void test_PARENT()
     {
-        testQuery("SELECT ParentId FROM Folder WHERE ParentId =  '" + rootNodeRef.toString() + "'", 4, false, "ParentId", new String(), false);
+        testQuery("SELECT cmis:ParentId FROM cmis:Folder WHERE cmis:ParentId =  '" + rootNodeRef.toString() + "'", 4, false, "cmis:ParentId", new String(), false);
         testQuery("SELECT ParentId FROM Folder WHERE ParentId <> '" + rootNodeRef.toString() + "'", 6, false, "ParentId", new String(), false);
         testQuery("SELECT ParentId FROM Folder WHERE ParentId <  '" + rootNodeRef.toString() + "'", 0, false, "ParentId", new String(), true);
         testQuery("SELECT ParentId FROM Folder WHERE ParentId <= '" + rootNodeRef.toString() + "'", 0, false, "ParentId", new String(), true);
@@ -451,35 +451,6 @@ public class QueryTest extends BaseCMISTest
 
         testQuery("SELECT ParentId FROM Folder WHERE ANY ParentId IN     ('" + rootNodeRef.toString() + "')", 4, false, "ParentId", new String(), false);
         testQuery("SELECT ParentId FROM Folder WHERE ANY ParentId NOT IN ('" + rootNodeRef.toString() + "')", 6, false, "ParentId", new String(), false);
-    }
-
-    public void test_CONTENT_STREAM_URI()
-    {
-        testQuery("SELECT ContentStreamUri FROM Document WHERE ContentStreamUri =  'test'", 0, false, "ContentStreamUri", new String(), true);
-        testQuery("SELECT ContentStreamUri FROM Document WHERE ContentStreamUri <> 'test'", 10, false, "ContentStreamUri", new String(), true);
-        testQuery("SELECT ContentStreamUri FROM Document WHERE ContentStreamUri <  'test'", 0, false, "ContentStreamUri", new String(), true);
-        testQuery("SELECT ContentStreamUri FROM Document WHERE ContentStreamUri <= 'test'", 0, false, "ContentStreamUri", new String(), true);
-        testQuery("SELECT ContentStreamUri FROM Document WHERE ContentStreamUri >  'test'", 0, false, "ContentStreamUri", new String(), true);
-        testQuery("SELECT ContentStreamUri FROM Document WHERE ContentStreamUri >= 'test'", 0, false, "ContentStreamUri", new String(), true);
-
-        testQuery("SELECT ContentStreamUri FROM Document WHERE ContentStreamUri IN     ('test')", 0, false, "ContentStreamUri", new String(), true);
-        testQuery("SELECT ContentStreamUri FROM Document WHERE ContentStreamUri NOT IN ('test')", 10, false, "ContentStreamUri", new String(), true);
-
-        testQuery("SELECT ContentStreamUri FROM Document WHERE ContentStreamUri     LIKE 'test'", 0, false, "ContentStreamUri", new String(), true);
-        testQuery("SELECT ContentStreamUri FROM Document WHERE ContentStreamUri NOT LIKE 'test'", 0, false, "ContentStreamUri", new String(), true);
-
-        testQuery("SELECT ContentStreamUri FROM Document WHERE ContentStreamUri IS NOT NULL", 0, false, "ContentStreamUri", new String(), true);
-        testQuery("SELECT ContentStreamUri FROM Document WHERE ContentStreamUri IS     NULL", 10, false, "ContentStreamUri", new String(), true);
-
-        testQuery("SELECT ContentStreamUri FROM Document WHERE 'test' =  ANY ContentStreamUri", 0, false, "ContentStreamUri", new String(), true);
-        testQuery("SELECT ContentStreamUri FROM Document WHERE 'test' <> ANY ContentStreamUri", 10, false, "ContentStreamUri", new String(), true);
-        testQuery("SELECT ContentStreamUri FROM Document WHERE 'test' <  ANY ContentStreamUri", 0, false, "ContentStreamUri", new String(), true);
-        testQuery("SELECT ContentStreamUri FROM Document WHERE 'test' <= ANY ContentStreamUri", 0, false, "ContentStreamUri", new String(), true);
-        testQuery("SELECT ContentStreamUri FROM Document WHERE 'test' >  ANY ContentStreamUri", 0, false, "ContentStreamUri", new String(), true);
-        testQuery("SELECT ContentStreamUri FROM Document WHERE 'test' >= ANY ContentStreamUri", 0, false, "ContentStreamUri", new String(), true);
-
-        testQuery("SELECT ContentStreamUri FROM Document WHERE ANY ContentStreamUri IN     ('test')", 0, false, "ContentStreamUri", new String(), true);
-        testQuery("SELECT ContentStreamUri FROM Document WHERE ANY ContentStreamUri NOT IN ('test')", 10, false, "ContentStreamUri", new String(), true);
     }
 
     public void test_CONTENT_STREAM_FILENAME()

@@ -34,60 +34,41 @@ import org.alfresco.model.ContentModel;
  */
 public interface CMISDictionaryModel
 {
-    /**
-     * Type id for CMIS documents, from the spec.
-     */
-    public static String DOCUMENT_OBJECT_TYPE = "document";
-
-    /**
-     * Type is for CMIS folders, from the spec.
-     */
-    public static String FOLDER_OBJECT_TYPE = "folder";
-
-    /**
-     * Type Id for CMIS Relationships, from the spec.
-     */
-    public static String RELATIONSHIP_OBJECT_TYPE = "relationship";
-
-    /**
-     * Type Id for CMIS Policies, from the spec.
-     */
-    public static String POLICY_OBJECT_TYPE = "policy";
-
-    // TODO: spec issue - objectTypeEnum is lower cased - object type ids are repository specific in spec
-    public static CMISTypeId DOCUMENT_TYPE_ID = new CMISTypeId(CMISScope.DOCUMENT, DOCUMENT_OBJECT_TYPE.toLowerCase(), ContentModel.TYPE_CONTENT);
-    public static CMISTypeId FOLDER_TYPE_ID = new CMISTypeId(CMISScope.FOLDER, FOLDER_OBJECT_TYPE.toLowerCase(), ContentModel.TYPE_FOLDER);
-    public static CMISTypeId RELATIONSHIP_TYPE_ID = new CMISTypeId(CMISScope.RELATIONSHIP, RELATIONSHIP_OBJECT_TYPE.toLowerCase(), CMISMapping.RELATIONSHIP_QNAME);
-    public static CMISTypeId POLICY_TYPE_ID = new CMISTypeId(CMISScope.POLICY, POLICY_OBJECT_TYPE.toLowerCase(), CMISMapping.POLICY_QNAME);
+    // CMIS Type Ids
+    public static CMISTypeId DOCUMENT_TYPE_ID = new CMISTypeId(CMISScope.DOCUMENT, CMISMapping.DOCUMENT_QNAME, CMISMapping.CMIS_MODEL_NS + ":" + CMISMapping.DOCUMENT_QNAME.getLocalName(), ContentModel.TYPE_CONTENT);
+    public static CMISTypeId FOLDER_TYPE_ID = new CMISTypeId(CMISScope.FOLDER, CMISMapping.FOLDER_QNAME, CMISMapping.CMIS_MODEL_NS + ":" + CMISMapping.FOLDER_QNAME.getLocalName(), ContentModel.TYPE_FOLDER);
+    public static CMISTypeId RELATIONSHIP_TYPE_ID = new CMISTypeId(CMISScope.RELATIONSHIP, CMISMapping.RELATIONSHIP_QNAME, CMISMapping.CMIS_MODEL_NS + ":" + CMISMapping.RELATIONSHIP_QNAME.getLocalName(), CMISMapping.RELATIONSHIP_QNAME);
+    public static CMISTypeId POLICY_TYPE_ID = new CMISTypeId(CMISScope.POLICY, CMISMapping.POLICY_QNAME, CMISMapping.CMIS_MODEL_NS + ":" + CMISMapping.POLICY_QNAME.getLocalName(), CMISMapping.POLICY_QNAME);
 
     // CMIS properties
-    public static String PROP_OBJECT_ID = "ObjectId";
-    public static String PROP_URI = "Uri";
-    public static String PROP_OBJECT_TYPE_ID = "ObjectTypeId";
-    public static String PROP_CREATED_BY = "CreatedBy";
-    public static String PROP_CREATION_DATE = "CreationDate";
-    public static String PROP_LAST_MODIFIED_BY = "LastModifiedBy";
-    public static String PROP_LAST_MODIFICATION_DATE = "LastModificationDate";
-    public static String PROP_CHANGE_TOKEN = "ChangeToken";
-    public static String PROP_NAME = "Name";
-    public static String PROP_IS_IMMUTABLE = "IsImmutable";
-    public static String PROP_IS_LATEST_VERSION = "IsLatestVersion";
-    public static String PROP_IS_MAJOR_VERSION = "IsMajorVersion";
-    public static String PROP_IS_LATEST_MAJOR_VERSION = "IsLatestMajorVersion";
-    public static String PROP_VERSION_LABEL = "VersionLabel";
-    public static String PROP_VERSION_SERIES_ID = "VersionSeriesId";
-    public static String PROP_IS_VERSION_SERIES_CHECKED_OUT = "IsVersionSeriesCheckedOut";
-    public static String PROP_VERSION_SERIES_CHECKED_OUT_BY = "VersionSeriesCheckedOutBy";
-    public static String PROP_VERSION_SERIES_CHECKED_OUT_ID = "VersionSeriesCheckedOutId";
-    public static String PROP_CHECKIN_COMMENT = "CheckinComment";
-    public static String PROP_CONTENT_STREAM_ALLOWED = "ContentStreamAllowed";
-    public static String PROP_CONTENT_STREAM_LENGTH = "ContentStreamLength";
-    public static String PROP_CONTENT_STREAM_MIME_TYPE = "ContentStreamMimeType";
-    public static String PROP_CONTENT_STREAM_FILENAME = "ContentStreamFilename";
-    public static String PROP_CONTENT_STREAM_URI = "ContentStreamUri";
-    public static String PROP_PARENT_ID = "ParentId";
-    public static String PROP_ALLOWED_CHILD_OBJECT_TYPE_IDS = "AllowedChildObjectTypeIds";
-    public static String PROP_SOURCE_ID = "SourceId";
-    public static String PROP_TARGET_ID = "TargetId";
+    public static String PROP_OBJECT_ID = "cmis:ObjectId";
+    public static String PROP_BASE_TYPE_ID = "cmis:BaseTypeId";
+    public static String PROP_OBJECT_TYPE_ID = "cmis:ObjectTypeId";
+    public static String PROP_CREATED_BY = "cmis:CreatedBy";
+    public static String PROP_CREATION_DATE = "cmis:CreationDate";
+    public static String PROP_LAST_MODIFIED_BY = "cmis:LastModifiedBy";
+    public static String PROP_LAST_MODIFICATION_DATE = "cmis:LastModificationDate";
+    public static String PROP_CHANGE_TOKEN = "cmis:ChangeToken";
+    public static String PROP_NAME = "cmis:Name";
+    public static String PROP_IS_IMMUTABLE = "cmis:IsImmutable";
+    public static String PROP_IS_LATEST_VERSION = "cmis:IsLatestVersion";
+    public static String PROP_IS_MAJOR_VERSION = "cmis:IsMajorVersion";
+    public static String PROP_IS_LATEST_MAJOR_VERSION = "cmis:IsLatestMajorVersion";
+    public static String PROP_VERSION_LABEL = "cmis:VersionLabel";
+    public static String PROP_VERSION_SERIES_ID = "cmis:VersionSeriesId";
+    public static String PROP_IS_VERSION_SERIES_CHECKED_OUT = "cmis:IsVersionSeriesCheckedOut";
+    public static String PROP_VERSION_SERIES_CHECKED_OUT_BY = "cmis:VersionSeriesCheckedOutBy";
+    public static String PROP_VERSION_SERIES_CHECKED_OUT_ID = "cmis:VersionSeriesCheckedOutId";
+    public static String PROP_CHECKIN_COMMENT = "cmis:CheckinComment";
+    public static String PROP_CONTENT_STREAM_LENGTH = "cmis:ContentStreamLength";
+    public static String PROP_CONTENT_STREAM_MIME_TYPE = "cmis:ContentStreamMimeType";
+    public static String PROP_CONTENT_STREAM_FILENAME = "cmis:ContentStreamFileName";
+    public static String PROP_CONTENT_STREAM_ID = "cmis:ContentStreamId";
+    public static String PROP_PARENT_ID = "cmis:ParentId";
+    public static String PROP_PATH_NAME = "cmis:PathName";
+    public static String PROP_ALLOWED_CHILD_OBJECT_TYPE_IDS = "cmis:AllowedChildObjectTypeIds";
+    public static String PROP_SOURCE_ID = "cmis:SourceId";
+    public static String PROP_TARGET_ID = "cmis:TargetId";
+    public static String PROP_POLICY_TEXT = "cmis:PolicyText";
 
 }

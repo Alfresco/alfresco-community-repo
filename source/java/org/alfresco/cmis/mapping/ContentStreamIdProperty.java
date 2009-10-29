@@ -27,7 +27,6 @@ package org.alfresco.cmis.mapping;
 import java.io.Serializable;
 
 import org.alfresco.cmis.CMISDictionaryModel;
-import org.alfresco.model.ContentModel;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
 
@@ -36,16 +35,16 @@ import org.alfresco.service.cmr.repository.NodeRef;
  * 
  * @author andyh
  */
-public class ContentStreamUriProperty extends AbstractProperty
+public class ContentStreamIdProperty extends AbstractProperty
 {
     /**
-     * Construct 
-     *  
+     * Construct
+     * 
      * @param serviceRegistry
      */
-    public ContentStreamUriProperty(ServiceRegistry serviceRegistry)
+    public ContentStreamIdProperty(ServiceRegistry serviceRegistry)
     {
-        super(serviceRegistry, CMISDictionaryModel.PROP_CONTENT_STREAM_URI);
+        super(serviceRegistry, CMISDictionaryModel.PROP_CONTENT_STREAM_ID);
     }
 
     /*
@@ -54,19 +53,7 @@ public class ContentStreamUriProperty extends AbstractProperty
      */
     public Serializable getValue(NodeRef nodeRef)
     {
-        StringBuilder sb = new StringBuilder();
-        sb.append("/api/node/");
-        sb.append(nodeRef.getStoreRef().getProtocol());
-        sb.append("/");
-        sb.append(nodeRef.getStoreRef().getIdentifier());
-        sb.append("/");
-        sb.append(nodeRef.getId());
-        sb.append("/content");
-        String name = (String)getServiceRegistry().getNodeService().getProperty(nodeRef, ContentModel.PROP_NAME);
-        if (name.lastIndexOf('.') != -1)
-        {
-            sb.append(name.substring(name.lastIndexOf('.')));
-        }
-        return sb.toString();
+        return "cm:content";
     }
+    
 }

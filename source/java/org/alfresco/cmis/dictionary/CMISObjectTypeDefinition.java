@@ -24,6 +24,7 @@
  */
 package org.alfresco.cmis.dictionary;
 
+import java.util.ArrayList;
 import java.util.Collection;
 
 import org.alfresco.cmis.CMISScope;
@@ -57,7 +58,7 @@ public class CMISObjectTypeDefinition extends CMISAbstractTypeDefinition
         
         // Object type properties
         objectTypeId = typeId;
-        objectTypeQueryName = cmisMapping.buildPrefixEncodedString(typeId.getQName(), false);
+        objectTypeQueryName = cmisMapping.buildPrefixEncodedString(typeId.getQName());
 
         if (cmisClassDef != null)
         {
@@ -75,8 +76,10 @@ public class CMISObjectTypeDefinition extends CMISAbstractTypeDefinition
                 
         creatable = false;
         queryable = false;
-        controllable = false;
+        fullTextIndexed = false;
         includeInSuperTypeQuery = false;
+        controllablePolicy = false;
+        controllableACL = false;
     }
     
     /**
@@ -87,6 +90,7 @@ public class CMISObjectTypeDefinition extends CMISAbstractTypeDefinition
      */
     /*package*/ void createSubTypes(CMISMapping cmisMapping, DictionaryService dictionaryService)
     {
+        subTypeIds = new ArrayList<CMISTypeId>();
         Collection<QName> subTypes = dictionaryService.getSubTypes(objectTypeId.getQName(), false);
         for (QName subType : subTypes)
         {
@@ -115,7 +119,7 @@ public class CMISObjectTypeDefinition extends CMISAbstractTypeDefinition
         builder.append("Description=").append(getDescription()).append(", ");
         builder.append("Creatable=").append(isCreatable()).append(", ");
         builder.append("Queryable=").append(isQueryable()).append(", ");
-        builder.append("Controllable=").append(isControllable()).append(", ");
+        builder.append("Controllable=").append(isControllablePolicy()).append(", ");
         builder.append("IncludeInSuperTypeQuery=").append(isIncludeInSuperTypeQuery()).append(", ");
         builder.append("SubTypes=").append(getSubTypes(false).size()).append(", ");
         builder.append("Properties=").append(getPropertyDefinitions().size());

@@ -39,22 +39,25 @@ public class CMISTypeId implements Serializable
 {
     private static final long serialVersionUID = -4709046883083948302L;
 
-    private String typeId;
     private CMISScope scope;
-    private QName qName;
+    private QName typeQName;
+    private String typeId;
+    private QName internalQName;
 
     /**
      * Construct
      * 
-     * @param scope
-     * @param typeId
-     * @param qName
+     * @param scope  type scope
+     * @param typeQName  name of the CMIS type
+     * @param typeId  id of the CMIS type
+     * @param internalQName  alfresco class definition representing the type
      */
-    public CMISTypeId(CMISScope scope, String typeId, QName qName)
+    public CMISTypeId(CMISScope scope, QName typeQName, String typeId, QName internalQName)
     {
         this.scope = scope;
+        this.typeQName = typeQName;
         this.typeId = typeId;
-        this.qName = qName;
+        this.internalQName = internalQName;
     }
 
     /**
@@ -66,6 +69,24 @@ public class CMISTypeId implements Serializable
         return typeId;
     }
 
+    /**
+     * Get the CMIS local name
+     * @return
+     */
+    public String getLocalName()
+    {
+        return typeQName.getLocalName();
+    }
+    
+    /**
+     * Get the CMIS local namespace
+     * @return
+     */
+    public String getLocalNamespace()
+    {
+        return typeQName.getNamespaceURI();
+    }
+    
     /**
      * Get the scope for the type (Doc, Folder, Relationship or unknown)
      * @return
@@ -82,7 +103,7 @@ public class CMISTypeId implements Serializable
      */
     public QName getQName()
     {
-        return qName;
+        return internalQName;
     }
     
     /**
@@ -109,6 +130,7 @@ public class CMISTypeId implements Serializable
         }
     }
 
+    @Override
     public String toString()
     {
         return getId();
@@ -133,12 +155,12 @@ public class CMISTypeId implements Serializable
         if (getClass() != obj.getClass())
             return false;
         final CMISTypeId other = (CMISTypeId) obj;
-        if (typeId == null)
+        if (typeQName == null)
         {
-            if (other.typeId != null)
+            if (other.typeQName != null)
                 return false;
         }
-        else if (!typeId.equals(other.typeId))
+        else if (!typeQName.equals(other.typeQName))
             return false;
         return true;
     }

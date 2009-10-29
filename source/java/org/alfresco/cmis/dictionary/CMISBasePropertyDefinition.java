@@ -65,6 +65,7 @@ public class CMISBasePropertyDefinition implements CMISPropertyDefinition, Seria
     // Properties of Property
     private CMISTypeDefinition typeDef;
     private CMISPropertyId propertyId;
+    private String queryName;
     private String displayName;
     private String description;
     private CMISDataTypeEnum propertyType;
@@ -94,7 +95,8 @@ public class CMISBasePropertyDefinition implements CMISPropertyDefinition, Seria
     {
         this.propertyId = propertyId;
         this.typeDef = typeDef;
-        displayName = (propDef.getTitle() != null) ? propDef.getTitle() : propertyId.getName();
+        queryName = cmisMapping.buildPrefixEncodedString(propertyId.getQName());
+        displayName = (propDef.getTitle() != null) ? propDef.getTitle() : propertyId.getId();
         description = propDef.getDescription();
         propertyType = cmisMapping.getDataType(propDef.getDataType());
         cardinality = propDef.isMultiValued() ? CMISCardinalityEnum.MULTI_VALUED : CMISCardinalityEnum.SINGLE_VALUED;
@@ -177,6 +179,16 @@ public class CMISBasePropertyDefinition implements CMISPropertyDefinition, Seria
         return typeDef;
     }
 
+    /**
+     * Get the query name
+     * 
+     * @return
+     */
+    public String getQueryName()
+    {
+        return queryName;
+    }
+    
     /**
      * Get the display name
      * 
@@ -348,9 +360,11 @@ public class CMISBasePropertyDefinition implements CMISPropertyDefinition, Seria
         StringBuilder builder = new StringBuilder();
         builder.append("CMISPropertyDefinition[");
         builder.append("OwningTypeId=").append(getOwningType().getTypeId()).append(", ");
-        builder.append("PropertyName=").append(getPropertyId().getName()).append(", ");
-        builder.append("PropertyId=").append(getPropertyId().getId()).append(", ");
-        builder.append("PropertyQName=").append(getPropertyId().getQName()).append(", ");
+        builder.append("Id=").append(getPropertyId().getId()).append(", ");
+        builder.append("LocalName=").append(getPropertyId().getLocalName()).append(", ");
+        builder.append("Namespace=").append(getPropertyId().getLocalNamespace()).append(", ");
+        builder.append("InternalQName=").append(getPropertyId().getQName()).append(", ");
+        builder.append("QueryName=").append(getQueryName()).append(", ");
         builder.append("DisplayName=").append(getDisplayName()).append(", ");
         builder.append("Description=").append(getDescription()).append(", ");
         builder.append("PropertyType=").append(getDataType()).append(", ");

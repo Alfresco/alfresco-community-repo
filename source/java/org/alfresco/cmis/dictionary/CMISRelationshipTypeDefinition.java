@@ -26,6 +26,7 @@ package org.alfresco.cmis.dictionary;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -78,7 +79,10 @@ public class CMISRelationshipTypeDefinition extends CMISAbstractTypeDefinition
         actionEvaluators = cmisMapping.getActionEvaluators(objectTypeId.getScope());
         
         queryable = false;
-        controllable = false;
+        fullTextIndexed = false;
+        includeInSuperTypeQuery = false;
+        controllablePolicy = false;
+        controllableACL = false;
         
         if (assocDef == null)
         {
@@ -97,7 +101,7 @@ public class CMISRelationshipTypeDefinition extends CMISAbstractTypeDefinition
         {
             creatable = true;
             displayName = (assocDef.getTitle() != null) ? assocDef.getTitle() : typeId.getId();
-            objectTypeQueryName = cmisMapping.buildPrefixEncodedString(typeId.getQName(), false);
+            objectTypeQueryName = cmisMapping.buildPrefixEncodedString(typeId.getQName());
             parentTypeId = CMISDictionaryModel.RELATIONSHIP_TYPE_ID;
             description = assocDef.getDescription();
 
@@ -126,6 +130,7 @@ public class CMISRelationshipTypeDefinition extends CMISAbstractTypeDefinition
         {
             return super.createProperties(cmisMapping, dictionaryService);
         }
+        properties = new HashMap<String, CMISPropertyDefinition>();
         return properties;
     }
 
@@ -136,6 +141,7 @@ public class CMISRelationshipTypeDefinition extends CMISAbstractTypeDefinition
     @Override
     /*package*/ void createSubTypes(CMISMapping cmisMapping, DictionaryService dictionaryService)
     {
+        subTypeIds = new ArrayList<CMISTypeId>();
         if (objectTypeId.equals(CMISDictionaryModel.RELATIONSHIP_TYPE_ID))
         {
             // all associations are sub-type of RELATIONSHIP_OBJECT_TYPE
@@ -231,14 +237,16 @@ public class CMISRelationshipTypeDefinition extends CMISAbstractTypeDefinition
     {
         StringBuilder builder = new StringBuilder();
         builder.append("CMISRelationshipTypeDefinition[");
-        builder.append("ObjectTypeId=").append(getTypeId()).append(", ");
-        builder.append("ObjectTypeQueryName=").append(getQueryName()).append(", ");
-        builder.append("ObjectTypeDisplayName=").append(getDisplayName()).append(", ");
-        builder.append("ParentTypeId=").append(getParentType() == null ? "<none>" : getParentType().getTypeId()).append(", ");
+        builder.append("Id=").append(getTypeId().getId()).append(", ");
+        builder.append("Namespace=").append(getTypeId().getLocalNamespace()).append(", ");
+        builder.append("LocalName=").append(getTypeId().getLocalName()).append(", ");
+        builder.append("QueryName=").append(getQueryName()).append(", ");
+        builder.append("DisplayName=").append(getDisplayName()).append(", ");
+        builder.append("ParentId=").append(getParentType() == null ? "<none>" : getParentType().getTypeId()).append(", ");
         builder.append("Description=").append(getDescription()).append(", ");
         builder.append("Creatable=").append(isCreatable()).append(", ");
         builder.append("Queryable=").append(isQueryable()).append(", ");
-        builder.append("Controllable=").append(isControllable()).append(", ");
+        builder.append("Controllable=").append(isControllablePolicy()).append(", ");
         builder.append("IncludeInSuperTypeQuery=").append(isIncludeInSuperTypeQuery()).append(", ");
         builder.append("AllowedSourceTypes=[");
         for (CMISTypeDefinition type : getAllowedSourceTypes())

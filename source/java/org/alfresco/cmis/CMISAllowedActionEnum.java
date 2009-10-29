@@ -31,34 +31,48 @@ package org.alfresco.cmis;
  */
 public enum CMISAllowedActionEnum implements EnumLabel
 {
-    CAN_DELETE("canDelete"), 
-    CAN_UPDATE_PROPERTIES("canUpdateProperties"), 
-    CAN_GET_PROPERTIES("canGetProperties"), 
-    CAN_GET_RELATIONSHIPS("canGetRelationships"), 
-    CAN_GET_PARENTS("canGetParents"), 
-    CAN_GET_FOLDER_PARENT("canGetFolderParent"), 
+    // navigation services
     CAN_GET_DESCENDANTS("canGetDescendants"), 
-    CAN_MOVE("canMove"), 
-    CAN_DELETE_VERSION("canDeleteVersion"), 
-    CAN_DELETE_CONTENT("canDeleteContent"), 
-    CAN_CHECKOUT("canCheckout"), 
-    CAN_CANCEL_CHECKOUT("canCancelCheckout"), 
-    CAN_CHECKIN("canCheckin"), 
-    CAN_SET_CONTENT("canSetContent"), 
-    CAN_GET_ALL_VERSIONS("canGetAllVersions"), 
-    CAN_ADD_TO_FOLDER("canAddToFolder"), 
-    CAN_REMOVE_FROM_FOLDER("canRemoveFromFolder"), 
-    CAN_VIEW_CONTENT("canViewContent"), 
-    CAN_ADD_POLICY("canAddPolicy"), 
-    CAN_GET_APPLIED_POLICIES("canGetAppliedPolicies"), 
-    CAN_REMOVE_POLICY("canRemovePolicy"), 
     CAN_GET_CHILDREN("canGetChildren"), 
+    CAN_GET_FOLDER_PARENT("canGetFolderParent"), 
+    CAN_GET_OBJECT_PARENTS("canGetObjectParents"), 
+    
+    // object services
     CAN_CREATE_DOCUMENT("canCreateDocument"), 
     CAN_CREATE_FOLDER("canCreateFolder"), 
     CAN_CREATE_RELATIONSHIP("canCreateRelationship"), 
     CAN_CREATE_POLICY("canCreatePolicy"), 
-    CAN_DELETE_TREE("canDeleteTree");
+    CAN_GET_PROPERTIES("canGetProperties"), 
+    CAN_GET_RENDITIONS("canGetRenditions"), 
+    CAN_GET_CONTENT_STREAM("canGetContentStream"), 
+    CAN_UPDATE_PROPERTIES("canUpdateProperties"), 
+    CAN_MOVE_OBJECT("canMoveObject"), 
+    CAN_DELETE_OBJECT("canDelete"),  // TODO: ISSUE - should be canDeleteObject 
+    CAN_SET_CONTENT_STREAM("canSetContentStream"), 
+    CAN_DELETE_CONTENT_STREAM("canDeleteContentStream"), 
 
+    // multi-filing services
+    CAN_ADD_OBJECT_TO_FOLDER("canAddObjectToFolder"), 
+    CAN_REMOVE_OBJECT_FROM_FOLDER("canRemoveObjectFromFolder"), 
+    
+    // versioning services
+    CAN_CHECKOUT("canCheckOut"), 
+    CAN_CANCEL_CHECKOUT("canCancelCheckOut"), 
+    CAN_CHECKIN("canCheckIn"), 
+    CAN_GET_ALL_VERSIONS("canGetAllVersions"), 
+
+    // relationship services
+    CAN_GET_RELATIONSHIPS("canGetRelationships"),
+    
+    // policy services
+    CAN_APPLY_POLICY("canApplyPolicy"), 
+    CAN_REMOVE_POLICY("canRemovePolicy"), 
+    CAN_GET_APPLIED_POLICIES("canGetAppliedPolicies"), 
+    
+    // acl services
+    CAN_GET_ACL("canGetACL"),
+    CAN_APPLY_ACL("canApplyACL");
+    
 
     private String label;
     

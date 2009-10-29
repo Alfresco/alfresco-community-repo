@@ -24,7 +24,6 @@
  */
 package org.alfresco.cmis.mapping;
 
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -45,7 +44,6 @@ import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.AssociationDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.security.PermissionService;
-import org.alfresco.service.namespace.NamespaceException;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.apache.commons.logging.Log;
@@ -64,9 +62,10 @@ public class CMISMapping implements InitializingBean
     protected static final Log logger = LogFactory.getLog(CMISMapping.class);
     
     /**
-     * The Alfresco CMIS model URI.
+     * The Alfresco CMIS Namespace
      */
-    public static String CMIS_MODEL_URI = "http://www.alfresco.org/model/cmis/0.6";
+    public static String CMIS_MODEL_NS = "cmis";
+    public static String CMIS_MODEL_URI = "http://www.alfresco.org/model/cmis/0.62c";
 
     /**
      * The Alfresco CMIS Model name.
@@ -78,10 +77,6 @@ public class CMISMapping implements InitializingBean
      */
     public static QName CMIS_MODEL_QNAME = QName.createQName(CMIS_MODEL_URI, CMIS_MODEL_NAME);
 
-    // CMIS Internal Types
-    public static String OBJECT_OBJECT_TYPE = "object";
-    public static String FILESYSTEM_OBJECT_TYPE ="filesystemobject";
-    
     // CMIS Data Types
     public static QName CMIS_DATATYPE_ID = QName.createQName(CMIS_MODEL_URI, "id");
     public static QName CMIS_DATATYPE_URI = QName.createQName(CMIS_MODEL_URI, "uri");
@@ -89,16 +84,16 @@ public class CMISMapping implements InitializingBean
     public static QName CMIS_DATATYPE_HTML = QName.createQName(CMIS_MODEL_URI, "html");
 
     // CMIS Types
-    public static QName OBJECT_QNAME = QName.createQName(CMIS_MODEL_URI, OBJECT_OBJECT_TYPE);
-    public static QName FILESYSTEM_OBJECT_QNAME = QName.createQName(CMIS_MODEL_URI, FILESYSTEM_OBJECT_TYPE);
-    public static QName DOCUMENT_QNAME = QName.createQName(CMIS_MODEL_URI, CMISDictionaryModel.DOCUMENT_OBJECT_TYPE);
-    public static QName FOLDER_QNAME = QName.createQName(CMIS_MODEL_URI, CMISDictionaryModel.FOLDER_OBJECT_TYPE);
-    public static QName RELATIONSHIP_QNAME = QName.createQName(CMIS_MODEL_URI, CMISDictionaryModel.RELATIONSHIP_OBJECT_TYPE);
-    public static QName POLICY_QNAME = QName.createQName(CMIS_MODEL_URI, CMISDictionaryModel.POLICY_OBJECT_TYPE);
+    public static QName OBJECT_QNAME = QName.createQName(CMIS_MODEL_URI, "object");
+    public static QName FILESYSTEM_OBJECT_QNAME = QName.createQName(CMIS_MODEL_URI, "filesystemobject");
+    public static QName DOCUMENT_QNAME = QName.createQName(CMIS_MODEL_URI, "Document");
+    public static QName FOLDER_QNAME = QName.createQName(CMIS_MODEL_URI, "Folder");
+    public static QName RELATIONSHIP_QNAME = QName.createQName(CMIS_MODEL_URI, "Relationship");
+    public static QName POLICY_QNAME = QName.createQName(CMIS_MODEL_URI, "Policy");
 
     // CMIS Internal Type Ids
-    public static CMISTypeId OBJECT_TYPE_ID = new CMISTypeId(CMISScope.OBJECT, OBJECT_OBJECT_TYPE.toLowerCase(), OBJECT_QNAME);
-    public static CMISTypeId FILESYSTEM_OBJECT_TYPE_ID = new CMISTypeId(CMISScope.OBJECT, FILESYSTEM_OBJECT_TYPE.toLowerCase(), FILESYSTEM_OBJECT_QNAME);
+    public static CMISTypeId OBJECT_TYPE_ID = new CMISTypeId(CMISScope.OBJECT, OBJECT_QNAME, CMIS_MODEL_NS + ":" + OBJECT_QNAME.getLocalName(), OBJECT_QNAME);
+    public static CMISTypeId FILESYSTEM_OBJECT_TYPE_ID = new CMISTypeId(CMISScope.OBJECT, FILESYSTEM_OBJECT_QNAME, CMIS_MODEL_NS + ":" + FILESYSTEM_OBJECT_QNAME.getLocalName(), FILESYSTEM_OBJECT_QNAME);
 
     // Properties
     public static QName PROP_OBJECT_ID_QNAME = QName.createQName(CMIS_MODEL_URI, CMISDictionaryModel.PROP_OBJECT_ID);
@@ -173,8 +168,8 @@ public class CMISMapping implements InitializingBean
         //
         
         registerPropertyAccessor(new ObjectIdProperty(serviceRegistry));
-        registerPropertyAccessor(new FixedValueProperty(serviceRegistry, CMISDictionaryModel.PROP_URI, null));
         registerPropertyAccessor(new ObjectTypeIdProperty(serviceRegistry));
+        registerPropertyAccessor(new BaseTypeIdProperty(serviceRegistry));
         registerPropertyAccessor(new DirectProperty(serviceRegistry, CMISDictionaryModel.PROP_CREATED_BY, ContentModel.PROP_CREATOR));
         registerPropertyAccessor(new DirectProperty(serviceRegistry, CMISDictionaryModel.PROP_CREATION_DATE, ContentModel.PROP_CREATED));
         registerPropertyAccessor(new DirectProperty(serviceRegistry, CMISDictionaryModel.PROP_LAST_MODIFIED_BY, ContentModel.PROP_MODIFIER));
@@ -191,12 +186,12 @@ public class CMISMapping implements InitializingBean
         registerPropertyAccessor(new VersionSeriesCheckedOutByProperty(serviceRegistry));
         registerPropertyAccessor(new VersionSeriesCheckedOutIdProperty(serviceRegistry));
         registerPropertyAccessor(new CheckinCommentProperty(serviceRegistry));
-        registerPropertyAccessor(new FixedValueProperty(serviceRegistry, CMISDictionaryModel.PROP_CONTENT_STREAM_ALLOWED, CMISContentStreamAllowedEnum.ALLOWED.toString()));
         registerPropertyAccessor(new ContentStreamLengthProperty(serviceRegistry));
         registerPropertyAccessor(new ContentStreamMimetypeProperty(serviceRegistry));
+        registerPropertyAccessor(new ContentStreamIdProperty(serviceRegistry));
         registerPropertyAccessor(new DirectProperty(serviceRegistry, CMISDictionaryModel.PROP_CONTENT_STREAM_FILENAME, ContentModel.PROP_NAME));
-        registerPropertyAccessor(new ContentStreamUriProperty(serviceRegistry));
         registerPropertyAccessor(new ParentProperty(serviceRegistry));
+        registerPropertyAccessor(new FixedValueProperty(serviceRegistry, CMISDictionaryModel.PROP_PATH_NAME, null));
         registerPropertyAccessor(new FixedValueProperty(serviceRegistry, CMISDictionaryModel.PROP_ALLOWED_CHILD_OBJECT_TYPE_IDS, null));
         registerPropertyAccessor(new SourceIdProperty(serviceRegistry));
         registerPropertyAccessor(new TargetIdProperty(serviceRegistry));
@@ -205,39 +200,41 @@ public class CMISMapping implements InitializingBean
         // Action Evaluator Mappings
         //
         
-        registerEvaluator(CMISScope.DOCUMENT, new PermissionActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_DELETE, PermissionService.DELETE_NODE));
+        registerEvaluator(CMISScope.DOCUMENT, new PermissionActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_DELETE_OBJECT, PermissionService.DELETE_NODE));
         registerEvaluator(CMISScope.DOCUMENT, new PermissionActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_UPDATE_PROPERTIES, PermissionService.WRITE_PROPERTIES));
         registerEvaluator(CMISScope.DOCUMENT, new PermissionActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_GET_PROPERTIES, PermissionService.READ_PROPERTIES));
         registerEvaluator(CMISScope.DOCUMENT, new FixedValueActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_GET_RELATIONSHIPS, true));
-        registerEvaluator(CMISScope.DOCUMENT, new FixedValueActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_GET_PARENTS, true));
+        registerEvaluator(CMISScope.DOCUMENT, new FixedValueActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_GET_OBJECT_PARENTS, true));
         // Is CAN_MOVE correct mapping?
-        registerEvaluator(CMISScope.DOCUMENT, new PermissionActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_MOVE, PermissionService.DELETE_NODE));
-        registerEvaluator(CMISScope.DOCUMENT, new PermissionActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_DELETE_VERSION, PermissionService.DELETE_NODE));
-        registerEvaluator(CMISScope.DOCUMENT, new PermissionActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_DELETE_CONTENT, PermissionService.WRITE_PROPERTIES, PermissionService.WRITE_CONTENT));
+        registerEvaluator(CMISScope.DOCUMENT, new PermissionActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_MOVE_OBJECT, PermissionService.DELETE_NODE));
+        registerEvaluator(CMISScope.DOCUMENT, new PermissionActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_DELETE_CONTENT_STREAM, PermissionService.WRITE_PROPERTIES, PermissionService.WRITE_CONTENT));
         registerEvaluator(CMISScope.DOCUMENT, new PermissionActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_CHECKOUT, PermissionService.CHECK_OUT));
         registerEvaluator(CMISScope.DOCUMENT, new PermissionActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_CANCEL_CHECKOUT, PermissionService.CANCEL_CHECK_OUT));
         registerEvaluator(CMISScope.DOCUMENT, new PermissionActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_CHECKIN, PermissionService.CHECK_IN));
-        registerEvaluator(CMISScope.DOCUMENT, new PermissionActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_SET_CONTENT, PermissionService.WRITE_CONTENT));
+        registerEvaluator(CMISScope.DOCUMENT, new PermissionActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_SET_CONTENT_STREAM, PermissionService.WRITE_CONTENT));
         registerEvaluator(CMISScope.DOCUMENT, new FixedValueActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_GET_ALL_VERSIONS, true));
-        registerEvaluator(CMISScope.DOCUMENT, new ParentActionEvaluator(new PermissionActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_ADD_TO_FOLDER, PermissionService.LINK_CHILDREN)));
+        registerEvaluator(CMISScope.DOCUMENT, new ParentActionEvaluator(new PermissionActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_ADD_OBJECT_TO_FOLDER, PermissionService.LINK_CHILDREN)));
         // Is CAN_REMOVE_FROM_FOLDER correct mapping?
-        registerEvaluator(CMISScope.DOCUMENT, new ParentActionEvaluator(new FixedValueActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_REMOVE_FROM_FOLDER, true)));
-        registerEvaluator(CMISScope.DOCUMENT, new PermissionActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_VIEW_CONTENT, PermissionService.READ_CONTENT));
-        registerEvaluator(CMISScope.DOCUMENT, new FixedValueActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_ADD_POLICY, false));
+        registerEvaluator(CMISScope.DOCUMENT, new ParentActionEvaluator(new FixedValueActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_REMOVE_OBJECT_FROM_FOLDER, true)));
+        registerEvaluator(CMISScope.DOCUMENT, new PermissionActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_GET_CONTENT_STREAM, PermissionService.READ_CONTENT));
+        registerEvaluator(CMISScope.DOCUMENT, new FixedValueActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_APPLY_POLICY, false));
         registerEvaluator(CMISScope.DOCUMENT, new FixedValueActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_GET_APPLIED_POLICIES, false));
         registerEvaluator(CMISScope.DOCUMENT, new FixedValueActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_REMOVE_POLICY, false));
         registerEvaluator(CMISScope.DOCUMENT, new FixedValueActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_CREATE_RELATIONSHIP, true));
-
-        registerEvaluator(CMISScope.FOLDER, new PermissionActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_DELETE, PermissionService.DELETE_NODE));
+        registerEvaluator(CMISScope.DOCUMENT, new FixedValueActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_GET_RENDITIONS, true));
+        registerEvaluator(CMISScope.DOCUMENT, new FixedValueActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_GET_ACL, false));
+        registerEvaluator(CMISScope.DOCUMENT, new FixedValueActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_APPLY_ACL, false));
+        
+        registerEvaluator(CMISScope.FOLDER, new PermissionActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_DELETE_OBJECT, PermissionService.DELETE_NODE));
         registerEvaluator(CMISScope.FOLDER, new PermissionActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_UPDATE_PROPERTIES, PermissionService.WRITE_PROPERTIES));
         registerEvaluator(CMISScope.FOLDER, new PermissionActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_GET_PROPERTIES, PermissionService.READ_PROPERTIES));
         registerEvaluator(CMISScope.FOLDER, new FixedValueActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_GET_RELATIONSHIPS, true));
-        registerEvaluator(CMISScope.FOLDER, new FixedValueActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_GET_PARENTS, true));
+        registerEvaluator(CMISScope.FOLDER, new FixedValueActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_GET_OBJECT_PARENTS, true));
         registerEvaluator(CMISScope.FOLDER, new FixedValueActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_GET_FOLDER_PARENT, true));
         registerEvaluator(CMISScope.FOLDER, new PermissionActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_GET_DESCENDANTS, PermissionService.READ_CHILDREN));
-        // Is CAN_MOVE correct mapping?
-        registerEvaluator(CMISScope.FOLDER, new PermissionActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_MOVE, PermissionService.DELETE_NODE));
-        registerEvaluator(CMISScope.FOLDER, new FixedValueActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_ADD_POLICY, false));
+        // Is CAN_MOVE_OBJECT correct mapping?
+        registerEvaluator(CMISScope.FOLDER, new PermissionActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_MOVE_OBJECT, PermissionService.DELETE_NODE));
+        registerEvaluator(CMISScope.FOLDER, new FixedValueActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_APPLY_POLICY, false));
         registerEvaluator(CMISScope.FOLDER, new FixedValueActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_GET_APPLIED_POLICIES, false));
         registerEvaluator(CMISScope.FOLDER, new FixedValueActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_REMOVE_POLICY, false));
         registerEvaluator(CMISScope.FOLDER, new PermissionActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_GET_CHILDREN, PermissionService.READ_CHILDREN));
@@ -245,20 +242,25 @@ public class CMISMapping implements InitializingBean
         registerEvaluator(CMISScope.FOLDER, new PermissionActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_CREATE_FOLDER, PermissionService.CREATE_CHILDREN));
         registerEvaluator(CMISScope.FOLDER, new PermissionActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_CREATE_RELATIONSHIP, PermissionService.CREATE_ASSOCIATIONS));
         registerEvaluator(CMISScope.FOLDER, new FixedValueActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_CREATE_POLICY, false));
-        registerEvaluator(CMISScope.FOLDER, new PermissionActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_DELETE_TREE, PermissionService.DELETE_NODE));
+        registerEvaluator(CMISScope.FOLDER, new FixedValueActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_GET_ACL, false));
+        registerEvaluator(CMISScope.FOLDER, new FixedValueActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_APPLY_ACL, false));
 
-        registerEvaluator(CMISScope.RELATIONSHIP, new FixedValueActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_DELETE, true));
+        registerEvaluator(CMISScope.RELATIONSHIP, new FixedValueActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_DELETE_OBJECT, true));
         registerEvaluator(CMISScope.RELATIONSHIP, new FixedValueActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_UPDATE_PROPERTIES, false));
         registerEvaluator(CMISScope.RELATIONSHIP, new FixedValueActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_GET_PROPERTIES, true));
+        registerEvaluator(CMISScope.RELATIONSHIP, new FixedValueActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_GET_ACL, false));
+        registerEvaluator(CMISScope.RELATIONSHIP, new FixedValueActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_APPLY_ACL, false));
 
-        registerEvaluator(CMISScope.POLICY, new FixedValueActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_DELETE, false));
+        registerEvaluator(CMISScope.POLICY, new FixedValueActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_DELETE_OBJECT, false));
         registerEvaluator(CMISScope.POLICY, new FixedValueActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_UPDATE_PROPERTIES, false));
         registerEvaluator(CMISScope.POLICY, new FixedValueActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_GET_PROPERTIES, false));
+        registerEvaluator(CMISScope.POLICY, new FixedValueActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_GET_OBJECT_PARENTS, false));
+        registerEvaluator(CMISScope.POLICY, new FixedValueActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_MOVE_OBJECT, false));
+        registerEvaluator(CMISScope.POLICY, new FixedValueActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_ADD_OBJECT_TO_FOLDER, false));
+        registerEvaluator(CMISScope.POLICY, new FixedValueActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_REMOVE_OBJECT_FROM_FOLDER, false));
         registerEvaluator(CMISScope.POLICY, new FixedValueActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_GET_RELATIONSHIPS, false));
-        registerEvaluator(CMISScope.POLICY, new FixedValueActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_GET_PARENTS, false));
-        registerEvaluator(CMISScope.POLICY, new FixedValueActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_MOVE, false));
-        registerEvaluator(CMISScope.POLICY, new FixedValueActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_ADD_TO_FOLDER, false));
-        registerEvaluator(CMISScope.POLICY, new FixedValueActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_REMOVE_FROM_FOLDER, false));
+        registerEvaluator(CMISScope.POLICY, new FixedValueActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_GET_ACL, false));
+        registerEvaluator(CMISScope.POLICY, new FixedValueActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_APPLY_ACL, false));
     }
 
     
@@ -324,10 +326,10 @@ public class CMISMapping implements InitializingBean
         {
             throw new AlfrescoRuntimeException("Malformed type id '" + typeId + "'; discriminator " + typeId.charAt(0) + " unknown");
         }
-        QName typeQName = QName.resolveToQName(serviceRegistry.getNamespaceService(), typeId.substring(2).replace('_', ':'));
+        QName typeQName = QName.resolveToQName(serviceRegistry.getNamespaceService(), typeId.substring(2));
 
         // Construct CMIS Type Id
-        return new CMISTypeId(scope, typeId, typeQName);
+        return new CMISTypeId(scope, typeQName, typeId, typeQName);
     }
 
     /**
@@ -341,11 +343,8 @@ public class CMISMapping implements InitializingBean
         CMISTypeId typeId = mapAlfrescoQNameToTypeId.get(typeQName);
         if (typeId == null)
         {
-            StringBuilder builder = new StringBuilder(128);
-            builder.append(scope.getLabel());
-            builder.append("/");
-            builder.append(buildPrefixEncodedString(typeQName, false));
-            return new CMISTypeId(scope, builder.toString(), typeQName);
+            String typeIdStr = scope.getLabel() + "/" + typeQName.toPrefixString(serviceRegistry.getNamespaceService());
+            return new CMISTypeId(scope, typeQName, typeIdStr, typeQName);
         }
         else
         {
@@ -399,25 +398,9 @@ public class CMISMapping implements InitializingBean
         return null;
     }
 
-    public String buildPrefixEncodedString(QName qname, boolean upperCase)
+    public String buildPrefixEncodedString(QName qname)
     {
-        StringBuilder builder = new StringBuilder(128);
-
-        if (!qname.getNamespaceURI().equals(CMIS_MODEL_URI))
-        {
-            Collection<String> prefixes = serviceRegistry.getNamespaceService().getPrefixes(qname.getNamespaceURI());
-            if (prefixes.size() == 0)
-            {
-                throw new NamespaceException("A namespace prefix is not registered for uri " + qname.getNamespaceURI());
-            }
-            String resolvedPrefix = prefixes.iterator().next();
-
-            builder.append(upperCase ? resolvedPrefix.toUpperCase() : resolvedPrefix);
-            builder.append("_");
-        }
-
-        builder.append(upperCase ? qname.getLocalName().toUpperCase() : qname.getLocalName());
-        return builder.toString();
+        return qname.toPrefixString(serviceRegistry.getNamespaceService());
     }
 
     /**
@@ -613,18 +596,6 @@ public class CMISMapping implements InitializingBean
     }
 
     /**
-     * Get the CMIS property name from the property QName.
-     * 
-     * @param namespaceService
-     * @param propertyQName
-     * @return
-     */
-    public String getCmisPropertyName(QName propertyQName)
-    {
-        return buildPrefixEncodedString(propertyQName, false);
-    }
-
-    /**
      * Get the CMIS property type for a property
      * 
      * @param dictionaryService
@@ -722,14 +693,7 @@ public class CMISMapping implements InitializingBean
      */
     public String getCmisPropertyId(QName propertyQName)
     {
-        if (propertyQName.getNamespaceURI().equals(CMIS_MODEL_URI))
-        {
-            return propertyQName.getLocalName();
-        }
-        else
-        {
-            return propertyQName.toString();
-        }
+        return propertyQName.toPrefixString(serviceRegistry.getNamespaceService());
     }
 
     /**
@@ -740,15 +704,15 @@ public class CMISMapping implements InitializingBean
      */
     public AbstractProperty getPropertyAccessor(CMISPropertyId propertyId)
     {
-        AbstractProperty propertyAccessor = propertyAccessors.get(propertyId.getName());
+        AbstractProperty propertyAccessor = propertyAccessors.get(propertyId.getId());
         if (propertyAccessor == null)
         {
             QName propertyQName = propertyId.getQName();
             if (propertyQName == null)
             {
-                throw new AlfrescoRuntimeException("Can't get property accessor for property id " + propertyId.getName() + " due to unknown property QName");
+                throw new AlfrescoRuntimeException("Can't get property accessor for property id " + propertyId.getId() + " due to unknown property QName");
             }
-            propertyAccessor = new DirectProperty(serviceRegistry, propertyId.getName(), propertyQName);
+            propertyAccessor = new DirectProperty(serviceRegistry, propertyId.getId(), propertyQName);
         }
         return propertyAccessor;
     }

@@ -492,11 +492,11 @@ public class CMISQueryParser
 
                             Function function = factory.getFunction(PropertyAccessor.NAME);
                             Argument arg = factory.createPropertyArgument(PropertyAccessor.ARG_PROPERTY, propDef.isQueryable(), propDef.isOrderable(), selector.getAlias(), propDef
-                                    .getPropertyId().getName());
+                                    .getPropertyId().getId());
                             Map<String, Argument> functionArguments = new LinkedHashMap<String, Argument>();
                             functionArguments.put(arg.getName(), arg);
 
-                            String alias = (selector.getAlias().length() > 0) ? selector.getAlias() + "." + propDef.getPropertyId().getName() : propDef.getPropertyId().getName();
+                            String alias = (selector.getAlias().length() > 0) ? selector.getAlias() + "." + propDef.getPropertyId().getId() : propDef.getPropertyId().getId();
 
                             match = factory.createColumn(function, functionArguments, alias);
                         }
@@ -531,11 +531,11 @@ public class CMISQueryParser
 
                         Function function = factory.getFunction(PropertyAccessor.NAME);
                         Argument arg = factory.createPropertyArgument(PropertyAccessor.ARG_PROPERTY, propDef.isQueryable(), propDef.isOrderable(), selector.getAlias(), propDef
-                                .getPropertyId().getName());
+                                .getPropertyId().getId());
                         Map<String, Argument> functionArguments = new LinkedHashMap<String, Argument>();
                         functionArguments.put(arg.getName(), arg);
 
-                        String alias = (selector.getAlias().length() > 0) ? selector.getAlias() + "." + propDef.getPropertyId().getName() : propDef.getPropertyId().getName();
+                        String alias = (selector.getAlias().length() > 0) ? selector.getAlias() + "." + propDef.getPropertyId().getId() : propDef.getPropertyId().getId();
 
                         orderColumn = factory.createColumn(function, functionArguments, alias);
                     }
@@ -575,10 +575,10 @@ public class CMISQueryParser
                     {
                         Function function = factory.getFunction(PropertyAccessor.NAME);
                         Argument arg = factory.createPropertyArgument(PropertyAccessor.ARG_PROPERTY, definition.isQueryable(), definition.isOrderable(), selector.getAlias(),
-                                definition.getPropertyId().getName());
+                                definition.getPropertyId().getId());
                         Map<String, Argument> functionArguments = new LinkedHashMap<String, Argument>();
                         functionArguments.put(arg.getName(), arg);
-                        String alias = (selector.getAlias().length() > 0) ? selector.getAlias() + "." + definition.getPropertyId().getName() : definition.getPropertyId().getName();
+                        String alias = (selector.getAlias().length() > 0) ? selector.getAlias() + "." + definition.getPropertyId().getId() : definition.getPropertyId().getId();
                         Column column = factory.createColumn(function, functionArguments, alias);
                         columns.add(column);
                     }
@@ -619,11 +619,11 @@ public class CMISQueryParser
                         {
                             Function function = factory.getFunction(PropertyAccessor.NAME);
                             Argument arg = factory.createPropertyArgument(PropertyAccessor.ARG_PROPERTY, definition.isQueryable(), definition.isOrderable(), selector.getAlias(),
-                                    definition.getPropertyId().getName());
+                                    definition.getPropertyId().getId());
                             Map<String, Argument> functionArguments = new LinkedHashMap<String, Argument>();
                             functionArguments.put(arg.getName(), arg);
-                            String alias = (selector.getAlias().length() > 0) ? selector.getAlias() + "." + definition.getPropertyId().getName() : definition.getPropertyId()
-                                    .getName();
+                            String alias = (selector.getAlias().length() > 0) ? selector.getAlias() + "." + definition.getPropertyId().getId() : definition.getPropertyId()
+                                    .getId();
                             Column column = factory.createColumn(function, functionArguments, alias);
                             columns.add(column);
                         }
@@ -667,11 +667,11 @@ public class CMISQueryParser
 
                         Function function = factory.getFunction(PropertyAccessor.NAME);
                         Argument arg = factory.createPropertyArgument(PropertyAccessor.ARG_PROPERTY, propDef.isQueryable(), propDef.isOrderable(), selector.getAlias(), propDef
-                                .getPropertyId().getName());
+                                .getPropertyId().getId());
                         Map<String, Argument> functionArguments = new LinkedHashMap<String, Argument>();
                         functionArguments.put(arg.getName(), arg);
 
-                        String alias = (selector.getAlias().length() > 0) ? selector.getAlias() + "." + propDef.getPropertyId().getName() : propDef.getPropertyId().getName();
+                        String alias = (selector.getAlias().length() > 0) ? selector.getAlias() + "." + propDef.getPropertyId().getId() : propDef.getPropertyId().getId();
                         if (columnNode.getChildCount() > 1)
                         {
                             alias = columnNode.getChild(1).getText();
@@ -795,7 +795,7 @@ public class CMISQueryParser
                 {
                     throw new CMISQueryException("Column refers to unqueryable property " + definition.getName());
                 }
-                PropertyArgument arg = factory.createPropertyArgument(definition.getName(), propDef.isQueryable(), propDef.isOrderable(), "", propDef.getPropertyId().getName());
+                PropertyArgument arg = factory.createPropertyArgument(definition.getName(), propDef.isQueryable(), propDef.isOrderable(), "", propDef.getPropertyId().getId());
                 return arg;
             }
         }
@@ -946,7 +946,7 @@ public class CMISQueryParser
             CMISTypeDefinition typeDef = cmisDictionaryService.findTypeForTable(tableName);
             if (typeDef == null)
             {
-                throw new CMISQueryException("Type is unsupported in query " + tableName);
+                throw new CMISQueryException("Type is unsupported in query: " + tableName);
             }
             if (typeDef.getTypeId().getScope() != CMISScope.POLICY)
             {
@@ -1053,7 +1053,7 @@ public class CMISQueryParser
         {
             throw new CMISQueryException("Unknown column/property " + cmisPropertyName);
         }
-        return factory.createPropertyArgument(argumentName, propDef.isQueryable(), propDef.isOrderable(), qualifer, propDef.getPropertyId().getName());
+        return factory.createPropertyArgument(argumentName, propDef.isQueryable(), propDef.isOrderable(), qualifer, propDef.getPropertyId().getId());
     }
 
     public String getFunctionName(CommonTree functionNameNode)

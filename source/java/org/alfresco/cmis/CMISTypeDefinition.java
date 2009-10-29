@@ -113,14 +113,27 @@ public interface CMISTypeDefinition
      * @return true if queryable
      */
     public boolean isQueryable();
+    
+    /**
+     * Is the type full text indexed for querying via CONTAINS()
+     * @return
+     */
+    public boolean isFullTextIndexed();
 
     /**
-     * Are objects of this type controllable.
+     * Are objects of this type controllable via Policies.
      * 
      * @return
      */
-    public boolean isControllable();
-    
+    public boolean isControllablePolicy();
+
+    /**
+     * Are objects of this type controllable via ACLs.
+     * 
+     * @return
+     */
+    public boolean isControllableACL();
+
     /**
      * Are objects of this type included in super type queries
      * 

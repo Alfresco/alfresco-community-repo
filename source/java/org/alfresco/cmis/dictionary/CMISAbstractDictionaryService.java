@@ -110,7 +110,6 @@ public abstract class CMISAbstractDictionaryService extends AbstractLifecycleBea
     }
 
 
-    // TODO: read / write locks
     /** CMIS Dictionary Registry (tenant-aware) */
     private Map<String, DictionaryRegistry> registryMap = new ConcurrentHashMap<String, DictionaryRegistry>(4);
 
@@ -130,7 +129,7 @@ public abstract class CMISAbstractDictionaryService extends AbstractLifecycleBea
         Map<String, CMISTypeDefinition> typeDefsByTable = new HashMap<String, CMISTypeDefinition>();
 
         // Property Definitions Index
-        Map<String, CMISPropertyDefinition> propDefsByName = new HashMap<String, CMISPropertyDefinition>();
+        Map<String, CMISPropertyDefinition> propDefsById = new HashMap<String, CMISPropertyDefinition>();
         Map<QName, CMISPropertyDefinition> propDefsByQName = new HashMap<QName, CMISPropertyDefinition>();
         Map<CMISPropertyId, CMISPropertyDefinition> propDefsByPropId = new HashMap<CMISPropertyId, CMISPropertyDefinition>();
 
@@ -190,13 +189,13 @@ public abstract class CMISAbstractDictionaryService extends AbstractLifecycleBea
             
             propDefsByPropId.put(propDef.getPropertyId(), propDef);
             propDefsByQName.put(propDef.getPropertyId().getQName(), propDef);
-            propDefsByName.put(propDef.getPropertyId().getName().toLowerCase(), propDef);
+            propDefsById.put(propDef.getPropertyId().getId().toLowerCase(), propDef);
             
             if (logger.isDebugEnabled())
             {
                 logger.debug("Registered property " + propDef.getPropertyId().getId());
                 logger.debug(" QName: " + propDef.getPropertyId().getQName());
-                logger.debug(" Name: " + propDef.getPropertyId().getName());
+                logger.debug(" Id: " + propDef.getPropertyId().getId());
                 logger.debug(" Owning Type: " + propDef.getOwningType().getTypeId());
                 logger.debug(" Property Accessor: " + propDef.getPropertyAccessor() + " , mappedProperty=" + propDef.getPropertyAccessor().getMappedProperty());
                 logger.debug(" Property Lucene Builder: " + propDef.getPropertyLuceneBuilder());
@@ -334,7 +333,7 @@ public abstract class CMISAbstractDictionaryService extends AbstractLifecycleBea
      */
     public CMISPropertyDefinition findProperty(String property, CMISTypeDefinition matchingType)
     {
-        CMISPropertyDefinition propDef = getRegistry().propDefsByName.get(property.toLowerCase());
+        CMISPropertyDefinition propDef = getRegistry().propDefsById.get(property.toLowerCase());
         return getProperty(propDef, matchingType);
     }
     
@@ -351,7 +350,7 @@ public abstract class CMISAbstractDictionaryService extends AbstractLifecycleBea
         if (property != null && matchingType != null)
         {
             Map<String, CMISPropertyDefinition> props = matchingType.getPropertyDefinitions();
-            if (props.containsKey(property.getPropertyId().getName()))
+            if (props.containsKey(property.getPropertyId().getId()))
             {
                 isMatchingType = true;
             }
@@ -439,6 +438,12 @@ public abstract class CMISAbstractDictionaryService extends AbstractLifecycleBea
             {
                 typeDef.resolveInheritance(registry);
             }
+        }
+
+        // phase 4: assert valid
+        for (CMISAbstractTypeDefinition typeDef : registry.objectDefsByTypeId.values())
+        {
+            typeDef.assertComplete();
         }
 
         // publish new registry

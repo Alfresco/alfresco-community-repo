@@ -55,7 +55,7 @@ import org.apache.commons.logging.LogFactory;
  * 
  * @author davidc
  */
-public class CMISAbstractTypeDefinition implements CMISTypeDefinition, Serializable
+public abstract class CMISAbstractTypeDefinition implements CMISTypeDefinition, Serializable
 {
     // Logger
     protected static final Log logger = LogFactory.getLog(CMISAbstractTypeDefinition.class);
@@ -63,28 +63,56 @@ public class CMISAbstractTypeDefinition implements CMISTypeDefinition, Serializa
     private static final long serialVersionUID = -3131505923356013430L;
 
     // Object type properties
-    protected boolean isPublic;
-    protected ClassDefinition cmisClassDef;
-    protected CMISTypeId objectTypeId;
-    protected String objectTypeQueryName;
-    protected String displayName;
-    protected CMISTypeId parentTypeId;
-    protected CMISTypeDefinition parentType;
-    protected CMISAbstractTypeDefinition internalParentType;
-    protected CMISTypeDefinition rootType;
-    protected String description;
-    protected boolean creatable;
-    protected boolean queryable;
-    protected boolean controllable;
-    protected boolean includeInSuperTypeQuery;
-    protected Collection<CMISTypeId> subTypeIds = new ArrayList<CMISTypeId>();
-    protected Collection<CMISTypeDefinition> subTypes = new ArrayList<CMISTypeDefinition>();
-    protected Map<String, CMISPropertyDefinition> properties = new HashMap<String, CMISPropertyDefinition>();
-    protected Map<String, CMISPropertyDefinition> inheritedProperties = new HashMap<String, CMISPropertyDefinition>();
-    protected Map<String, CMISPropertyDefinition> ownedProperties = new HashMap<String, CMISPropertyDefinition>();
-    protected Map<CMISAllowedActionEnum, CMISActionEvaluator> actionEvaluators;
+    protected Boolean isPublic = null;
+    protected ClassDefinition cmisClassDef = null;
+    protected CMISTypeId objectTypeId = null;
+    protected String objectTypeQueryName = null;
+    protected String displayName = null;
+    protected CMISTypeId parentTypeId = null;
+    protected CMISTypeDefinition parentType = null;
+    protected CMISAbstractTypeDefinition internalParentType = null;
+    protected CMISTypeDefinition rootType = null;
+    protected String description = null;
+    protected Boolean creatable = null;
+    protected Boolean queryable = null;
+    protected Boolean fullTextIndexed = null;
+    protected Boolean controllablePolicy = null;
+    protected Boolean controllableACL = null;
+    protected Boolean includeInSuperTypeQuery = null;
+    protected Collection<CMISTypeId> subTypeIds = null;
+    protected Collection<CMISTypeDefinition> subTypes = null;
+    protected Map<String, CMISPropertyDefinition> properties = null;
+    protected Map<String, CMISPropertyDefinition> inheritedProperties = null;
+    protected Map<String, CMISPropertyDefinition> ownedProperties = null;
+    protected Map<CMISAllowedActionEnum, CMISActionEvaluator> actionEvaluators = null;
     
 
+    /*package*/ void assertComplete()
+    {
+        if (objectTypeId == null) throw new IllegalStateException("objectTypeId not specified");
+        if (isPublic == null) throw new IllegalStateException("isPublic not specified; objectTypeId=" + objectTypeId);
+        //if (cmisClassDef == null) throw new IllegalStateException("cmisClassDef not specified; objectTypeId=" + objectTypeId);
+        if (objectTypeQueryName == null) throw new IllegalStateException("objectTypeQueryName not specified; objectTypeId=" + objectTypeId);
+        if (displayName == null) throw new IllegalStateException("displayName not specified; objectTypeId=" + objectTypeId);
+        //if (parentTypeId == null) throw new IllegalStateException("parentTypeId not specified; objectTypeId=" + objectTypeId);
+        if (parentTypeId != null && internalParentType == null) throw new IllegalStateException("parentType not specified; objectTypeId=" + objectTypeId + ",parentTypeId=" + parentTypeId);
+        if (rootType == null) throw new IllegalStateException("rootType not specified; objectTypeId=" + objectTypeId);
+        //if (description == null) throw new IllegalStateException("description not specified; objectTypeId=" + objectTypeId);
+        if (creatable == null) throw new IllegalStateException("creatable not specified; objectTypeId=" + objectTypeId);
+        if (queryable == null) throw new IllegalStateException("queryable not specified; objectTypeId=" + objectTypeId);
+        if (fullTextIndexed == null) throw new IllegalStateException("fullTextIndexed not specified; objectTypeId=" + objectTypeId);
+        if (controllablePolicy == null) throw new IllegalStateException("controllablePolicy not specified; objectTypeId=" + objectTypeId);
+        if (controllableACL == null) throw new IllegalStateException("controllablePolicy not specified; objectTypeId=" + objectTypeId);
+        if (includeInSuperTypeQuery == null) throw new IllegalStateException("includeInSuperTypeQuery not specified; objectTypeId=" + objectTypeId);
+        if (subTypeIds == null) throw new IllegalStateException("subTypeIds not specified; objectTypeId=" + objectTypeId);
+        if (subTypes == null) throw new IllegalStateException("subTypes not specified; objectTypeId=" + objectTypeId);
+        if (properties == null) throw new IllegalStateException("properties not specified; objectTypeId=" + objectTypeId);
+        if (inheritedProperties == null) throw new IllegalStateException("inheritedProperties not specified; objectTypeId=" + objectTypeId);
+        if (ownedProperties == null) throw new IllegalStateException("inheritedProperties not specified; objectTypeId=" + objectTypeId);
+        if (actionEvaluators == null) throw new IllegalStateException("actionEvaluators not specified; objectTypeId=" + objectTypeId);
+    }
+    
+    
     /**
      * Construct
      * 
@@ -95,6 +123,7 @@ public class CMISAbstractTypeDefinition implements CMISTypeDefinition, Serializa
     /*package*/ Map<String, CMISPropertyDefinition> createProperties(CMISMapping cmisMapping, DictionaryService dictionaryService)
     {
         // map properties directly defined on this type
+        properties = new HashMap<String, CMISPropertyDefinition>();
         for (PropertyDefinition propDef : cmisClassDef.getProperties().values())
         {
             if (propDef.getContainerClass().equals(cmisClassDef) && !propDef.isOverride())
@@ -102,7 +131,7 @@ public class CMISAbstractTypeDefinition implements CMISTypeDefinition, Serializa
                 if (cmisMapping.getDataType(propDef.getDataType()) != null)
                 {
                     CMISPropertyDefinition cmisPropDef = createProperty(cmisMapping, propDef);
-                    properties.put(cmisPropDef.getPropertyId().getName(), cmisPropDef);
+                    properties.put(cmisPropDef.getPropertyId().getId(), cmisPropDef);
                 }
             }
         }
@@ -120,9 +149,8 @@ public class CMISAbstractTypeDefinition implements CMISTypeDefinition, Serializa
     private CMISPropertyDefinition createProperty(CMISMapping cmisMapping, PropertyDefinition propDef)
     {
         QName propertyQName = propDef.getName(); 
-        String propertyName = cmisMapping.getCmisPropertyName(propertyQName);
         String propertyId = cmisMapping.getCmisPropertyId(propertyQName);
-        CMISPropertyId cmisPropertyId = new CMISPropertyId(propertyName, propertyId, propertyQName);
+        CMISPropertyId cmisPropertyId = new CMISPropertyId(propertyQName, propertyId);
         return new CMISBasePropertyDefinition(cmisMapping, cmisPropertyId, propDef, this);
     }
 
@@ -134,6 +162,7 @@ public class CMISAbstractTypeDefinition implements CMISTypeDefinition, Serializa
      */
     /*package*/ void createSubTypes(CMISMapping cmisMapping, DictionaryService dictionaryService)
     {
+        subTypeIds = new ArrayList<CMISTypeId>();
         Collection<QName> subTypes = dictionaryService.getSubTypes(objectTypeId.getQName(), false);
         for (QName subType : subTypes)
         {
@@ -185,6 +214,7 @@ public class CMISAbstractTypeDefinition implements CMISTypeDefinition, Serializa
         if (logger.isDebugEnabled())
             logger.debug("Type " + objectTypeId + ": root=" + rootType.getTypeId());
         
+        subTypes = new ArrayList<CMISTypeDefinition>();
         for (CMISTypeId subTypeId : subTypeIds)
         {
             CMISTypeDefinition subType = registry.objectDefsByTypeId.get(subTypeId);
@@ -209,6 +239,8 @@ public class CMISAbstractTypeDefinition implements CMISTypeDefinition, Serializa
      */
     /*package*/ void resolveInheritance(DictionaryRegistry registry)
     {
+        inheritedProperties = new HashMap<String, CMISPropertyDefinition>();
+        ownedProperties = new HashMap<String, CMISPropertyDefinition>();
         inheritedProperties.putAll(properties);
         ownedProperties.putAll(properties);
         if (internalParentType != null)
@@ -354,11 +386,29 @@ public class CMISAbstractTypeDefinition implements CMISTypeDefinition, Serializa
 
     /*
      * (non-Javadoc)
+     * @see org.alfresco.cmis.CMISTypeDefinition#isFullTextIndexed()
+     */
+    public boolean isFullTextIndexed()
+    {
+        return fullTextIndexed;
+    }
+    
+    /*
+     * (non-Javadoc)
      * @see org.alfresco.cmis.dictionary.CMISTypeDefinition#isControllable()
      */
-    public boolean isControllable()
+    public boolean isControllablePolicy()
     {
-        return controllable;
+        return controllablePolicy;
+    }
+    
+    /*
+     * (non-Javadoc)
+     * @see org.alfresco.cmis.CMISTypeDefinition#isControllableACL()
+     */
+    public boolean isControllableACL()
+    {
+        return controllableACL;
     }
 
     /*

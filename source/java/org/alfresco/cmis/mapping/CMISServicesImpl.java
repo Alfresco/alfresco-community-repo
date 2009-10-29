@@ -38,7 +38,6 @@ import org.alfresco.cmis.CMISRelationshipDirectionEnum;
 import org.alfresco.cmis.CMISScope;
 import org.alfresco.cmis.CMISServices;
 import org.alfresco.cmis.CMISTypeDefinition;
-import org.alfresco.cmis.CMISTypeId;
 import org.alfresco.cmis.CMISTypesFilterEnum;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
@@ -62,7 +61,6 @@ import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.service.namespace.QNamePattern;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.AbstractLifecycleBean;
 import org.springframework.beans.BeansException;
@@ -591,7 +589,7 @@ public class CMISServicesImpl implements CMISServices, ApplicationContextAware, 
         Map<String, Serializable> values = new HashMap<String, Serializable>(propDefs.size());
         for (CMISPropertyDefinition propDef : propDefs.values())
         {
-            values.put(propDef.getPropertyId().getName(), propDef.getPropertyAccessor().getValue(nodeRef));
+            values.put(propDef.getPropertyId().getId(), propDef.getPropertyAccessor().getValue(nodeRef));
         }
         return values;
     }

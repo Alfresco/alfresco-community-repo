@@ -49,6 +49,12 @@ public interface CMISPropertyDefinition
     public CMISTypeDefinition getOwningType();
 
     /**
+     * Get the query name
+     * @return
+     */
+    public String getQueryName();
+    
+    /**
      * Get the display name
      * 
      * @return

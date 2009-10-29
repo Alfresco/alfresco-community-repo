@@ -39,9 +39,8 @@ public class CMISPropertyId implements Serializable
     private static final long serialVersionUID = 4094778633095367606L;
 
     // Id properties
-    private String propertyName;
+    private QName propertyQName;
     private String propertyId;
-    private QName qName;
 
     
     /**
@@ -49,23 +48,12 @@ public class CMISPropertyId implements Serializable
      * 
      * @param propertyName
      * @param propertyId
-     * @param qName
+     * @param internalQName
      */
-    public CMISPropertyId(String propertyName, String propertyId, QName qName)
+    public CMISPropertyId(QName propertyQName, String propertyId)
     {
-        this.propertyName = propertyName;
+        this.propertyQName = propertyQName;
         this.propertyId = propertyId;
-        this.qName = qName;
-    }
-
-    /**
-     * Get property name
-     *  
-     * @return
-     */
-    public String getName()
-    {
-        return propertyName;
     }
 
     /**
@@ -79,13 +67,31 @@ public class CMISPropertyId implements Serializable
     }
 
     /**
+     * Get property local name
+     * @return
+     */
+    public String getLocalName()
+    {
+        return propertyQName.getLocalName();
+    }
+    
+    /**
+     * Get property local namespace
+     * @return
+     */
+    public String getLocalNamespace()
+    {
+        return propertyQName.getNamespaceURI();
+    }
+    
+    /**
      * Get the Alfresco model QName associated with the property
      * 
      * @return  alfresco QName
      */
     public QName getQName()
     {
-        return qName;
+        return propertyQName;
     }
 
     /*
@@ -95,7 +101,7 @@ public class CMISPropertyId implements Serializable
     @Override
     public String toString()
     {
-        return getName();
+        return getId();
     }
 
     /*
@@ -107,7 +113,7 @@ public class CMISPropertyId implements Serializable
     {
         final int prime = 31;
         int result = 1;
-        result = prime * result + ((propertyName == null) ? 0 : propertyName.hashCode());
+        result = prime * result + ((propertyQName == null) ? 0 : propertyQName.hashCode());
         return result;
     }
 
@@ -125,12 +131,12 @@ public class CMISPropertyId implements Serializable
         if (getClass() != obj.getClass())
             return false;
         final CMISPropertyId other = (CMISPropertyId) obj;
-        if (propertyName == null)
+        if (propertyQName == null)
         {
-            if (other.propertyName != null)
+            if (other.propertyQName != null)
                 return false;
         }
-        else if (!propertyName.equals(other.propertyName))
+        else if (!propertyQName.equals(other.propertyQName))
             return false;
         return true;
     }

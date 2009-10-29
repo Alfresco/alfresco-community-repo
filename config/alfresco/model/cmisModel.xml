@@ -1,7 +1,7 @@
 <model name="cmis:cmismodel" xmlns="http://www.alfresco.org/model/dictionary/1.0">
 
   <description>CMIS Model Definitions</description>
-  <version>0.5</version>
+  <version>0.62c</version>
 
   <imports>
     <import uri="http://www.alfresco.org/model/dictionary/1.0" prefix="d" />
@@ -9,7 +9,7 @@
   </imports>
 
   <namespaces>
-    <namespace uri="http://www.alfresco.org/model/cmis/0.6" prefix="cmis" />
+    <namespace uri="http://www.alfresco.org/model/cmis/0.62c" prefix="cmis" />
   </namespaces>
 
   <data-types>
@@ -69,18 +69,20 @@
             <tokenised>false</tokenised>
           </index>
         </property>
-        <property name="cmis:Uri">
-          <title>URI</title>
-          <description>URI</description>
-          <type>cmis:uri</type>
-          <protected>true</protected>
-          <mandatory enforced="false">false</mandatory>
-          <multiple>false</multiple>
-          <index enabled="false" />
-        </property>
         <property name="cmis:ObjectTypeId">
           <title>Object Type Id</title>
-          <description>The object type id</description>
+          <description>Id of the object’s type</description>
+          <type>cmis:id</type>
+          <protected>true</protected>
+          <mandatory enforced="true">true</mandatory>
+          <multiple>false</multiple>
+          <index enabled="true">
+            <tokenised>false</tokenised>
+          </index>
+        </property>
+        <property name="cmis:BaseTypeId">
+          <title>Base Type Id</title>
+          <description>Id of the base object type for the object</description>
           <type>cmis:id</type>
           <protected>true</protected>
           <mandatory enforced="true">true</mandatory>
@@ -163,7 +165,7 @@
       </properties>
     </type>
 
-    <type name="cmis:document">
+    <type name="cmis:Document">
       <title>Document</title>
       <description>Document Type</description>
       <parent>cmis:filesystemobject</parent>
@@ -262,18 +264,6 @@
           <multiple>false</multiple>
           <index enabled="false" />
         </property>
-        <property name="cmis:ContentStreamAllowed">
-          <title>Content Stream Allowed</title>
-          <description>Is a content stream allowed?</description>
-          <type>d:text</type>
-          <protected>true</protected>
-          <mandatory enforced="true">true</mandatory>
-          <multiple>false</multiple>
-          <index enabled="false" />
-          <constraints>
-            <constraint ref="cmis:allowedValuesForContentStreamAllowed" />
-          </constraints>
-        </property>
         <property name="cmis:ContentStreamLength">
           <title>Content Stream Length</title>
           <description>The length of the content stream</description>
@@ -296,7 +286,7 @@
             <tokenised>false</tokenised>
           </index>
         </property>
-        <property name="cmis:ContentStreamFilename">
+        <property name="cmis:ContentStreamFileName">
           <title>Content Stream Filename</title>
           <description>The content stream filename</description>
           <type>d:text</type>
@@ -307,19 +297,21 @@
             <tokenised>true</tokenised>
           </index>
         </property>
-        <property name="cmis:ContentStreamUri">
-          <title>Content Stream URI</title>
-          <description>The content stream URI</description>
-          <type>cmis:uri</type>
+        <property name="cmis:ContentStreamId">
+          <title>Content Stream Id</title>
+          <description>Id of the stream</description>
+          <type>cmis:id</type>
           <protected>true</protected>
           <mandatory enforced="false">false</mandatory>
           <multiple>false</multiple>
-          <index enabled="false" />
+          <index enabled="true">
+            <tokenised>false</tokenised>
+          </index>
         </property>
       </properties>
     </type>
 
-    <type name="cmis:folder">
+    <type name="cmis:Folder">
       <title>Folder</title>
       <description>Folder Type</description>
       <parent>cmis:filesystemobject</parent>
@@ -328,6 +320,17 @@
           <title>Parent Id</title>
           <description>The parent id of the folder</description>
           <type>cmis:id</type>
+          <protected>true</protected>
+          <mandatory enforced="true">true</mandatory>
+          <multiple>false</multiple>
+          <index enabled="true">
+            <tokenised>false</tokenised>
+          </index>
+        </property>
+        <property name="cmis:PathName">
+          <title>Path Name</title>
+          <description>Name of the path element for this folder</description>
+          <type>d:text</type>
           <protected>true</protected>
           <mandatory enforced="true">true</mandatory>
           <multiple>false</multiple>
@@ -347,7 +350,7 @@
       </properties>
     </type>
 
-    <type name="cmis:relationship">
+    <type name="cmis:Relationship">
       <title>Relationship</title>
       <description>Relationship Type</description>
       <parent>cmis:object</parent>
@@ -373,20 +376,11 @@
       </properties>
     </type>
 
-    <type name="cmis:policy">
+    <type name="cmis:Policy">
       <title>Policy</title>
       <description>Policy Type</description>
       <parent>cmis:object</parent>
       <properties>
-        <property name="cmis:PolicyName">
-          <title>Policy Name</title>
-          <description>The name of the policy</description>
-          <type>d:text</type>
-          <protected>true</protected>
-          <mandatory enforced="true">true</mandatory>
-          <multiple>false</multiple>
-          <index enabled="false" />
-        </property>
         <property name="cmis:PolicyText">
           <title>Policy Text</title>
           <description>The policy text</description>

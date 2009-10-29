@@ -24,9 +24,12 @@
  */
 package org.alfresco.cmis.dictionary;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 
 import org.alfresco.cmis.CMISDictionaryModel;
+import org.alfresco.cmis.CMISPropertyDefinition;
 import org.alfresco.cmis.CMISScope;
 import org.alfresco.cmis.CMISTypeId;
 import org.alfresco.cmis.dictionary.CMISAbstractDictionaryService.DictionaryRegistry;
@@ -71,7 +74,7 @@ public class CMISPolicyTypeDefinition extends CMISAbstractTypeDefinition
         }
         else
         {
-            objectTypeQueryName = cmisMapping.buildPrefixEncodedString(typeId.getQName(), false);
+            objectTypeQueryName = cmisMapping.buildPrefixEncodedString(typeId.getQName());
             parentTypeId = CMISDictionaryModel.POLICY_TYPE_ID;
         }
         description = cmisClassDef.getDescription();
@@ -79,8 +82,11 @@ public class CMISPolicyTypeDefinition extends CMISAbstractTypeDefinition
         actionEvaluators = cmisMapping.getActionEvaluators(objectTypeId.getScope());
         
         creatable = false;
-        queryable = false;
-        controllable = false;
+        queryable = true;
+        includeInSuperTypeQuery = true;
+        fullTextIndexed = true;
+        controllablePolicy = false;
+        controllableACL = false;
     }
 
     /*
@@ -90,6 +96,7 @@ public class CMISPolicyTypeDefinition extends CMISAbstractTypeDefinition
     @Override
     /*package*/ void createSubTypes(CMISMapping cmisMapping, DictionaryService dictionaryService)
     {
+        subTypeIds = new ArrayList<CMISTypeId>();
         if (objectTypeId.equals(CMISDictionaryModel.POLICY_TYPE_ID))
         {
             // all aspects are sub-type of POLICY_OBJECT_TYPE
@@ -111,6 +118,8 @@ public class CMISPolicyTypeDefinition extends CMISAbstractTypeDefinition
     @Override
     /*package*/ void resolveInheritance(DictionaryRegistry registry)
     {
+        inheritedProperties = new HashMap<String, CMISPropertyDefinition>();
+        ownedProperties = new HashMap<String, CMISPropertyDefinition>();
         // NOTE: Force no inheritance of base Policy type
         inheritedProperties.putAll(properties);
         ownedProperties.putAll(properties);
@@ -128,14 +137,16 @@ public class CMISPolicyTypeDefinition extends CMISAbstractTypeDefinition
     {
         StringBuilder builder = new StringBuilder();
         builder.append("CMISPolicyTypeDefinition[");
-        builder.append("ObjectTypeId=").append(getTypeId()).append(", ");
-        builder.append("ObjectTypeQueryName=").append(getQueryName()).append(", ");
-        builder.append("ObjectTypeDisplayName=").append(getDisplayName()).append(", ");
-        builder.append("ParentTypeId=").append(getParentType() == null ? "<none>" : getParentType().getTypeId()).append(", ");
+        builder.append("Id=").append(getTypeId().getId()).append(", ");
+        builder.append("Namespace=").append(getTypeId().getLocalNamespace()).append(", ");
+        builder.append("LocalName=").append(getTypeId().getLocalName()).append(", ");
+        builder.append("QueryName=").append(getQueryName()).append(", ");
+        builder.append("DisplayName=").append(getDisplayName()).append(", ");
+        builder.append("ParentId=").append(getParentType() == null ? "<none>" : getParentType().getTypeId()).append(", ");
         builder.append("Description=").append(getDescription()).append(", ");
         builder.append("Creatable=").append(isCreatable()).append(", ");
         builder.append("Queryable=").append(isQueryable()).append(", ");
-        builder.append("Controllable=").append(isControllable()).append(", ");
+        builder.append("Controllable=").append(isControllablePolicy()).append(", ");
         builder.append("IncludeInSuperTypeQuery=").append(isIncludeInSuperTypeQuery()).append(", ");
         builder.append("SubTypes=").append(getSubTypes(false).size()).append(", ");
         builder.append("Properties=").append(getPropertyDefinitions().size());

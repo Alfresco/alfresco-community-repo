@@ -33,12 +33,12 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletResponse;
 
-import org.alfresco.abdera.ext.cmis.CMISConstants;
 import org.alfresco.util.Content;
 import org.alfresco.web.scripts.FormatReader;
 import org.alfresco.web.scripts.WebScriptException;
 import org.alfresco.web.scripts.WebScriptRequest;
 import org.alfresco.web.scripts.WebScriptResponse;
+import org.apache.chemistry.abdera.ext.CMISConstants;
 
 
 /**

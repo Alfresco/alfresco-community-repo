@@ -279,39 +279,39 @@
 
 [#macro propvalue name value type]
 [#if type == cmisconstants.DATATYPE_STRING]
-<cmis:propertyString pdid="${name}">[@values value;v]<cmis:value>[@stringvalue v/]</cmis:value>[/@values]</cmis:propertyString>
+<cmis:propertyString propertyDefinitionId="${name}">[@values value;v]<cmis:value>[@stringvalue v/]</cmis:value>[/@values]</cmis:propertyString>
 [#elseif type == cmisconstants.DATATYPE_INTEGER]
-<cmis:propertyInteger pdid="${name}">[@values value;v]<cmis:value>[@integervalue v/]</cmis:value>[/@values]</cmis:propertyInteger>
+<cmis:propertyInteger propertyDefinitionId="${name}">[@values value;v]<cmis:value>[@integervalue v/]</cmis:value>[/@values]</cmis:propertyInteger>
 [#elseif type == cmisconstants.DATATYPE_DECIMAL]
-<cmis:propertyDecimal pdid="${name}">[@values value;v]<cmis:value>[@decimalvalue v/]</cmis:value>[/@values]</cmis:propertyDecimal>
+<cmis:propertyDecimal propertyDefinitionId="${name}">[@values value;v]<cmis:value>[@decimalvalue v/]</cmis:value>[/@values]</cmis:propertyDecimal>
 [#elseif type == cmisconstants.DATATYPE_BOOLEAN]
-<cmis:propertyBoolean pdid="${name}">[@values value;v]<cmis:value>[@booleanvalue v/]</cmis:value>[/@values]</cmis:propertyBoolean>
+<cmis:propertyBoolean propertyDefinitionId="${name}">[@values value;v]<cmis:value>[@booleanvalue v/]</cmis:value>[/@values]</cmis:propertyBoolean>
 [#elseif type == cmisconstants.DATATYPE_DATETIME]
-<cmis:propertyDateTime pdid="${name}">[@values value;v]<cmis:value>[@datetimevalue v/]</cmis:value>[/@values]</cmis:propertyDateTime>
+<cmis:propertyDateTime propertyDefinitionId="${name}">[@values value;v]<cmis:value>[@datetimevalue v/]</cmis:value>[/@values]</cmis:propertyDateTime>
 [#elseif type == cmisconstants.DATATYPE_URI]
 [#-- TODO: check validity of abs url prefix --]
-<cmis:propertyUri pdid="${name}">[@values value;v]<cmis:value>[@urivalue absurl(url.serviceContext) + v/]</cmis:value>[/@values]</cmis:propertyUri>
+<cmis:propertyUri propertyDefinitionId="${name}">[@values value;v]<cmis:value>[@urivalue absurl(url.serviceContext) + v/]</cmis:value>[/@values]</cmis:propertyUri>
 [#elseif type == cmisconstants.DATATYPE_ID]
-<cmis:propertyId pdid="${name}">[@values value;v]<cmis:value>[@idvalue v/]</cmis:value>[/@values]</cmis:propertyId>
+<cmis:propertyId propertyDefinitionId="${name}">[@values value;v]<cmis:value>[@idvalue v/]</cmis:value>[/@values]</cmis:propertyId>
 [#-- TODO: remaining property types --]
 [/#if]
 [/#macro]
 
 [#macro propnull name type]
 [#if type == cmisconstants.DATATYPE_STRING]
-<cmis:propertyString pdid="${name}"/>
+<cmis:propertyString propertyDefinitionId="${name}"/>
 [#elseif type == cmisconstants.DATATYPE_INTEGER]
-<cmis:propertyInteger pdid="${name}"/>
+<cmis:propertyInteger propertyDefinitionId="${name}"/>
 [#elseif type == cmisconstants.DATATYPE_DECIMAL]
-<cmis:propertyDecimal pdid="${name}"/>
+<cmis:propertyDecimal propertyDefinitionId="${name}"/>
 [#elseif type == cmisconstants.DATATYPE_BOOLEAN]
-<cmis:propertyBoolean pdid="${name}"/>
+<cmis:propertyBoolean propertyDefinitionId="${name}"/>
 [#elseif type == cmisconstants.DATATYPE_DATETIME]
-<cmis:propertyDateTime pdid="${name}"/>
+<cmis:propertyDateTime propertyDefinitionId="${name}"/>
 [#elseif type == cmisconstants.DATATYPE_URI]
-<cmis:propertyUri pdid="${name}"/>
+<cmis:propertyUri propertyDefinitionId="${name}"/>
 [#elseif type == cmisconstants.DATATYPE_ID]
-<cmis:propertyId pdid="${name}"/>
+<cmis:propertyId propertyDefinitionId="${name}"/>
 [#-- TODO: remaining property types --]
 [/#if]
 [/#macro]

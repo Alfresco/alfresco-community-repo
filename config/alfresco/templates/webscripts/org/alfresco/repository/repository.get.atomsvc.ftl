@@ -6,50 +6,54 @@
   <workspace cmis:id="${server.id}" cmis:repositoryRelationship="self">
     <atom:title>${server.name}</atom:title>
 
-    <collection href="${absurl(url.serviceContext)}[@linksLib.nodeuri defaultRootFolder/]/children" cmisra:collectionType="root"> 
+    <collection href="${absurl(url.serviceContext)}[@linksLib.nodeuri defaultRootFolder/]/children"> 
       <atom:title>root collection</atom:title> 
+      <cmisra:collectionType>root</cmisra:collectionType>
     </collection> 
-    <collection href="${absurl(url.serviceContext)}/api/types" cmisra:collectionType="types"> 
+    <collection href="${absurl(url.serviceContext)}/api/types"> 
       <atom:title>type collection</atom:title> 
+      <cmisra:collectionType>types</cmisra:collectionType>
     </collection>
-    <collection href="${absurl(url.serviceContext)}/api/checkedout" cmisra:collectionType="checkedout"> 
+    <collection href="${absurl(url.serviceContext)}/api/checkedout"> 
       <atom:title>checkedout collection</atom:title> 
       <accept>${cmisconstants.MIMETYPE_ENTRY}</accept>
+      <cmisra:collectionType>checkedout</cmisra:collectionType>
     </collection> 
-    <collection href="${absurl(url.serviceContext)}/api/unfiled" cmisra:collectionType="unfiled"> 
+    <collection href="${absurl(url.serviceContext)}/api/unfiled"> 
       <atom:title>unfiled collection</atom:title> 
       <accept>${cmisconstants.MIMETYPE_ENTRY}</accept>
+      <cmisra:collectionType>unfiled</cmisra:collectionType>
     </collection>
-    <collection href="${absurl(url.serviceContext)}/api/queries" cmisra:collectionType="query"> 
+    <collection href="${absurl(url.serviceContext)}/api/queries"> 
       <atom:title>query collection</atom:title> 
       <accept>${cmisconstants.MIMETYPE_CMIS_QUERY}</accept>
+      <cmisra:collectionType>query</cmisra:collectionType>
     </collection>
 
-    <atom:link title="root folder tree" type="${cmisconstants.MIMETYPE_CMISTREE}" rel="http://docs.oasis-open.org/ns/cmis/link/200901/foldertree" href="${absurl(url.serviceContext)}[@linksLib.nodeuri defaultRootFolder/]/tree"/>
-    <atom:link title="root descendants" type="${cmisconstants.MIMETYPE_CMISTREE}" rel="http://docs.oasis-open.org/ns/cmis/link/200901/rootdescendants" href="${absurl(url.serviceContext)}[@linksLib.nodeuri defaultRootFolder/]/descendants"/>
-    <atom:link title="type descendants" type="${cmisconstants.MIMETYPE_CMISTREE}" rel="http://docs.oasis-open.org/ns/cmis/link/200901/typesdescendants" href="${absurl(url.serviceContext)}/api/types/descendants"/>
+    <atom:link title="root folder tree" type="${cmisconstants.MIMETYPE_CMISTREE}" rel="${cmisconstants.REL_FOLDER_TREE}" href="${absurl(url.serviceContext)}[@linksLib.nodeuri defaultRootFolder/]/tree"/>
+    <atom:link title="root descendants" type="${cmisconstants.MIMETYPE_CMISTREE}" rel="${cmisconstants.REL_ROOT_DESCENDANTS}" href="${absurl(url.serviceContext)}[@linksLib.nodeuri defaultRootFolder/]/descendants"/>
+    <atom:link title="type descendants" type="${cmisconstants.MIMETYPE_CMISTREE}" rel="${cmisconstants.REL_TYPES_DESCENDANTS}" href="${absurl(url.serviceContext)}/api/types/descendants"/>
 
     <cmisra:repositoryInfo>
       <cmis:repositoryId>${server.id}</cmis:repositoryId>
       <cmis:repositoryName>${server.name}</cmis:repositoryName>
-      <cmis:repositoryRelationship>self</cmis:repositoryRelationship>
       <cmis:repositoryDescription></cmis:repositoryDescription>   [#-- TODO --]
       <cmis:vendorName>Alfresco</cmis:vendorName> 
       <cmis:productName>Alfresco Repository (${server.edition})</cmis:productName>
       <cmis:productVersion>${server.version}</cmis:productVersion>
       <cmis:rootFolderId>[@linksLib.noderef defaultRootFolder/]</cmis:rootFolderId>
       [#-- TODO: implement change log --]
-      <cmis:latestChangeToken></cmis:latestChangeToken>
+      [#-- TODO: <cmis:latestChangeLogToken></cmis:latestChangeLogToken> --]
       <cmis:capabilities>
         <cmis:capabilityACL>[#-- TODO --]none</cmis:capabilityACL>
         <cmis:capabilityAllVersionsSearchable>${allVersionsSearchable?string}</cmis:capabilityAllVersionsSearchable>
         <cmis:capabilityChanges>[#-- TODO --]none</cmis:capabilityChanges>
-        <cmis:capabilityChangesOnType>cmis:document</cmis:capabilityChangesOnType>
         <cmis:capabilityContentStreamUpdatability>anytime</cmis:capabilityContentStreamUpdatability>
         <cmis:capabilityGetDescendants>true</cmis:capabilityGetDescendants>
+        <cmis:capabilityGetFolderTree>true</cmis:capabilityGetFolderTree>
         <cmis:capabilityMultifiling>true</cmis:capabilityMultifiling>
         <cmis:capabilityPWCSearchable>${pwcSearchable?string}</cmis:capabilityPWCSearchable>
-        <cmis:capabilityPWCUpdateable>true</cmis:capabilityPWCUpdateable>
+        <cmis:capabilityPWCUpdatable>true</cmis:capabilityPWCUpdatable>
         <cmis:capabilityQuery>${querySupport}</cmis:capabilityQuery>
         [#-- TODO: implement rendition spec --]
         <cmis:capabilityRenditions>none</cmis:capabilityRenditions>
@@ -60,6 +64,9 @@
       [#-- TODO: implement ACL spec --]
       [#-- <cmis:aclCapability></cmis:aclCapability> --]
       <cmis:cmisVersionSupported>${cmisVersion}</cmis:cmisVersionSupported>
+      [#-- TODO: implement change log --]
+      [#-- TODO: <cmis:changesIncomplete></cmis:changesIncomplete> --]
+      [#-- TODO: <cmis:changesOnType></cmis:changesOnType> --]
     </cmisra:repositoryInfo>
 
     <cmisra:uritemplate>

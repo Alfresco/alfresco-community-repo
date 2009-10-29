@@ -1,0 +1,6 @@
+<webscript>
+  <shortname>Test client atom api</shortname>
+  <description>Parse atom feed</description>
+  <url>/sample/cmis/folder/{id}</url>
+  <authentication>none</authentication>
+</webscript>

@@ -29,11 +29,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
-import org.alfresco.abdera.ext.cmis.CMISConstants;
-import org.alfresco.abdera.ext.cmis.CMISExtensionFactory;
-import org.alfresco.abdera.ext.cmis.CMISObject;
-import org.alfresco.abdera.ext.cmis.CMISProperties;
-import org.alfresco.abdera.ext.cmis.CMISProperty;
 import org.apache.abdera.Abdera;
 import org.apache.abdera.model.Document;
 import org.apache.abdera.model.Element;
@@ -41,6 +36,11 @@ import org.apache.abdera.model.Entry;
 import org.apache.abdera.protocol.Response;
 import org.apache.abdera.protocol.client.AbderaClient;
 import org.apache.abdera.protocol.client.ClientResponse;
+import org.apache.chemistry.abdera.ext.CMISConstants;
+import org.apache.chemistry.abdera.ext.CMISExtensionFactory;
+import org.apache.chemistry.abdera.ext.CMISObject;
+import org.apache.chemistry.abdera.ext.CMISProperties;
+import org.apache.chemistry.abdera.ext.CMISProperty;
 import org.apache.commons.httpclient.UsernamePasswordCredentials;
 
 

@@ -96,7 +96,7 @@
       <property name="scriptObjects">
          <map merge="true">
            <entry key="paging">
-              <ref bean="webscripts.js.paging" />
+              <ref bean="webscripts.js.paging"/>
            </entry>
          </map>
       </property>
@@ -152,6 +152,8 @@
       <property name="uriIndex" ref="webscripts.index.prototype" />
    </bean>
 
+   <bean id="webscripts.js.paging" class="org.alfresco.repo.web.util.paging.Paging" />
+
 
    <!--                            -->
    <!--  Web Script Authenticators -->
@@ -172,13 +174,65 @@
    <bean id="webscripts.authenticator.facebook" class="org.alfresco.repo.web.scripts.facebook.FacebookAuthenticatorFactory" />
 
 
-   <!--                                    -->
-   <!--  Web Script Javascript Extensions  -->
-   <!--                                    -->
+   <!--          -->
+   <!-- CMIS API -->
+   <!--          -->
 
-   <!-- TODO: the following root js objects should only really be available in context of web scripts -->
+   <!-- CMIS Abdera Extension -->
+   <bean id="webscripts.cmis.atom.extension" class="org.alfresco.web.scripts.atom.AbderaExtension">
+      <property name="abderaService" ref="webscripts.abdera"/>
+      <property name="QNames">
+         <props>
+            <prop key="cmisra_object">{http://docs.oasis-open.org/ns/cmis/restatom/200908/}object</prop>
+            <prop key="cmisra_content">{http://docs.oasis-open.org/ns/cmis/restatom/200908/}content</prop>
+            <prop key="cmisra_repositoryInfo">{http://docs.oasis-open.org/ns/cmis/restatom/200908/}repositoryInfo</prop>
+         </props>
+      </property>
+      <property name="extensionFactories">
+         <list>
+           <bean class="org.apache.chemistry.abdera.ext.CMISExtensionFactory"/>
+         </list>
+      </property>
+   </bean>
 
-   <bean id="webscripts.js.paging" class="org.alfresco.repo.web.util.paging.Paging" />
+   <!-- CMIS custom mimetypes -->
+   <bean id="webscripts.cmis.adaptors" parent="webscripts.adaptorset">
+      <property name="readers">
+         <list>
+           <bean class="org.alfresco.repo.cmis.rest.CMISQueryReader" />
+         </list>
+      </property>
+   </bean>
+
+   <!--  Default Formats -->
+   <bean id="webscripts.cmis.formats" parent="webscripts.formatmap">
+      <property name="formats">
+         <props>
+            <prop key="cmisquery">application/cmisquery+xml</prop>
+            <prop key="cmisallowableactions">application/cmisallowableactions+xml</prop>
+         </props>
+      </property>
+      <property name="mimetypes">
+         <props>
+            <prop key="application/cmisquery+xml">cmisquery</prop>
+            <prop key="application/cmisallowableactions+xml">application/cmisallowableactions+xml</prop>
+         </props>
+      </property>
+   </bean>
+
+   <!-- CMIS Javsascript API -->
+   <bean id="webscripts.js.cmis" parent="baseJavaScriptExtension" class="org.alfresco.repo.cmis.rest.CMISScript">
+      <property name="extensionName"><value>cmis</value></property>
+      <property name="serviceRegistry" ref="ServiceRegistry" />
+      <property name="repository" ref="repositoryHelper" />
+      <property name="CMISService" ref="CMISService" />
+      <property name="CMISDictionaryService" ref="CMISDictionaryService" />
+      <property name="CMISQueryService" ref="CMISQueryService" />
+      <property name="paging" ref="webscripts.js.paging" />
+   </bean>
+
+   <!-- CMIS Test Runner Web Script -->
+   <bean id="webscript.org.alfresco.cmis.test.post" class="org.alfresco.repo.cmis.rest.test.CMISTestRunnerWebScript" parent="webscript" />
 
 
    <!--            -->
@@ -439,50 +493,6 @@
    <!--  Switch on debugger by setting log4j.logger.org.alfresco.repo.web.scripts.AlfrescoRhinoScriptDebugger to DEBUG -->
    <bean id="rhinoScriptDebugger" class="org.alfresco.repo.web.scripts.AlfrescoRhinoScriptDebugger" init-method="start"/>
    
-   
-   <!--          -->
-   <!-- CMIS API -->
-   <!--          -->
-
-   <!-- CMIS custom mimetypes -->
-   <bean id="webscripts.cmis.adaptors" parent="webscripts.adaptorset">
-      <property name="readers">
-         <list>
-           <bean class="org.alfresco.repo.cmis.rest.CMISQueryReader" />
-         </list>
-      </property>
-   </bean>
-
-   <!--  Default Formats -->
-   <bean id="webscripts.cmis.formats" parent="webscripts.formatmap">
-      <property name="formats">
-         <props>
-            <prop key="cmisquery">application/cmisquery+xml</prop>
-            <prop key="cmisallowableactions">application/cmisallowableactions+xml</prop>
-         </props>
-      </property>
-      <property name="mimetypes">
-         <props>
-            <prop key="application/cmisquery+xml">cmisquery</prop>
-            <prop key="application/cmisallowableactions+xml">application/cmisallowableactions+xml</prop>
-         </props>
-      </property>
-   </bean>
-
-   <!-- CMIS Javsascript API -->
-   <bean id="webscripts.js.cmis" parent="baseJavaScriptExtension" class="org.alfresco.repo.cmis.rest.CMISScript">
-      <property name="extensionName"><value>cmis</value></property>
-      <property name="serviceRegistry" ref="ServiceRegistry" />
-      <property name="repository" ref="repositoryHelper" />
-      <property name="CMISService" ref="CMISService" />
-      <property name="CMISDictionaryService" ref="CMISDictionaryService" />
-      <property name="CMISQueryService" ref="CMISQueryService" />
-      <property name="paging" ref="webscripts.js.paging" />
-   </bean>
-
-   <!-- CMIS Helpers -->
-   
-   <bean id="webscript.org.alfresco.cmis.test.post" class="org.alfresco.repo.cmis.rest.test.CMISTestRunnerWebScript" parent="webscript" />
    
    <!--                        -->
    <!-- Rules Service REST API -->

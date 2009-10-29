@@ -24,7 +24,7 @@
  */
 package org.alfresco.repo.cmis.rest;
 
-import org.alfresco.abdera.ext.cmis.CMISConstants;
+import org.apache.chemistry.abdera.ext.CMISConstants;
 import org.springframework.beans.factory.FactoryBean;
 
 import freemarker.ext.beans.BeansWrapper;

@@ -170,7 +170,42 @@ function updateNode(node, entry, exclude, validator)
     }
 
     // handle content
-    if (entry.content != null && entry.contentSrc == null)
+    // NOTE: cmisra:content overrides atom:content
+    var cmiscontent = entry.getExtension(atom.names.cmisra_content);
+    if (cmiscontent != null)
+    {
+        if (!node.isDocument)
+        {
+            status.code = 400;
+            status.message = "Cannot update content on folder " + node.displayPath;
+            status.redirect = true;
+            return null;
+        }
+    
+        var mediatype = cmiscontent.mediaType;
+        if (mediatype == null)
+        {
+            status.code = 400;
+            status.message = "cmisra:content mediatype is missing";
+            status.redirect = true;
+            return null;
+        }
+        var contentStream = cmiscontent.contentStream;
+        if (contentStream == null)
+        {
+            status.code = 400;
+            status.message = "cmisra:content base64 content is missing";
+            status.redirect = true;
+            return null;
+        }
+        
+        // update content
+        node.properties.content.write(contentStream);
+        node.properties.content.encoding = "UTF-8";
+        node.properties.content.mimetype = mediatype;
+    }
+    
+    if (cmiscontent == null && entry.content != null && entry.contentSrc == null)
     {
         if (!node.isDocument)
         {

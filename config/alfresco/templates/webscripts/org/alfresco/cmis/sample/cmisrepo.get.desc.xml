@@ -1,0 +1,6 @@
+<webscript>
+  <shortname>CMIS Repository</shortname>
+  <description>Sample Surf component using CMIS Service document</description>
+  <url>/sample/cmis/repo?service={serviceUrl?}</url>
+  <authentication>none</authentication>
+</webscript>

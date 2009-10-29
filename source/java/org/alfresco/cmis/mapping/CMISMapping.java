@@ -35,6 +35,7 @@ import org.alfresco.cmis.CMISDataTypeEnum;
 import org.alfresco.cmis.CMISDictionaryModel;
 import org.alfresco.cmis.CMISPropertyId;
 import org.alfresco.cmis.CMISScope;
+import org.alfresco.cmis.CMISServices;
 import org.alfresco.cmis.CMISTypeId;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
@@ -96,6 +97,7 @@ public class CMISMapping implements InitializingBean
 
     // Service Dependencies
     private ServiceRegistry serviceRegistry;
+    private CMISServices cmisService;
 
     // Mappings
     private Map<QName, CMISTypeId> mapAlfrescoQNameToTypeId = new HashMap<QName, CMISTypeId>();
@@ -187,7 +189,7 @@ public class CMISMapping implements InitializingBean
         registerPropertyAccessor(new ContentStreamIdProperty(serviceRegistry));
         registerPropertyAccessor(new DirectProperty(serviceRegistry, CMISDictionaryModel.PROP_CONTENT_STREAM_FILENAME, ContentModel.PROP_NAME));
         registerPropertyAccessor(new ParentProperty(serviceRegistry));
-        registerPropertyAccessor(new FixedValueProperty(serviceRegistry, CMISDictionaryModel.PROP_PATH_NAME, null));
+        registerPropertyAccessor(new PathNameProperty(serviceRegistry, cmisService));
         registerPropertyAccessor(new FixedValueProperty(serviceRegistry, CMISDictionaryModel.PROP_ALLOWED_CHILD_OBJECT_TYPE_IDS, null));
         registerPropertyAccessor(new SourceIdProperty(serviceRegistry));
         registerPropertyAccessor(new TargetIdProperty(serviceRegistry));
@@ -269,6 +271,11 @@ public class CMISMapping implements InitializingBean
         this.serviceRegistry = serviceRegistry;
     }
 
+    public void setCMISService(CMISServices cmisService)
+    {
+        this.cmisService = cmisService;
+    }
+    
     /**
      * @return namespaceService
      */

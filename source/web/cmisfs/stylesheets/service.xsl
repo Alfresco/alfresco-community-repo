@@ -1,26 +1,29 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xsl:stylesheet version="1.0"
 	xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:app="http://www.w3.org/2007/app"
-	xmlns:atom="http://www.w3.org/2005/Atom" xmlns:cmis="http://docs.oasis-open.org/ns/cmis/core/200901"
-	xmlns:cmisra="http://docs.oasis-open.org/ns/cmis/restatom/200901">
+	xmlns:atom="http://www.w3.org/2005/Atom" xmlns:cmis="http://docs.oasis-open.org/ns/cmis/core/200908/"
+	xmlns:cmisra="http://docs.oasis-open.org/ns/cmis/restatom/200908/">
 
 	<xsl:output method="html" />
 
 	<xsl:param name="browseUrl"/>
-    <xsl:param name="webContentRoot"/>
+	<xsl:param name="auxRoot"/>
 
 	<xsl:template match="/">
 		<html>
 			<head>
 				<title>Service</title>
-				<link rel="stylesheet" type="text/css" href="{$webContentRoot}browser/browser.css" />
+				<link rel="stylesheet" type="text/css" href="{$auxRoot}browser.css" />
 			</head>
 			<body>
+				<img src="{$auxRoot}cmis.png" style="float: right;" />
+				<H1>Repositories</H1>
 				<xsl:for-each select="app:service/app:workspace">
 					<div class="servicebox">
-						<h2>Repository <xsl:value-of select="@cmis:id" /></h2>
+						<h2>Repository <xsl:value-of select="cmisra:repositoryInfo/cmis:repositoryId" /></h2>
 						<h3>Collections:</h3><ul><xsl:apply-templates select="app:collection" /></ul>
 						<h3>Links:</h3><ul><xsl:apply-templates select="atom:link" /></ul>
+						<h3>URI Templates:</h3><ul><xsl:apply-templates select="cmisra:uritemplate" /></ul>
 						<table style="border-spacing:5px">
 							<tr>
 								<td style="vertical-align:top;"><xsl:apply-templates select="cmisra:repositoryInfo" /></td>
@@ -90,11 +93,16 @@
 	</xsl:template>
 
 	<xsl:template match="app:collection">
-		<li><a href="{$browseUrl}{@href}"><xsl:value-of select="atom:title" /> (<xsl:value-of select="@cmisra:collectionType" />)</a></li>
+		<li><a href="{$browseUrl}{@href}"><xsl:value-of select="atom:title" /> (<xsl:value-of select="cmisra:collectionType" />)</a></li>
 	</xsl:template>
 
 	<xsl:template match="atom:link">
 		<li><a href="{$browseUrl}{@href}"><xsl:value-of select="@rel" /></a> (<xsl:value-of select="@type" />)</li>
+	</xsl:template>
+	
+	<xsl:template match="cmisra:uritemplate">
+		<li><xsl:value-of select="cmisra:type" /> (<xsl:value-of select="cmisra:mediatype" />): 
+		<a href="{$browseUrl}{cmisra:template}"><xsl:value-of select="cmisra:template" /></a></li>
 	</xsl:template>
 
 </xsl:stylesheet>

@@ -1,40 +1,41 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xsl:stylesheet version="1.0"
 	xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:app="http://www.w3.org/2007/app"
-	xmlns:atom="http://www.w3.org/2005/Atom" xmlns:cmis="http://docs.oasis-open.org/ns/cmis/core/200901"
-	xmlns:cmisra="http://docs.oasis-open.org/ns/cmis/restatom/200901">
+	xmlns:atom="http://www.w3.org/2005/Atom" xmlns:cmis="http://docs.oasis-open.org/ns/cmis/core/200908/"
+	xmlns:cmisra="http://docs.oasis-open.org/ns/cmis/restatom/200908/">
 
 	<xsl:output method="html" />
 
 	<xsl:param name="browseUrl"/>
-    <xsl:param name="webContentRoot"/>
+	<xsl:param name="auxRoot"/>
 
 	<xsl:template match="/">
 		<html>
 			<head>
 				<title><xsl:value-of select="atom:entry/atom:title" /></title>
-				<link rel="stylesheet" type="text/css" href="{$webContentRoot}browser/browser.css" />
+				<link rel="stylesheet" type="text/css" href="{$auxRoot}browser.css" />
 			</head>
 			<body>
+				<img src="{$auxRoot}cmis.png" style="float: right;" />
 				<h1>
 				<xsl:choose>
-					<xsl:when test="contains(atom:entry/cmisra:object/cmis:properties/cmis:propertyId[@pdid='cmis:BaseTypeId'],'cmis:document')">
-						<img src="{$webContentRoot}browser/document.png" style="vertical-align:middle; padding-right: 10px;" />
+					<xsl:when test="contains(atom:entry/cmisra:object/cmis:properties/cmis:propertyId[@propertyDefinitionId='cmis:baseTypeId'],'cmis:document')">
+						<img src="{$auxRoot}document.png" style="vertical-align:middle; padding-right: 10px;" />
 					</xsl:when>
-					<xsl:when test="contains(atom:entry/cmisra:object/cmis:properties/cmis:propertyId[@pdid='cmis:BaseTypeId'],'cmis:folder')">
-						<img src="{$webContentRoot}browser/folder.png" style="vertical-align:middle; padding-right: 10px;" />
+					<xsl:when test="contains(atom:entry/cmisra:object/cmis:properties/cmis:propertyId[@propertyDefinitionId='cmis:baseTypeId'],'cmis:folder')">
+						<img src="{$auxRoot}folder.png" style="vertical-align:middle; padding-right: 10px;" />
 					</xsl:when>
-					<xsl:when test="contains(atom:entry/cmisra:object/cmis:properties/cmis:propertyId[@pdid='cmis:BaseTypeId'],'cmis:relationship')">
-						<img src="{$webContentRoot}browser/relationship.png" style="vertical-align:middle; padding-right: 10px;" />
+					<xsl:when test="contains(atom:entry/cmisra:object/cmis:properties/cmis:propertyId[@propertyDefinitionId='cmis:baseTypeId'],'cmis:relationship')">
+						<img src="{$auxRoot}relationship.png" style="vertical-align:middle; padding-right: 10px;" />
 					</xsl:when>
-					<xsl:when test="contains(atom:entry/cmisra:object/cmis:properties/cmis:propertyId[@pdid='cmis:BaseTypeId'],'cmis:policy')">
-						<img src="{$webContentRoot}browser/policy.png" style="vertical-align:middle; padding-right: 10px;" />
+					<xsl:when test="contains(atom:entry/cmisra:object/cmis:properties/cmis:propertyId[@propertyDefinitionId='cmis:baseTypeId'],'cmis:policy')">
+						<img src="{$auxRoot}policy.png" style="vertical-align:middle; padding-right: 10px;" />
 					</xsl:when>
 					<xsl:when test="atom:entry/cmisra:type">
-						<img src="{$webContentRoot}browser/type.png" style="vertical-align:middle; padding-right: 10px;" />
+						<img src="{$auxRoot}type.png" style="vertical-align:middle; padding-right: 10px;" />
 					</xsl:when>
 					<xsl:otherwise>
-						<img src="{$webContentRoot}browser/unknown.png" style="vertical-align:middle; padding-right: 10px;" />
+						<img src="{$auxRoot}unknown.png" style="vertical-align:middle; padding-right: 10px;" />
 					</xsl:otherwise>
 				</xsl:choose>
 				<xsl:value-of select="atom:entry/atom:title" /></h1>
@@ -48,11 +49,11 @@
 					</xsl:if>
 					<xsl:if test="atom:entry/atom:link[@rel='down']">
 						<xsl:for-each select="atom:entry/atom:link[@rel='down']">
-							<a href="{@href}">Down (<xsl:value-of select="@type"></xsl:value-of>)</a> -
+							<a href="{$browseUrl}{@href}">Down (<xsl:value-of select="@type" />)</a> -
 						</xsl:for-each>
 					</xsl:if>
-					<xsl:if test="atom:entry/atom:link[@rel='http://docs.oasis-open.org/ns/cmis/link/200901/foldertree']">
-						<a href="{$browseUrl}{atom:entry/atom:link[@rel='http://docs.oasis-open.org/ns/cmis/link/200901/foldertree']/@href}">Folder Tree</a> -
+					<xsl:if test="atom:entry/atom:link[@rel='http://docs.oasis-open.org/ns/cmis/link/200908/foldertree']">
+						<a href="{$browseUrl}{atom:entry/atom:link[@rel='http://docs.oasis-open.org/ns/cmis/link/200908/foldertree']/@href}">Folder Tree</a> -
 					</xsl:if>
 					<xsl:if test="atom:entry/atom:content">
 						<a href="{atom:entry/atom:content/@src}">Download</a> -
@@ -65,17 +66,17 @@
 							<a href="{@href}">Rendition (<xsl:value-of select="@cmisra:renditionType"></xsl:value-of>)</a> -
 						</xsl:for-each>
 					</xsl:if>
-					<xsl:if test="atom:entry/atom:link[@rel='http://docs.oasis-open.org/ns/cmis/link/200901/relationships']">
-						<a href="{$browseUrl}{atom:entry/atom:link[@rel='http://docs.oasis-open.org/ns/cmis/link/200901/relationships']/@href}">Relationships</a> -
+					<xsl:if test="atom:entry/atom:link[@rel='http://docs.oasis-open.org/ns/cmis/link/200908/relationships']">
+						<a href="{$browseUrl}{atom:entry/atom:link[@rel='http://docs.oasis-open.org/ns/cmis/link/200908/relationships']/@href}">Relationships</a> -
 					</xsl:if>					
-					<xsl:if test="atom:entry/atom:link[@rel='http://docs.oasis-open.org/ns/cmis/link/200901/allowableactions']">
-						<a href="{$browseUrl}{atom:entry/atom:link[@rel='http://docs.oasis-open.org/ns/cmis/link/200901/allowableactions']/@href}">Allowable Actions</a> -
+					<xsl:if test="atom:entry/atom:link[@rel='http://docs.oasis-open.org/ns/cmis/link/200908/allowableactions']">
+						<a href="{$browseUrl}{atom:entry/atom:link[@rel='http://docs.oasis-open.org/ns/cmis/link/200908/allowableactions']/@href}">Allowable Actions</a> -
 					</xsl:if>
-					<xsl:if test="atom:entry/atom:link[@rel='http://docs.oasis-open.org/ns/cmis/link/200901/acl']">
-						<a href="{$browseUrl}{atom:entry/atom:link[@rel='http://docs.oasis-open.org/ns/cmis/link/200901/acl']/@href}">ACL</a> -
+					<xsl:if test="atom:entry/atom:link[@rel='http://docs.oasis-open.org/ns/cmis/link/200908/acl']">
+						<a href="{$browseUrl}{atom:entry/atom:link[@rel='http://docs.oasis-open.org/ns/cmis/link/200908/acl']/@href}">ACL</a> -
 					</xsl:if>
-					<xsl:if test="atom:entry/atom:link[@rel='http://docs.oasis-open.org/ns/cmis/link/200901/policies']">
-						<a href="{$browseUrl}{atom:entry/atom:link[@rel='http://docs.oasis-open.org/ns/cmis/link/200901/policies']/@href}">Policies</a> -
+					<xsl:if test="atom:entry/atom:link[@rel='http://docs.oasis-open.org/ns/cmis/link/200908/policies']">
+						<a href="{$browseUrl}{atom:entry/atom:link[@rel='http://docs.oasis-open.org/ns/cmis/link/200908/policies']/@href}">Policies</a> -
 					</xsl:if>
 					<xsl:if test="atom:entry/atom:link[@rel='describedby']">
 						<a href="{$browseUrl}{atom:entry/atom:link[@rel='describedby']/@href}">Type</a>
@@ -93,7 +94,7 @@
 				<table class="entrytable">
 				<xsl:for-each select="atom:entry/cmisra:object/cmis:properties/*">
 					<tr>
-						<td style="font-weight: bold;"><xsl:value-of select="@pdid" /></td>
+						<td style="font-weight: bold;"><xsl:value-of select="@propertyDefinitionId" /></td>
 						<td>
 						<xsl:for-each select="cmis:value">
 							<xsl:value-of select="current()" /><br/>
@@ -107,6 +108,12 @@
 						<td><xsl:value-of select="current()" /></td>
 					</tr>
 				</xsl:for-each>
+				<xsl:if test="atom:entry/cmisra:pathSegment">
+					<tr>
+						<td style="font-weight: bold; font-style:italic;">Path Segment</td>
+						<td style="font-style:italic;"><xsl:value-of select="atom:entry/cmisra:pathSegment" /></td>
+					</tr>
+				</xsl:if>
 				</table>
 				
 				<xsl:if test="atom:entry/cmisra:type">

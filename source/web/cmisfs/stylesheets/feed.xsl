@@ -1,21 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xsl:stylesheet version="1.0"
 	xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:app="http://www.w3.org/2007/app"
-	xmlns:atom="http://www.w3.org/2005/Atom" xmlns:cmis="http://docs.oasis-open.org/ns/cmis/core/200901"
-	xmlns:cmisra="http://docs.oasis-open.org/ns/cmis/restatom/200901">
+	xmlns:atom="http://www.w3.org/2005/Atom" xmlns:cmis="http://docs.oasis-open.org/ns/cmis/core/200908/"
+	xmlns:cmisra="http://docs.oasis-open.org/ns/cmis/restatom/200908/">
 
 	<xsl:output method="html" />
 
 	<xsl:param name="browseUrl"/>
-    <xsl:param name="webContentRoot"/>
+	<xsl:param name="auxRoot"/>
 
 	<xsl:template match="/">
 		<html>
 			<head>
 				<title><xsl:value-of select="atom:feed/atom:title" /></title>
-				<link rel="stylesheet" type="text/css" href="{$webContentRoot}browser/browser.css" />
+				<link rel="stylesheet" type="text/css" href="{$auxRoot}browser.css" />
 			</head>
 			<body>
+				<img src="{$auxRoot}cmis.png" style="float: right;" />
 				<h1><xsl:value-of select="atom:feed/atom:title" /></h1>
 				<div class="navigationbox">
 					<xsl:if test="atom:feed/atom:link[@rel='service']">
@@ -29,7 +30,7 @@
 					</xsl:if>
 					<xsl:if test="atom:feed/atom:link[@rel='down']">
 						<xsl:for-each select="atom:feed/atom:link[@rel='down']">
-							<a href="{@href}">Down (<xsl:value-of select="@type"></xsl:value-of>)</a> -
+							<a href="{$browseUrl}{@href}">Down (<xsl:value-of select="@type" />)</a> -
 						</xsl:for-each>
 					</xsl:if>
 					<xsl:if test="atom:feed/atom:link[@rel='first']">
@@ -44,17 +45,17 @@
 					<xsl:if test="atom:feed/atom:link[@rel='last']">
 						<a href="{$browseUrl}{atom:feed/atom:link[@rel='last']/@href}">Last</a> -
 					</xsl:if>						
-					<xsl:if test="atom:feed/atom:link[@rel='http://docs.oasis-open.org/ns/cmis/link/200901/foldertree']">
-						<a href="{$browseUrl}{atom:feed/atom:link[@rel='http://docs.oasis-open.org/ns/cmis/link/200901/foldertree']/@href}">Folder Tree</a> -
+					<xsl:if test="atom:feed/atom:link[@rel='http://docs.oasis-open.org/ns/cmis/link/200908/foldertree']">
+						<a href="{$browseUrl}{atom:feed/atom:link[@rel='http://docs.oasis-open.org/ns/cmis/link/200908/foldertree']/@href}">Folder Tree</a> -
 					</xsl:if>				
-					<xsl:if test="atom:feed/atom:link[@rel='http://docs.oasis-open.org/ns/cmis/link/200901/allowableactions']">
-						<a href="{$browseUrl}{atom:feed/atom:link[@rel='http://docs.oasis-open.org/ns/cmis/link/200901/allowableactions']/@href}">Allowable Actions</a> -
+					<xsl:if test="atom:feed/atom:link[@rel='http://docs.oasis-open.org/ns/cmis/link/200908/allowableactions']">
+						<a href="{$browseUrl}{atom:feed/atom:link[@rel='http://docs.oasis-open.org/ns/cmis/link/200908/allowableactions']/@href}">Allowable Actions</a> -
 					</xsl:if>
-					<xsl:if test="atom:feed/atom:link[@rel='http://docs.oasis-open.org/ns/cmis/link/200901/acl']">
-						<a href="{$browseUrl}{atom:feed/atom:link[@rel='http://docs.oasis-open.org/ns/cmis/link/200901/acl']/@href}">ACL</a> -
+					<xsl:if test="atom:feed/atom:link[@rel='http://docs.oasis-open.org/ns/cmis/link/200908/acl']">
+						<a href="{$browseUrl}{atom:feed/atom:link[@rel='http://docs.oasis-open.org/ns/cmis/link/200908/acl']/@href}">ACL</a> -
 					</xsl:if>
-					<xsl:if test="atom:feed/atom:link[@rel='http://docs.oasis-open.org/ns/cmis/link/200901/policies']">
-						<a href="{$browseUrl}{atom:feed/atom:link[@rel='http://docs.oasis-open.org/ns/cmis/link/200901/policies']/@href}">Policies</a> -
+					<xsl:if test="atom:feed/atom:link[@rel='http://docs.oasis-open.org/ns/cmis/link/200908/policies']">
+						<a href="{$browseUrl}{atom:feed/atom:link[@rel='http://docs.oasis-open.org/ns/cmis/link/200908/policies']/@href}">Policies</a> -
 					</xsl:if>
 					<xsl:if test="atom:feed/atom:link[@rel='describedby']">
 						<a href="{$browseUrl}{atom:feed/atom:link[@rel='describedby']/@href}">Type</a>
@@ -74,8 +75,8 @@
 						<th>Major /<br/> Latest</th>
 					</tr>
 					<xsl:for-each select="atom:feed/atom:entry">
-						<xsl:sort select="cmisra:object/cmis:properties/cmis:propertyId[@pdid='cmis:BaseTypeId']" />
-						<xsl:sort select="cmisra:object/cmis:properties/cmis:propertyId[@pdid='cmis:Name']" />
+						<xsl:sort select="cmisra:object/cmis:properties/cmis:propertyId[@propertyDefinitionId='cmis:baseTypeId']" />
+						<xsl:sort select="cmisra:object/cmis:properties/cmis:propertyId[@propertyDefinitionId='cmis:name']" />
 						
 						<xsl:variable name="odd">
 							<xsl:if test="(position() mod 2) != 1"></xsl:if>
@@ -85,83 +86,88 @@
 						<tr>
 							<td class="tdlinks{$odd}" rowspan="2">
 								<xsl:choose>
-									<xsl:when test="contains(cmisra:object/cmis:properties/cmis:propertyId[@pdid='cmis:BaseTypeId'],'cmis:document')">
-										<img src="{$webContentRoot}browser/document.png" />
+									<xsl:when test="contains(cmisra:object/cmis:properties/cmis:propertyId[@propertyDefinitionId='cmis:baseTypeId'],'cmis:document')">
+										<img src="{$auxRoot}document.png" />
 									</xsl:when>
-									<xsl:when test="contains(cmisra:object/cmis:properties/cmis:propertyId[@pdid='cmis:BaseTypeId'],'cmis:folder')">
-										<img src="{$webContentRoot}browser/folder.png" />
+									<xsl:when test="contains(cmisra:object/cmis:properties/cmis:propertyId[@propertyDefinitionId='cmis:baseTypeId'],'cmis:folder')">
+										<img src="{$auxRoot}folder.png" />
 									</xsl:when>
-									<xsl:when test="contains(cmisra:object/cmis:properties/cmis:propertyId[@pdid='cmis:BaseTypeId'],'cmis:relationship')">
-										<img src="{$webContentRoot}browser/relationship.png" />
+									<xsl:when test="contains(cmisra:object/cmis:properties/cmis:propertyId[@propertyDefinitionId='cmis:baseTypeId'],'cmis:relationship')">
+										<img src="{$auxRoot}relationship.png" />
 									</xsl:when>
-									<xsl:when test="contains(cmisra:object/cmis:properties/cmis:propertyId[@pdid='cmis:BaseTypeId'],'cmis:policy')">
-										<img src="{$webContentRoot}browser/policy.png" />
+									<xsl:when test="contains(cmisra:object/cmis:properties/cmis:propertyId[@propertyDefinitionId='cmis:baseTypeId'],'cmis:policy')">
+										<img src="{$auxRoot}policy.png" />
 									</xsl:when>
 									<xsl:otherwise>
-										<img src="{$webContentRoot}browser/unknown.png" />
+										<img src="{$auxRoot}unknown.png" />
 									</xsl:otherwise>
 								</xsl:choose>
 							</td>
 							<td class="tdinfo{$odd}" style="font-weight: bold;">
 								<xsl:choose>
-									<xsl:when test="contains(cmisra:object/cmis:properties/cmis:propertyId[@pdid='cmis:BaseTypeId'],'cmis:document')">
+									<xsl:when test="contains(cmisra:object/cmis:properties/cmis:propertyId[@propertyDefinitionId='cmis:baseTypeId'],'cmis:document')">
 										<a href="{atom:content/@src}">
-										<xsl:value-of select="cmisra:object/cmis:properties/cmis:propertyString[@pdid='cmis:Name']" />
+										<xsl:value-of select="cmisra:object/cmis:properties/cmis:propertyString[@propertyDefinitionId='cmis:name']" />
 										</a>
 									</xsl:when>
-									<xsl:when test="contains(cmisra:object/cmis:properties/cmis:propertyId[@pdid='cmis:BaseTypeId'],'cmis:folder')">
+									<xsl:when test="contains(cmisra:object/cmis:properties/cmis:propertyId[@propertyDefinitionId='cmis:baseTypeId'],'cmis:folder')">
 										<a href="{$browseUrl}{atom:link[@rel='down']/@href}">
-										<xsl:value-of select="cmisra:object/cmis:properties/cmis:propertyString[@pdid='cmis:Name']" />
+										<xsl:value-of select="cmisra:object/cmis:properties/cmis:propertyString[@propertyDefinitionId='cmis:name']" />
 										</a>
 									</xsl:when>
 									<xsl:otherwise>
 										<a href="{$browseUrl}{atom:link[@rel='self']/@href}">
-										<xsl:value-of select="cmisra:object/cmis:properties/cmis:propertyString[@pdid='cmis:Name']" />
+										<xsl:value-of select="cmisra:object/cmis:properties/cmis:propertyString[@propertyDefinitionId='cmis:name']" />
 										</a>
 									</xsl:otherwise>
 								</xsl:choose>
 							</td>
 							<td class="tdinfo{$odd}">
 								<a href="{$browseUrl}{atom:link[@rel='describedby']/@href}">
-								<xsl:value-of select="cmisra:object/cmis:properties/cmis:propertyId[@pdid='cmis:ObjectTypeId']" />
+								<xsl:value-of select="cmisra:object/cmis:properties/cmis:propertyId[@propertyDefinitionId='cmis:objectTypeId']" />
 								</a>
 							</td>
-							<td class="tdinfo{$odd}"><xsl:value-of select="cmisra:object/cmis:properties/cmis:propertyString[@pdid='cmis:ContentStreamMimeType']" /></td>							
-							<td class="tdinfo{$odd}" align="right"><xsl:value-of select="cmisra:object/cmis:properties/cmis:propertyInteger[@pdid='cmis:ContentStreamLength']" /></td>
-							<td class="tdinfo{$odd}"><xsl:value-of select="cmisra:object/cmis:properties/cmis:propertyString[@pdid='cmis:CreatedBy']" /></td>
-							<td class="tdinfo{$odd}"><xsl:value-of select="cmisra:object/cmis:properties/cmis:propertyDateTime[@pdid='cmis:CreationDate']" /></td>
-							<td class="tdinfo{$odd}"><xsl:value-of select="cmisra:object/cmis:properties/cmis:propertyString[@pdid='cmis:VersionLabel']" /></td>
-							<td class="tdinfo{$odd}"><xsl:value-of select="cmisra:object/cmis:properties/cmis:propertyBoolean[@pdid='cmis:IsMajorVersion']" /></td>
+							<td class="tdinfo{$odd}"><xsl:value-of select="cmisra:object/cmis:properties/cmis:propertyString[@propertyDefinitionId='cmis:contentStreamMimeType']" /></td>							
+							<td class="tdinfo{$odd}" align="right"><xsl:value-of select="cmisra:object/cmis:properties/cmis:propertyInteger[@propertyDefinitionId='cmis:contentStreamLength']" /></td>
+							<td class="tdinfo{$odd}"><xsl:value-of select="cmisra:object/cmis:properties/cmis:propertyString[@propertyDefinitionId='cmis:createdBy']" /></td>
+							<td class="tdinfo{$odd}"><xsl:value-of select="cmisra:object/cmis:properties/cmis:propertyDateTime[@propertyDefinitionId='cmis:creationDate']" /></td>
+							<td class="tdinfo{$odd}"><xsl:value-of select="cmisra:object/cmis:properties/cmis:propertyString[@propertyDefinitionId='cmis:versionLabel']" /></td>
+							<td class="tdinfo{$odd}"><xsl:value-of select="cmisra:object/cmis:properties/cmis:propertyBoolean[@propertyDefinitionId='cmis:isMajorVersion']" /></td>
 						</tr>
 						<tr>
 							<td class="tdlinks{$odd}" colspan="4">
-								<a href="{$browseUrl}{atom:link[@rel='self']/@href}" class="actionink">Entry</a> - 
-								<a href="{$browseUrl}{atom:link[@rel='describedby']/@href}" class="actionink">Type Info</a> -
-								<xsl:if test="atom:link[@rel='down']">
-									<a href="{$browseUrl}{atom:link[@rel='down']/@href}" class="actionink">Down</a> -
+								<a href="{$browseUrl}{atom:link[@rel='self']/@href}" class="actionlink">Entry</a> - 
+								<a href="{$browseUrl}{atom:link[@rel='describedby']/@href}" class="actionlink">Type Info</a> -
+								<xsl:if test="atom:link[@rel='down']">							
+									<xsl:for-each select="atom:link[@rel='down']">
+										<a href="{$browseUrl}{@href}" class="actionlink">Down (<xsl:value-of select="@type" />)</a> -
+									</xsl:for-each>
 								</xsl:if>
 								<xsl:if test="atom:content">
-									<a href="{atom:content/@src}" class="actionink">Download</a> - 
+									<a href="{atom:content/@src}" class="actionlink">Download</a> - 
 								</xsl:if>
 								<xsl:if test="atom:link[@rel='version-history']">
-									<a href="{$browseUrl}{atom:link[@rel='version-history']/@href}" class="actionink">All Versions</a> -
+									<a href="{$browseUrl}{atom:link[@rel='version-history']/@href}" class="actionlink">All Versions</a> -
 								</xsl:if>
 								<xsl:if test="atom:link[@rel='alternate']">
 									<xsl:for-each select="atom:link[@rel='alternate']">
-										<a href="{@href}" class="actionink">Rendition (<xsl:value-of select="@cmisra:renditionType"></xsl:value-of>)</a> -
+										<a href="{@href}" class="actionlink">Rendition (<xsl:value-of select="@cmisra:renditionType"></xsl:value-of>)</a> -
 									</xsl:for-each>
 								</xsl:if>
-								<xsl:if test="atom:link[@rel='http://docs.oasis-open.org/ns/cmis/link/200901/allowableactions']">
-									<a href="{$browseUrl}{atom:link[@rel='http://docs.oasis-open.org/ns/cmis/link/200901/allowableactions']/@href}" class="actionink">Allowable Actions</a> -
+								<xsl:if test="atom:link[@rel='http://docs.oasis-open.org/ns/cmis/link/200908/relationships']">
+									<a href="{$browseUrl}{atom:link[@rel='http://docs.oasis-open.org/ns/cmis/link/200908/relationships']/@href}">Relationships</a> -
+								</xsl:if>	
+								<xsl:if test="atom:link[@rel='http://docs.oasis-open.org/ns/cmis/link/200908/allowableactions']">
+									<a href="{$browseUrl}{atom:link[@rel='http://docs.oasis-open.org/ns/cmis/link/200908/allowableactions']/@href}" class="actionlink">Allowable Actions</a> -
 								</xsl:if>
-								<xsl:if test="atom:link[@rel='http://docs.oasis-open.org/ns/cmis/link/200901/acl']">
-									<a href="{$browseUrl}{atom:link[@rel='http://docs.oasis-open.org/ns/cmis/link/200901/acl']/@href}" class="actionink">ACL</a>
+								<xsl:if test="atom:link[@rel='http://docs.oasis-open.org/ns/cmis/link/200908/acl']">
+									<a href="{$browseUrl}{atom:link[@rel='http://docs.oasis-open.org/ns/cmis/link/200908/acl']/@href}" class="actionlink">ACL</a>
 								</xsl:if>
 							</td>
-							<td class="tdinfo2{$odd}"><xsl:value-of select="cmisra:object/cmis:properties/cmis:propertyString[@pdid='cmis:LastModifiedBy']" /></td>
-							<td class="tdinfo2{$odd}"><xsl:value-of select="cmisra:object/cmis:properties/cmis:propertyDateTime[@pdid='cmis:LastModificationDate']" /></td>
+							<td class="tdinfo2{$odd}"><xsl:value-of select="cmisra:object/cmis:properties/cmis:propertyString[@propertyDefinitionId='cmis:lastModifiedBy']" /></td>
+							<td class="tdinfo2{$odd}"><xsl:value-of select="cmisra:object/cmis:properties/cmis:propertyDateTime[@propertyDefinitionId='cmis:lastModificationDate']" /></td>
 							<td class="tdinfo2{$odd}"> </td>
-							<td class="tdinfo2{$odd}"><xsl:value-of select="cmisra:object/cmis:properties/cmis:propertyBoolean[@pdid='cmis:IsLatestVersion']" /></td>
+							<td class="tdinfo2{$odd}"><xsl:value-of select="cmisra:object/cmis:properties/cmis:propertyBoolean[@propertyDefinitionId='cmis:isLatestVersion']" /></td>
 					</tr>
 					</xsl:for-each>
 					</table>
@@ -176,7 +182,7 @@
 						<th>Local Namespace</th>
 						<th>Display Name</th>
 						<th>Query Name</th>
-						<th>Base Type</th>
+						<th>Base Id</th>
 						<th>Description</th>
 					</tr>
 					<xsl:for-each select="atom:feed/atom:entry">
@@ -187,7 +193,7 @@
 						
 						<tr>
 							<td class="tdlinks{$odd}" rowspan="2">
-								<img src="{$webContentRoot}browser/type.png" />
+								<img src="{$auxRoot}type.png" />
 							</td>
 							<td class="tdinfo{$odd}">
 								<a href="{$browseUrl}{atom:link[@rel='self']/@href}" style="font-weight: bold;">
@@ -198,15 +204,15 @@
 							<td class="tdinfo{$odd}"><xsl:value-of select="cmisra:type/cmis:localNamespace" /></td>
 							<td class="tdinfo{$odd}"><xsl:value-of select="cmisra:type/cmis:displayName" /></td>
 							<td class="tdinfo{$odd}"><xsl:value-of select="cmisra:type/cmis:queryName" /></td>
-							<td class="tdinfo{$odd}"><xsl:value-of select="cmisra:type/cmis:baseTypeId" /></td>
+							<td class="tdinfo{$odd}"><xsl:value-of select="cmisra:type/cmis:baseId" /></td>
 							<td class="tdinfo{$odd}"><xsl:value-of select="cmisra:type/cmis:description" /></td>
 						</tr>
 						<tr>
 							<td class="tdlinks{$odd}" colspan="7">
-								<a href="{$browseUrl}{atom:link[@rel='self']/@href}" class="actionink">Entry</a> - 
-								<a href="{$browseUrl}{atom:link[@rel='describedby']/@href}" class="actionink">Type Info</a> -
+								<a href="{$browseUrl}{atom:link[@rel='self']/@href}" class="actionlink">Entry</a> - 
+								<a href="{$browseUrl}{atom:link[@rel='describedby']/@href}" class="actionlink">Type Info</a> -
 								<xsl:if test="atom:link[@rel='down']">
-									<a href="{$browseUrl}{atom:link[@rel='down']/@href}" class="actionink">Down</a>
+									<a href="{$browseUrl}{atom:link[@rel='down']/@href}" class="actionlink">Down</a>
 								</xsl:if>
 							</td>
 						</tr>

@@ -439,8 +439,12 @@
         <servlet-name>CMISFileShareServlet</servlet-name>
         <servlet-class>de.fmui.cmis.fileshare.info.BrowseServlet</servlet-class>
         <init-param>
-            <param-name>webcontentroot</param-name>
-            <param-value>cmisfs/</param-value>
+            <param-name>auxroot</param-name>
+            <param-value>cmisfs/browser/</param-value>
+        </init-param>
+        <init-param>
+            <param-name>allow</param-name>
+            <param-value>http.*</param-value>
         </init-param>
         <init-param>
             <param-name>stylesheet:application/atomsvc+xml</param-name>

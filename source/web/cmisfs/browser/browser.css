@@ -5,6 +5,18 @@ body {
 	font-size: 10pt; 
 }
 
+h1 {
+	font-family: Georgia;
+}
+
+h2 {
+	font-family: Georgia;
+}
+
+h3 {
+	font-family: Georgia;
+}
+
 a:link {
 	color: #204a87;
 	text-decoration: none;	
@@ -26,7 +38,7 @@ a:active {
 }
 
 div.navigationbox {
-	background-color: #eeeeec;
+	background-color: #f6f1de;
 	margin-top: 10px;
 	margin-bottom: 10px;
 	margin-left: 0px;
@@ -50,7 +62,7 @@ table.servicetable td {
 }
 
 .servicebox {
-	background-color: #eeeeec;
+	background-color: #f6f1de;
 	font-size: 10pt; 
 	padding: 10px;
 	margin: 10px;
@@ -132,22 +144,22 @@ table.feedtable {
 	border-width: 1px;
 }
 
-a.actionink:link {
+a.actionlink:link {
 	color: #888a85;
 	text-decoration: none;	
 }
 
-a.actionink:visited {
+a.actionlink:visited {
 	color: #888a85;
 	text-decoration: none;
 }
 
-a.actionink:hover {
+a.actionlink:hover {
 	color: #2e3436;
 	text-decoration: underline;
 }
 
-a.actionink:active {
+a.actionlink:active {
 	color: red;
 	text-decoration: underline;
 }

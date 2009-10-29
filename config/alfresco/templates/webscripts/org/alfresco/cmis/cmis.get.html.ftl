@@ -48,6 +48,8 @@
         <li>CMIS Web Services Binding: <a href="${url.context}/cmis">WSDL Documents</a></li>
       </ul>
       
+      <p>You can also browse this repository via the <a href="${url.context}/cmisbrowse?url=${absurl(url.serviceContext)}/api/cmis">CMIS FileShare browser</a>.</p>
+      
       <h5><span id="repoinfo" class="toggle" onclick="return toggleDisplay(this)">+</span> CMIS Repository Information</h5>
       <table id="repoinfo_body" style="display: none;">
         <tr><td>Version Supported</td><td>${cmisVersion}</td></tr>
@@ -125,6 +127,10 @@
       <ul>
         <li><a href="http://incubator.apache.org/chemistry/">Home Page</a></li>
         <li><a href="http://svn.apache.org/viewvc/incubator/chemistry/trunk/chemistry/chemistry-tck-atompub/">Source Code</a> for TCK</li>
+      </ul>
+      <h3>CMIS FileShare</h3>
+      <ul>
+        <li><a href="http://cmisfs.fmui.de/">Home Page</a></li>
       </ul>
       <h3>Provide Feedback</h3>
       <ul>

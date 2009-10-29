@@ -1,0 +1,46 @@
+script:
+{
+    // process query statement
+    // <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+    // <cmis:query xmlns:cmis="http://docs.oasis-open.org/ns/cmis/core/200901">
+    //   <cmis:statement>SELECT * FROM Document</cmis:statement>
+    //   <cmis:searchAllVersions>true</cmis:searchAllVersions>
+    //   <cmis:maxItems>50</cmis:maxItems>
+    //   <cmis:skipCount>0</cmis:skipCount>
+    // </cmis:query>
+    
+    
+    // extract query statement
+    model.statement = args.q;
+    if (model.statement == null || model.statement.length == 0)
+    {
+        status.setCode(status.STATUS_BAD_REQUEST, "Query statement must be provided");
+        break script;
+    }
+    
+    // process search all versions (NOTE: not supported)
+    var searchAllVersions = args.searchAllVersions;
+    if (searchAllVersions != null && searchAllVersions === "true")
+    {
+        status.setCode(status.STATUS_INTERNAL_SERVER_ERROR, "Search all versions not supported");
+        break script;
+    }
+    
+    // include allowable actions
+    var includeAllowableActions = args[cmis.ARG_INCLUDE_ALLOWABLE_ACTIONS];
+    model.includeAllowableActions = (includeAllowableActions == "true" ? true : false);
+    
+    // perform query
+    var page = paging.createPageOrWindow(args);
+    var paged = cmis.query(model.statement, page);
+    model.resultset = paged.result;
+    model.cursor = paged.cursor;
+    
+    // check includeFlags are valid for query
+    var multiNodeResultSet = false;  // TODO: calculate from result set (for now, don't support joins)
+    if (!multiNodeResultSet && (model.includeAllowableActions))
+    {
+        status.setCode(status.STATUS_BAD_REQUEST, "Can't includeAllowableActions for multi-selector column result sets");
+        break script;
+    }
+}

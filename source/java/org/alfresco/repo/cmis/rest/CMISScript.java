@@ -40,6 +40,7 @@ import org.alfresco.cmis.CMISResultSet;
 import org.alfresco.cmis.CMISServices;
 import org.alfresco.cmis.CMISTypeDefinition;
 import org.alfresco.cmis.CMISTypesFilterEnum;
+import org.alfresco.cmis.CMISQueryOptions.CMISQueryMode;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.jscript.Association;
 import org.alfresco.repo.jscript.BaseScopableProcessorExtension;
@@ -84,6 +85,7 @@ public class CMISScript extends BaseScopableProcessorExtension
     public static final String ARG_MAJOR_VERSION = "majorVersion";
     public static final String ARG_MAX_ITEMS = "maxItems";
     public static final String ARG_OFFSET = "offset";
+    public static final String ARG_QUERY_STATEMENT = "q";
     public static final String ARG_REMOVE_FROM = "removeFrom";
     public static final String ARG_RELATIONSHIP_TYPE = "relationshipType";
     public static final String ARG_REPOSITORY_ID = "repositoryId";
@@ -554,6 +556,7 @@ public class CMISScript extends BaseScopableProcessorExtension
     public PagedResults query(String statement, Page page)
     {
         CMISQueryOptions options = new CMISQueryOptions(statement, cmisService.getDefaultRootStoreRef());
+        options.setQueryMode(CMISQueryMode.CMS_WITH_ALFRESCO_EXTENSIONS);
         options.setSkipCount(page.getNumber());
         options.setMaxItems(page.getSize());
         CMISResultSet resultSet = cmisQueryService.query(options);

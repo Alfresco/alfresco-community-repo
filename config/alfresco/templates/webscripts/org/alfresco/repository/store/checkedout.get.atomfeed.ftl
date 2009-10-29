@@ -1,5 +1,6 @@
 [#ftl]
 [#import "/org/alfresco/cmis/ns.lib.atom.ftl" as nsLib/]
+[#import "/org/alfresco/cmis/links.lib.atom.ftl" as linksLib/]
 [#import "/org/alfresco/cmis/atomfeed.lib.atom.ftl" as feedLib/]
 [#import "/org/alfresco/cmis/atomentry.lib.atom.ftl" as entryLib/]
 [#import "/org/alfresco/paging.lib.atom.ftl" as pagingLib/]
@@ -9,6 +10,8 @@
 <feed [@nsLib.feedNS/]>
 
 [@feedLib.generic "urn:uuid:checkedout" "Checked out Documents" "${person.properties.userName}"]
+  [@linksLib.linkservice/]
+  [@linksLib.linkself/]
   [@pagingLib.links cursor/]
 [/@feedLib.generic]
 

@@ -33,7 +33,7 @@ Enum capabilityFulltext: nofulltext, fulltextonly, fulltextandstructured<br>
   </description>
   <url>/api/repository</url>
   <url>/api/cmis</url>
-  <format default="atom"/>
+  <format default="atomsvc"/>
   <authentication>user</authentication>
   <family>CMIS</family>
 </webscript>

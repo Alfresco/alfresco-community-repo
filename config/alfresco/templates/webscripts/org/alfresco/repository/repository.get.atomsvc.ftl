@@ -1,11 +1,12 @@
 [#ftl]
 [#import "/org/alfresco/cmis/ns.lib.atom.ftl" as nsLib/]
+[#import "/org/alfresco/cmis/links.lib.atom.ftl" as linksLib/]
 <?xml version="1.0" encoding="utf-8"?> 
 <service [@nsLib.serviceNS/]>
   <workspace cmis:id="${server.id}" cmis:repositoryRelationship="self">
     <atom:title>${server.name}</atom:title>
 
-    <collection href="${absurl(url.serviceContext)}/api/path/${encodeuri(defaultRootFolderPath)}/children" cmisra:collectionType="root"> 
+    <collection href="${absurl(url.serviceContext)}[@linksLib.nodeuri defaultRootFolder/]/children" cmisra:collectionType="root"> 
       <atom:title>root collection</atom:title> 
     </collection> 
     <collection href="${absurl(url.serviceContext)}/api/types" cmisra:collectionType="types"> 
@@ -13,20 +14,20 @@
     </collection>
     <collection href="${absurl(url.serviceContext)}/api/checkedout" cmisra:collectionType="checkedout"> 
       <atom:title>checkedout collection</atom:title> 
-      <accept>application/atom+xml;type=entry</accept>
+      <accept>${cmisconstants.MIMETYPE_ENTRY}</accept>
     </collection> 
     <collection href="${absurl(url.serviceContext)}/api/unfiled" cmisra:collectionType="unfiled"> 
       <atom:title>unfiled collection</atom:title> 
-      <accept>application/atom+xml;type=entry</accept>
+      <accept>${cmisconstants.MIMETYPE_ENTRY}</accept>
     </collection>
-    <collection href="${absurl(url.serviceContext)}/api/query" cmisra:collectionType="query"> 
+    <collection href="${absurl(url.serviceContext)}/api/queries" cmisra:collectionType="query"> 
       <atom:title>query collection</atom:title> 
-      <accept>application/cmisquery+xml</accept>
+      <accept>${cmisconstants.MIMETYPE_CMIS_QUERY}</accept>
     </collection>
 
-    <atom:link title="root folder tree" type="application/atom+xml;type=feed" rel="http://docs.oasis-open.org/ns/cmis/link/200901/foldertree" href="${absurl(url.serviceContext)}/api/path/${encodeuri(defaultRootFolderPath)}/tree"/>
-    <atom:link title="root descendants" type="application/atom+xml;type=feed" rel="http://docs.oasis-open.org/ns/cmis/link/200901/rootdescendants" href="${absurl(url.serviceContext)}/api/path/${encodeuri(defaultRootFolderPath)}/descendants"/>
-    <atom:link title="type descendants" type="application/atom+xml;type=feed" rel="http://docs.oasis-open.org/ns/cmis/link/200901/typesdescendants" href="${absurl(url.serviceContext)}/api/types/descendants"/>
+    <atom:link title="root folder tree" type="${cmisconstants.MIMETYPE_CMISTREE}" rel="http://docs.oasis-open.org/ns/cmis/link/200901/foldertree" href="${absurl(url.serviceContext)}[@linksLib.nodeuri defaultRootFolder/]/tree"/>
+    <atom:link title="root descendants" type="${cmisconstants.MIMETYPE_CMISTREE}" rel="http://docs.oasis-open.org/ns/cmis/link/200901/rootdescendants" href="${absurl(url.serviceContext)}[@linksLib.nodeuri defaultRootFolder/]/descendants"/>
+    <atom:link title="type descendants" type="${cmisconstants.MIMETYPE_CMISTREE}" rel="http://docs.oasis-open.org/ns/cmis/link/200901/typesdescendants" href="${absurl(url.serviceContext)}/api/types/descendants"/>
 
     <cmisra:repositoryInfo>
       <cmis:repositoryId>${server.id}</cmis:repositoryId>
@@ -36,7 +37,7 @@
       <cmis:vendorName>Alfresco</cmis:vendorName> 
       <cmis:productName>Alfresco Repository (${server.edition})</cmis:productName>
       <cmis:productVersion>${server.version}</cmis:productVersion>
-      <cmis:rootFolderId>${absurl(url.serviceContext)}/api/path/${encodeuri(defaultRootFolderPath)}</cmis:rootFolderId>
+      <cmis:rootFolderId>${absurl(url.serviceContext)}[@linksLib.nodeuri defaultRootFolder/]</cmis:rootFolderId>
       [#-- TODO: implement change log --]
       <cmis:latestChangeToken></cmis:latestChangeToken>
       <cmis:capabilities>
@@ -64,7 +65,12 @@
     <cmisra:uritemplate>
         <cmisra:template>${absurl(url.serviceContext)}/api/node/{id}?filter={filter}&amp;includeAllowableActions={includeAllowableActions}&amp;includeRelationships={includeRelationships}</cmisra:template>
         <cmisra:type>entrybyid</cmisra:type>
-        <cmisra:mediatype>application/atom+xml;type=entry</cmisra:mediatype>
+        <cmisra:mediatype>${cmisconstants.MIMETYPE_ENTRY}</cmisra:mediatype>
+    </cmisra:uritemplate>
+    <cmisra:uritemplate>
+        <cmisra:template>${absurl(url.serviceContext)}/api/query?q={q}&amp;includeAllowableActions={includeAllowableActions?}&amp;searchAllVersions={searchAllVersions?}&amp;skipCount={skipCount?}&amp;maxItems={maxItems?}</cmisra:template>
+        <cmisra:type>query</cmisra:type>
+        <cmisra:mediatype>${cmisconstants.MIMETYPE_FEED}</cmisra:mediatype>
     </cmisra:uritemplate>
 
   </workspace> 

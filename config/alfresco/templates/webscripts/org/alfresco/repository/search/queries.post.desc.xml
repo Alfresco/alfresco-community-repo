@@ -29,7 +29,7 @@ It is recommended that “includeAllowableActions” be used with query statemen
 "IncludeRelationships" indicates whether relationships are also returned for each returned object. If it is set to "source" or "target", relationships for which the returned object is a source, or respectively a target, will also be returned. If it is set to "both", relationships for which the returned object is either a source or a target will be returned. If it is set to "none", relationships are not returned.<br>
 ]]>
   </description>
-  <url>/api/query</url>
+  <url>/api/queries</url>
   <authentication>user</authentication>
   <transaction allow="readonly"/>
   <format default="atomfeed"/>

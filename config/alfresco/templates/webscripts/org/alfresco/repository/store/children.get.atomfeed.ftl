@@ -1,5 +1,6 @@
 [#ftl]
 [#import "/org/alfresco/cmis/ns.lib.atom.ftl" as nsLib/]
+[#import "/org/alfresco/cmis/links.lib.atom.ftl" as linksLib/]
 [#import "/org/alfresco/cmis/atomfeed.lib.atom.ftl" as feedLib/]
 [#import "/org/alfresco/cmis/atomentry.lib.atom.ftl" as entryLib/]
 [#import "/org/alfresco/paging.lib.atom.ftl" as pagingLib/]
@@ -9,6 +10,15 @@
 <feed [@nsLib.feedNS/]>
 
 [@feedLib.node node "children"]
+  [@linksLib.linkservice/]
+  [@linksLib.linkself/]
+  [#assign nodeuri][@linksLib.nodeuri node/][/#assign]
+  [@linksLib.linkvia href="${nodeuri}"/]
+  [#if cmisproperty(node, cmisconstants.PROP_PARENT_ID)?is_string]
+    [@linksLib.linkchildren node.parent "${cmisconstants.REL_UP}"/]
+  [/#if]
+  [@linksLib.linkdescendants node/]
+  [@linksLib.linktree node/]
   [@pagingLib.links cursor/]
 [/@feedLib.node]
 [@pagingLib.opensearch cursor/]

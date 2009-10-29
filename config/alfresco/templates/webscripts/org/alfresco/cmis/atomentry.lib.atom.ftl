@@ -15,7 +15,7 @@
   [#assign typedef = cmistype(object)]
   
   [#list typedef.propertyDefinitions?values as propdef]
-    [@filter propfilter propdef.propertyId.id][@prop propdef.propertyId.id object propdef.dataType/][/@filter]
+    [@filter propfilter propdef.propertyId.id][@prop propdef.propertyId.id object propdef.dataType.label/][/@filter]
   [/#list]
 </cmis:properties>
 [/#macro]
@@ -30,10 +30,10 @@
 <author><name>${node.properties.creator!""}</name></author>
 [@contentstream node/]
 <id>urn:uuid:${node.id}</id>
-<link rel="self" href="${absurl(url.serviceContext)}[@nodeuri node/]"/>
-[@linkstream node "enclosure"/]
-<link rel="edit" href="${absurl(url.serviceContext)}[@nodeuri node/]"/>
-[@linkstream node "edit-media"/]
+[@linksLib.linknodeself node/]
+[@linksLib.linkstream node "enclosure"/]
+[@linksLib.linknodeedit node/]
+[@linksLib.linkstream node "edit-media"/]
 [@documentCMISLinks node=node/]
 <published>${xmldate(node.properties.created)}</published>
 <summary>[@contentsummary node/]</summary>
@@ -49,12 +49,12 @@
 [/#macro]
 
 [#macro documentCMISLinks node]
-[@linkallowableactions node/]
-[@linkrelationships node/]
-[@linkparents node/]
-[@linkversions node/]
-[@linktype node/]
-[@linkservice/]
+[@linksLib.linkallowableactions node/]
+[@linksLib.linkrelationships node/]
+[@linksLib.linkparents node/]
+[@linksLib.linkversions node/]
+[@linksLib.linktype node/]
+[@linksLib.linkservice/]
 [/#macro]
 
 
@@ -67,8 +67,8 @@
 <author><name>${node.properties.creator}</name></author>
 [@contentstream node/]
 <id>urn:uuid:${node.id}</id>
-<link rel="self" href="${absurl(url.serviceContext)}[@nodeuri node/]"/>
-[@linkstream node "enclosure"/]
+[@linksLib.linknodeself node/]
+[@linksLib.linkstream node "enclosure"/]
 [@documentCMISLinks node=node/]
 <published>${xmldate(node.properties.created)}</published>
 <summary>[@contentsummary node/]</summary>
@@ -92,17 +92,17 @@
 <author><name>${node.properties.creator}</name></author>
 [@contentstream node/]
 <id>urn:uuid:${node.id}</id>
-<link rel="self" href="${absurl(url.serviceContext)}/api/pwc/[@noderef node/]"/>
-[@linkstream node "enclosure"/]
-<link rel="edit" href="${absurl(url.serviceContext)}[@nodeuri node/]"/>
-[@linkstream node "edit-media"/]
+[#assign pwcuri]/api/pwc/[@linksLib.noderef node/][/#assign]
+[@linksLib.linkself href="${pwcuri}"/]
+[@linksLib.linkstream node "enclosure"/]
+[@linksLib.linknodeedit node/]
+[@linksLib.linkstream node "edit-media"/]
 [@documentCMISLinks node=node/]
 <published>${xmldate(node.properties.created)}</published>
 <summary>[@contentsummary node/]</summary>
 <title>${node.name}</title>
 <updated>${xmldate(node.properties.modified)}</updated>
 <app:edited>${xmldate(node.properties.modified)}</app:edited>
-[#-- TODO: the edit link refers to the updatable node resource, allowing updates on PWCs without checkin --]
 <alf:icon>${absurl(url.context)}${node.icon16}</alf:icon>
 <cmisra:object>
 [@objectCMISProps node propfilter/]
@@ -125,8 +125,8 @@
 <author><name>${node.properties.creator}</name></author>
 <content>${node.id}</content>  [#-- TODO --]
 <id>urn:uuid:${node.id}</id>
-<link rel="self" href="${absurl(url.serviceContext)}[@nodeuri node/]"/>
-<link rel="edit" href="${absurl(url.serviceContext)}[@nodeuri node/]"/>
+[@linksLib.linknodeself node/]
+[@linksLib.linknodeedit node/]
 [@folderCMISLinks node/]
 <published>${xmldate(node.properties.created)}</published>
 <summary>${node.properties.description!node.properties.title!""}</summary>  [#-- TODO --]
@@ -143,7 +143,9 @@
 [#assign nested = cmischildren(node, typesfilter)/]
 [#if nested?size > 0]
 <cmisra:children>
-[@feedLib.node node "${nestedkind}"/]
+[@feedLib.node node "${nestedkind}"]
+  [#if nestedkind == "tree"][@linksLib.linktree node "self"/][#else][@linksLib.linkdescendants node "self"/][/#if]
+[/@feedLib.node]
 [#list nested as child]
   [#if child.isDocument]
     [@document child propfilter includeallowableactions includerelationships/]
@@ -158,16 +160,16 @@
 [/#macro]
 
 [#macro folderCMISLinks node]
-[@linkallowableactions node/]
-[@linkrelationships node/]
+[@linksLib.linkallowableactions node/]
+[@linksLib.linkrelationships node/]
 [#if cmisproperty(node, cmisconstants.PROP_PARENT_ID)?is_string]
-[@linkparent node/]
+[@linksLib.linkparent node/]
 [/#if]
-[@linkchildren node/]
-[@linkdescendants node/]
-[@linktree node/]
-[@linktype node/]
-[@linkservice/]
+[@linksLib.linkchildren node/]
+[@linksLib.linkdescendants node/]
+[@linksLib.linktree node/]
+[@linksLib.linktype node/]
+[@linksLib.linkservice/]
 [/#macro]
 
 
@@ -180,8 +182,8 @@
 <author><name>${xmldate(date)}</name></author>  [#-- TODO: [@namedvalue cmisconstants.PROP_CREATED_BY assoc cmisconstants.DATATYPE_STRING/] --]
 <content>[@namedvalue cmisconstants.PROP_OBJECT_ID assoc cmisconstants.DATATYPE_ID/]</content>  [#-- TODO: spec id, how to map? --]
 <id>[@namedvalue cmisconstants.PROP_OBJECT_ID assoc cmisconstants.DATATYPE_ID/]</id>   [#-- TODO: id compliant --]
-<link rel="self" href="${absurl(url.serviceContext)}[@assocuri assoc/]"/>
-<link rel="edit" href="${absurl(url.serviceContext)}[@assocuri assoc/]"/>
+[@linksLib.linkassocself assoc/]
+[@linksLib.linkassocedit assoc/]
 [@assocCMISLinks assoc=assoc/]
 <published>${xmldate(date)}</published>  [#-- TODO: [@namedvalue cmisconstants.PROP_CREATION_DATE assoc cmisconstants.DATATYPE_DATETIME/] --]
 <summary>[@namedvalue cmisconstants.PROP_OBJECT_ID assoc cmisconstants.DATATYPE_ID/]</summary>  [#-- TODO: spec id, how to map? --]
@@ -197,10 +199,10 @@
 
 [#macro assocCMISLinks assoc]
 [#-- TODO: <link rel="allowableactions" href="${absurl(url.serviceContext)}/api/node/${node.nodeRef.storeRef.protocol}/${node.nodeRef.storeRef.identifier}/${node.nodeRef.id}/permissions"/> --]
-[@linktype assoc/]
-[@linktosource assoc.source/]
-[@linktotarget assoc.target/]
-[@linkservice/]
+[@linksLib.linktype assoc/]
+[@linksLib.linktosource assoc.source/]
+[@linksLib.linktotarget assoc.target/]
+[@linksLib.linkservice/]
 [/#macro]
 
 
@@ -211,23 +213,22 @@
 [#-- TODO: spec issue 47 --]
 [#macro row row includeallowableactions=false]
 [@entry]
-[#if row.nodes??]
-[#assign node = row.nodes?first]
+[#-- TODO: calculate multiNodeResultSet from result set --]
+[#if row.nodes?? && row.nodes?size == 1][#assign node = row.nodes?first/][/#if]
+[#if node??]
 <author><name>${node.properties.creator!""}</name></author>
-
 [#-- TODO: review if consistent with ATOM --]
 [#if node.isDocument]
   [@contentstream node/]
 [#else]
   <content>${node.id}</content>  [#-- TODO --]
 [/#if]    
-
 <id>urn:uuid:${node.id}</id>
-<link rel="self" href="${absurl(url.serviceContext)}[@nodeuri node/]"/>
-<link rel="edit" href="${absurl(url.serviceContext)}[@nodeuri node/]"/>
+[@linksLib.linknodeself node/]
+[@linksLib.linknodeedit node/]
 [#if node.isDocument]
-  [@linkstream node "enclosure"/]
-  [@linkstream node "edit-media"/]
+  [@linksLib.linkstream node "enclosure"/]
+  [@linksLib.linkstream node "edit-media"/]
   [@documentCMISLinks node=node/]
 [#else]
   [@folderCMISLinks node=node/]
@@ -235,10 +236,14 @@
 <title>${node.name}</title>
 <updated>${xmldate(node.properties.modified)}</updated>
 <alf:icon>${absurl(url.context)}${node.icon16}</alf:icon>
+[#else]
+<author><name>${person.properties.userName}</name></author>
+<id>urn:uuid:row-${row.index?c}</id>
+<title>Row ${row.index?c}</title>
+<updated>${xmldate(now)}</updated>
 [/#if]
 <cmisra:object>
 <cmis:properties>
-
 [#assign rowvalues = row.values]
 [#list rowvalues?keys as colname]
   [#assign coltype = row.getColumnType(colname)]
@@ -249,7 +254,7 @@
   [/#if]
 [/#list]
 </cmis:properties>
-[#if row.nodes?? && includeallowableactions][@allowableactions node/][/#if]
+[#if node?? && includeallowableactions][@allowableactions node/][/#if]
 </cmisra:object>
 [/@entry]
 [/#macro]
@@ -273,39 +278,39 @@
 [/#macro]
 
 [#macro propvalue name value type]
-[#if type.label == cmisconstants.DATATYPE_STRING]
+[#if type == cmisconstants.DATATYPE_STRING]
 <cmis:propertyString pdid="${name}">[@values value;v]<cmis:value>[@stringvalue v/]</cmis:value>[/@values]</cmis:propertyString>
-[#elseif type.label == cmisconstants.DATATYPE_INTEGER]
+[#elseif type == cmisconstants.DATATYPE_INTEGER]
 <cmis:propertyInteger pdid="${name}">[@values value;v]<cmis:value>[@integervalue v/]</cmis:value>[/@values]</cmis:propertyInteger>
-[#elseif type.label == cmisconstants.DATATYPE_DECIMAL]
+[#elseif type == cmisconstants.DATATYPE_DECIMAL]
 <cmis:propertyDecimal pdid="${name}">[@values value;v]<cmis:value>[@decimalvalue v/]</cmis:value>[/@values]</cmis:propertyDecimal>
-[#elseif type.label == cmisconstants.DATATYPE_BOOLEAN]
+[#elseif type == cmisconstants.DATATYPE_BOOLEAN]
 <cmis:propertyBoolean pdid="${name}">[@values value;v]<cmis:value>[@booleanvalue v/]</cmis:value>[/@values]</cmis:propertyBoolean>
-[#elseif type.label == cmisconstants.DATATYPE_DATETIME]
+[#elseif type == cmisconstants.DATATYPE_DATETIME]
 <cmis:propertyDateTime pdid="${name}">[@values value;v]<cmis:value>[@datetimevalue v/]</cmis:value>[/@values]</cmis:propertyDateTime>
-[#elseif type.label == cmisconstants.DATATYPE_URI]
+[#elseif type == cmisconstants.DATATYPE_URI]
 [#-- TODO: check validity of abs url prefix --]
 <cmis:propertyUri pdid="${name}">[@values value;v]<cmis:value>[@urivalue absurl(url.serviceContext) + v/]</cmis:value>[/@values]</cmis:propertyUri>
-[#elseif type.label == cmisconstants.DATATYPE_ID]
+[#elseif type == cmisconstants.DATATYPE_ID]
 <cmis:propertyId pdid="${name}">[@values value;v]<cmis:value>[@idvalue v/]</cmis:value>[/@values]</cmis:propertyId>
 [#-- TODO: remaining property types --]
 [/#if]
 [/#macro]
 
 [#macro propnull name type]
-[#if type.label == cmisconstants.DATATYPE_STRING]
+[#if type == cmisconstants.DATATYPE_STRING]
 <cmis:propertyString pdid="${name}"/>
-[#elseif type.label == cmisconstants.DATATYPE_INTEGER]
+[#elseif type == cmisconstants.DATATYPE_INTEGER]
 <cmis:propertyInteger pdid="${name}"/>
-[#elseif type.label == cmisconstants.DATATYPE_DECIMAL]
+[#elseif type == cmisconstants.DATATYPE_DECIMAL]
 <cmis:propertyDecimal pdid="${name}"/>
-[#elseif type.label == cmisconstants.DATATYPE_BOOLEAN]
+[#elseif type == cmisconstants.DATATYPE_BOOLEAN]
 <cmis:propertyBoolean pdid="${name}"/>
-[#elseif type.label == cmisconstants.DATATYPE_DATETIME]
+[#elseif type == cmisconstants.DATATYPE_DATETIME]
 <cmis:propertyDateTime pdid="${name}"/>
-[#elseif type.label == cmisconstants.DATATYPE_URI]
+[#elseif type == cmisconstants.DATATYPE_URI]
 <cmis:propertyUri pdid="${name}"/>
-[#elseif type.label == cmisconstants.DATATYPE_ID]
+[#elseif type == cmisconstants.DATATYPE_ID]
 <cmis:propertyId pdid="${name}"/>
 [#-- TODO: remaining property types --]
 [/#if]
@@ -380,7 +385,7 @@
 <author><name>${person.properties.userName}</name></author>
 <content>${typedefn.typeId.id}</content>  [#-- TODO --]
 <id>urn:uuid:type-${typedefn.typeId.id}</id>
-<link rel="self" href="${absurl(url.serviceContext)}/api/type/${typedefn.typeId.id}"/>
+[@linksLib.linktypeself typedefn/]
 [@typedefCMISLinks typedefn/]
 <summary>[#if typedefn.description??]${typedefn.description?xml}[#else]${typedefn.displayName?xml}[/#if]</summary>
 <title>${typedefn.displayName}</title>
@@ -391,7 +396,9 @@
 [#assign nested = typedefn.getSubTypes(false)/]
 [#if nested?size > 1]
 <cmisra:children>
-[@feedLib.typedef typedefn=typedefn kind="descendants" author="${person.properties.userName}"/]
+[@feedLib.generic "urn:uuid:type-${typedefn.typeId.id}-descendants" "Type ${typedefn.displayName} Descendants" "${person.properties.userName}"]
+  [@linksLib.linktypedescendants typedefn "self"/]
+[/@feedLib.generic]
 [#list nested as child]
   [@typedef child includeProperties includeInheritedProperties ns depth+1 maxdepth/]
 [/#list]
@@ -402,13 +409,13 @@
 [/#macro]
 
 [#macro typedefCMISLinks typedef]
-[@linktype typedef/]
+[@linksLib.linktype typedef/]
 [#if typedef.parentType??]
-[@linktypeparent typedef/]
+[@linksLib.linktypeparent typedef/]
 [/#if]
-[@linktypechildren typedef/]
-[@linktypedescendants typedef/]
-[@linkservice/]
+[@linksLib.linktypechildren typedef/]
+[@linksLib.linktypedescendants typedef/]
+[@linksLib.linkservice/]
 [/#macro]
 
 [#macro typedefCMISProps typedef includeProperties=true includeInheritedProperties=true]
@@ -424,30 +431,30 @@
 [/#macro]
 
 [#macro documenttypedefCMISProps typedef includeProperties=true includeInheritedProperties=true]
-<cmisra:documentType>
+<cmisra:type xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="cmis:cmisTypeDocumentDefinitionType">
   [@objecttypedefCMISProps typedef includeProperties includeInheritedProperties/]
   <cmis:versionable>${typedef.versionable?string}</cmis:versionable>
   <cmis:contentStreamAllowed>${typedef.contentStreamAllowed.label}</cmis:contentStreamAllowed>
-</cmisra:documentType>
+</cmisra:type>
 [/#macro]
 
 [#macro foldertypedefCMISProps typedef includeProperties=true includeInheritedProperties=true]
-<cmisra:folderType>
+<cmisra:type xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="cmis:cmisTypeFolderDefinitionType">
   [@objecttypedefCMISProps typedef includeProperties includeInheritedProperties/]
-</cmisra:folderType>
+</cmisra:type>
 [/#macro]
 
 [#macro relationshiptypedefCMISProps typedef includeProperties=true includeInheritedProperties=true]
-<cmisra:relationshipType>
+<cmisra:type xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="cmis:cmisTypeRelationshipDefinitionType">
   [@objecttypedefCMISProps typedef includeProperties includeInheritedProperties/]
   [#-- TODO: source and target types --]
-</cmisra:relationshipType>
+</cmisra:type>
 [/#macro]
 
 [#macro policytypedefCMISProps typedef includeProperties=true includeInheritedProperties=true]
-<cmisra:policyType>
+<cmisra:type xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="cmis:cmisTypePolicyDefinitionType">
   [@objecttypedefCMISProps typedef includeProperties includeInheritedProperties/]
-</cmisra:policyType>
+</cmisra:type>
 [/#macro]
 
 [#macro objecttypedefCMISProps typedef includeProperties=true includeInheritedProperties=true]
@@ -576,7 +583,7 @@
   <cmis:required>${propdef.required?string}</cmis:required>
   <cmis:queryable>${propdef.queryable?string}</cmis:queryable>
   <cmis:orderable>${propdef.orderable?string}</cmis:orderable>
-  [@cmisChoices propdef.choices propdef.dataType/]
+  [@cmisChoices propdef.choices propdef.dataType.label/]
   <cmis:openChoice>${propdef.openChoice?string}</cmis:openChoice>
 [#if propdef.defaultValue??]
   [#-- TODO: defaults for HTML and XML property types --]
@@ -587,37 +594,37 @@
 [#macro cmisChoices choices type]
 [#if choices?exists]
 [#list choices as choice]
-[#if type.label == cmisconstants.DATATYPE_STRING]
+[#if type == cmisconstants.DATATYPE_STRING]
 <cmis:choiceString cmis:key="${choice.name}">
 [@cmisChoices choice.children type/]
 <cmis:value>[@stringvalue choice.value/]</cmis:value>
 </cmis:choiceString>
-[#elseif type.label == cmisconstants.DATATYPE_INTEGER]
+[#elseif type == cmisconstants.DATATYPE_INTEGER]
 <cmis:choiceInteger cmis:key="${choice.name}">
 [@cmisChoices choice.children type/]
 <cmis:value>[@stringvalue choice.value/]</cmis:value>
 </cmis:choiceInteger>
-[#elseif type.label == cmisconstants.DATATYPE_DECIMAL]
+[#elseif type == cmisconstants.DATATYPE_DECIMAL]
 <cmis:choiceDecimal cmis:key="${choice.name}">
 [@cmisChoices choice.children type/]
 <cmis:value>[@stringvalue choice.value/]</cmis:value>
 </cmis:choiceDecimal>
-[#elseif type.label == cmisconstants.DATATYPE_BOOLEAN]
+[#elseif type == cmisconstants.DATATYPE_BOOLEAN]
 <cmis:choiceBoolean cmis:key="${choice.name}">
 [@cmisChoices choice.children type/]
 <cmis:value>[@stringvalue choice.value/]</cmis:value>
 </cmis:choiceBoolean>
-[#elseif type.label == cmisconstants.DATATYPE_DATETIME]
+[#elseif type == cmisconstants.DATATYPE_DATETIME]
 <cmis:choiceDateTime cmis:key="${choice.name}">
 [@cmisChoices choice.children type/]
 <cmis:value>[@stringvalue choice.value/]</cmis:value>
 </cmis:choiceDateTime>
-[#elseif type.label == cmisconstants.DATATYPE_URI]
+[#elseif type == cmisconstants.DATATYPE_URI]
 <cmis:choiceUri cmis:key="${choice.name}">
 [@cmisChoices choice.children type/]
 <cmis:value>[@stringvalue choice.value/]</cmis:value>
 </cmis:choiceUri>
-[#elseif type.label == cmisconstants.DATATYPE_ID]
+[#elseif type == cmisconstants.DATATYPE_ID]
 <cmis:choiceId cmis:key="${choice.name}">
 [@cmisChoices choice.children type/]
 <cmis:value>[@stringvalue choice.value/]</cmis:value>
@@ -626,91 +633,6 @@
 [/#if]
 [/#list]
 [/#if]
-[/#macro]
-
-
-[#--                                --]
-[#-- Link Relations                 --]
-[#--                                --]
-
-[#-- Link to repository service document --]
-[#macro linkservice]
-<link rel="${cmisconstants.REL_SERVICE}" href="${absurl(url.serviceContext)}/api/repository"/>
-[/#macro]
-
-[#-- Link to node allowable actions --]
-[#macro linkallowableactions node]
-<link rel="${cmisconstants.REL_ALLOWABLE_ACTIONS}" href="${absurl(url.serviceContext)}[@nodeuri node/]/allowableactions"/>
-[/#macro]
-
-[#-- Link to node relationships --]
-[#macro linkrelationships node]
-<link rel="${cmisconstants.REL_RELATIONSHIPS}" href="${absurl(url.serviceContext)}[@nodeuri node/]/rels"/>
-[/#macro]
-
-[#-- Link to node parents --]
-[#macro linkparents node]
-<link rel="${cmisconstants.REL_UP}" type="application/atom+xml;type=feed" href="${absurl(url.serviceContext)}[@nodeuri node/]/parents"/>
-[/#macro]
-
-[#-- Link to folder parent --]
-[#macro linkparent node]
-<link rel="${cmisconstants.REL_UP}" type="application/atom+xml;type=entry" href="${absurl(url.serviceContext)}[@nodeuri node.parent/]"/>
-[/#macro]
-
-[#-- Link to node children --]
-[#macro linkchildren node]
-<link rel="${cmisconstants.REL_DOWN}" type="application/atom+xml;type=feed" href="${absurl(url.serviceContext)}[@nodeuri node/]/children"/>
-[/#macro]
-
-[#-- Link to node descendants --]
-[#macro linkdescendants node]
-<link rel="${cmisconstants.REL_DOWN}" type="application/cmistree+xml" href="${absurl(url.serviceContext)}[@nodeuri node/]/descendants"/>
-[/#macro]
-
-[#-- Link to node tree --]
-[#macro linktree node]
-<link rel="${cmisconstants.REL_FOLDER_TREE}" type="application/cmistree+xml" href="${absurl(url.serviceContext)}[@nodeuri node/]/tree"/>
-[/#macro]
-
-[#-- Link to node versions --]
-[#macro linkversions node]
-<link rel="${cmisconstants.REL_VERSION_HISTORY}" href="${absurl(url.serviceContext)}[@nodeuri node/]/versions"/>
-[/#macro]
-
-[#-- Link to source node --]
-[#macro linktosource node]
-<link rel="${cmisconstants.REL_ASSOC_SOURCE}" href="${absurl(url.serviceContext)}[@nodeuri node/]"/>
-[/#macro]
-
-[#-- Link to target node --]
-[#macro linktotarget node]
-<link rel="${cmisconstants.REL_ASSOC_TARGET}" href="${absurl(url.serviceContext)}[@nodeuri node/]"/>
-[/#macro]
-
-[#-- Link to content stream --]
-[#macro linkstream node rel=""]
-<link[#if rel !=""] rel="${rel}"[/#if][#if node.mimetype??] type="${node.mimetype}"[/#if] href="[@contenturi node/]"/>
-[/#macro]
-
-[#-- Link to node type --]
-[#macro linktype object]
-<link rel="${cmisconstants.REL_DESCRIBED_BY}" href="${absurl(url.serviceContext)}[@typeuri cmistype(object)/]"/>
-[/#macro]
-
-[#-- Link to type parent --]
-[#macro linktypeparent typedef]
-<link rel="${cmisconstants.REL_UP}" type="application/atom+xml;type=entry" href="${absurl(url.serviceContext)}[@typeuri typedef.parentType/]"/>
-[/#macro]
-
-[#-- Link to type children --]
-[#macro linktypechildren typedef]
-<link rel="${cmisconstants.REL_DOWN}" type="application/atom+xml;type=feed" href="${absurl(url.serviceContext)}[@typeuri typedef/]/children"/>
-[/#macro]
-
-[#-- Link to type descendants --]
-[#macro linktypedescendants typedef]
-<link rel="${cmisconstants.REL_DOWN}" type="application/cmistree+xml" href="${absurl(url.serviceContext)}[@typeuri typedef/]/descendants"/>
 [/#macro]
 
 
@@ -725,22 +647,4 @@
 [#macro contenttype type][#if type == "text/html"]text[#elseif type == "text/xhtml"]xhtml[#elseif type == "text/plain"]text<#else>${type}[/#if][/#macro]
 
 [#-- Helper to render atom content element --]
-[#macro contentstream node]<content[#if node.mimetype??] type="${node.mimetype}"[/#if] src="[@contenturi node/]"/>[/#macro]
-
-[#-- Helper to render Alfresco content stream uri --]
-[#macro contenturi node]${absurl(url.serviceContext)}/api/node/${node.nodeRef.storeRef.protocol}/${node.nodeRef.storeRef.identifier}/${node.nodeRef.id}/content[#if node.properties.name?? && node.properties.name?last_index_of(".") != -1]${encodeuri(node.properties.name?substring(node.properties.name?last_index_of(".")))}[/#if][/#macro]
-
-[#-- Helper to render Alfresco service document uri --]
-[#macro serviceuri]${absurl(url.serviceContext)}/api/repository[/#macro]
-
-[#-- Helper to render Node Ref --]
-[#macro noderef node]${node.nodeRef.storeRef.protocol}/${node.nodeRef.storeRef.identifier}/${node.nodeRef.id}[/#macro]
-
-[#-- Helper to render Alfresco Node uri --]
-[#macro nodeuri node]/api/node/[@noderef node/][/#macro]
-
-[#-- Helper to render Alfresco Assoc uri --]
-[#macro assocuri assoc]/api/rel/[@noderef assoc.source/]/type/${cmistype(assoc).typeId.id!"undefined"}/target/[@noderef assoc.target/][/#macro]
-
-[#-- Helper to render Alfresco Type uri --]
-[#macro typeuri typedef]/api/type/${typedef.typeId.id}[/#macro]
+[#macro contentstream node]<content[#if node.mimetype??] type="${node.mimetype}"[/#if] src="[@linksLib.contenturi node/]"/>[/#macro]

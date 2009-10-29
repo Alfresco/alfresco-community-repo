@@ -9,17 +9,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <feed [@nsLib.feedNS/]>
 
-[@feedLib.node node "relationships"]
+[#-- TODO: uuid --]
+[@feedLib.generic "urn:uuid:resultset" "Result set for ${statement}" "${person.properties.userName}"]
   [@linksLib.linkservice/]
   [@linksLib.linkself/]
-  [#assign nodeuri][@linksLib.nodeuri node/][/#assign]
-  [@linksLib.linkvia href="${nodeuri}"/]
-  [@pagingLib.links cursor/]
-[/@feedLib.node]
+  [@pagingLib.linksredirect cursor "${queryUri}" "${queryArgs}" "${cmisconstants.MIMETYPE_FEED}"/]
+[/@feedLib.generic]
 [@pagingLib.opensearch cursor/]
 
-[#list results as assoc]
-  [@entryLib.assoc assoc=assoc propfilter=filter includeallowableactions=includeAllowableActions/]
+[#assign rs = cmisresultset(resultset)]
+[#list rs.rows as row]
+[@entryLib.row row=row includeallowableactions=includeAllowableActions/]
 [/#list]
 
 </feed>

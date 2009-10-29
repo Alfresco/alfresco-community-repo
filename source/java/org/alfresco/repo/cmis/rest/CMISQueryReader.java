@@ -62,7 +62,7 @@ public class CMISQueryReader implements FormatReader<String>
      */
     public String getSourceMimetype()
     {
-        return CMISConstants.MIMETYPE_QUERY;
+        return CMISConstants.MIMETYPE_CMIS_QUERY;
     }
 
     /* (non-Javadoc)

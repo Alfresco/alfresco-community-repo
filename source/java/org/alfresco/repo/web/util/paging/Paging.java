@@ -152,10 +152,6 @@ public class Paging
      *     skipCount  => row number start index
      *     maxItems  => size of page
      * 
-     * - header values
-     *     CMIS-skipCount  => row number start index
-     *     CMIS-maxItems  => size of page
-     * 
      * @param args  request args
      * @return  page (if pageNumber driven) or window (if skipCount driven)
      */
@@ -253,7 +249,7 @@ public class Paging
      */
     public Page createUnlimitedPage()
     {
-        return new Page(PageType.PAGE, zeroBasedPage, zeroBasedPage ? 0 : 1, 0);
+        return new Page(PageType.PAGE, zeroBasedPage, zeroBasedPage ? 0 : 1, -1);
     }
     
     /**

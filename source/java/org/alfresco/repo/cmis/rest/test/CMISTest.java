@@ -1274,13 +1274,13 @@ public class CMISTest extends BaseCMISWebScriptTest
         {
             {
                 // meta data only query against folder
-                String query = "SELECT * FROM Folder " +
-                               "WHERE ObjectId = '" + testFolderObject.getObjectId().getStringValue() + "'";
+                String query = "SELECT * FROM cmis:folder " +
+                               "WHERE cmis:ObjectId = '" + testFolderObject.getObjectId().getStringValue() + "'";
                 String queryReq = queryDoc.replace("${STATEMENT}", query);
                 queryReq = queryReq.replace("${SKIPCOUNT}", "0");
-                queryReq = queryReq.replace("${PAGESIZE}", "5");
+                queryReq = queryReq.replace("${MAXITEMS}", "5");
         
-                Response queryRes = sendRequest(new PostRequest(queryHREF.toString(), queryReq, CMISConstants.MIMETYPE_QUERY), 200);
+                Response queryRes = sendRequest(new PostRequest(queryHREF.toString(), queryReq, CMISConstants.MIMETYPE_CMIS_QUERY), 200);
                 assertNotNull(queryRes);
                 Feed queryFeed = getAbdera().parseFeed(new StringReader(queryRes.getContentAsString()), null);
                 assertNotNull(queryFeed);
@@ -1294,14 +1294,14 @@ public class CMISTest extends BaseCMISWebScriptTest
     
             {
                 // meta data only query against document
-                String query = "SELECT * FROM Document " +
+                String query = "SELECT * FROM cmis:document " +
                                "WHERE IN_FOLDER('" + testFolderObject.getObjectId().getStringValue() + "') " +
-                               "AND Name = 'apple1'";
+                               "AND cmis:Name = 'apple1'";
                 String queryReq = queryDoc.replace("${STATEMENT}", query);
                 queryReq = queryReq.replace("${SKIPCOUNT}", "0");
-                queryReq = queryReq.replace("${PAGESIZE}", "5");
+                queryReq = queryReq.replace("${MAXITEMS}", "5");
         
-                Response queryRes = sendRequest(new PostRequest(queryHREF.toString(), queryReq, CMISConstants.MIMETYPE_QUERY), 200);
+                Response queryRes = sendRequest(new PostRequest(queryHREF.toString(), queryReq, CMISConstants.MIMETYPE_CMIS_QUERY), 200);
                 assertNotNull(queryRes);
                 Feed queryFeed = getAbdera().parseFeed(new StringReader(queryRes.getContentAsString()), null);
                 assertNotNull(queryFeed);
@@ -1317,13 +1317,13 @@ public class CMISTest extends BaseCMISWebScriptTest
         if (queryCapability.equals("fulltextonly") || queryCapability.equals("bothseperate") || queryCapability.equals("bothcombined"))
         {
             // full text only query
-            String query = "SELECT ObjectId, ObjectTypeId, Name FROM Document " +
+            String query = "SELECT cmis:ObjectId, cmis:ObjectTypeId, cmis:Name FROM cmis:document " +
                            "WHERE CONTAINS('" + doc2name + "')";
             String queryReq = queryDoc.replace("${STATEMENT}", query);
             queryReq = queryReq.replace("${SKIPCOUNT}", "0");
-            queryReq = queryReq.replace("${PAGESIZE}", "5");
+            queryReq = queryReq.replace("${MAXITEMS}", "5");
     
-            Response queryRes = sendRequest(new PostRequest(queryHREF.toString(), queryReq, CMISConstants.MIMETYPE_QUERY), 200);
+            Response queryRes = sendRequest(new PostRequest(queryHREF.toString(), queryReq, CMISConstants.MIMETYPE_CMIS_QUERY), 200);
             assertNotNull(queryRes);
             Feed queryFeed = getAbdera().parseFeed(new StringReader(queryRes.getContentAsString()), null);
             assertNotNull(queryFeed);
@@ -1338,15 +1338,15 @@ public class CMISTest extends BaseCMISWebScriptTest
         if (queryCapability.equals("bothcombined"))
         {
             // combined meta data and full text
-            String query = "SELECT ObjectId, ObjectTypeId, Name FROM Document " +
+            String query = "SELECT cmis:ObjectId, cmis:ObjectTypeId, cmis:Name FROM cmis:document " +
                            "WHERE IN_FOLDER('" + testFolderObject.getObjectId().getStringValue() + "') " +
-                           "AND Name = 'apple1' " +
+                           "AND cmis:Name = 'apple1' " +
                            "AND CONTAINS('apple1')";
             String queryReq = queryDoc.replace("${STATEMENT}", query);
             queryReq = queryReq.replace("${SKIPCOUNT}", "0");
-            queryReq = queryReq.replace("${PAGESIZE}", "5");
+            queryReq = queryReq.replace("${MAXITEMS}", "5");
     
-            Response queryRes = sendRequest(new PostRequest(queryHREF.toString(), queryReq, CMISConstants.MIMETYPE_QUERY), 200);
+            Response queryRes = sendRequest(new PostRequest(queryHREF.toString(), queryReq, CMISConstants.MIMETYPE_CMIS_QUERY), 200);
             assertNotNull(queryRes);
             Feed queryFeed = getAbdera().parseFeed(new StringReader(queryRes.getContentAsString()), null);
             assertNotNull(queryFeed);
@@ -1386,26 +1386,52 @@ public class CMISTest extends BaseCMISWebScriptTest
         // query children
         String queryDoc = loadString("/org/alfresco/repo/cmis/rest/test/query.cmisquery.xml");
         CMISObject testFolderObject = testFolder.getExtension(CMISConstants.OBJECT);
-        String query = "SELECT ObjectId, ObjectTypeId, Name FROM Document " + "WHERE IN_FOLDER('" + testFolderObject.getObjectId().getStringValue() + "')";
+        String query = "SELECT cmis:ObjectId, cmis:ObjectTypeId, cmis:Name FROM cmis:document " + "WHERE IN_FOLDER('" + testFolderObject.getObjectId().getStringValue() + "')";
+        String queryReq = queryDoc.replace("${STATEMENT}", query);
+        queryReq = queryReq.replace("${SKIPCOUNT}", "0");
+        queryReq = queryReq.replace("${MAXITEMS}", "4");
+        
+        // issue query
+        Response queryRes = sendRequest(new PostRequest(queryHREF.toString(), queryReq, CMISConstants.MIMETYPE_CMIS_QUERY), 200);
+        assertNotNull(queryRes);
+        
+        // retrieve entries for first page
+        Feed queryFeed = getAbdera().parseFeed(new StringReader(queryRes.getContentAsString()), null);
+        assertNotNull(queryFeed);
 
-        for (int page = 0; page < 4; page++)
+        int page = 0;
+        Link nextLink = null;
+        do
         {
-            String queryReq = queryDoc.replace("${STATEMENT}", query);
-            queryReq = queryReq.replace("${SKIPCOUNT}", new Integer(page * 4).toString());
-            queryReq = queryReq.replace("${PAGESIZE}", "4");
-            Response queryRes = sendRequest(new PostRequest(queryHREF.toString(), queryReq, CMISConstants.MIMETYPE_QUERY), 200);
-            assertNotNull(queryRes);
-
-            Feed queryFeed = getAbdera().parseFeed(new StringReader(queryRes.getContentAsString()), null);
-            assertNotNull(queryFeed);
-            assertEquals(page < 3 ? 4 : 3, queryFeed.getEntries().size());
-
+            page++;
+            assertEquals(page < 4 ? 4 : 3, queryFeed.getEntries().size());
+            
+            // mark entries as read
             for (Entry entry : queryFeed.getEntries())
             {
                 docIds.remove(entry.getId());
             }
+
+            // next page
+            nextLink = queryFeed.getLink("next");
+            if (page == 4)
+            {
+                assertNull(nextLink);
+            }
+            else
+            {
+                assertNotNull(nextLink);
+            }
+            
+            if (nextLink != null)
+            {
+                queryFeed = getFeed(nextLink.getHref());
+                assertNotNull(queryFeed);
+            }
         }
+        while (nextLink != null);
         
+        assertEquals(4, page);
         assertEquals(0, docIds.size());
     }
 
@@ -1444,15 +1470,15 @@ public class CMISTest extends BaseCMISWebScriptTest
     
         {
             // construct structured query
-            String query = "SELECT * FROM Document " +
+            String query = "SELECT * FROM cmis:document " +
                            "WHERE IN_FOLDER('" + testFolderObject.getObjectId().getStringValue() + "') ";
             String queryReq = queryDoc.replace("${STATEMENT}", query);
             queryReq = queryReq.replace("${INCLUDEALLOWABLEACTIONS}", "true");
             queryReq = queryReq.replace("${SKIPCOUNT}", "0");
-            queryReq = queryReq.replace("${PAGESIZE}", "5");
+            queryReq = queryReq.replace("${MAXITEMS}", "5");
     
             // issue structured query
-            Response queryRes = sendRequest(new PostRequest(queryHREF.toString(), queryReq, CMISConstants.MIMETYPE_QUERY), 200);
+            Response queryRes = sendRequest(new PostRequest(queryHREF.toString(), queryReq, CMISConstants.MIMETYPE_CMIS_QUERY), 200);
             assertNotNull(queryRes);
             Feed queryFeed = getAbdera().parseFeed(new StringReader(queryRes.getContentAsString()), null);
             assertNotNull(queryFeed);

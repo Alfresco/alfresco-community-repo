@@ -273,7 +273,7 @@ public class CMISCustomTypeTest extends BaseCMISWebScriptTest
             queryReq = queryReq.replace("${PAGESIZE}", "5");
     
             // issue structured query
-            Response queryRes = sendRequest(new PostRequest(queryHREF.toString(), queryReq, CMISConstants.MIMETYPE_QUERY), 200);
+            Response queryRes = sendRequest(new PostRequest(queryHREF.toString(), queryReq, CMISConstants.MIMETYPE_CMIS_QUERY), 200);
             assertNotNull(queryRes);
             Feed queryFeed = getAbdera().parseFeed(new StringReader(queryRes.getContentAsString()), null);
             assertNotNull(queryFeed);

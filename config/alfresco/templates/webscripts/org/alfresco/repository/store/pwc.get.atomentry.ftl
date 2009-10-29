@@ -1,5 +1,6 @@
 [#ftl]
 [#import "/org/alfresco/cmis/ns.lib.atom.ftl" as nsLib/]
+[#import "/org/alfresco/cmis/links.lib.atom.ftl" as linksLib/]
 [#import "/org/alfresco/cmis/atomentry.lib.atom.ftl" as entryLib/]
 [#compress]
 

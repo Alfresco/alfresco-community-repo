@@ -12,7 +12,7 @@ script:
         var paged = cmis.queryTypeChildren(null, page);
         model.results = paged.results;
         model.cursor = paged.cursor;
-        model.type = "base";
+        model.typedef = null;
     }
     else
     {
@@ -28,10 +28,10 @@ script:
         var paged = cmis.queryTypeChildren(typedef, page);
         model.results = paged.results;
         model.cursor = paged.cursor;
-        model.type = typeId;
+        model.typedef = typedef;
     }
 
     // handle property definitions
-    var returnPropertyDefinitions = args[cmis.ARG_INCLUDE_PROPERTY_DEFINITIONS];
-    model.returnPropertyDefinitions = returnPropertyDefinitions == "true" ? true : false;
+    var includePropertyDefinitions = args[cmis.ARG_INCLUDE_PROPERTY_DEFINITIONS];
+    model.includePropertyDefinitions = includePropertyDefinitions == "true" ? true : false;
 }

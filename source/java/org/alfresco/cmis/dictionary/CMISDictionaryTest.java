@@ -30,7 +30,7 @@ import org.alfresco.cmis.mapping.BaseCMISTest;
 
 public class CMISDictionaryTest extends BaseCMISTest
 {
-    public void testBasicTypes()
+    public void testAllTypes()
     {
         for (CMISTypeDefinition type : cmisDictionaryService.getAllTypes())
         {
@@ -38,6 +38,13 @@ public class CMISDictionaryTest extends BaseCMISTest
         }
     }
     
+    public void testBaseTypes()
+    {
+        for (CMISTypeDefinition type : cmisDictionaryService.getBaseTypes())
+        {
+            System.out.println(type);
+        }
+    }
     public void testSubTypes()
     {
         for (CMISTypeDefinition type : cmisDictionaryService.getAllTypes())

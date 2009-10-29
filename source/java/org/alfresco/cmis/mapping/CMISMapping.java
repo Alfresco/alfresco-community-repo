@@ -31,7 +31,6 @@ import java.util.Map;
 
 import org.alfresco.cmis.CMISActionEvaluator;
 import org.alfresco.cmis.CMISAllowedActionEnum;
-import org.alfresco.cmis.CMISContentStreamAllowedEnum;
 import org.alfresco.cmis.CMISDataTypeEnum;
 import org.alfresco.cmis.CMISDictionaryModel;
 import org.alfresco.cmis.CMISPropertyId;
@@ -65,7 +64,7 @@ public class CMISMapping implements InitializingBean
      * The Alfresco CMIS Namespace
      */
     public static String CMIS_MODEL_NS = "cmis";
-    public static String CMIS_MODEL_URI = "http://www.alfresco.org/model/cmis/0.62c";
+    public static String CMIS_MODEL_URI = "http://www.alfresco.org/model/cmis/0.62";
 
     /**
      * The Alfresco CMIS Model name.
@@ -86,10 +85,10 @@ public class CMISMapping implements InitializingBean
     // CMIS Types
     public static QName OBJECT_QNAME = QName.createQName(CMIS_MODEL_URI, "object");
     public static QName FILESYSTEM_OBJECT_QNAME = QName.createQName(CMIS_MODEL_URI, "filesystemobject");
-    public static QName DOCUMENT_QNAME = QName.createQName(CMIS_MODEL_URI, "Document");
-    public static QName FOLDER_QNAME = QName.createQName(CMIS_MODEL_URI, "Folder");
-    public static QName RELATIONSHIP_QNAME = QName.createQName(CMIS_MODEL_URI, "Relationship");
-    public static QName POLICY_QNAME = QName.createQName(CMIS_MODEL_URI, "Policy");
+    public static QName DOCUMENT_QNAME = QName.createQName(CMIS_MODEL_URI, "document");
+    public static QName FOLDER_QNAME = QName.createQName(CMIS_MODEL_URI, "folder");
+    public static QName RELATIONSHIP_QNAME = QName.createQName(CMIS_MODEL_URI, "relationship");
+    public static QName POLICY_QNAME = QName.createQName(CMIS_MODEL_URI, "policy");
 
     // CMIS Internal Type Ids
     public static CMISTypeId OBJECT_TYPE_ID = new CMISTypeId(CMISScope.OBJECT, OBJECT_QNAME, CMIS_MODEL_NS + ":" + OBJECT_QNAME.getLocalName(), OBJECT_QNAME);
@@ -242,6 +241,7 @@ public class CMISMapping implements InitializingBean
         registerEvaluator(CMISScope.FOLDER, new PermissionActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_CREATE_FOLDER, PermissionService.CREATE_CHILDREN));
         registerEvaluator(CMISScope.FOLDER, new PermissionActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_CREATE_RELATIONSHIP, PermissionService.CREATE_ASSOCIATIONS));
         registerEvaluator(CMISScope.FOLDER, new FixedValueActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_CREATE_POLICY, false));
+        registerEvaluator(CMISScope.FOLDER, new PermissionActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_DELETE_TREE, PermissionService.DELETE_NODE));
         registerEvaluator(CMISScope.FOLDER, new FixedValueActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_GET_ACL, false));
         registerEvaluator(CMISScope.FOLDER, new FixedValueActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_APPLY_ACL, false));
 

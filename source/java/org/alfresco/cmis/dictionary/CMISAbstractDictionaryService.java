@@ -127,6 +127,7 @@ public abstract class CMISAbstractDictionaryService extends AbstractLifecycleBea
         Map<CMISTypeId, CMISAbstractTypeDefinition> objectDefsByTypeId = new HashMap<CMISTypeId, CMISAbstractTypeDefinition>();
         Map<CMISTypeId, CMISTypeDefinition> typeDefsByTypeId = new HashMap<CMISTypeId, CMISTypeDefinition>();
         Map<String, CMISTypeDefinition> typeDefsByTable = new HashMap<String, CMISTypeDefinition>();
+        List<CMISTypeDefinition> baseTypes = new ArrayList<CMISTypeDefinition>();
 
         // Property Definitions Index
         Map<String, CMISPropertyDefinition> propDefsById = new HashMap<String, CMISPropertyDefinition>();
@@ -212,6 +213,7 @@ public abstract class CMISAbstractDictionaryService extends AbstractLifecycleBea
             StringBuilder builder = new StringBuilder();
             builder.append("DictionaryRegistry[");
             builder.append("Types=").append(typeDefsByTypeId.size()).append(", ");
+            builder.append("Base Types=").append(baseTypes.size()).append(", ");
             builder.append("Properties=").append(propDefsByPropId.size());
             builder.append("]");
             return builder.toString();
@@ -306,6 +308,15 @@ public abstract class CMISAbstractDictionaryService extends AbstractLifecycleBea
     {
         CMISTypeDefinition typeDef = getRegistry().typeDefsByTable.get(tableName.toLowerCase());
         return typeDef;
+    }
+
+    /*
+     * (non-Javadoc)
+     * @see org.alfresco.cmis.CMISDictionaryService#getBaseTypes()
+     */
+    public Collection<CMISTypeDefinition> getBaseTypes()
+    {
+        return Collections.unmodifiableCollection(getRegistry().baseTypes);
     }
     
     /*
@@ -446,11 +457,20 @@ public abstract class CMISAbstractDictionaryService extends AbstractLifecycleBea
             typeDef.assertComplete();
         }
 
+        // phase 5: register base types
+        for (CMISAbstractTypeDefinition typeDef : registry.objectDefsByTypeId.values())
+        {
+            if (typeDef.isPublic() && typeDef.getParentType() == null)
+            {
+                registry.baseTypes.add(typeDef);
+            }
+        }
+        
         // publish new registry
         registryMap.put(tenantService.getCurrentUserDomain(), registry);
         
         if (logger.isInfoEnabled())
-            logger.info("Initialized CMIS Dictionary. Types:" + registry.typeDefsByTypeId.size() + ", Properties:" + registry.propDefsByPropId.size());
+            logger.info("Initialized CMIS Dictionary. Types:" + registry.typeDefsByTypeId.size() + ", Base Types: " + registry.baseTypes.size() + ", Properties:" + registry.propDefsByPropId.size());
     }
 
     /*

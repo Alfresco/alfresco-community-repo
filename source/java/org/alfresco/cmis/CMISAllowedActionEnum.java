@@ -47,7 +47,8 @@ public enum CMISAllowedActionEnum implements EnumLabel
     CAN_GET_CONTENT_STREAM("canGetContentStream"), 
     CAN_UPDATE_PROPERTIES("canUpdateProperties"), 
     CAN_MOVE_OBJECT("canMoveObject"), 
-    CAN_DELETE_OBJECT("canDelete"),  // TODO: ISSUE - should be canDeleteObject 
+    CAN_DELETE_OBJECT("canDeleteObject"),
+    CAN_DELETE_TREE("canDeleteTree"),
     CAN_SET_CONTENT_STREAM("canSetContentStream"), 
     CAN_DELETE_CONTENT_STREAM("canDeleteContentStream"), 
 

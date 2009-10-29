@@ -1,7 +1,7 @@
 <model name="cmis:cmismodel" xmlns="http://www.alfresco.org/model/dictionary/1.0">
 
   <description>CMIS Model Definitions</description>
-  <version>0.62c</version>
+  <version>0.62</version>
 
   <imports>
     <import uri="http://www.alfresco.org/model/dictionary/1.0" prefix="d" />
@@ -9,7 +9,7 @@
   </imports>
 
   <namespaces>
-    <namespace uri="http://www.alfresco.org/model/cmis/0.62c" prefix="cmis" />
+    <namespace uri="http://www.alfresco.org/model/cmis/0.62" prefix="cmis" />
   </namespaces>
 
   <data-types>
@@ -165,7 +165,7 @@
       </properties>
     </type>
 
-    <type name="cmis:Document">
+    <type name="cmis:document">
       <title>Document</title>
       <description>Document Type</description>
       <parent>cmis:filesystemobject</parent>
@@ -311,7 +311,7 @@
       </properties>
     </type>
 
-    <type name="cmis:Folder">
+    <type name="cmis:folder">
       <title>Folder</title>
       <description>Folder Type</description>
       <parent>cmis:filesystemobject</parent>
@@ -350,7 +350,7 @@
       </properties>
     </type>
 
-    <type name="cmis:Relationship">
+    <type name="cmis:relationship">
       <title>Relationship</title>
       <description>Relationship Type</description>
       <parent>cmis:object</parent>
@@ -376,7 +376,7 @@
       </properties>
     </type>
 
-    <type name="cmis:Policy">
+    <type name="cmis:policy">
       <title>Policy</title>
       <description>Policy Type</description>
       <parent>cmis:object</parent>

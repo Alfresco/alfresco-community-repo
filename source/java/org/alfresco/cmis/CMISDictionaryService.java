@@ -68,6 +68,11 @@ public interface CMISDictionaryService
     public CMISTypeDefinition findTypeForTable(String tableName);
     
     /**
+     * Get Base Types
+     */
+    public Collection<CMISTypeDefinition> getBaseTypes();
+    
+    /**
      * Get all Types
      * 
      * @return

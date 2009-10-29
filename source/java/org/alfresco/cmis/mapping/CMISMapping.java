@@ -94,9 +94,6 @@ public class CMISMapping implements InitializingBean
     public static CMISTypeId OBJECT_TYPE_ID = new CMISTypeId(CMISScope.OBJECT, OBJECT_QNAME, CMIS_MODEL_NS + ":" + OBJECT_QNAME.getLocalName(), OBJECT_QNAME);
     public static CMISTypeId FILESYSTEM_OBJECT_TYPE_ID = new CMISTypeId(CMISScope.OBJECT, FILESYSTEM_OBJECT_QNAME, CMIS_MODEL_NS + ":" + FILESYSTEM_OBJECT_QNAME.getLocalName(), FILESYSTEM_OBJECT_QNAME);
 
-    // Properties
-    public static QName PROP_OBJECT_ID_QNAME = QName.createQName(CMIS_MODEL_URI, CMISDictionaryModel.PROP_OBJECT_ID);
-
     // Service Dependencies
     private ServiceRegistry serviceRegistry;
 

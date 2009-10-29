@@ -581,7 +581,8 @@ FLOATING_POINT_LITERAL
 /**
  * We should support _x????_ encoding for invalid sql characters 
  */        
-ID	:	('a'..'z'|'A'..'Z'|'_')('a'..'z'|'A'..'Z'|'0'..'9'|'_'|'$'|'#')* ;
+ID	:	('a'..'z'|'A'..'Z'|'_')('a'..'z'|'A'..'Z'|'0'..'9'|'_'|':'|'$'|'#')* ;
+
 WS	:	( ' ' | '\t' | '\r' | '\n' )+ { $channel = HIDDEN; } ;
   
 

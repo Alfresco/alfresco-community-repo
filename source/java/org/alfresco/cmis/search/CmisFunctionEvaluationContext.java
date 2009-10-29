@@ -28,6 +28,7 @@ import java.io.Serializable;
 import java.util.Collection;
 import java.util.Map;
 
+import org.alfresco.cmis.CMISDictionaryModel;
 import org.alfresco.cmis.CMISDictionaryService;
 import org.alfresco.cmis.CMISPropertyDefinition;
 import org.alfresco.cmis.mapping.CMISMapping;
@@ -274,15 +275,7 @@ public class CmisFunctionEvaluationContext implements FunctionEvaluationContext
     
     public boolean isObjectId(String propertyName)
     {
-        CMISPropertyDefinition propertyDef = cmisDictionaryService.findProperty(propertyName, null);
-        if(propertyDef == null)
-        {
-            return false;
-        }
-        else
-        {
-            return CMISMapping.PROP_OBJECT_ID_QNAME.equals(propertyDef.getPropertyId().getQName());
-        }
+        return CMISDictionaryModel.PROP_OBJECT_ID.equalsIgnoreCase(propertyName);
     }
 
     public boolean isOrderable(String fieldName)

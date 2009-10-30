@@ -35,6 +35,7 @@ import java.util.Locale;
 import java.util.Map;
 
 import org.alfresco.cmis.CMISDictionaryModel;
+import org.alfresco.cmis.CMISPropertyDefinition;
 import org.alfresco.cmis.CMISQueryException;
 import org.alfresco.cmis.CMISQueryOptions;
 import org.alfresco.cmis.CMISResultSet;
@@ -304,6 +305,11 @@ public class QueryTest extends BaseCMISTest
     private <T> T testQuery(String query, int size, boolean dump, String returnPropertyName, T returnType, boolean shouldThrow)
     {
         return testQuery(query, size, dump, returnPropertyName, returnType, shouldThrow, CMISQueryMode.CMS_STRICT);
+    }
+    
+    private <T> T testExtendedQuery(String query, int size, boolean dump, String returnPropertyName, T returnType, boolean shouldThrow)
+    {
+        return testQuery(query, size, dump, returnPropertyName, returnType, shouldThrow, CMISQueryMode.CMS_WITH_ALFRESCO_EXTENSIONS);
     }
 
     @SuppressWarnings("unchecked")
@@ -1345,9 +1351,9 @@ public class QueryTest extends BaseCMISTest
 
     public void testOrderBy()
     {
-        String query = "SELECT  cmis:objectId FROM cmis:document ORDER BY cmis:objectId";
-        CMISResultSet rs = cmisQueryService.query(query);
-        // assertEquals(1, rs.getLength());
+        CMISQueryOptions options = new CMISQueryOptions("SELECT  cmis:objectId FROM cmis:folder ORDER BY cmis:objectId", rootNodeRef.getStoreRef());
+        CMISResultSet rs = cmisQueryService.query(options);
+        assertEquals(folder_count, rs.getLength());
         for (CMISResultSetRow row : rs)
         {
             System.out.println(row.getValue("cmis:objectId") + " Score " + row.getScore() + " " + row.getScores());
@@ -1355,9 +1361,9 @@ public class QueryTest extends BaseCMISTest
         rs.close();
         rs = null;
 
-        query = "SELECT  cmis:objectId FROM cmis:document ORDER BY cmis:objectId ASC";
-        rs = cmisQueryService.query(query);
-        // assertEquals(1, rs.getLength());
+        options = new CMISQueryOptions("SELECT  cmis:objectId FROM cmis:folder ORDER BY cmis:objectId ASC", rootNodeRef.getStoreRef());
+        rs = cmisQueryService.query(options);
+        assertEquals(folder_count, rs.getLength());
         for (CMISResultSetRow row : rs)
         {
             System.out.println(row.getValue("cmis:objectId") + " Score " + row.getScore() + " " + row.getScores());
@@ -1365,9 +1371,19 @@ public class QueryTest extends BaseCMISTest
         rs.close();
         rs = null;
 
-        query = "SELECT  cmis:objectId FROM cmis:document ORDER BY cmis:objectId DESC";
-        rs = cmisQueryService.query(query);
-        // assertEquals(1, rs.getLength());
+        options = new CMISQueryOptions("SELECT  cmis:objectId FROM cmis:folder ORDER BY cmis:objectId DESC", rootNodeRef.getStoreRef());
+        rs = cmisQueryService.query(options);
+        assertEquals(folder_count, rs.getLength());
+        for (CMISResultSetRow row : rs)
+        {
+            System.out.println(row.getValue("cmis:objectId") + " Score " + row.getScore() + " " + row.getScores());
+        }
+        rs.close();
+        rs = null;
+        
+        options = new CMISQueryOptions("SELECT  D.cmis:objectId FROM cmis:folder D ORDER BY D.cmis:objectId DESC", rootNodeRef.getStoreRef());
+        rs = cmisQueryService.query(options);
+        assertEquals(folder_count, rs.getLength());
         for (CMISResultSetRow row : rs)
         {
             System.out.println(row.getValue("cmis:objectId") + " Score " + row.getScore() + " " + row.getScores());
@@ -1375,9 +1391,19 @@ public class QueryTest extends BaseCMISTest
         rs.close();
         rs = null;
 
-        query = "SELECT SCORE() AS MEEP, cmis:objectId FROM cmis:folder WHERE cmis:name IN ('company', 'home') ORDER BY MEEP ASC";
-        rs = cmisQueryService.query(query);
-        // assertEquals(1, rs.getLength());
+        options = new CMISQueryOptions("SELECT SCORE() AS MEEP, cmis:objectId FROM cmis:folder ORDER BY MEEP ASC", rootNodeRef.getStoreRef());
+        rs = cmisQueryService.query(options);
+        assertEquals(folder_count, rs.getLength());
+        for (CMISResultSetRow row : rs)
+        {
+            System.out.println(row.getValue("cmis:objectId") + " Score " + row.getScore() + " " + row.getScores());
+        }
+        rs.close();
+        rs = null;
+        
+        options = new CMISQueryOptions("SELECT SCORE() AS MEEP, cmis:objectId FROM cmis:folder ORDER BY MEEP ASC", rootNodeRef.getStoreRef());
+        rs = cmisQueryService.query(options);
+        assertEquals(folder_count, rs.getLength());
         for (CMISResultSetRow row : rs)
         {
             System.out.println(row.getValue("cmis:objectId") + " Score " + row.getScore() + " " + row.getScores());
@@ -1385,9 +1411,9 @@ public class QueryTest extends BaseCMISTest
         rs.close();
         rs = null;
 
-        query = "SELECT SCORE() AS MEEP, cmis:objectId FROM cmis:folder WHERE cmis:name IN ('company', 'home') ORDER BY MEEP DESC";
-        rs = cmisQueryService.query(query);
-        // assertEquals(1, rs.getLength());
+        options = new CMISQueryOptions("SELECT SCORE() AS MEEP, cmis:objectId FROM cmis:folder ORDER BY MEEP DESC", rootNodeRef.getStoreRef());
+        rs = cmisQueryService.query(options);
+        assertEquals(folder_count, rs.getLength());
         for (CMISResultSetRow row : rs)
         {
             System.out.println(row.getValue("cmis:objectId") + " Score " + row.getScore() + " " + row.getScores());
@@ -1395,26 +1421,36 @@ public class QueryTest extends BaseCMISTest
         rs.close();
         rs = null;
 
+        testQuery("SELECT SCORE() AS MEEP, cmis:objectId FROM cmis:folder WHERE cmis:name = 'compan home') ORDER BY SCORE() DESC", 1, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT SCORE() AS MEEP, cmis:objectId FROM cmis:folder WHERE cmis:name IN ('company', 'home') ORDER BY MEEEP DESC", 1, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT SCORE() AS MEEP, cmis:objectId FROM cmis:folder WHERE cmis:name IN ('company', 'home') ORDER BY cmis:parentId DESC", 1, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT SCORE() AS MEEP, cmis:objectId, cmis:parentId FROM cmis:folder  ORDER BY cmis:parentId DESC", folder_count, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT SCORE() AS MEEP, cmis:objectId FROM cmis:folder WHERE cmis:name IN ('company', 'home') ORDER BY cmis:notThere DESC", 1, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT SCORE() AS MEEP, cmis:objectId FROM cmis:folder as F WHERE cmis:name IN ('company', 'home') ORDER BY F.cmis:parentId DESC", 1, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT SCORE() AS MEEP, cmis:objectId FROM cmis:folder F WHERE cmis:name IN ('company', 'home') ORDER BY F.cmis:notThere DESC", 1, false, "cmis:objectId", new String(), true);
+        
     }
     
     public void testUpperAndLower()
     {
-        testQuery("SELECT * FROM cmis:folder WHERE cmis:name = 'Folder 1'", 1, false, "cmis:objectId", new String(), false);
-        testQuery("SELECT * FROM cmis:folder WHERE cmis:name = 'FOLDER 1'", 0, false, "cmis:objectId", new String(), false);
-        testQuery("SELECT * FROM cmis:folder WHERE cmis:name = 'folder 1'", 0, false, "cmis:objectId", new String(), false);
-        testQuery("SELECT * FROM cmis:folder WHERE Upper(cmis:name) = 'FOLDER 1'", 1, false, "cmis:objectId", new String(), false);
-        testQuery("SELECT * FROM cmis:folder WHERE Lower(cmis:name) = 'folder 1'", 1, false, "cmis:objectId", new String(), false);
-        testQuery("SELECT * FROM cmis:folder WHERE Upper(cmis:name) = 'folder 1'", 0, false, "cmis:objectId", new String(), false);
-        testQuery("SELECT * FROM cmis:folder WHERE Lower(cmis:name) = 'FOLDER 1'", 0, false, "cmis:objectId", new String(), false);
-        testQuery("SELECT * FROM cmis:folder WHERE Upper(cmis:name) = 'Folder 1'", 0, false, "cmis:objectId", new String(), false);
-        testQuery("SELECT * FROM cmis:folder WHERE Lower(cmis:name) = 'Folder 1'", 0, false, "cmis:objectId", new String(), false);
+        testExtendedQuery("SELECT * FROM cmis:folder WHERE cmis:name = 'Folder 1'", 1, false, "cmis:objectId", new String(), false);
+        testExtendedQuery("SELECT * FROM cmis:folder WHERE cmis:name = 'FOLDER 1'", 0, false, "cmis:objectId", new String(), false);
+        testExtendedQuery("SELECT * FROM cmis:folder WHERE cmis:name = 'folder 1'", 0, false, "cmis:objectId", new String(), false);
+        testExtendedQuery("SELECT * FROM cmis:folder WHERE Upper(cmis:name) = 'FOLDER 1'", 1, false, "cmis:objectId", new String(), false);
+        testExtendedQuery("SELECT * FROM cmis:folder WHERE Lower(cmis:name) = 'folder 1'", 1, false, "cmis:objectId", new String(), false);
+        testExtendedQuery("SELECT * FROM cmis:folder WHERE Upper(cmis:name) = 'folder 1'", 0, false, "cmis:objectId", new String(), false);
+        testExtendedQuery("SELECT * FROM cmis:folder WHERE Lower(cmis:name) = 'FOLDER 1'", 0, false, "cmis:objectId", new String(), false);
+        testExtendedQuery("SELECT * FROM cmis:folder WHERE Upper(cmis:name) = 'Folder 1'", 0, false, "cmis:objectId", new String(), false);
+        testExtendedQuery("SELECT * FROM cmis:folder WHERE Lower(cmis:name) = 'Folder 1'", 0, false, "cmis:objectId", new String(), false);
         
-        testQuery("SELECT * FROM cmis:folder WHERE Upper(cmis:name) <> 'FOLDER 1'", 9, false, "cmis:objectId", new String(), false);
+        testExtendedQuery("SELECT * FROM cmis:folder WHERE Upper(cmis:name) <> 'FOLDER 1'", 9, false, "cmis:objectId", new String(), false);
         
-        testQuery("SELECT * FROM cmis:folder WHERE Upper(cmis:name) <= 'FOLDER 1'", 2, false, "cmis:objectId", new String(), false);
-        testQuery("SELECT * FROM cmis:folder WHERE Upper(cmis:name) < 'FOLDER 1'", 1, false, "cmis:objectId", new String(), false);
-        testQuery("SELECT * FROM cmis:folder WHERE Upper(cmis:name) >= 'FOLDER 1'", 9, false, "cmis:objectId", new String(), false);
-        testQuery("SELECT * FROM cmis:folder WHERE Upper(cmis:name) > 'FOLDER 1'", 8, false, "cmis:objectId", new String(), false);
+        testExtendedQuery("SELECT * FROM cmis:folder WHERE Upper(cmis:name) <= 'FOLDER 1'", 2, false, "cmis:objectId", new String(), false);
+        testExtendedQuery("SELECT * FROM cmis:folder WHERE Upper(cmis:name) < 'FOLDER 1'", 1, false, "cmis:objectId", new String(), false);
+        testExtendedQuery("SELECT * FROM cmis:folder WHERE Upper(cmis:name) >= 'FOLDER 1'", 9, false, "cmis:objectId", new String(), false);
+        testExtendedQuery("SELECT * FROM cmis:folder WHERE Upper(cmis:name) > 'FOLDER 1'", 8, false, "cmis:objectId", new String(), false);
+        
+        testQuery("SELECT * FROM cmis:folder WHERE Upper(cmis:name) > 'FOLDER 1'", 8, false, "cmis:objectId", new String(), true);
     }
 
     public void testAllSimpleTextPredicates()
@@ -1536,7 +1572,15 @@ public class QueryTest extends BaseCMISTest
         CMISResultSetMetaData md = rs.getMetaData();
         assertNotNull(md.getQueryOptions());
         CMISTypeDefinition typeDef = cmisDictionaryService.findType(CMISDictionaryModel.DOCUMENT_TYPE_ID);
-        assertEquals(typeDef.getPropertyDefinitions().size(), md.getColumnNames().length);
+        int count = 0;
+        for(CMISPropertyDefinition pdef : typeDef.getPropertyDefinitions().values())
+        {
+            if(pdef.isQueryable())
+            {
+                count++;
+            }
+        }
+        assertEquals(count, md.getColumnNames().length);
         assertNotNull(md.getColumn(CMISDictionaryModel.PROP_OBJECT_ID));
         assertEquals(1, md.getSelectors().length);
         assertNotNull(md.getSelector(""));
@@ -1637,6 +1681,7 @@ public class QueryTest extends BaseCMISTest
         CMISQueryOptions options = new CMISQueryOptions(
                 "SELECT DOC.cmis:name AS cmis:name, \nLOWER(\tDOC.cmis:name \n), LOWER ( DOC.cmis:name )  AS Lcmis:name, UPPER ( DOC.cmis:name ) , UPPER(DOC.cmis:name) AS Ucmis:name, Score(), SCORE() AS S1, SCORE() AS SCORED FROM cmis:folder AS DOC",
                 rootNodeRef.getStoreRef());
+        options.setQueryMode(CMISQueryMode.CMS_WITH_ALFRESCO_EXTENSIONS);
         CMISResultSet rs = cmisQueryService.query(options);
 
         CMISResultSetMetaData md = rs.getMetaData();

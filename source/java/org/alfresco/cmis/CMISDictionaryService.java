@@ -60,12 +60,20 @@ public interface CMISDictionaryService
     public CMISTypeDefinition findTypeForClass(QName clazz, CMISScope... matchingScopes);
     
     /**
-     * Find type for table
+     * Find a type by its query name
      * 
-     * @param tableName
+     * @param queryName
      * @return
      */
-    public CMISTypeDefinition findTypeForTable(String tableName);
+    public CMISTypeDefinition findTypeByQueryName(String queryName);
+    
+    /**
+     * Find a property by its query name
+     * 
+     * @param queryName
+     * @return
+     */
+    public CMISPropertyDefinition findPropertyByQueryName(String queryName);
     
     /**
      * Get Base Types

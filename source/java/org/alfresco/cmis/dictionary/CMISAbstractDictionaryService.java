@@ -126,13 +126,14 @@ public abstract class CMISAbstractDictionaryService extends AbstractLifecycleBea
         Map<QName, CMISAbstractTypeDefinition> assocDefsByQName = new HashMap<QName, CMISAbstractTypeDefinition>();
         Map<CMISTypeId, CMISAbstractTypeDefinition> objectDefsByTypeId = new HashMap<CMISTypeId, CMISAbstractTypeDefinition>();
         Map<CMISTypeId, CMISTypeDefinition> typeDefsByTypeId = new HashMap<CMISTypeId, CMISTypeDefinition>();
-        Map<String, CMISTypeDefinition> typeDefsByTable = new HashMap<String, CMISTypeDefinition>();
+        Map<String, CMISTypeDefinition> typeDefsByQueryName = new HashMap<String, CMISTypeDefinition>();
         List<CMISTypeDefinition> baseTypes = new ArrayList<CMISTypeDefinition>();
 
         // Property Definitions Index
         Map<String, CMISPropertyDefinition> propDefsById = new HashMap<String, CMISPropertyDefinition>();
         Map<QName, CMISPropertyDefinition> propDefsByQName = new HashMap<QName, CMISPropertyDefinition>();
         Map<CMISPropertyId, CMISPropertyDefinition> propDefsByPropId = new HashMap<CMISPropertyId, CMISPropertyDefinition>();
+        Map<String, CMISPropertyDefinition> propDefsByQueryName = new HashMap<String, CMISPropertyDefinition>();
 
         /**
          * Register Type Definition
@@ -163,7 +164,7 @@ public abstract class CMISAbstractDictionaryService extends AbstractLifecycleBea
                     }
                 }
                 typeDefsByTypeId.put(typeDef.getTypeId(), typeDef);
-                typeDefsByTable.put(typeDef.getQueryName().toLowerCase(), typeDef);
+                typeDefsByQueryName.put(typeDef.getQueryName().toLowerCase(), typeDef);
             }
             
             if (logger.isDebugEnabled())
@@ -191,6 +192,7 @@ public abstract class CMISAbstractDictionaryService extends AbstractLifecycleBea
             propDefsByPropId.put(propDef.getPropertyId(), propDef);
             propDefsByQName.put(propDef.getPropertyId().getQName(), propDef);
             propDefsById.put(propDef.getPropertyId().getId().toLowerCase(), propDef);
+            propDefsByQueryName.put(propDef.getQueryName().toLowerCase(), propDef);
             
             if (logger.isDebugEnabled())
             {
@@ -304,10 +306,20 @@ public abstract class CMISAbstractDictionaryService extends AbstractLifecycleBea
      * (non-Javadoc)
      * @see org.alfresco.cmis.dictionary.CMISDictionaryService#findTypeForTable(java.lang.String)
      */
-    public CMISTypeDefinition findTypeForTable(String tableName)
+    public CMISTypeDefinition findTypeByQueryName(String queryName)
     {
-        CMISTypeDefinition typeDef = getRegistry().typeDefsByTable.get(tableName.toLowerCase());
+        CMISTypeDefinition typeDef = getRegistry().typeDefsByQueryName.get(queryName.toLowerCase());
         return typeDef;
+    }
+
+    
+    /* (non-Javadoc)
+     * @see org.alfresco.cmis.CMISDictionaryService#findPropertyByQueryName(java.lang.String)
+     */
+    public CMISPropertyDefinition findPropertyByQueryName(String queryName)
+    {
+        CMISPropertyDefinition propertyDef = getRegistry().propDefsByQueryName.get(queryName.toLowerCase());
+        return propertyDef;
     }
 
     /*

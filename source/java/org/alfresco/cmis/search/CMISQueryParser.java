@@ -126,6 +126,7 @@ public class CMISQueryParser
             CMISLexer lexer = new CMISLexer(cs);
             CommonTokenStream tokens = new CommonTokenStream(lexer);
             parser = new CMISParser(tokens);
+            parser.setStrict(options.getQueryMode() == CMISQueryMode.CMS_STRICT);
             CommonTree queryNode = (CommonTree) parser.query().getTree();
 
             CommonTree sourceNode = (CommonTree) queryNode.getFirstChildWithType(CMISParser.SOURCE);
@@ -365,6 +366,14 @@ public class CMISQueryParser
         case CMISParser.PRED_FTS:
             String ftsExpression = predicateNode.getChild(0).getText();
             FTSQueryParser ftsQueryParser = new FTSQueryParser();
+            if (options.getQueryMode() == CMISQueryMode.CMS_STRICT)
+            {
+                // set default AND
+            }
+            else
+            {
+                // set default from the options
+            }
             Selector selector;
             if (predicateNode.getChildCount() > 1)
             {
@@ -468,6 +477,11 @@ public class CMISQueryParser
                                 break;
                             }
                         }
+                        // in strict mode the ordered column must be selected
+                        if ((options.getQueryMode() == CMISQueryMode.CMS_STRICT) && (match == null))
+                        {
+                            throw new CMISQueryException("Ordered column is not selected: " + qualifier + "." + columnName);
+                        }
                         if (match == null)
                         {
 
@@ -489,10 +503,33 @@ public class CMISQueryParser
                             {
                                 throw new CMISQueryException("Type unsupported in CMIS queries: " + selector.getAlias());
                             }
-                            CMISPropertyDefinition propDef = cmisDictionaryService.findProperty(columnName, typeDef);
+                            CMISPropertyDefinition propDef = cmisDictionaryService.findPropertyByQueryName(columnName);
                             if (propDef == null)
                             {
                                 throw new CMISQueryException("Invalid column for " + typeDef.getQueryName() + "." + columnName);
+                            }
+
+                            // check there is a matching selector
+
+                            if (options.getQueryMode() == CMISQueryMode.CMS_STRICT)
+                            {
+                                boolean found = false;
+                                for (Column column : columns)
+                                {
+                                    if (column.getFunction().getName().equals(PropertyAccessor.NAME))
+                                    {
+                                        PropertyArgument pa = (PropertyArgument) column.getFunctionArguments().get(PropertyAccessor.ARG_PROPERTY);
+                                        if (pa.getPropertyName().equals(propDef.getPropertyId().getId()))
+                                        {
+                                            found = true;
+                                            break;
+                                        }
+                                    }
+                                }
+                                if (!found)
+                                {
+                                    throw new CMISQueryException("Ordered column is not selected: " + qualifier + "." + columnName);
+                                }
                             }
 
                             Function function = factory.getFunction(PropertyAccessor.NAME);
@@ -528,10 +565,33 @@ public class CMISQueryParser
                         {
                             throw new CMISQueryException("Type unsupported in CMIS queries: " + selector.getAlias());
                         }
-                        CMISPropertyDefinition propDef = cmisDictionaryService.findProperty(columnName, typeDef);
+                        CMISPropertyDefinition propDef = cmisDictionaryService.findPropertyByQueryName(columnName);
                         if (propDef == null)
                         {
                             throw new CMISQueryException("Invalid column for " + typeDef.getQueryName() + "." + columnName + " selector alias " + selector.getAlias());
+                        }
+
+                        // check there is a matching selector
+
+                        if (options.getQueryMode() == CMISQueryMode.CMS_STRICT)
+                        {
+                            boolean found = false;
+                            for (Column column : columns)
+                            {
+                                if (column.getFunction().getName().equals(PropertyAccessor.NAME))
+                                {
+                                    PropertyArgument pa = (PropertyArgument) column.getFunctionArguments().get(PropertyAccessor.ARG_PROPERTY);
+                                    if (pa.getPropertyName().equals(propDef.getPropertyId().getId()))
+                                    {
+                                        found = true;
+                                        break;
+                                    }
+                                }
+                            }
+                            if (!found)
+                            {
+                                throw new CMISQueryException("Ordered column is not selected: " + qualifier + "." + columnName);
+                            }
                         }
 
                         Function function = factory.getFunction(PropertyAccessor.NAME);
@@ -545,7 +605,7 @@ public class CMISQueryParser
                         orderColumn = factory.createColumn(function, functionArguments, alias);
                     }
 
-                    if (!orderColumn.isOrderable())
+                    if (!orderColumn.isOrderable() || !orderColumn.isQueryable())
                     {
                         throw new CMISQueryException("Ordering is not support for " + orderColumn.getAlias());
                     }
@@ -585,7 +645,10 @@ public class CMISQueryParser
                         functionArguments.put(arg.getName(), arg);
                         String alias = (selector.getAlias().length() > 0) ? selector.getAlias() + "." + definition.getPropertyId().getId() : definition.getPropertyId().getId();
                         Column column = factory.createColumn(function, functionArguments, alias);
-                        columns.add(column);
+                        if (column.isQueryable())
+                        {
+                            columns.add(column);
+                        }
                     }
                 }
             }
@@ -629,7 +692,10 @@ public class CMISQueryParser
                             functionArguments.put(arg.getName(), arg);
                             String alias = (selector.getAlias().length() > 0) ? selector.getAlias() + "." + definition.getPropertyId().getId() : definition.getPropertyId().getId();
                             Column column = factory.createColumn(function, functionArguments, alias);
-                            columns.add(column);
+                            if (column.isQueryable())
+                            {
+                                columns.add(column);
+                            }
                         }
                     }
                 }
@@ -663,7 +729,7 @@ public class CMISQueryParser
                         {
                             throw new CMISQueryException("Type unsupported in CMIS queries: " + selector.getAlias());
                         }
-                        CMISPropertyDefinition propDef = cmisDictionaryService.findProperty(columnName, typeDef);
+                        CMISPropertyDefinition propDef = cmisDictionaryService.findPropertyByQueryName(columnName);
                         if (propDef == null)
                         {
                             throw new CMISQueryException("Invalid column for " + typeDef.getQueryName() + "." + columnName);
@@ -682,6 +748,12 @@ public class CMISQueryParser
                         }
 
                         Column column = factory.createColumn(function, functionArguments, alias);
+
+                        if (!column.isQueryable())
+                        {
+                            throw new CMISQueryException("Column is not queryable " + typeDef.getQueryName() + "." + columnName);
+                        }
+
                         columns.add(column);
 
                     }
@@ -691,9 +763,9 @@ public class CMISQueryParser
                     {
                         CommonTree functionNameNode = (CommonTree) functionNode.getChild(0);
                         Function function = factory.getFunction(functionNameNode.getText());
-                        if(function == null)
+                        if (function == null)
                         {
-                            throw new CMISQueryException("Unknown function: " + functionNameNode.getText()); 
+                            throw new CMISQueryException("Unknown function: " + functionNameNode.getText());
                         }
                         Collection<ArgumentDefinition> definitions = function.getArgumentDefinitions().values();
                         Map<String, Argument> functionArguments = new LinkedHashMap<String, Argument>();
@@ -731,7 +803,7 @@ public class CMISQueryParser
                         int end = getStringPosition(query, rparenNode.getLine(), rparenNode.getCharPositionInLine());
 
                         String alias;
-                        if(function.getName().equals(Score.NAME))
+                        if (function.getName().equals(Score.NAME))
                         {
                             alias = "SEARCH_SCORE";
                             // check no args
@@ -813,7 +885,7 @@ public class CMISQueryParser
             }
             else
             {
-                CMISPropertyDefinition propDef = cmisDictionaryService.findProperty(id, null);
+                CMISPropertyDefinition propDef = cmisDictionaryService.findPropertyByQueryName(id);
                 if (propDef == null || !propDef.isQueryable())
                 {
                     throw new CMISQueryException("Column refers to unqueryable property " + definition.getName());
@@ -875,24 +947,23 @@ public class CMISQueryParser
             String text = argNode.getChild(0).getText();
             text = text.substring(1, text.length() - 1);
             StringBuilder builder = new StringBuilder();
-            if(text.endsWith("Z"))
-            {                
-                builder.append(text.substring(0,  text.length() - 1));
+            if (text.endsWith("Z"))
+            {
+                builder.append(text.substring(0, text.length() - 1));
                 builder.append("+0000");
             }
             else
             {
-                if(text.charAt( text.length() - 3) != ':')
+                if (text.charAt(text.length() - 3) != ':')
                 {
                     throw new CMISQueryException("Invalid datetime literal " + text);
                 }
                 // remove TZ colon ....
-                builder.append(text.substring(0,  text.length() - 3));
+                builder.append(text.substring(0, text.length() - 3));
                 builder.append(text.substring(text.length() - 2, text.length()));
             }
             text = builder.toString();
-            
-            
+
             SimpleDateFormat df = CachingDateFormat.getCmisSqlDatetimeFormat();
             Date date;
             try
@@ -911,16 +982,16 @@ public class CMISQueryParser
         else if (argNode.getType() == CMISParser.BOOLEAN_LITERAL)
         {
             String text = argNode.getChild(0).getText();
-            if(text.equalsIgnoreCase("TRUE") || text.equalsIgnoreCase("FALSE"))
+            if (text.equalsIgnoreCase("TRUE") || text.equalsIgnoreCase("FALSE"))
             {
                 LiteralArgument arg = factory.createLiteralArgument(definition.getName(), DataTypeDefinition.TEXT, text);
-                return arg; 
+                return arg;
             }
             else
             {
                 throw new CMISQueryException("Invalid boolean literal " + text);
             }
-           
+
         }
         else if (argNode.getType() == CMISParser.LIST)
         {
@@ -951,9 +1022,9 @@ public class CMISQueryParser
         {
             CommonTree functionNameNode = (CommonTree) argNode.getChild(0);
             Function function = factory.getFunction(functionNameNode.getText());
-            if(function == null)
+            if (function == null)
             {
-                throw new CMISQueryException("Unknown function: " + functionNameNode.getText()); 
+                throw new CMISQueryException("Unknown function: " + functionNameNode.getText());
             }
             Collection<ArgumentDefinition> definitions = function.getArgumentDefinitions().values();
             Map<String, Argument> functionArguments = new LinkedHashMap<String, Argument>();
@@ -1023,7 +1094,7 @@ public class CMISQueryParser
                 alias = singleTableNode.getChild(1).getText();
             }
 
-            CMISTypeDefinition typeDef = cmisDictionaryService.findTypeForTable(tableName);
+            CMISTypeDefinition typeDef = cmisDictionaryService.findTypeByQueryName(tableName);
             if (typeDef == null)
             {
                 throw new CMISQueryException("Type is unsupported in query: " + tableName);
@@ -1054,7 +1125,7 @@ public class CMISQueryParser
             {
                 alias = singleTableNode.getChild(1).getText();
             }
-            CMISTypeDefinition typeDef = cmisDictionaryService.findTypeForTable(tableName);
+            CMISTypeDefinition typeDef = cmisDictionaryService.findTypeByQueryName(tableName);
             if (typeDef == null)
             {
                 throw new CMISQueryException("Type is unsupported in query " + tableName);
@@ -1098,14 +1169,14 @@ public class CMISQueryParser
                             throw new CMISQueryException("No table with alias " + arg1.getSelector());
                         }
                         CommonTree functionNameNode = (CommonTree) joinConditionNode.getChild(1);
-                        if(functionNameNode.getType()!= CMISParser.EQUALS)
+                        if (functionNameNode.getType() != CMISParser.EQUALS)
                         {
-                            throw new CMISQueryException("Only Equi-join is supported " + functionNameNode.getText()); 
+                            throw new CMISQueryException("Only Equi-join is supported " + functionNameNode.getText());
                         }
                         Function function = factory.getFunction(Equals.NAME);
-                        if(function == null)
+                        if (function == null)
                         {
-                            throw new CMISQueryException("Unknown function: " + functionNameNode.getText()); 
+                            throw new CMISQueryException("Unknown function: " + functionNameNode.getText());
                         }
                         PropertyArgument arg2 = buildColumnReference(Equals.ARG_RHS, (CommonTree) joinConditionNode.getChild(2), factory);
                         if (!lhs.getSelectors().containsKey(arg2.getSelector()) && !rhs.getSelectors().containsKey(arg2.getSelector()))
@@ -1136,10 +1207,17 @@ public class CMISQueryParser
         {
             qualifer = columnReferenceNode.getChild(1).getText();
         }
-        CMISPropertyDefinition propDef = cmisDictionaryService.findProperty(cmisPropertyName, null);
+        CMISPropertyDefinition propDef = cmisDictionaryService.findPropertyByQueryName(cmisPropertyName);
         if (propDef == null)
         {
             throw new CMISQueryException("Unknown column/property " + cmisPropertyName);
+        }
+        if (options.getQueryMode() == CMISQueryMode.CMS_STRICT)
+        {
+            if (!propDef.isQueryable())
+            {
+                throw new CMISQueryException("Column is not queryable " + qualifer + "." + cmisPropertyName);
+            }
         }
         return factory.createPropertyArgument(argumentName, propDef.isQueryable(), propDef.isOrderable(), qualifer, propDef.getPropertyId().getId());
     }

@@ -23,6 +23,7 @@ function createNode(parent, entry, slug)
     }
 
     // construct node of folder or file
+    var node = null;
     var name = (slug !== null) ? slug : entry.title;
     var baseType = type.typeId.baseTypeId;
     if (baseType == DOCUMENT_TYPE_ID)

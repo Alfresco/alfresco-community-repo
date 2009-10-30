@@ -19,7 +19,7 @@ canCreateInstances if false, the user MUST NOT be able to create instances of th
 When includeInheritedProperties is true, the repository SHOULD return all properties defined for the Object Type, including any properties inherited from its parent. If false, only Properties defined on the Object Type (but not its parent) SHOULD be returned. 
 ]]>
   </description>
-  <url>/api/type/{typeId}?includeInheritedProperties={includeInheritedProperties?}</url>
+  <url>/cmis/type/{typeId}?includeInheritedProperties={includeInheritedProperties?}</url>
   <authentication>user</authentication>
   <transaction allow="readonly"/>
   <format default="atomentry"/>

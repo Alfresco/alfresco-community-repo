@@ -1,20 +1,17 @@
 <import resource="classpath:alfresco/templates/webscripts/org/alfresco/cmis/constants.lib.js">
-<import resource="classpath:alfresco/templates/webscripts/org/alfresco/cmis/atomentry.lib.js">
+<import resource="classpath:alfresco/templates/webscripts/org/alfresco/cmis/read.lib.js">
+<import resource="classpath:alfresco/templates/webscripts/org/alfresco/cmis/modify.lib.js">
 
 script:
 {
     // locate node
-    var pathSegments = url.match.split("/");
-    var reference = [ url.templateArgs.store_type, url.templateArgs.store_id ].concat(url.templateArgs.id.split("/"));
-    model.node = cmis.findNode("node", reference);
-    if (model.node === null || !model.node.hasAspect("cm:workingcopy"))
+    var object = getObjectFromUrl();
+    if (object.node === null || !object.node.hasAspect("cm:workingcopy"))
     {
-        status.code = 404;
-        status.message = "Private working copy " + reference.join("/") + " not found";
-        status.redirect = true;
         break script;
     }
-
+    model.node = object.node;
+    
     // check permissions
     model.checkin = args[cmis.ARG_CHECKIN] == "true" ? true : false;
     if (model.checkin && !model.node.hasPermission("CheckIn"))

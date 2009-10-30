@@ -32,8 +32,17 @@ When returning the results of a call where the caller specified “Any” type, 
 If “includeAllowableActions” is TRUE, the repository will return the allowable actions for the current user for each descendant object as part of the output.<br>
 "IncludeRelationships" indicates whether relationships are also returned for each returned object. If it is set to "source" or "target", relationships for which the returned object is a source, or respectively a target, will also be returned. If it is set to "both", relationships for which the returned object is either a source or a target will be returned. If it is set to "none", relationships are not returned.]]>
   </description>
+  
+  <!-- by object id -->
+  <url>/cmis/i/{id}/descendants?types={types}&amp;filter={filter?}&amp;depth={depth?}&amp;includeAllowableActions={includeAllowableActions?}</url>
+  <url>/cmis/s/{store}/i/{id}/descendants?types={types}&amp;filter={filter?}&amp;depth={depth?}&amp;includeAllowableActions={includeAllowableActions?}</url>
+  <!-- by path -->
+  <url>/cmis/p{path}/descendants?types={types}&amp;filter={filter?}&amp;depth={depth?}&amp;includeAllowableActions={includeAllowableActions?}</url>
+  <url>/cmis/s/{store}/p{path}/descendants?types={types}&amp;filter={filter?}&amp;depth={depth?}&amp;includeAllowableActions={includeAllowableActions?}</url>
+  <!-- alfresco style -->
   <url>/api/node/{store_type}/{store_id}/{id}/descendants?types={types}&amp;filter={filter?}&amp;depth={depth?}&amp;includeAllowableActions={includeAllowableActions?}</url>
-  <url>/api/path/{store_type}/{store_id}/{id}/descendants?types={types}&amp;filter={filter?}&amp;depth={depth?}&amp;includeAllowableActions={includeAllowableActions?}</url>
+  <url>/api/path/{store_type}/{store_id}/{path}/descendants?types={types}&amp;filter={filter?}&amp;depth={depth?}&amp;includeAllowableActions={includeAllowableActions?}</url>
+  
   <authentication>guest</authentication>
   <transaction allow="readonly"/>
   <format default="atomfeed">argument</format>

@@ -1,8 +1,8 @@
 <webscript>
   <shortname>Retrieve list of child Types</shortname>
   <description>Retrieve list of all child Types</description>
-  <url>/api/type/{typeId}/children?includePropertyDefinitions={includePropertyDefinitions?}&amp;skipCount={skipCount?}&amp;maxItems={maxItems?}</url>
-  <url>/api/types?typeId={typeId?}&amp;includePropertyDefinitions={includePropertyDefinitions?}&amp;skipCount={skipCount?}&amp;maxItems={maxItems?}</url>
+  <url>/cmis/type/{typeId}/children?includePropertyDefinitions={includePropertyDefinitions?}&amp;skipCount={skipCount?}&amp;maxItems={maxItems?}</url>
+  <url>/cmis/types?typeId={typeId?}&amp;includePropertyDefinitions={includePropertyDefinitions?}&amp;skipCount={skipCount?}&amp;maxItems={maxItems?}</url>
   <authentication>user</authentication>
   <transaction allow="readonly"/>
   <format default="atomfeed"/>

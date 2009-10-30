@@ -1,3 +1,5 @@
+<import resource="classpath:alfresco/templates/webscripts/org/alfresco/cmis/read.lib.js">
+
 script:
 {
     // locate (optional) folder
@@ -5,18 +7,16 @@ script:
     var folderId = args[cmis.ARG_FOLDER_ID];
     if (folderId !== null)
     {
-        model.folder = cmis.findNode(folderId);
-        if (model.folder === null)
+        var folder = getObjectFromObjectId(folderId);
+        if (folder.node === null)
         {
-            status.code = 400;
-            status.message = "Folder " + folderId + " not found";
-            status.redirect = true;
             break script;
         }
+        model.folder = folder.node;
         if (!model.folder.isContainer)
         {
             status.code = 400;
-            status.message = "Folder id " + folderId + " does not refer to a folder";
+            status.message = "Folder id " + folder.ref + " does not refer to a folder";
             status.redirect = true;
             break script;
         }

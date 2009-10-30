@@ -2,7 +2,9 @@
   <shortname>Delete relationship (deleteRelationship)</shortname>
   <description>
   </description>
-  <url>/api/rel/{store_type}/{store_id}/{id}/type/{rel_type}/target/{target_store_type}/{target_store_id}/{target_id}</url>
+  
+  <url>/cmis/rel/s/{store}/i/{id}/type/{rel_type}/target/s/{target_store}/i/{target_id}</url>
+  
   <authentication>user</authentication>
   <format default="atomentry"/>
   <family>CMIS</family>

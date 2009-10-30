@@ -1,5 +1,6 @@
 <import resource="classpath:alfresco/templates/webscripts/org/alfresco/cmis/constants.lib.js">
-<import resource="classpath:alfresco/templates/webscripts/org/alfresco/cmis/atomentry.lib.js">
+<import resource="classpath:alfresco/templates/webscripts/org/alfresco/cmis/read.lib.js">
+<import resource="classpath:alfresco/templates/webscripts/org/alfresco/cmis/modify.lib.js">
 
 script:
 {
@@ -13,16 +14,12 @@ script:
     }
 
     // locate source node
-    var pathSegments = url.match.split("/");
-    var reference = [ url.templateArgs.store_type, url.templateArgs.store_id ].concat(url.templateArgs.id.split("/"));
-    model.source = cmis.findNode(pathSegments[2], reference);
-    if (model.source === null)
+    var object = getObjectFromUrl();
+    if (object.node == null)
     {
-        status.code = 404;
-        status.message = "Repository " + pathSegments[2] + " " + reference.join("/") + " not found";
-        status.redirect = true;
         break script;
     }
+    model.source = object.node;
 
     // create 
     var assoc = createAssociation(model.source, entry);
@@ -36,6 +33,6 @@ script:
     // TODO: set Content-Location
     status.code = 201;
     // TODO: complete url mapping
-    status.location = url.server + url.serviceContext + "/api/rel/" + model.source.nodeRef.storeRef.protocol + "/" + model.source.nodeRef.storeRef.identifier + "/" + model.source.nodeRef.id;
+    status.location = url.server + url.serviceContext + "/cmis/rel/" + model.source.nodeRef.storeRef.protocol + "/" + model.source.nodeRef.storeRef.identifier + "/" + model.source.nodeRef.id;
     status.redirect = true;
 }

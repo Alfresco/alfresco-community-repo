@@ -1,17 +1,15 @@
+<import resource="classpath:alfresco/templates/webscripts/org/alfresco/cmis/read.lib.js">
+
 script:
 {
-    // locate version series
     // NOTE: version series is identified by noderef (as this is constant during lifetime of node)
-    var pathSegments = url.match.split("/");
-    var reference = [ url.templateArgs.store_type, url.templateArgs.store_id ].concat(url.templateArgs.id.split("/"));
-    model.node = cmis.findNode(pathSegments[2], reference);
-    if (model.node === null || !model.node.isVersioned)
+    var object = getObjectFromUrl();
+    if (object.node == null || !object.node.isVersioned)
     {
-        status.code = 404;
-        status.message = "Versions series " + pathSegments[2] + " " + reference.join("/") + " not found";
-        status.redirect = true;
+        status.message = "Versions series " + object.ref + " not found";
         break script;
     }
+    model.node = object.node;
  
     // property filter 
     model.filter = args[cmis.ARG_FILTER];

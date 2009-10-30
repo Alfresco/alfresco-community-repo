@@ -23,7 +23,7 @@ CheckOut() on a non-document object will throw OperationNotSupportedException.<b
 Some repositories may not support updating of private working copies and the updates MUST be supplied via checkIn().<br>
 ]]>
   </description>
-  <url>/api/checkedout</url>
+  <url>/cmis/checkedout</url>
   <authentication>user</authentication>
   <format default="atomentry"/>
   <family>CMIS</family>

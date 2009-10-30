@@ -66,7 +66,7 @@ script:
     }
 
     // construct query uri
-    model.queryUri = "/api/query";
+    model.queryUri = "/cmis/query";
     model.queryArgs = cmis.ARG_QUERY_STATEMENT + "=" + model.statement;
     if (model.includeAllowableActions) model.queryArgs += "&" + cmis.ARG_INCLUDE_ALLOWABLE_ACTIONS + "=true";
     model.queryArgs += "&" + cmis.ARG_SKIP_COUNT + "=" + page.number;

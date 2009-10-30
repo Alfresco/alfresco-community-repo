@@ -6,7 +6,7 @@
 
 [#-- Link to repository service document --]
 [#macro linkservice]
-<link rel="${cmisconstants.REL_SERVICE}" href="${absurl(url.serviceContext)}/api/repository"/>
+<link rel="${cmisconstants.REL_SERVICE}" href="${absurl(url.serviceContext)}/cmis"/>
 [/#macro]
 
 [#-- Link to node allowable actions --]
@@ -111,7 +111,7 @@
 [/#macro]
 
 [#macro linkassocedit assoc]
-<link rel="edit" href="${absurl(url.serviceContext)}[@nodeuri node/]"/>
+<link rel="edit" href="${absurl(url.serviceContext)}[@assocuri assoc/]"/>
 [/#macro]
 
 [#-- Link to via --]
@@ -125,19 +125,22 @@
 [#--                                --]
 
 [#-- Helper to render Alfresco service document uri --]
-[#macro serviceuri]${absurl(url.serviceContext)}/api/repository[/#macro]
+[#macro serviceuri]${absurl(url.serviceContext)}/cmis[/#macro]
 
 [#-- Helper to render Alfresco content stream uri --]
-[#macro contenturi node]${absurl(url.serviceContext)}/api/node/${node.nodeRef.storeRef.protocol}/${node.nodeRef.storeRef.identifier}/${node.nodeRef.id}/content[#if node.properties.name?? && node.properties.name?last_index_of(".") != -1]${encodeuri(node.properties.name?substring(node.properties.name?last_index_of(".")))}[/#if][/#macro]
+[#macro contenturi node]${absurl(url.serviceContext)}/cmis/[@noderef node/]/content[#if node.properties.name?? && node.properties.name?last_index_of(".") != -1]${encodeuri(node.properties.name?substring(node.properties.name?last_index_of(".")))}[/#if][/#macro]
+
+[#-- Helper to render Store Ref --]
+[#macro storeref store]s/${store.protocol}:${store.identifier}[/#macro]
 
 [#-- Helper to render Node Ref --]
-[#macro noderef node]${node.nodeRef.storeRef.protocol}/${node.nodeRef.storeRef.identifier}/${node.nodeRef.id}[/#macro]
+[#macro noderef node][@storeref node.nodeRef.storeRef/]/i/${node.nodeRef.id}[/#macro]
 
 [#-- Helper to render Alfresco Node uri --]
-[#macro nodeuri node]/api/node/[@noderef node/][/#macro]
+[#macro nodeuri node]/cmis/[@noderef node/][/#macro]
 
 [#-- Helper to render Alfresco Assoc uri --]
-[#macro assocuri assoc]/api/rel/[@noderef assoc.source/]/type/${cmistype(assoc).typeId.id!"undefined"}/target/[@noderef assoc.target/][/#macro]
+[#macro assocuri assoc]/cmis/rel/[@noderef assoc.source/]/type/${cmistype(assoc).typeId.id!"undefined"}/target/[@noderef assoc.target/][/#macro]
 
 [#-- Helper to render Alfresco Type uri --]
-[#macro typeuri typedef]/api/type/${typedef.typeId.id}[/#macro]
+[#macro typeuri typedef]/cmis/type/${typedef.typeId.id}[/#macro]

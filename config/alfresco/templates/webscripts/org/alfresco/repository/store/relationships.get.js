@@ -1,16 +1,15 @@
+<import resource="classpath:alfresco/templates/webscripts/org/alfresco/cmis/read.lib.js">
 <import resource="classpath:alfresco/templates/webscripts/org/alfresco/cmis/constants.lib.js">
 
 script:
 {
     // locate node
-    var pathSegments = url.match.split("/");
-    var reference = [ url.templateArgs.store_type, url.templateArgs.store_id ].concat(url.templateArgs.id.split("/"));
-    model.node = cmis.findNode(pathSegments[2], reference);
-    if (model.node === null)
+    var object = getObjectFromUrl();
+    if (object.node == null)
     {
-        status.setCode(404, "Repository " + pathSegments[2] + " " + reference.join("/") + " not found");
         break script;
     }
+    model.node = object.node;
 
     // property filter
     model.filter = args[cmis.ARG_FILTER];

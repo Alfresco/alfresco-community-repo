@@ -26,26 +26,29 @@ package org.alfresco.repo.cmis.rest;
 
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.Map;
 
 import org.alfresco.cmis.CMISDictionaryService;
 import org.alfresco.cmis.CMISJoinEnum;
+import org.alfresco.cmis.CMISObjectReference;
 import org.alfresco.cmis.CMISPropertyDefinition;
 import org.alfresco.cmis.CMISQueryEnum;
 import org.alfresco.cmis.CMISQueryOptions;
 import org.alfresco.cmis.CMISQueryService;
 import org.alfresco.cmis.CMISRelationshipDirectionEnum;
+import org.alfresco.cmis.CMISRelationshipReference;
+import org.alfresco.cmis.CMISRepositoryReference;
 import org.alfresco.cmis.CMISResultSet;
 import org.alfresco.cmis.CMISServices;
 import org.alfresco.cmis.CMISTypeDefinition;
 import org.alfresco.cmis.CMISTypesFilterEnum;
 import org.alfresco.cmis.CMISQueryOptions.CMISQueryMode;
+import org.alfresco.cmis.reference.NodeRefReference;
+import org.alfresco.cmis.reference.ReferenceFactory;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.jscript.Association;
 import org.alfresco.repo.jscript.BaseScopableProcessorExtension;
 import org.alfresco.repo.jscript.ScriptNode;
-import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.web.util.paging.Cursor;
 import org.alfresco.repo.web.util.paging.Page;
 import org.alfresco.repo.web.util.paging.PagedResults;
@@ -101,15 +104,11 @@ public class CMISScript extends BaseScopableProcessorExtension
 
     // service dependencies
     private ServiceRegistry services;
-    private Repository repository;
     private CMISServices cmisService;
     private CMISDictionaryService cmisDictionaryService;
     private CMISQueryService cmisQueryService;
     private Paging paging;
-    
-    // versioned objectId pattern
-    // TODO: encapsulate elsewhere
-    private static final Pattern versionedObjectIdPattern = Pattern.compile(".+://.+/.+/.+");
+    private ReferenceFactory referenceFactory;
 
     
     /**
@@ -122,16 +121,6 @@ public class CMISScript extends BaseScopableProcessorExtension
         this.services = services;
     }
 
-    /**
-     * Set the repository
-     * 
-     * @param repository
-     */
-    public void setRepository(Repository repository)
-    {
-        this.repository = repository;
-    }
-    
     /**
      * Set the paging helper
      * 
@@ -172,6 +161,16 @@ public class CMISScript extends BaseScopableProcessorExtension
         this.cmisQueryService = cmisQueryService;
     }
 
+    /**
+     * Set the CMIS Reference Factory
+     *  
+     * @param referenceFactory
+     */
+    public void setCMISReferenceFactory(ReferenceFactory referenceFactory)
+    {
+        this.referenceFactory = referenceFactory;
+    }
+    
     /**
      * Gets the supported CMIS Version
      * 
@@ -238,63 +237,83 @@ public class CMISScript extends BaseScopableProcessorExtension
     }
     
     /**
-     * Finds a Node given a repository reference
+     * Create CMIS Repository Reference from URL segments
      * 
-     * @param referenceType  node, path
-     * @param reference  node => id, path => path
-     * @return  node (or null, if not found)
+     * @param args  url arguments
+     * @param templateArgs  url template arguments
+     * @return  Repository Reference  (or null, in case of bad url)
      */
-    public ScriptNode findNode(String referenceType, String[] reference)
+    public CMISRepositoryReference createRepoReferenceFromUrl(Map<String, String> args, Map<String, String> templateArgs)
     {
-        ScriptNode node = null;
-        NodeRef nodeRef = repository.findNodeRef(referenceType, reference);
-        if (nodeRef != null)
-        {
-            node = new ScriptNode(nodeRef, services, getScope());
-        }
-        return node;
+        return referenceFactory.createRepoReferenceFromUrl(args, templateArgs);
+    }
+        
+    /**
+     * Create CMIS Object Reference from URL segments
+     * 
+     * @param args  url arguments
+     * @param templateArgs  url template arguments
+     * @return  Repository Reference  (or null, in case of bad url)
+     */
+    public CMISObjectReference createObjectReferenceFromUrl(Map<String, String> args, Map<String, String> templateArgs)
+    {
+        return referenceFactory.createObjectReferenceFromUrl(args, templateArgs);
     }
 
     /**
-     * Finds a Node given CMIS ObjectId
+     * Create CMIS Relationship Reference from URL segments
      * 
-     * @param objectId
-     * @return  node (or null, if not found)
+     * @param args  url arguments
+     * @param templateArgs  url template arguments
+     * @return  Repository Reference  (or null, in case of bad url)
      */
-    public ScriptNode findNode(String objectId)
+    public CMISRelationshipReference createRelationshipReferenceFromUrl(Map<String, String> args, Map<String, String> templateArgs)
     {
-        NodeRef nodeRef;
-        Matcher matcher = versionedObjectIdPattern.matcher(objectId);
-        if (matcher.matches())
-        {
-            // TODO: handle version id
-            nodeRef = new NodeRef(objectId.substring(0, objectId.lastIndexOf("/")));
-        }
-        else
-        {
-            nodeRef = new NodeRef(objectId);
-        }
-        String[] reference = new String[] {nodeRef.getStoreRef().getProtocol(), nodeRef.getStoreRef().getIdentifier(), nodeRef.getId()};
-        return findNode("node", reference);
+        return referenceFactory.createRelationshipReferenceFromUrl(args, templateArgs);
     }
 
     /**
-     * Finds an Association
+     * Create Object Reference
      * 
-     * @param sourceType
-     * @param source
-     * @param relDef
-     * @param targetType
-     * @param target
-     * 
-     * @return
+     * @param repo  repository reference
+     * @param object id  object id (NodeRef.toString() format)
+     * @return  object id reference
      */
-    public Association findRelationship(CMISTypeDefinition relDef, String[] sourceRef, String[] targetRef)
+    public CMISObjectReference createObjectIdReference(String objectId)
     {
-        NodeRef source = new NodeRef(sourceRef[0], sourceRef[1], sourceRef[2]);
-        NodeRef target = new NodeRef(targetRef[0], targetRef[1], targetRef[2]);
-        AssociationRef assocRef = cmisService.getRelationship(relDef, source, target);
-        return (assocRef == null) ? null : new Association(services, assocRef);
+        return new NodeRefReference(cmisService, objectId);
+    }
+
+    /**
+     * Get Node from Object Reference
+     * 
+     * @param ref  object reference
+     * @return  node
+     */
+    public ScriptNode getNode(CMISObjectReference ref)
+    {
+        NodeRef nodeRef = ref.getNodeRef();
+        if (nodeRef == null)
+        {
+            return null;
+        }
+        return new ScriptNode(nodeRef, services, getScope());
+    }
+    
+    /**
+     * Get Association from Relationship Reference
+     *
+     * @param ref  relationship reference
+     * @return  association
+     */
+    public Association getAssociation(CMISRelationshipReference ref)
+    {
+        AssociationRef assocRef = ref.getAssocRef();
+        if (assocRef == null)
+        {
+            return null;
+        }
+        return new Association(services, assocRef);
     }
     
     /**
@@ -424,35 +443,6 @@ public class CMISScript extends BaseScopableProcessorExtension
         return results;
     }
     
-    /**
-     * Query for all Type Definitions in a type hierarchy
-     * 
-     * @param page
-     * @return  paged result set of types
-     */
-//    public PagedResults queryTypeHierarchy(CMISTypeDefinition typeDef, boolean descendants, Page page)
-//    {
-//        Collection<CMISTypeDefinition> subTypes = typeDef.getSubTypes(descendants);
-//        Cursor cursor = paging.createCursor(subTypes.size(), page);
-//        
-//        // skip
-//        Iterator<CMISTypeDefinition> iterSubTypes = subTypes.iterator();
-//        for (int i = 0; i < cursor.getStartRow(); i++)
-//        {
-//            iterSubTypes.next();
-//        }
-//
-//        // get types for page
-//        CMISTypeDefinition[] types = new CMISTypeDefinition[cursor.getRowCount()];
-//        for (int i = cursor.getStartRow(); i <= cursor.getEndRow(); i++)
-//        {
-//            types[i - cursor.getStartRow()] = iterSubTypes.next();
-//        }
-//        
-//        PagedResults results = paging.createPagedResults(types, cursor);
-//        return results;
-//    }
-
     /**
      * Query for a Type Definition given a CMIS Type Id
      * 

@@ -2,8 +2,18 @@
   <shortname>Create relationship (createRelationship)</shortname>
   <description>
   </description>
+  
+  <!-- by object id -->
+  <url>/cmis/i/{id}/rels</url>
+  <url>/cmis/s/{store}/i/{id}/rels</url>
+  <!-- by path -->
+  <url>/cmis/p{path}/rels</url>
+  <url>/cmis/s/{store}/p{path}/rels</url>
+  
+  <!-- alfresco style -->
   <url>/api/node/{store_type}/{store_id}/{id}/rels</url>
   <url>/api/path/{store_type}/{store_id}/{id}/rels</url>
+  
   <authentication>guest</authentication>
   <format default="atomentry">argument</format>
   <family>CMIS</family>

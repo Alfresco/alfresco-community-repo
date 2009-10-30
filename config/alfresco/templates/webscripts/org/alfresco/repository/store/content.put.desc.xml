@@ -1,11 +1,21 @@
 <webscript>
   <shortname>Content Write (setContent)</shortname>
   <description>TODO</description>
+  
+  <!-- by object id -->
+  <url>/cmis/i/{id}/content{property}?overwriteFlag={overwriteFlag?}</url>
+  <url>/cmis/s/{store}/i/{id}/content{property}?overwriteFlag={overwriteFlag?}</url>
+  <!-- by path -->
+  <url>/cmis/p{path}/content{property}?overwriteFlag={overwriteFlag?}</url>
+  <url>/cmis/s/{store}/p{path}/content{property}?overwriteFlag={overwriteFlag?}</url>
+  
+  <!-- alfresco style -->
   <url>/api/node/content{property}/{store_type}/{store_id}/{id}?overwriteFlag={overwriteFlag?}</url>
   <url>/api/path/content{property}/{store_type}/{store_id}/{id}?overwriteFlag={overwriteFlag?}</url>
   <url>/api/avmpath/content{property}/{store_id}/{id}?overwriteFlag={overwriteFlag?}</url>
   <url>/api/node/{store_type}/{store_id}/{id}/content{property}?overwriteFlag={overwriteFlag?}</url>
   <url>/api/path/{store_type}/{store_id}/{id}/content{property}?overwriteFlag={overwriteFlag?}</url>
+  
   <authentication>guest</authentication>
   <format default="text">argument</format>
   <family>CMIS</family>

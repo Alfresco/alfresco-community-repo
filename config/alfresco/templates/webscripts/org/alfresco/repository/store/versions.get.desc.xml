@@ -18,8 +18,17 @@ Notes:<br>
 Returns all versions the user can access including checked-out version and private working copy.<br>
 ]]>
   </description>
+  
+  <!-- by object id -->
+  <url>/cmis/i/{id}/versions?filter={filter?}</url>
+  <url>/cmis/s/{store}/i/{id}/versions?filter={filter?}</url>
+  <!-- by path -->
+  <url>/cmis/p{path}/versions?filter={filter?}</url>
+  <url>/cmis/s/{store}/p{path}/versions?filter={filter?}</url>
+  <!-- alfresco style -->
   <url>/api/node/{store_type}/{store_id}/{id}/versions?filter={filter?}</url>
-  <url>/api/path/{store_type}/{store_id}/{id}/versions?filter={filter?}</url>
+  <url>/api/path/{store_type}/{store_id}/{path}/versions?filter={filter?}</url>
+  
   <authentication>user</authentication>
   <transaction allow="readonly"/>
   <format default="atomfeed">argument</format>

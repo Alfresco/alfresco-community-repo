@@ -1,7 +1,7 @@
 <webscript>
   <shortname>Unfiled Documents</shortname>
   <description>Retrieve list of documents that are not in any folder</description>
-  <url>/api/unfiled</url>
+  <url>/cmis/unfiled</url>
   <authentication>guest</authentication>
   <transaction allow="readonly"/>
   <format default="atomfeed"/>

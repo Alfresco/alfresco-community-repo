@@ -2,8 +2,17 @@
   <shortname>Delete tree (deleteTree)</shortname>
   <description>
   </description>
+  
+  <!-- by object id -->
+  <url>/cmis/i/{id}/tree?continueOnFailure={continueOnFailure?}&amp;unfileMultiFiledDocuments={unfileMultiFiledDocuments}</url>
+  <url>/cmis/s/{store}/i/{id}/tree?continueOnFailure={continueOnFailure?}&amp;unfileMultiFiledDocuments={unfileMultiFiledDocuments}</url>
+  <!-- by path -->
+  <url>/cmis/p{path}/tree?continueOnFailure={continueOnFailure?}&amp;unfileMultiFiledDocuments={unfileMultiFiledDocuments}</url>
+  <url>/cmis/s/{store}/p{path}/tree?continueOnFailure={continueOnFailure?}&amp;unfileMultiFiledDocuments={unfileMultiFiledDocuments}</url>
+  <!-- alfresco style -->
   <url>/api/node/{store_type}/{store_id}/{id}/tree?continueOnFailure={continueOnFailure?}&amp;unfileMultiFiledDocuments={unfileMultiFiledDocuments}</url>
-  <url>/api/path/{store_type}/{store_id}/{id}/tree?continueOnFailure={continueOnFailure?}&amp;unfileMultiFiledDocuments={unfileMultiFiledDocuments}</url>
+  <url>/api/path/{store_type}/{store_id}/{path}/tree?continueOnFailure={continueOnFailure?}&amp;unfileMultiFiledDocuments={unfileMultiFiledDocuments}</url>
+  
   <authentication>user</authentication>
   <format default="atomfeed"/>
   <family>CMIS</family>

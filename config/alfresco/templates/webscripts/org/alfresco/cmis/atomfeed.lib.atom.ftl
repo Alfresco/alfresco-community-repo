@@ -21,7 +21,7 @@
 <icon>${absurl(url.context)}/images/logo/AlfrescoLogo16.ico</icon>
 <id>${id}</id>
 [#nested]  [#-- NOTE: Custom links --]
-<title>${title}</title> 
+<title>${title?xml}</title> 
 <updated>${xmldate(date)}</updated>
 [/#macro]
 
@@ -36,6 +36,6 @@
 <icon>${absurl(url.context)}/images/logo/AlfrescoLogo16.ico</icon>
 <id>urn:uuid:${node.id}[#if kind != ""]-${kind}[/#if]</id>
 [#nested]  [#-- NOTE: Custom links --]
-<title>${node.name}[#if kind != ""] ${kind?capitalize}[/#if]</title>
+<title>${node.name?xml}[#if kind != ""] ${kind?capitalize}[/#if]</title>
 <updated>${xmldate(node.properties.modified)}</updated>
 [/#macro]

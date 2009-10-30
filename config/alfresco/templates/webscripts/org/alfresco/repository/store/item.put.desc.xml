@@ -27,8 +27,17 @@ If this is a private working copy, some repositories may not support updates.<br
 Because repositories MAY automatically create new Document Versions on a user’s behalf, the objectId returned may not match the one provided as an input to this method.<br> 
 ]]>
   </description>
+  
+  <!-- by object id -->
+  <url>/cmis/i/{id}</url>
+  <url>/cmis/s/{store}/i/{id}</url>
+  <!-- by path -->
+  <url>/cmis/p{path}</url>
+  <url>/cmis/s/{store}/p{path}</url>
+  <!-- alfresco style -->
   <url>/api/node/{store_type}/{store_id}/{id}</url>
-  <url>/api/path/{store_type}/{store_id}/{id}</url>
+  <url>/api/path/{store_type}/{store_id}/{path}</url>
+    
   <authentication>user</authentication>
   <format default="atomentry">argument</format>
   <family>CMIS</family>

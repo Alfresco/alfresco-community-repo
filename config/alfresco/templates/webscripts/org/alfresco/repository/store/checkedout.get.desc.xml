@@ -28,7 +28,7 @@ If “includeAllowableActions” is TRUE, the repository will return the allowab
 If no “maxItems” value is provided, then the Repository will determine an appropriate number of items to return. How the Repository determines this value is repository-specific and opaque to CMIS.<br>    
 ]]>  
   </description>
-  <url>/api/checkedout?folderId={folderId?}&amp;includeDescendants={includeDescendants?}&amp;filter={filter?}&amp;skipCount={skipCount?}&amp;maxItems={maxItems?}&amp;includeAllowableActions={includeAllowableActions?}</url>
+  <url>/cmis/checkedout?folderId={folderId?}&amp;includeDescendants={includeDescendants?}&amp;filter={filter?}&amp;skipCount={skipCount?}&amp;maxItems={maxItems?}&amp;includeAllowableActions={includeAllowableActions?}</url>
   <authentication>user</authentication>
   <transaction allow="readonly"/>
   <format default="atomfeed"/>

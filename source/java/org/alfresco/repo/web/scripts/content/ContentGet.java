@@ -25,13 +25,14 @@
 package org.alfresco.repo.web.scripts.content;
 
 import java.io.IOException;
-import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletResponse;
 
+import org.alfresco.cmis.CMISObjectReference;
+import org.alfresco.cmis.reference.ReferenceFactory;
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.model.Repository;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
@@ -56,15 +57,15 @@ public class ContentGet extends StreamContent
     private static final Log logger = LogFactory.getLog(ContentGet.class);
     
     // Component dependencies
-    private Repository repository;
+    private ReferenceFactory referenceFactory;
     private NamespaceService namespaceService;
     
     /**
-     * @param repository
+     * @param reference factory
      */
-    public void setRepository(Repository repository)
+    public void setReferenceFactory(ReferenceFactory referenceFactory)
     {
-        this.repository = repository; 
+        this.referenceFactory = referenceFactory; 
     }
     
     /**
@@ -80,20 +81,24 @@ public class ContentGet extends StreamContent
      */
     public void execute(WebScriptRequest req, WebScriptResponse res)
         throws IOException
-    {        
-        // convert web script URL to node reference in Repository
-        String match = req.getServiceMatch().getPath();
-        String[] matchParts = match.split("/");
+    {
+        // create map of args
+        String[] names = req.getParameterNames();
+        Map<String, String> args = new HashMap<String, String>(names.length, 1.0f);
+        for (String name : names)
+        {
+            args.put(name, req.getParameter(name));
+        }
+        
+        // create map of template vars
         Map<String, String> templateVars = req.getServiceMatch().getTemplateVars();
-        String[] id = templateVars.get("id").split("/");
-        String[] path = new String[id.length + 2];
-        path[0] = templateVars.get("store_type");
-        path[1] = templateVars.get("store_id");
-        System.arraycopy(id, 0, path, 2, id.length);
-        NodeRef nodeRef = repository.findNodeRef(matchParts[2], path);
+        
+        // create object reference from url
+        CMISObjectReference reference = referenceFactory.createObjectReferenceFromUrl(args, templateVars);
+        NodeRef nodeRef = reference.getNodeRef();
         if (nodeRef == null)
         {
-            throw new WebScriptException(HttpServletResponse.SC_NOT_FOUND, "Unable to find " + matchParts[2] + " reference " + Arrays.toString(path));
+            throw new WebScriptException(HttpServletResponse.SC_NOT_FOUND, "Unable to find " + reference.toString());
         }
         
         // determine content property

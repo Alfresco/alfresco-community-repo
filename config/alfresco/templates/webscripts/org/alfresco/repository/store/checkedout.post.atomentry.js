@@ -1,3 +1,5 @@
+<import resource="classpath:alfresco/templates/webscripts/org/alfresco/cmis/read.lib.js">
+
 script:
 {
     // ensure atom entry is posted
@@ -21,20 +23,18 @@ script:
     }
     
     // locate node
-    model.node = cmis.findNode(objectId);
-    if (model.node === null)
+    var object = getObjectFromObjectId(objectId);
+    if (object.node === null)
     {
-        status.code = 400;
-        status.message = "Repository node " + objectId + " not found";
-        status.redirect = true;
         break script;
     }
+    model.node = object.node; 
     
     // ensure node can be checked-out
     if (!model.node.isDocument)
     {
         status.code = 400;
-        status.message = "Cannot checkout node " + objectId + " as it is not a document";
+        status.message = "Cannot checkout node " + object.ref + " as it is not a document";
         status.redirect = true;
         break script;
     }
@@ -43,7 +43,7 @@ script:
     if (model.node.isLocked || model.node.hasAspect("cm:workingCopy"))
     {
         status.code = 400;
-        status.message = "Cannot checkout node " + objectId + " as it is already checked-out";
+        status.message = "Cannot checkout node " + object.ref + " as it is already checked-out";
         status.redirect = true;
         break script;
     }
@@ -61,6 +61,6 @@ script:
     // setup for 201 Created response
     // TODO: set Content-Location
     status.code = 201;
-    status.location = url.server + url.serviceContext + "/api/pwc/" + model.pwc.nodeRef.storeRef.protocol + "/" + model.pwc.nodeRef.storeRef.identifier + "/" + model.pwc.nodeRef.id;
+    status.location = url.server + url.serviceContext + "/cmis/pwc/s/" + model.pwc.nodeRef.storeRef.protocol + ":" + model.pwc.nodeRef.storeRef.identifier + "/i/" + model.pwc.nodeRef.id;
     status.redirect = true;
 }

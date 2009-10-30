@@ -14,7 +14,11 @@ It is repository specific on who can cancel a checkout (user, admin, larger grou
 Throws OperationNotSupportedException if the object is not checked out<br>
 ]]>
   </description>
-  <url>/api/pwc/{store_type}/{store_id}/{id}</url>
+  
+  <!-- by object id -->
+  <url>/cmis/pwc/i/{id}</url>
+  <url>/cmis/pwc/s/{store}/i/{id}</url>
+  
   <authentication>user</authentication>
   <format default="atomentry"/>
   <family>CMIS</family>

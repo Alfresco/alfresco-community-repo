@@ -1,21 +1,19 @@
+<import resource="classpath:alfresco/templates/webscripts/org/alfresco/cmis/read.lib.js">
+
 script:
 {
     // locate node
-    var pathSegments = url.match.split("/");
-    var reference = [ url.templateArgs.store_type, url.templateArgs.store_id ].concat(url.templateArgs.id.split("/"));
-    var node = cmis.findNode(pathSegments[2], reference);
-    if (node === null)
+    var object = getObjectFromUrl();
+    if (object.node == null)
     {
-        status.code = 404;
-        status.message = "Repository " + pathSegments[2] + " " + reference.join("/") + " not found";
-        status.redirect = true;
         break script;
     }
+    var node = object.node;
 
     if (!node.hasPermission("Delete"))
     {
         status.code = 403;
-        status.message = "Permission to delete is denied";
+        status.message = "Permission to delete object " + object.ref + " is denied";
         status.redirect = true;
         break script;
     }
@@ -28,7 +26,7 @@ script:
        if (node.children.length > 0 && !args.includeChildren)
        {
           status.code = 403;
-          status.message = "Cannot delete folder " + pathSegments[2] + " " + reference.join("/") + " as it's not empty";
+          status.message = "Cannot delete folder " + object.ref + " as it's not empty";
           status.redirect = true;
           break script;
        }
@@ -38,7 +36,7 @@ script:
     if (!node.remove())
     {
         status.code = 500;
-        status.message = "Failed to delete node " + pathSegments[2] + " " + reference.join("/");
+        status.message = "Failed to delete object " + object.ref;
         status.redirect = true;
         break script;
     }

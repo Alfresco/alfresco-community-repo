@@ -20,11 +20,21 @@ Some CMIS protocol bindings MAY choose not to explicitly implement a “getConte
 Each CMIS protocol binding will provide a way for fetching a  sub-range within a content stream, in a manner appropriate to that protocol.<br> 
 ]]>
   </description>
+  
+  <!-- by object id -->
+  <url>/cmis/i/{id}/content{property}?a={attach?}</url>
+  <url>/cmis/s/{store}/i/{id}/content{property}?a={attach?}</url>
+  <!-- by path -->
+  <url>/cmis/p{path}/content{property}?a={attach?}</url>
+  <url>/cmis/s/{store}/p{path}/content{property}?a={attach?}</url>
+
+  <!-- alfresco style -->
   <url>/api/node/content{property}/{store_type}/{store_id}/{id}?a={attach?}</url>
-  <url>/api/path/content{property}/{store_type}/{store_id}/{id}?a={attach?}</url>
-  <url>/api/avmpath/content{property}/{store_id}/{id}?a={attach?}</url>
+  <url>/api/path/content{property}/{store_type}/{store_id}/{path}?a={attach?}</url>
+  <url>/api/avmpath/content{property}/{store_id}/{avmpath}?a={attach?}</url>
   <url>/api/node/{store_type}/{store_id}/{id}/content{property}?a={attach?}</url>
-  <url>/api/path/{store_type}/{store_id}/{id}/content{property}?a={attach?}</url>
+  <url>/api/path/{store_type}/{store_id}/{path}/content{property}?a={attach?}</url>
+  
   <authentication>guest</authentication>
   <transaction allow="readonly"/>
   <format default="">argument</format>

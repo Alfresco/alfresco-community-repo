@@ -34,8 +34,17 @@ If “includeAllowableActions” is TRUE, the repository will return the allowab
 If no “maxItems” value is provided, then the Repository will determine an appropriate number of items to return. How the Repository determines this value is repository-specific and opaque to CMIS.<br>
 ]]>
   </description>
+
+  <!-- by object id -->
+  <url>/cmis/i/{id}/children?types={types}&amp;filter={filter?}&amp;skipCount={skipCount?}&amp;maxItems={maxItems?}&amp;includeAllowableActions={includeAllowableActions?}</url>
+  <url>/cmis/s/{store}/i/{id}/children?types={types}&amp;filter={filter?}&amp;skipCount={skipCount?}&amp;maxItems={maxItems?}&amp;includeAllowableActions={includeAllowableActions?}</url>
+  <!-- by path -->
+  <url>/cmis/p{path}/children?types={types}&amp;filter={filter?}&amp;skipCount={skipCount?}&amp;maxItems={maxItems?}&amp;includeAllowableActions={includeAllowableActions?}</url>
+  <url>/cmis/s/{store}/p{path}/children?types={types}&amp;filter={filter?}&amp;skipCount={skipCount?}&amp;maxItems={maxItems?}&amp;includeAllowableActions={includeAllowableActions?}</url>
+  <!-- alfresco style -->
   <url>/api/node/{store_type}/{store_id}/{id}/children?types={types}&amp;filter={filter?}&amp;skipCount={skipCount?}&amp;maxItems={maxItems?}&amp;includeAllowableActions={includeAllowableActions?}</url>
-  <url>/api/path/{store_type}/{store_id}/{id}/children?types={types}&amp;filter={filter?}&amp;skipCount={skipCount?}&amp;maxItems={maxItems?}&amp;includeAllowableActions={includeAllowableActions?}</url>
+  <url>/api/path/{store_type}/{store_id}/{path}/children?types={types}&amp;filter={filter?}&amp;skipCount={skipCount?}&amp;maxItems={maxItems?}&amp;includeAllowableActions={includeAllowableActions?}</url>
+
   <authentication>guest</authentication>
   <transaction allow="readonly"/>
   <format default="atomfeed">argument</format>

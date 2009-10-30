@@ -2,8 +2,17 @@
   <shortname>Retrieve Parent Folder (getFolderParent)</shortname>
   <description>
   </description>
+  
+  <!-- by object id -->
+  <url>/cmis/i/{id}/parent?filter={filter?}&amp;includeAllowableActions={includeAllowableActions?}</url>
+  <url>/cmis/s/{store}/i/{id}/parent?filter={filter?}&amp;includeAllowableActions={includeAllowableActions?}</url>
+  <!-- by path -->
+  <url>/cmis/p{path}/parent?filter={filter?}&amp;includeAllowableActions={includeAllowableActions?}</url>
+  <url>/cmis/s/{store}/p{path}/parent?filter={filter?}&amp;includeAllowableActions={includeAllowableActions?}</url>
+  <!-- alfresco style -->
   <url>/api/node/{store_type}/{store_id}/{id}/parent?filter={filter?}&amp;includeAllowableActions={includeAllowableActions?}</url>
-  <url>/api/path/{store_type}/{store_id}/{id}/parent?filter={filter?}&amp;includeAllowableActions={includeAllowableActions?}</url>
+  <url>/api/path/{store_type}/{store_id}/{path}/parent?filter={filter?}&amp;includeAllowableActions={includeAllowableActions?}</url>
+    
   <authentication>guest</authentication>
   <transaction allow="readonly"/>
   <format default="atomentry">argument</format>

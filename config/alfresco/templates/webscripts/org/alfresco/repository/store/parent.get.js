@@ -1,22 +1,20 @@
+<import resource="classpath:alfresco/templates/webscripts/org/alfresco/cmis/read.lib.js">
+
 script:
 {
     // locate node
-    var pathSegments = url.match.split("/");
-    var reference = [ url.templateArgs.store_type, url.templateArgs.store_id ].concat(url.templateArgs.id.split("/"));
-    var node = cmis.findNode(pathSegments[2], reference);
-    if (node === null)
+    var object = getObjectFromUrl();
+    if (object.node == null)
     {
-        status.code = 404;
-        status.message = "Repository " + pathSegments[2] + " " + reference.join("/") + " not found";
-        status.redirect = true;
         break script;
     }
-
+    var node = object.node;
+    
     // locate parent
     if (node.id == cmis.defaultRootFolder.id)
     {
         status.code = 404;
-        status.message = "Repository " + pathSegments[2] + " " + reference.join("/") + " parent not found";
+        status.message = "Object " + object.ref + " parent not found";
         status.redirect = true;
         break script;
     }

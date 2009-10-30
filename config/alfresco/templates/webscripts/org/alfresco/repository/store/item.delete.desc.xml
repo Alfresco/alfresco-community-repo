@@ -17,8 +17,17 @@ This service deletes a specific version of a document object.  To delete all ver
 Deletion of a private working copy (checked out version) is the same as to cancel checkout.<br>
 ]]>
   </description>
+  
+  <!-- by object id -->
+  <url>/cmis/i/{id}?includeChildren={includeChildren?}</url>
+  <url>/cmis/s/{store}/i/{id}?includeChildren={includeChildren?}</url>
+  <!-- by path -->
+  <url>/cmis/p{path}?includeChildren={includeChildren?}</url>
+  <url>/cmis/s/{store}/p{path}?includeChildren={includeChildren?}</url>
+  <!-- alfresco style -->
   <url>/api/node/{store_type}/{store_id}/{id}?includeChildren={includeChildren?}</url>
-  <url>/api/path/{store_type}/{store_id}/{id}?includeChildren={includeChildren?}</url>
+  <url>/api/path/{store_type}/{store_id}/{path}?includeChildren={includeChildren?}</url>
+  
   <authentication>user</authentication>
   <format default="atomentry"/>
   <family>CMIS</family>

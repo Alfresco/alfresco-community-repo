@@ -13,7 +13,7 @@ boolean trace: true => trace request and response bodies
 String tests: names of tests to execute (use * in test name to represent wildcard) (Default: *)<br>
 ]]>
 </description>
-  <url>/api/cmis/test?url={serviceUrl}&amp;user={user?}&amp;validate={validate?}&amp;trace={trace?}&amp;tests={tests?}</url>
+  <url>/cmis/test?url={serviceUrl}&amp;user={user?}&amp;validate={validate?}&amp;trace={trace?}&amp;tests={tests?}</url>
   <authentication>none</authentication>
   <format default="text"/>
   <family>CMIS</family>

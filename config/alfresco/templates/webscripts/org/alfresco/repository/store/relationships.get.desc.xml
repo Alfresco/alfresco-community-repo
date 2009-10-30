@@ -2,6 +2,15 @@
   <shortname>Retrieve list of relationships (getRelationships)</shortname>
   <description>
   </description>
+
+  <!-- by object id -->
+  <url>/cmis/i/{id}/rels?filter={filter?}&amp;relationshipType={relationshipType?}&amp;includeSubRelationshipTypes={includeSubRelationshipTypes?}&amp;direction={direction?}&amp;skipCount={skipCount?}&amp;maxItems={maxItems?}&amp;includeAllowableActions={includeAllowableActions?}</url>
+  <url>/cmis/s/{store}/i/{id}/rels?filter={filter?}&amp;relationshipType={relationshipType?}&amp;includeSubRelationshipTypes={includeSubRelationshipTypes?}&amp;direction={direction?}&amp;skipCount={skipCount?}&amp;maxItems={maxItems?}&amp;includeAllowableActions={includeAllowableActions?}</url>
+  <!-- by path -->
+  <url>/cmis/p{path}/rels?filter={filter?}&amp;relationshipType={relationshipType?}&amp;includeSubRelationshipTypes={includeSubRelationshipTypes?}&amp;direction={direction?}&amp;skipCount={skipCount?}&amp;maxItems={maxItems?}&amp;includeAllowableActions={includeAllowableActions?}</url>
+  <url>/cmis/s/{store}/p{path}/rels?filter={filter?}&amp;relationshipType={relationshipType?}&amp;includeSubRelationshipTypes={includeSubRelationshipTypes?}&amp;direction={direction?}&amp;skipCount={skipCount?}&amp;maxItems={maxItems?}&amp;includeAllowableActions={includeAllowableActions?}</url>
+  
+  <!-- alfresco style -->
   <url>/api/node/{store_type}/{store_id}/{id}/rels?filter={filter?}&amp;relationshipType={relationshipType?}&amp;includeSubRelationshipTypes={includeSubRelationshipTypes?}&amp;direction={direction?}&amp;skipCount={skipCount?}&amp;maxItems={maxItems?}&amp;includeAllowableActions={includeAllowableActions?}</url>
   <url>/api/path/{store_type}/{store_id}/{id}/rels?filter={filter?}&amp;relationshipType={relationshipType?}&amp;includeSubRelationshipTypes={includeSubRelationshipTypes?}&amp;direction={direction?}&amp;skipCount={skipCount?}&amp;maxItems={maxItems?}&amp;includeAllowableActions={includeAllowableActions?}</url>
   <authentication>guest</authentication>

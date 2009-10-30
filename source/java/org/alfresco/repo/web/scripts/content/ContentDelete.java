@@ -24,57 +24,39 @@
  */
 package org.alfresco.repo.web.scripts.content;
 
-import java.io.BufferedInputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletResponse;
 
 import org.alfresco.cmis.CMISObjectReference;
-import org.alfresco.cmis.reference.ObjectPathReference;
 import org.alfresco.cmis.reference.ReferenceFactory;
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.content.encoding.ContentCharsetFinder;
-import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
-import org.alfresco.service.cmr.dictionary.DictionaryService;
-import org.alfresco.service.cmr.dictionary.PropertyDefinition;
-import org.alfresco.service.cmr.repository.ContentReader;
-import org.alfresco.service.cmr.repository.ContentService;
-import org.alfresco.service.cmr.repository.ContentWriter;
-import org.alfresco.service.cmr.repository.MimetypeService;
+import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.web.scripts.AbstractWebScript;
 import org.alfresco.web.scripts.WebScriptException;
 import org.alfresco.web.scripts.WebScriptRequest;
 import org.alfresco.web.scripts.WebScriptResponse;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 
 /**
- * Content Write Service
+ * Content Delete Service
  * 
- * Stream content to the Repository.
+ * Delete content stream from the Repository.
  * 
  * @author davidc
  */
-public class ContentSet extends AbstractWebScript
+public class ContentDelete extends AbstractWebScript
 {
-    // Logger
-    @SuppressWarnings("unused")
-    private static final Log logger = LogFactory.getLog(ContentSet.class);
-    
     // Component dependencies
     private ReferenceFactory referenceFactory;
-    private DictionaryService dictionaryService;
     private NamespaceService namespaceService;
-    private ContentService contentService;
-    private MimetypeService mimetypeService;
+    private NodeService nodeService;
     
     /**
      * @param reference factory
@@ -83,15 +65,7 @@ public class ContentSet extends AbstractWebScript
     {
         this.referenceFactory = referenceFactory; 
     }
-
-    /**
-     * @param dictionaryService
-     */
-    public void setDictionaryService(DictionaryService dictionaryService)
-    {
-        this.dictionaryService = dictionaryService; 
-    }
-
+    
     /**
      * @param namespaceService
      */
@@ -99,29 +73,22 @@ public class ContentSet extends AbstractWebScript
     {
         this.namespaceService = namespaceService; 
     }
-
+    
     /**
-     * @param contentService
+     * @param nodeService
      */
-    public void setContentService(ContentService contentService)
+    public void setNodeService(NodeService nodeService)
     {
-        this.contentService = contentService; 
+        this.nodeService = nodeService; 
     }
-
-    /**
-     * @param mimetypeService
-     */
-    public void setMimetypeService(MimetypeService mimetypeService)
-    {
-        this.mimetypeService = mimetypeService; 
-    }
-
+    
+        
     /**
      * @see org.alfresco.web.scripts.WebScript#execute(org.alfresco.web.scripts.WebScriptRequest, org.alfresco.web.scripts.WebScriptResponse)
      */
     public void execute(WebScriptRequest req, WebScriptResponse res)
         throws IOException
-    {   
+    {
         // create map of args
         String[] names = req.getParameterNames();
         Map<String, String> args = new HashMap<String, String>(names.length, 1.0f);
@@ -156,56 +123,16 @@ public class ContentSet extends AbstractWebScript
                 propertyQName = QName.createQName(propertyName, namespaceService);
             }
         }
-        PropertyDefinition propertyDef = dictionaryService.getProperty(propertyQName);
-        if (propertyDef == null)
-        {
-            throw new WebScriptException(HttpServletResponse.SC_NOT_FOUND, "Unable to find content property " + propertyQName + " of " + reference.toString());
-        }
-        if (!propertyDef.getDataType().getName().equals(DataTypeDefinition.CONTENT))
-        {
-            throw new WebScriptException(HttpServletResponse.SC_NOT_FOUND, "Content stream not found");
-        }
 
-        // ensure content can be overwritten
-        // TODO: check parameter name
-        String overwrite = req.getParameter("overwriteFlag");
-        if (overwrite != null && overwrite.equalsIgnoreCase("false"))
+        // retrieve content property
+        ContentData contentData = (ContentData)nodeService.getProperty(nodeRef, propertyQName);
+        if (contentData != null)
         {
-            ContentReader reader = contentService.getReader(nodeRef, propertyQName);
-            if (reader != null)
-            {
-                // error code as per CMIS specification
-                throw new WebScriptException(HttpServletResponse.SC_CONFLICT, "Content already exists.");
-            }
+            contentData = new ContentData(null, null, 0, null);
+            nodeService.setProperty(nodeRef, propertyQName, contentData);
         }
-        
-        // setup content writer
-        ContentWriter writer = contentService.getWriter(nodeRef, propertyQName, true);
-        
-        // establish mimetype
-        String mimetype = req.getContentType();
-        if (mimetype == null)
-        {
-            if (reference instanceof ObjectPathReference)
-            {
-                mimetype = mimetypeService.guessMimetype(((ObjectPathReference)reference).getPath());
-            }
-        }
-        if (mimetype != null)
-        {
-            writer.setMimetype(mimetype);
-        }
-        
-        // get the input stream from the request data
-        InputStream is = req.getContent().getInputStream();
-        is = is.markSupported() ? is : new BufferedInputStream(is);
-        
-        // establish content encoding
-        ContentCharsetFinder charsetFinder = mimetypeService.getContentCharsetFinder();
-        Charset encoding = charsetFinder.getCharset(is, mimetype);
-        writer.setEncoding(encoding.name());
-
-        // write the new data
-        writer.putContent(is);
+     
+        // no content returned
+        res.setStatus(204);
     }
 }

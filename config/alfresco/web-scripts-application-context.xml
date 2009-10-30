@@ -224,10 +224,10 @@
    <bean id="webscripts.js.cmis" parent="baseJavaScriptExtension" class="org.alfresco.repo.cmis.rest.CMISScript">
       <property name="extensionName"><value>cmis</value></property>
       <property name="serviceRegistry" ref="ServiceRegistry" />
-      <property name="repository" ref="repositoryHelper" />
       <property name="CMISService" ref="CMISService" />
       <property name="CMISDictionaryService" ref="CMISDictionaryService" />
       <property name="CMISQueryService" ref="CMISQueryService" />
+      <property name="CMISReferenceFactory" ref="CMISReferenceFactory" />
       <property name="paging" ref="webscripts.js.paging" />
    </bean>
 
@@ -292,7 +292,7 @@
 
    <!--  Content Retrieval -->
    <bean id="webscript.org.alfresco.repository.store.content.get" class="org.alfresco.repo.web.scripts.content.ContentGet" parent="webscript">
-      <property name="repository" ref="repositoryHelper" />
+      <property name="referenceFactory" ref="CMISReferenceFactory" />
       <property name="namespaceService" ref="NamespaceService" />
       <property name="permissionService" ref="PermissionService" />
       <property name="nodeService" ref="NodeService" />
@@ -309,11 +309,18 @@
    
    <!--  Content Write -->
    <bean id="webscript.org.alfresco.repository.store.content.put" class="org.alfresco.repo.web.scripts.content.ContentSet" parent="webscript">
-      <property name="repository" ref="repositoryHelper" />
+      <property name="referenceFactory" ref="CMISReferenceFactory" />
       <property name="dictionaryService" ref="DictionaryService" />
       <property name="namespaceService" ref="NamespaceService" />
       <property name="contentService" ref="ContentService" />
       <property name="mimetypeService" ref="MimetypeService" />
+   </bean>
+
+   <!--  Content Delete -->
+   <bean id="webscript.org.alfresco.repository.store.content.delete" class="org.alfresco.repo.web.scripts.content.ContentDelete" parent="webscript">
+      <property name="referenceFactory" ref="CMISReferenceFactory" />
+      <property name="namespaceService" ref="NamespaceService" />
+      <property name="nodeService" ref="NodeService" />
    </bean>
    
    <!--  Remote Store service - AVM -->

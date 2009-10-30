@@ -25,7 +25,10 @@ If Document is not checked out, throw OperationNotSupportedException.<br>
 If the Document has “Content_Stream_Allowed” set to FALSE, and a call is made to checkIn that includes a content-stream, throw ConstraintViolationException.<br>
 ]]>
   </description>
-  <url>/api/pwc/{store_type}/{store_id}/{id}?checkinComment={checkinComment?}&amp;major={major?}&amp;checkin={checkin?}</url>
+  
+  <url>/cmis/pwc/i/{id}?checkinComment={checkinComment?}&amp;major={major?}&amp;checkin={checkin?}</url>
+  <url>/cmis/pwc/s/{store}/i/{id}?checkinComment={checkinComment?}&amp;major={major?}&amp;checkin={checkin?}</url>
+  
   <authentication>user</authentication>
   <format default="atomentry"/>
   <family>CMIS</family>

@@ -29,8 +29,17 @@ Does not specify the order in which delete will happen<br>
 o   However, any objects that are not deleted (e.g. because a previous object failed to delete), they MUST remain valid CMIS objects (including any applicable filing constraint for each object).<br>
 ]]>  
   </description>
+  
+  <!-- by object id -->
+  <url>/cmis/i/{id}/descendants?continueOnFailure={continueOnFailure?}&amp;unfileMultiFiledDocuments={unfileMultiFiledDocuments}</url>
+  <url>/cmis/s/{store}/i/{id}/descendants?continueOnFailure={continueOnFailure?}&amp;unfileMultiFiledDocuments={unfileMultiFiledDocuments}</url>
+  <!-- by path -->
+  <url>/cmis/p{path}/descendants?continueOnFailure={continueOnFailure?}&amp;unfileMultiFiledDocuments={unfileMultiFiledDocuments}</url>
+  <url>/cmis/s/{store}/p{path}/descendants?continueOnFailure={continueOnFailure?}&amp;unfileMultiFiledDocuments={unfileMultiFiledDocuments}</url>
+  <!-- alfresco style -->
   <url>/api/node/{store_type}/{store_id}/{id}/descendants?continueOnFailure={continueOnFailure?}&amp;unfileMultiFiledDocuments={unfileMultiFiledDocuments}</url>
-  <url>/api/path/{store_type}/{store_id}/{id}/descendants?continueOnFailure={continueOnFailure?}&amp;unfileMultiFiledDocuments={unfileMultiFiledDocuments}</url>
+  <url>/api/path/{store_type}/{store_id}/{path}/descendants?continueOnFailure={continueOnFailure?}&amp;unfileMultiFiledDocuments={unfileMultiFiledDocuments}</url>
+  
   <authentication>user</authentication>
   <format default="atomfeed"/>
   <family>CMIS</family>

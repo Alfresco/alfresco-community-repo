@@ -41,8 +41,16 @@ If the to-be-created Folder’s Object Type is not one of the “Allowed_Child_O
 Root folder can not be created using this service.<br>
 ]]>
   </description>
+  
+  <url>/cmis/i/{id}/children?sourceFolderId={sourceFolderId}</url>
+  <url>/cmis/s/{store}/i/{id}/children?sourceFolderId={sourceFolderId}</url>
+  <!-- by path -->
+  <url>/cmis/p{path}/children?sourceFolderId={sourceFolderId}</url>
+  <url>/cmis/s/{store}/p{path}/children?sourceFolderId={sourceFolderId}</url>
+  <!-- alfresco style -->
   <url>/api/node/{store_type}/{store_id}/{id}/children?sourceFolderId={sourceFolderId}</url>
-  <url>/api/path/{store_type}/{store_id}/{id}/children?sourceFolderId={sourceFolderId}</url>
+  <url>/api/path/{store_type}/{store_id}/{path}/children?sourceFolderId={sourceFolderId}</url>
+  
   <authentication>user</authentication>
   <format default="atomentry"/>
   <family>CMIS</family>

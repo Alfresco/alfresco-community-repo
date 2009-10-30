@@ -93,7 +93,7 @@
 <author><name>${node.properties.creator}</name></author>
 [@contentstream node/]
 <id>urn:uuid:${node.id}</id>
-[#assign pwcuri]/api/pwc/[@linksLib.noderef node/][/#assign]
+[#assign pwcuri]/cmis/pwc/[@linksLib.noderef node/][/#assign]
 [@linksLib.linkself href="${pwcuri}"/]
 [@linksLib.linkstream node "enclosure"/]
 [@linksLib.linknodeedit node/]
@@ -204,7 +204,7 @@
 [/#macro]
 
 [#macro assocCMISLinks assoc]
-[#-- TODO: <link rel="allowableactions" href="${absurl(url.serviceContext)}/api/node/${node.nodeRef.storeRef.protocol}/${node.nodeRef.storeRef.identifier}/${node.nodeRef.id}/permissions"/> --]
+[#-- TODO: <link rel="allowableactions" href="${absurl(url.serviceContext)}/cmis/node/${node.nodeRef.storeRef.protocol}/${node.nodeRef.storeRef.identifier}/${node.nodeRef.id}/permissions"/> --]
 [@linksLib.linktype assoc/]
 [@linksLib.linktosource assoc.source/]
 [@linksLib.linktotarget assoc.target/]

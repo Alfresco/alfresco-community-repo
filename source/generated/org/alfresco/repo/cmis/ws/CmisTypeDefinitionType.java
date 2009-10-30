@@ -84,10 +84,10 @@ import org.w3c.dom.Element;
     "any"
 })
 @XmlSeeAlso({
-    CmisTypeDocumentDefinitionType.class,
-    CmisTypePolicyDefinitionType.class,
     CmisTypeFolderDefinitionType.class,
-    CmisTypeRelationshipDefinitionType.class
+    CmisTypeDocumentDefinitionType.class,
+    CmisTypeRelationshipDefinitionType.class,
+    CmisTypePolicyDefinitionType.class
 })
 public class CmisTypeDefinitionType {
 
@@ -113,14 +113,14 @@ public class CmisTypeDefinitionType {
     protected boolean controllablePolicy;
     protected boolean controllableACL;
     @XmlElements({
-        @XmlElement(name = "propertyBooleanDefinition", type = CmisPropertyBooleanDefinitionType.class),
-        @XmlElement(name = "propertyDateTimeDefinition", type = CmisPropertyDateTimeDefinitionType.class),
-        @XmlElement(name = "propertyUriDefinition", type = CmisPropertyUriDefinitionType.class),
-        @XmlElement(name = "propertyStringDefinition", type = CmisPropertyStringDefinitionType.class),
-        @XmlElement(name = "propertyIntegerDefinition", type = CmisPropertyIntegerDefinitionType.class),
         @XmlElement(name = "propertyHtmlDefinition", type = CmisPropertyHtmlDefinitionType.class),
+        @XmlElement(name = "propertyIntegerDefinition", type = CmisPropertyIntegerDefinitionType.class),
+        @XmlElement(name = "propertyDateTimeDefinition", type = CmisPropertyDateTimeDefinitionType.class),
+        @XmlElement(name = "propertyIdDefinition", type = CmisPropertyIdDefinitionType.class),
+        @XmlElement(name = "propertyUriDefinition", type = CmisPropertyUriDefinitionType.class),
+        @XmlElement(name = "propertyBooleanDefinition", type = CmisPropertyBooleanDefinitionType.class),
         @XmlElement(name = "propertyDecimalDefinition", type = CmisPropertyDecimalDefinitionType.class),
-        @XmlElement(name = "propertyIdDefinition", type = CmisPropertyIdDefinitionType.class)
+        @XmlElement(name = "propertyStringDefinition", type = CmisPropertyStringDefinitionType.class)
     })
     protected List<CmisPropertyDefinitionType> propertyDefinition;
     @XmlAnyElement(lax = true)
@@ -450,14 +450,14 @@ public class CmisTypeDefinitionType {
      * 
      * <p>
      * Objects of the following type(s) are allowed in the list
-     * {@link CmisPropertyBooleanDefinitionType }
-     * {@link CmisPropertyDateTimeDefinitionType }
-     * {@link CmisPropertyUriDefinitionType }
-     * {@link CmisPropertyStringDefinitionType }
-     * {@link CmisPropertyIntegerDefinitionType }
      * {@link CmisPropertyHtmlDefinitionType }
-     * {@link CmisPropertyDecimalDefinitionType }
+     * {@link CmisPropertyIntegerDefinitionType }
+     * {@link CmisPropertyDateTimeDefinitionType }
      * {@link CmisPropertyIdDefinitionType }
+     * {@link CmisPropertyUriDefinitionType }
+     * {@link CmisPropertyBooleanDefinitionType }
+     * {@link CmisPropertyDecimalDefinitionType }
+     * {@link CmisPropertyStringDefinitionType }
      * 
      * 
      */
@@ -486,8 +486,8 @@ public class CmisTypeDefinitionType {
      * 
      * <p>
      * Objects of the following type(s) are allowed in the list
-     * {@link Element }
      * {@link Object }
+     * {@link Element }
      * 
      * 
      */

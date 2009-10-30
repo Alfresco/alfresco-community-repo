@@ -453,7 +453,12 @@
 [#macro relationshiptypedefCMISProps typedef includeProperties=true includeInheritedProperties=true]
 <cmisra:type xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="cmis:cmisTypeRelationshipDefinitionType">
   [@objecttypedefCMISProps typedef includeProperties includeInheritedProperties/]
-  [#-- TODO: source and target types --]
+  [#list typedef.allowedSourceTypes as allowedSourceType]
+    <cmis:allowedSourceTypes>${allowedSourceType.typeId.id}</cmis:allowedSourceTypes>
+  [/#list]
+  [#list typedef.allowedTargetTypes as allowedTargetType]
+    <cmis:allowedTargetTypes>${allowedTargetType.typeId.id}</cmis:allowedTargetTypes>
+  [/#list]
 </cmisra:type>
 [/#macro]
 

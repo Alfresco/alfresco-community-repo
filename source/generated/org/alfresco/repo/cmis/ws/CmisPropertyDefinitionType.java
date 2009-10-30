@@ -70,13 +70,13 @@ import org.w3c.dom.Element;
     "any"
 })
 @XmlSeeAlso({
-    CmisPropertyHtmlDefinitionType.class,
-    CmisPropertyUriDefinitionType.class,
-    CmisPropertyIdDefinitionType.class,
-    CmisPropertyBooleanDefinitionType.class,
-    CmisPropertyIntegerDefinitionType.class,
     CmisPropertyDateTimeDefinitionType.class,
+    CmisPropertyUriDefinitionType.class,
     CmisPropertyDecimalDefinitionType.class,
+    CmisPropertyIntegerDefinitionType.class,
+    CmisPropertyBooleanDefinitionType.class,
+    CmisPropertyHtmlDefinitionType.class,
+    CmisPropertyIdDefinitionType.class,
     CmisPropertyStringDefinitionType.class
 })
 public class CmisPropertyDefinitionType {
@@ -436,8 +436,8 @@ public class CmisPropertyDefinitionType {
      * 
      * <p>
      * Objects of the following type(s) are allowed in the list
-     * {@link Element }
      * {@link Object }
+     * {@link Element }
      * 
      * 
      */

@@ -37,14 +37,14 @@ import javax.xml.namespace.QName;
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "cmisProperty", namespace = "http://docs.oasis-open.org/ns/cmis/core/200908/")
 @XmlSeeAlso({
-    CmisPropertyDecimal.class,
-    CmisPropertyInteger.class,
-    CmisPropertyDateTime.class,
-    CmisPropertyUri.class,
     CmisPropertyHtml.class,
-    CmisPropertyBoolean.class,
+    CmisPropertyDecimal.class,
+    CmisPropertyDateTime.class,
+    CmisPropertyId.class,
     CmisPropertyString.class,
-    CmisPropertyId.class
+    CmisPropertyUri.class,
+    CmisPropertyBoolean.class,
+    CmisPropertyInteger.class
 })
 public class CmisProperty {
 

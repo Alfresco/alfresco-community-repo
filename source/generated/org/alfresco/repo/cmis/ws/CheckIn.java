@@ -23,7 +23,7 @@ import javax.xml.bind.annotation.XmlType;
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
  *         &lt;element name="repositoryId" type="{http://www.w3.org/2001/XMLSchema}string"/>
- *         &lt;element name="documentId" type="{http://www.w3.org/2001/XMLSchema}string"/>
+ *         &lt;element name="objectId" type="{http://www.w3.org/2001/XMLSchema}string"/>
  *         &lt;element name="major" type="{http://www.w3.org/2001/XMLSchema}boolean" minOccurs="0"/>
  *         &lt;element name="properties" type="{http://docs.oasis-open.org/ns/cmis/core/200908/}cmisPropertiesType" minOccurs="0"/>
  *         &lt;element name="contentStream" type="{http://docs.oasis-open.org/ns/cmis/messaging/200908/}cmisContentStreamType" minOccurs="0"/>
@@ -43,7 +43,7 @@ import javax.xml.bind.annotation.XmlType;
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "", propOrder = {
     "repositoryId",
-    "documentId",
+    "objectId",
     "major",
     "properties",
     "contentStream",
@@ -59,7 +59,7 @@ public class CheckIn {
     @XmlElement(required = true)
     protected String repositoryId;
     @XmlElement(required = true)
-    protected String documentId;
+    protected String objectId;
     @XmlElementRef(name = "major", namespace = "http://docs.oasis-open.org/ns/cmis/messaging/200908/", type = JAXBElement.class)
     protected JAXBElement<Boolean> major;
     @XmlElementRef(name = "properties", namespace = "http://docs.oasis-open.org/ns/cmis/messaging/200908/", type = JAXBElement.class)
@@ -102,27 +102,27 @@ public class CheckIn {
     }
 
     /**
-     * Gets the value of the documentId property.
+     * Gets the value of the objectId property.
      * 
      * @return
      *     possible object is
      *     {@link String }
      *     
      */
-    public String getDocumentId() {
-        return documentId;
+    public String getObjectId() {
+        return objectId;
     }
 
     /**
-     * Sets the value of the documentId property.
+     * Sets the value of the objectId property.
      * 
      * @param value
      *     allowed object is
      *     {@link String }
      *     
      */
-    public void setDocumentId(String value) {
-        this.documentId = value;
+    public void setObjectId(String value) {
+        this.objectId = value;
     }
 
     /**

@@ -1,6 +1,6 @@
 [#ftl]
-[#import "/org/alfresco/cmis/ns.lib.atom.ftl" as nsLib/]
-[#import "/org/alfresco/cmis/links.lib.atom.ftl" as linksLib/]
+[#import "/org/alfresco/cmis/lib/ns.lib.atom.ftl" as nsLib/]
+[#import "/org/alfresco/cmis/lib/links.lib.atom.ftl" as linksLib/]
 <?xml version="1.0" encoding="utf-8"?> 
 <service [@nsLib.serviceNS/]>
   <workspace>
@@ -67,6 +67,7 @@
       [#-- TODO: implement change log --]
       [#-- TODO: <cmis:changesIncomplete></cmis:changesIncomplete> --]
       [#-- TODO: <cmis:changesOnType></cmis:changesOnType> --]
+      <alf:cmisSpecificationTitle>${cmisSpecTitle}</alf:cmisSpecificationTitle>
     </cmisra:repositoryInfo>
 
     <cmisra:uritemplate>

@@ -182,6 +182,16 @@ public class CMISScript extends BaseScopableProcessorExtension
     }
     
     /**
+     * Gets the supported CMIS Specification Title
+     * 
+     * @return  CMIS Specification Title
+     */
+    public String getSpecTitle()
+    {
+        return cmisService.getCMISSpecTitle();
+    }
+    
+    /**
      * Gets the default root folder path
      * 
      * @return  default root folder path

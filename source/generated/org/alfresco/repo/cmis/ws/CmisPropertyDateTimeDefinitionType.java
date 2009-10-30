@@ -19,6 +19,7 @@ import javax.xml.bind.annotation.XmlType;
  *     &lt;extension base="{http://docs.oasis-open.org/ns/cmis/core/200908/}cmisPropertyDefinitionType">
  *       &lt;sequence>
  *         &lt;element name="defaultValue" type="{http://docs.oasis-open.org/ns/cmis/core/200908/}cmisPropertyDateTime" minOccurs="0"/>
+ *         &lt;element name="resolution" type="{http://docs.oasis-open.org/ns/cmis/core/200908/}enumDateTimeResolution" minOccurs="0"/>
  *         &lt;element name="choice" type="{http://docs.oasis-open.org/ns/cmis/core/200908/}cmisChoiceDateTime" maxOccurs="unbounded" minOccurs="0"/>
  *       &lt;/sequence>
  *     &lt;/extension>
@@ -31,6 +32,7 @@ import javax.xml.bind.annotation.XmlType;
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "cmisPropertyDateTimeDefinitionType", namespace = "http://docs.oasis-open.org/ns/cmis/core/200908/", propOrder = {
     "defaultValue",
+    "resolution",
     "choice"
 })
 public class CmisPropertyDateTimeDefinitionType
@@ -38,6 +40,7 @@ public class CmisPropertyDateTimeDefinitionType
 {
 
     protected CmisPropertyDateTime defaultValue;
+    protected EnumDateTimeResolution resolution;
     protected List<CmisChoiceDateTime> choice;
 
     /**
@@ -62,6 +65,30 @@ public class CmisPropertyDateTimeDefinitionType
      */
     public void setDefaultValue(CmisPropertyDateTime value) {
         this.defaultValue = value;
+    }
+
+    /**
+     * Gets the value of the resolution property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link EnumDateTimeResolution }
+     *     
+     */
+    public EnumDateTimeResolution getResolution() {
+        return resolution;
+    }
+
+    /**
+     * Sets the value of the resolution property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link EnumDateTimeResolution }
+     *     
+     */
+    public void setResolution(EnumDateTimeResolution value) {
+        this.resolution = value;
     }
 
     /**

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 	<!--
-		$Revision: 102 $ $Date: 2009-09-21 11:39:42 -0700 (Mon, 21 Sep 2009) $
+		$Revision: 137 $ $Date: 2009-10-21 15:50:27 -0700 (Wed, 21 Oct 2009) $
 		$Author: albertcbrown $ $HeadURL:
 		http://tools.oasis-open.org/version-control/svn/cmis/trunk/SchemaProject/schema/CMIS-Core.xsd
 		$
@@ -10,10 +10,7 @@
 	xmlns:atom="http://www.w3.org/2005/Atom" xmlns:xhtml="http://www.w3.org/1999/xhtml"
 	xmlns:jaxb="http://java.sun.com/xml/ns/jaxb" xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc"
 	jaxb:extensionBindingPrefixes="xjc" jaxb:version="2.1"
-	xmlns:cmis="http://docs.oasis-open.org/ns/cmis/core/200908/" version="0.63">
-
-	<xs:import namespace="http://www.w3.org/XML/1998/namespace"
-		schemaLocation="xml.xsd" />
+	xmlns:cmis="http://docs.oasis-open.org/ns/cmis/core/200908/" version="1.0">
 
 	<!--  enums -->
 	<xs:simpleType name="enumDecimalPrecision">
@@ -42,6 +39,13 @@
 			<xs:enumeration value="readwrite" />
 			<xs:enumeration value="whencheckedout" />
 			<xs:enumeration value="oncreate" />
+		</xs:restriction>
+	</xs:simpleType>
+		<xs:simpleType name="enumDateTimeResolution">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="year" />
+			<xs:enumeration value="date" />
+			<xs:enumeration value="time" />
 		</xs:restriction>
 	</xs:simpleType>
 	<xs:simpleType name="enumPropertyType">
@@ -490,6 +494,8 @@
 				minOccurs="0" maxOccurs="1" />
 			<xs:element name="canUpdateProperties" type="xs:boolean"
 				minOccurs="0" maxOccurs="1" />
+			<xs:element name="canGetFolderTree" type="xs:boolean"
+				minOccurs="0" maxOccurs="1" />
 			<xs:element name="canGetProperties" type="xs:boolean"
 				minOccurs="0" maxOccurs="1" />
 			<xs:element name="canGetObjectRelationships" type="xs:boolean"
@@ -660,6 +666,7 @@
 				<xs:sequence>
 					<xs:element minOccurs="0" maxOccurs="1" name="defaultValue"
 						type="cmis:cmisPropertyDateTime" />
+					<xs:element minOccurs="0" maxOccurs="1" name="resolution" type="cmis:enumDateTimeResolution" />
 					<xs:element minOccurs="0" maxOccurs="unbounded" name="choice"
 						type="cmis:cmisChoiceDateTime" />
 
@@ -832,9 +839,9 @@
 			<xs:extension base="cmis:cmisTypeDefinitionType">
 				<xs:sequence>
 					<xs:element name="allowedSourceTypes" type="xs:string"
-						minOccurs="1" maxOccurs="unbounded" />
+						minOccurs="0" maxOccurs="unbounded" />
 					<xs:element name="allowedTargetTypes" type="xs:string"
-						minOccurs="1" maxOccurs="unbounded" />
+						minOccurs="0" maxOccurs="unbounded" />
 				</xs:sequence>
 			</xs:extension>
 		</xs:complexContent>

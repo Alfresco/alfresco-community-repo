@@ -68,7 +68,7 @@ import org.alfresco.util.Pair;
  */
 public class CmisObjectsUtils
 {
-    public static final String NODE_REFERENCE_ID_DELIMETER = "/";
+    public static final String NODE_REFERENCE_ID_DELIMITER = ";";
 
     private static final Pattern VERSION_LABEL_MATCHING_COMPILED_PATTERN = Pattern.compile("([\\p{Graph}])+([\\p{Digit}]*)\\.([\\p{Digit}]*)$");
 
@@ -498,7 +498,7 @@ public class CmisObjectsUtils
     private Pair<String, String> splitOnNodeRefAndVersionLabel(String nodeIdentifier)
     {
         String versionLabel = null;
-        int versionDelimeterIndex = nodeIdentifier.lastIndexOf(NODE_REFERENCE_ID_DELIMETER);
+        int versionDelimeterIndex = nodeIdentifier.lastIndexOf(NODE_REFERENCE_ID_DELIMITER);
         if (versionDelimeterIndex > 0)
         {
             versionLabel = nodeIdentifier.substring(versionDelimeterIndex + 1);

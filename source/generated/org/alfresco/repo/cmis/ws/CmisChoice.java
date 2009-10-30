@@ -34,14 +34,14 @@ import javax.xml.namespace.QName;
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "cmisChoice", namespace = "http://docs.oasis-open.org/ns/cmis/core/200908/")
 @XmlSeeAlso({
-    CmisChoiceId.class,
-    CmisChoiceDateTime.class,
-    CmisChoiceDecimal.class,
-    CmisChoiceBoolean.class,
     CmisChoiceHtml.class,
-    CmisChoiceUri.class,
     CmisChoiceInteger.class,
-    CmisChoiceString.class
+    CmisChoiceDecimal.class,
+    CmisChoiceString.class,
+    CmisChoiceDateTime.class,
+    CmisChoiceId.class,
+    CmisChoiceBoolean.class,
+    CmisChoiceUri.class
 })
 public class CmisChoice {
 

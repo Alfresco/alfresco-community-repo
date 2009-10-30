@@ -1,4 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
+
+	<!--
+		$Revision: 34 $
+		$Date: 2009-08-07 15:20:47 -0700 (Fri, 07 Aug 2009) $
+		$Author: albertcbrown $
+		$HeadURL: http://tools.oasis-open.org/version-control/svn/cmis/trunk/SchemaProject/schema/xml.xsd $
+	-->
 <xsd:schema 
 targetNamespace="http://www.w3.org/XML/1998/namespace" 
 xmlns:xsd="http://www.w3.org/2001/XMLSchema" 

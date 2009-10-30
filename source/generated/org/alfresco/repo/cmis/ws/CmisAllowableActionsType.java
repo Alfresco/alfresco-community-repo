@@ -26,6 +26,7 @@ import org.w3c.dom.Element;
  *       &lt;sequence>
  *         &lt;element name="canDeleteObject" type="{http://www.w3.org/2001/XMLSchema}boolean" minOccurs="0"/>
  *         &lt;element name="canUpdateProperties" type="{http://www.w3.org/2001/XMLSchema}boolean" minOccurs="0"/>
+ *         &lt;element name="canGetFolderTree" type="{http://www.w3.org/2001/XMLSchema}boolean" minOccurs="0"/>
  *         &lt;element name="canGetProperties" type="{http://www.w3.org/2001/XMLSchema}boolean" minOccurs="0"/>
  *         &lt;element name="canGetObjectRelationships" type="{http://www.w3.org/2001/XMLSchema}boolean" minOccurs="0"/>
  *         &lt;element name="canGetObjectParents" type="{http://www.w3.org/2001/XMLSchema}boolean" minOccurs="0"/>
@@ -67,6 +68,7 @@ import org.w3c.dom.Element;
 @XmlType(name = "cmisAllowableActionsType", namespace = "http://docs.oasis-open.org/ns/cmis/core/200908/", propOrder = {
     "canDeleteObject",
     "canUpdateProperties",
+    "canGetFolderTree",
     "canGetProperties",
     "canGetObjectRelationships",
     "canGetObjectParents",
@@ -100,6 +102,7 @@ public class CmisAllowableActionsType {
 
     protected Boolean canDeleteObject;
     protected Boolean canUpdateProperties;
+    protected Boolean canGetFolderTree;
     protected Boolean canGetProperties;
     protected Boolean canGetObjectRelationships;
     protected Boolean canGetObjectParents;
@@ -178,6 +181,30 @@ public class CmisAllowableActionsType {
      */
     public void setCanUpdateProperties(Boolean value) {
         this.canUpdateProperties = value;
+    }
+
+    /**
+     * Gets the value of the canGetFolderTree property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link Boolean }
+     *     
+     */
+    public Boolean isCanGetFolderTree() {
+        return canGetFolderTree;
+    }
+
+    /**
+     * Sets the value of the canGetFolderTree property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link Boolean }
+     *     
+     */
+    public void setCanGetFolderTree(Boolean value) {
+        this.canGetFolderTree = value;
     }
 
     /**
@@ -846,8 +873,8 @@ public class CmisAllowableActionsType {
      * 
      * <p>
      * Objects of the following type(s) are allowed in the list
-     * {@link Element }
      * {@link Object }
+     * {@link Element }
      * 
      * 
      */

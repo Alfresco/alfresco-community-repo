@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 	<!--
-		$Revision: 84 $
-		$Date: 2009-09-10 13:43:24 -0700 (Thu, 10 Sep 2009) $
-		$Author: fmueller $
+		$Revision: 135 $
+		$Date: 2009-10-19 10:59:00 -0700 (Mon, 19 Oct 2009) $
+		$Author: albertcbrown $
 		$HeadURL: http://tools.oasis-open.org/version-control/svn/cmis/trunk/SchemaProject/schema/CMIS-Messaging.xsd $
 	-->
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
 	targetNamespace="http://docs.oasis-open.org/ns/cmis/messaging/200908/"
 	xmlns:cmis="http://docs.oasis-open.org/ns/cmis/core/200908/"
 	xmlns:cmism="http://docs.oasis-open.org/ns/cmis/messaging/200908/"
-	xmlns:jaxb="http://java.sun.com/xml/ns/jaxb" version="0.63a"
+	xmlns:jaxb="http://java.sun.com/xml/ns/jaxb" version="1.0"
 	xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc"
 	jaxb:extensionBindingPrefixes="xjc" jaxb:version="2.1"
 	elementFormDefault="qualified">
@@ -1294,7 +1294,7 @@
 			<xs:sequence>
 				<xs:element name="repositoryId" type="xs:string"
 					minOccurs="1" maxOccurs="1" />
-				<xs:element name="documentId" type="xs:string" minOccurs="1"
+				<xs:element name="objectId" type="xs:string" minOccurs="1"
 					maxOccurs="1" />
 				<xs:element name="overwriteFlag" type="xs:boolean"
 					minOccurs="0" maxOccurs="1" nillable="true" />
@@ -1319,7 +1319,7 @@
 	<xs:element name="setContentStreamResponse">
 		<xs:complexType>
 			<xs:sequence>
-				<xs:element name="documentId" type="xs:string" minOccurs="1"
+				<xs:element name="objectId" type="xs:string" minOccurs="1"
 					maxOccurs="1" />
 				<xs:element name="changeToken" type="xs:string"
 					minOccurs="0" maxOccurs="1" />
@@ -1345,7 +1345,7 @@
 			<xs:sequence>
 				<xs:element name="repositoryId" type="xs:string"
 					minOccurs="1" maxOccurs="1" />
-				<xs:element name="documentId" type="xs:string" minOccurs="1"
+				<xs:element name="objectId" type="xs:string" minOccurs="1"
 					maxOccurs="1" />
 				<xs:element name="changeToken" type="xs:string"
 					minOccurs="0" maxOccurs="1" />
@@ -1366,7 +1366,7 @@
 	<xs:element name="deleteContentStreamResponse">
 		<xs:complexType>
 			<xs:sequence>
-				<xs:element name="documentId" type="xs:string" minOccurs="1"
+				<xs:element name="objectId" type="xs:string" minOccurs="1"
 					maxOccurs="1" />
 				<xs:element name="changeToken" type="xs:string"
 					minOccurs="0" maxOccurs="1" />
@@ -1572,7 +1572,7 @@
 			<xs:sequence>
 				<xs:element name="repositoryId" type="xs:string"
 					minOccurs="1" maxOccurs="1" />
-				<xs:element name="documentId" type="xs:string" minOccurs="1"
+				<xs:element name="objectId" type="xs:string" minOccurs="1"
 					maxOccurs="1" />
 
 				<xs:element name="extension" type="cmism:cmisExtensionType"
@@ -1591,7 +1591,7 @@
 	<xs:element name="checkOutResponse">
 		<xs:complexType>
 			<xs:sequence>
-				<xs:element name="documentId" type="xs:string" minOccurs="1"
+				<xs:element name="objectId" type="xs:string" minOccurs="1"
 					maxOccurs="1" />
 				<xs:element name="contentCopied" type="xs:boolean"
 					minOccurs="1" maxOccurs="1" />
@@ -1616,7 +1616,7 @@
 			<xs:sequence>
 				<xs:element name="repositoryId" type="xs:string"
 					minOccurs="1" maxOccurs="1" />
-				<xs:element name="documentId" type="xs:string" minOccurs="1"
+				<xs:element name="objectId" type="xs:string" minOccurs="1"
 					maxOccurs="1" />
 
 				<xs:element name="extension" type="cmism:cmisExtensionType"
@@ -1655,7 +1655,7 @@
 			<xs:sequence>
 				<xs:element name="repositoryId" type="xs:string"
 					minOccurs="1" maxOccurs="1" />
-				<xs:element name="documentId" type="xs:string" minOccurs="1"
+				<xs:element name="objectId" type="xs:string" minOccurs="1"
 					maxOccurs="1" />
 				<xs:element name="major" type="xs:boolean" minOccurs="0"
 					maxOccurs="1" nillable="true" />
@@ -1689,7 +1689,7 @@
 	<xs:element name="checkInResponse">
 		<xs:complexType>
 			<xs:sequence>
-				<xs:element name="documentId" type="xs:string" minOccurs="1"
+				<xs:element name="objectId" type="xs:string" minOccurs="1"
 					maxOccurs="1" />
 
 				<xs:element name="extension" type="cmism:cmisExtensionType"

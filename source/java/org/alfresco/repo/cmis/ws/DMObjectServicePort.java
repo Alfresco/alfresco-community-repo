@@ -702,7 +702,7 @@ public class DMObjectServicePort extends DMAbstractServicePort implements Object
             }
             versionLabel = propertiesUtil.getProperty(targetDocumentNodeRef, CMISDictionaryModel.PROP_VERSION_LABEL, "");
         }
-        String createdObjectId = ((null != versionLabel) && versionLabel.contains(VERSION_DELIMETER)) ? (targetDocumentNodeRef.toString() + CmisObjectsUtils.NODE_REFERENCE_ID_DELIMETER + versionLabel)
+        String createdObjectId = ((null != versionLabel) && versionLabel.contains(VERSION_DELIMETER)) ? (targetDocumentNodeRef.toString() + CmisObjectsUtils.NODE_REFERENCE_ID_DELIMITER + versionLabel)
                 : (targetDocumentNodeRef.toString());
         objectId.value = createdObjectId;
     }

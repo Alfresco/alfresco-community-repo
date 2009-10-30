@@ -20,7 +20,7 @@ import javax.xml.bind.annotation.XmlType;
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
- *         &lt;element name="documentId" type="{http://www.w3.org/2001/XMLSchema}string"/>
+ *         &lt;element name="objectId" type="{http://www.w3.org/2001/XMLSchema}string"/>
  *         &lt;element name="extension" type="{http://docs.oasis-open.org/ns/cmis/messaging/200908/}cmisExtensionType" minOccurs="0"/>
  *       &lt;/sequence>
  *     &lt;/restriction>
@@ -32,39 +32,39 @@ import javax.xml.bind.annotation.XmlType;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "", propOrder = {
-    "documentId",
+    "objectId",
     "extension"
 })
 @XmlRootElement(name = "checkInResponse")
 public class CheckInResponse {
 
     @XmlElement(required = true)
-    protected String documentId;
+    protected String objectId;
     @XmlElementRef(name = "extension", namespace = "http://docs.oasis-open.org/ns/cmis/messaging/200908/", type = JAXBElement.class)
     protected JAXBElement<CmisExtensionType> extension;
 
     /**
-     * Gets the value of the documentId property.
+     * Gets the value of the objectId property.
      * 
      * @return
      *     possible object is
      *     {@link String }
      *     
      */
-    public String getDocumentId() {
-        return documentId;
+    public String getObjectId() {
+        return objectId;
     }
 
     /**
-     * Sets the value of the documentId property.
+     * Sets the value of the objectId property.
      * 
      * @param value
      *     allowed object is
      *     {@link String }
      *     
      */
-    public void setDocumentId(String value) {
-        this.documentId = value;
+    public void setObjectId(String value) {
+        this.objectId = value;
     }
 
     /**

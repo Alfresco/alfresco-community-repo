@@ -261,7 +261,7 @@ public class CmisObjectIterator implements Iterator<FileInfo>
         String versionLabel = (null != properties) ? ((String) properties.get(ContentModel.PROP_VERSION_LABEL)) : (null);
         if (null != versionLabel)
         {
-            generator.append(CmisObjectsUtils.NODE_REFERENCE_ID_DELIMETER).append(versionLabel);
+            generator.append(CmisObjectsUtils.NODE_REFERENCE_ID_DELIMITER).append(versionLabel);
         }
         return generator.toString();
     }

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 	<!--
-		$Revision: 122 $ $Date: 2009-09-25 12:25:29 -0700 (Fri, 25 Sep 2009) $
+		$Revision: 135 $ $Date: 2009-10-19 10:59:00 -0700 (Mon, 19 Oct 2009) $
 		$Author: albertcbrown $ $HeadURL:
 		http://tools.oasis-open.org/version-control/svn/cmis/trunk/SchemaProject/schema/CMIS-RestAtom.xsd
 		$
@@ -13,7 +13,8 @@
 	jaxb:extensionBindingPrefixes="xjc" jaxb:version="2.1"
 	xmlns:cmis="http://docs.oasis-open.org/ns/cmis/core/200908/"
 	xmlns:cmisra="http://docs.oasis-open.org/ns/cmis/restatom/200908/"
-	version="0.63">
+	version="1.0">
+	
 	<xs:import namespace="http://docs.oasis-open.org/ns/cmis/core/200908/"
 		schemaLocation="CMIS-Core.xsd" />
 	<xs:import namespace="http://www.w3.org/2005/Atom"
@@ -377,6 +378,8 @@
 			<xs:enumeration value="includeACL" />
 			<xs:enumeration value="includeAllowableActions" />
 			<xs:enumeration value="includeProperties" />
+			<xs:enumeration value="includePathSegment" />
+			<xs:enumeration value="includeRelativePathSegment" />
 			<xs:enumeration value="includePropertyDefinitions" />
 			<xs:enumeration value="includePolicyIds" />
 			<xs:enumeration value="includeRelationships" />

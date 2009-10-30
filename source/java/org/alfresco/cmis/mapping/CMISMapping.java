@@ -319,7 +319,7 @@ public class CMISMapping implements InitializingBean
         }
 
         // Is it an Alfresco type id?
-        if (typeId.length() < 4 || typeId.charAt(1) != '/')
+        if (typeId.length() < 4 || typeId.charAt(1) != ':')
         {
             throw new AlfrescoRuntimeException("Malformed type id '" + typeId + "'");
         }
@@ -347,7 +347,7 @@ public class CMISMapping implements InitializingBean
         CMISTypeId typeId = mapAlfrescoQNameToTypeId.get(typeQName);
         if (typeId == null)
         {
-            String typeIdStr = scope.getLabel() + "/" + typeQName.toPrefixString(serviceRegistry.getNamespaceService());
+            String typeIdStr = scope.getLabel() + ":" + typeQName.toPrefixString(serviceRegistry.getNamespaceService());
             return new CMISTypeId(scope, typeQName, typeIdStr, typeQName);
         }
         else

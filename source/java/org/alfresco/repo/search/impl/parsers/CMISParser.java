@@ -1,4 +1,4 @@
-// $ANTLR !Unknown version! W:\\alfresco\\BRANCHES\\DEV\\CMIS063\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g 2009-10-15 15:44:00
+// $ANTLR !Unknown version! W:\\alfresco\\BRANCHES\\DEV\\CMIS063\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g 2009-10-28 12:12:41
 
     package org.alfresco.repo.search.impl.parsers;
     import org.alfresco.cmis.CMISQueryException;
@@ -377,7 +377,7 @@ public class CMISParser extends Parser {
 
 
             // AST REWRITE
-            // elements: selectList, orderByClause, fromClause, whereClause
+            // elements: fromClause, selectList, orderByClause, whereClause
             // token labels: 
             // rule labels: retval
             // token list labels: 
@@ -728,7 +728,7 @@ public class CMISParser extends Parser {
 
 
                     // AST REWRITE
-                    // elements: columnName, valueExpression
+                    // elements: valueExpression, columnName
                     // token labels: 
                     // rule labels: retval
                     // token list labels: 
@@ -1064,7 +1064,7 @@ public class CMISParser extends Parser {
 
 
             // AST REWRITE
-            // elements: columnName, qualifier
+            // elements: qualifier, columnName
             // token labels: 
             // rule labels: retval
             // token list labels: 
@@ -1179,7 +1179,7 @@ public class CMISParser extends Parser {
 
 
             // AST REWRITE
-            // elements: multiValuedColumnName, qualifier
+            // elements: qualifier, multiValuedColumnName
             // token labels: 
             // rule labels: retval
             // token list labels: 
@@ -1333,7 +1333,7 @@ public class CMISParser extends Parser {
 
 
                     // AST REWRITE
-                    // elements: cmisFunctionName, functionArgument, LPAREN, RPAREN
+                    // elements: LPAREN, cmisFunctionName, functionArgument, RPAREN
                     // token labels: 
                     // rule labels: retval, cmisFunctionName
                     // token list labels: 
@@ -1431,7 +1431,7 @@ public class CMISParser extends Parser {
 
 
                     // AST REWRITE
-                    // elements: RPAREN, LPAREN, functionName, functionArgument
+                    // elements: LPAREN, functionArgument, RPAREN, functionName
                     // token labels: 
                     // rule labels: retval, functionName
                     // token list labels: 
@@ -1545,7 +1545,7 @@ public class CMISParser extends Parser {
 
 
                     // AST REWRITE
-                    // elements: columnName, qualifier
+                    // elements: qualifier, columnName
                     // token labels: 
                     // rule labels: retval
                     // token list labels: 
@@ -2040,7 +2040,7 @@ public class CMISParser extends Parser {
 
 
                     // AST REWRITE
-                    // elements: tableName, correlationName
+                    // elements: correlationName, tableName
                     // token labels: 
                     // rule labels: retval
                     // token list labels: 
@@ -2213,7 +2213,7 @@ public class CMISParser extends Parser {
 
 
             // AST REWRITE
-            // elements: joinType, joinSpecification, tableReference, JOIN
+            // elements: JOIN, joinSpecification, joinType, tableReference
             // token labels: 
             // rule labels: retval
             // token list labels: 
@@ -2339,7 +2339,7 @@ public class CMISParser extends Parser {
 
 
             // AST REWRITE
-            // elements: singleTable, joinedTable
+            // elements: joinedTable, singleTable
             // token labels: 
             // rule labels: retval
             // token list labels: 
@@ -2587,7 +2587,7 @@ public class CMISParser extends Parser {
 
 
             // AST REWRITE
-            // elements: EQUALS, lhs, rhs, ON
+            // elements: lhs, EQUALS, rhs, ON
             // token labels: 
             // rule labels: retval, rhs, lhs
             // token list labels: 
@@ -3426,7 +3426,7 @@ public class CMISParser extends Parser {
 
 
             // AST REWRITE
-            // elements: compOp, valueExpression, literalOrParameterName
+            // elements: literalOrParameterName, valueExpression, compOp
             // token labels: 
             // rule labels: retval
             // token list labels: 
@@ -3839,7 +3839,7 @@ public class CMISParser extends Parser {
 
 
             // AST REWRITE
-            // elements: NOT, columnReference, inValueList
+            // elements: inValueList, columnReference, NOT
             // token labels: 
             // rule labels: retval
             // token list labels: 
@@ -4084,7 +4084,7 @@ public class CMISParser extends Parser {
 
 
             // AST REWRITE
-            // elements: columnReference, NOT, characterStringLiteral
+            // elements: characterStringLiteral, columnReference, NOT
             // token labels: 
             // rule labels: retval
             // token list labels: 
@@ -4401,7 +4401,7 @@ public class CMISParser extends Parser {
 
 
             // AST REWRITE
-            // elements: multiValuedColumnReference, ANY, compOp, literalOrParameterName
+            // elements: literalOrParameterName, compOp, multiValuedColumnReference, ANY
             // token labels: 
             // rule labels: retval
             // token list labels: 
@@ -4537,7 +4537,7 @@ public class CMISParser extends Parser {
 
 
             // AST REWRITE
-            // elements: NOT, multiValuedColumnReference, inValueList, ANY
+            // elements: inValueList, ANY, multiValuedColumnReference, NOT
             // token labels: 
             // rule labels: retval
             // token list labels: 
@@ -4956,7 +4956,7 @@ public class CMISParser extends Parser {
 
 
             // AST REWRITE
-            // elements: folderId, qualifier
+            // elements: qualifier, folderId
             // token labels: 
             // rule labels: retval
             // token list labels: 
@@ -5082,7 +5082,7 @@ public class CMISParser extends Parser {
 
 
             // AST REWRITE
-            // elements: sortSpecification, ORDER
+            // elements: ORDER, sortSpecification
             // token labels: 
             // rule labels: retval
             // token list labels: 
@@ -5259,7 +5259,7 @@ public class CMISParser extends Parser {
 
 
                     // AST REWRITE
-                    // elements: columnReference, by
+                    // elements: by, columnReference
                     // token labels: by
                     // rule labels: retval
                     // token list labels: 
@@ -5954,7 +5954,7 @@ public class CMISParser extends Parser {
                 case 1 :
                     // W:\\alfresco\\BRANCHES\\DEV\\CMIS063\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:609:4: FLOATING_POINT_LITERAL
                     {
-                    FLOATING_POINT_LITERAL159=(Token)match(input,FLOATING_POINT_LITERAL,FOLLOW_FLOATING_POINT_LITERAL_in_signedNumericLiteral2146); if (state.failed) return retval; 
+                    FLOATING_POINT_LITERAL159=(Token)match(input,FLOATING_POINT_LITERAL,FOLLOW_FLOATING_POINT_LITERAL_in_signedNumericLiteral2145); if (state.failed) return retval; 
                     if ( state.backtracking==0 ) stream_FLOATING_POINT_LITERAL.add(FLOATING_POINT_LITERAL159);
 
 
@@ -5991,7 +5991,7 @@ public class CMISParser extends Parser {
                 case 2 :
                     // W:\\alfresco\\BRANCHES\\DEV\\CMIS063\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:611:4: integerLiteral
                     {
-                    pushFollow(FOLLOW_integerLiteral_in_signedNumericLiteral2161);
+                    pushFollow(FOLLOW_integerLiteral_in_signedNumericLiteral2160);
                     integerLiteral160=integerLiteral();
 
                     state._fsp--;
@@ -6063,7 +6063,7 @@ public class CMISParser extends Parser {
             // W:\\alfresco\\BRANCHES\\DEV\\CMIS063\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:616:2: ( DECIMAL_INTEGER_LITERAL -> ^( NUMERIC_LITERAL DECIMAL_INTEGER_LITERAL ) )
             // W:\\alfresco\\BRANCHES\\DEV\\CMIS063\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:616:4: DECIMAL_INTEGER_LITERAL
             {
-            DECIMAL_INTEGER_LITERAL161=(Token)match(input,DECIMAL_INTEGER_LITERAL,FOLLOW_DECIMAL_INTEGER_LITERAL_in_integerLiteral2180); if (state.failed) return retval; 
+            DECIMAL_INTEGER_LITERAL161=(Token)match(input,DECIMAL_INTEGER_LITERAL,FOLLOW_DECIMAL_INTEGER_LITERAL_in_integerLiteral2179); if (state.failed) return retval; 
             if ( state.backtracking==0 ) stream_DECIMAL_INTEGER_LITERAL.add(DECIMAL_INTEGER_LITERAL161);
 
 
@@ -6159,7 +6159,7 @@ public class CMISParser extends Parser {
                 case 1 :
                     // W:\\alfresco\\BRANCHES\\DEV\\CMIS063\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:621:5: TRUE
                     {
-                    TRUE162=(Token)match(input,TRUE,FOLLOW_TRUE_in_booleanLiteral2204); if (state.failed) return retval; 
+                    TRUE162=(Token)match(input,TRUE,FOLLOW_TRUE_in_booleanLiteral2203); if (state.failed) return retval; 
                     if ( state.backtracking==0 ) stream_TRUE.add(TRUE162);
 
 
@@ -6196,7 +6196,7 @@ public class CMISParser extends Parser {
                 case 2 :
                     // W:\\alfresco\\BRANCHES\\DEV\\CMIS063\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:623:5: FALSE
                     {
-                    FALSE163=(Token)match(input,FALSE,FOLLOW_FALSE_in_booleanLiteral2222); if (state.failed) return retval; 
+                    FALSE163=(Token)match(input,FALSE,FOLLOW_FALSE_in_booleanLiteral2221); if (state.failed) return retval; 
                     if ( state.backtracking==0 ) stream_FALSE.add(FALSE163);
 
 
@@ -6276,10 +6276,10 @@ public class CMISParser extends Parser {
             // W:\\alfresco\\BRANCHES\\DEV\\CMIS063\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:628:3: ( TIMESTAMP QUOTED_STRING -> ^( DATETIME_LITERAL QUOTED_STRING ) )
             // W:\\alfresco\\BRANCHES\\DEV\\CMIS063\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:628:5: TIMESTAMP QUOTED_STRING
             {
-            TIMESTAMP164=(Token)match(input,TIMESTAMP,FOLLOW_TIMESTAMP_in_datetimeLiteral2247); if (state.failed) return retval; 
+            TIMESTAMP164=(Token)match(input,TIMESTAMP,FOLLOW_TIMESTAMP_in_datetimeLiteral2246); if (state.failed) return retval; 
             if ( state.backtracking==0 ) stream_TIMESTAMP.add(TIMESTAMP164);
 
-            QUOTED_STRING165=(Token)match(input,QUOTED_STRING,FOLLOW_QUOTED_STRING_in_datetimeLiteral2249); if (state.failed) return retval; 
+            QUOTED_STRING165=(Token)match(input,QUOTED_STRING,FOLLOW_QUOTED_STRING_in_datetimeLiteral2248); if (state.failed) return retval; 
             if ( state.backtracking==0 ) stream_QUOTED_STRING.add(QUOTED_STRING165);
 
 
@@ -6354,7 +6354,7 @@ public class CMISParser extends Parser {
             // W:\\alfresco\\BRANCHES\\DEV\\CMIS063\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:633:2: ( QUOTED_STRING -> ^( STRING_LITERAL QUOTED_STRING ) )
             // W:\\alfresco\\BRANCHES\\DEV\\CMIS063\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:633:4: QUOTED_STRING
             {
-            QUOTED_STRING166=(Token)match(input,QUOTED_STRING,FOLLOW_QUOTED_STRING_in_characterStringLiteral2272); if (state.failed) return retval; 
+            QUOTED_STRING166=(Token)match(input,QUOTED_STRING,FOLLOW_QUOTED_STRING_in_characterStringLiteral2271); if (state.failed) return retval; 
             if ( state.backtracking==0 ) stream_QUOTED_STRING.add(QUOTED_STRING166);
 
 
@@ -6636,7 +6636,7 @@ public class CMISParser extends Parser {
                     {
                     root_0 = (Object)adaptor.nil();
 
-                    SELECT167=(Token)match(input,SELECT,FOLLOW_SELECT_in_keyWord2298); if (state.failed) return retval;
+                    SELECT167=(Token)match(input,SELECT,FOLLOW_SELECT_in_keyWord2297); if (state.failed) return retval;
                     if ( state.backtracking==0 ) {
                     SELECT167_tree = (Object)adaptor.create(SELECT167);
                     adaptor.addChild(root_0, SELECT167_tree);
@@ -6649,7 +6649,7 @@ public class CMISParser extends Parser {
                     {
                     root_0 = (Object)adaptor.nil();
 
-                    AS168=(Token)match(input,AS,FOLLOW_AS_in_keyWord2303); if (state.failed) return retval;
+                    AS168=(Token)match(input,AS,FOLLOW_AS_in_keyWord2302); if (state.failed) return retval;
                     if ( state.backtracking==0 ) {
                     AS168_tree = (Object)adaptor.create(AS168);
                     adaptor.addChild(root_0, AS168_tree);
@@ -6662,7 +6662,7 @@ public class CMISParser extends Parser {
                     {
                     root_0 = (Object)adaptor.nil();
 
-                    FROM169=(Token)match(input,FROM,FOLLOW_FROM_in_keyWord2308); if (state.failed) return retval;
+                    FROM169=(Token)match(input,FROM,FOLLOW_FROM_in_keyWord2307); if (state.failed) return retval;
                     if ( state.backtracking==0 ) {
                     FROM169_tree = (Object)adaptor.create(FROM169);
                     adaptor.addChild(root_0, FROM169_tree);
@@ -6675,7 +6675,7 @@ public class CMISParser extends Parser {
                     {
                     root_0 = (Object)adaptor.nil();
 
-                    JOIN170=(Token)match(input,JOIN,FOLLOW_JOIN_in_keyWord2314); if (state.failed) return retval;
+                    JOIN170=(Token)match(input,JOIN,FOLLOW_JOIN_in_keyWord2313); if (state.failed) return retval;
                     if ( state.backtracking==0 ) {
                     JOIN170_tree = (Object)adaptor.create(JOIN170);
                     adaptor.addChild(root_0, JOIN170_tree);
@@ -6688,7 +6688,7 @@ public class CMISParser extends Parser {
                     {
                     root_0 = (Object)adaptor.nil();
 
-                    INNER171=(Token)match(input,INNER,FOLLOW_INNER_in_keyWord2320); if (state.failed) return retval;
+                    INNER171=(Token)match(input,INNER,FOLLOW_INNER_in_keyWord2319); if (state.failed) return retval;
                     if ( state.backtracking==0 ) {
                     INNER171_tree = (Object)adaptor.create(INNER171);
                     adaptor.addChild(root_0, INNER171_tree);
@@ -6701,7 +6701,7 @@ public class CMISParser extends Parser {
                     {
                     root_0 = (Object)adaptor.nil();
 
-                    LEFT172=(Token)match(input,LEFT,FOLLOW_LEFT_in_keyWord2326); if (state.failed) return retval;
+                    LEFT172=(Token)match(input,LEFT,FOLLOW_LEFT_in_keyWord2325); if (state.failed) return retval;
                     if ( state.backtracking==0 ) {
                     LEFT172_tree = (Object)adaptor.create(LEFT172);
                     adaptor.addChild(root_0, LEFT172_tree);
@@ -6714,7 +6714,7 @@ public class CMISParser extends Parser {
                     {
                     root_0 = (Object)adaptor.nil();
 
-                    OUTER173=(Token)match(input,OUTER,FOLLOW_OUTER_in_keyWord2332); if (state.failed) return retval;
+                    OUTER173=(Token)match(input,OUTER,FOLLOW_OUTER_in_keyWord2331); if (state.failed) return retval;
                     if ( state.backtracking==0 ) {
                     OUTER173_tree = (Object)adaptor.create(OUTER173);
                     adaptor.addChild(root_0, OUTER173_tree);
@@ -6727,7 +6727,7 @@ public class CMISParser extends Parser {
                     {
                     root_0 = (Object)adaptor.nil();
 
-                    ON174=(Token)match(input,ON,FOLLOW_ON_in_keyWord2338); if (state.failed) return retval;
+                    ON174=(Token)match(input,ON,FOLLOW_ON_in_keyWord2337); if (state.failed) return retval;
                     if ( state.backtracking==0 ) {
                     ON174_tree = (Object)adaptor.create(ON174);
                     adaptor.addChild(root_0, ON174_tree);
@@ -6740,7 +6740,7 @@ public class CMISParser extends Parser {
                     {
                     root_0 = (Object)adaptor.nil();
 
-                    WHERE175=(Token)match(input,WHERE,FOLLOW_WHERE_in_keyWord2344); if (state.failed) return retval;
+                    WHERE175=(Token)match(input,WHERE,FOLLOW_WHERE_in_keyWord2343); if (state.failed) return retval;
                     if ( state.backtracking==0 ) {
                     WHERE175_tree = (Object)adaptor.create(WHERE175);
                     adaptor.addChild(root_0, WHERE175_tree);
@@ -6753,7 +6753,7 @@ public class CMISParser extends Parser {
                     {
                     root_0 = (Object)adaptor.nil();
 
-                    OR176=(Token)match(input,OR,FOLLOW_OR_in_keyWord2350); if (state.failed) return retval;
+                    OR176=(Token)match(input,OR,FOLLOW_OR_in_keyWord2349); if (state.failed) return retval;
                     if ( state.backtracking==0 ) {
                     OR176_tree = (Object)adaptor.create(OR176);
                     adaptor.addChild(root_0, OR176_tree);
@@ -6766,7 +6766,7 @@ public class CMISParser extends Parser {
                     {
                     root_0 = (Object)adaptor.nil();
 
-                    AND177=(Token)match(input,AND,FOLLOW_AND_in_keyWord2356); if (state.failed) return retval;
+                    AND177=(Token)match(input,AND,FOLLOW_AND_in_keyWord2355); if (state.failed) return retval;
                     if ( state.backtracking==0 ) {
                     AND177_tree = (Object)adaptor.create(AND177);
                     adaptor.addChild(root_0, AND177_tree);
@@ -6779,7 +6779,7 @@ public class CMISParser extends Parser {
                     {
                     root_0 = (Object)adaptor.nil();
 
-                    NOT178=(Token)match(input,NOT,FOLLOW_NOT_in_keyWord2362); if (state.failed) return retval;
+                    NOT178=(Token)match(input,NOT,FOLLOW_NOT_in_keyWord2361); if (state.failed) return retval;
                     if ( state.backtracking==0 ) {
                     NOT178_tree = (Object)adaptor.create(NOT178);
                     adaptor.addChild(root_0, NOT178_tree);
@@ -6792,7 +6792,7 @@ public class CMISParser extends Parser {
                     {
                     root_0 = (Object)adaptor.nil();
 
-                    IN179=(Token)match(input,IN,FOLLOW_IN_in_keyWord2368); if (state.failed) return retval;
+                    IN179=(Token)match(input,IN,FOLLOW_IN_in_keyWord2367); if (state.failed) return retval;
                     if ( state.backtracking==0 ) {
                     IN179_tree = (Object)adaptor.create(IN179);
                     adaptor.addChild(root_0, IN179_tree);
@@ -6805,7 +6805,7 @@ public class CMISParser extends Parser {
                     {
                     root_0 = (Object)adaptor.nil();
 
-                    LIKE180=(Token)match(input,LIKE,FOLLOW_LIKE_in_keyWord2374); if (state.failed) return retval;
+                    LIKE180=(Token)match(input,LIKE,FOLLOW_LIKE_in_keyWord2373); if (state.failed) return retval;
                     if ( state.backtracking==0 ) {
                     LIKE180_tree = (Object)adaptor.create(LIKE180);
                     adaptor.addChild(root_0, LIKE180_tree);
@@ -6818,7 +6818,7 @@ public class CMISParser extends Parser {
                     {
                     root_0 = (Object)adaptor.nil();
 
-                    IS181=(Token)match(input,IS,FOLLOW_IS_in_keyWord2380); if (state.failed) return retval;
+                    IS181=(Token)match(input,IS,FOLLOW_IS_in_keyWord2379); if (state.failed) return retval;
                     if ( state.backtracking==0 ) {
                     IS181_tree = (Object)adaptor.create(IS181);
                     adaptor.addChild(root_0, IS181_tree);
@@ -6831,7 +6831,7 @@ public class CMISParser extends Parser {
                     {
                     root_0 = (Object)adaptor.nil();
 
-                    NULL182=(Token)match(input,NULL,FOLLOW_NULL_in_keyWord2386); if (state.failed) return retval;
+                    NULL182=(Token)match(input,NULL,FOLLOW_NULL_in_keyWord2385); if (state.failed) return retval;
                     if ( state.backtracking==0 ) {
                     NULL182_tree = (Object)adaptor.create(NULL182);
                     adaptor.addChild(root_0, NULL182_tree);
@@ -6844,7 +6844,7 @@ public class CMISParser extends Parser {
                     {
                     root_0 = (Object)adaptor.nil();
 
-                    ANY183=(Token)match(input,ANY,FOLLOW_ANY_in_keyWord2392); if (state.failed) return retval;
+                    ANY183=(Token)match(input,ANY,FOLLOW_ANY_in_keyWord2391); if (state.failed) return retval;
                     if ( state.backtracking==0 ) {
                     ANY183_tree = (Object)adaptor.create(ANY183);
                     adaptor.addChild(root_0, ANY183_tree);
@@ -6857,7 +6857,7 @@ public class CMISParser extends Parser {
                     {
                     root_0 = (Object)adaptor.nil();
 
-                    CONTAINS184=(Token)match(input,CONTAINS,FOLLOW_CONTAINS_in_keyWord2398); if (state.failed) return retval;
+                    CONTAINS184=(Token)match(input,CONTAINS,FOLLOW_CONTAINS_in_keyWord2397); if (state.failed) return retval;
                     if ( state.backtracking==0 ) {
                     CONTAINS184_tree = (Object)adaptor.create(CONTAINS184);
                     adaptor.addChild(root_0, CONTAINS184_tree);
@@ -6870,7 +6870,7 @@ public class CMISParser extends Parser {
                     {
                     root_0 = (Object)adaptor.nil();
 
-                    IN_FOLDER185=(Token)match(input,IN_FOLDER,FOLLOW_IN_FOLDER_in_keyWord2405); if (state.failed) return retval;
+                    IN_FOLDER185=(Token)match(input,IN_FOLDER,FOLLOW_IN_FOLDER_in_keyWord2404); if (state.failed) return retval;
                     if ( state.backtracking==0 ) {
                     IN_FOLDER185_tree = (Object)adaptor.create(IN_FOLDER185);
                     adaptor.addChild(root_0, IN_FOLDER185_tree);
@@ -6883,7 +6883,7 @@ public class CMISParser extends Parser {
                     {
                     root_0 = (Object)adaptor.nil();
 
-                    IN_TREE186=(Token)match(input,IN_TREE,FOLLOW_IN_TREE_in_keyWord2411); if (state.failed) return retval;
+                    IN_TREE186=(Token)match(input,IN_TREE,FOLLOW_IN_TREE_in_keyWord2410); if (state.failed) return retval;
                     if ( state.backtracking==0 ) {
                     IN_TREE186_tree = (Object)adaptor.create(IN_TREE186);
                     adaptor.addChild(root_0, IN_TREE186_tree);
@@ -6896,7 +6896,7 @@ public class CMISParser extends Parser {
                     {
                     root_0 = (Object)adaptor.nil();
 
-                    ORDER187=(Token)match(input,ORDER,FOLLOW_ORDER_in_keyWord2417); if (state.failed) return retval;
+                    ORDER187=(Token)match(input,ORDER,FOLLOW_ORDER_in_keyWord2416); if (state.failed) return retval;
                     if ( state.backtracking==0 ) {
                     ORDER187_tree = (Object)adaptor.create(ORDER187);
                     adaptor.addChild(root_0, ORDER187_tree);
@@ -6909,7 +6909,7 @@ public class CMISParser extends Parser {
                     {
                     root_0 = (Object)adaptor.nil();
 
-                    BY188=(Token)match(input,BY,FOLLOW_BY_in_keyWord2422); if (state.failed) return retval;
+                    BY188=(Token)match(input,BY,FOLLOW_BY_in_keyWord2421); if (state.failed) return retval;
                     if ( state.backtracking==0 ) {
                     BY188_tree = (Object)adaptor.create(BY188);
                     adaptor.addChild(root_0, BY188_tree);
@@ -6922,7 +6922,7 @@ public class CMISParser extends Parser {
                     {
                     root_0 = (Object)adaptor.nil();
 
-                    ASC189=(Token)match(input,ASC,FOLLOW_ASC_in_keyWord2428); if (state.failed) return retval;
+                    ASC189=(Token)match(input,ASC,FOLLOW_ASC_in_keyWord2427); if (state.failed) return retval;
                     if ( state.backtracking==0 ) {
                     ASC189_tree = (Object)adaptor.create(ASC189);
                     adaptor.addChild(root_0, ASC189_tree);
@@ -6935,7 +6935,7 @@ public class CMISParser extends Parser {
                     {
                     root_0 = (Object)adaptor.nil();
 
-                    DESC190=(Token)match(input,DESC,FOLLOW_DESC_in_keyWord2434); if (state.failed) return retval;
+                    DESC190=(Token)match(input,DESC,FOLLOW_DESC_in_keyWord2433); if (state.failed) return retval;
                     if ( state.backtracking==0 ) {
                     DESC190_tree = (Object)adaptor.create(DESC190);
                     adaptor.addChild(root_0, DESC190_tree);
@@ -6948,7 +6948,7 @@ public class CMISParser extends Parser {
                     {
                     root_0 = (Object)adaptor.nil();
 
-                    TIMESTAMP191=(Token)match(input,TIMESTAMP,FOLLOW_TIMESTAMP_in_keyWord2439); if (state.failed) return retval;
+                    TIMESTAMP191=(Token)match(input,TIMESTAMP,FOLLOW_TIMESTAMP_in_keyWord2438); if (state.failed) return retval;
                     if ( state.backtracking==0 ) {
                     TIMESTAMP191_tree = (Object)adaptor.create(TIMESTAMP191);
                     adaptor.addChild(root_0, TIMESTAMP191_tree);
@@ -6961,7 +6961,7 @@ public class CMISParser extends Parser {
                     {
                     root_0 = (Object)adaptor.nil();
 
-                    TRUE192=(Token)match(input,TRUE,FOLLOW_TRUE_in_keyWord2444); if (state.failed) return retval;
+                    TRUE192=(Token)match(input,TRUE,FOLLOW_TRUE_in_keyWord2443); if (state.failed) return retval;
                     if ( state.backtracking==0 ) {
                     TRUE192_tree = (Object)adaptor.create(TRUE192);
                     adaptor.addChild(root_0, TRUE192_tree);
@@ -6974,7 +6974,7 @@ public class CMISParser extends Parser {
                     {
                     root_0 = (Object)adaptor.nil();
 
-                    FALSE193=(Token)match(input,FALSE,FOLLOW_FALSE_in_keyWord2449); if (state.failed) return retval;
+                    FALSE193=(Token)match(input,FALSE,FOLLOW_FALSE_in_keyWord2448); if (state.failed) return retval;
                     if ( state.backtracking==0 ) {
                     FALSE193_tree = (Object)adaptor.create(FALSE193);
                     adaptor.addChild(root_0, FALSE193_tree);
@@ -6987,7 +6987,7 @@ public class CMISParser extends Parser {
                     {
                     root_0 = (Object)adaptor.nil();
 
-                    pushFollow(FOLLOW_cmisFunction_in_keyWord2454);
+                    pushFollow(FOLLOW_cmisFunction_in_keyWord2453);
                     cmisFunction194=cmisFunction();
 
                     state._fsp--;
@@ -7039,7 +7039,7 @@ public class CMISParser extends Parser {
             // W:\\alfresco\\BRANCHES\\DEV\\CMIS063\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:669:14: ( SCORE -> SCORE )
             // W:\\alfresco\\BRANCHES\\DEV\\CMIS063\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:669:16: SCORE
             {
-            SCORE195=(Token)match(input,SCORE,FOLLOW_SCORE_in_cmisFunction2465); if (state.failed) return retval; 
+            SCORE195=(Token)match(input,SCORE,FOLLOW_SCORE_in_cmisFunction2464); if (state.failed) return retval; 
             if ( state.backtracking==0 ) stream_SCORE.add(SCORE195);
 
 
@@ -7126,7 +7126,7 @@ public class CMISParser extends Parser {
                 case 1 :
                     // W:\\alfresco\\BRANCHES\\DEV\\CMIS063\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:674:4: keyWord
                     {
-                    pushFollow(FOLLOW_keyWord_in_keyWordOrId2483);
+                    pushFollow(FOLLOW_keyWord_in_keyWordOrId2482);
                     keyWord196=keyWord();
 
                     state._fsp--;
@@ -7158,7 +7158,7 @@ public class CMISParser extends Parser {
                 case 2 :
                     // W:\\alfresco\\BRANCHES\\DEV\\CMIS063\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:676:4: ID
                     {
-                    ID197=(Token)match(input,ID,FOLLOW_ID_in_keyWordOrId2495); if (state.failed) return retval; 
+                    ID197=(Token)match(input,ID,FOLLOW_ID_in_keyWordOrId2494); if (state.failed) return retval; 
                     if ( state.backtracking==0 ) stream_ID.add(ID197);
 
 
@@ -18047,45 +18047,45 @@ public class CMISParser extends Parser {
     public static final BitSet FOLLOW_DOUBLE_QUOTE_in_identifier2122 = new BitSet(new long[]{0xFF83DF8480000000L,0x0000000000001E67L});
     public static final BitSet FOLLOW_keyWordOrId_in_identifier2124 = new BitSet(new long[]{0x0000000000000000L,0x0000000000000040L});
     public static final BitSet FOLLOW_DOUBLE_QUOTE_in_identifier2126 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_FLOATING_POINT_LITERAL_in_signedNumericLiteral2146 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_integerLiteral_in_signedNumericLiteral2161 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_DECIMAL_INTEGER_LITERAL_in_integerLiteral2180 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_TRUE_in_booleanLiteral2204 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_FALSE_in_booleanLiteral2222 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_TIMESTAMP_in_datetimeLiteral2247 = new BitSet(new long[]{0x0000000000000000L,0x0000000000000010L});
-    public static final BitSet FOLLOW_QUOTED_STRING_in_datetimeLiteral2249 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_QUOTED_STRING_in_characterStringLiteral2272 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_SELECT_in_keyWord2298 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_AS_in_keyWord2303 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_FROM_in_keyWord2308 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_JOIN_in_keyWord2314 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_INNER_in_keyWord2320 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_LEFT_in_keyWord2326 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_OUTER_in_keyWord2332 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_ON_in_keyWord2338 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_WHERE_in_keyWord2344 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_OR_in_keyWord2350 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_AND_in_keyWord2356 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_NOT_in_keyWord2362 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_IN_in_keyWord2368 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_LIKE_in_keyWord2374 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_IS_in_keyWord2380 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_NULL_in_keyWord2386 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_ANY_in_keyWord2392 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_CONTAINS_in_keyWord2398 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_IN_FOLDER_in_keyWord2405 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_IN_TREE_in_keyWord2411 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_ORDER_in_keyWord2417 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_BY_in_keyWord2422 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_ASC_in_keyWord2428 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_DESC_in_keyWord2434 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_TIMESTAMP_in_keyWord2439 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_TRUE_in_keyWord2444 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_FALSE_in_keyWord2449 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_cmisFunction_in_keyWord2454 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_SCORE_in_cmisFunction2465 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_keyWord_in_keyWordOrId2483 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_ID_in_keyWordOrId2495 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_FLOATING_POINT_LITERAL_in_signedNumericLiteral2145 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_integerLiteral_in_signedNumericLiteral2160 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_DECIMAL_INTEGER_LITERAL_in_integerLiteral2179 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_TRUE_in_booleanLiteral2203 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_FALSE_in_booleanLiteral2221 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_TIMESTAMP_in_datetimeLiteral2246 = new BitSet(new long[]{0x0000000000000000L,0x0000000000000010L});
+    public static final BitSet FOLLOW_QUOTED_STRING_in_datetimeLiteral2248 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_QUOTED_STRING_in_characterStringLiteral2271 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_SELECT_in_keyWord2297 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_AS_in_keyWord2302 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_FROM_in_keyWord2307 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_JOIN_in_keyWord2313 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_INNER_in_keyWord2319 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_LEFT_in_keyWord2325 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_OUTER_in_keyWord2331 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_ON_in_keyWord2337 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_WHERE_in_keyWord2343 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_OR_in_keyWord2349 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_AND_in_keyWord2355 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_NOT_in_keyWord2361 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_IN_in_keyWord2367 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_LIKE_in_keyWord2373 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_IS_in_keyWord2379 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_NULL_in_keyWord2385 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_ANY_in_keyWord2391 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_CONTAINS_in_keyWord2397 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_IN_FOLDER_in_keyWord2404 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_IN_TREE_in_keyWord2410 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_ORDER_in_keyWord2416 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_BY_in_keyWord2421 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_ASC_in_keyWord2427 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_DESC_in_keyWord2433 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_TIMESTAMP_in_keyWord2438 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_TRUE_in_keyWord2443 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_FALSE_in_keyWord2448 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_cmisFunction_in_keyWord2453 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_SCORE_in_cmisFunction2464 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_keyWord_in_keyWordOrId2482 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_ID_in_keyWordOrId2494 = new BitSet(new long[]{0x0000000000000002L});
     public static final BitSet FOLLOW_valueExpression_in_synpred1_CMIS340 = new BitSet(new long[]{0x0000000000000002L});
     public static final BitSet FOLLOW_tableName_in_synpred2_CMIS771 = new BitSet(new long[]{0x0000000000000002L});
     public static final BitSet FOLLOW_columnReference_in_synpred3_CMIS1592 = new BitSet(new long[]{0x0000000000000002L});

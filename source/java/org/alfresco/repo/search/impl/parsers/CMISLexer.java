@@ -1,4 +1,4 @@
-// $ANTLR !Unknown version! W:\\alfresco\\BRANCHES\\DEV\\CMIS063\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g 2009-10-15 15:44:01
+// $ANTLR !Unknown version! W:\\alfresco\\BRANCHES\\DEV\\CMIS063\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g 2009-10-28 12:12:42
 
     package org.alfresco.repo.search.impl.parsers;
     import org.alfresco.cmis.CMISQueryException;

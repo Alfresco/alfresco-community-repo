@@ -28,7 +28,7 @@
  * It may be used stand-alone or embedded, for example, in CMIS SQL contains() 
  *
  */
- 
+
 grammar FTS;
 
 options

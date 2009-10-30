@@ -49,6 +49,7 @@ import org.alfresco.repo.search.impl.parsers.CMISLexer;
 import org.alfresco.repo.search.impl.parsers.CMISParser;
 import org.alfresco.repo.search.impl.parsers.FTSQueryException;
 import org.alfresco.repo.search.impl.querymodel.QueryModelException;
+import org.alfresco.repo.search.impl.querymodel.QueryOptions.Connective;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.MLText;
@@ -994,6 +995,8 @@ public class QueryTest extends BaseCMISTest
         testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE ANY cmis:lastModificationDate IN     ('" + sDate + "')", 10, false, "cmis:objectId", new String(), false);
         testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE ANY cmis:lastModificationDate NOT IN ('" + sDate + "')", 0, false, "cmis:objectId", new String(), false);
 
+        testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE ANY cmis:lastModificationDate NOT IN ('" + sDate + "') order by cmis:lastModificationDate", 0, false, "cmis:objectId", new String(), false);
+
         // using yesterday
 
         date = Duration.subtract(date, new Duration("P1D"));
@@ -1091,7 +1094,8 @@ public class QueryTest extends BaseCMISTest
 
         testQuery("SELECT cmis:lastModifiedBy FROM cmis:document WHERE ANY cmis:lastModifiedBy IN     ('System')", 10, false, "cmis:objectId", new String(), false);
         testQuery("SELECT cmis:lastModifiedBy FROM cmis:document WHERE ANY cmis:lastModifiedBy NOT IN ('System')", 0, false, "cmis:objectId", new String(), false);
-
+        
+        testQuery("SELECT cmis:lastModifiedBy FROM cmis:document WHERE ANY cmis:lastModifiedBy NOT IN ('System') order by cmis:lastModifiedBy", 0, false, "cmis:objectId", new String(), false);
     }
 
     public void test_CREATION_DATE()
@@ -1146,6 +1150,8 @@ public class QueryTest extends BaseCMISTest
 
         testQuery("SELECT cmis:creationDate FROM cmis:document WHERE ANY cmis:creationDate IN     ('" + sDate + "')", 10, false, "cmis:objectId", new String(), false);
         testQuery("SELECT cmis:creationDate FROM cmis:document WHERE ANY cmis:creationDate NOT IN ('" + sDate + "')", 0, false, "cmis:objectId", new String(), false);
+
+        testQuery("SELECT cmis:creationDate FROM cmis:document WHERE ANY cmis:creationDate NOT IN ('" + sDate + "') order by cmis:creationDate", 0, false, "cmis:objectId", new String(), false);
 
         // using yesterday
 
@@ -1244,6 +1250,8 @@ public class QueryTest extends BaseCMISTest
         testQuery("SELECT cmis:createdBy FROM cmis:document WHERE ANY cmis:createdBy IN     ('System')", 10, false, "cmis:objectId", new String(), false);
         testQuery("SELECT cmis:createdBy FROM cmis:document WHERE ANY cmis:createdBy NOT IN ('System')", 0, false, "cmis:objectId", new String(), false);
 
+        testQuery("SELECT cmis:createdBy FROM cmis:document WHERE ANY cmis:createdBy IN     ('System') order by cmis:createdBy", 10, false, "cmis:objectId", new String(), false);
+        
     }
 
     public void test_OBJECT_TYPE_ID()
@@ -1837,6 +1845,31 @@ public class QueryTest extends BaseCMISTest
 
     }
 
+    public void testFTSConnectives()
+    {
+        testQuery("SELECT * FROM cmis:document where contains('\"one\" and \"zebra\"')", 1, false, "cmis:objectId", new String(), false, CMISQueryMode.CMS_STRICT);
+        testQuery("SELECT * FROM cmis:document where contains('\"one\" or \"zebra\"')", 9, false, "cmis:objectId", new String(), false, CMISQueryMode.CMS_STRICT);
+        testQuery("SELECT * FROM cmis:document where contains('\"one\" \"zebra\"')", 1, false, "cmis:objectId", new String(), false, CMISQueryMode.CMS_STRICT);
+        testQuery("SELECT * FROM cmis:document where contains('\"one\" and \"zebra\"')", 1, false, "cmis:objectId", new String(), false, CMISQueryMode.CMS_WITH_ALFRESCO_EXTENSIONS);
+        testQuery("SELECT * FROM cmis:document where contains('\"one\" or \"zebra\"')", 9, false, "cmis:objectId", new String(), false, CMISQueryMode.CMS_WITH_ALFRESCO_EXTENSIONS);
+        testQuery("SELECT * FROM cmis:document where contains('\"one\"  \"zebra\"')", 1, false, "cmis:objectId", new String(), false, CMISQueryMode.CMS_WITH_ALFRESCO_EXTENSIONS);
+
+        CMISQueryOptions options = new CMISQueryOptions("SELECT * FROM cmis:document where contains('\"one\"  \"zebra\"')", rootNodeRef.getStoreRef());
+        options.setDefaultFTSConnective(Connective.OR);
+        options.setDefaultFTSFieldConnective(Connective.OR);
+        CMISResultSet rs = cmisQueryService.query(options);
+        assertEquals(1, rs.length());
+        rs.close();
+        
+        options = new CMISQueryOptions("SELECT * FROM cmis:document where contains('\"one\"  \"zebra\"')", rootNodeRef.getStoreRef());
+        options.setDefaultFTSConnective(Connective.OR);
+        options.setDefaultFTSFieldConnective(Connective.OR);
+        options.setQueryMode(CMISQueryMode.CMS_WITH_ALFRESCO_EXTENSIONS);
+        rs = cmisQueryService.query(options);
+        assertEquals(9, rs.length());
+        rs.close();
+    }
+    
     private void doPage(List<String> expected, int skip, int max)
     {
         CMISQueryOptions options = new CMISQueryOptions("SELECT * FROM cmis:folder", rootNodeRef.getStoreRef());

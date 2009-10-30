@@ -366,14 +366,6 @@ public class CMISQueryParser
         case CMISParser.PRED_FTS:
             String ftsExpression = predicateNode.getChild(0).getText();
             FTSQueryParser ftsQueryParser = new FTSQueryParser();
-            if (options.getQueryMode() == CMISQueryMode.CMS_STRICT)
-            {
-                // set default AND
-            }
-            else
-            {
-                // set default from the options
-            }
             Selector selector;
             if (predicateNode.getChildCount() > 1)
             {
@@ -395,8 +387,20 @@ public class CMISQueryParser
                     throw new CMISQueryException("A selector must be specified when there are two or more selectors");
                 }
             }
-            return ftsQueryParser.buildFTS(ftsExpression.substring(1, ftsExpression.length() - 1), factory, functionEvaluationContext, selector, columns, Connective.OR,
-                    Connective.OR, null);
+            Connective defaultConnective;
+            Connective defaultFieldConnective;
+            if (options.getQueryMode() == CMISQueryMode.CMS_STRICT)
+            {
+                defaultConnective = Connective.AND;
+                defaultFieldConnective = Connective.AND;
+            }
+            else
+            {
+                defaultConnective = options.getDefaultFTSConnective();
+                defaultFieldConnective = options.getDefaultFTSFieldConnective();
+            }
+            return ftsQueryParser.buildFTS(ftsExpression.substring(1, ftsExpression.length() - 1), factory, functionEvaluationContext, selector, columns, defaultConnective,
+                    defaultFieldConnective, null);
         case CMISParser.PRED_IN:
             functionName = In.NAME;
             function = factory.getFunction(functionName);
@@ -1106,6 +1110,14 @@ public class CMISQueryParser
                     throw new CMISQueryException("Type is not queryable " + tableName + " -> " + typeDef.getTypeId());
                 }
             }
+            // check sub types all include in super type query
+            for(CMISTypeDefinition subType : typeDef.getSubTypes(true))
+            {
+                if(!subType.isIncludeInSuperTypeQuery())
+                {
+                    throw new CMISQueryException("includeInSuperTypeQuery=falss is not support for "+tableName+ " descendant type "+subType.getQueryName());
+                }
+            }
             return factory.createSelector(typeDef.getTypeId().getQName(), alias);
         }
         else
@@ -1135,6 +1147,14 @@ public class CMISQueryParser
                 if (!typeDef.isQueryable())
                 {
                     throw new CMISQueryException("Type is not queryable " + tableName + " -> " + typeDef.getTypeId());
+                }
+            }
+            // check sub types all include in super type query
+            for(CMISTypeDefinition subType : typeDef.getSubTypes(true))
+            {
+                if(!subType.isIncludeInSuperTypeQuery())
+                {
+                    throw new CMISQueryException("includeInSuperTypeQuery=falss is not support for "+tableName+ " descendant type "+subType.getQueryName());
                 }
             }
             Source lhs = factory.createSelector(typeDef.getTypeId().getQName(), alias);

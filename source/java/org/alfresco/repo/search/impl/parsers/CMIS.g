@@ -604,7 +604,7 @@ identifier
 	|	{strict == false}? => DOUBLE_QUOTE keyWordOrId DOUBLE_QUOTE
 		-> ^(keyWordOrId)
 	;
-	
+
 signedNumericLiteral
 	:	FLOATING_POINT_LITERAL
 		-> ^(NUMERIC_LITERAL FLOATING_POINT_LITERAL)

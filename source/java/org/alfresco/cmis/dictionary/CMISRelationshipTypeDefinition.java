@@ -80,7 +80,7 @@ public class CMISRelationshipTypeDefinition extends CMISAbstractTypeDefinition
         
         queryable = false;
         fullTextIndexed = false;
-        includeInSuperTypeQuery = false;
+        includeInSuperTypeQuery = true;
         controllablePolicy = false;
         controllableACL = false;
         

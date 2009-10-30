@@ -4,6 +4,8 @@
   </description>
   
   <url>/cmis</url>
+  <!-- alfresco style -->
+  <url>/api/cmis</url>  
   
   <format default="atomsvc"/>
   <authentication>none</authentication>

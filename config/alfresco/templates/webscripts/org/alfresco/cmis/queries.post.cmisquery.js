@@ -73,5 +73,6 @@ script:
     model.queryArgs += "&" + cmis.ARG_MAX_ITEMS + "=" + page.size;
     
     // TODO: set Content-Location
+    status.code = 201;
     status.location = url.server + url.serviceContext + model.queryUri + "?" + model.queryArgs;
 }

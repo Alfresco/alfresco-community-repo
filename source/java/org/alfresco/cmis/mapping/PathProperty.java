@@ -28,7 +28,6 @@ import java.io.Serializable;
 
 import org.alfresco.cmis.CMISDictionaryModel;
 import org.alfresco.cmis.CMISServices;
-import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -91,7 +90,8 @@ public class PathProperty extends AbstractProperty
         
         if (i == path.size())
         {
-            throw new AlfrescoRuntimeException("Path " + path + " not in CMIS root node scope");
+            // TODO:
+            //throw new AlfrescoRuntimeException("Path " + path + " not in CMIS root node scope");
         }
 
         if (path.size() - i == 1)

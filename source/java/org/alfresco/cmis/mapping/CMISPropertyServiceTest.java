@@ -626,7 +626,7 @@ public class CMISPropertyServiceTest extends BaseCMISTest
         serviceRegistry.getCheckOutCheckInService().checkin(pwc, versionProperties);
 
         properties = cmisService.getProperties(content);
-        assertEquals(properties.get(CMISDictionaryModel.PROP_OBJECT_ID), content.toString()+"/1.0");
+        assertEquals(properties.get(CMISDictionaryModel.PROP_OBJECT_ID), content.toString()+";1.0");
         assertEquals(properties.get(CMISDictionaryModel.PROP_OBJECT_TYPE_ID), CMISDictionaryModel.DOCUMENT_TYPE_ID.getId());
         assertEquals(properties.get(CMISDictionaryModel.PROP_BASE_TYPE_ID), CMISDictionaryModel.DOCUMENT_TYPE_ID.getId());
         assertEquals(properties.get(CMISDictionaryModel.PROP_CREATED_BY), authenticationComponent.getCurrentUserName());
@@ -706,7 +706,7 @@ public class CMISPropertyServiceTest extends BaseCMISTest
         serviceRegistry.getCheckOutCheckInService().checkin(pwc, versionProperties);
 
         properties = cmisService.getProperties(content);
-        assertEquals(properties.get(CMISDictionaryModel.PROP_OBJECT_ID), content.toString()+"/1.1");
+        assertEquals(properties.get(CMISDictionaryModel.PROP_OBJECT_ID), content.toString()+";1.1");
         assertEquals(properties.get(CMISDictionaryModel.PROP_OBJECT_TYPE_ID), CMISDictionaryModel.DOCUMENT_TYPE_ID.getId());
         assertEquals(properties.get(CMISDictionaryModel.PROP_BASE_TYPE_ID), CMISDictionaryModel.DOCUMENT_TYPE_ID.getId());
         assertEquals(properties.get(CMISDictionaryModel.PROP_CREATED_BY), authenticationComponent.getCurrentUserName());

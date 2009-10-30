@@ -116,6 +116,7 @@ public class CMISServicesImpl implements CMISServices, ApplicationContextAware, 
     private String cmisVersion = "[undefined]";
     
     // default CMIS store and path
+    private StoreRef defaultStoreRef;
     private String defaultRootPath;
     private Map<String, NodeRef> defaultRootNodeRefs;
     
@@ -135,11 +136,19 @@ public class CMISServicesImpl implements CMISServices, ApplicationContextAware, 
     }
     
     /**
+     * Sets the default root store
+     * 
+     * @param store  store_type://store_id
+     */
+    public void setDefaultStore(String store)
+    {
+        this.defaultStoreRef = new StoreRef(store);
+    }
+    
+    /**
      * Sets the default root path
      * 
-     * store_type/store_id/path...
-     * 
-     * @param path  store_type/store_id/path...
+     * @param path  path within default store
      */
     public void setDefaultRootPath(String path)
     {
@@ -312,8 +321,9 @@ public class CMISServicesImpl implements CMISServices, ApplicationContextAware, 
                     return retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<NodeRef>()
                     {
                         public NodeRef execute() throws Exception
-                        {                                   
-                            return repository.findNodeRef("path", defaultRootPath.split("/"));
+                        {
+                            String path = defaultStoreRef.getProtocol() + "/" + defaultStoreRef.getIdentifier() + defaultRootPath;
+                            return repository.findNodeRef("path", path.split("/"));
                         };
                     });
                 }
@@ -337,6 +347,16 @@ public class CMISServicesImpl implements CMISServices, ApplicationContextAware, 
         return getDefaultRootNodeRef().getStoreRef();
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.alfresco.cmis.CMISServices#getNode(java.lang.String, java.lang.String[])
+     */
+    public NodeRef getNode(String referenceType, String[] reference)
+    {
+        NodeRef nodeRef = repository.findNodeRef(referenceType, reference);
+        return nodeRef;
+    }
+    
     /*
      * (non-Javadoc)
      * @see org.alfresco.cmis.CMISServices#getChildren(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.cmis.CMISTypesFilterEnum)

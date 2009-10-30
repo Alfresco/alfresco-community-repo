@@ -78,7 +78,7 @@ public class ObjectIdProperty extends AbstractProperty
                 String versionLabel = DefaultTypeConverter.INSTANCE.convert(String.class, value);
                 StringBuilder builder = new StringBuilder(128);
                 builder.append(nodeRef.toString());
-                builder.append("/");
+                builder.append(";");
                 builder.append(versionLabel);
                 return builder.toString();
             }

@@ -68,6 +68,15 @@ public interface CMISServices
     public StoreRef getDefaultRootStoreRef();
     
     /**
+     * Finds a NodeRef given a repository reference
+     * 
+     * @param referenceType  node, path
+     * @param reference  node => id, path => path
+     * @return  nodeRef (or null, if not found)
+     */
+    public NodeRef getNode(String referenceType, String[] reference);
+    
+    /**
      * Query for node children
      * 
      * @param parent  node to query children for

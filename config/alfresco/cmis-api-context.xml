@@ -40,7 +40,8 @@
 
     <bean id="CMISService" class="org.alfresco.cmis.mapping.CMISServicesImpl">
         <property name="CMISSpecVersion"><value>0.7</value></property>
-        <property name="defaultRootPath"><value>workspace/SpacesStore/Company Home</value></property>
+        <property name="defaultStore"><value>workspace://SpacesStore</value></property>
+        <property name="defaultRootPath"><value>/Company Home</value></property>
         <property name="dictionaryService" ref="dictionaryService" />
         <property name="CMISDictionaryService" ref="CMISDictionaryService" />
         <property name="searchService" ref="SearchService" />
@@ -69,6 +70,7 @@
         <property name="models">
             <list>
                 <value>alfresco/model/cmisModel.xml</value>
+                <value>alfresco/model/cmisTestModel.xml</value>
             </list>
         </property>
     </bean>
@@ -91,6 +93,10 @@
         </property>
     </bean>
    
+   <bean id="CMISReferenceFactory" class="org.alfresco.cmis.reference.ReferenceFactory">
+        <property name="CMISService" ref="CMISService" />
+        <property name="CMISDictionaryService" ref="CMISDictionaryService" />
+   </bean>
    
     <bean id="adm.luceneQueryEngine" class="org.springframework.aop.framework.ProxyFactoryBean">
         <property name="proxyInterfaces">

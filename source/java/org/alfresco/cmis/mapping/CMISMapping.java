@@ -158,7 +158,6 @@ public class CMISMapping implements InitializingBean
         mapAlfrescoToCmisDataType.put(DataTypeDefinition.TEXT, CMISDataTypeEnum.STRING);
         mapAlfrescoToCmisDataType.put(CMIS_DATATYPE_ID, CMISDataTypeEnum.ID);
         mapAlfrescoToCmisDataType.put(CMIS_DATATYPE_URI, CMISDataTypeEnum.URI);
-        mapAlfrescoToCmisDataType.put(CMIS_DATATYPE_XML, CMISDataTypeEnum.XML);
         mapAlfrescoToCmisDataType.put(CMIS_DATATYPE_HTML, CMISDataTypeEnum.HTML);
 
         //
@@ -189,7 +188,7 @@ public class CMISMapping implements InitializingBean
         registerPropertyAccessor(new ContentStreamIdProperty(serviceRegistry));
         registerPropertyAccessor(new DirectProperty(serviceRegistry, CMISDictionaryModel.PROP_CONTENT_STREAM_FILENAME, ContentModel.PROP_NAME));
         registerPropertyAccessor(new ParentProperty(serviceRegistry));
-        registerPropertyAccessor(new PathNameProperty(serviceRegistry, cmisService));
+        registerPropertyAccessor(new PathProperty(serviceRegistry, cmisService));
         registerPropertyAccessor(new FixedValueProperty(serviceRegistry, CMISDictionaryModel.PROP_ALLOWED_CHILD_OBJECT_TYPE_IDS, null));
         registerPropertyAccessor(new SourceIdProperty(serviceRegistry));
         registerPropertyAccessor(new TargetIdProperty(serviceRegistry));
@@ -201,7 +200,7 @@ public class CMISMapping implements InitializingBean
         registerEvaluator(CMISScope.DOCUMENT, new PermissionActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_DELETE_OBJECT, PermissionService.DELETE_NODE));
         registerEvaluator(CMISScope.DOCUMENT, new PermissionActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_UPDATE_PROPERTIES, PermissionService.WRITE_PROPERTIES));
         registerEvaluator(CMISScope.DOCUMENT, new PermissionActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_GET_PROPERTIES, PermissionService.READ_PROPERTIES));
-        registerEvaluator(CMISScope.DOCUMENT, new FixedValueActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_GET_RELATIONSHIPS, true));
+        registerEvaluator(CMISScope.DOCUMENT, new FixedValueActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_GET_OBJECT_RELATIONSHIPS, true));
         registerEvaluator(CMISScope.DOCUMENT, new FixedValueActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_GET_OBJECT_PARENTS, true));
         // Is CAN_MOVE correct mapping?
         registerEvaluator(CMISScope.DOCUMENT, new PermissionActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_MOVE_OBJECT, PermissionService.DELETE_NODE));
@@ -227,7 +226,7 @@ public class CMISMapping implements InitializingBean
         registerEvaluator(CMISScope.FOLDER, new PermissionActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_UPDATE_PROPERTIES, PermissionService.WRITE_PROPERTIES));
         registerEvaluator(CMISScope.FOLDER, new PermissionActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_GET_FOLDER_TREE, PermissionService.READ_CHILDREN));
         registerEvaluator(CMISScope.FOLDER, new PermissionActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_GET_PROPERTIES, PermissionService.READ_PROPERTIES));
-        registerEvaluator(CMISScope.FOLDER, new FixedValueActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_GET_RELATIONSHIPS, true));
+        registerEvaluator(CMISScope.FOLDER, new FixedValueActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_GET_OBJECT_RELATIONSHIPS, true));
         registerEvaluator(CMISScope.FOLDER, new FixedValueActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_GET_OBJECT_PARENTS, true));
         registerEvaluator(CMISScope.FOLDER, new FixedValueActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_GET_FOLDER_PARENT, true));
         registerEvaluator(CMISScope.FOLDER, new PermissionActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_GET_DESCENDANTS, PermissionService.READ_CHILDREN));
@@ -241,7 +240,6 @@ public class CMISMapping implements InitializingBean
         registerEvaluator(CMISScope.FOLDER, new PermissionActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_CREATE_FOLDER, PermissionService.CREATE_CHILDREN));
         registerEvaluator(CMISScope.FOLDER, new PermissionActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_CREATE_RELATIONSHIP, PermissionService.CREATE_ASSOCIATIONS));
         registerEvaluator(CMISScope.FOLDER, new FixedValueActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_CREATE_POLICY, false));
-        registerEvaluator(CMISScope.FOLDER, new PermissionActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_DELETE_TREE, PermissionService.DELETE_NODE));
         registerEvaluator(CMISScope.FOLDER, new FixedValueActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_GET_ACL, false));
         registerEvaluator(CMISScope.FOLDER, new FixedValueActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_APPLY_ACL, false));
 
@@ -258,7 +256,7 @@ public class CMISMapping implements InitializingBean
         registerEvaluator(CMISScope.POLICY, new FixedValueActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_MOVE_OBJECT, false));
         registerEvaluator(CMISScope.POLICY, new FixedValueActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_ADD_OBJECT_TO_FOLDER, false));
         registerEvaluator(CMISScope.POLICY, new FixedValueActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_REMOVE_OBJECT_FROM_FOLDER, false));
-        registerEvaluator(CMISScope.POLICY, new FixedValueActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_GET_RELATIONSHIPS, false));
+        registerEvaluator(CMISScope.POLICY, new FixedValueActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_GET_OBJECT_RELATIONSHIPS, false));
         registerEvaluator(CMISScope.POLICY, new FixedValueActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_GET_ACL, false));
         registerEvaluator(CMISScope.POLICY, new FixedValueActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_APPLY_ACL, false));
     }

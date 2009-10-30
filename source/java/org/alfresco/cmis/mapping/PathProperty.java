@@ -37,11 +37,11 @@ import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.repository.Path.ChildAssocElement;
 
 /**
- * Get the CMIS object id property.
+ * Get the CMIS path property.
  * 
  * @author davidc
  */
-public class PathNameProperty extends AbstractProperty
+public class PathProperty extends AbstractProperty
 {
     private CMISServices cmisService;
     
@@ -50,9 +50,9 @@ public class PathNameProperty extends AbstractProperty
      * 
      * @param serviceRegistry
      */
-    public PathNameProperty(ServiceRegistry serviceRegistry, CMISServices cmisService)
+    public PathProperty(ServiceRegistry serviceRegistry, CMISServices cmisService)
     {
-        super(serviceRegistry, CMISDictionaryModel.PROP_PATH_NAME);
+        super(serviceRegistry, CMISDictionaryModel.PROP_PATH);
         this.cmisService = cmisService;
     }
 

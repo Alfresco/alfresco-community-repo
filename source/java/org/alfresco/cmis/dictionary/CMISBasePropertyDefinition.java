@@ -71,8 +71,6 @@ public class CMISBasePropertyDefinition implements CMISPropertyDefinition, Seria
     private CMISDataTypeEnum propertyType;
     private CMISCardinalityEnum cardinality;
     private int maximumLength = -1;
-    private String schemaURI = null;
-    private String encoding = null;
     private Collection<CMISChoice> choices = new HashSet<CMISChoice>();
     private boolean isOpenChoice = false;
     private boolean required;
@@ -240,26 +238,6 @@ public class CMISBasePropertyDefinition implements CMISPropertyDefinition, Seria
     }
 
     /**
-     * For properties of type CMISPropertyType.XML the schema to which the property must conform. Unsupported
-     * 
-     * @return - the schema URI
-     */
-    public String getSchemaURI()
-    {
-        return schemaURI;
-    }
-
-    /**
-     * For properties of type CMISPropertyType.XML the encoding used for the property value
-     * 
-     * @return the encoding
-     */
-    public String getEncoding()
-    {
-        return encoding;
-    }
-
-    /**
      * Get the choices available as values for this property TODO: not implemented yet
      * 
      * @return
@@ -370,8 +348,6 @@ public class CMISBasePropertyDefinition implements CMISPropertyDefinition, Seria
         builder.append("PropertyType=").append(getDataType()).append(", ");
         builder.append("Cardinality=").append(getCardinality()).append(", ");
         builder.append("MaximumLength=").append(getMaximumLength()).append(", ");
-        builder.append("SchemaURI=").append(getSchemaURI()).append(", ");
-        builder.append("Encoding=").append(getEncoding()).append(", ");
         builder.append("Choices=").append(getChoices()).append(", ");
         builder.append("IsOpenChoice=").append(isOpenChoice()).append(", ");
         builder.append("Required=").append(isRequired()).append(", ");

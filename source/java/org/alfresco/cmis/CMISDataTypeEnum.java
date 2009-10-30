@@ -83,13 +83,6 @@ public enum CMISDataTypeEnum implements EnumLabel
             return DataTypeDefinition.TEXT;
         }
     },
-    XML("xml")
-    {
-        public QName getDefaultDataType()
-        {
-            return DataTypeDefinition.TEXT;
-        }
-    },
     HTML("html")
     {
         public QName getDefaultDataType()

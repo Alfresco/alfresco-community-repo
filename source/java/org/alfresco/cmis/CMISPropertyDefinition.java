@@ -139,20 +139,6 @@ public interface CMISPropertyDefinition
     public int getMaximumLength();
 
     /**
-     * For properties of type CMISPropertyType.XML the schema to which the property must conform. Unsupported
-     * 
-     * @return - the schema URI
-     */
-    public String getSchemaURI();
-
-    /**
-     * For properties of type CMISPropertyType.XML the encoding used for the property value
-     * 
-     * @return the encoding
-     */
-    public String getEncoding();
-    
-    /**
      * Gets the property accessor (for reading / writing values)
      * 
      * @return

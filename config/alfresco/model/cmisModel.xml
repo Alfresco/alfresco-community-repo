@@ -1,7 +1,7 @@
 <model name="cmis:cmismodel" xmlns="http://www.alfresco.org/model/dictionary/1.0">
 
   <description>CMIS Model Definitions</description>
-  <version>0.62</version>
+  <version>1.0</version>
 
   <imports>
     <import uri="http://www.alfresco.org/model/dictionary/1.0" prefix="d" />
@@ -15,26 +15,17 @@
   <data-types>
 
     <data-type name="cmis:id">
-      <analyser-class>org.alfresco.repo.search.impl.lucene.analysis.AlfrescoStandardAnalyser
-      </analyser-class>
+      <analyser-class>org.alfresco.repo.search.impl.lucene.analysis.AlfrescoStandardAnalyser</analyser-class>
       <java-class>java.lang.String</java-class>
     </data-type>
 
     <data-type name="cmis:uri">
-      <analyser-class>org.alfresco.repo.search.impl.lucene.analysis.AlfrescoStandardAnalyser
-      </analyser-class>
-      <java-class>java.lang.String</java-class>
-    </data-type>
-
-    <data-type name="cmis:xml">
-      <analyser-class>org.alfresco.repo.search.impl.lucene.analysis.AlfrescoStandardAnalyser
-      </analyser-class>
+      <analyser-class>org.alfresco.repo.search.impl.lucene.analysis.AlfrescoStandardAnalyser</analyser-class>
       <java-class>java.lang.String</java-class>
     </data-type>
 
     <data-type name="cmis:html">
-      <analyser-class>org.alfresco.repo.search.impl.lucene.analysis.AlfrescoStandardAnalyser
-      </analyser-class>
+      <analyser-class>org.alfresco.repo.search.impl.lucene.analysis.AlfrescoStandardAnalyser</analyser-class>
       <java-class>java.lang.String</java-class>
     </data-type>
 
@@ -58,7 +49,7 @@
 
     <type name="cmis:object">
       <properties>
-        <property name="cmis:ObjectId">
+        <property name="cmis:objectId">
           <title>Object Id</title>
           <description>The unique object id (a node ref)</description>
           <type>cmis:id</type>
@@ -69,7 +60,7 @@
             <tokenised>false</tokenised>
           </index>
         </property>
-        <property name="cmis:ObjectTypeId">
+        <property name="cmis:objectTypeId">
           <title>Object Type Id</title>
           <description>Id of the object’s type</description>
           <type>cmis:id</type>
@@ -80,7 +71,7 @@
             <tokenised>false</tokenised>
           </index>
         </property>
-        <property name="cmis:BaseTypeId">
+        <property name="cmis:baseTypeId">
           <title>Base Type Id</title>
           <description>Id of the base object type for the object</description>
           <type>cmis:id</type>
@@ -91,7 +82,7 @@
             <tokenised>false</tokenised>
           </index>
         </property>
-        <property name="cmis:CreatedBy">
+        <property name="cmis:createdBy">
           <title>Created by</title>
           <description>The authority who created this object</description>
           <type>d:text</type>
@@ -102,7 +93,7 @@
             <tokenised>false</tokenised>
           </index>
         </property>
-        <property name="cmis:CreationDate">
+        <property name="cmis:creationDate">
           <title>Creation Date</title>
           <description>The object creation date</description>
           <type>d:datetime</type>
@@ -113,7 +104,7 @@
             <tokenised>false</tokenised>
           </index>
         </property>
-        <property name="cmis:LastModifiedBy">
+        <property name="cmis:lastModifiedBy">
           <title>Last Modified By</title>
           <description>The authority who last modified this object</description>
           <type>d:text</type>
@@ -124,7 +115,7 @@
             <tokenised>false</tokenised>
           </index>
         </property>
-        <property name="cmis:LastModificationDate">
+        <property name="cmis:lastModificationDate">
           <title>Last Modified Date</title>
           <description>The date this object was last modified</description>
           <type>d:datetime</type>
@@ -135,7 +126,7 @@
             <tokenised>false</tokenised>
           </index>
         </property>
-        <property name="cmis:ChangeToken">
+        <property name="cmis:changeToken">
           <title>Change token</title>
           <description>Change Token</description>
           <type>d:text</type>
@@ -151,7 +142,7 @@
     <type name="cmis:filesystemobject">
       <parent>cmis:object</parent>
       <properties>
-        <property name="cmis:Name">
+        <property name="cmis:name">
           <title>Name</title>
           <description>Name</description>
           <type>d:text</type>
@@ -170,7 +161,7 @@
       <description>Document Type</description>
       <parent>cmis:filesystemobject</parent>
       <properties>
-        <property name="cmis:IsImmutable">
+        <property name="cmis:isImmutable">
           <title>Is Immutable</title>
           <description>Is the document immutable?</description>
           <type>d:boolean</type>
@@ -179,7 +170,7 @@
           <multiple>false</multiple>
           <index enabled="false" />
         </property>
-        <property name="cmis:IsLatestVersion">
+        <property name="cmis:isLatestVersion">
           <title>Is Latest Version</title>
           <description>Is this the latest version of the document?</description>
           <type>d:boolean</type>
@@ -188,7 +179,7 @@
           <multiple>false</multiple>
           <index enabled="false" />
         </property>
-        <property name="cmis:IsMajorVersion">
+        <property name="cmis:isMajorVersion">
           <title>Is Major Version</title>
           <description>Is this a major version of the document?</description>
           <type>d:boolean</type>
@@ -197,7 +188,7 @@
           <multiple>false</multiple>
           <index enabled="false" />
         </property>
-        <property name="cmis:IsLatestMajorVersion">
+        <property name="cmis:isLatestMajorVersion">
           <title>Is Latest Major Version</title>
           <description>Is this the latest major version of the document?</description>
           <type>d:boolean</type>
@@ -206,7 +197,7 @@
           <multiple>false</multiple>
           <index enabled="false" />
         </property>
-        <property name="cmis:VersionLabel">
+        <property name="cmis:versionLabel">
           <title>Version Label</title>
           <description>The version label</description>
           <type>d:text</type>
@@ -217,7 +208,7 @@
             <tokenised>true</tokenised>
           </index>
         </property>
-        <property name="cmis:VersionSeriesId">
+        <property name="cmis:versionSeriesId">
           <title>Version series id</title>
           <description>The version series id</description>
           <type>cmis:id</type>
@@ -228,7 +219,7 @@
             <tokenised>false</tokenised>
           </index>
         </property>
-        <property name="cmis:IsVersionSeriesCheckedOut">
+        <property name="cmis:isVersionSeriesCheckedOut">
           <title>Is Version Series Checked Out</title>
           <description>Is the version series checked out?</description>
           <type>d:boolean</type>
@@ -237,7 +228,7 @@
           <multiple>false</multiple>
           <index enabled="false" />
         </property>
-        <property name="cmis:VersionSeriesCheckedOutBy">
+        <property name="cmis:versionSeriesCheckedOutBy">
           <title>Version Series Checked Out By</title>
           <description>The authority who checked out this document version series</description>
           <type>d:text</type>
@@ -246,7 +237,7 @@
           <multiple>false</multiple>
           <index enabled="false" />
         </property>
-        <property name="cmis:VersionSeriesCheckedOutId">
+        <property name="cmis:versionSeriesCheckedOutId">
           <title>Version Series Checked Out Id</title>
           <description>The checked out version series id</description>
           <type>cmis:id</type>
@@ -255,7 +246,7 @@
           <multiple>false</multiple>
           <index enabled="false" />
         </property>
-        <property name="cmis:CheckinComment">
+        <property name="cmis:checkinComment">
           <title>Checkin Comment</title>
           <description>The checkin comment</description>
           <type>d:text</type>
@@ -264,7 +255,7 @@
           <multiple>false</multiple>
           <index enabled="false" />
         </property>
-        <property name="cmis:ContentStreamLength">
+        <property name="cmis:contentStreamLength">
           <title>Content Stream Length</title>
           <description>The length of the content stream</description>
           <type>d:int</type>
@@ -275,7 +266,7 @@
             <tokenised>false</tokenised>
           </index>
         </property>
-        <property name="cmis:ContentStreamMimeType">
+        <property name="cmis:contentStreamMimeType">
           <title>Content Stream MIME Type</title>
           <description>The content stream MIME type</description>
           <type>d:text</type>
@@ -286,7 +277,7 @@
             <tokenised>false</tokenised>
           </index>
         </property>
-        <property name="cmis:ContentStreamFileName">
+        <property name="cmis:contentStreamFileName">
           <title>Content Stream Filename</title>
           <description>The content stream filename</description>
           <type>d:text</type>
@@ -297,7 +288,7 @@
             <tokenised>true</tokenised>
           </index>
         </property>
-        <property name="cmis:ContentStreamId">
+        <property name="cmis:contentStreamId">
           <title>Content Stream Id</title>
           <description>Id of the stream</description>
           <type>cmis:id</type>
@@ -316,7 +307,7 @@
       <description>Folder Type</description>
       <parent>cmis:filesystemobject</parent>
       <properties>
-        <property name="cmis:ParentId">
+        <property name="cmis:parentId">
           <title>Parent Id</title>
           <description>The parent id of the folder</description>
           <type>cmis:id</type>
@@ -327,9 +318,9 @@
             <tokenised>false</tokenised>
           </index>
         </property>
-        <property name="cmis:PathName">
-          <title>Path Name</title>
-          <description>Name of the path element for this folder</description>
+        <property name="cmis:path">
+          <title>Path</title>
+          <description>The fully qualified path to this folder/description</description>
           <type>d:text</type>
           <protected>true</protected>
           <mandatory enforced="true">true</mandatory>
@@ -338,7 +329,7 @@
             <tokenised>false</tokenised>
           </index>
         </property>
-        <property name="cmis:AllowedChildObjectTypeIds">
+        <property name="cmis:allowedChildObjectTypeIds">
           <title>Allowed Child Object Types Ids</title>
           <description>The allowed child object type ids</description>
           <type>cmis:id</type>
@@ -355,7 +346,7 @@
       <description>Relationship Type</description>
       <parent>cmis:object</parent>
       <properties>
-        <property name="cmis:SourceId">
+        <property name="cmis:sourceId">
           <title>Source Id</title>
           <description>The source id for the relationship</description>
           <type>cmis:id</type>
@@ -364,7 +355,7 @@
           <multiple>false</multiple>
           <index enabled="false" />
         </property>
-        <property name="cmis:TargetId">
+        <property name="cmis:targetId">
           <title>Target Id</title>
           <description>The target id for the relationship</description>
           <type>cmis:id</type>
@@ -381,7 +372,7 @@
       <description>Policy Type</description>
       <parent>cmis:object</parent>
       <properties>
-        <property name="cmis:PolicyText">
+        <property name="cmis:policyText">
           <title>Policy Text</title>
           <description>The policy text</description>
           <type>d:text</type>

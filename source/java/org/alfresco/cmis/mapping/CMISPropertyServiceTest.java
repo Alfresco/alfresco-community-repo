@@ -44,7 +44,7 @@ public class CMISPropertyServiceTest extends BaseCMISTest
 {
     public void testBasicFolder()
     {
-        NodeRef folder = fileFolderService.create(rootNodeRef, "BaseFolder", ContentModel.TYPE_FOLDER).getNodeRef();
+        NodeRef folder = fileFolderService.create(cmisService.getDefaultRootNodeRef(), "BaseFolder", ContentModel.TYPE_FOLDER).getNodeRef();
         Map<String, Serializable> properties = cmisService.getProperties(folder);
         assertEquals(folder.toString(), properties.get(CMISDictionaryModel.PROP_OBJECT_ID));
         assertEquals(CMISDictionaryModel.FOLDER_TYPE_ID.getId(), properties.get(CMISDictionaryModel.PROP_OBJECT_TYPE_ID));
@@ -72,7 +72,7 @@ public class CMISPropertyServiceTest extends BaseCMISTest
         assertNull(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_FILENAME));
         assertNull(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_ID));
 
-        assertEquals(rootNodeRef.toString(), properties.get(CMISDictionaryModel.PROP_PARENT_ID));
+        assertEquals(cmisService.getDefaultRootNodeRef().toString(), properties.get(CMISDictionaryModel.PROP_PARENT_ID));
         assertNull(properties.get(CMISDictionaryModel.PROP_ALLOWED_CHILD_OBJECT_TYPE_IDS));
     }
 

@@ -32,7 +32,8 @@ package org.alfresco.cmis;
 public enum CMISAllowedActionEnum implements EnumLabel
 {
     // navigation services
-    CAN_GET_DESCENDANTS("canGetDescendants"), 
+    CAN_GET_DESCENDANTS("canGetDescendants"),
+    CAN_GET_FOLDER_TREE("canGetFolderTree"),
     CAN_GET_CHILDREN("canGetChildren"), 
     CAN_GET_FOLDER_PARENT("canGetFolderParent"), 
     CAN_GET_OBJECT_PARENTS("canGetObjectParents"), 
@@ -48,7 +49,6 @@ public enum CMISAllowedActionEnum implements EnumLabel
     CAN_UPDATE_PROPERTIES("canUpdateProperties"), 
     CAN_MOVE_OBJECT("canMoveObject"), 
     CAN_DELETE_OBJECT("canDeleteObject"),
-    CAN_DELETE_TREE("canDeleteTree"),
     CAN_SET_CONTENT_STREAM("canSetContentStream"), 
     CAN_DELETE_CONTENT_STREAM("canDeleteContentStream"), 
 
@@ -63,7 +63,7 @@ public enum CMISAllowedActionEnum implements EnumLabel
     CAN_GET_ALL_VERSIONS("canGetAllVersions"), 
 
     // relationship services
-    CAN_GET_RELATIONSHIPS("canGetRelationships"),
+    CAN_GET_OBJECT_RELATIONSHIPS("canGetObjectRelationships"),
     
     // policy services
     CAN_APPLY_POLICY("canApplyPolicy"), 

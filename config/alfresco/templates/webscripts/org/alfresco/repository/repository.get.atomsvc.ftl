@@ -85,7 +85,7 @@
         <cmisra:mediatype>${cmisconstants.MIMETYPE_ENTRY}</cmisra:mediatype>
     </cmisra:uritemplate>
     <cmisra:uritemplate>
-        <cmisra:template>${absurl(url.serviceContext)}/api/query?q={q}&amp;includeAllowableActions={includeAllowableActions?}&amp;searchAllVersions={searchAllVersions?}&amp;skipCount={skipCount?}&amp;maxItems={maxItems?}</cmisra:template>
+        <cmisra:template>${absurl(url.serviceContext)}/api/query?q={q}&amp;searchAllVersions={searchAllVersions}&amp;maxItems={maxItems}&amp;skipCount={skipCount}&amp;includeAllowableActions={includeAllowableActions}&amp;includeRelationships={includeRelationships}</cmisra:template>
         <cmisra:type>${cmisconstants.URI_QUERY}</cmisra:type>
         <cmisra:mediatype>${cmisconstants.MIMETYPE_FEED}</cmisra:mediatype>
     </cmisra:uritemplate>

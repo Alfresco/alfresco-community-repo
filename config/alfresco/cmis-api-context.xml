@@ -3,32 +3,6 @@
 
 <beans>
 
-	 <bean id="lucene.sql.cmis.strict" class="org.alfresco.repo.search.impl.lucene.LuceneCmisStrictSqlQueryLanguage" >
-        <property name="cmisQueryService">
-            <ref bean="CMISQueryService" />
-        </property>
-        <property name="factories">
-            <list>
-                <ref bean="admLuceneIndexerAndSearcherFactory" />
-                <ref bean="admLuceneUnIndexedIndexerAndSearcherFactory" />
-                <ref bean="avmLuceneIndexerAndSearcherFactory" />
-            </list>
-        </property>
-    </bean>
-
-    <bean id="lucene.sql.alfresco" class="org.alfresco.repo.search.impl.lucene.LuceneAlfrescoSqlQueryLanguage">
-        <property name="cmisQueryService">
-            <ref bean="CMISQueryService" />
-        </property>
-        <property name="factories">
-            <list>
-                <ref bean="admLuceneIndexerAndSearcherFactory" />
-                <ref bean="admLuceneUnIndexedIndexerAndSearcherFactory" />
-                <ref bean="avmLuceneIndexerAndSearcherFactory" />
-            </list>
-        </property>
-    </bean>
-	
     <bean id="CMISMapping" class="org.alfresco.cmis.mapping.CMISMapping" >
         <property name="serviceRegistry">
             <ref bean="ServiceRegistry" />
@@ -39,7 +13,8 @@
     </bean>
 
     <bean id="CMISService" class="org.alfresco.cmis.mapping.CMISServicesImpl">
-        <property name="CMISSpecVersion"><value>0.7</value></property>
+        <property name="CMISSpecVersion"><value>1.0</value></property>
+        <property name="CMISSpecTitle"><value>Version 1.0 Committee Draft 04</value></property>
         <property name="defaultStore"><value>workspace://SpacesStore</value></property>
         <property name="defaultRootPath"><value>/Company Home</value></property>
         <property name="dictionaryService" ref="dictionaryService" />
@@ -93,10 +68,37 @@
         </property>
     </bean>
    
-   <bean id="CMISReferenceFactory" class="org.alfresco.cmis.reference.ReferenceFactory">
+    <bean id="CMISReferenceFactory" class="org.alfresco.cmis.reference.ReferenceFactory">
         <property name="CMISService" ref="CMISService" />
         <property name="CMISDictionaryService" ref="CMISDictionaryService" />
-   </bean>
+    </bean>
+
+    <bean id="lucene.sql.cmis.strict" class="org.alfresco.repo.search.impl.lucene.LuceneCmisStrictSqlQueryLanguage" >
+        <property name="cmisQueryService">
+            <ref bean="CMISQueryService" />
+        </property>
+        <property name="factories">
+            <list>
+                <ref bean="admLuceneIndexerAndSearcherFactory" />
+                <ref bean="admLuceneUnIndexedIndexerAndSearcherFactory" />
+                <ref bean="avmLuceneIndexerAndSearcherFactory" />
+            </list>
+        </property>
+    </bean>
+
+    <bean id="lucene.sql.alfresco" class="org.alfresco.repo.search.impl.lucene.LuceneAlfrescoSqlQueryLanguage">
+        <property name="cmisQueryService">
+            <ref bean="CMISQueryService" />
+        </property>
+        <property name="factories">
+            <list>
+                <ref bean="admLuceneIndexerAndSearcherFactory" />
+                <ref bean="admLuceneUnIndexedIndexerAndSearcherFactory" />
+                <ref bean="avmLuceneIndexerAndSearcherFactory" />
+            </list>
+        </property>
+    </bean>
+	
    
     <bean id="adm.luceneQueryEngine" class="org.springframework.aop.framework.ProxyFactoryBean">
         <property name="proxyInterfaces">
@@ -123,7 +125,5 @@
             </value>
         </property>
     </bean>
-	
-	
    
 </beans>

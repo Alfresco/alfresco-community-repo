@@ -114,6 +114,7 @@ public class CMISServicesImpl implements CMISServices, ApplicationContextAware, 
 
     // CMIS supported version
     private String cmisVersion = "[undefined]";
+    private String cmisSpecTitle = "[undefined]";
     
     // default CMIS store and path
     private StoreRef defaultStoreRef;
@@ -133,6 +134,16 @@ public class CMISServicesImpl implements CMISServices, ApplicationContextAware, 
     public void setCMISSpecVersion(String cmisVersion)
     {
         this.cmisVersion = cmisVersion;
+    }
+    
+    /**
+     * Sets the CMIS specification title 
+     * 
+     * @param cmisTitle
+     */
+    public void setCMISSpecTitle(String cmisSpecTitle)
+    {
+        this.cmisSpecTitle = cmisSpecTitle;
     }
     
     /**
@@ -295,6 +306,15 @@ public class CMISServicesImpl implements CMISServices, ApplicationContextAware, 
         return cmisVersion;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.alfresco.cmis.CMISServices#getCMISSpecTitle()
+     */
+    public String getCMISSpecTitle()
+    {
+        return cmisSpecTitle;
+    }
+    
     /*
      * (non-Javadoc)
      * @see org.alfresco.cmis.CMISServices#getDefaultRootPath()

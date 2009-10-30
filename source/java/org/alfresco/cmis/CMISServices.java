@@ -45,6 +45,13 @@ public interface CMISServices
      * @return  version of CMIS specification supported
      */
     public String getCMISVersion();
+
+    /**
+     * Gets the supported CMIS Specification Title
+     * 
+     * @return  CMIS pecification Title
+     */
+    public String getCMISSpecTitle();
     
     /**
      * Gets the default root node path

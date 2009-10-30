@@ -65,7 +65,7 @@ public class CMISMapping implements InitializingBean
      * The Alfresco CMIS Namespace
      */
     public static String CMIS_MODEL_NS = "cmis";
-    public static String CMIS_MODEL_URI = "http://www.alfresco.org/model/cmis/0.62";
+    public static String CMIS_MODEL_URI = "http://www.alfresco.org/model/cmis/1.0/cd04";
 
     /**
      * The Alfresco CMIS Model name.
@@ -225,6 +225,7 @@ public class CMISMapping implements InitializingBean
         
         registerEvaluator(CMISScope.FOLDER, new PermissionActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_DELETE_OBJECT, PermissionService.DELETE_NODE));
         registerEvaluator(CMISScope.FOLDER, new PermissionActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_UPDATE_PROPERTIES, PermissionService.WRITE_PROPERTIES));
+        registerEvaluator(CMISScope.FOLDER, new PermissionActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_GET_FOLDER_TREE, PermissionService.READ_CHILDREN));
         registerEvaluator(CMISScope.FOLDER, new PermissionActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_GET_PROPERTIES, PermissionService.READ_PROPERTIES));
         registerEvaluator(CMISScope.FOLDER, new FixedValueActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_GET_RELATIONSHIPS, true));
         registerEvaluator(CMISScope.FOLDER, new FixedValueActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_GET_OBJECT_PARENTS, true));

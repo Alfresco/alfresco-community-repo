@@ -527,7 +527,7 @@ public class PropertyUtil
     public CmisPropertiesType getPropertiesType(String identifier, PropertyFilter filter) throws CmisException
     {
         Map<String, Serializable> properties;
-        if (NodeRef.isNodeRef(identifier))
+        if (!identifier.contains("|"))
         {
             properties = cmisService.getProperties(new NodeRef(identifier));
         }
@@ -556,7 +556,7 @@ public class PropertyUtil
 
     private void convertToCmisProperties(Map<String, Serializable> properties, PropertyFilter filter, CmisPropertiesType cmisProperties) throws CmisException
     {
-        String typeId = (String) properties.get(CMISDictionaryModel.PROP_OBJECT_TYPE_ID);
+        String typeId = properties.get(CMISDictionaryModel.PROP_OBJECT_TYPE_ID) != null ? properties.get(CMISDictionaryModel.PROP_OBJECT_TYPE_ID).toString() : null;
         CMISTypeDefinition type = cmisDictionaryService.findType(typeId);
 
         if (null == type)
@@ -690,7 +690,7 @@ public class PropertyUtil
             }
             else
             {
-                property.getValue().add((String) value);
+                property.getValue().add(value != null ? value.toString() : null);
             }
 
             return property;

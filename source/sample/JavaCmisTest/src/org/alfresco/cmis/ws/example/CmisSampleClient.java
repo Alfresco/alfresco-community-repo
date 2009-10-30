@@ -26,6 +26,7 @@ package org.alfresco.cmis.ws.example;
 
 import java.util.List;
 
+import org.alfresco.repo.cmis.ws.CmisObjectInFolderType;
 import org.alfresco.repo.cmis.ws.CmisObjectType;
 import org.alfresco.repo.cmis.ws.CmisPropertiesType;
 import org.alfresco.repo.cmis.ws.CmisProperty;
@@ -45,8 +46,8 @@ import org.alfresco.repo.cmis.ws.CmisPropertyString;
  */
 public class CmisSampleClient
 {
-    private static final String NAME_PROPERTY = "cmis:Name";
-    private static final String BASE_TYPE_ID_PROPERTY = "cmis:BaseTypeId";
+    private static final String NAME_PROPERTY = "cmis:name";
+    private static final String BASE_TYPE_ID_PROPERTY = "cmis:baseTypeId";
 
     /**
      * Executable entry point - represents main life-cycle
@@ -73,7 +74,6 @@ public class CmisSampleClient
         }
 
         CmisUtils servicesHelper;
-
         try
         {
             servicesHelper = new CmisUtils(username, password, serverUrl);
@@ -84,8 +84,7 @@ public class CmisSampleClient
             return;
         }
 
-        List<CmisObjectType> response;
-
+        List<CmisObjectInFolderType> response;
         try
         {
             response = servicesHelper.receiveFolderEntry(servicesHelper.getRootFolderId());
@@ -97,13 +96,25 @@ public class CmisSampleClient
             return;
         }
 
-        System.out.println("Outing Company Home contents:");
-        for (CmisObjectType item : response)
+        if (null == response)
         {
-            boolean thisIsFolder = ((CmisPropertyId) getCmisProperty(item.getProperties(), BASE_TYPE_ID_PROPERTY)).getValue().get(0).contains("folder");
-            String itemName = ((CmisPropertyString) getCmisProperty(item.getProperties(), NAME_PROPERTY)).getValue().get(0);
-
-            System.out.println(((thisIsFolder) ? ("[") : ("")) + itemName + ((thisIsFolder) ? ("]") : ("")));
+            System.out.println("Children for Company Home were not returned");
+        }
+        else
+        {
+            System.out.println("Outing Company Home contents:");
+            for (CmisObjectInFolderType item : response)
+            {
+                String itemName = "NULL";
+                boolean thisIsFolder = false;
+                if ((null != item) && (null != item.getObject()) && (null != item.getObject().getProperties()))
+                {
+                    CmisObjectType object = item.getObject();
+                    thisIsFolder = ((CmisPropertyId) getCmisProperty(object.getProperties(), BASE_TYPE_ID_PROPERTY)).getValue().get(0).contains("folder");
+                    itemName = ((CmisPropertyString) getCmisProperty(object.getProperties(), NAME_PROPERTY)).getValue().get(0);
+                }
+                System.out.println(((thisIsFolder) ? ("[") : ("")) + itemName + ((thisIsFolder) ? ("]") : ("")));
+            }
         }
     }
 
@@ -125,8 +136,8 @@ public class CmisSampleClient
         String result = null;
         if (null != property)
         {
-            result = (null != property.getPdid()) ? (property.getPdid()):(property.getLocalname());
-            result = (null != result) ? (result) : (property.getDisplayname());
+            result = (null != property.getPropertyDefinitionId()) ? (property.getPropertyDefinitionId()) : (property.getLocalName());
+            result = (null != result) ? (result) : (property.getDisplayName());
         }
         return result;
     }

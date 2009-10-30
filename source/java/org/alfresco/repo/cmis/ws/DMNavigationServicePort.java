@@ -98,7 +98,7 @@ public class DMNavigationServicePort extends DMAbstractServicePort implements Na
         result.setHasMoreItems(new Boolean(cursor.getEndRow() < (nodeRefs.length - 1)));
 
         // TODO: includeAllowableActions, includeRelationships, renditions
-        
+
         return result;
     }
 
@@ -126,12 +126,12 @@ public class DMNavigationServicePort extends DMAbstractServicePort implements Na
         {
             orderingFields = checkAndParseOrderByClause(orderBy);
         }
-      
-        // TODO: Ordering functionality SHOULD be moved to getChildren service method
-        NodeRef[] listing = cmisService.getChildren(folderNodeRef, CMISTypesFilterEnum.ANY);        
 
-        CmisObjectInFolderListType result = new CmisObjectInFolderListType();        
-        
+        // TODO: Ordering functionality SHOULD be moved to getChildren service method
+        NodeRef[] listing = cmisService.getChildren(folderNodeRef, CMISTypesFilterEnum.ANY);
+
+        CmisObjectInFolderListType result = new CmisObjectInFolderListType();
+
         Cursor cursor = createCursor(listing.length, skipCount, maxItems);
 
         for (int index = cursor.getStartRow(); index <= cursor.getEndRow(); index++)
@@ -254,31 +254,31 @@ public class DMNavigationServicePort extends DMAbstractServicePort implements Na
         }
         return result;
     }
-    
+
     private CmisObjectInFolderContainerType getDescedantsTree(String repositoryId, String folderId, BigInteger depth, String filter, Boolean includeAllowableActions,
-            EnumIncludeRelationships includeRelationships, String renditionFilter, Boolean includePathSegments,
-            CMISTypesFilterEnum types) throws CmisException
+            EnumIncludeRelationships includeRelationships, String renditionFilter, Boolean includePathSegments, CMISTypesFilterEnum types) throws CmisException
     {
         checkRepositoryId(repositoryId);
         PropertyFilter propertyFilter = createPropertyFilter(filter);
         depth = (depth == null) ? (BigInteger.ONE.add(BigInteger.ONE)) : depth;
         depth = depth.equals(BigInteger.valueOf(-1)) ? BigInteger.valueOf(Integer.MAX_VALUE) : depth;
-        long maxDepth = depth.longValue(); 
+        long maxDepth = depth.longValue();
         checkDepthParameter(depth);
-        
+
         NodeRef folderNodeRef = cmisObjectsUtils.getIdentifierInstance(folderId, AlfrescoObjectType.FOLDER_OBJECT);
-        Stack<RecursiveElement> descedantsStack = new Stack<RecursiveElement>();        
-        CmisObjectInFolderContainerType objectInFolderContainer = createObjectInFolderContainer(folderNodeRef, propertyFilter, includeAllowableActions, includeRelationships, renditionFilter, includePathSegments);
+        Stack<RecursiveElement> descedantsStack = new Stack<RecursiveElement>();
+        CmisObjectInFolderContainerType objectInFolderContainer = createObjectInFolderContainer(folderNodeRef, propertyFilter, includeAllowableActions, includeRelationships,
+                renditionFilter, includePathSegments);
         NodeRef[] children = cmisService.getChildren(folderNodeRef, types);
         for (NodeRef childRef : children)
         {
             descedantsStack.push(new RecursiveElement(objectInFolderContainer, 1, childRef));
-        }        
+        }
         while (!descedantsStack.isEmpty())
         {
             RecursiveElement element = descedantsStack.pop();
-            CmisObjectInFolderContainerType currentContainer = createObjectInFolderContainer(element.getCurrentNodeRef(), propertyFilter, includeAllowableActions, includeRelationships,
-                    renditionFilter, includePathSegments);
+            CmisObjectInFolderContainerType currentContainer = createObjectInFolderContainer(element.getCurrentNodeRef(), propertyFilter, includeAllowableActions,
+                    includeRelationships, renditionFilter, includePathSegments);
             element.getParentContainerType().getChildren().add(currentContainer);
             if (element.getDepth() <= maxDepth)
             {
@@ -294,14 +294,14 @@ public class DMNavigationServicePort extends DMAbstractServicePort implements Na
         }
         return objectInFolderContainer;
     }
-    
+
     private CmisObjectInFolderContainerType createObjectInFolderContainer(NodeRef nodeRef, PropertyFilter filter, Boolean includeAllowableActions,
             EnumIncludeRelationships includeRelationships, String renditionFilter, Boolean includePathSegments) throws CmisException
     {
         includeAllowableActions = includeAllowableActions == null ? Boolean.FALSE : includeAllowableActions;
         CmisObjectType cmisObject = createCmisObject(nodeRef, filter, includeAllowableActions);
         //TODO: add relationships and renditions
-        
+
         CmisObjectInFolderType objectInFolderType = new CmisObjectInFolderType();
         objectInFolderType.setObject(cmisObject);
         if (includePathSegments != null && includePathSegments)
@@ -344,7 +344,7 @@ public class DMNavigationServicePort extends DMAbstractServicePort implements Na
         }
         return receiveNextParentNodeReference((NodeRef) cmisObjectsUtils.getIdentifierInstance(targetChildIdentifier, AlfrescoObjectType.FOLDER_OBJECT), new ArrayList<NodeRef>());
     }
-        
+
     private void checkDepthParameter(BigInteger depth) throws CmisException
     {
         if (depth.equals(BigInteger.ZERO) || (depth.compareTo(FULL_DESCENDANTS_HIERARCHY_CONDITION) < EQUALS_CONDITION_VALUE))
@@ -373,13 +373,13 @@ public class DMNavigationServicePort extends DMAbstractServicePort implements Na
         }
         return parents;
     }
-    
+
     private class RecursiveElement
     {
         private CmisObjectInFolderContainerType parentContainerType;
         private int depth;
         private NodeRef currentNodeRef;
-        
+
         public RecursiveElement(CmisObjectInFolderContainerType parentContainerType, int depth, NodeRef currentNodeRef)
         {
             this.parentContainerType = parentContainerType;

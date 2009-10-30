@@ -250,37 +250,6 @@ public class DMRepositoryServicePort extends DMAbstractServicePort implements Re
         }
     }
 
-    // private CmisTypeContainer getTypeDescendants(CMISTypeDefinition typeDef, long depth, boolean includePropertyDefs) throws CmisException
-    // {
-    //     if (depth < 0)
-    //     {
-    //         return null;
-    //     }
-    //     CmisTypeContainer container = new CmisTypeContainer();
-    //     CmisTypeDefinitionType targetTypeDef = getCmisTypeDefinition(typeDef, includePropertyDefs);
-    //     if (targetTypeDef != null)
-    //     {
-    //         container.setType(targetTypeDef);
-    //         Collection<CMISTypeDefinition> subTypes = typeDef.getSubTypes(false);
-    //         if (subTypes != null)
-    //         {
-    //             for (CMISTypeDefinition subType : subTypes)
-    //             {
-    //                 CmisTypeContainer child = getTypeDescendants(subType, depth - 1, includePropertyDefs);
-    //                 if (child != null)
-    //                 {
-    //                     container.getChildren().add(child);
-    //                 }
-    //             }
-    //         }
-    //     }
-    //     else
-    //     {
-    //         throw cmisObjectsUtils.createCmisException(("Subtypes collection is corrupted. Type id: " + targetTypeDef), EnumServiceException.STORAGE);
-    //     }
-    //     return container;
-    // }
-
     private CmisPropertyDefinitionType createPropertyDefinitionType(CMISDataTypeEnum type) throws CmisException
     {
         switch (type)
@@ -420,6 +389,20 @@ public class DMRepositoryServicePort extends DMAbstractServicePort implements Re
             {
                 relationshipDefinitionType.setParentId(typeDef.getParentType().getTypeId().getId());
             }
+            if (typeDef.getAllowedSourceTypes() != null)
+            {
+                for (CMISTypeDefinition definition : typeDef.getAllowedSourceTypes())
+                {
+                    relationshipDefinitionType.getAllowedSourceTypes().add(definition.getTypeId().getId());
+                }
+            }
+            if (typeDef.getAllowedTargetTypes() != null)
+            {
+                for (CMISTypeDefinition definition : typeDef.getAllowedTargetTypes())
+                {
+                    relationshipDefinitionType.getAllowedTargetTypes().add(definition.getTypeId().getId());
+                }
+            }
             setCmisTypeDefinitionProperties(relationshipDefinitionType, typeDef, includeProperties);
             result = relationshipDefinitionType;
             break;
@@ -473,6 +456,7 @@ public class DMRepositoryServicePort extends DMAbstractServicePort implements Re
         repositoryInfoType.setCmisVersionSupported(BigDecimal.valueOf(0.723)); // TODO: ask how to specify supported version like '0.7b3'
         repositoryInfoType.setThinClientURI(repositoryUri);
         repositoryInfoType.setChangesIncomplete(true); // TODO
+        // TODO: getFolderTree capability
         // TODO: set chnagedOnType via getChangesOnType().add()...
         // repositoryInfoType.getChangesOnType();
         // FIXME [BUG]: 'supportedPermissions' defined in spec. is absent in schema
@@ -582,6 +566,10 @@ public class DMRepositoryServicePort extends DMAbstractServicePort implements Re
     {
         checkRepositoryId(repositoryId);
         long depthLong = (null == depth) ? (-1) : (depth.longValue());
+        if (0 == depthLong)
+        {
+            throw cmisObjectsUtils.createCmisException("Depth parameter equal to '0' have no sence", EnumServiceException.INVALID_ARGUMENT);
+        }
         boolean includePropertyDefsBool = (null == includePropertyDefinitions) ? (false) : (includePropertyDefinitions);
         List<CmisTypeContainer> result = new LinkedList<CmisTypeContainer>();
         Queue<TypeElement> typesQueue = new LinkedList<TypeElement>();

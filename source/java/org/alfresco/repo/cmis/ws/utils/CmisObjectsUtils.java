@@ -32,6 +32,7 @@ import java.util.Map;
 import java.util.regex.Pattern;
 
 import org.alfresco.cmis.CMISDictionaryService;
+import org.alfresco.cmis.CMISQueryException;
 import org.alfresco.cmis.CMISScope;
 import org.alfresco.cmis.CMISTypeDefinition;
 import org.alfresco.model.ContentModel;
@@ -91,6 +92,7 @@ public class CmisObjectsUtils
         CLASS_TO_ENUM_EXCEPTION_MAPPING.put(UnsupportedOperationException.class.getName(), EnumServiceException.NOT_SUPPORTED);
         CLASS_TO_ENUM_EXCEPTION_MAPPING.put(InvalidNodeRefException.class.getName(), EnumServiceException.INVALID_ARGUMENT);
         CLASS_TO_ENUM_EXCEPTION_MAPPING.put(ContentIOException.class.getName(), EnumServiceException.NOT_SUPPORTED);
+        CLASS_TO_ENUM_EXCEPTION_MAPPING.put(CMISQueryException.class.getName(), EnumServiceException.INVALID_ARGUMENT);
         // TODO: insert CLASS_TO_ENUM_EXCEPTION_MAPPING.put(<Concreate_Exception_Type>.class.getName(), EnumServiceException.<Appropriate_Enum_value>);
     }
 
@@ -206,18 +208,16 @@ public class CmisObjectsUtils
 
     public List<String> deleteFolder(NodeRef folderNodeReference, boolean continueOnFailure, EnumUnfileObject unfillingStrategy, boolean deleteAllVersions) throws CmisException
     {
-//        TODO: DC 16Oct09 - commented out due to missing CmisObjectIterator
-//        CmisObjectIterator iterator = new CmisObjectIterator(folderNodeReference, unfillingStrategy, continueOnFailure, deleteAllVersions, nodeService, fileFolderService,
-//                versionService, checkOutCheckInService, this);
-//        if (iterator.hasNext())
-//        {
-//            for (; iterator.hasNext(); iterator.next())
-//            {
-//                iterator.remove();
-//            }
-//        }
-//        return iterator.getFailToDelete();
-        return null;
+        CmisObjectIterator iterator = new CmisObjectIterator(folderNodeReference, unfillingStrategy, continueOnFailure, deleteAllVersions, nodeService, fileFolderService,
+                versionService, checkOutCheckInService, this);
+        if (iterator.hasNext())
+        {
+            for (; iterator.hasNext(); iterator.next())
+            {
+                iterator.remove();
+            }
+        }
+        return iterator.getFailToDelete();
     }
 
     public boolean deleteObject(NodeRef objectNodeReference)

@@ -98,7 +98,7 @@ public class DMRelationshipServicePort extends DMAbstractServicePort implements 
     {
         Cursor cursor = createCursor(sourceArray.length, skipCount, maxItems);
         CmisObjectListType result = new CmisObjectListType();
-        for (int i = cursor.getStartRow(); i < cursor.getEndRow(); i++)
+        for (int i = cursor.getStartRow(); i <= cursor.getEndRow(); i++)
         {
             result.getObjects().add(createCmisObject(sourceArray[i].toString(), filter, includeAllowableActions));
         }

@@ -65,15 +65,15 @@ public class DMVersioningServicePort extends DMAbstractServicePort implements Ve
      * again.
      * 
      * @param repositoryId repository Id
-     * @param documentId document Id
+     * @param objectId document Id
      * @throws CmisException (with following {@link EnumServiceException} : INVALID_ARGUMENT, OBJECT_NOT_FOUND, NOT_SUPPORTED, PERMISSION_DENIED, RUNTIME, CONSTRAINT,
      *         UPDATE_CONFLICT, VERSIONING)
      */
     // FIXME [~BUG]: may it is better returning id of the unchecked out document
-    public void cancelCheckOut(String repositoryId, String documentId, Holder<CmisExtensionType> extension) throws CmisException
+    public void cancelCheckOut(String repositoryId, String objectId, Holder<CmisExtensionType> extension) throws CmisException
     {
         checkRepositoryId(repositoryId);
-        NodeRef workingCopyNodeRef = cmisObjectsUtils.getIdentifierInstance(documentId, AlfrescoObjectType.DOCUMENT_OBJECT);
+        NodeRef workingCopyNodeRef = cmisObjectsUtils.getIdentifierInstance(objectId, AlfrescoObjectType.DOCUMENT_OBJECT);
         assertVersionableIsTrue(workingCopyNodeRef);
         assertLatestVersion(workingCopyNodeRef, true);
         checkOutCheckInService.cancelCheckout(workingCopyNodeRef);
@@ -103,7 +103,7 @@ public class DMVersioningServicePort extends DMAbstractServicePort implements Ve
      * Makes the private working copy the current version of the document.
      * 
      * @param repositoryId repository Id
-     * @param documentId document Id
+     * @param objectId document Id
      * @param major is major True (Default)
      * @param properties CMIS properties
      * @param contentStream content stream
@@ -112,11 +112,11 @@ public class DMVersioningServicePort extends DMAbstractServicePort implements Ve
      *         STREAM_NOT_SUPPORTED, UPDATE_CONFLICT, VERSIONING)
      */
     // FIXME [~BUG]: it is better changing 'void' to 'PWC Id' result type
-    public void checkIn(String repositoryId, Holder<String> documentId, Boolean major, CmisPropertiesType properties, CmisContentStreamType contentStream, String checkinComment,
+    public void checkIn(String repositoryId, Holder<String> objectId, Boolean major, CmisPropertiesType properties, CmisContentStreamType contentStream, String checkinComment,
             List<String> policies, CmisAccessControlListType addACEs, CmisAccessControlListType removeACEs, Holder<CmisExtensionType> extension) throws CmisException
     {
         checkRepositoryId(repositoryId);
-        NodeRef workingCopyNodeRef = cmisObjectsUtils.getIdentifierInstance(documentId.value, AlfrescoObjectType.DOCUMENT_OBJECT);
+        NodeRef workingCopyNodeRef = cmisObjectsUtils.getIdentifierInstance(objectId.value, AlfrescoObjectType.DOCUMENT_OBJECT);
         assertVersionableIsTrue(workingCopyNodeRef);
         assertLatestVersion(workingCopyNodeRef, true);
 
@@ -154,23 +154,23 @@ public class DMVersioningServicePort extends DMAbstractServicePort implements Ve
             throw cmisObjectsUtils.createCmisException("Unable to check in Private Working Copy object that was specified", EnumServiceException.STORAGE, e);
         }
         // TODO: applyPolicies, addACEs, removeACEs
-        documentId.value = propertiesUtil.getProperty(nodeRef, CMISDictionaryModel.PROP_OBJECT_ID, documentId.value);
+        objectId.value = propertiesUtil.getProperty(nodeRef, CMISDictionaryModel.PROP_OBJECT_ID, objectId.value);
     }
 
     /**
      * Create a private working copy of the object, copies the metadata and optionally content.
      * 
      * @param repositoryId repository Id
-     * @param documentId ObjectID of document version to checkout
+     * @param objectId ObjectID of document version to checkout
      * @param contentCopied
      * @return ObjectID of private working copy as documentId; True if succeed, False otherwise as contentCopied
      * @throws CmisException (with following {@link EnumServiceException} : INVALID_ARGUMENT, OBJECT_NOT_FOUND, NOT_SUPPORTED, PERMISSION_DENIED, RUNTIME, CONSTRAINT, STORAGE,
      *         UPDATE_CONFLICT, VERSIONING)
      */
-    public void checkOut(String repositoryId, Holder<String> documentId, Holder<CmisExtensionType> extension, Holder<Boolean> contentCopied) throws CmisException
+    public void checkOut(String repositoryId, Holder<String> objectId, Holder<CmisExtensionType> extension, Holder<Boolean> contentCopied) throws CmisException
     {
         checkRepositoryId(repositoryId);
-        NodeRef documentNodeRef = cmisObjectsUtils.getIdentifierInstance(documentId.value, AlfrescoObjectType.DOCUMENT_OBJECT);
+        NodeRef documentNodeRef = cmisObjectsUtils.getIdentifierInstance(objectId.value, AlfrescoObjectType.DOCUMENT_OBJECT);
         assertVersionableIsTrue(documentNodeRef);
         assertLatestVersion(documentNodeRef, false);
 
@@ -183,7 +183,7 @@ public class DMVersioningServicePort extends DMAbstractServicePort implements Ve
         try
         {
             NodeRef pwcNodeRef = checkoutNode(documentNodeRef);
-            documentId.value = propertiesUtil.getProperty(pwcNodeRef, CMISDictionaryModel.PROP_OBJECT_ID, documentId.value);
+            objectId.value = propertiesUtil.getProperty(pwcNodeRef, CMISDictionaryModel.PROP_OBJECT_ID, objectId.value);
             contentCopied.value = null != nodeService.getProperty(pwcNodeRef, ContentModel.PROP_CONTENT);
         }
         catch (Exception e)

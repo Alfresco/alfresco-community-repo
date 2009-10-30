@@ -59,6 +59,7 @@ public class DMMultiFilingServicePort extends DMAbstractServicePort implements M
         {
             throw cmisObjectsUtils.createCmisException("Type of the specified parent folder can't be resovled", EnumServiceException.RUNTIME);
         }
+        // FIXME [BUG]: folderType.getAllowedTargetTypes() MUST be changed on folderType.getAllowedChildObjectTypeIds()
         if (!folderType.getAllowedTargetTypes().isEmpty() && !folderType.getAllowedTargetTypes().contains(objectType))
         {
             throw cmisObjectsUtils.createCmisException(("The Object of '" + objectType.getTypeId() + "' Type can't be child of Folder of '" + folderType.getTypeId() + "' Type"),

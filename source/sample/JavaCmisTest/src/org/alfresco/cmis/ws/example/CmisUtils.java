@@ -29,7 +29,6 @@ import java.math.BigInteger;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -37,10 +36,10 @@ import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.callback.UnsupportedCallbackException;
 import javax.xml.namespace.QName;
-import javax.xml.ws.Holder;
 import javax.xml.ws.Service;
 
-import org.alfresco.repo.cmis.ws.CmisObjectType;
+import org.alfresco.repo.cmis.ws.CmisObjectInFolderListType;
+import org.alfresco.repo.cmis.ws.CmisObjectInFolderType;
 import org.alfresco.repo.cmis.ws.EnumIncludeRelationships;
 import org.alfresco.repo.cmis.ws.NavigationServicePort;
 import org.alfresco.repo.cmis.ws.RepositoryServicePort;
@@ -59,8 +58,8 @@ import org.apache.ws.security.handler.WSHandlerConstants;
  */
 public class CmisUtils
 {
-    private static final QName NAVIGATION_SERVICE_NAME = new QName("http://docs.oasis-open.org/ns/cmis/ws/200901", "NavigationService");
-    private static final QName REPOSITORY_SERVICE_NAME = new QName("http://docs.oasis-open.org/ns/cmis/ws/200901", "RepositoryService");
+    private static final QName NAVIGATION_SERVICE_NAME = new QName("http://docs.oasis-open.org/ns/cmis/ws/200908/", "NavigationService");
+    private static final QName REPOSITORY_SERVICE_NAME = new QName("http://docs.oasis-open.org/ns/cmis/ws/200908/", "RepositoryService");
 
     private static final String NAVIGATION_SERVER_URL_POSTFIX = "/alfresco/cmis/NavigationService?wsdl";
     private static final String REPOSITORY_SERVER_URL_POSTFIX = "/alfresco/cmis/RepositoryService?wsdl";
@@ -110,7 +109,7 @@ public class CmisUtils
         {
             try
             {
-                rootFolderId = getRepositoryService().getRepositoryInfo(getRepositoryId()).getRootFolderId();
+                rootFolderId = getRepositoryService().getRepositoryInfo(getRepositoryId(), null).getRootFolderId();
             }
             catch (Exception e)
             {
@@ -127,23 +126,21 @@ public class CmisUtils
      * @return <b>List&lt;CmisObjectType&gt;</b> - list of all children elements of specified folder
      * @throws RuntimeException This exception will be thrown when any <b>CMIS Services</b> operation fail
      */
-    public List<CmisObjectType> receiveFolderEntry(String folderId)
+    public List<CmisObjectInFolderType> receiveFolderEntry(String folderId)
     {
-        Holder<List<CmisObjectType>> resultHolder = new Holder<List<CmisObjectType>>();
-        resultHolder.value = new LinkedList<CmisObjectType>();
-        Holder<Boolean> hasMoreItems = new Holder<Boolean>(false);
+        CmisObjectInFolderListType result = null;
         try
         {
-            getNavigationService().getChildren(getRepositoryId(), folderId, "*", false, EnumIncludeRelationships.NONE, false, false, BigInteger.ZERO, BigInteger.ZERO, null,
-                    resultHolder, hasMoreItems);
+            result = getNavigationService().getChildren(getRepositoryId(), folderId, "*", "", false, EnumIncludeRelationships.NONE, "", false, BigInteger.ZERO, BigInteger.ZERO,
+                    null);
         }
         catch (Exception e)
         {
             throw new RuntimeException("Can't receive Children of specified folder with Id=" + folderId + ". Cause error message: " + e.toString());
         }
-        if ((null != resultHolder) && (resultHolder.value != null))
+        if ((null != result) && (result.getObjects() != null))
         {
-            return resultHolder.value;
+            return result.getObjects();
         }
         else
         {
@@ -157,7 +154,7 @@ public class CmisUtils
         {
             try
             {
-                return getRepositoryService().getRepositories().get(0).getId();
+                return getRepositoryService().getRepositories(null).get(0).getRepositoryId();
             }
             catch (Exception e)
             {

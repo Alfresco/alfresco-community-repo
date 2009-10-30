@@ -105,7 +105,7 @@ public class DMDiscoveryServicePort extends DMAbstractServicePort implements Dis
             }
             response.getObjects().getObjects().add(object);
         }
-        //TODO: response.getObjects().setNumItems(value);
+        // TODO: response.getObjects().setNumItems(value);
         response.getObjects().setHasMoreItems(resultSet.hasMore());
         return response;
     }

@@ -197,6 +197,7 @@ public class DMNavigationServicePort extends DMAbstractServicePort implements Na
      */
     public CmisObjectType getFolderParent(String repositoryId, String folderId, String filter, CmisExtensionType extension) throws CmisException
     {
+        // FIXME: [BUG] It is necessary to check with specification for behaviour of this method with folderId equal to rootFolderId!!!
         checkRepositoryId(repositoryId);
 
         if ((filter != null) && !filter.equals("") && !filter.equals("*"))

@@ -25,7 +25,9 @@
 package org.alfresco.repo.cmis.ws.utils;
 
 import java.math.BigInteger;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -387,33 +389,25 @@ public class CmisObjectsUtils
      */
     public NodeRef getLatestNode(NodeRef documentNodeRef, boolean major)
     {
-        Version specifiedVersion = versionService.getCurrentVersion(documentNodeRef);
         NodeRef latestVersionNodeRef = documentNodeRef;
-
-        if ((null != specifiedVersion) && (null != specifiedVersion.getVersionedNodeRef()))
+        VersionHistory versionHistory = versionService.getVersionHistory(documentNodeRef);
+        if (null != versionHistory)
         {
-            latestVersionNodeRef = specifiedVersion.getVersionedNodeRef();
-
-            if (major)
+            Collection<Version> allVersions = versionHistory.getAllVersions();
+            Iterator<Version> versionsIterator = ((null != allVersions) && !allVersions.isEmpty()) ? (allVersions.iterator()) : (null);
+            Version latestVersion = (null == versionsIterator) ? (null) : (versionsIterator.next());
+            String currentVersionLabel = (null != latestVersion) ? (latestVersion.getVersionLabel()) : (null);
+            if (major && (null != latestVersion))
             {
-                Version latestVersion = versionService.getCurrentVersion(latestVersionNodeRef);
-
-                if ((null != latestVersion) && (VersionType.MAJOR != latestVersion.getVersionType()))
+                for (; (VersionType.MAJOR != latestVersion.getVersionType()) && versionsIterator.hasNext(); latestVersion = versionsIterator.next())
                 {
-                    VersionHistory versionHistory = versionService.getVersionHistory(latestVersion.getFrozenStateNodeRef());
-                    if (null != versionHistory)
-                    {
-                        for (latestVersion = versionHistory.getPredecessor(latestVersion); (null != latestVersion) && (VersionType.MAJOR != latestVersion.getVersionType()); latestVersion = versionHistory
-                                .getPredecessor(latestVersion))
-                        {
-                        }
-                    }
-
-                    if ((null != latestVersion) && (null != latestVersion.getFrozenStateNodeRef()))
-                    {
-                        latestVersionNodeRef = latestVersion.getFrozenStateNodeRef();
-                    }
                 }
+                latestVersion = (VersionType.MAJOR != latestVersion.getVersionType()) ? (null) : (latestVersion);
+            }
+            if ((null != latestVersion) && (null != latestVersion.getVersionLabel()))
+            {
+                latestVersionNodeRef = (!latestVersion.getVersionLabel().equals(currentVersionLabel) || (null == latestVersion.getVersionedNodeRef()) || !nodeService
+                        .exists(latestVersion.getVersionedNodeRef())) ? (latestVersion.getFrozenStateNodeRef()) : (latestVersion.getVersionedNodeRef());
             }
         }
 

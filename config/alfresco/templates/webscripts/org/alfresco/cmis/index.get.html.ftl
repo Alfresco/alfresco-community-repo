@@ -135,7 +135,7 @@
         <li><a href="http://wiki.alfresco.com/wiki/Download_Community_Edition">Download</a> Repository</a></li>
         <li><a href="http://wiki.alfresco.com/wiki/Alfresco_SVN_Development_Environment">Source Code</a> for Repository</li>
         <li><a href="http://svn.alfresco.com/repos/alfresco-open-mirror/alfresco/HEAD/root/design/changes_v0.62f_to_v0.7.txt">Changes: v0.62 to v0.7</li>
-        <li><a href="http://svn.alfresco.com/repos/alfresco-open-mirror/alfresco/HEAD/root/design/changes_v0.7_to_v1.0cd04.txt">Changes: v0.7 to v1.0 cd04</li>
+        <li><a href="http://svn.alfresco.com/repos/alfresco-open-mirror/alfresco/HEAD/root/design/changes_v0.7_to_1.0cd04.txt">Changes: v0.7 to v1.0 cd04</li>
       </ul>
       <h3>Apache Chemistry</h3>
       <ul>

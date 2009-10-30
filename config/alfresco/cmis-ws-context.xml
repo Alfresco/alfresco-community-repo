@@ -9,8 +9,6 @@
     <import resource="classpath:META-INF/cxf/cxf-extension-soap.xml" />
     <import resource="classpath:META-INF/cxf/cxf-servlet.xml" />
 
-<!-- Uncomment this block to enable CMIS web services
-
     <jaxws:endpoint address="/RepositoryService" implementor="#dmRepositoryService"
         implementorClass="org.alfresco.repo.cmis.ws.DMRepositoryServicePort">
         <jaxws:inInterceptors>
@@ -241,7 +239,6 @@
             <bean class="org.apache.cxf.feature.LoggingFeature" />
         </jaxws:features>
     </jaxws:endpoint>
--->
 
     <bean id="dmServicesProxyCreator" class="org.springframework.aop.framework.autoproxy.BeanNameAutoProxyCreator">
         <property name="beanNames">

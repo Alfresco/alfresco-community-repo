@@ -476,7 +476,7 @@ public class PropertyUtil
             return PropertyCheckingStateEnum.PROPERTY_NOT_UPDATABLE;
         }
 
-        if (propertyDefinition.isRequired() && (value == null))
+        if (propertyDefinition.isRequired() && (null == value))
         {
             throw cmisObjectsUtils.createCmisException((propertyName + " property required"), EnumServiceException.CONSTRAINT);
         }
@@ -499,7 +499,7 @@ public class PropertyUtil
         return PropertyCheckingStateEnum.PROPERTY_CHECKED;
     }
 
-    private enum PropertyCheckingStateEnum
+    public enum PropertyCheckingStateEnum
     {
         PROPERTY_CHECKED, PROPERTY_NATIVE, PROPERTY_NOT_UPDATABLE;
     }
@@ -729,25 +729,6 @@ public class PropertyUtil
             else
             {
                 property.getValue().add(BigDecimal.valueOf((Double) value));
-            }
-
-            return property;
-        }
-        case XML:
-        {
-            CmisPropertyXml property = new CmisPropertyXml();
-            property.setPdid(pdid);
-
-            if (value instanceof Collection)
-            {
-                for (CmisPropertyXml.Value propertyValue : (Collection<CmisPropertyXml.Value>) value)
-                {
-                    property.getValue().add(propertyValue);
-                }
-            }
-            else
-            {
-                property.getValue().add((CmisPropertyXml.Value) value);
             }
 
             return property;

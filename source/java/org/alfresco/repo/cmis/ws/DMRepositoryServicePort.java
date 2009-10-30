@@ -97,7 +97,6 @@ public class DMRepositoryServicePort extends DMAbstractServicePort implements Re
         propertyTypeEnumMapping.put(CMISDataTypeEnum.INTEGER, EnumPropertyType.INTEGER);
         propertyTypeEnumMapping.put(CMISDataTypeEnum.STRING, EnumPropertyType.STRING);
         propertyTypeEnumMapping.put(CMISDataTypeEnum.URI, EnumPropertyType.URI);
-        propertyTypeEnumMapping.put(CMISDataTypeEnum.XML, EnumPropertyType.XML);
 
         queryTypeEnumMapping = new HashMap<CMISQueryEnum, EnumCapabilityQuery>();
         queryTypeEnumMapping.put(CMISQueryEnum.BOTH_COMBINED, EnumCapabilityQuery.BOTHCOMBINED);
@@ -223,8 +222,6 @@ public class DMRepositoryServicePort extends DMAbstractServicePort implements Re
             break;
         case URI:
             break;
-        case XML:
-            break;
         }
         return result;
     }
@@ -285,10 +282,6 @@ public class DMRepositoryServicePort extends DMAbstractServicePort implements Re
         case URI:
         {
             return new CmisPropertyUriDefinitionType();
-        }
-        case XML:
-        {
-            return new CmisPropertyXmlDefinitionType();
         }
         default:
         {

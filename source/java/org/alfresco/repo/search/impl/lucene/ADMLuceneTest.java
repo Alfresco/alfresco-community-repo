@@ -823,8 +823,8 @@ public class ADMLuceneTest extends TestCase
         searcher.setQueryRegister(queryRegisterComponent);
         searcher.setQueryLanguages(((AbstractLuceneIndexerAndSearcherFactory) indexerAndSearcher).queryLanguages);
 
-        alfrescoSqlQueryWithCount(searcher, "SELECT * FROM DOCUMENT", 1);
-        alfrescoSqlQueryWithCount(searcher, "SELECT * FROM DOCUMENT D JOIN CM_OWNABLE O ON (D.OBJECTID = O.OBJECTID)", 0);
+        alfrescoSqlQueryWithCount(searcher, "SELECT * FROM CMIS:DOCUMENT", 1);
+        alfrescoSqlQueryWithCount(searcher, "SELECT * FROM CMIS:DOCUMENT D JOIN CM:OWNABLE O ON D.CMIS:OBJECTID = O.CMIS:OBJECTID", 0);
     }
 
     public void alfrescoSqlQueryWithCount(ADMLuceneSearcherImpl searcher, String query, int count)
@@ -848,8 +848,8 @@ public class ADMLuceneTest extends TestCase
         searcher.setQueryRegister(queryRegisterComponent);
         searcher.setQueryLanguages(((AbstractLuceneIndexerAndSearcherFactory) indexerAndSearcher).queryLanguages);
 
-        sqlQueryWithCount(searcher, "SELECT * FROM DOCUMENT", 1);
-        sqlQueryWithCount(searcher, "SELECT * FROM DOCUMENT D WHERE CONTAINS(D,'lazy')", 1);
+        sqlQueryWithCount(searcher, "SELECT * FROM CMIS:DOCUMENT", 1);
+        sqlQueryWithCount(searcher, "SELECT * FROM CMIS:DOCUMENT D WHERE CONTAINS(D,'lazy')", 1);
     }
 
     public void sqlQueryWithCount(ADMLuceneSearcherImpl searcher, String query, int count)

@@ -49,8 +49,6 @@
         <li>CMIS Web Services Binding: <a href="${url.context}/cmis">WSDL Documents</a></li>
       </ul>
       
-      <p>You can also browse this repository via the <a href="${url.context}/cmisbrowse?url=${absurl(url.serviceContext)}/cmis">CMIS FileShare browser</a>.</p>
-      
       <h5><span id="repoinfo" class="toggle" onclick="return toggleDisplay(this)">[+]</span> CMIS Repository Information</h5>
       <table id="repoinfo_body" style="display: none;">
         <tr><td>Version Supported</td><td>${cmisVersion}</td></tr>
@@ -81,8 +79,8 @@
         <tr><td>VersionSpecificFiling</td><td>false</td></tr>
       </table>
 
-      <p><em>Note: The contents of this repository may be cleaned at any time.</em><p>
-      
+      <p>You can also browse this repository via the <a href="${url.context}/cmisbrowse?url=${absurl(url.serviceContext)}/cmis">CMIS FileShare browser</a>.</p>
+
       <a name="testatompub"></a>
       <h3>CMIS AtomPub TCK</h3>
       <p>Point the TCK (Test Compatibility Kit) at your CMIS Repository AtomPub Service Document. Provide credentials (or leave blank, if authentication not required) and adjust options as necessary. Hit the '<strong>Start TCK</strong>' button for a test report.</p>

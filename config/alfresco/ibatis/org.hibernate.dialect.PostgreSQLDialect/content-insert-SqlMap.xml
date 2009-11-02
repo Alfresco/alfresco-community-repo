@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE sqlMap      
+    PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"      
+    "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+    
+<sqlMap namespace="alfresco.content">
+   
+   <insert id="insert_Mimetype" parameterClass="Mimetype" >
+        
+        <selectKey resultClass="long" keyProperty="id">
+            select nextVal('alf_mimetype_seq')
+        </selectKey>
+        
+        insert into alf_mimetype (id, version, mimetype_str)
+        values (#id#, #version#, lower(#mimetype#))
+        
+    </insert>
+    
+    <insert id="insert_Encoding" parameterClass="Encoding" >
+    
+        <selectKey resultClass="long" keyProperty="id">
+             select nextVal('alf_encoding_seq')
+        </selectKey>
+        
+        insert into alf_encoding (id, version, encoding_str) 
+        values (#id#, #version#, lower(#encoding#))
+        
+    </insert>
+    
+    <insert id="insert_ContentUrl" parameterClass="ContentUrl" >
+        
+        <selectKey resultClass="long" keyProperty="id">
+            select nextVal('alf_content_url_seq')
+        </selectKey>
+        
+        insert into alf_content_url (id, version, content_url, content_url_short, content_url_crc, content_size) 
+        values (#id#, #version#, #contentUrl#, #contentUrlShort#, #contentUrlCrc#, #size#)
+        
+    </insert>
+    
+    <insert id="insert_ContentData" parameterClass="ContentData" >
+    
+        <selectKey resultClass="long" keyProperty="id">
+            select nextVal('alf_content_data_seq')
+        </selectKey>
+        
+        insert into alf_content_data (id, version, content_url_id, content_mimetype_id, content_encoding_id, content_locale_id) 
+        values (#id#, #version#, #contentUrlId#, #mimetypeId#, #encodingId#, #localeId#)
+        
+    </insert>
+    
+</sqlMap>

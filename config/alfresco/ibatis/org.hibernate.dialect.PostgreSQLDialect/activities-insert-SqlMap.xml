@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE sqlMap      
+    PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"      
+    "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="alfresco.activities">
+
+   <insert id="insert_activity_feedcontrol" parameterClass="FeedControl">
+
+      <selectKey keyProperty="id" resultClass="long">
+         select nextVal('alf_activity_feed_control_seq')
+      </selectKey>
+      
+      insert into alf_activity_feed_control (id, feed_user_id, site_network, app_tool, last_modified)
+      values (#id#, #feedUserId#, #siteNetwork#, #appTool#, #lastModified#)
+      
+   </insert>
+
+   <insert id="insert_activity_feed" parameterClass="ActivityFeed">
+      
+      <selectKey keyProperty="id" resultClass="long">
+         select nextVal('alf_activity_feed_seq')
+      </selectKey>
+      
+      insert into alf_activity_feed (id, activity_type, activity_summary, activity_format, feed_user_id, post_user_id, post_date, post_id, site_network, app_tool, feed_date) 
+      values (#id#, #activityType#, #activitySummary#, #activitySummaryFormat#, #feedUserId#, #postUserId#, #postDate#, #postId#, #siteNetwork#, #appTool#, #feedDate#)
+
+   </insert>
+
+   <insert id="insert_activity_post" parameterClass="ActivityPost">
+      
+      <selectKey keyProperty="id" resultClass="long">
+         select nextVal('alf_activity_post_seq')
+      </selectKey>
+      
+      insert into alf_activity_post (sequence_id, status, activity_data, post_user_id, post_date, activity_type, site_network, app_tool, job_task_node, last_modified)
+      values (#id#, #status#, #activityData#, #userId#, #postDate#, #activityType#, #siteNetwork#, #appTool#, #jobTaskNode#, #lastModified#)
+      
+   </insert>
+
+</sqlMap>

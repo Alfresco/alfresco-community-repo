@@ -8,6 +8,6 @@
   <url>/api/cmis</url>  
   
   <format default="atomsvc"/>
-  <authentication>none</authentication>
+  <authentication>user</authentication>
   <family>CMIS</family>
 </webscript>

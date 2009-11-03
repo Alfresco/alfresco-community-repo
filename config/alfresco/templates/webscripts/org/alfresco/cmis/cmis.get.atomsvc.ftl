@@ -1,6 +1,7 @@
 [#ftl]
 [#import "/org/alfresco/cmis/lib/ns.lib.atom.ftl" as nsLib/]
 [#import "/org/alfresco/cmis/lib/links.lib.atom.ftl" as linksLib/]
+[#import "/org/alfresco/cmis/lib/atomentry.lib.atom.ftl" as entryLib/]
 <?xml version="1.0" encoding="utf-8"?> 
 <service [@nsLib.serviceNS/]>
   <workspace>
@@ -41,7 +42,7 @@
       <cmis:vendorName>Alfresco</cmis:vendorName> 
       <cmis:productName>Alfresco Repository (${server.edition})</cmis:productName>
       <cmis:productVersion>${server.version}</cmis:productVersion>
-      <cmis:rootFolderId>[@linksLib.noderef defaultRootFolder/]</cmis:rootFolderId>
+      <cmis:rootFolderId>[@entryLib.namedvalue cmisconstants.PROP_OBJECT_ID defaultRootFolder cmisconstants.DATATYPE_ID/]</cmis:rootFolderId>
       [#-- TODO: implement change log --]
       [#-- TODO: <cmis:latestChangeLogToken></cmis:latestChangeLogToken> --]
       <cmis:capabilities>

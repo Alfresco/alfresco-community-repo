@@ -65,7 +65,11 @@ public class ObjectIdReference extends AbstractObjectReference
         }
         
         StoreRef storeRef = repo.getStoreRef();
-        reference = new String[] {storeRef.getProtocol(), storeRef.getIdentifier(), this.id};
+        String[] idParts = this.id.split("/");
+        reference = new String[2 + idParts.length];
+        reference[0] = storeRef.getProtocol();
+        reference[1] = storeRef.getIdentifier();
+        System.arraycopy(idParts, 0, reference, 2, idParts.length);
     }
 
     /*

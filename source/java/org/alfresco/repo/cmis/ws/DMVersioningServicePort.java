@@ -73,9 +73,10 @@ public class DMVersioningServicePort extends DMAbstractServicePort implements Ve
     public void cancelCheckOut(String repositoryId, String objectId, Holder<CmisExtensionType> extension) throws CmisException
     {
         checkRepositoryId(repositoryId);
-        NodeRef workingCopyNodeRef = cmisObjectsUtils.getIdentifierInstance(objectId, AlfrescoObjectType.DOCUMENT_OBJECT);
-        assertVersionableIsTrue(workingCopyNodeRef);
-        assertLatestVersion(workingCopyNodeRef, true);
+        NodeRef documentNodeRef = cmisObjectsUtils.getIdentifierInstance(objectId, AlfrescoObjectType.DOCUMENT_OBJECT);
+        assertVersionableIsTrue(documentNodeRef);
+        boolean checkedOut = propertiesUtil.getProperty(documentNodeRef, CMISDictionaryModel.PROP_IS_VERSION_SERIES_CHECKED_OUT, false);
+        NodeRef workingCopyNodeRef = definitelyGetWorkingCopy(checkedOut, documentNodeRef);        
         checkOutCheckInService.cancelCheckout(workingCopyNodeRef);
     }
 
@@ -276,14 +277,12 @@ public class DMVersioningServicePort extends DMAbstractServicePort implements Ve
         return propertiesUtil.getPropertiesType(latestVersionNodeRef.toString(), propertyFilter);
     }
 
-    private void assertLatestVersion(NodeRef nodeRef, boolean shouldBePwc) throws CmisException
+    private void assertLatestVersion(NodeRef nodeRef, boolean mustBePwc) throws CmisException
     {
-        if (shouldBePwc)
+        if (mustBePwc)
         {
-            if (!cmisObjectsUtils.isWorkingCopy(nodeRef))
-            {
-                throw cmisObjectsUtils.createCmisException("Object isn't checked out", EnumServiceException.UPDATE_CONFLICT);
-            }
+            boolean checkedOut = propertiesUtil.getProperty(nodeRef, CMISDictionaryModel.PROP_IS_VERSION_SERIES_CHECKED_OUT, false);
+            definitelyGetWorkingCopy(checkedOut, nodeRef);
         }
         else
         {
@@ -293,6 +292,21 @@ public class DMVersioningServicePort extends DMAbstractServicePort implements Ve
                 throw cmisObjectsUtils.createCmisException("Operation can be executed only on the latest document version", EnumServiceException.VERSIONING);
             }
         }
+    }
+
+    private NodeRef definitelyGetWorkingCopy(boolean checkedOut, NodeRef nodeRef) throws CmisException
+    {
+        NodeRef workingCopy = null;
+        String workingCopyId = propertiesUtil.getProperty(nodeRef, CMISDictionaryModel.PROP_VERSION_SERIES_CHECKED_OUT_ID, null);
+        if (checkedOut && (null != workingCopyId) && !"".equals(workingCopyId))
+        {
+            workingCopy = cmisObjectsUtils.getIdentifierInstance(workingCopyId, AlfrescoObjectType.DOCUMENT_OBJECT);
+        }
+        if ((null == workingCopy) || !cmisObjectsUtils.isWorkingCopy(workingCopy))
+        {
+            throw cmisObjectsUtils.createCmisException("Object isn't checked out", EnumServiceException.UPDATE_CONFLICT);
+        }
+        return workingCopy;
     }
 
     /**

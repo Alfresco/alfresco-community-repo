@@ -52,12 +52,12 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.security.AuthenticationService;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.version.Version;
 import org.alfresco.service.cmr.version.VersionService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.BaseSpringTest;
-import org.alfresco.util.TestWithUserUtils;
 
 public abstract class BaseVersionStoreTest extends BaseSpringTest
 {
@@ -75,6 +75,7 @@ public abstract class BaseVersionStoreTest extends BaseSpringTest
     protected MutableAuthenticationDao authenticationDAO;
     protected NodeArchiveService nodeArchiveService;
     protected NodeService nodeService;
+    protected PermissionService permissionService;
 	
     /*
      * Data used by tests
@@ -164,6 +165,7 @@ public abstract class BaseVersionStoreTest extends BaseSpringTest
         this.authenticationDAO = (MutableAuthenticationDao) applicationContext.getBean("authenticationDao");
         this.nodeArchiveService = (NodeArchiveService) applicationContext.getBean("nodeArchiveService");
         this.nodeService = (NodeService)applicationContext.getBean("nodeService");
+        this.permissionService = (PermissionService)this.applicationContext.getBean("permissionService");
         
         setVersionService((VersionService)applicationContext.getBean("versionService"));
         
@@ -197,14 +199,14 @@ public abstract class BaseVersionStoreTest extends BaseSpringTest
         // Get a reference to the root node
         this.rootNodeRef = this.dbNodeService.getRootNode(this.testStoreRef);
         
-        // Create an authenticate the user
+        // Create and authenticate the user
         
         if(!authenticationDAO.userExists(AuthenticationUtil.getAdminUserName()))
         {
             authenticationService.createAuthentication(AuthenticationUtil.getAdminUserName(), PWD.toCharArray());
         }
         
-        TestWithUserUtils.authenticateUser(AuthenticationUtil.getAdminUserName(), PWD, this.rootNodeRef, this.authenticationService);
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
     }
     
     /**
@@ -408,7 +410,7 @@ public abstract class BaseVersionStoreTest extends BaseSpringTest
             fail("The created date of the version is incorrect.");
         }
         
-        // Check the creator 
+        // Check the creator
         assertEquals(AuthenticationUtil.getAdminUserName(), newVersion.getCreator());
         
         // Check the metadata properties of the version

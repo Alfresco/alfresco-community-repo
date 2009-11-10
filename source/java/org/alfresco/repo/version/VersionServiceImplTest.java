@@ -37,6 +37,7 @@ import java.util.Set;
 import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.model.FileFolderService;
@@ -47,6 +48,8 @@ import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.security.AccessStatus;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.version.Version;
 import org.alfresco.service.cmr.version.VersionHistory;
 import org.alfresco.service.cmr.version.VersionService;
@@ -67,19 +70,22 @@ import org.springframework.context.ApplicationContext;
 public class VersionServiceImplTest extends BaseVersionStoreTest
 {
     private static Log logger = LogFactory.getLog(VersionServiceImplTest.class);
-
+    
     private static final String UPDATED_VALUE_1 = "updatedValue1";
-	private static final String UPDATED_VALUE_2 = "updatedValue2";
-	private static final String UPDATED_VALUE_3 = "updatedValue3";
-	private static final String UPDATED_CONTENT_1 = "updatedContent1";
-	private static final String UPDATED_CONTENT_2 = "updatedContent2";
-
-	public void testSetup()
+    private static final String UPDATED_VALUE_2 = "updatedValue2";
+    private static final String UPDATED_VALUE_3 = "updatedValue3";
+    private static final String UPDATED_CONTENT_1 = "updatedContent1";
+    private static final String UPDATED_CONTENT_2 = "updatedContent2";
+    
+    private static final String PWD_A = "passA";
+    private static final String USER_NAME_A = "userA";
+    
+    public void testSetup()
     {
-	    // NOOP
+        // NOOP
     }
-	
-	/**
+    
+    /**
      * Tests the creation of the initial version of a versionable node
      */
     public void testCreateIntialVersion()
@@ -1126,7 +1132,47 @@ public class VersionServiceImplTest extends BaseVersionStoreTest
         
         Object editionCodeArchive = nodeService.getProperty(versionNodeRef, prop);
         assertEquals(editionCodeArchive.getClass(), Integer.class);
-    }    
+    }
+    
+    /**
+     * Check read permission for the frozen node
+     */
+    public void testHasPermission()
+    {
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
+        
+        if(!authenticationDAO.userExists(USER_NAME_A))
+        {
+            authenticationService.createAuthentication(USER_NAME_A, PWD_A.toCharArray());
+        }
+        
+        permissionService.setPermission(rootNodeRef, PermissionService.ALL_AUTHORITIES, PermissionService.READ, true);
+        permissionService.setInheritParentPermissions(rootNodeRef, true);
+        
+        // Create a new versionable node
+        NodeRef versionableNode = createNewVersionableNode();
+        
+        // Create a new version
+        Version version = createVersion(versionableNode, versionProperties);
+        NodeRef versionNodeRef = version.getFrozenStateNodeRef();
+        
+        assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(versionNodeRef, PermissionService.READ));
+        
+        AuthenticationUtil.setFullyAuthenticatedUser(USER_NAME_A);
+        
+        assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(versionNodeRef, PermissionService.READ));
+        
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
+        
+        permissionService.setInheritParentPermissions(versionableNode, false);
+        
+        assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(versionNodeRef, PermissionService.READ));
+        
+        AuthenticationUtil.setFullyAuthenticatedUser(USER_NAME_A);
+        
+        assertEquals(AccessStatus.DENIED, permissionService.hasPermission(versionNodeRef, PermissionService.READ));
+    }
+    
     public static void main(String ... args)
     {
         try

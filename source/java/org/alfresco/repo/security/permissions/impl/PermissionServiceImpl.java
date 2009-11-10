@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -53,6 +53,7 @@ import org.alfresco.repo.security.permissions.PermissionEntry;
 import org.alfresco.repo.security.permissions.PermissionReference;
 import org.alfresco.repo.security.permissions.PermissionServiceSPI;
 import org.alfresco.repo.tenant.TenantService;
+import org.alfresco.repo.version.Version2Model;
 import org.alfresco.repo.version.VersionModel;
 import org.alfresco.repo.version.common.VersionUtil;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -417,23 +418,17 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
         {
             return doAvmCan(passedNodeRef, permIn);
         }
-
+        
+        // Note: if we're directly accessing a frozen state (version) node (ie. in the 'version' store) we need to check permissions for the versioned node (ie. in the 'live' store)
+        if (isVersionNodeRef(passedNodeRef))
+        {
+            passedNodeRef = convertVersionNodeRefToVersionedNodeRef(VersionUtil.convertNodeRef(passedNodeRef));
+        }
+        
         // Allow permissions for nodes that do not exist
         if (!nodeService.exists(passedNodeRef))
         {
             return AccessStatus.ALLOWED;
-        }
-        
-        // Because of VersionedNodeRef has no any inherited from source Frozen NodeRef permissions (it has only default permissions),
-        // it is necessary to avoid cases when some user without appropriate permissions trying to receive any resource from its any version link etc.
-        // That could be proceed through receiving Frozen NodeRef instance for this VersionedNodeRef instance. There is appears a possibility to get
-        // access to specified for Frozen NodeRef instance permissions
-        
-        // NOTE: maybe in future there will appear situation when changing Node permissions will be a cause for creating new Node version. In other words,
-        // VersionedNodeRefs will contain their own permissions (whose, probably, will differ from version to version). In this case you should delete/comment this code!!!
-        if (isVersionedNodeRefInstance(passedNodeRef))
-        {
-            passedNodeRef = convertVersionedNodeRefToFrozenNodeRef(VersionUtil.convertNodeRef(passedNodeRef));
         }
         
         final NodeRef nodeRef = tenantService.getName(passedNodeRef);
@@ -1910,29 +1905,42 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
     }
     
     /**
-     * This methods checks weather the specified NodeRef instance is an VersionedNodeRef
+     * This methods checks whether the specified nodeRef instance is a version nodeRef (ie. in the 'version' store)
      * 
-     * @param nodeRef - probably VersionedNodeRef
-     * @return <b>true</b> if NodeRef if Versioned and <b>false</b> in other case
+     * @param nodeRef - version nodeRef
+     * @return <b>true</b> if version nodeRef <b>false</b> otherwise
      */
-    private boolean isVersionedNodeRefInstance(NodeRef nodeRef)
+    private boolean isVersionNodeRef(NodeRef nodeRef)
     {
     	return nodeRef.getStoreRef().getProtocol().equals(VersionModel.STORE_PROTOCOL);
     }
 
     /**
-     * Converts specified VersionedNodeRef to Frozen NodeRef (from SpacesStore store, accessed by workspace protocol)
+     * Converts specified version nodeRef (eg. versionStore://...) to versioned nodeRef (eg. workspace://SpacesStore/...)
      * 
-     * @param nodeRef - <b>always</b> VersionedNodeRef
-     * @return Frozen NodeRef instance (source for this VersionedNodeRef instance)
+     * @param nodeRef - <b>always</b> version nodeRef (ie. in the 'version' store)
+     * @return versioned nodeRef (ie.in the 'live' store)
      */
-    private NodeRef convertVersionedNodeRefToFrozenNodeRef(NodeRef nodeRef)
+    private NodeRef convertVersionNodeRefToVersionedNodeRef(NodeRef versionNodeRef)
     {
-
-    	Map<QName, Serializable> properties = nodeService.getProperties(nodeRef);
-    
-       return new NodeRef((String) properties.get(ContentModel.PROP_STORE_PROTOCOL),
-                          (String) properties.get(ContentModel.PROP_STORE_IDENTIFIER),
-                          (String) properties.get(ContentModel.PROP_NODE_UUID));
+        Map<QName, Serializable> properties = nodeService.getProperties(versionNodeRef);
+        
+        NodeRef nodeRef = null;
+        
+        // Switch VersionStore depending on configured impl
+        if (versionNodeRef.getStoreRef().getIdentifier().equals(Version2Model.STORE_ID))
+        {
+            // V2 version store (eg. workspace://version2Store)
+            nodeRef = (NodeRef)properties.get(Version2Model.PROP_QNAME_FROZEN_NODE_REF);
+        } 
+        else if (versionNodeRef.getStoreRef().getIdentifier().equals(VersionModel.STORE_ID))
+        {
+            // Deprecated V1 version store (eg. workspace://lightWeightVersionStore)
+            nodeRef = new NodeRef((String) properties.get(VersionModel.PROP_QNAME_FROZEN_NODE_STORE_PROTOCOL),
+                                  (String) properties.get(VersionModel.PROP_QNAME_FROZEN_NODE_STORE_ID),
+                                  (String) properties.get(VersionModel.PROP_QNAME_FROZEN_NODE_ID));
+        }
+        
+        return nodeRef;
     }
 }

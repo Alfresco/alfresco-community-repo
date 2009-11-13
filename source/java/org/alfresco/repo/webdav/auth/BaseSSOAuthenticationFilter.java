@@ -279,7 +279,7 @@ public abstract class BaseSSOAuthenticationFilter extends BaseAuthenticationFilt
     		    SessionUser user = getSessionUser(servletContext, req, resp, true);
 				
     		    // If this isn't the same ticket, invalidate the session
-				if (!ticket.equals(user.getTicket()))
+				if (user != null && !ticket.equals(user.getTicket()))
 				{
 				    invalidateSession(req);
 					user = null;

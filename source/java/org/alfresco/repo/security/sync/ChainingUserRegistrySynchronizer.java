@@ -24,6 +24,7 @@
  */
 package org.alfresco.repo.security.sync;
 
+import java.sql.BatchUpdateException;
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -47,6 +48,7 @@ import org.alfresco.repo.management.subsystems.ActivateableBean;
 import org.alfresco.repo.management.subsystems.ChildApplicationContextManager;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
+import org.alfresco.repo.security.authority.UnknownAuthorityException;
 import org.alfresco.repo.security.sync.BatchProcessor.Worker;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
@@ -817,7 +819,16 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean impl
                                                     .getShortName(groupName) + "'");
                                 }
                             }
-                            ChainingUserRegistrySynchronizer.this.authorityService.addAuthority(parents, child);
+                            try
+                            {
+                                ChainingUserRegistrySynchronizer.this.authorityService.addAuthority(parents, child);
+                            }
+                            catch (UnknownAuthorityException e)
+                            {
+                                // Let's force a transaction retry if a parent doesn't exist. It may be because we are
+                                // waiting for another worker thread to create it
+                                throw new BatchUpdateException().initCause(e);
+                            }                            
                         }
                         Set<String> parentsToDelete = groupAssocsToDelete.get(child);
                         if (parentsToDelete != null && !parentsToDelete.isEmpty())

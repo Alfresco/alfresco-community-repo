@@ -248,9 +248,10 @@ public final class AuthenticationHelper
       else
       {         
          // set last authentication username cookie value
-         if (loginBean != null)
+         String loginName;
+         if (loginBean != null && (loginName = loginBean.getUsernameInternal()) != null)
          {
-            setUsernameCookie(req, res, loginBean.getUsernameInternal());
+            setUsernameCookie(req, res, loginName);
          }
 
          // Set up the thread context

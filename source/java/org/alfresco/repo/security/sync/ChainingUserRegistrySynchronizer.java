@@ -59,6 +59,7 @@ import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.AbstractLifecycleBean;
 import org.alfresco.util.PropertyMap;
 import org.apache.commons.logging.Log;
@@ -132,6 +133,9 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean impl
     /** The attribute service. */
     private AttributeService attributeService;
 
+    /** The transaction service. */
+    private TransactionService transactionService;
+    
     /** The retrying transaction helper. */
     private RetryingTransactionHelper retryingTransactionHelper;
 
@@ -215,14 +219,15 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean impl
     }
 
     /**
-     * Sets the retrying transaction helper.
+     * Sets the transaction service.
      * 
-     * @param retryingTransactionHelper
-     *            the new retrying transaction helper
+     * @param transactionService
+     *            the transaction service
      */
-    public void setRetryingTransactionHelper(RetryingTransactionHelper retryingTransactionHelper)
+    public void setTransactionService(TransactionService transactionService)
     {
-        this.retryingTransactionHelper = retryingTransactionHelper;
+        this.transactionService = transactionService;
+        this.retryingTransactionHelper = transactionService.getRetryingTransactionHelper();
     }
 
     /**
@@ -315,10 +320,18 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean impl
 
     /*
      * (non-Javadoc)
-     * @see org.alfresco.repo.security.sync.UserRegistrySynchronizer#synchronize(boolean, boolean)
+     * @see org.alfresco.repo.security.sync.UserRegistrySynchronizer#synchronize(boolean, boolean, boolean)
      */
-    public void synchronize(boolean force, boolean splitTxns)
+    public void synchronize(boolean forceUpdate, boolean allowDeletions, boolean splitTxns)
     {
+        // Don't proceed with the sync if the repository is read only
+        if (this.transactionService.isReadOnly())
+        {
+            ChainingUserRegistrySynchronizer.logger
+                    .warn("Unable to proceed with user registry synchronization. Repository is read only.");
+            return;
+        }
+
         String lockToken = null;
 
         // Let's ensure all exceptions get logged
@@ -380,10 +393,10 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean impl
                             ChainingUserRegistrySynchronizer.logger
                                     .info("Synchronizing users and groups with user registry '" + id + "'");
                         }
-                        if (force && ChainingUserRegistrySynchronizer.logger.isWarnEnabled())
+                        if (allowDeletions && ChainingUserRegistrySynchronizer.logger.isWarnEnabled())
                         {
                             ChainingUserRegistrySynchronizer.logger
-                                    .warn("Forced synchronization with user registry '"
+                                    .warn("Full synchronization with user registry '"
                                             + id
                                             + "'; some users and groups previously created by synchronization with this user registry may be removed.");
                         }
@@ -393,7 +406,7 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean impl
                         boolean requiresNew = splitTxns
                                 || AlfrescoTransactionSupport.getTransactionReadState() == TxnReadState.TXN_READ_ONLY;
 
-                        syncWithPlugin(id, plugin, force, requiresNew, visitedZoneIds, allZoneIds);
+                        syncWithPlugin(id, plugin, forceUpdate, allowDeletions, requiresNew, visitedZoneIds, allZoneIds);
                     }
                 }
                 catch (NoSuchBeanDefinitionException e)
@@ -439,7 +452,7 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean impl
             {
                 try
                 {
-                    synchronize(false, false);
+                    synchronize(false, false, false);
                 }
                 catch (Exception e)
                 {
@@ -474,8 +487,16 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean impl
      *            tell those that have been deleted from the registry.
      * @param userRegistry
      *            the user registry for the zone.
-     * @param force
-     *            <code>true</code> if user and group deletions are to be processed.
+     * @param forceUpdate
+     *            Should the complete set of users and groups be updated / created locally or just those known to have
+     *            changed since the last sync? When <code>true</code> then <i>all</i> users and groups are queried from
+     *            the user registry and updated locally. When <code>false</code> then each source is only queried for
+     *            those users and groups modified since the most recent modification date of all the objects last
+     *            queried from that same source.
+     * @param allowDeletions
+     *            Should a complete set of user and group IDs be queried from the user registries in order to determine
+     *            deletions? This parameter is independent of <code>force</code> as a separate query is run to process
+     *            updates.
      * @param splitTxns
      *            Can the modifications to Alfresco be split across multiple transactions for maximum performance? If
      *            <code>true</code>, users and groups are created/updated in batches for increased performance. If
@@ -490,8 +511,8 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean impl
      *            recorded against a user or group is invalid for the current authentication chain and whether the user
      *            or group needs to be 're-zoned'.
      */
-    private void syncWithPlugin(final String zone, UserRegistry userRegistry, boolean force, boolean splitTxns,
-            final Set<String> visitedZoneIds, final Set<String> allZoneIds)
+    private void syncWithPlugin(final String zone, UserRegistry userRegistry, boolean forceUpdate,
+            boolean allowDeletions, boolean splitTxns, final Set<String> visitedZoneIds, final Set<String> allZoneIds)
     {
         // Create a prefixed zone ID for use with the authority service
         final String zoneId = AuthorityService.ZONE_AUTH_EXT_PREFIX + zone;
@@ -499,7 +520,7 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean impl
         // The set of zones we associate with new objects (default plus registry specific)
         final Set<String> zoneSet = getZones(zoneId);
 
-        long lastModifiedMillis = getMostRecentUpdateTime(
+        long lastModifiedMillis = forceUpdate ? -1 : getMostRecentUpdateTime(
                 ChainingUserRegistrySynchronizer.GROUP_LAST_MODIFIED_ATTRIBUTE, zoneId, splitTxns);
         Date lastModified = lastModifiedMillis == -1 ? null : new Date(lastModifiedMillis);
 
@@ -708,7 +729,7 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean impl
         Set<String> deletionCandidates = null;
 
         // If we got back some groups, we have to cross reference them with the set of known authorities
-        if (force || !groupAssocsToCreate.isEmpty())
+        if (allowDeletions || !groupAssocsToCreate.isEmpty())
         {
             // Get current set of known authorities
             Set<String> allZoneAuthorities = this.retryingTransactionHelper.doInTransaction(
@@ -724,7 +745,7 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean impl
             allZoneAuthorities.addAll(groupAnalyzer.getAllZoneAuthorities());
 
             // Prune our set of authorities according to deletions
-            if (force)
+            if (allowDeletions)
             {
                 deletionCandidates = new TreeSet<String>(allZoneAuthorities);
                 userRegistry.processDeletions(deletionCandidates);
@@ -822,8 +843,8 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean impl
 
         // Process persons and their parent associations
 
-        lastModifiedMillis = getMostRecentUpdateTime(ChainingUserRegistrySynchronizer.PERSON_LAST_MODIFIED_ATTRIBUTE,
-                zoneId, splitTxns);
+        lastModifiedMillis = forceUpdate ? -1 : getMostRecentUpdateTime(
+                ChainingUserRegistrySynchronizer.PERSON_LAST_MODIFIED_ATTRIBUTE, zoneId, splitTxns);
         lastModified = lastModifiedMillis == -1 ? null : new Date(lastModifiedMillis);
         if (ChainingUserRegistrySynchronizer.logger.isInfoEnabled())
         {
@@ -994,7 +1015,7 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean impl
         }
 
         // Delete authorities if we have complete information for the zone
-        if (force)
+        if (allowDeletions)
         {
             BatchProcessor<String> authorityDeletionProcessor = new BatchProcessor<String>(
                     this.retryingTransactionHelper, this.ruleService, this.applicationEventPublisher,
@@ -1214,7 +1235,7 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean impl
                 {
                     try
                     {
-                        synchronize(false, true);
+                        synchronize(false, false, true);
                     }
                     catch (Exception e)
                     {

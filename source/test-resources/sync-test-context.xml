@@ -15,8 +15,8 @@
         <property name="applicationContextManager">
             <ref bean="testApplicationContextManager" />
         </property>
-        <property name="retryingTransactionHelper">
-            <ref bean="retryingTransactionHelper" />
+        <property name="transactionService">
+            <ref bean="transactionService" />
         </property>
         <property name="ruleService">
             <ref bean="ruleService" />

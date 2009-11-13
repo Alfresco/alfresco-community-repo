@@ -47,6 +47,9 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.site.SiteService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.BeansException;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.core.io.support.ResourcePatternResolver;
@@ -59,7 +62,7 @@ import freemarker.template.DefaultObjectWrapper;
 /**
  * The local (ie. not grid) feed task processor is responsible for processing the individual feed job
  */
-public class LocalFeedTaskProcessor extends FeedTaskProcessor
+public class LocalFeedTaskProcessor extends FeedTaskProcessor implements ApplicationContextAware
 {
     private static final Log logger = LogFactory.getLog(LocalFeedTaskProcessor.class);
     
@@ -74,6 +77,7 @@ public class LocalFeedTaskProcessor extends FeedTaskProcessor
     private String defaultEncoding;
     private List<String> templateSearchPaths;
     private boolean useRemoteCallbacks;
+    private ResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();    
     
     // used to start/end/commit transaction
     // note: currently assumes that all dao services are configured with this mapper / data source
@@ -128,7 +132,12 @@ public class LocalFeedTaskProcessor extends FeedTaskProcessor
     {
         this.sqlMapper = sqlMapper;
     }
-    
+            
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException
+    {
+        this.resolver = applicationContext;
+    }
+
     public void startTransaction() throws SQLException
     {
         sqlMapper.startTransaction();
@@ -307,7 +316,6 @@ public class LocalFeedTaskProcessor extends FeedTaskProcessor
     // Helper to return a list of resource document paths based on a search pattern.
     private List<String> getPaths(String pattern, String classPath) throws IOException
     {
-        ResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
         Resource[] resources = resolver.getResources(pattern);
         List<String> documentPaths = new ArrayList<String>(resources.length);
         for (Resource resource : resources)

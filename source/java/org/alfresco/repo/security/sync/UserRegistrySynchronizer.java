@@ -48,19 +48,21 @@ public interface UserRegistrySynchronizer
      * users and groups last retrieved from the same sources. Any updates and additions made to those users and groups
      * are applied to the local Alfresco copies.
      * 
-     * @param force
-     *            Should a complete or partial set of information be queried from the external sources? When
-     *            <code>true</code> then <i>all</i> users and groups are queried. With this complete set of information,
-     *            the implementation is able to identify which users and groups have been deleted, so it will delete
-     *            users and groups as well as update and create them. When <code>false</code> then each source is only
-     *            queried for those users and groups modified since the most recent modification date of all the objects
-     *            last queried from that same source. In this mode, local users and groups are created and updated, but
-     *            not deleted.
+     * @param forceUpdate
+     *            Should the complete set of users and groups be updated / created locally or just those known to have
+     *            changed since the last sync? When <code>true</code> then <i>all</i> users and groups are queried from
+     *            the user registry and updated locally. When <code>false</code> then each source is only queried for
+     *            those users and groups modified since the most recent modification date of all the objects last
+     *            queried from that same source.
+     * @param allowDeletions
+     *            Should a complete set of user and group IDs be queried from the user registries in order to determine
+     *            deletions? This parameter is independent of <code>force</code> as a separate query is run to process
+     *            updates.
      * @param splitTxns
      *            Can the modifications to Alfresco be split across multiple transactions for maximum performance? If
      *            <code>true</code>, users and groups are created/updated in batches of 10 for increased performance. If
      *            <code>false</code>, all users and groups are processed in the current transaction. This is required if
      *            calling synchronously (e.g. in response to an authentication event in the same transaction).
      */
-    public void synchronize(boolean force, boolean splitTxns);
+    public void synchronize(boolean forceUpdate, boolean allowDeletions, boolean splitTxns);
 }

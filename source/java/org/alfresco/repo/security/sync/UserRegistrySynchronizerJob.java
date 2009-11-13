@@ -32,9 +32,9 @@ import org.quartz.JobExecutionException;
 
 /**
  * A scheduled job that regularly invokes a {@link UserRegistrySynchronizer}. Supports a
- * <code>synchronizeChangesOnly</code> string parameter. When <code>"true"</code> means that the
- * {@link UserRegistrySynchronizer#synchronize(boolean)} method will be called with a <code>false</code> argument rather
- * than the default <code>true</code>.
+ * <code>synchronizeChangesOnly</code> string parameter. When <code>"false"</code> means that the
+ * {@link UserRegistrySynchronizer#synchronize(boolean)} method will be called with a <code>true</code> forceUpdate
+ * argument rather than the default <code>false</code>.
  * 
  * @author dward
  */
@@ -55,7 +55,7 @@ public class UserRegistrySynchronizerJob implements Job
             public Object doWork() throws Exception
             {
                 userRegistrySynchronizer.synchronize(synchronizeChangesOnly == null
-                        || !Boolean.parseBoolean(synchronizeChangesOnly), true);
+                        || !Boolean.parseBoolean(synchronizeChangesOnly), true, true);
                 return null;
             }
         }, AuthenticationUtil.getSystemUserName());

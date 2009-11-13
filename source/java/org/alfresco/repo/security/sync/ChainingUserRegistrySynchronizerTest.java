@@ -171,7 +171,7 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
         {
             newGroup("G2", "U1", "U3", "U4"), newGroup("G6", "U3", "U4", "G7"), newGroup("G7", "U5")
         }));
-        this.synchronizer.synchronize(true, true);
+        this.synchronizer.synchronize(true, true, true);
         this.retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Object>()
         {
 
@@ -208,7 +208,7 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
                 new NodeDescription[] {}), new MockUserRegistry("Z1", new NodeDescription[] {},
                 new NodeDescription[] {}), new MockUserRegistry("Z2", new NodeDescription[] {},
                 new NodeDescription[] {}));
-        this.synchronizer.synchronize(true, true);
+        this.synchronizer.synchronize(true, true, true);
         this.retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Object>()
         {
 
@@ -271,7 +271,7 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
             public Object execute() throws Throwable
             {
 
-                ChainingUserRegistrySynchronizerTest.this.synchronizer.synchronize(false, false);
+                ChainingUserRegistrySynchronizerTest.this.synchronizer.synchronize(false, false, false);
                 // Stay in the same transaction
                 assertExists("Z1", "U1");
                 assertEmailEquals("U1", "changeofemail@alfresco.com");
@@ -332,7 +332,7 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
         {
             newGroup("G2", "U1", "U3", "U4", "U6"), newGroup("G6", "U3", "U4", "G7"), newGroup("G7", "U4", "U5")
         }));
-        this.synchronizer.synchronize(true, true);
+        this.synchronizer.synchronize(true, true, true);
         this.retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Object>()
         {
 
@@ -369,7 +369,7 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
         List<NodeDescription> persons = new ArrayList<NodeDescription>(new RandomPersonCollection(100));
         List<NodeDescription> groups = new ArrayList<NodeDescription>(new RandomGroupCollection(100, persons));
         this.applicationContextManager.setUserRegistries(new MockUserRegistry("Z0", persons, groups));
-        this.synchronizer.synchronize(true, true);
+        this.synchronizer.synchronize(true, true, true);
         tearDownTestUsersAndGroups();
     }
 
@@ -394,7 +394,7 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
                 }, true, true);
         ChainingUserRegistrySynchronizerTest.this.applicationContextManager.setUserRegistries(new MockUserRegistry(
                 "Z0", Collections.<NodeDescription> emptyList(), groups));
-        ChainingUserRegistrySynchronizerTest.this.synchronizer.synchronize(true, true);
+        ChainingUserRegistrySynchronizerTest.this.synchronizer.synchronize(true, true, true);
         tearDownTestUsersAndGroups();
     }
 

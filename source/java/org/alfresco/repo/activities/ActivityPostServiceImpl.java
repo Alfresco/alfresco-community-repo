@@ -139,7 +139,7 @@ public class ActivityPostServiceImpl implements ActivityPostService
     
     private void postActivity(String activityType, String siteId, String appTool, String activityData, ActivityPostEntity.STATUS status)
     {
-        String currentUser = AuthenticationUtil.getFullyAuthenticatedUser();
+        String currentUser = getCurrentUser();
         
         try
         {
@@ -187,11 +187,6 @@ public class ActivityPostServiceImpl implements ActivityPostService
             if (currentUser.length() > MAX_LEN_USER_ID)
             {
                 throw new AlfrescoRuntimeException("Invalid user - exceeds " + MAX_LEN_USER_ID + " chars: " + currentUser);
-            }
-            else if ((! currentUser.equals(AuthenticationUtil.SYSTEM_USER_NAME)) && (! userNamesAreCaseSensitive))
-            {
-                // user names are not case-sensitive
-                currentUser = currentUser.toLowerCase();
             }
         } 
         catch (AlfrescoRuntimeException e)
@@ -247,5 +242,17 @@ public class ActivityPostServiceImpl implements ActivityPostService
             // log error, subsume exception (for post activity)
             logger.error(e);
         }
+    }
+    
+    private String getCurrentUser()
+    {
+        String userId = AuthenticationUtil.getFullyAuthenticatedUser();
+        if ((userId != null) && (! userId.equals(AuthenticationUtil.SYSTEM_USER_NAME)) && (! userNamesAreCaseSensitive))
+        {
+            // user names are not case-sensitive
+            userId = userId.toLowerCase();
+        }
+        
+        return userId;
     }
 }

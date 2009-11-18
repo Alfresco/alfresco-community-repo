@@ -170,7 +170,7 @@ public class ActivityServiceImpl implements ActivityService
             feedUserId = feedUserId.toLowerCase();
         }
         
-        String currentUser = AuthenticationUtil.getFullyAuthenticatedUser();
+        String currentUser = getCurrentUser();
         if (! ((currentUser == null) || 
                (currentUser.equals(AuthenticationUtil.getSystemUserName())) ||
                (authorityService.isAdminAuthority(currentUser)) ||
@@ -279,12 +279,13 @@ public class ActivityServiceImpl implements ActivityService
     {
         ParameterCheck.mandatory("feedControl", feedControl);
         
-        String userId = AuthenticationUtil.getFullyAuthenticatedUser();
-        if (! userNamesAreCaseSensitive)
+        String userId = getCurrentUser();
+        
+        if (userId == null)
         {
-            userId = userId.toLowerCase();
+            throw new AlfrescoRuntimeException("Current user " + userId + " is not permitted to set feed control");
         }
-
+        
         try
         {
             if (! existsFeedControl(feedControl))
@@ -305,7 +306,7 @@ public class ActivityServiceImpl implements ActivityService
      */
     public List<FeedControl> getFeedControls()
     {
-        String userId = AuthenticationUtil.getFullyAuthenticatedUser();
+        String userId = getCurrentUser();
         return getFeedControlsImpl(userId);
     }
     
@@ -315,7 +316,13 @@ public class ActivityServiceImpl implements ActivityService
     public List<FeedControl> getFeedControls(String userId)
     {
         ParameterCheck.mandatoryString("userId", userId);
-        String currentUser = AuthenticationUtil.getFullyAuthenticatedUser();
+        
+        if (! userNamesAreCaseSensitive)
+        {
+            userId = userId.toLowerCase();
+        }
+        
+        String currentUser = getCurrentUser();
         
         if ((currentUser == null) || ((! currentUser.equals(AuthenticationUtil.getSystemUserName())) && (! currentUser.equals(userId)) && (! authorityService.isAdminAuthority(currentUser))))
         {
@@ -328,11 +335,6 @@ public class ActivityServiceImpl implements ActivityService
     private List<FeedControl> getFeedControlsImpl(String userId)
     {
         ParameterCheck.mandatoryString("userId", userId);
-        
-        if (! userNamesAreCaseSensitive)
-        {
-            userId = userId.toLowerCase();
-        }
         
         try
         {
@@ -360,10 +362,11 @@ public class ActivityServiceImpl implements ActivityService
     {
         ParameterCheck.mandatory("feedControl", feedControl);
         
-        String userId = AuthenticationUtil.getFullyAuthenticatedUser();
-        if (! userNamesAreCaseSensitive)
+        String userId = getCurrentUser();
+        
+        if (userId == null)
         {
-            userId = userId.toLowerCase();
+            throw new AlfrescoRuntimeException("Current user " + userId + " is not permitted to unset feed control");
         }
         
         try
@@ -385,12 +388,7 @@ public class ActivityServiceImpl implements ActivityService
     {
         ParameterCheck.mandatory("feedControl", feedControl);
         
-        String userId = AuthenticationUtil.getFullyAuthenticatedUser();
-        
-        if (! userNamesAreCaseSensitive)
-        {
-            userId = userId.toLowerCase();
-        }
+        String userId = getCurrentUser();
         
         try
         {
@@ -403,6 +401,18 @@ public class ActivityServiceImpl implements ActivityService
             logger.error(are);
             throw are;
         }
+    }
+    
+    private String getCurrentUser()
+    {
+        String userId = AuthenticationUtil.getFullyAuthenticatedUser();
+        if ((userId != null) && (! userId.equals(AuthenticationUtil.SYSTEM_USER_NAME)) && (! userNamesAreCaseSensitive))
+        {
+            // user names are not case-sensitive
+            userId = userId.toLowerCase();
+        }
+        
+        return userId;
     }
     
     private FeedControl getTenantFeedControl(FeedControl feedControl)

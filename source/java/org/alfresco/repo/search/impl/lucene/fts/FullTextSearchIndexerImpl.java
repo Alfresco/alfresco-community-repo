@@ -28,6 +28,7 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
+import org.alfresco.config.FixedClassPathXmlApplicationContext;
 import org.alfresco.repo.search.BackgroundIndexerAware;
 import org.alfresco.repo.search.Indexer;
 import org.alfresco.repo.search.IndexerAndSearcher;
@@ -36,9 +37,7 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.ListableBeanFactory;
-import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 /**
  * Background index update scheduler
@@ -242,7 +241,7 @@ public class FullTextSearchIndexerImpl implements FTSIndexerAware, FullTextSearc
     public static void main(String[] args) throws InterruptedException
     {
         @SuppressWarnings("unused")
-        ApplicationContext ctx = new ClassPathXmlApplicationContext("classpath:alfresco/application-context.xml");
+        ApplicationContext ctx = new FixedClassPathXmlApplicationContext("classpath:alfresco/application-context.xml");
     }
 
 

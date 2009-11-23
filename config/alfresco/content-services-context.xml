@@ -2,11 +2,14 @@
 <!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
  
 <beans>
-   
+
    <bean id="fileContentStore" class="org.alfresco.repo.content.filestore.FileContentStore">
       <constructor-arg>
          <value>${dir.contentstore}</value>
       </constructor-arg>
+      <property name="applicationEventPublisher">
+         <ref bean="applicationEventPublisher" />
+      </property>
    </bean>
    
    <!-- deleted content will get pushed into this store, where it can be cleaned up at will -->
@@ -14,6 +17,9 @@
       <constructor-arg>
          <value>${dir.contentstore.deleted}</value>
       </constructor-arg>
+      <property name="applicationEventPublisher">
+         <ref bean="applicationEventPublisher" />
+      </property>
    </bean>
    <!-- bean to move deleted content into the the backup store -->
    <bean id="deletedContentBackupListener" class="org.alfresco.repo.content.cleanup.DeletedContentBackupCleanerListener" >
@@ -90,6 +96,9 @@
    
    <!-- Abstract bean definition defining base definition for content service -->
    <bean id="baseContentService" class="org.alfresco.repo.content.ContentServiceImpl" abstract="true" init-method="init">
+      <property name="applicationEventPublisher">
+          <ref bean="applicationEventPublisher"/>
+      </property>
       <property name="retryingTransactionHelper">
           <ref bean="retryingTransactionHelper"/>
       </property>

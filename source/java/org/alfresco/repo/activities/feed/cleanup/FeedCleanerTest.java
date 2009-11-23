@@ -37,7 +37,7 @@ import org.alfresco.service.cmr.activities.ActivityService;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.util.ApplicationContextHelper;
-import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.context.ApplicationContext;
 
 /**
  * @see org.alfresco.repo.activities.feed.cleanup.FeedCleaner
@@ -46,7 +46,7 @@ import org.springframework.context.ConfigurableApplicationContext;
  */
 public class FeedCleanerTest extends TestCase
 {
-    private static ConfigurableApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
+    private static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
     
     private ActivityFeedDAO feedDAO;
     private FeedCleaner cleaner;

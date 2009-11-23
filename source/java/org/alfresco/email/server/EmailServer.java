@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.StringTokenizer;
 
+import org.alfresco.config.FixedClassPathXmlApplicationContext;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.service.cmr.email.EmailMessageException;
 import org.alfresco.service.cmr.email.EmailService;
@@ -37,7 +38,6 @@ import org.alfresco.util.PropertyCheck;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.support.AbstractApplicationContext;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 /**
  * Base implementation of an email server.
@@ -260,7 +260,7 @@ public abstract class EmailServer extends AbstractLifecycleBean
         AbstractApplicationContext context = null;
         try 
         {
-            context = new ClassPathXmlApplicationContext(args);
+            context = new FixedClassPathXmlApplicationContext(args);
         } catch (BeansException e) 
         {
             System.err.println("Erro create context: " + e);

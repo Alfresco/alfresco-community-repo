@@ -39,6 +39,7 @@ import java.util.Set;
 
 import junit.framework.TestCase;
 
+import org.alfresco.config.FixedClassPathXmlApplicationContext;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.management.subsystems.ChildApplicationContextManager;
 import org.alfresco.repo.security.authentication.AuthenticationContext;
@@ -52,7 +53,6 @@ import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.util.GUID;
 import org.alfresco.util.PropertyMap;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.context.support.StaticApplicationContext;
 
 /**
@@ -70,7 +70,7 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
     };
 
     /** The Spring application context. */
-    private static ApplicationContext context = new ClassPathXmlApplicationContext(
+    private static ApplicationContext context = new FixedClassPathXmlApplicationContext(
             ChainingUserRegistrySynchronizerTest.CONFIG_LOCATIONS);
 
     /** The synchronizer we are testing. */

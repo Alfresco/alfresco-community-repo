@@ -101,6 +101,7 @@ import org.apache.lucene.store.IndexOutput;
 import org.apache.lucene.store.RAMDirectory;
 import org.safehaus.uuid.UUID;
 import org.saxpath.SAXPathException;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.ConfigurableApplicationContext;
@@ -2510,7 +2511,7 @@ public class IndexInfo implements IndexMonitor
 
     static Query getPathQuery(String path) throws SAXPathException
     {
-        ConfigurableApplicationContext ac = ApplicationContextHelper.getApplicationContext();
+        ApplicationContext ac = ApplicationContextHelper.getApplicationContext();
         XPathReader reader = new XPathReader();
         LuceneXPathHandler handler = new LuceneXPathHandler();
         handler.setNamespacePrefixResolver((NamespaceService) ac.getBean("namespaceService"));

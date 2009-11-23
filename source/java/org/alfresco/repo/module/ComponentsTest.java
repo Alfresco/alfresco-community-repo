@@ -30,6 +30,7 @@ import javax.transaction.UserTransaction;
 
 import junit.framework.TestCase;
 
+import org.alfresco.config.FixedClassPathXmlApplicationContext;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.service.ServiceRegistry;
@@ -40,7 +41,6 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.CategoryService;
 import org.alfresco.service.transaction.TransactionService;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 /**
  * Tests various module components.
@@ -52,7 +52,7 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
  */
 public class ComponentsTest extends TestCase
 {
-    private static ApplicationContext ctx = new ClassPathXmlApplicationContext("module/module-component-test-beans.xml");
+    private static ApplicationContext ctx = new FixedClassPathXmlApplicationContext("module/module-component-test-beans.xml");
     
     private ServiceRegistry serviceRegistry;
     private AuthenticationComponent authenticationComponent;

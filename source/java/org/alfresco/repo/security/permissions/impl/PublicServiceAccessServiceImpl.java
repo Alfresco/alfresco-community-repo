@@ -65,7 +65,7 @@ public class PublicServiceAccessServiceImpl implements PublicServiceAccessServic
                 {
                     if (method.getParameterTypes().length == args.length)
                     {
-                        methodInvocation = new ReflectiveMethodInvocation(null, null, method, args, null, null);
+                        methodInvocation = new ReflectiveMethodInvocation(null, null, method, args, null, null) {};
                     }
                 }
             }

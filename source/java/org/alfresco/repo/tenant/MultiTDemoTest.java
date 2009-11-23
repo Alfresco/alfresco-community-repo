@@ -37,6 +37,7 @@ import java.util.Set;
 
 import junit.framework.TestCase;
 
+import org.alfresco.config.FixedClassPathXmlApplicationContext;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
@@ -70,13 +71,12 @@ import org.alfresco.util.ApplicationContextHelper;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 public class MultiTDemoTest extends TestCase
 {
     private static Log logger = LogFactory.getLog(MultiTDemoTest.class);
     
-    private static ApplicationContext ctx =new ClassPathXmlApplicationContext(
+    private static ApplicationContext ctx =new FixedClassPathXmlApplicationContext(
             new String[] {ApplicationContextHelper.CONFIG_LOCATIONS[0], "classpath:tenant/mt-*context.xml"}
             );
     

@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
+import org.alfresco.config.FixedClassPathXmlApplicationContext;
 import org.alfresco.repo.importer.ImporterBootstrap;
 import org.alfresco.repo.security.authentication.AuthenticationContext;
 import org.alfresco.repo.security.authentication.MutableAuthenticationDao;
@@ -41,7 +42,6 @@ import org.alfresco.service.cmr.view.ImporterService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.transaction.TransactionService;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 
 
@@ -56,7 +56,7 @@ public class TestData
      */
     public static void main(String[] args)
     {
-        ApplicationContext context = new ClassPathXmlApplicationContext("org/alfresco/jcr/test/test-context.xml");
+        ApplicationContext context = new FixedClassPathXmlApplicationContext("org/alfresco/jcr/test/test-context.xml");
         generateTestData(context, TEST_WORKSPACE);
         System.out.println("Generated TCK test data to workspace: " + TEST_WORKSPACE);
         System.exit(0);

@@ -59,7 +59,8 @@ import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.GUID;
 import org.alfresco.util.TempFileProvider;
-import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationEventPublisher;
 
 /**
  * @see org.alfresco.repo.content.cleanup.ContentStoreCleaner
@@ -68,7 +69,7 @@ import org.springframework.context.ConfigurableApplicationContext;
  */
 public class ContentStoreCleanerTest extends TestCase
 {
-    private static ConfigurableApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
+    private static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
     
     private ContentService contentService;
     private NodeService nodeService;
@@ -96,12 +97,14 @@ public class ContentStoreCleanerTest extends TestCase
         AVMNodeDAO avmNodeDAO = (AVMNodeDAO) ctx.getBean("newAvmNodeDAO");
         ContentCleanDAO contentCleanDAO = (ContentCleanDAO) ctx.getBean("contentCleanDAO");
         ContentDataDAO contentDataDAO = (ContentDataDAO) ctx.getBean("contentDataDAO");
+        ApplicationEventPublisher applicationEventPublisher = (ApplicationEventPublisher) ctx
+                .getBean("applicationEventPublisher");
         
         eagerCleaner = (EagerContentStoreCleaner) ctx.getBean("eagerContentStoreCleaner");
         eagerCleaner.setEagerOrphanCleanup(false);
         
         // we need a store
-        store = new FileContentStore(ctx, TempFileProvider.getTempDir().getAbsolutePath());
+        store = new FileContentStore(applicationEventPublisher, TempFileProvider.getTempDir().getAbsolutePath());
         // and a listener
         listener = new DummyCleanerListener();
         // initialise record of deleted URLs

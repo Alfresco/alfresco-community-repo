@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -18,7 +18,7 @@
  * As a special exception to the terms and conditions of version 2.0 of 
  * the GPL, you may redistribute this Program in connection with Free/Libre 
  * and Open Source Software ("FLOSS") applications as described in Alfresco's 
- * FLOSS exception.  You should have recieved a copy of the text describing 
+ * FLOSS exception.  You should have received a copy of the text describing 
  * the FLOSS exception, and it is also available here: 
  * http://www.alfresco.com/legal/licensing"
  */
@@ -69,10 +69,7 @@ import org.alfresco.util.Pair;
 import org.alfresco.util.TempFileProvider;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.BeansException;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
-import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.context.ApplicationEventPublisher;
 
 
 /**
@@ -86,7 +83,7 @@ import org.springframework.context.ConfigurableApplicationContext;
  * @author Derek Hulley
  * @since 3.2
  */
-public class ContentServiceImpl implements ContentService, ApplicationContextAware
+public class ContentServiceImpl implements ContentService
 {
     private static Log logger = LogFactory.getLog(ContentServiceImpl.class);
     
@@ -94,7 +91,7 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
     private NodeService nodeService;
     private AVMService avmService;
     private RetryingTransactionHelper transactionHelper;
-    private ApplicationContext applicationContext;
+    private ApplicationEventPublisher applicationEventPublisher;
     
     /** a registry of all available content transformers */
     private ContentTransformerRegistry transformerRegistry;
@@ -163,14 +160,16 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
     {
         this.imageMagickContentTransformer = imageMagickContentTransformer;
     }
-    
-    
-    /* (non-Javadoc)
-     * @see org.springframework.context.ApplicationContextAware#setApplicationContext(org.springframework.context.ApplicationContext)
+        
+    /**
+     * Sets the application event publisher.
+     * 
+     * @param applicationEventPublisher
+     *            the new application event publisher
      */
-    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException
+    public void setApplicationEventPublisher(ApplicationEventPublisher applicationEventPublisher)
     {
-        this.applicationContext = applicationContext;
+        this.applicationEventPublisher = applicationEventPublisher;
     }
 
     /**
@@ -179,8 +178,8 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
     public void init()
     {
         // Set up a temporary store
-        this.tempStore = new FileContentStore((ConfigurableApplicationContext) this.applicationContext,
-                TempFileProvider.getTempDir().getAbsolutePath());
+        this.tempStore = new FileContentStore(this.applicationEventPublisher, TempFileProvider.getTempDir()
+                .getAbsolutePath());
 
         // Bind on update properties behaviour
         this.policyComponent.bindClassBehaviour(

@@ -33,6 +33,7 @@ import javax.transaction.UserTransaction;
 import junit.framework.TestCase;
 import net.sf.ehcache.CacheManager;
 
+import org.alfresco.config.FixedClassPathXmlApplicationContext;
 import org.alfresco.repo.cache.TransactionalCache.NullValueMarker;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
@@ -42,7 +43,6 @@ import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 /**
  * @see org.alfresco.repo.cache.EhCacheAdapter
@@ -51,7 +51,7 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
  */
 public class CacheTest extends TestCase
 {
-    private static ApplicationContext ctx =new ClassPathXmlApplicationContext(
+    private static ApplicationContext ctx =new FixedClassPathXmlApplicationContext(
             new String[] {"classpath:cache-test-context.xml", ApplicationContextHelper.CONFIG_LOCATIONS[0]}
             );
     

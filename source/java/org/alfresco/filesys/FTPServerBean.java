@@ -28,17 +28,17 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.net.SocketException;
 
+import org.alfresco.config.FixedClassPathXmlApplicationContext;
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.jlan.ftp.FTPConfigSection;
 import org.alfresco.jlan.ftp.FTPServer;
 import org.alfresco.jlan.server.NetworkServer;
 import org.alfresco.jlan.server.config.ServerConfiguration;
-import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.util.AbstractLifecycleBean;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationEvent;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 /**
  * FTP Server Class
@@ -174,7 +174,7 @@ public class FTPServerBean extends AbstractLifecycleBean
         {
             // Create the configuration service in the same way that Spring creates it
             
-            ApplicationContext ctx = new ClassPathXmlApplicationContext("alfresco/application-context.xml");
+            ApplicationContext ctx = new FixedClassPathXmlApplicationContext("alfresco/application-context.xml");
 
             // Get the FTP server bean
             

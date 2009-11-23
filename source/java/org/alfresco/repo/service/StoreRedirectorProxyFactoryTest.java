@@ -24,12 +24,12 @@
  */
 package org.alfresco.repo.service;
 
+import junit.framework.TestCase;
+
+import org.alfresco.config.FixedClassPathXmlApplicationContext;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
-
-import junit.framework.TestCase;
 
 public class StoreRedirectorProxyFactoryTest extends TestCase
 {
@@ -38,7 +38,7 @@ public class StoreRedirectorProxyFactoryTest extends TestCase
 
     public void setUp()
     {
-        factory = new ClassPathXmlApplicationContext("org/alfresco/repo/service/testredirector.xml");
+        factory = new FixedClassPathXmlApplicationContext("org/alfresco/repo/service/testredirector.xml");
     }
 
     public void testRedirect()

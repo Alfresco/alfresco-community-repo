@@ -27,7 +27,6 @@ package org.alfresco.repo.management.subsystems;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
@@ -36,12 +35,12 @@ import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanNameAware;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.config.PropertyPlaceholderConfigurer;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
+import org.springframework.util.PropertyPlaceholderHelper;
 
 /**
  * A base class for {@link PropertyBackedBean}s. Gets its category from its Spring bean name and automatically
@@ -485,10 +484,10 @@ public abstract class AbstractPropertyBackedBean implements PropertyBackedBean, 
     }
 
     /**
-     * Uses a Spring {@link PropertyPlaceholderConfigurer} to resolve placeholders in the property defaults. This means
+     * Uses a Spring {@link PropertyPlaceholderHelper} to resolve placeholders in the property defaults. This means
      * that placeholders need not be displayed in the configuration UI or JMX console.
      */
-    public class DefaultResolver extends PropertyPlaceholderConfigurer
+    public class DefaultResolver extends PropertyPlaceholderHelper
     {
 
         /**
@@ -496,7 +495,7 @@ public abstract class AbstractPropertyBackedBean implements PropertyBackedBean, 
          */
         public DefaultResolver()
         {
-            setIgnoreUnresolvablePlaceholders(true);
+            super("${", "}", ":", true);
         }
 
         /**
@@ -508,8 +507,8 @@ public abstract class AbstractPropertyBackedBean implements PropertyBackedBean, 
          */
         public String resolveValue(String val)
         {
-            return AbstractPropertyBackedBean.this.propertyDefaults == null ? null : parseStringValue(val,
-                    AbstractPropertyBackedBean.this.propertyDefaults, new HashSet<Object>());
+            return AbstractPropertyBackedBean.this.propertyDefaults == null ? null : replacePlaceholders(
+                    val, AbstractPropertyBackedBean.this.propertyDefaults);
         }
 
     }

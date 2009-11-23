@@ -18,7 +18,7 @@
  * As a special exception to the terms and conditions of version 2.0 of 
  * the GPL, you may redistribute this Program in connection with Free/Libre 
  * and Open Source Software ("FLOSS") applications as described in Alfresco's 
- * FLOSS exception.  You should have recieved a copy of the text describing 
+ * FLOSS exception.  You should have received a copy of the text describing 
  * the FLOSS exception, and it is also available here: 
  * http://www.alfresco.com/legal/licensing"
  */
@@ -36,24 +36,21 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.tenant.Tenant;
 import org.alfresco.repo.tenant.TenantDeployer;
 import org.alfresco.repo.tenant.TenantService;
-import org.springframework.beans.BeansException;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
-import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.context.ApplicationEventPublisher;
 
 /**
  * Content Store that supports tenant routing, if multi-tenancy is enabled.
  * 
  * Note: Need to initialise before the dictionary service, in the case that models are dynamically loaded for the tenant.
  */
-public class TenantRoutingFileContentStore extends AbstractRoutingContentStore implements TenantDeployer, ApplicationContextAware
+public class TenantRoutingFileContentStore extends AbstractRoutingContentStore implements TenantDeployer
 {
     // cache of tenant file stores
     Map<String, FileContentStore> tenantFileStores = new ConcurrentHashMap<String, FileContentStore>();
     
     private String defaultRootDirectory;
     private TenantService tenantService;
-    private ApplicationContext applicationContext;
+    private ApplicationEventPublisher applicationEventPublisher;
     
     
     public void setDefaultRootDir(String defaultRootDirectory)
@@ -65,17 +62,18 @@ public class TenantRoutingFileContentStore extends AbstractRoutingContentStore i
     {
         this.tenantService = tenantService;
     }
-
-    /*
-     * (non-Javadoc)
-     * @see org.springframework.context.ApplicationContextAware#setApplicationContext(org.springframework.context.
-     * ApplicationContext)
+        
+    /**
+     * Sets the application event publisher.
+     * 
+     * @param applicationEventPublisher
+     *            the new application event publisher
      */
-    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException
+    public void setApplicationEventPublisher(ApplicationEventPublisher applicationEventPublisher)
     {
-        this.applicationContext = applicationContext;
+        this.applicationEventPublisher = applicationEventPublisher;
     }
-    
+
     @Override
     protected ContentStore selectWriteStore(ContentContext ctx)
     {
@@ -138,8 +136,7 @@ public class TenantRoutingFileContentStore extends AbstractRoutingContentStore i
             tenantDomain = tenant.getTenantDomain();
         }
         
-        putTenantFileStore(tenantDomain, new FileContentStore((ConfigurableApplicationContext) this.applicationContext,
-                new File(rootDir)));
+        putTenantFileStore(tenantDomain, new FileContentStore(this.applicationEventPublisher, new File(rootDir)));
     }
     
     public void destroy()

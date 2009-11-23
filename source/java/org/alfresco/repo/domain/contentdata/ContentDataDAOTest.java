@@ -42,6 +42,7 @@ import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.Pair;
 import org.alfresco.util.TempFileProvider;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ConfigurableApplicationContext;
 
 /**
@@ -65,9 +66,10 @@ public class ContentDataDAOTest extends TestCase
         ServiceRegistry serviceRegistry = (ServiceRegistry) ctx.getBean(ServiceRegistry.SERVICE_REGISTRY);
         transactionService = serviceRegistry.getTransactionService();
         txnHelper = transactionService.getRetryingTransactionHelper();
+        ApplicationEventPublisher applicationEventPublisher = (ApplicationEventPublisher) ctx.getBean("applicationEventPublisher");
         
         contentDataDAO = (ContentDataDAO) ctx.getBean("contentDataDAO");
-        contentStore = new FileContentStore(ctx, TempFileProvider.getTempDir());
+        contentStore = new FileContentStore(applicationEventPublisher, TempFileProvider.getTempDir());
     }
     
     private Pair<Long, ContentData> create(final ContentData contentData)

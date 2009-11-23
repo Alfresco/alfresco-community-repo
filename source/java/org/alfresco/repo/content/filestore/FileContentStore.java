@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2008 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -44,13 +44,8 @@ import org.alfresco.util.GUID;
 import org.alfresco.util.Pair;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.BeansException;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
-import org.springframework.context.ApplicationEvent;
-import org.springframework.context.ApplicationListener;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ConfigurableApplicationContext;
-import org.springframework.context.event.ContextRefreshedEvent;
 
 /**
  * Provides a store of node content directly to the file system.  The writers
@@ -61,7 +56,7 @@ import org.springframework.context.event.ContextRefreshedEvent;
  * 
  * @author Derek Hulley
  */
-public class FileContentStore extends AbstractContentStore implements ApplicationContextAware, ApplicationListener
+public class FileContentStore extends AbstractContentStore
 {
     /**
      * <b>store</b> is the new prefix for file content URLs
@@ -75,7 +70,7 @@ public class FileContentStore extends AbstractContentStore implements Applicatio
     private String rootAbsolutePath;
     private boolean allowRandomAccess;
     private boolean readOnly;
-    private ApplicationContext applicationContext;
+    private ApplicationEventPublisher applicationEventPublisher;
 
     /**
      * Private: for Spring-constructed instances only.
@@ -113,32 +108,32 @@ public class FileContentStore extends AbstractContentStore implements Applicatio
     /**
      * Public constructor for programmatic use.
      * 
-     * @param context
-     *            application context through which events can be published
+     * @param applicationEventPublisher
+     *            the application event publisher
      * @param rootDirectoryStr
      *            the root under which files will be stored. The directory will be created if it does not exist.
      * @see FileContentStore#FileContentStore(File)
      */
-    public FileContentStore(ConfigurableApplicationContext context, String rootDirectoryStr)
+    public FileContentStore(ApplicationEventPublisher applicationEventPublisher, String rootDirectoryStr)
     {
         this(rootDirectoryStr);
-        setApplicationContext(context);
-        publishEvent(context);
+        setApplicationEventPublisher(applicationEventPublisher);
+        publishEvent();
     }
 
     /**
      * Public constructor for programmatic use.
      * 
-     * @param context
-     *            application context through which events can be published
+     * @param applicationEventPublisher
+     *            the application event publisher
      * @param rootDirectory
      *            the root under which files will be stored. The directory will be created if it does not exist.
      */
-    public FileContentStore(ConfigurableApplicationContext context, File rootDirectory)
+    public FileContentStore(ApplicationEventPublisher applicationEventPublisher, File rootDirectory)
     {
         this(rootDirectory);        
-        setApplicationContext(context);
-        publishEvent(context);
+        setApplicationEventPublisher(applicationEventPublisher);
+        publishEvent();
     }
     
     
@@ -153,13 +148,16 @@ public class FileContentStore extends AbstractContentStore implements Applicatio
         return sb.toString();
     }
 
-    
-    /* (non-Javadoc)
-     * @see org.springframework.context.ApplicationContextAware#setApplicationContext(org.springframework.context.ApplicationContext)
+
+    /**
+     * Sets the application event publisher.
+     * 
+     * @param applicationEventPublisher
+     *            the new application event publisher
      */
-    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException
+    public void setApplicationEventPublisher(ApplicationEventPublisher applicationEventPublisher)
     {
-        this.applicationContext = applicationContext;
+        this.applicationEventPublisher = applicationEventPublisher;
     }
 
     /**
@@ -638,32 +636,9 @@ public class FileContentStore extends AbstractContentStore implements Applicatio
     /**
      * Publishes an event to the application context that will notify any interested parties of the existence of this
      * content store.
-     * 
-     * @param context
-     *            the application context
      */
-    private void publishEvent(ConfigurableApplicationContext context)
+    private void publishEvent()
     {
-        // If the context isn't running yet, we have to wait until the refresh event
-        try
-        {
-            // Neither context.isActive() or context.isRunning() seem to detect whether the refresh() has completed
-            context.publishEvent(new ContentStoreCreatedEvent(this));
-        }
-        catch (IllegalStateException e)
-        {
-            context.addApplicationListener(this);
-        }
-    }
-
-    public void onApplicationEvent(ApplicationEvent event)
-    {
-        // Once the context has been refreshed, we tell other interested beans about the existence of this content store
-        // (e.g. for monitoring purposes)
-        if (event instanceof ContextRefreshedEvent && event.getSource() == this.applicationContext)
-        {
-            ((ContextRefreshedEvent) event).getApplicationContext().publishEvent(
-                    new ContentStoreCreatedEvent(this));
-        }
+        this.applicationEventPublisher.publishEvent(new ContentStoreCreatedEvent(this));
     }
 }

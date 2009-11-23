@@ -1419,4 +1419,7 @@
       </property>
    </bean>
     
+    <!-- Bean that can be used for publishing events, even when the app is starting up -->
+    <bean id="applicationEventPublisher" class="org.alfresco.repo.management.SafeEventPublisher"/>
+
 </beans>

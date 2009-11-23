@@ -50,10 +50,8 @@ public class ReadOnlyFileContentStoreTest extends AbstractReadOnlyContentStoreTe
         
         // create a store that uses a subdirectory of the temp directory
         File tempDir = TempFileProvider.getTempDir();
-        store = new FileContentStore(ctx,
-                tempDir.getAbsolutePath() +
-                File.separatorChar +
-                getName());
+        store = new FileContentStore(applicationEventPublisher, tempDir.getAbsolutePath() + File.separatorChar
+                + getName());
         // disallow random access
         store.setReadOnly(true);
     }

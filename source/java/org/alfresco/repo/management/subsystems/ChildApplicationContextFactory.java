@@ -36,6 +36,7 @@ import java.util.StringTokenizer;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
+import org.alfresco.config.FixedClassPathXmlApplicationContext;
 import org.alfresco.config.JBossEnabledResourcePatternResolver;
 import org.alfresco.config.JndiPropertiesFactoryBean;
 import org.alfresco.util.config.RepositoryPathConfigBean;
@@ -350,12 +351,12 @@ public class ChildApplicationContextFactory extends AbstractPropertyBackedBean i
      * 
      * @author dward
      */
-    private class ChildApplicationContext extends ClassPathXmlApplicationContext
+    private class ChildApplicationContext extends FixedClassPathXmlApplicationContext
     {
 
         /** The composite property values. */
         private Map<String, Map<String, CompositeDataBean>> compositeProperties;
-
+        
         /**
          * The Constructor.
          * 
@@ -373,8 +374,14 @@ public class ChildApplicationContextFactory extends AbstractPropertyBackedBean i
             {
                 ChildApplicationContextFactory.CLASSPATH_PREFIX + getCategory() + '/' + getTypeName()
                         + ChildApplicationContextFactory.CONTEXT_SUFFIX,
-                ChildApplicationContextFactory.EXTENSION_CLASSPATH_PREFIX + getCategory() + '/' + getTypeName() + '/'
-                        + getId().get(getId().size() - 1) + '/' + ChildApplicationContextFactory.CONTEXT_SUFFIX
+                ChildApplicationContextFactory.EXTENSION_CLASSPATH_PREFIX
+                        + getCategory()
+                        + '/'
+                        + getTypeName()
+                        + '/'
+                        + ChildApplicationContextFactory.this.getId().get(
+                                ChildApplicationContextFactory.this.getId().size() - 1) + '/'
+                        + ChildApplicationContextFactory.CONTEXT_SUFFIX
             }, false, ChildApplicationContextFactory.this.getParent());
 
             this.compositeProperties = compositeProperties;

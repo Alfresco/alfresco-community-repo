@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
+import org.alfresco.config.FixedClassPathXmlApplicationContext;
 import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
@@ -168,7 +169,7 @@ public class TestWebScriptRepoServer extends TestWebScriptServer
                 System.arraycopy(CONFIG_LOCATIONS, 0, configLocations, 0, CONFIG_LOCATIONS.length);
                 configLocations[CONFIG_LOCATIONS.length] = appendTestConfigLocation;
             }
-            TestWebScriptRepoServer.ctx = new ClassPathXmlApplicationContext(configLocations);
+            TestWebScriptRepoServer.ctx = new FixedClassPathXmlApplicationContext(configLocations);
             TestWebScriptRepoServer.appendedTestConfiguration = appendTestConfigLocation;
         }
         

@@ -3,7 +3,7 @@
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="lib" path="lib/cmis-types.jar"/>
 	<classpathentry kind="lib" path="lib/commons-logging-1.1.1.jar"/>
-	<classpathentry kind="lib" path="lib/cxf-2.1.2.jar"/>
+	<classpathentry kind="lib" path="lib/cxf-2.2.2.jar"/>
 	<classpathentry kind="lib" path="lib/FastInfoset-1.2.2.jar"/>
 	<classpathentry kind="lib" path="lib/geronimo-activation_1.1_spec-1.0.2.jar"/>
 	<classpathentry kind="lib" path="lib/geronimo-annotation_1.0_spec-1.1.1.jar"/>

@@ -24,40 +24,35 @@
  */
 package org.alfresco.web.forms;
 
-import java.io.*;
-import java.util.*;
-import org.alfresco.service.namespace.QName;
+import java.io.Serializable;
+import java.util.Calendar;
+import java.util.HashMap;
+
+import org.alfresco.config.FixedClassPathXmlApplicationContext;
 import org.alfresco.model.WCMAppModel;
-import junit.framework.AssertionFailedError;
-import org.alfresco.service.cmr.repository.*;
-import org.alfresco.service.namespace.NamespaceService;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.MutableAuthenticationDao;
+import org.alfresco.service.cmr.model.FileFolderService;
+import org.alfresco.service.cmr.model.FileInfo;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.security.AuthenticationService;
+import org.alfresco.service.namespace.QName;
 import org.alfresco.util.BaseSpringTest;
-import org.alfresco.web.forms.XMLUtil;
-import org.apache.commons.jxpath.JXPathContext;
-import org.apache.commons.jxpath.Pointer;
+import org.alfresco.util.TestWithUserUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.chiba.xml.ns.NamespaceConstants;
-import org.chiba.xml.events.XFormsEventNames;
-import org.chiba.xml.events.XMLEvent;
-import org.chiba.xml.xforms.ChibaBean;
-import org.chiba.xml.xforms.exception.XFormsException;
-import org.chiba.xml.xforms.XFormsElement;
-import org.chiba.xml.events.DOMEventNames;
-import org.w3c.dom.*;
-import org.w3c.dom.events.*;
-import org.xml.sax.*;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
+import org.apache.shale.test.mock.MockExternalContext;
+import org.apache.shale.test.mock.MockFacesContext;
+import org.apache.shale.test.mock.MockHttpServletRequest;
+import org.apache.shale.test.mock.MockHttpServletResponse;
+import org.apache.shale.test.mock.MockServletContext;
 import org.springframework.context.ConfigurableApplicationContext;
-import org.alfresco.service.cmr.security.AuthenticationService;
-import org.alfresco.service.cmr.model.*;
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.security.authentication.MutableAuthenticationDao;
-import org.alfresco.util.TestWithUserUtils;
-import org.apache.shale.test.mock.*;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.StaticWebApplicationContext;
+import org.w3c.dom.Document;
 
 /**
  * JUnit tests to exercise parts of the forms codebase
@@ -168,7 +163,7 @@ public class FormsTest
    protected ConfigurableApplicationContext loadContext(Object key)
       throws Exception
    {
-      return new ClassPathXmlApplicationContext((String[])key);
+      return new FixedClassPathXmlApplicationContext((String[])key);
    }
 
    public void testOutputPathPatternForFormInstanceData()

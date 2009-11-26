@@ -26,7 +26,6 @@ package org.alfresco.repo.management.subsystems;
 
 import java.util.Collection;
 import java.util.LinkedHashSet;
-import java.util.Properties;
 import java.util.Set;
 
 import org.apache.commons.logging.Log;
@@ -41,8 +40,10 @@ import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.config.PropertyPlaceholderConfigurer;
 import org.springframework.beans.factory.config.RuntimeBeanReference;
 import org.springframework.beans.factory.config.TypedStringValue;
+import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.ManagedList;
 import org.springframework.core.Ordered;
+import org.springframework.core.PriorityOrdered;
 
 /**
  * A {@link BeanFactoryPostProcessor} that upgrades old-style Spring overrides that add location paths to the
@@ -52,7 +53,7 @@ import org.springframework.core.Ordered;
  * 
  * @author dward
  */
-public class LegacyConfigPostProcessor implements BeanFactoryPostProcessor, Ordered
+public class LegacyConfigPostProcessor implements BeanFactoryPostProcessor, PriorityOrdered
 {
     /** The name of the bean that, in new configurations, holds all properties */
     private static final String BEAN_NAME_GLOBAL_PROPERTIES = "global-properties";
@@ -128,12 +129,17 @@ public class LegacyConfigPostProcessor implements BeanFactoryPostProcessor, Orde
                     .getSingleton(LegacyConfigPostProcessor.BEAN_NAME_REPOSITORY_PROPERTIES);
             if (repositoryConfigurer != null)
             {
-                repositoryConfigurer.setIgnoreUnresolvablePlaceholders(true);
-                repositoryConfigurer.setLocalOverride(false);
-                repositoryConfigurer.setSystemPropertiesModeName("SYSTEM_PROPERTIES_MODE_NEVER");
-                // At this point we're going to have to resolve the actual global properties bean and reference it!
-                repositoryConfigurer.setProperties((Properties) beanFactory
-                        .getBean(LegacyConfigPostProcessor.BEAN_NAME_GLOBAL_PROPERTIES));
+                // Reset locations list
+                repositoryConfigurer.setLocations(null);
+
+                // Invalidate cached merged bean definitions
+                ((BeanDefinitionRegistry) beanFactory).registerBeanDefinition(
+                        LegacyConfigPostProcessor.BEAN_NAME_REPOSITORY_PROPERTIES, beanFactory
+                                .getBeanDefinition(LegacyConfigPostProcessor.BEAN_NAME_REPOSITORY_PROPERTIES));
+
+                // Reconfigure the bean according to its new definition
+                beanFactory.configureBean(repositoryConfigurer,
+                        LegacyConfigPostProcessor.BEAN_NAME_REPOSITORY_PROPERTIES);
             }
         }
         catch (NoSuchBeanDefinitionException e)

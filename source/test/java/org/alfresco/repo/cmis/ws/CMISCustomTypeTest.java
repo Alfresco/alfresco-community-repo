@@ -32,12 +32,12 @@ import javax.xml.ws.Holder;
 import junit.framework.TestCase;
 
 import org.alfresco.cmis.CMISDictionaryModel;
-import org.alfresco.config.FixedClassPathXmlApplicationContext;
 import org.alfresco.repo.cmis.ws.utils.PropertyUtil;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 public class CMISCustomTypeTest extends TestCase
 {
@@ -61,7 +61,7 @@ public class CMISCustomTypeTest extends TestCase
     {
         if (null == applicationContext)
         {
-            applicationContext = new FixedClassPathXmlApplicationContext(new String[] { "classpath:alfresco/application-context.xml", "classpath:alfresco/cmis-ws-context.xml",
+            applicationContext = new ClassPathXmlApplicationContext(new String[] { "classpath:alfresco/application-context.xml", "classpath:alfresco/cmis-ws-context.xml",
                     "classpath:cmis/cmis-test-context.xml" });
             ServiceRegistry serviceRegistry = (ServiceRegistry) applicationContext.getBean(ServiceRegistry.SERVICE_REGISTRY);
             authenticationService = serviceRegistry.getAuthenticationService();

@@ -5,27 +5,9 @@
                http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.0.xsd
             http://cxf.apache.org/jaxws http://cxf.apache.org/schemas/jaxws.xsd">
 
-    <!-- Workaround for http://jira.springframework.org/browse/SPR-6412 -->
-    <bean class="org.springframework.context.annotation.CommonAnnotationBeanPostProcessor"/>
-
     <import resource="classpath:META-INF/cxf/cxf.xml" />
     <import resource="classpath:META-INF/cxf/cxf-extension-soap.xml" />
     <import resource="classpath:META-INF/cxf/cxf-servlet.xml" />
-
-    <!-- Workaround for http://jira.springframework.org/browse/SPR-6412 -->
-    <bean id="org.apache.cxf.binding.soap.SoapBindingFactory"
-      class="org.apache.cxf.binding.soap.SoapBindingFactory">
-        <property name="activationNamespaces">
-            <set>
-                <value>http://schemas.xmlsoap.org/soap/</value>
-                <value>http://schemas.xmlsoap.org/wsdl/soap/</value>
-                <value>http://schemas.xmlsoap.org/wsdl/soap12/</value>
-                <value>http://www.w3.org/2003/05/soap/bindings/HTTP/</value>
-                <value>http://schemas.xmlsoap.org/wsdl/soap/http</value>
-            </set>
-        </property>
-        <property name="bus" ref="cxf"/>
-    </bean>
 
     <jaxws:endpoint address="/RepositoryService" implementor="#dmRepositoryService"
         implementorClass="org.alfresco.repo.cmis.ws.DMRepositoryServicePort">

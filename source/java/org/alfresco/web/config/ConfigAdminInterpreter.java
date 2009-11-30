@@ -31,12 +31,12 @@ import java.io.PrintStream;
 import java.util.List;
 
 import org.alfresco.config.ConfigDeployment;
-import org.alfresco.config.FixedClassPathXmlApplicationContext;
 import org.alfresco.i18n.I18NUtil;
 import org.alfresco.repo.admin.BaseInterpreter;
 import org.alfresco.repo.config.xml.RepoXMLConfigService;
 import org.alfresco.service.transaction.TransactionService;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.core.io.ClassPathResource;
 
 /**
@@ -63,7 +63,7 @@ public class ConfigAdminInterpreter extends BaseInterpreter
      */
     public static void main(String[] args)
     {
-    	ApplicationContext context = new FixedClassPathXmlApplicationContext(new String[] {"classpath:alfresco/application-context.xml","classpath:alfresco/web-client-application-context.xml"});
+    	ApplicationContext context = new ClassPathXmlApplicationContext(new String[] {"classpath:alfresco/application-context.xml","classpath:alfresco/web-client-application-context.xml"});
         runMain(context, "webClientConfigAdminInterpreter");
     }
 

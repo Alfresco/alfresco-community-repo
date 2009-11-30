@@ -28,7 +28,6 @@ import java.io.Serializable;
 import java.util.Calendar;
 import java.util.HashMap;
 
-import org.alfresco.config.FixedClassPathXmlApplicationContext;
 import org.alfresco.model.WCMAppModel;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.MutableAuthenticationDao;
@@ -50,6 +49,7 @@ import org.apache.shale.test.mock.MockHttpServletRequest;
 import org.apache.shale.test.mock.MockHttpServletResponse;
 import org.apache.shale.test.mock.MockServletContext;
 import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.StaticWebApplicationContext;
 import org.w3c.dom.Document;
@@ -163,7 +163,7 @@ public class FormsTest
    protected ConfigurableApplicationContext loadContext(Object key)
       throws Exception
    {
-      return new FixedClassPathXmlApplicationContext((String[])key);
+      return new ClassPathXmlApplicationContext((String[])key);
    }
 
    public void testOutputPathPatternForFormInstanceData()

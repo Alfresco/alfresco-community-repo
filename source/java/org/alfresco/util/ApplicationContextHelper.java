@@ -26,7 +26,6 @@ package org.alfresco.util;
 
 import java.util.Arrays;
 
-import org.alfresco.config.FixedClassPathXmlApplicationContext;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
@@ -81,7 +80,7 @@ public class ApplicationContextHelper
         // The config has changed so close the current context (if any)
         closeApplicationContext();
         
-        instance = new FixedClassPathXmlApplicationContext(configLocations);            
+        instance = new ClassPathXmlApplicationContext(configLocations);            
         usedConfiguration = configLocations;
         
         return instance;

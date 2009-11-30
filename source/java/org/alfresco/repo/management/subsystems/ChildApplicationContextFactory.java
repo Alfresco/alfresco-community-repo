@@ -36,7 +36,6 @@ import java.util.StringTokenizer;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
-import org.alfresco.config.FixedClassPathXmlApplicationContext;
 import org.alfresco.config.JBossEnabledResourcePatternResolver;
 import org.alfresco.config.JndiPropertiesFactoryBean;
 import org.alfresco.util.config.RepositoryPathConfigBean;
@@ -351,7 +350,7 @@ public class ChildApplicationContextFactory extends AbstractPropertyBackedBean i
      * 
      * @author dward
      */
-    private class ChildApplicationContext extends FixedClassPathXmlApplicationContext
+    private class ChildApplicationContext extends ClassPathXmlApplicationContext
     {
 
         /** The composite property values. */

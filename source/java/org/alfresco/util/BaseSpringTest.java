@@ -24,10 +24,10 @@
  */
 package org.alfresco.util;
 
-import org.alfresco.config.FixedClassPathXmlApplicationContext;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.orm.hibernate3.SessionFactoryUtils;
 import org.springframework.test.AbstractTransactionalDataSourceSpringContextTests;
 
@@ -120,7 +120,7 @@ public abstract class BaseSpringTest extends AbstractTransactionalDataSourceSpri
         else
         {
             String[] configLocations = (String[]) key;
-            return new FixedClassPathXmlApplicationContext(configLocations);
+            return new ClassPathXmlApplicationContext(configLocations);
         }
     }
 }

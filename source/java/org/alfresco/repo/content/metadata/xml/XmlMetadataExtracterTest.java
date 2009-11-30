@@ -30,7 +30,6 @@ import java.net.URL;
 
 import junit.framework.TestCase;
 
-import org.alfresco.config.FixedClassPathXmlApplicationContext;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.ActionImpl;
 import org.alfresco.repo.action.executer.ActionExecuter;
@@ -55,6 +54,7 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.util.GUID;
 import org.alfresco.util.PropertyMap;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 /**
  * Tests various aspects of XML metadata extraction.
@@ -71,7 +71,7 @@ public class XmlMetadataExtracterTest extends TestCase
     private static final String FILE_MALFORMED = "xml-metadata/malformed-sample.xml";
     
     private static final String CTX_LOCATION = "classpath:xml-metadata/xml-metadata-test-context.xml";
-    private static final ApplicationContext ctx = new FixedClassPathXmlApplicationContext(CTX_LOCATION);
+    private static final ApplicationContext ctx = new ClassPathXmlApplicationContext(CTX_LOCATION);
     
     private ServiceRegistry serviceRegistry;
     private AuthenticationComponent authenticationComponent;

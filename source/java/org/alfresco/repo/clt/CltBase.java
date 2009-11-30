@@ -11,7 +11,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.alfresco.config.FixedClassPathXmlApplicationContext;
 import org.alfresco.repo.remote.ClientTicketHolder;
 import org.alfresco.service.cmr.avmsync.AVMSyncService;
 import org.alfresco.service.cmr.remote.AVMRemote;
@@ -19,6 +18,7 @@ import org.alfresco.service.cmr.remote.RepoRemote;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.util.Pair;
 import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 /**
  * This is the base class for AVM clts.
@@ -64,7 +64,7 @@ public abstract class CltBase
      */
     protected CltBase()
     {
-        fContext = new FixedClassPathXmlApplicationContext("clt-context.xml");
+        fContext = new ClassPathXmlApplicationContext("clt-context.xml");
         fAVMRemote = (AVMRemote)fContext.getBean("avmRemote");
         fAVMSyncService = (AVMSyncService)fContext.getBean("avmSyncService");
         fRepoRemote = (RepoRemote)fContext.getBean("repoRemote");

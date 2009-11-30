@@ -47,7 +47,6 @@ import javax.xml.transform.sax.SAXTransformerFactory;
 import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamResult;
 
-import org.alfresco.config.FixedClassPathXmlApplicationContext;
 import org.hibernate.dialect.Dialect;
 import org.hibernate.dialect.Oracle8iDialect;
 import org.hibernate.dialect.TypeNames;
@@ -102,7 +101,7 @@ public class Main
     @SuppressWarnings("unchecked")
     public Main(final String contextPath) throws Exception
     {
-        final ClassPathXmlApplicationContext context = new FixedClassPathXmlApplicationContext(new String[]
+        final ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(new String[]
         {
             "file:" + contextPath
         });

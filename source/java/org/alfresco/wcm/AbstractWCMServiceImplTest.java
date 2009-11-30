@@ -28,7 +28,6 @@ import java.util.List;
 
 import junit.framework.TestCase;
 
-import org.alfresco.config.FixedClassPathXmlApplicationContext;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -46,6 +45,7 @@ import org.alfresco.wcm.webproject.WebProjectService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 /**
  * Abstract WCM Service implementation unit test
@@ -65,7 +65,7 @@ public class AbstractWCMServiceImplTest extends TestCase
     protected static final int POLL_MAX_ATTEMPTS = 10;
     
     // note: all tests share same context (when run via WCMTestSuite)
-    protected static ApplicationContext ctx = new FixedClassPathXmlApplicationContext(new String[] {ApplicationContextHelper.CONFIG_LOCATIONS[0], SUBMIT_CONFIG_LOCATION, PREVIEW_CONFIG_LOCATION});;
+    protected static ApplicationContext ctx = new ClassPathXmlApplicationContext(new String[] {ApplicationContextHelper.CONFIG_LOCATIONS[0], SUBMIT_CONFIG_LOCATION, PREVIEW_CONFIG_LOCATION});;
     
     //
     // test data

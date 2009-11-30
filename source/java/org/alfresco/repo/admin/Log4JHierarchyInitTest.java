@@ -26,10 +26,10 @@ package org.alfresco.repo.admin;
 
 import junit.framework.TestCase;
 
-import org.alfresco.config.FixedClassPathXmlApplicationContext;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 /**
  * @see Log4JHierarchyInit
@@ -39,7 +39,7 @@ import org.springframework.context.ApplicationContext;
  */
 public class Log4JHierarchyInitTest extends TestCase
 {
-    private static ApplicationContext ctx = new FixedClassPathXmlApplicationContext(
+    private static ApplicationContext ctx = new ClassPathXmlApplicationContext(
             new String[] {"classpath:log4j/log4j-test-context.xml"}
             );
 

@@ -28,12 +28,12 @@ import javax.jcr.Repository;
 
 import junit.framework.TestCase;
 
-import org.alfresco.config.FixedClassPathXmlApplicationContext;
 import org.alfresco.jcr.repository.RepositoryFactory;
 import org.alfresco.jcr.repository.RepositoryImpl;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 /**
  * Base JCR Test
@@ -47,7 +47,7 @@ public class BaseJCRTest extends TestCase
     protected StoreRef storeRef;
     protected String adminUserName;
     
-    protected static ApplicationContext applicationContext = new FixedClassPathXmlApplicationContext("classpath:org/alfresco/jcr/test/test-context.xml");
+    protected static ApplicationContext applicationContext = new ClassPathXmlApplicationContext("classpath:org/alfresco/jcr/test/test-context.xml");
     
     protected String getWorkspace()
     {

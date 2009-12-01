@@ -178,8 +178,6 @@ public interface AuditComponent
      * @return                  Returns the values that were actually persisted, keyed by their full path.
      * @throws IllegalStateException if there is not a writable transaction present
      * 
-     * @see #startAuditSession()
-     * 
      * @since 3.2
      */
     Map<String, Serializable> recordAuditValues(String rootPath, Map<String, Serializable> values);

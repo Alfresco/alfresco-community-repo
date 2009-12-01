@@ -72,7 +72,7 @@ public class AuditComponentTest extends TestCase
 {
     private static final String APPLICATION_TEST = "Alfresco Test";
     private static final String APPLICATION_ACTIONS_TEST = "Actions Test";
-    private static final String APPLICATION_API_TEST = "API Test";
+    private static final String APPLICATION_API_TEST = "Test AuthenticationService";
     
     private static final Log logger = LogFactory.getLog(AuditComponentTest.class);
     
@@ -454,12 +454,10 @@ public class AuditComponentTest extends TestCase
     
     public void testAuditAuthenticationService() throws Exception
     {
-        final Map<String, Serializable> expected = new HashMap<String, Serializable>();
-        expected.put("/actions-test/actions/user", AuthenticationUtil.getFullyAuthenticatedUser());
-        expected.put("/actions-test/actions/context-node/noderef", nodeRef);
-        expected.put("/actions-test/actions/action-01/params/A/value", null);
-        expected.put("/actions-test/actions/action-01/params/B/value", null);
-        expected.put("/actions-test/actions/action-01/params/C/value", null);
+        // Load in the config for this specific test: alfresco-audit-test-authenticationservice.xml
+        URL testModelUrl = ResourceUtils.getURL("classpath:alfresco/audit/alfresco-audit-test-authenticationservice.xml");
+        auditModelRegistry.registerModel(testModelUrl);
+        auditModelRegistry.loadAuditModels();
         
         final List<Map<String, Serializable>> results = new ArrayList<Map<String,Serializable>>();
         final StringBuilder sb = new StringBuilder();

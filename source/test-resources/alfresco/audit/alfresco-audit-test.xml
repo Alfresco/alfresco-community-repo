@@ -24,7 +24,6 @@
         <PathMap source="/test/one.one/two.two" target="/test/1.1/2.2"/>
         <PathMap source="/actions-test" target="/actions-test"/>
         <PathMap source="/actions-test/actions/action-01-mapped" target="/actions-test/actions/action-01"/>
-        <PathMap source="/alfresco-api" target="/api-test"/>
     </PathMappings>
 
     <Application name="Alfresco Test" key="test">
@@ -94,23 +93,6 @@
                 </AuditPath>
             </AuditPath>
         </AuditPath>
-    </Application>
-
-    <Application name="API Test" key="api-test">
-        <AuditPath key="post">
-	        <AuditPath key="AuthenticationService">
-	            <AuditPath key="authenticate">
-	                <AuditPath key="args">
-	                    <AuditPath key="userName">
-	                        <RecordValue key="value" dataExtractor="simpleValue"/>
-	                    </AuditPath>
-	                </AuditPath>
-	                <AuditPath key="error">
-                        <RecordValue key="value" dataExtractor="simpleValue"/>
-	                </AuditPath>
-	            </AuditPath>
-	        </AuditPath>
-	    </AuditPath>
     </Application>
 
 </Audit>

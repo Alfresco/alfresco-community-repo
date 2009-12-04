@@ -31,6 +31,7 @@ import javax.transaction.UserTransaction;
 
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.audit.AuditInfo;
+import org.alfresco.service.cmr.audit.AuditQueryParameters;
 import org.alfresco.service.cmr.audit.AuditService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -169,6 +170,15 @@ public class AuditServiceImpl implements AuditService
 
     /**
      * {@inheritDoc}
+     * @since 3.3
+     */
+    public void auditQuery(AuditQueryCallback callback, AuditQueryParameters parameters, int maxResults)
+    {
+        auditComponent.auditQuery(callback, parameters, maxResults);
+    }
+
+    /**
+     * {@inheritDoc}
      * @since 3.2
      */
     public void auditQuery(
@@ -180,8 +190,14 @@ public class AuditServiceImpl implements AuditService
     {
         ParameterCheck.mandatory("callback", callback);
         
-        auditComponent.auditQuery(
-                callback, forward, applicationName, user, from, to, maxResults);
+        AuditQueryParameters params = new AuditQueryParameters();
+        params.setForward(true);
+        params.setApplicationName(applicationName);
+        params.setUser(user);
+        params.setFromTime(from);
+        params.setToTime(to);
+        
+        auditComponent.auditQuery(callback, params, maxResults);
     }
 
     /**
@@ -198,7 +214,17 @@ public class AuditServiceImpl implements AuditService
     {
         ParameterCheck.mandatory("callback", callback);
         
-        auditComponent.auditQuery(
-                callback, forward, applicationName, user, from, to, searchKey, searchValue, maxResults);
+        AuditQueryParameters params = new AuditQueryParameters();
+        params.setForward(true);
+        params.setApplicationName(applicationName);
+        params.setUser(user);
+        params.setFromTime(from);
+        params.setToTime(to);
+        if (searchKey != null || searchValue != null)
+        {
+            params.addSearchKey(searchKey, searchValue);
+        }
+        
+        auditComponent.auditQuery(callback, params, maxResults);
     }
 }

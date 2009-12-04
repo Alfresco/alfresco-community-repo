@@ -188,6 +188,12 @@
             <isNotNull prepend="and" property="auditUserId">
                 entry.audit_user_id = #auditUserId#
             </isNotNull>
+            <isNotNull prepend="and" property="auditFromId">
+                <![CDATA[entry.id >= #auditFromId#]]>
+            </isNotNull>
+            <isNotNull prepend="and" property="auditToId">
+                <![CDATA[entry.id < #auditToId#]]>
+            </isNotNull>
             <isNotNull prepend="and" property="auditFromTime">
                 <![CDATA[entry.audit_time >= #auditFromTime#]]>
             </isNotNull>
@@ -236,6 +242,12 @@
             </isNotNull>
             <isNotNull prepend="and" property="auditUserId">
                 entry.audit_user_id = #auditUserId#
+            </isNotNull>
+            <isNotNull prepend="and" property="auditFromId">
+                <![CDATA[entry.id >= #auditFromId#]]>
+            </isNotNull>
+            <isNotNull prepend="and" property="auditToId">
+                <![CDATA[entry.id < #auditToId#]]>
             </isNotNull>
             <isNotNull prepend="and" property="auditFromTime">
                 <![CDATA[entry.audit_time >= #auditFromTime#]]>

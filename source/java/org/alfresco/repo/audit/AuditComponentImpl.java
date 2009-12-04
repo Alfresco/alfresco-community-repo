@@ -54,6 +54,7 @@ import org.alfresco.service.Auditable;
 import org.alfresco.service.NotAuditable;
 import org.alfresco.service.PublicService;
 import org.alfresco.service.cmr.audit.AuditInfo;
+import org.alfresco.service.cmr.audit.AuditQueryParameters;
 import org.alfresco.service.cmr.audit.AuditService.AuditQueryCallback;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -1321,51 +1322,17 @@ public class AuditComponentImpl implements AuditComponent
     /**
      * {@inheritDoc}
      */
-    public void auditQuery(
-            AuditQueryCallback callback,
-            boolean forward,
-            String applicationName,
-            String user,
-            Long from,
-            Long to,
-            int maxResults)
+    public void auditQuery(AuditQueryCallback callback, AuditQueryParameters parameters, int maxResults)
     {
         ParameterCheck.mandatory("callback", callback);
+        ParameterCheck.mandatory("parameters", parameters);
         
         // Shortcuts
-        if (from != null && to != null && from.compareTo(to) > 0)
+        if (parameters.isZeroResultQuery())
         {
-            // Time range can't yield results
             return;
         }
         
-        auditDAO.findAuditEntries(
-                callback, forward, applicationName, user, from, to, maxResults);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public void auditQuery(
-            AuditQueryCallback callback,
-            boolean forward,
-            String applicationName,
-            String user,
-            Long from,
-            Long to,
-            String searchKey, Serializable searchValue,
-            int maxResults)
-    {
-        ParameterCheck.mandatory("callback", callback);
-        
-        // Shortcuts
-        if (from != null && to != null && from.compareTo(to) > 0)
-        {
-            // Time range can't yield results
-            return;
-        }
-        
-        auditDAO.findAuditEntries(
-                callback, forward, applicationName, user, from, to, searchKey, searchValue, maxResults);
+        auditDAO.findAuditEntries(callback, parameters, maxResults);
     }
 }

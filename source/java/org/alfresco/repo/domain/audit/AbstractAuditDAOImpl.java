@@ -442,28 +442,40 @@ public abstract class AbstractAuditDAOImpl implements AuditDAO
 
     public void findAuditEntries(
             AuditQueryCallback callback,
-            boolean forward,
-            String applicationName, String user, Long from, Long to,
+            org.alfresco.service.cmr.audit.AuditQueryParameters parameters,
             int maxResults)
     {
+        String searchKey = null;
+        Serializable searchValue = null;
+        if (parameters.getSearchKeyValues().size() > 0)
+        {
+            // Only handle one pair for now
+            Pair<String, Serializable> searchKeyValue = parameters.getSearchKeyValues().get(0);
+            searchKey = searchKeyValue.getFirst();
+            searchValue = searchKeyValue.getSecond();
+        }
+        
         AuditQueryRowHandler rowHandler = new AuditQueryRowHandler(callback);
-        findAuditEntries(rowHandler, forward, applicationName, user, from, to, maxResults, null, null);
-    }
-    
-    public void findAuditEntries(
-            AuditQueryCallback callback,
-            boolean forward,
-            String applicationName, String user, Long from, Long to,
-            String searchKey, Serializable searchValue,
-            int maxResults)
-    {
-        AuditQueryRowHandler rowHandler = new AuditQueryRowHandler(callback);
-        findAuditEntries(rowHandler, forward, applicationName, user, from, to, maxResults, searchKey, searchValue);
+        findAuditEntries(
+                rowHandler,
+                parameters.isForward(),
+                parameters.getApplicationName(),
+                parameters.getUser(),
+                parameters.getFromId(),
+                parameters.getToId(),
+                parameters.getFromTime(),
+                parameters.getToTime(),
+                maxResults,
+                searchKey,
+                searchValue);
     }
     
     protected abstract void findAuditEntries(
             AuditQueryRowHandler rowHandler,
             boolean forward,
-            String applicationName, String user, Long from, Long to, int maxResults,
+            String applicationName, String user,
+            Long fromId, Long toId,
+            Long fromTime, Long toTime,
+            int maxResults,
             String searchKey, Serializable searchValue);
 }

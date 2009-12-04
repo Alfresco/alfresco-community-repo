@@ -32,6 +32,7 @@ import org.alfresco.repo.audit.model.AuditApplication;
 import org.alfresco.repo.audit.model.AuditModelRegistry;
 import org.alfresco.repo.audit.model._3.AuditPath;
 import org.alfresco.service.cmr.audit.AuditInfo;
+import org.alfresco.service.cmr.audit.AuditQueryParameters;
 import org.alfresco.service.cmr.audit.AuditService.AuditQueryCallback;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.aopalliance.intercept.MethodInvocation;
@@ -183,45 +184,13 @@ public interface AuditComponent
     Map<String, Serializable> recordAuditValues(String rootPath, Map<String, Serializable> values);
     
     /**
-     * Get the audit entries that match the given criteria.
+     * Find audit entries using the given parameters
      * 
-     * @param callback          the callback that will handle results
-     * @param forward           <tt>true</tt> for results to ordered from first to last,
-     *                          or <tt>false</tt> to order from last to first
-     * @param applicationName   if not <tt>null</tt>, find entries logged against this application 
-     * @param user              if not <tt>null</tt>, find entries logged against this user
-     * @param from              the start search time (<tt>null</tt> to start at the beginning)
-     * @param to                the end search time (<tt>null</tt> for no limit)
+     * @param callback          the data callback per entry
+     * @param parameters        the parameters for the query (may not be <tt>null</tt>)
      * @param maxResults        the maximum number of results to retrieve (zero or negative to ignore)
      * 
      * @since 3.2
      */
-    void auditQuery(
-            AuditQueryCallback callback,
-            boolean forward,
-            String applicationName, String user, Long from, Long to,
-            int maxResults);
-    
-    /**
-     * Get the audit entries that match the given criteria.
-     * 
-     * @param callback          the callback that will handle results
-     * @param forward           <tt>true</tt> for results to ordered from first to last,
-     *                          or <tt>false</tt> to order from last to first
-     * @param applicationName   if not <tt>null</tt>, find entries logged against this application 
-     * @param user              if not <tt>null</tt>, find entries logged against this user
-     * @param from              the start search time (<tt>null</tt> to start at the beginning)
-     * @param to                the end search time (<tt>null</tt> for no limit)
-     * @param searchKey         the audit key path that must exist (<tt>null</tt> to ignore)
-     * @param searchValue       an audit value that must exist (<tt>null</tt> to ignore)
-     * @param maxResults        the maximum number of results to retrieve (zero or negative to ignore)
-     * 
-     * @since 3.2
-     */
-    void auditQuery(
-            AuditQueryCallback callback,
-            boolean forward,
-            String applicationName, String user, Long from, Long to,
-            String searchKey, Serializable searchValue,
-            int maxResults);
+    void auditQuery(AuditQueryCallback callback, AuditQueryParameters parameters, int maxResults);
 }

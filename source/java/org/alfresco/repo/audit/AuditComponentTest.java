@@ -44,6 +44,7 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.cmr.audit.AuditQueryParameters;
 import org.alfresco.service.cmr.audit.AuditService;
 import org.alfresco.service.cmr.audit.AuditService.AuditQueryCallback;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -336,9 +337,13 @@ public class AuditComponentTest extends TestCase
             }
         };
         
+        AuditQueryParameters params = new AuditQueryParameters();
+        params.setForward(true);
+        params.setApplicationName(APPLICATION_ACTIONS_TEST);
+        
         sb.delete(0, sb.length());
         rowCount.setValue(0);
-        auditComponent.auditQuery(callback, true, APPLICATION_ACTIONS_TEST, null, null, null, -1);
+        auditComponent.auditQuery(callback, params, -1);
         assertTrue("Expected some data", rowCount.intValue() > 0);
         logger.debug(sb.toString());
         int allResults = rowCount.intValue();
@@ -346,21 +351,25 @@ public class AuditComponentTest extends TestCase
         // Limit by count
         sb.delete(0, sb.length());
         rowCount.setValue(0);
-        auditComponent.auditQuery(callback, true, APPLICATION_ACTIONS_TEST, null, null, null, 1);
+        auditComponent.auditQuery(callback, params, 1);
         assertEquals("Expected to limit data", 1, rowCount.intValue());
         logger.debug(sb.toString());
         
         // Limit by time and query up to and excluding the 'before' time
         sb.delete(0, sb.length());
         rowCount.setValue(0);
-        auditComponent.auditQuery(callback, true, APPLICATION_ACTIONS_TEST, null, null, beforeTime, -1);
+        params.setToTime(beforeTime);
+        auditComponent.auditQuery(callback, params, -1);
+        params.setToTime(null);
         logger.debug(sb.toString());
         int resultsBefore = rowCount.intValue();
         
         // Limit by time and query from and including the 'before' time
         sb.delete(0, sb.length());
         rowCount.setValue(0);
-        auditComponent.auditQuery(callback, true, APPLICATION_ACTIONS_TEST, null, beforeTime, null, -1);
+        params.setFromTime(beforeTime);
+        auditComponent.auditQuery(callback, params, -1);
+        params.setFromTime(null);
         logger.debug(sb.toString());
         int resultsAfter = rowCount.intValue();
         
@@ -370,13 +379,17 @@ public class AuditComponentTest extends TestCase
 
         sb.delete(0, sb.length());
         rowCount.setValue(0);
-        auditComponent.auditQuery(callback, true, APPLICATION_ACTIONS_TEST, user, null, null, -1);
+        params.setUser(user);
+        auditComponent.auditQuery(callback, params, -1);
+        params.setUser(null);
         assertTrue("Expected some data for specific user", rowCount.intValue() > 0);
         logger.debug(sb.toString());
         
         sb.delete(0, sb.length());
         rowCount.setValue(0);
-        auditComponent.auditQuery(callback, true, APPLICATION_ACTIONS_TEST, "Numpty", null, null, -1);
+        params.setUser("Numpty");
+        auditComponent.auditQuery(callback, params, -1);
+        params.setUser(null);
         assertTrue("Expected no data for bogus user", rowCount.intValue() == 0);
         logger.debug(sb.toString());
         
@@ -454,6 +467,10 @@ public class AuditComponentTest extends TestCase
     
     public void testAuditAuthenticationService() throws Exception
     {
+        AuditQueryParameters params = new AuditQueryParameters();
+        params.setForward(true);
+        params.setApplicationName(APPLICATION_API_TEST);
+        
         // Load in the config for this specific test: alfresco-audit-test-authenticationservice.xml
         URL testModelUrl = ResourceUtils.getURL("classpath:alfresco/audit/alfresco-audit-test-authenticationservice.xml");
         auditModelRegistry.registerModel(testModelUrl);
@@ -497,7 +514,7 @@ public class AuditComponentTest extends TestCase
         auditService.clearAudit(APPLICATION_API_TEST);
         results.clear();
         sb.delete(0, sb.length());
-        auditService.auditQuery(auditQueryCallback, true, APPLICATION_API_TEST, null, null, null, -1);
+        auditService.auditQuery(auditQueryCallback, params, -1);
         logger.debug(sb.toString());
         assertTrue("There should be no audit entries for the API test after a clear", results.isEmpty());
         
@@ -531,7 +548,7 @@ public class AuditComponentTest extends TestCase
         // Check that the call was audited
         results.clear();
         sb.delete(0, sb.length());
-        auditService.auditQuery(auditQueryCallback, true, APPLICATION_API_TEST, null, null, null, -1);
+        auditService.auditQuery(auditQueryCallback, params, -1);
         logger.debug(sb.toString());
         assertFalse("Did not get any audit results after successful login", results.isEmpty());
 
@@ -548,7 +565,7 @@ public class AuditComponentTest extends TestCase
         }
         results.clear();
         sb.delete(0, sb.length());
-        auditService.auditQuery(auditQueryCallback, true, APPLICATION_API_TEST, null, null, null, -1);
+        auditService.auditQuery(auditQueryCallback, params, -1);
         logger.debug(sb.toString());
         assertFalse("Did not get any audit results after failed login", results.isEmpty());
     }

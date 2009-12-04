@@ -29,49 +29,40 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.net.URL;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.GregorianCalendar;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.repo.audit.AuditComponentImpl;
-import org.alfresco.repo.audit.AuditConfiguration;
 import org.alfresco.repo.audit.AuditState;
-import org.alfresco.repo.content.ContentContext;
 import org.alfresco.repo.content.ContentStore;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.domain.audit.AuditDAO;
-import org.alfresco.repo.domain.audit.AuditDAO.AuditApplicationInfo;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.TransactionalDao;
-import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.audit.AuditInfo;
+import org.alfresco.service.cmr.audit.AuditQueryParameters;
 import org.alfresco.service.cmr.audit.AuditService.AuditQueryCallback;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.datatype.Duration;
-import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.EqualsHelper;
 import org.alfresco.util.GUID;
 import org.alfresco.util.Pair;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.hibernate.HibernateException;
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.mapping.Column;
 import org.springframework.orm.hibernate3.HibernateCallback;
-import org.springframework.orm.hibernate3.HibernateTemplate;
 import org.springframework.orm.hibernate3.LocalSessionFactoryBean;
 import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
 
@@ -738,27 +729,7 @@ public class HibernateAuditDAO extends HibernateDaoSupport implements AuditDAO, 
      * @throws UnsupportedOperationException always
      * @since 3.2
      */
-    public void findAuditEntries(
-            AuditQueryCallback callback,
-            boolean forward,
-            String applicationName, String user, Long from, Long to,
-            int maxResults)
-    {
-        throw new UnsupportedOperationException();
-    }
-
-    /**
-     * Fallout implementation from new audit DAO
-     * 
-     * @throws UnsupportedOperationException always
-     * @since 3.2
-     */
-    public void findAuditEntries(
-            AuditQueryCallback callback,
-            boolean forward,
-            String applicationName, String user, Long from, Long to,
-            String searchKey, Serializable searchValue,
-            int maxResults)
+    public void findAuditEntries(AuditQueryCallback callback, AuditQueryParameters parameters, int maxResults)
     {
         throw new UnsupportedOperationException();
     }

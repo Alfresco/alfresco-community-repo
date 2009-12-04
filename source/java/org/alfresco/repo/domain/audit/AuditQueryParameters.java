@@ -37,6 +37,8 @@ public class AuditQueryParameters
     private boolean forward;
     private Long auditAppNameId;
     private Long auditUserId;
+    private Long auditFromId;
+    private Long auditToId;
     private Long auditFromTime;
     private Long auditToTime;
     private Long searchKeyId;
@@ -54,6 +56,8 @@ public class AuditQueryParameters
           .append("[ forward=").append(forward)
           .append(", auditAppNameId=").append(auditAppNameId)
           .append(", auditUserId=").append(auditUserId)
+          .append(", auditFromId=").append(auditFromId == null ? null : auditFromId)
+          .append(", auditToId=").append(auditToId == null ? null : auditToId)
           .append(", auditFromTime=").append(auditFromTime == null ? null : new Date(auditFromTime))
           .append(", auditToTime=").append(auditToTime == null ? null : new Date(auditToTime))
           .append(", searchKeyId=").append(searchKeyId)
@@ -100,6 +104,26 @@ public class AuditQueryParameters
     public Long getAuditFromTime()
     {
         return auditFromTime;
+    }
+
+    public Long getAuditFromId()
+    {
+        return auditFromId;
+    }
+
+    public void setAuditFromId(Long auditFromId)
+    {
+        this.auditFromId = auditFromId;
+    }
+
+    public Long getAuditToId()
+    {
+        return auditToId;
+    }
+
+    public void setAuditToId(Long auditToId)
+    {
+        this.auditToId = auditToId;
     }
 
     public void setAuditFromTime(Long from)

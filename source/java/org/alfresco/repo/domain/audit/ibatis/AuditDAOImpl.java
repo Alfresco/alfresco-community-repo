@@ -194,7 +194,10 @@ public class AuditDAOImpl extends AbstractAuditDAOImpl
     protected void findAuditEntries(
             final AuditQueryRowHandler rowHandler,
             boolean forward,
-            String appName, String user, Long from, Long to, int maxResults,
+            String appName, String user,
+            Long fromId, Long toId,
+            Long fromTime, Long toTime,
+            int maxResults,
             String searchKey, Serializable searchValue)
     {
         AuditQueryParameters params = new AuditQueryParameters();
@@ -220,8 +223,10 @@ public class AuditDAOImpl extends AbstractAuditDAOImpl
             }
             params.setAuditUserId(userPair.getFirst());
         }
-        params.setAuditFromTime(from);
-        params.setAuditToTime(to);
+        params.setAuditFromId(fromId);
+        params.setAuditToId(toId);
+        params.setAuditFromTime(fromTime);
+        params.setAuditToTime(toTime);
         if (searchKey != null)
         {
             // Look up the ID of the search key

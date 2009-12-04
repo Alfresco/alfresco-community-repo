@@ -207,34 +207,11 @@ public interface AuditDAO
      * Find audit entries using the given parameters, any of which may be null
      * 
      * @param callback          the data callback per entry
-     * @param forward           <tt>true</tt> for results to ordered from first to last,
-     *                          or <tt>false</tt> to order from last to first
-     * @param applicationName   the name of the application to search against (optional)
-     * @param user              the user to search for (optional)
-     * @param from              the minimum entry time (optional)
-     * @param to                the maximum entry time (optional)
+     * @param parameters        the parameters for the query (may not be <tt>null</tt>)
      * @param maxResults        the maximum number of results to retrieve
      */
     void findAuditEntries(
             AuditQueryCallback callback,
-            boolean forward,
-            String applicationName, String user, Long from, Long to, int maxResults);
-    
-    /**
-     * Find audit entries using the given parameters, any of which may be null.
-     * 
-     * @param searchKey         the audit path key to search for (optional)
-     * @param searchValue       the audit value to search for (optional).  This can be
-     *                          of any type that is supported by the <b>alf_prop_xxx</b> tables.
-     * 
-     * @see #findAuditEntries(AuditQueryCallback, String, String, Long, Long, int)
-     * 
-     * @since 3.2
-     */
-    void findAuditEntries(
-            AuditQueryCallback callback,
-            boolean forward,
-            String applicationName, String user, Long from, Long to,
-            String searchKey, Serializable searchValue,
+            org.alfresco.service.cmr.audit.AuditQueryParameters parameters,
             int maxResults);
 }

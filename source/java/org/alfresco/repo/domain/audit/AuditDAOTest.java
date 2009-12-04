@@ -40,6 +40,7 @@ import org.alfresco.repo.domain.contentdata.ContentDataDAO;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.cmr.audit.AuditQueryParameters;
 import org.alfresco.service.cmr.audit.AuditService.AuditQueryCallback;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.transaction.TransactionService;
@@ -213,11 +214,14 @@ public class AuditDAOTest extends TestCase
             }
         };
         
+        final AuditQueryParameters params = new AuditQueryParameters();
+        params.addSearchKey("/a/b/c", null);
+        
         RetryingTransactionCallback<Void> findCallback = new RetryingTransactionCallback<Void>()
         {
             public Void execute() throws Throwable
             {
-                auditDAO.findAuditEntries(callback, true, null, null, null, null, "/a/b/c", null, 2);
+                auditDAO.findAuditEntries(callback, params, 2);
                 return null;
             }
         };
@@ -240,7 +244,9 @@ public class AuditDAOTest extends TestCase
         {
             public Void execute() throws Throwable
             {
-                auditDAO.findAuditEntries(callback, false, null, null, null, null, "/a/b/c", null, 2);
+                params.setForward(false);
+                auditDAO.findAuditEntries(callback, params, 2);
+                params.setForward(true);
                 return null;
             }
         };
@@ -276,6 +282,9 @@ public class AuditDAOTest extends TestCase
         
         // Some entries
         final String appName = doAuditEntryImpl(1);
+
+        final AuditQueryParameters params = new AuditQueryParameters();
+        params.setApplicationName(appName);
         // Delete the entries
         RetryingTransactionCallback<Void> deletedCallback = new RetryingTransactionCallback<Void>()
         {
@@ -284,7 +293,7 @@ public class AuditDAOTest extends TestCase
                 Long appId = auditDAO.getAuditApplication(appName).getId();
                 auditDAO.deleteAuditEntries(appId, null, null);
                 // There should be no entries
-                auditDAO.findAuditEntries(noResultsCallback, true, appName, null, null, null, -1);
+                auditDAO.findAuditEntries(noResultsCallback, params, -1);
                 return null;
             }
         };

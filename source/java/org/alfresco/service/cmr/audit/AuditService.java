@@ -181,6 +181,17 @@ public interface AuditService
     }
     
     /**
+     * Issue an audit query using the given parameters and consuming results in the callback.
+     * 
+     * @param callback          the callback that will handle results
+     * @param parameters        the parameters for the query (may not be <tt>null</tt>)
+     * @param maxResults        the maximum number of results to retrieve (zero or negative to ignore)
+     * 
+     * @since 3.3
+     */
+    void auditQuery(AuditQueryCallback callback, AuditQueryParameters parameters, int maxResults);
+    
+    /**
      * Get the audit entries that match the given criteria.
      * 
      * @param callback          the callback that will handle results
@@ -193,6 +204,7 @@ public interface AuditService
      * @param maxResults        the maximum number of results to retrieve (zero or negative to ignore)
      * 
      * @since 3.2
+     * @deprecated              Use {@link #auditQuery(AuditQueryCallback, AuditQueryParameters)}
      */
     void auditQuery(
             AuditQueryCallback callback,
@@ -215,6 +227,7 @@ public interface AuditService
      * @param maxResults        the maximum number of results to retrieve (zero or negative to ignore)
      * 
      * @since 3.2
+     * @deprecated              Use {@link #auditQuery(AuditQueryCallback, AuditQueryParameters)}
      */
     void auditQuery(
             AuditQueryCallback callback,

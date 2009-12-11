@@ -491,7 +491,7 @@ public class AuditComponentTest extends TestCase
                 if (logger.isDebugEnabled())
                 {
                     logger.debug(
-                            "Audit Entry: " + applicationName + ", " + user + ", " + new Date(time) + "\n" +
+                            "Audit Entry " + entryId + ": " + applicationName + ", " + user + ", " + new Date(time) + "\n" +
                             "   Data: " + values);
                 }
                 sb.append("Row: ")
@@ -568,5 +568,38 @@ public class AuditComponentTest extends TestCase
         auditService.auditQuery(auditQueryCallback, params, -1);
         logger.debug(sb.toString());
         assertFalse("Did not get any audit results after failed login", results.isEmpty());
+    }
+    
+    public void testAuditQuery_MaxId() throws Exception
+    {
+        AuditQueryCallback auditQueryCallback = new AuditQueryCallback()
+        {
+            public boolean handleAuditEntry(
+                    Long entryId,
+                    String applicationName,
+                    String user,
+                    long time,
+                    Map<String, Serializable> values)
+            {
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug(
+                            "Audit Entry " + entryId + ": " + applicationName + ", " + user + ", " + new Date(time) + "\n" +
+                            "   Data: " + values);
+                }
+                return true;
+            }
+
+            public boolean handleAuditEntryError(Long entryId, String errorMsg, Throwable error)
+            {
+                throw new AlfrescoRuntimeException(errorMsg, error);
+            }
+        };
+        
+        AuditQueryParameters params = new AuditQueryParameters();
+        params.setApplicationName(APPLICATION_API_TEST);
+        params.setForward(false);
+        params.setToId(Long.MAX_VALUE);
+        auditService.auditQuery(auditQueryCallback, params, 1);
     }
 }

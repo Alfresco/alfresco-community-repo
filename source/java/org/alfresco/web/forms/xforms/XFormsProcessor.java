@@ -30,8 +30,8 @@ import java.util.TreeSet;
 
 import javax.faces.context.FacesContext;
 
-import org.alfresco.config.ConfigElement;
-import org.alfresco.config.ConfigService;
+import org.springframework.extensions.config.ConfigElement;
+import org.springframework.extensions.config.ConfigService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.servlet.FacesHelper;

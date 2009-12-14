@@ -32,9 +32,9 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.alfresco.config.ConfigElement;
-import org.alfresco.config.ConfigException;
-import org.alfresco.config.element.ConfigElementAdapter;
+import org.springframework.extensions.config.ConfigElement;
+import org.springframework.extensions.config.ConfigException;
+import org.springframework.extensions.config.element.ConfigElementAdapter;
 
 /**
  * Dashboard config element.
@@ -67,7 +67,7 @@ public class DashboardsConfigElement extends ConfigElementAdapter
    }
 
    /**
-    * @see org.alfresco.config.element.ConfigElementAdapter#getChildren()
+    * @see org.springframework.extensions.config.element.ConfigElementAdapter#getChildren()
     */
    public List<ConfigElement> getChildren()
    {
@@ -75,7 +75,7 @@ public class DashboardsConfigElement extends ConfigElementAdapter
    }
    
    /**
-    * @see org.alfresco.config.element.ConfigElementAdapter#combine(org.alfresco.config.ConfigElement)
+    * @see org.springframework.extensions.config.element.ConfigElementAdapter#combine(org.alfresco.config.ConfigElement)
     */
    public ConfigElement combine(ConfigElement configElement)
    {

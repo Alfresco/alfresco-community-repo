@@ -27,9 +27,9 @@ package org.alfresco.web.config;
 import java.util.HashMap;
 import java.util.List;
 
-import org.alfresco.config.ConfigElement;
-import org.alfresco.config.element.ConfigElementAdapter;
-import org.alfresco.config.element.GenericConfigElement;
+import org.springframework.extensions.config.ConfigElement;
+import org.springframework.extensions.config.element.ConfigElementAdapter;
+import org.springframework.extensions.config.element.GenericConfigElement;
 
 /**
  * Custom config element that represents the config data for navigation

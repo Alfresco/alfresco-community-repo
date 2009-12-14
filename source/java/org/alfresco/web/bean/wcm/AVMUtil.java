@@ -30,8 +30,8 @@ import java.util.regex.Pattern;
 
 import javax.faces.context.FacesContext;
 
-import org.alfresco.config.ConfigElement;
-import org.alfresco.config.ConfigService;
+import org.springframework.extensions.config.ConfigElement;
+import org.springframework.extensions.config.ConfigService;
 import org.alfresco.config.JNDIConstants;
 import org.alfresco.mbeans.VirtServerRegistry;
 import org.alfresco.repo.avm.AVMNodeConverter;

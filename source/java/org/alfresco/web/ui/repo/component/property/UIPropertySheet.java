@@ -39,9 +39,9 @@ import javax.faces.context.FacesContext;
 import javax.faces.context.ResponseWriter;
 import javax.faces.el.ValueBinding;
 
-import org.alfresco.config.Config;
-import org.alfresco.config.ConfigLookupContext;
-import org.alfresco.config.ConfigService;
+import org.springframework.extensions.config.Config;
+import org.springframework.extensions.config.ConfigLookupContext;
+import org.springframework.extensions.config.ConfigService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.web.app.Application;

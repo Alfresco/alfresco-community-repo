@@ -28,7 +28,7 @@ import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.faces.convert.Converter;
 
-import org.alfresco.i18n.I18NUtil;
+import org.springframework.extensions.surf.util.I18NUtil;
 import org.alfresco.service.cmr.ml.ContentFilterLanguagesService;
 import org.alfresco.web.app.servlet.FacesHelper;
 

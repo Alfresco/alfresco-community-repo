@@ -32,7 +32,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-import org.alfresco.config.ConfigService;
+import org.springframework.extensions.config.ConfigService;
 import org.alfresco.repo.SessionUser;
 import org.alfresco.repo.webdav.auth.BaseKerberosAuthenticationFilter;
 import org.alfresco.service.cmr.repository.NodeRef;

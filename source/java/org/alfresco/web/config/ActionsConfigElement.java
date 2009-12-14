@@ -33,9 +33,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.alfresco.config.ConfigElement;
-import org.alfresco.config.ConfigException;
-import org.alfresco.config.element.ConfigElementAdapter;
+import org.springframework.extensions.config.ConfigElement;
+import org.springframework.extensions.config.ConfigException;
+import org.springframework.extensions.config.element.ConfigElementAdapter;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.web.action.ActionEvaluator;
 import org.alfresco.web.bean.repository.Repository;
@@ -69,7 +69,7 @@ public class ActionsConfigElement extends ConfigElementAdapter
    }
 
    /**
-    * @see org.alfresco.config.element.ConfigElementAdapter#getChildren()
+    * @see org.springframework.extensions.config.element.ConfigElementAdapter#getChildren()
     */
    public List<ConfigElement> getChildren()
    {
@@ -77,7 +77,7 @@ public class ActionsConfigElement extends ConfigElementAdapter
    }
    
    /**
-    * @see org.alfresco.config.element.ConfigElementAdapter#combine(org.alfresco.config.ConfigElement)
+    * @see org.springframework.extensions.config.element.ConfigElementAdapter#combine(org.alfresco.config.ConfigElement)
     */
    public ConfigElement combine(ConfigElement configElement)
    {

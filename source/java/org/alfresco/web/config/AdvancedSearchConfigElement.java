@@ -28,9 +28,9 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.alfresco.config.ConfigElement;
-import org.alfresco.config.ConfigException;
-import org.alfresco.config.element.ConfigElementAdapter;
+import org.springframework.extensions.config.ConfigElement;
+import org.springframework.extensions.config.ConfigException;
+import org.springframework.extensions.config.element.ConfigElementAdapter;
 
 /**
  * Custom config element that represents config values for advanced search
@@ -66,7 +66,7 @@ public class AdvancedSearchConfigElement extends ConfigElementAdapter implements
    }
 
    /**
-    * @see org.alfresco.config.element.ConfigElementAdapter#getChildren()
+    * @see org.springframework.extensions.config.element.ConfigElementAdapter#getChildren()
     */
    @Override
    public List<ConfigElement> getChildren()
@@ -75,7 +75,7 @@ public class AdvancedSearchConfigElement extends ConfigElementAdapter implements
    }
    
    /**
-    * @see org.alfresco.config.element.ConfigElementAdapter#combine(org.alfresco.config.ConfigElement)
+    * @see org.springframework.extensions.config.element.ConfigElementAdapter#combine(org.alfresco.config.ConfigElement)
     */
    public ConfigElement combine(ConfigElement configElement)
    {

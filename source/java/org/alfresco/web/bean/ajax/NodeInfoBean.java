@@ -33,7 +33,7 @@ import java.util.Map;
 import javax.faces.context.FacesContext;
 import javax.faces.context.ResponseWriter;
 
-import org.alfresco.i18n.I18NUtil;
+import org.springframework.extensions.surf.util.I18NUtil;
 import org.alfresco.repo.content.transform.TransformerInfoException;
 import org.alfresco.repo.template.I18NMessageMethod;
 import org.alfresco.repo.template.TemplateNode;

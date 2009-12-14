@@ -50,7 +50,7 @@ import org.alfresco.service.cmr.workflow.WorkflowTaskQuery;
 import org.alfresco.service.cmr.workflow.WorkflowTaskState;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.util.Pair;
+import org.springframework.extensions.surf.util.Pair;
 import org.alfresco.wcm.sandbox.SandboxConstants;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.repository.Repository;

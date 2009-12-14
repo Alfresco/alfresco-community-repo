@@ -5,7 +5,7 @@
 
    <!-- I18N -->
    
-   <bean id="officeResourceBundles" class="org.alfresco.i18n.ResourceBundleBootstrapComponent">
+   <bean id="officeResourceBundles" class="org.springframework.extensions.surf.util.ResourceBundleBootstrapComponent">
         <property name="resourceBundles">
             <list>
                 <value>alfresco.messages.office-addin</value>

@@ -35,9 +35,9 @@ import javax.faces.context.FacesContext;
 import javax.faces.context.ResponseWriter;
 import javax.faces.el.PropertyNotFoundException;
 
-import org.alfresco.config.Config;
-import org.alfresco.config.ConfigElement;
-import org.alfresco.config.ConfigService;
+import org.springframework.extensions.config.Config;
+import org.springframework.extensions.config.ConfigElement;
+import org.springframework.extensions.config.ConfigService;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.common.component.UIImagePicker;

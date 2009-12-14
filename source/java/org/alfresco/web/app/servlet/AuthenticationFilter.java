@@ -34,9 +34,9 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.alfresco.config.ConfigService;
+import org.springframework.extensions.config.ConfigService;
 import org.alfresco.repo.web.filter.beans.DependencyInjectedFilter;
-import org.alfresco.util.AbstractLifecycleBean;
+import org.springframework.extensions.surf.util.AbstractLifecycleBean;
 import org.alfresco.web.config.ClientConfigElement;
 import org.springframework.context.ApplicationEvent;
 
@@ -68,7 +68,7 @@ public class AuthenticationFilter extends AbstractLifecycleBean implements Depen
     }
     
     /* (non-Javadoc)
-     * @see org.alfresco.util.AbstractLifecycleBean#onBootstrap(org.springframework.context.ApplicationEvent)
+     * @see org.springframework.extensions.surf.util.AbstractLifecycleBean#onBootstrap(org.springframework.context.ApplicationEvent)
      */
     @Override
     protected void onBootstrap(ApplicationEvent event)
@@ -86,7 +86,7 @@ public class AuthenticationFilter extends AbstractLifecycleBean implements Depen
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.util.AbstractLifecycleBean#onShutdown(org.springframework.context.ApplicationEvent)
+     * @see org.springframework.extensions.surf.util.AbstractLifecycleBean#onShutdown(org.springframework.context.ApplicationEvent)
      */
     @Override
     protected void onShutdown(ApplicationEvent event)

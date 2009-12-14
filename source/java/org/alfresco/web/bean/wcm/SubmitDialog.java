@@ -56,7 +56,7 @@ import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.service.cmr.workflow.WorkflowTask;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
-import org.alfresco.util.ISO8601DateFormat;
+import org.springframework.extensions.surf.util.ISO8601DateFormat;
 import org.alfresco.util.NameMatcher;
 import org.alfresco.wcm.sandbox.SandboxFactory;
 import org.alfresco.wcm.sandbox.SandboxService;

@@ -95,7 +95,7 @@
       <property name="repoXMLConfigService" ref="webClientConfigService"/>
    </bean>
    
-   <bean id="webClientConfigAdminInterpreterHelp" class="org.alfresco.i18n.ResourceBundleBootstrapComponent"> 
+   <bean id="webClientConfigAdminInterpreterHelp" class="org.springframework.extensions.surf.util.ResourceBundleBootstrapComponent"> 
       <property name="resourceBundles">
          <list>
              <value>alfresco.messages.webclient-config-admin-interpreter-help</value>

@@ -42,8 +42,8 @@ import javax.faces.event.ActionEvent;
 import javax.faces.model.SelectItem;
 import javax.transaction.UserTransaction;
 
-import org.alfresco.config.ConfigElement;
-import org.alfresco.config.ConfigService;
+import org.springframework.extensions.config.ConfigElement;
+import org.springframework.extensions.config.ConfigService;
 import org.alfresco.config.JNDIConstants;
 import org.alfresco.linkvalidation.HrefValidationProgress;
 import org.alfresco.linkvalidation.LinkValidationService;

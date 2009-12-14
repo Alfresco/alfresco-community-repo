@@ -31,7 +31,7 @@ import java.util.List;
 import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
 
-import org.alfresco.config.Config;
+import org.springframework.extensions.config.Config;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.config.SidebarConfigElement;
 import org.alfresco.web.config.SidebarConfigElement.SidebarPluginConfig;

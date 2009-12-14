@@ -34,7 +34,7 @@ import org.alfresco.repo.action.executer.CopyToWebProjectActionExecuter;
 import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.util.Pair;
+import org.springframework.extensions.surf.util.Pair;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.bean.wcm.AVMUtil;

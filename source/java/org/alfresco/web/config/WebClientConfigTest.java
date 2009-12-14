@@ -32,10 +32,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 
-import org.alfresco.config.Config;
-import org.alfresco.config.ConfigElement;
-import org.alfresco.config.ConfigException;
-import org.alfresco.config.xml.XMLConfigService;
+import org.springframework.extensions.config.Config;
+import org.springframework.extensions.config.ConfigElement;
+import org.springframework.extensions.config.ConfigException;
+import org.springframework.extensions.config.xml.XMLConfigService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.BaseTest;
 import org.alfresco.web.config.ActionsConfigElement.ActionDefinition;

@@ -24,8 +24,8 @@
  */
 package org.alfresco.web.config;
 
-import org.alfresco.config.ConfigElement;
-import org.alfresco.config.xml.elementreader.GenericElementReader;
+import org.springframework.extensions.config.ConfigElement;
+import org.springframework.extensions.config.xml.elementreader.GenericElementReader;
 import org.dom4j.Element;
 
 /**
@@ -46,7 +46,7 @@ public class WCMElementReader extends GenericElementReader
    }
    
    /**
-    * @see org.alfresco.config.xml.elementreader.ConfigElementReader#parse(org.dom4j.Element)
+    * @see org.springframework.extensions.config.xml.elementreader.ConfigElementReader#parse(org.dom4j.Element)
     */
    public ConfigElement parse(Element element)
    {

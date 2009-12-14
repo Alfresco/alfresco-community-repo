@@ -28,7 +28,7 @@ import javax.faces.context.FacesContext;
 import javax.faces.el.ValueBinding;
 
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.util.URLEncoder;
+import org.springframework.extensions.surf.util.URLEncoder;
 import org.alfresco.web.ui.common.Utils;
 
 /**

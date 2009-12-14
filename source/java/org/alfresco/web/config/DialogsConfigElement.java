@@ -29,10 +29,10 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.alfresco.config.ConfigElement;
-import org.alfresco.config.ConfigException;
-import org.alfresco.config.element.ConfigElementAdapter;
-import org.alfresco.util.ParameterCheck;
+import org.springframework.extensions.config.ConfigElement;
+import org.springframework.extensions.config.ConfigException;
+import org.springframework.extensions.config.element.ConfigElementAdapter;
+import org.springframework.extensions.surf.util.ParameterCheck;
 
 /**
  * Custom config element that represents the config data for a property sheet

@@ -24,7 +24,7 @@
  */
 package org.alfresco.web.config;
 
-import org.alfresco.config.evaluator.Evaluator;
+import org.springframework.extensions.config.evaluator.Evaluator;
 import org.alfresco.web.bean.repository.Node;
 
 /**
@@ -37,7 +37,7 @@ public class PathEvaluator implements Evaluator
    /**
     * Determines whether the given path matches the path of the given object
     * 
-    * @see org.alfresco.config.evaluator.Evaluator#applies(java.lang.Object, java.lang.String)
+    * @see org.springframework.extensions.config.evaluator.Evaluator#applies(java.lang.Object, java.lang.String)
     */
    public boolean applies(Object obj, String condition)
    {

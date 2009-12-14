@@ -26,10 +26,10 @@ package org.alfresco.web.config;
 
 import java.util.List;
 
-import org.alfresco.config.ConfigDeployer;
-import org.alfresco.config.ConfigDeployment;
-import org.alfresco.config.ConfigService;
-import org.alfresco.config.source.UrlConfigSource;
+import org.springframework.extensions.config.ConfigDeployer;
+import org.springframework.extensions.config.ConfigDeployment;
+import org.springframework.extensions.config.ConfigService;
+import org.springframework.extensions.config.source.UrlConfigSource;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;

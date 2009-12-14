@@ -26,9 +26,9 @@ package org.alfresco.web.config;
 
 import java.util.Iterator;
 
-import org.alfresco.config.ConfigElement;
-import org.alfresco.config.ConfigException;
-import org.alfresco.config.xml.elementreader.ConfigElementReader;
+import org.springframework.extensions.config.ConfigElement;
+import org.springframework.extensions.config.ConfigException;
+import org.springframework.extensions.config.xml.elementreader.ConfigElementReader;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.dom4j.Element;
@@ -50,7 +50,7 @@ public class ViewsElementReader implements ConfigElementReader
    private static Log logger = LogFactory.getLog(ViewsElementReader.class);
    
    /**
-    * @see org.alfresco.config.xml.elementreader.ConfigElementReader#parse(org.dom4j.Element)
+    * @see org.springframework.extensions.config.xml.elementreader.ConfigElementReader#parse(org.dom4j.Element)
     */
    @SuppressWarnings("unchecked")
    public ConfigElement parse(Element element)

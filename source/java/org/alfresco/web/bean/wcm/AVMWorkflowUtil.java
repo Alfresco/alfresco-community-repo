@@ -37,7 +37,7 @@ import java.util.StringTokenizer;
 
 import javax.faces.context.FacesContext;
 
-import org.alfresco.config.ConfigElement;
+import org.springframework.extensions.config.ConfigElement;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.WCMAppModel;
 import org.alfresco.repo.content.MimetypeMap;

@@ -26,9 +26,9 @@ package org.alfresco.web.config;
 
 import java.util.Iterator;
 
-import org.alfresco.config.ConfigElement;
-import org.alfresco.config.ConfigException;
-import org.alfresco.config.xml.elementreader.ConfigElementReader;
+import org.springframework.extensions.config.ConfigElement;
+import org.springframework.extensions.config.ConfigException;
+import org.springframework.extensions.config.xml.elementreader.ConfigElementReader;
 import org.alfresco.web.config.WizardsConfigElement.ConditionalPageConfig;
 import org.alfresco.web.config.WizardsConfigElement.PageConfig;
 import org.alfresco.web.config.WizardsConfigElement.StepConfig;
@@ -63,7 +63,7 @@ public class WizardsElementReader implements ConfigElementReader
    public static final String ATTR_PATH = "path";
    
    /**
-    * @see org.alfresco.config.xml.elementreader.ConfigElementReader#parse(org.dom4j.Element)
+    * @see org.springframework.extensions.config.xml.elementreader.ConfigElementReader#parse(org.dom4j.Element)
     */
    public ConfigElement parse(Element element)
    {

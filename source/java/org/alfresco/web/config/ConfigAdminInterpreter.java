@@ -30,8 +30,8 @@ import java.io.InputStream;
 import java.io.PrintStream;
 import java.util.List;
 
-import org.alfresco.config.ConfigDeployment;
-import org.alfresco.i18n.I18NUtil;
+import org.springframework.extensions.config.ConfigDeployment;
+import org.springframework.extensions.surf.util.I18NUtil;
 import org.alfresco.repo.admin.BaseInterpreter;
 import org.alfresco.repo.config.xml.RepoXMLConfigService;
 import org.alfresco.service.transaction.TransactionService;

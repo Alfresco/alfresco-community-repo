@@ -35,8 +35,8 @@ import java.util.ResourceBundle;
 import javax.faces.context.FacesContext;
 import javax.faces.model.SelectItem;
 
-import org.alfresco.config.Config;
-import org.alfresco.config.ConfigElement;
+import org.springframework.extensions.config.Config;
+import org.springframework.extensions.config.ConfigElement;
 import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;

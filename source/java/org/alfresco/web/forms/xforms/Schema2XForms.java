@@ -32,7 +32,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import javax.xml.transform.*;
 import org.alfresco.service.namespace.NamespaceService;
-import org.alfresco.util.Pair;
+import org.springframework.extensions.surf.util.Pair;
 import org.alfresco.web.forms.XMLUtil;
 import org.apache.commons.jxpath.JXPathContext;
 import org.apache.commons.jxpath.Pointer;

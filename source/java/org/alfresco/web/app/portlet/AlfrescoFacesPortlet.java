@@ -41,8 +41,8 @@ import javax.portlet.RenderRequest;
 import javax.portlet.RenderResponse;
 import javax.portlet.UnavailableException;
 
-import org.alfresco.config.ConfigService;
-import org.alfresco.i18n.I18NUtil;
+import org.springframework.extensions.config.ConfigService;
+import org.springframework.extensions.surf.util.I18NUtil;
 import org.alfresco.repo.SessionUser;
 import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.service.cmr.security.AuthenticationService;

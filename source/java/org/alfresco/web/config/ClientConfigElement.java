@@ -29,9 +29,9 @@ import java.util.List;
 
 import javax.faces.context.FacesContext;
 
-import org.alfresco.config.ConfigElement;
+import org.springframework.extensions.config.ConfigElement;
 import org.alfresco.config.JNDIConstants;
-import org.alfresco.config.element.ConfigElementAdapter;
+import org.springframework.extensions.config.element.ConfigElementAdapter;
 import org.alfresco.mbeans.VirtServerRegistry;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ExpiringValueCache;
@@ -110,7 +110,7 @@ public class ClientConfigElement extends ConfigElementAdapter
    }
 
    /**
-    * @see org.alfresco.config.element.ConfigElementAdapter#combine(org.alfresco.config.ConfigElement)
+    * @see org.springframework.extensions.config.element.ConfigElementAdapter#combine(org.alfresco.config.ConfigElement)
     */
    public ConfigElement combine(ConfigElement configElement)
    {

@@ -28,8 +28,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.alfresco.config.ConfigElement;
-import org.alfresco.config.element.GenericConfigElement;
+import org.springframework.extensions.config.ConfigElement;
+import org.springframework.extensions.config.element.GenericConfigElement;
 
 /**
  * Custom config element that represents the config data for WCM

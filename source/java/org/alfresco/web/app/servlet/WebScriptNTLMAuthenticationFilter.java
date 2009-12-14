@@ -33,7 +33,7 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 
-import org.alfresco.util.URLDecoder;
+import org.springframework.extensions.surf.util.URLDecoder;
 import org.alfresco.web.scripts.Match;
 import org.alfresco.web.scripts.RuntimeContainer;
 import org.alfresco.web.scripts.Description.RequiredAuthentication;

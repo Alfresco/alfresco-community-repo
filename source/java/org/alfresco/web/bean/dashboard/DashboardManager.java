@@ -32,7 +32,7 @@ import java.util.ListIterator;
 
 import javax.faces.context.FacesContext;
 
-import org.alfresco.config.ConfigService;
+import org.springframework.extensions.config.ConfigService;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.repository.PreferencesService;
 import org.alfresco.web.config.DashboardsConfigElement;

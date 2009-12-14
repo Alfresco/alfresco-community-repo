@@ -1,5 +1,12 @@
 {
-	<@serialize object=object includeChildren=includeChildren includeContent=includeContent/>
+	"code" : "${code}"
+
+<#if object?exists>
+	,
+	"data" : {
+		<@serialize object=object includeChildren=includeChildren includeContent=includeContent/>
+	}
+</#if>
 }
 
 <#macro serialize object includeChildren includeContent>
@@ -10,10 +17,10 @@
 	"url" : "${object.url}"
 	,
 	"downloadUrl" : "${object.downloadUrl}"
-<#if object.mimetype?exists>	
+<#if object.mimetype?exists>
 	,
 	"mimetype" : "${object.mimetype}"
-</#if>	
+</#if>
 	,
 	"size" : "${object.size}"
 	,
@@ -36,7 +43,7 @@
 	"type" : "${object.type}"
 	,
 	"isCategory" : ${object.isCategory?string}
-	
+
 <#if object.properties?exists>
 	,
 	"properties" :
@@ -86,7 +93,7 @@
 		{
 			<@serialize object=child includeChildren=false includeContent=includeContent/>
 		}
-			<#assign first = false>	
+			<#assign first = false>
 		</#list>
 	]
 <#else>

@@ -146,7 +146,7 @@ public abstract class BaseRemoteStore extends AbstractWebScript
         String methodName = null;
         String store = null;
         String webapp = null;
-        StringBuilder pathBuilder = null;
+        StringBuilder pathBuilder = new StringBuilder(128);
         
         // tokenize the path and figure out tokenized values
         StringTokenizer tokenizer = new StringTokenizer(extPath, "/");
@@ -178,10 +178,6 @@ public abstract class BaseRemoteStore extends AbstractWebScript
         		
         		while (el != null)
         		{
-        			if (pathBuilder == null)
-        			{
-        				pathBuilder = new StringBuilder(128);
-        			}
         			pathBuilder.append('/');
         			pathBuilder.append(el);
         			

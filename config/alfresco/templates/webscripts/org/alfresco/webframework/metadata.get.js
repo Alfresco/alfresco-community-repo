@@ -2,6 +2,8 @@ model.includeChildren = true;
 model.includeContent = false;
 model.isUser = false;
 
+model.code = "ERROR";
+
 var object = null;
 
 // allow for content to be loaded from id
@@ -33,6 +35,11 @@ else
 	
 	// look up the content by path
 	object = roothome.childByNamePath(path);
+}
+
+if (object != null)
+{
+	model.code = "OK";
 }
 
 model.object = object;

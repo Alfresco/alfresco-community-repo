@@ -37,7 +37,7 @@ import org.alfresco.jlan.server.SessionListener;
 import org.alfresco.jlan.server.config.ServerConfiguration;
 import org.alfresco.jlan.smb.server.CIFSConfigSection;
 import org.alfresco.jlan.smb.server.SMBServer;
-import org.alfresco.util.AbstractLifecycleBean;
+import org.springframework.extensions.surf.util.AbstractLifecycleBean;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.context.ApplicationContext;

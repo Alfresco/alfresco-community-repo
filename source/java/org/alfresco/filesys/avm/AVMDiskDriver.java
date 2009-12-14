@@ -32,7 +32,7 @@ import java.util.StringTokenizer;
 
 import javax.transaction.UserTransaction;
 
-import org.alfresco.config.ConfigElement;
+import org.springframework.extensions.config.ConfigElement;
 import org.alfresco.filesys.alfresco.AlfrescoDiskDriver;
 import org.alfresco.filesys.state.FileState;
 import org.alfresco.jlan.server.SrvSession;

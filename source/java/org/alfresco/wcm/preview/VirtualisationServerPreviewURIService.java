@@ -31,7 +31,7 @@ import org.alfresco.config.JNDIConstants;
 import org.alfresco.mbeans.VirtServerRegistry;
 import org.alfresco.repo.avm.util.AVMUtil;
 import org.alfresco.service.cmr.avm.AVMService;
-import org.alfresco.util.ParameterCheck;
+import org.springframework.extensions.surf.util.ParameterCheck;
 import org.alfresco.wcm.util.WCMUtil;
 
 

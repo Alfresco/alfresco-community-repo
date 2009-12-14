@@ -37,7 +37,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
-import org.alfresco.util.ParameterCheck;
+import org.springframework.extensions.surf.util.ParameterCheck;
 import org.springframework.context.ApplicationContext;
 
 /**

@@ -24,7 +24,7 @@
  */
 package org.alfresco.repo.dictionary.types.period;
 
-import org.alfresco.i18n.I18NUtil;
+import org.springframework.extensions.surf.util.I18NUtil;
 import org.alfresco.service.cmr.repository.Period;
 import org.alfresco.service.cmr.repository.PeriodProvider;
 import org.springframework.beans.factory.InitializingBean;

@@ -44,7 +44,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
-import org.alfresco.i18n.I18NUtil;
+import org.springframework.extensions.surf.util.I18NUtil;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.content.transform.ContentTransformer;
@@ -78,7 +78,7 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.repository.datatype.TypeConversionException;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.util.CachingDateFormat;
+import org.springframework.extensions.surf.util.CachingDateFormat;
 import org.alfresco.util.EqualsHelper;
 import org.alfresco.util.ISO9075;
 import org.apache.commons.logging.Log;

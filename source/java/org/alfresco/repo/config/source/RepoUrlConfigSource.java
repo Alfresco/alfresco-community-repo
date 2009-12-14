@@ -27,8 +27,8 @@ package org.alfresco.repo.config.source;
 import java.io.InputStream;
 import java.util.List;
 
-import org.alfresco.config.ConfigException;
-import org.alfresco.config.source.UrlConfigSource;
+import org.springframework.extensions.config.ConfigException;
+import org.springframework.extensions.config.source.UrlConfigSource;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.repository.ContentReader;

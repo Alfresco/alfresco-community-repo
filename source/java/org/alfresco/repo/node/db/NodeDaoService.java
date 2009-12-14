@@ -47,7 +47,7 @@ import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.repository.StoreExistsException;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.util.Pair;
+import org.springframework.extensions.surf.util.Pair;
 
 /**
  * Service layer accessing persistent <b>node</b> entities directly

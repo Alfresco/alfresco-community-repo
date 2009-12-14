@@ -28,7 +28,7 @@ import java.util.Locale;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.domain.hibernate.DirtySessionAnnotation;
-import org.alfresco.util.Pair;
+import org.springframework.extensions.surf.util.Pair;
 
 /**
  * Data abstraction layer for Locale entities.

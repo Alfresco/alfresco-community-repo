@@ -27,7 +27,7 @@ package org.alfresco.filesys.auth.ftp;
 
 import javax.transaction.UserTransaction;
 
-import org.alfresco.config.ConfigElement;
+import org.springframework.extensions.config.ConfigElement;
 import org.alfresco.filesys.AlfrescoConfigSection;
 import org.alfresco.jlan.ftp.FTPAuthenticator;
 import org.alfresco.jlan.ftp.FTPSrvSession;

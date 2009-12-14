@@ -28,7 +28,7 @@ import java.io.Serializable;
 
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
-import org.alfresco.util.ParameterCheck;
+import org.springframework.extensions.surf.util.ParameterCheck;
 import org.mozilla.javascript.Scriptable;
 
 /**

@@ -27,7 +27,7 @@ package org.alfresco.repo.management;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.alfresco.util.AbstractLifecycleBean;
+import org.springframework.extensions.surf.util.AbstractLifecycleBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationEventPublisher;
@@ -49,7 +49,7 @@ public class SafeEventPublisher extends AbstractLifecycleBean implements Applica
 
     /*
      * (non-Javadoc)
-     * @see org.alfresco.util.AbstractLifecycleBean#onBootstrap(org.springframework.context.ApplicationEvent)
+     * @see org.springframework.extensions.surf.util.AbstractLifecycleBean#onBootstrap(org.springframework.context.ApplicationEvent)
      */
     @Override
     protected void onBootstrap(ApplicationEvent event)
@@ -64,7 +64,7 @@ public class SafeEventPublisher extends AbstractLifecycleBean implements Applica
 
     /*
      * (non-Javadoc)
-     * @see org.alfresco.util.AbstractLifecycleBean#onShutdown(org.springframework.context.ApplicationEvent)
+     * @see org.springframework.extensions.surf.util.AbstractLifecycleBean#onShutdown(org.springframework.context.ApplicationEvent)
      */
     @Override
     protected void onShutdown(ApplicationEvent event)

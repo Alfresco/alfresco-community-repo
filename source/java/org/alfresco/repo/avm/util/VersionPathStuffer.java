@@ -5,7 +5,7 @@ package org.alfresco.repo.avm.util;
 
 import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.util.Pair;
+import org.springframework.extensions.surf.util.Pair;
 
 /**
  * A utility to build a (possibly long) String representation of

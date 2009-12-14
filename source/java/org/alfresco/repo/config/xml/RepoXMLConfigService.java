@@ -32,13 +32,13 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import javax.transaction.UserTransaction;
 
-import org.alfresco.config.ConfigDeployment;
-import org.alfresco.config.ConfigImpl;
-import org.alfresco.config.ConfigSection;
-import org.alfresco.config.ConfigSource;
-import org.alfresco.config.evaluator.Evaluator;
-import org.alfresco.config.xml.XMLConfigService;
-import org.alfresco.config.xml.elementreader.ConfigElementReader;
+import org.springframework.extensions.config.ConfigDeployment;
+import org.springframework.extensions.config.ConfigImpl;
+import org.springframework.extensions.config.ConfigSection;
+import org.springframework.extensions.config.ConfigSource;
+import org.springframework.extensions.config.evaluator.Evaluator;
+import org.springframework.extensions.config.xml.XMLConfigService;
+import org.springframework.extensions.config.xml.elementreader.ConfigElementReader;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.security.authentication.AuthenticationContext;

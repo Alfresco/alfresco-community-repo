@@ -27,7 +27,7 @@ import org.alfresco.repo.avm.util.AVMUtil;
 import org.alfresco.service.cmr.avm.AVMException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.util.Pair;
+import org.springframework.extensions.surf.util.Pair;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 

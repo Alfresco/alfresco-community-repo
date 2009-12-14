@@ -31,14 +31,14 @@ import java.io.InputStream;
 import java.io.PrintStream;
 import java.util.List;
 
-import org.alfresco.i18n.I18NUtil;
+import org.springframework.extensions.surf.util.I18NUtil;
 import org.alfresco.repo.admin.BaseInterpreter;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.AuthorityService;
-import org.alfresco.util.PropertyCheck;
+import org.springframework.extensions.surf.util.PropertyCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.BeansException;

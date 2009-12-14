@@ -32,7 +32,7 @@ import org.alfresco.service.cmr.attributes.AttrQuery;
 import org.alfresco.service.cmr.attributes.AttributeService;
 import org.alfresco.service.cmr.remote.AttributeServiceTransport;
 import org.alfresco.service.cmr.security.AuthenticationService;
-import org.alfresco.util.Pair;
+import org.springframework.extensions.surf.util.Pair;
 
 /**
  * Server side implementation of transport for AttributeService.

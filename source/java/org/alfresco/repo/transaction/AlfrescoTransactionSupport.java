@@ -40,7 +40,7 @@ import org.alfresco.repo.domain.hibernate.SessionSizeResourceManager;
 import org.alfresco.repo.node.integrity.IntegrityChecker;
 import org.alfresco.repo.search.impl.lucene.LuceneIndexerAndSearcher;
 import org.alfresco.util.GUID;
-import org.alfresco.util.ParameterCheck;
+import org.springframework.extensions.surf.util.ParameterCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.orm.hibernate3.SessionFactoryUtils;

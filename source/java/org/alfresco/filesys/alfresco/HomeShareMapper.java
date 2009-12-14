@@ -27,7 +27,7 @@ package org.alfresco.filesys.alfresco;
 
 import java.util.Enumeration;
 
-import org.alfresco.config.ConfigElement;
+import org.springframework.extensions.config.ConfigElement;
 import org.alfresco.filesys.AlfrescoConfigSection;
 import org.alfresco.filesys.repo.ContentContext;
 import org.alfresco.filesys.repo.ContentDiskDriver;

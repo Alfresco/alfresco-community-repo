@@ -62,7 +62,7 @@ import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransacti
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.PathMapper;
-import org.alfresco.util.PropertyCheck;
+import org.springframework.extensions.surf.util.PropertyCheck;
 import org.alfresco.util.registry.NamedObjectRegistry;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;

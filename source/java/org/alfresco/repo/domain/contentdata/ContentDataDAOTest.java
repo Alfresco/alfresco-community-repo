@@ -40,7 +40,7 @@ import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
-import org.alfresco.util.Pair;
+import org.springframework.extensions.surf.util.Pair;
 import org.alfresco.util.TempFileProvider;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ConfigurableApplicationContext;

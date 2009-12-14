@@ -24,7 +24,7 @@
  */
 package org.alfresco.repo.domain.encoding;
 
-import org.alfresco.util.Pair;
+import org.springframework.extensions.surf.util.Pair;
 
 /**
  * DAO services for <b>alf_encoding</b> and related tables

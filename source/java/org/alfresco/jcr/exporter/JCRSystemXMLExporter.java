@@ -51,7 +51,7 @@ import org.alfresco.service.cmr.view.Exporter;
 import org.alfresco.service.cmr.view.ExporterContext;
 import org.alfresco.service.cmr.view.ExporterException;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.util.Base64;
+import org.springframework.extensions.surf.util.Base64;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;

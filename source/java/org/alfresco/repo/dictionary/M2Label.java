@@ -26,7 +26,7 @@ package org.alfresco.repo.dictionary;
 
 import java.util.Locale;
 
-import org.alfresco.i18n.I18NUtil;
+import org.springframework.extensions.surf.util.I18NUtil;
 import org.alfresco.service.cmr.dictionary.ModelDefinition;
 import org.alfresco.service.namespace.QName;
 import org.springframework.util.StringUtils;

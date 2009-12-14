@@ -12,7 +12,7 @@ import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.alfresco.i18n.I18NUtil;
+import org.springframework.extensions.surf.util.I18NUtil;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.forms.AssociationFieldDefinition;
 import org.alfresco.repo.forms.FieldGroup;

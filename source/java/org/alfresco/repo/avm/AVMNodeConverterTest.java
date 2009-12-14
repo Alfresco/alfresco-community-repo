@@ -24,7 +24,7 @@
 package org.alfresco.repo.avm;
 
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.util.Pair;
+import org.springframework.extensions.surf.util.Pair;
 
 import junit.framework.TestCase;
 

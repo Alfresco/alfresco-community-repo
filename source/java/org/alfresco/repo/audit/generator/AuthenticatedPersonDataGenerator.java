@@ -31,7 +31,7 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.PersonService;
-import org.alfresco.util.PropertyCheck;
+import org.springframework.extensions.surf.util.PropertyCheck;
 
 /**
  * Gives back the full name (person details) of the currently-authenticated user.

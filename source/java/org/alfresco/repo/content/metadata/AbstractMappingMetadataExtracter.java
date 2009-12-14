@@ -52,7 +52,7 @@ import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.repository.datatype.TypeConversionException;
 import org.alfresco.service.namespace.InvalidQNameException;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.util.ISO8601DateFormat;
+import org.springframework.extensions.surf.util.ISO8601DateFormat;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 

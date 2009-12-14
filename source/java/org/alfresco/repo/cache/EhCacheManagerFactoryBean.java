@@ -31,7 +31,7 @@ import net.sf.ehcache.CacheException;
 import net.sf.ehcache.CacheManager;
 
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.util.PropertyCheck;
+import org.springframework.extensions.surf.util.PropertyCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 

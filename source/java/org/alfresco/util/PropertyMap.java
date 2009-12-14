@@ -30,6 +30,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.alfresco.service.namespace.QName;
+import org.springframework.extensions.surf.util.Pair;
 
 /**
  * Property map helper class.  

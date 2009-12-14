@@ -36,7 +36,7 @@ import org.alfresco.service.license.LicenseDescriptor;
 import org.alfresco.service.license.LicenseException;
 import org.alfresco.service.license.LicenseService;
 import org.alfresco.service.transaction.TransactionService;
-import org.alfresco.util.AbstractLifecycleBean;
+import org.springframework.extensions.surf.util.AbstractLifecycleBean;
 import org.alfresco.util.VersionNumber;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
@@ -160,7 +160,7 @@ public class DescriptorServiceImpl extends AbstractLifecycleBean implements Desc
 
     /*
      * (non-Javadoc)
-     * @see org.alfresco.util.AbstractLifecycleBean#onBootstrap(org.springframework.context.ApplicationEvent)
+     * @see org.springframework.extensions.surf.util.AbstractLifecycleBean#onBootstrap(org.springframework.context.ApplicationEvent)
      */
     @Override
     protected void onBootstrap(ApplicationEvent event)
@@ -243,7 +243,7 @@ public class DescriptorServiceImpl extends AbstractLifecycleBean implements Desc
 
     /*
      * (non-Javadoc)
-     * @see org.alfresco.util.AbstractLifecycleBean#onShutdown(org.springframework.context.ApplicationEvent)
+     * @see org.springframework.extensions.surf.util.AbstractLifecycleBean#onShutdown(org.springframework.context.ApplicationEvent)
      */
     @Override
     protected void onShutdown(ApplicationEvent event)

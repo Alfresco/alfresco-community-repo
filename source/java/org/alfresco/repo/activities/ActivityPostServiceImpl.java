@@ -35,7 +35,7 @@ import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.activities.ActivityPostService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.util.ParameterCheck;
+import org.springframework.extensions.surf.util.ParameterCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 

@@ -63,7 +63,7 @@ import org.alfresco.service.cmr.security.PermissionContext;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.FileNameValidator;
-import org.alfresco.util.Pair;
+import org.springframework.extensions.surf.util.Pair;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 

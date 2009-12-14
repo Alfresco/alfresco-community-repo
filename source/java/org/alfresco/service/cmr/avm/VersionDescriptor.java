@@ -26,7 +26,7 @@ package org.alfresco.service.cmr.avm;
 import java.io.Serializable;
 import java.util.Date;
 
-import org.alfresco.util.ISO8601DateFormat;
+import org.springframework.extensions.surf.util.ISO8601DateFormat;
 
 /**
  * All the information about a particular version.

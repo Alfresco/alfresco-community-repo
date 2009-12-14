@@ -27,13 +27,13 @@ package org.alfresco.repo.domain.hibernate;
 import java.io.Serializable;
 import java.util.Locale;
 
-import org.alfresco.i18n.I18NUtil;
+import org.springframework.extensions.surf.util.I18NUtil;
 import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.domain.LocaleDAO;
 import org.alfresco.repo.domain.LocaleEntity;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
-import org.alfresco.util.Pair;
-import org.alfresco.util.ParameterCheck;
+import org.springframework.extensions.surf.util.Pair;
+import org.springframework.extensions.surf.util.ParameterCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.Query;

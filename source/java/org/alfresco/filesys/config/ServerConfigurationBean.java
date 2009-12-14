@@ -39,7 +39,7 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.StringTokenizer;
 
-import org.alfresco.config.element.GenericConfigElement;
+import org.springframework.extensions.config.element.GenericConfigElement;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.filesys.AbstractServerConfigurationBean;
 import org.alfresco.filesys.alfresco.ExtendedDiskInterface;

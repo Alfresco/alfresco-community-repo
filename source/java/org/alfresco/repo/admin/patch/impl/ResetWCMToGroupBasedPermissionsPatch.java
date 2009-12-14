@@ -35,7 +35,7 @@ import java.util.zip.CRC32;
 
 import org.alfresco.config.JNDIConstants;
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.i18n.I18NUtil;
+import org.springframework.extensions.surf.util.I18NUtil;
 import org.alfresco.model.WCMAppModel;
 import org.alfresco.repo.domain.DbAccessControlEntry;
 import org.alfresco.repo.domain.DbAccessControlList;
@@ -65,7 +65,7 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.GUID;
-import org.alfresco.util.Pair;
+import org.springframework.extensions.surf.util.Pair;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.Query;

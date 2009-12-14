@@ -31,7 +31,7 @@ import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.alfresco.i18n.I18NUtil;
+import org.springframework.extensions.surf.util.I18NUtil;
 import org.alfresco.service.cmr.admin.RepoAdminService;
 import org.alfresco.service.namespace.QName;
 import org.springframework.core.io.ClassPathResource;

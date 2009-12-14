@@ -27,7 +27,7 @@ package org.alfresco.service.cmr.avm.deploy;
 
 import java.io.Serializable;
 
-import org.alfresco.util.Pair;
+import org.springframework.extensions.surf.util.Pair;
 
 /**
  * Interface for Deployment Events.

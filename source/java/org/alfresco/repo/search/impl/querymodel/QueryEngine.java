@@ -28,7 +28,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.alfresco.service.cmr.search.ResultSet;
-import org.alfresco.util.Pair;
+import org.springframework.extensions.surf.util.Pair;
 
 /**
  * @author andyh

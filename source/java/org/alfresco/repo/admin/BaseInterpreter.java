@@ -33,7 +33,7 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.transaction.TransactionService;
-import org.alfresco.util.AbstractLifecycleBean;
+import org.springframework.extensions.surf.util.AbstractLifecycleBean;
 import org.alfresco.util.ApplicationContextHelper;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationEvent;
@@ -212,7 +212,7 @@ public abstract class BaseInterpreter extends AbstractLifecycleBean
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.util.AbstractLifecycleBean#onBootstrap(org.springframework.context.ApplicationEvent)
+     * @see org.springframework.extensions.surf.util.AbstractLifecycleBean#onBootstrap(org.springframework.context.ApplicationEvent)
      */
     @Override
     protected void onBootstrap(ApplicationEvent event)
@@ -221,7 +221,7 @@ public abstract class BaseInterpreter extends AbstractLifecycleBean
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.util.AbstractLifecycleBean#onShutdown(org.springframework.context.ApplicationEvent)
+     * @see org.springframework.extensions.surf.util.AbstractLifecycleBean#onShutdown(org.springframework.context.ApplicationEvent)
      */
     @Override
     protected void onShutdown(ApplicationEvent event)

@@ -30,13 +30,13 @@ import java.util.List;
 import java.util.Map;
 
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.i18n.I18NUtil;
+import org.springframework.extensions.surf.util.I18NUtil;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.tenant.TenantAdminService;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.module.ModuleService;
 import org.alfresco.util.EqualsHelper;
-import org.alfresco.util.PropertyCheck;
+import org.springframework.extensions.surf.util.PropertyCheck;
 import org.alfresco.util.VersionNumber;
 import org.springframework.beans.factory.BeanNameAware;
 

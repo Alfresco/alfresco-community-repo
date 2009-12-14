@@ -42,7 +42,7 @@ import org.alfresco.repo.attributes.Attribute.Type;
 import org.alfresco.repo.domain.hibernate.DirtySessionMethodInterceptor;
 import org.alfresco.service.cmr.attributes.AttrQuery;
 import org.alfresco.service.cmr.attributes.AttrQueryHelper;
-import org.alfresco.util.Pair;
+import org.springframework.extensions.surf.util.Pair;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.Query;

@@ -29,7 +29,7 @@ import java.util.List;
 import java.util.Properties;
 
 import org.alfresco.repo.importer.ImporterBootstrap;
-import org.alfresco.util.PropertyCheck;
+import org.springframework.extensions.surf.util.PropertyCheck;
 
 
 /**

@@ -30,7 +30,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.util.Locale;
 
-import org.alfresco.i18n.I18NUtil;
+import org.springframework.extensions.surf.util.I18NUtil;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.ContentData;

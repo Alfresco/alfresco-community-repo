@@ -8,7 +8,7 @@ import java.util.Map;
 import java.util.Stack;
 
 import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
-import org.alfresco.util.ParameterCheck;
+import org.springframework.extensions.surf.util.ParameterCheck;
 
 /**
  * Base behaviour implementation

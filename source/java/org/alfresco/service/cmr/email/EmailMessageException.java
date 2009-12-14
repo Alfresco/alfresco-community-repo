@@ -24,7 +24,7 @@
  */
 package org.alfresco.service.cmr.email;
 
-import org.alfresco.i18n.I18NUtil;
+import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * A checked and handled exception indicating a specific and well-known

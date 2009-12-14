@@ -37,7 +37,7 @@ import javax.mail.Part;
 
 import org.alfresco.service.cmr.email.EmailMessageException;
 import org.alfresco.service.cmr.email.EmailMessagePart;
-import org.alfresco.util.ParameterCheck;
+import org.springframework.extensions.surf.util.ParameterCheck;
 import org.alfresco.util.remote.RemotableInputStream;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;

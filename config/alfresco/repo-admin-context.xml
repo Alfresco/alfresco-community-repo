@@ -30,7 +30,7 @@
       
    </bean>
 
-   <bean id="repoAdminInterpreterHelp" class="org.alfresco.i18n.ResourceBundleBootstrapComponent">
+   <bean id="repoAdminInterpreterHelp" class="org.springframework.extensions.surf.util.ResourceBundleBootstrapComponent">
       
       <property name="resourceBundles">
          <list>

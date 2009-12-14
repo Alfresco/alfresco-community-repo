@@ -47,7 +47,7 @@ import org.alfresco.repo.dictionary.DictionaryListener;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.util.AbstractLifecycleBean;
+import org.springframework.extensions.surf.util.AbstractLifecycleBean;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.context.ApplicationEvent;
@@ -513,7 +513,7 @@ public abstract class CMISAbstractDictionaryService extends AbstractLifecycleBea
     
     /*
      * (non-Javadoc)
-     * @see org.alfresco.util.AbstractLifecycleBean#onBootstrap(org.springframework.context.ApplicationEvent)
+     * @see org.springframework.extensions.surf.util.AbstractLifecycleBean#onBootstrap(org.springframework.context.ApplicationEvent)
      */
     protected void onBootstrap(ApplicationEvent event)
     {
@@ -523,7 +523,7 @@ public abstract class CMISAbstractDictionaryService extends AbstractLifecycleBea
 
     /*
      * (non-Javadoc)
-     * @see org.alfresco.util.AbstractLifecycleBean#onShutdown(org.springframework.context.ApplicationEvent)
+     * @see org.springframework.extensions.surf.util.AbstractLifecycleBean#onShutdown(org.springframework.context.ApplicationEvent)
      */
     protected void onShutdown(ApplicationEvent event)
     {

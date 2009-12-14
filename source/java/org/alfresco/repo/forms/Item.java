@@ -24,7 +24,7 @@
  */
 package org.alfresco.repo.forms;
 
-import org.alfresco.util.ParameterCheck;
+import org.springframework.extensions.surf.util.ParameterCheck;
 
 /**
  * Represents an item a form is generated for.

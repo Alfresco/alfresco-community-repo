@@ -37,8 +37,8 @@ import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
 
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.util.AbstractLifecycleBean;
-import org.alfresco.util.PropertyCheck;
+import org.springframework.extensions.surf.util.AbstractLifecycleBean;
+import org.springframework.extensions.surf.util.PropertyCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jgroups.Address;

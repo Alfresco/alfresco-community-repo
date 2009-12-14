@@ -27,7 +27,7 @@ package org.alfresco.repo.admin.patch.impl;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import org.alfresco.i18n.I18NUtil;
+import org.springframework.extensions.surf.util.I18NUtil;
 import org.alfresco.model.WCMAppModel;
 import org.alfresco.repo.admin.patch.AbstractPatch;
 import org.alfresco.repo.importer.ImporterBootstrap;

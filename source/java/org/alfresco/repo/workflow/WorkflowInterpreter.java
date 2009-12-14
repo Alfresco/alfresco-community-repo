@@ -34,7 +34,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.alfresco.i18n.I18NUtil;
+import org.springframework.extensions.surf.util.I18NUtil;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.admin.BaseInterpreter;
 import org.alfresco.repo.avm.AVMNodeConverter;
@@ -105,7 +105,7 @@ public class WorkflowInterpreter extends BaseInterpreter
 
 
     /* (non-Javadoc)
-     * @see org.alfresco.util.AbstractLifecycleBean#onBootstrap(org.springframework.context.ApplicationEvent)
+     * @see org.springframework.extensions.surf.util.AbstractLifecycleBean#onBootstrap(org.springframework.context.ApplicationEvent)
      */
     @Override
     protected void onBootstrap(ApplicationEvent event)
@@ -113,7 +113,7 @@ public class WorkflowInterpreter extends BaseInterpreter
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.util.AbstractLifecycleBean#onShutdown(org.springframework.context.ApplicationEvent)
+     * @see org.springframework.extensions.surf.util.AbstractLifecycleBean#onShutdown(org.springframework.context.ApplicationEvent)
      */
     @Override
     protected void onShutdown(ApplicationEvent event)

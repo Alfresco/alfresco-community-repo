@@ -34,7 +34,7 @@ import org.alfresco.service.cmr.view.ExportPackageHandler;
 import org.alfresco.service.cmr.view.Exporter;
 import org.alfresco.service.cmr.view.ExporterContext;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.util.ParameterCheck;
+import org.springframework.extensions.surf.util.ParameterCheck;
 
 
 /**

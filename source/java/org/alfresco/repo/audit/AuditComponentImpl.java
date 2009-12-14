@@ -64,7 +64,7 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.transaction.TransactionService;
-import org.alfresco.util.ParameterCheck;
+import org.springframework.extensions.surf.util.ParameterCheck;
 import org.alfresco.util.PathMapper;
 import org.aopalliance.intercept.MethodInvocation;
 import org.apache.commons.logging.Log;

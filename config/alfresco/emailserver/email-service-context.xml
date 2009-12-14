@@ -5,7 +5,7 @@
 
    <!-- I18N -->
    
-   <bean id="emailResourceBundles" class="org.alfresco.i18n.ResourceBundleBootstrapComponent">
+   <bean id="emailResourceBundles" class="org.springframework.extensions.surf.util.ResourceBundleBootstrapComponent">
         <property name="resourceBundles">
             <list>
                 <value>alfresco.messages.email-service</value>

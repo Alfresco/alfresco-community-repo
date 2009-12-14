@@ -30,7 +30,7 @@ import java.util.Set;
 
 import org.alfresco.repo.avm.util.AVMUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.util.ParameterCheck;
+import org.springframework.extensions.surf.util.ParameterCheck;
 import org.alfresco.wcm.util.WCMUtil;
 import org.alfresco.wcm.webproject.WebProjectService;
 

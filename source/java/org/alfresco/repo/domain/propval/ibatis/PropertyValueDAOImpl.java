@@ -44,7 +44,7 @@ import org.alfresco.repo.domain.propval.PropertyStringValueEntity;
 import org.alfresco.repo.domain.propval.PropertyUniqueContextEntity;
 import org.alfresco.repo.domain.propval.PropertyValueEntity;
 import org.alfresco.repo.domain.propval.PropertyValueEntity.PersistedType;
-import org.alfresco.util.Pair;
+import org.springframework.extensions.surf.util.Pair;
 import org.springframework.orm.ibatis.SqlMapClientTemplate;
 
 import com.ibatis.sqlmap.client.event.RowHandler;

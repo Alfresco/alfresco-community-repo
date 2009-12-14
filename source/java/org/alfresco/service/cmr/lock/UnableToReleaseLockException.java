@@ -26,7 +26,7 @@ package org.alfresco.service.cmr.lock;
 
 import java.text.MessageFormat;
 
-import org.alfresco.i18n.I18NUtil;
+import org.springframework.extensions.surf.util.I18NUtil;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 /**

@@ -37,7 +37,7 @@ import org.alfresco.service.cmr.avmsync.AVMSyncException;
 import org.alfresco.service.cmr.avmsync.AVMSyncService;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.util.Pair;
+import org.springframework.extensions.surf.util.Pair;
 
 /**
  * An ActionExecuter that promotes content from one store to another.

@@ -30,7 +30,7 @@ import java.util.List;
 
 import org.alfresco.repo.domain.activities.ActivityFeedDAO;
 import org.alfresco.repo.domain.activities.ActivityFeedEntity;
-import org.alfresco.util.PropertyCheck;
+import org.springframework.extensions.surf.util.PropertyCheck;
 import org.alfresco.util.VmShutdownListener;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;

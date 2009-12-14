@@ -35,7 +35,7 @@ import org.alfresco.service.cmr.audit.AuditInfo;
 import org.alfresco.service.cmr.audit.AuditService.AuditQueryCallback;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.util.Pair;
+import org.springframework.extensions.surf.util.Pair;
 
 /**
  * DAO services for <b>alf_audit_XXX</b> tables.

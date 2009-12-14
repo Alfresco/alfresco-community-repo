@@ -27,7 +27,7 @@ package org.alfresco.repo.avm;
 import java.util.List;
 
 import org.alfresco.service.cmr.security.PermissionService;
-import org.alfresco.util.AbstractLifecycleBean;
+import org.springframework.extensions.surf.util.AbstractLifecycleBean;
 import org.springframework.context.ApplicationEvent;
 
 /**

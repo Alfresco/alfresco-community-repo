@@ -70,7 +70,7 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.DNSNameMangler;
-import org.alfresco.util.ParameterCheck;
+import org.springframework.extensions.surf.util.ParameterCheck;
 import org.alfresco.wcm.preview.PreviewURIServiceRegistry;
 import org.alfresco.wcm.sandbox.SandboxConstants;
 import org.alfresco.wcm.sandbox.SandboxFactory;

@@ -32,14 +32,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.alfresco.config.Config;
-import org.alfresco.config.ConfigElement;
-import org.alfresco.config.ConfigLookupContext;
-import org.alfresco.config.ConfigService;
+import org.springframework.extensions.config.Config;
+import org.springframework.extensions.config.ConfigElement;
+import org.springframework.extensions.config.ConfigLookupContext;
+import org.springframework.extensions.config.ConfigService;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.content.encoding.ContentCharsetFinder;
 import org.alfresco.service.cmr.repository.MimetypeService;
-import org.alfresco.util.PropertyCheck;
+import org.springframework.extensions.surf.util.PropertyCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 

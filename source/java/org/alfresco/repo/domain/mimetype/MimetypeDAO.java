@@ -25,7 +25,7 @@
 package org.alfresco.repo.domain.mimetype;
 
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.util.Pair;
+import org.springframework.extensions.surf.util.Pair;
 
 /**
  * DAO services for <b>alf_mimetype</b> table

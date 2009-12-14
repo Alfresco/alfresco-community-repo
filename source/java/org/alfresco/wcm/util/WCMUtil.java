@@ -46,7 +46,7 @@ import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.FileNameValidator;
-import org.alfresco.util.ParameterCheck;
+import org.springframework.extensions.surf.util.ParameterCheck;
 import org.alfresco.util.VirtServerUtils;
 import org.alfresco.wcm.sandbox.SandboxConstants;
 import org.apache.commons.logging.Log;

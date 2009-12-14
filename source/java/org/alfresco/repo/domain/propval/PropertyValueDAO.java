@@ -30,7 +30,7 @@ import java.util.List;
 
 import org.alfresco.repo.domain.CrcHelper;
 import org.alfresco.repo.props.PropertyUniqueConstraintViolation;
-import org.alfresco.util.Pair;
+import org.springframework.extensions.surf.util.Pair;
 import org.springframework.dao.DataIntegrityViolationException;
 
 /**

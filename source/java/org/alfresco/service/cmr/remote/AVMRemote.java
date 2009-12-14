@@ -40,7 +40,7 @@ import org.alfresco.service.cmr.avm.AVMStoreDescriptor;
 import org.alfresco.service.cmr.avm.LayeringDescriptor;
 import org.alfresco.service.cmr.avm.VersionDescriptor;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.util.Pair;
+import org.springframework.extensions.surf.util.Pair;
 
 /**
  * Remote interface for Alfresco Versioning Model (AVM).<br>

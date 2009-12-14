@@ -544,7 +544,7 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
 
     private AccessStatus doAvmCan(NodeRef nodeRef, PermissionReference permission)
     {
-        org.alfresco.util.Pair<Integer, String> avmVersionPath = AVMNodeConverter.ToAVMVersionPath(nodeRef);
+        org.springframework.extensions.surf.util.Pair<Integer, String> avmVersionPath = AVMNodeConverter.ToAVMVersionPath(nodeRef);
         int version = avmVersionPath.getFirst();
         String path = avmVersionPath.getSecond();
         boolean result = AVMRepository.GetInstance().can(nodeRef.getStoreRef().getIdentifier(), version, path, permission.getName());

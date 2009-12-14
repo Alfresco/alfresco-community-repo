@@ -29,7 +29,7 @@ import java.util.Date;
 
 import org.alfresco.repo.domain.Server;
 import org.alfresco.repo.domain.Transaction;
-import org.alfresco.util.ISO8601DateFormat;
+import org.springframework.extensions.surf.util.ISO8601DateFormat;
 
 /**
  * Bean containing all the persistence data representing a <b>Transaction</b>.

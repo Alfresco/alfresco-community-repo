@@ -37,7 +37,7 @@ import junit.framework.TestCase;
 import net.sf.ehcache.Cache;
 import net.sf.ehcache.CacheManager;
 
-import org.alfresco.i18n.I18NUtil;
+import org.springframework.extensions.surf.util.I18NUtil;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.cache.EhCacheAdapter;
 import org.alfresco.repo.dictionary.DictionaryDAOImpl.DictionaryRegistry;

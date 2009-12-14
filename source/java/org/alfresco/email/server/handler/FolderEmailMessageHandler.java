@@ -35,7 +35,7 @@ import java.util.Map;
 import javax.mail.MessagingException;
 
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.i18n.I18NUtil;
+import org.springframework.extensions.surf.util.I18NUtil;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.service.cmr.email.EmailMessage;

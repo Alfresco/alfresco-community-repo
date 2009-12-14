@@ -36,7 +36,7 @@ import java.util.Locale;
 import javax.servlet.http.HttpServletResponse;
 
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.i18n.I18NUtil;
+import org.springframework.extensions.surf.util.I18NUtil;
 import org.alfresco.repo.content.AbstractContentReader;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;

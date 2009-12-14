@@ -29,7 +29,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.alfresco.repo.attributes.Attribute;
-import org.alfresco.util.Pair;
+import org.springframework.extensions.surf.util.Pair;
 
 /**
  * This provides services for reading, writing, and querying global attributes.

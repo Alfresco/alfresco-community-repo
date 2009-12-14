@@ -31,8 +31,8 @@ import java.util.List;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.cache.NullCache;
 import org.alfresco.repo.cache.SimpleCache;
-import org.alfresco.util.Pair;
-import org.alfresco.util.ParameterCheck;
+import org.springframework.extensions.surf.util.Pair;
+import org.springframework.extensions.surf.util.ParameterCheck;
 import org.springframework.dao.ConcurrencyFailureException;
 
 /**

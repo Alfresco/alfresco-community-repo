@@ -27,7 +27,7 @@ package org.alfresco.repo.search;
 import org.alfresco.repo.service.StoreRedirectorProxyFactory;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.util.AbstractLifecycleBean;
+import org.springframework.extensions.surf.util.AbstractLifecycleBean;
 import org.springframework.context.ApplicationEvent;
 
 /**

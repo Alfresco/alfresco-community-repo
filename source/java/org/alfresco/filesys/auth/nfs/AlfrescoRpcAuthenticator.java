@@ -31,7 +31,7 @@ import java.util.List;
 import javax.transaction.Status;
 import javax.transaction.UserTransaction;
 
-import org.alfresco.config.ConfigElement;
+import org.springframework.extensions.config.ConfigElement;
 import org.alfresco.filesys.AlfrescoConfigSection;
 import org.alfresco.filesys.alfresco.AlfrescoClientInfo;
 import org.alfresco.jlan.oncrpc.AuthType;

@@ -27,7 +27,7 @@ package org.alfresco.repo.admin.patch.impl;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.alfresco.i18n.I18NUtil;
+import org.springframework.extensions.surf.util.I18NUtil;
 import org.alfresco.repo.admin.patch.AbstractPatch;
 import org.alfresco.repo.search.AVMSnapShotTriggeredIndexingMethodInterceptor;
 import org.alfresco.repo.search.impl.lucene.AVMLuceneIndexer;

@@ -29,7 +29,7 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.service.cmr.email.EmailMessage;
 import org.alfresco.service.cmr.email.EmailService;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.util.AbstractLifecycleBean;
+import org.springframework.extensions.surf.util.AbstractLifecycleBean;
 import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.remoting.rmi.RmiClientInterceptor;

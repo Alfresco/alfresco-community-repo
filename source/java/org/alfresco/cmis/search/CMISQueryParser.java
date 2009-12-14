@@ -85,7 +85,7 @@ import org.alfresco.repo.search.impl.querymodel.impl.functions.Score;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.util.CachingDateFormat;
+import org.springframework.extensions.surf.util.CachingDateFormat;
 import org.antlr.runtime.ANTLRStringStream;
 import org.antlr.runtime.CharStream;
 import org.antlr.runtime.CommonTokenStream;

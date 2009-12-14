@@ -33,7 +33,6 @@ import net.sf.jooreports.openoffice.connection.AbstractOpenOfficeConnection;
 import net.sf.jooreports.openoffice.connection.OpenOfficeConnection;
 
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.i18n.I18NUtil;
 import org.alfresco.repo.content.metadata.MetadataExtracterRegistry;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -43,6 +42,8 @@ import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationEvent;
+import org.springframework.extensions.surf.util.AbstractLifecycleBean;
+import org.springframework.extensions.surf.util.I18NUtil;
 
 import com.sun.star.registry.RegistryValueType;
 import com.sun.star.registry.XRegistryKey;

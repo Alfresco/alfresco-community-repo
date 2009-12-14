@@ -28,7 +28,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.alfresco.repo.avm.util.AVMUtil;
-import org.alfresco.util.Pair;
+import org.springframework.extensions.surf.util.Pair;
 
 /**
  * This holds all the information necessary to perform operations

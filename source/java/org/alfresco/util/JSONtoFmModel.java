@@ -35,6 +35,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
+import org.springframework.extensions.surf.util.ISO8601DateFormat;
 
 /**
  * Utility to convert JSON to Freemarker-compatible data model

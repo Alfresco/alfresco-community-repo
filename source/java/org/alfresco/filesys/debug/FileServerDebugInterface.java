@@ -6,7 +6,7 @@ package org.alfresco.filesys.debug;
  * Copyright (c) 2007 Starlasoft. All rights reserved.
  */
 
-import org.alfresco.config.ConfigElement;
+import org.springframework.extensions.config.ConfigElement;
 import org.alfresco.jlan.debug.Debug;
 import org.alfresco.jlan.debug.DebugInterfaceBase;
 import org.apache.commons.logging.Log;

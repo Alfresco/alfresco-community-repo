@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
-import org.alfresco.util.Pair;
+import org.springframework.extensions.surf.util.Pair;
 
 /**
  * Copy out a file or a directory recursively from the repository

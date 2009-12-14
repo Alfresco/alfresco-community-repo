@@ -29,7 +29,7 @@ import java.util.List;
 
 import org.alfresco.repo.domain.hibernate.DirtySessionAnnotation;
 import org.alfresco.service.cmr.attributes.AttrQuery;
-import org.alfresco.util.Pair;
+import org.springframework.extensions.surf.util.Pair;
 
 /**
  * Interface for persistence operations on attributes.

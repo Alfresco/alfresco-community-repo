@@ -31,7 +31,7 @@ import java.io.Reader;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.scripts.ScriptException;
 import org.alfresco.service.cmr.repository.ScriptLocation;
-import org.alfresco.util.ParameterCheck;
+import org.springframework.extensions.surf.util.ParameterCheck;
 
 /**
  * Classpath script location object.

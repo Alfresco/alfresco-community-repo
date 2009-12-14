@@ -26,7 +26,7 @@ package org.alfresco.repo.domain.activities;
 
 import java.util.Date;
 
-import org.alfresco.util.ISO8601DateFormat;
+import org.springframework.extensions.surf.util.ISO8601DateFormat;
 import org.json.JSONException;
 import org.json.JSONObject;
 

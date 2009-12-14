@@ -72,7 +72,7 @@ import org.alfresco.service.cmr.view.Location;
 import org.alfresco.service.cmr.view.ImporterBinding.UUID_BINDING;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.util.ParameterCheck;
+import org.springframework.extensions.surf.util.ParameterCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.core.io.DefaultResourceLoader;

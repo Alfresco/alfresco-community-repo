@@ -29,7 +29,7 @@ package org.alfresco.repo.invitation.script;
 import org.alfresco.service.cmr.invitation.Invitation;
 import org.alfresco.service.cmr.invitation.InvitationService;
 import org.alfresco.service.cmr.invitation.NominatedInvitation;
-import org.alfresco.util.ISO8601DateFormat;
+import org.springframework.extensions.surf.util.ISO8601DateFormat;
 
 import java.util.Date;
 

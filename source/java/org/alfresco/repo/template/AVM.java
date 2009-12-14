@@ -31,7 +31,7 @@ import org.alfresco.config.JNDIConstants;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avm.AVMStoreDescriptor;
-import org.alfresco.util.ParameterCheck;
+import org.springframework.extensions.surf.util.ParameterCheck;
 import org.alfresco.wcm.asset.AssetInfo;
 import org.alfresco.wcm.sandbox.SandboxService;
 import org.alfresco.wcm.util.WCMUtil;

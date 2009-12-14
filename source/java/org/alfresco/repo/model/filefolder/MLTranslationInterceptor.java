@@ -32,7 +32,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
-import org.alfresco.i18n.I18NUtil;
+import org.springframework.extensions.surf.util.I18NUtil;
 import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.ml.MultilingualContentService;
 import org.alfresco.service.cmr.model.FileFolderService;

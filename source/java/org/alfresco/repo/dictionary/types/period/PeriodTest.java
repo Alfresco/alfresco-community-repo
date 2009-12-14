@@ -35,7 +35,7 @@ import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.repository.Period;
 import org.alfresco.service.cmr.repository.PeriodProvider;
 import org.alfresco.util.ApplicationContextHelper;
-import org.alfresco.util.CachingDateFormat;
+import org.springframework.extensions.surf.util.CachingDateFormat;
 
 /**
  * Tests for period implementations - persistence and search is tested elsewhere

@@ -31,7 +31,7 @@ import org.alfresco.repo.avm.util.SimplePath;
 import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.service.cmr.security.PermissionService;
-import org.alfresco.util.Pair;
+import org.springframework.extensions.surf.util.Pair;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.InitializingBean;

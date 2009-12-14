@@ -32,7 +32,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-import org.alfresco.i18n.I18NUtil;
+import org.springframework.extensions.surf.util.I18NUtil;
 import org.alfresco.repo.search.MLAnalysisMode;
 import org.alfresco.repo.search.SearcherException;
 import org.alfresco.repo.search.impl.lucene.LuceneFunction;

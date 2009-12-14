@@ -49,7 +49,7 @@ import org.alfresco.service.cmr.repository.Period;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.EqualsHelper;
-import org.alfresco.util.ParameterCheck;
+import org.springframework.extensions.surf.util.ParameterCheck;
 import org.alfresco.util.VersionNumber;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;

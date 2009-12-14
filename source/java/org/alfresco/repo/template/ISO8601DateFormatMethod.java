@@ -26,7 +26,7 @@ package org.alfresco.repo.template;
 
 import java.util.List;
 
-import org.alfresco.util.ISO8601DateFormat;
+import org.springframework.extensions.surf.util.ISO8601DateFormat;
 
 import freemarker.template.TemplateDateModel;
 import freemarker.template.TemplateMethodModelEx;

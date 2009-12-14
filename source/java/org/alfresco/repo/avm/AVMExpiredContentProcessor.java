@@ -36,7 +36,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.alfresco.config.JNDIConstants;
-import org.alfresco.i18n.I18NUtil;
+import org.springframework.extensions.surf.util.I18NUtil;
 import org.alfresco.mbeans.VirtServerRegistry;
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.WCMAppModel;
@@ -66,7 +66,7 @@ import org.alfresco.service.cmr.workflow.WorkflowTask;
 import org.alfresco.service.cmr.workflow.WorkflowTaskState;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
-import org.alfresco.util.Pair;
+import org.springframework.extensions.surf.util.Pair;
 import org.alfresco.wcm.sandbox.SandboxFactory;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;

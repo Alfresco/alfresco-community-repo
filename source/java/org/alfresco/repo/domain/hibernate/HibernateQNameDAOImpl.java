@@ -36,7 +36,7 @@ import org.alfresco.repo.domain.NamespaceEntity;
 import org.alfresco.repo.domain.QNameDAO;
 import org.alfresco.repo.domain.QNameEntity;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.util.Pair;
+import org.springframework.extensions.surf.util.Pair;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.Query;

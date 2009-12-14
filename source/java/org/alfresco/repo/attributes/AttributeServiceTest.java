@@ -42,7 +42,7 @@ import org.alfresco.service.cmr.attributes.AttrQueryLTE;
 import org.alfresco.service.cmr.attributes.AttrQueryLike;
 import org.alfresco.service.cmr.attributes.AttrQueryNE;
 import org.alfresco.service.cmr.attributes.AttributeService;
-import org.alfresco.util.Pair;
+import org.springframework.extensions.surf.util.Pair;
 import org.springframework.context.support.FileSystemXmlApplicationContext;
 
 import junit.framework.TestCase;

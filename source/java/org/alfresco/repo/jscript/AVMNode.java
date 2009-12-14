@@ -35,8 +35,8 @@ import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avm.locking.AVMLock;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.util.Pair;
-import org.alfresco.util.ParameterCheck;
+import org.springframework.extensions.surf.util.Pair;
+import org.springframework.extensions.surf.util.ParameterCheck;
 import org.mozilla.javascript.Scriptable;
 
 /**

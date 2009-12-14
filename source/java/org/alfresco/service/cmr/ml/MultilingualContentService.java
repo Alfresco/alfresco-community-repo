@@ -105,7 +105,7 @@ public interface MultilingualContentService
     /**
      * Given a <b>cm:mlDocument</b>, this method attempts to find the best translation for the given
      * locale.  If there is not even a
-     * {@link org.alfresco.i18n.I18NUtil#getNearestLocale(Locale, Set) partial match}, then the
+     * {@link org.springframework.extensions.surf.util.I18NUtil#getNearestLocale(Locale, Set) partial match}, then the
      * {@link #getPivotTranslation(NodeRef) pivot translation} is used.  If that also gives no results
      * then the translation itself is returned.
      *
@@ -114,7 +114,7 @@ public interface MultilingualContentService
      * @return                          Returns the best match for the locale (never <tt>null</tt>)
      *
      * @see #getTranslations(NodeRef)
-     * @see org.alfresco.i18n.I18NUtil#getNearestLocale(Locale, Set)
+     * @see org.springframework.extensions.surf.util.I18NUtil#getNearestLocale(Locale, Set)
      */
     @Auditable(key = Auditable.Key.ARG_0, parameters = {"translationNodeRef", "locale"})
     NodeRef getTranslationForLocale(NodeRef translationNodeRef, Locale locale);

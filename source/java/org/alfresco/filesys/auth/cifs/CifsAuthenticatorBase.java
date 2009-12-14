@@ -26,7 +26,7 @@ package org.alfresco.filesys.auth.cifs;
 
 import net.sf.acegisecurity.Authentication;
 
-import org.alfresco.config.ConfigElement;
+import org.springframework.extensions.config.ConfigElement;
 import org.alfresco.filesys.AlfrescoConfigSection;
 import org.alfresco.filesys.alfresco.AlfrescoClientInfo;
 import org.alfresco.filesys.repo.ContentContext;

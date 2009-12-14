@@ -34,7 +34,7 @@ import org.alfresco.repo.policy.BaseBehaviour;
 import org.alfresco.repo.policy.PolicyException;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.ScriptLocation;
-import org.alfresco.util.ParameterCheck;
+import org.springframework.extensions.surf.util.ParameterCheck;
 
 
 /**

@@ -27,7 +27,7 @@ package org.alfresco.repo.avm;
 
 import java.io.Serializable;
 
-import org.alfresco.util.MD5;
+import org.springframework.extensions.surf.util.MD5;
 
 /**
  * Implementation of entry for tracking layered nodes which were 

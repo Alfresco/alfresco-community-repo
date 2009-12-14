@@ -32,7 +32,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.alfresco.i18n.I18NUtil;
+import org.springframework.extensions.surf.util.I18NUtil;
 import org.alfresco.repo.domain.AppliedPatch;
 import org.alfresco.repo.transaction.TransactionServiceImpl;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;

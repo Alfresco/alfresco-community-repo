@@ -27,7 +27,7 @@ package org.alfresco.repo.avm.locking;
 
 import org.alfresco.service.cmr.avm.locking.AVMLockingService;
 import org.alfresco.service.transaction.TransactionService;
-import org.alfresco.util.AbstractLifecycleBean;
+import org.springframework.extensions.surf.util.AbstractLifecycleBean;
 import org.springframework.context.ApplicationEvent;
 
 /**

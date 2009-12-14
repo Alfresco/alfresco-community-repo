@@ -55,7 +55,7 @@ import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.util.ParameterCheck;
+import org.springframework.extensions.surf.util.ParameterCheck;
 import org.alfresco.wcm.asset.AssetInfo;
 import org.alfresco.wcm.sandbox.script.Asset;
 import org.mozilla.javascript.NativeObject;

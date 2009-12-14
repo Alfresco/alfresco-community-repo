@@ -27,7 +27,7 @@ package org.alfresco.wcm.preview;
 import java.util.Map;
 
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.util.PropertyCheck;
+import org.springframework.extensions.surf.util.PropertyCheck;
 import org.springframework.beans.factory.InitializingBean;
 
 

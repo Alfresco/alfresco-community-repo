@@ -10,7 +10,7 @@ import java.util.Map;
 import org.alfresco.service.cmr.remote.RepoRemote;
 import org.alfresco.service.cmr.remote.RepoRemoteTransport;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.util.Pair;
+import org.springframework.extensions.surf.util.Pair;
 
 /**
  * Client side implementation of RepoRemote interface.

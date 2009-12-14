@@ -96,7 +96,7 @@ import org.alfresco.service.cmr.view.ImporterException;
 import org.alfresco.service.cmr.view.Location;
 import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.util.ParameterCheck;
+import org.springframework.extensions.surf.util.ParameterCheck;
 import org.dom4j.io.OutputFormat;
 import org.dom4j.io.XMLWriter;
 import org.xml.sax.ContentHandler;

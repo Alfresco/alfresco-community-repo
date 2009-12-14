@@ -54,7 +54,7 @@
       <property name="tenantService" ref="tenantService"/>
    </bean>
 
-   <bean id="workflowInterpreterHelp" class="org.alfresco.i18n.ResourceBundleBootstrapComponent">
+   <bean id="workflowInterpreterHelp" class="org.springframework.extensions.surf.util.ResourceBundleBootstrapComponent">
         <property name="resourceBundles">
             <list>
                 <value>alfresco.messages.workflow-interpreter-help</value>

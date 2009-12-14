@@ -46,8 +46,8 @@ import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.GUID;
-import org.alfresco.util.ISO8601DateFormat;
-import org.alfresco.util.Pair;
+import org.springframework.extensions.surf.util.ISO8601DateFormat;
+import org.springframework.extensions.surf.util.Pair;
 import org.bouncycastle.util.Arrays;
 import org.springframework.context.ApplicationContext;
 

@@ -28,7 +28,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
 
-import org.alfresco.config.ConfigElement;
+import org.springframework.extensions.config.ConfigElement;
 import org.alfresco.jlan.server.filesys.DiskSharedDevice;
 import org.alfresco.jlan.server.filesys.pseudo.LocalPseudoFile;
 import org.alfresco.jlan.server.filesys.pseudo.PseudoFile;

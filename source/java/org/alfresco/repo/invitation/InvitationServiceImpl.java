@@ -59,7 +59,7 @@ import org.alfresco.service.cmr.workflow.WorkflowTaskState;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.GUID;
-import org.alfresco.util.PropertyCheck;
+import org.springframework.extensions.surf.util.PropertyCheck;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.invitation.site.*;
 import org.alfresco.repo.node.NodeServicePolicies;

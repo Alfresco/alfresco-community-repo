@@ -26,7 +26,7 @@ package org.alfresco.repo.importer;
 
 import java.io.InputStream;
 
-import org.alfresco.util.ParameterCheck;
+import org.springframework.extensions.surf.util.ParameterCheck;
 import org.xml.sax.Attributes;
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.Locator;

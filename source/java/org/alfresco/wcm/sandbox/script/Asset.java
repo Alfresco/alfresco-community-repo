@@ -35,7 +35,7 @@ import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.namespace.NamespaceException;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.util.ISO8601DateFormat;
+import org.springframework.extensions.surf.util.ISO8601DateFormat;
 import org.alfresco.wcm.asset.AssetInfo;
 import org.alfresco.wcm.asset.AssetService;
 import org.alfresco.wcm.sandbox.SandboxService;

@@ -30,7 +30,7 @@ import java.util.Date;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.domain.activities.ActivityPostDAO;
 import org.alfresco.repo.domain.activities.ActivityPostEntity;
-import org.alfresco.util.PropertyCheck;
+import org.springframework.extensions.surf.util.PropertyCheck;
 import org.alfresco.util.VmShutdownListener;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;

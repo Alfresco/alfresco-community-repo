@@ -35,7 +35,7 @@ import org.alfresco.jlan.oncrpc.nfs.NFSServer;
 import org.alfresco.jlan.oncrpc.portmap.PortMapperServer;
 import org.alfresco.jlan.server.NetworkServer;
 import org.alfresco.jlan.server.config.ServerConfiguration;
-import org.alfresco.util.AbstractLifecycleBean;
+import org.springframework.extensions.surf.util.AbstractLifecycleBean;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.context.ApplicationContext;

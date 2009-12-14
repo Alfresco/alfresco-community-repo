@@ -34,7 +34,7 @@ import java.nio.channels.FileChannel;
 import java.nio.charset.Charset;
 
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.i18n.I18NUtil;
+import org.springframework.extensions.surf.util.I18NUtil;
 import org.alfresco.jlan.server.filesys.AccessDeniedException;
 import org.alfresco.jlan.server.filesys.DiskFullException;
 import org.alfresco.jlan.server.filesys.FileAttribute;

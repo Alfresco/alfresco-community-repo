@@ -28,7 +28,7 @@ import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
 
-import org.alfresco.config.ConfigElement;
+import org.springframework.extensions.config.ConfigElement;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.filesys.alfresco.AlfrescoClientInfo;
 import org.alfresco.filesys.auth.PassthruServerFactory;

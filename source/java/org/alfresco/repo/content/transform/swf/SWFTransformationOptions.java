@@ -28,7 +28,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.alfresco.service.cmr.repository.TransformationOptions;
-import org.alfresco.util.ParameterCheck;
+import org.springframework.extensions.surf.util.ParameterCheck;
 
 /**
  * SFW transformation options

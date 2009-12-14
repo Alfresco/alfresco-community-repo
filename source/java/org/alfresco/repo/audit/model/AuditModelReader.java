@@ -26,7 +26,7 @@ package org.alfresco.repo.audit.model;
 
 import java.net.URL;
 
-import org.alfresco.util.PropertyCheck;
+import org.springframework.extensions.surf.util.PropertyCheck;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.util.ResourceUtils;
 

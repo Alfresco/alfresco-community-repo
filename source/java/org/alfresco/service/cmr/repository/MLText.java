@@ -29,7 +29,7 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Set;
 
-import org.alfresco.i18n.I18NUtil;
+import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * Class to represent a multilingual (ML) text value.

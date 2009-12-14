@@ -49,7 +49,7 @@ import org.alfresco.repo.domain.activities.ActivityFeedEntity;
 import org.alfresco.repo.domain.activities.ActivityPostEntity;
 import org.alfresco.repo.domain.activities.FeedControlEntity;
 import org.alfresco.repo.template.ISO8601DateFormatMethod;
-import org.alfresco.util.Base64;
+import org.springframework.extensions.surf.util.Base64;
 import org.alfresco.util.JSONtoFmModel;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;

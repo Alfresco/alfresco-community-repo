@@ -25,7 +25,7 @@ package org.alfresco.filesys.avm;
 
 import java.util.Enumeration;
 
-import org.alfresco.config.ConfigElement;
+import org.springframework.extensions.config.ConfigElement;
 import org.alfresco.jlan.server.SrvSession;
 import org.alfresco.jlan.server.config.InvalidConfigurationException;
 import org.alfresco.jlan.server.config.ServerConfiguration;

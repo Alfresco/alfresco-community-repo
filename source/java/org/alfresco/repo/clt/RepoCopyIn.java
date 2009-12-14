@@ -13,7 +13,7 @@ import java.util.Map;
 
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.util.Pair;
+import org.springframework.extensions.surf.util.Pair;
 
 /**
  * Simplified cp from a local filesystem to the repo.

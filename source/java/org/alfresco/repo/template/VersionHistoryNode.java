@@ -41,7 +41,7 @@ import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.namespace.NamespacePrefixResolverProvider;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.QNameMap;
-import org.alfresco.util.URLEncoder;
+import org.springframework.extensions.surf.util.URLEncoder;
 
 /**
  * Template Node wrapper representing a record in the version history of a node.

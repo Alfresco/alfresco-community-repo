@@ -28,7 +28,7 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.alfresco.i18n.I18NUtil;
+import org.springframework.extensions.surf.util.I18NUtil;
 import org.alfresco.service.cmr.action.ParameterDefinition;
 import org.alfresco.service.cmr.action.ParameterizedItem;
 import org.alfresco.service.cmr.action.ParameterizedItemDefinition;

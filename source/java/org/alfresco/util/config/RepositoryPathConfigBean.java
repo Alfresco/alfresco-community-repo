@@ -31,8 +31,8 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.namespace.NamespaceService;
-import org.alfresco.util.ParameterCheck;
-import org.alfresco.util.PropertyCheck;
+import org.springframework.extensions.surf.util.ParameterCheck;
+import org.springframework.extensions.surf.util.PropertyCheck;
 
 /**
  * Composite property bean to identify a repository path.

@@ -28,7 +28,7 @@ import java.util.Locale;
 
 import junit.framework.TestCase;
 
-import org.alfresco.i18n.I18NUtil;
+import org.springframework.extensions.surf.util.I18NUtil;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 

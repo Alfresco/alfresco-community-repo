@@ -29,7 +29,7 @@ import java.util.List;
 
 import org.alfresco.config.JNDIConstants;
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.i18n.I18NUtil;
+import org.springframework.extensions.surf.util.I18NUtil;
 import org.alfresco.repo.action.ParameterDefinitionImpl;
 import org.alfresco.repo.action.executer.ActionExecuterAbstractBase;
 import org.alfresco.repo.avm.AVMNodeConverter;
@@ -41,7 +41,7 @@ import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.avmsync.AVMSyncException;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.util.Pair;
+import org.springframework.extensions.surf.util.Pair;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 

@@ -27,8 +27,8 @@ package org.alfresco.repo.module;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.module.ModuleService;
 import org.alfresco.service.transaction.TransactionService;
-import org.alfresco.util.AbstractLifecycleBean;
-import org.alfresco.util.PropertyCheck;
+import org.springframework.extensions.surf.util.AbstractLifecycleBean;
+import org.springframework.extensions.surf.util.PropertyCheck;
 import org.springframework.context.ApplicationEvent;
 
 /**

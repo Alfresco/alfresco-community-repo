@@ -28,7 +28,7 @@ import java.io.Serializable;
 import java.util.Locale;
 import java.util.StringTokenizer;
 
-import org.alfresco.i18n.I18NUtil;
+import org.springframework.extensions.surf.util.I18NUtil;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.util.EqualsHelper;

@@ -27,7 +27,7 @@ package org.alfresco.repo.admin.patch.impl;
 import java.io.Serializable;
 import java.util.Map;
 
-import org.alfresco.i18n.I18NUtil;
+import org.springframework.extensions.surf.util.I18NUtil;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.ActionModel;
 import org.alfresco.repo.admin.patch.AbstractPatch;

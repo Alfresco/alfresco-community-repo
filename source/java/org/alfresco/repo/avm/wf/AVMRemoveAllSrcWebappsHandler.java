@@ -38,7 +38,7 @@ import org.alfresco.repo.workflow.jbpm.JBPMSpringActionHandler;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.util.Pair;
+import org.springframework.extensions.surf.util.Pair;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jbpm.graph.exe.ExecutionContext;

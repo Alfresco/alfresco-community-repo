@@ -24,7 +24,7 @@
  */
 package org.alfresco.repo.workflow.jbpm;
 
-import org.alfresco.util.AbstractLifecycleBean;
+import org.springframework.extensions.surf.util.AbstractLifecycleBean;
 import org.jbpm.job.executor.JobExecutor;
 import org.springframework.context.ApplicationEvent;
 import org.springmodules.workflow.jbpm31.JbpmTemplate;

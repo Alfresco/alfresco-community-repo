@@ -39,7 +39,7 @@ import org.alfresco.jlan.server.core.SharedDevice;
 import org.alfresco.jlan.server.core.SharedDeviceList;
 import org.alfresco.jlan.server.filesys.DiskSharedDevice;
 import org.alfresco.jlan.server.filesys.FilesystemsConfigSection;
-import org.alfresco.config.ConfigElement;
+import org.springframework.extensions.config.ConfigElement;
 import org.alfresco.filesys.alfresco.AlfrescoClientInfo;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;

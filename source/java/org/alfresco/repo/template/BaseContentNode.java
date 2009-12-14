@@ -45,7 +45,7 @@ import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.FileTypeImageSize;
 import org.alfresco.service.cmr.repository.TemplateImageResolver;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.util.URLEncoder;
+import org.springframework.extensions.surf.util.URLEncoder;
 
 /**
  * Base class for Template API objects that supply content functionality.

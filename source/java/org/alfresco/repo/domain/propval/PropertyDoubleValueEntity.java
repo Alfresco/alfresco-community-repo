@@ -25,7 +25,7 @@
 package org.alfresco.repo.domain.propval;
 
 import org.alfresco.util.EqualsHelper;
-import org.alfresco.util.Pair;
+import org.springframework.extensions.surf.util.Pair;
 
 /**
  * Entity bean for <b>alf_prop_numeric_value</b> table.

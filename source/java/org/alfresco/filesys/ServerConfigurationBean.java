@@ -40,11 +40,11 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.StringTokenizer;
 
-import org.alfresco.config.Config;
-import org.alfresco.config.ConfigElement;
-import org.alfresco.config.ConfigLookupContext;
-import org.alfresco.config.ConfigService;
-import org.alfresco.config.element.GenericConfigElement;
+import org.springframework.extensions.config.Config;
+import org.springframework.extensions.config.ConfigElement;
+import org.springframework.extensions.config.ConfigLookupContext;
+import org.springframework.extensions.config.ConfigService;
+import org.springframework.extensions.config.element.GenericConfigElement;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.filesys.alfresco.DesktopAction;
 import org.alfresco.filesys.alfresco.DesktopActionException;

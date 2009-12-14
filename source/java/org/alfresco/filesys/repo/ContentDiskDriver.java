@@ -32,7 +32,7 @@ import java.util.List;
 
 import javax.transaction.UserTransaction;
 
-import org.alfresco.config.ConfigElement;
+import org.springframework.extensions.config.ConfigElement;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.filesys.alfresco.AlfrescoContext;
 import org.alfresco.filesys.alfresco.AlfrescoDiskDriver;

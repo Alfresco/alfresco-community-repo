@@ -40,7 +40,7 @@ import java.util.Locale;
 import java.util.Map;
 
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.i18n.I18NUtil;
+import org.springframework.extensions.surf.util.I18NUtil;
 import org.alfresco.repo.attributes.Attribute;
 import org.alfresco.repo.attributes.MapAttribute;
 import org.alfresco.repo.attributes.MapAttributeValue;
@@ -57,7 +57,7 @@ import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.repository.Period;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.util.ISO8601DateFormat;
+import org.springframework.extensions.surf.util.ISO8601DateFormat;
 import org.alfresco.util.VersionNumber;
 
 /**

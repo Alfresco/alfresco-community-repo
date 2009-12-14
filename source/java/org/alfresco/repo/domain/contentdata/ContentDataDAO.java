@@ -28,7 +28,7 @@ import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.service.cmr.repository.ContentData;
-import org.alfresco.util.Pair;
+import org.springframework.extensions.surf.util.Pair;
 import org.springframework.dao.ConcurrencyFailureException;
 
 /**

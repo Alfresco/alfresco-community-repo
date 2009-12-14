@@ -39,7 +39,7 @@ import java.util.Locale;
 import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.i18n.I18NUtil;
+import org.springframework.extensions.surf.util.I18NUtil;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.dictionary.IndexTokenisationMode;
 import org.alfresco.repo.search.MLAnalysisMode;
@@ -61,7 +61,7 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.util.CachingDateFormat;
+import org.springframework.extensions.surf.util.CachingDateFormat;
 import org.alfresco.util.SearchLanguageConversion;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;

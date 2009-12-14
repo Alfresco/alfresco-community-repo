@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.alfresco.repo.transaction.TransactionListenerAdapter;
-import org.alfresco.util.Pair;
+import org.springframework.extensions.surf.util.Pair;
 
 /**
  * Transaction listener that fires purge version events.

@@ -54,7 +54,7 @@ import org.alfresco.service.namespace.NamespacePrefixResolverProvider;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.QNameMap;
 import org.alfresco.service.namespace.RegexQNamePattern;
-import org.alfresco.util.Pair;
+import org.springframework.extensions.surf.util.Pair;
 
 /**
  * Workflow and task support in FreeMarker templates.

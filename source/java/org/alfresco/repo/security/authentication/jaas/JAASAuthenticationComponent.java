@@ -37,7 +37,7 @@ import javax.security.auth.login.LoginException;
 import javax.security.sasl.AuthorizeCallback;
 import javax.security.sasl.RealmCallback;
 
-import org.alfresco.i18n.I18NUtil;
+import org.springframework.extensions.surf.util.I18NUtil;
 import org.alfresco.repo.security.authentication.AbstractAuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationException;
 

@@ -16,7 +16,7 @@ import org.alfresco.service.cmr.avmsync.AVMSyncService;
 import org.alfresco.service.cmr.remote.AVMRemote;
 import org.alfresco.service.cmr.remote.RepoRemote;
 import org.alfresco.service.cmr.security.AuthenticationService;
-import org.alfresco.util.Pair;
+import org.springframework.extensions.surf.util.Pair;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 

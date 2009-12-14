@@ -26,7 +26,7 @@
         <property name="authenticationService" ref="AuthenticationService"/>
    </bean>
 
-   <bean id="tenantInterpreterHelp" class="org.alfresco.i18n.ResourceBundleBootstrapComponent">
+   <bean id="tenantInterpreterHelp" class="org.springframework.extensions.surf.util.ResourceBundleBootstrapComponent">
         <property name="resourceBundles">
             <list>
                 <value>alfresco.messages.tenant-interpreter-help</value>

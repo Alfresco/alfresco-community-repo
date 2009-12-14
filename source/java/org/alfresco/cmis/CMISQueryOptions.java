@@ -26,7 +26,7 @@ package org.alfresco.cmis;
 
 import java.util.Locale;
 
-import org.alfresco.i18n.I18NUtil;
+import org.springframework.extensions.surf.util.I18NUtil;
 import org.alfresco.repo.search.impl.querymodel.QueryOptions;
 import org.alfresco.service.cmr.repository.StoreRef;
 

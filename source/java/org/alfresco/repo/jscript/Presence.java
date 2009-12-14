@@ -26,7 +26,7 @@ package org.alfresco.repo.jscript;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.service.ServiceRegistry;
-import org.alfresco.util.ParameterCheck;
+import org.springframework.extensions.surf.util.ParameterCheck;
 
 /**
  * Scripted Presence service for determining online status of People.

@@ -35,7 +35,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import org.alfresco.i18n.I18NUtil;
+import org.springframework.extensions.surf.util.I18NUtil;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.importer.system.SystemExporterImporter;
@@ -55,7 +55,7 @@ import org.alfresco.service.cmr.view.Location;
 import org.alfresco.service.cmr.view.ReferenceType;
 import org.alfresco.service.cmr.view.RepositoryExporterService;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.util.ParameterCheck;
+import org.springframework.extensions.surf.util.ParameterCheck;
 import org.alfresco.util.TempFileProvider;
 
 

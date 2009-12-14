@@ -44,6 +44,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.extensions.surf.util.AbstractLifecycleBean;
 import org.springframework.extensions.surf.util.I18NUtil;
+import org.springframework.extensions.surf.util.PropertyCheck;
 
 import com.sun.star.registry.RegistryValueType;
 import com.sun.star.registry.XRegistryKey;

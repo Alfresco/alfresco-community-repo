@@ -35,7 +35,7 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.web.scripts.BaseWebScriptTest;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.PersonService;
-import org.alfresco.util.ISO8601DateFormat;
+import org.springframework.extensions.surf.util.ISO8601DateFormat;
 import org.alfresco.util.PropertyMap;
 import org.alfresco.web.scripts.Status;
 import org.alfresco.web.scripts.TestWebScriptServer.DeleteRequest;

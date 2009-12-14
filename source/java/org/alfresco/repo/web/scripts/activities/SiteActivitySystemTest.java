@@ -39,7 +39,8 @@ import junit.framework.TestCase;
 
 import org.alfresco.repo.site.SiteModel;
 import org.alfresco.repo.web.scripts.activities.feed.UserFeedRetrieverWebScript;
-import org.alfresco.util.Base64;
+import org.springframework.extensions.surf.util.Base64;
+import org.springframework.extensions.surf.util.ISO8601DateFormat;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.JSONArray;

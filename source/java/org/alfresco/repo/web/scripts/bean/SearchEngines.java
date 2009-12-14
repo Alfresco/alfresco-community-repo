@@ -29,9 +29,9 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import org.alfresco.config.Config;
-import org.alfresco.config.ConfigService;
-import org.alfresco.i18n.I18NUtil;
+import org.springframework.extensions.config.Config;
+import org.springframework.extensions.config.ConfigService;
+import org.springframework.extensions.surf.util.I18NUtil;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.web.scripts.config.OpenSearchConfigElement;
 import org.alfresco.web.scripts.DeclarativeWebScript;

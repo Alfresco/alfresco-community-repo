@@ -35,7 +35,7 @@ import java.util.StringTokenizer;
 
 import javax.servlet.http.HttpServletResponse;
 
-import org.alfresco.i18n.I18NUtil;
+import org.springframework.extensions.surf.util.I18NUtil;
 import org.alfresco.repo.content.filestore.FileContentReader;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;

@@ -50,7 +50,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.TemplateService;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.descriptor.DescriptorService;
-import org.alfresco.util.StringBuilderWriter;
+import org.springframework.extensions.surf.util.StringBuilderWriter;
 import org.alfresco.web.scripts.AbstractRuntimeContainer;
 import org.alfresco.web.scripts.Authenticator;
 import org.alfresco.web.scripts.Cache;

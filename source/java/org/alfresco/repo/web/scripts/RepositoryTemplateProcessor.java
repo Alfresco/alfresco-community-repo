@@ -32,7 +32,7 @@ import java.util.List;
 import org.alfresco.processor.ProcessorExtension;
 import org.alfresco.repo.template.FreeMarkerProcessor;
 import org.alfresco.repo.template.QNameAwareObjectWrapper;
-import org.alfresco.util.AbstractLifecycleBean;
+import org.springframework.extensions.surf.util.AbstractLifecycleBean;
 import org.alfresco.web.scripts.SearchPath;
 import org.alfresco.web.scripts.Store;
 import org.alfresco.web.scripts.TemplateProcessor;

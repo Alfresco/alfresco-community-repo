@@ -8,7 +8,7 @@
    <!--  Web Script Configuration -->
    <!--                           -->   
 
-   <bean id="webscripts.configsource" class="org.alfresco.config.source.UrlConfigSource">
+   <bean id="webscripts.configsource" class="org.springframework.extensions.config.source.UrlConfigSource">
       <constructor-arg>
          <list>
             <value>classpath:alfresco/web-scripts-config.xml</value>
@@ -18,7 +18,7 @@
       </constructor-arg>
    </bean>
 
-   <bean id="webscripts.config" class="org.alfresco.config.xml.XMLConfigService" init-method="init">
+   <bean id="webscripts.config" class="org.springframework.extensions.config.xml.XMLConfigService" init-method="init">
       <constructor-arg>
          <ref bean="webscripts.configsource" />
       </constructor-arg>

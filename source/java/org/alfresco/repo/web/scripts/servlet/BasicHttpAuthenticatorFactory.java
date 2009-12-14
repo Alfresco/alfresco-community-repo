@@ -29,7 +29,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.service.cmr.security.AuthenticationService;
-import org.alfresco.util.Base64;
+import org.springframework.extensions.surf.util.Base64;
 import org.alfresco.web.scripts.Authenticator;
 import org.alfresco.web.scripts.WebScriptException;
 import org.alfresco.web.scripts.Description.RequiredAuthentication;

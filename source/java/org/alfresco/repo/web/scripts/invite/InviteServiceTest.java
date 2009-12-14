@@ -56,7 +56,7 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.GUID;
 import org.alfresco.util.PropertyMap;
-import org.alfresco.util.URLEncoder;
+import org.springframework.extensions.surf.util.URLEncoder;
 import org.alfresco.web.scripts.Status;
 import org.alfresco.web.scripts.TestWebScriptServer.GetRequest;
 import org.alfresco.web.scripts.TestWebScriptServer.PutRequest;

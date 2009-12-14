@@ -34,17 +34,16 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.Date;
 
 import junit.framework.TestCase;
 
 import org.alfresco.repo.site.SiteModel;
 import org.alfresco.repo.web.scripts.activities.feed.UserFeedRetrieverWebScript;
 import org.alfresco.util.Base64;
-import org.alfresco.util.ISO8601DateFormat;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
@@ -59,18 +58,15 @@ public class SiteActivitySystemTest extends TestCase
     // TODO - use test property file
     private static final String REPO = "http://localhost:8080/alfresco";
     
-    // web service (SOAP) - temporary (see below)
-    private static final String WEBSERVICE_ENDPOINT = REPO + "/api";
-    
-    private static final String URL_AUTH = "/AuthenticationService";
-    private static final String URL_ADMIN = "/AdministrationService";
-    
     // web script (REST)
     private static final String WEBSCRIPT_ENDPOINT  = REPO + "/service";
     
     // Site Service part-URLs
     private static final String URL_SITES = "/api/sites";
     private static final String URL_MEMBERSHIPS = "/memberships";
+    
+    // Person Service part-URLs
+    private static final String URL_PEOPLE = "/api/people";
     
     // Activity Service part-URLs
     private static final String URL_ACTIVITIES = "/api/activities";
@@ -130,10 +126,13 @@ public class SiteActivitySystemTest extends TestCase
             
             // pre-create users
             
-            createUser(user1, USER_PW);
-            createUser(user2, USER_PW);
-            createUser(user3, USER_PW);
-            createUser(user4, USER_PW);
+            String ticket = callLoginWebScript(WEBSCRIPT_ENDPOINT, ADMIN_USER, ADMIN_PW);
+            assertNotNull(ticket);
+            
+            createUser(ticket, user1, USER_PW);
+            createUser(ticket, user2, USER_PW);
+            createUser(ticket, user3, USER_PW);
+            createUser(ticket, user4, USER_PW);
             
             setup = true;
         }
@@ -806,91 +805,25 @@ public class SiteActivitySystemTest extends TestCase
         return ticketResult;
     }
     
-    // TODO - replace with Create Person REST API when it becomes available
-    
-    protected void createUser(String username, String password) throws MalformedURLException, URISyntaxException, IOException
+    protected void createUser(String ticket, String username, String password) throws JSONException, IOException, URISyntaxException
     {
-        String ticket = webServiceStartSession(ADMIN_USER, ADMIN_PW);
-        webServiceCreateUser(username, password, ticket);
-        webServiceEndSession(ticket);
-    }
-    
-    private String webServiceStartSession(String username, String password) throws MalformedURLException, URISyntaxException, IOException
-    {
-        String soapCall = 
-            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"+
-            "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">"+
-            "<soapenv:Body><startSession xmlns=\"http://www.alfresco.org/ws/service/authentication/1.0\">"+
-            "<username>"+username+"</username>"+
-            "<password>"+password+"</password>"+
-            "</startSession></soapenv:Body></soapenv:Envelope>";
+        // Build the JSON person object
+        JSONObject person = new JSONObject();
+        person.put("userName", username);
+        person.put("firstName", "first");
+        person.put("lastName", "last");
+        person.put("email", "email@email.com");
+        person.put("password", password);
         
-        String response = callInOutWeb(WEBSERVICE_ENDPOINT + URL_AUTH, "POST", null, soapCall, "text/xml; charset=utf-8", "\"http://www.alfresco.org/ws/service/authentication/1.0/startSession\"");
+        String url = WEBSCRIPT_ENDPOINT + URL_PEOPLE;
+        String response = callPostWebScript(url, ticket, person.toString());
         
-        String ticket = null;
-        
-        if (response != null)
+        if (logger.isDebugEnabled())
         {
-            int idx1 = response.indexOf("<ticket>");
-            if (idx1 != -1)
-            {
-                int idx2 = response.indexOf("</ticket>");
-                if (idx2 != -1)
-                {
-                    ticket = response.substring(idx1+"<ticket>".length(), idx2);
-                }
-            }
+            logger.debug("addPerson: " + username);
+            logger.debug("--------------");
+            logger.debug(url);
+            logger.debug(response);
         }
-        
-        return ticket;
-    }
-    
-    private void webServiceCreateUser(String username, String password, String ticket) throws MalformedURLException, URISyntaxException, IOException
-    {
-        Date now = new Date();
-        String startTime = ISO8601DateFormat.format(now);
-        String expireTime = ISO8601DateFormat.format(new Date(now.getTime() + 5*60*1000));
-        
-        String soapCall = 
-            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"+
-            "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">"+
-            "<soapenv:Header>"+
-            "<wsse:Security xmlns:wsse=\"http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd\" soapenv:mustUnderstand=\"1\">"+
-            "<wsu:Timestamp xmlns:wsu=\"http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd\"><wsu:Created>"+startTime+"</wsu:Created><wsu:Expires>"+expireTime+"</wsu:Expires></wsu:Timestamp>"+
-            "<wsse:UsernameToken><wsse:Username>ticket</wsse:Username><wsse:Password Type=\"http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-username-token-profile-1.0#PasswordText\">"+ticket+"</wsse:Password></wsse:UsernameToken></wsse:Security></soapenv:Header>"+
-            "<soapenv:Body><createUsers xmlns=\"http://www.alfresco.org/ws/service/administration/1.0\">"+
-            "<newUsers><userName>"+username+"</userName><password>"+password+"</password><properties>"+
-            "<ns1:name xmlns:ns1=\"http://www.alfresco.org/ws/model/content/1.0\">{http://www.alfresco.org/model/content/1.0}homeFolder</ns1:name>"+
-            "<ns2:isMultiValue xmlns:ns2=\"http://www.alfresco.org/ws/model/content/1.0\">false</ns2:isMultiValue>"+
-            "<ns3:value xmlns:ns3=\"http://www.alfresco.org/ws/model/content/1.0\">workspace:////SpacesStore</ns3:value></properties><properties>" +
-            "<ns4:name xmlns:ns4=\"http://www.alfresco.org/ws/model/content/1.0\">{http://www.alfresco.org/model/content/1.0}firstName</ns4:name>"+
-            "<ns5:isMultiValue xmlns:ns5=\"http://www.alfresco.org/ws/model/content/1.0\">false</ns5:isMultiValue>"+
-            "<ns6:value xmlns:ns6=\"http://www.alfresco.org/ws/model/content/1.0\">"+"FN_"+username+"</ns6:value></properties><properties>"+
-            "<ns7:name xmlns:ns7=\"http://www.alfresco.org/ws/model/content/1.0\">{http://www.alfresco.org/model/content/1.0}middleName</ns7:name>"+
-            "<ns8:isMultiValue xmlns:ns8=\"http://www.alfresco.org/ws/model/content/1.0\">false</ns8:isMultiValue>"+
-            "<ns9:value xmlns:ns9=\"http://www.alfresco.org/ws/model/content/1.0\"></ns9:value></properties><properties>"+
-            "<ns10:name xmlns:ns10=\"http://www.alfresco.org/ws/model/content/1.0\">{http://www.alfresco.org/model/content/1.0}lastName</ns10:name>"+
-            "<ns11:isMultiValue xmlns:ns11=\"http://www.alfresco.org/ws/model/content/1.0\">false</ns11:isMultiValue>" +
-            "<ns12:value xmlns:ns12=\"http://www.alfresco.org/ws/model/content/1.0\">"+"LN_"+username+"</ns12:value></properties><properties>" +
-            "<ns13:name xmlns:ns13=\"http://www.alfresco.org/ws/model/content/1.0\">{http://www.alfresco.org/model/content/1.0}email</ns13:name>"+
-            "<ns14:isMultiValue xmlns:ns14=\"http://www.alfresco.org/ws/model/content/1.0\">false</ns14:isMultiValue>"+
-            "<ns15:value xmlns:ns15=\"http://www.alfresco.org/ws/model/content/1.0\">email1210929178773</ns15:value></properties><properties>"+
-            "<ns16:name xmlns:ns16=\"http://www.alfresco.org/ws/model/content/1.0\">{http://www.alfresco.org/model/content/1.0}organizationId</ns16:name>"+
-            "<ns17:isMultiValue xmlns:ns17=\"http://www.alfresco.org/ws/model/content/1.0\">false</ns17:isMultiValue>"+
-            "<ns18:value xmlns:ns18=\"http://www.alfresco.org/ws/model/content/1.0\">org1210929178773</ns18:value></properties></newUsers></createUsers></soapenv:Body></soapenv:Envelope>";
-        
-        callInOutWeb(WEBSERVICE_ENDPOINT + URL_ADMIN, "POST", null, soapCall, "text/xml; charset=utf-8", "\"http://www.alfresco.org/ws/service/administration/1.0/createUsers\"");  // ignore response
-    }
-    
-    private void webServiceEndSession(String ticket) throws MalformedURLException, URISyntaxException, IOException
-    {
-        String soapCall = 
-            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"+
-            "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">"+
-            "<soapenv:Body><endSession xmlns=\"http://www.alfresco.org/ws/service/authentication/1.0\">"+
-            "<ticket>"+ticket+"</ticket>"+
-            "</endSession></soapenv:Body></soapenv:Envelope>";
-        
-        callInOutWeb(WEBSERVICE_ENDPOINT + URL_AUTH, "POST", null, soapCall, "text/xml; charset=utf-8", "\"http://www.alfresco.org/ws/service/authentication/1.0/endSession\""); // ignore response
     }
 }

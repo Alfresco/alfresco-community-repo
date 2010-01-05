@@ -32,9 +32,6 @@
 <%@ page isELIgnored="false" %>
 
 <h:panelGroup styleClass="deployAddServerConfig">
-   <a:actionLink value="#{msg.deploy_add_alf_receiver}" 
-                 action="#{WizardManager.bean.addAlfrescoServerReceiver}" 
-                 image="/images/icons/plus.gif"  />
    <a:actionLink value="#{msg.deploy_add_file_receiver}" 
                  action="#{WizardManager.bean.addFileSystemReceiver}" 
                  image="/images/icons/plus.gif"  />

@@ -49,10 +49,10 @@ import org.alfresco.service.cmr.workflow.WorkflowTask;
 import org.alfresco.service.cmr.workflow.WorkflowTaskQuery;
 import org.alfresco.service.cmr.workflow.WorkflowTaskState;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.web.scripts.DeclarativeWebScript;
-import org.alfresco.web.scripts.Status;
-import org.alfresco.web.scripts.WebScriptException;
-import org.alfresco.web.scripts.WebScriptRequest;
+import org.springframework.extensions.webscripts.DeclarativeWebScript;
+import org.springframework.extensions.webscripts.Status;
+import org.springframework.extensions.webscripts.WebScriptException;
+import org.springframework.extensions.webscripts.WebScriptRequest;
 
 /**
  * Web Script which returns pending Site invitations matching at least one of

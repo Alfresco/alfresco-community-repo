@@ -35,19 +35,11 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletResponse;
 
-import org.springframework.extensions.config.Config;
-import org.springframework.extensions.config.ConfigService;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.web.scripts.config.OpenSearchConfigElement;
 import org.alfresco.repo.web.scripts.config.OpenSearchConfigElement.EngineConfig;
 import org.alfresco.repo.web.scripts.config.OpenSearchConfigElement.ProxyConfig;
-import org.alfresco.web.scripts.AbstractWebScript;
-import org.alfresco.web.scripts.FormatRegistry;
-import org.alfresco.web.scripts.WebScriptException;
-import org.alfresco.web.scripts.WebScriptRequest;
-import org.alfresco.web.scripts.WebScriptResponse;
-import org.alfresco.web.scripts.servlet.HTTPProxy;
-import org.alfresco.web.scripts.servlet.WebScriptServletRuntime;
+import org.alfresco.web.app.servlet.HTTPProxy;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.dom4j.Attribute;
@@ -58,6 +50,14 @@ import org.dom4j.XPath;
 import org.dom4j.io.OutputFormat;
 import org.dom4j.io.SAXReader;
 import org.dom4j.io.XMLWriter;
+import org.springframework.extensions.config.Config;
+import org.springframework.extensions.config.ConfigService;
+import org.springframework.extensions.webscripts.AbstractWebScript;
+import org.springframework.extensions.webscripts.FormatRegistry;
+import org.springframework.extensions.webscripts.WebScriptException;
+import org.springframework.extensions.webscripts.WebScriptRequest;
+import org.springframework.extensions.webscripts.WebScriptResponse;
+import org.springframework.extensions.webscripts.servlet.WebScriptServletRuntime;
 import org.springframework.beans.factory.InitializingBean;
 
 

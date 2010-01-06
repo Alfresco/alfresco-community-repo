@@ -25,8 +25,8 @@
 package org.alfresco.repo.web.scripts.dictionary;
 
 import org.alfresco.repo.web.scripts.BaseWebScriptTest;
-import org.alfresco.web.scripts.TestWebScriptServer.GetRequest;
-import org.alfresco.web.scripts.TestWebScriptServer.Response;
+import org.springframework.extensions.webscripts.TestWebScriptServer.GetRequest;
+import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
 import java.util.HashMap;
 import java.util.Map;
 

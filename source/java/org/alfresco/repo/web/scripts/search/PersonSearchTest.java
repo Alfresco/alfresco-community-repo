@@ -32,9 +32,9 @@ import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.util.PropertyMap;
-import org.alfresco.web.scripts.Status;
-import org.alfresco.web.scripts.TestWebScriptServer.GetRequest;
-import org.alfresco.web.scripts.TestWebScriptServer.Response;
+import org.springframework.extensions.webscripts.Status;
+import org.springframework.extensions.webscripts.TestWebScriptServer.GetRequest;
+import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
 
 /**
  * Unit test for PersonSearch Web Script.

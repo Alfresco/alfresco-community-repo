@@ -36,8 +36,8 @@ import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.RegexQNamePattern;
-import org.alfresco.web.scripts.TestWebScriptServer.PostRequest;
-import org.alfresco.web.scripts.TestWebScriptServer.Response;
+import org.springframework.extensions.webscripts.TestWebScriptServer.PostRequest;
+import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
 import org.json.JSONException;
 import org.json.JSONObject;
 

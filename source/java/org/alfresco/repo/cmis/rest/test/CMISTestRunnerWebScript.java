@@ -28,9 +28,9 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.util.Properties;
 
-import org.alfresco.web.scripts.AbstractWebScript;
-import org.alfresco.web.scripts.WebScriptRequest;
-import org.alfresco.web.scripts.WebScriptResponse;
+import org.springframework.extensions.webscripts.AbstractWebScript;
+import org.springframework.extensions.webscripts.WebScriptRequest;
+import org.springframework.extensions.webscripts.WebScriptResponse;
 import org.apache.chemistry.tck.atompub.TCKMessageWriter;
 import org.apache.chemistry.tck.atompub.tools.TCKRunner;
 import org.apache.chemistry.tck.atompub.tools.TCKRunnerOptions;

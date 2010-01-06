@@ -35,7 +35,7 @@ import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.util.EqualsHelper;
-import org.alfresco.web.scripts.TestWebScriptServer;
+import org.springframework.extensions.webscripts.TestWebScriptServer;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 

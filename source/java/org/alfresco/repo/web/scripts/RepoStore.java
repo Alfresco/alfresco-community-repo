@@ -60,11 +60,12 @@ import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.util.ISO9075;
-import org.alfresco.web.scripts.ScriptContent;
-import org.alfresco.web.scripts.ScriptLoader;
-import org.alfresco.web.scripts.Store;
-import org.alfresco.web.scripts.WebScript;
-import org.alfresco.web.scripts.WebScriptException;
+import org.springframework.extensions.webscripts.AbstractStore;
+import org.springframework.extensions.webscripts.ScriptContent;
+import org.springframework.extensions.webscripts.ScriptLoader;
+import org.springframework.extensions.webscripts.Store;
+import org.springframework.extensions.webscripts.WebScript;
+import org.springframework.extensions.webscripts.WebScriptException;
 
 import freemarker.cache.TemplateLoader;
 
@@ -74,7 +75,7 @@ import freemarker.cache.TemplateLoader;
  * 
  * @author davidc
  */
-public class RepoStore implements Store, TenantDeployer
+public class RepoStore extends AbstractStore implements TenantDeployer
 {
     protected boolean mustExist = false;
     protected StoreRef repoStore;
@@ -460,7 +461,7 @@ public class RepoStore implements Store, TenantDeployer
      */
     public String[] getDescriptionDocumentPaths()
     {
-        return getDocumentPaths("/", true, "*.desc.xml");
+        return getDocumentPaths("/", true, DESC_PATH_PATTERN);
     }
 
     /* (non-Javadoc)
@@ -681,6 +682,15 @@ public class RepoStore implements Store, TenantDeployer
     public void onDisableTenant()
     {
         destroy();
+    }
+    
+    /* (non-Javadoc)
+     * @see java.lang.Object#toString()
+     */
+    @Override
+    public String toString()
+    {
+        return repoPath;
     }
     
     /**

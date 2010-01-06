@@ -26,12 +26,12 @@ package org.alfresco.repo.web.scripts;
 
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
-import org.alfresco.web.scripts.AlfrescoScriptDebugger;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.mozilla.javascript.ContextFactory;
 import org.mozilla.javascript.tools.debugger.Dim;
 import org.mozilla.javascript.tools.debugger.SwingGui;
+import org.springframework.extensions.webscripts.ScriptDebugger;
 
 
 /**
@@ -41,7 +41,7 @@ import org.mozilla.javascript.tools.debugger.SwingGui;
  * 
  * @author davidc
  */
-public class AlfrescoRhinoScriptDebugger extends AlfrescoScriptDebugger
+public class AlfrescoRhinoScriptDebugger extends ScriptDebugger
 {
     private static final Log logger = LogFactory.getLog(AlfrescoRhinoScriptDebugger.class);
     

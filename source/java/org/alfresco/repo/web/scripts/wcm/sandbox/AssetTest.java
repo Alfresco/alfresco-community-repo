@@ -36,14 +36,14 @@ import org.alfresco.repo.web.scripts.BaseWebScriptTest;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.util.PropertyMap;
-import org.alfresco.web.scripts.Status;
-import org.alfresco.web.scripts.TestWebScriptServer.DeleteRequest;
-import org.alfresco.web.scripts.TestWebScriptServer.GetRequest;
-import org.alfresco.web.scripts.TestWebScriptServer.PostRequest;
-import org.alfresco.web.scripts.TestWebScriptServer.PutRequest;
-import org.alfresco.web.scripts.TestWebScriptServer.Response;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.springframework.extensions.webscripts.Status;
+import org.springframework.extensions.webscripts.TestWebScriptServer.DeleteRequest;
+import org.springframework.extensions.webscripts.TestWebScriptServer.GetRequest;
+import org.springframework.extensions.webscripts.TestWebScriptServer.PostRequest;
+import org.springframework.extensions.webscripts.TestWebScriptServer.PutRequest;
+import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
 
 /**
  * Junit tests of the REST bindings for WCM Assets

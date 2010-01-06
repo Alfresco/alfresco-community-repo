@@ -44,8 +44,8 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.GUID;
-import org.alfresco.web.scripts.TestWebScriptServer.GetRequest;
-import org.alfresco.web.scripts.TestWebScriptServer.Response;
+import org.springframework.extensions.webscripts.TestWebScriptServer.GetRequest;
+import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
 
 public abstract class AbstractTestFormRestApi extends BaseWebScriptTest
 {

@@ -2,9 +2,9 @@ package org.alfresco.repo.imap.scripts;
 
 import java.io.IOException;
 
-import org.alfresco.web.scripts.AbstractWebScript;
-import org.alfresco.web.scripts.WebScriptRequest;
-import org.alfresco.web.scripts.WebScriptResponse;
+import org.springframework.extensions.webscripts.AbstractWebScript;
+import org.springframework.extensions.webscripts.WebScriptRequest;
+import org.springframework.extensions.webscripts.WebScriptResponse;
 
 public class ServerStatusWebScript extends AbstractWebScript
 {

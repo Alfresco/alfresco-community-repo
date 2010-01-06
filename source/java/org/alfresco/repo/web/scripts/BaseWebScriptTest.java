@@ -38,9 +38,6 @@ import junit.textui.ResultPrinter;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
-import org.alfresco.web.scripts.TestWebScriptServer;
-import org.alfresco.web.scripts.TestWebScriptServer.Request;
-import org.alfresco.web.scripts.TestWebScriptServer.Response;
 import org.apache.commons.httpclient.Header;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpMethod;
@@ -53,6 +50,9 @@ import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.methods.PutMethod;
 import org.apache.commons.httpclient.params.HttpClientParams;
+import org.springframework.extensions.webscripts.TestWebScriptServer;
+import org.springframework.extensions.webscripts.TestWebScriptServer.Request;
+import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
 
 /**
  * Base unit test class for web scripts.

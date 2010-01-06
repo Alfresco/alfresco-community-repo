@@ -27,15 +27,14 @@ package org.alfresco.repo.web.scripts.facebook;
 import java.io.IOException;
 
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.web.scripts.Authenticator;
-import org.alfresco.web.scripts.WebScriptException;
-import org.alfresco.web.scripts.Description.RequiredAuthentication;
-import org.alfresco.web.scripts.facebook.FacebookServletRequest;
-import org.alfresco.web.scripts.servlet.ServletAuthenticatorFactory;
-import org.alfresco.web.scripts.servlet.WebScriptServletRequest;
-import org.alfresco.web.scripts.servlet.WebScriptServletResponse;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.extensions.webscripts.Authenticator;
+import org.springframework.extensions.webscripts.WebScriptException;
+import org.springframework.extensions.webscripts.Description.RequiredAuthentication;
+import org.springframework.extensions.webscripts.servlet.ServletAuthenticatorFactory;
+import org.springframework.extensions.webscripts.servlet.WebScriptServletRequest;
+import org.springframework.extensions.webscripts.servlet.WebScriptServletResponse;
 
 /**
  * Web Script Authenticator that supports Facebook authentication

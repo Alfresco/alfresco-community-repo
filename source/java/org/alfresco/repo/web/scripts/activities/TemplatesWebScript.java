@@ -30,12 +30,12 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import org.alfresco.web.scripts.DeclarativeWebScript;
-import org.alfresco.web.scripts.SearchPath;
-import org.alfresco.web.scripts.Status;
-import org.alfresco.web.scripts.Store;
-import org.alfresco.web.scripts.WebScriptException;
-import org.alfresco.web.scripts.WebScriptRequest;
+import org.springframework.extensions.webscripts.DeclarativeWebScript;
+import org.springframework.extensions.webscripts.SearchPath;
+import org.springframework.extensions.webscripts.Status;
+import org.springframework.extensions.webscripts.Store;
+import org.springframework.extensions.webscripts.WebScriptException;
+import org.springframework.extensions.webscripts.WebScriptRequest;
  
 /**
  * Java-backed WebScript to get list of Activity Templates from a Template Store

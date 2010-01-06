@@ -48,19 +48,19 @@ import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.TempFileProvider;
-import org.alfresco.web.scripts.AbstractWebScript;
-import org.alfresco.web.scripts.Cache;
-import org.alfresco.web.scripts.Status;
-import org.alfresco.web.scripts.WebScriptException;
-import org.alfresco.web.scripts.WebScriptRequest;
-import org.alfresco.web.scripts.WebScriptResponse;
-import org.alfresco.web.scripts.WebScriptStatus;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.extensions.webscripts.AbstractWebScript;
+import org.springframework.extensions.webscripts.Cache;
+import org.springframework.extensions.webscripts.ScriptProcessor;
+import org.springframework.extensions.webscripts.Status;
+import org.springframework.extensions.webscripts.WebScriptException;
+import org.springframework.extensions.webscripts.WebScriptRequest;
+import org.springframework.extensions.webscripts.WebScriptResponse;
+import org.springframework.extensions.webscripts.WebScriptStatus;
 import org.springframework.util.FileCopyUtils;
 
 import de.schlichtherle.io.FileOutputStream;
@@ -155,7 +155,7 @@ public class StreamContent extends AbstractWebScript
                 Map<String, Object> returnModel = new HashMap<String, Object>(8, 1.0f);
                 scriptModel.put("model", returnModel);
                 executeScript(executeScript.getContent(), scriptModel);
-                mergeScriptModelIntoTemplateModel(returnModel, model);
+                mergeScriptModelIntoTemplateModel(executeScript.getContent().getPath(), returnModel, model);
             }
             
             // is a redirect to a status specific template required?
@@ -214,18 +214,28 @@ public class StreamContent extends AbstractWebScript
     
     /**
      * Merge script generated model into template-ready model
-     * 
+     *
+     * @param scriptPath   path to script
      * @param scriptModel  script model
      * @param templateModel  template model
      */
-    final private void mergeScriptModelIntoTemplateModel(Map<String, Object> scriptModel, Map<String, Object> templateModel)
+    final private void mergeScriptModelIntoTemplateModel(String scriptPath, Map<String, Object> scriptModel, Map<String, Object> templateModel)
     {
-        for (Map.Entry<String, Object> entry : scriptModel.entrySet())
+        int i = scriptPath.lastIndexOf(".");
+        if (i != -1)
         {
-            // retrieve script model value
-            Object value = entry.getValue();
-            Object templateValue = getContainer().getScriptProcessor().unwrapValue(value);
-            templateModel.put(entry.getKey(), templateValue);
+            String extension = scriptPath.substring(i+1);
+            ScriptProcessor processor = getContainer().getScriptProcessorRegistry().getScriptProcessorByExtension(extension);
+            if (processor != null)
+            {
+                for (Map.Entry<String, Object> entry : scriptModel.entrySet())
+                {
+                    // retrieve script model value
+                    Object value = entry.getValue();
+                    Object templateValue = processor.unwrapValue(value);
+                    templateModel.put(entry.getKey(), templateValue);
+                }
+            }
         }
     }
 

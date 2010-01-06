@@ -34,9 +34,9 @@ import org.springframework.extensions.config.ConfigService;
 import org.springframework.extensions.surf.util.I18NUtil;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.web.scripts.config.OpenSearchConfigElement;
-import org.alfresco.web.scripts.DeclarativeWebScript;
-import org.alfresco.web.scripts.Status;
-import org.alfresco.web.scripts.WebScriptRequest;
+import org.springframework.extensions.webscripts.DeclarativeWebScript;
+import org.springframework.extensions.webscripts.Status;
+import org.springframework.extensions.webscripts.WebScriptRequest;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 

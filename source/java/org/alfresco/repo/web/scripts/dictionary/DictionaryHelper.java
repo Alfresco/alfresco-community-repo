@@ -25,8 +25,8 @@
 package org.alfresco.repo.web.scripts.dictionary;
 
 import org.alfresco.service.cmr.dictionary.DictionaryService;
-import org.alfresco.web.scripts.Status;
-import org.alfresco.web.scripts.WebScriptException;
+import org.springframework.extensions.webscripts.Status;
+import org.springframework.extensions.webscripts.WebScriptException;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.InvalidQNameException;

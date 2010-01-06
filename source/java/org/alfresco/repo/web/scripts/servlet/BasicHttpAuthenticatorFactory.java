@@ -30,12 +30,12 @@ import javax.servlet.http.HttpServletResponse;
 import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.springframework.extensions.surf.util.Base64;
-import org.alfresco.web.scripts.Authenticator;
-import org.alfresco.web.scripts.WebScriptException;
-import org.alfresco.web.scripts.Description.RequiredAuthentication;
-import org.alfresco.web.scripts.servlet.ServletAuthenticatorFactory;
-import org.alfresco.web.scripts.servlet.WebScriptServletRequest;
-import org.alfresco.web.scripts.servlet.WebScriptServletResponse;
+import org.springframework.extensions.webscripts.Authenticator;
+import org.springframework.extensions.webscripts.WebScriptException;
+import org.springframework.extensions.webscripts.Description.RequiredAuthentication;
+import org.springframework.extensions.webscripts.servlet.ServletAuthenticatorFactory;
+import org.springframework.extensions.webscripts.servlet.WebScriptServletRequest;
+import org.springframework.extensions.webscripts.servlet.WebScriptServletResponse;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 

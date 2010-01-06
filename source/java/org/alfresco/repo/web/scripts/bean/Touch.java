@@ -26,10 +26,10 @@ package org.alfresco.repo.web.scripts.bean;
 
 import java.io.IOException;
 
-import org.alfresco.web.scripts.AbstractWebScript;
-import org.alfresco.web.scripts.Status;
-import org.alfresco.web.scripts.WebScriptRequest;
-import org.alfresco.web.scripts.WebScriptResponse;
+import org.springframework.extensions.webscripts.AbstractWebScript;
+import org.springframework.extensions.webscripts.Status;
+import org.springframework.extensions.webscripts.WebScriptRequest;
+import org.springframework.extensions.webscripts.WebScriptResponse;
 
 /**
  * WebScript java backed bean implementation - to simple return a STATUS_OK message

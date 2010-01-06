@@ -25,7 +25,7 @@
 package org.alfresco.repo.web.scripts;
 
 import org.alfresco.service.descriptor.Descriptor;
-import org.alfresco.web.scripts.ServerModel;
+import org.springframework.extensions.webscripts.ServerModel;
 
 
 /**

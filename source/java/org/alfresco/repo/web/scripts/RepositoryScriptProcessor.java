@@ -35,13 +35,13 @@ import org.alfresco.repo.jscript.ValueConverter;
 import org.alfresco.scripts.ScriptException;
 import org.alfresco.service.cmr.repository.ScriptLocation;
 import org.alfresco.service.cmr.repository.ScriptService;
-import org.alfresco.web.scripts.MultiScriptLoader;
-import org.alfresco.web.scripts.ScriptContent;
-import org.alfresco.web.scripts.ScriptLoader;
-import org.alfresco.web.scripts.ScriptProcessor;
-import org.alfresco.web.scripts.SearchPath;
-import org.alfresco.web.scripts.Store;
-import org.alfresco.web.scripts.WebScriptException;
+import org.springframework.extensions.webscripts.MultiScriptLoader;
+import org.springframework.extensions.webscripts.ScriptContent;
+import org.springframework.extensions.webscripts.ScriptLoader;
+import org.springframework.extensions.webscripts.ScriptProcessor;
+import org.springframework.extensions.webscripts.SearchPath;
+import org.springframework.extensions.webscripts.Store;
+import org.springframework.extensions.webscripts.WebScriptException;
 
 
 /**

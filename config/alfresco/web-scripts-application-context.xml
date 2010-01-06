@@ -2,11 +2,10 @@
 <!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN 2.0//EN' 'http://www.springframework.org/dtd/spring-beans-2.0.dtd'>
 
 <beans>
- 
- 
+
    <!--                           -->
    <!--  Web Script Configuration -->
-   <!--                           -->   
+   <!--                           -->
 
    <bean id="webscripts.configsource" class="org.springframework.extensions.config.source.UrlConfigSource">
       <constructor-arg>
@@ -29,7 +28,7 @@
    <!--  Web Script Storage -->
    <!--                     -->
 
-   <bean id="webscripts.repostore" class="org.alfresco.repo.web.scripts.RepoStore" abstract="true">
+   <bean id="webscripts.repostore" class="org.alfresco.repo.web.scripts.RepoStore" abstract="true" init-method="init">
       <property name="transactionHelper" ref="retryingTransactionHelper" />
       <property name="nodeService" ref="nodeService" />
       <property name="namespaceService" ref="namespaceService" />
@@ -60,7 +59,7 @@
       <property name="classPath"><value>alfresco/templates/webscripts</value></property>
    </bean>
    
-   <bean id="webscripts.searchpath" class="org.alfresco.web.scripts.SearchPath">
+   <bean id="webscripts.searchpath" class="org.springframework.extensions.webscripts.SearchPath">
       <property name="searchPath">
           <list>
              <ref bean="webscripts.store.repo.extension" />
@@ -68,6 +67,8 @@
              <ref bean="webscripts.store.client.extension" />
              <ref bean="webscripts.store.client" />
              <ref bean="webscripts.store" />
+             <ref bean="webscripts.store.alfresco" />
+             <ref bean="webscripts.systemstore" />
           </list>
       </property>
    </bean>
@@ -79,16 +80,41 @@
 
    <bean id="webscripts.repo.imageresolver" class="org.alfresco.repo.web.scripts.RepositoryImageResolver" />
    
-   <bean id="webscripts.repo.templateprocessor" class="org.alfresco.repo.web.scripts.RepositoryTemplateProcessor">
-      <property name="serviceRegistry" ref="ServiceRegistry" />     
-      <property name="freeMarkerProcessor" ref="freeMarkerProcessor" /> 
-      <property name="searchPath" ref="webscripts.searchpath" />
-      <!-- <property name="defaultEncoding"><value>UTF-8</value></property> -->
+   <bean id="webscripts.repo.registry.templateprocessor" class="org.springframework.extensions.webscripts.TemplateProcessorRegistry" />      
+
+   <bean id="webscripts.repo.registry.scriptprocessor" class="org.springframework.extensions.webscripts.ScriptProcessorRegistry" />
+   
+   <bean id="webscripts.repo.templateprocessor.factory" class="org.alfresco.repo.web.scripts.RepositoryTemplateProcessorFactory">
+      <property name="templateProcessor">
+         <bean id="webscripts.repo.templateprocessor" class="org.alfresco.repo.web.scripts.RepositoryTemplateProcessor">
+            <property name="serviceRegistry" ref="ServiceRegistry" />     
+	        <property name="freeMarkerProcessor" ref="freeMarkerProcessor" /> 
+	        <property name="searchPath" ref="webscripts.searchpath" />
+	     </bean>
+	  </property>
+   </bean>
+   
+   <bean id="webscripts.repo.scriptprocessor.factory" class="org.alfresco.repo.web.scripts.RepositoryScriptProcessorFactory">
+      <property name="scriptProcessor">
+         <bean id="webscripts.repo.scriptprocessor" class="org.alfresco.repo.web.scripts.RepositoryScriptProcessor">
+            <property name="scriptService" ref="scriptService" />
+            <property name="searchPath" ref="webscripts.searchpath" />
+         </bean>
+      </property>
    </bean>
 
-   <bean id="webscripts.repo.scriptprocessor" class="org.alfresco.repo.web.scripts.RepositoryScriptProcessor">
-      <property name="searchPath" ref="webscripts.searchpath" />
-      <property name="scriptService" ref="scriptService" />
+   <bean class="org.springframework.extensions.webscripts.TemplateProcessorRegistrar" init-method="init">
+      <property name="registry" ref="webscripts.repo.registry.templateprocessor" />
+      <property name="factory" ref="webscripts.repo.templateprocessor.factory" />
+	  <property name="name"><value>Repository Template Processor</value></property>
+	  <property name="extension"><value>ftl</value></property>
+   </bean>
+
+   <bean class="org.springframework.extensions.webscripts.ScriptProcessorRegistrar" init-method="init">
+      <property name="registry" ref="webscripts.repo.registry.scriptprocessor" />
+      <property name="factory" ref="webscripts.repo.scriptprocessor.factory" />
+      <property name="name"><value>Repository Script Processor</value></property>
+      <property name="extension"><value>js</value></property>
    </bean>
  
    <bean id="webscripts.container" class="org.alfresco.repo.web.scripts.RepositoryContainer" parent="webscripts.abstractcontainer">
@@ -139,14 +165,14 @@
       <property name="authorityService" ref="AuthorityService" />
       <property name="repository" ref="repositoryHelper" />
       <property name="repositoryImageResolver" ref="webscripts.repo.imageresolver" />
-      <property name="templateProcessor" ref="webscripts.repo.templateprocessor" />
-      <property name="scriptProcessor" ref="webscripts.repo.scriptprocessor" />
+      <property name="templateProcessorRegistry" ref="webscripts.repo.registry.templateprocessor" />
+      <property name="scriptProcessorRegistry" ref="webscripts.repo.registry.scriptprocessor" />
       <property name="descriptorService" ref="DescriptorService" />
       <property name="tenantAdminService" ref="tenantAdminService" />
       <property name="webScriptsRegistryCache" ref="webScriptsRegistryCache"/>
    </bean>
    
-   <bean id="webscripts.index.prototype" class="org.alfresco.web.scripts.JaxRSUriIndex" scope="prototype"/>
+   <bean id="webscripts.index.prototype" class="org.springframework.extensions.webscripts.JaxRSUriIndex" scope="prototype"/>
    
    <bean id="webscripts.registry.prototype" parent="webscripts.registry" scope="prototype">
       <property name="uriIndex" ref="webscripts.index.prototype" />
@@ -174,12 +200,21 @@
    <bean id="webscripts.authenticator.facebook" class="org.alfresco.repo.web.scripts.facebook.FacebookAuthenticatorFactory" />
 
 
+   <!--                   -->
+   <!--  Facebook Runtime -->
+   <!--                   -->
+
+   <bean id="facebook.service" class="org.alfresco.repo.web.scripts.facebook.FacebookService">
+      <property name="container" ref="webscripts.container" />
+   </bean>
+
+
    <!--          -->
    <!-- CMIS API -->
    <!--          -->
 
    <!-- CMIS Abdera Extension -->
-   <bean id="webscripts.cmis.atom.extension" class="org.alfresco.web.scripts.atom.AbderaExtension">
+   <bean id="webscripts.cmis.atom.extension" class="org.springframework.extensions.webscripts.atom.AbderaExtension">
       <property name="abderaService" ref="webscripts.abdera"/>
       <property name="QNames">
          <props>
@@ -266,10 +301,10 @@
    <!--            -->
 
    <!--  Javascript APIs -->
-   <bean id="webscript.org.alfresco.jsdebugger.get" class="org.alfresco.web.scripts.bean.JavascriptDebugger" parent="webscript">
+   <bean id="webscript.org.alfresco.jsdebugger.get" class="org.springframework.extensions.webscripts.bean.JavascriptDebugger" parent="webscript">
       <property name="debugger" ref="rhinoScriptDebugger" />
    </bean>
-   <bean id="webscript.org.alfresco.jsdebugger.post" class="org.alfresco.web.scripts.bean.JavascriptDebuggerPost" parent="webscript">
+   <bean id="webscript.org.alfresco.jsdebugger.post" class="org.springframework.extensions.webscripts.bean.JavascriptDebuggerPost" parent="webscript">
       <property name="debugger" ref="rhinoScriptDebugger" />
    </bean>
 
@@ -395,7 +430,7 @@
       <property name="searchPath" ref="activity.template.searchpath"/>
    </bean>
    
-   <bean id="templates.classpathstore" class="org.alfresco.web.scripts.ClassPathStore" abstract="true" />
+   <bean id="templates.classpathstore" class="org.springframework.extensions.webscripts.ClassPathStore" abstract="true" />
    
    <bean id="activity.template.store.client.extension" parent="templates.classpathstore">
       <property name="classPath"><value>alfresco/extension/templates/activities</value></property>
@@ -406,7 +441,7 @@
       <property name="classPath"><value>alfresco/templates/activities</value></property>
    </bean>
    
-   <bean id="activity.template.searchpath" class="org.alfresco.web.scripts.SearchPath">
+   <bean id="activity.template.searchpath" class="org.springframework.extensions.webscripts.SearchPath">
       <property name="searchPath">
           <list>
              <ref bean="activity.template.store.client.extension" />
@@ -649,11 +684,9 @@
       <property name="dictionaryService" ref="DictionaryService"/>
     </bean>
     
-    <!-- GET IMAP SERVER STATUS-->    
+    <!-- GET IMAP SERVER STATUS -->
     <bean id="webscript.org.alfresco.repository.imap.imap-enabled.get" class="org.alfresco.repo.imap.scripts.ServerStatusWebScript" parent="webscript">
-    <property name="imapServerEnabled">
-             <value>${imap.server.enabled}</value>
-        </property>
+      <property name="imapServerEnabled"><value>${imap.server.enabled}</value></property>
     </bean>
     
 </beans>

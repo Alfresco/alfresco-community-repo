@@ -49,12 +49,12 @@ import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.GUID;
 import org.alfresco.util.PropertyMap;
-import org.alfresco.web.scripts.Status;
-import org.alfresco.web.scripts.TestWebScriptServer.DeleteRequest;
-import org.alfresco.web.scripts.TestWebScriptServer.GetRequest;
-import org.alfresco.web.scripts.TestWebScriptServer.PostRequest;
-import org.alfresco.web.scripts.TestWebScriptServer.PutRequest;
-import org.alfresco.web.scripts.TestWebScriptServer.Response;
+import org.springframework.extensions.webscripts.Status;
+import org.springframework.extensions.webscripts.TestWebScriptServer.DeleteRequest;
+import org.springframework.extensions.webscripts.TestWebScriptServer.GetRequest;
+import org.springframework.extensions.webscripts.TestWebScriptServer.PostRequest;
+import org.springframework.extensions.webscripts.TestWebScriptServer.PutRequest;
+import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
 import org.json.JSONArray;
 import org.json.JSONObject;
 

@@ -33,11 +33,11 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.transaction.TransactionService;
-import org.alfresco.web.scripts.Authenticator;
-import org.alfresco.web.scripts.WebScriptException;
-import org.alfresco.web.scripts.Description.RequiredAuthentication;
-import org.alfresco.web.scripts.portlet.PortletAuthenticatorFactory;
-import org.alfresco.web.scripts.portlet.WebScriptPortletRequest;
+import org.springframework.extensions.webscripts.Authenticator;
+import org.springframework.extensions.webscripts.WebScriptException;
+import org.springframework.extensions.webscripts.Description.RequiredAuthentication;
+import org.springframework.extensions.webscripts.portlet.PortletAuthenticatorFactory;
+import org.springframework.extensions.webscripts.portlet.WebScriptPortletRequest;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 

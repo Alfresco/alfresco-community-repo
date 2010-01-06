@@ -27,14 +27,14 @@ function main()
    var fc = false;
    if (args.c != null)
    {
-   	if (args.c == "queue")
-   	{
-   		qc = true;
-   	}
-   	else if (args.c == "force")
-   	{
-   		fc = true;
-   	}
+      if (args.c == "queue")
+      {
+         qc = true;
+      }
+      else if (args.c == "force")
+      {
+         fc = true;
+      }
    }
    
    // Get the place holder flag
@@ -58,42 +58,42 @@ function main()
       // Queue the creation of the thumbnail if appropriate
       if (fc)
       {
-      	model.contentNode = node.createThumbnail(thumbnailName, false);
+        model.contentNode = node.createThumbnail(thumbnailName, false);
       }
       else
       {
-	      if (qc)
-	      {
-	         node.createThumbnail(thumbnailName, true);
-	      }
-	      
-	      if (ph == true)
-	      {
-	         // Try and get the place holder resource
-	         var phPath = thumbnailService.getPlaceHolderResourcePath(thumbnailName);
-	         if (phPath == null)
-	         {
-	            // 404 since no thumbnail was found
-	            status.setCode(status.STATUS_NOT_FOUND, "Thumbnail was not found and no place holde resource set for '" + thumbnailName + "'");
-	            return;
-	         }
-	         else
-	         {
-	            // Set the resouce path in the model ready for the content stream to send back to the client
-	            model.contentPath = phPath;
-	         }
-	      }
-	      else
-	      {         
-	         // 404 since no thumbnail was found
-	         status.setCode(status.STATUS_NOT_FOUND, "Thumbnail was not found");
-	         return;
-	      }
+         if (qc)
+         {
+            node.createThumbnail(thumbnailName, true);
+         }
+         
+         if (ph == true)
+         {
+            // Try and get the place holder resource
+            var phPath = thumbnailService.getPlaceHolderResourcePath(thumbnailName);
+            if (phPath == null)
+            {
+               // 404 since no thumbnail was found
+               status.setCode(status.STATUS_NOT_FOUND, "Thumbnail was not found and no place holde resource set for '" + thumbnailName + "'");
+               return;
+            }
+            else
+            {
+               // Set the resouce path in the model ready for the content stream to send back to the client
+               model.contentPath = phPath;
+            }
+         }
+         else
+         {
+            // 404 since no thumbnail was found
+            status.setCode(status.STATUS_NOT_FOUND, "Thumbnail was not found");
+            return;
+         }
       }
    }
    else
    {
-   	  // Place the details of the thumbnail into the model, this will be used to stream the content to the client
+      // Place the details of the thumbnail into the model, this will be used to stream the content to the client
       model.contentNode = thumbnail;
    } 
 }

@@ -70,8 +70,10 @@
     -->
     <import resource="classpath*:alfresco/module-context.xml" />
 
+    <!--  Import Spring WebScripts framework beans -->
+    <import resource="classpath*:org/springframework/extensions/webscripts/*-context.xml" />
+
     <!--  Import client beans -->
-    <import resource="classpath*:alfresco/webscript-framework-application-context.xml" />
     <import resource="classpath*:alfresco/web-client-application-context.xml" />
 
     <!--

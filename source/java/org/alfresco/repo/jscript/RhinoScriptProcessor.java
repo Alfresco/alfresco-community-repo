@@ -64,7 +64,7 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.util.FileCopyUtils;
 
 /**
- * Implementation of the ScriptEninge using the Rhino JavaScript engine.
+ * Implementation of the ScriptProcessor using the Rhino JavaScript library.
  * 
  * @author Kevin Roast
  */

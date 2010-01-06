@@ -25,7 +25,7 @@
 package org.alfresco.web.ui.repo.tag.property;
 
 import javax.faces.component.UIComponent;
-import org.alfresco.web.ui.common.tag.BaseComponentTag;
+import org.springframework.extensions.webscripts.ui.common.tag.BaseComponentTag;
 
 /**
  * Tag to represent the combination of a PropertySheet component

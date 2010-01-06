@@ -34,7 +34,7 @@ import javax.portlet.RenderRequest;
 import javax.portlet.RenderResponse;
 
 import org.alfresco.web.app.Application;
-import org.alfresco.web.scripts.portlet.WebScriptPortlet;
+import org.springframework.extensions.webscripts.portlet.WebScriptPortlet;
 
 
 /**

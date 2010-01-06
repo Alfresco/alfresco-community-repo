@@ -27,6 +27,8 @@ package org.alfresco.web.ui.common.component;
 import javax.faces.context.FacesContext;
 import javax.faces.el.ValueBinding;
 
+import org.springframework.extensions.webscripts.ui.common.component.SelfRenderingComponent;
+
 /**
  * Allows a group of UIListItem objects to be represented.
  * 

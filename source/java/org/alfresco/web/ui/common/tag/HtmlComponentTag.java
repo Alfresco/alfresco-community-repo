@@ -26,6 +26,8 @@ package org.alfresco.web.ui.common.tag;
 
 import javax.faces.component.UIComponent;
 
+import org.springframework.extensions.webscripts.ui.common.tag.BaseComponentTag;
+
 
 /**
  * Base class for tags that represent HTML components.

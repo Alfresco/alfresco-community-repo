@@ -29,7 +29,7 @@ import java.io.Serializable;
 import javax.faces.context.FacesContext;
 import javax.faces.el.ValueBinding;
 
-import org.alfresco.web.ui.common.component.SelfRenderingComponent;
+import org.springframework.extensions.webscripts.ui.common.component.SelfRenderingComponent;
 
 /**
  * Description component that outputs a dynamic description

@@ -44,7 +44,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.repository.Repository;
-import org.alfresco.web.scripts.json.JSONWriter;
+import org.springframework.extensions.webscripts.json.JSONWriter;
 import org.alfresco.web.ui.common.Utils;
 import org.springframework.web.jsf.FacesContextUtils;
 

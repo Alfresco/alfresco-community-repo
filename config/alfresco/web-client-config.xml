@@ -7,7 +7,7 @@
       </evaluators>
       <element-readers>
          <element-reader element-name="client" class="org.alfresco.web.config.ClientElementReader"/>
-         <element-reader element-name="server" class="org.alfresco.web.config.ServerElementReader"/>
+         <element-reader element-name="server" class="org.springframework.extensions.config.ServerElementReader"/>
          <element-reader element-name="property-sheet" class="org.alfresco.web.config.PropertySheetElementReader"/>
          <element-reader element-name="navigation" class="org.alfresco.web.config.NavigationElementReader" />
          <element-reader element-name="languages" class="org.alfresco.web.config.LanguagesElementReader" />

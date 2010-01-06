@@ -25,7 +25,6 @@
 package org.alfresco.web.ui.common.tag;
 
 import javax.faces.FacesException;
-import javax.faces.component.UICommand;
 import javax.faces.component.UIComponent;
 import javax.faces.el.MethodBinding;
 import javax.servlet.jsp.JspException;

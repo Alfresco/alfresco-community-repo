@@ -27,7 +27,7 @@ package org.alfresco.web.ui.common.component.description;
 import javax.faces.context.FacesContext;
 import javax.faces.el.ValueBinding;
 
-import org.alfresco.web.ui.common.component.SelfRenderingComponent;
+import org.springframework.extensions.webscripts.ui.common.component.SelfRenderingComponent;
 
 /**
  * Descriptions component that outputs descriptions held in a backing object

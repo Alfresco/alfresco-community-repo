@@ -55,7 +55,7 @@ import org.alfresco.web.app.servlet.FacesHelper;
 import org.alfresco.web.app.servlet.ajax.InvokeCommand;
 import org.alfresco.web.bean.BrowseBean;
 import org.alfresco.web.bean.repository.Repository;
-import org.alfresco.web.scripts.json.JSONWriter;
+import org.springframework.extensions.webscripts.json.JSONWriter;
 import org.alfresco.web.ui.common.Utils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;

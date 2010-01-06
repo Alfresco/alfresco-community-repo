@@ -59,7 +59,7 @@ import org.alfresco.web.config.AdvancedSearchConfigElement;
 import org.alfresco.web.config.AdvancedSearchConfigElement.CustomProperty;
 import org.alfresco.web.ui.common.ComponentConstants;
 import org.alfresco.web.ui.common.Utils;
-import org.alfresco.web.ui.common.component.SelfRenderingComponent;
+import org.springframework.extensions.webscripts.ui.common.component.SelfRenderingComponent;
 import org.alfresco.web.ui.repo.RepoConstants;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;

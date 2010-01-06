@@ -42,7 +42,7 @@ import org.alfresco.web.app.servlet.FacesHelper;
 import org.alfresco.web.config.DialogsConfigElement.DialogButtonConfig;
 import org.alfresco.web.ui.common.ComponentConstants;
 import org.alfresco.web.ui.common.Utils;
-import org.alfresco.web.ui.common.component.SelfRenderingComponent;
+import org.springframework.extensions.webscripts.ui.common.component.SelfRenderingComponent;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 

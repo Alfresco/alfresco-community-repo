@@ -24,7 +24,7 @@
  */
 package org.alfresco.web.ui.repo.component.shelf;
 
-import org.alfresco.web.ui.common.component.SelfRenderingComponent;
+import org.springframework.extensions.webscripts.ui.common.component.SelfRenderingComponent;
 
 /**
  * @author Kevin Roast

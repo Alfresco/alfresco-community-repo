@@ -32,15 +32,15 @@ import java.util.Set;
 import javax.faces.context.FacesContext;
 import javax.faces.context.ResponseWriter;
 
-import org.springframework.extensions.config.Config;
-import org.springframework.extensions.config.ConfigService;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.web.scripts.bean.SearchProxy;
 import org.alfresco.repo.web.scripts.config.OpenSearchConfigElement;
 import org.alfresco.repo.web.scripts.config.OpenSearchConfigElement.EngineConfig;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.ui.common.Utils;
-import org.alfresco.web.ui.common.component.SelfRenderingComponent;
+import org.springframework.extensions.config.Config;
+import org.springframework.extensions.config.ConfigService;
+import org.springframework.extensions.webscripts.ui.common.component.SelfRenderingComponent;
 import org.springframework.web.jsf.FacesContextUtils;
 
 /**

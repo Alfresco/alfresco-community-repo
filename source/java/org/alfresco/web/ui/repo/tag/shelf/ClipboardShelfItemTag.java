@@ -28,8 +28,8 @@ import javax.faces.FacesException;
 import javax.faces.component.UIComponent;
 import javax.faces.el.MethodBinding;
 
-import org.alfresco.web.ui.common.tag.BaseComponentTag;
 import org.alfresco.web.ui.repo.component.shelf.UIClipboardShelfItem;
+import org.springframework.extensions.webscripts.ui.common.tag.BaseComponentTag;
 
 /**
  * @author Kevin Roast

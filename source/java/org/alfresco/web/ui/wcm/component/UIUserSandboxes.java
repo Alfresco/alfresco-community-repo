@@ -80,10 +80,8 @@ import org.alfresco.web.data.IDataContainer;
 import org.alfresco.web.data.QuickSort;
 import org.alfresco.web.forms.Form;
 import org.alfresco.web.ui.common.ComponentConstants;
-import org.alfresco.web.ui.common.ConstantMethodBinding;
 import org.alfresco.web.ui.common.PanelGenerator;
 import org.alfresco.web.ui.common.Utils;
-import org.alfresco.web.ui.common.component.SelfRenderingComponent;
 import org.alfresco.web.ui.common.component.UIActionLink;
 import org.alfresco.web.ui.common.component.UIMenu;
 import org.alfresco.web.ui.common.converter.ByteSizeConverter;
@@ -91,6 +89,8 @@ import org.alfresco.web.ui.repo.component.UIActions;
 import org.alfresco.web.ui.wcm.WebResources;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.extensions.webscripts.ui.common.ConstantMethodBinding;
+import org.springframework.extensions.webscripts.ui.common.component.SelfRenderingComponent;
 
 /**
  * Component responsible for rendering the list of user sandboxes for a web project.

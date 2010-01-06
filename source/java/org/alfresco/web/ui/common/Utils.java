@@ -46,7 +46,6 @@ import javax.faces.el.MethodBinding;
 import javax.faces.event.AbortProcessingException;
 import javax.faces.event.ActionEvent;
 
-import org.springframework.extensions.config.ConfigElement;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.filesys.repo.ContentContext;
 import org.alfresco.jlan.server.config.ServerConfigurationAccessor;
@@ -68,7 +67,6 @@ import org.alfresco.service.cmr.repository.NoTransformerException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.NamespaceService;
-import org.springframework.extensions.surf.util.URLEncoder;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.servlet.DownloadContentServlet;
 import org.alfresco.web.app.servlet.ExternalAccessServlet;
@@ -80,6 +78,9 @@ import org.alfresco.web.ui.common.component.UIStatusMessage;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.myfaces.shared_impl.renderkit.html.HtmlFormRendererBase;
+import org.springframework.extensions.config.ConfigElement;
+import org.springframework.extensions.surf.util.URLEncoder;
+import org.springframework.extensions.webscripts.ui.common.StringUtils;
 import org.springframework.web.jsf.FacesContextUtils;
 
 /**

@@ -30,6 +30,7 @@ import javax.faces.component.UIComponent;
 import javax.faces.el.MethodBinding;
 
 import org.alfresco.web.ui.common.component.UIGenericPicker;
+import org.springframework.extensions.webscripts.ui.common.tag.BaseComponentTag;
 
 /**
  * @author Kevin Roast

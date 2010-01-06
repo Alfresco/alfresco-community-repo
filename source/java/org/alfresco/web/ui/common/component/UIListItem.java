@@ -29,6 +29,8 @@ import java.io.Serializable;
 import javax.faces.context.FacesContext;
 import javax.faces.el.ValueBinding;
 
+import org.springframework.extensions.webscripts.ui.common.component.SelfRenderingComponent;
+
 /**
  * @author kevinr
  */

@@ -2190,7 +2190,7 @@
    
    <tag>
       <name>webScript</name>
-      <tag-class>org.alfresco.web.scripts.jsf.WebScriptTag</tag-class>
+      <tag-class>org.springframework.extensions.webscripts.jsf.WebScriptTag</tag-class>
       <body-content>JSP</body-content>
       
       <description>

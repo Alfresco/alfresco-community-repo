@@ -65,6 +65,7 @@
         </description>
     </context-param>
 
+   <!-- Spring Application Context location and context class -->
    <context-param>
       <param-name>contextConfigLocation</param-name>
       <param-value>/WEB-INF/web-application-context.xml</param-value>
@@ -75,6 +76,7 @@
       <param-value>org.alfresco.config.JBossEnabledWebApplicationContext</param-value>
       <description>Spring context class</description>
    </context-param>
+   
    <context-param>
       <param-name>log4jExposeWebAppRoot</param-name>
       <param-value>false</param-value>
@@ -292,10 +294,12 @@
       <listener-class>org.springframework.web.util.Log4jConfigListener</listener-class>
    </listener>
    
+   <!-- Spring Context Loader listener - can disable loading of context if runtime config changes are needed -->
    <listener>
       <listener-class>org.alfresco.web.app.ContextLoaderListener</listener-class>
    </listener>
 
+   <!-- Web Application Context listener - session create/destroy debugging and bootstrap Spring init -->
    <listener>
       <listener-class>org.alfresco.web.app.ContextListener</listener-class>
    </listener>
@@ -377,7 +381,7 @@
 
    <servlet>
       <servlet-name>apiServlet</servlet-name>
-      <servlet-class>org.alfresco.web.scripts.servlet.WebScriptServlet</servlet-class>
+      <servlet-class>org.springframework.extensions.webscripts.servlet.WebScriptServlet</servlet-class>
       <init-param>
          <param-name>authenticator</param-name>
          <param-value>webscripts.authenticator.basic</param-value>
@@ -386,7 +390,7 @@
 
    <servlet>
       <servlet-name>wcapiServlet</servlet-name>
-      <servlet-class>org.alfresco.web.scripts.servlet.WebScriptServlet</servlet-class>
+      <servlet-class>org.springframework.extensions.webscripts.servlet.WebScriptServlet</servlet-class>
       <init-param>
          <param-name>authenticator</param-name>
          <param-value>webscripts.authenticator.webclient</param-value>
@@ -395,7 +399,7 @@
 
    <servlet>
       <servlet-name>portalapiServlet</servlet-name>
-      <servlet-class>org.alfresco.web.scripts.servlet.WebScriptServlet</servlet-class>
+      <servlet-class>org.springframework.extensions.webscripts.servlet.WebScriptServlet</servlet-class>
       <init-param>
          <param-name>authenticator</param-name>
          <param-value>webscripts.authenticator.webclient</param-value>
@@ -404,7 +408,7 @@
 
    <servlet>
       <servlet-name>facebookServlet</servlet-name>
-      <servlet-class>org.alfresco.web.scripts.facebook.FacebookServlet</servlet-class>
+      <servlet-class>org.alfresco.repo.web.scripts.facebook.FacebookServlet</servlet-class>
       <init-param>
          <param-name>authenticator</param-name>
          <param-value>webscripts.authenticator.facebook</param-value>
@@ -413,7 +417,7 @@
 
    <servlet>
       <servlet-name>fbapiServlet</servlet-name>
-      <servlet-class>org.alfresco.web.scripts.facebook.FacebookAPIServlet</servlet-class>
+      <servlet-class>org.alfresco.repo.web.scripts.facebook.FacebookAPIServlet</servlet-class>
       <init-param>
          <param-name>authenticator</param-name>
          <param-value>webscripts.authenticator.facebook</param-value>
@@ -422,7 +426,7 @@
 
    <servlet>
       <servlet-name>proxyServlet</servlet-name>
-      <servlet-class>org.alfresco.web.scripts.servlet.HTTPProxyServlet</servlet-class>
+      <servlet-class>org.alfresco.web.app.servlet.HTTPProxyServlet</servlet-class>
    </servlet>
 
    <servlet>
@@ -435,42 +439,42 @@
       <servlet-class>org.alfresco.web.app.servlet.JBPMDeployProcessServlet</servlet-class>
    </servlet>
 
-    <servlet>
-        <servlet-name>CMISFileShareServlet</servlet-name>
-        <servlet-class>de.fmui.cmis.fileshare.info.BrowseServlet</servlet-class>
-        <init-param>
-            <param-name>auxroot</param-name>
-            <param-value>cmisfs/browser/</param-value>
-        </init-param>
-        <init-param>
-            <param-name>allow</param-name>
-            <param-value>http.*</param-value>
-        </init-param>
-        <init-param>
-            <param-name>stylesheet:application/atomsvc+xml</param-name>
-            <param-value>/cmisfs/stylesheets/service.xsl</param-value>
-        </init-param>
-        <init-param>
-            <param-name>stylesheet:application/atom+xml;type=feed</param-name>
-            <param-value>/cmisfs/stylesheets/feed.xsl</param-value>
-        </init-param>
-        <init-param>
-            <param-name>stylesheet:application/cmistree+xml</param-name>
-            <param-value>/cmisfs/stylesheets/feed.xsl</param-value>
-        </init-param>
-        <init-param>
-            <param-name>stylesheet:application/atom+xml;type=entry</param-name>
-            <param-value>/cmisfs/stylesheets/entry.xsl</param-value>
-        </init-param>
-        <init-param>
-            <param-name>stylesheet:application/cmisallowableactions+xml</param-name>
-            <param-value>/cmisfs/stylesheets/actions.xsl</param-value>
-        </init-param>
-        <init-param>
-            <param-name>stylesheet:application/cmisacl+xml</param-name>
-            <param-value>/cmisfs/stylesheets/acl.xsl</param-value>
-        </init-param>
-    </servlet>
+   <servlet>
+      <servlet-name>CMISFileShareServlet</servlet-name>
+      <servlet-class>de.fmui.cmis.fileshare.info.BrowseServlet</servlet-class>
+      <init-param>
+         <param-name>auxroot</param-name>
+         <param-value>cmisfs/browser/</param-value>
+      </init-param>
+      <init-param>
+         <param-name>allow</param-name>
+         <param-value>http.*</param-value>
+      </init-param>
+      <init-param>
+         <param-name>stylesheet:application/atomsvc+xml</param-name>
+         <param-value>/cmisfs/stylesheets/service.xsl</param-value>
+      </init-param>
+      <init-param>
+         <param-name>stylesheet:application/atom+xml;type=feed</param-name>
+         <param-value>/cmisfs/stylesheets/feed.xsl</param-value>
+      </init-param>
+      <init-param>
+         <param-name>stylesheet:application/cmistree+xml</param-name>
+         <param-value>/cmisfs/stylesheets/feed.xsl</param-value>
+      </init-param>
+      <init-param>
+         <param-name>stylesheet:application/atom+xml;type=entry</param-name>
+         <param-value>/cmisfs/stylesheets/entry.xsl</param-value>
+      </init-param>
+      <init-param>
+         <param-name>stylesheet:application/cmisallowableactions+xml</param-name>
+         <param-value>/cmisfs/stylesheets/actions.xsl</param-value>
+      </init-param>
+      <init-param>
+         <param-name>stylesheet:application/cmisacl+xml</param-name>
+         <param-value>/cmisfs/stylesheets/acl.xsl</param-value>
+      </init-param>
+   </servlet>
 
    <servlet-mapping>
       <servlet-name>Faces Servlet</servlet-name>

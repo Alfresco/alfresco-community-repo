@@ -37,7 +37,7 @@ import org.alfresco.web.bean.SidebarBean;
 import org.alfresco.web.config.SidebarConfigElement;
 import org.alfresco.web.config.SidebarConfigElement.SidebarPluginConfig;
 import org.alfresco.web.ui.common.Utils;
-import org.alfresco.web.ui.common.component.SelfRenderingComponent;
+import org.springframework.extensions.webscripts.ui.common.component.SelfRenderingComponent;
 import org.alfresco.web.ui.common.component.UIListItems;
 import org.alfresco.web.ui.common.component.UIModeList;
 

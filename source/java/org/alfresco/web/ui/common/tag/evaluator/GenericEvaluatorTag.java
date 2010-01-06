@@ -26,7 +26,7 @@ package org.alfresco.web.ui.common.tag.evaluator;
 
 import javax.faces.component.UIComponent;
 
-import org.alfresco.web.ui.common.tag.BaseComponentTag;
+import org.springframework.extensions.webscripts.ui.common.tag.BaseComponentTag;
 
 /**
  * @author kevinr

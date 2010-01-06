@@ -27,7 +27,7 @@ import javax.faces.application.Application;
 import javax.faces.component.UIComponent;
 import javax.faces.el.MethodBinding;
 import javax.faces.el.ValueBinding;
-import org.alfresco.web.ui.common.tag.BaseComponentTag;
+import org.springframework.extensions.webscripts.ui.common.tag.BaseComponentTag;
 
 /**
  * @author Ariel Backenroth

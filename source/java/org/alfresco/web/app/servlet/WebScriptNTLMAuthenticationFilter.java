@@ -34,9 +34,9 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.extensions.surf.util.URLDecoder;
-import org.alfresco.web.scripts.Match;
-import org.alfresco.web.scripts.RuntimeContainer;
-import org.alfresco.web.scripts.Description.RequiredAuthentication;
+import org.springframework.extensions.webscripts.Match;
+import org.springframework.extensions.webscripts.RuntimeContainer;
+import org.springframework.extensions.webscripts.Description.RequiredAuthentication;
 
 /**
  * WebScript aware NTLM Authentication Filter Class.

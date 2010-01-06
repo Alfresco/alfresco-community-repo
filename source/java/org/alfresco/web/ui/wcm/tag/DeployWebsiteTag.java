@@ -26,7 +26,7 @@ package org.alfresco.web.ui.wcm.tag;
 
 import javax.faces.component.UIComponent;
 
-import org.alfresco.web.ui.common.tag.BaseComponentTag;
+import org.springframework.extensions.webscripts.ui.common.tag.BaseComponentTag;
 
 /**
  * Tag class that allows the DeployWebsite component to be used on a JSP page.

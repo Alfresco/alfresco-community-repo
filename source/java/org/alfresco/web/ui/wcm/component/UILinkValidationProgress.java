@@ -35,7 +35,7 @@ import javax.faces.el.MethodBinding;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.wcm.AVMUtil;
 import org.alfresco.web.ui.common.Utils;
-import org.alfresco.web.ui.common.component.SelfRenderingComponent;
+import org.springframework.extensions.webscripts.ui.common.component.SelfRenderingComponent;
 import org.alfresco.web.ui.common.component.UIActionLink;
 import org.alfresco.web.ui.repo.component.UIActions;
 

@@ -39,8 +39,6 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.Map;
 
-import org.alfresco.error.AlfrescoRuntimeException;
-import org.springframework.extensions.surf.util.I18NUtil;
 import org.alfresco.repo.attributes.Attribute;
 import org.alfresco.repo.attributes.MapAttribute;
 import org.alfresco.repo.attributes.MapAttributeValue;
@@ -57,8 +55,10 @@ import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.repository.Period;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.QName;
-import org.springframework.extensions.surf.util.ISO8601DateFormat;
 import org.alfresco.util.VersionNumber;
+import org.springframework.extensions.surf.exception.PlatformRuntimeException;
+import org.springframework.extensions.surf.util.I18NUtil;
+import org.springframework.extensions.surf.util.ISO8601DateFormat;
 
 /**
  * Support for generic conversion between types.
@@ -220,7 +220,7 @@ public class DefaultTypeConverter
                     Date date = ISO8601DateFormat.parse(source);
                     return date;
                 }
-                catch(AlfrescoRuntimeException e)
+                catch (PlatformRuntimeException e)
                 {
                     throw new TypeConversionException("Failed to convert date " + source + " to string", e);
                 }

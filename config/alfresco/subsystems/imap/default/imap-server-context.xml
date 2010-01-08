@@ -31,7 +31,7 @@
     </bean>
     
 
-    <bean id="imapResourceBundles" class="org.springframework.extensions.surf.util.ResourceBundleBootstrapComponent">
+    <bean id="imapResourceBundles" class="org.alfresco.i18n.ResourceBundleBootstrapComponent">
         <property name="resourceBundles">
             <list>
                 <value>alfresco.messages.imap-service</value>

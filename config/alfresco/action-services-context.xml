@@ -121,7 +121,7 @@
    
    <!-- I18N -->
    
-   <bean id="actionResourceBundles" class="org.springframework.extensions.surf.util.ResourceBundleBootstrapComponent">
+   <bean id="actionResourceBundles" class="org.alfresco.i18n.ResourceBundleBootstrapComponent">
         <property name="resourceBundles">
             <list>
                 <value>alfresco.messages.action-service</value>

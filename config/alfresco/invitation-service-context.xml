@@ -53,7 +53,7 @@
         </property>
     </bean>
         
-    <bean id="invitationResourceBundles" class="org.springframework.extensions.surf.util.ResourceBundleBootstrapComponent">
+    <bean id="invitationResourceBundles" class="org.alfresco.i18n.ResourceBundleBootstrapComponent">
     	<property name="resourceBundles">
     		<list>
     			<value>alfresco.messages.invitation-service</value>

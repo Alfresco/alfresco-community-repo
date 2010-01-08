@@ -335,7 +335,7 @@
     
     <!-- I18N -->
     
-    <bean id="wcmServicesResourceBundles" class="org.springframework.extensions.surf.util.ResourceBundleBootstrapComponent">
+    <bean id="wcmServicesResourceBundles" class="org.alfresco.i18n.ResourceBundleBootstrapComponent">
         <property name="resourceBundles">
             <list>
                 <value>alfresco.messages.wcm-services</value>

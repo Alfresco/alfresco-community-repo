@@ -391,7 +391,7 @@
     <!-- I18N                   -->
     <!--                        -->
 
-    <bean id="resourceBundles" class="org.springframework.extensions.surf.util.ResourceBundleBootstrapComponent">
+    <bean id="resourceBundles" class="org.alfresco.i18n.ResourceBundleBootstrapComponent">
         <property name="resourceBundles">
             <list>
                 <value>alfresco.messages.system-messages</value>

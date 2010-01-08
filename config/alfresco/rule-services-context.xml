@@ -48,7 +48,7 @@
    
    <!-- I18N -->
    
-   <bean id="ruleResourceBundles" class="org.springframework.extensions.surf.util.ResourceBundleBootstrapComponent">
+   <bean id="ruleResourceBundles" class="org.alfresco.i18n.ResourceBundleBootstrapComponent">
         <property name="resourceBundles">
             <list>
                 <value>alfresco.messages.rule-config</value>

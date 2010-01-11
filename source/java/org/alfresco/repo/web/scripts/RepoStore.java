@@ -63,7 +63,6 @@ import org.alfresco.util.ISO9075;
 import org.springframework.extensions.webscripts.AbstractStore;
 import org.springframework.extensions.webscripts.ScriptContent;
 import org.springframework.extensions.webscripts.ScriptLoader;
-import org.springframework.extensions.webscripts.Store;
 import org.springframework.extensions.webscripts.WebScript;
 import org.springframework.extensions.webscripts.WebScriptException;
 
@@ -195,8 +194,6 @@ public class RepoStore extends AbstractStore implements TenantDeployer
         {
     		baseNodeRefs = new HashMap<String, NodeRef>(1);
     	}
-    	
-        getBaseNodeRef();
     }
     
     /* (non-Javadoc)

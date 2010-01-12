@@ -1,8 +1,0 @@
-<webscript>
-   <shortname>Get Condition Definitions</shortname>
-   <description>Get the collection of condition definitions</description>
-   <url>/api/rules/conditiondefs</url>
-   <format default="json">argument</format>
-   <authentication>user</authentication>
-   <transaction allow="readonly">required</transaction>
-</webscript>

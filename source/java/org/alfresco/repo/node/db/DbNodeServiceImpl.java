@@ -729,15 +729,16 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         return nodeDaoService.getNodeAspects(nodePair.getFirst());
     }
 
+    /**
+     * Delete Node
+     */
     public void deleteNode(NodeRef nodeRef)
     {
+        // Pair contains NodeId, NodeRef
         Pair<Long, NodeRef> nodePair = getNodePairNotNull(nodeRef);
         Long nodeId = nodePair.getFirst();
 
         Boolean requiresDelete = null;
-
-        // Invoke policy behaviours
-        invokeBeforeDeleteNode(nodeRef);
 
         // get the primary parent-child relationship before it is gone
         Pair<Long, ChildAssociationRef> childAssocPair = nodeDaoService.getPrimaryParentAssoc(nodeId);
@@ -746,12 +747,16 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         QName nodeTypeQName = nodeDaoService.getNodeType(nodeId);
         Set<QName> nodeAspectQNames = nodeDaoService.getNodeAspects(nodeId);
 
-        // check if we need to archive the node
         StoreRef storeRef = nodeRef.getStoreRef();
         StoreRef archiveStoreRef = storeArchiveMap.get(storeRef);
 
+        /**
+         *  Work out whether we need to archive or delete the node.
+         */
+     
         if (archiveStoreRef == null)
         {
+            // The store does not specify archiving
             requiresDelete = true;
         }
         else
@@ -784,12 +789,18 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
             }
         }
 
+        /**
+         * Now we have worked out whether to archive or delete, go ahead and do it
+         */
         if (requiresDelete == null || requiresDelete)
         {
-            // Cascade as required
+            // Invoke policy behaviours
+            invokeBeforeDeleteNode(nodeRef);
+
+            // Cascade delecte as required
             if (cascadeInTransaction)
             {
-                deletePrimaryChildren(nodePair, true);
+                deletePrimaryChildrenNotArchived(nodePair, true);
             }
             // perform a normal deletion
             nodeDaoService.deleteNode(nodeId);
@@ -801,20 +812,31 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         }
         else
         {
-            // archive it
+            /**
+             *  Go ahead and archive the node
+             *  
+             *  Archiving will take responsibility for firing the policy behaviours on 
+             *  the nodes it modifies. 
+             */
             archiveNode(nodeRef, archiveStoreRef);
-            // The archive performs a move, which will fire the appropriate OnDeleteNode
-            invokeOnDeleteNode(childAssocRef, nodeTypeQName, nodeAspectQNames, true);
         }
     }
     
-    private void deletePrimaryChildren(Pair<Long, NodeRef> nodePair, boolean cascade)
+    /**
+     * delete primary children - private method for deleteNode.
+     * 
+     * recurses through children when deleting a node.   Does not archive.
+     * 
+     * @param nodePair
+     * @param cascade
+     */
+    private void deletePrimaryChildrenNotArchived(Pair<Long, NodeRef> nodePair, boolean cascade)
     {
         Long nodeId = nodePair.getFirst();
         // Get the node's primary children
         final List<Pair<Long, NodeRef>> childNodePairs = new ArrayList<Pair<Long, NodeRef>>(5);
-//        TODO: Fix issues when invoking onDeleteNode
-//        final Map<Long, ChildAssociationRef> childAssocRefsByChildId = new HashMap<Long, ChildAssociationRef>(5);
+
+        final Map<Long, ChildAssociationRef> childAssocRefsByChildId = new HashMap<Long, ChildAssociationRef>(5);
         NodeDaoService.ChildAssocRefQueryCallback callback = new NodeDaoService.ChildAssocRefQueryCallback()
         {
             public boolean handle(
@@ -825,7 +847,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
             {
                 // Add it
                 childNodePairs.add(childNodePair);
-//                childAssocRefsByChildId.put(childNodePair.getFirst(), childAssocPair.getSecond());
+                childAssocRefsByChildId.put(childNodePair.getFirst(), childAssocPair.getSecond());
                 // No recurse
                 return false;
             }
@@ -844,9 +866,9 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
             // Fire node policies.  This ensures that each node in the hierarchy gets a notification fired.
             Long childNodeId = childNodePair.getFirst();
             NodeRef childNodeRef = childNodePair.getSecond();
-//            QName childNodeType = nodeDaoService.getNodeType(childNodeId);
-//            Set<QName> childNodeQNames = nodeDaoService.getNodeAspects(childNodeId);
-//            ChildAssociationRef childParentAssocRef = childAssocRefsByChildId.get(childNodeId);
+            QName childNodeType = nodeDaoService.getNodeType(childNodeId);
+            Set<QName> childNodeQNames = nodeDaoService.getNodeAspects(childNodeId);
+            ChildAssociationRef childParentAssocRef = childAssocRefsByChildId.get(childNodeId);
             
             invokeBeforeDeleteNode(childNodeRef);
             
@@ -855,11 +877,11 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
             // the actual delete starts.
             if (cascade)
             {
-                deletePrimaryChildren(childNodePair, true);
+                deletePrimaryChildrenNotArchived(childNodePair, true);
             }
             // Delete the child
             nodeDaoService.deleteNode(childNodeId);
-//            invokeOnDeleteNode(childParentAssocRef, childNodeType, childNodeQNames, true);
+            invokeOnDeleteNode(childParentAssocRef, childNodeType, childNodeQNames, false);
         }
     }
 
@@ -2054,6 +2076,8 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
     }
 
     /**
+     * Move Node
+     * 
      * Drops the old primary association and creates a new one
      */
     public ChildAssociationRef moveNode(
@@ -2101,7 +2125,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
             handleStoreMoveConflicts(nodeToMovePair, newStoreRef);
         }
         
-        // Invoke policy behaviour
+        // Invoke "Before"policy behaviour
         if (movingStore)
         {
             invokeBeforeDeleteNode(nodeToMoveRef);

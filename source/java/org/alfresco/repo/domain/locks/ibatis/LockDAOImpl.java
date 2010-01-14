@@ -62,7 +62,7 @@ public class LockDAOImpl extends AbstractLockDAOImpl
     {
         LockResourceEntity lockResource = new LockResourceEntity();
         lockResource.setQnameNamespaceId(qnameNamespaceId);
-        lockResource.setQnameLocalName(qnameLocalName);
+        lockResource.setQnameLocalName(qnameLocalName == null ? null : qnameLocalName.toLowerCase());
         lockResource = (LockResourceEntity) template.queryForObject(SELECT_LOCKRESOURCE_BY_QNAME, lockResource);
         // Could be null
         return lockResource;
@@ -74,7 +74,7 @@ public class LockDAOImpl extends AbstractLockDAOImpl
         LockResourceEntity lockResource = new LockResourceEntity();
         lockResource.setVersion(LockEntity.CONST_LONG_ZERO);
         lockResource.setQnameNamespaceId(qnameNamespaceId);
-        lockResource.setQnameLocalName(qnameLocalName);
+        lockResource.setQnameLocalName(qnameLocalName == null ? null : qnameLocalName.toLowerCase());
         Long id = (Long) template.insert(INSERT_LOCKRESOURCE, lockResource);
         lockResource.setId(id);
         // Done
@@ -122,7 +122,7 @@ public class LockDAOImpl extends AbstractLockDAOImpl
         lock.setVersion(LockEntity.CONST_LONG_ZERO);
         lock.setSharedResourceId(sharedResourceId);
         lock.setExclusiveResourceId(exclusiveResourceId);
-        lock.setLockToken(lockToken);
+        lock.setLockToken(lockToken == null ? null : lockToken.toLowerCase());
         long now = System.currentTimeMillis();
         long exp = now + timeToLive;
         lock.setStartTime(now);
@@ -142,7 +142,7 @@ public class LockDAOImpl extends AbstractLockDAOImpl
         updateLockEntity.incrementVersion();            // Increment the version number
         updateLockEntity.setSharedResourceId(lockEntity.getSharedResourceId());
         updateLockEntity.setExclusiveResourceId(lockEntity.getExclusiveResourceId());
-        updateLockEntity.setLockToken(lockToken);
+        updateLockEntity.setLockToken(lockToken == null ? null : lockToken.toLowerCase());
         long now = (timeToLive > 0) ? System.currentTimeMillis() : 0L;
         long exp = (timeToLive > 0) ? (now + timeToLive) : 0L;
         updateLockEntity.setStartTime(new Long(now));
@@ -162,7 +162,7 @@ public class LockDAOImpl extends AbstractLockDAOImpl
         Map<String, Object> params = new HashMap<String, Object>(11);
         params.put("exclusiveLockResourceId", exclusiveLockResourceId);
         params.put("oldLockToken", oldLockToken);
-        params.put("newLockToken", newLockToken);
+        params.put("newLockToken", newLockToken == null ? null : newLockToken.toLowerCase());
         long now = (timeToLive > 0) ? System.currentTimeMillis() : 0L;
         long exp = (timeToLive > 0) ? (now + timeToLive) : 0L;
         params.put("newStartTime", new Long(now));

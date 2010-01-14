@@ -82,6 +82,7 @@
              <value>classpath:alfresco/dbscripts/create/3.2/${db.script.dialect}/AlfrescoPostCreate-3.2-AuditTables.sql</value>
              <value>classpath:alfresco/dbscripts/create/3.2/${db.script.dialect}/AlfrescoPostCreate-3.2-AvmTables.sql</value>
              <value>classpath:alfresco/dbscripts/create/3.2/${db.script.dialect}/AlfrescoPostCreate-3.2-Indexes.sql</value>
+             <value>classpath:alfresco/dbscripts/create/3.2/${db.script.dialect}/AlfrescoPostCreate-3.2-JBPM-Extra.sql</value>
           </list>
        </property>
        <property name="validateUpdateScriptPatches">

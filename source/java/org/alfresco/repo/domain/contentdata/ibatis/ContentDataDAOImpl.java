@@ -92,6 +92,10 @@ public class ContentDataDAOImpl extends AbstractContentDataDAOImpl
     {
         ContentUrlEntity contentUrlEntity = new ContentUrlEntity();
         contentUrlEntity.setContentUrl(contentUrl);
+        if (contentUrlEntity.getContentUrlShort() != null)
+        {
+            contentUrlEntity.setContentUrlShort(contentUrlEntity.getContentUrlShort().toLowerCase());
+        }
         contentUrlEntity = (ContentUrlEntity) template.queryForObject(SELECT_CONTENT_URL_BY_KEY, contentUrlEntity);
         // Done
         return contentUrlEntity;
@@ -110,6 +114,10 @@ public class ContentDataDAOImpl extends AbstractContentDataDAOImpl
     {
         ContentUrlEntity contentUrlEntity = new ContentUrlEntity();
         contentUrlEntity.setContentUrl(contentUrl);
+        if (contentUrlEntity.getContentUrlShort() != null)
+        {
+            contentUrlEntity.setContentUrlShort(contentUrlEntity.getContentUrlShort().toLowerCase());
+        }
         contentUrlEntity = (ContentUrlEntity) template.queryForObject(SELECT_CONTENT_URL_BY_KEY_UNREFERENCED, contentUrlEntity);
         // Done
         return contentUrlEntity;

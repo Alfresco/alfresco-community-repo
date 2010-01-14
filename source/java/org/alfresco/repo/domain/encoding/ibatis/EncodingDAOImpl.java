@@ -62,7 +62,7 @@ public class EncodingDAOImpl extends AbstractEncodingDAOImpl
     protected EncodingEntity getEncodingEntity(String encoding)
     {
         EncodingEntity encodingEntity = new EncodingEntity();
-        encodingEntity.setEncoding(encoding);
+        encodingEntity.setEncoding(encoding == null ? null : encoding.toLowerCase());
         encodingEntity = (EncodingEntity) template.queryForObject(SELECT_ENCODING_BY_KEY, encodingEntity);
         // Could be null
         return encodingEntity;
@@ -73,7 +73,7 @@ public class EncodingDAOImpl extends AbstractEncodingDAOImpl
     {
         EncodingEntity encodingEntity = new EncodingEntity();
         encodingEntity.setVersion(MimetypeEntity.CONST_LONG_ZERO);
-        encodingEntity.setEncoding(encoding);
+        encodingEntity.setEncoding(encoding == null ? null : encoding.toLowerCase());
         Long id = (Long) template.insert(INSERT_ENCODING, encodingEntity);
         encodingEntity.setId(id);
         // Done

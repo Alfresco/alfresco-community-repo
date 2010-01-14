@@ -61,7 +61,7 @@ public class MimetypeDAOImpl extends AbstractMimetypeDAOImpl
     protected MimetypeEntity getMimetypeEntity(String mimetype)
     {
         MimetypeEntity mimetypeEntity = new MimetypeEntity();
-        mimetypeEntity.setMimetype(mimetype);
+        mimetypeEntity.setMimetype(mimetype == null ? null : mimetype.toLowerCase());
         mimetypeEntity = (MimetypeEntity) template.queryForObject(SELECT_MIMETYPE_BY_KEY, mimetypeEntity);
         // Could be null
         return mimetypeEntity;
@@ -72,7 +72,7 @@ public class MimetypeDAOImpl extends AbstractMimetypeDAOImpl
     {
         MimetypeEntity mimetypeEntity = new MimetypeEntity();
         mimetypeEntity.setVersion(MimetypeEntity.CONST_LONG_ZERO);
-        mimetypeEntity.setMimetype(mimetype);
+        mimetypeEntity.setMimetype(mimetype == null ? null : mimetype.toLowerCase());
         Long id = (Long) template.insert(INSERT_MIMETYPE, mimetypeEntity);
         mimetypeEntity.setId(id);
         // Done

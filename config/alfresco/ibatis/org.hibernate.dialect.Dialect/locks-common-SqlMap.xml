@@ -52,12 +52,12 @@
     
     <sql id="insert_LockResource_AutoIncrement">
         insert into alf_lock_resource (version, qname_ns_id, qname_localname) 
-        values (#version#, #qnameNamespaceId#, lower(#qnameLocalName#))
+        values (#version#, #qnameNamespaceId#, #qnameLocalName#)
     </sql>
     
     <sql id="insert_Lock_AutoIncrement">
         insert into alf_lock (version, shared_resource_id, excl_resource_id, lock_token, start_time, expiry_time) 
-        values (#version#, #sharedResourceId#, #exclusiveResourceId#, lower(#lockToken#), #startTime#, #expiryTime#)
+        values (#version#, #sharedResourceId#, #exclusiveResourceId#, #lockToken#, #startTime#, #expiryTime#)
     </sql>
     
     <!--                -->
@@ -72,7 +72,7 @@
             alf_lock_resource
         where
             qname_ns_id = #qnameNamespaceId# and
-            qname_localname = lower(#qnameLocalName#)
+            qname_localname = #qnameLocalName#
     </select>
 
     <!-- Get a lock based on the ID -->
@@ -117,7 +117,7 @@
             alf_lock
         set
             version = #version#,
-            lock_token = lower(#lockToken#),
+            lock_token = #lockToken#,
             start_time = #startTime#,
             expiry_time = #expiryTime#
         where
@@ -131,7 +131,7 @@
             alf_lock
         set
             version = version + 1,
-            lock_token = lower(?),
+            lock_token = ?,
             start_time = ?,
             expiry_time = ?
         where

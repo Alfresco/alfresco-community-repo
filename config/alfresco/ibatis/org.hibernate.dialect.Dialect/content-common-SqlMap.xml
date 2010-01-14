@@ -65,18 +65,26 @@
         <parameter property="qnameId" jdbcType="BIGINT" javaType="java.lang.Long"/>
     </parameterMap>
   
+    <parameterMap id="parameter_ContentData" class="ContentData">
+        <parameter property="version" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <parameter property="contentUrlId" jdbcType="BIGINT" javaType="java.lang.Long"/>
+		<parameter property="mimetypeId" jdbcType="BIGINT" javaType="java.lang.Long"/>
+		<parameter property="encodingId" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <parameter property="localeId" jdbcType="BIGINT" javaType="java.lang.Long"/>
+    </parameterMap>
+  
     <!--                -->
     <!-- SQL Snippets   -->
     <!--                -->
     
     <sql id="insert_Mimetype_AutoIncrement">
         insert into alf_mimetype (version, mimetype_str) 
-        values (#version#, lower(#mimetype#))
+        values (#version#, #mimetype#)
     </sql>
     
     <sql id="insert_Encoding_AutoIncrement">
         insert into alf_encoding (version, encoding_str) 
-        values (#version#, lower(#encoding#))
+        values (#version#, #encoding#)
     </sql>
     
     <sql id="insert_ContentUrl_AutoIncrement">
@@ -86,7 +94,7 @@
     
     <sql id="insert_ContentData_AutoIncrement">
         insert into alf_content_data (version, content_url_id, content_mimetype_id, content_encoding_id, content_locale_id) 
-        values (#version#, #contentUrlId#, #mimetypeId#, #encodingId#, #localeId#)
+        values (?, ?, ?, ?, ?)
     </sql>
     
     <!--                -->
@@ -100,7 +108,7 @@
         from
             alf_mimetype
         where
-            mimetype_str = lower(#mimetype#)
+            mimetype_str = #mimetype#
     </select>
 
     <!-- Get a mimetype based on the ID -->
@@ -120,7 +128,7 @@
         from
             alf_encoding
         where
-            encoding_str = lower(#encoding#)
+            encoding_str = #encoding#
     </select>
 
     <!-- Get a encoding based on the ID -->
@@ -150,7 +158,7 @@
         from
             alf_content_url
         where
-            content_url_short = lower(#contentUrlShort#) and
+            content_url_short = #contentUrlShort# and
             content_url_crc = #contentUrlCrc#
     </select>
 
@@ -162,7 +170,7 @@
             alf_content_url cu
             left outer join alf_content_data cd on (cd.content_url_id = cu.id)
         where
-            content_url_short = lower(#contentUrlShort#) and
+            content_url_short = #contentUrlShort# and
             content_url_crc = #contentUrlCrc# and
             cd.id is null
     </select>
@@ -226,7 +234,7 @@
 
     <!-- Insert a Content Clean URL -->
     <insert id="insert_ContentCleanUrl" parameterClass="ContentClean" >
-        insert into alf_content_clean (content_url) values (lower(#contentUrl#))
+        insert into alf_content_clean (content_url) values (#contentUrl#)
     </insert>
 
     <!-- Select all content clean URLs -->
@@ -243,7 +251,7 @@
         from
             alf_content_clean
         where
-            content_url = lower(#contentUrl#)
+            content_url = #contentUrl#
     </delete>
 
     <!-- Remove all Content Clean URLs -->

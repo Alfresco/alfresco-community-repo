@@ -87,7 +87,7 @@ public class ContentCleanDAOImpl implements ContentCleanDAO
             public void processContentUrl(String contentUrl)
             {
                 ContentCleanEntity contentCleanEntity = new ContentCleanEntity();
-                contentCleanEntity.setContentUrl(contentUrl);
+                contentCleanEntity.setContentUrl(contentUrl == null ? null : contentUrl.toLowerCase());
                 template.insert(INSERT_CONTENT_CLEAN, contentCleanEntity);
                 // Write the batch
                 executeBatch();

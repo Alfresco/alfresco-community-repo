@@ -27,6 +27,25 @@
 #db.driver=org.gjt.mm.mysql.Driver
 #db.url=jdbc:mysql://localhost/alfresco
 
+#
+# Oracle connection
+#
+#db.driver=oracle.jdbc.OracleDriver
+#db.url=jdbc:oracle:thin:@localhost:1521:alfresco
+
+#
+# SQLServer connection (note you must enable TCP protocol on fixed port 1433)
+#
+#db.driver=com.microsoft.sqlserver.jdbc.SQLServerDriver
+#db.url=jdbc:sqlserver://localhost:1433;databaseName=alfresco
+#db.txn.isolation=4096
+
+#
+# PostgreSQL connection (requires postgresql-8.2-504.jdbc3.jar or equivalent)
+#
+#db.driver=org.postgresql.Driver
+#db.url=jdbc:postgresql://localhost:5432/alfresco
+
 # The well known RMI registry port is defined in the alfresco-shared.properties file
 # alfresco.rmi.services.port=50500
 #

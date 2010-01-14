@@ -373,7 +373,7 @@
                  description-id="remove_invited_user_info" />
          
          <dialog name="editLinkProperties" page="/jsp/content/edit-link-properties.jsp" managed-bean="LinkPropertiesDialog"
-                 icon="/images/icons/details_large.gif" title-id="modify_props_of" 
+                 icon="/images/icons/details_large.gif" title-id="modify_link_properties" 
                  description-id="editlink_description" />
          
          <dialog name="editUserRoles" page="/jsp/roles/edit-user-roles.jsp" managed-bean="EditUserRolesDialog"

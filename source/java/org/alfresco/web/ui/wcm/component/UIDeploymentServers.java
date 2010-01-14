@@ -203,13 +203,13 @@ public class UIDeploymentServers extends UIInput
             String displayGroup = (String)server.getProperties().get(DeploymentServerConfig.PROP_GROUP);
             if(!currentDisplayGroup.equalsIgnoreCase(displayGroup)) 
             {
-              // yes title has changed - write out the new displayGroup	
-              out.write("<p class='mainSubTitle'>");
-              out.write(Utils.encode(displayGroup));
-              out.write("</p>");
-              currentDisplayGroup = displayGroup;
-        	}
-        	 
+               // yes title has changed - write out the new displayGroup	
+               out.write("<p class='mainSubTitle'>");
+               out.write(Utils.encode(displayGroup));
+               out.write("</p>");
+               currentDisplayGroup = displayGroup;
+            }
+        	   
             if (currentServer != null && currentServer.getId().equals(server.getId()))
             {
                // This is the server in edit mode

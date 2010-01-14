@@ -138,7 +138,14 @@ public final class DeploymentServerConfig implements Serializable
       
       if (this.props.get(PROP_PORT) != null && ((String)this.props.get(PROP_PORT)).length() > 0)
       {
-         repoProps.put(WCMAppModel.PROP_DEPLOYSERVERPORT, new Integer((String)this.props.get(PROP_PORT)));
+         try
+         {
+            repoProps.put(WCMAppModel.PROP_DEPLOYSERVERPORT, new Integer((String)this.props.get(PROP_PORT)));
+         }
+         catch (NumberFormatException ne)
+         {
+            // ignore invalid numbers
+         }
       }
       
       if (this.props.get(PROP_NAME) != null && ((String)this.props.get(PROP_NAME)).length() > 0)

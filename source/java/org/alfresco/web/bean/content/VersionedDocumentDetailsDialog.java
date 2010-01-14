@@ -54,6 +54,7 @@ import org.alfresco.service.namespace.QName;
 import org.springframework.extensions.surf.util.ParameterCheck;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.servlet.DownloadContentServlet;
+import org.alfresco.web.bean.BrowseBean;
 import org.alfresco.web.bean.repository.MapNode;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.Repository;
@@ -88,6 +89,9 @@ public class VersionedDocumentDetailsDialog implements Serializable
     /** The multilingual information of the selected version selected by the user */
     private Version documentEdition;
     private VersionHistory editionHistory;
+    
+    /** Common property resolvers accessed from the BrowseBean */
+    private BrowseBean browseBean;
 
 
     public void init()
@@ -97,6 +101,14 @@ public class VersionedDocumentDetailsDialog implements Serializable
         versionHistory = null;
         documentEdition = null;
         editionHistory = null;
+    }
+    
+    /**
+     * @param browseBean The BrowseBean to set.
+     */
+    public void setBrowseBean(BrowseBean browseBean)
+    {
+        this.browseBean = browseBean;
     }
 
     /**
@@ -364,17 +376,21 @@ public class VersionedDocumentDetailsDialog implements Serializable
        return DownloadContentServlet.generateBrowserURL(getFrozenStateNodeRef(), getName());
    }
 
-  /**
-   * @return the versioned node selected by the user
-   */
+   /**
+    * @return the versioned node selected by the user
+    */
    public Node getFrozenStateDocument()
    {
-       return new Node(getFrozenStateNodeRef());
+       Node node = new Node(getFrozenStateNodeRef());
+       node.addPropertyResolver("mimetype", this.browseBean.resolverMimetype);
+       node.addPropertyResolver("encoding", this.browseBean.resolverEncoding);
+       node.addPropertyResolver("size", this.browseBean.resolverSize);
+       return node;
    }
 
-  /**
-   * @return the versioned node ref selected by the user
-   */
+   /**
+    * @return the versioned node ref selected by the user
+    */
    public NodeRef getFrozenStateNodeRef()
    {
        return documentVersion.getFrozenStateNodeRef();

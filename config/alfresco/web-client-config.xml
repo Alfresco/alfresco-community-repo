@@ -310,7 +310,7 @@
             <plugin id="opensearch" label-id="opensearch" description-id="opensearch_desc"
                     page="/jsp/sidebar/opensearch.jsp" />
             <plugin id="category-browser" label-id="category_browser_plugin_label"
-                    description-id="category_browser_plugin_description" 
+                    description-id="category_browser_plugin_description" actions-config-id="category_plugin_actions"
                     page="/jsp/sidebar/category-browser.jsp" />
          </plugins>
          

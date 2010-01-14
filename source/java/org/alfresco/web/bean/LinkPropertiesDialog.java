@@ -60,6 +60,15 @@ public class LinkPropertiesDialog extends BaseDialogBean
    private Node editableNode = null;
    
    
+   @Override
+   public void init(Map<String, String> parameters)
+   {
+      super.init(parameters);
+      
+      // reset node instance for next dialog invocation
+      this.editableNode = null;
+   }
+   
    public Map<String, Object> getProperties()
    {
       return getEditableNode().getProperties();

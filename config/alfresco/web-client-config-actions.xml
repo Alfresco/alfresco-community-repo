@@ -777,6 +777,12 @@
             <action>#{NavigatorPluginBean.reset}</action>
          </action>
 
+         <action id="reset_categories">
+            <label-id>reset_categories</label-id>
+            <image>/images/icons/reset.gif</image>
+            <action>#{CategoryBrowserPluginBean.reset}</action>
+         </action>
+
          <!-- Make a document multilingual -->
          <action id="make_doc_multilingual">
             <permissions>
@@ -1168,6 +1174,10 @@
          <action-group id="navigator_actions">
             <action idref="reset_navigator" />
          </action-group>
+
+         <action-group id="category_plugin_actions">
+            <action idref="reset_categories" />
+         </action-group> 
 
          <!-- Actions for the manage group dialog -->
          <action-group id="group_actions">

@@ -466,8 +466,15 @@ public class AdminNodeBrowseBean implements Serializable
     {
         if (assocs == null)
         {
-            List<AssociationRef> assocRefs = getNodeService().getTargetAssocs(getNodeRef(), RegexQNamePattern.MATCH_ALL);
-            assocs = new ListDataModel(assocRefs);
+            try
+            {
+                List<AssociationRef> assocRefs = getNodeService().getTargetAssocs(getNodeRef(), RegexQNamePattern.MATCH_ALL);
+                assocs = new ListDataModel(assocRefs);
+            }
+            catch (UnsupportedOperationException err)
+            {
+               // some stores do not support associations
+            }
         }
         return assocs;
     }

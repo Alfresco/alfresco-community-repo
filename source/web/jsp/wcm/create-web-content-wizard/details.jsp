@@ -44,7 +44,7 @@
    
    function checkButtonState()
    {
-      if (document.getElementById("wizard:wizard-body:name").value.length == 0 )
+      if (document.getElementById("wizard:wizard-body:name").value.trim().length == 0)
       {
          document.getElementById("wizard:next-button").disabled = true;
          document.getElementById("wizard:finish-button").disabled = true;

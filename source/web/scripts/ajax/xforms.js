@@ -412,7 +412,7 @@ alfresco.xforms.Widget = new Class({
   /** Returns the widget's label. */
   getLabel: function()
   {
-	var result = "";
+	 var result = "";
     var node = this._getChildXFormsNode("label");
     
     if (node && node.firstChild !== null)
@@ -430,15 +430,29 @@ alfresco.xforms.Widget = new Class({
   /** Returns the widget's alert text. */
   getAlert: function()
   {
+    var result = "";
     var node = this._getChildXFormsNode("alert");
-    return node ? node.firstChild.nodeValue : "";
+    
+    if (node && node.firstChild !== null)
+    {
+      result = node.firstChild.nodeValue;
+    }
+    
+    return result;
   },
 
   /** Returns the widget's alert text. */
   getHint: function()
   {
+    var result = null;
     var node = this._getChildXFormsNode("hint");
-    return node ? node.firstChild.nodeValue : null;
+    
+    if (node && node.firstChild !== null)
+    {
+      result = node.firstChild.nodeValue;
+    }
+    
+    return result;
   },
   
   /** Makes the label red. */
@@ -2310,6 +2324,7 @@ alfresco.xforms.MonthPicker = alfresco.xforms.ComboboxSelect1.extend({
   initialize: function(xform, xformsNode)
   {
     this.parent(xform, xformsNode);
+    dojo.require("dojo.date.format");
   },
 
   /////////////////////////////////////////////////////////////////

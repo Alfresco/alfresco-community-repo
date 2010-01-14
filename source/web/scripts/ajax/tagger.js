@@ -78,7 +78,10 @@ var AlfTagger = new Class(
       // Add click event handlers for the add and cancel buttons
       $(this.id + "-addTag-ok").addEvent("click", function()
       {
-         this.addTag($(this.id + "-addTag-box").value);
+         if (this.validateTagBox())
+         {
+            this.addTag($(this.id + "-addTag-box").value);
+         }
       }.bind(this));
 
       $(this.id + "-addTag-cancel").addEvent("click", function()
@@ -110,15 +113,28 @@ var AlfTagger = new Class(
          {
             e.stop();
          }
-      }
+      };
 
+      // Add validation of tagName and cancel enter keys
       $(this.id + "-addTag-box").addEvents(
       {
-         "keyup": fnEnterStop,
+         "keyup": function(e)
+         {
+            var addTagOk = $(this.id + "-addTag-ok")
+            if (!this.validateTagBox())
+            {
+               addTagOk.setStyle("opacity", 0.5);
+            }
+            else
+            {
+               addTagOk.setStyle("opacity", 1);
+            }
+            fnEnterStop(e);
+         }.bind(this),
          "keypress": fnEnterStop
       });
    },
-   
+
    setDefaultIcon: function(icon)
    {
       this.defaultIcon = icon;
@@ -585,5 +601,11 @@ var AlfTagger = new Class(
          {
          }
       }).request();
+   },
+
+   validateTagBox: function()
+   {
+      var tagBox = $(this.id + "-addTag-box");
+      return tagBox && tagBox.value && tagBox.value.length > 0 && validateName(tagBox);
    }
 });

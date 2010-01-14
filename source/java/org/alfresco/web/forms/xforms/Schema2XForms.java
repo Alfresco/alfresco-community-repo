@@ -956,9 +956,15 @@ public class Schema2XForms implements Serializable
                          " at " + newPathToRoot);
             try
             {
-               final String defaultValue = (currentAttributeUse.getConstraintType() == XSConstants.VC_NONE
+               String defaultValue = (currentAttributeUse.getConstraintType() == XSConstants.VC_NONE
                                             ? null
                                             : currentAttributeUse.getConstraintValue());
+               // make sure boolean attributes have a default value
+               if (defaultValue == null && "boolean".equals(currentAttribute.getTypeDefinition().getName()))
+               {
+                   defaultValue = "false";
+               }
+               
                if (namespacePrefix.length() > 0)
                {
                   defaultInstanceElement.setAttributeNS(this.targetNamespace,
@@ -1713,6 +1719,12 @@ public class Schema2XForms implements Serializable
       {
          Node value = xformsDocument.createTextNode(element.getConstraintValue());
          newDefaultInstanceElement.appendChild(value);
+      }
+      else if ("boolean".equals(element.getTypeDefinition().getName()))
+      {
+          // we have a boolean element without a default value, default to false
+          Node value = xformsDocument.createTextNode("false");
+          newDefaultInstanceElement.appendChild(value);
       }
 
       this.addElement(xformsDocument,

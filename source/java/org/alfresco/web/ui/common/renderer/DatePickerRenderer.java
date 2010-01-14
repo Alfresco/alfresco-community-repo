@@ -396,7 +396,7 @@ public class DatePickerRenderer extends BaseRenderer
       
       if (showTime)
       {
-         out.write(" type='text' size='1' maxlength='2'");
+         out.write(" type='text' size='2' maxlength='2'");
          
          if (component.getAttributes().get("disabled") != null)
          {

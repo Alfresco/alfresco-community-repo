@@ -87,6 +87,15 @@
       schema_file_input.value = filename;
       schema_file_input.form.submit();
     }
+    
+    function checkDisabledState()
+    {
+      var disabledElement = document.getElementById('wizard:next-button');
+      var outputPathInput = document.getElementById('wizard:wizard-body:form_instance_data_output_path_pattern');
+      var additionalConditionInput = document.getElementById('wizard:wizard-body:form-name');
+      validateOutputPathPattern(disabledElement, outputPathInput, additionalConditionInput);
+    }
+    
     </script>
   </f:verbatim>
 
@@ -200,9 +209,8 @@
       <h:outputText id="out_name" value="#{msg.name}:"/>
       <h:inputText id="form-name" 
                    disabled="#{WizardManager.bean.schemaFileName == null}"
-		   value="#{WizardManager.bean.formName}"
-                   maxlength="1024" 
-		   size="35"/>
+		             value="#{WizardManager.bean.formName}" onkeyup="javascript:checkDisabledState();"
+                   maxlength="1024" size="35"/>
       <h:column id="no_img_name_help"/>
       
       <h:column id="no_img_title"/>
@@ -234,7 +242,8 @@
               disabled="#{WizardManager.bean.schemaFileName == null}"
 		      value="#{WizardManager.bean.outputPathPatternForFormInstanceData}" 
 		      style="width:100%"
-		      rendered="#{WizardManager.bean.isWebForm == true}"/>
+              rendered="#{WizardManager.bean.isWebForm == true}"
+              onkeyup="javascript:checkDisabledState();" />
       <h:graphicImage id="img_form_instance_data_output_path_pattern_help"
 		      value="/images/icons/Help_icon.gif" style="cursor:help"
 		      onclick="javascript:toggleOutputPathPatternHelp()" 

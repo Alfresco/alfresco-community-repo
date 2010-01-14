@@ -31,11 +31,11 @@
 <%@ page isELIgnored="false" %>
 
 <f:verbatim>
-<script type="text/javascript" src="<%=request.getContextPath()%>/scripts/validation.js"> </script>
+<script type="text/javascript" src="<%=request.getContextPath()%>/scripts/validation.js">&#160;</script>
 
 <script type="text/javascript">
    var finishButtonPressed = false;
-   window.onload = pageLoaded;
+   window.addEvent('load',pageLoaded);
    
    function pageLoaded()
    {

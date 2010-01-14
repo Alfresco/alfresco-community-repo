@@ -40,6 +40,7 @@
   <jsp:directive.page import="org.alfresco.web.bean.wcm.CreateFormWizard"/>
 
   <f:verbatim>
+    <script type="text/javascript" src="${pageContext.request.contextPath}/scripts/validation.js">&#160;</script>
     <script type="text/javascript" src="${pageContext.request.contextPath}/scripts/upload_helper.js">&#160;</script>
     <script type="text/javascript">
       function handle_upload(target)
@@ -78,7 +79,22 @@
         {
           document.getElementById("wizard:wizard-body:add-to-list-button").disabled = false;
         }
-      } 
+      }
+
+      function checkDisabledState()
+      {
+        var disabledElement = document.getElementById("wizard:wizard-body:add-to-list-button");
+        var outputPathInput = document.getElementById("wizard:wizard-body:output-path-pattern");
+        var additionalConditionInput = document.getElementById("wizard:wizard-body:name");
+        validateOutputPathPattern(disabledElement, outputPathInput, additionalConditionInput);
+      }
+
+      function refreshAndCheck()
+      {
+    	checkDisabledState();
+    	refresh_add_to_list_button();
+      }
+       
     </script>
   </f:verbatim>
 
@@ -167,12 +183,12 @@
       <h:outputText id="name-output-text"
                     value="#{msg.name}:"/>
       <h:inputText id="name" 
-		   value="#{WizardManager.bean.renderingEngineTemplateName}"
+		           value="#{WizardManager.bean.renderingEngineTemplateName}"
                    disabled="#{WizardManager.bean.renderingEngineTemplateFileName == null}"
                    maxlength="1024" 
-		   size="35"
-                   onkeyup="refresh_add_to_list_button();"
-                   onchange="refresh_add_to_list_button();"/>
+		           size="35"
+                   onkeyup="javascript:refreshAndCheck();"
+                   onchange="javascript:refreshAndCheck();"/>
       <h:column id="name-help"/>
 
       <h:outputText id="no_graphic_image_title" value=""/>
@@ -224,10 +240,10 @@
                     value="#{msg.output_path_pattern}:"/>
       <h:inputText id="output-path-pattern" 
                    disabled="#{WizardManager.bean.renderingEngineTemplateFileName == null}"
-		   value="#{WizardManager.bean.outputPathPatternForRendition}"
-		   style="width:100%;"
-                   onkeyup="refresh_add_to_list_button();"
-                   onchange="refresh_add_to_list_button();"/>
+		           value="#{WizardManager.bean.outputPathPatternForRendition}"
+		           style="width:100%;"
+                   onkeyup="javascript:refreshAndCheck();"
+                   onchange="javascript:refreshAndCheck();"/>
       <h:graphicImage id="graphic_image_output_path_pattern_help"
 		      value="/images/icons/Help_icon.gif" style="cursor:help"
 		      onclick="javascript:toggleOutputPathPatternHelp()" />

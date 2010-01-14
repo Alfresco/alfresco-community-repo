@@ -32,34 +32,25 @@
 
 <f:verbatim>
 
-<script type="text/javascript" src="<%=request.getContextPath()%>/scripts/validation.js"> </script>
-
+<script type="text/javascript" src="<%=request.getContextPath()%>/scripts/validation.js">&#160;</script>
 <script type="text/javascript">
-   window.onload = pageLoaded;
+   window.addEvent('load',pageLoaded);
    
    function pageLoaded()
    {
       document.getElementById("dialog:dialog-body:title").focus();
-      checkButtonState();
+      checkDisabledState();
    }
 
-   function checkButtonState()
+   function checkDisabledState()
    {
-	  var name = document.getElementById("dialog:dialog-body:title");
-	  var filepattern = document.getElementById("dialog:dialog-body:filepattern");
-	  var description = document.getElementById("dialog:dialog-body:description");
-
-	  if (!validateName(name, "", false) || filepattern.value.length == 0 || description.value.length > 1024)
-      {
-         document.getElementById("dialog:finish-button").disabled = true;
-      }
-      else
-      {
-         document.getElementById("dialog:finish-button").disabled = false;
-      }
+      var disabledElement = document.getElementById('dialog:finish-button');
+      var outputPathInput = document.getElementById('dialog:dialog-body:filepattern');
+      var additionalConditionInput = document.getElementById('dialog:dialog-body:title');
+      var description = document.getElementById("dialog:dialog-body:description");
+      validateOutputPathPattern(disabledElement, outputPathInput, additionalConditionInput);
+      disabledElement.disabled = (disabledElement.disabled || description.value.length > 1024 || !validateName(name, "", false));
    }
-   
-   
 </script>
 </f:verbatim>
 
@@ -90,7 +81,7 @@
             </td>
             <td>
                </f:verbatim>
-               <h:inputText id="title" value="#{DialogManager.bean.title}" size="45" maxlength="1024" onchange="javascript:checkButtonState();" onkeyup="javascript:checkButtonState();" />
+               <h:inputText id="title" value="#{DialogManager.bean.title}" size="45" maxlength="1024" onchange="javascript:checkDisabledState();" onkeyup="javascript:checkDisabledState();" />
                <f:verbatim>
             </td>
          </tr>
@@ -103,7 +94,7 @@
             </td>
             <td>
                </f:verbatim>
-               <h:inputTextarea id="description" value="#{DialogManager.bean.description}" rows="3" cols="42" onchange="javascript:checkButtonState();" onkeyup="javascript:checkButtonState();" />
+               <h:inputTextarea id="description" value="#{DialogManager.bean.description}" rows="3" cols="42" onchange="javascript:checkDisabledState();" onkeyup="javascript:checkDisabledState();" />
                <f:verbatim>
             </td>
          </tr>
@@ -132,7 +123,7 @@
       </table>
       <table cellpadding="3" cellspacing="2" border="0">
          <tr>
-            <td align="left" width=16>
+            <td align="left" width="16">
                </f:verbatim>
                <h:graphicImage value="/images/icons/required_field.gif" alt="#{msg.required_field}" />
                <f:verbatim>
@@ -146,7 +137,7 @@
             </td>
             <td>
                </f:verbatim>
-               <h:inputText id="filepattern" value="#{DialogManager.bean.outputPathPattern}" size="70" maxlength="1024" onchange="javascript:checkButtonState();" onkeyup="javascript:checkButtonState();" />
+               <h:inputText id="filepattern" value="#{DialogManager.bean.outputPathPattern}" size="70" maxlength="1024" onchange="javascript:checkDisabledState();" onkeyup="javascript:checkDisabledState();" />
                <h:graphicImage value="/images/icons/Help_icon.gif" style="vertical-align:-20%;padding-left:8px;cursor:help" onclick="javascript:toggleOutputPathPatternHelp()" />
                <f:verbatim>
             </td>

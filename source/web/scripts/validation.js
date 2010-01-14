@@ -295,5 +295,32 @@ function decode(str)
     }
 
     return s0;
+}
 
+/**
+ * This function validates Output Path Pattern parameter for Create Web Site and
+ * Create Form Wizards
+ * 
+ * @param disablingElement -
+ *            some input control for disabling if Pattern parameter is not valid
+ * @param outputPathInput -
+ *            input that contains Pattern parameter
+ * @param additionalConditionInput -
+ *            input that contains additional parameter for enabling
+ *            disablingElement. If this parameter is 'null' then
+ *            disablingElement will be enabled
+ */
+function validateOutputPathPattern(disabledElement, outputPathInput, additionalConditionInput)
+{
+   var path = (null != outputPathInput) ? (outputPathInput.value) : (null);
+   var pattern = new RegExp("^([\\s\u0020]*)([^\\s\\u0020]+)([^\\0]*)$", "");
+   if ((null == path) || ("" == path) || !pattern.test(path))
+   {
+      disabledElement.disabled = true;
+   }
+   else
+   {
+      value = (null != additionalConditionInput) ? (additionalConditionInput.value) : (null);
+      disabledElement.disabled = (null != value) ? (("" == value.trim()) || !pattern.test(value)) : (false);
+   }
 }

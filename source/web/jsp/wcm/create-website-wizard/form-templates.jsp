@@ -30,51 +30,67 @@
 <%@ page buffer="32kb" contentType="text/html;charset=UTF-8" %>
 <%@ page isELIgnored="false" %>
 
-
 <f:verbatim>
-
-<script type="text/javascript" src="<%=request.getContextPath()%>/scripts/validation.js"> </script>
-
+<script type="text/javascript" src="${pageContext.request.contextPath}/scripts/validation.js">&#160;</script>
 <script type="text/javascript">
-   window.onload = pageLoaded;
-   
-   function pageLoaded()
+   var length = 0;
+   var outputPathPatterns = new Array();
+
+   window.addEvent('load', accumulateEmptyPatternFields);
+
+   function accumulateEmptyPatternFields()
    {
-      checkButtonState();
+      for(var i = 0, element = getElement(i); null != element; i++, element = getElement(i))
+      {
+         if (isEmpty(element))
+         {
+            addElement(element);
+         }
+      }
+      document.getElementById("dialog:finish-button").disabled = length > 0;
    }
 
-   function checkButtonState(control)
+   function getElement(number)
    {
-        var outputPatterns = $("dialog:dialog-body:templates").getElements('input[name^=dialog:dialog-body:templates]');
+      var id = "dialog:dialog-body:templates:" + number + ":in-01";
+      return document.getElementById(id);
+   }
 
-        var disable = false;
-        for (var i = 0; i < outputPatterns.length; i++)
-        {
-            if (outputPatterns[i].value.length == 0)
-            {
-                disable = true;
-                break;
-            }
-        }
-	  
-	  
-        if (disable)
-        {
-            document.getElementById("dialog:finish-button").disabled = true;
-        }
-        else
-        {
-            document.getElementById("dialog:finish-button").disabled = false;
-        }
-    }
+   function checkDisabledState(element)
+   {
+      if (isEmpty(element))
+      {
+         if ("undefined" == typeof(outputPathPatterns[element.id]))
+         {
+            addElement(element);
+         }
+      }
+      else
+      {
+         if ("undefined" != typeof(outputPathPatterns[element.id]))
+         {
+            length--;
+            delete outputPathPatterns[element.id];
+         }
+      }
+      document.getElementById("dialog:finish-button").disabled = length > 0;
+   }
 
-   
+   function isEmpty(element)
+   {
+       var disabledElement = new Object();
+       disabledElement.disabled = false;
+       validateOutputPathPattern(disabledElement, element, null);
+       return disabledElement.disabled;
+   }
+
+   function addElement(element)
+   {
+      length++;
+      outputPathPatterns[element.id] = element;
+   }
 </script>
 </f:verbatim>
-
-
-
-
 
 <h:panelGrid id="grid-1" columns="1" cellpadding="2" cellpadding="2" width="100%">
    <%-- Template selection list --%>
@@ -113,9 +129,10 @@
                <f:facet name="header">
                   <h:outputText id="head-2" value="#{msg.output_path_pattern}" />
                </f:facet>
+               <h:graphicImage value="/images/icons/required_field.gif" alt="#{msg.required_field}" /><h:outputLabel value=" " />
                <h:inputText id="in-01" value="#{row.outputPathPattern}" size="70" maxlength="1024" 
-                                       onchange="javascript:checkButtonState(this);"
-                                       onkeyup="javascript:checkButtonState(this);" />
+                                       onchange="javascript:checkDisabledState(this);"
+                                       onkeyup="javascript:checkDisabledState(this);" />
             </h:column>
             <h:column>
                <a:actionLink id="act-01" actionListener="#{DialogManager.bean.removeTemplate}" image="/images/icons/delete.gif"

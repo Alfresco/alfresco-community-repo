@@ -554,8 +554,9 @@ function getSearchResults(term, maxResults, siteId, containerId)
                   break;
                
                default:
-                  luceneQuery += "(TEXT:\"" + t + "\"" +        // full text
-                                 " @cm\\:name:\"" + t + "\"" +  // name property
+                  luceneQuery += "(TEXT:\"" + t + "\"" +          // full text
+                                 " @cm\\:name:\"" + t + "\"" +    // name property
+                                 " @cm\\:title:\"" + t + "\"" +   // title property
                                  " @lnk\\:title:\"" + t + "\"" +  // link title
                                  " @lnk\\:description:\"" + t + "\"" +  // link description
                                  " PATH:\"/cm:taggable/cm:" + search.ISO9075Encode(t) + "/member\"" + // tags

@@ -108,6 +108,7 @@ function main()
       {
          from += " " + json.get("start");
          to += " " + json.get("end");
+         allday = ''
       }
       from = new Date(from);
       to = new Date(to);
@@ -156,7 +157,7 @@ function main()
        description : json.get('desc'),
        dtstart : fromIsoDate+ 'T' +json.get('start'),
        dtend : toIsoDate + 'T' +json.get('end'),
-       allday : (json.isNull("allday")) ? false : (json.get('allday')=='on') ? true : false,
+       allday : (json.isNull("allday")) ? "" : (json.get('allday')=='on') ? true : "",
        uri : "calendar/event/" + params.siteid + "/" + event.name,
        tags : tags
    }

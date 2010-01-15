@@ -48,7 +48,7 @@ function getDuration(dtStartDate,dtEndDate)
     dateDiff[WEEK] = Math.floor(timediff / (1000 * 60 * 60 * 24 * 7));
     timediff -= dateDiff[WEEK] * (1000 * 60 * 60 * 24 * 7);
 
-    dateDiff[DAY] = (Math.floor(timediff / (1000 * 60 * 60 * 24))+1); 
+    dateDiff[DAY] = (Math.floor(timediff / (1000 * 60 * 60 * 24))); 
     timediff -= dateDiff[DAY] * (1000 * 60 * 60 * 24);
 
     dateDiff[HOUR] = Math.floor(timediff / (1000 * 60 * 60)); 

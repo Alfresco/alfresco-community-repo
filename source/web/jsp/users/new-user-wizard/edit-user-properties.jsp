@@ -55,7 +55,7 @@
                       styleClass="selector" />
 
    <h:outputText value="#{msg.home_space_name}:"/>
-   <h:inputText id="homeSpaceName" value="#{WizardManager.bean.homeSpaceName}" size="35" maxlength="1024" onkeyup="updateButtonState();" onchange="updateButtonState();" />
+   <h:inputText id="homeSpaceName" value="#{WizardManager.bean.homeSpaceName}" size="35" maxlength="1024" />
 </h:panelGrid>
 
 <f:verbatim>

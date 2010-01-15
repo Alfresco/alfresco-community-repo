@@ -96,7 +96,7 @@ public final class Preferences implements Serializable
       try
       {
          FacesContext context = FacesContext.getCurrentInstance();
-         tx = Repository.getUserTransaction(context, true);
+         tx = Repository.getUserTransaction(context);
          tx.begin();
          
          getNodeService().setProperty(this.preferencesRef, qname, value);

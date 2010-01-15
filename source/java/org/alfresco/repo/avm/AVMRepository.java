@@ -1284,7 +1284,8 @@ public class AVMRepository
         List<AVMStoreDescriptor> result = new ArrayList<AVMStoreDescriptor>(storeEntities.size());
         for (AVMStoreEntity storeEntity : storeEntities)
         {
-            AVMStore store = new AVMStoreImpl();
+            AVMStoreImpl store = new AVMStoreImpl();
+            store.setId(storeEntity.getId());
             store.setName(storeEntity.getName());
             result.add(store.getDescriptor());
         }

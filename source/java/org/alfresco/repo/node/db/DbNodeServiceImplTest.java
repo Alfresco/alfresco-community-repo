@@ -38,8 +38,6 @@ import org.springframework.extensions.surf.util.I18NUtil;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.node.BaseNodeServiceTest;
-import org.alfresco.repo.node.StoreArchiveMap;
-import org.alfresco.repo.node.cleanup.NodeCleanupRegistry;
 import org.alfresco.repo.node.db.NodeDaoService.NodePropertyHandler;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
@@ -50,7 +48,6 @@ import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.MLText;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.service.transaction.TransactionService;
@@ -73,7 +70,6 @@ public class DbNodeServiceImplTest extends BaseNodeServiceTest
     {
         // Force cascading
         DbNodeServiceImpl dbNodeServiceImpl = (DbNodeServiceImpl) applicationContext.getBean("dbNodeServiceImpl");
-        dbNodeServiceImpl.setCascadeInTransaction(true);
         
         return (NodeService) applicationContext.getBean("dbNodeService");
     }
@@ -400,49 +396,6 @@ public class DbNodeServiceImplTest extends BaseNodeServiceTest
                 TYPE_QNAME_TEST_CONTENT).getChildRef();
         // Delete the node
         nodeService.deleteNode(nodeRef);
-    }
-    
-    public void testCleanup() throws Exception
-    {
-        @SuppressWarnings("unchecked")
-        StoreArchiveMap storeArchiveMap = (StoreArchiveMap) applicationContext.getBean("storeArchiveMap");
-        DbNodeServiceImpl ns = (DbNodeServiceImpl) applicationContext.getBean("dbNodeServiceImpl");
-        ns.setCascadeInTransaction(false);
-        
-        NodeRef parentNodeRef = nodeService.createNode(
-                rootNodeRef,
-                ASSOC_TYPE_QNAME_TEST_CHILDREN,
-                QName.createQName(NAMESPACE, this.getName()),
-                ContentModel.TYPE_FOLDER).getChildRef();
-        NodeRef childNodeRef = nodeService.createNode(
-                parentNodeRef,
-                ContentModel.ASSOC_CONTAINS,
-                QName.createQName(NAMESPACE, this.getName()),
-                ContentModel.TYPE_FOLDER).getChildRef();
-        
-        // Ensure that the archive feature is enabled
-        StoreRef archiveStoreRef = ns.createStore("test", getName() + "-" + System.currentTimeMillis());
-        storeArchiveMap.put(parentNodeRef.getStoreRef(), archiveStoreRef);
-        
-        // Delete parent.  Cascade is OFF, so children should be left in their current store.
-        ns.deleteNode(parentNodeRef);
-        // Check that the node n1 is in the archive store
-        assertFalse("Parent should be deleted", ns.exists(parentNodeRef));
-        NodeRef parentArchiveRef = new NodeRef(archiveStoreRef, parentNodeRef.getId());
-        assertTrue("Parent should be in the archive store", ns.exists(parentArchiveRef));
-        
-        // Force a commit here
-        setComplete();
-        endTransaction();
-        
-        NodeCleanupRegistry nodeCleanupRegistry = new NodeCleanupRegistry();
-        DbNodeServiceImpl.MoveChildrenToCorrectStore worker = new DbNodeServiceImpl.MoveChildrenToCorrectStore();
-        worker.setTransactionService(transactionService);
-        worker.setDbNodeService(ns);
-        worker.setNodeDaoService(nodeDaoService);
-        
-        // Run cleanup
-        worker.doClean();
     }
     
     /**

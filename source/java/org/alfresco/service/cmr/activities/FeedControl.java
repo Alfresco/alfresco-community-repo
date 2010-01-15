@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2008 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -36,10 +36,16 @@ public class FeedControl implements Serializable
     
     public FeedControl(String siteId, String appToolId)
     {
-        if (siteId == null) siteId = "";
+        if (siteId == null)
+        {
+            siteId = "";
+        }
         this.siteId = siteId;
         
-        if (appToolId == null) appToolId = "";
+        if (appToolId == null)
+        {
+            appToolId = "";
+        }
         this.appToolId = appToolId;
     }
     

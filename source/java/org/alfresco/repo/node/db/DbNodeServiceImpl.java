@@ -42,12 +42,12 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.domain.Node;
 import org.alfresco.repo.node.AbstractNodeServiceImpl;
 import org.alfresco.repo.node.StoreArchiveMap;
-import org.alfresco.repo.node.cleanup.AbstractNodeCleanupWorker;
-import org.alfresco.repo.node.db.NodeDaoService.NodeRefQueryCallback;
 import org.alfresco.repo.node.index.NodeIndexer;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.transaction.RetryingTransactionHelper;
-import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
+import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
+import org.alfresco.repo.transaction.TransactionListener;
+import org.alfresco.repo.transaction.TransactionListenerAdapter;
+import org.alfresco.repo.transaction.TransactionalResourceHelper;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.AssociationDefinition;
 import org.alfresco.service.cmr.dictionary.ChildAssociationDefinition;
@@ -94,13 +94,12 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
     private NodeDaoService nodeDaoService;
     private StoreArchiveMap storeArchiveMap;
     private NodeService avmNodeService;
-    private NodeIndexer nodeIndexer;
-    private boolean cascadeInTransaction;
+    private NodeIndexer nodeIndexer; 
+    private final static String KEY_PRE_COMMIT_ADD_NODE = "DbNodeServiceImpl.PreCommitAddNode";
     
     public DbNodeServiceImpl()
     {
         storeArchiveMap = new StoreArchiveMap();        // in case it is not set
-        cascadeInTransaction = true;
     }
 
     public void setNodeDaoService(NodeDaoService nodeDaoService)
@@ -128,15 +127,11 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
     }
 
     /**
-     * Set whether store delete and archive operations must cascade to all children
-     * in the same transaction.
-     * 
-     * @param cascadeInTransaction      <tt>true</tt> (default) to cascade during
-     *                                  delete and archive
+     * @deprecated              the functionality did not see wide enough usage to warrant the maintenance
      */
     public void setCascadeInTransaction(boolean cascadeInTransaction)
     {
-        this.cascadeInTransaction = cascadeInTransaction;
+        logger.warn("NodeService property 'cascadeInTransaction' is no longer available.");
     }
 
     /**
@@ -339,12 +334,81 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         addMissingAspects(childNodePair, propertiesBefore, propertiesAfter);
         addMissingAspects(parentNodePair, assocTypeQName);
         
+        /**
+         * track new node ref so we can validate its path. 
+         * 
+         * it may be valid now, but who knows what will happen between 
+         * now and commit!
+         */ 
+        trackNewNodeRef(childAssocRef.getChildRef());
+        
         // Index
         nodeIndexer.indexCreateNode(childAssocRef);
         
         // done
         return childAssocRef;
     }
+    
+    /**
+     * Track a new node ref so we can validate its path at commit time. 
+     * 
+     * It may have a valid path now, but who knows what will happen between 
+     * now and commit! 
+     * 
+     * @param newNodeRef the node to track
+     */
+    private void trackNewNodeRef(NodeRef newNodeRef)
+    {
+//        // bind a pre-commit listener to validate any new node associations
+//        Set<NodeRef> newNodes = TransactionalResourceHelper.getSet(KEY_PRE_COMMIT_ADD_NODE);
+//        if (newNodes.size() == 0)
+//        {
+//            PreCommitNewNodeListener listener = new PreCommitNewNodeListener();
+//            AlfrescoTransactionSupport.bindListener(listener);
+//        }
+//        newNodes.add(newNodeRef);
+    }
+    
+    /**
+     * loose interest in tracking a node ref
+     * 
+     * for example if its been deleted or moved
+     * @param nodeRef the node ref to untrack
+     */
+    private void untrackNodeRef(NodeRef nodeRef)
+    {
+//        Set<NodeRef> newNodes = TransactionalResourceHelper.getSet(KEY_PRE_COMMIT_ADD_NODE);
+//        if (newNodes.size() > 0)
+//        {
+//            newNodes.remove(nodeRef);
+//        }
+    }
+    
+    private class PreCommitNewNodeListener extends TransactionListenerAdapter
+    {
+        @Override
+        public void beforeCommit(boolean readOnly)
+        {
+            if (readOnly)
+            {
+                return;
+            }
+            Set<NodeRef> nodeRefs = TransactionalResourceHelper.getSet(KEY_PRE_COMMIT_ADD_NODE);
+//            for (NodeRef nodeRef : nodeRefs)
+//            {
+//                // Need to check for exists the node may be created 
+//                // and deleted within the same transaction
+//                if(exists(nodeRef))
+//                {
+//                    System.out.println("Checking bideRef " + nodeRef);
+//                    // Check that the primary path is valid for this node
+//                    getPaths(nodeRef, false);
+//                }
+//            }
+            nodeRefs.clear();            
+        }
+    }
+    
 
     /**
      * Adds all the default aspects and properties required for the given type.
@@ -798,10 +862,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
             invokeBeforeDeleteNode(nodeRef);
 
             // Cascade delecte as required
-            if (cascadeInTransaction)
-            {
-                deletePrimaryChildrenNotArchived(nodePair, true);
-            }
+            deletePrimaryChildrenNotArchived(nodePair);
             // perform a normal deletion
             nodeDaoService.deleteNode(nodeId);
             // Invoke policy behaviours
@@ -820,17 +881,18 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
              */
             archiveNode(nodeRef, archiveStoreRef);
         }
+        
+        // remove the deleted node from the list of new nodes
+        untrackNodeRef(nodeRef);
+
     }
     
     /**
      * delete primary children - private method for deleteNode.
      * 
      * recurses through children when deleting a node.   Does not archive.
-     * 
-     * @param nodePair
-     * @param cascade
      */
-    private void deletePrimaryChildrenNotArchived(Pair<Long, NodeRef> nodePair, boolean cascade)
+    private void deletePrimaryChildrenNotArchived(Pair<Long, NodeRef> nodePair)
     {
         Long nodeId = nodePair.getFirst();
         // Get the node's primary children
@@ -859,10 +921,10 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
        };
 
        // Get all the QNames to remove
-        nodeDaoService.getPrimaryChildAssocs(nodeId, callback);
-        // Each child must be deleted
-        for (Pair<Long, NodeRef> childNodePair : childNodePairs)
-        {
+       nodeDaoService.getPrimaryChildAssocs(nodeId, callback);
+       // Each child must be deleted
+       for (Pair<Long, NodeRef> childNodePair : childNodePairs)
+       {
             // Fire node policies.  This ensures that each node in the hierarchy gets a notification fired.
             Long childNodeId = childNodePair.getFirst();
             NodeRef childNodeRef = childNodePair.getSecond();
@@ -872,16 +934,16 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
             
             invokeBeforeDeleteNode(childNodeRef);
             
-            // Cascade first, if required.
+            // Cascade first
             // This ensures that the beforeDelete policy is fired for all nodes in the hierarchy before
             // the actual delete starts.
-            if (cascade)
-            {
-                deletePrimaryChildrenNotArchived(childNodePair, true);
-            }
+            deletePrimaryChildrenNotArchived(childNodePair);
             // Delete the child
             nodeDaoService.deleteNode(childNodeId);
             invokeOnDeleteNode(childParentAssocRef, childNodeType, childNodeQNames, false);
+            
+            // loose interest in tracking this node ref
+            untrackNodeRef(childNodeRef);
         }
     }
 
@@ -2197,12 +2259,8 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
             invokeOnMoveNode(oldParentAssocRef, newParentAssocRef);
         }
         
-        // If we have to cascade in the transaction, then pull the children over to the new store
-        if (cascadeInTransaction)
-        {
-            // Pull children to the new store
-            pullNodeChildrenToSameStore(newNodeToMovePair, true, true);
-        }
+        // Pull children to the new store
+        pullNodeChildrenToSameStore(newNodeToMovePair, true);
         
         // Done
         return newParentAssocRef;
@@ -2231,7 +2289,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
      * do not need to be remade.  If the children are in the same store, only the <code>indexChildren</code>
      * value is needed.
      */
-    private void pullNodeChildrenToSameStore(Pair<Long, NodeRef> nodePair, boolean cascade, boolean indexChildren)
+    private void pullNodeChildrenToSameStore(Pair<Long, NodeRef> nodePair, boolean indexChildren)
     {
         Long nodeId = nodePair.getFirst();
         NodeRef nodeRef = nodePair.getSecond();
@@ -2291,7 +2349,6 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
             // Index
             if (indexChildren)
             {
-                nodeIndexer.indexDeleteNode(oldParentAssocPair.getSecond());
                 nodeIndexer.indexCreateNode(newParentAssocPair.getSecond());
             }
             else
@@ -2302,11 +2359,8 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
             // Fire node policies.  This ensures that each node in the hierarchy gets a notification fired.
             invokeOnDeleteNode(oldParentAssocPair.getSecond(), childNodeTypeQName, childNodeAspectQNames, true);
             invokeOnCreateNode(newParentAssocPair.getSecond());
-            // Cascade, if required
-            if (cascade)
-            {
-                pullNodeChildrenToSameStore(newChildNodePair, cascade, indexChildren);
-            }
+            // Cascade
+            pullNodeChildrenToSameStore(newChildNodePair, indexChildren);
         }
     }
     
@@ -2417,108 +2471,5 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         {
             nodeDaoService.setChildNameUnique(assocId, newName);
         }
-    }
-
-    public static class MoveChildrenToCorrectStore extends AbstractNodeCleanupWorker
-    {
-        @Override
-        protected List<String> doCleanInternal() throws Throwable
-        {
-            return dbNodeService.moveChildrenToCorrectStore();
-        }
-    };
-    
-    private List<String> moveChildrenToCorrectStore()
-    {
-        List<String> results = new ArrayList<String>(1000);
-        // Repeat the process for each store
-        List<Pair<Long, StoreRef>> storePairs = nodeDaoService.getStores();
-        for (Pair<Long, StoreRef> storePair : storePairs)
-        {
-            List<String> storeResults = moveChildrenToCorrectStore(storePair.getFirst());
-            results.addAll(storeResults);
-        }
-        return results;
-    }
-    
-    private List<String> moveChildrenToCorrectStore(final Long storeId)
-    {
-        final List<Pair<Long, NodeRef>> parentNodePairs = new ArrayList<Pair<Long, NodeRef>>(100);
-        final NodeRefQueryCallback callback = new NodeRefQueryCallback()
-        {
-            public boolean handle(Pair<Long, NodeRef> nodePair)
-            {
-                parentNodePairs.add(nodePair);
-                return true;
-            }
-        };
-        RetryingTransactionCallback<Object> getNodesCallback = new RetryingTransactionCallback<Object>()
-        {
-            public Object execute() throws Throwable
-            {
-                nodeDaoService.getNodesWithChildrenInDifferentStore(storeId, Long.MIN_VALUE, 100, callback);
-                // Done
-                return null;
-            }
-        };
-        transactionService.getRetryingTransactionHelper().doInTransaction(getNodesCallback, true, true);
-        // Process the nodes in random order
-        Collections.shuffle(parentNodePairs);
-        // Iterate and operate
-        List<String> results = new ArrayList<String>(100);
-        for (final Pair<Long, NodeRef> parentNodePair : parentNodePairs)
-        {
-            RetryingTransactionCallback<String> fixNodesCallback = new RetryingTransactionCallback<String>()
-            {
-                public String execute() throws Throwable
-                {
-                    // Pull the children to the same store with full indexing - but don't cascade.
-                    pullNodeChildrenToSameStore(parentNodePair, true, true);
-                    // Done
-                    return null;
-                }
-            };
-            RetryingTransactionHelper txnHelper = transactionService.getRetryingTransactionHelper();
-            txnHelper.setMaxRetries(1);
-            try
-            {
-                txnHelper.doInTransaction(fixNodesCallback, false, true);
-                String msg = 
-                    "Moved child nodes to parent node's store: \n" +
-                    "   Parent node: " + parentNodePair.getFirst();
-                results.add(msg);
-            }
-            catch (Throwable e)
-            {
-                String msg = 
-                    "Failed to move child nodes to parent node's store." +
-                    "  Set log level to WARN for this class to get exception log: \n" +
-                    "   Parent node: " + parentNodePair.getFirst() + "\n" +
-                    "   Error:       " + e.getMessage();
-                // It failed; do a full log in WARN mode
-                if (logger.isWarnEnabled())
-                {
-                    logger.warn(msg, e);
-                }
-                else
-                {
-                    logger.error(msg);
-                }
-                results.add(msg);
-            }
-        }
-        // Done
-        if (logger.isDebugEnabled())
-        {
-            StringBuilder sb = new StringBuilder(256);
-            sb.append("Moved children to correct stores: \n")
-              .append("  Results:\n");
-            for (String msg : results)
-            {
-                sb.append("  ").append(msg).append("\n");
-            }
-            logger.debug(sb.toString());
-        }
-        return results;
     }
 }

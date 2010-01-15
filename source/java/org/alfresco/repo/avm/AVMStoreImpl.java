@@ -43,6 +43,7 @@ import org.alfresco.repo.avm.util.RawServices;
 import org.alfresco.repo.avm.util.SimplePath;
 import org.alfresco.repo.domain.DbAccessControlList;
 import org.alfresco.repo.domain.PropertyValue;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.permissions.ACLCopyMode;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.service.cmr.avm.AVMBadArgumentException;
@@ -1273,8 +1274,8 @@ public class AVMStoreImpl implements AVMStore
     {
         // Get the creator ensuring that nulls are not hit
         PropertyValue creatorValue = getProperty(ContentModel.PROP_CREATOR);
-        String creator = creatorValue == null ? "system" : (String) creatorValue.getValue(DataTypeDefinition.TEXT);
-        creator = (creator == null) ? "system" : creator;
+        String creator = (creatorValue == null ? AuthenticationUtil.SYSTEM_USER_NAME : (String) creatorValue.getValue(DataTypeDefinition.TEXT));
+        creator = (creator == null ? AuthenticationUtil.SYSTEM_USER_NAME : creator);
         // Get the created date ensuring that nulls are not hit
         PropertyValue createdValue = getProperty(ContentModel.PROP_CREATED);
         Date created = createdValue == null ? (new Date()) : (Date) createdValue.getValue(DataTypeDefinition.DATE);

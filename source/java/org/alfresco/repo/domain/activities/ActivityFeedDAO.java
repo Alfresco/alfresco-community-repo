@@ -33,6 +33,13 @@ import java.util.List;
  */
 public interface ActivityFeedDAO extends ActivitiesDAO
 {
+    public static final int MAX_LEN_USER_ID = 255;            // needs to match schema: feed_user_id, post_user_id
+    public static final int MAX_LEN_SITE_ID = 255;            // needs to match schema: site_network
+    public static final int MAX_LEN_ACTIVITY_TYPE = 255;      // needs to match schema: activity_type
+    public static final int MAX_LEN_ACTIVITY_SUMMARY = 4000;  // needs to match schema: activity_summary
+    public static final int MAX_LEN_ACTIVITY_FORMAT = 255;    // needs to match schema: activity_format
+    public static final int MAX_LEN_APP_TOOL_ID = 36;         // needs to match schema: app_tool
+    
     public long insertFeedEntry(ActivityFeedEntity activityFeed) throws SQLException;
     
     public int deleteFeedEntries(Date keepDate) throws SQLException;

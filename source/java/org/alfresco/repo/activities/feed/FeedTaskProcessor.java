@@ -45,6 +45,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
+import org.alfresco.repo.domain.activities.ActivityFeedDAO;
 import org.alfresco.repo.domain.activities.ActivityFeedEntity;
 import org.alfresco.repo.domain.activities.ActivityPostEntity;
 import org.alfresco.repo.domain.activities.FeedControlEntity;
@@ -113,7 +114,7 @@ public abstract class FeedTaskProcessor
             Map<String, Set<String>> siteConnectedUsers = new TreeMap<String, Set<String>>();
             
             Map<String, Template> templateCache = new TreeMap<String, Template>();
-                
+            
             // for each activity post ...
             for (ActivityPostEntity activityPost : activityPosts)
             {
@@ -179,7 +180,7 @@ public abstract class FeedTaskProcessor
                         }
                     }
                 }
-                                   
+                
                 if (fmTemplates.size() == 0)
                 {
                     logger.error(">>> Skipping activity post " + activityPost.getId() + " since no specific/generic templates for activityType: " + activityType );
@@ -199,18 +200,17 @@ public abstract class FeedTaskProcessor
                     continue;
                 }
                 
+                String thisSite = activityPost.getSiteNetwork();
+                
                 model.put("activityType", activityPost.getActivityType());
-                model.put("siteNetwork", activityPost.getSiteNetwork());
+                model.put("siteNetwork", thisSite);
                 model.put("userId", activityPost.getUserId());
                 model.put("id", activityPost.getId());
                 model.put("date", activityPost.getPostDate()); // post date rather than time that feed is generated
                 model.put("xmldate", new ISO8601DateFormatMethod());
                 model.put("repoEndPoint", ctx.getRepoEndPoint());
                 
-                // Get the members of this site
-                String thisSite = activityPost.getSiteNetwork();
-
-                // Save hammering the repository by reusing cached site members
+                // Get the members of this site - save hammering the repository by reusing cached site members
                 Set<String> connectedUsers = siteConnectedUsers.get(thisSite);
                 if (connectedUsers == null)
                 {
@@ -237,7 +237,7 @@ public abstract class FeedTaskProcessor
                         }
                     }
                 }
-                                
+                
                 try 
                 { 
                     startTransaction();
@@ -258,15 +258,15 @@ public abstract class FeedTaskProcessor
                         }
                         
                         // filter based on opt-out feed controls (if any)
-                     	if (! acceptActivity(activityPost, feedControls))
-                     	{
-                     	    excludedConnections++;
-                     	}
-                     	else
-                    	{ 
+                        if (! acceptActivity(activityPost, feedControls))
+                        {
+                            excludedConnections++;
+                        }
+                        else
+                        { 
                             for (String fmTemplate : fmTemplates)
                             {
-                                // determine format - based on template naming convention   
+                                // determine format - based on template naming convention
                                 String formatFound = null;
                                 for (String format : formats)
                                 {
@@ -275,7 +275,7 @@ public abstract class FeedTaskProcessor
                                         formatFound = format;
                                         break;
                                     }
-                                }    
+                                }
                                 
                                 if (formatFound == null)
                                 {
@@ -283,48 +283,55 @@ public abstract class FeedTaskProcessor
                                     logger.warn("Unknown format for: " + fmTemplate + " default to '"+formatFound+"'");
                                 }
                                 
-        	                    ActivityFeedEntity feed = new ActivityFeedEntity();
-        	                    
-        	                    // Generate activity feed summary 
-        	                    feed.setFeedUserId(connectedUser);
-        	                    feed.setPostUserId(postingUserId);
-        	                    feed.setActivityType(activityType);
-        	                    
-        	                    if (formatFound.equals("json"))
-        	                    {
-        	                        // allows generic JSON template to simply pass straight through
-        	                        model.put("activityData", activityPost.getActivityData());
-        	                    }
-        	                    
-        	                    String activitySummary = processFreemarker(templateCache, fmTemplate, cfg, model);   
-        	                    if (! activitySummary.equals(""))
-        	                    {
-            	                    feed.setActivitySummary(activitySummary);
-            	                    feed.setActivitySummaryFormat(formatFound);
-            	                    feed.setSiteNetwork(thisSite);
-            	                    feed.setAppTool(activityPost.getAppTool());
-            	                    feed.setPostDate(activityPost.getPostDate());
-            	                    feed.setPostId(activityPost.getId());
-            	                    feed.setFeedDate(new Date());
- 
-            	                    // Insert activity feed
-            	                    insertFeedEntry(feed); // ignore returned feedId
-            	                    
-            	                    totalGenerated++;
-        	                    }
-        	                    else
-        	                    {
-        	                        if (logger.isDebugEnabled())
+                                ActivityFeedEntity feed = new ActivityFeedEntity();
+                                
+                                // Generate activity feed summary 
+                                feed.setFeedUserId(connectedUser);
+                                feed.setPostUserId(postingUserId);
+                                feed.setActivityType(activityType);
+                                
+                                if (formatFound.equals("json"))
+                                {
+                                    // allows generic JSON template to simply pass straight through
+                                    model.put("activityData", activityPost.getActivityData());
+                                }
+                                
+                                String activitySummary = processFreemarker(templateCache, fmTemplate, cfg, model);
+                                if (! activitySummary.equals(""))
+                                {
+                                    if (activitySummary.length() > ActivityFeedDAO.MAX_LEN_ACTIVITY_SUMMARY)
+                                    {
+                                        logger.warn("Skip feed entry (activity post " + activityPost.getId() + ") since activity summary - exceeds " + ActivityFeedDAO.MAX_LEN_ACTIVITY_SUMMARY + " chars: " + activitySummary);
+                                    }
+                                    else
+                                    {
+                                        feed.setActivitySummary(activitySummary);
+                                        feed.setActivitySummaryFormat(formatFound);
+                                        feed.setSiteNetwork(thisSite);
+                                        feed.setAppTool(activityPost.getAppTool());
+                                        feed.setPostDate(activityPost.getPostDate());
+                                        feed.setPostId(activityPost.getId());
+                                        feed.setFeedDate(new Date());
+                                        
+                                        // Insert activity feed
+                                        insertFeedEntry(feed); // ignore returned feedId
+                                        
+                                        totalGenerated++;
+                                    }
+                                }
+                                else
+                                {
+                                    if (logger.isDebugEnabled())
                                     {
                                         logger.debug("Empty template result for activityType '" + activityType + "' using format '" + formatFound + "' hence skip feed entry (activity post " + activityPost.getId() + ")");
                                     }
-        	                    }
+                                }
                             }
-                    	}
+                        }
                     }
                     
                     updatePostStatus(activityPost.getId(), ActivityPostEntity.STATUS.PROCESSED);
-
+                    
                     commitTransaction();
                     
                     if (logger.isDebugEnabled())
@@ -366,21 +373,21 @@ public abstract class FeedTaskProcessor
     
     protected String callWebScript(String urlString, String ticket) throws MalformedURLException, URISyntaxException, IOException
     {
-    	URL url = new URL(urlString);
-    	
-    	if (logger.isDebugEnabled())
-    	{
-    	    logger.debug(">>> Request URI: " + url.toURI());
-    	}
+        URL url = new URL(urlString);
+        
+        if (logger.isDebugEnabled())
+        {
+            logger.debug(">>> Request URI: " + url.toURI());
+        }
         
         HttpURLConnection conn = (HttpURLConnection)url.openConnection();
         conn.setRequestMethod("GET");
-
+        
         if (ticket != null)
         {
-        	// add Base64 encoded authorization header
+            // add Base64 encoded authorization header
             // refer to: http://wiki.alfresco.com/wiki/Web_Scripts_Framework#HTTP_Basic_Authentication
-        	conn.addRequestProperty("Authorization", "Basic " + Base64.encodeBytes(ticket.getBytes()));
+            conn.addRequestProperty("Authorization", "Basic " + Base64.encodeBytes(ticket.getBytes()));
         }
         
         String result = null;
@@ -389,34 +396,35 @@ public abstract class FeedTaskProcessor
         
         try
         {
-	        is = conn.getInputStream();
-	        br = new BufferedReader(new InputStreamReader(is));
-	
-	        String line = null;
-	        StringBuffer sb = new StringBuffer();
-	        while(((line = br.readLine()) !=null))  {
-	        	sb.append(line);
-	        }
-	        
-	        result = sb.toString();
-	        
-	        if (logger.isDebugEnabled())
-	        {
-	            int responseCode = conn.getResponseCode();
-	            logger.debug(">>> Response code: " + responseCode);
-	        }
+            is = conn.getInputStream();
+            br = new BufferedReader(new InputStreamReader(is));
+            
+            String line = null;
+            StringBuffer sb = new StringBuffer();
+            while(((line = br.readLine()) !=null))  
+            {
+                sb.append(line);
+            }
+            
+            result = sb.toString();
+            
+            if (logger.isDebugEnabled())
+            {
+                int responseCode = conn.getResponseCode();
+                logger.debug(">>> Response code: " + responseCode);
+            }
         }
         finally
         {
-	        if (br != null) { br.close(); };
-        	if (is != null) { is.close(); };
+            if (br != null) { br.close(); };
+            if (is != null) { is.close(); };
         }
-
+        
         return result;
     }
-
+    
     protected Set<String> getSiteMembers(RepoCtx ctx, String siteId) throws Exception
-    {   
+    {
         Set<String> members = new HashSet<String>();
         if ((siteId != null) && (siteId.length() != 0))
         {
@@ -516,10 +524,10 @@ public abstract class FeedTaskProcessor
         
         return activityTemplates;
     }
-
+    
     protected Configuration getFreemarkerConfiguration(RepoCtx ctx)
-    {	
-    	Configuration cfg = new Configuration();
+    {
+        Configuration cfg = new Configuration();
         cfg.setObjectWrapper(new DefaultObjectWrapper());
         
         // custom template loader
@@ -670,7 +678,7 @@ public abstract class FeedTaskProcessor
             catch (Exception e)
             {
                 throw new RuntimeException(e);
-             }
+            }
          }
     }
 }

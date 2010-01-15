@@ -181,7 +181,7 @@
         <parameter property="longValue" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <parameter property="floatValue" jdbcType="FLOAT" javaType="java.lang.Float"/>
         <parameter property="doubleValue" jdbcType="DOUBLE" javaType="java.lang.Double"/>
-        <parameter property="stringValue" jdbcType="TEXT" javaType="java.lang.String"/>
+        <parameter property="stringValue" jdbcType="VARCHAR" javaType="java.lang.String"/>
         <parameter property="serializableValue" jdbcType="BLOB" javaType="java.io.Serializable"/>
         <parameter property="nodeId" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <parameter property="qnameId" jdbcType="BIGINT" javaType="java.lang.Long"/>
@@ -195,7 +195,7 @@
         <parameter property="longValue" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <parameter property="floatValue" jdbcType="FLOAT" javaType="java.lang.Float"/>
         <parameter property="doubleValue" jdbcType="DOUBLE" javaType="java.lang.Double"/>
-        <parameter property="stringValue" jdbcType="TEXT" javaType="java.lang.String"/>
+        <parameter property="stringValue" jdbcType="VARCHAR" javaType="java.lang.String"/>
         <parameter property="serializableValue" jdbcType="BLOB" javaType="java.io.Serializable"/>
         <parameter property="avmStoreId" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <parameter property="qnameId" jdbcType="BIGINT" javaType="java.lang.Long"/>
@@ -697,6 +697,7 @@
             avm_version_roots
         where
             avm_store_id = ?
+        order by version_id
     </select>
     
     <select id="select_AVMVersionRootsByTo" parameterMap="parameter_IdToMap" resultMap="result_AVMVersionRoot">
@@ -708,7 +709,7 @@
         where
             avm_store_id = ? and
             create_date <= ?
-        order by version_id;
+        order by version_id
         ]]>
     </select>
     
@@ -720,7 +721,7 @@
         where
             avm_store_id = ? and
             create_date >= ?
-        order by version_id;
+        order by version_id
     </select>
     
     <select id="select_AVMVersionRootsBetween" parameterMap="parameter_IdFromToMap" resultMap="result_AVMVersionRoot">
@@ -731,7 +732,7 @@
         where
             avm_store_id = ? and
             create_date between ? and ?
-        order by version_id;
+        order by version_id
     </select>
     
     <!-- Optimistic update of the version root -->

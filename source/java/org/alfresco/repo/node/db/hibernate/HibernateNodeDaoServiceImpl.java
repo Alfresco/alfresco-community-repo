@@ -3232,6 +3232,9 @@ public class HibernateNodeDaoServiceImpl
         // Done
     }
 
+    /**
+     * @deprecated                  Not performant.  Do not use.
+     */
     public void getNodesWithChildrenInDifferentStore(
             final Long storeId,
             final Long minNodeId,

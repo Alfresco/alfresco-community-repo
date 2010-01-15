@@ -316,6 +316,31 @@
    </bean>
    
    <!-- ===================================== -->
+   <!-- Rules lookup for nodes                -->
+   <!-- ===================================== -->
+
+   <!-- The cross-transaction shared cache for Parent Associations -->
+   
+   <bean name="nodeRulesSharedCache" class="org.alfresco.repo.cache.NullCache"/>
+   
+   <!-- The transactional cache for Parent Associations -->
+   
+   <bean name="nodeRulesCache" class="org.alfresco.repo.cache.TransactionalCache">
+      <property name="sharedCache">
+         <ref bean="parentAssocsSharedCache" />
+      </property>
+      <property name="cacheManager" >
+         <ref bean="transactionalEHCacheManager" />
+      </property>
+      <property name="name">
+         <value>org.alfresco.nodeRulesTransactionalCache</value>
+      </property>
+      <property name="maxCacheSize">
+         <value>2000</value>
+      </property>
+   </bean>
+   
+   <!-- ===================================== -->
    <!-- Authority container look up for users -->
    <!-- ===================================== -->
 

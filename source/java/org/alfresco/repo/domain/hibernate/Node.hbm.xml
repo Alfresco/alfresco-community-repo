@@ -581,6 +581,7 @@
          assoc.id
    </query>
    
+   <!-- WARNING: This query is not performant and should not be used. -->
    <query name="node.GetNodesWithChildrenInDifferentStore">
       select
          parent.id,

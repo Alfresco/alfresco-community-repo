@@ -5,7 +5,7 @@
     
    <!-- Rules Service -->
    
-   <bean id="ruleService" class="org.alfresco.repo.rule.RuleServiceImpl">
+   <bean id="ruleService" class="org.alfresco.repo.rule.RuleServiceImpl" init-method="init">
         <property name="nodeService">
             <ref bean="NodeService"/>
         </property>        
@@ -21,9 +21,15 @@
         <property name="dictionaryService">
             <ref bean="dictionaryService"/>
         </property>
+        <property name="policyComponent">
+            <ref bean="policyComponent"/>
+        </property>
         <property name="permissionService">
             <ref bean="permissionService"/>
         </property>
+	    <property name="nodeRulesCache">
+	        <ref bean="nodeRulesCache"/>
+	    </property>
         <property name="rulesDisabled">
             <value>false</value>
         </property>

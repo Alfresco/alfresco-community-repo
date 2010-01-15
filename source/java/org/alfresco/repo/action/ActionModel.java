@@ -6,6 +6,7 @@ public interface ActionModel
 {
     static final String ACTION_MODEL_URI            = "http://www.alfresco.org/model/action/1.0";
     static final String ACTION_MODEL_PREFIX         = "act";
+    static final QName TYPE_ACTION_BASE             = QName.createQName(ACTION_MODEL_URI, "actionbase");
     static final QName TYPE_ACTION                  = QName.createQName(ACTION_MODEL_URI, "action");
     static final QName PROP_DEFINITION_NAME         = QName.createQName(ACTION_MODEL_URI, "definitionName");
     static final QName PROP_ACTION_TITLE            = QName.createQName(ACTION_MODEL_URI, "actionTitle");

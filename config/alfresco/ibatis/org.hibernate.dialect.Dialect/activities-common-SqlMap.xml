@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 
-<!DOCTYPE sqlMap      
-    PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"      
+<!DOCTYPE sqlMap
+    PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"
     "http://ibatis.apache.org/dtd/sql-map-2.dtd">
 
 <sqlMap namespace="alfresco.activities">
@@ -9,7 +9,7 @@
    <typeAlias alias="ActivityFeed" type="org.alfresco.repo.domain.activities.ActivityFeedEntity"/>
    <typeAlias alias="FeedControl" type="org.alfresco.repo.domain.activities.FeedControlEntity"/>
    <typeAlias alias="ActivityPost" type="org.alfresco.repo.domain.activities.ActivityPostEntity"/>
-
+   
    <resultMap id="ActivityFeedResult" class="ActivityFeed">
       <result property="id" column="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
       <result property="feedUserId" column="feed_user_id"/>
@@ -22,7 +22,7 @@
       <result property="activitySummaryFormat" column="activity_format"/>
       <result property="feedDate" column="feed_date"/>
    </resultMap>
-  
+   
    <resultMap id="FeedControlResult" class="FeedControl">
       <result property="id" column="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
       <result property="feedUserId" column="feed_user_id"/>
@@ -30,7 +30,7 @@
       <result property="appTool" column="app_tool"/>
       <result property="lastModified" column="last_modified"/>
    </resultMap>
-  
+   
    <resultMap id="ActivityPostResult" class="ActivityPost">
       <result property="id" column="sequence_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
       <result property="activityData" column="activity_data"/>
@@ -170,14 +170,14 @@
       where feed_user_id = #feedUserId#
       ]]>
    </select>
-
+   
    <select id="select_activity_feedcontrol" parameterClass="FeedControl" resultClass="long">
       <![CDATA[
       select id as id
       from alf_activity_feed_control
       where feed_user_id = #feedUserId#
-      and site_network = #siteNetwork#
-      and app_tool = #appTool#
+      and ((site_network = #siteNetwork#) or ((#siteNetwork# is null) and (site_network is null)))
+      and ((app_tool = #appTool#) or ((#appTool# is null) and (app_tool is null)))
       ]]>
    </select>
    
@@ -185,11 +185,11 @@
       <![CDATA[
       delete from alf_activity_feed_control
       where feed_user_id = #feedUserId#
-      and site_network = #siteNetwork#
-      and app_tool = #appTool#
+      and ((site_network = #siteNetwork#) or ((#siteNetwork# is null) and (site_network is null)))
+      and ((app_tool = #appTool#) or ((#appTool# is null) and (app_tool is null)))
       ]]>
    </delete>
-
+   
    <select id="select_activity_posts" parameterClass="ActivityPost" resultClass="ActivityPost">
       <![CDATA[
       select 
@@ -211,7 +211,7 @@
          status = #status#
       ]]>
    </select>
-  
+   
    <select id="select_activity_posts_by_status_only" parameterClass="ActivityPost" resultClass="ActivityPost">
       <![CDATA[
       select 
@@ -230,25 +230,25 @@
          status = #status#
       ]]>
    </select>
-  
+   
    <select id="select_activity_post_max_seq" resultClass="long">
       select max(sequence_id) as maxId
       from alf_activity_post
       where status = 'POSTED'
    </select>
-  
+   
    <select id="select_activity_post_min_seq" resultClass="long">
       select min(sequence_id) as minId
       from alf_activity_post
       where status = 'POSTED'
    </select>
-  
+   
    <select id="select_activity_post_max_jobtasknode" resultClass="int">
       select max(job_task_node) as maxJobTaskNode
       from alf_activity_post
       where status = 'POSTED'
    </select>
-
+   
    <delete id="delete_activity_posts_older_than_date" parameterClass="ActivityPost">
       <![CDATA[
       delete from alf_activity_post 
@@ -256,17 +256,17 @@
       and status = #status#
       ]]>
    </delete>
-  
+   
    <update id="update_activity_post_data" parameterClass="ActivityPost">
       update alf_activity_post set status = #status#, activity_data=#activityData#, site_network=#siteNetwork#, last_modified=#lastModified#
       where sequence_id = #id#
       and status != #status#
    </update>
-  
+   
    <update id="update_activity_post_status" parameterClass="ActivityPost">
       update alf_activity_post set status = #status#, last_modified=#lastModified#
       where sequence_id = #id#
       and status != #status#
    </update>
-
+   
 </sqlMap>

@@ -196,9 +196,6 @@
          <ref bean="nodeDaoService" />
       </property>
    </bean>
-   <bean id="nodeCleanup.moveChildrenToCorrectStore"
-         class="org.alfresco.repo.node.db.DbNodeServiceImpl$MoveChildrenToCorrectStore"
-         parent="nodeCleanupBase"/>
    <bean id="nodeCleanup.indexChildrenWhereRequired"
          class="org.alfresco.repo.node.db.IndexChildrenWhereRequiredWorker"
          parent="nodeCleanupBase"/>

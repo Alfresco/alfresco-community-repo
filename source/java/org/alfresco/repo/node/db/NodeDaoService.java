@@ -357,6 +357,8 @@ public interface NodeDaoService
      * @param minNodeId             the min node ID to return
      * @param count                 the maximum number of results
      * @param resultsCallback       the node callback
+     * 
+     * @deprecated                  Since 2.2SP6, 3.1SP2, 3.2: not performant and not relevant to any use-cases
      */
     @DirtySessionAnnotation(markDirty=false)
     public void getNodesWithChildrenInDifferentStore(

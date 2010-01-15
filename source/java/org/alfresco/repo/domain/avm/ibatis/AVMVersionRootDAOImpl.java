@@ -141,20 +141,18 @@ public class AVMVersionRootDAOImpl extends AbstractAVMVersionRootDAOImpl
     @SuppressWarnings("unchecked")
     protected List<AVMVersionRootEntity> getVersionRootEntitiesByTo(long storeId, long to)
     {
-        Map<String, Object> params = new HashMap<String, Object>(3);
+        Map<String, Object> params = new HashMap<String, Object>(2);
         params.put("id", storeId);
         params.put("to", to);
-        params.put("from", null);
         return (List<AVMVersionRootEntity>) template.queryForList(SELECT_AVM_VERSION_ROOTS_BY_TO, params);
     }
     
     @SuppressWarnings("unchecked")
     protected List<AVMVersionRootEntity> getVersionRootEntitiesByFrom(long storeId, long from)
     {
-        Map<String, Object> params = new HashMap<String, Object>(3);
+        Map<String, Object> params = new HashMap<String, Object>(2);
         params.put("id", storeId);
         params.put("from", from);
-        params.put("to", null);
         return (List<AVMVersionRootEntity>) template.queryForList(SELECT_AVM_VERSION_ROOTS_BY_FROM, params);
     }
     

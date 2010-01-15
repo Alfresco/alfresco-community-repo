@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2008 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -33,6 +33,12 @@ import java.util.List;
  */
 public interface ActivityPostDAO extends ActivitiesDAO
 {
+    public static final int MAX_LEN_USER_ID = 255;         // needs to match schema: feed_user_id, post_user_id
+    public static final int MAX_LEN_SITE_ID = 255;         // needs to match schema: site_network
+    public static final int MAX_LEN_ACTIVITY_TYPE = 255;   // needs to match schema: activity_type
+    public static final int MAX_LEN_ACTIVITY_DATA = 4000;  // needs to match schema: activity_data
+    public static final int MAX_LEN_APP_TOOL_ID = 36;      // needs to match schema: app_tool
+    
     public List<ActivityPostEntity> selectPosts(ActivityPostEntity activityPost) throws SQLException;
     
     public Long getMaxActivitySeq() throws SQLException;

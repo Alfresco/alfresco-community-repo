@@ -48,12 +48,6 @@ public class ActivityPostServiceImpl implements ActivityPostService
 {
     private static final Log logger = LogFactory.getLog(ActivityServiceImpl.class);
     
-    private static final int MAX_LEN_USER_ID = 255;         // needs to match schema: feed_user_id, post_user_id
-    private static final int MAX_LEN_SITE_ID = 255;         // needs to match schema: site_network
-    private static final int MAX_LEN_ACTIVITY_TYPE = 255;   // needs to match schema: activity_type
-    private static final int MAX_LEN_ACTIVITY_DATA = 4000;  // needs to match schema: activity_data
-    private static final int MAX_LEN_APP_TOOL_ID = 36;      // needs to match schema: app_tool
-    
     private ActivityPostDAO postDAO;
     private TenantService tenantService;
     private int estGridSize = 1;
@@ -148,9 +142,9 @@ public class ActivityPostServiceImpl implements ActivityPostService
             {
                 siteId = "";
             }
-            else if (siteId.length() > MAX_LEN_SITE_ID)
+            else if (siteId.length() > ActivityPostDAO.MAX_LEN_SITE_ID)
             {
-                throw new AlfrescoRuntimeException("Invalid siteId - exceeds " + MAX_LEN_SITE_ID + " chars: " + siteId);
+                throw new IllegalArgumentException("Invalid siteId - exceeds " + ActivityPostDAO.MAX_LEN_SITE_ID + " chars: " + siteId);
             }
             
             // optional - default to empty string
@@ -158,17 +152,17 @@ public class ActivityPostServiceImpl implements ActivityPostService
             {
                 appTool = "";
             }
-            else if (appTool.length() > MAX_LEN_APP_TOOL_ID)
+            else if (appTool.length() > ActivityPostDAO.MAX_LEN_APP_TOOL_ID)
             {
-                throw new AlfrescoRuntimeException("Invalid app tool - exceeds " + MAX_LEN_APP_TOOL_ID + " chars: " + appTool);
+                throw new IllegalArgumentException("Invalid app tool - exceeds " + ActivityPostDAO.MAX_LEN_APP_TOOL_ID + " chars: " + appTool);
             }
             
             // required
             ParameterCheck.mandatoryString("activityType", activityType);
             
-            if (activityType.length() > MAX_LEN_ACTIVITY_TYPE)
+            if (activityType.length() > ActivityPostDAO.MAX_LEN_ACTIVITY_TYPE)
             {
-                throw new AlfrescoRuntimeException("Invalid activity type - exceeds " + MAX_LEN_ACTIVITY_TYPE + " chars: " + activityType);
+                throw new IllegalArgumentException("Invalid activity type - exceeds " + ActivityPostDAO.MAX_LEN_ACTIVITY_TYPE + " chars: " + activityType);
             }
             
             // optional - default to empty string
@@ -176,24 +170,24 @@ public class ActivityPostServiceImpl implements ActivityPostService
             {
                 activityData = "";
             }
-            else if (activityType.length() > MAX_LEN_ACTIVITY_DATA)
+            else if (activityData.length() > ActivityPostDAO.MAX_LEN_ACTIVITY_DATA)
             {
-                throw new AlfrescoRuntimeException("Invalid activity data - exceeds " + MAX_LEN_ACTIVITY_DATA + " chars: " + activityData);
+                throw new IllegalArgumentException("Invalid activity data - exceeds " + ActivityPostDAO.MAX_LEN_ACTIVITY_DATA + " chars: " + activityData);
             }
             
             // required
             ParameterCheck.mandatoryString("currentUser", currentUser);
             
-            if (currentUser.length() > MAX_LEN_USER_ID)
+            if (currentUser.length() > ActivityPostDAO.MAX_LEN_USER_ID)
             {
-                throw new AlfrescoRuntimeException("Invalid user - exceeds " + MAX_LEN_USER_ID + " chars: " + currentUser);
+                throw new IllegalArgumentException("Invalid user - exceeds " + ActivityPostDAO.MAX_LEN_USER_ID + " chars: " + currentUser);
             }
         } 
-        catch (AlfrescoRuntimeException e)
+        catch (IllegalArgumentException e)
         {
             // log error and throw exception
             logger.error(e);
-            throw e;
+            throw new IllegalArgumentException("Failed to post activity: " + e, e);
         }
         
         try

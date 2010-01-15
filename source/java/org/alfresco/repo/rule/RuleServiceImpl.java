@@ -26,6 +26,7 @@ package org.alfresco.repo.rule;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -35,6 +36,11 @@ import java.util.Set;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.ActionModel;
 import org.alfresco.repo.action.RuntimeActionService;
+import org.alfresco.repo.cache.NullCache;
+import org.alfresco.repo.cache.SimpleCache;
+import org.alfresco.repo.node.NodeServicePolicies;
+import org.alfresco.repo.policy.JavaBehaviour;
+import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.TransactionListener;
 import org.alfresco.service.cmr.action.Action;
@@ -51,6 +57,7 @@ import org.alfresco.service.cmr.rule.RuleServiceException;
 import org.alfresco.service.cmr.rule.RuleType;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
+import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.GUID;
@@ -67,7 +74,12 @@ import org.apache.commons.logging.LogFactory;
  * 
  * @author Roy Wetherall   
  */
-public class RuleServiceImpl implements RuleService, RuntimeRuleService
+public class RuleServiceImpl
+        implements RuleService, RuntimeRuleService,
+                NodeServicePolicies.BeforeCreateChildAssociationPolicy,
+                NodeServicePolicies.OnCreateNodePolicy,
+                NodeServicePolicies.OnUpdateNodePolicy,
+                NodeServicePolicies.OnAddAspectPolicy
 {
     /** key against which to store rules pending on the current transaction */
     private static final String KEY_RULES_PENDING = "RuleServiceImpl.PendingRules";
@@ -79,44 +91,30 @@ public class RuleServiceImpl implements RuleService, RuntimeRuleService
     private String ASSOC_NAME_RULES_PREFIX = "rules";
     private RegexQNamePattern ASSOC_NAME_RULES_REGEX = new RegexQNamePattern(RuleModel.RULE_MODEL_URI, "^" + ASSOC_NAME_RULES_PREFIX + ".*");
     
-    /**
-     * The logger
-     */
     private static Log logger = LogFactory.getLog(RuleServiceImpl.class); 
     
-    /**
-     * The permission-safe node service
-     */
     private NodeService nodeService;
-    
-    /**
-     * The runtime node service (ignores permissions)
-     */
     private NodeService runtimeNodeService;
-    
-    /**
-     * The action service
-     */
     private ActionService actionService;
-    
-    /**
-     * The dictionary service
-     */
     private DictionaryService dictionaryService;
-    
-    /**
-     * The permission service
-     */
+    private PolicyComponent policyComponent;
     private PermissionService permissionService;
     
     /**
      * The action service implementation which we need for some things.
      */
-    RuntimeActionService runtimeActionService;
+    private RuntimeActionService runtimeActionService;
+    
+    /**
+     * Cache of raw rules (not inherited or interpreted) for a given node
+     */
+    private SimpleCache<NodeRef, List<Rule>> nodeRulesCache;
        
     /**
      * List of disabled node refs.  The rules associated with these nodes will node be added to the pending list, and
      * therefore not fired.  This list is transient.
+     * 
+     * TODO: (DH) Make this txn-local
      */
     private Set<NodeRef> disabledNodeRefs = new HashSet<NodeRef>(5);
     
@@ -148,8 +146,6 @@ public class RuleServiceImpl implements RuleService, RuntimeRuleService
     
     /**
      * Set the permission-safe node service 
-     * 
-     * @param nodeService   the permission-safe node service
      */
     public void setNodeService(NodeService nodeService)
     {
@@ -158,8 +154,6 @@ public class RuleServiceImpl implements RuleService, RuntimeRuleService
     
     /**
      * Set the direct node service 
-     * 
-     * @param nodeService   the node service
      */
     public void setRuntimeNodeService(NodeService runtimeNodeService)
     {
@@ -168,8 +162,6 @@ public class RuleServiceImpl implements RuleService, RuntimeRuleService
     
     /**
      * Set the action service
-     * 
-     * @param actionService  the action service
      */
     public void setActionService(ActionService actionService)
     {
@@ -178,8 +170,6 @@ public class RuleServiceImpl implements RuleService, RuntimeRuleService
     
     /**
      * Set the runtime action service
-     * 
-     * @param actionRegistration  the action service
      */
     public void setRuntimeActionService(RuntimeActionService runtimeActionService)
     {
@@ -188,8 +178,6 @@ public class RuleServiceImpl implements RuleService, RuntimeRuleService
     
     /**
      * Set the dictionary service
-     * 
-     * @param dictionaryService     the dictionary service
      */
     public void setDictionaryService(DictionaryService dictionaryService)
     {
@@ -197,15 +185,34 @@ public class RuleServiceImpl implements RuleService, RuntimeRuleService
     }
     
     /**
+     * Set the policy component to listen for various events
+     */
+    public void setPolicyComponent(PolicyComponent policyComponent)
+    {
+        this.policyComponent = policyComponent;
+    }
+
+    /**
      * Set the permission service
-     * 
-     * @param permissionService        the permission service
      */
     public void setPermissionService(PermissionService permissionService)
     {
         this.permissionService = permissionService;
     }
     
+    /**
+     * Set the cache to hold node's individual rules.  This cache <b>must not be shared</b>
+     * across transactions.
+     * 
+     * @param nodeRulesCache        a cache of raw rules contained on a node
+     * 
+     * @see NullCache
+     */
+    public void setNodeRulesCache(SimpleCache<NodeRef, List<Rule>> nodeRulesCache)
+    {
+        this.nodeRulesCache = nodeRulesCache;
+    }
+
     /**
      * Set the global rules disabled flag
      * 
@@ -216,6 +223,88 @@ public class RuleServiceImpl implements RuleService, RuntimeRuleService
         this.globalRulesDisabled = rulesDisabled;
     }
     
+    /**
+     * Registers to listen for events of interest.  For instance, the creation or deletion of a rule folder
+     * will affect the caching of rules.
+     */
+    public void init()
+    {
+        policyComponent.bindAssociationBehaviour(
+                QName.createQName(NamespaceService.ALFRESCO_URI, "beforeCreateChildAssociation"),
+                RuleModel.ASPECT_RULES,
+                RuleModel.ASSOC_RULE_FOLDER,
+                new JavaBehaviour(this, "beforeCreateChildAssociation"));
+        policyComponent.bindClassBehaviour(
+                QName.createQName(NamespaceService.ALFRESCO_URI, "onAddAspect"),
+                RuleModel.ASPECT_RULES,
+                new JavaBehaviour(this, "onAddAspect"));
+        policyComponent.bindClassBehaviour(
+                QName.createQName(NamespaceService.ALFRESCO_URI, "onUpdateNode"),
+                RuleModel.ASPECT_RULES,
+                new JavaBehaviour(this, "onUpdateNode"));
+        policyComponent.bindClassBehaviour(
+                QName.createQName(NamespaceService.ALFRESCO_URI, "onCreateNode"),
+                RuleModel.TYPE_RULE,
+                new JavaBehaviour(this, "onCreateNode"));
+        policyComponent.bindClassBehaviour(
+                QName.createQName(NamespaceService.ALFRESCO_URI, "onUpdateNode"),
+                RuleModel.TYPE_RULE,
+                new JavaBehaviour(this, "onUpdateNode"));
+        policyComponent.bindClassBehaviour(
+                QName.createQName(NamespaceService.ALFRESCO_URI, "onCreateNode"),
+                ActionModel.TYPE_ACTION_BASE,
+                new JavaBehaviour(this, "onCreateNode"));
+        policyComponent.bindClassBehaviour(
+                QName.createQName(NamespaceService.ALFRESCO_URI, "onUpdateNode"),
+                ActionModel.TYPE_ACTION_BASE,
+                new JavaBehaviour(this, "onUpdateNode"));
+        policyComponent.bindClassBehaviour(
+                QName.createQName(NamespaceService.ALFRESCO_URI, "onCreateNode"),
+                ActionModel.TYPE_ACTION_PARAMETER,
+                new JavaBehaviour(this, "onCreateNode"));
+        policyComponent.bindClassBehaviour(
+                QName.createQName(NamespaceService.ALFRESCO_URI, "onUpdateNode"),
+                ActionModel.TYPE_ACTION_PARAMETER,
+                new JavaBehaviour(this, "onUpdateNode"));
+    }
+
+    /**
+     * Cache invalidation
+     */
+	public void beforeCreateChildAssociation(
+            NodeRef parentNodeRef,
+            NodeRef childNodeRef,
+            QName assocTypeQName,
+            QName assocQName,
+            boolean isNewNode)
+    {
+        nodeRulesCache.clear();
+    }
+
+    /**
+     * Cache invalidation
+     */
+    public void onUpdateNode(NodeRef nodeRef)
+    {
+        nodeRulesCache.clear();
+    }
+
+    /**
+     * Cache invalidation
+     */
+    public void onCreateNode(ChildAssociationRef childAssocRef)
+    {
+        nodeRulesCache.clear();
+    }
+
+    /**
+     * Cache invalidation
+     */
+    public void onAddAspect(NodeRef nodeRef, QName aspectTypeQName)
+    {
+        nodeRulesCache.clear();
+    }
+
     /**
      * Gets the saved rule folder reference
      * 
@@ -355,60 +444,78 @@ public class RuleServiceImpl implements RuleService, RuntimeRuleService
     {
         List<Rule> rules = new ArrayList<Rule>();
 
-        if (this.runtimeNodeService.exists(nodeRef) == true && checkNodeType(nodeRef) == true)
+        if (!this.runtimeNodeService.exists(nodeRef) || !checkNodeType(nodeRef))
         {
-            if (includeInherited == true && this.runtimeNodeService.hasAspect(nodeRef, RuleModel.ASPECT_IGNORE_INHERITED_RULES) == false)
+            // Node has gone or is not the correct type
+            return rules;
+        }
+        if (includeInherited == true && this.runtimeNodeService.hasAspect(nodeRef, RuleModel.ASPECT_IGNORE_INHERITED_RULES) == false)
+        {
+            // Get any inherited rules
+            for (Rule rule : getInheritedRules(nodeRef, ruleTypeName, null))
             {
-                // Get any inherited rules
-                for (Rule rule : getInheritedRules(nodeRef, ruleTypeName, null))
+                // Ensure rules are not duplicated in the list
+                if (rules.contains(rule) == false)
                 {
-                    // Ensure rules are not duplicated in the list
-                    if (rules.contains(rule) == false)
-                    {
-                        rules.add(rule);
-                    }
+                    rules.add(rule);
                 }
             }
+        }
             
-            // Extra check of CONSUMER permission was added to rule selection,
-            // to prevent Access Denied Exception due to the bug:
-            // https://issues.alfresco.com/browse/ETWOTWO-438
-            
-            if (this.runtimeNodeService.hasAspect(nodeRef, RuleModel.ASPECT_RULES) == true &&
-                permissionService.hasPermission(nodeRef, PermissionService.READ) == AccessStatus.ALLOWED)
+        // Get the node's own rules and add them to the list
+        List<Rule> nodeRules = getRulesForNode(nodeRef);
+        for (Rule rule : nodeRules)
+        {                   
+            if ((rules.contains(rule) == false) &&
+                    (ruleTypeName == null || rule.getRuleTypes().contains(ruleTypeName) == true))
             {
-                NodeRef ruleFolder = getSavedRuleFolderRef(nodeRef);
-                if (ruleFolder != null)
-                {
-                    List<Rule> allRules = new ArrayList<Rule>();
-                    
-                    // Get the rules for this node
-                    List<ChildAssociationRef> ruleChildAssocRefs = 
-                        this.runtimeNodeService.getChildAssocs(ruleFolder, RegexQNamePattern.MATCH_ALL, ASSOC_NAME_RULES_REGEX);
-                    for (ChildAssociationRef ruleChildAssocRef : ruleChildAssocRefs)
-                    {
-                        // Create the rule and add to the list
-                        NodeRef ruleNodeRef = ruleChildAssocRef.getChildRef();
-                        Rule rule = getRule(ruleNodeRef);
-                        allRules.add(rule);
-                    }
-                    
-                    // Build the list of rules that is returned to the client
-                    for (Rule rule : allRules)
-                    {                    
-                        if ((rules.contains(rule) == false) &&
-                                (ruleTypeName == null || rule.getRuleTypes().contains(ruleTypeName) == true))
-                        {
-                            rules.add(rule);                        
-                        }
-                    }
-                }
+                rules.add(rule);                        
             }
         }
         
         return rules;
     }
     
+    private List<Rule> getRulesForNode(NodeRef nodeRef)
+    {
+            // Extra check of CONSUMER permission was added to rule selection,
+            // to prevent Access Denied Exception due to the bug:
+            // https://issues.alfresco.com/browse/ETWOTWO-438
+            
+        if (!runtimeNodeService.hasAspect(nodeRef, RuleModel.ASPECT_RULES) ||
+            permissionService.hasPermission(nodeRef, PermissionService.READ) != AccessStatus.ALLOWED)
+        {
+            // Doesn't have the aspect or the user doesn't have access
+            return Collections.emptyList();
+        }
+        List<Rule> nodeRules = nodeRulesCache.get(nodeRef);
+        if (nodeRules != null)
+        {
+            // We have already processed this node
+            return nodeRules;
+        }
+        // Not in the cache, so go and get the rules
+        nodeRules = new ArrayList<Rule>();
+        NodeRef ruleFolder = getSavedRuleFolderRef(nodeRef);
+        if (ruleFolder != null)
+        {
+            // Get the rules for this node
+            List<ChildAssociationRef> ruleChildAssocRefs = 
+                this.runtimeNodeService.getChildAssocs(ruleFolder, RegexQNamePattern.MATCH_ALL, ASSOC_NAME_RULES_REGEX);
+            for (ChildAssociationRef ruleChildAssocRef : ruleChildAssocRefs)
+            {
+                // Create the rule and add to the list
+                NodeRef ruleNodeRef = ruleChildAssocRef.getChildRef();
+                Rule rule = getRule(ruleNodeRef);
+                nodeRules.add(rule);
+            }
+        }
+        // Store this in the cache for later re-use
+        nodeRulesCache.put(nodeRef, nodeRules);
+        // Done
+        return nodeRules;
+    }
+        
     /**
      * @see org.alfresco.service.cmr.rule.RuleService#countRules(org.alfresco.service.cmr.repository.NodeRef)
      */
@@ -651,6 +758,8 @@ public class RuleServiceImpl implements RuleService, RuntimeRuleService
             finally
             {
                 enableRules();
+                // Drop the rules from the cache
+                nodeRulesCache.remove(nodeRef);
             }
         }
         else
@@ -728,6 +837,8 @@ public class RuleServiceImpl implements RuleService, RuntimeRuleService
                     enableRules(nodeRef);
                 }
             }
+            // Drop the rules from the cache
+            nodeRulesCache.remove(nodeRef);
         }
         else
         {
@@ -757,6 +868,8 @@ public class RuleServiceImpl implements RuleService, RuntimeRuleService
                     }
                 }
             }
+            // Drop the rules from the cache
+            nodeRulesCache.remove(nodeRef);
         }
         else
         {
@@ -767,7 +880,6 @@ public class RuleServiceImpl implements RuleService, RuntimeRuleService
     /**
      * @see org.alfresco.repo.rule.RuntimeRuleService#addRulePendingExecution(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.rule.Rule)
      */
-    @SuppressWarnings("unchecked")
     public void addRulePendingExecution(NodeRef actionableNodeRef, NodeRef actionedUponNodeRef, Rule rule) 
     {
         addRulePendingExecution(actionableNodeRef, actionedUponNodeRef, rule, false);

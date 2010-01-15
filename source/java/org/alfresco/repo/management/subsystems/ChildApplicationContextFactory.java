@@ -36,7 +36,6 @@ import java.util.StringTokenizer;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
-import org.alfresco.config.JBossEnabledResourcePatternResolver;
 import org.alfresco.config.JndiPropertiesFactoryBean;
 import org.alfresco.util.config.RepositoryPathConfigBean;
 import org.apache.commons.logging.Log;
@@ -51,7 +50,6 @@ import org.springframework.beans.factory.config.PropertiesFactoryBean;
 import org.springframework.beans.factory.config.PropertyPlaceholderConfigurer;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
-import org.springframework.core.io.support.ResourcePatternResolver;
 
 /**
  * A factory allowing initialization of an entire 'subsystem' in a child application context. As with other
@@ -398,17 +396,6 @@ public class ChildApplicationContextFactory extends AbstractPropertyBackedBean i
             }
 
             setClassLoader(ChildApplicationContextFactory.this.getParent().getClassLoader());
-        }
-
-        /*
-         * (non-Javadoc)
-         * @see org.springframework.context.support.AbstractApplicationContext#getResourcePatternResolver()
-         */
-        @Override
-        protected ResourcePatternResolver getResourcePatternResolver()
-        {
-            // Ensure we can resolve resourced on JBoss 5
-            return new JBossEnabledResourcePatternResolver(this);
         }
 
         /*

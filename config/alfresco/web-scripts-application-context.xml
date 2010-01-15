@@ -66,9 +66,8 @@
              <ref bean="webscripts.store.repo" />
              <ref bean="webscripts.store.client.extension" />
              <ref bean="webscripts.store.client" />
-             <ref bean="webscripts.store" />
              <ref bean="webscripts.store.alfresco" />
-             <ref bean="webscripts.systemstore" />
+             <ref bean="webscripts.store" />
           </list>
       </property>
    </bean>

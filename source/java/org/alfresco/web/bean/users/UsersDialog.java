@@ -387,6 +387,15 @@ public class UsersDialog extends BaseDialogBean implements IContextListener, Cha
          return (quota != null && quota != -1L) ? quota : null;
       }
    };
+
+   public NodePropertyResolver resolverUserMutable = new NodePropertyResolver()
+   {
+      public Object get(Node personNode)
+      {
+         return properties.getAuthenticationService().isAuthenticationMutable(
+               (String) personNode.getProperties().get("userName"));
+      }
+   };
    
    /**
     * Action handler to show all the users currently in the system
@@ -404,6 +413,7 @@ public class UsersDialog extends BaseDialogBean implements IContextListener, Cha
       {
          node.addPropertyResolver("sizeLatest", this.resolverUserSizeLatest);
          node.addPropertyResolver("quota", this.resolverUserQuota);
+         node.addPropertyResolver("isMutable", this.resolverUserMutable);
       }
       
       // return null to stay on the same page

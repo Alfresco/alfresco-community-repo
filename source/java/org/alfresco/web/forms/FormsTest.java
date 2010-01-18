@@ -36,7 +36,7 @@ import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.cmr.security.AuthenticationService;
+import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.BaseSpringTest;
 import org.alfresco.util.TestWithUserUtils;
@@ -105,7 +105,7 @@ public class FormsTest
       assertNotNull(fileFolderService);
       this.formsService = (FormsService)super.applicationContext.getBean("FormsService");
       assertNotNull(this.formsService);
-      final AuthenticationService authenticationService = (AuthenticationService)
+      final MutableAuthenticationService authenticationService = (MutableAuthenticationService)
          applicationContext.getBean("authenticationService");
       authenticationService.clearCurrentSecurityContext();
       final MutableAuthenticationDao authenticationDAO = (MutableAuthenticationDao) 

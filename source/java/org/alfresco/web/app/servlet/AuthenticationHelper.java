@@ -25,6 +25,7 @@
 package org.alfresco.web.app.servlet;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.util.Enumeration;
 
 import javax.faces.context.FacesContext;
@@ -36,7 +37,6 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.springframework.extensions.surf.util.I18NUtil;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.SessionUser;
 import org.alfresco.repo.management.subsystems.ActivateableBean;
@@ -50,7 +50,6 @@ import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.AuthenticationService;
-import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.LoginBean;
@@ -58,6 +57,8 @@ import org.alfresco.web.bean.repository.User;
 import org.alfresco.web.bean.users.UserPreferencesBean;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.extensions.surf.util.Base64;
+import org.springframework.extensions.surf.util.I18NUtil;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
 
@@ -556,13 +557,23 @@ public final class AuthenticationHelper
    public static void setUsernameCookie(HttpServletRequest httpRequest, HttpServletResponse httpResponse, String username)
    {
       Cookie authCookie = getAuthCookie(httpRequest);
+      // Let's Base 64 encode the username so it is a legal cookie value
+      String encodedUsername;
+      try
+      {
+         encodedUsername = Base64.encodeBytes(username.getBytes("UTF-8"));
+      }
+      catch (UnsupportedEncodingException e)
+      {
+         throw new RuntimeException(e);
+      }
       if (authCookie == null)
       {
-         authCookie = new Cookie(COOKIE_ALFUSER, username);
+         authCookie = new Cookie(COOKIE_ALFUSER, encodedUsername);
       }
       else
       {
-         authCookie.setValue(username);
+         authCookie.setValue(encodedUsername);
       }
       authCookie.setPath(httpRequest.getContextPath());
       // TODO: make this configurable - currently 7 days (value in seconds)

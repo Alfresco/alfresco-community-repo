@@ -138,10 +138,10 @@
                <f:facet name="header">
                   <h:outputText value="#{msg.actions}" />
                </f:facet>
-               <a:actionLink value="#{msg.modify}" image="/images/icons/edituser.gif" showLink="false" action="wizard:editUser" actionListener="#{DialogManager.bean.setupUserAction}">
+               <a:actionLink rendered="#{r.isMutable}" value="#{msg.modify}" image="/images/icons/edituser.gif" showLink="false" action="wizard:editUser" actionListener="#{DialogManager.bean.setupUserAction}">
                   <f:param name="id" value="#{r.id}" />
                </a:actionLink>
-               <a:actionLink value="#{msg.change_password}" image="/images/icons/change_password.gif" showLink="false" action="dialog:changePassword" actionListener="#{DialogManager.bean.setupUserAction}">
+               <a:actionLink rendered="#{r.isMutable}" value="#{msg.change_password}" image="/images/icons/change_password.gif" showLink="false" action="dialog:changePassword" actionListener="#{DialogManager.bean.setupUserAction}">
                   <f:param name="id" value="#{r.id}" />
                </a:actionLink>
                <a:booleanEvaluator value="#{r.userName != 'admin'}">

@@ -36,7 +36,7 @@ import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.search.SearchService;
-import org.alfresco.service.cmr.security.AuthenticationService;
+import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.usage.ContentUsageService;
 import org.alfresco.web.app.servlet.DownloadContentServlet;
@@ -57,7 +57,7 @@ public class UsersBeanProperties implements Serializable
     transient private SearchService searchService;
     
     /** AuthenticationService bean reference */
-    transient private AuthenticationService authenticationService;
+    transient private MutableAuthenticationService authenticationService;
 
     /** PersonService bean reference */
     transient private PersonService personService;
@@ -111,7 +111,7 @@ public class UsersBeanProperties implements Serializable
     /**
      * @return the authenticationService
      */
-    public AuthenticationService getAuthenticationService()
+    public MutableAuthenticationService getAuthenticationService()
     {
      //check for null for cluster environment
         if (authenticationService == null)
@@ -167,7 +167,7 @@ public class UsersBeanProperties implements Serializable
     /**
      * @param authenticationService  The AuthenticationService to set.
      */
-    public void setAuthenticationService(AuthenticationService authenticationService)
+    public void setAuthenticationService(MutableAuthenticationService authenticationService)
     {
        this.authenticationService = authenticationService;
     }

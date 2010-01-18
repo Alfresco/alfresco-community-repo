@@ -24,8 +24,6 @@
  */
 package org.alfresco.web.bean.wizard;
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
 import java.io.Serializable;
 import java.text.MessageFormat;
 import java.util.HashMap;
@@ -48,13 +46,12 @@ import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.security.AuthenticationService;
+import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.OwnableService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.context.UIContextService;
 import org.alfresco.web.bean.repository.Node;
@@ -101,7 +98,7 @@ public class NewUserWizard extends AbstractWizardBean
    private NodeRef homeSpaceLocation = null;
 
    /** AuthenticationService bean reference */
-   transient private AuthenticationService authenticationService;
+   transient private MutableAuthenticationService authenticationService;
 
    /** NamespaceService bean reference */
    transient private NamespaceService namespaceService;
@@ -131,12 +128,12 @@ public class NewUserWizard extends AbstractWizardBean
    /**
     * @param authenticationService  The AuthenticationService to set.
     */
-   public void setAuthenticationService(AuthenticationService authenticationService)
+   public void setAuthenticationService(MutableAuthenticationService authenticationService)
    {
       this.authenticationService = authenticationService;
    }
    
-   private AuthenticationService getAuthenticationService()
+   private MutableAuthenticationService getAuthenticationService()
    {
       if (authenticationService == null)
       {

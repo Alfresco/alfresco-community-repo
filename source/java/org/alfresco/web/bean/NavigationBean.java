@@ -56,7 +56,7 @@ import org.alfresco.service.cmr.repository.TemplateService;
 import org.alfresco.service.cmr.rule.RuleService;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.AccessStatus;
-import org.alfresco.service.cmr.security.AuthenticationService;
+import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.web.app.Application;
@@ -208,12 +208,12 @@ public class NavigationBean implements Serializable
    /**
     * @param authService The AuthenticationService to set.
     */
-   public void setAuthenticationService(AuthenticationService authService)
+   public void setAuthenticationService(MutableAuthenticationService authService)
    {
       this.authService = authService;
    }
    
-   protected AuthenticationService getAuthService()
+   protected MutableAuthenticationService getAuthService()
    {
       if (authService == null)
          this.authService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getAuthenticationService();
@@ -1024,7 +1024,9 @@ public class NavigationBean implements Serializable
     */
    public boolean isAllowUserConfig()
    {
-      return this.clientConfig.getAllowUserConfig();
+      // For correct behaviour, we ask the authentication chain whether this particular user is mutable
+      return this.clientConfig.getAllowUserConfig()
+            && this.authService.isAuthenticationMutable(this.authService.getCurrentUserName());
    }
    
    
@@ -1157,7 +1159,7 @@ public class NavigationBean implements Serializable
    UserPreferencesBean preferences;
    
    /** The Authentication service bean reference */
-   transient private AuthenticationService authService;
+   transient private MutableAuthenticationService authService;
    
    /** The PermissionService reference */
    transient private PermissionService permissionService;

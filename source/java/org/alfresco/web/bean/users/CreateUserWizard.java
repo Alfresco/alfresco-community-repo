@@ -43,14 +43,13 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.security.AuthenticationService;
+import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.OwnableService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.usage.ContentUsageService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.util.ApplicationContextHelper;
 import org.springframework.extensions.surf.util.Pair;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.context.UIContextService;
@@ -102,7 +101,7 @@ public class CreateUserWizard extends BaseWizardBean
     protected String sizeQuotaUnits = null;
 
     /** AuthenticationService bean reference */
-    transient private AuthenticationService authenticationService;
+    transient private MutableAuthenticationService authenticationService;
 
     /** PersonService bean reference */
     transient private PersonService personService;
@@ -129,7 +128,7 @@ public class CreateUserWizard extends BaseWizardBean
     /**
      * @param authenticationService The AuthenticationService to set.
      */
-    public void setAuthenticationService(AuthenticationService authenticationService)
+    public void setAuthenticationService(MutableAuthenticationService authenticationService)
     {
         this.authenticationService = authenticationService;
     }
@@ -137,7 +136,7 @@ public class CreateUserWizard extends BaseWizardBean
     /**
      * @return authenticationService
      */
-    private AuthenticationService getAuthenticationService()
+    private MutableAuthenticationService getAuthenticationService()
     {
         if (authenticationService == null)
         {

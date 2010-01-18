@@ -78,6 +78,15 @@
             <value>org.alfresco.repo.security.authentication.MutableAuthenticationDao</value>
          </list>
       </property>
+      <!-- A generic fallback implementation, in case the chain doesn't provide one-->
+      <property name="defaultTarget">
+         <bean class="org.alfresco.repo.security.authentication.DefaultMutableAuthenticationDao">
+            <property name="allowSetEnabled" value="true" />
+            <property name="allowGetEnabled" value="true" />
+            <property name="allowDeleteUser" value="true" />
+            <property name="allowCreateUser" value="true" />
+         </bean>
+      </property>
    </bean>
 
    <!-- Allow the authentication subsystem to listen for SMB Server session events -->

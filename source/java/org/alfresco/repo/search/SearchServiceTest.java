@@ -41,7 +41,7 @@ import org.alfresco.service.cmr.search.PermissionEvaluationMode;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
-import org.alfresco.service.cmr.security.AuthenticationService;
+import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
@@ -55,7 +55,7 @@ public class SearchServiceTest extends TestCase
 
     private AuthenticationComponent authenticationComponent;
 
-    private AuthenticationService authenticationService;
+    private MutableAuthenticationService authenticationService;
 
     private MutableAuthenticationDao authenticationDAO;
 
@@ -98,7 +98,7 @@ public class SearchServiceTest extends TestCase
     {
         nodeService = (NodeService) ctx.getBean("dbNodeService");
         authenticationComponent = (AuthenticationComponent) ctx.getBean("authenticationComponent");
-        authenticationService = (AuthenticationService) ctx.getBean("authenticationService");
+        authenticationService = (MutableAuthenticationService) ctx.getBean("authenticationService");
         authenticationDAO = (MutableAuthenticationDao) ctx.getBean("authenticationDao");
         pubSearchService = (SearchService) ctx.getBean("SearchService");
         pubPermissionService = (PermissionService) ctx.getBean("PermissionService");

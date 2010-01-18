@@ -32,9 +32,9 @@ import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.MutableAuthenticationDao;
 import org.alfresco.service.ServiceRegistry;
-import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
+import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.transaction.TransactionService;
@@ -47,7 +47,7 @@ public class SimpleAuthorityServiceTest extends TestCase
 
     private AuthenticationComponent authenticationComponent;
 
-    private AuthenticationService authenticationService;
+    private MutableAuthenticationService authenticationService;
 
     private AuthorityService authorityService;
 
@@ -68,7 +68,7 @@ public class SimpleAuthorityServiceTest extends TestCase
     public void setUp() throws Exception
     {
         authenticationComponent = (AuthenticationComponent) ctx.getBean("authenticationComponent");
-        authenticationService = (AuthenticationService) ctx.getBean("authenticationService");
+        authenticationService = (MutableAuthenticationService) ctx.getBean("authenticationService");
         authorityService = (AuthorityService) ctx.getBean("authorityService");
         pubAuthorityService = (AuthorityService) ctx.getBean("AuthorityService");
         personService = (PersonService) ctx.getBean("personService");

@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.alfresco.service.cmr.security.AuthenticationService;
+import org.alfresco.service.cmr.security.MutableAuthenticationService;
 
 /**
  * This class implements a simple chaining authentication service. It chains together other authentication services so
@@ -47,7 +48,7 @@ public class ChainingAuthenticationServiceImpl extends AbstractChainingAuthentic
 
     List<AuthenticationService> authenticationServices;
 
-    AuthenticationService mutableAuthenticationService;
+    MutableAuthenticationService mutableAuthenticationService;
 
     public ChainingAuthenticationServiceImpl()
     {
@@ -60,12 +61,12 @@ public class ChainingAuthenticationServiceImpl extends AbstractChainingAuthentic
     }
 
     @Override
-    public AuthenticationService getMutableAuthenticationService()
+    public MutableAuthenticationService getMutableAuthenticationService()
     {
         return this.mutableAuthenticationService;
     }
 
-    public void setMutableAuthenticationService(AuthenticationService mutableAuthenticationService)
+    public void setMutableAuthenticationService(MutableAuthenticationService mutableAuthenticationService)
     {
         this.mutableAuthenticationService = mutableAuthenticationService;
     }

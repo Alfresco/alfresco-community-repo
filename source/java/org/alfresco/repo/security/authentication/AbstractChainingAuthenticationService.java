@@ -30,6 +30,7 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import org.alfresco.service.cmr.security.AuthenticationService;
+import org.alfresco.service.cmr.security.MutableAuthenticationService;
 
 /**
  * A base class for chaining authentication services. Where appropriate, methods will 'chain' across multiple
@@ -37,9 +38,8 @@ import org.alfresco.service.cmr.security.AuthenticationService;
  * 
  * @author dward
  */
-public abstract class AbstractChainingAuthenticationService extends AbstractAuthenticationService
+public abstract class AbstractChainingAuthenticationService extends AbstractAuthenticationService implements MutableAuthenticationService
 {
-
     /**
      * Instantiates a new abstract chaining authentication service.
      */
@@ -53,7 +53,7 @@ public abstract class AbstractChainingAuthenticationService extends AbstractAuth
      * 
      * @return the mutable authentication service
      */
-    public abstract AuthenticationService getMutableAuthenticationService();
+    public abstract MutableAuthenticationService getMutableAuthenticationService();
 
     /**
      * Gets the authentication services across which methods will chain.
@@ -133,6 +133,16 @@ public abstract class AbstractChainingAuthenticationService extends AbstractAuth
     /**
      * {@inheritDoc}
      */
+    public boolean isAuthenticationMutable(String userName)
+    {
+        MutableAuthenticationService mutableAuthenticationService = getMutableAuthenticationService();
+        return mutableAuthenticationService == null ? false : mutableAuthenticationService
+                .isAuthenticationMutable(userName);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     public boolean getAuthenticationEnabled(String userName) throws AuthenticationException
     {
         for (AuthenticationService authService : getUsableAuthenticationServices())
@@ -149,7 +159,7 @@ public abstract class AbstractChainingAuthenticationService extends AbstractAuth
                 // Ignore and chain
             }
         }
-        return false;
+        return true;
     }
 
     /**
@@ -226,7 +236,7 @@ public abstract class AbstractChainingAuthenticationService extends AbstractAuth
         // it doesn't exist in any of the authentication components
         return false;
     }
-
+    
     /**
      * {@inheritDoc}
      */
@@ -529,5 +539,7 @@ public abstract class AbstractChainingAuthenticationService extends AbstractAuth
         }
         return defaultGuestUserNames;
     }
+    
+    
 
 }

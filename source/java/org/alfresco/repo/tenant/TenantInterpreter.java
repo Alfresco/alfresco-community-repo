@@ -31,14 +31,12 @@ import java.io.InputStream;
 import java.io.PrintStream;
 import java.util.List;
 
-import org.springframework.extensions.surf.util.I18NUtil;
 import org.alfresco.repo.admin.BaseInterpreter;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
-import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.AuthorityService;
-import org.springframework.extensions.surf.util.PropertyCheck;
+import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.BeansException;
@@ -46,6 +44,8 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.extensions.surf.util.I18NUtil;
+import org.springframework.extensions.surf.util.PropertyCheck;
 
 /**
  * An interactive console for Tenants.
@@ -61,7 +61,7 @@ public class TenantInterpreter extends BaseInterpreter implements ApplicationCon
     
     private TenantAdminService tenantAdminService;
     protected TenantService tenantService;
-    private AuthenticationService authenticationService;
+    private MutableAuthenticationService authenticationService;
     
     private String baseAdminUsername = null;
     
@@ -72,7 +72,7 @@ public class TenantInterpreter extends BaseInterpreter implements ApplicationCon
         this.tenantAdminService = tenantAdminService;
     }
     
-    public void setAuthenticationService(AuthenticationService authenticationService)
+    public void setAuthenticationService(MutableAuthenticationService authenticationService)
     {
         this.authenticationService = authenticationService;
     }

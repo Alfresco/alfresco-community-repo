@@ -37,7 +37,7 @@ import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.cmr.security.AuthenticationService;
+import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.version.VersionService;
 import org.alfresco.service.namespace.QName;
@@ -69,7 +69,7 @@ public class LockBehaviourImplTest extends BaseSpringTest
     /**
      * The authentication service
      */
-    private AuthenticationService authenticationService;    
+    private MutableAuthenticationService authenticationService;    
     
     private PermissionService permissionService;
     
@@ -99,7 +99,7 @@ public class LockBehaviourImplTest extends BaseSpringTest
         this.nodeService = (NodeService)applicationContext.getBean("dbNodeService");
         this.lockService = (LockService)applicationContext.getBean("lockService");
 		this.versionService = (VersionService)applicationContext.getBean("versionService");
-        this.authenticationService = (AuthenticationService)applicationContext.getBean("authenticationService");
+        this.authenticationService = (MutableAuthenticationService)applicationContext.getBean("authenticationService");
         this.permissionService = (PermissionService)applicationContext.getBean("permissionService");
         
         // Set the authentication

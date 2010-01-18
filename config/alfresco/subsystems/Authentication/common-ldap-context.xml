@@ -5,18 +5,6 @@
 -->
 
 <beans>
-   <!--
-      DAO that rejects changes - LDAP is read only at the moment. It does allow users to be deleted with out warnings
-      from the UI.
-   -->
-
-   <bean id="authenticationDao" class="org.alfresco.repo.security.authentication.DefaultMutableAuthenticationDao">
-      <property name="allowSetEnabled" value="true" />
-      <property name="allowGetEnabled" value="true" />
-      <property name="allowDeleteUser" value="true" />
-      <property name="allowCreateUser" value="true" />
-   </bean>
-
    <!-- LDAP authentication configuration -->
 
    <!--
@@ -83,9 +71,6 @@
 
    <!-- Authenticaton service for chaining -->
    <bean id="localAuthenticationService" class="org.alfresco.repo.security.authentication.AuthenticationServiceImpl">
-      <property name="authenticationDao">
-         <ref bean="authenticationDao" />
-      </property>
       <property name="ticketComponent">
          <ref bean="ticketComponent" />
       </property>

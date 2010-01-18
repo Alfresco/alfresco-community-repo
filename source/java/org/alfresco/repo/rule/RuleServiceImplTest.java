@@ -43,7 +43,7 @@ import org.alfresco.service.cmr.repository.CyclicChildRelationshipException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.rule.Rule;
 import org.alfresco.service.cmr.rule.RuleType;
-import org.alfresco.service.cmr.security.AuthenticationService;
+import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
 
@@ -55,7 +55,7 @@ import org.alfresco.service.namespace.QName;
  */
 public class RuleServiceImplTest extends BaseRuleTest
 {    
-    AuthenticationService authenticationService;
+    MutableAuthenticationService authenticationService;
 	PermissionService permissionService;  
 	
 	@Override
@@ -63,7 +63,7 @@ public class RuleServiceImplTest extends BaseRuleTest
 	{
 		super.onSetUpInTransaction();		
 		this.permissionService = (PermissionService)this.applicationContext.getBean("permissionService");
-		this.authenticationService = (AuthenticationService)this.applicationContext.getBean("authenticationService");
+		this.authenticationService = (MutableAuthenticationService)this.applicationContext.getBean("authenticationService");
 	}
 	
     /**

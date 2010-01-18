@@ -3,14 +3,6 @@
 
 <beans>
 
-   <bean id="authenticationDao" class="org.alfresco.repo.security.authentication.DefaultMutableAuthenticationDao">
-      <property name="allowSetEnabled" value="true" />
-      <property name="allowGetEnabled" value="true" />
-      <property name="allowDeleteUser" value="true" />
-      <property name="allowCreateUser" value="true" />
-   </bean>
-
-
    <!-- The passthru servers  -->
    <!-- Properties that specify the server(s) to use for passthru          -->
    <!-- authentication :-                                                  -->
@@ -94,9 +86,6 @@
 
    <!-- Authenticaton service for chaining -->
    <bean id="localAuthenticationService" class="org.alfresco.repo.security.authentication.AuthenticationServiceImpl">
-      <property name="authenticationDao">
-         <ref bean="authenticationDao" />
-      </property>
       <property name="ticketComponent">
          <ref bean="ticketComponent" />
       </property>

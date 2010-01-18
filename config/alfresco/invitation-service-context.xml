@@ -8,7 +8,6 @@
         <property name="personService" ref="PersonService"/>
         <property name="permissionService" ref="PermissionService"/>
         <property name="authenticationService" ref="AuthenticationService"/>
-        <property name="mutableAuthenticationDao" ref="authenticationDao"/>
         <property name="siteService" ref="SiteService"/>
         <property name="namespaceService" ref="NamespaceService"/>
         <property name="nodeService" ref="NodeService"/>

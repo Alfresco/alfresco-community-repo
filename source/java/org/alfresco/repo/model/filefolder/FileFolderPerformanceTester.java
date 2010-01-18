@@ -50,7 +50,7 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchService;
-import org.alfresco.service.cmr.security.AuthenticationService;
+import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
@@ -421,7 +421,7 @@ public class FileFolderPerformanceTester extends TestCase
         final NodeRef selectedFolderNodeRef = folderRefStr == null ? null : new NodeRef(folderRefStr);
         
         ServiceRegistry serviceRegistry = (ServiceRegistry) ctx.getBean(ServiceRegistry.SERVICE_REGISTRY);
-        final AuthenticationService authenticationService = serviceRegistry.getAuthenticationService();
+        final MutableAuthenticationService authenticationService = serviceRegistry.getAuthenticationService();
         final PermissionService permissionService = serviceRegistry.getPermissionService();
         final NodeService nodeService = serviceRegistry.getNodeService();
         final TransactionService transactionService = serviceRegistry.getTransactionService();

@@ -43,7 +43,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.security.AccessStatus;
-import org.alfresco.service.cmr.security.AuthenticationService;
+import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.OwnableService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
@@ -63,7 +63,7 @@ public class LockOwnerDynamicAuthorityTest extends TestCase
 
     private NodeService nodeService;
 
-    private AuthenticationService authenticationService;
+    private MutableAuthenticationService authenticationService;
 
     private AuthenticationComponent authenticationComponent;
     
@@ -102,7 +102,7 @@ public class LockOwnerDynamicAuthorityTest extends TestCase
     public void setUp() throws Exception
     {
         nodeService = (NodeService) ctx.getBean("nodeService");
-        authenticationService = (AuthenticationService) ctx.getBean("authenticationService");
+        authenticationService = (MutableAuthenticationService) ctx.getBean("authenticationService");
         authenticationComponent = (AuthenticationComponent) ctx.getBean("authenticationComponent");
         lockService = (LockService) ctx.getBean("lockService");
         permissionService = (PermissionService) ctx.getBean("permissionService");

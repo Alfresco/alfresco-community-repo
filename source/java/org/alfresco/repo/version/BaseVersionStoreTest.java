@@ -24,7 +24,6 @@
  */
 package org.alfresco.repo.version;
 
-import java.io.InputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -37,7 +36,6 @@ import java.util.Map;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.dictionary.DictionaryBootstrap;
 import org.alfresco.repo.dictionary.DictionaryDAO;
-import org.alfresco.repo.dictionary.M2Model;
 import org.alfresco.repo.node.archive.NodeArchiveService;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.MutableAuthenticationDao;
@@ -51,7 +49,7 @@ import org.alfresco.service.cmr.repository.MLText;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.cmr.security.AuthenticationService;
+import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.version.Version;
 import org.alfresco.service.cmr.version.VersionService;
@@ -69,7 +67,7 @@ public abstract class BaseVersionStoreTest extends BaseSpringTest
     protected VersionCounterService versionCounterDaoService;
     protected ContentService contentService;
 	protected DictionaryDAO dictionaryDAO;
-    protected AuthenticationService authenticationService;
+    protected MutableAuthenticationService authenticationService;
     protected TransactionService transactionService;
     protected RetryingTransactionHelper txnHelper;
     protected MutableAuthenticationDao authenticationDAO;
@@ -159,7 +157,7 @@ public abstract class BaseVersionStoreTest extends BaseSpringTest
         this.dbNodeService = (NodeService)applicationContext.getBean("dbNodeService");
         this.versionCounterDaoService = (VersionCounterService)applicationContext.getBean("versionCounterService");
         this.contentService = (ContentService)applicationContext.getBean("contentService");
-        this.authenticationService = (AuthenticationService)applicationContext.getBean("authenticationService");
+        this.authenticationService = (MutableAuthenticationService)applicationContext.getBean("authenticationService");
         this.transactionService = (TransactionService)this.applicationContext.getBean("transactionComponent");
         this.txnHelper = (RetryingTransactionHelper) applicationContext.getBean("retryingTransactionHelper");
         this.authenticationDAO = (MutableAuthenticationDao) applicationContext.getBean("authenticationDao");

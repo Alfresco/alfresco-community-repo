@@ -38,7 +38,7 @@ import org.alfresco.service.cmr.lock.UnableToReleaseLockException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.cmr.security.AuthenticationService;
+import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.BaseSpringTest;
 import org.alfresco.util.TestWithUserUtils;
@@ -55,7 +55,7 @@ public class LockServiceImplTest extends BaseSpringTest
      */
     private NodeService nodeService;
     private LockService lockService;
-    private AuthenticationService authenticationService;
+    private MutableAuthenticationService authenticationService;
     
     /**
      * Data used in tests
@@ -79,7 +79,7 @@ public class LockServiceImplTest extends BaseSpringTest
     {
         this.nodeService = (NodeService)applicationContext.getBean("dbNodeService");
         this.lockService = (LockService)applicationContext.getBean("lockService");
-        this.authenticationService = (AuthenticationService)applicationContext.getBean("authenticationService");
+        this.authenticationService = (MutableAuthenticationService)applicationContext.getBean("authenticationService");
         
         // Set the authentication
         AuthenticationComponent authComponent = (AuthenticationComponent)this.applicationContext.getBean("authenticationComponent");

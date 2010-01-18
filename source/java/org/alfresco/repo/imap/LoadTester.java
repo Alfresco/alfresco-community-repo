@@ -20,7 +20,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.SearchService;
-import org.alfresco.service.cmr.security.AuthenticationService;
+import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.view.ImporterService;
@@ -46,7 +46,7 @@ public class LoadTester extends TestCase
  
     private ImapService imapService;
     private ImporterService importerService;
-    private AuthenticationService authenticationService;
+    private MutableAuthenticationService authenticationService;
     
     private AlfrescoImapUser user;
     // DH: Do not assume the presence of any specific user or password.  Create a new user for the test.

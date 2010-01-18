@@ -32,6 +32,7 @@ import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.AuthenticationService;
+import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 
@@ -56,7 +57,7 @@ public abstract class TestWithUserUtils
             String password, 
             NodeRef rootNodeRef,
             NodeService nodeService,
-            AuthenticationService authenticationService)
+            MutableAuthenticationService authenticationService)
     {
         // ignore if the user's authentication already exists
         if (authenticationService.authenticationExists(userName))
@@ -105,7 +106,7 @@ public abstract class TestWithUserUtils
     public static void authenticateUser(
             String userName,
             String password,
-            AuthenticationService authenticationService,
+            MutableAuthenticationService authenticationService,
             AuthenticationComponent authenticationComponent)
     {
         // go system
@@ -144,7 +145,7 @@ public abstract class TestWithUserUtils
         
     }
 
-    public static void deleteUser(String user_name, String pwd, NodeRef ref, NodeService service, AuthenticationService service2)
+    public static void deleteUser(String user_name, String pwd, NodeRef ref, NodeService service, MutableAuthenticationService service2)
     {
         service2.deleteAuthentication(user_name);
     }

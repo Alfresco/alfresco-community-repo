@@ -44,11 +44,9 @@ import net.sf.acegisecurity.DisabledException;
 import net.sf.acegisecurity.LockedException;
 import net.sf.acegisecurity.UserDetails;
 import net.sf.acegisecurity.providers.UsernamePasswordAuthenticationToken;
-import net.sf.acegisecurity.providers.dao.SaltSource;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.cache.SimpleCache;
-import org.alfresco.repo.management.subsystems.ApplicationContextFactory;
 import org.alfresco.repo.management.subsystems.ChildApplicationContextManager;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.security.authentication.InMemoryTicketComponentImpl.ExpiryMode;
@@ -62,7 +60,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.SearchService;
-import org.alfresco.service.cmr.security.AuthenticationService;
+import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.DynamicNamespacePrefixResolver;
 import org.alfresco.service.namespace.NamespacePrefixResolver;
@@ -103,9 +101,9 @@ public class AuthenticationTest extends TestCase
 
     private SimpleCache<String, Ticket> ticketsCache;
 
-    private AuthenticationService authenticationService;
+    private MutableAuthenticationService authenticationService;
 
-    private AuthenticationService pubAuthenticationService;
+    private MutableAuthenticationService pubAuthenticationService;
 
     private AuthenticationComponent authenticationComponent;
 
@@ -140,8 +138,8 @@ public class AuthenticationTest extends TestCase
         dictionaryService = (DictionaryService) ctx.getBean("dictionaryService");
         passwordEncoder = (MD4PasswordEncoder) ctx.getBean("passwordEncoder");
         ticketComponent = (TicketComponent) ctx.getBean("ticketComponent");
-        authenticationService = (AuthenticationService) ctx.getBean("authenticationService");
-        pubAuthenticationService = (AuthenticationService) ctx.getBean("AuthenticationService");
+        authenticationService = (MutableAuthenticationService) ctx.getBean("authenticationService");
+        pubAuthenticationService = (MutableAuthenticationService) ctx.getBean("AuthenticationService");
         authenticationComponent = (AuthenticationComponent) ctx.getBean("authenticationComponent");
         authenticationComponentImpl = (AuthenticationComponent) ctx.getBean("authenticationComponent");
         pubPersonService =  (PersonService) ctx.getBean("PersonService");

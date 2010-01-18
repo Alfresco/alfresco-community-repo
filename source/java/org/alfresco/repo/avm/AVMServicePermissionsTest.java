@@ -59,6 +59,7 @@ import org.alfresco.service.cmr.security.AccessPermission;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.AuthorityService;
+import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.NamespacePrefixResolver;
@@ -84,7 +85,7 @@ public class AVMServicePermissionsTest extends TestCase
 
     protected PermissionServiceSPI permissionService;
 
-    protected AuthenticationService authenticationService;
+    protected MutableAuthenticationService authenticationService;
 
     private MutableAuthenticationDao authenticationDAO;
 
@@ -140,7 +141,7 @@ public class AVMServicePermissionsTest extends TestCase
         dictionaryService = (DictionaryService) applicationContext.getBean(ServiceRegistry.DICTIONARY_SERVICE.getLocalName());
         permissionService = (PermissionServiceSPI) applicationContext.getBean("permissionService");
         namespacePrefixResolver = (NamespacePrefixResolver) applicationContext.getBean(ServiceRegistry.NAMESPACE_SERVICE.getLocalName());
-        authenticationService = (AuthenticationService) applicationContext.getBean("authenticationService");
+        authenticationService = (MutableAuthenticationService) applicationContext.getBean("authenticationService");
         authenticationComponent = (AuthenticationComponent) applicationContext.getBean("authenticationComponent");
         serviceRegistry = (ServiceRegistry) applicationContext.getBean(ServiceRegistry.SERVICE_REGISTRY);
         permissionModelDAO = (ModelDAO) applicationContext.getBean("permissionsModelDAO");

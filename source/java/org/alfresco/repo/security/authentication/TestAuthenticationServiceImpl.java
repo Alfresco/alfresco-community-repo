@@ -41,11 +41,11 @@ import net.sf.acegisecurity.context.security.SecureContextImpl;
 import net.sf.acegisecurity.providers.UsernamePasswordAuthenticationToken;
 import net.sf.acegisecurity.providers.dao.User;
 
-import org.alfresco.service.cmr.security.AuthenticationService;
+import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.util.EqualsHelper;
 import org.alfresco.util.GUID;
 
-public class TestAuthenticationServiceImpl implements AuthenticationService
+public class TestAuthenticationServiceImpl implements MutableAuthenticationService
 {
     private Map<String, String> userNamesAndPasswords = new HashMap<String, String>();
 
@@ -245,6 +245,11 @@ public class TestAuthenticationServiceImpl implements AuthenticationService
     public boolean authenticationExists(String userName)
     {
         return userNamesAndPasswords.containsKey(userName);
+    }
+        
+    public boolean isAuthenticationMutable(String userName)
+    {
+        return authenticationExists(userName);
     }
 
     public String getCurrentUserName() throws AuthenticationException

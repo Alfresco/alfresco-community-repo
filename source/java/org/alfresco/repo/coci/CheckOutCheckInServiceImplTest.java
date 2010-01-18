@@ -44,7 +44,7 @@ import org.alfresco.service.cmr.repository.CopyService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.cmr.security.AuthenticationService;
+import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.version.Version;
 import org.alfresco.service.cmr.version.VersionService;
@@ -70,7 +70,7 @@ public class CheckOutCheckInServiceImplTest extends BaseSpringTest
 	private CheckOutCheckInService cociService;
 	private ContentService contentService;
 	private VersionService versionService;
-    private AuthenticationService authenticationService;
+    private MutableAuthenticationService authenticationService;
     private LockService lockService;
     private TransactionService transactionService;
     private PermissionService permissionService;
@@ -114,7 +114,7 @@ public class CheckOutCheckInServiceImplTest extends BaseSpringTest
 		this.cociService = (CheckOutCheckInService)this.applicationContext.getBean("checkOutCheckInService");
 		this.contentService = (ContentService)this.applicationContext.getBean("contentService");
 		this.versionService = (VersionService)this.applicationContext.getBean("versionService");
-        this.authenticationService = (AuthenticationService)this.applicationContext.getBean("authenticationService");
+        this.authenticationService = (MutableAuthenticationService)this.applicationContext.getBean("authenticationService");
         this.lockService = (LockService)this.applicationContext.getBean("lockService");
         this.transactionService = (TransactionService)this.applicationContext.getBean("transactionComponent");
         this.permissionService = (PermissionService)this.applicationContext.getBean("permissionService");

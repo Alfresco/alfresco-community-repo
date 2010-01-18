@@ -30,7 +30,7 @@ import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.cmr.security.AuthenticationService;
+import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.transaction.TransactionService;
 
 /**
@@ -51,7 +51,7 @@ public abstract class BaseAlfrescoSpringTest extends BaseSpringTest
     protected ContentService contentService;
 
     /** The authentication service */
-    protected AuthenticationService authenticationService;
+    protected MutableAuthenticationService authenticationService;
 
     /** The store reference */
     protected StoreRef storeRef;
@@ -74,7 +74,7 @@ public abstract class BaseAlfrescoSpringTest extends BaseSpringTest
         // Get a reference to the node service
         this.nodeService = (NodeService) this.applicationContext.getBean("nodeService");
         this.contentService = (ContentService) this.applicationContext.getBean("contentService");
-        this.authenticationService = (AuthenticationService) this.applicationContext.getBean("authenticationService");
+        this.authenticationService = (MutableAuthenticationService) this.applicationContext.getBean("authenticationService");
         this.actionService = (ActionService)this.applicationContext.getBean("actionService");
         this.transactionService = (TransactionService)this.applicationContext.getBean("transactionComponent");
 

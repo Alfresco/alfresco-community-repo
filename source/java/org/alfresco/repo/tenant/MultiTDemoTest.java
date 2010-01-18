@@ -57,9 +57,9 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.CategoryService;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchService;
-import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
+import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.OwnableService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
@@ -81,7 +81,7 @@ public class MultiTDemoTest extends TestCase
             );
     
     private NodeService nodeService;
-    private AuthenticationService authenticationService;
+    private MutableAuthenticationService authenticationService;
     private PersonService personService;
     private SearchService searchService;
     private ContentService contentService;
@@ -141,7 +141,7 @@ public class MultiTDemoTest extends TestCase
         super.setUp();
         
         nodeService = (NodeService) ctx.getBean("NodeService");
-        authenticationService = (AuthenticationService) ctx.getBean("AuthenticationService");
+        authenticationService = (MutableAuthenticationService) ctx.getBean("AuthenticationService");
         tenantAdminService = (TenantAdminService) ctx.getBean("tenantAdminService");
         tenantService = (TenantService) ctx.getBean("tenantService");
         personService = (PersonService) ctx.getBean("PersonService");

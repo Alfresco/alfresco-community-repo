@@ -59,8 +59,8 @@ import org.alfresco.service.cmr.repository.TemplateService;
 import org.alfresco.service.cmr.rule.RuleService;
 import org.alfresco.service.cmr.search.CategoryService;
 import org.alfresco.service.cmr.search.SearchService;
-import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.AuthorityService;
+import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.OwnableService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
@@ -214,7 +214,7 @@ public interface ServiceRegistry
      * @return the authentication service (or null, if one is not provided)
      */
     @NotAuditable
-    AuthenticationService getAuthenticationService();
+    MutableAuthenticationService getAuthenticationService();
 
     /**
      * @return the node service (or null, if one is not provided)

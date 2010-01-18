@@ -64,9 +64,9 @@ import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.ResultSetRow;
 import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
-import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
+import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.NoSuchPersonException;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.NamespacePrefixResolver;
@@ -109,7 +109,7 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
 
     private AuthorityService authorityService;
     
-    private AuthenticationService authenticationService;
+    private MutableAuthenticationService authenticationService;
 
     private DictionaryService dictionaryService;
 
@@ -874,7 +874,7 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
         this.authorityService = authorityService;
     }
     
-    public void setAuthenticationService(AuthenticationService authenticationService)
+    public void setAuthenticationService(MutableAuthenticationService authenticationService)
     {
         this.authenticationService = authenticationService;
     }

@@ -104,7 +104,7 @@
    </bean>
 
    <!-- Authentication service for chaining -->
-   <bean id="localAuthenticationService" class="org.alfresco.repo.security.authentication.AuthenticationServiceImpl">
+   <bean id="localAuthenticationService" class="org.alfresco.repo.security.authentication.MutableAuthenticationServiceImpl">
       <property name="authenticationDao">
          <ref bean="authenticationDao" />
       </property>

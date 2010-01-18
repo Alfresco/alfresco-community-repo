@@ -45,7 +45,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.SearchService;
-import org.alfresco.service.cmr.security.AuthenticationService;
+import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.transaction.TransactionService;
@@ -89,7 +89,7 @@ public abstract class BaseCMISTest extends TestCase
     
     protected CMISQueryService cmisQueryService;
 
-    private AuthenticationService authenticationService;
+    private MutableAuthenticationService authenticationService;
 
     private MutableAuthenticationDao authenticationDAO;
 
@@ -121,7 +121,7 @@ public abstract class BaseCMISTest extends TestCase
         
         permissionService = (PermissionService) ctx.getBean("permissionService");
         
-        authenticationService = (AuthenticationService) ctx.getBean("authenticationService");
+        authenticationService = (MutableAuthenticationService) ctx.getBean("authenticationService");
         authenticationDAO = (MutableAuthenticationDao) ctx.getBean("authenticationDao");
         
         testTX = transactionService.getUserTransaction();

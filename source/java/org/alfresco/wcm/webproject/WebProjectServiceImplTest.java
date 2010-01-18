@@ -42,9 +42,9 @@ import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.repository.DuplicateChildNodeNameException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
+import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.wcm.AbstractWCMServiceImplTest;
@@ -95,7 +95,7 @@ public class WebProjectServiceImplTest extends AbstractWCMServiceImplTest
         super.setUp();
         
         // Get the required services
-        authenticationService = (AuthenticationService)ctx.getBean("AuthenticationService");
+        authenticationService = (MutableAuthenticationService)ctx.getBean("AuthenticationService");
         personService = (PersonService)ctx.getBean("PersonService");
         fileFolderService = (FileFolderService)ctx.getBean("FileFolderService");
         authorityService = (AuthorityService)ctx.getBean("AuthorityService");

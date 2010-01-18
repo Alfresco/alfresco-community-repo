@@ -32,8 +32,6 @@ import org.alfresco.repo.security.authentication.AuthenticationComponent.UserNam
 
 public class AuthenticationServiceImpl extends AbstractAuthenticationService implements ActivateableBean
 {
-    MutableAuthenticationDao authenticationDao;
-
     AuthenticationComponent authenticationComponent;
     
     TicketComponent ticketComponent;
@@ -51,11 +49,6 @@ public class AuthenticationServiceImpl extends AbstractAuthenticationService imp
         super();
     }
     
-    public void setAuthenticationDao(MutableAuthenticationDao authenticationDao)
-    {
-        this.authenticationDao = authenticationDao;
-    }
-
     public void setTicketComponent(TicketComponent ticketComponent)
     {
         this.ticketComponent = ticketComponent;
@@ -76,46 +69,6 @@ public class AuthenticationServiceImpl extends AbstractAuthenticationService imp
                 || ((ActivateableBean) this.authenticationComponent).isActive();
     }
 
-    public void createAuthentication(String userName, char[] password) throws AuthenticationException
-    {
-        authenticationDao.createUser(userName, password);
-    }
-
-    public void updateAuthentication(String userName, char[] oldPassword, char[] newPassword)
-            throws AuthenticationException
-    {
-        // Need to preserve the run-as user
-        String currentUser = AuthenticationUtil.getRunAsUser();
-        try
-        {
-            authenticate(userName, oldPassword);
-        }
-        finally
-        {
-            AuthenticationUtil.setRunAsUser(currentUser);
-        }
-        authenticationDao.updateUser(userName, newPassword);
-    }
-
-    public void setAuthentication(String userName, char[] newPassword) throws AuthenticationException
-    {
-        authenticationDao.updateUser(userName, newPassword);
-    }
-
-    public void deleteAuthentication(String userName) throws AuthenticationException
-    {
-        authenticationDao.deleteUser(userName);
-    }
-
-    public boolean getAuthenticationEnabled(String userName) throws AuthenticationException
-    {
-        return authenticationDao.getEnabled(userName);
-    }
-
-    public void setAuthenticationEnabled(String userName, boolean enabled) throws AuthenticationException
-    {
-        authenticationDao.setEnabled(userName, enabled);
-    }
 
     public void authenticate(String userName, char[] password) throws AuthenticationException
     {
@@ -136,11 +89,6 @@ public class AuthenticationServiceImpl extends AbstractAuthenticationService imp
         ticketComponent.getCurrentTicket(userName); // to ensure new ticket is created (even if client does not explicitly call getCurrentTicket)
     }
     
-    public boolean authenticationExists(String userName)
-    {
-        return authenticationDao.userExists(userName);
-    }
-
     public String getCurrentUserName() throws AuthenticationException
     {
         return authenticationComponent.getCurrentUserName();
@@ -327,4 +275,20 @@ public class AuthenticationServiceImpl extends AbstractAuthenticationService imp
     {
         return authenticationComponent.getDefaultGuestUserNames();
     }
+
+    /**
+     * {@inheritDoc}
+     */
+    public boolean authenticationExists(String userName)
+    {
+        return true;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public boolean getAuthenticationEnabled(String userName) throws AuthenticationException
+    {
+        return true;
+    }        
 }

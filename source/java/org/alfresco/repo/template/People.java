@@ -26,7 +26,9 @@ package org.alfresco.repo.template;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.model.ContentModel;
@@ -35,28 +37,70 @@ import org.alfresco.repo.security.authority.AuthorityDAO;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
+import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.springframework.extensions.surf.util.ParameterCheck;
+import org.alfresco.util.ValueDerivingMapFactory;
+import org.alfresco.util.ValueDerivingMapFactory.ValueDeriver;
+import org.springframework.beans.factory.InitializingBean;
 
 /**
  * People and users support in FreeMarker templates.
  * 
  * @author Kevin Roast
  */
-public class People extends BaseTemplateProcessorExtension
+public class People extends BaseTemplateProcessorExtension implements InitializingBean
 {
     /** Repository Service Registry */
     private ServiceRegistry services;
     private AuthorityDAO authorityDAO;
     private AuthorityService authorityService;
-    private AuthenticationService authenticationService;
+    private MutableAuthenticationService authenticationService;
     private PersonService personService;
     private StoreRef storeRef;
+    private ValueDerivingMapFactory<TemplateNode, String, Boolean> valueDerivingMapFactory;        
     
-    
+    public void afterPropertiesSet() throws Exception
+    {
+        Map <String, ValueDeriver<TemplateNode, Boolean>> capabilityTesters = new HashMap<String, ValueDeriver<TemplateNode, Boolean>>(5);
+        capabilityTesters.put("isAdmin", new ValueDeriver<TemplateNode, Boolean>()
+                {
+                    public Boolean deriveValue(TemplateNode source)
+                    {
+                        return isAdmin(source);
+                    }
+                });
+                capabilityTesters.put("isGuest", new ValueDeriver<TemplateNode, Boolean>()
+                {
+                    public Boolean deriveValue(TemplateNode source)
+                    {
+                        return isGuest(source);
+                    }
+                });
+                capabilityTesters.put("isMutable", new ValueDeriver<TemplateNode, Boolean>()
+                {
+                    public Boolean deriveValue(TemplateNode source)
+                    {
+                        // Check whether the account is mutable according to the authentication service
+                        String sourceUser = (String) source.getProperties().get(ContentModel.PROP_USERNAME);
+                        if (!authenticationService.isAuthenticationMutable(sourceUser))
+                        {
+                            return false;
+                        }
+                        // Only allow non-admin users to mutate their own accounts
+                        String currentUser = authenticationService.getCurrentUserName();
+                        if (currentUser.equals(sourceUser) || authorityService.isAdminAuthority(currentUser))
+                        {
+                            return true;
+                        }
+                        return false;
+                    }
+                });
+        this.valueDerivingMapFactory = new ValueDerivingMapFactory<TemplateNode, String, Boolean>(capabilityTesters);
+    }
+
     /**
      * Set the default store reference
      * 
@@ -118,7 +162,7 @@ public class People extends BaseTemplateProcessorExtension
      * @param authenticationService
      *            the new authentication service
      */
-    public void setAuthenticationService(AuthenticationService authenticationService)
+    public void setAuthenticationService(MutableAuthenticationService authenticationService)
     {
         this.authenticationService = authenticationService;
     }
@@ -213,7 +257,7 @@ public class People extends BaseTemplateProcessorExtension
         }
         return parents;
     }
-    
+
     /**
      * Return true if the specified user is an Administrator authority.
      * 
@@ -238,6 +282,19 @@ public class People extends BaseTemplateProcessorExtension
     {
         ParameterCheck.mandatory("Person", person);
         return this.authorityService.isGuestAuthority((String)person.getProperties().get(ContentModel.PROP_USERNAME));
+    }
+    
+    /**
+     * Gets a map of capabilities (boolean assertions) for the given person.
+     * 
+     * @param person
+     *            the person
+     * @return the capability map
+     */
+    public Map<String, Boolean> getCapabilities(final TemplateNode person)
+    {
+        ParameterCheck.mandatory("Person", person);
+        return this.valueDerivingMapFactory.getMap(person);
     }
 
     /**

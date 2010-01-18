@@ -24,6 +24,8 @@
  */
 package org.alfresco.repo.jscript;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 
@@ -41,18 +43,21 @@ import org.alfresco.service.cmr.search.LimitBy;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
-import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
+import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.usage.ContentUsageService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.springframework.extensions.surf.util.ParameterCheck;
 import org.alfresco.util.PropertyMap;
+import org.alfresco.util.ValueDerivingMapFactory;
+import org.alfresco.util.ValueDerivingMapFactory.ValueDeriver;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.Scriptable;
+import org.springframework.beans.factory.InitializingBean;
 
 /**
  * Scripted People service for describing and executing actions against People & Groups.
@@ -60,7 +65,7 @@ import org.mozilla.javascript.Scriptable;
  * @author davidc
  * @author kevinr
  */
-public final class People extends BaseScopableProcessorExtension
+public final class People extends BaseScopableProcessorExtension implements InitializingBean
 {
     private static Log logger = LogFactory.getLog(People.class);
     
@@ -69,13 +74,53 @@ public final class People extends BaseScopableProcessorExtension
     private AuthorityDAO authorityDAO;
     private AuthorityService authorityService;
     private PersonService personService;
-    private AuthenticationService authenticationService;
+    private MutableAuthenticationService authenticationService;
     private ContentUsageService contentUsageService;
     private TenantService tenantService;
     private UserNameGenerator usernameGenerator;
     private StoreRef storeRef;
+    private ValueDerivingMapFactory<ScriptNode, String, Boolean> valueDerivingMapFactory;
     private int numRetries = 10;
+
     
+    public void afterPropertiesSet() throws Exception
+    {
+        Map <String, ValueDeriver<ScriptNode, Boolean>> capabilityTesters = new HashMap<String, ValueDeriver<ScriptNode, Boolean>>(5);
+        capabilityTesters.put("isAdmin", new ValueDeriver<ScriptNode, Boolean>()
+        {
+            public Boolean deriveValue(ScriptNode source)
+            {
+                return isAdmin(source);
+            }
+        });
+        capabilityTesters.put("isGuest", new ValueDeriver<ScriptNode, Boolean>()
+        {
+            public Boolean deriveValue(ScriptNode source)
+            {
+                return isGuest(source);
+            }
+        });
+        capabilityTesters.put("isMutable", new ValueDeriver<ScriptNode, Boolean>()
+        {
+            public Boolean deriveValue(ScriptNode source)
+            {
+                // Check whether the account is mutable according to the authentication service
+                String sourceUser = (String) source.getProperties().get(ContentModel.PROP_USERNAME);
+                if (!authenticationService.isAuthenticationMutable(sourceUser))
+                {
+                    return false;
+                }
+                // Only allow non-admin users to mutate their own accounts
+                String currentUser = authenticationService.getCurrentUserName();
+                if (currentUser.equals(sourceUser) || authorityService.isAdminAuthority(currentUser))
+                {
+                    return true;
+                }
+                return false;
+            }
+        });
+        this.valueDerivingMapFactory = new ValueDerivingMapFactory<ScriptNode, String, Boolean>(capabilityTesters);
+    }
     
     /**
      * Set the default store reference
@@ -98,7 +143,7 @@ public final class People extends BaseScopableProcessorExtension
      * @param authenticationService
      *            the authentication service
      */
-    public void setAuthenticationService(AuthenticationService authenticationService)
+    public void setAuthenticationService(MutableAuthenticationService authenticationService)
     {
         this.authenticationService = authenticationService;
     }
@@ -324,7 +369,7 @@ public final class People extends BaseScopableProcessorExtension
         ParameterCheck.mandatoryString("userName", userName);
         ParameterCheck.mandatoryString("password", password);
         
-        AuthenticationService authService = this.services.getAuthenticationService();
+        MutableAuthenticationService authService = this.services.getAuthenticationService();
         if (this.authorityService.hasAdminAuthority() && (userName.equalsIgnoreCase(authService.getCurrentUserName()) == false))
         {
             authService.setAuthentication(userName, password.toCharArray());
@@ -723,6 +768,21 @@ public final class People extends BaseScopableProcessorExtension
     {
         ParameterCheck.mandatory("Person", person);
         return this.authorityService.isGuestAuthority((String) person.getProperties().get(ContentModel.PROP_USERNAME));
+    }
+
+    /**
+     * Gets a map of capabilities (boolean assertions) for the given person.
+     * 
+     * @param person
+     *            the person
+     * @return the capability map
+     */
+    public Map<String, Boolean> getCapabilities(final ScriptNode person)
+    {
+        ParameterCheck.mandatory("Person", person);
+        Map<String,Boolean> retVal = new ScriptableHashMap<String, Boolean>();
+        retVal.putAll(this.valueDerivingMapFactory.getMap(person));
+        return retVal;
     }
 
     /**

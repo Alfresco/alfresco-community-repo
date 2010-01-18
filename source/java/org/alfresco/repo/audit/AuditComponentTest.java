@@ -50,7 +50,7 @@ import org.alfresco.service.cmr.audit.AuditService.AuditQueryCallback;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.cmr.security.AuthenticationService;
+import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.EqualsHelper;
@@ -518,7 +518,7 @@ public class AuditComponentTest extends TestCase
         logger.debug(sb.toString());
         assertTrue("There should be no audit entries for the API test after a clear", results.isEmpty());
         
-        final AuthenticationService authenticationService = serviceRegistry.getAuthenticationService();
+        final MutableAuthenticationService authenticationService = serviceRegistry.getAuthenticationService();
         // Create a good authentication
         RunAsWork<Void> createAuthenticationWork = new RunAsWork<Void>()
         {

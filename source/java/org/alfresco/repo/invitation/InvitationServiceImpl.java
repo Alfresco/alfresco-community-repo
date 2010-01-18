@@ -32,19 +32,30 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.alfresco.model.ContentModel;
+import org.alfresco.repo.invitation.site.InviteHelper;
+import org.alfresco.repo.node.NodeServicePolicies;
+import org.alfresco.repo.policy.JavaBehaviour;
+import org.alfresco.repo.policy.PolicyComponent;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.PasswordGenerator;
+import org.alfresco.repo.security.authentication.UserNameGenerator;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
+import org.alfresco.repo.site.SiteModel;
+import org.alfresco.repo.workflow.WorkflowModel;
 import org.alfresco.service.cmr.invitation.Invitation;
+import org.alfresco.service.cmr.invitation.InvitationException;
 import org.alfresco.service.cmr.invitation.InvitationExceptionForbidden;
 import org.alfresco.service.cmr.invitation.InvitationExceptionNotFound;
 import org.alfresco.service.cmr.invitation.InvitationExceptionUserError;
 import org.alfresco.service.cmr.invitation.InvitationSearchCriteria;
+import org.alfresco.service.cmr.invitation.InvitationService;
 import org.alfresco.service.cmr.invitation.ModeratedInvitation;
 import org.alfresco.service.cmr.invitation.NominatedInvitation;
-import org.alfresco.service.cmr.invitation.InvitationService;
-import org.alfresco.service.cmr.invitation.InvitationException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
-import org.alfresco.service.cmr.security.AuthenticationService;
+import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.site.SiteService;
@@ -60,18 +71,6 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.GUID;
 import org.springframework.extensions.surf.util.PropertyCheck;
-import org.alfresco.model.ContentModel;
-import org.alfresco.repo.invitation.site.*;
-import org.alfresco.repo.node.NodeServicePolicies;
-import org.alfresco.repo.policy.JavaBehaviour;
-import org.alfresco.repo.policy.PolicyComponent;
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.security.authentication.MutableAuthenticationDao;
-import org.alfresco.repo.security.authentication.PasswordGenerator;
-import org.alfresco.repo.security.authentication.UserNameGenerator;
-import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
-import org.alfresco.repo.site.SiteModel;
-import org.alfresco.repo.workflow.WorkflowModel;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -94,9 +93,8 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
 	private WorkflowService workflowService;
 	private PersonService personService;
 	private SiteService siteService;
-	private AuthenticationService authenticationService;
+	private MutableAuthenticationService authenticationService;
 	private PermissionService permissionService;
-	private MutableAuthenticationDao mutableAuthenticationDao;
 	private NamespaceService namespaceService;
 	private NodeService nodeService;
 	// user name and password generation beans
@@ -132,7 +130,6 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
         PropertyCheck.mandatory(this, "SiteService", siteService);
         PropertyCheck.mandatory(this, "AuthenticationService", authenticationService);
         PropertyCheck.mandatory(this, "PermissionService", permissionService);
-        PropertyCheck.mandatory(this, "MutableAuthenticationDao", mutableAuthenticationDao);
         PropertyCheck.mandatory(this, "NamespaceService", namespaceService);
         PropertyCheck.mandatory(this, "NodeService", nodeService);
         PropertyCheck.mandatory(this, "UserNameGenerator", usernameGenerator);
@@ -467,7 +464,6 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
 
 		if (invitation instanceof ModeratedInvitation) {
 			WorkflowTaskQuery wfModeratedTaskQuery = new WorkflowTaskQuery();
-			HashMap<QName, Object> wfQueryModifiedProps = new HashMap<QName, Object>(3, 1.0f);
 
 			// Check rejecter is a site manager and throw and exception if not
 			String rejecterUserName = this.authenticationService.getCurrentUserName();
@@ -910,11 +906,11 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
 	}
 
 	public void setAuthenticationService(
-			AuthenticationService authenticationService) {
+	        MutableAuthenticationService authenticationService) {
 		this.authenticationService = authenticationService;
 	}
 
-	public AuthenticationService getAuthenticationService() {
+	public MutableAuthenticationService getAuthenticationService() {
 		return authenticationService;
 	}
 
@@ -948,15 +944,6 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
 
 	public PermissionService getPermissionService() {
 		return permissionService;
-	}
-
-	public void setMutableAuthenticationDao(
-			MutableAuthenticationDao mutableAuthenticationDao) {
-		this.mutableAuthenticationDao = mutableAuthenticationDao;
-	}
-
-	public MutableAuthenticationDao getMutableAuthenticationDao() {
-		return mutableAuthenticationDao;
 	}
 
 	public void setNodeService(NodeService nodeService) {
@@ -1038,11 +1025,9 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
 		char[] generatedPassword = passwordGenerator.generatePassword()
 				.toCharArray();
 
-		// create disabled user account for invitee user name with generated
-		// password
-		this.mutableAuthenticationDao.createUser(inviteeUserName,
-				generatedPassword);
-		this.mutableAuthenticationDao.setEnabled(inviteeUserName, false);
+		// create disabled user account for invitee user name with generated password
+        this.authenticationService.createAuthentication(inviteeUserName, generatedPassword);
+        this.authenticationService.setAuthenticationEnabled(inviteeUserName, false);
 
 		return String.valueOf(generatedPassword);
 	}
@@ -1302,7 +1287,7 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
 		// user name, then local reference to invitee password will be "null"
 		//
 		String inviteePassword = null;
-		if (this.mutableAuthenticationDao.userExists(inviteeUserName) == false) {
+		if (!this.authenticationService.authenticationExists(inviteeUserName)) {
 			if (logger.isDebugEnabled())
 				logger
 						.debug("Invitee user account does not exist, creating disabled account.");

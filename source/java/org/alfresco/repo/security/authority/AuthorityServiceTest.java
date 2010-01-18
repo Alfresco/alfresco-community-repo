@@ -44,9 +44,9 @@ import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
-import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
+import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.QName;
@@ -62,7 +62,7 @@ public class AuthorityServiceTest extends TestCase
 
     private AuthenticationComponent authenticationComponentImpl;
 
-    private AuthenticationService authenticationService;
+    private MutableAuthenticationService authenticationService;
 
     private MutableAuthenticationDao authenticationDAO;
 
@@ -88,7 +88,7 @@ public class AuthorityServiceTest extends TestCase
     {
         authenticationComponent = (AuthenticationComponent) ctx.getBean("authenticationComponent");
         authenticationComponentImpl = (AuthenticationComponent) ctx.getBean("authenticationComponent");
-        authenticationService = (AuthenticationService) ctx.getBean("authenticationService");
+        authenticationService = (MutableAuthenticationService) ctx.getBean("authenticationService");
         authorityService = (AuthorityService) ctx.getBean("authorityService");
         pubAuthorityService = (AuthorityService) ctx.getBean("AuthorityService");
         personService = (PersonService) ctx.getBean("personService");

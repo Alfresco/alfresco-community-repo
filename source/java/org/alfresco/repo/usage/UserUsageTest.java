@@ -45,7 +45,7 @@ import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.cmr.security.AuthenticationService;
+import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.OwnableService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.usage.UsageService;
@@ -64,7 +64,7 @@ public class UserUsageTest extends TestCase
     
     protected NodeService nodeService;
     protected FileFolderService fileFolderService;
-    protected AuthenticationService authenticationService;
+    protected MutableAuthenticationService authenticationService;
     private MutableAuthenticationDao authenticationDAO;
     protected NodeRef rootNodeRef;
     protected NodeRef systemNodeRef;
@@ -85,7 +85,7 @@ public class UserUsageTest extends TestCase
         nodeService = (NodeService) applicationContext.getBean("nodeService");
         fileFolderService = (FileFolderService) applicationContext.getBean("fileFolderService");
         
-        authenticationService = (AuthenticationService) applicationContext.getBean("authenticationService");
+        authenticationService = (MutableAuthenticationService) applicationContext.getBean("authenticationService");
         authenticationComponent = (AuthenticationComponent) applicationContext.getBean("authenticationComponent");
         
         authenticationComponent.setCurrentUser(authenticationComponent.getSystemUserName());

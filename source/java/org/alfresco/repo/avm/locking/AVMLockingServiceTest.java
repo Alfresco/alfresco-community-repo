@@ -46,6 +46,7 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
+import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
@@ -68,7 +69,7 @@ public class AVMLockingServiceTest extends TestCase
     
     private static AuthorityService fAuthorityService;
     
-    private static AuthenticationService fAuthenticationService;
+    private static MutableAuthenticationService fAuthenticationService;
     
     private static AuthenticationComponent fAuthenticationComponent;
     
@@ -93,7 +94,7 @@ public class AVMLockingServiceTest extends TestCase
             fAttributeService = (AttributeService)fContext.getBean("AttributeService");
             fPersonService = (PersonService)fContext.getBean("PersonService");
             fAuthorityService = (AuthorityService)fContext.getBean("AuthorityService");
-            fAuthenticationService = (AuthenticationService)fContext.getBean("AuthenticationService");
+            fAuthenticationService = (MutableAuthenticationService)fContext.getBean("AuthenticationService");
             fAuthenticationComponent = (AuthenticationComponent)fContext.getBean("AuthenticationComponent");
             fAuthenticationComponent.setSystemUserAsCurrentUser();
             fNodeService = (NodeService)fContext.getBean("NodeService");

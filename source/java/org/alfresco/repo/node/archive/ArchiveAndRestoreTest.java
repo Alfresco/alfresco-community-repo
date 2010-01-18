@@ -47,7 +47,7 @@ import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.cmr.security.AuthenticationService;
+import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.OwnableService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.NamespaceService;
@@ -80,7 +80,7 @@ public class ArchiveAndRestoreTest extends TestCase
     private NodeService nodeService;
     private PermissionService permissionService;
     private AuthenticationComponent authenticationComponent;
-    private AuthenticationService authenticationService;
+    private MutableAuthenticationService authenticationService;
     private OwnableService ownableService;
     private TransactionService transactionService;
     

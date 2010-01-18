@@ -27,7 +27,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.SearchService;
-import org.alfresco.service.cmr.security.AuthenticationService;
+import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.view.ImporterService;
@@ -60,7 +60,7 @@ public class ImapServiceImplTest extends TestCase
     private NodeService nodeService;
     private ImporterService importerService;
     private PersonService personService;
-    private AuthenticationService authenticationService;
+    private MutableAuthenticationService authenticationService;
     private PermissionService permissionService;
     private SearchService searchService;
     private NamespaceService namespaceService;

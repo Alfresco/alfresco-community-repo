@@ -33,7 +33,7 @@ import org.alfresco.service.cmr.activities.ActivityService;
 import org.alfresco.service.cmr.activities.FeedControl;
 import org.alfresco.service.cmr.repository.ScriptLocation;
 import org.alfresco.service.cmr.repository.ScriptService;
-import org.alfresco.service.cmr.security.AuthenticationService;
+import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.util.BaseSpringTest;
@@ -47,7 +47,7 @@ public class ActivityServiceImplTest extends BaseSpringTest
 {
     private ActivityService activityService;
     private ScriptService scriptService;
-    private AuthenticationService authenticationService;
+    private MutableAuthenticationService authenticationService;
     private SiteService siteService;
     
     private static final String ADMIN_PW = "admin";
@@ -64,7 +64,7 @@ public class ActivityServiceImplTest extends BaseSpringTest
         this.scriptService = (ScriptService)this.applicationContext.getBean("ScriptService");
         this.siteService = (SiteService)this.applicationContext.getBean("SiteService");
         
-        this.authenticationService = (AuthenticationService)applicationContext.getBean("authenticationService");
+        this.authenticationService = (MutableAuthenticationService)applicationContext.getBean("authenticationService");
         
         authenticationService.authenticate(AuthenticationUtil.getAdminUserName(), ADMIN_PW.toCharArray());
     }

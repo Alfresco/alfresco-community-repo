@@ -32,7 +32,7 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
-import org.alfresco.service.cmr.security.AuthenticationService;
+import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
@@ -102,7 +102,7 @@ public class AbstractWCMServiceImplTest extends TestCase
     protected SandboxService sbService;
     protected AssetService assetService;
     
-    protected AuthenticationService authenticationService;
+    protected MutableAuthenticationService authenticationService;
     protected PersonService personService;
     
     protected TransactionService transactionService;
@@ -115,7 +115,7 @@ public class AbstractWCMServiceImplTest extends TestCase
         sbService = (SandboxService)ctx.getBean("SandboxService");
         assetService = (AssetService)ctx.getBean("AssetService");
         
-        authenticationService = (AuthenticationService)ctx.getBean("AuthenticationService");
+        authenticationService = (MutableAuthenticationService)ctx.getBean("AuthenticationService");
         personService = (PersonService)ctx.getBean("PersonService");
         transactionService = (TransactionService)ctx.getBean("TransactionService");
         

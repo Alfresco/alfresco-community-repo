@@ -46,22 +46,8 @@
       </property>
    </bean>
 
-   <!-- DAO that rejects changes - JAAS is read only at the moment.      -->
-   <!-- It does allow users to be deleted with out warnings from the UI. -->
-   <!-- The user is still present in JAAS, only the personal information is removed from alfresco. -->
-
-   <bean id="authenticationDao" class="org.alfresco.repo.security.authentication.DefaultMutableAuthenticationDao">
-      <property name="allowSetEnabled" value="true" />
-      <property name="allowGetEnabled" value="true" />
-      <property name="allowDeleteUser" value="true" />
-      <property name="allowCreateUser" value="true" />
-   </bean>
-
    <!-- Authenticaton service for chaining -->
    <bean id="localAuthenticationService" class="org.alfresco.repo.security.authentication.AuthenticationServiceImpl">
-      <property name="authenticationDao">
-         <ref bean="authenticationDao" />
-      </property>
       <property name="ticketComponent">
          <ref bean="ticketComponent" />
       </property>

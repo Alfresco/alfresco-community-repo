@@ -49,7 +49,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.SearchService;
-import org.alfresco.service.cmr.security.AuthenticationService;
+import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.transaction.TransactionService;
@@ -64,7 +64,7 @@ public class FileImporterTest extends TestCase
     private SearchService searchService;
     private DictionaryService dictionaryService;
     private ContentService contentService;
-    private AuthenticationService authenticationService;
+    private MutableAuthenticationService authenticationService;
     private AuthenticationComponent authenticationComponent;
     private PermissionService permissionService;
     private MimetypeService mimetypeService;
@@ -92,7 +92,7 @@ public class FileImporterTest extends TestCase
         searchService = serviceRegistry.getSearchService();
         dictionaryService = serviceRegistry.getDictionaryService();
         contentService = serviceRegistry.getContentService();
-        authenticationService = (AuthenticationService) ctx.getBean("authenticationService");
+        authenticationService = (MutableAuthenticationService) ctx.getBean("authenticationService");
         authenticationComponent = (AuthenticationComponent) ctx.getBean("authenticationComponent");
         permissionService = serviceRegistry.getPermissionService();
         mimetypeService = serviceRegistry.getMimetypeService();

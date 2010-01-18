@@ -19,7 +19,7 @@ import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.cmr.security.AuthenticationService;
+import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ApplicationContextHelper;
@@ -37,7 +37,7 @@ public class MessageServiceImplTest extends TestCase implements MessageDeployer
     
 	private MessageService messageService;
 	private NodeService nodeService;
-	private AuthenticationService authenticationService;
+	private MutableAuthenticationService authenticationService;
 	private ContentService contentService;
 
 	private static final String BASE_BUNDLE_NAME = "testMessages";
@@ -72,7 +72,7 @@ public class MessageServiceImplTest extends TestCase implements MessageDeployer
     	// Get the services by name from the application context
     	messageService = (MessageService)applicationContext.getBean("messageService");
         nodeService = (NodeService)applicationContext.getBean("NodeService");
-        authenticationService = (AuthenticationService)applicationContext.getBean("AuthenticationService");
+        authenticationService = (MutableAuthenticationService)applicationContext.getBean("AuthenticationService");
         contentService = (ContentService) applicationContext.getBean("ContentService");
         
         // Re-set the current locale to be the default

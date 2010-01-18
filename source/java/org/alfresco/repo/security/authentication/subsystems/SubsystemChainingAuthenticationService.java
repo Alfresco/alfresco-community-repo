@@ -31,6 +31,7 @@ import org.alfresco.repo.management.subsystems.ActivateableBean;
 import org.alfresco.repo.management.subsystems.ChildApplicationContextManager;
 import org.alfresco.repo.security.authentication.AbstractChainingAuthenticationService;
 import org.alfresco.service.cmr.security.AuthenticationService;
+import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.context.ApplicationContext;
 
@@ -77,7 +78,7 @@ public class SubsystemChainingAuthenticationService extends AbstractChainingAuth
      * org.alfresco.repo.security.authentication.AbstractChainingAuthenticationService#getMutableAuthenticationService()
      */
     @Override
-    public AuthenticationService getMutableAuthenticationService()
+    public MutableAuthenticationService getMutableAuthenticationService()
     {
         for (String instance : this.applicationContextManager.getInstanceIds())
         {
@@ -87,11 +88,12 @@ public class SubsystemChainingAuthenticationService extends AbstractChainingAuth
                 AuthenticationService authenticationService = (AuthenticationService) context.getBean(sourceBeanName);
                 // Only add active authentication services. E.g. we might have an ldap context that is only used for
                 // synchronizing
-                if (!(authenticationService instanceof ActivateableBean)
-                        || ((ActivateableBean) authenticationService).isActive())
+                if (authenticationService instanceof MutableAuthenticationService
+                        && (!(authenticationService instanceof ActivateableBean) || ((ActivateableBean) authenticationService)
+                                .isActive()))
                 {
 
-                    return authenticationService;
+                    return (MutableAuthenticationService) authenticationService;
                 }
             }
             catch (NoSuchBeanDefinitionException e)

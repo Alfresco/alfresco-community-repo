@@ -41,7 +41,7 @@ import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.cmr.security.AuthenticationService;
+import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.usage.ContentUsageService;
 import org.alfresco.service.namespace.NamespaceService;
@@ -59,7 +59,7 @@ public class UserUsageTrackingComponentTest extends TestCase
 
     private boolean clean = true;
     
-    private AuthenticationService authenticationService;
+    private MutableAuthenticationService authenticationService;
     private ContentService contentService;
     private TransactionService transactionService;
     private PersonService personService;
@@ -80,7 +80,7 @@ public class UserUsageTrackingComponentTest extends TestCase
     protected void setUp() throws Exception
     {
         nodeService = (NodeService)applicationContext.getBean("NodeService");
-        authenticationService = (AuthenticationService)applicationContext.getBean("authenticationService");   
+        authenticationService = (MutableAuthenticationService)applicationContext.getBean("authenticationService");   
         transactionService = (TransactionService)applicationContext.getBean("transactionComponent");
         personService = (PersonService)applicationContext.getBean("PersonService");
         contentService = (ContentService)applicationContext.getBean("ContentService");

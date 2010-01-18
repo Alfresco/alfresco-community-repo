@@ -38,7 +38,7 @@ import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.repo.site.SiteModel;
 import org.alfresco.service.cmr.activities.ActivityService;
 import org.alfresco.service.cmr.activities.FeedControl;
-import org.alfresco.service.cmr.security.AuthenticationService;
+import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.cmr.site.SiteVisibility;
@@ -62,7 +62,7 @@ public class SiteActivityTest extends TestCase
     
     private SiteService siteService;
     private ActivityService activityService;
-    private AuthenticationService authenticationService;
+    private MutableAuthenticationService authenticationService;
     private PersonService personService;
     private PostLookup postLookup;
     private FeedGenerator feedGenerator;
@@ -115,7 +115,7 @@ public class SiteActivityTest extends TestCase
         // Get the required services
         this.activityService = (ActivityService)applicationContext.getBean("activityService");
         this.siteService = (SiteService)applicationContext.getBean("SiteService");
-        this.authenticationService = (AuthenticationService)applicationContext.getBean("AuthenticationService");
+        this.authenticationService = (MutableAuthenticationService)applicationContext.getBean("AuthenticationService");
         this.personService = (PersonService)applicationContext.getBean("PersonService");
         
         this.postLookup = (PostLookup)applicationContext.getBean("postLookup");

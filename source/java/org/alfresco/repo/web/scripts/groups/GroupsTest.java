@@ -32,9 +32,9 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.web.scripts.BaseWebScriptTest;
-import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
+import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.util.PropertyMap;
 import org.springframework.extensions.webscripts.Status;
@@ -60,7 +60,7 @@ public class GroupsTest extends BaseWebScriptTest
 {    
 	private static final Log logger = LogFactory.getLog(BaseWebScriptTest.class);
 	
-    private AuthenticationService authenticationService;
+    private MutableAuthenticationService authenticationService;
     private AuthorityService authorityService;
     private AuthenticationComponent authenticationComponent;
     private PersonService personService;
@@ -142,7 +142,7 @@ public class GroupsTest extends BaseWebScriptTest
     {
         super.setUp();
         
-        this.authenticationService = (AuthenticationService)getServer().getApplicationContext().getBean("AuthenticationService");
+        this.authenticationService = (MutableAuthenticationService)getServer().getApplicationContext().getBean("AuthenticationService");
         this.authenticationComponent = (AuthenticationComponent)getServer().getApplicationContext().getBean("authenticationComponent");
         this.personService = (PersonService)getServer().getApplicationContext().getBean("PersonService");
         this.authorityService = (AuthorityService)getServer().getApplicationContext().getBean("AuthorityService");

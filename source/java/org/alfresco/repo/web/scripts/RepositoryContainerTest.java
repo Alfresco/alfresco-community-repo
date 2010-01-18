@@ -26,7 +26,7 @@ package org.alfresco.repo.web.scripts;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.service.cmr.security.AuthenticationService;
+import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.util.PropertyMap;
 import org.springframework.extensions.webscripts.TestWebScriptServer.GetRequest;
@@ -39,7 +39,7 @@ import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
  */
 public class RepositoryContainerTest extends BaseWebScriptTest
 {
-    private AuthenticationService authenticationService;
+    private MutableAuthenticationService authenticationService;
     private PersonService personService;
 
     private static final String USER_ONE = "RunAsOne";
@@ -51,7 +51,7 @@ public class RepositoryContainerTest extends BaseWebScriptTest
     {
         super.setUp();
 
-        this.authenticationService = (AuthenticationService) getServer().getApplicationContext().getBean(
+        this.authenticationService = (MutableAuthenticationService) getServer().getApplicationContext().getBean(
                 "AuthenticationService");
         this.personService = (PersonService) getServer().getApplicationContext().getBean("PersonService");
 

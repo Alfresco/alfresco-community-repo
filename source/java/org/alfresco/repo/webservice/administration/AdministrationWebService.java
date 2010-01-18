@@ -45,8 +45,8 @@ import org.alfresco.repo.webservice.types.NamedValue;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
-import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.AuthorityService;
+import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
@@ -76,7 +76,7 @@ public class AdministrationWebService extends AbstractWebService implements
     private boolean manageAuthenticationDetails = true;
     
     /** The authentication service */
-    private AuthenticationService authenticationService = null;
+    private MutableAuthenticationService authenticationService = null;
     
     private AuthorityService authorityService;
     
@@ -133,7 +133,7 @@ public class AdministrationWebService extends AbstractWebService implements
      * 
      * @param authenticationService     the authentication service
      */
-    public void setAuthenticationService(AuthenticationService authenticationService)
+    public void setAuthenticationService(MutableAuthenticationService authenticationService)
     {
         this.authenticationService = authenticationService;
     }

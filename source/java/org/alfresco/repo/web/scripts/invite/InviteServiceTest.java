@@ -42,9 +42,9 @@ import org.alfresco.repo.web.scripts.BaseWebScriptTest;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
-import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
+import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
@@ -74,7 +74,7 @@ public class InviteServiceTest extends BaseWebScriptTest
 {
     // member variables for service instances
     private AuthorityService authorityService;
-    private AuthenticationService authenticationService;
+    private MutableAuthenticationService authenticationService;
     private AuthenticationComponent authenticationComponent;
     private PersonService personService;
     private SiteService siteService;
@@ -123,7 +123,7 @@ public class InviteServiceTest extends BaseWebScriptTest
 
         // get references to services
         this.authorityService = (AuthorityService) getServer().getApplicationContext().getBean("AuthorityService");
-        this.authenticationService = (AuthenticationService) getServer().getApplicationContext()
+        this.authenticationService = (MutableAuthenticationService) getServer().getApplicationContext()
                 .getBean("AuthenticationService");
         this.authenticationComponent = (AuthenticationComponent) getServer().getApplicationContext()
                 .getBean("AuthenticationComponent");

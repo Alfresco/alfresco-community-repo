@@ -18,10 +18,9 @@ else if (args["user"] != null)
 {
    var userId = args["user"];
    object = people.getPerson(userId);
-   model.isAdmin = people.isAdmin(object);
-   model.isGuest = people.isGuest(object);
-   model.isUser = true;
+   model.isUser = true; 
    model.includeChildren = false;
+   model.capabilities = people.getCapabilities(object);
 }
 
 // load content by relative path

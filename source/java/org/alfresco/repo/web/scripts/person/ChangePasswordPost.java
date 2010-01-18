@@ -29,15 +29,15 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.alfresco.repo.security.authentication.AuthenticationException;
-import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.AuthorityService;
+import org.alfresco.service.cmr.security.MutableAuthenticationService;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.springframework.extensions.surf.util.Content;
 import org.springframework.extensions.webscripts.DeclarativeWebScript;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 /**
  * Webscript implementation for the POST method for 'changepassword' API.
@@ -48,14 +48,14 @@ public class ChangePasswordPost extends DeclarativeWebScript
 {
     private static final String PARAM_NEWPW = "newpw";
     private static final String PARAM_OLDPW = "oldpw";
-    private AuthenticationService authenticationService;
+    private MutableAuthenticationService authenticationService;
     private AuthorityService authorityService;
     
     
     /**
      * @param authenticationService    the AuthenticationService to set
      */
-    public void setAuthenticationService(AuthenticationService authenticationService)
+    public void setAuthenticationService(MutableAuthenticationService authenticationService)
     {
         this.authenticationService = authenticationService;
     }

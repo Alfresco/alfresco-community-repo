@@ -48,36 +48,7 @@
 	,
 	"properties" :
 	{
-	<#assign first = true>
-	<#list object.properties?keys as key>
-		<#if object.properties[key]?exists>
-			<#assign val = object.properties[key]>
-			<#if isUser && object.isTemplateContent(val)>
-				<#if first == false>,</#if>
-				"${key}" : "${jsonUtils.encodeJSONString(val.content)}"
-				<#assign first = false>
-			<#elseif object.isTemplateNodeRef(val)>
-				<#if first == false>,</#if>
-				"${key}" : "${val.nodeRef}"
-				<#assign first = false>
-			<#elseif val?is_string == true>
-				<#if first == false>,</#if>
-				"${key}" : "${jsonUtils.encodeJSONString(val)}"
-				<#assign first = false>
-			<#elseif val?is_date == true>
-				<#if first == false>,</#if>
-				"${key}" : "${val?datetime}"
-				<#assign first = false>
-			<#elseif val?is_boolean == true>
-				<#if first == false>,</#if>
-				"${key}" : "${val?string}"
-				<#assign first = false>
-			</#if>
-		</#if>
-	</#list>
-	<#if isUser>
-		, "isAdmin" : "${isAdmin?string}"
-	</#if>
+	   <@serializeHash hash=object.properties/>
 	}
 </#if>
 
@@ -108,5 +79,45 @@
 		"{http://www.alfresco.org/model/content/1.0}avatar" : ["${object.associations["cm:avatar"][0].nodeRef}"]
 	}
 </#if>
+
+<#if isUser>
+    ,
+    "capabilities" :
+    {
+        <@serializeHash hash=capabilities/>
+    }
+</#if>
+
+</#macro>
+
+<#macro serializeHash hash>
+
+<#local first = true>
+<#list hash?keys as key>
+    <#if hash[key]?exists>
+        <#local val = hash[key]>
+        <#if isUser && object.isTemplateContent(val)>
+            <#if first == false>,</#if>
+            "${key}" : "${jsonUtils.encodeJSONString(val.content)}"
+            <#local first = false>
+        <#elseif object.isTemplateNodeRef(val)>
+            <#if first == false>,</#if>
+            "${key}" : "${val.nodeRef}"
+            <#local first = false>
+        <#elseif val?is_string == true>
+            <#if first == false>,</#if>
+            "${key}" : "${jsonUtils.encodeJSONString(val)}"
+            <#local first = false>
+        <#elseif val?is_date == true>
+            <#if first == false>,</#if>
+            "${key}" : "${val?datetime}"
+            <#local first = false>
+        <#elseif val?is_boolean == true>
+            <#if first == false>,</#if>
+            "${key}" : "${val?string}"
+            <#local first = false>
+        </#if>
+    </#if>
+</#list>
 
 </#macro>

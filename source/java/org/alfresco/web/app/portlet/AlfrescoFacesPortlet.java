@@ -173,7 +173,7 @@ public class AlfrescoFacesPortlet extends MyFacesGenericPortlet
                   WebApplicationContext ctx = (WebApplicationContext)getPortletContext().getAttribute(
                         WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE);
                   AuthenticationService auth = (AuthenticationService)ctx.getBean("AuthenticationService");
-                  auth.validate(user.getTicket());
+                  auth.validate(user.getTicket(), null);
                   
                   // save last username into portlet preferences, get from LoginBean state
                   LoginBean loginBean = (LoginBean)request.getPortletSession().getAttribute(AuthenticationHelper.LOGIN_BEAN);
@@ -329,7 +329,7 @@ public class AlfrescoFacesPortlet extends MyFacesGenericPortlet
                      logger.debug("Validating ticket: " + user.getTicket());
                   
                   // setup the authentication context
-                  auth.validate(user.getTicket());
+                  auth.validate(user.getTicket(), null);
                }
                
                // do the normal JSF processing

@@ -236,7 +236,8 @@ public class HTTPRequestAuthenticationFilter implements Filter
         authComponent.setCurrentUser(userName);
         
         // Set up the user information
-        AuthenticationHelper.setUser(context, req, userName, authenticationService.getCurrentTicket(), true);
+        AuthenticationHelper.setUser(context, req, userName, authenticationService.getCurrentTicket(req.getSession()
+                .getId()), true);
 
         // Set the locale using the session
         AuthenticationHelper.setupThread(this.context, req, res);

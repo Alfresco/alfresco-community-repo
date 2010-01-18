@@ -79,7 +79,7 @@ public class BasicAuthenticationHandler extends AbstractAuthenticationHandler
                 
                 if (mapper.isSiteMember(request, alfrescoContext, username))
                 {
-                    user = new User(username, authenticationService.getCurrentTicket(), personService.getPerson(username));
+                    user = new User(username, authenticationService.getCurrentTicket(session.getId()), personService.getPerson(username));
                     if (session != null)
                         session.setAttribute(USER_SESSION_ATTRIBUTE, user);
                 }

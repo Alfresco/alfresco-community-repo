@@ -60,7 +60,7 @@ if (user != null)
    tx.begin();
 	try
 	{
-      authService.validate(user.getTicket());
+      authService.validate(user.getTicket(), session.getId());
       
       // ensure construction of the FacesContext before attemping a service call
       FacesContext fc = FacesHelper.getFacesContext(request, response, application);
@@ -78,7 +78,7 @@ if (user != null)
       
       // expired ticket
       AuthenticationService unpAuth = (AuthenticationService)context.getBean("authenticationService");
-      unpAuth.invalidateTicket(unpAuth.getCurrentTicket());
+      unpAuth.invalidateTicket(unpAuth.getCurrentTicket(session.getId()), session.getId());
       unpAuth.clearCurrentSecurityContext();
    }
    catch (Throwable e)
@@ -95,7 +95,7 @@ else
 	   authService.authenticateAsGuest();
 		PersonService personService = (PersonService)context.getBean("personService");
       NodeRef guestRef = personService.getPerson(PermissionService.GUEST_AUTHORITY);
-      user = new User(authService.getCurrentUserName(), authService.getCurrentTicket(), guestRef);
+      user = new User(authService.getCurrentUserName(), authService.getCurrentTicket(session.getId()), guestRef);
       session.setAttribute(AuthenticationHelper.AUTHENTICATION_USER, user);
       
       // ensure construction of the FacesContext before attemping a service call

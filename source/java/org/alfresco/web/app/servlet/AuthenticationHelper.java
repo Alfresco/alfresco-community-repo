@@ -93,7 +93,7 @@ public final class AuthenticationHelper
    private static final String PERSON_SERVICE = "personService";
    
    /** cookie names */
-   private static final String COOKIE_ALFUSER = "alfUser";
+   private static final String COOKIE_ALFUSER = "alfUser0";
    
    private static Log logger = LogFactory.getLog(AuthenticationHelper.class);
    
@@ -209,7 +209,7 @@ public final class AuthenticationHelper
                   auth.authenticateAsGuest();
                   
                   // if we get here then Guest access was allowed and successful
-                  setUser(sc, req, AuthenticationUtil.getGuestUserName(), auth.getCurrentTicket(), false);
+                  setUser(sc, req, AuthenticationUtil.getGuestUserName(), auth.getCurrentTicket(session.getId()), false);
                   
                   // Set up the thread context
                   setupThread(sc, req, res);
@@ -228,7 +228,8 @@ public final class AuthenticationHelper
                {
                   // Guest is unable to access either properties on Person
                   AuthenticationService unprotAuthService = (AuthenticationService)wc.getBean(UNPROTECTED_AUTH_SERVICE);
-                  unprotAuthService.invalidateTicket(unprotAuthService.getCurrentTicket());
+                  String sessionId = session.getId();
+                  unprotAuthService.invalidateTicket(unprotAuthService.getCurrentTicket(sessionId), sessionId);
                   unprotAuthService.clearCurrentSecurityContext();
                   logger.warn("Unable to login as Guest: " + accessError.getMessage());
                }
@@ -236,7 +237,8 @@ public final class AuthenticationHelper
                {
                   // Some other kind of serious failure to report
                   AuthenticationService unprotAuthService = (AuthenticationService)wc.getBean(UNPROTECTED_AUTH_SERVICE);
-                  unprotAuthService.invalidateTicket(unprotAuthService.getCurrentTicket());
+                  String sessionId = session.getId();
+                  unprotAuthService.invalidateTicket(unprotAuthService.getCurrentTicket(sessionId), sessionId);
                   unprotAuthService.clearCurrentSecurityContext();
                   throw new AlfrescoRuntimeException("Failed to authenticate as Guest user.", e);
                }
@@ -277,7 +279,7 @@ public final class AuthenticationHelper
       HttpSession session = httpRequest.getSession();
       try
       {
-         auth.validate(ticket);
+         auth.validate(ticket, session.getId());
          
          // We may have previously been authenticated via WebDAV so we may need to 'promote' the user object
          SessionUser user = (SessionUser)session.getAttribute(AuthenticationHelper.AUTHENTICATION_USER);
@@ -295,7 +297,8 @@ public final class AuthenticationHelper
       {
          // Some other kind of serious failure
          AuthenticationService unprotAuthService = (AuthenticationService)wc.getBean(UNPROTECTED_AUTH_SERVICE);
-         unprotAuthService.invalidateTicket(unprotAuthService.getCurrentTicket());
+         String sessionId = session.getId();
+         unprotAuthService.invalidateTicket(unprotAuthService.getCurrentTicket(sessionId), sessionId);
          unprotAuthService.clearCurrentSecurityContext();
          return AuthenticationStatus.Failure;
       }
@@ -403,7 +406,7 @@ public final class AuthenticationHelper
       {
          auth.authenticateAsGuest();
          
-         User user = createUser(ctx, AuthenticationUtil.getGuestUserName(), auth.getCurrentTicket());
+         User user = createUser(ctx, AuthenticationUtil.getGuestUserName(), auth.getCurrentTicket(session.getId()));
          
          // store the User object in the Session - the authentication servlet will then proceed
          session.setAttribute(AuthenticationHelper.AUTHENTICATION_USER, user);
@@ -425,7 +428,8 @@ public final class AuthenticationHelper
       {
          // Guest is unable to access either properties on Person
          AuthenticationService unprotAuthService = (AuthenticationService)ctx.getBean(UNPROTECTED_AUTH_SERVICE);
-         unprotAuthService.invalidateTicket(unprotAuthService.getCurrentTicket());
+         String sessionId = session.getId();
+         unprotAuthService.invalidateTicket(unprotAuthService.getCurrentTicket(sessionId), sessionId);
          unprotAuthService.clearCurrentSecurityContext();
          logger.warn("Unable to login as Guest: " + accessError.getMessage());
       }
@@ -433,7 +437,8 @@ public final class AuthenticationHelper
       {
          // Some other kind of serious failure to report
          AuthenticationService unprotAuthService = (AuthenticationService)ctx.getBean(UNPROTECTED_AUTH_SERVICE);
-         unprotAuthService.invalidateTicket(unprotAuthService.getCurrentTicket());
+         String sessionId = session.getId();
+         unprotAuthService.invalidateTicket(unprotAuthService.getCurrentTicket(sessionId), sessionId);
          unprotAuthService.clearCurrentSecurityContext();
          throw new AlfrescoRuntimeException("Failed to authenticate as Guest user.", e);
       }
@@ -499,7 +504,7 @@ public final class AuthenticationHelper
          AuthenticationService auth = (AuthenticationService) wc.getBean(AUTHENTICATION_SERVICE);
          try
          {
-            auth.validate(sessionUser.getTicket());
+            auth.validate(sessionUser.getTicket(), session.getId());
             if (sessionUser instanceof User)
             {
                user = (User)sessionUser;
@@ -541,7 +546,8 @@ public final class AuthenticationHelper
                   .getBean(AUTHENTICATION_COMPONENT);
             authenticationComponent.setCurrentUser(userId);
             AuthenticationService authenticationService = (AuthenticationService) wc.getBean(AUTHENTICATION_SERVICE);
-            user = setUser(sc, httpRequest, userId, authenticationService.getCurrentTicket(), true);
+            session = httpRequest.getSession();
+            user = setUser(sc, httpRequest, userId, authenticationService.getCurrentTicket(session.getId()), true);
          }
       }
       return user;
@@ -605,5 +611,29 @@ public final class AuthenticationHelper
          }
       }
       return authCookie;
+   }
+   
+   /**
+    * Gets the decoded auth cookie value.
+    * 
+    * @param authCookie
+    *           the auth cookie
+    * @return the auth cookie value
+    */
+   public static String getAuthCookieValue(Cookie authCookie)
+   {
+      String authCookieValue = authCookie.getValue();
+      if (authCookieValue == null)
+      {
+         return null;
+      }
+      try
+      {
+         return new String(Base64.decode(authCookieValue), "UTF-8");
+      }
+      catch (UnsupportedEncodingException e)
+      {
+         throw new RuntimeException(e);
+      }
    }
 }

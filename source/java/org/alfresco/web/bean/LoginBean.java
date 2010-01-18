@@ -35,6 +35,7 @@ import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.faces.validator.ValidatorException;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.SessionUser;
@@ -300,10 +301,19 @@ public class LoginBean implements Serializable
             // remove the session invalidated flag (used to remove last username cookie by AuthenticationFilter)
             session.remove(AuthenticationHelper.SESSION_INVALIDATED);
             
+            // Try to make an association between the session ID and the ticket ID (if not possible here, it will
+            // happen during first pass through security filters)
+            String sessionId = null;
+            Object httpSession = fc.getExternalContext().getSession(false);
+            if (httpSession != null && httpSession instanceof HttpSession)
+            {
+                sessionId = ((HttpSession) httpSession).getId();
+            }
+
             // setup User object and Home space ID
             User user = new User(
                     this.username,
-                  this.getAuthenticationService().getCurrentTicket(),
+                  this.getAuthenticationService().getCurrentTicket(sessionId),
                   getPersonService().getPerson(this.username));
             
             NodeRef homeSpaceRef = (NodeRef) this.getNodeService().getProperty(getPersonService().getPerson(this.username), ContentModel.PROP_HOMEFOLDER);
@@ -426,8 +436,8 @@ public class LoginBean implements Serializable
          SessionUser user = (SessionUser)session.get(AuthenticationHelper.AUTHENTICATION_USER);
          if (user != null)
          {
-            // invalidate ticket and clear the Security context for this thread
-            getAuthenticationService().invalidateTicket(user.getTicket());
+             // invalidate ticket and clear the Security context for this thread
+            getAuthenticationService().invalidateTicket(user.getTicket(), null);
             getAuthenticationService().clearCurrentSecurityContext();
          }
          // remove all objects from our session by hand

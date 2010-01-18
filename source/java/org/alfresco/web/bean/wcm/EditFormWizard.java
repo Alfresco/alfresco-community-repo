@@ -306,60 +306,67 @@ public class EditFormWizard
        for (WebProject wp: webProjects)
        {
            ResultSet results = searchRenderingEngineTemplateInWebProject(wp, retd.getName());
-           int resultsCount = results.length();
-           if (resultsCount>0)
+           try
            {
-               //update
-               for (int i=0; i<resultsCount; i++)
+               int resultsCount = results.length();
+               if (resultsCount>0)
                {
-                   NodeRef webformTemplateNodeRef = results.getNodeRef(i);
-                   if (retd.getOutputPathPatternForRendition() != null)
+                   //update
+                   for (int i=0; i<resultsCount; i++)
+                   {
+                       NodeRef webformTemplateNodeRef = results.getNodeRef(i);
+                       if (retd.getOutputPathPatternForRendition() != null)
+                       {
+                          props.clear();
+                          props.put(WCMAppModel.PROP_OUTPUT_PATH_PATTERN, retd.getOutputPathPatternForRendition());
+                          getNodeService().addAspect(webformTemplateNodeRef, WCMAppModel.ASPECT_OUTPUT_PATH_PATTERN, props);
+                       }
+                   }
+               }
+               else
+               {
+                   //just add
+                   String query = "+TYPE:\"" + WCMAppModel.TYPE_WEBFORM + "\"" +
+                                  " +@" + Repository.escapeQName(WCMAppModel.PROP_FORMNAME) + ":\"" + form.getName() + "\"";
+                   
+                   if (LOGGER.isDebugEnabled())
+                      LOGGER.debug("Search web forms query: " + query);
+    
+                   ResultSet webforms = getSearchService().query(wp.getNodeRef().getStoreRef(), SearchService.LANGUAGE_LUCENE, query);
+                   
+                   try
                    {
                       props.clear();
-                      props.put(WCMAppModel.PROP_OUTPUT_PATH_PATTERN, retd.getOutputPathPatternForRendition());
-                      getNodeService().addAspect(webformTemplateNodeRef, WCMAppModel.ASPECT_OUTPUT_PATH_PATTERN, props);
+                      props.put(WCMAppModel.PROP_BASE_RENDERING_ENGINE_TEMPLATE_NAME, 
+                                retd.getName());
+                      for (int i=0; i<webforms.length(); i++)
+                      {
+                          if (LOGGER.isDebugEnabled())
+                             LOGGER.debug("WebForm NodeRef: " + webforms.getNodeRef(i));
+                          
+                          NodeRef templateRef = getNodeService().createNode(webforms.getNodeRef(i),
+                                                                            WCMAppModel.ASSOC_WEBFORMTEMPLATE,
+                                                                            WCMAppModel.ASSOC_WEBFORMTEMPLATE,
+                                                                            WCMAppModel.TYPE_WEBFORMTEMPLATE,
+                                                                            props).getChildRef();
+                          
+                          if (retd.getOutputPathPatternForRendition() != null)
+                          {
+                             props.clear();
+                             props.put(WCMAppModel.PROP_OUTPUT_PATH_PATTERN, retd.getOutputPathPatternForRendition());
+                             getNodeService().addAspect(templateRef, WCMAppModel.ASPECT_OUTPUT_PATH_PATTERN, props);
+                          }
+                      }
+                   }
+                   finally
+                   {
+                      webforms.close();
                    }
                }
            }
-           else
+           finally
            {
-               //just add
-               String query = "+TYPE:\"" + WCMAppModel.TYPE_WEBFORM + "\"" +
-                              " +@" + Repository.escapeQName(WCMAppModel.PROP_FORMNAME) + ":\"" + form.getName() + "\"";
-               
-               if (LOGGER.isDebugEnabled())
-                  LOGGER.debug("Search web forms query: " + query);
-
-               ResultSet webforms = getSearchService().query(wp.getNodeRef().getStoreRef(), SearchService.LANGUAGE_LUCENE, query);
-               
-               try
-               {
-                  props.clear();
-                  props.put(WCMAppModel.PROP_BASE_RENDERING_ENGINE_TEMPLATE_NAME, 
-                            retd.getName());
-                  for (int i=0; i<webforms.length(); i++)
-                  {
-                      if (LOGGER.isDebugEnabled())
-                         LOGGER.debug("WebForm NodeRef: " + webforms.getNodeRef(i));
-                      
-                      NodeRef templateRef = getNodeService().createNode(webforms.getNodeRef(i),
-                                                                        WCMAppModel.ASSOC_WEBFORMTEMPLATE,
-                                                                        WCMAppModel.ASSOC_WEBFORMTEMPLATE,
-                                                                        WCMAppModel.TYPE_WEBFORMTEMPLATE,
-                                                                        props).getChildRef();
-                      
-                      if (retd.getOutputPathPatternForRendition() != null)
-                      {
-                         props.clear();
-                         props.put(WCMAppModel.PROP_OUTPUT_PATH_PATTERN, retd.getOutputPathPatternForRendition());
-                         getNodeService().addAspect(templateRef, WCMAppModel.ASPECT_OUTPUT_PATH_PATTERN, props);
-                      }
-                  }
-               }
-               finally
-               {
-                  webforms.close();
-               }
+               results.close();
            }
        }
    }

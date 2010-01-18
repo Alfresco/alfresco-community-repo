@@ -192,7 +192,7 @@ public class ContextListener implements ServletContextListener, HttpSessionListe
             // invalidate ticket and clear the Security context for this thread
             WebApplicationContext ctx = WebApplicationContextUtils.getRequiredWebApplicationContext(servletContext);
             AuthenticationService authService = (AuthenticationService)ctx.getBean("authenticationService");
-            authService.invalidateTicket(user.getTicket());
+            authService.invalidateTicket(user.getTicket(), event.getSession().getId());
             authService.clearCurrentSecurityContext();
             event.getSession().removeAttribute(userKey);
          }

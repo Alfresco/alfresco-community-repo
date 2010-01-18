@@ -56,9 +56,10 @@
    else
    {      
       // setup value used by JSF bean state ready for login page if we find the cookie
-      if (authCookie != null && authCookie.getValue() != null)
+      String authCookieValue;
+      if (authCookie != null && (authCookieValue = AuthenticationHelper.getAuthCookieValue(authCookie)) != null)
       {
-         session.setAttribute(AuthenticationHelper.SESSION_USERNAME, authCookie.getValue());
+         session.setAttribute(AuthenticationHelper.SESSION_USERNAME, authCookieValue);
       }
    }
    

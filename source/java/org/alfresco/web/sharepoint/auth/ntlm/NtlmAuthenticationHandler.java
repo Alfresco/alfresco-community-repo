@@ -159,7 +159,7 @@ public class NtlmAuthenticationHandler extends AbstractAuthenticationHandler imp
         {
             try
             {
-                authenticationService.validate(user.getTicket());
+                authenticationService.validate(user.getTicket(), session.getId());
                 needToAuthenticate = false;
             }
             catch (AuthenticationException e)
@@ -252,7 +252,7 @@ public class NtlmAuthenticationHandler extends AbstractAuthenticationHandler imp
                     {
                         try
                         {
-                            authenticationService.validate(user.getTicket());
+                            authenticationService.validate(user.getTicket(), session.getId());
                             return user;
                         }
                         catch (AuthenticationException ae)
@@ -443,7 +443,7 @@ public class NtlmAuthenticationHandler extends AbstractAuthenticationHandler imp
                 // user already exists - revalidate ticket to authenticate the current user thread
                 try
                 {
-                    authenticationService.validate(user.getTicket());
+                    authenticationService.validate(user.getTicket(), session.getId());
                 }
                 catch (AuthenticationException ex)
                 {
@@ -523,7 +523,7 @@ public class NtlmAuthenticationHandler extends AbstractAuthenticationHandler imp
             String username = AuthenticationUtil.runAs(getUserNameRunAsWork, AuthenticationUtil.SYSTEM_USER_NAME);
 
             authenticationComponent.setCurrentUser(userName);
-            String currentTicket = authenticationService.getCurrentTicket();
+            String currentTicket = authenticationService.getCurrentTicket(session.getId());
 
             // Create the user object to be stored in the session
             user = new User(username, currentTicket, personNodeRef);

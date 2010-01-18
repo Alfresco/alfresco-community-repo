@@ -27,6 +27,7 @@ package org.alfresco.repo.security.authentication;
 import java.io.Serializable;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
@@ -83,23 +84,25 @@ public class InMemoryTicketComponentImpl implements TicketComponent
         this.ticketsCache = ticketsCache;
     }
 
-    public String getNewTicket(String userName) throws AuthenticationException
+    public String getNewTicket(String userName, String sessionId) throws AuthenticationException
     {
         Date expiryDate = null;
         if (ticketsExpire)
         {
             expiryDate = Duration.add(new Date(), validDuration);
         }
-        Ticket ticket = new Ticket(ticketsExpire ? expiryMode : ExpiryMode.DO_NOT_EXPIRE, expiryDate, userName, validDuration);
+        Ticket ticket = new Ticket(ticketsExpire ? expiryMode : ExpiryMode.DO_NOT_EXPIRE, expiryDate, userName,
+                validDuration, sessionId == null ? Collections.<String> emptySet() : Collections.singleton(sessionId));
         ticketsCache.put(ticket.getTicketId(), ticket);
         String ticketString = GRANTED_AUTHORITY_TICKET_PREFIX + ticket.getTicketId();
         currentTicket.set(ticketString);
         return ticketString;
     }
 
-    public String validateTicket(String ticketString) throws AuthenticationException
+    public String validateTicket(String ticketString, String sessionId) throws AuthenticationException
     {
-        Ticket ticket = getTicketByTicketString(ticketString);
+        String ticketKey = getTicketKey(ticketString);
+        Ticket ticket = this.ticketsCache.get(ticketKey);
         if (ticket == null)
         {
             throw new AuthenticationException("Missing ticket for " + ticketString);
@@ -112,7 +115,17 @@ public class InMemoryTicketComponentImpl implements TicketComponent
         // TODO: Strengthen ticket as GUID is predicatble
         if (oneOff)
         {
-            ticketsCache.remove(getTicketKey(ticketString));
+            ticketsCache.remove(ticketKey);
+        }
+        // Make sure the association with the session is recorded
+        else if (sessionId != null)
+        {
+            Ticket newTicket = ticket.addSessionId(sessionId);
+            if (newTicket != ticket)
+            {
+                ticketsCache.put(ticketKey, newTicket);
+                ticket = newTicket;
+            }
         }
         currentTicket.set(ticketString);
         return ticket.getUserName();
@@ -146,10 +159,28 @@ public class InMemoryTicketComponentImpl implements TicketComponent
         return key;
     }
 
-    public void invalidateTicketById(String ticketString)
+    public void invalidateTicketById(String ticketString, String sessionId)
     {
-        String key = ticketString.substring(GRANTED_AUTHORITY_TICKET_PREFIX.length());
-        ticketsCache.remove(key);
+        String ticketKey = getTicketKey(ticketString);
+        // If we are dissassociating the ticket from an app server session, it may still not be time to expire it, as it
+        // may be in use by other sessions
+        if (sessionId != null)
+        {
+            Ticket ticketObj = ticketsCache.get(ticketKey);
+            ticketObj = ticketObj.removeSessionId(sessionId);
+            if (ticketObj == null)
+            {
+                ticketsCache.remove(ticketKey);
+            }
+            else
+            {
+                ticketsCache.put(ticketKey, ticketObj);
+            }
+        }
+        else
+        {
+            ticketsCache.remove(ticketKey);
+        }
     }
     
     /*
@@ -297,13 +328,27 @@ public class InMemoryTicketComponentImpl implements TicketComponent
         private String guid;
         
         private Duration validDuration;
+        
+        private Set<String> sessionIds;
 
-        Ticket(ExpiryMode expires, Date expiryDate, String userName, Duration validDuration)
+        private Ticket(Ticket copy, Set<String> sessionIds)
+        {
+            this.expires = copy.expires;
+            this.expiryDate = copy.expiryDate;
+            this.userName = copy.userName;
+            this.validDuration = copy.validDuration;
+            this.guid = copy.guid;
+            this.ticketId = copy.ticketId;
+            this.sessionIds = sessionIds;            
+        }
+
+        Ticket(ExpiryMode expires, Date expiryDate, String userName, Duration validDuration, Set<String> sessionIds)
         {
             this.expires = expires;
             this.expiryDate = expiryDate;
             this.userName = userName;
             this.validDuration = validDuration;
+            this.sessionIds = sessionIds;
             this.guid = UUIDGenerator.getInstance().generateRandomBasedUUID().toString();
 
             String encode = (expires.toString()) + ((expiryDate == null) ? new Date().toString() : expiryDate.toString()) + userName + guid;
@@ -336,6 +381,35 @@ public class InMemoryTicketComponentImpl implements TicketComponent
                     this.ticketId = new String(Hex.encodeHex(bytes));
                 }
             }
+        }
+
+        public Ticket addSessionId(String sessionId)
+        {
+            if (this.sessionIds.contains(sessionId))
+            {
+                return this;
+            }
+            Set<String> newSessionIds = new HashSet<String>(this.sessionIds.size() * 2 + 2);
+            newSessionIds.addAll(this.sessionIds);
+            newSessionIds.add(sessionId);
+            return new Ticket(this, newSessionIds);
+        }
+
+        public Ticket removeSessionId(String sessionId)
+        {
+            if (this.sessionIds.contains(sessionId))
+            {
+                Set<String> newSessionIds;
+                if (this.sessionIds.size() > 1)
+                {
+                    newSessionIds = new HashSet<String>(this.sessionIds.size() * 2 - 2);
+                    newSessionIds.addAll(this.sessionIds);
+                    newSessionIds.remove(sessionId);
+                    return new Ticket(this, newSessionIds);
+                }
+                return null;
+            }
+            return this;
         }
 
         /**
@@ -414,6 +488,10 @@ public class InMemoryTicketComponentImpl implements TicketComponent
             return userName;
         }
 
+        protected Set<String> getSessionIds()
+        {
+            return sessionIds;
+        }
     }
 
     /**
@@ -466,21 +544,35 @@ public class InMemoryTicketComponentImpl implements TicketComponent
         return ticket.getUserName();
     }
 
-    public String getCurrentTicket(String userName)
+    public String getCurrentTicket(String userName, String sessionId, boolean autoCreate)
     {
-        String ticket = currentTicket.get();
-        if (ticket == null)
+        String ticketString = currentTicket.get();
+        if (ticketString == null)
         {
-            return getNewTicket(userName);
+            return autoCreate ? getNewTicket(userName, sessionId) : null;
         }
-        String ticketUser = getAuthorityForTicket(ticket);
-        if (userName.equals(ticketUser))
+        String ticketKey = getTicketKey(ticketString);
+        Ticket ticketObj = this.ticketsCache.get(ticketKey);
+        if (ticketObj != null && userName.equals(ticketObj.getUserName()))       
         {
-            return ticket;
+            if (sessionId != null)
+            {
+                // A current, as yet unclaimed valid ticket. Make the association with the session now
+                if (ticketObj.getSessionIds().isEmpty())
+                {
+                    this.ticketsCache.put(ticketKey, ticketObj.addSessionId(sessionId));
+                }
+                // The ticket is already claimed by at least one other session, so start a new one
+                else
+                {
+                    return autoCreate ? getNewTicket(userName, sessionId) : null;
+                }
+            }
+            return ticketString;
         }
         else
         {
-            return getNewTicket(userName);
+            return autoCreate ? getNewTicket(userName, sessionId) : null;
         }
     }
 

@@ -176,31 +176,6 @@ public class LDAPAuthenticationComponentImpl extends AbstractAuthenticationCompo
     @Override
     protected boolean implementationAllowsGuestLogin()
     {
-        InitialDirContext ctx = null;
-        try
-        {
-            ctx = ldapInitialContextFactory.getDefaultIntialDirContext();
-            return true;
-
-        }
-        catch (Exception e)
-        {
-            return false;
-        }
-        finally
-        {
-            if (ctx != null)
-            {
-                try
-                {
-                    ctx.close();
-                }
-                catch (NamingException e)
-                {
-                    throw new AuthenticationException("Failed to close connection", e);
-                }
-            }
-        }
+        return true;
     }
-
 }

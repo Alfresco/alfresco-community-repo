@@ -22,7 +22,7 @@
  * the FLOSS exception, and it is also available here: 
  * http://www.alfresco.com/legal/licensing"
  */
-package org.alfresco.repo.security.sync;
+package org.alfresco.repo.batch;
 
 import org.springframework.context.ApplicationEvent;
 

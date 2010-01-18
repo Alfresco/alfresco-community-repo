@@ -22,7 +22,7 @@
  * the FLOSS exception, and it is also available here: 
  * http://www.alfresco.com/legal/licensing"
  */
-package org.alfresco.repo.security.sync;
+package org.alfresco.repo.batch;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -43,7 +43,6 @@ import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.rule.RuleService;
 import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.springframework.context.ApplicationEventPublisher;
 
 /**
@@ -60,26 +59,26 @@ import org.springframework.context.ApplicationEventPublisher;
  */
 public class BatchProcessor<T> implements BatchMonitor
 {
-    /** Let's share the logger of ChainingUserRegistrySynchronizer. */
-    private static final Log logger = LogFactory.getLog(ChainingUserRegistrySynchronizer.class);
+    /** The logger to use. */
+    private final Log logger;
 
     /** The retrying transaction helper. */
-    private RetryingTransactionHelper retryingTransactionHelper;
+    private final RetryingTransactionHelper retryingTransactionHelper;
 
     /** The rule service. */
-    private RuleService ruleService;
+    private final RuleService ruleService;
 
     /** The collection. */
-    private Collection<T> collection;
+    private final Collection<T> collection;
 
     /** The process name. */
-    private String processName;
+    private final String processName;
 
     /** The number of entries to process before reporting progress. */
-    private int loggingInterval;
+    private final int loggingInterval;
 
     /** The number of worker threads. */
-    private int workerThreads;
+    private final int workerThreads;
 
     /** The number of entries we process at a time in a transaction *. */
     private final int batchSize;
@@ -108,6 +107,8 @@ public class BatchProcessor<T> implements BatchMonitor
     /**
      * Instantiates a new batch processor.
      * 
+     * @param logger
+     *            the logger to use
      * @param retryingTransactionHelper
      *            the retrying transaction helper
      * @param ruleService
@@ -125,10 +126,11 @@ public class BatchProcessor<T> implements BatchMonitor
      * @param batchSize
      *            the number of entries we process at a time in a transaction
      */
-    public BatchProcessor(RetryingTransactionHelper retryingTransactionHelper, RuleService ruleService,
+    public BatchProcessor(Log logger, RetryingTransactionHelper retryingTransactionHelper, RuleService ruleService,
             ApplicationEventPublisher applicationEventPublisher, Collection<T> collection, String processName,
             int loggingInterval, int workerThreads, int batchSize)
     {
+        this.logger = logger;
         this.retryingTransactionHelper = retryingTransactionHelper;
         this.ruleService = ruleService;
         this.collection = collection;
@@ -262,15 +264,15 @@ public class BatchProcessor<T> implements BatchMonitor
         synchronized (this)
         {
             this.startTime = new Date();
-            if (BatchProcessor.logger.isInfoEnabled())
+            if (this.logger.isInfoEnabled())
             {
                 if (count >= 0)
                 {
-                    BatchProcessor.logger.info(getProcessName() + ": Commencing batch of " + count + " entries");
+                    this.logger.info(getProcessName() + ": Commencing batch of " + count + " entries");
                 }
                 else
                 {
-                    BatchProcessor.logger.info(getProcessName() + ": Commencing batch");
+                    this.logger.info(getProcessName() + ": Commencing batch");
 
                 }
             }
@@ -279,7 +281,7 @@ public class BatchProcessor<T> implements BatchMonitor
         // Create a thread pool executor with the specified number of threads and a finite blocking queue of jobs
         ExecutorService executorService = splitTxns && this.workerThreads > 1 ? new ThreadPoolExecutor(
                 this.workerThreads, this.workerThreads, 0L, TimeUnit.MILLISECONDS, new ArrayBlockingQueue<Runnable>(
-                        this.workerThreads * batchSize * 10)
+                        this.workerThreads * this.batchSize * 10)
                 {
                     // Add blocking behaviour to work queue
                     @Override
@@ -341,21 +343,21 @@ public class BatchProcessor<T> implements BatchMonitor
             {
                 reportProgress(true);
                 this.endTime = new Date();
-                if (BatchProcessor.logger.isInfoEnabled())
+                if (this.logger.isInfoEnabled())
                 {
                     if (count >= 0)
                     {
-                        BatchProcessor.logger.info(getProcessName() + ": Completed batch of " + count + " entries");
+                        this.logger.info(getProcessName() + ": Completed batch of " + count + " entries");
                     }
                     else
                     {
-                        BatchProcessor.logger.info(getProcessName() + ": Completed batch");
+                        this.logger.info(getProcessName() + ": Completed batch");
 
                     }
                 }
-                if (this.totalErrors > 0 && BatchProcessor.logger.isErrorEnabled())
+                if (this.totalErrors > 0 && this.logger.isErrorEnabled())
                 {
-                    BatchProcessor.logger.error(getProcessName() + ": " + this.totalErrors
+                    this.logger.error(getProcessName() + ": " + this.totalErrors
                             + " error(s) detected. Last error from entry \"" + this.lastErrorEntryId + "\"",
                             this.lastError);
                 }
@@ -391,7 +393,7 @@ public class BatchProcessor<T> implements BatchMonitor
                 message.append(". Rate: ").append(processed * 1000L / duration).append(" per second");
             }
             message.append(". " + this.totalErrors + " failures detected.");
-            BatchProcessor.logger.info(message);
+            this.logger.info(message);
         }
     }
 
@@ -467,7 +469,7 @@ public class BatchProcessor<T> implements BatchMonitor
 
         /** The last error entry id. */
         private String txnLastErrorEntryId;
-        
+
         /*
          * (non-Javadoc)
          * @see org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback#execute ()
@@ -491,9 +493,9 @@ public class BatchProcessor<T> implements BatchMonitor
                 {
                     if (RetryingTransactionHelper.extractRetryCause(t) == null)
                     {
-                        if (BatchProcessor.logger.isWarnEnabled())
+                        if (BatchProcessor.this.logger.isWarnEnabled())
                         {
-                            BatchProcessor.logger.warn(getProcessName() + ": Failed to process entry \""
+                            BatchProcessor.this.logger.warn(getProcessName() + ": Failed to process entry \""
                                     + this.txnEntryId + "\".", t);
                         }
                         this.txnLastError = t;
@@ -529,9 +531,9 @@ public class BatchProcessor<T> implements BatchMonitor
                     this.txnLastError = t;
                     this.txnLastErrorEntryId = this.txnEntryId;
                     this.txnErrors++;
-                    if (BatchProcessor.logger.isWarnEnabled())
+                    if (BatchProcessor.this.logger.isWarnEnabled())
                     {
-                        BatchProcessor.logger.warn(getProcessName() + ": Failed to process entry \""
+                        BatchProcessor.this.logger.warn(getProcessName() + ": Failed to process entry \""
                                 + BatchProcessor.this.currentEntryId + "\".", t);
                     }
                 }
@@ -621,7 +623,7 @@ public class BatchProcessor<T> implements BatchMonitor
                     BatchProcessor.this.lastError = this.txnLastError;
                     BatchProcessor.this.lastErrorEntryId = this.txnLastErrorEntryId;
                 }
-                
+
                 reset();
             }
         }

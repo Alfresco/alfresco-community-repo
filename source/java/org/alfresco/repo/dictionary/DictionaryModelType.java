@@ -666,9 +666,16 @@ public class DictionaryModelType implements ContentServicePolicies.OnContentUpda
             
             // search for TYPE or ASPECT - TODO - alternative would be to extract QName and search by namespace ...
             ResultSet rs = searchService.query(store, SearchService.LANGUAGE_LUCENE, classType+":\""+className+"\"");
-            if (rs.length() > 0)
+            try
             {
-                throw new AlfrescoRuntimeException("Failed to validate model delete" + tenantDomain + " - found " + rs.length() + " nodes in store " + store + " with " + classType + " '" + className + "'" );
+                if (rs.length() > 0)
+                {
+                    throw new AlfrescoRuntimeException("Failed to validate model delete" + tenantDomain + " - found " + rs.length() + " nodes in store " + store + " with " + classType + " '" + className + "'" );
+                }
+            }
+            finally
+            {
+                rs.close();
             }
         }
         
@@ -691,16 +698,23 @@ public class DictionaryModelType implements ContentServicePolicies.OnContentUpda
 		ArrayList<NodeRef> nodeRefs = new ArrayList<NodeRef>();
 		
 	    ResultSet rs = searchService.query(storeRef, SearchService.LANGUAGE_LUCENE, "TYPE:\""+ContentModel.TYPE_DICTIONARY_MODEL+"\"");
-	    if (rs.length() > 0)
+	    try
 	    {
-	    	for (NodeRef modelNodeRef : rs.getNodeRefs())
-	        {
-	    		QName name = (QName)nodeService.getProperty(modelNodeRef, ContentModel.PROP_MODEL_NAME);
-	    		if ((name != null) && (name.equals(modelName)))
-	    		{
-	    			nodeRefs.add(modelNodeRef);
-	    		}
-	        }
+    	    if (rs.length() > 0)
+    	    {
+    	    	for (NodeRef modelNodeRef : rs.getNodeRefs())
+    	        {
+    	    		QName name = (QName)nodeService.getProperty(modelNodeRef, ContentModel.PROP_MODEL_NAME);
+    	    		if ((name != null) && (name.equals(modelName)))
+    	    		{
+    	    			nodeRefs.add(modelNodeRef);
+    	    		}
+    	        }
+    	    }
+	    }
+	    finally
+	    {
+	        rs.close();
 	    }
 	    return nodeRefs;
 	}

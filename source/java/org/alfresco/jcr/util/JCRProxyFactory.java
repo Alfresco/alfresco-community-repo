@@ -130,7 +130,7 @@ public class JCRProxyFactory
                     {
                         if (username == null)
                         {
-                            authenticationService.validate(session.getTicket());
+                            authenticationService.validate(session.getTicket(), null);
                         }
                     }
 

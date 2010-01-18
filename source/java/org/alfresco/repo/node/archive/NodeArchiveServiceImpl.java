@@ -254,20 +254,27 @@ public class NodeArchiveServiceImpl implements NodeArchiveService
     {
         // get all archived children using a search
         ResultSet rs = getArchivedNodes(originalStoreRef);
-        // loop through the resultset and attempt to restore all the nodes
-        List<RestoreNodeReport> results = new ArrayList<RestoreNodeReport>(1000);
-        for (ResultSetRow row : rs)
+        try
         {
-            NodeRef archivedNodeRef = row.getNodeRef();
-            RestoreNodeReport result = restoreArchivedNode(archivedNodeRef, destinationNodeRef, assocTypeQName, assocQName);
-            results.add(result);
+            // loop through the resultset and attempt to restore all the nodes
+            List<RestoreNodeReport> results = new ArrayList<RestoreNodeReport>(1000);
+            for (ResultSetRow row : rs)
+            {
+                NodeRef archivedNodeRef = row.getNodeRef();
+                RestoreNodeReport result = restoreArchivedNode(archivedNodeRef, destinationNodeRef, assocTypeQName, assocQName);
+                results.add(result);
+            }
+            // done
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("Restored " + results.size() + " nodes into store " + originalStoreRef);
+            }
+            return results;
         }
-        // done
-        if (logger.isDebugEnabled())
+        finally
         {
-            logger.debug("Restored " + results.size() + " nodes into store " + originalStoreRef);
+            rs.close();
         }
-        return results;
     }
 
     /**
@@ -311,17 +318,24 @@ public class NodeArchiveServiceImpl implements NodeArchiveService
     {
         // get all archived children using a search
         ResultSet rs = getArchivedNodes(originalStoreRef);
-        // loop through the resultset and attempt to restore all the nodes
-        List<RestoreNodeReport> results = new ArrayList<RestoreNodeReport>(1000);
-        for (ResultSetRow row : rs)
+        try
         {
-            NodeRef archivedNodeRef = row.getNodeRef();
-            purgeArchivedNode(archivedNodeRef);
+            // loop through the resultset and attempt to restore all the nodes
+            List<RestoreNodeReport> results = new ArrayList<RestoreNodeReport>(1000);
+            for (ResultSetRow row : rs)
+            {
+                NodeRef archivedNodeRef = row.getNodeRef();
+                purgeArchivedNode(archivedNodeRef);
+            }
+            // done
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("Deleted " + results.size() + " nodes originally in store " + originalStoreRef);
+            }
         }
-        // done
-        if (logger.isDebugEnabled())
+        finally
         {
-            logger.debug("Deleted " + results.size() + " nodes originally in store " + originalStoreRef);
+            rs.close();
         }
     }
 

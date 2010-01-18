@@ -24,31 +24,37 @@
  */
 package org.alfresco.repo.admin.patch.impl;
 
+import java.sql.BatchUpdateException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.Map.Entry;
 
 import org.springframework.extensions.surf.util.I18NUtil;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.admin.patch.AbstractPatch;
 import org.alfresco.repo.admin.patch.PatchExecuter;
+import org.alfresco.repo.batch.BatchProcessor;
 import org.alfresco.repo.importer.ImporterBootstrap;
-import org.alfresco.repo.transaction.RetryingTransactionHelper;
-import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
+import org.alfresco.repo.security.authority.UnknownAuthorityException;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
+import org.alfresco.service.cmr.rule.RuleService;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.ApplicationEventPublisherAware;
 
 /**
  * Migrates authority information previously stored in the user store to the spaces store, using the new structure used
@@ -56,14 +62,13 @@ import org.apache.commons.logging.LogFactory;
  * 
  * @author dward
  */
-public class AuthorityMigrationPatch extends AbstractPatch
+public class AuthorityMigrationPatch extends AbstractPatch implements ApplicationEventPublisherAware
 {
+    /** The title we give to the batch process in progress messages / JMX. */
+    private static final String MSG_PROCESS_NAME = "patch.authorityMigration.process.name";
 
-    /** Progress message for authorities. */
-    private static final String MSG_PROGRESS_AUTHORITY = "patch.authorityMigration.progress.authority";
-
-    /** Progress message for associations. */
-    private static final String MSG_PROGRESS_ASSOC = "patch.authorityMigration.progress.assoc";
+    /** The warning message when a 'dangling' assoc is found that can't be created */
+    private static final String MSG_WARNING_INVALID_ASSOC = "patch.authorityMigration.warning.assoc";
 
     /** Success message. */
     private static final String MSG_SUCCESS = "patch.authorityMigration.result";
@@ -81,14 +86,17 @@ public class AuthorityMigrationPatch extends AbstractPatch
     /** The old authority members property. */
     private static final QName PROP_MEMBERS = QName.createQName(ContentModel.USER_MODEL_URI, "members");
 
-    /** The number of items to create in a transaction. */
-    private static final int BATCH_SIZE = 10;
-
     /** The authority service. */
     private AuthorityService authorityService;
 
+    /** The rule service. */
+    private RuleService ruleService;
+
     /** The user bootstrap. */
     private ImporterBootstrap userBootstrap;
+
+    /** The application event publisher. */
+    private ApplicationEventPublisher applicationEventPublisher;
 
     /**
      * Sets the authority service.
@@ -99,6 +107,17 @@ public class AuthorityMigrationPatch extends AbstractPatch
     public void setAuthorityService(AuthorityService authorityService)
     {
         this.authorityService = authorityService;
+    }
+
+    /**
+     * Sets the rule service.
+     * 
+     * @param ruleService
+     *            the rule service
+     */
+    public void setRuleService(RuleService ruleService)
+    {
+        this.ruleService = ruleService;
     }
 
     /**
@@ -113,6 +132,17 @@ public class AuthorityMigrationPatch extends AbstractPatch
     }
 
     /**
+     * Sets the application event publisher.
+     * 
+     * @param applicationEventPublisher
+     *            the application event publisher
+     */
+    public void setApplicationEventPublisher(ApplicationEventPublisher applicationEventPublisher)
+    {
+        this.applicationEventPublisher = applicationEventPublisher;
+    }
+
+    /**
      * Recursively retrieves the authorities under the given node and their associations.
      * 
      * @param parentAuthority
@@ -122,14 +152,14 @@ public class AuthorityMigrationPatch extends AbstractPatch
      *            the node to find authorities below
      * @param authoritiesToCreate
      *            the authorities to create
-     * @param childAssocs
-     *            the child associations
+     * @param parentAssocs
+     *            the parent associations
+     * @return count of the number of parent associations
      */
-    private void retrieveAuthorities(String parentAuthority, NodeRef nodeRef, Map<String, String> authoritiesToCreate,
-            Map<String, Set<String>> childAssocs)
+    private int retrieveAuthorities(String parentAuthority, NodeRef nodeRef, Map<String, String> authoritiesToCreate,
+            Map<String, Set<String>> parentAssocs)
     {
-        // If we have a parent authority, prepare a list for recording its children
-        Set<String> children = parentAuthority == null ? null : childAssocs.get(parentAuthority);
+        int assocCount = 0;
 
         // Process all children
         List<ChildAssociationRef> cars = this.nodeService.getChildAssocs(nodeRef);
@@ -144,20 +174,20 @@ public class AuthorityMigrationPatch extends AbstractPatch
             authoritiesToCreate.put(authorityName, DefaultTypeConverter.INSTANCE.convert(String.class, this.nodeService
                     .getProperty(current, AuthorityMigrationPatch.PROP_AUTHORITY_DISPLAY_NAME)));
 
-            // If we have a parent, remember the child association
+            // Record the parent association (or empty set if this is a root)
+            Set<String> parents = parentAssocs.get(authorityName);
+            if (parents == null)
+            {
+                parents = new TreeSet<String>();
+                parentAssocs.put(authorityName, parents);
+            }
             if (parentAuthority != null)
             {
-                if (children == null)
-                {
-                    children = new TreeSet<String>();
-                    childAssocs.put(parentAuthority, children);
-                }
-                children.add(authorityName);
+                parents.add(parentAuthority);
+                assocCount++;
             }
 
             // loop over properties
-            Set<String> propChildren = childAssocs.get(authorityName);
-
             Collection<String> members = DefaultTypeConverter.INSTANCE.getCollection(String.class, this.nodeService
                     .getProperty(current, AuthorityMigrationPatch.PROP_MEMBERS));
             if (members != null)
@@ -167,119 +197,89 @@ public class AuthorityMigrationPatch extends AbstractPatch
                     // Believe it or not, some old authorities have null members in them!
                     if (user != null)
                     {
-                        if (propChildren == null)
+                        Set<String> propParents = parentAssocs.get(user);
+                        if (propParents == null)
                         {
-                            propChildren = new TreeSet<String>();
-                            childAssocs.put(authorityName, propChildren);
+                            propParents = new TreeSet<String>();
+                            parentAssocs.put(user, propParents);
                         }
-                        propChildren.add(user);
+                        propParents.add(authorityName);
+                        assocCount++;
                     }
                 }
             }
-            retrieveAuthorities(authorityName, current, authoritiesToCreate, childAssocs);
+            assocCount += retrieveAuthorities(authorityName, current, authoritiesToCreate, parentAssocs);
         }
+        return assocCount;
     }
 
     /**
-     * Migrates the authorities.
+     * Migrates the authorities and their associations.
      * 
      * @param authoritiesToCreate
      *            the authorities to create
+     * @param parentAssocs
+     *            the parent associations to create (if they don't exist already)
      * @return the number of authorities migrated
      */
-    private int migrateAuthorities(Map<String, String> authoritiesToCreate)
+    private void migrateAuthorities(final Map<String, String> authoritiesToCreate, Map<String, Set<String>> parentAssocs)
     {
-        int processedCount = 0;
-        final Iterator<Map.Entry<String, String>> i = authoritiesToCreate.entrySet().iterator();
-        RetryingTransactionHelper retryingTransactionHelper = this.transactionService.getRetryingTransactionHelper();
-
-        // Process batches in separate transactions for maximum performance
-        while (i.hasNext())
+        BatchProcessor.Worker<Map.Entry<String, Set<String>>> worker = new BatchProcessor.Worker<Map.Entry<String, Set<String>>>()
         {
-            processedCount += retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Integer>()
+
+            public String getIdentifier(Entry<String, Set<String>> entry)
             {
-                public Integer execute() throws Throwable
-                {
-                    int processedCount = 0;
-                    do
-                    {
-                        Map.Entry<String, String> authority = i.next();
-                        String authorityName = authority.getKey();
-                        boolean existed = AuthorityMigrationPatch.this.authorityService.authorityExists(authorityName);
-                        if (existed)
-                        {
-                            i.remove();
-                        }
-                        else
-                        {
-                            AuthorityMigrationPatch.this.authorityService.createAuthority(AuthorityType
-                                    .getAuthorityType(authorityName), AuthorityMigrationPatch.this.authorityService
-                                    .getShortName(authorityName), authority.getValue(), null);
-                            processedCount++;
-                        }
-                    }
-                    while (processedCount < AuthorityMigrationPatch.BATCH_SIZE && i.hasNext());
-                    return processedCount;
-                }
-            }, false, true);
+                return entry.getKey();
+            }
 
-            // Report progress
-            AuthorityMigrationPatch.progress_logger.info(I18NUtil.getMessage(
-                    AuthorityMigrationPatch.MSG_PROGRESS_AUTHORITY, processedCount));
-        }
-        return processedCount;
-    }
-
-    /**
-     * Migrates the group associations.
-     * 
-     * @param authoritiesCreated
-     *            the authorities created
-     * @param childAssocs
-     *            the child associations
-     * @return the number of associations migrated
-     */
-    private int migrateAssocs(final Map<String, String> authoritiesCreated, Map<String, Set<String>> childAssocs)
-    {
-        int processedCount = 0;
-        final Iterator<Map.Entry<String, Set<String>>> j = childAssocs.entrySet().iterator();
-        RetryingTransactionHelper retryingTransactionHelper = this.transactionService.getRetryingTransactionHelper();
-
-        // Process batches in separate transactions for maximum performance
-        while (j.hasNext())
-        {
-            processedCount += retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Integer>()
+            public void process(Entry<String, Set<String>> authority) throws Throwable
             {
-                public Integer execute() throws Throwable
+                String authorityName = authority.getKey();
+                boolean existed = AuthorityMigrationPatch.this.authorityService.authorityExists(authorityName);
+                Set<String> knownParents;
+                if (existed)
                 {
-                    int processedCount = 0;
-                    do
-                    {
-                        Map.Entry<String, Set<String>> childAssoc = j.next();
-                        String parentAuthority = childAssoc.getKey();
-                        Set<String> knownChildren = authoritiesCreated.containsKey(parentAuthority) ? Collections
-                                .<String> emptySet() : AuthorityMigrationPatch.this.authorityService
-                                .getContainedAuthorities(AuthorityType.GROUP, parentAuthority, true);
-                        for (String authorityName : childAssoc.getValue())
-                        {
-                            if (!knownChildren.contains(authorityName))
-                            {
-                                AuthorityMigrationPatch.this.authorityService.addAuthority(parentAuthority,
-                                        authorityName);
-                                processedCount++;
-                            }
-                        }
-                    }
-                    while (processedCount < AuthorityMigrationPatch.BATCH_SIZE && j.hasNext());
-                    return processedCount;
+                    knownParents = AuthorityMigrationPatch.this.authorityService.getContainingAuthorities(
+                            AuthorityType.GROUP, authorityName, true);
                 }
-            }, false, true);
-
-            // Report progress
-            AuthorityMigrationPatch.progress_logger.info(I18NUtil.getMessage(
-                    AuthorityMigrationPatch.MSG_PROGRESS_ASSOC, processedCount));
-        }
-        return processedCount;
+                else
+                {
+                    knownParents = Collections.emptySet();
+                    AuthorityType authorityType = AuthorityType.getAuthorityType(authorityName);
+                    // We have associations to a non-existent authority. If it is a user, just skip it because it must
+                    // have been a 'dangling' reference
+                    if (authorityType == AuthorityType.USER)
+                    {
+                        AuthorityMigrationPatch.progress_logger.warn(I18NUtil.getMessage(
+                                AuthorityMigrationPatch.MSG_WARNING_INVALID_ASSOC, authorityName));
+                        return;
+                    }
+                    AuthorityMigrationPatch.this.authorityService.createAuthority(authorityType,
+                            AuthorityMigrationPatch.this.authorityService.getShortName(authorityName),
+                            authoritiesToCreate.get(authorityName), null);
+                }
+                Set<String> parentAssocsToCreate = authority.getValue();
+                parentAssocsToCreate.removeAll(knownParents);
+                if (!parentAssocsToCreate.isEmpty())
+                {
+                    try
+                    {
+                        AuthorityMigrationPatch.this.authorityService.addAuthority(parentAssocsToCreate, authorityName);
+                    }
+                    catch (UnknownAuthorityException e)
+                    {
+                        // Let's force a transaction retry if a parent doesn't exist. It may be because we are waiting
+                        // for another worker thread to create it
+                        throw new BatchUpdateException().initCause(e);
+                    }
+                }
+            }
+        };
+        // Migrate using 2 threads, 20 authorities per transaction. Log every 100 entries.
+        new BatchProcessor<Map.Entry<String, Set<String>>>(AuthorityMigrationPatch.progress_logger,
+                this.transactionService.getRetryingTransactionHelper(), this.ruleService,
+                this.applicationEventPublisher, parentAssocs.entrySet(), I18NUtil
+                        .getMessage(AuthorityMigrationPatch.MSG_PROCESS_NAME), 100, 2, 20).process(worker, true);
     }
 
     /**
@@ -323,18 +323,71 @@ public class AuthorityMigrationPatch extends AbstractPatch
     @Override
     protected String applyInternal() throws Exception
     {
-        int authorities = 0;
-        int assocs = 0;
         NodeRef authorityContainer = getAuthorityContainer();
+        int authorities = 0, assocs = 0;
         if (authorityContainer != null)
         {
+            // Crawl the old tree of authorities
             Map<String, String> authoritiesToCreate = new TreeMap<String, String>();
-            Map<String, Set<String>> childAssocs = new TreeMap<String, Set<String>>();
-            retrieveAuthorities(null, authorityContainer, authoritiesToCreate, childAssocs);
-            authorities = migrateAuthorities(authoritiesToCreate);
-            assocs = migrateAssocs(authoritiesToCreate, childAssocs);
+            Map<String, Set<String>> parentAssocs = new TreeMap<String, Set<String>>();
+            assocs = retrieveAuthorities(null, authorityContainer, authoritiesToCreate, parentAssocs);
+
+            // Sort the group associations in parent-first order (root groups first)
+            Map<String, Set<String>> sortedParentAssocs = new LinkedHashMap<String, Set<String>>(
+                    parentAssocs.size() * 2);
+            List<String> authorityPath = new ArrayList<String>(5);
+            for (String authority : parentAssocs.keySet())
+            {
+                authorityPath.add(authority);
+                visitGroupAssociations(authorityPath, parentAssocs, sortedParentAssocs);
+                authorityPath.clear();
+            }
+
+            // Recreate the authorities and their associations in parent-first order
+            migrateAuthorities(authoritiesToCreate, sortedParentAssocs);
+            authorities = authoritiesToCreate.size();
         }
         // build the result message
         return I18NUtil.getMessage(AuthorityMigrationPatch.MSG_SUCCESS, authorities, assocs);
     }
+
+    /**
+     * Visits the last authority in the given list by recursively visiting its parents in associationsOld and then
+     * adding the authority to associationsNew. Used to sort associationsOld into 'parent-first' order.
+     * 
+     * @param authorityPath
+     *            The authority to visit, preceeded by all its descendants. Allows detection of cyclic child
+     *            associations.
+     * @param associationsOld
+     *            the association map to sort
+     * @param associationsNew
+     *            the association map to add to in parent-first order
+     */
+    private static void visitGroupAssociations(List<String> authorityPath, Map<String, Set<String>> associationsOld,
+            Map<String, Set<String>> associationsNew)
+    {
+        String authorityName = authorityPath.get(authorityPath.size() - 1);
+        if (!associationsNew.containsKey(authorityName))
+        {
+            Set<String> associations = associationsOld.get(authorityName);
+
+            if (!associations.isEmpty())
+            {
+                int insertIndex = authorityPath.size();
+                for (String parentAuthority : associations)
+                {
+                    // Prevent cyclic paths
+                    if (!authorityPath.contains(parentAuthority))
+                    {
+                        authorityPath.add(parentAuthority);
+                        visitGroupAssociations(authorityPath, associationsOld, associationsNew);
+                        authorityPath.remove(insertIndex);
+                    }
+                }
+            }
+
+            associationsNew.put(authorityName, associations);
+        }
+    }
+
 }

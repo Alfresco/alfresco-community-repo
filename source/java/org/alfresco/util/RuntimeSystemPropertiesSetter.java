@@ -24,6 +24,7 @@
 *----------------------------------------------------------------------------*/
 package org.alfresco.util;
 
+import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -32,7 +33,10 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.core.Ordered;
+import org.springframework.core.io.support.ResourcePatternResolver;
 
 /**
  * Sets runtime JVM system properties for Spring Framework. 
@@ -46,12 +50,14 @@ import org.springframework.core.Ordered;
  * @author Jon Cox
  * @see #setProperties(Map)
 */
-public class RuntimeSystemPropertiesSetter implements BeanFactoryPostProcessor, Ordered
+public class RuntimeSystemPropertiesSetter implements BeanFactoryPostProcessor, ApplicationContextAware, Ordered
 {
     private static Log logger = LogFactory.getLog(RuntimeSystemPropertiesSetter.class );
 
     /** default: just before PropertyPlaceholderConfigurer */
     private int order = Integer.MAX_VALUE - 1;
+    
+    private ResourcePatternResolver resolver;
     
     /**
      * @see #setProperties(Map)
@@ -75,6 +81,12 @@ public class RuntimeSystemPropertiesSetter implements BeanFactoryPostProcessor, 
         this.jvmProperties = jvmProperties;
     }
 
+    
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException
+    {
+        this.resolver  = applicationContext;
+    }
+
     public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException 
     {
         // Push any mapped properties into the JVM
@@ -94,8 +106,7 @@ public class RuntimeSystemPropertiesSetter implements BeanFactoryPostProcessor, 
             }
         }
         
-        ClassLoader loader = Thread.currentThread().getContextClassLoader();
-        String path=null;
+        File path=null;
         try 
         {
             // Typically, the value of 'path' will be something like:
@@ -109,9 +120,8 @@ public class RuntimeSystemPropertiesSetter implements BeanFactoryPostProcessor, 
             // will be disabled later when org.alfresco.mbeans.VirtServerRegistry
             // refuses to bring up the serverConnector bean.
 
-            path = loader.getResource("alfresco/alfresco-jmxrmi.password").toURI().getPath();
+            path = this.resolver.getResource("classpath:alfresco/alfresco-jmxrmi.password").getFile().getCanonicalFile();
         }
-        catch (java.net.URISyntaxException e ) { e.printStackTrace(); }
         catch (Exception e ) 
         { 
             if ( logger.isWarnEnabled() )
@@ -121,8 +131,7 @@ public class RuntimeSystemPropertiesSetter implements BeanFactoryPostProcessor, 
         if ( path == null ) { System.setProperty("alfresco.jmx.dir", ""); }
         else
         {
-            String alfresco_jmx_dir =   
-                   path.substring(0,path.lastIndexOf("/alfresco-jmxrmi.password"));
+            String alfresco_jmx_dir = path.getParent();
 
             // The value of 'alfresco.jmx.dir' will be something like:
             // $TOMCAT_HOME/webapps/alfresco/WEB-INF/classes/alfresco

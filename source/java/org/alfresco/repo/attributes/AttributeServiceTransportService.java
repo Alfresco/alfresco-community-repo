@@ -64,7 +64,7 @@ public class AttributeServiceTransportService implements
      */
     public void addAttribute(String ticket, String path, Attribute value)
     {
-        fAuthService.validate(ticket);
+        fAuthService.validate(ticket, null);
         fService.addAttribute(path, value);
     }
 
@@ -73,7 +73,7 @@ public class AttributeServiceTransportService implements
      */
     public void addAttribute(String ticket, List<String> keys, Attribute value)
     {
-        fAuthService.validate(ticket);
+        fAuthService.validate(ticket, null);
         fService.addAttribute(keys, value);
     }
 
@@ -82,7 +82,7 @@ public class AttributeServiceTransportService implements
      */
     public Attribute getAttribute(String ticket, String path)
     {
-        fAuthService.validate(ticket);
+        fAuthService.validate(ticket, null);
         return fService.getAttribute(path);
     }
 
@@ -91,7 +91,7 @@ public class AttributeServiceTransportService implements
      */
     public Attribute getAttribute(String ticket, List<String> keys)
     {
-        fAuthService.validate(ticket);
+        fAuthService.validate(ticket, null);
         return fService.getAttribute(keys);
     }
 
@@ -100,7 +100,7 @@ public class AttributeServiceTransportService implements
      */
     public List<String> getKeys(String ticket, String path)
     {
-        fAuthService.validate(ticket);
+        fAuthService.validate(ticket, null);
         return fService.getKeys(path);
     }
 
@@ -109,7 +109,7 @@ public class AttributeServiceTransportService implements
      */
     public List<String> getKeys(String ticket, List<String> keys)
     {
-        fAuthService.validate(ticket);
+        fAuthService.validate(ticket, null);
         return fService.getKeys(keys);
     }
 
@@ -119,7 +119,7 @@ public class AttributeServiceTransportService implements
     public List<Pair<String, Attribute>> query(String ticket, String path,
             AttrQuery query)
     {
-        fAuthService.validate(ticket);
+        fAuthService.validate(ticket, null);
         return fService.query(path, query);
     }
 
@@ -129,7 +129,7 @@ public class AttributeServiceTransportService implements
     public List<Pair<String, Attribute>> query(String ticket,
             List<String> keys, AttrQuery query)
     {
-        fAuthService.validate(ticket);
+        fAuthService.validate(ticket, null);
         return fService.query(keys, query);
     }
 
@@ -138,7 +138,7 @@ public class AttributeServiceTransportService implements
      */
     public void removeAttribute(String ticket, String path, String name)
     {
-        fAuthService.validate(ticket);
+        fAuthService.validate(ticket, null);
         fService.removeAttribute(path, name);
     }
 
@@ -147,7 +147,7 @@ public class AttributeServiceTransportService implements
      */
     public void removeAttribute(String ticket, List<String> keys, String name)
     {
-        fAuthService.validate(ticket);
+        fAuthService.validate(ticket, null);
         fService.removeAttribute(keys, name);
     }
 
@@ -156,7 +156,7 @@ public class AttributeServiceTransportService implements
      */
     public void removeAttribute(String ticket, String path, int index)
     {
-        fAuthService.validate(ticket);
+        fAuthService.validate(ticket, null);
         fService.removeAttribute(path, index);
     }
 
@@ -165,7 +165,7 @@ public class AttributeServiceTransportService implements
      */
     public void removeAttribute(String ticket, List<String> keys, int index)
     {
-        fAuthService.validate(ticket);
+        fAuthService.validate(ticket, null);
         fService.removeAttribute(keys, index);
     }
 
@@ -175,7 +175,7 @@ public class AttributeServiceTransportService implements
     public void setAttribute(String ticket, String path, String name,
             Attribute value)
     {
-        fAuthService.validate(ticket);
+        fAuthService.validate(ticket, null);
         fService.setAttribute(path, name, value);
     }
 
@@ -185,7 +185,7 @@ public class AttributeServiceTransportService implements
     public void setAttribute(String ticket, List<String> keys, String name,
             Attribute value)
     {
-        fAuthService.validate(ticket);
+        fAuthService.validate(ticket, null);
         fService.setAttribute(keys, name, value);
     }
 
@@ -195,7 +195,7 @@ public class AttributeServiceTransportService implements
     public void setAttribute(String ticket, String path, int index,
             Attribute value)
     {
-        fAuthService.validate(ticket);
+        fAuthService.validate(ticket, null);
         fService.setAttribute(path, index, value);
     }
 
@@ -205,7 +205,7 @@ public class AttributeServiceTransportService implements
     public void setAttribute(String ticket, List<String> keys, int index,
             Attribute value)
     {
-        fAuthService.validate(ticket);
+        fAuthService.validate(ticket, null);
         fService.setAttribute(keys, index, value);
     }
 
@@ -214,7 +214,7 @@ public class AttributeServiceTransportService implements
      */
     public boolean exists(String ticket, List<String> keys)
     {
-        fAuthService.validate(ticket);
+        fAuthService.validate(ticket, null);
         return fService.exists(keys);
     }
 
@@ -223,7 +223,7 @@ public class AttributeServiceTransportService implements
      */
     public boolean exists(String ticket, String path)
     {
-        fAuthService.validate(ticket);
+        fAuthService.validate(ticket, null);
         return fService.exists(path);
     }
 
@@ -232,7 +232,7 @@ public class AttributeServiceTransportService implements
      */
     public int getCount(String ticket, List<String> keys)
     {
-        fAuthService.validate(ticket);
+        fAuthService.validate(ticket, null);
         return fService.getCount(keys);
     }
 
@@ -241,7 +241,7 @@ public class AttributeServiceTransportService implements
      */
     public int getCount(String ticket, String path)
     {
-        fAuthService.validate(ticket);
+        fAuthService.validate(ticket, null);
         return fService.getCount(path);
     }
 
@@ -250,7 +250,7 @@ public class AttributeServiceTransportService implements
      */
     public void addAttributes(String ticket, List<String> keys, List<Attribute> values)
     {
-        fAuthService.validate(ticket);
+        fAuthService.validate(ticket, null);
         fService.addAttributes(keys, values);
     }
 
@@ -259,7 +259,7 @@ public class AttributeServiceTransportService implements
      */
     public void addAttributes(String ticket, String path, List<Attribute> values)
     {
-        fAuthService.validate(ticket);
+        fAuthService.validate(ticket, null);
         fService.addAttributes(path, values);
     }
 
@@ -268,7 +268,7 @@ public class AttributeServiceTransportService implements
      */
     public void setAttributes(String ticket, List<String> keys, Map<String, Attribute> entries)
     {
-        fAuthService.validate(ticket);
+        fAuthService.validate(ticket, null);
         fService.setAttributes(keys, entries);
     }
 
@@ -277,7 +277,7 @@ public class AttributeServiceTransportService implements
      */
     public void setAttributes(String ticket, String path, Map<String, Attribute> entries)
     {
-        fAuthService.validate(ticket);
+        fAuthService.validate(ticket, null);
         fService.setAttributes(path, entries);
     }
 
@@ -286,7 +286,7 @@ public class AttributeServiceTransportService implements
      */
     public void removeEntries(String ticket, List<String> keys, AttrQuery query)
     {
-        fAuthService.validate(ticket);
+        fAuthService.validate(ticket, null);
         fService.removeEntries(keys, query);
     }
 
@@ -295,7 +295,7 @@ public class AttributeServiceTransportService implements
      */
     public void removeEntries(String ticket, String path, AttrQuery query)
     {
-        fAuthService.validate(ticket);
+        fAuthService.validate(ticket, null);
         fService.removeEntries(path, query);
     }
 }

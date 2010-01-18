@@ -108,14 +108,21 @@ public class AliasableAspect implements NodeServicePolicies.OnAddAspectPolicy, N
         // Create search string like this: ASPECT:"emailserver:aliasable" +@emailserver\:alias:"alias_string"
         String query = String.format(SEARCH_TEMPLATE, alias);
         ResultSet res = searchService.query(storeRef, SearchService.LANGUAGE_LUCENE, query);
-        for (int i = 0; i < res.length(); i++)
+        try
         {
-            NodeRef resRef = res.getNodeRef(i);
-            Object otherAlias = nodeService.getProperty(resRef, EmailServerModel.PROP_ALIAS);
-            if (!resRef.equals(nodeRef) && alias.equals(otherAlias))
+            for (int i = 0; i < res.length(); i++)
             {
-                throw new AlfrescoRuntimeException("Node with alias=\"" + alias + "\" already exists. Duplicate isn't allowed.");
+                NodeRef resRef = res.getNodeRef(i);
+                Object otherAlias = nodeService.getProperty(resRef, EmailServerModel.PROP_ALIAS);
+                if (!resRef.equals(nodeRef) && alias.equals(otherAlias))
+                {
+                    throw new AlfrescoRuntimeException("Node with alias=\"" + alias + "\" already exists. Duplicate isn't allowed.");
+                }
             }
+        }
+        finally
+        {
+            res.close();
         }
     }
 

@@ -748,6 +748,7 @@
         <property name="objectDefinitionSource">
             <value>
                 org.alfresco.service.cmr.security.MutableAuthenticationService.isAuthenticationMutable=ACL_ALLOW
+                org.alfresco.service.cmr.security.MutableAuthenticationService.isAuthenticationCreationAllowed=ACL_ALLOW
                 org.alfresco.service.cmr.security.MutableAuthenticationService.createAuthentication=ACL_METHOD.ROLE_ADMINISTRATOR
                 org.alfresco.service.cmr.security.MutableAuthenticationService.updateAuthentication=ACL_ALLOW
                 org.alfresco.service.cmr.security.MutableAuthenticationService.setAuthentication=ACL_METHOD.ROLE_ADMINISTRATOR

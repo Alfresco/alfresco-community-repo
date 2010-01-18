@@ -44,6 +44,14 @@ public interface MutableAuthenticationService extends AuthenticationService
     public boolean isAuthenticationMutable(String userName);
     
     /**
+     * Determines whether authentication creation is allowed.
+     * 
+     * @return <code>true</code> if authentication creation is allowed
+     */
+    @Auditable
+    public boolean isAuthenticationCreationAllowed();
+    
+    /**
      * Create an authentication for the given user.
      * 
      * @param userName

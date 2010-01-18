@@ -229,7 +229,7 @@ public class RepoRemoteTransportService implements RepoRemoteTransport,
      */
     public synchronized void closeInputHandle(String ticket, String handle) 
     {
-        fAuthService.validate(ticket);
+        fAuthService.validate(ticket, null);
         InputStream in = fInputStreams.get(handle);
         if (in != null)
         {
@@ -252,7 +252,7 @@ public class RepoRemoteTransportService implements RepoRemoteTransport,
      */
     public synchronized void closeOutputHandle(String ticket, String handle) 
     {
-        fAuthService.validate(ticket);
+        fAuthService.validate(ticket, null);
         OutputStream out = fOutputStreams.get(handle);
         if (out != null)
         {
@@ -275,7 +275,7 @@ public class RepoRemoteTransportService implements RepoRemoteTransport,
      */
     public NodeRef createDirectory(String ticket, NodeRef base, String path) 
     {
-        fAuthService.validate(ticket);
+        fAuthService.validate(ticket, null);
         return fRepoRemote.createDirectory(base, path);
     }
 
@@ -284,7 +284,7 @@ public class RepoRemoteTransportService implements RepoRemoteTransport,
      */
     public String createFile(String ticket, NodeRef base, String path) 
     {
-        fAuthService.validate(ticket);
+        fAuthService.validate(ticket, null);
         OutputStream out = fRepoRemote.createFile(base, path);
         return getOutputHandle(out);
     }
@@ -294,7 +294,7 @@ public class RepoRemoteTransportService implements RepoRemoteTransport,
      */
     public Map<String, Pair<NodeRef, Boolean>> getListing(String ticket, NodeRef dir) 
     {
-        fAuthService.validate(ticket);
+        fAuthService.validate(ticket, null);
         return fRepoRemote.getListing(dir);
     }
 
@@ -303,7 +303,7 @@ public class RepoRemoteTransportService implements RepoRemoteTransport,
      */
     public NodeRef getRoot(String ticket) 
     {
-        fAuthService.validate(ticket);
+        fAuthService.validate(ticket, null);
         return fRepoRemote.getRoot();
     }
 
@@ -312,7 +312,7 @@ public class RepoRemoteTransportService implements RepoRemoteTransport,
      */
     public Pair<NodeRef, Boolean> lookup(String ticket, NodeRef base, String path) 
     {
-        fAuthService.validate(ticket);
+        fAuthService.validate(ticket, null);
         return fRepoRemote.lookup(base, path);
     }
 
@@ -321,7 +321,7 @@ public class RepoRemoteTransportService implements RepoRemoteTransport,
      */
     public String readFile(String ticket, NodeRef base, String path) 
     {
-        fAuthService.validate(ticket);
+        fAuthService.validate(ticket, null);
         InputStream in = fRepoRemote.readFile(base, path);
         return getInputHandle(in);
     }
@@ -331,7 +331,7 @@ public class RepoRemoteTransportService implements RepoRemoteTransport,
      */
     public String readFile(String ticket, NodeRef fileRef) 
     {
-        fAuthService.validate(ticket);
+        fAuthService.validate(ticket, null);
         InputStream in = fRepoRemote.readFile(fileRef);
         return getInputHandle(in);
     }
@@ -341,7 +341,7 @@ public class RepoRemoteTransportService implements RepoRemoteTransport,
      */
     public byte[] readInput(String ticket, String handle, int count) 
     {
-        fAuthService.validate(ticket);
+        fAuthService.validate(ticket, null);
         InputStream in = null;
         synchronized (this)
         {
@@ -390,7 +390,7 @@ public class RepoRemoteTransportService implements RepoRemoteTransport,
      */
     public void removeNode(String ticket, NodeRef base, String path) 
     {
-        fAuthService.validate(ticket);
+        fAuthService.validate(ticket, null);
         fRepoRemote.removeNode(base, path);
     }
 
@@ -399,7 +399,7 @@ public class RepoRemoteTransportService implements RepoRemoteTransport,
      */
     public void removeNode(String ticket, NodeRef toRemove) 
     {
-        fAuthService.validate(ticket);
+        fAuthService.validate(ticket, null);
         fRepoRemote.removeNode(toRemove);
     }
 
@@ -408,7 +408,7 @@ public class RepoRemoteTransportService implements RepoRemoteTransport,
      */
     public void rename(String ticket, NodeRef base, String src, String dst) 
     {
-        fAuthService.validate(ticket);
+        fAuthService.validate(ticket, null);
         fRepoRemote.rename(base, src, dst);
     }
 
@@ -417,7 +417,7 @@ public class RepoRemoteTransportService implements RepoRemoteTransport,
      */
     public String writeFile(String ticket, NodeRef base, String path) 
     {
-        fAuthService.validate(ticket);
+        fAuthService.validate(ticket, null);
         OutputStream out = fRepoRemote.writeFile(base, path);
         return getOutputHandle(out);
     }
@@ -427,7 +427,7 @@ public class RepoRemoteTransportService implements RepoRemoteTransport,
      */
     public void writeOutput(String ticket, String handle, byte[] buff, int count) 
     {
-        fAuthService.validate(ticket);
+        fAuthService.validate(ticket, null);
         OutputStream out = null;
         synchronized (this)
         {

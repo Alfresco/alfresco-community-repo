@@ -663,8 +663,13 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
         {
             throw new AlfrescoRuntimeException("Attempt to create person for an authority which is not a user");
         }
-
+                
         tenantService.checkDomainUser(userName);
+        
+        if (personExists(userName))
+        {
+            throw new AlfrescoRuntimeException("Person '" + userName + "' already exists.");
+        }
 
         properties.put(ContentModel.PROP_USERNAME, userName);
         properties.put(ContentModel.PROP_SIZE_CURRENT, 0L);

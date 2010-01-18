@@ -103,7 +103,7 @@ public class FileFolderRemoteServer implements FileFolderRemote
         AuthenticationUtil.pushAuthentication();
         try
         {
-            authenticationService.validate(ticket);
+            authenticationService.validate(ticket, null);
             // Make the call
             RetryingTransactionCallback<List<FileInfo>> callback = new RetryingTransactionCallback<List<FileInfo>>()
             {
@@ -128,7 +128,7 @@ public class FileFolderRemoteServer implements FileFolderRemote
         AuthenticationUtil.pushAuthentication();
         try
         {
-            authenticationService.validate(ticket);
+            authenticationService.validate(ticket, null);
             // Make the call
             RetryingTransactionCallback<List<FileInfo>> callback = new RetryingTransactionCallback<List<FileInfo>>()
             {
@@ -153,7 +153,7 @@ public class FileFolderRemoteServer implements FileFolderRemote
         AuthenticationUtil.pushAuthentication();
         try
         {
-            authenticationService.validate(ticket);
+            authenticationService.validate(ticket, null);
             // Make the call
             RetryingTransactionCallback<List<FileInfo>> callback = new RetryingTransactionCallback<List<FileInfo>>()
             {
@@ -178,7 +178,7 @@ public class FileFolderRemoteServer implements FileFolderRemote
         AuthenticationUtil.pushAuthentication();
         try
         {
-            authenticationService.validate(ticket);
+            authenticationService.validate(ticket, null);
             // Make the call
             RetryingTransactionCallback<NodeRef> callback = new RetryingTransactionCallback<NodeRef>()
             {
@@ -207,7 +207,7 @@ public class FileFolderRemoteServer implements FileFolderRemote
         AuthenticationUtil.pushAuthentication();
         try
         {
-            authenticationService.validate(ticket);
+            authenticationService.validate(ticket, null);
             // Make the call
             RetryingTransactionCallback<List<FileInfo>> callback = new RetryingTransactionCallback<List<FileInfo>>()
             {
@@ -238,7 +238,7 @@ public class FileFolderRemoteServer implements FileFolderRemote
         AuthenticationUtil.pushAuthentication();
         try
         {
-            authenticationService.validate(ticket);
+            authenticationService.validate(ticket, null);
             // Make the call
             RetryingTransactionCallback<List<FileInfo>> callback = new RetryingTransactionCallback<List<FileInfo>>()
             {
@@ -263,7 +263,7 @@ public class FileFolderRemoteServer implements FileFolderRemote
         AuthenticationUtil.pushAuthentication();
         try
         {
-            authenticationService.validate(ticket);
+            authenticationService.validate(ticket, null);
             // Make the call
             RetryingTransactionCallback<FileInfo> callback = new RetryingTransactionCallback<FileInfo>()
             {
@@ -289,7 +289,7 @@ public class FileFolderRemoteServer implements FileFolderRemote
         AuthenticationUtil.pushAuthentication();
         try
         {
-            authenticationService.validate(ticket);
+            authenticationService.validate(ticket, null);
             // Make the call
             RetryingTransactionCallback<FileInfo> callback = new RetryingTransactionCallback<FileInfo>()
             {
@@ -315,7 +315,7 @@ public class FileFolderRemoteServer implements FileFolderRemote
         AuthenticationUtil.pushAuthentication();
         try
         {
-            authenticationService.validate(ticket);
+            authenticationService.validate(ticket, null);
             // Make the call
             RetryingTransactionCallback<FileInfo> callback = new RetryingTransactionCallback<FileInfo>()
             {
@@ -340,7 +340,7 @@ public class FileFolderRemoteServer implements FileFolderRemote
         AuthenticationUtil.pushAuthentication();
         try
         {
-            authenticationService.validate(ticket);
+            authenticationService.validate(ticket, null);
             // Make the call
             RetryingTransactionCallback<FileInfo> callback = new RetryingTransactionCallback<FileInfo>()
             {
@@ -365,7 +365,7 @@ public class FileFolderRemoteServer implements FileFolderRemote
         AuthenticationUtil.pushAuthentication();
         try
         {
-            authenticationService.validate(ticket);
+            authenticationService.validate(ticket, null);
             // Make the call
             RetryingTransactionCallback<FileInfo[]> callback = new RetryingTransactionCallback<FileInfo[]>()
             {
@@ -395,7 +395,7 @@ public class FileFolderRemoteServer implements FileFolderRemote
         AuthenticationUtil.pushAuthentication();
         try
         {
-            authenticationService.validate(ticket);
+            authenticationService.validate(ticket, null);
             // Make the call
             RetryingTransactionCallback<Object> callback = new RetryingTransactionCallback<Object>()
             {
@@ -421,7 +421,7 @@ public class FileFolderRemoteServer implements FileFolderRemote
         AuthenticationUtil.pushAuthentication();
         try
         {
-            authenticationService.validate(ticket);
+            authenticationService.validate(ticket, null);
             // Make the call
             RetryingTransactionCallback<Object> callback = new RetryingTransactionCallback<Object>()
             {
@@ -448,7 +448,7 @@ public class FileFolderRemoteServer implements FileFolderRemote
         AuthenticationUtil.pushAuthentication();
         try
         {
-            authenticationService.validate(ticket);
+            authenticationService.validate(ticket, null);
             // Make the call
             RetryingTransactionCallback<FileInfo> callback = new RetryingTransactionCallback<FileInfo>()
             {
@@ -473,7 +473,7 @@ public class FileFolderRemoteServer implements FileFolderRemote
         AuthenticationUtil.pushAuthentication();
         try
         {
-            authenticationService.validate(ticket);
+            authenticationService.validate(ticket, null);
             // Make the call
             RetryingTransactionCallback<List<FileInfo>> callback = new RetryingTransactionCallback<List<FileInfo>>()
             {
@@ -498,7 +498,7 @@ public class FileFolderRemoteServer implements FileFolderRemote
         AuthenticationUtil.pushAuthentication();
         try
         {
-            authenticationService.validate(ticket);
+            authenticationService.validate(ticket, null);
             // Make the call
             RetryingTransactionCallback<FileInfo> callback = new RetryingTransactionCallback<FileInfo>()
             {
@@ -523,7 +523,7 @@ public class FileFolderRemoteServer implements FileFolderRemote
         AuthenticationUtil.pushAuthentication();
         try
         {
-            authenticationService.validate(ticket);
+            authenticationService.validate(ticket, null);
             // Make the call
             RetryingTransactionCallback<FileInfo> callback = new RetryingTransactionCallback<FileInfo>()
             {
@@ -552,7 +552,7 @@ public class FileFolderRemoteServer implements FileFolderRemote
         AuthenticationUtil.pushAuthentication();
         try
         {
-            authenticationService.validate(ticket);
+            authenticationService.validate(ticket, null);
             // Make the call
             RetryingTransactionCallback<ContentData> callback = new RetryingTransactionCallback<ContentData>()
             {
@@ -601,7 +601,7 @@ public class FileFolderRemoteServer implements FileFolderRemote
         AuthenticationUtil.pushAuthentication();
         try
         {
-            authenticationService.validate(ticket);
+            authenticationService.validate(ticket, null);
             // Make the call
             RetryingTransactionCallback<ContentData[]> callback = new RetryingTransactionCallback<ContentData[]>()
             {
@@ -653,7 +653,7 @@ public class FileFolderRemoteServer implements FileFolderRemote
         AuthenticationUtil.pushAuthentication();
         try
         {
-            authenticationService.validate(ticket);
+            authenticationService.validate(ticket, null);
             // Make the call
             RetryingTransactionCallback<byte[]> callback = new RetryingTransactionCallback<byte[]>()
             {

@@ -578,11 +578,18 @@ public class AVMLockingServiceImpl implements AVMLockingService
                 storeRef,
                 SearchService.LANGUAGE_LUCENE,
                 "@wca\\:avmstore:\"" + webProject + '"');
-        if (results.getNodeRefs().size() == 1)
+        try
         {
-            return hasAccess(webProject, results.getNodeRefs().get(0), avmPath, user);
+            if (results.getNodeRefs().size() == 1)
+            {
+                return hasAccess(webProject, results.getNodeRefs().get(0), avmPath, user);
+            }
+            return false;
         }
-        return false;
+        finally
+        {
+            results.close();
+        }
     }
 
     /* (non-Javadoc)
@@ -652,7 +659,8 @@ public class AVMLockingServiceImpl implements AVMLockingService
         		new StoreRef(this.webProjectStore),
                 SearchService.LANGUAGE_LUCENE,
                 query.toString());            
-        List<NodeRef> nodes = resultSet.getNodeRefs();    
+        List<NodeRef> nodes = resultSet.getNodeRefs();
+        resultSet.close();
 
         if (nodes.size() == 1)
         {

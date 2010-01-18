@@ -251,6 +251,11 @@ public class TestAuthenticationServiceImpl implements MutableAuthenticationServi
     {
         return authenticationExists(userName);
     }
+    
+    public boolean isAuthenticationCreationAllowed()
+    {
+        return allowCreate;
+    }
 
     public String getCurrentUserName() throws AuthenticationException
     {
@@ -279,7 +284,7 @@ public class TestAuthenticationServiceImpl implements MutableAuthenticationServi
         userToTicket.remove(userName);
     }
 
-    public void invalidateTicket(String ticket) throws AuthenticationException
+    public void invalidateTicket(String ticket, String sessionId) throws AuthenticationException
     {
         String userToRemove = null;
         for (String user : userToTicket.keySet())
@@ -297,7 +302,7 @@ public class TestAuthenticationServiceImpl implements MutableAuthenticationServi
 
     }
 
-    public void validate(String ticket) throws AuthenticationException
+    public void validate(String ticket, String sessionId) throws AuthenticationException
     {
         String userToSet = null;
         for (String user : userToTicket.keySet())
@@ -319,8 +324,13 @@ public class TestAuthenticationServiceImpl implements MutableAuthenticationServi
 
     }
 
-    // TODO: Fix this up
     public String getCurrentTicket()
+    {
+        return getCurrentTicket(null);
+    }
+
+    // TODO: Fix this up
+    public String getCurrentTicket(String sessionId)
     {
         String currentUser = getCurrentUserName();
         String ticket = userToTicket.get(currentUser);
@@ -332,7 +342,7 @@ public class TestAuthenticationServiceImpl implements MutableAuthenticationServi
         return ticket;
     }
     
-    public String getNewTicket()
+    public String getNewTicket(String sessionId)
     {
         String currentUser = getCurrentUserName();
         String ticket = userToTicket.get(currentUser);

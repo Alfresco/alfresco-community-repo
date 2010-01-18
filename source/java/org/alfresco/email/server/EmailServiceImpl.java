@@ -287,25 +287,38 @@ public class EmailServiceImpl implements EmailService
         StoreRef storeRef = new StoreRef(StoreRef.PROTOCOL_WORKSPACE, "SpacesStore");
         String query = String.format(AliasableAspect.SEARCH_TEMPLATE, parts[0]);
         ResultSet resultSet = searchService.query(storeRef, SearchService.LANGUAGE_LUCENE, query);
-
-        // Sometimes result contains trash. For example if we look for node with alias='target' after searching,
-        // we will get all nodes wich contain word 'target' in them alias property.
-        for (int i = 0; i < resultSet.length(); i++)
+        try
         {
-            NodeRef resRef = resultSet.getNodeRef(i);
-            Object alias = nodeService.getProperty(resRef, EmailServerModel.PROP_ALIAS);
-            if (parts[0].equals(alias))
+            // Sometimes result contains trash. For example if we look for node with alias='target' after searching,
+            // we will get all nodes wich contain word 'target' in them alias property.
+            for (int i = 0; i < resultSet.length(); i++)
             {
-                return resRef;
+                NodeRef resRef = resultSet.getNodeRef(i);
+                Object alias = nodeService.getProperty(resRef, EmailServerModel.PROP_ALIAS);
+                if (parts[0].equals(alias))
+                {
+                    return resRef;
+                }
             }
+        }
+        finally
+        {
+            resultSet.close();
         }
 
         // Ok, alias wasn't found, let's try to interpret recipient address as 'node-bdid' value
         query = "@sys\\:node-dbid:" + parts[0];
-        resultSet = searchService.query(storeRef, SearchService.LANGUAGE_LUCENE, query);
-        if (resultSet.length() > 0)
+        try
         {
-            return resultSet.getNodeRef(0);
+            resultSet = searchService.query(storeRef, SearchService.LANGUAGE_LUCENE, query);
+            if (resultSet.length() > 0)
+            {
+                return resultSet.getNodeRef(0);
+            }
+        }
+        finally
+        {
+            resultSet.close();
         }
         throw new EmailMessageException(ERR_INVALID_NODE_ADDRESS, recipient);
     }
@@ -324,32 +337,38 @@ public class EmailServiceImpl implements EmailService
         String query = "TYPE:cm\\:person +@cm\\:email:\"" + from + "\"";
 
         ResultSet resultSet = searchService.query(storeRef, SearchService.LANGUAGE_LUCENE, query);
-
-        if (resultSet.length() == 0)
+        try
         {
-            if (unknownUser == null || unknownUser.length() == 0)
+            if (resultSet.length() == 0)
             {
-                throw new EmailMessageException(ERR_UNKNOWN_SOURCE_ADDRESS, from);
+                if (unknownUser == null || unknownUser.length() == 0)
+                {
+                    throw new EmailMessageException(ERR_UNKNOWN_SOURCE_ADDRESS, from);
+                }
+                else
+                {
+                    userName = unknownUser;
+                }
             }
             else
             {
-                userName = unknownUser;
+                NodeRef userNode = resultSet.getNodeRef(0);
+                if (nodeService.exists(userNode))
+                {
+                    userName = DefaultTypeConverter.INSTANCE.convert(
+                            String.class,
+                            nodeService.getProperty(userNode, ContentModel.PROP_USERNAME));
+                }
+                else
+                {
+                    // The Lucene index returned a dead result
+                    throw new EmailMessageException(ERR_UNKNOWN_SOURCE_ADDRESS, from);
+                }
             }
         }
-        else
+        finally
         {
-            NodeRef userNode = resultSet.getNodeRef(0);
-            if (nodeService.exists(userNode))
-            {
-                userName = DefaultTypeConverter.INSTANCE.convert(
-                        String.class,
-                        nodeService.getProperty(userNode, ContentModel.PROP_USERNAME));
-            }
-            else
-            {
-                // The Lucene index returned a dead result
-                throw new EmailMessageException(ERR_UNKNOWN_SOURCE_ADDRESS, from);
-            }
+            resultSet.close();
         }
         // Ensure that the user is part of the Email Contributors group
         if (userName == null || !isEmailContributeUser(userName))

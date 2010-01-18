@@ -38,13 +38,13 @@ import java.util.zip.CRC32;
 import org.springframework.extensions.surf.util.I18NUtil;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.admin.patch.AbstractPatch;
+import org.alfresco.repo.batch.BatchProcessor;
+import org.alfresco.repo.batch.BatchProcessor.Worker;
 import org.alfresco.repo.domain.ChildAssoc;
 import org.alfresco.repo.domain.Node;
 import org.alfresco.repo.domain.QNameDAO;
 import org.alfresco.repo.domain.hibernate.ChildAssocImpl;
 import org.alfresco.repo.node.db.NodeDaoService;
-import org.alfresco.repo.security.sync.BatchProcessor;
-import org.alfresco.repo.security.sync.BatchProcessor.Worker;
 import org.alfresco.service.cmr.admin.PatchException;
 import org.alfresco.service.cmr.rule.RuleService;
 import org.alfresco.service.namespace.QName;
@@ -186,7 +186,7 @@ public class FixNameCrcValuesPatch extends AbstractPatch implements ApplicationE
         public String fixCrcValues() throws Exception
         {
             // get the association types to check
-            BatchProcessor<Long> batchProcessor = new BatchProcessor<Long>(transactionService
+            BatchProcessor<Long> batchProcessor = new BatchProcessor<Long>(logger, transactionService
                     .getRetryingTransactionHelper(), ruleService, applicationEventPublisher, findMismatchedCrcs(),
                     "FixNameCrcValuesPatch", 100, 2, 20);
 
@@ -224,7 +224,8 @@ public class FixNameCrcValuesPatch extends AbstractPatch implements ApplicationE
                     }
                     // Update the CRCs
                     long childCrc = getCrc(childName);
-                    long qnameCrc = ChildAssocImpl.getCrc(assoc.getQName(qnameDAO));
+                    QName qname = assoc.getQName(qnameDAO);
+                    long qnameCrc = ChildAssocImpl.getCrc(qname);
                     
                     // Update the assoc
                     assoc.setChildNodeNameCrc(childCrc);
@@ -237,7 +238,7 @@ public class FixNameCrcValuesPatch extends AbstractPatch implements ApplicationE
                     catch (Throwable e)
                     {
                         String msg = I18NUtil.getMessage(MSG_UNABLE_TO_CHANGE, childNode.getId(), childName, oldChildCrc,
-                                childCrc, oldQNameCrc, qnameCrc, e.getMessage());
+                                childCrc, qname, oldQNameCrc, qnameCrc, e.getMessage());
                         // We just log this and add details to the message file
                         if (logger.isDebugEnabled())
                         {
@@ -251,7 +252,8 @@ public class FixNameCrcValuesPatch extends AbstractPatch implements ApplicationE
                     }
                     getSession().clear();
                     // Record
-                    writeLine(I18NUtil.getMessage(MSG_REWRITTEN, childNode.getId(), childName, oldChildCrc, childCrc, oldQNameCrc, qnameCrc));
+                    writeLine(I18NUtil.getMessage(MSG_REWRITTEN, childNode.getId(), childName, oldChildCrc, childCrc,
+                            qname, oldQNameCrc, qnameCrc));
                 }}, true);
 
             

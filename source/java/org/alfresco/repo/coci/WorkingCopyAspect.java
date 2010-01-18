@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -18,7 +18,7 @@
  * As a special exception to the terms and conditions of version 2.0 of 
  * the GPL, you may redistribute this Program in connection with Free/Libre 
  * and Open Source Software ("FLOSS") applications as described in Alfresco's 
- * FLOSS exception.  You should have recieved a copy of the text describing 
+ * FLOSS exception.  You should have received a copy of the text describing 
  * the FLOSS exception, and it is also available here: 
  * http://www.alfresco.com/legal/licensing"
  */
@@ -42,6 +42,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.GUID;
 
 public class WorkingCopyAspect implements CopyServicePolicies.OnCopyNodePolicy
 {    
@@ -59,6 +60,11 @@ public class WorkingCopyAspect implements CopyServicePolicies.OnCopyNodePolicy
      * The lock service
      */
     private LockService lockService;
+    
+    /**
+     * The working copy aspect copy behaviour callback.
+     * */
+    private WorkingCopyAspectCopyBehaviourCallback workingCopyAspectCopyBehaviourCallback = new WorkingCopyAspectCopyBehaviourCallback();
     
     /**
      * Sets the policy component
@@ -142,7 +148,7 @@ public class WorkingCopyAspect implements CopyServicePolicies.OnCopyNodePolicy
      */
     public CopyBehaviourCallback getCopyCallback(QName classRef, CopyDetails copyDetails)
     {
-        return WorkingCopyAspectCopyBehaviourCallback.instance;
+        return this.workingCopyAspectCopyBehaviourCallback;
     }
 
     /**
@@ -153,10 +159,8 @@ public class WorkingCopyAspect implements CopyServicePolicies.OnCopyNodePolicy
      * @author Derek Hulley
      * @since 3.2
      */
-    private static class WorkingCopyAspectCopyBehaviourCallback extends DefaultCopyBehaviourCallback
+    private class WorkingCopyAspectCopyBehaviourCallback extends DefaultCopyBehaviourCallback
     {
-        private static WorkingCopyAspectCopyBehaviourCallback instance = new WorkingCopyAspectCopyBehaviourCallback();
-        
         /**
          * Disallows copying of the {@link ContentModel#ASPECT_WORKING_COPY <b>cm:workingCopy</b>} aspect.
          */
@@ -177,8 +181,8 @@ public class WorkingCopyAspect implements CopyServicePolicies.OnCopyNodePolicy
          * Prevents copying off the {@link ContentModel#PROP_NAME <b>cm:name</b>} property.
          */
         @Override
-        public Map<QName, Serializable> getCopyProperties(
-                QName classQName, CopyDetails copyDetails, Map<QName, Serializable> properties)
+        public Map<QName, Serializable> getCopyProperties(QName classQName, CopyDetails copyDetails,
+                Map<QName, Serializable> properties)
         {
             if (classQName.equals(ContentModel.ASPECT_WORKING_COPY))
             {
@@ -186,7 +190,32 @@ public class WorkingCopyAspect implements CopyServicePolicies.OnCopyNodePolicy
             }
             else if (copyDetails.getSourceNodeAspectQNames().contains(ContentModel.ASPECT_WORKING_COPY))
             {
-                properties.remove(ContentModel.PROP_NAME);
+                // Generate a new name for a new copy of a working copy
+                String newName = null;
+
+                // This is a copy of a working copy to a new node (not a check in). Try to derive a new name from the
+                // node it is checked out from
+                if (copyDetails.isTargetNodeIsNew() && copyDetails.getSourceNodeAspectQNames().contains(ContentModel.ASPECT_COPIEDFROM))
+                {
+                    NodeRef checkedOutFrom = (NodeRef) copyDetails.getSourceNodeProperties().get(
+                            ContentModel.PROP_COPY_REFERENCE);
+                    if (nodeService.exists(checkedOutFrom))
+                    {
+                        String oldName = (String) nodeService.getProperty(checkedOutFrom, ContentModel.PROP_NAME);
+                        int extIndex = oldName.lastIndexOf('.');
+                        newName = extIndex == -1 ? oldName + "_" + GUID.generate() : oldName.substring(0, extIndex)
+                                + "_" + GUID.generate() + oldName.substring(extIndex);
+                    }
+                }
+
+                if (newName == null)
+                {
+                    properties.remove(ContentModel.PROP_NAME);
+                }
+                else
+                {
+                    properties.put(ContentModel.PROP_NAME, newName);
+                }
                 return properties;
             }
             else

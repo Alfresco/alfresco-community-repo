@@ -167,7 +167,7 @@ public class LoaderRemoteServer implements LoaderRemote
         AuthenticationUtil.pushAuthentication();
         try
         {
-            authenticationService.validate(ticket);
+            authenticationService.validate(ticket, null);
             // Make the call
             RetryingTransactionCallback<NodeRef> callback = new RetryingTransactionCallback<NodeRef>()
             {
@@ -252,7 +252,7 @@ public class LoaderRemoteServer implements LoaderRemote
         AuthenticationUtil.pushAuthentication();
         try
         {
-            authenticationService.validate(ticket);
+            authenticationService.validate(ticket, null);
             
             // Make the call
             RetryingTransactionCallback<FileInfo[]> callback = new RetryingTransactionCallback<FileInfo[]>()
@@ -333,7 +333,7 @@ public class LoaderRemoteServer implements LoaderRemote
         AuthenticationUtil.pushAuthentication();
         try
         {
-            authenticationService.validate(ticket);
+            authenticationService.validate(ticket, null);
             RetryingTransactionCallback<NodeRef> callback = new RetryingTransactionCallback<NodeRef>()
             {
                 public NodeRef execute() throws Throwable
@@ -360,7 +360,7 @@ public class LoaderRemoteServer implements LoaderRemote
         AuthenticationUtil.pushAuthentication();
         try
         {
-            authenticationService.validate(ticket);
+            authenticationService.validate(ticket, null);
             RetryingTransactionCallback<FileInfo[]> callback = new RetryingTransactionCallback<FileInfo[]>()
             {
                 public FileInfo[] execute() throws Throwable
@@ -396,7 +396,7 @@ public class LoaderRemoteServer implements LoaderRemote
         AuthenticationUtil.pushAuthentication();
         try
         {
-            authenticationService.validate(ticket);
+            authenticationService.validate(ticket, null);
             RetryingTransactionCallback<NodeRef> callback = new RetryingTransactionCallback<NodeRef>()
             {
                 public NodeRef execute() throws Throwable
@@ -423,7 +423,7 @@ public class LoaderRemoteServer implements LoaderRemote
 
         try
         {
-            authenticationService.validate(ticket);
+            authenticationService.validate(ticket, null);
             RetryingTransactionCallback<NodeRef[]> callback = new RetryingTransactionCallback<NodeRef[]>()
             {
                 public NodeRef [] execute() throws Throwable

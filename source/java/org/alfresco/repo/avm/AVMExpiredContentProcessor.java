@@ -248,21 +248,27 @@ public class AVMExpiredContentProcessor
                 StoreRef storeRef = new StoreRef(StoreRef.PROTOCOL_AVM, storeName);
                 ResultSet results = this.searchService.query(storeRef, SearchService.LANGUAGE_LUCENE, 
                          query.toString());
-
-                if (logger.isDebugEnabled())
-                      logger.debug("Found " + results.length() + " potential expired item(s) in store '" + storeName + "'");
-                
-                if (results.length() > 0)
+                try
                 {
-                   for (NodeRef resultNode : results.getNodeRefs())
-                   {
-                      // get the AVMNodeDescriptor object for each node found
-                      Pair<Integer, String> path = AVMNodeConverter.ToAVMVersionPath(resultNode);
-                      AVMNodeDescriptor node = this.avmService.lookup(path.getFirst(), path.getSecond());
-                      
-                      // process the node to see whether the date and time has passed
-                      processNode(storeName, node);
-                   }
+                    if (logger.isDebugEnabled())
+                          logger.debug("Found " + results.length() + " potential expired item(s) in store '" + storeName + "'");
+                    
+                    if (results.length() > 0)
+                    {
+                       for (NodeRef resultNode : results.getNodeRefs())
+                       {
+                          // get the AVMNodeDescriptor object for each node found
+                          Pair<Integer, String> path = AVMNodeConverter.ToAVMVersionPath(resultNode);
+                          AVMNodeDescriptor node = this.avmService.lookup(path.getFirst(), path.getSecond());
+                          
+                          // process the node to see whether the date and time has passed
+                          processNode(storeName, node);
+                       }
+                    }
+                }
+                finally
+                {
+                    results.close();
                 }
             }
             else

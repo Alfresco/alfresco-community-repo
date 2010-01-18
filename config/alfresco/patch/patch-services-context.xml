@@ -1805,6 +1805,9 @@
         <property name="authorityService">
             <ref bean="authorityService" />
         </property>
+        <property name="ruleService">
+            <ref bean="ruleService" />
+        </property>
         <property name="userBootstrap">
             <ref bean="userBootstrap" />
         </property>

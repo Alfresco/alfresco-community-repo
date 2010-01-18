@@ -102,12 +102,19 @@ public class ContentFormTypePatch extends AbstractPatch
         sp.setLanguage(SearchService.LANGUAGE_LUCENE);
         sp.setQuery("ASPECT:\"" + WCMAppModel.ASPECT_FORM + "\"");
         ResultSet rs = this.searchService.query(sp);
-        Collection<NodeRef> result = new ArrayList<NodeRef>(rs.length());
-        for (ResultSetRow row : rs)
+        try
         {
-            result.add(row.getNodeRef());
+            Collection<NodeRef> result = new ArrayList<NodeRef>(rs.length());
+            for (ResultSetRow row : rs)
+            {
+                result.add(row.getNodeRef());
+            }
+            
+            return result;
         }
-        
-        return result;
+        finally
+        {
+            rs.close();
+        }
     }
 }

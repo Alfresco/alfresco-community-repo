@@ -657,7 +657,7 @@ public class SessionImpl implements Session
             {
                 try
                 {
-                    getRepositoryImpl().getServiceRegistry().getAuthenticationService().invalidateTicket(getTicket());
+                    getRepositoryImpl().getServiceRegistry().getAuthenticationService().invalidateTicket(getTicket(), null);
                 }
                 finally
                 {

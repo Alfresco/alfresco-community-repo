@@ -274,11 +274,11 @@ public class AuthenticationTest extends TestCase
         //userTransaction = transactionService.getUserTransaction();
         //userTransaction.begin();
         
-        pubAuthenticationService.validate(ticket);
+        pubAuthenticationService.validate(ticket, null);
         userName = pubAuthenticationService.getCurrentUserName();
         assertEquals("andy", userName);
         
-        pubAuthenticationService.validate(newticket);
+        pubAuthenticationService.validate(newticket, null);
         userName = pubAuthenticationService.getCurrentUserName();
         assertEquals("andy", userName);
         
@@ -629,14 +629,14 @@ public class AuthenticationTest extends TestCase
         Authentication result = authenticationManager.authenticate(token);
         result.setAuthenticated(true);
 
-        String ticket = ticketComponent.getNewTicket(getUserName(result));
-        String user = ticketComponent.validateTicket(ticket);
-        assertEquals(ticketComponent.getCurrentTicket("Andy"), ticket);
+        String ticket = ticketComponent.getNewTicket(getUserName(result), null);
+        String user = ticketComponent.validateTicket(ticket, null);
+        assertEquals(ticketComponent.getCurrentTicket("Andy", null, true), ticket);
 
         user = null;
         try
         {
-            user = ticketComponent.validateTicket("INVALID");
+            user = ticketComponent.validateTicket("INVALID", null);
             assertNotNull(null);
         }
         catch (AuthenticationException e)
@@ -644,11 +644,11 @@ public class AuthenticationTest extends TestCase
             assertNull(user);
         }
 
-        ticketComponent.invalidateTicketById(ticket);
+        ticketComponent.invalidateTicketById(ticket, null);
         try
         {
-            user = ticketComponent.validateTicket(ticket);
-            assertEquals(ticketComponent.getCurrentTicket("Andy"), ticket);
+            user = ticketComponent.validateTicket(ticket, null);
+            assertEquals(ticketComponent.getCurrentTicket("Andy", null, true), ticket);
             assertNotNull(null);
         }
         catch (AuthenticationException e)
@@ -677,11 +677,11 @@ public class AuthenticationTest extends TestCase
         Authentication result = authenticationManager.authenticate(token);
         result.setAuthenticated(true);
 
-        String ticket = tc.getNewTicket(getUserName(result));
-        tc.validateTicket(ticket);
-        assertEquals(ticketComponent.getCurrentTicket("Andy"), ticket);
-        tc.validateTicket(ticket);
-        assertEquals(ticketComponent.getCurrentTicket("Andy"), ticket);
+        String ticket = tc.getNewTicket(getUserName(result), null);
+        tc.validateTicket(ticket, null);
+        assertEquals(ticketComponent.getCurrentTicket("Andy", null, true), ticket);
+        tc.validateTicket(ticket, null);
+        assertEquals(ticketComponent.getCurrentTicket("Andy", null, true), ticket);
 
         dao.deleteUser("Andy");
         // assertNull(dao.getUserOrNull("Andy"));
@@ -703,12 +703,12 @@ public class AuthenticationTest extends TestCase
         Authentication result = authenticationManager.authenticate(token);
         result.setAuthenticated(true);
 
-        String ticket = tc.getNewTicket(getUserName(result));
-        tc.validateTicket(ticket);
-        assertTrue(!ticketComponent.getCurrentTicket("Andy").equals(ticket));
+        String ticket = tc.getNewTicket(getUserName(result), null);
+        tc.validateTicket(ticket, null);
+        assertTrue(!ticketComponent.getCurrentTicket("Andy", null, true).equals(ticket));
         try
         {
-            tc.validateTicket(ticket);
+            tc.validateTicket(ticket, null);
             assertNotNull(null);
         }
         catch (AuthenticationException e)
@@ -737,13 +737,13 @@ public class AuthenticationTest extends TestCase
         Authentication result = authenticationManager.authenticate(token);
         result.setAuthenticated(true);
 
-        String ticket = tc.getNewTicket(getUserName(result));
-        tc.validateTicket(ticket);
-        assertEquals(ticketComponent.getCurrentTicket("Andy"), ticket);
-        tc.validateTicket(ticket);
-        assertEquals(ticketComponent.getCurrentTicket("Andy"), ticket);
-        tc.validateTicket(ticket);
-        assertEquals(ticketComponent.getCurrentTicket("Andy"), ticket);
+        String ticket = tc.getNewTicket(getUserName(result), null);
+        tc.validateTicket(ticket, null);
+        assertEquals(ticketComponent.getCurrentTicket("Andy", null, true), ticket);
+        tc.validateTicket(ticket, null);
+        assertEquals(ticketComponent.getCurrentTicket("Andy", null, true), ticket);
+        tc.validateTicket(ticket, null);
+        assertEquals(ticketComponent.getCurrentTicket("Andy", null, true), ticket);
 
         synchronized (this)
         {
@@ -759,7 +759,7 @@ public class AuthenticationTest extends TestCase
         }
         try
         {
-            tc.validateTicket(ticket);
+            tc.validateTicket(ticket, null);
             assertNotNull(null);
         }
         catch (AuthenticationException e)
@@ -769,7 +769,7 @@ public class AuthenticationTest extends TestCase
 
         try
         {
-            tc.validateTicket(ticket);
+            tc.validateTicket(ticket, null);
             assertNotNull(null);
         }
         catch (AuthenticationException e)
@@ -779,7 +779,7 @@ public class AuthenticationTest extends TestCase
 
         try
         {
-            tc.validateTicket(ticket);
+            tc.validateTicket(ticket, null);
             assertNotNull(null);
         }
         catch (AuthenticationException e)
@@ -802,7 +802,7 @@ public class AuthenticationTest extends TestCase
 
         try
         {
-            tc.validateTicket(ticket);
+            tc.validateTicket(ticket, null);
             assertNotNull(null);
         }
         catch (AuthenticationException e)
@@ -811,7 +811,7 @@ public class AuthenticationTest extends TestCase
         }
 
         tc.setExpiryMode(ExpiryMode.AFTER_INACTIVITY.toString());
-        ticket = tc.getNewTicket(getUserName(result));
+        ticket = tc.getNewTicket(getUserName(result), null);
 
         for (int i = 0; i < 50; i++)
         {
@@ -828,7 +828,7 @@ public class AuthenticationTest extends TestCase
                     e.printStackTrace();
                 }
 
-                tc.validateTicket(ticket);
+                tc.validateTicket(ticket, null);
 
             }
         }
@@ -848,7 +848,7 @@ public class AuthenticationTest extends TestCase
 
         try
         {
-            tc.validateTicket(ticket);
+            tc.validateTicket(ticket, null);
             assertNotNull(null);
         }
         catch (AuthenticationException e)
@@ -877,13 +877,13 @@ public class AuthenticationTest extends TestCase
         Authentication result = authenticationManager.authenticate(token);
         result.setAuthenticated(true);
 
-        String ticket = tc.getNewTicket(getUserName(result));
-        tc.validateTicket(ticket);
-        assertEquals(ticketComponent.getCurrentTicket("Andy"), ticket);
-        tc.validateTicket(ticket);
-        assertEquals(ticketComponent.getCurrentTicket("Andy"), ticket);
-        tc.validateTicket(ticket);
-        assertEquals(ticketComponent.getCurrentTicket("Andy"), ticket);
+        String ticket = tc.getNewTicket(getUserName(result), null);
+        tc.validateTicket(ticket, null);
+        assertEquals(ticketComponent.getCurrentTicket("Andy", null, true), ticket);
+        tc.validateTicket(ticket, null);
+        assertEquals(ticketComponent.getCurrentTicket("Andy", null, true), ticket);
+        tc.validateTicket(ticket, null);
+        assertEquals(ticketComponent.getCurrentTicket("Andy", null, true), ticket);
 
         synchronized (this)
         {
@@ -899,7 +899,7 @@ public class AuthenticationTest extends TestCase
         }
         try
         {
-            tc.validateTicket(ticket);
+            tc.validateTicket(ticket, null);
             assertNotNull(null);
         }
         catch (AuthenticationException e)
@@ -909,7 +909,7 @@ public class AuthenticationTest extends TestCase
 
         try
         {
-            tc.validateTicket(ticket);
+            tc.validateTicket(ticket, null);
             assertNotNull(null);
         }
         catch (AuthenticationException e)
@@ -919,7 +919,7 @@ public class AuthenticationTest extends TestCase
 
         try
         {
-            tc.validateTicket(ticket);
+            tc.validateTicket(ticket, null);
             assertNotNull(null);
         }
         catch (AuthenticationException e)
@@ -942,7 +942,7 @@ public class AuthenticationTest extends TestCase
 
         try
         {
-            tc.validateTicket(ticket);
+            tc.validateTicket(ticket, null);
             assertNotNull(null);
         }
         catch (AuthenticationException e)
@@ -970,13 +970,13 @@ public class AuthenticationTest extends TestCase
         Authentication result = authenticationManager.authenticate(token);
         result.setAuthenticated(true);
 
-        String ticket = tc.getNewTicket(getUserName(result));
-        tc.validateTicket(ticket);
-        assertEquals(ticketComponent.getCurrentTicket("Andy"), ticket);
-        tc.validateTicket(ticket);
-        assertEquals(ticketComponent.getCurrentTicket("Andy"), ticket);
-        tc.validateTicket(ticket);
-        assertEquals(ticketComponent.getCurrentTicket("Andy"), ticket);
+        String ticket = tc.getNewTicket(getUserName(result), null);
+        tc.validateTicket(ticket, null);
+        assertEquals(ticketComponent.getCurrentTicket("Andy", null, true), ticket);
+        tc.validateTicket(ticket, null);
+        assertEquals(ticketComponent.getCurrentTicket("Andy", null, true), ticket);
+        tc.validateTicket(ticket, null);
+        assertEquals(ticketComponent.getCurrentTicket("Andy", null, true), ticket);
         synchronized (this)
         {
             try
@@ -990,8 +990,8 @@ public class AuthenticationTest extends TestCase
             }
         }
 
-        tc.validateTicket(ticket);
-        assertEquals(ticketComponent.getCurrentTicket("Andy"), ticket);
+        tc.validateTicket(ticket, null);
+        assertEquals(ticketComponent.getCurrentTicket("Andy", null, true), ticket);
 
         dao.deleteUser("Andy");
         // assertNull(dao.getUserOrNull("Andy"));
@@ -1126,14 +1126,14 @@ public class AuthenticationTest extends TestCase
         // instance
         String ticket = authenticationService.getCurrentTicket();
         // validate our ticket is still valid
-        authenticationService.validate(ticket);
+        authenticationService.validate(ticket, null);
         assertEquals(ticket, authenticationService.getCurrentTicket());
 
         // destroy the ticket instance
-        authenticationService.invalidateTicket(ticket);
+        authenticationService.invalidateTicket(ticket, null);
         try
         {
-            authenticationService.validate(ticket);
+            authenticationService.validate(ticket, null);
             fail("Invalid taicket should have been rejected");
         }
         catch (AuthenticationException e)
@@ -1175,11 +1175,11 @@ public class AuthenticationTest extends TestCase
         // validate our ticket is still valid
 
         authenticationService.clearCurrentSecurityContext();
-        authenticationService.validate(ticket);
+        authenticationService.validate(ticket, null);
         assertEquals(ticket, authenticationService.getCurrentTicket());
 
         // destroy the ticket instance
-        authenticationService.invalidateTicket(ticket);
+        authenticationService.invalidateTicket(ticket, null);
 
         Authentication current = authenticationComponent.getCurrentAuthentication();
         if (current != null)
@@ -1190,7 +1190,7 @@ public class AuthenticationTest extends TestCase
 
         try
         {
-            authenticationService.validate(ticket);
+            authenticationService.validate(ticket, null);
             fail("Invalid ticket should have been rejected");
         }
         catch (AuthenticationException e)
@@ -1234,11 +1234,11 @@ public class AuthenticationTest extends TestCase
         // instance
         String ticket = authenticationService.getCurrentTicket();
         // validate our ticket is still valid
-        authenticationService.validate(ticket);
+        authenticationService.validate(ticket, null);
         assertEquals(ticket, authenticationService.getCurrentTicket());
 
         // destroy the ticket instance
-        authenticationService.invalidateTicket(ticket);
+        authenticationService.invalidateTicket(ticket, null);
 
         Authentication current = authenticationComponent.getCurrentAuthentication();
         if (current != null)
@@ -1294,11 +1294,11 @@ public class AuthenticationTest extends TestCase
         // instance
         String ticket = authenticationService.getCurrentTicket();
         // validate our ticket is still valid
-        authenticationService.validate(ticket);
+        authenticationService.validate(ticket, null);
         assertEquals(ticket, authenticationService.getCurrentTicket());
 
         // destroy the ticket instance
-        authenticationService.invalidateTicket(ticket);
+        authenticationService.invalidateTicket(ticket, null);
 
         Authentication current = authenticationComponent.getCurrentAuthentication();
         if (current != null)
@@ -1314,6 +1314,48 @@ public class AuthenticationTest extends TestCase
 
         dao.deleteUser("Andy");
         // assertNull(dao.getUserOrNull("Andy"));
+    }
+
+    public void testAuthenticationServiceSessionIds()
+    {
+        // create an authentication object e.g. the user
+        authenticationService.createAuthentication("Andy", "auth1".toCharArray());
+
+        // authenticate with this user details
+        authenticationService.authenticate("Andy", "auth1".toCharArray());
+
+        // assert the user is authenticated
+        assertEquals("Andy", authenticationService.getCurrentUserName());
+
+        // Get the user's ticket and associate it with "AndySessionId"
+        String andyTicket = authenticationService.getCurrentTicket("AndySessionId");
+
+        // Now validate the ticket in another session
+        authenticationService.validate(andyTicket, "DaveSessionId");
+
+        assertEquals(andyTicket, authenticationService.getCurrentTicket());
+
+        // Invalidate it in that session
+        authenticationService.invalidateTicket(andyTicket, "DaveSessionId");
+
+        // Make sure we don't get that ticket again in the same session
+        assertNotSame(andyTicket, authenticationService.getCurrentTicket("DaveSessionId"));
+
+        // The ticket should still validate in the other session
+        authenticationService.validate(andyTicket, "AndySessionId");
+        
+        // When we invalidate it in the other session, the ticket should be invalidated globally
+        authenticationService.invalidateTicket(andyTicket, "AndySessionId");
+
+        try
+        {
+            authenticationService.validate(andyTicket, null);
+            fail("Invalid ticket should have been rejected");
+        }
+        catch (AuthenticationException e)
+        {
+            // Expected
+        }
     }
 
     public void testPubAuthenticationService1()
@@ -1456,14 +1498,14 @@ public class AuthenticationTest extends TestCase
         assertNull(authenticationComponent.getCurrentAuthentication());
 
         // validate our ticket is still valid
-        pubAuthenticationService.validate(ticket);
+        pubAuthenticationService.validate(ticket, null);
         assertEquals(ticket, authenticationService.getCurrentTicket());
 
         // destroy the ticket instance
-        pubAuthenticationService.invalidateTicket(ticket);
+        pubAuthenticationService.invalidateTicket(ticket, null);
         try
         {
-            pubAuthenticationService.validate(ticket);
+            pubAuthenticationService.validate(ticket, null);
             fail("Ticket should not validate");
         }
         catch (AuthenticationException e)
@@ -1525,11 +1567,11 @@ public class AuthenticationTest extends TestCase
         // instance
         String ticket = pubAuthenticationService.getCurrentTicket();
         // validate our ticket is still valid
-        pubAuthenticationService.validate(ticket);
+        pubAuthenticationService.validate(ticket, null);
         assertEquals(ticket, authenticationService.getCurrentTicket());
 
         // destroy the ticket instance
-        pubAuthenticationService.invalidateTicket(ticket);
+        pubAuthenticationService.invalidateTicket(ticket, null);
 
     }
 
@@ -1586,11 +1628,11 @@ public class AuthenticationTest extends TestCase
         // instance
         String ticket = pubAuthenticationService.getCurrentTicket();
         // validate our ticket is still valid
-        pubAuthenticationService.validate(ticket);
+        pubAuthenticationService.validate(ticket, null);
         assertEquals(ticket, authenticationService.getCurrentTicket());
 
         // destroy the ticket instance
-        pubAuthenticationService.invalidateTicket(ticket);
+        pubAuthenticationService.invalidateTicket(ticket, null);
 
         authenticationComponent.clearCurrentSecurityContext();
 

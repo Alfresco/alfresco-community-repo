@@ -86,7 +86,7 @@ public class AuthenticationServiceImpl extends AbstractAuthenticationService imp
         }
         ticketComponent.clearCurrentTicket();
         
-        ticketComponent.getCurrentTicket(userName); // to ensure new ticket is created (even if client does not explicitly call getCurrentTicket)
+        ticketComponent.getCurrentTicket(userName, null, true); // to ensure new ticket is created (even if client does not explicitly call getCurrentTicket)
     }
     
     public String getCurrentUserName() throws AuthenticationException
@@ -104,9 +104,9 @@ public class AuthenticationServiceImpl extends AbstractAuthenticationService imp
     	return ticketComponent.getUsersWithTickets(nonExpiredOnly);
     }
 
-    public void invalidateTicket(String ticket) throws AuthenticationException
+    public void invalidateTicket(String ticket, String sessionId) throws AuthenticationException
     {
-        ticketComponent.invalidateTicketById(ticket);
+        ticketComponent.invalidateTicketById(ticket, sessionId);
     }
     
     public int countTickets(boolean nonExpiredOnly)
@@ -120,7 +120,7 @@ public class AuthenticationServiceImpl extends AbstractAuthenticationService imp
     }
     
 
-    public void validate(String ticket) throws AuthenticationException
+    public void validate(String ticket, String sessionId) throws AuthenticationException
     {
         String currentUser = null;
         try
@@ -128,7 +128,7 @@ public class AuthenticationServiceImpl extends AbstractAuthenticationService imp
 
             // clear context - to avoid MT concurrency issue (causing domain mismatch) - see also 'authenticate' above
             clearCurrentSecurityContext();
-            currentUser = ticketComponent.validateTicket(ticket);
+            currentUser = ticketComponent.validateTicket(ticket, sessionId);
             authenticationComponent.setCurrentUser(currentUser, UserNameValidationMode.CHECK);
         }
         catch (AuthenticationException ae)
@@ -138,14 +138,43 @@ public class AuthenticationServiceImpl extends AbstractAuthenticationService imp
         }
     }
 
-    public String getCurrentTicket()
+    public String getCurrentTicket(String sessionId) throws AuthenticationException
     {
-        return ticketComponent.getCurrentTicket(getCurrentUserName());
+        String userName = getCurrentUserName();
+        // So that preAuthenticationCheck can constrain the creation of new tickets, we first ask for the current ticket
+        // without auto-creation
+        String ticket = ticketComponent.getCurrentTicket(userName, sessionId, false);
+        if (ticket == null)
+        {
+            try
+            {
+                preAuthenticationCheck(userName);
+            }
+            catch (AuthenticationException e)
+            {
+                clearCurrentSecurityContext();
+                throw e;
+            }
+            // If we get through the authentication check then it's safe to issue a new ticket (e.g. for
+            // SSO/external-based login)
+            return ticketComponent.getCurrentTicket(userName, sessionId, true);
+        }
+        return ticket;
     }
 
-    public String getNewTicket()
+    public String getNewTicket(String sessionId)
     {
-        return ticketComponent.getNewTicket(getCurrentUserName());
+        String userName = getCurrentUserName();
+        try
+        {
+            preAuthenticationCheck(userName);
+        }
+        catch (AuthenticationException e)
+        {
+            clearCurrentSecurityContext();
+            throw e;
+        }
+        return ticketComponent.getNewTicket(userName, sessionId);
     }
     
     public void clearCurrentSecurityContext()
@@ -165,7 +194,7 @@ public class AuthenticationServiceImpl extends AbstractAuthenticationService imp
         authenticationComponent.setGuestUserAsCurrentUser();
         String guestUser = authenticationComponent.getCurrentUserName();
         ticketComponent.clearCurrentTicket();
-        ticketComponent.getCurrentTicket(guestUser); // to ensure new ticket is created (even if client does not explicitly call getCurrentTicket)
+        ticketComponent.getCurrentTicket(guestUser, null, true); // to ensure new ticket is created (even if client does not explicitly call getCurrentTicket)
     }
     
     public boolean guestUserAuthenticationAllowed()

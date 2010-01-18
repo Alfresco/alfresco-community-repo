@@ -558,14 +558,17 @@ public class MultiTDemoTest extends TestCase
             
             cnt = cnt + 1;
         }
+        resultSet.close();
         
         // Find all root categories
         resultSet = searchService.query(SPACES_STORE, SearchService.LANGUAGE_LUCENE, query);
         assertEquals(cnt, resultSet.length());
+        resultSet.close();
         
         String queryMembers = "PATH:\"/cm:generalclassifiable//cm:catA/member\"";
         resultSet = searchService.query(SPACES_STORE, SearchService.LANGUAGE_LUCENE, queryMembers);
         assertEquals(0, resultSet.length());
+        resultSet.close();
         
         NodeRef homeSpaceRef = getHomeSpaceFolderNode(AuthenticationUtil.getRunAsUser());
         NodeRef contentRef = addContent(homeSpaceRef, "tqbfjotld.txt", "The quick brown fox jumps over the lazy dog (tenant " + tenantDomain + ")", MimetypeMap.MIMETYPE_TEXT_PLAIN);
@@ -592,6 +595,7 @@ public class MultiTDemoTest extends TestCase
         queryMembers = "PATH:\"/cm:generalclassifiable//cm:CatA/member\"";
         resultSet = searchService.query(SPACES_STORE, SearchService.LANGUAGE_LUCENE, queryMembers);
         assertEquals(1, resultSet.length());
+        resultSet.close();
     }
     
     public void testCreateFolders()
@@ -774,6 +778,7 @@ public class MultiTDemoTest extends TestCase
                     assertEquals(1, resultSet.length());
                     
                     NodeRef nodeRef = resultSet.getNodeRef(0);
+                    resultSet.close();
                     
                     // checkout, update and checkin
                     
@@ -792,10 +797,12 @@ public class MultiTDemoTest extends TestCase
                     query = "+PATH:\"/app:company_home/app:dictionary/app:email_templates/app:invite_email_templates/*\" +TEXT:\""+origText+"\"";
                     resultSet = searchService.query(SPACES_STORE, SearchService.LANGUAGE_LUCENE, query);
                     assertEquals(0, resultSet.length());
+                    resultSet.close();
                     
                     query = "+PATH:\"/app:company_home/app:dictionary/app:email_templates/app:invite_email_templates/*\" +TEXT:\""+updateText+"\"";
                     resultSet = searchService.query(SPACES_STORE, SearchService.LANGUAGE_LUCENE, query);
                     assertEquals(1, resultSet.length());
+                    resultSet.close();
                     
                     return null;
                 }
@@ -1043,6 +1050,7 @@ public class MultiTDemoTest extends TestCase
         {
             folderNodeRef = rs.getNodeRef(0);
         }
+        rs.close();
         return folderNodeRef;
     }
     

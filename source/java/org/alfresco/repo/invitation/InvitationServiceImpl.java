@@ -1286,13 +1286,20 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
 		// is created, otherwise if a user account already exists for invitee
 		// user name, then local reference to invitee password will be "null"
 		//
-		String inviteePassword = null;
-		if (!this.authenticationService.authenticationExists(inviteeUserName)) {
-			if (logger.isDebugEnabled())
-				logger
-						.debug("Invitee user account does not exist, creating disabled account.");
-			inviteePassword = createInviteeDisabledAccount(inviteeUserName);
-		}
+        final String initeeUserNameFinal = inviteeUserName;
+        String inviteePassword = AuthenticationUtil.runAs(new RunAsWork<String>()
+        {
+            public String doWork()
+            {
+                if (!InvitationServiceImpl.this.authenticationService.authenticationExists(initeeUserNameFinal))
+                {
+                    if (logger.isDebugEnabled())
+                        logger.debug("Invitee user account does not exist, creating disabled account.");
+                    return createInviteeDisabledAccount(initeeUserNameFinal);
+                }
+                return null;
+            }
+        }, AuthenticationUtil.getSystemUserName());
 
 		// create a ticket for the invite - this is used
 		String inviteTicket = GUID.generate();

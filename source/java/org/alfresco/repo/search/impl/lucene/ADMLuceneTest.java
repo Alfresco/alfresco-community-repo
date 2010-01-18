@@ -748,6 +748,7 @@ public class ADMLuceneTest extends TestCase
             assertEquals("Skip = " + skip + " max  = " + max + " actual = " + actualPosition, expected.get(actualPosition), nodeRef);
             actualPosition++;
         }
+        results.close();
     }
 
     public void testNonPublicSearchServicePaging() throws InterruptedException
@@ -808,6 +809,7 @@ public class ADMLuceneTest extends TestCase
             assertEquals("Skip = " + skip + " max  = " + max + " actual = " + actualPosition, expected.get(actualPosition), nodeRef);
             actualPosition++;
         }
+        results.close();
     }
 
     public void testAlfrescoSql() throws InterruptedException

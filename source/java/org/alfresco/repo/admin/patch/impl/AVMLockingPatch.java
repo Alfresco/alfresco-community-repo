@@ -58,10 +58,17 @@ public class AVMLockingPatch extends AbstractPatch
     {
         ResultSet results =
             searchService.query(new StoreRef(STORE), "lucene", "TYPE:\"wca:webfolder\"");
-        for (NodeRef nodeRef : results.getNodeRefs())
+        try
         {
-            String webProject = (String)nodeService.getProperty(nodeRef, WCMAppModel.PROP_AVMSTORE);
-            fLockingService.addWebProject(webProject);
+            for (NodeRef nodeRef : results.getNodeRefs())
+            {
+                String webProject = (String)nodeService.getProperty(nodeRef, WCMAppModel.PROP_AVMSTORE);
+                fLockingService.addWebProject(webProject);
+            }
+        }
+        finally
+        {
+            results.close();
         }
         return I18NUtil.getMessage(MSG_SUCCESS);
     }

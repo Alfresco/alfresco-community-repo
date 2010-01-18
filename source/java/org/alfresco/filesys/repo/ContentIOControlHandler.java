@@ -754,7 +754,7 @@ public class ContentIOControlHandler implements IOControlHandler
     		{
     			// Validate the existing ticket
     			
-    			getAuthenticationService().validate( cInfo.getAuthenticationTicket());
+    			getAuthenticationService().validate( cInfo.getAuthenticationTicket(), null);
     			needTicket = false;
     		}
     		catch ( AuthenticationException ex)
@@ -763,7 +763,7 @@ public class ContentIOControlHandler implements IOControlHandler
     			
     			try
     			{
-    				getAuthenticationService().invalidateTicket( cInfo.getAuthenticationTicket());
+    				getAuthenticationService().invalidateTicket( cInfo.getAuthenticationTicket(), null);
     				cInfo.setAuthenticationTicket( null);
     			}
     			catch (Exception ex2)

@@ -621,11 +621,10 @@ public class SiteServiceImpl implements SiteService, SiteModel
                     siteRoot.getStoreRef(),
                     SearchService.LANGUAGE_LUCENE,
                     query.toString(),
-                    params);           
-             
-            result = new ArrayList<SiteInfo>(results.length());
+                    params);                        
             try
             {
+                result = new ArrayList<SiteInfo>(results.length());
                 for (NodeRef site : results.getNodeRefs())
                 {
                     // Ignore any node type that is not a "site"

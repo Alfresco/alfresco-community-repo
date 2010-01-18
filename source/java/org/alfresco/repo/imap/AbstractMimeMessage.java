@@ -343,6 +343,7 @@ public abstract class AbstractMimeMessage extends MimeMessage
             return result;
         }
         result = resultSet.getNodeRef(0).toString();
+        resultSet.close();
         return result;
     }
 

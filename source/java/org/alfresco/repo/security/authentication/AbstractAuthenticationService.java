@@ -73,6 +73,11 @@ public abstract class AbstractAuthenticationService implements AuthenticationSer
     {
         return sysAdminParams.getMaxUsers();
     }
+    
+    public String getCurrentTicket()
+    {
+        return getCurrentTicket(null);
+    }
 
     public abstract Set<String> getUsersWithTickets(boolean nonExpiredOnly);
 

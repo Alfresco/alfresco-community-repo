@@ -305,11 +305,11 @@ public class ChainingAuthenticationServiceTest extends TestCase
         String ticket = as.getCurrentTicket();
         assertTrue(ticket == as.getCurrentTicket());
 
-        as.validate(ticket);
-        as.invalidateTicket(ticket);
+        as.validate(ticket, null);
+        as.invalidateTicket(ticket, null);
         try
         {
-            as.validate(ticket);
+            as.validate(ticket, null);
             fail();
         }
         catch (AuthenticationException e)
@@ -318,11 +318,11 @@ public class ChainingAuthenticationServiceTest extends TestCase
         }
 
         ticket = as.getCurrentTicket();
-        as.validate(ticket);
+        as.validate(ticket, null);
         as.invalidateUserSession("andy");
         try
         {
-            as.validate(ticket);
+            as.validate(ticket, null);
             fail();
         }
         catch (AuthenticationException e)
@@ -638,11 +638,11 @@ public class ChainingAuthenticationServiceTest extends TestCase
         String ticket = as.getCurrentTicket();
         assertTrue(ticket == as.getCurrentTicket());
 
-        as.validate(ticket);
-        as.invalidateTicket(ticket);
+        as.validate(ticket, null);
+        as.invalidateTicket(ticket, null);
         try
         {
-            as.validate(ticket);
+            as.validate(ticket, null);
             fail();
         }
         catch (AuthenticationException e)
@@ -651,11 +651,11 @@ public class ChainingAuthenticationServiceTest extends TestCase
         }
 
         ticket = as.getCurrentTicket();
-        as.validate(ticket);
+        as.validate(ticket, null);
         as.invalidateUserSession("andy");
         try
         {
-            as.validate(ticket);
+            as.validate(ticket, null);
             fail();
         }
         catch (AuthenticationException e)

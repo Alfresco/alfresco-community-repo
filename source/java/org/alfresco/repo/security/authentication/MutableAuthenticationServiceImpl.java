@@ -137,4 +137,11 @@ public class MutableAuthenticationServiceImpl extends AuthenticationServiceImpl 
         return authenticationExists(userName);
     }
 
+    /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.security.MutableAuthenticationService#isAuthenticationCreationAllowed()
+     */
+    public boolean isAuthenticationCreationAllowed()
+    {
+        return true;
+    }
 }

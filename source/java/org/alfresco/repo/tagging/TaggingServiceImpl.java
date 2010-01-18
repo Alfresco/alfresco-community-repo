@@ -334,6 +334,7 @@ public class TaggingServiceImpl implements TaggingService,
         {
             tagNodeRef = resultSet.getNodeRef(0);
         }
+        resultSet.close();
         
         return tagNodeRef;
     }
@@ -621,7 +622,9 @@ public class TaggingServiceImpl implements TaggingService,
                 storeRef, 
                 SearchService.LANGUAGE_LUCENE, 
                 "+PATH:\"/cm:taggable/cm:" + ISO9075.encode(tag) + "/member\"");
-        return resultSet.getNodeRefs();
+        List<NodeRef> nodeRefs = resultSet.getNodeRefs();
+        resultSet.close();
+        return nodeRefs;
     }
 
     /**
@@ -641,7 +644,9 @@ public class TaggingServiceImpl implements TaggingService,
                 storeRef, 
                 SearchService.LANGUAGE_LUCENE, 
                 "+PATH:\"" + pathString + "//*\" +PATH:\"/cm:taggable/cm:" + ISO9075.encode(tag) + "/member\"");
-        return resultSet.getNodeRefs();
+        List<NodeRef> nodeRefs = resultSet.getNodeRefs();
+        resultSet.close();
+        return nodeRefs;
     }
     
     /**

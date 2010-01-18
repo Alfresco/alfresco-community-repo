@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -103,37 +103,58 @@ public interface AuthenticationService
     @Auditable(parameters = {"userName"})
     public void invalidateUserSession(String userName) throws AuthenticationException;
     
-   /**
-    * Invalidate a single ticket by ID
-    * 
-    * @param ticket
-    * @throws AuthenticationException
-    */
-    @Auditable(parameters = {"ticket"}, recordable = {false})
-    public void invalidateTicket(String ticket) throws AuthenticationException;
-    
-   /**
-    * Validate a ticket. Set the current user name accordingly. 
-    * 
-    * @param ticket
-    * @throws AuthenticationException
-    */
-    @Auditable(parameters = {"ticket"}, recordable = {false})
-    public void validate(String ticket) throws AuthenticationException;
+    /**
+     * Invalidate a single ticket by ID or remove its association with a given session ID.
+     *
+     * @param ticket
+     * @param sessionId
+     *            the app server session ID (e.g. HttpSession ID) or <code>null</code> if not applicable.
+     * @throws AuthenticationException
+     */
+    @Auditable(parameters = {"ticket", "sessionId"}, recordable = {false, false})
+    public void invalidateTicket(String ticket, String sessionId) throws AuthenticationException;
     
     /**
-     * Get the current ticket as a string
-     * @return
+     * Validate a ticket and associate it with a given app server session ID. Set the current user name accordingly. 
+     * 
+     * @param ticket
+     * @param sessionId
+     *            the app server session ID (e.g. HttpSession ID) or <code>null</code> if not applicable.
+     * @throws AuthenticationException
+     */
+    @Auditable(parameters = {"ticket", "sessionId"}, recordable = {false, false})
+    public void validate(String ticket, String sessionId) throws AuthenticationException;
+
+    /**
+     * Gets the current ticket as a string. If there isn't an appropriate current ticket, a new ticket will be made the
+     * current ticket.
+     * 
+     * @param sessionId
+     *            the app server session ID (e.g. HttpSession ID) or <code>null</code> if not applicable. If non-null,
+     *            the ticket returned is either a new one or one previously associated with the same sessionId by
+     *            {@link #validate(String, String)} or {@link #getCurrentTicket(String)}.
+     * @return the current ticket as a string
+     */
+    @Auditable(parameters = {"sessionId"}, recordable = {false})
+    public String getCurrentTicket(String sessionId);
+    
+    /**
+     * Gets the current ticket as a string. If there isn't an appropriate current ticket, a new ticket will be made the
+     * current ticket.
+     * 
+     * @return the current ticket as a string
      */
     @Auditable
     public String getCurrentTicket();
-    
+
     /**
-     * Get the current ticket as a string
+     * Get a new ticket as a string
+     * @param sessionId
+     *            the app server session ID (e.g. HttpSession ID) or <code>null</code> if not applicable.
      * @return
      */
-    @Auditable
-    public String getNewTicket();
+    @Auditable(parameters = {"sessionId"}, recordable = {false})
+    public String getNewTicket(String sessionId);
     
     /**
      * Remove the current security information

@@ -114,6 +114,7 @@ public class BlogIntegrationServiceSystemTest extends BaseAlfrescoSpringTest imp
                 SearchService.LANGUAGE_XPATH, 
                 "app:company_home");
         NodeRef companyHome = results1.getNodeRefs().get(0);
+        results1.close();
         
         // Create the blog details node
         this.blogDetailsNodeRef = this.nodeService.createNode(

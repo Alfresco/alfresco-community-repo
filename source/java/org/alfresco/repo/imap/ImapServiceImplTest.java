@@ -227,7 +227,7 @@ public class ImapServiceImplTest extends TestCase
     
     private void reauthenticate(String name, String password)
     {
-        authenticationService.invalidateTicket(authenticationService.getCurrentTicket());
+        authenticationService.invalidateTicket(authenticationService.getCurrentTicket(), null);
         authenticationService.clearCurrentSecurityContext();
         authenticationService.authenticate(name, password.toCharArray());
     }

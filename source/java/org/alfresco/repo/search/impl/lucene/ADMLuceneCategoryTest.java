@@ -805,9 +805,9 @@ public class ADMLuceneCategoryTest extends TestCase
         tx = transactionService.getUserTransaction();
         tx.begin();
         start = System.nanoTime();
-        @SuppressWarnings("unused")
         ResultSet set = searcher.query(serviceRegistry.getPersonService().getPeopleContainer().getStoreRef(), "lucene", "@"+LuceneQueryParser.escape(ContentModel.ASPECT_GEN_CLASSIFIABLE.toString())+":second*");
         System.out.println("Query complete in "+(System.nanoTime()-start)/1e9f);
+        set.close();
         tx.commit();
 
     }

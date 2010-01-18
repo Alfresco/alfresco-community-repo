@@ -163,9 +163,16 @@ public abstract class AbstractEmailMessageHandler implements EmailMessageHandler
         StoreRef storeRef = new StoreRef(StoreRef.PROTOCOL_WORKSPACE, "SpacesStore");
         String query = "@sys\\:node-dbid:" + parts[0];
         ResultSet resultSet = searchService.query(storeRef, SearchService.LANGUAGE_LUCENE, query);
-        if (resultSet.length() == 1)
+        try
         {
-            return resultSet.getNodeRef(0);
+            if (resultSet.length() == 1)
+            {
+                return resultSet.getNodeRef(0);
+            }
+        }
+        finally
+        {
+            resultSet.close();
         }
         return null;
     }

@@ -26,6 +26,7 @@ package org.alfresco.web.bean.users;
 
 import java.util.Set;
 
+import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.web.bean.spaces.InviteSpaceUsersWizard;
@@ -42,7 +43,7 @@ public class MailInviteSpaceUsersWizard extends InviteSpaceUsersWizard
         // groups - text search match on supplied name
         String term = PermissionService.GROUP_PREFIX + "*" + search + "*";
         Set<String> groups;
-        groups = getAuthorityService().findAuthorities(AuthorityType.GROUP, term);
+        groups = getAuthorityService().findAuthoritiesInZone(AuthorityType.GROUP, term, AuthorityService.ZONE_APP_DEFAULT);
         return groups;
     }
 }

@@ -279,7 +279,7 @@ public class SetPermissionsDialog extends UpdatePermissionsDialog
                 // groups - text search match on supplied name
                 String term = PermissionService.GROUP_PREFIX + "*" + contains.trim() + "*";
                 Set<String> groups;
-                groups = getAuthorityService().findAuthorities(AuthorityType.GROUP, term);
+                groups = getAuthorityService().findAuthoritiesInZone(AuthorityType.GROUP, term, AuthorityService.ZONE_APP_DEFAULT);
                 groups.addAll(getAuthorityService().getAllAuthorities(AuthorityType.EVERYONE));
 
                 String groupDisplayName;

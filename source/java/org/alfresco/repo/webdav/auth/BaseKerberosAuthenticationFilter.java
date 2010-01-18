@@ -56,6 +56,7 @@ import org.alfresco.jlan.server.auth.spnego.NegTokenTarg;
 import org.alfresco.jlan.server.auth.spnego.OID;
 import org.alfresco.jlan.server.auth.spnego.SPNEGO;
 import org.alfresco.repo.SessionUser;
+import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.apache.commons.codec.binary.Base64;
 import org.ietf.jgss.Oid;
 
@@ -313,6 +314,17 @@ public abstract class BaseKerberosAuthenticationFilter extends BaseSSOAuthentica
             return;
         }
 
+        // Check if the login page is being accessed, do not intercept the login page
+        if (hasLoginPage() && req.getRequestURI().endsWith(getLoginPage()))
+        {
+            if (getLogger().isDebugEnabled())
+                getLogger().debug("Login page requested, chaining ...");
+            
+            // Chain to the next filter
+            chain.doFilter( sreq, sresp);
+            return;
+        }
+
         // Check the authorization header
         
         if ( authHdr == null) {
@@ -325,7 +337,10 @@ public abstract class BaseKerberosAuthenticationFilter extends BaseSSOAuthentica
         		
         		if (checkForTicketParameter(context, req, resp))
         		{
-        	        // Chain to the next filter
+                    // Filter validate hook
+                    onValidate( context, req, resp);
+
+                    // Chain to the next filter
                     
                     chain.doFilter(sreq, sresp);
         	        return;
@@ -397,18 +412,29 @@ public abstract class BaseKerberosAuthenticationFilter extends BaseSSOAuthentica
                     {
                         //  Kerberos logon
                         
-                        if ( doKerberosLogon( negToken, req, resp, httpSess) != null)
+                        try
                         {
-                            // Allow the user to access the requested page
+                            if ( doKerberosLogon( negToken, req, resp, httpSess) != null)
+                            {
+                                // Allow the user to access the requested page
+                                onValidate(context, req, resp);
+                                    
+                                chain.doFilter( req, resp);
+                            }
+                            else
+                            {
+                                // Send back a request for SPNEGO authentication
                                 
-                            chain.doFilter( req, resp);
+                            	restartLoginChallenge( resp, httpSess);
+                            }
                         }
-                        else
+                        catch (AuthenticationException ex)
                         {
-                            // Send back a request for SPNEGO authentication
-                            
-                        	restartLoginChallenge( resp, httpSess);
-                        }	
+                            // Even though the user successfully authenticated, the ticket may not be granted, e.g. to
+                            // max user limit
+                            onValidateFailed(req, resp, httpSess);
+                            return;
+                        }                        
                     }
                 }
                 catch ( IOException ex)
@@ -512,14 +538,13 @@ public abstract class BaseKerberosAuthenticationFilter extends BaseSSOAuthentica
                 
                 if ( negTokenTarg != null)
                 {
-                	
-                	// Create and store the user authentication context
-                	
-                	SessionUser user = createUserEnvironment( httpSess, krbDetails.getUserName());
-                    
+                    // Create and store the user authentication context
+
+                    SessionUser user = createUserEnvironment(httpSess, krbDetails.getUserName());
+
                     // Debug
-                    
-                    if ( getLogger().isDebugEnabled())
+
+                    if (getLogger().isDebugEnabled())
                         getLogger().debug("User " + user.getUserName() + " logged on via Kerberos");
                 }
             }
@@ -530,6 +555,14 @@ public abstract class BaseKerberosAuthenticationFilter extends BaseSSOAuthentica
             	if ( getLogger().isDebugEnabled())
             		getLogger().debug( "No SPNEGO response, Kerberos logon failed");
             }
+        }
+        catch (AuthenticationException ex)
+        {
+            // Pass on validation failures
+            if (getLogger().isDebugEnabled())
+                getLogger().debug("Failed to validate user " + krbDetails.getUserName(), ex);
+
+            throw ex;
         }
         catch (Exception ex)
         {

@@ -282,7 +282,13 @@
         />
     <cache 
         name="org.alfresco.cache.userToAuthorityCache" 
-        maxElementsInMemory="10000"
+        maxElementsInMemory="5000"
+        eternal="true"
+        overflowToDisk="false"
+        />
+    <cache 
+        name="org.alfresco.cache.authorityCache" 
+        maxElementsInMemory="5000"
         eternal="true"
         overflowToDisk="false"
         />

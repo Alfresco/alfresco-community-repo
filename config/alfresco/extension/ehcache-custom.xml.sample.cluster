@@ -640,7 +640,22 @@
 
     <cache
         name="org.alfresco.cache.userToAuthorityCache"
-        maxElementsInMemory="10000"
+        maxElementsInMemory="5000"
+        eternal="true"
+        overflowToDisk="false">
+
+            <cacheEventListenerFactory
+                    class="net.sf.ehcache.distribution.RMICacheReplicatorFactory"
+                    properties="replicatePuts = false,
+                                replicateUpdates = true,
+                                replicateRemovals = true,
+                                replicateUpdatesViaCopy = false,
+                                replicateAsynchronously = false"/>
+    </cache>
+
+    <cache
+        name="org.alfresco.cache.authorityCache" 
+        maxElementsInMemory="5000"
         eternal="true"
         overflowToDisk="false">
 

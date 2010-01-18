@@ -376,6 +376,42 @@
       </property>
    </bean>
    
+   <!-- ====================================== -->
+   <!-- NodeRef lookup for authority containers -->
+   <!-- ====================================== -->
+
+   <!-- The cross-transaction shared cache for authority containers -->
+   
+   <bean name="authoritySharedCache" class="org.alfresco.repo.cache.EhCacheAdapter">
+      <property name="cache">
+         <bean class="org.springframework.cache.ehcache.EhCacheFactoryBean" >
+            <property name="cacheManager">
+               <ref bean="internalEHCacheManager" />
+            </property>
+            <property name="cacheName">
+               <value>org.alfresco.cache.authorityCache</value>
+            </property>
+         </bean>
+      </property>
+   </bean>
+   
+   <!-- The transactional cache for authority containers -->
+   
+   <bean name="authorityLookupCache" class="org.alfresco.repo.cache.TransactionalCache">
+      <property name="sharedCache">
+         <ref bean="authoritySharedCache" />
+      </property>
+      <property name="cacheManager" >
+         <ref bean="transactionalEHCacheManager" />
+      </property>
+      <property name="name">
+         <value>org.alfresco.authorityTransactionalCache</value>
+      </property>
+      <property name="maxCacheSize">
+         <value>100</value>
+      </property>
+   </bean>
+
    <!-- ===================================== -->
    <!-- Permissions access cache              -->
    <!-- ===================================== -->

@@ -250,7 +250,7 @@ public abstract class AbstractAVMNodeLinksDAOImpl implements AVMNodeLinksDAO
         */
     }
     
-    private class ChildKey implements Serializable
+    private static class ChildKey implements Serializable
     {
         private static final long serialVersionUID = 848161072437569305L;
         

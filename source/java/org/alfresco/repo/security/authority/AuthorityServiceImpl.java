@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -213,8 +213,15 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
         
         // Check named guest and admin users
         Set<String> adminUsers = this.authenticationService.getDefaultAdministratorUserNames();
+        
         Set<String> guestUsers = this.authenticationService.getDefaultGuestUserNames();
-
+        
+        String defaultGuestName = AuthenticationUtil.getGuestUserName();
+        if (defaultGuestName != null && defaultGuestName.length() > 0)
+        {
+            guestUsers.add(defaultGuestName);
+        }
+        
         // Check for name matches using MT + case sensitivity rules
         boolean isAdminUser = containsMatch(adminUsers, currentUserName);
         boolean isGuestUser = containsMatch(guestUsers, currentUserName);

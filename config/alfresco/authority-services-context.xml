@@ -54,7 +54,7 @@
     <!-- Authority DAO that stores group information along with user information, -->
     <!-- in the repository.                                                       -->
     <!--                                                                          -->
-    <!-- This bean uses the userToAuthorityCache configured in cache-context.xml  -->
+    <!-- This bean uses the authorityLookupCache configured in cache-context.xml  -->
     <!--                                                                          -->
 
     <bean id="authorityDAO" class="org.alfresco.repo.security.authority.AuthorityDAOImpl" init-method="init">   
@@ -63,6 +63,9 @@
         </property>
         <property name="nodeService">
             <ref bean="mlAwareNodeService" />
+        </property>
+        <property name="searchService">
+            <ref bean="admSearchService" />
         </property>
         <property name="namespacePrefixResolver">
             <ref bean="namespaceService" />
@@ -76,7 +79,10 @@
         <property name="tenantService">
             <ref bean="tenantService" />
         </property>
-        <property name="userToAuthorityCache">
+        <property name="authorityLookupCache">
+            <ref bean="authorityLookupCache" />
+        </property>
+        <property name="userAuthorityCache">
             <ref bean="userToAuthorityCache" />
         </property>
         <property name="policyComponent">

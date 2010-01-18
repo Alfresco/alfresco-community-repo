@@ -590,7 +590,39 @@ public class ChainingAuthenticationServiceTest extends TestCase
         as.clearCurrentSecurityContext();
         assertNull(as.getCurrentUserName());
     }
-
+    
+    public void testService_NoGuestConfigured() throws Exception
+    {
+        
+        ChainingAuthenticationServiceImpl as = new ChainingAuthenticationServiceImpl();
+        ArrayList<AuthenticationService> ases = new ArrayList<AuthenticationService>();
+        ases.add(service2);
+        as.setAuthenticationServices(ases);
+        
+        assertNotNull(AuthenticationUtil.getGuestUserName());
+        as.authenticateAsGuest();
+        assertEquals(as.getCurrentUserName(), AuthenticationUtil.getGuestUserName());
+        as.clearCurrentSecurityContext();
+        assertNull(as.getCurrentUserName());
+        
+        AuthenticationUtil authUtil = new AuthenticationUtil();
+        authUtil.setDefaultAdminUserName("admin");
+        authUtil.setDefaultGuestUserName(null);
+        authUtil.afterPropertiesSet();
+        
+        try
+        {
+            as.authenticateAsGuest();
+            fail("Guest authentication should not be supported");
+        }
+        catch (AuthenticationException ae)
+        {
+            // expected
+            assertTrue(ae.getMessage().contains("Guest authentication not supported"));
+        }
+        assertNull(as.getCurrentUserName());
+    }
+    
     public void testService_Domains()
     {
         ChainingAuthenticationServiceImpl as = new ChainingAuthenticationServiceImpl();

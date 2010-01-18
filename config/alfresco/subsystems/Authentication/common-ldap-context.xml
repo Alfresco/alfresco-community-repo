@@ -142,6 +142,15 @@
         </property>
 
         <!--
+        If positive, this property indicates that range retrieval should be used to fetch
+        multi-valued attributes (such as member) in batches of the specified size.
+        Overcomes any size limits imposed by Active Directory.        
+        -->
+        <property name="attributeBatchSize">
+            <value>${ldap.synchronization.attributeBatchSize}</value>
+        </property>
+
+        <!--
         The query to select all objects that represent the groups to import.
         
         For Open LDAP, using a basic schema, the following is probably what you want:

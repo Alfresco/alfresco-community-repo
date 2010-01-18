@@ -186,7 +186,7 @@ public abstract class AbstractPropertyBackedBean implements PropertyBackedBean, 
         {
             value = this.defaultResolver.resolveValue(value);
         }
-        return value == null || value.length() == 0 ? null : value;
+        return value;
     }
 
     /**

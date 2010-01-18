@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2009 Alfresco Software Limited.
+ * Copyright (C) 2005-2010 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -39,6 +39,7 @@ import java.util.Set;
 import java.util.TimeZone;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.regex.Pattern;
 
 import javax.naming.InvalidNameException;
 import javax.naming.NamingEnumeration;
@@ -76,6 +77,9 @@ public class LDAPUserRegistry implements UserRegistry, LDAPNameResolver, Initial
 
     /** The logger. */
     private static Log logger = LogFactory.getLog(LDAPUserRegistry.class);
+    
+    /** The regular expression that will match the attribute at the end of a range. */
+    private static final Pattern PATTERN_RANGE_END = Pattern.compile(";range=[0-9]+-\\*");
 
     /** Is this bean active? I.e. should this part of the subsystem be used? */
     private boolean active = true;
@@ -136,6 +140,13 @@ public class LDAPUserRegistry implements UserRegistry, LDAPNameResolver, Initial
      * into batches of the specified size. Overcomes any size limits imposed by the LDAP server.
      */
     private int queryBatchSize;
+
+    /**
+     * The attribute retrieval batch size. If positive, indicates that range retrieval should be used to fetch
+     * multi-valued attributes (such as member) in batches of the specified size. Overcomes any size limits imposed by
+     * the LDAP server.
+     */
+    private int attributeBatchSize;
 
     /** Should we error on missing group members?. */
     private boolean errorOnMissingMembers;
@@ -437,6 +448,18 @@ public class LDAPUserRegistry implements UserRegistry, LDAPNameResolver, Initial
     {
         this.queryBatchSize = queryBatchSize;
     }
+    
+    /**
+     * Sets the attribute batch size.
+     * 
+     * @param attributeBatchSize
+     *            If positive, indicates that range retrieval should be used to fetch multi-valued attributes (such as
+     *            member) in batches of the specified size. Overcomes any size limits imposed by the LDAP server.
+     */
+    public void setAttributeBatchSize(int attributeBatchSize)
+    {
+        this.attributeBatchSize = attributeBatchSize;
+    }
 
     /*
      * (non-Javadoc)
@@ -465,9 +488,14 @@ public class LDAPUserRegistry implements UserRegistry, LDAPNameResolver, Initial
         }
         this.userAttributeNames = new String[userAttributeSet.size()];
         userAttributeSet.toArray(this.userAttributeNames);
+
+        // Include a range restriction for the multi-valued member attribute if this is enabled
         this.groupAttributeNames = new String[]
         {
-            this.groupIdAttributeName, this.modifyTimestampAttributeName, this.memberAttributeName
+            this.groupIdAttributeName,
+            this.modifyTimestampAttributeName,
+            this.attributeBatchSize > 0 ? this.memberAttributeName + ";range=0-" + (this.attributeBatchSize - 1)
+                    : this.memberAttributeName
         };
     }
 
@@ -640,9 +668,12 @@ public class LDAPUserRegistry implements UserRegistry, LDAPNameResolver, Initial
                 }
                 Set<String> childAssocs = group.getChildAssociations();
 
-                Attribute memAttribute = attributes.get(LDAPUserRegistry.this.memberAttributeName);
-                // check for null
-                if (memAttribute != null)
+                // Get the repeating (and possibly range restricted) member attribute
+                Attribute memAttribute = getRangeRestrictedAttribute(attributes, LDAPUserRegistry.this.memberAttributeName);
+                int nextStart = LDAPUserRegistry.this.attributeBatchSize;
+
+                // Loop until we get to the end of the range
+                while (memAttribute != null)
                 {
                     for (int i = 0; i < memAttribute.size(); i++)
                     {
@@ -768,6 +799,24 @@ public class LDAPUserRegistry implements UserRegistry, LDAPNameResolver, Initial
                                 childAssocs.add(attribute);
                             }
                         }
+                    }
+                    
+                    // If we are using attribute matching and we haven't got to the end (indicated by an asterisk),
+                    // fetch the next batch
+                    if (nextStart > 0 && !PATTERN_RANGE_END.matcher(memAttribute.getID().toLowerCase()).find())
+                    {
+                        Attributes childAttributes = this.ctx.getAttributes(result.getNameInNamespace(), new String[]
+                        {
+                            LDAPUserRegistry.this.memberAttributeName + ";range=" + nextStart + '-'
+                                    + (nextStart + LDAPUserRegistry.this.attributeBatchSize - 1)
+                        });
+                        memAttribute = getRangeRestrictedAttribute(childAttributes,
+                                LDAPUserRegistry.this.memberAttributeName);
+                        nextStart += LDAPUserRegistry.this.attributeBatchSize;
+                    }
+                    else
+                    {
+                        memAttribute = null;
                     }
                 }
             }
@@ -924,6 +973,39 @@ public class LDAPUserRegistry implements UserRegistry, LDAPNameResolver, Initial
             }
         }
         return false;
+    }
+    
+    /**
+     * Gets the values of a repeating attribute that may have range restriction options. If an attribute is range
+     * restricted, it will appear in the attribute set with a ";range=i-j" option, where i and j indicate the start and
+     * end index, and j is '*' if it is at the end.
+     * 
+     * @param attributes
+     *            the attributes
+     * @param attributeName
+     *            the attribute name
+     * @return the range restricted attribute
+     * @throws NamingException
+     *             the naming exception
+     */
+    private Attribute getRangeRestrictedAttribute(Attributes attributes, String attributeName) throws NamingException
+    {
+        Attribute unrestricted = attributes.get(attributeName);
+        if (unrestricted != null)
+        {
+            return unrestricted;
+        }
+        NamingEnumeration<? extends Attribute> i = attributes.getAll();
+        String searchString = attributeName.toLowerCase() + ';'; 
+        while (i.hasMore())
+        {
+            Attribute attribute = i.next();
+            if (attribute.getID().toLowerCase().startsWith(searchString))
+            {
+                return attribute;
+            }
+        }
+        return null;
     }
 
     /**

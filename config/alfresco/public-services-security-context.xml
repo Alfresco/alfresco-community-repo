@@ -709,6 +709,7 @@
 				org.alfresco.service.cmr.security.AuthorityService.findAuthoritiesByShortName=ACL_ALLOW
 				org.alfresco.service.cmr.security.AuthorityService.findAuthoritiesByShortNameInZone=ACL_ALLOW
 				org.alfresco.service.cmr.security.AuthorityService.findAuthorities=ACL_ALLOW
+                org.alfresco.service.cmr.security.AuthorityService.findAuthoritiesInZone=ACL_ALLOW
                 org.alfresco.service.cmr.security.AuthorityService.getAllRootAuthorities=ACL_ALLOW
                 org.alfresco.service.cmr.security.AuthorityService.createAuthority=ACL_METHOD.ROLE_ADMINISTRATOR
                 org.alfresco.service.cmr.security.AuthorityService.addAuthority=ACL_METHOD.ROLE_ADMINISTRATOR

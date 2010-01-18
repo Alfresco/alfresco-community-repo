@@ -24,7 +24,11 @@
  */
 package org.alfresco.repo.admin.patch.impl;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 import java.util.Properties;
 
@@ -37,10 +41,12 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.service.cmr.admin.PatchException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.view.ImporterException;
 import org.alfresco.service.cmr.view.ImporterService;
 import org.alfresco.service.cmr.view.Location;
+import org.alfresco.util.TempFileProvider;
 import org.springframework.context.MessageSource;
-import org.springframework.core.io.ClassPathResource;
+import org.springframework.util.FileCopyUtils;
 /**
  * Builds folders tree necessary for IMAP functionality and imports email action scripts.
  * 
@@ -255,10 +261,47 @@ public class ImapFoldersPatch extends AbstractPatch
 
     private void importInternal(String acpName, NodeRef space) throws IOException
     {
-        ClassPathResource acpResource = new ClassPathResource(acpName);
-        ACPImportPackageHandler acpHandler = new ACPImportPackageHandler(acpResource.getFile(), null);
+        File acpFile = getFile(acpName);
+        ACPImportPackageHandler acpHandler = new ACPImportPackageHandler(acpFile, null);
         Location importLocation = new Location(space);
         importerService.importView(acpHandler, importLocation, null, null);
     }
 
+    private File getFile(String acpName)
+    {
+        // Try as a file location
+        File file = new File(acpName);
+        if ((file != null) && (file.exists()))
+        {
+            return file;
+        }
+        else
+        {
+            // Try as a classpath location
+            
+            // Get input stream
+            InputStream viewStream = getClass().getClassLoader().getResourceAsStream(acpName);
+            if (viewStream == null)
+            {
+                throw new ImporterException("Could not find view file " + acpName);
+            }
+            
+            // Create output stream
+            File tempFile = TempFileProvider.createTempFile("acpImport", ".tmp");
+            try
+            {
+                FileOutputStream os = new FileOutputStream(tempFile);
+                FileCopyUtils.copy(viewStream, os);
+            }
+            catch (FileNotFoundException e)
+            {
+                throw new ImporterException("Could not import view " + acpName, e);
+            }
+            catch (IOException e)
+            {
+                throw new ImporterException("Could not import view " + acpName, e);
+            }
+            return tempFile;
+        }
+    }
 }

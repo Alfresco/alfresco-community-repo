@@ -25,9 +25,9 @@
 package org.alfresco.repo.security.authority.script;
 
 import java.io.Serializable;
-
 import java.util.LinkedHashSet;
 import java.util.Set;
+import java.util.TreeSet;
 
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
@@ -46,7 +46,8 @@ public class ScriptGroup implements Authority, Serializable
     private String shortName;
     private String fullName;
     private String displayName;
-    private boolean isAdmin; 
+    private Set<String> childAuthorityNames;
+    private Boolean isAdmin; 
     
     /**
      * New script group
@@ -59,7 +60,6 @@ public class ScriptGroup implements Authority, Serializable
         this.fullName = fullName;	
         shortName = authorityService.getShortName(fullName);
         displayName = authorityService.getAuthorityDisplayName(fullName);
-        isAdmin = authorityService.isAdminAuthority(fullName);
     }
     
 	/**
@@ -146,12 +146,36 @@ public class ScriptGroup implements Authority, Serializable
 	/**
 	 * Get child groups of this group
 	 */
-	private ScriptUser[] childUsers; 
+	private ScriptUser[] childUsers;
+	
+	private Set<String> getChildAuthorityNames()
+	{
+	    if (childAuthorityNames == null)
+	    {
+	        childAuthorityNames = authorityService.getContainedAuthorities(null, fullName, true);
+	    }
+	    return childAuthorityNames;
+	}
+
+	private Set<String> getChildNamesOfType(AuthorityType type)
+	{
+	    Set<String> authorities = getChildAuthorityNames();
+	    Set<String> result = new TreeSet<String>();
+	    for (String authority : authorities)
+	    {
+	        if (AuthorityType.getAuthorityType(authority) == type)
+	        {
+	            result.add(authority);
+	        }
+	    }
+	    return result;
+	}
+
 	public ScriptUser[] getChildUsers()
 	{
 		if(childUsers == null)
 		{
-			Set<String> children = authorityService.getContainedAuthorities(AuthorityType.USER, fullName, true);
+			Set<String> children = getChildNamesOfType(AuthorityType.USER);
 			Set<ScriptUser> users = new LinkedHashSet<ScriptUser>();
 			for(String authority : children)
 			{
@@ -171,7 +195,7 @@ public class ScriptGroup implements Authority, Serializable
 	{
 		if(childGroups == null)
 		{
-			Set<String> children = authorityService.getContainedAuthorities(AuthorityType.GROUP, fullName, true);
+			Set<String> children = getChildNamesOfType(AuthorityType.GROUP);
 			Set<ScriptGroup> groups = new LinkedHashSet<ScriptGroup>();
 			for(String authority : children)
 			{
@@ -255,11 +279,14 @@ public class ScriptGroup implements Authority, Serializable
 	 * Is this an admin group?
 	 * @return
 	 */
-	public boolean isAdminGroup()
-	{
-		return this.isAdmin;
-	}
-	
+    public boolean isAdminGroup()
+    {
+        if (this.isAdmin == null)
+        {
+            this.isAdmin = authorityService.isAdminAuthority(fullName);
+        }
+        return this.isAdmin;
+    }	
 	
 	/**
 	 * Get the number of users contained within this group.
@@ -267,8 +294,7 @@ public class ScriptGroup implements Authority, Serializable
 	 */
 	public int getUserCount()
 	{
-		ScriptUser[] users = getChildUsers();
-		return users.length;
+		return getChildNamesOfType(AuthorityType.USER).size();
 	}
 	
 	/**
@@ -277,8 +303,7 @@ public class ScriptGroup implements Authority, Serializable
 	 */
 	public int getGroupCount()
 	{
-		ScriptGroup[] groups = getChildGroups();
-		return groups.length;
+        return getChildNamesOfType(AuthorityType.GROUP).size();
 	}
 	
 	/**
@@ -345,6 +370,7 @@ public class ScriptGroup implements Authority, Serializable
 	{
 		childUsers = null;
 		childGroups = null;
+		childAuthorityNames = null;
 	}
 	
 }

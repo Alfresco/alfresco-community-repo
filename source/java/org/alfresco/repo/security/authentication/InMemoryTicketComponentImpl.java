@@ -193,9 +193,12 @@ public class InMemoryTicketComponentImpl implements TicketComponent
     	for (String key : ticketsCache.getKeys())
         {
     		Ticket ticket = ticketsCache.get(key);
-    		if ((nonExpiredOnly == false) || (! ticket.hasExpired()))
+    		if (ticket != null)
     		{
-    			users.add(ticket.getUserName());
+        		if ((nonExpiredOnly == false) || (! ticket.hasExpired()))
+        		{
+        			users.add(ticket.getUserName());
+        		}
     		}
         }
     	return users;
@@ -243,7 +246,7 @@ public class InMemoryTicketComponentImpl implements TicketComponent
 	    	for (String key : ticketsCache.getKeys())
 	        {
 	    		Ticket ticket = ticketsCache.get(key);
-	    		if (ticket.hasExpired())
+	    		if (ticket == null || ticket.hasExpired())
 	    		{
 	    			count++;
 	    			ticketsCache.remove(key);

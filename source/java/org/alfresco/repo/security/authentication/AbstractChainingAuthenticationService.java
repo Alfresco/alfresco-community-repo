@@ -204,7 +204,11 @@ public abstract class AbstractChainingAuthenticationService extends AbstractAuth
      */
     public void authenticateAsGuest() throws AuthenticationException
     {
-        preAuthenticationCheck(AuthenticationUtil.getGuestUserName());
+        String defaultGuestName = AuthenticationUtil.getGuestUserName();
+        if (defaultGuestName != null && defaultGuestName.length() > 0)
+        {
+            preAuthenticationCheck(defaultGuestName);
+        }
         for (AuthenticationService authService : getUsableAuthenticationServices())
         {
             try
@@ -350,7 +354,7 @@ public abstract class AbstractChainingAuthenticationService extends AbstractAuth
                 // Ignore and chain
             }
         }
-        return null;
+        throw new AuthenticationException("Unable to issue ticket");
     }
 
     /**
@@ -369,7 +373,7 @@ public abstract class AbstractChainingAuthenticationService extends AbstractAuth
                 // Ignore and chain
             }
         }
-        return null;
+        throw new AuthenticationException("Unable to issue ticket");
     }
 
     /**

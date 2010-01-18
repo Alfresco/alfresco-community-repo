@@ -58,6 +58,9 @@
             <value>classpath:alfresco/ibatis/alfresco-SqlMapConfig.xml</value>
         </property> 
     </bean>
+    <bean id="repoSqlMapClientTemplate" class="org.springframework.orm.ibatis.SqlMapClientTemplate">
+        <property name="sqlMapClient" ref="alfrescoSqlMapClient"/>
+    </bean>
     <bean id="locksSqlMapClientTemplate" class="org.springframework.orm.ibatis.SqlMapClientTemplate">
         <property name="sqlMapClient" ref="alfrescoSqlMapClient"/>
     </bean>
@@ -67,11 +70,9 @@
     <bean id="propertyValueSqlMapClientTemplate" class="org.springframework.orm.ibatis.SqlMapClientTemplate">
         <property name="sqlMapClient" ref="alfrescoSqlMapClient"/>
     </bean>
-    
     <bean id="auditSqlMapClientTemplate" class="org.springframework.orm.ibatis.SqlMapClientTemplate">
         <property name="sqlMapClient" ref="alfrescoSqlMapClient"/>
     </bean>
-    
     <bean id="avmSqlMapClientTemplate" class="org.springframework.orm.ibatis.SqlMapClientTemplate">
         <property name="sqlMapClient" ref="alfrescoSqlMapClient"/>
     </bean>

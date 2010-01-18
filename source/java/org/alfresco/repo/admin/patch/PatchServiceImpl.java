@@ -32,8 +32,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.springframework.extensions.surf.util.I18NUtil;
-import org.alfresco.repo.domain.AppliedPatch;
+import org.alfresco.repo.domain.patch.AppliedPatchDAO;
 import org.alfresco.repo.transaction.TransactionServiceImpl;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.admin.PatchException;
@@ -42,6 +41,7 @@ import org.alfresco.service.descriptor.Descriptor;
 import org.alfresco.service.descriptor.DescriptorService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.extensions.surf.util.I18NUtil;
 
 
 /**
@@ -68,7 +68,7 @@ public class PatchServiceImpl implements PatchService
     private DescriptorService descriptorService;
     private TransactionServiceImpl transactionService;
     private RuleService ruleService;
-    private PatchDaoService patchDaoService;
+    private AppliedPatchDAO appliedPatchDAO;
     private List<Patch> patches;
 
     public PatchServiceImpl()
@@ -86,9 +86,9 @@ public class PatchServiceImpl implements PatchService
         this.transactionService = transactionService;
     }
 
-    public void setPatchDaoService(PatchDaoService patchDaoService)
+    public void setAppliedPatchDAO(AppliedPatchDAO appliedPatchDAO)
     {
-        this.patchDaoService = patchDaoService;
+        this.appliedPatchDAO = appliedPatchDAO;
     }
     
     public void setRuleService(RuleService ruleService)
@@ -139,7 +139,7 @@ public class PatchServiceImpl implements PatchService
                 
                 // construct a list of executed patches by ID (also check the date)
                 Map<String, AppliedPatch> appliedPatchesById = new HashMap<String, AppliedPatch>(23);
-                List<AppliedPatch> appliedPatches = patchDaoService.getAppliedPatches();
+                List<AppliedPatch> appliedPatches = appliedPatchDAO.getAppliedPatches();
                 for (final AppliedPatch appliedPatch : appliedPatches)
                 {
                     appliedPatchesById.put(appliedPatch.getId(), appliedPatch);
@@ -153,7 +153,8 @@ public class PatchServiceImpl implements PatchService
                             public Date execute() throws Throwable
                             {
                                 Date now = new Date();
-                                patchDaoService.setAppliedOnDate(appliedPatch.getId(), now);
+                                appliedPatch.setAppliedOnDate(now);
+                                appliedPatchDAO.updateAppliedPatch(appliedPatch);
                                 return now;
                             }
                         };
@@ -255,7 +256,7 @@ public class PatchServiceImpl implements PatchService
                     "   Patch: " + patch);
         }
         // get the patch from the DAO
-        AppliedPatch appliedPatch = patchDaoService.getAppliedPatch(patch.getId());
+        AppliedPatch appliedPatch = appliedPatchDAO.getAppliedPatch(patch.getId());
         // We bypass the patch if it was executed successfully
         if (appliedPatch != null && !forcePatch)
         {
@@ -316,9 +317,17 @@ public class PatchServiceImpl implements PatchService
         String server = (serverDescriptor.getVersion() + " - " + serverDescriptor.getEdition());
         
         // create or update the record of execution
+        boolean create = true;
         if (appliedPatch == null)
         {
-            appliedPatch = patchDaoService.newAppliedPatch(patch.getId());
+            appliedPatch = new AppliedPatch();
+            appliedPatch.setId(patch.getId());
+            create = true;
+        }
+        else
+        {
+            // Update it
+            create = false;
         }
         // fill in the record's details
         String patchDescription = I18NUtil.getMessage(patch.getDescription());
@@ -337,6 +346,15 @@ public class PatchServiceImpl implements PatchService
         appliedPatch.setSucceeded(success);                          // whether or not the patch succeeded
         appliedPatch.setWasExecuted(applies);                        // whether or not the patch was executed
         appliedPatch.setReport(report);                              // additional, human-readable, status
+        // Update or create the entry
+        if (create)
+        {
+            appliedPatchDAO.createAppliedPatch(appliedPatch);
+        }
+        else
+        {
+            appliedPatchDAO.updateAppliedPatch(appliedPatch);
+        }
 
         // done
         if (logger.isDebugEnabled())
@@ -359,7 +377,7 @@ public class PatchServiceImpl implements PatchService
         for (Patch alternative : alternatives)
         {
             // If the patch was executed, then this one was effectively executed
-            AppliedPatch appliedAlternative = patchDaoService.getAppliedPatch(alternative.getId());
+            AppliedPatch appliedAlternative = appliedPatchDAO.getAppliedPatch(alternative.getId());
             if (appliedAlternative != null && appliedAlternative.getSucceeded())
             {
                 return alternative.getId();
@@ -392,7 +410,7 @@ public class PatchServiceImpl implements PatchService
     }
 
     @SuppressWarnings("unchecked")
-    public List<PatchInfo> getPatches(Date fromDate, Date toDate)
+    public List<AppliedPatch> getPatches(Date fromDate, Date toDate)
     {
         if (fromDate == null)
         {
@@ -402,14 +420,9 @@ public class PatchServiceImpl implements PatchService
         {
             toDate = INFINITE_DATE;
         }
-        List<? extends PatchInfo> appliedPatches = patchDaoService.getAppliedPatches(fromDate, toDate);
-        // disconnect each of these
-        for (PatchInfo appliedPatch : appliedPatches)
-        {
-            patchDaoService.detach((AppliedPatch)appliedPatch);
-        }
+        List<? extends AppliedPatch> appliedPatches = appliedPatchDAO.getAppliedPatches(fromDate, toDate);
         // done
-        return (List<PatchInfo>) appliedPatches;
+        return (List<AppliedPatch>) appliedPatches;
     }
 
     /**

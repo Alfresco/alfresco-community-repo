@@ -176,8 +176,8 @@
       <property name="nodeService">
          <ref bean="nodeService" />
       </property>      
-      <property name="patchDao">
-         <ref bean="patchDaoComponent" />
+      <property name="appliedPatchDAO">
+         <ref bean="appliedPatchDAO" />
       </property>
       <property name="versionCounterService">
          <ref bean="versionCounterService" />

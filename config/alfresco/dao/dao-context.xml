@@ -15,6 +15,14 @@
       <property name="sqlMapClient" ref="activitiesSqlMapClient"/>
    </bean>
 
+   <bean id="patchDAO" class="org.alfresco.repo.domain.patch.ibatis.PatchDAOImpl">
+      <property name="sqlMapClientTemplate" ref="repoSqlMapClientTemplate"/>
+   </bean>
+   
+   <bean id="appliedPatchDAO" class="org.alfresco.repo.domain.patch.ibatis.AppliedPatchDAOImpl">
+      <property name="sqlMapClientTemplate" ref="repoSqlMapClientTemplate"/>
+   </bean>
+   
    <bean id="lockDAO" class="org.alfresco.repo.domain.locks.ibatis.LockDAOImpl">
       <property name="sqlMapClientTemplate" ref="locksSqlMapClientTemplate"/>
       <property name="qnameDAO" ref="qnameDAO"/>
@@ -71,44 +79,28 @@
    
    <bean id="newAvmStoreDAO" class="org.alfresco.repo.domain.avm.ibatis.AVMStoreDAOImpl">
       <property name="sqlMapClientTemplate" ref="avmSqlMapClientTemplate"/>
-      
       <property name="qnameDAO" ref="qnameDAO"/>
-      
       <property name="avmStoreCache" ref="avmStoreCache"/>
       <property name="avmStorePropertyCache" ref="avmEntityCache"/>
-      
    </bean>
    
    <bean id="newAvmNodeDAO" class="org.alfresco.repo.domain.avm.ibatis.AVMNodeDAOImpl">
       <property name="sqlMapClientTemplate" ref="avmSqlMapClientTemplate"/>
-      
       <property name="qnameDAO" ref="qnameDAO"/>
-      
       <property name="avmNodeCache" ref="avmNodeCache"/>
       <property name="avmNodePropertyCache" ref="avmEntityCache"/>
       <property name="avmNodeAspectsCache" ref="avmNodeAspectsCache"/>
-      
    </bean>
    
    <bean id="newAvmNodeLinksDAO" class="org.alfresco.repo.domain.avm.ibatis.AVMNodeLinksDAOImpl">
       <property name="sqlMapClientTemplate" ref="avmSqlMapClientTemplate"/>
-      
       <property name="avmChildEntryCache" ref="avmEntityCache"/>
       <property name="avmHistoryLinkCache" ref="avmEntityCache"/>
-      
    </bean>
    
    <bean id="newAvmVersionRootDAO" class="org.alfresco.repo.domain.avm.ibatis.AVMVersionRootDAOImpl">
       <property name="sqlMapClientTemplate" ref="avmSqlMapClientTemplate"/>
-      
       <property name="versionRootEntityCache" ref="avmVersionRootEntityCache"/>
-      
-   </bean>
-   
-   <!-- Patch -->
-   
-   <bean id="patchDAO" class="org.alfresco.repo.domain.patch.ibatis.PatchDAOImpl">
-      <property name="avmSqlMapClientTemplate" ref="avmSqlMapClientTemplate"/>
    </bean>
    
 </beans>

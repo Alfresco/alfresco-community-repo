@@ -33,6 +33,7 @@ import org.alfresco.repo.domain.encoding.EncodingDAOTest;
 import org.alfresco.repo.domain.hibernate.HibernateSessionHelperTest;
 import org.alfresco.repo.domain.locks.LockDAOTest;
 import org.alfresco.repo.domain.mimetype.MimetypeDAOTest;
+import org.alfresco.repo.domain.patch.AppliedPatchDAOTest;
 
 /**
  * Suite for domain-related tests.
@@ -55,6 +56,7 @@ public class DomainTestSuite extends TestSuite
         suite.addTestSuite(QNameDAOTest.class);
         suite.addTestSuite(PropertyValueTest.class);
         suite.addTestSuite(AuditDAOTest.class);
+        suite.addTestSuite(AppliedPatchDAOTest.class);
                 
         return suite;
     }

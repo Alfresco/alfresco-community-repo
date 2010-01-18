@@ -43,37 +43,37 @@ public class PatchDAOImpl extends AbstractPatchDAOImpl
     private static final String SELECT_AVM_LD_NODE_ENTITIES_NULL_VERSION = "alfresco.avm.select_AVMNodes_nullVersionLayeredDirectories";
     private static final String SELECT_AVM_LF_NODE_ENTITIES_NULL_VERSION = "alfresco.avm.select_AVMNodes_nullVersionLayeredFiles";
     
-    private SqlMapClientTemplate avmTemplate;
+    private SqlMapClientTemplate template;
     
-    public void setAvmSqlMapClientTemplate(SqlMapClientTemplate avmSqlMapClientTemplate)
+    public void setSqlMapClientTemplate(SqlMapClientTemplate sqlMapClientTemplate)
     {
-        this.avmTemplate = avmSqlMapClientTemplate;
+        this.template = sqlMapClientTemplate;
     }
-    
+
     @Override
     protected Long getAVMNodeEntitiesCountWhereNewInStore()
     {
-        return (Long) avmTemplate.queryForObject(SELECT_AVM_NODE_ENTITIES_COUNT_WHERE_NEW_IN_STORE);
+        return (Long) template.queryForObject(SELECT_AVM_NODE_ENTITIES_COUNT_WHERE_NEW_IN_STORE);
     }
     
     @SuppressWarnings("unchecked")
     @Override
     protected List<AVMNodeEntity> getAVMNodeEntitiesWithEmptyGUID()
     {
-        return (List<AVMNodeEntity>) avmTemplate.queryForList(SELECT_AVM_NODE_ENTITIES_WITH_EMPTY_GUID);
+        return (List<AVMNodeEntity>) template.queryForList(SELECT_AVM_NODE_ENTITIES_WITH_EMPTY_GUID);
     }
     
     @SuppressWarnings("unchecked")
     @Override
     protected List<AVMNodeEntity> getNullVersionLayeredDirectoryNodeEntities()
     {
-        return (List<AVMNodeEntity>) avmTemplate.queryForList(SELECT_AVM_LD_NODE_ENTITIES_NULL_VERSION);
+        return (List<AVMNodeEntity>) template.queryForList(SELECT_AVM_LD_NODE_ENTITIES_NULL_VERSION);
     }
     
     @SuppressWarnings("unchecked")
     @Override
     protected List<AVMNodeEntity> getNullVersionLayeredFileNodeEntities()
     {
-        return (List<AVMNodeEntity>) avmTemplate.queryForList(SELECT_AVM_LF_NODE_ENTITIES_NULL_VERSION);
+        return (List<AVMNodeEntity>) template.queryForList(SELECT_AVM_LF_NODE_ENTITIES_NULL_VERSION);
     }
 }

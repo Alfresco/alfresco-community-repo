@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE sqlMap      
+    PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"      
+    "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="alfresco.appliedpatch">
+
+    <!--                -->
+    <!-- Type Defs      -->
+    <!--                -->
+    
+    <typeAlias alias="AppliedPatch" type="org.alfresco.repo.domain.patch.AppliedPatchEntity"/>
+
+    <!--                -->
+    <!-- Result Maps    -->
+    <!--                -->
+
+    <resultMap id="result_AppliedPatch" class="AppliedPatch">
+        <result property="id" column="id" jdbcType="VARCHAR" javaType="string"/>
+        <result property="description" column="description" jdbcType="VARCHAR" javaType="string"/>
+        <result property="fixesFromSchema" column="fixes_from_schema" jdbcType="INT" javaType="int" />
+        <result property="fixesToSchema" column="fixes_to_schema" jdbcType="INT" javaType="int" />
+        <result property="targetSchema" column="target_schema" jdbcType="INT" javaType="int" />
+        <result property="appliedToSchema" column="applied_to_schema" jdbcType="INT" javaType="int" />
+        <result property="appliedOnDate" column="applied_on_date" jdbcType="DATETIME" javaType="date" />
+        <result property="appliedToServer" column="applied_to_server" jdbcType="VARCHAR" javaType="string"/>
+        <result property="wasExecuted" column="was_executed" jdbcType="BOOLEAN" javaType="boolean"/>
+        <result property="succeeded" column="succeeded" jdbcType="BOOLEAN" javaType="boolean"/>
+        <result property="report" column="report" jdbcType="VARCHAR" javaType="string"/>
+    </resultMap>
+  
+    <!--                -->
+    <!-- SQL Snippets   -->
+    <!--                -->
+
+<!--    
+    <sql id="insert_LockResource_AutoIncrement">
+        insert into alf_lock_resource (version, qname_ns_id, qname_localname) 
+        values (#version#, #qnameNamespaceId#, #qnameLocalName#)
+    </sql>
+    
+    <sql id="insert_Lock_AutoIncrement">
+        insert into alf_lock (version, shared_resource_id, excl_resource_id, lock_token, start_time, expiry_time) 
+        values (#version#, #sharedResourceId#, #exclusiveResourceId#, #lockToken#, #startTime#, #expiryTime#)
+    </sql>
+-->
+    
+    <!--                -->
+    <!-- Inserts        -->
+    <!--                -->
+    
+    <insert id="insert_AppliedPatch" parameterClass="AppliedPatch">
+        insert into alf_applied_patch
+            (
+                id, description,
+                fixes_from_schema, fixes_to_schema, target_schema,
+                applied_to_schema, applied_on_date, applied_to_server,
+                was_executed, succeeded, report
+            )
+            values
+            (
+                #id#, #description#,
+                #fixesFromSchema#, #fixesToSchema#, #targetSchema#,
+                #appliedToSchema#, #appliedOnDate#, #appliedToServer#,
+                #wasExecuted#, #succeeded#, #report#
+            )
+    </insert>
+    
+    <!--                -->
+    <!-- Updates        -->
+    <!--                -->
+    
+    <insert id="update_AppliedPatch" parameterClass="AppliedPatch">
+        update alf_applied_patch
+            set
+                description = #description#,
+                fixes_from_schema = #fixesFromSchema#,
+                fixes_to_schema = #fixesToSchema#,
+                target_schema = #targetSchema#,
+                applied_to_schema = #appliedToSchema#,
+                applied_on_date = #appliedOnDate#,
+                applied_to_server = #appliedToServer#,
+                was_executed = #wasExecuted#,
+                succeeded = #succeeded#,
+                report = #report#
+            where
+                id = #id#
+    </insert>
+    
+    <!--                -->
+    <!-- Statements     -->
+    <!--                -->
+    
+    <select id="select_AppliedPatchById" parameterClass="AppliedPatch" resultMap="result_AppliedPatch">
+        select
+	        id, description,
+	        fixes_from_schema, fixes_to_schema, target_schema,
+	        applied_to_schema, applied_on_date, applied_to_server,
+	        was_executed, succeeded, report
+	    from
+	        alf_applied_patch
+	    where
+	        id = #id#
+    </select>
+    
+    <select id="select_AllAppliedPatches" resultMap="result_AppliedPatch">
+        select
+            id, description,
+            fixes_from_schema, fixes_to_schema, target_schema,
+            applied_to_schema, applied_on_date, applied_to_server,
+            was_executed, succeeded, report
+        from
+            alf_applied_patch
+        order by
+            target_schema
+    </select>
+    
+</sqlMap>

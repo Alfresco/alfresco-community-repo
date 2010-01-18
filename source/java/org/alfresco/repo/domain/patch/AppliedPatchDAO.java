@@ -22,47 +22,37 @@
  * the FLOSS exception, and it is also available here: 
  * http://www.alfresco.com/legal/licensing"
  */
-package org.alfresco.repo.admin.patch;
+package org.alfresco.repo.domain.patch;
 
 import java.util.Date;
 import java.util.List;
 
-import org.alfresco.repo.domain.AppliedPatch;
+import org.alfresco.repo.admin.patch.AppliedPatch;
 
 /**
- * Provides data access support for patch persistence. 
+ * Provides data access support for patch persistence in <b>alf_applied_patch</b>.
  * 
- * @since 1.2
+ * @since 3.3
  * @author Derek Hulley
  */
-public interface PatchDaoService
+public interface AppliedPatchDAO
 {
     /**
-     * Creates and saves a new instance of the patch.  This will not have all the mandatory
-     * properties set - only the ID.
+     * Creates and saves a new instance of the patch.
      * 
-     * @param id the unique key
-     * @return Returns a new instance that can be manipulated
+     * @param patchInfo         the patch ID and details
      */
-    public AppliedPatch newAppliedPatch(String id);
+    public void createAppliedPatch(AppliedPatch appliedPatch);
+    
+    public void updateAppliedPatch(AppliedPatch appliedPatch);
     
     /**
      * Retrieve an existing patch
      * 
      * @param id the patch unique ID
-     * @return Returns the patch instance or null if one has not been persisted
+     * @return Returns the patch instance or <tt>null</tt> if one has not been persisted
      */
     public AppliedPatch getAppliedPatch(String id);
-    
-    /**
-     * Detaches the given instance from the persistence engine.  This will
-     * ensure that any changes made to the java object do not get persisted,
-     * allowing the objects to be passed out to external clients without any
-     * concern of their lifecycle.
-     * 
-     * @param appliedPatch the object to detach from persistence
-     */
-    public void detach(AppliedPatch appliedPatch);
     
     /**
      * Get a list of all applied patches

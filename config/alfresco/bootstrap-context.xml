@@ -68,6 +68,7 @@
        </property>
        <property name="preCreateScriptUrls">
           <list>
+             <value>classpath:alfresco/dbscripts/create/3.3/${db.script.dialect}/AlfrescoCreate-3.3-RepoTables.sql</value>
           </list>
        </property>
        <property name="postCreateScriptUrls">

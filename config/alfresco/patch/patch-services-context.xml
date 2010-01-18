@@ -28,12 +28,6 @@
         </property>
     </bean>
     
-    <bean id="patchDaoComponent" class="org.alfresco.repo.admin.patch.hibernate.HibernatePatchDaoServiceImpl" >
-        <property name="sessionFactory">
-            <ref bean="sessionFactory" />
-        </property>
-    </bean>
-    
     <bean id="patchComponent" class="org.alfresco.repo.admin.patch.PatchServiceImpl" >
         <property name="descriptorService">
             <ref bean="descriptorComponent" />
@@ -44,8 +38,8 @@
         <property name="ruleService">
             <ref bean="ruleService" />
         </property>
-        <property name="patchDaoService">
-            <ref bean="patchDaoComponent" />
+        <property name="appliedPatchDAO">
+            <ref bean="appliedPatchDAO" />
         </property>
     </bean>
 

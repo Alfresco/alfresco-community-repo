@@ -61,7 +61,6 @@
                 <value>org/alfresco/repo/domain/hibernate/Node.hbm.xml</value>
                 <value>org/alfresco/repo/domain/hibernate/Transaction.hbm.xml</value>
                 <value>org/alfresco/repo/domain/hibernate/VersionCount.hbm.xml</value>
-                <value>org/alfresco/repo/domain/hibernate/AppliedPatch.hbm.xml</value>
                 <value>org/alfresco/repo/domain/hibernate/Permission.hbm.xml</value>
                 <value>org/alfresco/repo/attributes/hibernate/Attributes.hbm.xml</value>
                 <value>org/alfresco/repo/domain/hibernate/UsageDelta.hbm.xml</value>
@@ -177,7 +176,6 @@
                 <prop key="org.alfresco.repo.domain.hibernate.TransactionImpl">${cache.strategy}</prop>
                 <prop key="org.alfresco.repo.domain.hibernate.ServerImpl">${cache.strategy}</prop>
                 <prop key="org.alfresco.repo.domain.hibernate.VersionCountImpl">${cache.strategy}</prop>
-                <prop key="org.alfresco.repo.domain.hibernate.AppliedPatchImpl">${cache.strategy}</prop>
 
                 <prop key="org.alfresco.repo.domain.hibernate.DbAccessControlEntryContextImpl">${cache.strategy}</prop>
                 <prop key="org.alfresco.repo.domain.hibernate.DbAccessControlEntryImpl">${cache.strategy}</prop>

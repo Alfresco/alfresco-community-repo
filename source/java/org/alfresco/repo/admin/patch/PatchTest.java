@@ -30,7 +30,6 @@ import java.util.List;
 import junit.framework.TestCase;
 
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.repo.domain.AppliedPatch;
 import org.alfresco.repo.security.authentication.AuthenticationContext;
 import org.alfresco.service.cmr.admin.PatchException;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -57,7 +56,6 @@ public class PatchTest extends TestCase
     private SearchService searchService;
     private AuthenticationContext authenticationContext;
     private PatchService patchService;
-    private PatchDaoService patchDaoComponent;
     
     public PatchTest(String name)
     {
@@ -73,7 +71,6 @@ public class PatchTest extends TestCase
         authenticationContext = (AuthenticationContext) ctx.getBean("authenticationContext");
         
         patchService = (PatchService) ctx.getBean("PatchService");
-        patchDaoComponent = (PatchDaoService) ctx.getBean("patchDaoComponent");
         
         // get the patches to play with
         patchService.registerPatch((Patch)ctx.getBean("patch.sample.02"));
@@ -84,7 +81,6 @@ public class PatchTest extends TestCase
     {
         assertNotNull(transactionService);
         assertNotNull(patchService);
-        assertNotNull(patchDaoComponent);
     }
     
     private SamplePatch constructSamplePatch(boolean mustFail)
@@ -151,7 +147,7 @@ public class PatchTest extends TestCase
         boolean success = patchService.applyOutstandingPatches();
         assertTrue(success);
         // get applied patches
-        List<AppliedPatch> appliedPatches = patchDaoComponent.getAppliedPatches();
+        List<AppliedPatch> appliedPatches = patchService.getPatches(null, null);
         // check that the patch application was recorded
         boolean found01 = false;
         boolean found02 = false;
@@ -177,22 +173,16 @@ public class PatchTest extends TestCase
         // ensure that there are some applied patches
         testApplyOutstandingPatches();
         // get the number of applied patches
-        List<AppliedPatch> appliedPatches = patchDaoComponent.getAppliedPatches();
+        List<AppliedPatch> appliedPatches = patchService.getPatches(null, null);
         assertTrue("Expected at least 2 applied patches", appliedPatches.size() >= 2);
         
         // now requery using null dates
-        List<PatchInfo> appliedPatchesAllDates = patchService.getPatches(null, null);
+        List<AppliedPatch> appliedPatchesAllDates = patchService.getPatches(null, null);
         assertEquals("Applied patches by all dates doesn't match all applied patches",
                 appliedPatches.size(), appliedPatchesAllDates.size());
         
-        // make sure that the objects are not connected to the persistence layer
-        PatchInfo disconnectedObject = appliedPatchesAllDates.get(0);
-        AppliedPatch persistedObject = patchDaoComponent.getAppliedPatch(disconnectedObject.getId());
-        assertNotSame("Instances should not be shared between evicted and cached objects",
-                disconnectedObject, persistedObject);
-        
         // perform another query with dates that should return no results
-        List<PatchInfo> appliedPatchesFutureDates = patchService.getPatches(new Date(), new Date());
+        List<AppliedPatch> appliedPatchesFutureDates = patchService.getPatches(new Date(), new Date());
         assertEquals("Query returned results for dates when no patches should exist", 0, appliedPatchesFutureDates.size());
     }
 }

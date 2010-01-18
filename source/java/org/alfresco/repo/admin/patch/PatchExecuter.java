@@ -90,7 +90,7 @@ public class PatchExecuter extends AbstractLifecycleBean
         Date after = new Date(System .currentTimeMillis() + 20000L);  // 20 seconds ahead
         
         // get all the patches executed in the time
-        List<PatchInfo> appliedPatches = patchService.getPatches(before, after);
+        List<AppliedPatch> appliedPatches = patchService.getPatches(before, after);
         
         // don't report anything if nothing was done
         if (appliedPatches.size() == 0)
@@ -101,7 +101,7 @@ public class PatchExecuter extends AbstractLifecycleBean
         {
             boolean succeeded = true;
             // list all patches applied, including failures
-            for (PatchInfo patchInfo : appliedPatches)
+            for (AppliedPatch patchInfo : appliedPatches)
             {
                 if (!patchInfo.getWasExecuted())
                 {

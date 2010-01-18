@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2010 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -22,36 +22,25 @@
  * the FLOSS exception, and it is also available here: 
  * http://www.alfresco.com/legal/licensing"
  */
-package org.alfresco.repo.admin.patch;
+package org.alfresco.repo.domain.patch;
 
-import java.util.Date;
+import org.alfresco.repo.admin.patch.AppliedPatch;
 
 /**
- * Data on applied patches
+ * Entity for <b>alf_applied_patch</b> persistence. 
  * 
  * @author Derek Hulley
+ * @since 3.3
  */
-public interface PatchInfo
+public class AppliedPatchEntity extends AppliedPatch
 {
-    public String getId();
-
-    public String getDescription();
+    public AppliedPatchEntity()
+    {
+        super();
+    }
     
-    public int getFixesFromSchema();
-    
-    public int getFixesToSchema();
-    
-    public int getTargetSchema();
-    
-    public int getAppliedToSchema();
-    
-    public String getAppliedToServer();
-    
-    public Date getAppliedOnDate();
-    
-    public boolean getWasExecuted();
-    
-    public boolean getSucceeded();
-    
-    public String getReport();
+    public AppliedPatchEntity(AppliedPatch appliedPatch)
+    {
+        super(appliedPatch);
+    }
 }

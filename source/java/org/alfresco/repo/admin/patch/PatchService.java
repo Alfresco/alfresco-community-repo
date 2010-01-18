@@ -27,8 +27,6 @@ package org.alfresco.repo.admin.patch;
 import java.util.Date;
 import java.util.List;
 
-import org.alfresco.error.AlfrescoRuntimeException;
-
 /**
  * Manages patches applied against the repository.
  * <p>
@@ -73,5 +71,5 @@ public interface PatchService
      *            the end date of the search, or null to g
      * @return Returns all applied patches (successful or not)
      */
-    public List<PatchInfo> getPatches(Date fromDate, Date toDate);
+    public List<AppliedPatch> getPatches(Date fromDate, Date toDate);
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2010 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -22,59 +22,55 @@
  * the FLOSS exception, and it is also available here: 
  * http://www.alfresco.com/legal/licensing"
  */
-package org.alfresco.repo.domain.hibernate;
+package org.alfresco.repo.admin.patch;
 
-import java.io.Serializable;
 import java.util.Date;
 
-import org.alfresco.repo.domain.AppliedPatch;
-
 /**
- * Hibernate-specific implementation of the persistent object.
+ * Applied patch bean
  * 
  * @author Derek Hulley
+ * @since 3.3
  */
-public class AppliedPatchImpl implements AppliedPatch, Serializable
+public class AppliedPatch
 {
-    private static final long serialVersionUID = 2694230422651768785L;
-
     private String id;
     private String description;
     private int fixesFromSchema;
     private int fixesToSchema;
     private int targetSchema;
-
     private int appliedToSchema;
     private String appliedToServer;
     private Date appliedOnDate;
     private boolean wasExecuted;
     private boolean succeeded;
     private String report;
-    
-    public AppliedPatchImpl()
-    {
-    }
-    
-    @Override
-    public String toString()
-    {
-        StringBuilder sb = new StringBuilder(256);
-        sb.append("AppliedPatch")
-          .append("[ id=").append(id)
-          .append(", description=").append(description)
-          .append(", fixesFromSchema=").append(fixesFromSchema)
-          .append(", fixesToSchema=").append(fixesToSchema)
-          .append(", targetSchema=").append(targetSchema)
-          .append(", appliedToSchema=").append(appliedToSchema)
-          .append(", appliedToServer=").append(appliedToServer)
-          .append(", appliedOnDate=").append(appliedOnDate)
-          .append(", wasExecuted=").append(wasExecuted)
-          .append(", succeeded=").append(succeeded)
-          .append(", report=").append(report)
-          .append("]");
-        return sb.toString();
-    }
 
+    /**
+     * Default constructor
+     */
+    public AppliedPatch()
+    {
+    }
+    
+    /**
+     * Construct an instance from another patch info-provider
+     */
+    public AppliedPatch(AppliedPatch appliedPatch)
+    {
+        this.id = appliedPatch.getId();
+        this.description = appliedPatch.getDescription();
+        this.fixesFromSchema = appliedPatch.getFixesFromSchema();
+        this.fixesToSchema = appliedPatch.getFixesToSchema();
+        this.targetSchema = appliedPatch.getTargetSchema();
+        this.appliedToSchema = appliedPatch.getAppliedToSchema();
+        this.appliedToServer = appliedPatch.getAppliedToServer();
+        this.appliedOnDate = appliedPatch.getAppliedOnDate();
+        this.wasExecuted = appliedPatch.getWasExecuted();
+        this.succeeded = appliedPatch.getSucceeded();
+        this.report = appliedPatch.getReport();
+    }
+    
     public String getId()
     {
         return id;
@@ -90,60 +86,54 @@ public class AppliedPatchImpl implements AppliedPatch, Serializable
     }
     public void setDescription(String description)
     {
-        if (description != null && description.length() > 1024)
-        {
-            // truncate as necessary
-            description = (description.substring(0, 1020) + "...");
-        }
         this.description = description;
     }
-
+    
     public int getFixesFromSchema()
     {
         return fixesFromSchema;
     }
-    public void setFixesFromSchema(int version)
+    public void setFixesFromSchema(int fixesFromSchema)
     {
-        this.fixesFromSchema = version;
+        this.fixesFromSchema = fixesFromSchema;
     }
-
+    
     public int getFixesToSchema()
     {
         return fixesToSchema;
     }
-    public void setFixesToSchema(int version)
+    public void setFixesToSchema(int fixesToSchema)
     {
-        this.fixesToSchema = version;
+        this.fixesToSchema = fixesToSchema;
     }
-
+    
     public int getTargetSchema()
     {
         return targetSchema;
     }
-    public void setTargetSchema(int currentSchema)
+    public void setTargetSchema(int targetSchema)
     {
-        this.targetSchema = currentSchema;
+        this.targetSchema = targetSchema;
     }
-
+    
     public int getAppliedToSchema()
     {
         return appliedToSchema;
     }
-    public void setAppliedToSchema(int version)
+    public void setAppliedToSchema(int appliedToSchema)
     {
-        this.appliedToSchema = version;
+        this.appliedToSchema = appliedToSchema;
     }
-
+    
     public String getAppliedToServer()
     {
         return appliedToServer;
     }
-
     public void setAppliedToServer(String appliedToServer)
     {
         this.appliedToServer = appliedToServer;
     }
-
+    
     public Date getAppliedOnDate()
     {
         return appliedOnDate;
@@ -170,18 +160,13 @@ public class AppliedPatchImpl implements AppliedPatch, Serializable
     {
         this.succeeded = succeeded;
     }
-
+    
     public String getReport()
     {
         return report;
     }
     public void setReport(String report)
     {
-        if (report != null && report.length() > 1024)
-        {
-            // truncate as necessary
-            report = (report.substring(0, 1020) + "...");
-        }
         this.report = report;
     }
 }

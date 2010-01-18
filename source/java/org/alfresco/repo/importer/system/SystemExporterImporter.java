@@ -28,8 +28,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.List;
 
-import org.alfresco.repo.admin.patch.PatchDaoService;
-import org.alfresco.repo.domain.AppliedPatch;
+import org.alfresco.repo.admin.patch.AppliedPatch;
+import org.alfresco.repo.domain.patch.AppliedPatchDAO;
 import org.alfresco.repo.version.common.counter.VersionCounterService;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -44,7 +44,7 @@ public class SystemExporterImporter
 {
     // dependencies
     private NodeService nodeService;
-    private PatchDaoService patchDao;
+    private AppliedPatchDAO appliedPatchDAO;
     private VersionCounterService versionCounterService;
     
     
@@ -53,9 +53,9 @@ public class SystemExporterImporter
         this.nodeService = nodeService;
     }
     
-    public void setPatchDao(PatchDaoService patchDaoService)
+    public void setAppliedPatchDAO(AppliedPatchDAO appliedPatchDAO)
     {
-        this.patchDao = patchDaoService;
+        this.appliedPatchDAO = appliedPatchDAO;
     }
     
     public void setVersionCounterService(VersionCounterService versionCounterService)
@@ -74,7 +74,7 @@ public class SystemExporterImporter
         SystemInfo systemInfo = new SystemInfo();
         
         // capture applied patches
-        List<AppliedPatch> patches = patchDao.getAppliedPatches();
+        List<AppliedPatch> patches = appliedPatchDAO.getAppliedPatches();
         for (AppliedPatch patch : patches)
         {
             PatchInfo patchInfo = new PatchInfo();
@@ -119,7 +119,8 @@ public class SystemExporterImporter
         // apply patch info
         for (PatchInfo patchInfo : systemInfo.patches)
         {
-            AppliedPatch patch = patchDao.newAppliedPatch(patchInfo.id);
+            AppliedPatch patch = new AppliedPatch();
+            patch.setId(patchInfo.id);
             patch.setAppliedOnDate(patchInfo.appliedOnDate);
             patch.setAppliedToSchema(patchInfo.appliedToSchema);
             patch.setAppliedToServer(patchInfo.appliedToServer);
@@ -130,6 +131,7 @@ public class SystemExporterImporter
             patch.setSucceeded(patchInfo.succeeded);
             patch.setTargetSchema(patchInfo.targetSchema);
             patch.setWasExecuted(patchInfo.wasExecuted);
+            appliedPatchDAO.createAppliedPatch(patch);
         }
 
         // apply version counters

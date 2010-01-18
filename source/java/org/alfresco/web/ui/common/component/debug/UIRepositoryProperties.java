@@ -30,7 +30,7 @@ import java.util.TreeMap;
 
 import javax.faces.context.FacesContext;
 
-import org.alfresco.repo.admin.patch.PatchInfo;
+import org.alfresco.repo.admin.patch.AppliedPatch;
 import org.alfresco.repo.admin.patch.PatchService;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.descriptor.Descriptor;
@@ -78,8 +78,8 @@ public class UIRepositoryProperties extends BaseDebugComponent
       
       WebApplicationContext cx = FacesContextUtils.getRequiredWebApplicationContext(fc);
       PatchService patchService = (PatchService)cx.getBean("PatchService");
-      List<PatchInfo> patches = patchService.getPatches(null, null);
-      for (PatchInfo patch : patches)
+      List<AppliedPatch> patches = patchService.getPatches(null, null);
+      for (AppliedPatch patch : patches)
       {
          StringBuilder data = new StringBuilder(256);
          data.append(patch.getAppliedOnDate())

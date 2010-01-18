@@ -163,7 +163,7 @@ public abstract class BaseSSOAuthenticationFilter extends BaseAuthenticationFilt
                     public SessionUser execute() throws Throwable
                     {
                         authenticationComponent.setCurrentUser(userName);
-                        return createUserEnvironment(session, userName, authenticationService.getCurrentTicket(), true);
+                        return createUserEnvironment(session, userName, authenticationService.getCurrentTicket(session.getId()), true);
                     }
                 });
     }
@@ -288,8 +288,10 @@ public abstract class BaseSSOAuthenticationFilter extends BaseAuthenticationFilt
 				// If we don't yet have a valid cached user, validate the ticket and create one
                 if ( user == null )
                 {
-                    authenticationService.validate(ticket);
-                    user = createUserEnvironment(req.getSession(), authenticationService.getCurrentUserName(), authenticationService.getCurrentTicket(), true);
+                    HttpSession session = req.getSession();
+                    String sessionId = session.getId();
+                    authenticationService.validate(ticket, sessionId);
+                    user = createUserEnvironment(session, authenticationService.getCurrentUserName(), authenticationService.getCurrentTicket(sessionId), true);
                 }
     		    
     		    // Indicate the ticket parameter was specified, and valid

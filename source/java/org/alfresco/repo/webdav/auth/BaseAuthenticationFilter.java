@@ -160,7 +160,7 @@ public abstract class BaseAuthenticationFilter
         {
             try
             {
-                authenticationService.validate(sessionUser.getTicket());
+                authenticationService.validate(sessionUser.getTicket(), session.getId());
                 setExternalAuth(session, externalAuth);
             }
             catch (AuthenticationException e)

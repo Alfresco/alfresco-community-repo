@@ -116,7 +116,7 @@ public class AuthenticationWebService implements AuthenticationServiceSoapPort
                     public Object execute() throws Throwable
                     {
                     	AuthenticationWebService.this.authenticationComponent.setSystemUserAsCurrentUser();
-                    	AuthenticationWebService.this.authenticationService.invalidateTicket(ticket);
+                    	AuthenticationWebService.this.authenticationService.invalidateTicket(ticket, null);
                     	AuthenticationWebService.this.authenticationService.clearCurrentSecurityContext();
     
 		                if (logger.isDebugEnabled())

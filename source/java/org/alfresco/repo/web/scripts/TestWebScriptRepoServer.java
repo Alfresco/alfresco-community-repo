@@ -196,7 +196,7 @@ public class TestWebScriptRepoServer extends TestWebScriptServer
                     {
                         public Object execute() throws Exception
                         {
-                            authenticationService.validate(username);
+                            authenticationService.validate(username, null);
                             return null;
                         }
                     });

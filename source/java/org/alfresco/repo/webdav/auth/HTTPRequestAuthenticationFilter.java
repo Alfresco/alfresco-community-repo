@@ -39,6 +39,7 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 import org.alfresco.repo.SessionUser;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
@@ -219,8 +220,9 @@ public class HTTPRequestAuthenticationFilter extends BaseAuthenticationFilter im
                                     m_authComponent.clearCurrentSecurityContext();
                                     m_authComponent.setCurrentUser(userName);
 
-                                    return createUserEnvironment(httpReq.getSession(), userName, authenticationService
-                                            .getCurrentTicket(), true);
+                                    HttpSession session = httpReq.getSession();
+                                    return createUserEnvironment(session, userName, authenticationService
+                                            .getCurrentTicket(session.getId()), true);
                                 }
                                 catch (AuthenticationException ex)
                                 {
@@ -251,12 +253,12 @@ public class HTTPRequestAuthenticationFilter extends BaseAuthenticationFilter im
 
                     try
                     {
+                        HttpSession session = httpReq.getSession();
                         // Validate the ticket
-                        authenticationService.validate(ticket);
+                        authenticationService.validate(ticket, session.getId());
 
                         // Need to create the User instance if not already available
-                        user = createUserEnvironment(httpReq.getSession(), authenticationService.getCurrentUserName(),
-                                ticket, true);
+                        user = createUserEnvironment(session, authenticationService.getCurrentUserName(), ticket, true);
                     }
                     catch (AuthenticationException authErr)
                     {

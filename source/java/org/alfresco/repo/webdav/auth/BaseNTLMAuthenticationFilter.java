@@ -601,7 +601,7 @@ public abstract class BaseNTLMAuthenticationFilter extends BaseSSOAuthentication
                     catch (AuthenticationException ex)
                     {
                         if (logger.isDebugEnabled())
-                            logger.debug("Failed to validate user " + user.getUserName(), ex);
+                            logger.debug("Failed to validate user " + userName, ex);
 
                         onValidateFailed(req, res, session);
                         return;

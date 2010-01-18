@@ -34,6 +34,7 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 import org.alfresco.repo.SessionUser;
 import org.alfresco.repo.security.authentication.AuthenticationException;
@@ -115,8 +116,9 @@ public class AuthenticationFilter extends BaseAuthenticationFilter implements De
                     // Authenticate the user
 
                 	authenticationService.authenticate(username, password.toCharArray());
-                	
-                	user = createUserEnvironment(httpReq.getSession(), authenticationService.getCurrentUserName(), authenticationService.getCurrentTicket(), false);                    
+                	HttpSession session = httpReq.getSession();
+                	user = createUserEnvironment(session, authenticationService.getCurrentUserName(),
+                            authenticationService.getCurrentTicket(session.getId()), false);                    
                 }
                 catch ( AuthenticationException ex)
                 {
@@ -149,13 +151,14 @@ public class AuthenticationFilter extends BaseAuthenticationFilter implements De
 
                     // Validate the ticket
 
-                    authenticationService.validate(ticket);
+                    HttpSession session = httpReq.getSession();
+                    authenticationService.validate(ticket, session.getId());
 
                     // Need to create the User instance if not already available
 
                     String currentUsername = authenticationService.getCurrentUserName();
 
-                    user = createUserEnvironment(httpReq.getSession(), currentUsername, ticket, false);
+                    user = createUserEnvironment(session, currentUsername, ticket, false);
                 }
             }
 

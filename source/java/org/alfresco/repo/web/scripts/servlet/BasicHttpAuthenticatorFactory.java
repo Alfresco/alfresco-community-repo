@@ -140,7 +140,7 @@ public class BasicHttpAuthenticatorFactory implements ServletAuthenticatorFactor
                         logger.debug("Authenticating (URL argument) ticket " + ticket);
         
                     // assume a ticket has been passed
-                    authenticationService.validate(ticket);
+                    authenticationService.validate(ticket, null);
                     authorized = true;
                 }
                 catch(AuthenticationException e)
@@ -168,7 +168,7 @@ public class BasicHttpAuthenticatorFactory implements ServletAuthenticatorFactor
                             logger.debug("Authenticating (BASIC HTTP) ticket " + parts[0]);
     
                         // assume a ticket has been passed
-                        authenticationService.validate(parts[0]);
+                        authenticationService.validate(parts[0], null);
                         authorized = true;
                     }
                     else

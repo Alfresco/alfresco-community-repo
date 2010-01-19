@@ -96,6 +96,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
     private NodeService avmNodeService;
     private NodeIndexer nodeIndexer; 
     private final static String KEY_PRE_COMMIT_ADD_NODE = "DbNodeServiceImpl.PreCommitAddNode";
+    private final static String KEY_DELETED_NODES = "DbNodeServiceImpl.DeletedNodes";
     
     public DbNodeServiceImpl()
     {
@@ -274,6 +275,12 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         {      
             properties = Collections.emptyMap();
         }
+        
+        // check the parent node has not been deleted in this txn
+        if(isDeletedNodeRef(parentRef))
+        {
+            throw new InvalidNodeRefException("The parent node has been deleted", parentRef);
+        }
 
         // get/generate an ID for the node
         String newUuid = generateGuid(properties);
@@ -359,14 +366,37 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
      */
     private void trackNewNodeRef(NodeRef newNodeRef)
     {
-//        // bind a pre-commit listener to validate any new node associations
-//        Set<NodeRef> newNodes = TransactionalResourceHelper.getSet(KEY_PRE_COMMIT_ADD_NODE);
-//        if (newNodes.size() == 0)
-//        {
-//            PreCommitNewNodeListener listener = new PreCommitNewNodeListener();
-//            AlfrescoTransactionSupport.bindListener(listener);
-//        }
-//        newNodes.add(newNodeRef);
+        // bind a pre-commit listener to validate any new node associations
+        Set<NodeRef> newNodes = TransactionalResourceHelper.getSet(KEY_PRE_COMMIT_ADD_NODE);
+        if (newNodes.size() == 0)
+        {
+            PreCommitNewNodeListener listener = new PreCommitNewNodeListener();
+            AlfrescoTransactionSupport.bindListener(listener);
+        }
+        newNodes.add(newNodeRef);
+    }
+    
+
+    
+    /**
+     * Track a deleted node
+     * 
+     * The deleted node set is used to break an infinite loop which can happen when adding a new node into a path containing a 
+     * deleted node.  This transactional list is used to detect and prevent that from 
+     * happening.
+     *  
+     * @param nodeRef the deleted node to track
+     */
+    private void trackDeletedNodeRef(NodeRef deletedNodeRef)
+    {
+        Set<NodeRef> deletedNodes = TransactionalResourceHelper.getSet(KEY_DELETED_NODES);
+        deletedNodes.add(deletedNodeRef);
+    }
+    
+    private boolean isDeletedNodeRef(NodeRef deletedNodeRef)
+    {
+        Set<NodeRef> deletedNodes = TransactionalResourceHelper.getSet(KEY_DELETED_NODES);
+        return deletedNodes.contains(deletedNodeRef);
     }
     
     /**
@@ -375,18 +405,28 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
      * for example if its been deleted or moved
      * @param nodeRef the node ref to untrack
      */
-    private void untrackNodeRef(NodeRef nodeRef)
+    private void untrackNewNodeRef(NodeRef nodeRef)
     {
-//        Set<NodeRef> newNodes = TransactionalResourceHelper.getSet(KEY_PRE_COMMIT_ADD_NODE);
-//        if (newNodes.size() > 0)
-//        {
-//            newNodes.remove(nodeRef);
-//        }
+        Set<NodeRef> newNodes = TransactionalResourceHelper.getSet(KEY_PRE_COMMIT_ADD_NODE);
+        if (newNodes.size() > 0)
+        {
+            newNodes.remove(nodeRef);
+        }
     }
     
     private class PreCommitNewNodeListener extends TransactionListenerAdapter
     {
-        @Override
+        public void afterCommit()
+        {
+            // NO-OP
+        }
+
+        public void afterRollback()
+        {
+            // NO-OP
+            
+        }
+
         public void beforeCommit(boolean readOnly)
         {
             if (readOnly)
@@ -394,18 +434,35 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
                 return;
             }
             Set<NodeRef> nodeRefs = TransactionalResourceHelper.getSet(KEY_PRE_COMMIT_ADD_NODE);
-//            for (NodeRef nodeRef : nodeRefs)
-//            {
-//                // Need to check for exists the node may be created 
-//                // and deleted within the same transaction
-//                if(exists(nodeRef))
-//                {
-//                    System.out.println("Checking bideRef " + nodeRef);
-//                    // Check that the primary path is valid for this node
-//                    getPaths(nodeRef, false);
-//                }
-//            }
+            for (NodeRef nodeRef : nodeRefs)
+            {
+                // Need to check for exists since the node may be created 
+                // and deleted within the same transaction
+                if(exists(nodeRef))
+                {
+                    try 
+                    {
+                        // Check that the primary path is valid for this node
+                        getPaths(nodeRef, false);
+                    } 
+                    catch (AlfrescoRuntimeException are)
+                    {
+                        throw new AlfrescoRuntimeException("Error while validating path:" + are.toString(), are);
+                    }
+                }
+            }
             nodeRefs.clear();            
+        }
+
+        public void beforeCompletion()
+        {
+            // NO-OP
+            
+        }
+
+        public void flush()
+        {
+            // NO-OP
         }
     }
     
@@ -858,6 +915,12 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
          */
         if (requiresDelete == null || requiresDelete)
         {
+            // remove the deleted node from the list of new nodes
+            untrackNewNodeRef(nodeRef);
+
+            // track the deletion of this node - so we can prevent new associations to it.
+            trackDeletedNodeRef(nodeRef);
+            
             // Invoke policy behaviours
             invokeBeforeDeleteNode(nodeRef);
 
@@ -881,10 +944,6 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
              */
             archiveNode(nodeRef, archiveStoreRef);
         }
-        
-        // remove the deleted node from the list of new nodes
-        untrackNodeRef(nodeRef);
-
     }
     
     /**
@@ -932,6 +991,12 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
             Set<QName> childNodeQNames = nodeDaoService.getNodeAspects(childNodeId);
             ChildAssociationRef childParentAssocRef = childAssocRefsByChildId.get(childNodeId);
             
+            // remove the deleted node from the list of new nodes
+            untrackNewNodeRef(childNodeRef);
+
+            // track the deletion of this node - so we can prevent new associations to it.
+            trackDeletedNodeRef(childNodeRef);
+            
             invokeBeforeDeleteNode(childNodeRef);
             
             // Cascade first
@@ -943,7 +1008,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
             invokeOnDeleteNode(childParentAssocRef, childNodeType, childNodeQNames, false);
             
             // loose interest in tracking this node ref
-            untrackNodeRef(childNodeRef);
+            untrackNewNodeRef(childNodeRef);
         }
     }
 
@@ -2190,6 +2255,12 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         // Invoke "Before"policy behaviour
         if (movingStore)
         {
+            // remove the deleted node from the list of new nodes
+            untrackNewNodeRef(nodeToMoveRef);
+
+            // track the deletion of this node - so we can prevent new associations to it.
+            trackDeletedNodeRef(nodeToMoveRef);
+            
             invokeBeforeDeleteNode(nodeToMoveRef);
             invokeBeforeCreateNode(newParentRef, assocTypeQName, assocQName, nodeToMoveTypeQName);
         }
@@ -2239,9 +2310,10 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         
         // Ensure name uniqueness
         setChildNameUnique(newParentAssocPair, newNodeToMovePair);
-        
+                
         // Check that there is not a cyclic relationship
         getPaths(newNodeToMoveRef, false);
+        trackNewNodeRef(newNodeToMoveRef);
         
         // Call behaviours
         if (movingStore)
@@ -2333,6 +2405,13 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
             Pair<Long, NodeRef> newChildNodePair = oldChildNodePair;
             Pair<Long, ChildAssociationRef> newParentAssocPair = oldParentAssocPair;
             ChildAssociationRef newParentAssocRef = newParentAssocPair.getSecond();
+            
+            // remove the deleted node from the list of new nodes
+            untrackNewNodeRef(childNodeRef);
+
+            // track the deletion of this node - so we can prevent new associations to it.
+            trackDeletedNodeRef(childNodeRef);
+            
             // Fire node policies.  This ensures that each node in the hierarchy gets a notification fired.
             invokeBeforeDeleteNode(childNodeRef);
             invokeBeforeCreateNode(

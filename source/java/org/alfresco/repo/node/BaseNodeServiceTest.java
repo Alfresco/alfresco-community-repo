@@ -1011,6 +1011,7 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         private List<NodeRef> beforeDeleteNodeRefs;
         
         private boolean onDeleteCreateChild = true;
+        private boolean beforeDeleteCreateChild = true;
         
         public BadOnDeleteNodePolicy(NodeService nodeService, 
                 List<NodeRef> beforeDeleteNodeRefs, 
@@ -1028,8 +1029,9 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
             // add the child to the list
             beforeDeleteNodeRefs.add(nodeRef);
             
-            if(onDeleteCreateChild)
+            if(beforeDeleteCreateChild)
             {
+                System.out.println("before delete node - add child.");
                 // add a new child to the child, i.e. just before it is deleted
                 ChildAssociationRef assocRef = nodeService.createNode(
                     nodeRef,
@@ -1051,6 +1053,7 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
             
             if(onDeleteCreateChild)
             {
+                System.out.println("on delete node - add sibling.");
                 // now perform some nasties on the node's parent, i.e. add a new child
                 NodeRef parentRef = childAssocRef.getParentRef();
                 NodeRef childRef = childAssocRef.getChildRef();
@@ -1072,6 +1075,16 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
             return onDeleteCreateChild;
         }
         
+        private void setBeforeDeleteCreateChild(boolean beforeDeleteCreateChild)
+        {
+            this.beforeDeleteCreateChild = beforeDeleteCreateChild;
+        }
+
+        private boolean isBeforeDeleteCreateChild()
+        {
+            return beforeDeleteCreateChild;
+        }
+        
     }
     
     public void testDelete() throws Exception
@@ -1081,6 +1094,7 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         
         BadOnDeleteNodePolicy nasty = new BadOnDeleteNodePolicy(nodeService, beforeDeleteNodeRefs, deletedNodeRefs);
         nasty.setOnDeleteCreateChild(false);
+        nasty.setBeforeDeleteCreateChild(false);
         NodeServicePolicies.OnDeleteNodePolicy policy = nasty;
 
         // bind to listen to the deletion of a node
@@ -1127,67 +1141,122 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         endTransaction();
     }
     
-//    /**
-//     * This test is similar to the test above but the delete policies do nasty stuff such as 
-//     * creating children of the soon to be deleted children.  
-//     * 
-//     * In particular, it verifies that we don't get stuck in an infinite loop.
-//     * @throws Exception
-//     */
-//    public void testDeleteWithBadlyBehavedPolicies() throws Exception
-//    {
-//        try 
-//        {
-//            final List<NodeRef> beforeDeleteNodeRefs = new ArrayList<NodeRef>(5);
-//            final List<NodeRef> deletedNodeRefs = new ArrayList<NodeRef>(5);
-//        
-//            BadOnDeleteNodePolicy nasty = new BadOnDeleteNodePolicy(nodeService, beforeDeleteNodeRefs, deletedNodeRefs);
-//            nasty.setOnDeleteCreateChild(true);
-//            NodeServicePolicies.OnDeleteNodePolicy policy = nasty;
-//
-//            // bind to listen to the deletion of a node
-//            policyComponent.bindClassBehaviour(
-//                QName.createQName(NamespaceService.ALFRESCO_URI, "onDeleteNode"),
-//                policy,
-//                new JavaBehaviour(policy, "onDeleteNode"));  
-//            
-//            policyComponent.bindClassBehaviour(
-//                    QName.createQName(NamespaceService.ALFRESCO_URI, "beforeDeleteNode"),
-//                    policy,
-//                    new JavaBehaviour(policy, "beforeDeleteNode")); 
-//        
-//            // build the node and commit the node graph
-//            Map<QName, ChildAssociationRef> assocRefs = buildNodeGraph(nodeService, rootNodeRef);
-//            NodeRef n1Ref = assocRefs.get(QName.createQName(BaseNodeServiceTest.NAMESPACE, "root_p_n1")).getChildRef();
-//            NodeRef n3Ref = assocRefs.get(QName.createQName(BaseNodeServiceTest.NAMESPACE, "n1_p_n3")).getChildRef();
-//            NodeRef n4Ref = assocRefs.get(QName.createQName(BaseNodeServiceTest.NAMESPACE, "n2_p_n4")).getChildRef();
-//            NodeRef n6Ref = assocRefs.get(QName.createQName(BaseNodeServiceTest.NAMESPACE, "n3_p_n6")).getChildRef();
-//            NodeRef n8Ref = assocRefs.get(QName.createQName(BaseNodeServiceTest.NAMESPACE, "n6_p_n8")).getChildRef();
-//        
-//            // delete n1
-//            nodeService.deleteNode(n1Ref);
-//            
-//            // turn off nasty policy - may upset other tests
-//            nasty.setOnDeleteCreateChild(false);
-//
-//            // Just a cut down set of tests to validate that something has happened, the real point of the test is to see how
-//            // the end of the transaction fails.
-//            
-//            assertEquals("Node not directly deleted", 0, countNodesByReference(n1Ref));
-//            assertTrue("n1Ref before delete policy not called", beforeDeleteNodeRefs.contains(n1Ref));
-//            assertTrue("n1Ref delete policy not called", deletedNodeRefs.contains(n1Ref));
-//        
-//            // commit to check
-//            setComplete();
-//            endTransaction();
-//            fail("test has not detected orphan children");
-//        }
-//        catch (Exception e)
-//        {
-//            // We expect to get here with this test.
-//            e.printStackTrace();
-//        }
-//    }
+    /**
+     * This test is similar to the test above but onDelete does nasty stuff such as 
+     * creating siblings of the soon to be deleted children.  
+     * 
+     * In particular, it verifies that we don't get stuck in an infinite loop.
+     * @throws Exception
+     */
+    public void testDeleteWithBadlyBehavedOnDeletePolicies() throws Exception
+    {
+        final List<NodeRef> beforeDeleteNodeRefs = new ArrayList<NodeRef>(5);
+        final List<NodeRef> deletedNodeRefs = new ArrayList<NodeRef>(5);
+        BadOnDeleteNodePolicy nasty = new BadOnDeleteNodePolicy(nodeService, beforeDeleteNodeRefs, deletedNodeRefs);
+        
+        try 
+        {   
+            nasty.setOnDeleteCreateChild(true);
+            nasty.setBeforeDeleteCreateChild(false);
+            NodeServicePolicies.OnDeleteNodePolicy policy = nasty;
+
+            // bind to listen to the deletion of a node
+            policyComponent.bindClassBehaviour(
+                QName.createQName(NamespaceService.ALFRESCO_URI, "onDeleteNode"),
+                policy,
+                new JavaBehaviour(policy, "onDeleteNode"));  
+            
+            policyComponent.bindClassBehaviour(
+                    QName.createQName(NamespaceService.ALFRESCO_URI, "beforeDeleteNode"),
+                    policy,
+                    new JavaBehaviour(policy, "beforeDeleteNode")); 
+        
+            // build the node and commit the node graph
+            Map<QName, ChildAssociationRef> assocRefs = buildNodeGraph(nodeService, rootNodeRef);
+            NodeRef n1Ref = assocRefs.get(QName.createQName(BaseNodeServiceTest.NAMESPACE, "root_p_n1")).getChildRef();
+            NodeRef n3Ref = assocRefs.get(QName.createQName(BaseNodeServiceTest.NAMESPACE, "n1_p_n3")).getChildRef();
+            NodeRef n4Ref = assocRefs.get(QName.createQName(BaseNodeServiceTest.NAMESPACE, "n2_p_n4")).getChildRef();
+            NodeRef n6Ref = assocRefs.get(QName.createQName(BaseNodeServiceTest.NAMESPACE, "n3_p_n6")).getChildRef();
+            NodeRef n8Ref = assocRefs.get(QName.createQName(BaseNodeServiceTest.NAMESPACE, "n6_p_n8")).getChildRef();
+        
+            // delete n1
+            nodeService.deleteNode(n1Ref);
+            
+            fail("test has not detected orphan children");
+              
+            // commit to check
+            setComplete();
+            endTransaction();
+         
+        }
+        catch (Exception e)
+        {
+            // We expect to get here with this test.
+            //e.printStackTrace();
+        }
+        finally
+        {
+            // turn off nasty policy - may upset other tests
+            nasty.setOnDeleteCreateChild(false);
+            nasty.setBeforeDeleteCreateChild(false);
+        }
+    }
+    /**
+     * This test is similar to the test above but beforeDelete does nasty stuff such as 
+     * creating children of the soon to be deleted children.  
+     * 
+     * In particular, it verifies that we don't get stuck in an infinite loop.
+     * @throws Exception
+     */
+    public void testDeleteWithBadlyBehavedBeforeDeletePolicies() throws Exception
+    {
+        final List<NodeRef> beforeDeleteNodeRefs = new ArrayList<NodeRef>(5);
+        final List<NodeRef> deletedNodeRefs = new ArrayList<NodeRef>(5);
+        BadOnDeleteNodePolicy nasty = new BadOnDeleteNodePolicy(nodeService, beforeDeleteNodeRefs, deletedNodeRefs);
+        
+        try 
+        {
+            nasty.setOnDeleteCreateChild(false);
+            nasty.setBeforeDeleteCreateChild(true);
+            NodeServicePolicies.OnDeleteNodePolicy policy = nasty;
+
+            // bind to listen to the deletion of a node
+            policyComponent.bindClassBehaviour(
+                QName.createQName(NamespaceService.ALFRESCO_URI, "onDeleteNode"),
+                policy,
+                new JavaBehaviour(policy, "onDeleteNode"));  
+            
+            policyComponent.bindClassBehaviour(
+                    QName.createQName(NamespaceService.ALFRESCO_URI, "beforeDeleteNode"),
+                    policy,
+                    new JavaBehaviour(policy, "beforeDeleteNode")); 
+        
+            // build the node and commit the node graph
+            Map<QName, ChildAssociationRef> assocRefs = buildNodeGraph(nodeService, rootNodeRef);
+            NodeRef n1Ref = assocRefs.get(QName.createQName(BaseNodeServiceTest.NAMESPACE, "root_p_n1")).getChildRef();
+            NodeRef n3Ref = assocRefs.get(QName.createQName(BaseNodeServiceTest.NAMESPACE, "n1_p_n3")).getChildRef();
+            NodeRef n4Ref = assocRefs.get(QName.createQName(BaseNodeServiceTest.NAMESPACE, "n2_p_n4")).getChildRef();
+            NodeRef n6Ref = assocRefs.get(QName.createQName(BaseNodeServiceTest.NAMESPACE, "n3_p_n6")).getChildRef();
+            NodeRef n8Ref = assocRefs.get(QName.createQName(BaseNodeServiceTest.NAMESPACE, "n6_p_n8")).getChildRef();
+        
+            // delete n1
+            nodeService.deleteNode(n1Ref);
+            
+            fail("test has not detected orphan children");
+            
+        }
+        catch (Exception e)
+        {
+            // We expect to get here with this test.
+            //e.printStackTrace();
+        }
+        finally
+        {
+            // turn off nasty policy - may upset other tests
+            nasty.setOnDeleteCreateChild(false);
+            nasty.setBeforeDeleteCreateChild(false);
+        }
+    }
     
     
     @SuppressWarnings("unchecked")

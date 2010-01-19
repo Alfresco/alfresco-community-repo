@@ -70,6 +70,14 @@ public interface AuditComponent
      * @since 2.1
      */
     public void audit(String source, String description, NodeRef key, Object... args);
+    
+    /**
+     * Add an audit entry - without invoking the method invocation.
+     * Only the method arguments can be audited.
+     * 
+     * @since 3.2
+     */
+    void beforeMethodCallManualAudit(Class<?> clazz, Object target, String method, Object ... args);
 
     /**
      * Get the audit trail for a node.

@@ -64,11 +64,12 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.transaction.TransactionService;
-import org.springframework.extensions.surf.util.ParameterCheck;
 import org.alfresco.util.PathMapper;
 import org.aopalliance.intercept.MethodInvocation;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.aop.framework.ReflectiveMethodInvocation;
+import org.springframework.extensions.surf.util.ParameterCheck;
 
 /**
  * The default audit component implementation. TODO: Implement before, after and exception filtering. At the moment
@@ -234,7 +235,7 @@ public class AuditComponentImpl implements AuditComponent
                             {
                                 logger.debug("Auditing - " + serviceName + "." + methodName);
                             }
-                            return auditImpl(mi);
+                            return auditImpl(mi, true);
                         }
                         else
                         {
@@ -242,7 +243,7 @@ public class AuditComponentImpl implements AuditComponent
                             {
                                 logger.debug("UnknownService." + methodName);
                             }
-                            return auditImpl(mi);
+                            return auditImpl(mi, true);
                         }
 
                     }
@@ -298,16 +299,20 @@ public class AuditComponentImpl implements AuditComponent
      * @throws Throwable -
      *             any Throwable that can be thrown by th audtied method.
      */
-    public Object auditImpl(MethodInvocation mi) throws Throwable
+    public Object auditImpl(MethodInvocation mi, boolean execute) throws Throwable
     {
         final AuditState auditInfo = new AuditState(auditConfiguration);
         // RecordOptions recordOptions = auditModel.getAuditRecordOptions(mi);
         AuditMode auditMode = AuditMode.UNSET;
         try
         {
+            Object o = null;
             auditMode = beforeInvocation(auditMode, auditInfo, mi);
-            Object o = mi.proceed();
-            auditMode = postInvocation(auditMode, auditInfo, mi, o);
+            if (execute)
+            {
+                o = mi.proceed();
+                auditMode = postInvocation(auditMode, auditInfo, mi, o);
+            }
             if ((auditMode == AuditMode.ALL) || (auditMode == AuditMode.SUCCESS))
             {
                 RetryingTransactionCallback<Object> cb = new RetryingTransactionCallback<Object>()
@@ -608,6 +613,120 @@ public class AuditComponentImpl implements AuditComponent
         if (mi.getArguments().length <= position)
         {
             logger.warn("Auditable annotation on " + serviceName + "." + methodName + " references non existant argument");
+        }
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.alfresco.repo.audit.AuditComponent#beforeMethodCallManualAudit(org.aopalliance.intercept.MethodInvocation)
+     */
+    @SuppressWarnings("unchecked")
+    public void beforeMethodCallManualAudit(Class clazz, Object target, String methodName, Object ... args)
+    {
+        Class[] argTypes = new Class[args.length];
+        for(int i = 0; i < args.length; i++)
+        {
+            argTypes[i] = args[i].getClass();
+        }
+        Method method;
+        try
+        {
+            method = clazz.getMethod(methodName, argTypes);
+        }
+        catch (SecurityException e1)
+        {
+            return;
+        }
+        catch (NoSuchMethodException e1)
+        {
+            return;
+        }
+        MethodInvocation methodInvocation = new ReflectiveMethodInvocation(null, target, method, args, null, null) {};
+        if ((auditFlag.get() == null) || (!auditFlag.get().booleanValue()))
+        {
+            if (auditModel instanceof AuditEntry && ((AuditEntry) auditModel).getEnabled() == TrueFalseUnset.TRUE)
+            {
+                boolean auditInternal = (auditModel.getAuditInternalServiceMethods(methodInvocation) == TrueFalseUnset.TRUE);
+                try
+                {
+                    String serviceName = publicServiceIdentifier.getPublicServiceName(methodInvocation);
+
+                    if (!auditInternal)
+                    {
+                        auditFlag.set(Boolean.TRUE);
+                    }
+                    else
+                    {
+                        if (logger.isDebugEnabled())
+                        {
+                            logger.debug("Auditing internal service use for  - " + serviceName + "." + methodName);
+                        }
+                    }
+
+                    if (method.isAnnotationPresent(Auditable.class))
+                    {
+
+                        if (serviceName != null)
+                        {
+                            if (logger.isDebugEnabled())
+                            {
+                                logger.debug("Auditing - " + serviceName + "." + methodName);
+                            }
+                            try
+                            {
+                                auditImpl(methodInvocation, false);
+                            }
+                            catch (Throwable e)
+                            {
+                               
+                            }
+                        }
+                        else
+                        {
+                            if (logger.isDebugEnabled())
+                            {
+                                logger.debug("UnknownService." + methodName);
+                            }
+                            try
+                            {
+                                auditImpl(methodInvocation, false);
+                            }
+                            catch (Throwable e)
+                            {
+                                
+                            }
+                        }
+
+                    }
+                    else if (method.isAnnotationPresent(NotAuditable.class))
+                    {
+                        if (logger.isDebugEnabled())
+                        {
+                            logger.debug("Not Audited. " + serviceName + "." + methodName);
+                        }
+                    }
+                    else
+                    {
+                        if (logger.isDebugEnabled())
+                        {
+                            logger.debug("Unannotated service method " + serviceName + "." + methodName);
+                        }
+                        if (method.getDeclaringClass().isInterface() && method.getDeclaringClass().isAnnotationPresent(PublicService.class))
+                        {
+                            throw new RuntimeException("Unannotated service method " + serviceName + "." + methodName);
+                        }
+                    }
+                }
+                finally
+                {
+                    if (!auditInternal)
+                    {
+                        auditFlag.set(Boolean.FALSE);
+                    }
+                }
+            }
+
         }
     }
 

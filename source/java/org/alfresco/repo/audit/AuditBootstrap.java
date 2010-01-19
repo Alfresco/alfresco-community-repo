@@ -57,6 +57,12 @@ public class AuditBootstrap extends AbstractLifecycleBean
     @Override
     protected void onBootstrap(ApplicationEvent event)
     {
+        // Don't bootstrap if the system is read-only
+        if (transactionService.isReadOnly())
+        {
+            return;
+        }
+        
         RetryingTransactionCallback<Void> callback = new RetryingTransactionCallback<Void>()
         {
             public Void execute() throws Throwable

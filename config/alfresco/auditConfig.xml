@@ -135,13 +135,16 @@
         <Method name="setAuthentication" mode="all"/>
         <Method name="deleteAuthentication" mode="all"/>
         <Method name="setAuthenticationEnabled" mode="all"/>
-        <Method name="authenticate" mode="all"/>
+        <Method name="authenticate" mode="all" auditInternal="true"/>
         <Method name="authenticateAsGuest" mode="all"/>
         <Method name="authenticationExists" mode="all"/>
         <Method name="invalidateUserSession" mode="all"/>
         <Method name="invalidateTicket" mode="all"/>
         <Method name="validate" mode="all"/>
         <Method name="clearCurrentSecurityContext" mode="all"/>
+        <!-- audit the creation of new tickets to follow SSO -->
+        <Method name="getNewTicket" mode="all" />
+        <Method name="getCurrentTicket" mode="none" auditInternal="true"/>
     </Service>
     
     <Service name="AuthorityService" mode="none">

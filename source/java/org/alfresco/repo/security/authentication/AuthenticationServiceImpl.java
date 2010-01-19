@@ -24,17 +24,24 @@
  */
 package org.alfresco.repo.security.authentication;
 
+import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.Set;
 
+import org.alfresco.repo.audit.AuditComponent;
 import org.alfresco.repo.management.subsystems.ActivateableBean;
 import org.alfresco.repo.security.authentication.AuthenticationComponent.UserNameValidationMode;
+import org.alfresco.service.cmr.security.AuthenticationService;
+import org.aopalliance.intercept.MethodInvocation;
+import org.springframework.aop.framework.ReflectiveMethodInvocation;
 
 public class AuthenticationServiceImpl extends AbstractAuthenticationService implements ActivateableBean
 {
     AuthenticationComponent authenticationComponent;
     
     TicketComponent ticketComponent;
+    
+    AuditComponent auditComponent;
     
     private String domain;
     
@@ -58,7 +65,16 @@ public class AuthenticationServiceImpl extends AbstractAuthenticationService imp
     {
         this.authenticationComponent = authenticationComponent;
     }
+   
     
+    /**
+     * @param auditComponent the auditComponent to set
+     */
+    public void setAuditComponent(AuditComponent auditComponent)
+    {
+        this.auditComponent = auditComponent;
+    }
+
     /*
      * (non-Javadoc)
      * @see org.alfresco.repo.management.subsystems.ActivateableBean#isActive()
@@ -85,8 +101,7 @@ public class AuthenticationServiceImpl extends AbstractAuthenticationService imp
             throw ae;
         }
         ticketComponent.clearCurrentTicket();
-        
-        ticketComponent.getCurrentTicket(userName, null, true); // to ensure new ticket is created (even if client does not explicitly call getCurrentTicket)
+        getCurrentTicket(null);       
     }
     
     public String getCurrentUserName() throws AuthenticationException
@@ -146,24 +161,16 @@ public class AuthenticationServiceImpl extends AbstractAuthenticationService imp
         String ticket = ticketComponent.getCurrentTicket(userName, sessionId, false);
         if (ticket == null)
         {
-            try
-            {
-                preAuthenticationCheck(userName);
-            }
-            catch (AuthenticationException e)
-            {
-                clearCurrentSecurityContext();
-                throw e;
-            }
             // If we get through the authentication check then it's safe to issue a new ticket (e.g. for
             // SSO/external-based login)
-            return ticketComponent.getCurrentTicket(userName, sessionId, true);
+            return getNewTicket(sessionId);
         }
         return ticket;
     }
 
     public String getNewTicket(String sessionId)
     {
+        auditComponent.beforeMethodCallManualAudit(AuthenticationService.class, this, "getNewTicket", "");
         String userName = getCurrentUserName();
         try
         {

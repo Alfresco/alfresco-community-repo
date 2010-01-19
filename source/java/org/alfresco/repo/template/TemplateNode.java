@@ -28,8 +28,10 @@ import java.io.Serializable;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.service.ServiceRegistry;
@@ -337,6 +339,23 @@ public class TemplateNode extends BasePermissionsNode implements NamespacePrefix
     }
     
     /**
+     * @return The list of children of this Node that match a specific object type.
+     */
+    public List<TemplateNode> getChildAssocsByType(String type)
+    {
+        Set<QName> types = new HashSet<QName>(1, 1.0f);
+        types.add(createQName(type));
+        List<ChildAssociationRef> refs = this.services.getNodeService().getChildAssocs(this.nodeRef, types);
+        List<TemplateNode> nodes = new ArrayList<TemplateNode>(refs.size());
+        for (ChildAssociationRef ref : refs)
+        {
+            String qname = ref.getTypeQName().toString();
+            nodes.add( new TemplateNode(ref.getChildRef(), this.services, this.imageResolver) );
+        }
+        return nodes;
+    }
+    
+    /**
      * @return true if the node is currently locked
      */
     public boolean getIsLocked()
@@ -518,6 +537,27 @@ public class TemplateNode extends BasePermissionsNode implements NamespacePrefix
     public TemplateImageResolver getImageResolver()
     {
         return this.imageResolver;
+    }
+    
+    /**
+     * Helper to create a QName from either a fully qualified or short-name QName string
+     * 
+     * @param s    Fully qualified or short-name QName string
+     * 
+     * @return QName
+     */
+    private QName createQName(String s)
+    {
+        QName qname;
+        if (s.indexOf(NAMESPACE_BEGIN) != -1)
+        {
+            qname = QName.createQName(s);
+        }
+        else
+        {
+            qname = QName.createQName(s, this.services.getNamespaceService());
+        }
+        return qname;
     }
     
     

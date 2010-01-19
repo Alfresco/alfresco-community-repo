@@ -167,14 +167,17 @@ public class InMemoryTicketComponentImpl implements TicketComponent
         if (sessionId != null)
         {
             Ticket ticketObj = ticketsCache.get(ticketKey);
-            ticketObj = ticketObj.removeSessionId(sessionId);
-            if (ticketObj == null)
+            if (ticketObj != null)
             {
-                ticketsCache.remove(ticketKey);
-            }
-            else
-            {
-                ticketsCache.put(ticketKey, ticketObj);
+                ticketObj = ticketObj.removeSessionId(sessionId);
+                if (ticketObj == null)
+                {
+                    ticketsCache.remove(ticketKey);
+                }
+                else
+                {
+                    ticketsCache.put(ticketKey, ticketObj);
+                }
             }
         }
         else

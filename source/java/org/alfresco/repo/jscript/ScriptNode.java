@@ -716,6 +716,28 @@ public class ScriptNode implements Serializable, Scopeable, NamespacePrefixResol
     }
     
     /**
+     * Return an Array of the associations from this Node that match a specific object type.
+     * <code>node.getChildAssocsByType("cm:folder")[0]</code>
+     * 
+     * @return Array of child associations from this Node that match a specific object type.
+     */
+    @SuppressWarnings("unchecked")
+    public Scriptable getChildAssocsByType(String type)
+    {
+        // get the list of child assoc nodes for each association type
+        Set<QName> types = new HashSet<QName>(1, 1.0f);
+        types.add(createQName(type));
+        List<ChildAssociationRef> refs = this.nodeService.getChildAssocs(this.nodeRef, types);
+        Object[] nodes = new Object[refs.size()];
+        for (int i=0; i<nodes.length; i++)
+        {
+            ChildAssociationRef ref = refs.get(i);
+            nodes[i] = newInstance(ref.getChildRef(), this.services, this.scope);
+        }
+        return Context.getCurrentContext().newArray(this.scope, nodes);
+    }
+    
+    /**
      * Return the parent associations to this Node. As a Map of assoc name to a JavaScript array of Nodes.
      * The Map returned implements the Scriptable interface to allow access to the assoc arrays via JavaScript
      * associative array access. This means associations of this node can be access thus:

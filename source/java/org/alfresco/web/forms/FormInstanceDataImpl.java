@@ -176,8 +176,10 @@ import org.xml.sax.SAXException;
       throws FormNotFoundException
    {
       if (logger.isDebugEnabled())
+      {
          logger.debug("regenerating renditions of " + this);
-
+      }
+      
       AVMLockingService avmLockService = this.getServiceRegistry().getAVMLockingService();
       final AVMService avmService = this.getServiceRegistry().getAVMService();
       PropertyValue pv = avmService.getNodeProperty(
@@ -220,7 +222,9 @@ import org.xml.sax.SAXException;
          try
          {
             if (logger.isDebugEnabled())
+            {
                logger.debug("regenerating rendition " + r + " using template " + ret);
+            }
             
             renditionLockedBefore = false;
             path = r.getPath();
@@ -230,7 +234,9 @@ import org.xml.sax.SAXException;
                renditionLockedBefore = true;
                
                if (logger.isDebugEnabled())
+               {
                   logger.debug("Lock already exists for " + path);
+               }
             }
             
             ret.render(this, r);
@@ -247,7 +253,9 @@ import org.xml.sax.SAXException;
                avmLockService.removeLock(AVMUtil.getStoreId(path), AVMUtil.getStoreRelativePath(path));
                
                if (logger.isDebugEnabled())
+               {
                   logger.debug("Removed lock for " + path + " as it failed to generate");
+               }
             }
          }
       }
@@ -261,8 +269,10 @@ import org.xml.sax.SAXException;
             path = ret.getOutputPathForRendition(this, originalParentAvmPath, getName());
             
             if (logger.isDebugEnabled())
+            {
                logger.debug("regenerating rendition of " + this.getPath() + 
                             " at " + path + " using template " + ret);
+            }
             
             AVMLock lock = avmLockService.getLock(AVMUtil.getStoreId(path), AVMUtil.getStoreRelativePath(path));
             if (lock != null)
@@ -270,7 +280,9 @@ import org.xml.sax.SAXException;
                renditionLockedBefore = true;
                
                if (logger.isDebugEnabled())
+               {
                   logger.debug("Lock already exists for " + path);
+               }
             }
             
             result.add(new RegenerateResult(ret, path, ret.render(this, path)));
@@ -285,14 +297,21 @@ import org.xml.sax.SAXException;
                avmLockService.removeLock(AVMUtil.getStoreId(path), AVMUtil.getStoreRelativePath(path));
                
                if (logger.isDebugEnabled())
+               {
                   logger.debug("Removed lock for " + path + " as it failed to generate");
+               }
             }
          }
       }
       return result;
    }
-
+   
    public List<Rendition> getRenditions()
+   {
+       return getRenditions(false);
+   }
+   
+   public List<Rendition> getRenditions(boolean includeDeleted)
    {
       final AVMService avmService = this.getServiceRegistry().getAVMLockingAwareService();
       final PropertyValue pv = 
@@ -304,24 +323,29 @@ import org.xml.sax.SAXException;
       final List<Rendition> result = new ArrayList<Rendition>(renditionPaths.size());
       for (Serializable path : renditionPaths)
       {
-         if (avmService.lookup(-1, storeName + ':' + (String)path) == null)
+         String avmRenditionPath = AVMUtil.buildAVMPath(storeName, (String)path);
+         if (avmService.lookup(-1, avmRenditionPath, includeDeleted) == null)
          {
             if (logger.isDebugEnabled())
-               logger.debug("ignoring dangling rendition at " + storeName + ':' + (String)path);
+            {
+               logger.debug("ignoring dangling rendition at: " + avmRenditionPath);
+            }
          }
          else
          {
-            final Rendition r = new RenditionImpl(-1, 
-                                                  storeName + ':' + (String)path, 
+            final Rendition r = new RenditionImpl(-1,
+                                                  avmRenditionPath,
                                                   this.getFormsService());
             try
             {
-               if (!this.equals(r.getPrimaryFormInstanceData()))
+               if (!this.equals(r.getPrimaryFormInstanceData(includeDeleted)))
                {
                   if (logger.isDebugEnabled())
+                  {
                      logger.debug("rendition " + r + 
-                                  " points at form instance data " + r.getPrimaryFormInstanceData() +
+                                  " points at form instance data " + r.getPrimaryFormInstanceData(includeDeleted) +
                                   " instead of " + this + ". Not including in renditions list.");
+                  }
                   continue;
                }
             }

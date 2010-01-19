@@ -135,6 +135,12 @@ import org.xml.sax.SAXException;
    }
 
    public FormInstanceData getPrimaryFormInstanceData()
+   throws FileNotFoundException
+   {
+       return getPrimaryFormInstanceData(false);
+   }
+   
+   public FormInstanceData getPrimaryFormInstanceData(boolean includeDeleted)
       throws FileNotFoundException
    {
       final AVMService avmService = this.getServiceRegistry().getAVMLockingAwareService();
@@ -145,7 +151,7 @@ import org.xml.sax.SAXException;
       String avmStore = AVMNodeConverter.ToAVMVersionPath(this.nodeRef).getSecond();
       avmStore = avmStore.substring(0, avmStore.indexOf(':'));
       final String path = avmStore + ':' + fidAVMStoreRelativePath;
-      if (avmService.lookup(-1, path) == null)
+      if (avmService.lookup(-1, path, includeDeleted) == null)
       {
          throw new FileNotFoundException("unable to find primary form instance data " + path);
       }

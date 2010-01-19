@@ -64,7 +64,7 @@ public class ManageReviewTaskDialog extends ManageTaskDialog
    protected String webapp;
    protected NodeRef webProjectRef;
    protected AVMBrowseBean avmBrowseBean;
-   transient protected PermissionService permissionService;
+   transient private PermissionService permissionService;
    
    private static final Log logger = LogFactory.getLog(ManageReviewTaskDialog.class);
    

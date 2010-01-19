@@ -65,9 +65,7 @@ import org.alfresco.web.app.servlet.FacesHelper;
 import org.alfresco.web.bean.BrowseBean;
 import org.alfresco.web.bean.dialog.BaseDialogBean;
 import org.alfresco.web.bean.repository.Repository;
-import org.alfresco.web.forms.Form;
 import org.alfresco.web.forms.FormInstanceData;
-import org.alfresco.web.forms.FormNotFoundException;
 import org.alfresco.web.forms.FormsService;
 import org.alfresco.web.forms.Rendition;
 import org.alfresco.web.ui.common.Utils;
@@ -737,81 +735,63 @@ public class SubmitDialog extends BaseDialogBean
                   this.warningItems.add(new ItemWrapper(node));
                   continue;
                }
-               
                NodeRef ref = AVMNodeConverter.ToNodeRef(-1, node.getPath());
                if (submittedPaths.contains(node.getPath()))
                {
                   continue;
                }
-               if (node.isDeleted())
-               {
-                  // found a deleted node for submit
-                  this.submitItems.add(new ItemWrapper(node));
-                  submittedPaths.add(node.getPath());
-               }
                
-               // lookup if this item was created via a form - then lookup the workflow defaults
-               // for that form and store into the list of available workflows
-               else if (!getNodeService().hasAspect(ref, WCMAppModel.ASPECT_FORM_INSTANCE_DATA))
+               boolean isForm = getNodeService().hasAspect(ref, WCMAppModel.ASPECT_FORM_INSTANCE_DATA);
+               boolean isRendition = getNodeService().hasAspect(ref, WCMAppModel.ASPECT_RENDITION);
+               
+               if (((!isForm) && (!isRendition)) || (node.isDeleted() && (!isForm)))
                {
+                  // found single item for submit
+                  // note: could be a single deleted rendition - to enable deletion of old renditions (eg. if template no longer applicable)
                   this.submitItems.add(new ItemWrapper(node));
                   submittedPaths.add(node.getPath());
                }
                else
                {
+                  // item is a form (note: could be deleted) or a rendition
+                  
                   FormInstanceData fid = null;
-                  // check if this is a rendition - as they also have the forminstancedata aspect
-                  if (getNodeService().hasAspect(ref, WCMAppModel.ASPECT_RENDITION))
+                  if (isRendition)
                   {
                      // found a generated rendition asset - locate the parent form instance data file
                      // and use this to find all generated assets that are appropriate
                      // NOTE: this path value is store relative
-                     fid = getFormsService().getRendition(ref).getPrimaryFormInstanceData();
+                     fid = getFormsService().getRendition(ref).getPrimaryFormInstanceData(true);
                   }
                   else
                   {
                      fid = getFormsService().getFormInstanceData(ref);
                   }
                   
-                  // check form's default workflow (if any)
-                  Form f = null;
-                  try
-                  {
-                      f = fid.getForm();
-                  }
-                  catch (FormNotFoundException fnfe)
-                  {
-                      String formName = (String)getNodeService().getProperty(ref, WCMAppModel.PROP_PARENT_FORM_NAME);
-                      logger.warn("Cannot check default workflow (if any) for missing form '"+formName+"' (may have been deleted) - when submitting '"+node.getPath()+"'");
-                      //Utils.addErrorMessage(fnfe.getMessage(), fnfe);
-                  }
-                  
                   // add the form instance data file to the list for submission
                   if (!submittedPaths.contains(fid.getPath()))
                   {
-                     this.submitItems.add(new ItemWrapper(getAvmService().lookup(-1, fid.getPath())));
+                     this.submitItems.add(new ItemWrapper(getAvmService().lookup(-1, fid.getPath(), true)));
                      submittedPaths.add(fid.getPath());
                   }
                   
                   // locate renditions for this form instance data file and add to list for submission
-                  for (final Rendition rendition : fid.getRenditions())
+                  for (final Rendition rendition : fid.getRenditions(true))
                   {
                      final String renditionPath = rendition.getPath();
                      if (!submittedPaths.contains(renditionPath))
                      {
-                        this.submitItems.add(new ItemWrapper(getAvmService().lookup(-1, renditionPath)));
+                        this.submitItems.add(new ItemWrapper(getAvmService().lookup(-1, renditionPath, true)));
                         submittedPaths.add(renditionPath);
                      }
                   }
                   
-                  if (f != null)
+                  // lookup the workflow defaults for that form and store into the list of available workflows
+                  WorkflowDefinition defaultWfDef = fid.getForm().getDefaultWorkflow();
+                  if (defaultWfDef != null)
                   {
-                      WorkflowDefinition defaultWfDef = f.getDefaultWorkflow();
-                      if (defaultWfDef != null)
-                      {
-                         this.workflows.add(new FormWorkflowWrapper(defaultWfDef.getName(),
-                                  f.getDefaultWorkflowParameters()));
-                      }
+                     this.workflows.add(new FormWorkflowWrapper(defaultWfDef.getName(),
+                              fid.getForm().getDefaultWorkflowParameters()));
                   }
                   
                   // See WCM-1090 ACT-1551
@@ -825,14 +805,14 @@ public class SubmitDialog extends BaseDialogBean
                }
             }
          }
-
+         
          tx.commit();
       }
       catch (Throwable e)
       {
          // rollback the transaction on error
          try { if (tx != null) {tx.rollback();} } catch (Exception ex) {}
-
+         
          // rethrow the exception to highlight the problem
          throw (RuntimeException)e;
       }

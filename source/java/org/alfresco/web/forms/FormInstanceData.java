@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -123,4 +123,7 @@ public interface FormInstanceData
 
    /** returns all renditions of this form instance data */
    public List<Rendition> getRenditions();
+   
+   /** returns all renditions of this form instance data (include deleted AVM nodes) */
+   public List<Rendition> getRenditions(boolean includeDeleted);
 }

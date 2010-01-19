@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -50,6 +50,10 @@ public interface Rendition
 
    /** the primary form instance data used to generate this rendition */
    public FormInstanceData getPrimaryFormInstanceData()
+      throws FileNotFoundException;
+   
+   /** the primary form instance data used to generate this rendition (include deleted AVM nodes) */
+   public FormInstanceData getPrimaryFormInstanceData(boolean includeDeleted)
       throws FileNotFoundException;
 
    /** the rendering engine template that generated this rendition */

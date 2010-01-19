@@ -87,15 +87,14 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
  * @author andyh
  */
 
-public abstract class AbstractLuceneIndexerAndSearcherFactory implements LuceneIndexerAndSearcher, XAResource,
-        ApplicationContextAware
+public abstract class AbstractLuceneIndexerAndSearcherFactory implements LuceneIndexerAndSearcher, XAResource, ApplicationContextAware
 {
     private static Log logger = LogFactory.getLog(AbstractLuceneIndexerAndSearcherFactory.class);
 
     private int queryMaxClauses;
 
     private int indexerBatchSize;
-    
+
     protected Map<String, LuceneQueryLanguageSPI> queryLanguages = new HashMap<String, LuceneQueryLanguageSPI>();
 
     /**
@@ -155,6 +154,12 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory implements LuceneI
 
     private int maxDocsForInMemoryMerge = 10000;
 
+    private int maxDocsForInMemoryIndex = 10000;
+
+    private double maxRamInMbForInMemoryMerge = 16.0;
+
+    private double maxRamInMbForInMemoryIndex = 16.0;
+
     private int maxDocumentCacheSize = 100;
 
     private int maxIsCategoryCacheSize = -1;
@@ -172,8 +177,10 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory implements LuceneI
     private int mergerMergeFactor = 5;
 
     private int mergerMergeBlockingFactor = 1;
-    
-    private int mergerMinMergeDocs = 1000;
+
+    private int mergerMaxBufferedDocs = IndexWriter.DISABLE_AUTO_FLUSH;
+
+    private double mergerRamBufferSizeMb = 16.0;
 
     private int mergerTargetIndexCount = 5;
 
@@ -181,7 +188,7 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory implements LuceneI
 
     private int mergerTargetOverlaysBlockingFactor = 1;
 
-    private int termIndexInterval =IndexWriter.DEFAULT_TERM_INDEX_INTERVAL;
+    private int termIndexInterval = IndexWriter.DEFAULT_TERM_INDEX_INTERVAL;
 
     private boolean useNioMemoryMapping = true;
 
@@ -189,7 +196,9 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory implements LuceneI
 
     private int writerMergeFactor = 5;
 
-    private int writerMinMergeDocs = 1000;
+    private int writerMaxBufferedDocs = IndexWriter.DISABLE_AUTO_FLUSH;
+
+    private double writerRamBufferSizeMb = 16.0;
 
     private boolean cacheEnabled = true;
 
@@ -206,7 +215,6 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory implements LuceneI
         super();
     }
 
-    
     /*
      * (non-Javadoc)
      * @seeorg.springframework.context.ApplicationContextAware#setApplicationContext(org.springframework.context.
@@ -219,6 +227,7 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory implements LuceneI
 
     /*
      * (non-Javadoc)
+     * 
      * @see org.alfresco.repo.search.impl.lucene.LuceneConfig#getApplicationContext()
      */
     public ConfigurableApplicationContext getApplicationContext()
@@ -404,7 +413,7 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory implements LuceneI
         if (indexers == null)
         {
             indexers = new HashMap<StoreRef, LuceneIndexer>();
-            AlfrescoTransactionSupport.bindResource(indexersKey, indexers);            
+            AlfrescoTransactionSupport.bindResource(indexersKey, indexers);
         }
         LuceneIndexer indexer = indexers.get(storeRef);
         if (indexer == null)
@@ -431,8 +440,7 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory implements LuceneI
         }
         else if (TransactionSynchronizationManager.isSynchronizationActive())
         {
-            Map<StoreRef, LuceneIndexer> indexers = (Map<StoreRef, LuceneIndexer>) AlfrescoTransactionSupport
-                    .getResource(indexersKey);
+            Map<StoreRef, LuceneIndexer> indexers = (Map<StoreRef, LuceneIndexer>) AlfrescoTransactionSupport.getResource(indexersKey);
             if (indexers != null)
             {
                 LuceneIndexer indexer = indexers.get(storeRef);
@@ -474,7 +482,7 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory implements LuceneI
         LuceneSearcher searcher = getSearcher(storeRef, indexer);
         return searcher;
     }
-    
+
     /**
      * Get node-based searcher (for "selectNodes / selectProperties")
      */
@@ -776,7 +784,7 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory implements LuceneI
             if (indexers != null)
             {
                 indexers.clear();
-                AlfrescoTransactionSupport.unbindResource(indexersKey);                
+                AlfrescoTransactionSupport.unbindResource(indexersKey);
             }
         }
     }
@@ -1031,7 +1039,7 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory implements LuceneI
      * 
      * @author Derek Hulley
      */
-    public static class LuceneIndexBackupComponent /*implements InitializingBean*/
+    public static class LuceneIndexBackupComponent /* implements InitializingBean */
     {
         ReentrantReadWriteLock rwLock = new ReentrantReadWriteLock();
 
@@ -1590,7 +1598,6 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory implements LuceneI
         defaultMLSearchAnalysisMode = mode;
     }
 
-    
     public int getMaxDocIdCacheSize()
     {
         return maxDocIdCacheSize;
@@ -1690,7 +1697,7 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory implements LuceneI
     {
         this.mergerMergeFactor = mergerMergeFactor;
     }
-    
+
     public int getMergerMergeBlockingFactor()
     {
         return mergerMergeBlockingFactor;
@@ -1701,14 +1708,14 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory implements LuceneI
         this.mergerMergeBlockingFactor = mergerMergeBlockingFactor;
     }
 
-    public int getMergerMinMergeDocs()
+    public int getMergerMaxBufferedDocs()
     {
-        return mergerMinMergeDocs;
+        return mergerMaxBufferedDocs;
     }
 
-    public void setMergerMinMergeDocs(int mergerMinMergeDocs)
+    public void setMergerMaxBufferedDocs(int mergerMaxBufferedDocs)
     {
-        this.mergerMinMergeDocs = mergerMinMergeDocs;
+        this.mergerMaxBufferedDocs = mergerMaxBufferedDocs;
     }
 
     public int getMergerTargetIndexCount()
@@ -1730,7 +1737,7 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory implements LuceneI
     {
         this.mergerTargetOverlayCount = mergerTargetOverlayCount;
     }
-    
+
     public int getMergerTargetOverlaysBlockingFactor()
     {
         return mergerTargetOverlaysBlockingFactor;
@@ -1781,14 +1788,14 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory implements LuceneI
         this.writerMergeFactor = writerMergeFactor;
     }
 
-    public int getWriterMinMergeDocs()
+    public int getWriterMaxBufferedDocs()
     {
-        return writerMinMergeDocs;
+        return writerMaxBufferedDocs;
     }
 
-    public void setWriterMinMergeDocs(int writerMinMergeDocs)
+    public void setWriterMaxBufferedDocs(int writerMaxBufferedDocs)
     {
-        this.writerMinMergeDocs = writerMinMergeDocs;
+        this.writerMaxBufferedDocs = writerMaxBufferedDocs;
     }
 
     public boolean isCacheEnabled()
@@ -1800,29 +1807,112 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory implements LuceneI
     {
         this.cacheEnabled = cacheEnabled;
     }
-    
+
     public boolean getPostSortDateTime()
     {
-       return postSortDateTime;
-    }
-    
-    public void setPostSortDateTime(boolean postSortDateTime)
-    {
-       this.postSortDateTime = postSortDateTime;
+        return postSortDateTime;
     }
 
-    
+    public void setPostSortDateTime(boolean postSortDateTime)
+    {
+        this.postSortDateTime = postSortDateTime;
+    }
+
     public void registerQueryLanguage(LuceneQueryLanguageSPI queryLanguage)
     {
         this.queryLanguages.put(queryLanguage.getName().toLowerCase(), queryLanguage);
     }
-    
+
+    /**
+     * @return the maxDocsForInMemoryIndex
+     */
+    public int getMaxDocsForInMemoryIndex()
+    {
+        return maxDocsForInMemoryIndex;
+    }
+
+    /**
+     * @param maxDocsForInMemoryIndex
+     *            the maxDocsForInMemoryIndex to set
+     */
+    public void setMaxDocsForInMemoryIndex(int maxDocsForInMemoryIndex)
+    {
+        this.maxDocsForInMemoryIndex = maxDocsForInMemoryIndex;
+    }
+
+    /**
+     * @return the maxRamInMbForInMemoryMerge
+     */
+    public double getMaxRamInMbForInMemoryMerge()
+    {
+        return maxRamInMbForInMemoryMerge;
+    }
+
+    /**
+     * @param maxRamInMbForInMemoryMerge
+     *            the maxRamInMbForInMemoryMerge to set
+     */
+    public void setMaxRamInMbForInMemoryMerge(double maxRamInMbForInMemoryMerge)
+    {
+        this.maxRamInMbForInMemoryMerge = maxRamInMbForInMemoryMerge;
+    }
+
+    /**
+     * @return the maxRamInMbForInMemoryIndex
+     */
+    public double getMaxRamInMbForInMemoryIndex()
+    {
+        return maxRamInMbForInMemoryIndex;
+    }
+
+    /**
+     * @param maxRamInMbForInMemoryIndex
+     *            the maxRamInMbForInMemoryIndex to set
+     */
+    public void setMaxRamInMbForInMemoryIndex(double maxRamInMbForInMemoryIndex)
+    {
+        this.maxRamInMbForInMemoryIndex = maxRamInMbForInMemoryIndex;
+    }
+
+    /**
+     * @return the mergerRamBufferSizeMb
+     */
+    public double getMergerRamBufferSizeMb()
+    {
+        return mergerRamBufferSizeMb;
+    }
+
+    /**
+     * @param mergerRamBufferSizeMb
+     *            the mergerRamBufferSizeMb to set
+     */
+    public void setMergerRamBufferSizeMb(double mergerRamBufferSizeMb)
+    {
+        this.mergerRamBufferSizeMb = mergerRamBufferSizeMb;
+    }
+
+    /**
+     * @return the writerRamBufferSizeMb
+     */
+    public double getWriterRamBufferSizeMb()
+    {
+        return writerRamBufferSizeMb;
+    }
+
+    /**
+     * @param writerRamBufferSizeMb
+     *            the writerRamBufferSizeMb to set
+     */
+    public void setWriterRamBufferSizeMb(double writerRamBufferSizeMb)
+    {
+        this.writerRamBufferSizeMb = writerRamBufferSizeMb;
+    }
+
     protected LuceneQueryLanguageSPI getQueryLanguage(String name)
     {
         return this.queryLanguages.get(name);
     }
-    
-    
+
     protected abstract List<StoreRef> getAllStores();
 
     public <R> R doWithAllWriteLocks(WithAllWriteLocksWork<R> lockWork)

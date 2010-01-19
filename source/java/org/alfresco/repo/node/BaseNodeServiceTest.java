@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -105,6 +105,10 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
 {
     public static final String NAMESPACE = "http://www.alfresco.org/test/BaseNodeServiceTest";
     public static final String TEST_PREFIX = "test";
+    
+    public static final String DEFAULT_VALUE = "defaultValue";
+    public static final String NOT_DEFAULT_VALUE = "notDefaultValue";
+     
     public static final QName TYPE_QNAME_TEST_CONTENT = QName.createQName(NAMESPACE, "content");
     public static final QName TYPE_QNAME_TEST_MANY_PROPERTIES = QName.createQName(NAMESPACE, "many-properties");
     public static final QName TYPE_QNAME_TEST_MANY_ML_PROPERTIES = QName.createQName(NAMESPACE, "many-ml-properties");
@@ -134,8 +138,8 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
     public static final QName PROP_QNAME_LOCALE_VALUE = QName.createQName(NAMESPACE, "localeValue");
     public static final QName PROP_QNAME_NULL_VALUE = QName.createQName(NAMESPACE, "nullValue");
     public static final QName PROP_QNAME_MULTI_VALUE = QName.createQName(NAMESPACE, "multiValue");   
-    public static final QName PROP_QNAME_PERIOD_VALUE = QName.createQName(NAMESPACE, "periodValue");   
-    public static final QName PROP_QNAME_MULTI_ML_VALUE = QName.createQName(NAMESPACE, "multiMLValue");    
+    public static final QName PROP_QNAME_PERIOD_VALUE = QName.createQName(NAMESPACE, "periodValue");
+    public static final QName PROP_QNAME_MULTI_ML_VALUE = QName.createQName(NAMESPACE, "multiMLValue");
     public static final QName PROP_QNAME_MARKER_PROP = QName.createQName(NAMESPACE, "markerProp");
     public static final QName PROP_QNAME_PROP1 = QName.createQName(NAMESPACE, "prop1");
     public static final QName PROP_QNAME_PROP2 = QName.createQName(NAMESPACE, "prop2");
@@ -566,12 +570,19 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
                 rootNodeRef,
                 ASSOC_TYPE_QNAME_TEST_CHILDREN,
                 QName.createQName("setTypeTest"),
-                TYPE_QNAME_TEST_CONTENT).getChildRef();        
+                TYPE_QNAME_TEST_CONTENT).getChildRef();
         assertEquals(TYPE_QNAME_TEST_CONTENT, this.nodeService.getType(nodeRef));
+        
+        assertNull(this.nodeService.getProperty(nodeRef, PROP_QNAME_PROP1));
         
         // Now change the type
         this.nodeService.setType(nodeRef, TYPE_QNAME_EXTENDED_CONTENT);
-        assertEquals(TYPE_QNAME_EXTENDED_CONTENT, this.nodeService.getType(nodeRef));        
+        assertEquals(TYPE_QNAME_EXTENDED_CONTENT, this.nodeService.getType(nodeRef));
+        
+        // Check new defaults
+        Serializable defaultValue = this.nodeService.getProperty(nodeRef, PROP_QNAME_PROP1);
+        assertNotNull("No default property value assigned", defaultValue);
+        assertEquals(DEFAULT_VALUE, defaultValue);
     }
     
     /**
@@ -2409,25 +2420,25 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
                 rootNodeRef,
                 ASSOC_TYPE_QNAME_TEST_CHILDREN,
                 QName.createQName("testDefaultValues"),
-                TYPE_QNAME_EXTENDED_CONTENT).getChildRef();                
-        assertEquals("defaultValue", this.nodeService.getProperty(nodeRef, PROP_QNAME_PROP1));
+                TYPE_QNAME_EXTENDED_CONTENT).getChildRef();
+        assertEquals(DEFAULT_VALUE, this.nodeService.getProperty(nodeRef, PROP_QNAME_PROP1));
         this.nodeService.addAspect(nodeRef, ASPECT_QNAME_WITH_DEFAULT_VALUE, null);
-        assertEquals("defaultValue", this.nodeService.getProperty(nodeRef, PROP_QNAME_PROP2));
+        assertEquals(DEFAULT_VALUE, this.nodeService.getProperty(nodeRef, PROP_QNAME_PROP2));
         
         // Ensure that default values do not overrite already set values
         Map<QName, Serializable> props = new HashMap<QName, Serializable>(1);
-        props.put(PROP_QNAME_PROP1, "notDefaultValue");
+        props.put(PROP_QNAME_PROP1, NOT_DEFAULT_VALUE);
         NodeRef nodeRef2 = nodeService.createNode(
                 rootNodeRef,
                 ASSOC_TYPE_QNAME_TEST_CHILDREN,
                 QName.createQName("testDefaultValues"),
                 TYPE_QNAME_EXTENDED_CONTENT,
                 props).getChildRef();                
-        assertEquals("notDefaultValue", this.nodeService.getProperty(nodeRef2, PROP_QNAME_PROP1));
+        assertEquals(NOT_DEFAULT_VALUE, this.nodeService.getProperty(nodeRef2, PROP_QNAME_PROP1));
         Map<QName, Serializable> prop2 = new HashMap<QName, Serializable>(1);
-        prop2.put(PROP_QNAME_PROP2, "notDefaultValue");
+        prop2.put(PROP_QNAME_PROP2, NOT_DEFAULT_VALUE);
         this.nodeService.addAspect(nodeRef2, ASPECT_QNAME_WITH_DEFAULT_VALUE, prop2);
-        assertEquals("notDefaultValue", this.nodeService.getProperty(nodeRef2, PROP_QNAME_PROP2));
+        assertEquals(NOT_DEFAULT_VALUE, this.nodeService.getProperty(nodeRef2, PROP_QNAME_PROP2));
                 
     }
     

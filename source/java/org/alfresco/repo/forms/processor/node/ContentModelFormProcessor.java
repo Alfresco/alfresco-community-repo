@@ -111,7 +111,7 @@ public abstract class ContentModelFormProcessor<ItemType, PersistType> extends
      * names will look like <code>"prop_cm_name"</code>. The pattern can also be
      * used to extract the "cm" and the "name" parts.
      */
-    protected Pattern propertyNamePattern = Pattern.compile(PROP_DATA_PREFIX + "(.*){1}?_(.*){1}?");
+    protected Pattern propertyNamePattern = Pattern.compile(PROP_DATA_PREFIX + "([a-zA-Z0-9]+)_(.*)");
 
     /**
      * A regular expression which can be used to match tranisent property names.
@@ -126,7 +126,7 @@ public abstract class ContentModelFormProcessor<ItemType, PersistType> extends
      * pattern can also be used to extract the "cm", the "name" and the suffix
      * parts.
      */
-    protected Pattern associationNamePattern = Pattern.compile(ASSOC_DATA_PREFIX + "(.*){1}?_(.*){1}?(_[a-zA-Z]+)");
+    protected Pattern associationNamePattern = Pattern.compile(ASSOC_DATA_PREFIX + "([a-zA-Z0-9]+)_(.*)(_[a-zA-Z]+)");
 
     /**
      * Sets the node service
@@ -1115,8 +1115,9 @@ public abstract class ContentModelFormProcessor<ItemType, PersistType> extends
             {
                 if (getLogger().isWarnEnabled())
                 {
-                    getLogger().warn("Definition for association " + fullQName + " not recognised and not persisted.");
+                    getLogger().warn("Ignoring field '" + fieldName + "' as an association definition can not be found");
                 }
+                
                 return;
             }
 
@@ -1162,10 +1163,10 @@ public abstract class ContentModelFormProcessor<ItemType, PersistType> extends
                             if (getLogger().isWarnEnabled())
                             {
                                 StringBuilder msg = new StringBuilder();
-                                msg.append("fieldName ").append(fieldName).append(
-                                            " does not have one of the expected suffixes [").append(
-                                            ASSOC_DATA_ADDED_SUFFIX).append(", ").append(ASSOC_DATA_REMOVED_SUFFIX)
-                                            .append("] and has been ignored.");
+                                msg.append("Ignoring 'fieldName ").append(fieldName).append(
+                                            "' as it does not have one of the expected suffixes (").append(
+                                            ASSOC_DATA_ADDED_SUFFIX).append(" or ").append(ASSOC_DATA_REMOVED_SUFFIX)
+                                            .append(")");
                                 getLogger().warn(msg.toString());
                             }
                         }
@@ -1182,6 +1183,10 @@ public abstract class ContentModelFormProcessor<ItemType, PersistType> extends
                     }
                 }
             }
+        }
+        else if (getLogger().isWarnEnabled())
+        {
+            getLogger().warn("Ignoring unrecognised field '" + fieldName + "'");
         }
     }
 

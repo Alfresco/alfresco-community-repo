@@ -469,15 +469,17 @@ public class DictionaryDAOImpl implements DictionaryDAO
      */
     public DataTypeDefinition getDataType(QName typeName)
     {
-        List<CompiledModel> models = getModelsForUri(typeName.getNamespaceURI());
-        for (CompiledModel model : models)
-        {
-        	DataTypeDefinition dataType = model.getDataType(typeName);
-        	if (dataType != null)
-        	{
-        		return dataType;
-        	}
-        }
+    	if (typeName != null) {
+	        List<CompiledModel> models = getModelsForUri(typeName.getNamespaceURI());
+	        for (CompiledModel model : models)
+	        {
+	        	DataTypeDefinition dataType = model.getDataType(typeName);
+	        	if (dataType != null)
+	        	{
+	        		return dataType;
+	        	}
+	        }
+    	}
         return null;
     }
     
@@ -542,19 +544,21 @@ public class DictionaryDAOImpl implements DictionaryDAO
      */
     public TypeDefinition getType(QName typeName)
     {
-        List<CompiledModel> models = getModelsForUri(typeName.getNamespaceURI());
-        for (CompiledModel model : models)
-        {
-        	TypeDefinition type = model.getType(typeName);
-        	if (type != null)
-        	{
-        		return type;
-        	}
-        }
-        
-        if (logger.isWarnEnabled())
-        {
-            logger.warn("Type not found: "+typeName);
+        if (typeName != null) {
+            List<CompiledModel> models = getModelsForUri(typeName.getNamespaceURI());
+            for (CompiledModel model : models)
+            {
+                TypeDefinition type = model.getType(typeName);
+                if (type != null)
+                {
+                    return type;
+                }
+            }
+            
+            if (logger.isWarnEnabled())
+            {
+                logger.warn("Type not found: "+typeName);
+            }
         }
         return null;
     }
@@ -614,14 +618,16 @@ public class DictionaryDAOImpl implements DictionaryDAO
      */
     public AspectDefinition getAspect(QName aspectName)
     {
-        List<CompiledModel> models = getModelsForUri(aspectName.getNamespaceURI());
-        for (CompiledModel model : models)
-        {
-        	AspectDefinition aspect = model.getAspect(aspectName);
-        	if (aspect != null)
-        	{
-        		return aspect;
-        	}
+        if (aspectName != null) {
+            List<CompiledModel> models = getModelsForUri(aspectName.getNamespaceURI());
+            for (CompiledModel model : models)
+            {
+                AspectDefinition aspect = model.getAspect(aspectName);
+                if (aspect != null)
+                {
+                    return aspect;
+                }
+            }
         }
         return null;
     }

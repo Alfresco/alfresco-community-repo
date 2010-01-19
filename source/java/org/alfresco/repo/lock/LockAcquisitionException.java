@@ -64,6 +64,13 @@ public class LockAcquisitionException extends AlfrescoRuntimeException
      * <ul>
      *   <li>1: the qname</li>
      *   <li>2: the lock token</li>
+     * </ul>
+     */
+    public static final String ERR_FAILED_TO_RELEASE_LOCK = "system.locks.err.failed_to_release_lock";
+    /**
+     * <ul>
+     *   <li>1: the qname</li>
+     *   <li>2: the lock token</li>
      *   <li>3: the existing other lock</li>
      * </ul>
      */

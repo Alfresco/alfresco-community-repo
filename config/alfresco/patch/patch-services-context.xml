@@ -1992,4 +1992,21 @@
             <ref bean="ruleService" />
         </property>
     </bean>
+    
+    <bean id="patch.redeployNominatedInvitationProcessWithPropsForShare" class="org.alfresco.repo.admin.patch.impl.GenericWorkflowPatch" parent="basePatch" >
+        <property name="id"><value>patch.redeployNominatedInvitationProcessWithPropsForShare</value></property>
+        <property name="description"><value>patch.redeployNominatedInvitationProcessWithPropsForShare.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>4000</value></property>
+        <property name="targetSchema"><value>4001</value></property>
+        <property name="workflowDefinitions">
+            <list>
+               <props>
+                    <prop key="engineId">jbpm</prop>
+                    <prop key="location">alfresco/workflow/invitation-nominated_processdefinition.xml</prop>
+                    <prop key="mimetype">text/xml</prop>
+               </props>
+            </list>
+        </property>
+    </bean>
 </beans>

@@ -1819,7 +1819,7 @@ public class AVMServiceLocalTest extends TestCase
             out.println("I am mainA:/a/b/foo");
             out.close();
             
-            logger.debug("created file: mainA:/a/b/c/foo");
+            logger.debug("created file: mainA:/a/b/foo");
             
             // create equivalent of WCM layered folder between web project staging sandboxes (mainB:/a/b pointing to mainA:/a/b)
             fService.createLayeredDirectory("mainA:/a/b", "mainB:/a", "b");
@@ -1844,7 +1844,7 @@ public class AVMServiceLocalTest extends TestCase
             fSyncService.update(diffs, null, false, false, false, false, "one", "one");
             fSyncService.flatten("mainB--layer:/a", "mainB:/a");
             
-            logger.debug("updated: created dir: mainB:/a/d");
+            logger.debug("updated: created dir: mainB:/a/c");
             
             assertTrue(fService.lookup(-1, "mainB--layer:/a/b").isLayeredDirectory());
             
@@ -1870,6 +1870,151 @@ public class AVMServiceLocalTest extends TestCase
             recursiveList("mainA");
             recursiveList("mainB");
             recursiveList("mainB--layer");
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace(System.err);
+            throw e;
+        }
+        finally
+        {
+            fService.purgeStore("mainA");
+            fService.purgeStore("mainB");
+            fService.purgeStore("mainB--layer");
+        }
+    }
+    
+    public void testLayeredFolder2() throws Exception
+    {
+        try
+        {
+            fService.createStore("mainA");
+            fService.createStore("mainB");
+            
+            fService.createDirectory("mainA:/", "a");
+            fService.createDirectory("mainA:/a", "b");
+            
+            fService.createDirectory("mainB:/", "a");
+            
+            fService.createStore("mainB--layer");
+            
+            recursiveList("mainA");
+            recursiveList("mainB");
+            recursiveList("mainB--layer");
+            
+            List<VersionDescriptor> snapshots = fService.getStoreVersions("mainA");
+            assertEquals(1, snapshots.size());
+            assertEquals(0, snapshots.get(0).getVersionID());
+            
+            snapshots = fService.getStoreVersions("mainB");
+            assertEquals(1, snapshots.size());
+            assertEquals(0, snapshots.get(0).getVersionID());
+            
+            snapshots = fService.getStoreVersions("mainB--layer");
+            assertEquals(1, snapshots.size());
+            assertEquals(0, snapshots.get(0).getVersionID());
+            
+            fService.createLayeredDirectory("mainB:/a", "mainB--layer:/", "a");
+            
+            // note: short-cut - created directly in "staging" area (don't bother with sandbox mainA--layer for now)
+            fService.createFile("mainA:/a/b", "foo");
+            
+            PrintStream out = new PrintStream(fService.getFileOutputStream("mainA:/a/b/foo"));
+            out.println("I am mainA:/a/b/foo");
+            out.close();
+            
+            logger.debug("created file: mainA:/a/b/foo");
+            
+            recursiveList("mainA");
+            recursiveList("mainB");
+            recursiveList("mainB--layer");
+            
+            // create equivalent of WCM layered folder between web project staging sandboxes (mainB:/a/b pointing to mainA:/a/b)
+            fService.createLayeredDirectory("mainA:/a/b", "mainB:/a", "b");
+            
+            logger.debug("created layered directory: mainB:/a/b -> mainA:/a/b");
+            
+            recursiveList("mainA");
+            recursiveList("mainB");
+            recursiveList("mainB--layer");
+            
+            fService.createFile("mainB--layer:/a/b", "bar");
+            
+            out = new PrintStream(fService.getFileOutputStream("mainB--layer:/a/b/bar"));
+            out.println("I am mainB--layer:/a/b/bar");
+            out.close();
+            
+            logger.debug("created file: mainB--layer:/a/b/bar");
+            
+            recursiveList("mainA");
+            recursiveList("mainB");
+            recursiveList("mainB--layer");
+            
+            List<AVMDifference> diffs = fSyncService.compare(-1, "mainB--layer:/a", -1, "mainB:/a", null);
+            assertEquals(1, diffs.size());
+            assertEquals("[mainB--layer:/a/b/bar[-1] > mainB:/a/b/bar[-1]]", diffs.toString());
+            
+            snapshots = fService.getStoreVersions("mainB");
+            assertEquals(1, snapshots.size());
+            
+            fSyncService.update(diffs, null, false, false, false, false, "one", "one");
+            
+            snapshots = fService.getStoreVersions("mainB");
+            assertEquals(3, snapshots.size());
+            
+            fSyncService.flatten("mainB--layer:/a", "mainB:/a");
+            
+            logger.debug("updated: created file: mainB:/a/b/bar");
+            
+            recursiveList("mainA");
+            recursiveList("mainB");
+            recursiveList("mainB--layer");
+            
+            snapshots = fService.getStoreVersions("mainB");
+            assertEquals(3, snapshots.size());
+            assertEquals(2, snapshots.get(snapshots.size()-1).getVersionID());
+            
+            // note: short-cut - created directly in "staging" area (don't bother with sandbox mainA--layer for now)
+            fService.createFile("mainA:/a/b", "baz");
+            
+            out = new PrintStream(fService.getFileOutputStream("mainA:/a/b/baz"));
+            out.println("I am mainA:/a/b/baz");
+            out.close();
+            
+            logger.debug("created file: mainA:/a/b/baz");
+            
+            recursiveList("mainA");
+            recursiveList("mainB");
+            recursiveList("mainB--layer");
+            
+            fService.createSnapshot("mainB", "two", "two");
+            
+            logger.debug("snapshot: mainB");
+            
+            recursiveList("mainA");
+            recursiveList("mainB");
+            recursiveList("mainB--layer");
+            
+            snapshots = fService.getStoreVersions("mainB");
+            assertEquals(4, snapshots.size());
+            assertEquals(3, snapshots.get(snapshots.size()-1).getVersionID());
+            
+            // ETHREEOH-3340
+            diffs = fSyncService.compare(2, "mainB:/a", 3, "mainB:/a", null);
+            assertEquals(1, diffs.size());
+            assertEquals("[mainB:/a/b/baz[2] < mainB:/a/b/baz[3]]", diffs.toString());
+            
+            recursiveList("mainA");
+            recursiveList("mainB");
+            recursiveList("mainB--layer");
+            
+            logger.debug("list mainB [2]");
+            
+            recursiveList("mainB", 2);
+            
+            logger.debug("list mainB [3]");
+            
+            recursiveList("mainB", 3);
         }
         catch (Exception e)
         {
@@ -2843,7 +2988,12 @@ public class AVMServiceLocalTest extends TestCase
 
     protected void recursiveList(String store)
     {
-        String list = recursiveList(store, -1, true);
+        recursiveList(store, -1);
+    }
+    
+    protected void recursiveList(String store, int version)
+    {
+        String list = recursiveList(store, version, true);
         if (logger.isDebugEnabled())
         { 
             logger.debug("\n\n"+store+":"+"\n"+list+"\n");

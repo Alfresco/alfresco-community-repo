@@ -1436,6 +1436,7 @@ public class NodeRefPropertyMethodInterceptorTest extends BaseSpringTest
 
         ArrayList<NodeRef> values = new ArrayList<NodeRef>();
         values.add(cat);
+        values.add(cat);
 
         nodeService.setProperty(n1, typeCategoriesProp, values);
         nodeService.setProperty(n1, typeNoderefsProp, values);
@@ -1443,19 +1444,19 @@ public class NodeRefPropertyMethodInterceptorTest extends BaseSpringTest
         assertNotNull(mlAwareNodeService.getProperty(n1, typeCategoriesProp));
         assertEquals(1, ((Collection) mlAwareNodeService.getProperty(n1, typeCategoriesProp)).size());
         assertNotNull(mlAwareNodeService.getProperty(n1, typeNoderefsProp));
-        assertEquals(1, ((Collection) mlAwareNodeService.getProperty(n1, typeNoderefsProp)).size());
+        assertEquals(2, ((Collection) mlAwareNodeService.getProperty(n1, typeNoderefsProp)).size());
         assertNotNull(mlAwareNodeService.getProperties(n1).get(typeCategoriesProp));
         assertEquals(1, ((Collection) mlAwareNodeService.getProperties(n1).get(typeCategoriesProp)).size());
         assertNotNull(mlAwareNodeService.getProperties(n1).get(typeNoderefsProp));
-        assertEquals(1, ((Collection) mlAwareNodeService.getProperties(n1).get(typeNoderefsProp)).size());
+        assertEquals(2, ((Collection) mlAwareNodeService.getProperties(n1).get(typeNoderefsProp)).size());
         assertNotNull(nodeService.getProperty(n1, typeCategoriesProp));
         assertEquals(1, ((Collection) nodeService.getProperty(n1, typeCategoriesProp)).size());
         assertNotNull(nodeService.getProperty(n1, typeNoderefsProp));
-        assertEquals(1, ((Collection) nodeService.getProperty(n1, typeNoderefsProp)).size());
+        assertEquals(2, ((Collection) nodeService.getProperty(n1, typeNoderefsProp)).size());
         assertNotNull(nodeService.getProperties(n1).get(typeCategoriesProp));
         assertEquals(1, ((Collection) nodeService.getProperties(n1).get(typeCategoriesProp)).size());
         assertNotNull(nodeService.getProperties(n1).get(typeNoderefsProp));
-        assertEquals(1, ((Collection) nodeService.getProperties(n1).get(typeNoderefsProp)).size());
+        assertEquals(2, ((Collection) nodeService.getProperties(n1).get(typeNoderefsProp)).size());
     }
 
     public void testSetPropertyMixedList()

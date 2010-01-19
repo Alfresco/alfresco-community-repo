@@ -32,6 +32,7 @@ import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.apache.commons.logging.Log;
@@ -104,16 +105,30 @@ public class CreateNodeRuleTrigger extends RuleTriggerAbstractBase
         // Only fire the rule if the node is question has no potential to contain content
         // TODO we need to find a better way to do this .. how can this be resolved in CIFS??
         boolean triggerRule = false;
-        QName type = this.nodeService.getType(childAssocRef.getChildRef());
-        ClassDefinition classDefinition = this.dictionaryService.getClass(type);
-        if (classDefinition != null)
+        
+        NodeRef nodeRef = childAssocRef.getChildRef();
+        
+        // This is a "tempory" fix to identify object created via a web client and trigger the rule immediately 
+        Boolean value = (Boolean)nodeService.getProperty(nodeRef, QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "editInline"));
+        boolean editInline = false;
+        if (value != null)
         {
-            for (PropertyDefinition propertyDefinition : classDefinition.getProperties().values())
+            editInline = value.booleanValue();
+        }
+        
+        if (editInline == false)
+        {
+            QName type = this.nodeService.getType(nodeRef);
+            ClassDefinition classDefinition = this.dictionaryService.getClass(type);
+            if (classDefinition != null)
             {
-                if (propertyDefinition.getDataType().getName().equals(DataTypeDefinition.CONTENT) == true)
+                for (PropertyDefinition propertyDefinition : classDefinition.getProperties().values())
                 {
-                    triggerRule = true;
-                    break;
+                    if (propertyDefinition.getDataType().getName().equals(DataTypeDefinition.CONTENT) == true)
+                    {
+                        triggerRule = true;
+                        break;
+                    }
                 }
             }
         }
@@ -132,7 +147,7 @@ public class CreateNodeRuleTrigger extends RuleTriggerAbstractBase
             triggerRules(childAssocRef.getParentRef(), childAssocRef.getChildRef());
         }
         
-        // Reguadless of whether the rule is triggered, mark this transaction as having created this node
+        // Regardless of whether the rule is triggered, mark this transaction as having created this node
         AlfrescoTransactionSupport.bindResource(childAssocRef.getChildRef().toString(), childAssocRef.getChildRef().toString());         
     }
 }

@@ -32,6 +32,51 @@
             <property name="inwf:inviteTicket">
                <type>d:text</type>
             </property>
+            <property name="inwf:inviteeGenPassword">
+               <type>d:text</type>
+            </property>
+         </properties>
+         <mandatory-aspects>
+            <aspect>bpm:assignee</aspect>
+            <aspect>inwf:nominatedInvitationStats</aspect>
+         </mandatory-aspects>
+      </type>
+
+      <type name="inwf:invitePendingTask">
+         <parent>bpm:workflowTask</parent>
+         <mandatory-aspects>
+             <aspect>inwf:nominatedInvitationStats</aspect>
+         </mandatory-aspects>
+      </type>
+
+      <type name="inwf:acceptInviteTask">
+         <parent>bpm:workflowTask</parent>
+         <mandatory-aspects>
+             <aspect>inwf:nominatedInvitationStats</aspect>
+         </mandatory-aspects>
+      </type>
+
+      <type name="inwf:rejectInviteTask">
+         <parent>bpm:workflowTask</parent>
+         <mandatory-aspects>
+             <aspect>inwf:nominatedInvitationStats</aspect>
+         </mandatory-aspects>
+      </type>
+
+   </types>
+   
+   <aspects>
+      <aspect name="inwf:nominatedInvitationStats">
+          <properties>
+            <property name="inwf:resourceType">
+               <type>d:text</type>
+            </property>
+            <property name="inwf:resourceName">
+               <type>d:text</type>
+            </property>
+            <property name="inwf:inviteeRole">
+               <type>d:text</type>
+            </property>
             <property name="inwf:inviterUserName">
                <type>d:text</type>
             </property>
@@ -47,35 +92,8 @@
             <property name="inwf:inviteeLastName">
                <type>d:text</type>
             </property>
-            <property name="inwf:inviteeGenPassword">
-               <type>d:text</type>
-            </property>
-            <property name="inwf:resourceType">
-               <type>d:text</type>
-            </property>
-            <property name="inwf:resourceName">
-               <type>d:text</type>
-            </property>
-            <property name="inwf:inviteeRole">
-               <type>d:text</type>
-            </property>
-         </properties>
-         <mandatory-aspects>
-            <aspect>bpm:assignee</aspect>
-         </mandatory-aspects>
-      </type>
-
-      <type name="inwf:invitePendingTask">
-         <parent>bpm:workflowTask</parent>
-      </type>
-
-      <type name="inwf:acceptInviteTask">
-         <parent>bpm:workflowTask</parent>
-      </type>
-
-      <type name="inwf:rejectInviteTask">
-         <parent>bpm:workflowTask</parent>
-      </type>
-
-   </types>
+          </properties>
+      </aspect>
+   </aspects>
+   
 </model>

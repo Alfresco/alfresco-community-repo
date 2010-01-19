@@ -28,6 +28,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 
 import org.alfresco.model.ContentModel;
@@ -85,7 +86,7 @@ public class NodeRefPropertyMethodInterceptor implements MethodInterceptor
     {
         this.dictionaryService = dictionaryService;
     }
-    
+
     private DictionaryService getDictionaryService()
     {
         return dictionaryService;
@@ -95,12 +96,12 @@ public class NodeRefPropertyMethodInterceptor implements MethodInterceptor
     {
         this.nodeService = nodeService;
     }
-    
+
     private NodeService getNodeService()
     {
         return nodeService;
     }
-    
+
     public void init()
     {
         PropertyCheck.mandatory(this, "dictionaryService", dictionaryService);
@@ -302,7 +303,8 @@ public class NodeRefPropertyMethodInterceptor implements MethodInterceptor
             {
                 if (inboundValue instanceof Collection)
                 {
-                    Collection in = (Collection) inboundValue;
+                    HashSet<NodeRef> categories = new HashSet<NodeRef>();
+                    Collection<?> in = (Collection<?>) inboundValue;
                     ArrayList<NodeRef> out = new ArrayList<NodeRef>(in.size());
                     for (Object o : in)
                     {
@@ -323,7 +325,11 @@ public class NodeRefPropertyMethodInterceptor implements MethodInterceptor
                                         QName type = getNodeService().getType(test);
                                         if (getDictionaryService().isSubClass(type, ContentModel.TYPE_CATEGORY))
                                         {
-                                            out.add(test);
+                                            if (!categories.contains(test))
+                                            {
+                                                out.add(test);
+                                                categories.add(test);
+                                            }
                                         }
                                     }
                                     else

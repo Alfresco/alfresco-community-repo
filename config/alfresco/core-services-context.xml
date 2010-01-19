@@ -642,8 +642,11 @@
         <property name="mergerMergeBlockingFactor">
             <value>${lucene.indexer.mergerMergeBlockingFactor}</value>
         </property>
-        <property name="mergerMinMergeDocs">
-            <value>${lucene.indexer.mergerMinMergeDocs}</value>
+        <property name="mergerMaxBufferedDocs">
+            <value>${lucene.indexer.mergerMaxBufferedDocs}</value>
+        </property>
+        <property name="mergerRamBufferSizeMb">
+            <value>${lucene.indexer.mergerRamBufferSizeMb}</value>
         </property>
         <!-- delta indexers -->
         <property name="writerMaxMergeDocs">
@@ -652,8 +655,11 @@
         <property name="writerMergeFactor">
             <value>${lucene.indexer.writerMergeFactor}</value>
         </property>
-        <property name="writerMinMergeDocs">
-            <value>${lucene.indexer.writerMinMergeDocs}</value>
+        <property name="writerMaxBufferedDocs">
+            <value>${lucene.indexer.writerMaxBufferedDocs}</value>
+        </property>
+        <property name="writerRamBufferSizeMb">
+            <value>${lucene.indexer.writerRamBufferSizeMb}</value>
         </property>
         <!-- target -->
         <property name="mergerTargetIndexCount">
@@ -667,6 +673,15 @@
         </property>
         <property name="maxDocsForInMemoryMerge">
             <value>${lucene.indexer.maxDocsForInMemoryMerge}</value>
+        </property>
+        <property name="maxRamInMbForInMemoryMerge">
+            <value>${lucene.indexer.maxRamInMbForInMemoryMerge}</value>
+        </property>
+        <property name="maxDocsForInMemoryIndex">
+            <value>${lucene.indexer.maxDocsForInMemoryIndex}</value>
+        </property>
+        <property name="maxRamInMbForInMemoryIndex">
+            <value>${lucene.indexer.maxRamInMbForInMemoryIndex}</value>
         </property>
         <!-- other -->    
         <property name="termIndexInterval">

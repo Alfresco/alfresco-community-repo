@@ -200,9 +200,18 @@ public abstract class AbstractLockDAOImpl implements LockDAO
         // Check
         if (updateCount != requiredUpdateCount)
         {
-            throw new LockAcquisitionException(
-                    LockAcquisitionException.ERR_LOCK_UPDATE_COUNT,
-                    lockQName, lockToken, new Integer(updateCount), new Integer(requiredUpdateCount));
+            if (LOCK_TOKEN_RELEASED.equals(newLockToken))
+            {
+                throw new LockAcquisitionException(
+                        LockAcquisitionException.ERR_FAILED_TO_RELEASE_LOCK,
+                        lockQName, lockToken);
+            }
+            else
+            {
+                throw new LockAcquisitionException(
+                        LockAcquisitionException.ERR_LOCK_UPDATE_COUNT,
+                        lockQName, lockToken, new Integer(updateCount), new Integer(requiredUpdateCount));
+            }
         }
         // Done
     }

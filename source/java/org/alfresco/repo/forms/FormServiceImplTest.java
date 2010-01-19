@@ -739,9 +739,15 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
         // add an association to the child doc (as an attachment which is defined on an aspect not applied)
         //data.addField("assoc_cm_attachments_added", this.childDoc.toString());
         
-        // try and update non-existent properties (make sure there are no exceptions)
+        // try and update non-existent properties and assocs (make sure there are no exceptions)
         data.addFieldData("prop_cm_wrong", "This should not be persisted");
         data.addFieldData("cm_wrong", "This should not be persisted");
+        data.addFieldData("prop_cm_wrong_property", "This should not be persisted");
+        data.addFieldData("prop_cm_wrong_property_name", "This should not be persisted");
+        data.addFieldData("assoc_cm_wrong_association", "This should be ignored");
+        data.addFieldData("assoc_cm_wrong_association_added", "This should be ignored");
+        data.addFieldData("assoc_cm_wrong_association_removed", "This should be ignored");
+        data.addFieldData("assoc_cm_added", "This should be ignored");
         
         // persist the data
         this.formService.saveForm(new Item(NODE_FORM_ITEM_KIND, this.document.toString()), data);

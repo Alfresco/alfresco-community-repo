@@ -25,17 +25,25 @@
 package org.alfresco.repo.node;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-import org.springframework.extensions.surf.util.I18NUtil;
+import javax.transaction.UserTransaction;
+
 import org.alfresco.repo.node.db.DbNodeServiceImpl;
+import org.alfresco.service.cmr.dictionary.DictionaryException;
 import org.alfresco.service.cmr.repository.MLText;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.namespace.QName;
+import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * Tests the fully-intercepted version of the NodeService
@@ -244,5 +252,169 @@ public class FullNodeServiceTest extends BaseNodeServiceTest
         MLText mlTextValue = (MLText) checkProperties.get(PROP_QNAME_ML_TEXT_VALUE);
         String strValue = mlTextValue.getDefaultValue();
         checkProperties.put(PROP_QNAME_ML_TEXT_VALUE, strValue);
+    }
+    
+    @SuppressWarnings("unchecked")
+    public void testMultiProp() throws Exception
+    {
+        QName undeclaredPropQName = QName.createQName(NAMESPACE, getName());
+        // create node
+        NodeRef nodeRef = nodeService.createNode(
+                rootNodeRef,
+                ASSOC_TYPE_QNAME_TEST_CHILDREN,
+                QName.createQName("pathA"),
+                TYPE_QNAME_TEST_MULTIPLE_TESTER).getChildRef();
+        ArrayList<Serializable> values = new ArrayList<Serializable>(1);
+        values.add("ABC");
+        values.add("DEF");
+        // test allowable conditions
+        nodeService.setProperty(nodeRef, PROP_QNAME_STRING_PROP_SINGLE, "ABC");
+        // nodeService.setProperty(nodeRef, PROP_QNAME_STRING_PROP_SINGLE, values); -- should fail
+        nodeService.setProperty(nodeRef, PROP_QNAME_STRING_PROP_MULTIPLE, "ABC");
+        nodeService.setProperty(nodeRef, PROP_QNAME_STRING_PROP_MULTIPLE, values);
+        nodeService.setProperty(nodeRef, PROP_QNAME_ANY_PROP_SINGLE, "ABC");
+        nodeService.setProperty(nodeRef, PROP_QNAME_ANY_PROP_SINGLE, values);
+        nodeService.setProperty(nodeRef, PROP_QNAME_ANY_PROP_MULTIPLE, "ABC");
+        nodeService.setProperty(nodeRef, PROP_QNAME_ANY_PROP_MULTIPLE, values);
+        nodeService.setProperty(nodeRef, undeclaredPropQName, "ABC");
+        nodeService.setProperty(nodeRef, undeclaredPropQName, values);
+
+        // commit as we will be breaking the transaction in the next test
+        setComplete();
+        endTransaction();
+        
+        UserTransaction txn = transactionService.getUserTransaction();
+        try
+        {
+            txn.begin();
+            // this should fail as we are passing multiple values into a non-any that is multiple=false
+            nodeService.setProperty(nodeRef, PROP_QNAME_STRING_PROP_SINGLE, values);
+        }
+        catch (DictionaryException e)
+        {
+            // expected
+        }
+        finally
+        {
+            try { txn.rollback(); } catch (Throwable e) {}
+        }
+        
+        txn = transactionService.getUserTransaction();
+        try
+        {
+            txn.begin();
+            // Check that multi-valued d:mltext can be collections of MLText
+            values.clear();
+            values.add(new MLText("ABC"));
+            values.add(new MLText("DEF"));
+            nodeService.setProperty(nodeRef, PROP_QNAME_MULTI_ML_VALUE, values);
+            List<Serializable> checkValues = (List<Serializable>) nodeService.getProperty(
+                    nodeRef, PROP_QNAME_MULTI_ML_VALUE);
+            assertEquals("Expected 2 MLText values back", 2, checkValues.size());
+            assertTrue("Incorrect type in collection", checkValues.get(0) instanceof String);
+            assertTrue("Incorrect type in collection", checkValues.get(1) instanceof String);
+            
+            // Check that multi-valued d:any properties can be collections of collections (empty)
+            // We put ArrayLists and HashSets into the Collection of d:any, so that is exactly what should come out
+            values.clear();
+            ArrayList<Serializable> arrayListVal = new ArrayList<Serializable>(2);
+            HashSet<Serializable> hashSetVal = new HashSet<Serializable>(2);
+            values.add(arrayListVal);
+            values.add(hashSetVal);
+            nodeService.setProperty(nodeRef, PROP_QNAME_ANY_PROP_MULTIPLE, values);
+            checkValues = (List<Serializable>) nodeService.getProperty(
+                    nodeRef, PROP_QNAME_ANY_PROP_MULTIPLE);
+            assertEquals("Expected 2 Collection values back", 2, checkValues.size());
+            assertTrue("Incorrect type in collection", checkValues.get(0) instanceof ArrayList);  // ArrayList in - ArrayList out
+            assertTrue("Incorrect type in collection", checkValues.get(1) instanceof HashSet);  // HashSet in - HashSet out
+            
+            // Check that multi-valued d:any properties can be collections of collections (with values)
+            // We put ArrayLists and HashSets into the Collection of d:any, so that is exactly what should come out
+            arrayListVal.add("ONE");
+            arrayListVal.add("TWO");
+            hashSetVal.add("ONE");
+            hashSetVal.add("TWO");
+            values.clear();
+            values.add(arrayListVal);
+            values.add(hashSetVal);
+            nodeService.setProperty(nodeRef, PROP_QNAME_ANY_PROP_MULTIPLE, values);
+            checkValues = (List<Serializable>) nodeService.getProperty(
+                    nodeRef, PROP_QNAME_ANY_PROP_MULTIPLE);
+            assertEquals("Expected 2 Collection values back", 2, checkValues.size());
+            assertTrue("Incorrect type in collection", checkValues.get(0) instanceof ArrayList);  // ArrayList in - ArrayList out
+            assertTrue("Incorrect type in collection", checkValues.get(1) instanceof HashSet);  // HashSet in - HashSet out
+            assertEquals("First collection incorrect", 2, ((Collection)checkValues.get(0)).size());
+            assertEquals("Second collection incorrect", 2, ((Collection)checkValues.get(1)).size());
+        }
+        catch (DictionaryException e)
+        {
+            // expected
+        }
+        finally
+        {
+            try { txn.rollback(); } catch (Throwable e) {}
+        }
+    }
+    
+    @SuppressWarnings("unchecked")
+    public void testMultiValueMLTextProperties() throws Exception
+    {
+        NodeRef nodeRef = nodeService.createNode(
+                rootNodeRef,
+                ASSOC_TYPE_QNAME_TEST_CHILDREN,
+                QName.createQName("pathA"),
+                TYPE_QNAME_TEST_MANY_ML_PROPERTIES).getChildRef();
+        
+        // Create MLText properties and add to a collection
+        List<MLText> mlTextCollection = new ArrayList<MLText>(2);
+        MLText mlText0 = new MLText();
+        mlText0.addValue(Locale.ENGLISH, "Hello");
+        mlText0.addValue(Locale.FRENCH, "Bonjour");
+        mlTextCollection.add(mlText0);
+        MLText mlText1 = new MLText();
+        mlText1.addValue(Locale.ENGLISH, "Bye bye");
+        mlText1.addValue(Locale.FRENCH, "Au revoir");
+        mlTextCollection.add(mlText1);
+        
+        nodeService.setProperty(nodeRef, PROP_QNAME_MULTI_ML_VALUE, (Serializable) mlTextCollection);
+        
+        I18NUtil.setContentLocale(Locale.ENGLISH);
+        Collection<String> mlTextCollectionCheck = (Collection<String>) nodeService.getProperty(nodeRef, PROP_QNAME_MULTI_ML_VALUE);
+        assertEquals("MLText collection didn't come back correctly.", Arrays.asList(new String[]{"Hello", "Bye bye"}), mlTextCollectionCheck);
+        
+        I18NUtil.setContentLocale(Locale.FRENCH);
+        mlTextCollectionCheck = (Collection<String>) nodeService.getProperty(nodeRef, PROP_QNAME_MULTI_ML_VALUE);
+        assertEquals("MLText collection didn't come back correctly.", Arrays.asList(new String[]{"Bonjour", "Au revoir"}), mlTextCollectionCheck);
+        
+        I18NUtil.setContentLocale(Locale.GERMAN);
+        nodeService.setProperty(nodeRef, PROP_QNAME_MULTI_ML_VALUE, (Serializable)Arrays.asList(new String[]{"eins", "zwei", "drie", "vier"}));
+        
+        I18NUtil.setContentLocale(Locale.ENGLISH);
+        mlTextCollectionCheck = (Collection<String>) nodeService.getProperty(nodeRef, PROP_QNAME_MULTI_ML_VALUE);
+        assertEquals("MLText collection didn't come back correctly.", Arrays.asList(new String[]{"Hello", "Bye bye"}), mlTextCollectionCheck);
+        
+        I18NUtil.setContentLocale(Locale.FRENCH);
+        mlTextCollectionCheck = (Collection<String>) nodeService.getProperty(nodeRef, PROP_QNAME_MULTI_ML_VALUE);
+        assertEquals("MLText collection didn't come back correctly.", Arrays.asList(new String[]{"Bonjour", "Au revoir"}), mlTextCollectionCheck);
+        
+        I18NUtil.setContentLocale(Locale.GERMAN);
+        mlTextCollectionCheck = (Collection<String>) nodeService.getProperty(nodeRef, PROP_QNAME_MULTI_ML_VALUE);
+        assertEquals("MLText collection didn't come back correctly.", Arrays.asList(new String[]{"eins", "zwei", "drie", "vier"}), mlTextCollectionCheck);
+        
+        I18NUtil.setContentLocale(Locale.GERMAN);
+        nodeService.setProperty(nodeRef, PROP_QNAME_MULTI_ML_VALUE, (Serializable)Arrays.asList(new String[]{"eins"}));
+        
+        I18NUtil.setContentLocale(Locale.ENGLISH);
+        mlTextCollectionCheck = (Collection<String>) nodeService.getProperty(nodeRef, PROP_QNAME_MULTI_ML_VALUE);
+        assertEquals("MLText collection didn't come back correctly.", Arrays.asList(new String[]{"Hello", "Bye bye"}), mlTextCollectionCheck);
+        
+        I18NUtil.setContentLocale(Locale.FRENCH);
+        mlTextCollectionCheck = (Collection<String>) nodeService.getProperty(nodeRef, PROP_QNAME_MULTI_ML_VALUE);
+        assertEquals("MLText collection didn't come back correctly.", Arrays.asList(new String[]{"Bonjour", "Au revoir"}), mlTextCollectionCheck);
+        
+        I18NUtil.setContentLocale(Locale.GERMAN);
+        mlTextCollectionCheck = (Collection<String>) nodeService.getProperty(nodeRef, PROP_QNAME_MULTI_ML_VALUE);
+        assertEquals("MLText collection didn't come back correctly.", Arrays.asList(new String[]{"eins"}), mlTextCollectionCheck);
+        
     }
 }

@@ -477,7 +477,6 @@ public class PersonTest extends BaseSpringTest
 
     private void testProperties(NodeRef nodeRef, String userName, String firstName, String lastName, String email, String orgId)
     {
-        Map<QName, Serializable> props = nodeService.getProperties(nodeRef);
         assertEquals(userName, DefaultTypeConverter.INSTANCE.convert(String.class, nodeService.getProperty(nodeRef, ContentModel.PROP_USERNAME)));
         assertNotNull(nodeService.getProperty(nodeRef, ContentModel.PROP_HOMEFOLDER));
         assertEquals(firstName, DefaultTypeConverter.INSTANCE.convert(String.class, nodeService.getProperty(nodeRef, ContentModel.PROP_FIRSTNAME)));
@@ -597,8 +596,23 @@ public class PersonTest extends BaseSpringTest
         
         transactionService.getRetryingTransactionHelper().doInTransaction(deletePersonWork, false, true);
     }
+    
+    public void testSplitPersonCleanupManyTimes() throws Throwable
+    {
+        for (int i = 0; i < 100; i++)            // Bump this number up to 1000 for 'real' testing
+        {
+            try
+            {
+                forceSplitPersonCleanup();
+            }
+            catch (Throwable e)
+            {
+                throw new RuntimeException("Failed on iteration " + i + " of forcing split person.", e);
+            }
+        }
+    }
 
-    public void testSplitPersonCleanup() throws Exception
+    private void forceSplitPersonCleanup() throws Exception
     {
         // Kill the annoying Spring-managed txn
         super.setComplete();

@@ -110,7 +110,7 @@ public interface LuceneConfig
      * Lucene writer config
      * @return
      */
-    public int getWriterMinMergeDocs();
+    public int getWriterMaxBufferedDocs();
     
     /**
      * Lucene writer config
@@ -128,7 +128,7 @@ public interface LuceneConfig
      * Lucene merger config
      * @return
      */
-    public int getMergerMinMergeDocs();
+    public int getMergerMaxBufferedDocs();
     
     /**
      * Lucene merger config
@@ -243,5 +243,35 @@ public interface LuceneConfig
      * @return
      */
     public ConfigurableApplicationContext getApplicationContext();
+
+    /**
+     * Ram based limit for in memory merges
+     * @return
+     */
+    public double getMaxRamInMbForInMemoryMerge();
+
+    /**
+     * Ram based limit for in memory portion of writer index.
+     * @return
+     */
+    public double getWriterRamBufferSizeMb();
+
+    /**
+     * Ram based limit for in memory portion of merger index.
+     * @return
+     */
+    public double getMergerRamBufferSizeMb();
+
+    /**
+     * Max docs to allow for in memory indexes (does no apply to merges)
+     * @return
+     */
+    public int getMaxDocsForInMemoryIndex();
+
+    /**
+     * Max Ram to allow for in memory indexes (does not apply to merges)
+     * @return
+     */
+    public double getMaxRamInMbForInMemoryIndex();
 
 }

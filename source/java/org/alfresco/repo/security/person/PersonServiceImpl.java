@@ -31,19 +31,19 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.cache.SimpleCache;
-import org.alfresco.repo.domain.hibernate.DirtySessionMethodInterceptor;
 import org.alfresco.repo.node.NodeServicePolicies;
+import org.alfresco.repo.node.NodeServicePolicies.BeforeDeleteNodePolicy;
+import org.alfresco.repo.node.NodeServicePolicies.OnCreateNodePolicy;
+import org.alfresco.repo.node.NodeServicePolicies.OnUpdatePropertiesPolicy;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.security.authentication.AuthenticationException;
@@ -141,7 +141,7 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
     private PermissionsManager permissionsManager;
 
     /** a transactionally-safe cache to be injected */
-    private SimpleCache<String, Map<String, NodeRef>> personCache;
+    private SimpleCache<String, Set<NodeRef>> personCache;
     
     /** People Container ref cache (Tennant aware) */
     private Map<String, NodeRef> peopleContainerRefs = new ConcurrentHashMap<String, NodeRef>(4);    
@@ -190,12 +190,18 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
         PropertyCheck.mandatory(this, "aclDao", aclDao);
         PropertyCheck.mandatory(this, "homeFolderManager", homeFolderManager);
 
-        this.policyComponent
-                .bindClassBehaviour(QName.createQName(NamespaceService.ALFRESCO_URI, "onCreateNode"), ContentModel.TYPE_PERSON, new JavaBehaviour(this, "onCreateNode"));
-        this.policyComponent.bindClassBehaviour(QName.createQName(NamespaceService.ALFRESCO_URI, "beforeDeleteNode"), ContentModel.TYPE_PERSON, new JavaBehaviour(this,
-                "beforeDeleteNode"));
-        this.policyComponent.bindClassBehaviour(QName.createQName(NamespaceService.ALFRESCO_URI, "onUpdateProperties"), ContentModel.TYPE_PERSON, new JavaBehaviour(this,
-                "onUpdateProperties"));
+        this.policyComponent.bindClassBehaviour(
+                OnCreateNodePolicy.QNAME,
+                ContentModel.TYPE_PERSON,
+                new JavaBehaviour(this, "onCreateNode"));
+        this.policyComponent.bindClassBehaviour(
+                BeforeDeleteNodePolicy.QNAME,
+                ContentModel.TYPE_PERSON,
+                new JavaBehaviour(this, "beforeDeleteNode"));
+        this.policyComponent.bindClassBehaviour(
+                OnUpdatePropertiesPolicy.QNAME,
+                ContentModel.TYPE_PERSON,
+                new JavaBehaviour(this, "onUpdateProperties"));
     }
 
     public UserNameMatcher getUserNameMatcher()
@@ -254,7 +260,7 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
      * @param personCache
      *            a transactionally safe cache
      */
-    public void setPersonCache(SimpleCache<String, Map<String, NodeRef>> personCache)
+    public void setPersonCache(SimpleCache<String, Set<NodeRef>> personCache)
     {
         this.personCache = personCache;
     }
@@ -346,30 +352,32 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
     private NodeRef getPersonOrNull(String searchUserName)
     {
         String cacheKey = searchUserName.toLowerCase();
-        Map<String, NodeRef> allRefs = this.personCache.get(cacheKey);
+        Set<NodeRef> allRefs = this.personCache.get(cacheKey);
         if (allRefs == null)
         {
-            List<ChildAssociationRef> childRefs = nodeService.getChildAssocs(getPeopleContainer(),
-                    ContentModel.ASSOC_CHILDREN, QName.createQName("cm", searchUserName.toLowerCase(),
-                            namespacePrefixResolver), false);
-            allRefs = new LinkedHashMap<String, NodeRef>(childRefs.size() * 2);
+            List<ChildAssociationRef> childRefs = nodeService.getChildAssocs(
+                    getPeopleContainer(),
+                    ContentModel.ASSOC_CHILDREN,
+                    QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, searchUserName.toLowerCase()),
+                    false);
+            allRefs = new LinkedHashSet<NodeRef>(childRefs.size() * 2);
             // add to cache
             personCache.put(cacheKey, allRefs);
 
             for (ChildAssociationRef childRef : childRefs)
             {
                 NodeRef nodeRef = childRef.getChildRef();
-                Serializable value = nodeService.getProperty(nodeRef, ContentModel.PROP_USERNAME);
-                String realUserName = DefaultTypeConverter.INSTANCE.convert(String.class, value);
-                allRefs.put(realUserName, nodeRef);
+                allRefs.add(nodeRef);
             }
         }
         List<NodeRef> refs = new ArrayList<NodeRef>(allRefs.size());
-        for (Entry<String, NodeRef> entry : allRefs.entrySet())
+        for (NodeRef nodeRef : allRefs)
         {
-            if (userNameMatcher.matches(searchUserName, entry.getKey()))
+            Serializable value = nodeService.getProperty(nodeRef, ContentModel.PROP_USERNAME);
+            String realUserName = DefaultTypeConverter.INSTANCE.convert(String.class, value);
+            if (userNameMatcher.matches(searchUserName, realUserName))
             {
-                refs.add(entry.getValue());
+                refs.add(nodeRef);
             }
         }
         NodeRef returnRef = null;
@@ -836,10 +844,8 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
 
     // Policies
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.alfresco.repo.node.NodeServicePolicies.OnCreateNodePolicy#onCreateNode(org.alfresco.service.cmr.repository.ChildAssociationRef)
+    /**
+     * {@inheritDoc}
      */
     public void onCreateNode(ChildAssociationRef childAssocRef)
     {
@@ -854,10 +860,8 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
         homeFolderManager.onCreateNode(childAssocRef);
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.alfresco.repo.node.NodeServicePolicies.BeforeDeleteNodePolicy#beforeDeleteNode(org.alfresco.service.cmr.repository.NodeRef)
+    /**
+     * {@inheritDoc}
      */
     public void beforeDeleteNode(NodeRef nodeRef)
     {

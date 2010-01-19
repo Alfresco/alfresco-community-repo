@@ -45,7 +45,6 @@ import org.alfresco.repo.node.StoreArchiveMap;
 import org.alfresco.repo.node.index.NodeIndexer;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
-import org.alfresco.repo.transaction.TransactionListener;
 import org.alfresco.repo.transaction.TransactionListenerAdapter;
 import org.alfresco.repo.transaction.TransactionalResourceHelper;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
@@ -276,17 +275,19 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
             properties = Collections.emptyMap();
         }
         
-        // check the parent node has not been deleted in this txn
-        if(isDeletedNodeRef(parentRef))
-        {
-            throw new InvalidNodeRefException("The parent node has been deleted", parentRef);
-        }
-
         // get/generate an ID for the node
         String newUuid = generateGuid(properties);
         
         // Remove any system properties
         extractIntrinsicProperties(properties);
+        
+        /**
+         *  Check the parent node has not been deleted in this txn.
+         */
+        if(isDeletedNodeRef(parentRef))
+        {               
+            throw new InvalidNodeRefException("The parent node has been deleted", parentRef);
+        }
         
         // Invoke policy behaviour
         invokeBeforeCreateNode(parentRef, assocTypeQName, assocQName, nodeTypeQName);
@@ -348,6 +349,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
          * now and commit!
          */ 
         trackNewNodeRef(childAssocRef.getChildRef());
+        untrackDeletedNodeRef(childAssocRef.getChildRef());       
         
         // Index
         nodeIndexer.indexCreateNode(childAssocRef);
@@ -391,6 +393,22 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
     {
         Set<NodeRef> deletedNodes = TransactionalResourceHelper.getSet(KEY_DELETED_NODES);
         deletedNodes.add(deletedNodeRef);
+    }
+    
+    /**
+     * Untrack a deleted node ref
+     * 
+     * Used when a deleted node is restored. 
+     * 
+     * @param deletedNodeRef
+     */
+    private void untrackDeletedNodeRef(NodeRef deletedNodeRef)
+    {
+        Set<NodeRef> deletedNodes = TransactionalResourceHelper.getSet(KEY_DELETED_NODES);
+        if (deletedNodes.size() > 0)
+        {
+            deletedNodes.remove(deletedNodeRef);
+        }
     }
     
     private boolean isDeletedNodeRef(NodeRef deletedNodeRef)
@@ -654,8 +672,8 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         // Set the type
         nodeDaoService.updateNode(nodePair.getFirst(), null, null, typeQName);
         
-        // Add the default aspects to the node (update the properties with any new default values)
-        addDefaultAspects(nodePair, typeQName);
+        // Add the default aspects and properties required for the given type. Existing values will not be overridden.
+        addDefaults(nodePair, typeQName);
         
         // Index
         nodeIndexer.indexUpdateNode(nodeRef);
@@ -936,7 +954,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         }
         else
         {
-            /**
+            /*
              *  Go ahead and archive the node
              *  
              *  Archiving will take responsibility for firing the policy behaviours on 
@@ -1007,7 +1025,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
             nodeDaoService.deleteNode(childNodeId);
             invokeOnDeleteNode(childParentAssocRef, childNodeType, childNodeQNames, false);
             
-            // loose interest in tracking this node ref
+            // lose interest in tracking this node ref
             untrackNewNodeRef(childNodeRef);
         }
     }

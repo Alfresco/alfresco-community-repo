@@ -25,11 +25,15 @@
 package org.alfresco.repo.node;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 
 import org.springframework.extensions.surf.util.I18NUtil;
 import org.alfresco.model.ContentModel;
@@ -352,6 +356,22 @@ public class MLPropertyInterceptor implements MethodInterceptor
             MLText mlText = (MLText) outboundValue;
             ret = mlText.getClosestValue(contentLocale);
         }
+        else if(isCollectionOfMLText(outboundValue))
+        {
+            Collection<?> col = (Collection<?>)outboundValue; 
+            ArrayList<String> answer = new ArrayList<String>(col.size());
+            Locale closestLocale = getClosestLocale(col, contentLocale);
+            for(Object o : col)
+            {
+                MLText mlText = (MLText) o;
+                String value = mlText.get(closestLocale);
+                if(value != null)
+                {
+                    answer.add(value);
+                }
+            }
+            ret = answer;
+        }
         else if (pivotNodeRef != null)       // It is an empty translation
         {
            if (propertyQName.equals(ContentModel.PROP_MODIFIED))
@@ -397,6 +417,58 @@ public class MLPropertyInterceptor implements MethodInterceptor
         return ret;
     }
     
+    public Locale getClosestLocale(Collection<?> collection, Locale locale)
+    {
+        if (collection.size() == 0)
+        {
+            return null;
+        }
+        // Use the available keys as options
+        HashSet<Locale> locales = new HashSet<Locale>();
+        for(Object o : collection)
+        {
+            MLText mlText = (MLText)o;
+            locales.addAll(mlText.keySet());
+        }
+        // Get a match
+        Locale match = I18NUtil.getNearestLocale(locale, locales);
+        if (match == null)
+        {
+            // No close matches for the locale - go for the default locale
+            locale = I18NUtil.getLocale();
+            match = I18NUtil.getNearestLocale(locale, locales);
+            if (match == null)
+            {
+                // just get any locale
+                match = I18NUtil.getNearestLocale(null, locales);
+            }
+        }
+        return match;
+    }
+    
+    /**
+     * @param outboundValue
+     * @return
+     */
+    private boolean isCollectionOfMLText(Serializable outboundValue)
+    {
+        if(outboundValue instanceof Collection)
+        {
+            for(Object o : (Collection<?>)outboundValue)
+            {
+                if(!(o instanceof MLText))
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
     private Map<QName, Serializable> convertInboundProperties(
             Map<QName, Serializable> currentProperties,
             Map<QName, Serializable> newProperties,
@@ -443,9 +515,82 @@ public class MLPropertyInterceptor implements MethodInterceptor
         else if (propertyDef.getDataType().getName().equals(DataTypeDefinition.MLTEXT))
         {
             // Don't mess with multivalued properties or instances already of type MLText
-            if (propertyDef.isMultiValued() || (inboundValue instanceof MLText) )
+            if (inboundValue instanceof MLText)
             {
                 ret = inboundValue;
+            }
+            else if(propertyDef.isMultiValued())
+            {
+                // leave collectios of ML text alone
+                if(isCollectionOfMLText(inboundValue))
+                {
+                    ret = inboundValue;
+                }
+                else
+                {
+                    // Anything else we assume is localised
+                    if (currentValue == null && nodeRef != null)
+                    {
+                        currentValue = nodeService.getProperty(nodeRef, propertyQName);
+                    }
+                    ArrayList<MLText> returnMLList = new ArrayList<MLText>();
+                    if (currentValue != null)
+                    {
+                        Collection<MLText> currentCollection = DefaultTypeConverter.INSTANCE.getCollection(MLText.class, currentValue);  
+                        returnMLList.addAll(currentCollection);
+                    }
+                    Collection<String> inboundCollection = DefaultTypeConverter.INSTANCE.getCollection(String.class, inboundValue);
+                    int count = 0;
+                    for(String current : inboundCollection)
+                    {
+                        MLText newMLValue;
+                        if(count < returnMLList.size())
+                        { 
+                            MLText currentMLValue = returnMLList.get(count);
+                            newMLValue = new MLText();
+                            if (currentMLValue != null)
+                            {
+                                newMLValue.putAll(currentMLValue);
+                            }                
+                        }
+                        else
+                        {
+                            newMLValue = new MLText();
+                        }
+                        newMLValue.addValue(contentLocale, current);
+                        if(count < returnMLList.size())
+                        {
+                            returnMLList.set(count, newMLValue);
+                        }
+                        else
+                        {
+                            returnMLList.add(newMLValue);
+                        }
+                        count++;
+                    }
+                    // remove locale settings for anything after
+                    for(int i = count; i < returnMLList.size(); i++)
+                    {
+                        MLText currentMLValue = returnMLList.get(i);
+                        MLText newMLValue = new MLText();
+                        if (currentMLValue != null)
+                        {
+                            newMLValue.putAll(currentMLValue);
+                        }
+                        newMLValue.remove(contentLocale);
+                        returnMLList.set(i, newMLValue);
+                    }
+                    // tidy up empty locales
+                    ArrayList<MLText> tidy = new ArrayList<MLText>();
+                    for(MLText mlText : returnMLList)
+                    {
+                        if(mlText.keySet().size() > 0)
+                        {
+                            tidy.add(mlText);
+                        }
+                    }
+                    ret = tidy;
+                }
             }
             else
             {

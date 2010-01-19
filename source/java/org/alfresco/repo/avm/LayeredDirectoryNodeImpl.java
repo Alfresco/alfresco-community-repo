@@ -593,7 +593,7 @@ public class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements Layer
         // If we are not opaque, get the underlying base listing.
         if (!getOpacity())
         {
-            Lookup lookup = AVMRepository.GetInstance().lookupDirectory(-1, dir.getIndirection());
+            Lookup lookup = AVMRepository.GetInstance().lookupDirectory(dir.getIndirectionVersion(), dir.getIndirection());
             if (lookup != null)
             {
                 DirectoryNode dirNode = (DirectoryNode) lookup.getCurrentNode();

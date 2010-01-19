@@ -74,6 +74,7 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.GUID;
 import org.alfresco.util.TraceableThreadFactory;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.lucene.analysis.Analyzer;
@@ -99,6 +100,7 @@ import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.store.IndexInput;
 import org.apache.lucene.store.IndexOutput;
 import org.apache.lucene.store.RAMDirectory;
+import org.apache.xml.dtm.ref.sax2dtm.SAX2DTM2.FollowingSiblingIterator;
 import org.safehaus.uuid.UUID;
 import org.saxpath.SAXPathException;
 import org.springframework.context.ApplicationContext;
@@ -229,7 +231,7 @@ public class IndexInfo implements IndexMonitor
      * Lock for the index entries
      */
     private ReentrantReadWriteLock readWriteLock = new ReentrantReadWriteLock();
-    
+
     /**
      * Read only index readers that also do reference counting.
      */
@@ -295,14 +297,22 @@ public class IndexInfo implements IndexMonitor
      */
     private static HashMap<File, IndexInfo> indexInfos = new HashMap<File, IndexInfo>();
 
-    // Properties that cotrol lucene indexing
+    // Properties that control lucene indexing
     // --------------------------------------
 
     // Properties for indexes that are created by transactions ...
 
     private int maxDocsForInMemoryMerge = 10000;
+    
+    private int maxDocsForInMemoryIndex = 10000;
 
-    private int writerMinMergeDocs = 1000;
+    private double maxRamInMbForInMemoryMerge = 16.0;
+    
+    private double maxRamInMbForInMemoryIndex = 16.0;
+
+    private int writerMaxBufferedDocs = IndexWriter.DISABLE_AUTO_FLUSH;
+
+    private double writerRamBufferSizeMb = 16.0;
 
     private int writerMergeFactor = 5;
 
@@ -312,7 +322,9 @@ public class IndexInfo implements IndexMonitor
 
     // Properties for indexes created by merging
 
-    private int mergerMinMergeDocs = 1000;
+    private int mergerMaxBufferedDocs = IndexWriter.DISABLE_AUTO_FLUSH;
+
+    private double mergerRamBufferSizeMb = 16.0;
 
     private int mergerMergeFactor = 5;
 
@@ -404,10 +416,15 @@ public class IndexInfo implements IndexMonitor
             this.threadPoolExecutor = config.getThreadPoolExecutor();
             IndexInfo.useNIOMemoryMapping = config.getUseNioMemoryMapping();
             this.maxDocsForInMemoryMerge = config.getMaxDocsForInMemoryMerge();
-            this.writerMinMergeDocs = config.getWriterMinMergeDocs();
+            this.maxRamInMbForInMemoryMerge = config.getMaxRamInMbForInMemoryMerge();
+            this.maxDocsForInMemoryIndex = config.getMaxDocsForInMemoryIndex();
+            this.maxRamInMbForInMemoryIndex = config.getMaxRamInMbForInMemoryIndex();
+            this.writerMaxBufferedDocs = config.getWriterMaxBufferedDocs();
+            this.writerRamBufferSizeMb = config.getWriterRamBufferSizeMb();
             this.writerMergeFactor = config.getWriterMergeFactor();
             this.writerMaxMergeDocs = config.getWriterMaxMergeDocs();
-            this.mergerMinMergeDocs = config.getMergerMinMergeDocs();
+            this.mergerMaxBufferedDocs = config.getMergerMaxBufferedDocs();
+            this.mergerRamBufferSizeMb = config.getMergerRamBufferSizeMb();
             this.mergerMergeFactor = config.getMergerMergeFactor();
             this.mergerMergeBlockingFactor = config.getMergerMergeBlockingFactor();
             this.mergerMaxMergeDocs = config.getMergerMaxMergeDocs();
@@ -464,7 +481,8 @@ public class IndexInfo implements IndexMonitor
         {
             writer = new IndexWriter(emptyIndex, new AlfrescoStandardAnalyser(), true, MaxFieldLength.LIMITED);
             writer.setUseCompoundFile(writerUseCompoundFile);
-            writer.setMaxBufferedDocs(writerMinMergeDocs);
+            writer.setMaxBufferedDocs(writerMaxBufferedDocs);
+            writer.setRAMBufferSizeMB(writerRamBufferSizeMb);
             writer.setMergeFactor(writerMergeFactor);
             writer.setMaxMergeDocs(writerMaxMergeDocs);
             writer.setWriteLockTimeout(writeLockTimeout);
@@ -531,7 +549,8 @@ public class IndexInfo implements IndexMonitor
                             {
                                 writer = new IndexWriter(oldIndex, new AlfrescoStandardAnalyser(), false, MaxFieldLength.LIMITED);
                                 writer.setUseCompoundFile(writerUseCompoundFile);
-                                writer.setMaxBufferedDocs(writerMinMergeDocs);
+                                writer.setMaxBufferedDocs(writerMaxBufferedDocs);
+                                writer.setRAMBufferSizeMB(writerRamBufferSizeMb);
                                 writer.setMergeFactor(writerMergeFactor);
                                 writer.setMaxMergeDocs(writerMaxMergeDocs);
                                 writer.setWriteLockTimeout(writeLockTimeout);
@@ -821,7 +840,7 @@ public class IndexInfo implements IndexMonitor
                     {
                         indexEntries.put(id, new IndexEntry(IndexType.DELTA, id, "", TransactionStatus.ACTIVE, "", 0, 0, false));
                     }
-                   
+
                 }
                 finally
                 { // Downgrade lock
@@ -858,7 +877,8 @@ public class IndexInfo implements IndexMonitor
             writer = new IndexWriter(location, analyzer, false, MaxFieldLength.LIMITED);
         }
         writer.setUseCompoundFile(writerUseCompoundFile);
-        writer.setMaxBufferedDocs(writerMinMergeDocs);
+        writer.setMaxBufferedDocs(writerMaxBufferedDocs);
+        writer.setRAMBufferSizeMB(writerRamBufferSizeMb);
         writer.setMergeFactor(writerMergeFactor);
         writer.setMaxMergeDocs(writerMaxMergeDocs);
         writer.setWriteLockTimeout(writeLockTimeout);
@@ -1081,7 +1101,7 @@ public class IndexInfo implements IndexMonitor
                 getWriteLock();
                 try
                 {
-                    mainIndexReader = null;    
+                    mainIndexReader = null;
                 }
                 finally
                 {
@@ -1116,7 +1136,7 @@ public class IndexInfo implements IndexMonitor
                         mainIndexReader = createMainIndexReader();
 
                     }
-                    
+
                 }
                 finally
                 {
@@ -1128,17 +1148,18 @@ public class IndexInfo implements IndexMonitor
             mainIndexReader.incRef();
             if (s_logger.isDebugEnabled())
             {
-                s_logger.debug("Main index reader references = " + ((ReferenceCounting)mainIndexReader).getReferenceCount());
+                s_logger.debug("Main index reader references = " + ((ReferenceCounting) mainIndexReader).getReferenceCount());
             }
-            
+
             // Prevent close calls from really closing the main reader
-            return new FilterIndexReader(mainIndexReader) {
-                
+            return new FilterIndexReader(mainIndexReader)
+            {
+
                 @Override
                 protected void doClose() throws IOException
                 {
                     in.decRef();
-                }                                
+                }
 
             };
         }
@@ -1239,11 +1260,12 @@ public class IndexInfo implements IndexMonitor
                 filterReader.decRef();
             }
 
-            // The reference count would have been incremented automatically by MultiReader / FilterIndexReaderByStringId
+            // The reference count would have been incremented automatically by MultiReader /
+            // FilterIndexReaderByStringId
             deltaReader.decRef();
             if (s_logger.isDebugEnabled())
             {
-                s_logger.debug("Main index reader references = " + ((ReferenceCounting)mainIndexReader).getReferenceCount());
+                s_logger.debug("Main index reader references = " + ((ReferenceCounting) mainIndexReader).getReferenceCount());
             }
             reader = ReferenceCountingReadOnlyIndexReaderFactory.createReader(MAIN_READER + id, reader, false, config);
             ReferenceCounting refCounting = (ReferenceCounting) reader;
@@ -1298,8 +1320,7 @@ public class IndexInfo implements IndexMonitor
                 }
                 getReadLock();
             }
-            
-            
+
             releaseReadLock();
             getWriteLock();
             try
@@ -1992,13 +2013,53 @@ public class IndexInfo implements IndexMonitor
         referenceCountingReadOnlyIndexReaders.put(id, reader);
     }
 
+    private double getSizeInMb(File file)
+    {
+        long size = getSize(file);
+        return size/1024.0d/1024.0d;
+    }
+    
+    private long getSize(File file)
+    {
+        long size = 0l;
+        if (file == null)
+        {
+            return size;
+        }
+        if (file.isFile())
+        {
+            return file.length();
+        }
+        else
+        {
+            File[] files = file.listFiles();
+            if(files == null)
+            {
+                return size;
+            }
+            for (File current : files)
+            {
+                if (current.isDirectory())
+                {
+                    size += getSize(current);
+                }
+                else
+                {
+                    size += current.length();
+                }
+            }
+        }
+        return size;
+    }
+
     private IndexReader buildReferenceCountingIndexReader(String id, long size) throws IOException
     {
         IndexReader reader;
         File location = new File(indexDirectory, id).getCanonicalFile();
+        double folderSize = getSizeInMb(location);
         if (IndexReader.indexExists(location))
         {
-            if ((config != null) && (size < config.getMaxDocsForInMemoryMerge()))
+            if ((size < maxDocsForInMemoryIndex) && (folderSize < maxRamInMbForInMemoryIndex))
             {
                 RAMDirectory rd = new RAMDirectory(location);
                 reader = IndexReader.open(rd);
@@ -2947,9 +3008,9 @@ public class IndexInfo implements IndexMonitor
     private abstract class AbstractSchedulable implements Schedulable, Runnable
     {
         ScheduledState scheduledState = ScheduledState.UN_SCHEDULED;
-        
+
         private int scheduledCount;
-        
+
         public synchronized int getScheduledCount()
         {
             return scheduledCount;
@@ -3767,6 +3828,7 @@ public class IndexInfo implements IndexMonitor
                 IndexWriter writer = null;
 
                 File outputLocation = null;
+                double mergeSize = 0;
                 for (IndexEntry entry : toMerge.values())
                 {
                     File location = new File(indexDirectory, entry.getName()).getCanonicalFile();
@@ -3784,12 +3846,13 @@ public class IndexInfo implements IndexMonitor
                         }
                         readers[count++] = reader;
                         docCount += entry.getDocumentCount();
+                        mergeSize += getSizeInMb(location);
                     }
                     else if (entry.getStatus() == TransactionStatus.MERGE_TARGET)
                     {
                         mergeTargetId = entry.getName();
                         outputLocation = location;
-                        if (docCount < maxDocsForInMemoryMerge)
+                        if ((docCount < maxDocsForInMemoryMerge) && (mergeSize < maxRamInMbForInMemoryMerge))
                         {
                             ramDirectory = new RAMDirectory();
                             writer = new IndexWriter(ramDirectory, new AlfrescoStandardAnalyser(), true, MaxFieldLength.UNLIMITED);
@@ -3800,7 +3863,8 @@ public class IndexInfo implements IndexMonitor
 
                         }
                         writer.setUseCompoundFile(mergerUseCompoundFile);
-                        writer.setMaxBufferedDocs(mergerMinMergeDocs);
+                        writer.setMaxBufferedDocs(mergerMaxBufferedDocs);
+                        writer.setRAMBufferSizeMB(mergerRamBufferSizeMb);
                         writer.setMergeFactor(mergerMergeFactor);
                         writer.setMaxMergeDocs(mergerMaxMergeDocs);
                         writer.setWriteLockTimeout(writeLockTimeout);

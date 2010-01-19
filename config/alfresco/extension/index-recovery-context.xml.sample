@@ -15,6 +15,9 @@
                         <entry key="indexRecoveryComponent">
                             <ref bean="missingFullTextReindexComponent" />
                         </entry>
+                        <entry key="clusterName">
+                            <value>${alfresco.cluster.name}</value>
+                        </entry>
                     </map>
                 </property>
             </bean>

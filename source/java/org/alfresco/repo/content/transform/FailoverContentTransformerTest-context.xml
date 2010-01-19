@@ -1,0 +1,31 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+ 
+<beans>
+   <bean id="transformer.Test-PdfToText-AlwaysFails"
+         class="org.alfresco.repo.content.transform.DummyTestContentTransformer"
+         parent="baseContentTransformer" >
+         <property name="alwaysFail">
+             <value>true</value>
+         </property>
+   </bean>
+   
+   <bean id="transformer.Test-PdfToText-AlwaysSucceeds"
+         class="org.alfresco.repo.content.transform.DummyTestContentTransformer"
+         parent="baseContentTransformer" >
+         <property name="alwaysFail">
+             <value>false</value>
+         </property>
+   </bean>
+   
+   <bean id="transformer.failover.Test-FailThenSucceed"
+        class="org.alfresco.repo.content.transform.FailoverContentTransformer"
+        parent="baseContentTransformer" >      
+      <property name="transformers">
+         <list>
+            <ref bean="transformer.Test-PdfToText-AlwaysFails"/>
+            <ref bean="transformer.Test-PdfToText-AlwaysSucceeds"/>
+         </list>
+      </property>  
+   </bean>
+</beans>

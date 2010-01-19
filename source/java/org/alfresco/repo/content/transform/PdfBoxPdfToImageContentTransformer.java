@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -18,20 +18,17 @@
  * As a special exception to the terms and conditions of version 2.0 of 
  * the GPL, you may redistribute this Program in connection with Free/Libre 
  * and Open Source Software ("FLOSS") applications as described in Alfresco's 
- * FLOSS exception.  You should have recieved a copy of the text describing 
+ * FLOSS exception.  You should have received a copy of the text describing 
  * the FLOSS exception, and it is also available here: 
  * http://www.alfresco.com/legal/licensing"
  */
 package org.alfresco.repo.content.transform;
 
-import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.RandomAccessFile;
-import java.nio.ByteBuffer;
-import java.nio.channels.FileChannel;
+import java.util.List;
 
 import javax.imageio.ImageIO;
 
@@ -43,86 +40,56 @@ import org.alfresco.service.cmr.repository.TransformationOptions;
 import org.alfresco.util.TempFileProvider;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
-import com.sun.pdfview.PDFFile;
-import com.sun.pdfview.PDFPage;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.pdmodel.PDPage;
 
 /**
- * Makes use of the {@link https://pdf-renderer.dev.java.net/ PDFRenderer} library to
+ * Makes use of the {@link http://www.pdfbox.org/ PDFBox} library to
  * perform conversions from PDF files to images.
  * 
- * @author Roy Wetherall
+ * @author Neil McErlean
  */
-public class PdfToImageContentTransformer extends AbstractContentTransformer2
+public class PdfBoxPdfToImageContentTransformer extends AbstractContentTransformer2
 {
-    private static final Log logger = LogFactory.getLog(PdfToImageContentTransformer.class);
-    /**
-     * Currently the only transformation performed is that of text extraction from PDF documents.
-     */
+    private static Log logger = LogFactory.getLog(PdfBoxPdfToImageContentTransformer.class);
+
     public boolean isTransformable(String sourceMimetype, String targetMimetype, TransformationOptions options)
     {
-        if (MimetypeMap.MIMETYPE_PDF.equals(sourceMimetype) == true &&
-            MimetypeMap.MIMETYPE_IMAGE_PNG.equals(targetMimetype) == true)
-        {
-            // only support PDF -> PNG
-            return true;
-        }
-        else
-        {
-            return false;
-        }
+    	// only support PDF -> PNG
+    	return  (MimetypeMap.MIMETYPE_PDF.equals(sourceMimetype) == true &&
+            MimetypeMap.MIMETYPE_IMAGE_PNG.equals(targetMimetype) == true);
     }
 
+    @SuppressWarnings("unchecked")
     protected void transformInternal(
             ContentReader reader,
             ContentWriter writer,
             TransformationOptions options) throws Exception
     {
-        RandomAccessFile raf;
+        PDDocument document = null;
         try 
         {
            File file = TempFileProvider.createTempFile("pdfToImage", ".pdf");
            reader.getContent(file);
                         
-           raf = new RandomAccessFile(file, "r");
-           FileChannel channel = raf.getChannel();
-          
-           ByteBuffer buf = channel.map(FileChannel.MapMode.READ_ONLY, 0, channel.size());
-            
-           PDFFile pdffile = new PDFFile(buf);
+           document = PDDocument.load(file);
 
-           // Log the PDF version of the file being transformed.
-           if (logger.isInfoEnabled())
+           if (document.isEncrypted())
            {
-        	   int pdfMajorVersion = pdffile.getMajorVersion();
-        	   int pdfMinorVersion = pdffile.getMinorVersion();
-        	   StringBuilder msg = new StringBuilder();
-        	   msg.append("File being transformed is of pdf version ")
-        	       .append(pdfMajorVersion).append(".").append(pdfMinorVersion);
-        	   logger.info(msg.toString());
+               String msg = "PDF document is encrypted.";
+               if (logger.isInfoEnabled())
+               {
+                   logger.info(msg);
+               }
+               throw new AlfrescoRuntimeException(msg);
            }
            
-           PDFPage page = pdffile.getPage(0, true);
-              
-           //get the width and height for the doc at the default zoom              
-           int width=(int)page.getBBox().getWidth();
-           int height=(int)page.getBBox().getHeight();
-            
-           Rectangle rect = new Rectangle(0,0,width,height);
-           int rotation=page.getRotation();
-           Rectangle rect1=rect;
-           if (rotation==90 || rotation==270)
-               rect1=new Rectangle(0,0,rect.height,rect.width);
-            
-           //generate the image
-           BufferedImage img = (BufferedImage)page.getImage(
-                        rect.width, rect.height, //width & height
-                        rect1, // clip rect
-                        null, // null for the ImageObserver
-                        true, // fill background with white
-                        true  // block until drawing is done
-                );
+           final int resolution = 16; //TODO A rather arbitrary number for resolution (DPI) here.
 
+           List pages = document.getDocumentCatalog().getAllPages();
+           PDPage page = (PDPage)pages.get(0);
+           BufferedImage img = page.convertToImage(BufferedImage.TYPE_INT_ARGB, resolution);
+           
            File outputFile = TempFileProvider.createTempFile("pdfToImageOutput", ".png");
            ImageIO.write(img, "png", outputFile);
             
@@ -135,6 +102,13 @@ public class PdfToImageContentTransformer extends AbstractContentTransformer2
         catch (IOException e) 
         {
            throw new AlfrescoRuntimeException("Unable to create image from pdf file.", e);
+        }
+        finally
+        {
+            if( document != null )
+            {
+                document.close();
+            }
         }
     }
 }

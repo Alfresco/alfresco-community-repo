@@ -211,8 +211,6 @@ public abstract class AbstractContentTransformer2 extends ContentTransformerHelp
         }
     }
 
-
-    @SuppressWarnings("deprecation")
     public final void transform(
             ContentReader reader,
             ContentWriter writer,

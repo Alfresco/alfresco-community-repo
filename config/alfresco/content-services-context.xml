@@ -239,6 +239,21 @@
       </property>
    </bean>
    
+   <!-- These transformers are not used alone but only as part of a failover sequence -->
+   <!-- For this reason they do not extend the baseContentTransformer bean and so will not be registered. -->
+   <bean id="failover.transformer.PdfRenderer.PdfToImage"
+         class="org.alfresco.repo.content.transform.PdfToImageContentTransformer" >
+         <property name="mimetypeService">
+            <ref bean="mimetypeService"/>
+         </property>
+   </bean>
+   <bean id="failover.transformer.PdfBox.PdfToImage"
+         class="org.alfresco.repo.content.transform.PdfBoxPdfToImageContentTransformer" >
+         <property name="mimetypeService">
+            <ref bean="mimetypeService"/>
+         </property>
+   </bean>
+
    <!-- Content Transformations -->
    <bean id="transformer.StringExtracter"
          class="org.alfresco.repo.content.transform.StringExtractingContentTransformer"
@@ -262,8 +277,14 @@
    </bean>
    
    <bean id="transformer.PdfToImage"
-         class="org.alfresco.repo.content.transform.PdfToImageContentTransformer"
-         parent="baseContentTransformer" >
+       class="org.alfresco.repo.content.transform.FailoverContentTransformer"
+       parent="baseContentTransformer" >      
+     <property name="transformers">
+        <list>
+           <ref bean="failover.transformer.PdfRenderer.PdfToImage"/>
+           <ref bean="failover.transformer.PdfBox.PdfToImage"/>
+        </list>
+     </property>  
    </bean>
    
    <bean id="transformer.complex.PDF.Image"

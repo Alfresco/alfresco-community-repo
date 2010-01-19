@@ -62,6 +62,7 @@
       {
          "index": ${item_index},
          "nodeRef": "${d.nodeRef}",
+         "nodeType": "${shortQName(d.type)}",
          "type": "${item.type}",
          "isFolder": ${d.isContainer?string},
          "isLink": ${item.isLink?string},

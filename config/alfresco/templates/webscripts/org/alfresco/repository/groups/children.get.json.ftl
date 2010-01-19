@@ -3,11 +3,9 @@
 <#import "authority.lib.ftl" as authorityLib/>
 {
 	"data": [
-	
-	    <#list children as wibble>	
-    		<@authorityLib.authorityJSON authority=wibble />	 	   
-	   		<#if wibble_has_next>,</#if>
-    	</#list>
-    	
-  	]
+		<#list children as c>
+			<@authorityLib.authorityJSON authority=c />
+				<#if c_has_next>,</#if>
+		</#list>
+	]
 }

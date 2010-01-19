@@ -14,40 +14,16 @@ function main()
    }
    
    var current = [],
-      visible = [],
-      addable = [],
-      removeable = [],
-      aspect;
-
-   var currentSet = node.aspectsSet.toArray();
+      currentSet = node.aspectsSet.toArray();
+   
    for (index in currentSet)
    {
       current.push(currentSet[index].toString());
    }
 
-   var myConfig = new XML(config.script);
-   
-   for each (name in myConfig.visible.aspect.@name)
-   {
-      visible.push(name.toString());
-   }
-
-   for each (name in myConfig.addable.aspect.@name)
-   {
-      addable.push(name.toString());
-   }
-
-   for each (name in myConfig.removeable.aspect.@name)
-   {
-      removeable.push(name.toString());
-   }
-
    return (
    {
-      current: current,
-      visible: visible,
-      addable: addable,
-      removeable: removeable
+      current: current
    });
 }
 

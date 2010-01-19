@@ -18,7 +18,6 @@ function getContents(user, type, maxResults)
                "+TYPE:\"{http://www.alfresco.org/model/content/1.0}content\" " +
                "+@cm\\:" + userType +":" + user + " " +
                "+@cm\\:" + type + ":[" + fromQuery + "T00\\:00\\:00 TO " + toQuery + "T23\\:59\\:59]" +
-               "-TYPE:\"{http://www.alfresco.org/model/forum/1.0}post\" " +
                "-TYPE:\"{http://www.alfresco.org/model/content/1.0}thumbnail\"";
    
    var nodes = search.luceneSearch(query, "cm:"+type, false, maxResults);

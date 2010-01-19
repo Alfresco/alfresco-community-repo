@@ -208,20 +208,29 @@ function main()
             else
             {
                // Upload component was configured to find a new unique name for clashing filenames
-               var suffix = 1;
-               var tmpFilename;
+               var counter = 1,
+                  tmpFilename,
+                  dotIndex;
                while (existingFile !== null)
                {
-                  if(filename.lastIndexOf(".") > 0)
+                  dotIndex = filename.lastIndexOf(".");
+                  if(dotIndex == 0)
                   {
-                     tmpFilename = filename.substring(0, filename.lastIndexOf(".")) + "-" + suffix + filename.substring(filename.lastIndexOf("."));
+                     // File didn't have a proper 'name' instead it had just a suffix and started with a ".", create "1.txt"
+                     tmpFilename = counter + filename;
+                  }
+                  else if(dotIndex > 0)
+                  {
+                     // Filename contained ".", create "filename-1.txt"
+                     tmpFilename = filename.substring(0, dotIndex) + "-" + counter + filename.substring(dotIndex);
                   }
                   else
                   {
-                     tmpFilename = filename + "-" + suffix;
+                     // Filename didn't contain a dot at all, create "filename-1"
+                     tmpFilename = filename + "-" + counter;
                   }
                   existingFile = container.childByNamePath(uploadDirectory + tmpFilename);
-                  suffix++;
+                  counter++;
                }
                filename = tmpFilename;
             }

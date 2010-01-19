@@ -104,6 +104,18 @@
       </property-sheet>
    </config>
 
+   <!-- Configuring in the cm:storeSelector aspect -->
+   <config evaluator="aspect-name" condition="cm:storeSelector">
+      <property-sheet>
+         <show-property name="cm:storeName" />
+      </property-sheet>
+   </config>
+   <config evaluator="string-compare" condition="Action Wizards">
+      <aspects>
+         <aspect name="cm:storeSelector"/>
+      </aspects>
+   </config>
+
    <config evaluator="string-compare" condition="Action Wizards">
       <aspects>
          <aspect name="my:imageClassification"/>

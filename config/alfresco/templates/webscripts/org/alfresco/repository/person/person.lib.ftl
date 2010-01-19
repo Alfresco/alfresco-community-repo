@@ -35,10 +35,24 @@
 }
 </#macro>
 
-<#macro personGroupsJSON person groups>
+<#macro personCapJSON person capabilities>
+{
+<@personJSONinner person=person/>,
+	"capabilities":
+	{
+		<@serializeHash hash=capabilities/>
+	}
+}
+</#macro>
+
+<#macro personGroupsJSON person groups capabilities>
 <#escape x as jsonUtils.encodeJSONString(x)>
 {
 <@personJSONinner person=person/>,
+	"capabilities":
+	{
+		<@serializeHash hash=capabilities/>
+	},
 	"groups": [
 	<#list groups as g>
 		<#assign authName = g.properties["cm:authorityName"]>
@@ -59,5 +73,23 @@
 	"firstName": "${person.properties.firstName}",
 	"lastName": "${person.properties.lastName}"
 }
+</#escape>
+</#macro>
+
+<#macro serializeHash hash>
+<#escape x as jsonUtils.encodeJSONString(x)>
+<#local first = true>
+<#list hash?keys as key>
+	<#if hash[key]??>
+		<#local val = hash[key]>
+		<#if !first>,<#else><#local first = false></#if>"${key}":
+		<#if person.isTemplateContent(val)>"${val.content}"
+		<#elseif person.isTemplateNodeRef(val)>"${val.nodeRef}"
+		<#elseif val?is_date>"${val?datetime}"
+		<#elseif val?is_boolean>${val?string}
+		<#else>"${val}"
+		</#if>
+	</#if>
+</#list>
 </#escape>
 </#macro>

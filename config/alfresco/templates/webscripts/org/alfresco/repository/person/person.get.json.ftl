@@ -1,6 +1,6 @@
 <#import "person.lib.ftl" as personLib/>
 <#if groups??>
-	<@personLib.personGroupsJSON person=person groups=groups />
+	<@personLib.personGroupsJSON person=person groups=groups capabilities=capabilities />
 <#else>
-	<@personLib.personJSON person=person />
+	<@personLib.personCapJSON person=person capabilities=capabilities />
 </#if>

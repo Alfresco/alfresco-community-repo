@@ -11,6 +11,7 @@ function main()
    if (person != null) 
    {
       model.person = person;
+      model.capabilities = people.getCapabilities(person);
       model.groups = groups ? people.getContainerGroups(person) : null;
    }
    else 

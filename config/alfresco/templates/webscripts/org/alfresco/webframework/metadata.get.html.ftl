@@ -1,52 +1,52 @@
 {
-	"code" : "${code}"
+	"code": "${code}"
 
 <#if object?exists>
 	,
-	"data" : {
+	"data": {
 		<@serialize object=object includeChildren=includeChildren includeContent=includeContent/>
 	}
 </#if>
 }
 
 <#macro serialize object includeChildren includeContent>
-	"isContainer" : ${object.isContainer?string}
+<#escape x as jsonUtils.encodeJSONString(x)>
+	"isContainer": ${object.isContainer?string}
 	,
-	"isDocument" : ${object.isDocument?string}
+	"isDocument": ${object.isDocument?string}
 	,
-	"url" : "${object.url}"
+	"url": "${object.url}"
 	,
-	"downloadUrl" : "${object.downloadUrl}"
+	"downloadUrl": "${object.downloadUrl}"
 <#if object.mimetype?exists>
 	,
-	"mimetype" : "${object.mimetype}"
+	"mimetype": "${object.mimetype}"
 </#if>
 	,
-	"size" : "${object.size}"
+	"size": "${object.size}"
 	,
-	"displayPath" : "${object.displayPath}"
+	"displayPath": "${object.displayPath}"
 	,
-	"qnamePath" : "${object.qnamePath}"
+	"qnamePath": "${object.qnamePath}"
 	,
-	"icon16" : "${object.icon16}"
+	"icon16": "${object.icon16}"
 	,
-	"icon32" : "${object.icon32}"
+	"icon32": "${object.icon32}"
 	,
-	"isLocked" : ${object.isLocked?string}
+	"isLocked": ${object.isLocked?string}
 	,
-	"id" : "${object.id}"
+	"id": "${object.id}"
 	,
-	"nodeRef" : "${object.nodeRef}"
+	"nodeRef": "${object.nodeRef}"
 	,
-	"name" : "${object.name}"
+	"name": "${object.name}"
 	,
-	"type" : "${object.type}"
+	"type": "${object.type}"
 	,
-	"isCategory" : ${object.isCategory?string}
-
+	"isCategory": ${object.isCategory?string}
 <#if object.properties?exists>
 	,
-	"properties" :
+	"properties":
 	{
 	   <@serializeHash hash=object.properties/>
 	}
@@ -54,70 +54,56 @@
 
 <#if includeChildren && object.children?exists>
 	,
-	"children" :
+	"children":
 	[
 		<#assign first = true>
 		<#list object.children as child>
-			<#if first == false>
+		<#if first == false>
 		,
-			</#if>
+		</#if>
 		{
 			<@serialize object=child includeChildren=false includeContent=includeContent/>
 		}
-			<#assign first = false>
+		<#assign first = false>	
 		</#list>
 	]
 <#else>
 	,
-	"children" : []
+	"children": []
 </#if>
 
 <#if isUser && object.associations["cm:avatar"]?exists>
 	,
-	"associations" :
+	"associations":
 	{
-		"{http://www.alfresco.org/model/content/1.0}avatar" : ["${object.associations["cm:avatar"][0].nodeRef}"]
+		"{http://www.alfresco.org/model/content/1.0}avatar": ["${object.associations["cm:avatar"][0].nodeRef}"]
 	}
 </#if>
 
 <#if isUser>
-    ,
-    "capabilities" :
-    {
-        <@serializeHash hash=capabilities/>
-    }
+	,
+	"capabilities":
+	{
+		<@serializeHash hash=capabilities/>
+	}
 </#if>
-
+</#escape>
 </#macro>
 
 <#macro serializeHash hash>
-
+<#escape x as jsonUtils.encodeJSONString(x)>
 <#local first = true>
 <#list hash?keys as key>
-    <#if hash[key]?exists>
-        <#local val = hash[key]>
-        <#if isUser && object.isTemplateContent(val)>
-            <#if first == false>,</#if>
-            "${key}" : "${jsonUtils.encodeJSONString(val.content)}"
-            <#local first = false>
-        <#elseif object.isTemplateNodeRef(val)>
-            <#if first == false>,</#if>
-            "${key}" : "${val.nodeRef}"
-            <#local first = false>
-        <#elseif val?is_string == true>
-            <#if first == false>,</#if>
-            "${key}" : "${jsonUtils.encodeJSONString(val)}"
-            <#local first = false>
-        <#elseif val?is_date == true>
-            <#if first == false>,</#if>
-            "${key}" : "${val?datetime}"
-            <#local first = false>
-        <#elseif val?is_boolean == true>
-            <#if first == false>,</#if>
-            "${key}" : "${val?string}"
-            <#local first = false>
-        </#if>
-    </#if>
+	<#if hash[key]??>
+		<#local val = hash[key]>
+		<#if !first>,<#else><#local first = false></#if>"${key}":
+		<#if isUser && object.isTemplateContent(val)>"${val.content}"
+		<#elseif object.isTemplateNodeRef(val)>"${val.nodeRef}"
+		<#elseif val?is_date>"${val?datetime}"
+		<#elseif val?is_boolean>${val?string}
+		<#else>"${val}"
+		</#if>
+	</#if>
 </#list>
-
+</#escape>
 </#macro>

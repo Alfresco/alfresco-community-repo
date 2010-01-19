@@ -1,5 +1,5 @@
 <%--
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -119,9 +119,15 @@
                   <h:outputText id="outT3" value="#{msg.actions}" />
                </f:facet>
                <a:actionLink id="view-link" value="#{msg.view}" href="#{r.url}" target="new" image="#{r.fileType16}" style="padding-right:8px" />
-               <a:actionLink id="revert-link" value="#{msg.revert}" actionListener="#{DialogManager.bean.revertNode}" action="dialog:close" image="/images/icons/revert.gif">
-                  <f:param name="version" value="#{r.strVersion}" />
-               </a:actionLink>
+               
+               <r:permissionEvaluator id="eval2" value="#{DialogManager.bean.avmNode}" allow="Write">
+                  <r:actionInstanceEvaluator id="acEv1" value="#{DialogManager.bean.avmNode}" evaluatorClassName="org.alfresco.web.action.evaluator.WCMWorkflowEvaluator">
+                     <a:actionLink id="revert-link" value="#{msg.revert}" actionListener="#{DialogManager.bean.revertNode}" action="dialog:close" image="/images/icons/revert.gif">
+                        <f:param name="version" value="#{r.strVersion}" />
+                     </a:actionLink>
+                  </r:actionInstanceEvaluator>
+               </r:permissionEvaluator>
+               
             </a:column>
 
             <a:dataPager id="pager" styleClass="pager" />

@@ -41,6 +41,7 @@ import org.alfresco.service.cmr.workflow.WorkflowTask;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.wcm.asset.AssetInfo;
 import org.alfresco.wcm.asset.AssetInfoImpl;
+import org.alfresco.wcm.util.WCMUtil;
 import org.alfresco.web.bean.BrowseBean;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.NodePropertyResolver;
@@ -255,8 +256,8 @@ public class AVMNode extends Node implements Map<String, Object>
       }
       return !this.layeringDesc.isBackground();
    }
-
-   public final boolean isWorkflowInFlight(List<WorkflowTask> tasks)
+   
+   public final boolean isInActiveWorkflow(String sandbox)
    {
       if (this.workflowInFlight == null)
       {
@@ -266,7 +267,7 @@ public class AVMNode extends Node implements Map<String, Object>
          }
          else
          {
-            this.workflowInFlight = AVMWorkflowUtil.getAssociatedTasksForNode(this.avmRef, tasks).size() != 0;
+            this.workflowInFlight = AVMWorkflowUtil.isInActiveWorkflow(sandbox, this.getDescriptor());
          }
       }
       return this.workflowInFlight;

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2008 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -33,6 +33,7 @@ import javax.faces.context.FacesContext;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.avmsync.AVMSyncService;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.wcm.sandbox.SandboxService;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.dialog.BaseDialogBean;
 import org.alfresco.web.bean.repository.Repository;
@@ -43,7 +44,6 @@ import org.apache.commons.logging.LogFactory;
  * Base class for AVMCompare dialogs
  *
  * @author Dmitry Lazurkin
- *
  */
 public abstract class CompareSnapshotDialog extends BaseDialogBean
 {
@@ -53,6 +53,7 @@ public abstract class CompareSnapshotDialog extends BaseDialogBean
 
     private final static String MSG_CLOSE = "close";
     protected AVMBrowseBean avmBrowseBean;
+    transient private SandboxService sandboxService;
     transient private AVMService avmService;
     transient private AVMSyncService avmSyncService;
     protected NodeRef websiteRef;
@@ -108,7 +109,7 @@ public abstract class CompareSnapshotDialog extends BaseDialogBean
     @Override
     public String getContainerDescription()
     {
-        int prev = AVMCompareUtils.getPrevVersionID(getAvmService(), sandbox, version);
+        int prev = WCMCompareUtils.getPrevVersionID(getSandboxService(), sandbox, version);
         return MessageFormat.format(Application.getMessage(FacesContext.getCurrentInstance(), getDescription()), version, prev);
     }
 
@@ -157,6 +158,20 @@ public abstract class CompareSnapshotDialog extends BaseDialogBean
         }
 
         return avmService;
+    }
+
+    /**
+     * Getter for sandboxService service
+     * 
+     * @return sandboxService
+     */
+    public SandboxService getSandboxService()
+    {
+        if (sandboxService == null)
+        {
+            sandboxService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getSandboxService();
+        }
+        return sandboxService;
     }
 
     /**

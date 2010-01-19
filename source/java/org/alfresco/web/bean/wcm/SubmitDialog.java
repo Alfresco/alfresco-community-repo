@@ -53,7 +53,6 @@ import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.workflow.WorkflowDefinition;
 import org.alfresco.service.cmr.workflow.WorkflowService;
-import org.alfresco.service.cmr.workflow.WorkflowTask;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.springframework.extensions.surf.util.ISO8601DateFormat;
@@ -730,18 +729,15 @@ public class SubmitDialog extends BaseDialogBean
             Set<String> submittedPaths = new HashSet<String>(selected.size());
             this.submitItems = new ArrayList<ItemWrapper>(selected.size());
             this.warningItems = new ArrayList<ItemWrapper>(selected.size() >> 1);
-            List<WorkflowTask> tasks = null;
+            
             for (AVMNodeDescriptor node : selected)
             {
-               if (tasks == null)
-               {
-                  tasks = AVMWorkflowUtil.getAssociatedTasksForSandbox(AVMUtil.getStoreName(node.getPath()));
-               }
-               if (AVMWorkflowUtil.getAssociatedTasksForNode(node, tasks).size() != 0)
+               if (AVMWorkflowUtil.isInActiveWorkflow(this.avmBrowseBean.getStagingStore(), node))
                {
                   this.warningItems.add(new ItemWrapper(node));
                   continue;
                }
+               
                NodeRef ref = AVMNodeConverter.ToNodeRef(-1, node.getPath());
                if (submittedPaths.contains(node.getPath()))
                {

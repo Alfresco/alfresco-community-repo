@@ -71,7 +71,6 @@ import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.workflow.WorkflowService;
-import org.alfresco.service.cmr.workflow.WorkflowTask;
 import org.alfresco.wcm.asset.AssetInfo;
 import org.alfresco.wcm.asset.AssetInfoImpl;
 import org.alfresco.wcm.sandbox.SandboxInfo;
@@ -2254,18 +2253,11 @@ public class AVMBrowseBean implements IContextListener
       String sbStoreId = storePath[0];
       
       List<String> paths = new ArrayList<String>();
-      List<WorkflowTask> tasks = null;
       for (AssetInfo asset : assets)
       {
          if (asset.getDiffCode() == AVMDifference.CONFLICT)
          {
-            // TODO refactor getAssociatedTasksForNode to use AssetInfo instead of AVMNodeDescriptor
-            AVMNodeDescriptor node = ((AssetInfoImpl)asset).getAVMNodeDescriptor();
-            if (tasks == null)
-            {
-               tasks = AVMWorkflowUtil.getAssociatedTasksForSandbox(sbStoreId);
-            }
-            if (AVMWorkflowUtil.getAssociatedTasksForNode(node, tasks).size() == 0)
+            if (! AVMWorkflowUtil.isInActiveWorkflow(sbStoreId, asset.getPath()))
             {
                paths.add(asset.getPath());
             }

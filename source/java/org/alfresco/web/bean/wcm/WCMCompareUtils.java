@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2008 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -26,30 +26,34 @@ package org.alfresco.web.bean.wcm;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import javax.faces.context.FacesContext;
 
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.avm.AVMStoreDescriptor;
-import org.alfresco.service.cmr.avm.VersionDescriptor;
 import org.alfresco.service.cmr.avmsync.AVMDifference;
 import org.alfresco.service.cmr.avmsync.AVMSyncService;
 import org.alfresco.util.NameMatcher;
+import org.alfresco.wcm.sandbox.SandboxService;
+import org.alfresco.wcm.sandbox.SandboxVersion;
 import org.alfresco.web.app.Application;
 
 /**
  * AVMCompare Utils
- * @author ValerySh
  *
+ * @author ValerySh
  */
-public class AVMCompareUtils
+public class WCMCompareUtils
 {
-
+	
     /**
      * Get a difference map between two corresponding node trees.
+     * 
      * @param avmSyncService AVMSyncService
      * @param srcVersion The version id for the source tree.
      * @param srcPath The avm path to the source tree.
@@ -101,76 +105,74 @@ public class AVMCompareUtils
 
     /**
      * checks the version of the first is accessible for Store
-     * @param avmService AVMService
-     * @param name The name of the AVMStore
-     * @param version Version
+     * 
+     * @param versions versions of specified store.
+     * @param item Version
      * @return true if version is first
      */
-    public static boolean isFirstVersion(AVMService avmService, String name, int version)
+    public static boolean isFirstVersion(List<SandboxVersion> versions, SandboxVersion item)
     {
         boolean result = false;
-        List<Integer> allVersions = getAllVersionID(avmService, name);
-
-        if (version == Collections.min(allVersions))
-            result = true;
+        if (versions.size() > 0)
+        {
+            if (item.getVersion() == Collections.min(versions, new SandboxVersionComparator()).getVersion())
+            {
+                result = true;
+            }
+        }
         return result;
     }
 
     /**
      * checks the version of the last is accessible for Store
-     * @param avmService AVMService
-     * @param name The name of the AVMStore
-     * @param version Version
+     * 
+     * @param versions versions of specified store.
+     * @param item Version
      * @return true if version is latest
      */
-    public static boolean isLatestVersion(AVMService avmService, String name, int version)
+    public static boolean isLatestVersion(List<SandboxVersion> versions, SandboxVersion item)
     {
         boolean result = false;
-        List<Integer> allVersions = getAllVersionID(avmService, name);
-        if (version == Collections.max(allVersions))
-            result = true;
+        if (versions.size() > 0)
+        {
+            if (item.getVersion() == Collections.max(versions, new SandboxVersionComparator()).getVersion())
+            {
+                result = true;
+            }
+        }
         return result;
     }
 
     /**
-     * Get the versions id in an AVMStore
-     * @param avmService AVMService
-     * @param name The name of the AVMStore
-     * @return List versions id
-     */
-    public static List<Integer> getAllVersionID(AVMService avmService, String name)
-    {
-        List<Integer> allVersions = new ArrayList<Integer>();
-        List<VersionDescriptor> listVersion = avmService.getStoreVersions(name);
-        for (VersionDescriptor vd : listVersion)
-        {
-            if ((vd.getTag() != null || AVMUtil.isUserStore(name)) && vd.getVersionID() > 2)
-            {
-                allVersions.add(vd.getVersionID());
-            }
-        }
-
-        return allVersions;
-    }
-
-    /** Get Previous Version Id
-     * @param avmService AVMService
+     * Get Previous Version Id
+     * 
+     * @param sandboxService SandboxService
      * @param name The name of the AVMStore
      * @param version Current version Id
      * @return Previous Version Id
      */
-    public static int getPrevVersionID(AVMService avmService, String name, int version)
+    public static int getPrevVersionID(SandboxService sandboxService, String name, int version)
     {
-        List<Integer> allVersions = getAllVersionID(avmService, name);
+        List<Integer> allVersions = getAllVersionID(sandboxService, name);
         Collections.sort(allVersions);
         int index = allVersions.indexOf(version);
         if (index == 0)
+        {
             return 0;
+        }
+        else
+        {
+            if (index == -1)
+            {
+                return -1;
+            }
+        }
         return allVersions.get(index - 1);
     }
 
     /**
      * Receive Stores List
+     * 
      * @param avmService AVMService
      * @return List Stores name
      */
@@ -180,9 +182,42 @@ public class AVMCompareUtils
         List<AVMStoreDescriptor> storeDescs = avmService.getStores();
         for (AVMStoreDescriptor storeDesc : storeDescs)
         {
-            if (!storeDesc.getCreator().equalsIgnoreCase("system") && !AVMUtil.isPreviewStore(storeDesc.getName()))
+            if (!storeDesc.getCreator().equalsIgnoreCase(AuthenticationUtil.SYSTEM_USER_NAME) && !AVMUtil.isPreviewStore(storeDesc.getName()))
+            {
                 result.add(storeDesc.getName());
+            }
         }
         return result;
+    }
+
+    /**
+     * Get the versions id in an AVMStore
+     * 
+     * @param sandboxService SandboxService
+     * @param store The name of the AVMStore
+     * @return List versions id
+     */
+    public static List<Integer> getAllVersionID(SandboxService sandboxService, String store)
+    {
+        List<SandboxVersion> allVersions = sandboxService.listSnapshots(store, false);
+        List<Integer> result = new ArrayList<Integer>();
+        for (SandboxVersion sandboxVersion : allVersions)
+        {
+            result.add(sandboxVersion.getVersion());
+        }
+        return result;
+    }
+
+    /**
+     * Comparator for SandboxVersion class
+     */
+    private static class SandboxVersionComparator implements Comparator<SandboxVersion>
+    {
+
+        public int compare(SandboxVersion o1, SandboxVersion o2)
+        {
+            return ((Integer) o1.getVersion()).compareTo((Integer) o2.getVersion());
+        }
+
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -460,7 +460,9 @@ public class CreateWebContentWizard extends CreateContentWizard
             logger.debug("reset form instance data " + this.formInstanceData.getName() + 
                          " and " + this.renditions.size() + " rendition(s) to main store");
       }
-
+      
+      this.avmBrowseBean.setAvmActionNode(new AVMNode(this.getAvmService().lookup(-1, this.createdPath)));
+      
       return outcome;
    }
 

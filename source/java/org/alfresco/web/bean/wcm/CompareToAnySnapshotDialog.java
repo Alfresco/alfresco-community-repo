@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2008 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -65,10 +65,11 @@ public class CompareToAnySnapshotDialog extends CompareSnapshotDialog
     /**
      * Builds list of available version numbers
      */
-    private void buildAvailibleVersionNumbers()
+    private void buildAvailableVersionNumbers()
     {
         this.curAvailableVersionNumber = -1;
-        this.availableVersionNumbers = AVMCompareUtils.getAllVersionID(getAvmService(), userSpecifiedStore);
+        this.availableVersionNumbers = WCMCompareUtils.getAllVersionID(getSandboxService(), userSpecifiedStore);
+        Collections.sort(availableVersionNumbers);
     }
 
     @Override
@@ -78,7 +79,7 @@ public class CompareToAnySnapshotDialog extends CompareSnapshotDialog
         userSpecifiedStore = sandbox;
         userSpecifiedRoot = storeRoot;
         userSpecifiedVersion = -1;
-        buildAvailibleVersionNumbers();
+        buildAvailableVersionNumbers();
         this.compare = true;
         this.storeChanged = false;
     }
@@ -102,7 +103,7 @@ public class CompareToAnySnapshotDialog extends CompareSnapshotDialog
 
             if (isCorrectVersion(userSpecifiedVersion))
             {
-                nodes = AVMCompareUtils.getComparedNodes(getAvmSyncService(), version, storeRoot, userSpecifiedVersion, userSpecifiedRoot, null);
+                nodes = WCMCompareUtils.getComparedNodes(getAvmSyncService(), version, storeRoot, userSpecifiedVersion, userSpecifiedRoot, null);
             }
 
             return nodes;
@@ -118,7 +119,7 @@ public class CompareToAnySnapshotDialog extends CompareSnapshotDialog
      */
     public List<SelectItem> getStoresList()
     {
-        List<String> stores = AVMCompareUtils.receiveStoresList(getAvmService());
+        List<String> stores = WCMCompareUtils.receiveStoresList(getAvmService());
 
         List<SelectItem> result = new ArrayList<SelectItem>();
 
@@ -211,7 +212,7 @@ public class CompareToAnySnapshotDialog extends CompareSnapshotDialog
             this.userSpecifiedStore = userSpecifiedSnapshot;
             this.userSpecifiedRoot = AVMUtil.buildSandboxRootPath(this.userSpecifiedStore);
             this.userSpecifiedVersion = -1;
-            buildAvailibleVersionNumbers();
+            buildAvailableVersionNumbers();
         }
     }
 

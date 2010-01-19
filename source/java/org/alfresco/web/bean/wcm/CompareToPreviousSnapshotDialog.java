@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2008 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -31,7 +31,6 @@ import java.util.Map;
  * Class for compareToPreviousSnapshot dialog
  * 
  * @author ValerySh
- *
  */
 public class CompareToPreviousSnapshotDialog extends CompareSnapshotDialog
 {
@@ -42,8 +41,8 @@ public class CompareToPreviousSnapshotDialog extends CompareSnapshotDialog
 
     public List<Map<String, String>> getComparedNodes()
     {
-        int prevVersion = AVMCompareUtils.getPrevVersionID(getAvmService(), sandbox, version);
-        return AVMCompareUtils.getComparedNodes(getAvmSyncService(), version, storeRoot, prevVersion, storeRoot, null);
+        int prevVersion = WCMCompareUtils.getPrevVersionID(getSandboxService(), sandbox, version);
+        return WCMCompareUtils.getComparedNodes(getAvmSyncService(), version, storeRoot, prevVersion, storeRoot, null);
     }
 
     protected String getDescription()

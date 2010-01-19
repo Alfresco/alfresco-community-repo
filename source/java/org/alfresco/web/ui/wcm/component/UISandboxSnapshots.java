@@ -53,7 +53,7 @@ import org.alfresco.wcm.sandbox.SandboxVersion;
 import org.alfresco.wcm.util.WCMUtil;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.repository.Repository;
-import org.alfresco.web.bean.wcm.AVMCompareUtils;
+import org.alfresco.web.bean.wcm.WCMCompareUtils;
 import org.alfresco.web.bean.wcm.DeploymentUtil;
 import org.alfresco.web.ui.common.ComponentConstants;
 import org.alfresco.web.ui.common.Utils;
@@ -313,7 +313,7 @@ public class UISandboxSnapshots extends SelfRenderingComponent
                      * Utils.encodeRecursive(context, aquireAction( context, sandbox, ACT_SNAPSHOT_PREVIEW, null, null, null)); out.write("&nbsp;");
                      */
 
-                    boolean isLatestVersion = AVMCompareUtils.isLatestVersion(avmService, sandbox, version);
+                    boolean isLatestVersion = WCMCompareUtils.isLatestVersion(versions, item);
                     // /////////////////////////////////////////////////////////////////////////
                     if (!isLatestVersion)
                     {
@@ -335,7 +335,7 @@ public class UISandboxSnapshots extends SelfRenderingComponent
                         Utils.encodeRecursive(context, action);
                     }
 
-                    boolean isFirstVersion = AVMCompareUtils.isFirstVersion(avmService, sandbox, version);
+                    boolean isFirstVersion = WCMCompareUtils.isFirstVersion(versions, item);
                     if (!isFirstVersion)
                     {
                         out.write("&nbsp;&nbsp;");

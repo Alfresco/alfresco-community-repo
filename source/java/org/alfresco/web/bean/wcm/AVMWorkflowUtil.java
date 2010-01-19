@@ -32,7 +32,9 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.StringTokenizer;
 
 import javax.faces.context.FacesContext;
@@ -43,6 +45,7 @@ import org.alfresco.model.WCMAppModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avm.AVMService;
+import org.alfresco.service.cmr.avmsync.AVMSyncService;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
@@ -50,6 +53,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.workflow.WorkflowDefinition;
 import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.service.cmr.workflow.WorkflowTask;
+import org.alfresco.wcm.util.WCMUtil;
 import org.alfresco.wcm.util.WCMWorkflowUtil;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.repository.Repository;
@@ -66,6 +70,8 @@ import org.apache.commons.logging.LogFactory;
 public class AVMWorkflowUtil extends WorkflowUtil
 {
    private static final Log logger = LogFactory.getLog(AVMWorkflowUtil.class);
+   
+   private static final String PATH_CACHE = "_alf_sandbox_path_cache";
 
    // cached configured lists
    private static List<WorkflowDefinition> configuredWorkflowDefs = null;
@@ -176,7 +182,10 @@ public class AVMWorkflowUtil extends WorkflowUtil
       }
       return configuredWorkflowDefs;
    }
-
+   
+   /**
+    * @deprecated since 3.2
+    */
    public static List<WorkflowTask> getAssociatedTasksForSandbox(final String storeName)
    {
       FacesContext fc = FacesContext.getCurrentInstance();
@@ -184,10 +193,47 @@ public class AVMWorkflowUtil extends WorkflowUtil
       return WCMWorkflowUtil.getAssociatedTasksForSandbox(workflowService, storeName);
    }
    
+   /**
+    * @deprecated since 3.2
+    */
    public static List<WorkflowTask> getAssociatedTasksForNode(AVMNodeDescriptor node, List<WorkflowTask> tasks)
    {
       FacesContext fc = FacesContext.getCurrentInstance();
       AVMService avmService = Repository.getServiceRegistry(fc).getAVMService();
       return WCMWorkflowUtil.getAssociatedTasksForNode(avmService, node, tasks);
    }
+   
+   public static boolean isInActiveWorkflow(String sandbox, AVMNodeDescriptor node)
+   {
+       return isInActiveWorkflow(sandbox, WCMUtil.getStoreRelativePath(node.getPath()));
+   }
+   
+   public static boolean isInActiveWorkflow(String sandbox, String relativePath)
+   {
+       List<String> cachedPaths = AVMWorkflowUtil.getAssociatedPathsForSandbox(sandbox);
+       return (cachedPaths.contains(relativePath));
+   }
+   
+   private static List<String> getAssociatedPathsForSandbox(String sandbox)
+   {
+      FacesContext fc = FacesContext.getCurrentInstance();
+      AVMSyncService avmSyncService = Repository.getServiceRegistry(fc).getAVMSyncService();
+      WorkflowService workflowService = Repository.getServiceRegistry(fc).getWorkflowService();
+       
+      Map<String, List<String>> cachedSandboxPaths = (Map<String, List<String>>)fc.getExternalContext().getRequestMap().get(PATH_CACHE);
+      if (cachedSandboxPaths == null)
+      {
+         cachedSandboxPaths = new HashMap<String, List<String>>(64, 1.0f);
+         fc.getExternalContext().getRequestMap().put(PATH_CACHE, cachedSandboxPaths);
+      }
+       
+      List<String> cachedPaths = cachedSandboxPaths.get(sandbox);
+      if (cachedPaths == null)
+      {
+         cachedPaths = WCMWorkflowUtil.getAssociatedPathsForSandbox(avmSyncService, workflowService, sandbox);
+         cachedSandboxPaths.put(sandbox, cachedPaths);
+      }
+      
+      return cachedPaths;
+    }
 }

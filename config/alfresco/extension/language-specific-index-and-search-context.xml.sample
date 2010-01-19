@@ -10,9 +10,13 @@
     <!-- See MLAnalysisMode for all the available options -->
     
     <bean id="admLuceneIndexerAndSearcherFactory"
-        class="org.alfresco.repo.search.impl.lucene.LuceneIndexerAndSearcherFactory2">
+        parent="abstractLuceneIndexerAndSearcherFactory"
+        class="org.alfresco.repo.search.impl.lucene.ADMLuceneUnIndexedIndexAndSearcherFactory">
         <property name="nodeService">
             <ref bean="mlAwareNodeService" />
+        </property>
+        <property name="tenantService">
+            <ref bean="tenantService"/>
         </property>
         <property name="dictionaryService">
             <ref bean="dictionaryService" />
@@ -20,41 +24,17 @@
         <property name="nameSpaceService">
             <ref bean="namespaceService" />
         </property>
-        <property name="indexRootLocation">
-            <value>${dir.indexes}</value>
-        </property>
         <property name="contentService">
             <ref bean="contentService" />
         </property>
         <property name="queryRegister">
             <ref bean="queryRegisterComponent" />
         </property>
-        <property name="maxAtomicTransformationTime">
-            <value>${lucene.maxAtomicTransformationTime}</value>  <!-- milliseconds allowed for inline text transformation -->
+        <property name="threadPoolExecutor">
+            <ref bean="indexThreadPoolExecutor"></ref>
         </property>
-        <property name="queryMaxClauses">
-            <value>${lucene.query.maxClauses}</value>
-        </property>
-        <property name="indexerBatchSize">
-            <value>${lucene.indexer.batchSize}</value>
-        </property>
-        <property name="lockDirectory">
-            <value>${dir.indexes.lock}</value>
-        </property>
-        <property name="indexerMaxFieldLength">
-            <value>${lucene.indexer.maxFieldLength}</value>
-        </property>
-        <property name="writeLockTimeout">
-            <value>${lucene.write.lock.timeout}</value>
-        </property>
-        <property name="commitLockTimeout">
-            <value>${lucene.commit.lock.timeout}</value>
-        </property>
-        <property name="lockPollInterval">
-            <value>${lucene.lock.poll.interval}</value>
-        </property>
-		 <property name="defaultMLIndexAnalysisMode">
-            <value>EXACT_LANGUAGE_AND_ALL</value>
+        <property name="bulkLoader">
+            <ref bean="nodeDaoServiceImpl"></ref>
         </property>
 		<property name="defaultMLSearchAnalysisMode">
             <value>EXACT_LANGUAGE</value>

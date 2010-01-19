@@ -24,53 +24,16 @@
 --%>
 <%@ taglib uri="http://java.sun.com/jsf/html" prefix="h" %>
 <%@ taglib uri="http://java.sun.com/jsf/core" prefix="f" %>
-<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ taglib uri="/WEB-INF/alfresco.tld" prefix="a" %>
 <%@ taglib uri="/WEB-INF/repo.tld" prefix="r" %>
 
-<f:verbatim>
-<script type="text/javascript">
-function checkButtonState()
-{
-if (document.getElementById("dialog:dialog-body:file-name").value.length == 0)
-{
-document.getElementById("dialog:finish-button").disabled = true;
-}
-else
-{
-document.getElementById("dialog:finish-button").disabled = false;
-}
-}
-</script>
+<h:panelGrid columns="1" cellpadding="2" style="padding-top: 4px; padding-bottom: 4px;"
+             width="100%" rowClasses="wizardSectionHeading">
+   <h:outputText value="&nbsp;#{msg.link_properties}" escape="false" />
+</h:panelGrid>
 
-<table cellpadding="2" cellspacing="2" border="0" width="100%">
-<tr>
-<td colspan="2" class="wizardSectionHeading"></f:verbatim><h:outputText value="#{msg.link_properties}" /><f:verbatim></td>
-</tr>
-<tr><td colspan="2" class="paddingRow"></td></tr>
-<tr>
-<td><nobr></f:verbatim><h:outputText value="#{msg.file_name}" /><f:verbatim>:</nobr></td>
-<td width="90%">
-</f:verbatim><h:inputText id="file-name" value="#{DialogManager.bean.properties.name}" size="35" maxlength="1024"
-onkeyup="javascript:checkButtonState();" /><f:verbatim>&nbsp;*
-</td>
-</tr>
-<tr>
-<td><nobr></f:verbatim><h:outputText value="#{msg.title}" /><f:verbatim>:</nobr></td>
-<td>
-</f:verbatim><h:inputText id="title" value="#{DialogManager.bean.properties.title}" size="35" maxlength="1024" /><f:verbatim>
-</td>
-</tr>
-<tr>
-<td><nobr></f:verbatim><h:outputText value="#{msg.description}" /><f:verbatim>:</nobr></td>
-<td>
-</f:verbatim><h:inputText value="#{DialogManager.bean.properties.description}" size="35" maxlength="1024" /><f:verbatim>
-</td>
-</tr>
-<tr>
-<td><nobr></f:verbatim><h:outputText value="#{msg.link_destination}" /><f:verbatim>:</nobr></td>
-<td>
-</f:verbatim><h:outputText value="#{DialogManager.bean.destinationPath}" /><f:verbatim>
-</td>
-</tr>
-</table></f:verbatim>
+<r:propertySheetGrid id="link-props" value="#{DialogManager.bean.editableNode}"
+                     var="editLinkProps" columns="1" externalConfig="true" />
+
+
+

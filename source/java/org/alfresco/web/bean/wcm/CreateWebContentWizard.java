@@ -80,7 +80,6 @@ import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.common.component.UIListItem;
 import org.alfresco.web.ui.wcm.component.UIUserSandboxes;
 import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.w3c.dom.Document;
@@ -900,10 +899,7 @@ public class CreateWebContentWizard extends CreateContentWizard
 
    public String getFormDescriptionAttribute()
    {
-       if (StringUtils.isEmpty(this.formDescriptionAttribute))
-       {
-           this.formDescriptionAttribute = buildFormDescriptionAttribute();
-       }
+       this.formDescriptionAttribute = buildFormDescriptionAttribute();
        return this.formDescriptionAttribute;
    }
    

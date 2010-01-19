@@ -1289,7 +1289,8 @@ public class Schema2XForms implements Serializable
                                                               elementDecl,
                                                               compatibleTypes,
                                                               pathToRoot,
-                                                              resourceBundle);
+                                                              resourceBundle,
+                                                              occurs);
          }
       }
 
@@ -1342,7 +1343,8 @@ public class Schema2XForms implements Serializable
                                                          final XSElementDeclaration elementDecl,
                                                          final TreeSet<XSTypeDefinition> compatibleTypes,
                                                          final String pathToRoot,
-                                                         final ResourceBundle resourceBundle)
+                                                         final ResourceBundle resourceBundle,
+                                                         final SchemaUtil.Occurrence occurs)
       throws FormBuilderException
    {
       // look for compatible types
@@ -1364,14 +1366,18 @@ public class Schema2XForms implements Serializable
       // multiple compatible types for this element exist
       // in the schema - allow the user to choose from
       // between compatible non-abstract types
+      boolean isRepeated = isRepeated(occurs, controlType);
       Element bindElement = this.createBind(xformsDocument, pathToRoot + "/@xsi:type");
       String bindId = bindElement.getAttributeNS(null, "id");
       modelSection.appendChild(bindElement);
+      this.startBindElement(bindElement, schema, controlType, null, occurs);
 
       //add the "element" bind, in addition
-      final Element bindElement2 = this.createBind(xformsDocument, pathToRoot);
+      final Element bindElement2 = this.createBind(xformsDocument, 
+                  pathToRoot + (isRepeated ? "[position() != last()]" : ""));
       final String bindId2 = bindElement2.getAttributeNS(null, "id");
       modelSection.appendChild(bindElement2);
+      this.startBindElement(bindElement2, schema, controlType, null, occurs);
 
       // add content to select1
       final Map<String, Element> caseTypes =

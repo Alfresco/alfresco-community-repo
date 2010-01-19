@@ -251,11 +251,9 @@ public abstract class BaseAuthenticationFilter
     {
         SessionUser user = doInSystemTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<SessionUser>()
         {
-
             public SessionUser execute() throws Throwable
             {
                 // Setup User object and Home space ID etc.
-
                 final NodeRef personNodeRef = personService.getPerson(userName);
 
                 String name = (String) nodeService.getProperty(personNodeRef, ContentModel.PROP_USERNAME);
@@ -267,7 +265,6 @@ public abstract class BaseAuthenticationFilter
         });
 
         // Store the user on the session
-
         session.setAttribute(getUserAttributeName(), user);        
         setExternalAuth(session, externalAuth);
         return user;

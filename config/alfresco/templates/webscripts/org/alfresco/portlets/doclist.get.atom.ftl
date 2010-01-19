@@ -46,7 +46,7 @@
       <#assign isImage=(d.mimetype="image/gif" || d.mimetype="image/jpeg" || d.mimetype="image/png")>
       <#assign isMP3=(d.mimetype="audio/x-mpeg" || d.mimetype="audio/mpeg")>
       <#if (filter=0) ||
-           (filter=1 && d.mimetype="application/msword") ||
+           (filter=1 && d.mimetype="application/msword" || d.mimetype="application/vnd.openxmlformats-officedocument.wordprocessingml.document") ||
            (filter=2 && d.mimetype="text/html") ||
            (filter=3 && d.mimetype="application/pdf") ||
            (filter=4 && (dateCompare(d.properties["cm:modified"],date,weekms) == 1 || dateCompare(d.properties["cm:created"], date, weekms) == 1))>

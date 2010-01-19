@@ -592,11 +592,13 @@ public abstract class BaseNTLMAuthenticationFilter extends BaseSSOAuthentication
             // Check if the user has been authenticated, if so then setup the user environment
             if (authenticated == true)
             {
+                boolean userInit = false;
                 if (user == null)
                 {
                     try
                     {
                         user = createUserEnvironment(session, userName);
+                        userInit = true;
                     }
                     catch (AuthenticationException ex)
                     {
@@ -635,7 +637,7 @@ public abstract class BaseNTLMAuthenticationFilter extends BaseSSOAuthentication
                 if (logger.isDebugEnabled())
                     logger.debug("User logged on via NTLM, " + ntlmDetails);
                 
-                if (onLoginComplete(req, res))
+                if (onLoginComplete(context, req, res, userInit))
                 {
                     // Allow the user to access the requested page
                     chain.doFilter(req, res);

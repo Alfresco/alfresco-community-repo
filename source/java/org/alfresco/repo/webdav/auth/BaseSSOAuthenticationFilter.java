@@ -202,7 +202,7 @@ public abstract class BaseSSOAuthenticationFilter extends BaseAuthenticationFilt
      * @param res HttpServletResponse
      * @return true to continue filter chaining, false otherwise
      */
-    protected boolean onLoginComplete(HttpServletRequest req, HttpServletResponse res)
+    protected boolean onLoginComplete(ServletContext sc, HttpServletRequest req, HttpServletResponse res, boolean userInit)
         throws IOException
     {
     	return true;

@@ -21,7 +21,7 @@
    <#assign projectcount=0>
    <#assign search="TYPE:\"{http://www.alfresco.org/model/wcmappmodel/1.0}webfolder\"">
    <#list companyhome.childrenByLuceneSearch[search]?sort_by('name') as wp>
-      <#list wp.childAssocs["wca:webuser"] as user>
+      <#list wp.getChildAssocsByType("wca:webuser") as user>
          <#if user.properties["wca:username"] = person.properties.userName>
             <#assign projectcount=projectcount+1>
             <#-- construct the sandbox name based on the webproject and current username -->

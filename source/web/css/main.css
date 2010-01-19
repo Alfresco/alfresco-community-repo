@@ -667,7 +667,7 @@ a.topToolbarLinkHighlight, a.topToolbarLinkHighlight:link, a.topToolbarLinkHighl
 .navigatorPanelBody
 {
    height: 330px;
-   width: 220px;
+   width: 100%;
    overflow: auto;
 }
 

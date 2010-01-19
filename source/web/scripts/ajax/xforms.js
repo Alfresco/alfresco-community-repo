@@ -4762,11 +4762,23 @@ alfresco.constants.TINY_MCE_DEFAULT_SETTINGS =
   add_form_submit_trigger: false,
   theme_advanced_toolbar_location: "top",
   theme_advanced_toolbar_align: "left",
-  theme_advanced_buttons1: "",
+  theme_advanced_buttons1: "fullscreen,table",
   theme_advanced_buttons2: "",
   theme_advanced_buttons3: "",
   urlconverter_callback: "alfresco_TinyMCE_urlconverter_callback",
-  file_browser_callback: "alfresco_TinyMCE_file_browser_callback"
+  file_browser_callback: "alfresco_TinyMCE_file_browser_callback",
+  setup : function(ed)
+     {
+        // Fix for issue in browsers where content is not saved after fullscreen mode is toggled off
+        ed.onSetContent.add(function(ed, o) {
+              //if fullscreen plugin is available and o has these values, then we're coming out of fullscreen mode only
+              if ((ed.settings.plugins.indexOf('fullscreen')!=-1) && o.set && o.format==='raw' && o.initial===undefined)
+              {
+                 alfresco.xforms.RichTextEditor.currentInstance._commitValueChange(alfresco.xforms.RichTextEditor.currentInstance.getValue());                 
+              }
+         });
+         
+     }
 };
 
 tinyMCE.init($extend({}, alfresco.constants.TINY_MCE_DEFAULT_SETTINGS));

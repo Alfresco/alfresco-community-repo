@@ -1225,10 +1225,6 @@ public class AVMBrowseBean implements IContextListener
       String query = this.searchContext.buildQuery(getMinimumSearchLength());
       if (query == null)
       {
-         // failed to build a valid query, the user probably did not enter the
-         // minimum text required to construct a valid search
-         Utils.addErrorMessage(MessageFormat.format(Application.getMessage(FacesContext.getCurrentInstance(),
-               BrowseBean.MSG_SEARCH_MINIMUM), new Object[] {getMinimumSearchLength()}));
          this.folders = Collections.<Map>emptyList();
          this.files = Collections.<Map>emptyList();
          return;
@@ -1987,6 +1983,14 @@ public class AVMBrowseBean implements IContextListener
          this.searchContext = searchContext;
          
          resetFileFolderLists();
+
+         if (searchContext.buildQuery(getMinimumSearchLength()) == null)
+         {
+            // failed to build a valid query, the user probably did not enter the
+            // minimum text required to construct a valid search
+            Utils.addErrorMessage(MessageFormat.format(Application.getMessage(FacesContext.getCurrentInstance(),
+                  BrowseBean.MSG_SEARCH_MINIMUM), new Object[] {getMinimumSearchLength()}));
+         }
       }
    }
    

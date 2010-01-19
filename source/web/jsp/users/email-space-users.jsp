@@ -45,7 +45,8 @@
    {
       if (okEnabled)
       {
-         if (document.getElementById("dialog:dialog-body:subject").value.length == 0)
+         if (document.getElementById("dialog:dialog-body:subject").value.trim().length == 0 ||
+            document.getElementById("dialog:dialog-body:message").value.trim().length == 0)
          {
             document.getElementById("dialog:finish-button").disabled = true;
          }
@@ -91,7 +92,7 @@
    </h:panelGrid>
    
    <h:outputText value="#{msg.message}:"/>
-   <h:inputTextarea value="#{DialogManager.bean.mailHelper.body}" rows="4" cols="75" disabled="#{DialogManager.bean.mailHelper.usingTemplate != null}" />
+   <h:inputTextarea id="message" value="#{DialogManager.bean.mailHelper.body}" rows="4" cols="75" disabled="#{DialogManager.bean.mailHelper.usingTemplate != null}" onkeyup="javascript:checkButtonState();" />
 </h:panelGrid>
 
 </a:panel>

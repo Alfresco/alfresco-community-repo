@@ -24,6 +24,7 @@
  */
 package org.alfresco.wcm.util;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -36,6 +37,8 @@ import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avm.AVMNotFoundException;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.avm.LayeringDescriptor;
+import org.alfresco.service.cmr.avmsync.AVMDifference;
+import org.alfresco.service.cmr.avmsync.AVMSyncService;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.workflow.WorkflowService;
@@ -56,7 +59,7 @@ import org.apache.commons.logging.LogFactory;
 public class WCMWorkflowUtil
 {
     private static final Log logger = LogFactory.getLog(WCMWorkflowUtil.class);
-
+    
     public static NodeRef createWorkflowPackage(WorkflowService workflowService, AVMService avmService, SandboxInfo sandboxInfo)
     {
         // create package paths (layered to user sandbox area as target)
@@ -81,25 +84,30 @@ public class WCMWorkflowUtil
     
     public static List<WorkflowTask> getAssociatedTasksForSandbox(WorkflowService workflowService, final String storeName)
     {
+        long start = System.currentTimeMillis();
+        
         String fromPath = WCMUtil.buildStoreRootPath(storeName);
         WorkflowTaskQuery query = new WorkflowTaskQuery();
-      
+        
         HashMap<QName, Object> props = new HashMap<QName, Object>(1, 1.0f);
-      
+        
         props.put(WCMWorkflowModel.PROP_FROM_PATH, fromPath);
         query.setProcessCustomProps(props);
         query.setActive(true);
-      
+        
         List<WorkflowTask> tasks = workflowService.queryTasks(query);
-      
-        if (logger.isDebugEnabled())
+        
+        if (logger.isTraceEnabled())
         {
-            logger.debug("found " + tasks.size() + " tasks originating user sandbox " + fromPath);
+            logger.trace("getAssociatedTasksForSandbox: "+storeName+" (found "+tasks.size()+" tasks originating user sandbox "+fromPath+") in "+(System.currentTimeMillis()-start)+" msecs");
         }
       
        return tasks;
     }
-   
+    
+    /**
+     * @deprecated since 3.2
+     */
     public static List<WorkflowTask> getAssociatedTasksForNode(AVMService avmService, AVMNodeDescriptor node, List<WorkflowTask> tasks)
     {
         List<WorkflowTask> result = new LinkedList<WorkflowTask>();
@@ -139,10 +147,58 @@ public class WCMWorkflowUtil
       
         return result;
     }
-   
+    
+    /**
+     * @deprecated since 3.2
+     */
     public static List<WorkflowTask> getAssociatedTasksForNode(WorkflowService workflowService, AVMService avmService, AVMNodeDescriptor node)
     {
-        final List<WorkflowTask> tasks = WCMWorkflowUtil.getAssociatedTasksForSandbox(workflowService, WCMUtil.getSandboxStoreId(node.getPath()));
+        final List<WorkflowTask> tasks = getAssociatedTasksForSandbox(workflowService, WCMUtil.getSandboxStoreId(node.getPath()));
         return getAssociatedTasksForNode(avmService, node, tasks);
+    }
+    
+    public static List<String> getAssociatedPathsForSandbox(AVMSyncService avmSyncService, WorkflowService workflowService, String sandboxName)
+    {
+        long start = System.currentTimeMillis();
+        
+        List<WorkflowTask> tasks = getAssociatedTasksForSandbox(workflowService, sandboxName);
+        List<String> storeRelativePaths = getAssociatedPathsForSandboxTasks(avmSyncService, sandboxName, tasks);
+        
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("getAssociatedPathsForSandbox: "+sandboxName+" (tasks="+tasks.size()+", paths="+storeRelativePaths.size()+") in "+(System.currentTimeMillis()-start)+" msecs");
+        }
+        
+        return storeRelativePaths;
+    }
+    
+    private static List<String> getAssociatedPathsForSandboxTasks(AVMSyncService avmSyncService, String sandboxName, List<WorkflowTask> tasks)
+    {
+        long start = System.currentTimeMillis();
+        
+        String stagingSandboxName = WCMUtil.buildStagingStoreName(WCMUtil.getWebProjectStoreId(sandboxName));
+        List<String> storeRelativePaths = new ArrayList<String>(tasks.size());
+        
+        for (WorkflowTask task : tasks)
+        {
+            final NodeRef ref = task.path.instance.workflowPackage;
+            
+            String wfPath = AVMNodeConverter.ToAVMVersionPath(ref).getSecond();
+            String stagingSandboxPath = WCMUtil.getCorrespondingPath(wfPath, stagingSandboxName);
+            
+            List<AVMDifference> diffs = avmSyncService.compare(-1, wfPath, -1, stagingSandboxPath, null);
+            
+            for (AVMDifference diff : diffs)
+            {
+                storeRelativePaths.add(WCMUtil.getStoreRelativePath(diff.getSourcePath()));
+            }
+        }
+        
+        if (logger.isTraceEnabled())
+        {
+            logger.trace("getAssociatedPathsForSandboxTasks: "+sandboxName+" (tasks="+tasks.size()+", paths="+storeRelativePaths.size()+") in "+(System.currentTimeMillis()-start)+" msecs");
+        }
+        
+        return storeRelativePaths;
     }
 }

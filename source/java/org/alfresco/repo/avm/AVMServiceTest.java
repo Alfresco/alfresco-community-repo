@@ -1259,47 +1259,62 @@ public class AVMServiceTest extends AVMServiceTestBase
         try
         {
             setupBasicTree();
+            
             ContentWriter writer = fService.getContentWriter("main:/a/b/c/foo");
             writer.setEncoding("UTF-8");
             writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
             writer.putContent("I am main:/a/b/c/foo V1");
             fService.createSnapshot("main", "v1", null);
+            
             writer = fService.getContentWriter("main:/a/b/c/foo");
             writer.setEncoding("UTF-8");
             writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
             writer.putContent("I am main:/a/b/c/foo V2");
             fService.createSnapshot("main", "v2", null);
+            
             writer = fService.getContentWriter("main:/a/b/c/foo");
             writer.setEncoding("UTF-8");
             writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
             writer.putContent("I am main:/a/b/c/foo V3");
             fService.createSnapshot("main", "v3", null);
+            
             writer = fService.getContentWriter("main:/a/b/c/foo");
             writer.setEncoding("UTF-8");
             writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
             writer.putContent("I am main:/a/b/c/foo V4");
             fService.createSnapshot("main", "v4", null);
+            
             writer = fService.getContentWriter("main:/a/b/c/foo");
             writer.setEncoding("UTF-8");
             writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
             writer.putContent("I am main:/a/b/c/foo V5");
             fService.createSnapshot("main", "v5", null);
+            
             writer = fService.getContentWriter("main:/a/b/c/foo");
             writer.setEncoding("UTF-8");
             writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
             writer.putContent("I am main:/a/b/c/foo HEAD");
+            
             StoreRef storeRef = AVMNodeConverter.ToStoreRef("main");
+            
             SearchService searchService = fIndexerAndSearcher.getSearcher(storeRef, true);
+            
             ResultSet results = searchService.query(storeRef, "lucene", "TEXT:\"HEAD\"");
             assertEquals(0, results.length());
             results.close();
+            
             results = searchService.query(storeRef, "lucene", "TEXT:\"V5\"");
             assertEquals(1, results.length());
             results.close();
-
+            
+            results = searchService.query(storeRef, "lucene", "TEXT:\"V2\"");
+            assertEquals(0, results.length());
+            results.close();
+            
             AVMNodeDescriptor desc = fService.lookup(-1, "main:/a/b/c/foo");
             List<AVMNodeDescriptor> history = fService.getHistory(desc, 100);
             AVMNodeDescriptor toRevert = history.get(3);
+            
             final ActionImpl action = new ActionImpl(null, GUID.generate(), AVMRevertToVersionAction.NAME);
             action.setParameterValue(AVMRevertToVersionAction.TOREVERT, toRevert);
             final AVMRevertToVersionAction revert = (AVMRevertToVersionAction) fContext.getBean("avm-revert-to-version");
@@ -1307,26 +1322,15 @@ public class AVMServiceTest extends AVMServiceTestBase
             {
                 public Object execute() throws Exception
                 {
+                    // note: including implicit snapshot
                     revert.execute(action, AVMNodeConverter.ToNodeRef(-1, "main:/a/b/c/foo"));
                     return null;
                 }
-            }
-            ;
+            };
+            
             TransactionService transactionService = (TransactionService) fContext.getBean("transactionService");
             transactionService.getRetryingTransactionHelper().doInTransaction(new TxnWork());
-
-            results = searchService.query(storeRef, "lucene", "TEXT:\"HEAD\"");
-            assertEquals(0, results.length());
-            results.close();
-            results = searchService.query(storeRef, "lucene", "TEXT:\"V5\"");
-            assertEquals(1, results.length());
-            results.close();
-            results = searchService.query(storeRef, "lucene", "TEXT:\"V2\"");
-            assertEquals(0, results.length());
-            results.close();
-
-            fService.createSnapshot("main", "reverted", null);
-
+            
             results = searchService.query(storeRef, "lucene", "TEXT:\"HEAD\"");
             assertEquals(0, results.length());
             results.close();
@@ -1336,7 +1340,6 @@ public class AVMServiceTest extends AVMServiceTestBase
             results = searchService.query(storeRef, "lucene", "TEXT:\"V2\"");
             assertEquals(1, results.length());
             results.close();
-
         }
         catch (Exception e)
         {

@@ -34,6 +34,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
 
+import org.alfresco.repo.avm.util.AVMUtil;
 import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.service.cmr.avm.AVMBadArgumentException;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
@@ -703,10 +704,11 @@ public class AVMLockingAwareService implements AVMService, ApplicationContextAwa
      */
     public void removeNode(String parent, String name)
     {
-        grabLock(parent + '/' + name);
+        String path = AVMUtil.extendAVMPath(parent, name);
+        grabLock(path);
         fService.removeNode(parent, name);
         String[] storePath = parent.split(":");
-        fService.createSnapshot(storePath[0], null, null);
+        fService.createSnapshot(storePath[0], null, "Removed "+path);
         String webProject = getWebProject(storePath[0]);
         if (webProject != null)
         {
@@ -722,7 +724,7 @@ public class AVMLockingAwareService implements AVMService, ApplicationContextAwa
         grabLock(path);
         fService.removeNode(path);
         String[] storePath = path.split(":");
-        fService.createSnapshot(storePath[0], null, null);
+        fService.createSnapshot(storePath[0], null, "Removed "+path);
         String webProject = getWebProject(storePath[0]);
         if (webProject != null)
         {

@@ -29,6 +29,7 @@ import java.util.List;
 import org.alfresco.repo.action.ParameterDefinitionImpl;
 import org.alfresco.repo.action.executer.ActionExecuterAbstractBase;
 import org.alfresco.repo.avm.AVMNodeConverter;
+import org.alfresco.repo.avm.util.AVMUtil;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ParameterDefinition;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
@@ -77,9 +78,12 @@ public class AVMRevertToVersionAction extends ActionExecuterAbstractBase
     {
         Pair<Integer, String> versionPath = 
             AVMNodeConverter.ToAVMVersionPath(actionedUponNodeRef);
-        AVMNodeDescriptor toRevert = 
+        AVMNodeDescriptor toRevertTo = 
             (AVMNodeDescriptor)action.getParameterValue(TOREVERT);
-        fAVMService.revert(versionPath.getSecond(), toRevert);
+        fAVMService.revert(versionPath.getSecond(), toRevertTo);
+        
+        String[] storePath = AVMUtil.splitPath(versionPath.getSecond());
+        fAVMService.createSnapshot(storePath[0], null, "Reverted "+versionPath.getSecond()+" to version "+toRevertTo.getVersionID());
     }
 
     /* (non-Javadoc)

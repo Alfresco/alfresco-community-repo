@@ -961,30 +961,28 @@ public class SandboxServiceImpl implements SandboxService
         
         List<AssetInfo> assetsToRevert = new ArrayList<AssetInfo>(assets.size());
         
-        List<WorkflowTask> tasks = null;
+        List<String> wfRelativePaths = WCMWorkflowUtil.getAssociatedPathsForSandbox(avmSyncService, workflowService, sbStoreId);
+        
         for (AssetInfo asset : assets)
         {
-           if (tasks == null)
+           if (! asset.getSandboxId().equals(sbStoreId))
            {
-              tasks = WCMWorkflowUtil.getAssociatedTasksForSandbox(workflowService, WCMUtil.getSandboxStoreId(asset.getAvmPath()));
+               // belts-and-braces
+               logger.warn("revertListAssets: Skip assert "+asset.getPath()+" (was "+asset.getSandboxId()+", expected "+sbStoreId+")");
+               continue;
            }
            
-           // TODO refactor getAssociatedTasksForNode to use AssetInfo instead of AVMNodeDescriptor
-           AVMNodeDescriptor node = ((AssetInfoImpl)asset).getAVMNodeDescriptor();
-           
-           if (node != null)
+           // check if in workflow
+           if (! wfRelativePaths.contains(asset.getPath()))
            {
-               if (WCMWorkflowUtil.getAssociatedTasksForNode(avmService, node, tasks).size() == 0)
-               {
-                  assetsToRevert.add(asset);
-                  
-                  if (VirtServerUtils.requiresUpdateNotification(asset.getAvmPath()))
-                  {
-                      // Bind the post-commit transaction listener with data required for virtualization server notification
-                      UpdateSandboxTransactionListener tl = new UpdateSandboxTransactionListener(asset.getAvmPath());
-                      AlfrescoTransactionSupport.bindListener(tl);
-                  }
-               }
+              assetsToRevert.add(asset);
+              
+              if (VirtServerUtils.requiresUpdateNotification(asset.getAvmPath()))
+              {
+                  // Bind the post-commit transaction listener with data required for virtualization server notification
+                  UpdateSandboxTransactionListener tl = new UpdateSandboxTransactionListener(asset.getAvmPath());
+                  AlfrescoTransactionSupport.bindListener(tl);
+              }
            }
         }
         

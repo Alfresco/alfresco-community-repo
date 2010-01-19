@@ -567,10 +567,10 @@
         </property>
     </bean>
     
-    <!-- deprecated -->
+    <!-- deprecated - note: still used by Web-Client (FileDetailsBean) -->
     <bean id="avm-revert-to-version" class="org.alfresco.repo.avm.actions.AVMRevertToVersionAction" parent = "action-executer">
         <property name="avmService">
-            <ref bean="AVMService"/>
+            <ref bean="AVMLockingAwareService"/>
         </property>
         <property name="publicAction">
             <value>false</value>
@@ -590,7 +590,7 @@
         </property>
     </bean>
     
-    <!-- deprecated -->
+    <!-- deprecated - note: still used by Web-Client (*Deploy*) -->
     <bean id="avm-deploy-website" class="org.alfresco.repo.avm.actions.AVMDeployWebsiteAction" parent="action-executer">
       
       <!--  Run avm-deploy-website action on the deployment queue -->

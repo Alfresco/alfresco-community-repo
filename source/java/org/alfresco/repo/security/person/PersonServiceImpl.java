@@ -42,6 +42,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.cache.SimpleCache;
+import org.alfresco.repo.domain.hibernate.DirtySessionMethodInterceptor;
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
@@ -629,7 +630,9 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
                         homeFolderManager.makeHomeFolder(ref);
                         return null;
                     }
-                }, transactionService.isReadOnly(), false);
+                }, transactionService.isReadOnly(), transactionService.isReadOnly() ? false : AlfrescoTransactionSupport.getTransactionReadState() == TxnReadState.TXN_READ_ONLY);
+                //homeFolder = DefaultTypeConverter.INSTANCE.convert(NodeRef.class, nodeService.getProperty(person, ContentModel.PROP_HOMEFOLDER));
+                //assert(homeFolder != null);
             }
         }
     }

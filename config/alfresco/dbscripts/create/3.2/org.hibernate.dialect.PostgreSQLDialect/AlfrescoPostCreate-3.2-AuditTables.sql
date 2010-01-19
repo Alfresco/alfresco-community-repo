@@ -15,7 +15,7 @@ CREATE TABLE alf_audit_model
    CONSTRAINT fk_alf_aud_mod_cd FOREIGN KEY (content_data_id) REFERENCES alf_content_data (id),
    PRIMARY KEY (id)
 );
-CREATE UNIQUE INDEX idx_alf_audit_cfg_crc ON alf_audit_model(content_crc);
+CREATE UNIQUE INDEX idx_alf_aud_mod_cr ON alf_audit_model(content_crc);
 
 CREATE SEQUENCE alf_audit_model_seq START WITH 1 INCREMENT BY 1;
 
@@ -23,10 +23,10 @@ CREATE TABLE alf_audit_app
 (
    id INT8 NOT NULL,
    version INT4 NOT NULL,
-   app_name_id INT8 NOT NULL CONSTRAINT id_alf_aud_app_app UNIQUE,
+   app_name_id INT8 NOT NULL CONSTRAINT idx_alf_aud_app_an UNIQUE,
    audit_model_id INT8 NOT NULL,
    disabled_paths_id INT8 NOT NULL,
-   CONSTRAINT fk_alf_aud_app_app FOREIGN KEY (app_name_id) REFERENCES alf_prop_value (id),   
+   CONSTRAINT fk_alf_aud_app_an FOREIGN KEY (app_name_id) REFERENCES alf_prop_value (id),   
    CONSTRAINT fk_alf_aud_app_mod FOREIGN KEY (audit_model_id) REFERENCES alf_audit_model (id) ON DELETE CASCADE,
    CONSTRAINT fk_alf_aud_app_dis FOREIGN KEY (disabled_paths_id) REFERENCES alf_prop_root (id),
    PRIMARY KEY (id)
@@ -45,7 +45,7 @@ CREATE TABLE alf_audit_entry
    CONSTRAINT fk_alf_aud_ent_pro FOREIGN KEY (audit_values_id) REFERENCES alf_prop_root (id),
    PRIMARY KEY (id)
 );
-CREATE INDEX idx_alf_audit_ent_time ON alf_audit_entry(audit_time);
+CREATE INDEX idx_alf_aud_ent_tm ON alf_audit_entry(audit_time);
 
 CREATE SEQUENCE alf_audit_entry_seq START WITH 1 INCREMENT BY 1;
 

@@ -1867,25 +1867,36 @@ public class DeploymentServiceImpl implements DeploymentService
 	        }
 	    }
 	}
-	
-	private boolean isStale(AVMNodeDescriptor avmRef)
-	{
-	    // note: currently specific to WCM use-cases, eg. ETHREEOH-2758
-	    if ((avmRef.isLayeredDirectory() && avmRef.isPrimary()) || avmRef.isLayeredFile())
-	    {
-	        AVMNodeDescriptor parentNode = avmRef;
-	        
-	        while((parentNode.isLayeredDirectory() && parentNode.isPrimary()) || parentNode.isLayeredFile())
-	        {
-	            AVMNodeDescriptor childNode = fAVMService.lookup(avmRef.getIndirectionVersion(), avmRef.getIndirection());
-	            if(childNode == null)
-	            {
-	                // The child node is missing
-	                return true;
-	            }
-	            parentNode = childNode;	                
-	        }   
-	    }
-	    return false;
-	}
+    
+    private boolean isStale(AVMNodeDescriptor avmRef)
+    {
+        // note: currently specific to WCM use-cases, eg. ETHREEOH-2758
+        if ((avmRef.isLayeredDirectory() && avmRef.isPrimary()) || avmRef.isLayeredFile())
+        {
+            AVMNodeDescriptor srcNode = avmRef;
+            
+            while ((srcNode.isLayeredDirectory() && srcNode.isPrimary()) || srcNode.isLayeredFile())
+            {
+                AVMNodeDescriptor targetNode = fAVMService.lookup(srcNode.getIndirectionVersion(), srcNode.getIndirection());
+                if (targetNode == null)
+                {
+                    if (srcNode.isLayeredFile() ||
+                        (srcNode.isLayeredDirectory() &&
+                         (! srcNode.getOpacity()) &&
+                         fAVMService.getDirectoryListingDirect(srcNode, false).isEmpty()))
+                    {
+                        // The target node is missing
+                        return true;
+                    }
+                    else
+                    {
+                        // unbacked layered dir - however opaque or not directly empty
+                        return false;
+                    }
+                }
+                srcNode = targetNode;
+            }
+        }
+        return false;
+    }
 }

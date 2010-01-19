@@ -26,6 +26,9 @@ package org.alfresco.repo.security.person;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
+import org.alfresco.repo.transaction.AlfrescoTransactionSupport.TxnReadState;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -93,7 +96,8 @@ public class PersonServiceLoader
     public static void main(String[] args)
     {
         StringBuilder sb = new StringBuilder();
-        sb.append("\n").append("Usage\n").append("   PersonServiceLoader  --user=<username> --pwd=<password> --batch-count=<batch-count> --batch-size=<batch-size> --threads=<threads>\n");
+        sb.append("\n").append("Usage\n").append(
+                "   PersonServiceLoader  --user=<username> --pwd=<password> --batch-count=<batch-count> --batch-size=<batch-size> --threads=<threads>\n");
         String usage = sb.toString();
         ArgumentHelper argHelper = new ArgumentHelper(usage, args);
         try
@@ -110,20 +114,19 @@ public class PersonServiceLoader
             PersonServiceLoader loader = new PersonServiceLoader(ctx, batchSize, batchCount);
             loader.run(user, pwd, threads);
 
-
             // check the lazy creation
-            
+
             AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getSystemUserName());
-            
+
             final ServiceRegistry serviceRegistry = (ServiceRegistry) ctx.getBean(ServiceRegistry.SERVICE_REGISTRY);
             final AuthenticationService authenticationService = serviceRegistry.getAuthenticationService();
             final PersonService personService = serviceRegistry.getPersonService();
             final TransactionService transactionService = serviceRegistry.getTransactionService();
             final NodeService nodeService = serviceRegistry.getNodeService();
-            
+
             String firstName = "" + System.currentTimeMillis();
             String lastName = String.format("%05d", -1);
-            String username = GUID.generate();
+            final String username = GUID.generate();
             String emailAddress = String.format("%s.%s@xyz.com", firstName, lastName);
             PropertyMap properties = new PropertyMap(7);
             properties.put(ContentModel.PROP_USERNAME, username);
@@ -131,30 +134,36 @@ public class PersonServiceLoader
             properties.put(ContentModel.PROP_LASTNAME, lastName);
             properties.put(ContentModel.PROP_EMAIL, emailAddress);
             NodeRef madePerson = personService.createPerson(properties);
-            
+
             NodeRef homeFolder = DefaultTypeConverter.INSTANCE.convert(NodeRef.class, nodeService.getProperty(madePerson, ContentModel.PROP_HOMEFOLDER));
-            if(homeFolder != null)
+            if (homeFolder != null)
             {
-               throw new IllegalStateException("Home folder created eagerly");
+                throw new IllegalStateException("Home folder created eagerly");
             }
-            
-            NodeRef person = personService.getPerson(username);
-            homeFolder = DefaultTypeConverter.INSTANCE.convert(NodeRef.class, nodeService.getProperty(person, ContentModel.PROP_HOMEFOLDER));
-            if(homeFolder == null)
+
+            RetryingTransactionHelper helper = transactionService.getRetryingTransactionHelper();
+            helper.doInTransaction(new RetryingTransactionCallback<Void>()
             {
-               throw new IllegalStateException("Home folder not created lazily");
-            }
-        
+                public Void execute() throws Throwable
+                {
+                    NodeRef person = personService.getPerson(username);
+                    NodeRef homeFolder = DefaultTypeConverter.INSTANCE.convert(NodeRef.class, nodeService.getProperty(person, ContentModel.PROP_HOMEFOLDER));
+                    if (homeFolder == null)
+                    {
+                        throw new IllegalStateException("Home folder not created lazily");
+                    }
+                    return null;
+                }
+            }, true, true);
+
             
             NodeRef autoPerson = personService.getPerson(GUID.generate());
             NodeRef autoHomeFolder = DefaultTypeConverter.INSTANCE.convert(NodeRef.class, nodeService.getProperty(autoPerson, ContentModel.PROP_HOMEFOLDER));
-            if(autoHomeFolder == null)
+            if (autoHomeFolder == null)
             {
-               throw new IllegalStateException("Home folder not created lazily for auto created users");
+                throw new IllegalStateException("Home folder not created lazily for auto created users");
             }
-            
-            
-            
+
             // All done
             ApplicationContextHelper.closeApplicationContext();
             System.exit(0);
@@ -177,7 +186,7 @@ public class PersonServiceLoader
         Thread waiter;
 
         int batchSize;
-        
+
         int batchCount;
 
         ApplicationContext ctx;
@@ -239,9 +248,8 @@ public class PersonServiceLoader
                     double deltaMs = (double) (end - start) / 1000000.0D;
                     double ave = deltaMs / (double) batchSize;
                     System.out.println("\n"
-                            + Thread.currentThread().getName() +"\n"
-                            + "Batch users created: \n" + "   Batch Number:    " + i + "\n" + "   Batch Size:      " + batchSize + "\n" + "   Batch Time (ms): "
-                            + Math.floor(deltaMs) + "\n" + "   Average (ms):    " + Math.floor(ave));
+                            + Thread.currentThread().getName() + "\n" + "Batch users created: \n" + "   Batch Number:    " + i + "\n" + "   Batch Size:      " + batchSize + "\n"
+                            + "   Batch Time (ms): " + Math.floor(deltaMs) + "\n" + "   Average (ms):    " + Math.floor(ave));
                 }
             }
             catch (Exception e)

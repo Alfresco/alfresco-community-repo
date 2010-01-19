@@ -34,6 +34,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -48,6 +49,7 @@ import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.BaseSpringTest;
 import org.alfresco.util.EqualsHelper;
 import org.alfresco.util.GUID;
+import org.alfresco.util.PropertyMap;
 
 public class PersonTest extends BaseSpringTest
 {
@@ -97,6 +99,53 @@ public class PersonTest extends BaseSpringTest
         super.onTearDownInTransaction();
     }
 
+    public void xtestLazyHomeFolderCreation()
+    {
+        String firstName = "" + System.currentTimeMillis();
+        String lastName = String.format("%05d", -1);
+        final String username = GUID.generate();
+        String emailAddress = String.format("%s.%s@xyz.com", firstName, lastName);
+        PropertyMap properties = new PropertyMap(7);
+        properties.put(ContentModel.PROP_USERNAME, username);
+        properties.put(ContentModel.PROP_FIRSTNAME, firstName);
+        properties.put(ContentModel.PROP_LASTNAME, lastName);
+        properties.put(ContentModel.PROP_EMAIL, emailAddress);
+        final NodeRef madePerson = personService.createPerson(properties);
+
+        NodeRef homeFolder = DefaultTypeConverter.INSTANCE.convert(NodeRef.class, nodeService.getProperty(madePerson, ContentModel.PROP_HOMEFOLDER));
+        if (homeFolder != null)
+        {
+            throw new IllegalStateException("Home folder created eagerly");
+        }
+
+        setComplete();
+        endTransaction();
+        startNewTransaction();
+        
+        RetryingTransactionHelper helper = transactionService.getRetryingTransactionHelper();
+        helper.doInTransaction(new RetryingTransactionCallback<Void>()
+        {
+            public Void execute() throws Throwable
+            {
+                assertTrue(personService.personExists(username));
+                NodeRef person = personService.getPerson(username);
+                assertEquals(madePerson, person);
+                NodeRef homeFolder = DefaultTypeConverter.INSTANCE.convert(NodeRef.class, nodeService.getProperty(madePerson, ContentModel.PROP_HOMEFOLDER));
+                if (homeFolder == null)
+                {
+                   throw new IllegalStateException("Home folder not created lazily");
+                }
+                return null;
+            }
+        }, true, false);
+     
+        homeFolder = DefaultTypeConverter.INSTANCE.convert(NodeRef.class, nodeService.getProperty(madePerson, ContentModel.PROP_HOMEFOLDER));
+        if (homeFolder == null)
+        {
+            throw new IllegalStateException("Home folder not created lazily");
+        }
+    }
+    
     public void testZones()
     {
         assertNull(authorityService.getAuthorityZones("derek"));

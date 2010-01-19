@@ -51,6 +51,7 @@ import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.model.FileNotFoundException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
+import org.alfresco.service.cmr.repository.CyclicChildRelationshipException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -684,5 +685,21 @@ public class FileFolderServiceImplTest extends TestCase
         I18NUtil.setContentLocale(Locale.CANADA);
         FileFolderServiceType type = fileFolderService.getType(ContentModel.TYPE_FOLDER);
         assertEquals("Type incorrect for folder", FileFolderServiceType.FOLDER, type);
+    }
+    
+    public void testETHREEOH_3088_MoveIntoSelf() throws Exception
+    {
+        FileInfo folderInfo = fileFolderService.create(workingRootNodeRef, "NotGood.txt", ContentModel.TYPE_FOLDER);
+        NodeRef folderNodeRef = folderInfo.getNodeRef();
+        // Move into self
+        try
+        {
+            fileFolderService.move(folderNodeRef, folderNodeRef, null);
+            fail("Failed to detect cyclic relationship");
+        }
+        catch (CyclicChildRelationshipException e)
+        {
+            // Expected
+        }
     }
 }

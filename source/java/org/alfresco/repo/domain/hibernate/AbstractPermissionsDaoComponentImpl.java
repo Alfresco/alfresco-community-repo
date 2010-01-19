@@ -522,6 +522,7 @@ public abstract class AbstractPermissionsDaoComponentImpl implements Permissions
 
     public void setInheritParentPermissions(NodeRef nodeRef, boolean inheritParentPermissions)
     {
+        
         DbAccessControlList acl = getAccessControlList(nodeRef);
         if ((acl == null) && (inheritParentPermissions == INHERIT_PERMISSIONS_DEFAULT))
         {
@@ -541,9 +542,8 @@ public abstract class AbstractPermissionsDaoComponentImpl implements Permissions
         }
         else
         {
-            // TODO: Find inheritance
-            // ATM this should wire up any previous inheritance that existed
-            changes = aclDaoComponent.enableInheritance(report.getCreated().getId(), null);
+            Long parentAcl = getACLDAO(nodeRef).getInheritedAcl(nodeRef);
+            changes = aclDaoComponent.enableInheritance(report.getCreated().getId(), parentAcl);
         }
         List<AclChange> all = new ArrayList<AclChange>(changes.size() + report.getChanges().size());
         all.addAll(report.getChanges());

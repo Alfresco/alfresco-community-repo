@@ -36,7 +36,6 @@ import java.util.SortedMap;
 
 import org.alfresco.repo.avm.util.AVMUtil;
 import org.alfresco.repo.domain.PropertyValue;
-import org.alfresco.service.cmr.avm.AVMBadArgumentException;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.avm.AVMStoreDescriptor;
@@ -57,7 +56,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
 /**
- * An AVMLockingService aware implemantation of AVMService.
+ * An AVMLockingService aware implementation of AVMService.
  * @author britt
  */
 public class AVMLockingAwareService implements AVMService, ApplicationContextAware
@@ -130,7 +129,7 @@ public class AVMLockingAwareService implements AVMService, ApplicationContextAwa
      */
     public OutputStream createFile(String path, String name)
     {
-        grabLock(path + '/' + name);
+        grabLock(AVMUtil.extendAVMPath(path, name));
         return fService.createFile(path, name);
     }
 
@@ -139,7 +138,7 @@ public class AVMLockingAwareService implements AVMService, ApplicationContextAwa
      */
     public void createFile(String path, String name, InputStream in)
     {
-        grabLock(path + '/' + name);
+        grabLock(AVMUtil.extendAVMPath(path, name));
         fService.createFile(path, name, in);
     }
 
@@ -157,7 +156,7 @@ public class AVMLockingAwareService implements AVMService, ApplicationContextAwa
      */
     public void createLayeredFile(String targetPath, String parent, String name)
     {
-        grabLock(parent + '/' + name);
+        grabLock(AVMUtil.extendAVMPath(parent, name));
         fService.createLayeredFile(targetPath, parent, name);
     }
 
@@ -707,12 +706,12 @@ public class AVMLockingAwareService implements AVMService, ApplicationContextAwa
         String path = AVMUtil.extendAVMPath(parent, name);
         grabLock(path);
         fService.removeNode(parent, name);
-        String[] storePath = parent.split(":");
+        String[] storePath = AVMUtil.splitPath(parent);
         fService.createSnapshot(storePath[0], null, "Removed "+path);
         String webProject = getWebProject(storePath[0]);
         if (webProject != null)
         {
-            fLockingService.removeLocksInDirectory(webProject, storePath[0], storePath[1] + '/' + name);
+            fLockingService.removeLocksInDirectory(webProject, storePath[0], AVMUtil.extendAVMPath(storePath[1], name));
         }
     }
 
@@ -723,7 +722,7 @@ public class AVMLockingAwareService implements AVMService, ApplicationContextAwa
     {
         grabLock(path);
         fService.removeNode(path);
-        String[] storePath = path.split(":");
+        String[] storePath = AVMUtil.splitPath(path);
         fService.createSnapshot(storePath[0], null, "Removed "+path);
         String webProject = getWebProject(storePath[0]);
         if (webProject != null)
@@ -739,26 +738,34 @@ public class AVMLockingAwareService implements AVMService, ApplicationContextAwa
             String dstName)
     {
         // TODO Unresolved: how to deal with directory level locking.
-        // TODO This assumes that the rename occurs within the same web project.
         
-        String srcPath = srcParent + '/' + srcName;
+        String srcPath = AVMUtil.extendAVMPath(srcParent, srcName);
+        String dstPath = AVMUtil.extendAVMPath(dstParent, dstName);
         
         AVMNodeDescriptor desc = fService.lookup(-1, srcPath, false);
         if (! (desc != null && desc.isDirectory()))
         {
-            grabLock(srcParent + '/' + srcName);
+            grabLock(srcPath);
         }
         
         fService.rename(srcParent, srcName, dstParent, dstName);
         
         if (! (desc != null && desc.isDirectory()))
         {
-            String[] srcStorePath = splitPath(srcParent + '/' + srcName);
-            String[] dstStorePath = splitPath(dstParent + '/' + dstName);
-            String webProject = getWebProject(dstStorePath[0]);
-            if (webProject != null)
+            String[] srcStorePath = AVMUtil.splitPath(srcPath);
+            String[] dstStorePath = AVMUtil.splitPath(dstPath);
+            
+            String srcWebProject = getWebProject(srcStorePath[0]);
+            String dstWebProject = getWebProject(dstStorePath[0]);
+            
+            if ((dstWebProject != null) && (dstWebProject.equals(srcWebProject)))
             {
-                fLockingService.modifyLock(webProject, srcStorePath[1], dstStorePath[1], dstStorePath[0], null, null);
+                fLockingService.modifyLock(dstWebProject, srcStorePath[1], dstStorePath[1], dstStorePath[0], null, null);
+            }
+            else
+            {
+                fLockingService.removeLock(srcWebProject, srcStorePath[1]);
+                grabLock(dstPath);
             }
         }
     }
@@ -884,20 +891,10 @@ public class AVMLockingAwareService implements AVMService, ApplicationContextAwa
     public void uncover(String dirPath, String name)
     {
         // TODO What about when this is a directory?
-        grabLock(dirPath + '/' + name);
+        grabLock(AVMUtil.extendAVMPath(dirPath, name));
         fService.uncover(dirPath, name);
     }
-
-    private String[] splitPath(String path)
-    {
-        String[] storePath = path.split(":");
-        if (storePath.length != 2)
-        {
-            throw new AVMBadArgumentException("Invalid Path: " + path);
-        }
-        return storePath;
-    }
-
+    
     private String getWebProject(String name)
     {	
     	String wpStoreId = WCMUtil.getWebProjectStoreId(name);
@@ -915,7 +912,7 @@ public class AVMLockingAwareService implements AVMService, ApplicationContextAwa
         {
             return;
         }
-        String[] storePath = splitPath(path);
+        String[] storePath = AVMUtil.splitPath(path);
         String webProject = getWebProject(storePath[0]);
         if (webProject != null && webProject.equals(storePath[0]))
         {
@@ -965,7 +962,7 @@ public class AVMLockingAwareService implements AVMService, ApplicationContextAwa
      */
     public void createFile(String path, String name, InputStream in, List<QName> aspects, Map<QName, PropertyValue> properties)
     {
-        grabLock(path + '/' + name);
+        grabLock(AVMUtil.extendAVMPath(path, name));
         fService.createFile(path, name, in, aspects, properties);
     }
 }

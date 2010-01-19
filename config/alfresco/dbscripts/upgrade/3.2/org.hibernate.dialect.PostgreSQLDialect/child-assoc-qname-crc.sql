@@ -1,7 +1,7 @@
 --
 -- Title:      Upgrade to V3.2 - Add qname_crc column to alf_child_assoc 
 -- Database:   PostgreSQL
--- Since:      V3.2 schema 2023
+-- Since:      V3.2 schema 3006
 -- Author:     Pavel Yurkevich
 --
 -- Add qname_crc column to alf_child_assoc and change indexes

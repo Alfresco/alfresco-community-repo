@@ -78,7 +78,6 @@ import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.ResultSetRow;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.AccessPermission;
-import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
@@ -329,57 +328,6 @@ public class AVMServiceTest extends AVMServiceTestBase
         }
     }
 
-    /**
-     * Minimal testing of Locking Aware service.
-     */
-    public void testLockingAwareService() throws Exception
-    {
-        AVMService oldService = fService;
-        fService = (AVMService) fContext.getBean("AVMLockingAwareService");
-        AuthenticationService authService = (AuthenticationService) fContext.getBean("AuthenticationService");
-        
-        try
-        {
-              // note: locking applies to WCM web projects, hence relies on WCM sandbox conventions (naming and properties)
-            fService.setStoreProperty("main", SandboxConstants.PROP_WEB_PROJECT_NODE_REF, new PropertyValue(DataTypeDefinition.NODE_REF, new NodeRef("workspace://SpacesStore/dummy")));
-            
-            fService.createStore("main--admin");
-            
-            setupBasicTree0();
-
-
-            List<AVMDifference> diffs = fSyncService.compare(-1, "main:/", -1, "main--admin:/", null);
-            assertEquals(2, diffs.size());
-            assertEquals("[main:/a[-1] > main--admin:/a[-1], main:/d[-1] > main--admin:/d[-1]]", diffs.toString());
-            
-            fSyncService.update(diffs, null, false, false, false, false, null, null);
-            RetryingTransactionHelper.RetryingTransactionCallback<Object> cb = new RetryingTransactionHelper.RetryingTransactionCallback<Object>()
-            {
-                public Object execute() throws Exception
-                {
-                    BulkLoader loader = new BulkLoader();
-                    loader.setAvmService(fService);
-                    loader.recursiveLoad("source/java/org/alfresco/repo/avm", "main--admin:/");
-                    return null;
-                }
-            };
-            RetryingTransactionHelper helper = (RetryingTransactionHelper) fContext.getBean("retryingTransactionHelper");
-            helper.doInTransaction(cb);
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace();
-            throw e;
-        }
-        finally
-        {
-            fService = oldService;
-            fLockingService.removeStoreLocks("main");
-            fLockingService.removeWebProject("main");
-            authService.authenticate(AuthenticationUtil.getAdminUserName(), "admin".toCharArray());
-            fService.purgeStore("main--admin");
-        }
-    }
 
     /**
      * Test version by date lookup.
@@ -532,10 +480,14 @@ public class AVMServiceTest extends AVMServiceTestBase
             
             props = fService.getNodeProperties(-1, "main:/a/b/c/bar");
             assertEquals(0, props.size());
+            
             fService.removeNode("main:/a/b/c/foo");
-            fService.setNodeProperty("main:/a/b/c/foo", QName.createQName("silly.uri", "Prop1"), new PropertyValue(null, 42));
             assertEquals(1, fService.getNodeProperties(-1, "main:/a/b/c/foo").size());
+            fService.setNodeProperty("main:/a/b/c/foo", QName.createQName("silly.uri", "Prop1"), new PropertyValue(null, 42));
+            assertEquals(2, fService.getNodeProperties(-1, "main:/a/b/c/foo").size());
+            
             fService.createSnapshot("main", null, null);
+            
             results = searchService.query(storeRef, "lucene", LuceneQueryParser.escape("@{silly.uri}Prop1") + ":\"" + p1.getStringValue() + "\"");
             assertEquals(0, results.length());
             results.close();

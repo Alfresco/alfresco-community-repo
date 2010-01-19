@@ -134,6 +134,7 @@ import org.hibernate.Session;
 import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
 import org.hibernate.exception.ConstraintViolationException;
+import org.hibernate.exception.SQLGrammarException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.orm.hibernate3.HibernateCallback;
 import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
@@ -194,7 +195,8 @@ public class HibernateNodeDaoServiceImpl
     {
         DUPLICATE_CHILD_NAME_EXCEPTIONS = new Class[] {
                 ConstraintViolationException.class,
-                DataIntegrityViolationException.class
+                DataIntegrityViolationException.class,
+                SQLGrammarException.class                   // Hibernate misinterprets a MS SQL Server exception
                 };
     }
 
@@ -1992,7 +1994,6 @@ public class HibernateNodeDaoServiceImpl
      * @param childAssocChangingCallback        the callback in which the child assoc is modified
      * @return                                  Returns the callback's result
      */
-    @SuppressWarnings("unchecked")
     private Object writeChildAssocChanges(
             HibernateCallback childAssocChangingCallback,
             NodeRef parentNodeRef,
@@ -2022,18 +2023,31 @@ public class HibernateNodeDaoServiceImpl
                         e, "Exception while flushing child assoc to database");
                 throw ee;
             }
-            else
+            else if (constraintViolation instanceof SQLGrammarException)
             {
-                if (isDebugEnabled)
+                SQLGrammarException sqlge = (SQLGrammarException) constraintViolation;
+                if (sqlge.getMessage().contains("isolation") || sqlge.getCause().getMessage().contains("isolation"))
                 {
-                    logger.debug(
-                            "Duplicate child association detected: \n" +
-                            "   Parent node:     " + parentNodeRef + "\n" +
-                            "   Child node name: " + childName,
-                            e);
+                    // This will do to cover ETHREEOH-3170
                 }
-                throw new DuplicateChildNodeNameException(parentNodeRef, assocTypeQName, childName);
+                else
+                {
+                    // It was something else
+                    RuntimeException ee = AlfrescoRuntimeException.makeRuntimeException(
+                            e, "Exception while flushing child assoc to database");
+                    throw ee;
+                }
             }
+            // We caught an exception that indicates a duplicate child
+            if (isDebugEnabled)
+            {
+                logger.debug(
+                        "Duplicate child association detected: \n" +
+                        "   Parent node:     " + parentNodeRef + "\n" +
+                        "   Child node name: " + childName,
+                        e);
+            }
+            throw new DuplicateChildNodeNameException(parentNodeRef, assocTypeQName, childName);
         }
     }
     
@@ -2275,7 +2289,7 @@ public class HibernateNodeDaoServiceImpl
                         }
                         else if (aclProperties.getAclType() == ACLType.SHARED)
                         {
-                            setFixedAcls(childNodeId, inheritedAclId, true);
+                            setFixedAcls(childNodeId, inheritedAclId, true, null);
                         }
                     }
                     else
@@ -2301,7 +2315,7 @@ public class HibernateNodeDaoServiceImpl
                 {
                     Long parentAcl = newParentNode.getAccessControlList().getId();
                     Long inheritedAcl = aclDaoComponent.getInheritedAccessControlList(parentAcl);
-                    setFixedAcls(childNodeId, inheritedAcl, true);
+                    setFixedAcls(childNodeId, inheritedAcl, true, null);
                 } 
             }
         }
@@ -2317,16 +2331,26 @@ public class HibernateNodeDaoServiceImpl
      * This code is here, and not in another DAO, in order to avoid unnecessary circular callbacks
      * and cyclical dependencies.  It would be nice if the ACL code could be separated (or combined)
      * but the node tree walking code is best done right here.
-     * 
-     * @param nodeRef
-     * @param mergeFromAclId
-     * @param set
      */
     private void setFixedAcls(
             final Long nodeId,
             final Long mergeFromAclId,
-            final boolean set)
+            final boolean set,
+            Set<Long> processedNodes)
     {
+        // ETHREEOH-3088: Cut/Paste into same hierarchy
+        if (processedNodes == null)
+        {
+            processedNodes = new HashSet<Long>(3);
+        }
+        if (!processedNodes.add(nodeId))
+        {
+            logger.error(
+                    "Cyclic parent-child relationship detected: \n" +
+                    "   current node: " + nodeId);
+            throw new CyclicChildRelationshipException("Node has been pasted into its own tree.", null);
+        }
+        
         Node mergeFromNode = getNodeNotNull(nodeId);
         
         if (set)
@@ -2366,7 +2390,7 @@ public class HibernateNodeDaoServiceImpl
 
             if (acl == null)
             {
-                setFixedAcls(childNodeId, mergeFromAclId, true);
+                setFixedAcls(childNodeId, mergeFromAclId, true, processedNodes);
             }
             else if (acl.getAclType() == ACLType.LAYERED)
             {
@@ -2380,7 +2404,7 @@ public class HibernateNodeDaoServiceImpl
             }
             else
             {
-                    setFixedAcls(childNodeId, mergeFromAclId, true);
+                setFixedAcls(childNodeId, mergeFromAclId, true, processedNodes);
             }
         }
     }
@@ -3125,12 +3149,17 @@ public class HibernateNodeDaoServiceImpl
         criteria.setFlushMode(FlushMode.MANUAL);
 
         List<Node> nodeList = criteria.list();
-        List<Long> nodeIds = new ArrayList<Long>(nodeList.size());
+        Set<Long> nodeIds = new HashSet<Long>(nodeList.size()*2);
         for (Node node : nodeList)
         {
+            // We have duplicate nodes, so make sure we only process each node once
             Long nodeId = node.getId();
+            if (!nodeIds.add(nodeId))
+            {
+                // Already processed
+                continue;
+            }
             storeAndNodeIdCache.put(node.getNodeRef(), nodeId);
-            nodeIds.add(nodeId);
         }        
         
         if (nodeIds.size() == 0)
@@ -3646,12 +3675,12 @@ public class HibernateNodeDaoServiceImpl
             if (assocIdStack.contains(assocId))
             {
                 // the association was present already
-                throw new CyclicChildRelationshipException(
+                logger.error(
                         "Cyclic parent-child relationship detected: \n" +
                         "   current node: " + currentNodeId + "\n" +
                         "   current path: " + currentPath + "\n" +
-                        "   next assoc: " + assocId,
-                        assocRef);
+                        "   next assoc: " + assocId);
+                throw new CyclicChildRelationshipException("Node has been pasted into its own tree.", assocRef);
             }
             
             // push the assoc stack, recurse and pop

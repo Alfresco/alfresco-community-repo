@@ -67,6 +67,41 @@ public class PermissionServiceTest extends AbstractPermissionTest
         super();
         // TODO Auto-generated constructor stub
     }
+    
+    public void testMove()
+    {
+        runAs("admin");
+        NodeRef one = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}one"), ContentModel.TYPE_FOLDER).getChildRef();
+        permissionService.setPermission(one, "andy", PermissionService.CONTRIBUTOR, true);
+        NodeRef two = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}two"), ContentModel.TYPE_FOLDER).getChildRef();
+        NodeRef test = nodeService.createNode(one, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}test"), ContentModel.TYPE_FOLDER).getChildRef();
+        
+        runAs("andy");
+        assertEquals("andy", authenticationComponent.getCurrentUserName());
+        assertTrue(permissionService.hasPermission(test, PermissionService.CONTRIBUTOR) == AccessStatus.ALLOWED);
+        
+        runAs("admin");
+        permissionService.setInheritParentPermissions(test, false);
+        
+        runAs("andy");
+        assertEquals("andy", authenticationComponent.getCurrentUserName());
+        assertTrue(permissionService.hasPermission(test, PermissionService.CONTRIBUTOR) == AccessStatus.DENIED);
+        
+        runAs("admin");
+        nodeService.moveNode(test, two, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}test"));
+        assertEquals(two, nodeService.getPrimaryParent(test).getParentRef());
+        
+        runAs("andy");
+        assertEquals("andy", authenticationComponent.getCurrentUserName());
+        assertTrue(permissionService.hasPermission(test, PermissionService.CONTRIBUTOR) == AccessStatus.DENIED);
+        
+        runAs("admin");
+        permissionService.setInheritParentPermissions(test, true);
+        
+        runAs("andy");
+        assertEquals("andy", authenticationComponent.getCurrentUserName());
+        assertTrue(permissionService.hasPermission(test, PermissionService.CONTRIBUTOR) == AccessStatus.DENIED);
+    }
 
     public void testChangePersonUid()
     {

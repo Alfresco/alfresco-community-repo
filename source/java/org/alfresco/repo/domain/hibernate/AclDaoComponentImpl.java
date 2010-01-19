@@ -1434,7 +1434,7 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
         }
         else
         {
-            // Assuem we are just resetting it to inherit as before
+            // Assume we are just resetting it to inherit as before
             if (targetAcl.getInheritsFrom() != null)
             {
                 inheritedAcl = (DbAccessControlList) getHibernateTemplate().get(DbAccessControlListImpl.class, targetAcl.getInheritsFrom());

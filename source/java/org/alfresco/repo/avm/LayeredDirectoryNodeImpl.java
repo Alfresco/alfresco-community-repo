@@ -805,6 +805,8 @@ public class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements Layer
             ghost.setAncestor(child);
             ghost.setDeletedType(child.getType());
             ghost.copyCreationAndOwnerBasicAttributes(child);
+            ghost.copyAspects(child);
+            ghost.copyProperties(child);
             
             AVMDAOs.Instance().fAVMNodeDAO.update(ghost);
             

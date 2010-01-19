@@ -12,7 +12,7 @@ CREATE TABLE alf_audit_model
    id BIGINT NOT NULL AUTO_INCREMENT,
    content_data_id BIGINT NOT NULL,
    content_crc BIGINT NOT NULL,
-   UNIQUE INDEX idx_alf_audit_cfg_crc (content_crc),
+   UNIQUE INDEX idx_alf_aud_mod_cr (content_crc),
    CONSTRAINT fk_alf_aud_mod_cd FOREIGN KEY (content_data_id) REFERENCES alf_content_data (id),
    PRIMARY KEY (id)
 ) ENGINE=InnoDB;
@@ -24,8 +24,8 @@ CREATE TABLE alf_audit_app
    app_name_id BIGINT NOT NULL,
    audit_model_id BIGINT NOT NULL,
    disabled_paths_id BIGINT NOT NULL,
-   CONSTRAINT fk_alf_aud_app_app FOREIGN KEY (app_name_id) REFERENCES alf_prop_value (id),
-   CONSTRAINT UNIQUE id_alf_aud_app_app (app_name_id),
+   CONSTRAINT fk_alf_aud_app_an FOREIGN KEY (app_name_id) REFERENCES alf_prop_value (id),
+   CONSTRAINT UNIQUE idx_alf_aud_app_an (app_name_id),
    CONSTRAINT fk_alf_aud_app_mod FOREIGN KEY (audit_model_id) REFERENCES alf_audit_model (id) ON DELETE CASCADE,
    CONSTRAINT fk_alf_aud_app_dis FOREIGN KEY (disabled_paths_id) REFERENCES alf_prop_root (id),
    PRIMARY KEY (id)
@@ -39,7 +39,7 @@ CREATE TABLE alf_audit_entry
    audit_user_id BIGINT NULL,
    audit_values_id BIGINT NULL,
    CONSTRAINT fk_alf_aud_ent_app FOREIGN KEY (audit_app_id) REFERENCES alf_audit_app (id) ON DELETE CASCADE,
-   INDEX idx_alf_audit_ent_time (audit_time),
+   INDEX idx_alf_aud_ent_tm (audit_time),
    CONSTRAINT fk_alf_aud_ent_use FOREIGN KEY (audit_user_id) REFERENCES alf_prop_value (id),
    CONSTRAINT fk_alf_aud_ent_pro FOREIGN KEY (audit_values_id) REFERENCES alf_prop_root (id),
    PRIMARY KEY (id)

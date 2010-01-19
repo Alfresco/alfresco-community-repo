@@ -1,7 +1,7 @@
 --
 -- Title:      Upgrade to V3.2 - Add qname_crc column to alf_child_assoc 
 -- Database:   MySQL
--- Since:      V3.2 schema 2023
+-- Since:      V3.2 schema 3006
 -- Author:     davew
 --
 -- Add qname_crc column to alf_child_assoc and change indexes

@@ -907,7 +907,8 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
 
     public void setInheritParentPermissions(NodeRef nodeRef, boolean inheritParentPermissions)
     {
-        permissionsDaoComponent.setInheritParentPermissions(tenantService.getName(nodeRef), inheritParentPermissions);
+        NodeRef actualRef = tenantService.getName(nodeRef);
+        permissionsDaoComponent.setInheritParentPermissions(actualRef, inheritParentPermissions);
         accessCache.clear();
     }
 

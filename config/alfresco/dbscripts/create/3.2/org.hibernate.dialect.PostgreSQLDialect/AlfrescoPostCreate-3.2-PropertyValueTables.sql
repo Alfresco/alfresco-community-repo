@@ -15,8 +15,8 @@ CREATE TABLE alf_prop_class
    java_class_name_crc INT8 NOT NULL,   
    PRIMARY KEY (id)
 );
-CREATE UNIQUE INDEX idx_alf_prop_class_crc ON alf_prop_class(java_class_name_crc, java_class_name_short);
-CREATE INDEX idx_alf_prop_class_class ON alf_prop_class(java_class_name);
+CREATE UNIQUE INDEX idx_alf_propc_crc ON alf_prop_class(java_class_name_crc, java_class_name_short);
+CREATE INDEX idx_alf_propc_clas ON alf_prop_class(java_class_name);
 
 CREATE SEQUENCE alf_prop_class_seq START WITH 1 INCREMENT BY 1;
 
@@ -34,7 +34,7 @@ CREATE TABLE alf_prop_date_value
    day_of_week INT2 NOT NULL,   
    PRIMARY KEY (date_value)
 );
-CREATE INDEX idx_alf_prop_date_units ON alf_prop_date_value(full_year, month_of_year, day_of_month);
+CREATE INDEX idx_alf_propdt_dt ON alf_prop_date_value(full_year, month_of_year, day_of_month);
 
 CREATE TABLE alf_prop_double_value
 (
@@ -42,7 +42,7 @@ CREATE TABLE alf_prop_double_value
    double_value FLOAT8 NOT NULL,   
    PRIMARY KEY (id)
 );
-CREATE UNIQUE INDEX idx_alf_prop_dbl_val ON alf_prop_double_value(double_value);
+CREATE UNIQUE INDEX idx_alf_propd_val ON alf_prop_double_value(double_value);
 
 CREATE SEQUENCE alf_prop_double_value_seq START WITH 1 INCREMENT BY 1;
 
@@ -55,8 +55,8 @@ CREATE TABLE alf_prop_string_value
    string_crc INT8 NOT NULL,   
    PRIMARY KEY (id)
 );
-CREATE INDEX idx_alf_prop_str ON alf_prop_string_value(string_value);
-CREATE UNIQUE INDEX idx_alf_prop_crc ON alf_prop_string_value(string_end_lower, string_crc);
+CREATE INDEX idx_alf_props_str ON alf_prop_string_value(string_value);
+CREATE UNIQUE INDEX idx_alf_props_crc ON alf_prop_string_value(string_end_lower, string_crc);
 
 CREATE SEQUENCE alf_prop_string_value_seq START WITH 1 INCREMENT BY 1;
 
@@ -76,8 +76,8 @@ CREATE TABLE alf_prop_value
    long_value INT8 NOT NULL,   
    PRIMARY KEY (id)
 );
-CREATE INDEX idx_alf_prop_per ON alf_prop_value(persisted_type, long_value);
-CREATE UNIQUE INDEX idx_alf_prop_act ON alf_prop_value(actual_type_id, long_value);
+CREATE INDEX idx_alf_propv_per ON alf_prop_value(persisted_type, long_value);
+CREATE UNIQUE INDEX idx_alf_propv_act ON alf_prop_value(actual_type_id, long_value);
 
 CREATE SEQUENCE alf_prop_value_seq START WITH 1 INCREMENT BY 1;
 
@@ -96,12 +96,12 @@ CREATE TABLE alf_prop_link
    contained_in INT8 NOT NULL,
    key_prop_id INT8 NOT NULL,
    value_prop_id INT8 NOT NULL,
-   CONSTRAINT fk_alf_pr_li_root FOREIGN KEY (root_prop_id) REFERENCES alf_prop_root (id) ON DELETE CASCADE,
-   CONSTRAINT fk_alf_pr_li_key FOREIGN KEY (key_prop_id) REFERENCES alf_prop_value (id) ON DELETE CASCADE,
-   CONSTRAINT fk_alf_pr_li_val FOREIGN KEY (value_prop_id) REFERENCES alf_prop_value (id) ON DELETE CASCADE,   
+   CONSTRAINT fk_alf_propln_root FOREIGN KEY (root_prop_id) REFERENCES alf_prop_root (id) ON DELETE CASCADE,
+   CONSTRAINT fk_alf_propln_key FOREIGN KEY (key_prop_id) REFERENCES alf_prop_value (id) ON DELETE CASCADE,
+   CONSTRAINT fk_alf_propln_val FOREIGN KEY (value_prop_id) REFERENCES alf_prop_value (id) ON DELETE CASCADE,   
    PRIMARY KEY (root_prop_id, contained_in, prop_index)
 );
-CREATE INDEX idx_alf_prop_link_for ON alf_prop_link(root_prop_id, key_prop_id, value_prop_id);
+CREATE INDEX idx_alf_propln_for ON alf_prop_link(root_prop_id, key_prop_id, value_prop_id);
 
 CREATE TABLE alf_prop_unique_ctx
 (
@@ -110,12 +110,12 @@ CREATE TABLE alf_prop_unique_ctx
    value1_prop_id INT8 NOT NULL,
    value2_prop_id INT8 NOT NULL,
    value3_prop_id INT8 NOT NULL,   
-   CONSTRAINT fk_alf_pr_un_ctx_1 FOREIGN KEY (value1_prop_id) REFERENCES alf_prop_value (id) ON DELETE CASCADE,
-   CONSTRAINT fk_alf_pr_un_ctx_2 FOREIGN KEY (value2_prop_id) REFERENCES alf_prop_value (id) ON DELETE CASCADE,
-   CONSTRAINT fk_alf_pr_un_ctx_3 FOREIGN KEY (value3_prop_id) REFERENCES alf_prop_value (id) ON DELETE CASCADE,
+   CONSTRAINT fk_alf_propuctx_v1 FOREIGN KEY (value1_prop_id) REFERENCES alf_prop_value (id) ON DELETE CASCADE,
+   CONSTRAINT fk_alf_propuctx_v2 FOREIGN KEY (value2_prop_id) REFERENCES alf_prop_value (id) ON DELETE CASCADE,
+   CONSTRAINT fk_alf_propuctx_v3 FOREIGN KEY (value3_prop_id) REFERENCES alf_prop_value (id) ON DELETE CASCADE,
    PRIMARY KEY (id)
 );
-CREATE UNIQUE INDEX idx_alf_prop_unique_ctx ON alf_prop_unique_ctx(value1_prop_id, value2_prop_id, value3_prop_id);
+CREATE UNIQUE INDEX idx_alf_propuctx ON alf_prop_unique_ctx(value1_prop_id, value2_prop_id, value3_prop_id);
 
 CREATE SEQUENCE alf_prop_unique_ctx_seq START WITH 1 INCREMENT BY 1;
 

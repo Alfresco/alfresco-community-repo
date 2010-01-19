@@ -73,7 +73,6 @@
        </property>
        <property name="postCreateScriptUrls">
           <list>
-             <value>classpath:alfresco/dbscripts/create/2.2/${db.script.dialect}/AlfrescoPostCreate-2.2-MappedFKIndexes.sql</value>
              <value>classpath:alfresco/dbscripts/create/2.2/${db.script.dialect}/AlfrescoPostCreate-2.2-Extra.sql</value>
              <value>classpath:alfresco/dbscripts/create/2.2/${db.script.dialect}/post-create-indexes-04.sql</value>
              <value>classpath:alfresco/dbscripts/create/3.0/${db.script.dialect}/create-activities-extras.sql</value>
@@ -296,6 +295,14 @@
     <!-- Bootstrap any extensions -->
    
     <import resource="classpath*:alfresco/extension/bootstrap/*-context.xml" />
+    
+    <!--  Start third party transformer Subsystem, 
+          stated here so the index recovery can use open office transformation  -->
+    <bean id="thirdparty" class="org.alfresco.repo.management.subsystems.ChildApplicationContextFactory" parent="abstractPropertyBackedBean">
+        <property name="autoStart">
+            <value>true</value>
+        </property>
+    </bean>
 
     <!-- Perform index recovery before applying any patches -->
     <!-- rebuild the index if required - before we check that it is there -->
@@ -457,12 +464,7 @@
        </property>
     </bean>
 
-    <!--  Third party transformer Subsystem -->
-    <bean id="thirdparty" class="org.alfresco.repo.management.subsystems.ChildApplicationContextFactory" parent="abstractPropertyBackedBean">
-        <property name="autoStart">
-            <value>true</value>
-        </property>
-    </bean>
+
 
     <!--  User usage tracking (requires a query across all users on startup) -->
     <bean id="userUsageTrackingComponent" class="org.alfresco.repo.usage.UserUsageTrackingComponent">

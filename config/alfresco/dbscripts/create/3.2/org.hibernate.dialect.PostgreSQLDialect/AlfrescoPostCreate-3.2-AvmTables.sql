@@ -74,8 +74,7 @@
         length INT8,
         primary key (id)
     );
-	CREATE SEQUENCE avm_nodes_seq START WITH 1 INCREMENT BY 1;
-
+	
     create table avm_store_properties (
         id INT8 not null,
         avm_store_id INT8,
@@ -91,8 +90,7 @@
         serializable_value BYTEA,
         primary key (id)
     );
-	CREATE SEQUENCE avm_store_properties_seq START WITH 1 INCREMENT BY 1;
-
+	
     create table avm_stores (
         id INT8 not null,
         vers INT8 not null,
@@ -102,8 +100,7 @@
         acl_id INT8,
         primary key (id)
     );
-	CREATE SEQUENCE avm_stores_seq START WITH 1 INCREMENT BY 1;
-
+	
     create table avm_version_layered_node_entry (
         version_root_id INT8 not null,
         md5sum varchar(32) not null,
@@ -123,8 +120,7 @@
         primary key (id),
         unique (version_id, avm_store_id)
     );
-	CREATE SEQUENCE avm_version_roots_seq START WITH 1 INCREMENT BY 1;
-
+	
     alter table avm_aspects        
         add constraint fk_avm_nasp_n
         foreign key (node_id)

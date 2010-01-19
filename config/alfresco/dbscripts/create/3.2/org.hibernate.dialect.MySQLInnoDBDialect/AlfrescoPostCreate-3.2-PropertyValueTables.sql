@@ -86,9 +86,9 @@ CREATE TABLE alf_prop_link
    contained_in BIGINT NOT NULL,
    key_prop_id BIGINT NOT NULL,
    value_prop_id BIGINT NOT NULL,
-   CONSTRAINT fk_alf_prop_link_root FOREIGN KEY (root_prop_id) REFERENCES alf_prop_root (id) ON DELETE CASCADE,
-   CONSTRAINT fk_alf_prop_link_key FOREIGN KEY (key_prop_id) REFERENCES alf_prop_value (id) ON DELETE CASCADE,
-   CONSTRAINT fk_alf_prop_link_val FOREIGN KEY (value_prop_id) REFERENCES alf_prop_value (id) ON DELETE CASCADE,
+   CONSTRAINT fk_alf_pr_li_root FOREIGN KEY (root_prop_id) REFERENCES alf_prop_root (id) ON DELETE CASCADE,
+   CONSTRAINT fk_alf_pr_li_key FOREIGN KEY (key_prop_id) REFERENCES alf_prop_value (id) ON DELETE CASCADE,
+   CONSTRAINT fk_alf_pr_li_val FOREIGN KEY (value_prop_id) REFERENCES alf_prop_value (id) ON DELETE CASCADE,
    INDEX idx_alf_prop_link_for (root_prop_id, key_prop_id, value_prop_id),
    PRIMARY KEY (root_prop_id, contained_in, prop_index)
 ) ENGINE=InnoDB;
@@ -101,9 +101,9 @@ CREATE TABLE alf_prop_unique_ctx
    value2_prop_id BIGINT NOT NULL,
    value3_prop_id BIGINT NOT NULL,
    UNIQUE INDEX idx_alf_prop_unique_ctx (value1_prop_id, value2_prop_id, value3_prop_id),
-   CONSTRAINT fk_alf_prop_unique_ctx_1 FOREIGN KEY (value1_prop_id) REFERENCES alf_prop_value (id) ON DELETE CASCADE,
-   CONSTRAINT fk_alf_prop_unique_ctx_2 FOREIGN KEY (value2_prop_id) REFERENCES alf_prop_value (id) ON DELETE CASCADE,
-   CONSTRAINT fk_alf_prop_unique_ctx_3 FOREIGN KEY (value3_prop_id) REFERENCES alf_prop_value (id) ON DELETE CASCADE,
+   CONSTRAINT fk_alf_pr_un_ctx_1 FOREIGN KEY (value1_prop_id) REFERENCES alf_prop_value (id) ON DELETE CASCADE,
+   CONSTRAINT fk_alf_pr_un_ctx_2 FOREIGN KEY (value2_prop_id) REFERENCES alf_prop_value (id) ON DELETE CASCADE,
+   CONSTRAINT fk_alf_pr_un_ctx_3 FOREIGN KEY (value3_prop_id) REFERENCES alf_prop_value (id) ON DELETE CASCADE,
    PRIMARY KEY (id)
 ) ENGINE=InnoDB;
 

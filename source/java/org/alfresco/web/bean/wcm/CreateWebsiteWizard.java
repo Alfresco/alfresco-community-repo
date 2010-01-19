@@ -25,6 +25,7 @@
 package org.alfresco.web.bean.wcm;
 
 import java.io.Serializable;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -87,6 +88,7 @@ public class CreateWebsiteWizard extends BaseWizardBean
    private static final long serialVersionUID = 6480869380508635173L;
 
    private static final String MSG_USERROLES = "create_website_summary_users";
+   private static final String MSG_SERVER_ALREADY_EXIST = "server_already_exist";
    
    private static final String COMPONENT_FORMLIST = "form-list";
    private static final String COMPONENT_WORKFLOWLIST = "workflow-list";
@@ -1147,6 +1149,36 @@ public class CreateWebsiteWizard extends BaseWizardBean
    
    public String saveDeploymentServerConfig()
    {
+       String currentServerName = (String) editedDeployServerProps.get(DeploymentServerConfig.PROP_NAME);
+       if (currentServerName == null ||currentServerName.length() == 0)
+       {
+           currentServerName = "" + editedDeployServerProps.get(DeploymentServerConfig.PROP_HOST)+ ":" + editedDeployServerProps.get(DeploymentServerConfig.PROP_PORT);
+       }
+       for (DeploymentServerConfig server: deployServersList)
+       {
+            if (!server.getId().equals(currentDeployServer.getId()))
+            {
+               Map<String, Object> serverProps = server.getProperties();
+               String serverName = (String) serverProps.get(DeploymentServerConfig.PROP_NAME);
+               if (serverName == null ||serverName.length() == 0)
+               {
+                   serverName = "" + serverProps.get(DeploymentServerConfig.PROP_HOST)+ ":" + serverProps.get(DeploymentServerConfig.PROP_PORT);
+               }
+                
+               if (currentServerName.equals(serverName))
+               {
+                   if (this.inAddDeployServerMode)
+                   {
+                       this.deployServersList.remove(this.currentDeployServer);
+                       this.deployServersMap.remove(this.currentDeployServer.getId());
+                   }
+               
+                   Utils.addErrorMessage(MessageFormat.format(Application.getMessage(FacesContext.getCurrentInstance(), MSG_SERVER_ALREADY_EXIST), currentServerName));
+               
+                   return null;
+               }
+           }
+       }
       // set the edited properties
       this.currentDeployServer.setProperties(this.editedDeployServerProps);
       

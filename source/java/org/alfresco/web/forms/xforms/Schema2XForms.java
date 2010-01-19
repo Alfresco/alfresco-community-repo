@@ -23,14 +23,23 @@
  */
 package org.alfresco.web.forms.xforms;
 
-import java.io.File;
-import java.io.IOException;
 import java.io.Serializable;
-import java.io.StringWriter;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.*;
-import javax.xml.transform.*;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.MissingResourceException;
+import java.util.ResourceBundle;
+import java.util.Stack;
+import java.util.TreeMap;
+import java.util.TreeSet;
+
 import org.alfresco.service.namespace.NamespaceService;
 import org.springframework.extensions.surf.util.Pair;
 import org.alfresco.web.forms.XMLUtil;
@@ -40,12 +49,31 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.xerces.impl.xs.SchemaSymbols;
-import org.apache.xerces.xs.*;
+import org.apache.xerces.xs.StringList;
+import org.apache.xerces.xs.XSAnnotation;
+import org.apache.xerces.xs.XSAttributeDeclaration;
+import org.apache.xerces.xs.XSAttributeUse;
+import org.apache.xerces.xs.XSComplexTypeDefinition;
+import org.apache.xerces.xs.XSConstants;
+import org.apache.xerces.xs.XSElementDeclaration;
+import org.apache.xerces.xs.XSModel;
+import org.apache.xerces.xs.XSModelGroup;
+import org.apache.xerces.xs.XSMultiValueFacet;
+import org.apache.xerces.xs.XSObject;
+import org.apache.xerces.xs.XSObjectList;
+import org.apache.xerces.xs.XSParticle;
+import org.apache.xerces.xs.XSSimpleTypeDefinition;
+import org.apache.xerces.xs.XSTerm;
+import org.apache.xerces.xs.XSTypeDefinition;
 import org.chiba.xml.dom.DOMUtil;
 import org.chiba.xml.ns.NamespaceConstants;
 import org.chiba.xml.ns.NamespaceResolver;
-import org.w3c.dom.*;
-import org.w3c.dom.ls.*;
+import org.w3c.dom.Attr;
+import org.w3c.dom.Comment;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 /**
  * An abstract implementation of the Schema2XForms interface allowing
@@ -58,6 +86,7 @@ import org.w3c.dom.ls.*;
  */
 public class Schema2XForms implements Serializable
 {
+   private static final long serialVersionUID = -2751398323635817643L;
 
    /////////////////////////////////////////////////////////////////////////////
 
@@ -91,6 +120,7 @@ public class Schema2XForms implements Serializable
    private final String action;
    private final SubmitMethod submitMethod;
    private final String base;
+   @SuppressWarnings("unchecked")
    private final Stack parentStack = new Stack();
 
    /**
@@ -190,7 +220,9 @@ public class Schema2XForms implements Serializable
       {
          // will return null if no target namespace was specified
          this.targetNamespace = schemaNamespaces.item(0);
-         LOGGER.debug("using targetNamespace " + this.targetNamespace);
+         
+         if (LOGGER.isDebugEnabled())
+            LOGGER.debug("[buildXForm] using targetNamespace " + this.targetNamespace);
 
          for (int i = 0; i < schemaNamespaces.getLength(); i++)
          {
@@ -201,7 +233,7 @@ public class Schema2XForms implements Serializable
             final String prefix = schemaDocument.lookupPrefix(schemaNamespaces.item(i));
             if (LOGGER.isDebugEnabled())
             {
-               LOGGER.debug("adding namespace " + schemaNamespaces.item(i) +
+               LOGGER.debug("[buildXForm] adding namespace " + schemaNamespaces.item(i) +
                             " with prefix " + prefix +
                             " to xform and default instance element");
             }
@@ -225,7 +257,7 @@ public class Schema2XForms implements Serializable
       {
          throw new FormBuilderException("Invalid root element tag name ["
                                         + rootElementName
-                                        + ", targetNamespace="
+                                        + ", targetNamespace = "
                                         + this.targetNamespace
                                         + "]");
       }
@@ -244,9 +276,14 @@ public class Schema2XForms implements Serializable
       if (this.targetNamespace != null)
       {
          final String targetNamespacePrefix = schemaDocument.lookupPrefix(this.targetNamespace);
-         LOGGER.debug("adding target namespace " + this.targetNamespace +
+         
+         if (LOGGER.isDebugEnabled())
+         {
+            LOGGER.debug("[buildXForm] adding target namespace " + this.targetNamespace +
                       " with prefix " + targetNamespacePrefix +
                       " to xform and default instance element");
+         }
+         
          this.addNamespace(defaultInstanceDocumentElement,
                            targetNamespacePrefix,
                            this.targetNamespace);
@@ -269,7 +306,10 @@ public class Schema2XForms implements Serializable
                                                "expected " + rootElementName +
                                                ", got " + instanceDocumentElement.getNodeName());
          }
-         LOGGER.debug("importing rootElement from other document");
+         
+         if (LOGGER.isDebugEnabled())
+            LOGGER.debug("[buildXForm] importing rootElement from other document");
+         
          importedInstanceDocumentElement = (Element)
             xformsDocument.importNode(instanceDocumentElement, true);
          //add XMLSchema instance NS
@@ -327,6 +367,10 @@ public class Schema2XForms implements Serializable
       xformsDocument.getDocumentElement().insertBefore(comment,
                                                        xformsDocument.getDocumentElement().getFirstChild());
       xformsDocument.normalizeDocument();
+      
+      if (LOGGER.isDebugEnabled())
+         LOGGER.debug("[buildXForm] Returning XForm =\n" + XMLUtil.toString(xformsDocument));
+      
       return new Pair<Document, XSModel>(xformsDocument, schema);
    }
 
@@ -348,11 +392,14 @@ public class Schema2XForms implements Serializable
     * @param schemaNamespaces the namespaces used by the instance document needed for
     * initializing the xpath context.
     */
+   @SuppressWarnings("unchecked")
    public static void insertUpdatedNodes(final Element instanceDocumentElement,
                                          final Element prototypeDocumentElement,
                                          final HashMap<String, String> schemaNamespaces)
    {
-      LOGGER.debug("updating imported instance document");
+      if (LOGGER.isDebugEnabled())
+         LOGGER.debug("[insertUpdatedNodes] updating imported instance document");
+      
       final JXPathContext prototypeContext =
          JXPathContext.newContext(prototypeDocumentElement);
       prototypeContext.registerNamespace(NamespaceService.ALFRESCO_PREFIX,
@@ -378,7 +425,7 @@ public class Schema2XForms implements Serializable
          final Pointer p = (Pointer)it.next();
          if (LOGGER.isDebugEnabled())
          {
-            LOGGER.debug("evaluating prototype node " + p.asPath() +
+            LOGGER.debug("[insertUpdatedNodes] evaluating prototype node " + p.asPath() +
                          " normalized " + p.asPath().replaceAll("\\[\\d+\\]", ""));
          }
 
@@ -387,7 +434,9 @@ public class Schema2XForms implements Serializable
          {
             if (instanceContext.selectNodes(path).size() == 0)
             {
-               LOGGER.debug("copying " + path + " into imported instance");
+               if (LOGGER.isDebugEnabled())
+                  LOGGER.debug("[insertUpdatedNodes] copying " + path + " into imported instance");
+               
                // remove child elements - we want attributes but don't want to
                // copy any potential prototyp nodes
                final Node clone = ((Node)p.getNode()).cloneNode(true);
@@ -421,8 +470,13 @@ public class Schema2XForms implements Serializable
                path = path.replaceAll("\\/([^/]+)$", "[not(child::$1)]");
             }
             final List<Node> l = (List<Node>)instanceContext.selectNodes(path);
-            LOGGER.debug("appending node " + ((Node)p.getNode()).getNodeName() +
-                         " to the " + l.size() + " selected nodes matching path " + path);
+            
+            if (LOGGER.isDebugEnabled())
+            {
+               LOGGER.debug("[insertUpdatedNodes] appending node " + ((Node)p.getNode()).getNodeName() +
+                            " to the " + l.size() + " selected nodes matching path " + path);
+            }
+            
             for (Node n : l)
             {
                // remove child elements - we want attributes but don't want to
@@ -458,6 +512,7 @@ public class Schema2XForms implements Serializable
     * @param schemaNamespaces the namespaces used by the instance document needed for
     * initializing the xpath context.
     */
+   @SuppressWarnings("unchecked")
    public static void insertPrototypeNodes(final Element instanceDocumentElement,
                                            final Element prototypeDocumentElement,
                                            final HashMap<String, String> schemaNamespaces)
@@ -506,21 +561,21 @@ public class Schema2XForms implements Serializable
          final Pointer p = (Pointer)it.next();
          if (LOGGER.isDebugEnabled())
          {
-            LOGGER.debug("evaluating prototype node " + p.asPath());
+            LOGGER.debug("[insertPrototypeNodes] evaluating prototype node " + p.asPath());
          }
          String path = p.asPath().replaceAll("\\[\\d+\\]", "") + "[last()]";
          if (prototypesToInsert.containsKey(path))
          {
             if (LOGGER.isDebugEnabled())
             {
-               LOGGER.debug("already checked path " + path + " - ignoring.");
+               LOGGER.debug("[insertPrototypeNodes] already checked path " + path + " - ignoring.");
             }
             continue;
          }
 
          if (LOGGER.isDebugEnabled())
          {
-            LOGGER.debug("evaluating " + path + " against instance document");
+            LOGGER.debug("[insertPrototypeNodes] evaluating " + path + " against instance document");
          }
 
          List<Node> l = (List<Node>)instanceContext.selectNodes(path);
@@ -529,7 +584,7 @@ public class Schema2XForms implements Serializable
             // this is a 1 to n repeat - add a prototype node to the list of repeat instances
             if (LOGGER.isDebugEnabled())
             {
-               LOGGER.debug("path " + path + " evaluated to " + l.size() + " nodes");
+               LOGGER.debug("[insertPrototypeNodes] path " + path + " evaluated to " + l.size() + " nodes");
             }
             prototypesToInsert.put(path, new PrototypeInsertionData((Node)p.getNode(),
                                                                     l,
@@ -545,7 +600,7 @@ public class Schema2XForms implements Serializable
             l = (List<Node>)instanceContext.selectNodes(path);
             if (LOGGER.isDebugEnabled())
             {
-               LOGGER.debug("path " + path + " evaluated to " + l.size() + " nodes");
+               LOGGER.debug("[insertPrototypeNodes] path " + path + " evaluated to " + l.size() + " nodes");
             }
             prototypesToInsert.put(path, new PrototypeInsertionData((Node)p.getNode(),
                                                                     l,
@@ -558,7 +613,7 @@ public class Schema2XForms implements Serializable
             l = (List<Node>)instanceContext.selectNodes(path);
             if (LOGGER.isDebugEnabled())
             {
-               LOGGER.debug("path " + path + " evaluated to " + l.size() + " nodes");
+               LOGGER.debug("[insertPrototypeNodes] path " + path + " evaluated to " + l.size() + " nodes");
             }
             if (l.size() == 0)
             {
@@ -573,7 +628,7 @@ public class Schema2XForms implements Serializable
       // apply prototype nodes to all discovered insertion points
       if (LOGGER.isDebugEnabled())
       {
-         LOGGER.debug("instance dcoument before mutation " + 
+         LOGGER.debug("[insertPrototypeNodes] instance dcoument before mutation =\n" + 
                       XMLUtil.toString(instanceDocumentElement, true));
       }
       for (Map.Entry<String, PrototypeInsertionData> me : prototypesToInsert.entrySet())
@@ -581,7 +636,7 @@ public class Schema2XForms implements Serializable
          final PrototypeInsertionData data = me.getValue();
          if (LOGGER.isDebugEnabled())
          {
-            LOGGER.debug("adding prototype for " + data.prototype.getNodeName() + 
+            LOGGER.debug("[insertPrototypeNodes] adding prototype for " + data.prototype.getNodeName() + 
                          " from path " + me.getKey() +
                          " to " + data.nodes.size() + " nodes");
          }
@@ -592,7 +647,7 @@ public class Schema2XForms implements Serializable
             {
                if (LOGGER.isDebugEnabled())
                {
-                  LOGGER.debug("appending " + data.prototype.getNodeName() +
+                  LOGGER.debug("[insertPrototypeNodes] appending " + data.prototype.getNodeName() +
                                " to " + XMLUtil.buildXPath(n, instanceDocumentElement));
                }
                n.appendChild(data.prototype.cloneNode(true));
@@ -601,7 +656,7 @@ public class Schema2XForms implements Serializable
             {
                if (LOGGER.isDebugEnabled())
                {
-                  LOGGER.debug("inserting " + data.prototype.getNodeName() +
+                  LOGGER.debug("[insertPrototypeNodes] inserting " + data.prototype.getNodeName() +
                                " into " + XMLUtil.buildXPath(n.getParentNode(), 
                                                              instanceDocumentElement) +
                                " before " + XMLUtil.buildXPath(n.getNextSibling(),
@@ -614,7 +669,7 @@ public class Schema2XForms implements Serializable
             {
                if (LOGGER.isDebugEnabled())
                {
-                  LOGGER.debug("appending " + data.prototype.getNodeName() +
+                  LOGGER.debug("[insertPrototypeNodes] appending " + data.prototype.getNodeName() +
                                " to " + XMLUtil.buildXPath(n.getParentNode(),
                                                            instanceDocumentElement));
                }
@@ -623,7 +678,7 @@ public class Schema2XForms implements Serializable
          }
          if (LOGGER.isDebugEnabled())
          {
-            LOGGER.debug("instance dcoument after mutation " + 
+            LOGGER.debug("[insertPrototypeNodes] instance dcoument after mutation =\n" + 
                          XMLUtil.toString(instanceDocumentElement, true));
          }
       }
@@ -752,7 +807,7 @@ public class Schema2XForms implements Serializable
    {
       if (LOGGER.isDebugEnabled())
       {
-         LOGGER.debug("addChoicesForSelectSwitchControl, values=");
+         LOGGER.debug("[addChoicesForSelectSwitchControl] values = ");
          for (XSTypeDefinition type : choiceValues)
          {
             LOGGER.debug("  - " + type.getName());
@@ -766,7 +821,7 @@ public class Schema2XForms implements Serializable
          
          if (LOGGER.isDebugEnabled())
          {
-            LOGGER.debug("addChoicesForSelectSwitchControl, processing " + textValue);
+            LOGGER.debug("[addChoicesForSelectSwitchControl] processing " + textValue);
          }
 
          //build the case element
@@ -820,23 +875,31 @@ public class Schema2XForms implements Serializable
       }
       if (d.getLength() > 1)
       {
-         LOGGER.warn("expected exactly one value for " + namespace +
+         LOGGER.warn("[extractPropertyFromAnnotation] expected exactly one value for " + namespace +
                      ":" + elementName +
                      ". found " + d.getLength());
       }
       String result = DOMUtil.getTextNodeAsString(d.item(0));
-      LOGGER.debug(namespace + ":" + elementName + " = " + result);
+      
+      if (LOGGER.isDebugEnabled())
+         LOGGER.debug(namespace + ":" + elementName + " = " + result);
+      
       if (result.startsWith("${") && result.endsWith("}") && resourceBundle != null)
       {
          result = result.substring("${".length(), result.length() - "}".length());
-         LOGGER.debug("looking up key " + result + " in bundle " + resourceBundle);
+         
+         if (LOGGER.isDebugEnabled())
+            LOGGER.debug("[extractPropertyFromAnnotation] looking up key " + result + " in bundle " + resourceBundle);
+         
          try
          {
             result = resourceBundle.getString(result);
          }
          catch (MissingResourceException mse)
          {
-            LOGGER.debug("unable to find key " + result, mse);
+            if (LOGGER.isDebugEnabled())
+               LOGGER.debug("[extractPropertyFromAnnotation] unable to find key " + result, mse);
+            
             result = "$$" + result + "$$";
          }
       }
@@ -879,8 +942,8 @@ public class Schema2XForms implements Serializable
          {
             if (LOGGER.isDebugEnabled())
             {
-               LOGGER.debug("This attribute comes from an extension: recopy form controls. \n Model section: ");
-               LOGGER.debug(XMLUtil.toString(modelSection));
+               LOGGER.debug("[addAttributeSet] This attribute comes from an extension: recopy form controls. Model section =\n" + 
+                            XMLUtil.toString(modelSection));
             }
 
             //find the existing bind Id
@@ -907,7 +970,7 @@ public class Schema2XForms implements Serializable
             if (bindId != null)
             {
                if (LOGGER.isDebugEnabled())
-                  LOGGER.debug("bindId found: " + bindId);
+                  LOGGER.debug("[addAttributeSet] bindId found: " + bindId);
 
                JXPathContext context = JXPathContext.newContext(formSection.getOwnerDocument());
                final Pointer pointer =
@@ -916,8 +979,24 @@ public class Schema2XForms implements Serializable
                {
                   control = (Element)pointer.getNode();
                }
+               else if (LOGGER.isDebugEnabled())
+               {
+                  LOGGER.debug("[addAttributeSet] unable to resolve pointer for: //*[@" + NamespaceConstants.XFORMS_PREFIX + ":bind='" + bindId + "']");
+               }
             }
-
+            
+            if (LOGGER.isDebugEnabled())
+            {
+               if (control == null)
+               {
+                  LOGGER.debug("[addAttributeSet] control = <not found>");
+               }
+               else
+               {
+                  LOGGER.debug("[addAttributeSet] control = " + control.getTagName());
+               }
+            }
+            
             //copy it
             if (control == null)
             {
@@ -952,8 +1031,9 @@ public class Schema2XForms implements Serializable
                    ? pathToRoot + "@" + namespacePrefix + currentAttribute.getName()
                    : pathToRoot + "/@"+ namespacePrefix + currentAttribute.getName()));
 
-            LOGGER.debug("adding attribute " + attributeName +
-                         " at " + newPathToRoot);
+            if (LOGGER.isDebugEnabled())
+               LOGGER.debug("[addAttributeSet] adding attribute " + attributeName +" at " + newPathToRoot);
+            
             try
             {
                String defaultValue = (currentAttributeUse.getConstraintType() == XSConstants.VC_NONE
@@ -1011,16 +1091,16 @@ public class Schema2XForms implements Serializable
       {
          if (LOGGER.isDebugEnabled())
          {
-            LOGGER.debug("addComplexType: control type is null for pathToRoot="
+            LOGGER.debug("[addComplexType] addComplexType control type is null for pathToRoot = "
                          + pathToRoot);
          }
          return null;
       }
 
-      if (LOGGER.isDebugEnabled()) 
+      if (LOGGER.isDebugEnabled())
       {
-         LOGGER.debug("addComplexType for " + controlType.getName() +
-                      " owner " + (owner != null ? owner.getName() : "<no owner>"));
+         LOGGER.debug("[addComplexType] Start addComplexType for " + controlType.getName() + " (" + pathToRoot + ")," +
+                      " owner = " + (owner == null ? "null" : owner.getName()));
       }
 
       // add a group node and recurse
@@ -1046,12 +1126,6 @@ public class Schema2XForms implements Serializable
          relative = true;
       }
 
-      if (LOGGER.isDebugEnabled())
-      {
-         LOGGER.debug("addComplexType for " + controlType.getName() + "(" + pathToRoot + ")" +
-                      " owner = " + (owner == null ? "null" : owner.getName()));
-      }
-
       if (controlType.getContentType() == XSComplexTypeDefinition.CONTENTTYPE_MIXED ||
           (controlType.getContentType() == XSComplexTypeDefinition.CONTENTTYPE_SIMPLE &&
            controlType.getAttributeUses() != null &&
@@ -1060,7 +1134,7 @@ public class Schema2XForms implements Serializable
          XSTypeDefinition base = controlType.getBaseType();
          if (LOGGER.isDebugEnabled())
          {
-            LOGGER.debug("	Control type is mixed . base type=" + base.getName());
+            LOGGER.debug("[addComplexType] Control type is mixed, base type = " + base.getName());
          }
 
          if (base != null && base != controlType)
@@ -1080,13 +1154,13 @@ public class Schema2XForms implements Serializable
             }
             else
             {
-               LOGGER.warn("addComplexTypeChildren for mixed type with basic type complex !");
+               LOGGER.warn("[addComplexType] addComplexTypeChildren for mixed type with basic type complex!");
             }
          }
       }
       else if (LOGGER.isDebugEnabled())
       {
-         LOGGER.debug("	Content type = " + controlType.getContentType());
+         LOGGER.debug("[addComplexType] Control content type = " + controlType.getContentType());
       }
 
       // check for compatible subtypes
@@ -1122,7 +1196,7 @@ public class Schema2XForms implements Serializable
          final XSTerm term = particle.getTerm();
          if (LOGGER.isDebugEnabled())
          {
-            LOGGER.debug("Particle of " + controlType.getName() +
+            LOGGER.debug("[addComplexType] Particle of " + controlType.getName() +
                          " is" + (term instanceof XSModelGroup ? "" : " not") +
                          " a group: " + term.getClass().getName());
          }
@@ -1167,8 +1241,9 @@ public class Schema2XForms implements Serializable
 
       if (LOGGER.isDebugEnabled())
       {
-         LOGGER.debug("--->end of addComplexTypeChildren for " + controlType.getName());
+         LOGGER.debug("[addComplexType] End of addComplexType for " + controlType.getName());
       }
+      
       return groupElement;
    }
 
@@ -1187,7 +1262,8 @@ public class Schema2XForms implements Serializable
                               final ResourceBundle resourceBundle)
       throws FormBuilderException
    {
-      LOGGER.debug("adding element " + elementDecl + " at path " + pathToRoot);
+      if (LOGGER.isDebugEnabled())
+         LOGGER.debug("[addElement] adding element " + elementDecl + " at path " + pathToRoot);
 
       XSTypeDefinition controlType = elementDecl.getTypeDefinition();
       if (controlType == null)
@@ -1245,9 +1321,10 @@ public class Schema2XForms implements Serializable
       final boolean typeIsAbstract = ((XSComplexTypeDefinition)controlType).getAbstract();
       final TreeSet<XSTypeDefinition> compatibleTypes =
          typeName != null ? this.typeTree.get(typeName) : null;
+
       if (compatibleTypes == null && typeName != null && LOGGER.isDebugEnabled())
       {
-         LOGGER.debug("No compatible type found for " + typeName);
+         LOGGER.debug("[addElement] No compatible type found for " + typeName);
       }
 
       if (typeName != null && compatibleTypes != null)
@@ -1256,10 +1333,10 @@ public class Schema2XForms implements Serializable
 
          if (LOGGER.isDebugEnabled())
          {
-            LOGGER.debug("compatible types for " + typeName + ":");
+            LOGGER.debug("[addElement] compatible types for " + typeName + ":");
             for (XSTypeDefinition compType : compatibleTypes)
             {
-               LOGGER.debug("          compatible type name=" + compType.getName());
+               LOGGER.debug("[addElement]   compatible type name = " + compType.getName());
             }
          }
 
@@ -1296,23 +1373,26 @@ public class Schema2XForms implements Serializable
 
       if (!relative)
       {
-         LOGGER.debug("addElement: bind is not relative for " + elementDecl.getName());
+         if (LOGGER.isDebugEnabled())
+            LOGGER.debug("[addElement] bind is not relative for " + elementDecl.getName());
       }
       else
       {
 //         final SchemaUtil.Occurrence occurs = SchemaUtil.getOccurrence(elementDecl);
          //create the bind in case it is a repeat
-         LOGGER.debug("Adding empty bind for control " + controlType +
-                      " type " + typeName + 
-                      " nodeset " + pathToRoot +
-                      " occurs " + occurs);
-
+         if (LOGGER.isDebugEnabled())
+         {
+            LOGGER.debug("[addElement] Adding empty bind for control " + controlType +
+                         " type " + typeName + 
+                         " nodeset " + pathToRoot +
+                         " occurs " + occurs);
+         }
+         
          // create the <xforms:bind> element and add it to the model.
          boolean isRepeated = isRepeated(occurs, controlType);
          final Element bindElement = 
             this.createBind(xformsDocument, 
                             pathToRoot + (isRepeated ? "[position() != last()]" : ""));
-         final String bindId = bindElement.getAttributeNS(null, "id");
 
          modelSection.appendChild(bindElement);
          this.startBindElement(bindElement,
@@ -1347,6 +1427,9 @@ public class Schema2XForms implements Serializable
                                                          final SchemaUtil.Occurrence occurs)
       throws FormBuilderException
    {
+      if (LOGGER.isDebugEnabled())
+         LOGGER.debug("[addElementWithMultipleCompatibleTypes] adding element " + elementDecl + " at path " + pathToRoot);
+      
       // look for compatible types
       final XSTypeDefinition controlType = elementDecl.getTypeDefinition();
 
@@ -1361,8 +1444,6 @@ public class Schema2XForms implements Serializable
       //add compatible types
       enumValues.addAll(compatibleTypes);
 
-      final String caption = this.createCaption(elementDecl.getName() + " Type");
-
       // multiple compatible types for this element exist
       // in the schema - allow the user to choose from
       // between compatible non-abstract types
@@ -1375,7 +1456,6 @@ public class Schema2XForms implements Serializable
       //add the "element" bind, in addition
       final Element bindElement2 = this.createBind(xformsDocument, 
                   pathToRoot + (isRepeated ? "[position() != last()]" : ""));
-      final String bindId2 = bindElement2.getAttributeNS(null, "id");
       modelSection.appendChild(bindElement2);
       this.startBindElement(bindElement2, schema, controlType, null, occurs);
 
@@ -1386,7 +1466,6 @@ public class Schema2XForms implements Serializable
       //add switch
       final Element switchElement = xformsDocument.createElementNS(NamespaceConstants.XFORMS_NS,
                                                                    NamespaceConstants.XFORMS_PREFIX + ":switch");
-      final String switchId = this.setXFormsId(switchElement);
       switchElement.setAttributeNS(NamespaceConstants.XFORMS_NS,
                                    NamespaceConstants.XFORMS_PREFIX + ":bind",
                                    bindId);
@@ -1436,10 +1515,11 @@ public class Schema2XForms implements Serializable
          if (LOGGER.isDebugEnabled())
          {
             LOGGER.debug(type == null
-                         ? (">>>addElement: compatible type is null!! type=" +
-                            compatibleTypeName + ", targetNamespace=" + this.targetNamespace)
-                         : ("   >>>addElement: adding compatible type " + type.getName()));
+                         ? ("[addElementWithMultipleCompatibleTypes] compatible type is null!! type = " +
+                            compatibleTypeName + ", targetNamespace = " + this.targetNamespace)
+                         : ("[addElementWithMultipleCompatibleTypes] adding compatible type " + type.getName()));
          }
+         
          if (type == null || type.getTypeCategory() != XSTypeDefinition.COMPLEX_TYPE)
          {
             continue;
@@ -1467,7 +1547,7 @@ public class Schema2XForms implements Serializable
          // modify bind to add a "relevant" attribute that checks the value of @xsi:type
          if (LOGGER.isDebugEnabled())
          {
-            LOGGER.debug(XMLUtil.toString(bindElement2));
+            LOGGER.debug("[addElementWithMultipleCompatibleTypes] Model section =\n" + XMLUtil.toString(bindElement2));
          }
 
          final NodeList binds = bindElement2.getElementsByTagNameNS(NamespaceConstants.XFORMS_NS, "bind");
@@ -1478,7 +1558,7 @@ public class Schema2XForms implements Serializable
 
             if (LOGGER.isDebugEnabled())
             {
-               LOGGER.debug("Testing sub-bind with nodeset " + name);
+               LOGGER.debug("[addElementWithMultipleCompatibleTypes] Testing sub-bind with nodeset " + name);
             }
 
             if (!SchemaUtil.isElementDeclaredIn(name, (XSComplexTypeDefinition) type, false) &&
@@ -1488,7 +1568,7 @@ public class Schema2XForms implements Serializable
             }
             if (LOGGER.isDebugEnabled())
             {
-               LOGGER.debug("Element/Attribute " + name +
+               LOGGER.debug("[addElementWithMultipleCompatibleTypes] Element/Attribute " + name +
                             " declared in type " + type.getName() +
                             ": adding relevant attribute");
             }
@@ -1540,20 +1620,21 @@ public class Schema2XForms implements Serializable
       {
          return;
       }
-
+      
+      if (LOGGER.isDebugEnabled())
+      {
+         LOGGER.debug("[addGroup] Start of addGroup, from owner = " + owner.getName() +
+                      " and controlType = " + controlType.getName());
+         LOGGER.debug("[addGroup] group before =\n" + XMLUtil.toString(formSection));
+      }
+      
       final Element repeatSection = this.addRepeatIfNecessary(xformsDocument,
                                                               modelSection,
                                                               formSection,
                                                               owner.getTypeDefinition(),
                                                               pathToRoot,
                                                               occurs);
-
-      if (LOGGER.isDebugEnabled())
-      {
-         LOGGER.debug("addGroup from owner=" + owner.getName() +
-                      " and controlType=" + controlType.getName());
-      }
-
+      
       final XSObjectList particles = group.getParticles();
       for (int counter = 0; counter < particles.getLength(); counter++)
       {
@@ -1562,15 +1643,15 @@ public class Schema2XForms implements Serializable
          final SchemaUtil.Occurrence childOccurs = new SchemaUtil.Occurrence(currentNode);
          if (LOGGER.isDebugEnabled())
          {
-            LOGGER.debug("	: next term = " + term.getName() +
-                         " occurs = " + childOccurs);
+            LOGGER.debug("[addGroup] next term = " + term.getName() +
+                         ", occurs = " + childOccurs);
          }
 
          if (term instanceof XSModelGroup)
          {
             if (LOGGER.isDebugEnabled())
             {
-               LOGGER.debug("	term is a group");
+               LOGGER.debug("[addGroup] term is a group");
             }
 
             this.addGroup(xformsDocument,
@@ -1592,7 +1673,7 @@ public class Schema2XForms implements Serializable
 
             if (LOGGER.isDebugEnabled())
             {
-               LOGGER.debug("	term is an element declaration: "
+               LOGGER.debug("[addGroup] term is an element declaration: "
                             + term.getName());
             }
 
@@ -1604,8 +1685,8 @@ public class Schema2XForms implements Serializable
             {
                if (LOGGER.isDebugEnabled())
                {
-                  LOGGER.debug("This element comes from an extension: recopy form controls.\n Model Section=");
-                  LOGGER.debug(XMLUtil.toString(modelSection));
+                  LOGGER.debug("[addGroup] This element comes from an extension: recopy form controls. Model Section =\n" +
+                               XMLUtil.toString(modelSection));
                }
 
                //find the existing bind Id
@@ -1621,14 +1702,17 @@ public class Schema2XForms implements Serializable
                      bindId = bind.getAttributeNS(null, "id");
                   }
                }
-               LOGGER.debug("found bindId " + bindId + " for element " + element.getName());
+               
+               if (LOGGER.isDebugEnabled())
+                  LOGGER.debug("[addGroup] found bindId " + bindId + " for element " + element.getName());
+               
                //find the control
                Element control = null;
                if (bindId != null)
                {
                   if (LOGGER.isDebugEnabled())
                   {
-                     LOGGER.debug("bindId found: " + bindId);
+                     LOGGER.debug("[addGroup] bindId found: " + bindId);
                   }
 
                   final JXPathContext context =
@@ -1639,12 +1723,24 @@ public class Schema2XForms implements Serializable
                   {
                      control = (Element) pointer.getNode();
                   }
-                  else
+                  else if (LOGGER.isDebugEnabled())
                   {
-                     LOGGER.debug("unable to resolve pointer " + pointer.asPath());
+                     LOGGER.debug("[addGroup] unable to resolve pointer for: //*[@" + NamespaceConstants.XFORMS_PREFIX + ":bind='" + bindId + "']");
                   }
                }
 
+               if (LOGGER.isDebugEnabled())
+               {
+                  if (control == null)
+                  {
+                     LOGGER.debug("[addGroup] control = <not found>");
+                  }
+                  else
+                  {
+                     LOGGER.debug("[addGroup] control = " + control.getTagName());
+                  }
+               }
+               
                //copy it
                if (control == null)
                {
@@ -1691,10 +1787,13 @@ public class Schema2XForms implements Serializable
 
       if (LOGGER.isDebugEnabled())
       {
-         LOGGER.debug("--- end of addGroup from owner=" + owner.getName());
+         LOGGER.debug("[addGroup] group after =\n" + XMLUtil.toString(formSection));
+         LOGGER.debug("[addGroup] End of addGroup, from owner = " + owner.getName() +
+                      " and controlType = " + controlType.getName());
       }
    }
  
+   @SuppressWarnings("unchecked")
    private void addElementToGroup(final Document xformsDocument,
                                   final Element modelSection,
                                   final Element defaultInstanceElement,
@@ -1711,13 +1810,18 @@ public class Schema2XForms implements Serializable
       final String path = (pathToRoot.length() == 0
                            ? elementName
                            : pathToRoot + "/" + elementName);
-      LOGGER.debug("addElement to group " + elementName + " at "  + path + " parentStack " + this.parentStack);
+      
+      if (LOGGER.isDebugEnabled())
+         LOGGER.debug("[addElementToGroup] Start addElement to group " + elementName + " at "  + path + " parentStack " + this.parentStack);
       
       if (this.parentStack.contains(element))
       {
          throw new FormBuilderException("recursion detected at element " + elementName);
       }
-      LOGGER.debug("pushing element " + element + " onto parent stack");
+      
+      if (LOGGER.isDebugEnabled())
+         LOGGER.debug("[addElementToGroup] pushing element " + element + " onto parent stack");
+      
       this.parentStack.push(element);
 
       final Element newDefaultInstanceElement = xformsDocument.createElement(elementName);
@@ -1742,21 +1846,27 @@ public class Schema2XForms implements Serializable
                       path,
                       occurs,
                       resourceBundle);
-      LOGGER.debug("popped element " + this.parentStack.pop() + " from parent stack");
-
-
-//      final SchemaUtil.Occurrence occurs = SchemaUtil.getOccurrence(element);
-      LOGGER.debug("adding " + (occurs.maximum == 1
+      
+      if (LOGGER.isDebugEnabled())
+      {
+         LOGGER.debug("[addElementToGroup] popped element " + this.parentStack.pop() + " from parent stack");
+         LOGGER.debug("[addElementToGroup] adding " + (occurs.maximum == 1
                                 ? 1
                                 : occurs.minimum + 1) +
-                   " default instance element for " + elementName +
-                   " at path " + path);
+                      " default instance element for " + elementName +
+                      " at path " + path);
+      }
+      
       // update the default instance
       if (isRepeated(occurs, element.getTypeDefinition()))
       {
-         LOGGER.debug("adding " + (occurs.minimum + 1) +
-                      " default instance elements for " + elementName +
-                      " at path " + path);
+         if (LOGGER.isDebugEnabled())
+         {
+            LOGGER.debug("[addElementToGroup] adding " + (occurs.minimum + 1) +
+                         " default instance elements for " + elementName +
+                         " at path " + path);
+         }
+      
          for (int i = 0; i < occurs.minimum + 1; i++)
          {
             final Element e = (Element)newDefaultInstanceElement.cloneNode(true);
@@ -1771,8 +1881,12 @@ public class Schema2XForms implements Serializable
       }
       else
       {
-         LOGGER.debug("adding one default instance element for " + elementName +
-                      " at path " + path);
+         if (LOGGER.isDebugEnabled())
+         {
+            LOGGER.debug("[addElementToGroup] adding one default instance element for " + elementName +
+                         " at path " + path);
+         }
+         
          if (occurs.minimum == 0)
          {
             newDefaultInstanceElement.setAttributeNS(NamespaceConstants.XMLSCHEMA_INSTANCE_NS,
@@ -1780,6 +1894,11 @@ public class Schema2XForms implements Serializable
                                                      "true");
          }
          defaultInstanceElement.appendChild(newDefaultInstanceElement);
+      }
+      
+      if (LOGGER.isDebugEnabled())
+      {
+         LOGGER.debug("[addGroup] End of addElementToGroup, group = " + elementName);
       }
    }
 
@@ -1803,7 +1922,7 @@ public class Schema2XForms implements Serializable
 
       if (LOGGER.isDebugEnabled())
       {
-         LOGGER.debug("AddRepeatIfNecessary for multiple element for type " +
+         LOGGER.debug("[addRepeatIfNecessary] for multiple element for type " +
                       controlType.getName() + ", maxOccurs = " + o.maximum);
       }
 
@@ -1825,8 +1944,8 @@ public class Schema2XForms implements Serializable
       }
       else
       {
-         LOGGER.warn("addRepeatIfNecessary: bind not found: " + bind
-                     + " (model selection name=" + modelSection.getNodeName() + ")");
+         LOGGER.warn("[addRepeatIfNecessary] bind not found: " + bind
+                     + " (model selection name = " + modelSection.getNodeName() + ")");
 
          //if no bind is found -> modelSection is already a bind, get its parent last child
          bind = DOMUtil.getLastChildElement(modelSection.getParentNode());
@@ -1839,7 +1958,7 @@ public class Schema2XForms implements Serializable
          }
          else
          {
-            LOGGER.warn("addRepeatIfNecessary: bind really not found");
+            LOGGER.warn("[addRepeatIfNecessary] bind really not found");
          }
       }
 
@@ -1881,13 +2000,12 @@ public class Schema2XForms implements Serializable
    {
       if (LOGGER.isDebugEnabled())
       {
-         LOGGER.debug("addSimpleType for " + controlType.getName() +
-                      " (owningElementName=" + owningElementName + ")" +
-                      " occurs = " + occurs);
+         LOGGER.debug("[addSimpleType] for " + controlType.getName() +
+                      " (owningElementName = " + owningElementName + ")," +
+                      " occurs = [" + occurs + "]");
          if (owner != null)
          {
-            LOGGER.debug("owner is " + owner.getClass() +
-                         ", name is " + owner.getName());
+            LOGGER.debug("[addSimpleType] owner is " + owner.getClass() + ", name is " + owner.getName());
          }
       }
 
@@ -2098,7 +2216,9 @@ public class Schema2XForms implements Serializable
           schema.getTypeDefinition(typeName, typeNS) == null ||
           (typeNS != null && NamespaceConstants.XMLSCHEMA_NS.equals(typeNS)))
       {
-         LOGGER.debug("using built in type for " + typeName);
+         if (LOGGER.isDebugEnabled())
+            LOGGER.debug("[getXFormsTypeName] using built in type for " + typeName);
+         
          //use built in type
          return SchemaUtil.getBuiltInTypeName(controlType);
       }
@@ -2126,7 +2246,7 @@ public class Schema2XForms implements Serializable
          }
          if (LOGGER.isDebugEnabled())
          {
-            LOGGER.debug("resolved namespace prefix for uri " + typeNS + 
+            LOGGER.debug("[getXFormsTypeName] resolved namespace prefix for uri " + typeNS + 
                          " to " + prefix +
                          " using document element " + context);
          }
@@ -2134,9 +2254,9 @@ public class Schema2XForms implements Serializable
 
       if (LOGGER.isDebugEnabled())
       {
-         LOGGER.debug("getXFormsTypeName: typeName=" + typeName +
-                      ", typeNS=" + typeNS +
-                      ", result=" + result);
+         LOGGER.debug("[getXFormsTypeName] typeName = " + typeName +
+                      ", typeNS = " + typeNS +
+                      ", result = " + result);
       }
       return result;
    }
@@ -2209,10 +2329,10 @@ public class Schema2XForms implements Serializable
          xformsDocument.createElementNS(NamespaceConstants.XFORMS_NS,
                                         NamespaceConstants.XFORMS_PREFIX + ":group");
       this.setXFormsId(result);
-      final String appearance = this.extractPropertyFromAnnotation(NamespaceService.ALFRESCO_URI,
-                                                                   "appearance",
-                                                                   this.getAnnotation(owner),
-                                                                   resourceBundle);
+      final String appearance = extractPropertyFromAnnotation(NamespaceService.ALFRESCO_URI,
+                                                              "appearance",
+                                                              this.getAnnotation(owner),
+                                                              resourceBundle);
       result.setAttributeNS(NamespaceConstants.XFORMS_NS,
                             NamespaceConstants.XFORMS_PREFIX + ":appearance",
                             appearance == null || appearance.length() == 0 ? "full" : appearance);
@@ -2222,7 +2342,7 @@ public class Schema2XForms implements Serializable
                                           this.createCaption(owner, resourceBundle)));
       if (LOGGER.isDebugEnabled())
       {
-         LOGGER.debug("created group " + XMLUtil.toString(result));
+         LOGGER.debug("[createGroup] group =\n" + XMLUtil.toString(result));
       }
       return result;
    }
@@ -2394,7 +2514,7 @@ public class Schema2XForms implements Serializable
    {
       if (LOGGER.isDebugEnabled())
       {
-         LOGGER.debug("creating a control for atomic type {name: " + controlType.getName() +
+         LOGGER.debug("[createControlForAtomicType] {name: " + controlType.getName() +
                       ", numeric: " + controlType.getNumeric() +
                       ", bounded: " + controlType.getBounded() +
                       ", finite: " + controlType.getFinite() +
@@ -2413,10 +2533,10 @@ public class Schema2XForms implements Serializable
                       ", builtInType: " + SchemaUtil.getBuiltInType(controlType) +
                       "}");
       }
-      String appearance = this.extractPropertyFromAnnotation(NamespaceService.ALFRESCO_URI,
-                                                             "appearance",
-                                                             this.getAnnotation(owner),
-                                                             resourceBundle);
+      String appearance = extractPropertyFromAnnotation(NamespaceService.ALFRESCO_URI,
+                                                        "appearance",
+                                                        this.getAnnotation(owner),
+                                                        resourceBundle);
       Element result = null;
       if (controlType.getNumeric())
       {
@@ -2673,10 +2793,10 @@ public class Schema2XForms implements Serializable
                          : null));
       }
 
-      String appearance = this.extractPropertyFromAnnotation(NamespaceService.ALFRESCO_URI,
-                                                             "appearance",
-                                                             this.getAnnotation(owner),
-                                                             resourceBundle);
+      String appearance = extractPropertyFromAnnotation(NamespaceService.ALFRESCO_URI,
+                                                        "appearance",
+                                                        this.getAnnotation(owner),
+                                                        resourceBundle);
       if (appearance == null || appearance.length() == 0)
       {
          appearance = enumFacets.getLength() < Schema2XForms.LONG_LIST_SIZE ? "full" : "compact";
@@ -2777,10 +2897,10 @@ public class Schema2XForms implements Serializable
       // Possibly look for special appInfo section in the schema and if not present default to checkBox...
       //
       // For now, use checkbox if there are < DEFAULT_LONG_LIST_MAX_SIZE items, otherwise use long control
-      String appearance = this.extractPropertyFromAnnotation(NamespaceService.ALFRESCO_URI,
-                                                             "appearance",
-                                                             this.getAnnotation(owner),
-                                                             resourceBundle);
+      String appearance = extractPropertyFromAnnotation(NamespaceService.ALFRESCO_URI,
+                                                        "appearance",
+                                                        this.getAnnotation(owner),
+                                                        resourceBundle);
       if (appearance == null || appearance.length() == 0)
       {
          appearance = enumValues.size() < Schema2XForms.LONG_LIST_SIZE ? "full" : "compact";
@@ -2885,7 +3005,7 @@ public class Schema2XForms implements Serializable
          // Causing the failure of org.alfresco.web.forms.xforms.Schema2XFormsTest.testConstraint()
          //
          for (int i = 0; lexicalPatterns != null && i < lexicalPatterns.getLength()
-               && !typeName.equals(SchemaSymbols.ATTVAL_INTEGER); i++)
+               && !SchemaSymbols.ATTVAL_INTEGER.equals(typeName); i++)
          {
             constraints.add("chiba:match(., '" + lexicalPatterns.item(i) + "',null)");
          }
@@ -2969,7 +3089,10 @@ public class Schema2XForms implements Serializable
          final String prefix = NamespaceResolver.getPrefix(xformsDocument.getDocumentElement(), namespace);
          elementName = prefix + ":" + elementName;
       }
-      LOGGER.debug("getElementName(" + element.getName() + "," + namespace + ") = " + elementName);
+      
+      if (LOGGER.isDebugEnabled())
+         LOGGER.debug("[getElementName] " + element.getName() + "," + namespace + " = " + elementName);
+      
       return elementName;
    }
 
@@ -2980,7 +3103,9 @@ public class Schema2XForms implements Serializable
 
       if (!e.hasAttributeNS(NamespaceConstants.XMLNS_NS, nsPrefix))
       {
-         LOGGER.debug("adding namespace " + ns + " with prefix " + nsPrefix + " to " + e.getNodeName());
+         if (LOGGER.isDebugEnabled())
+            LOGGER.debug("[addNamespace] adding namespace " + ns + " with prefix " + nsPrefix + " to " + e.getNodeName());
+         
          e.setAttributeNS(NamespaceConstants.XMLNS_NS,
                           NamespaceConstants.XMLNS_PREFIX + ':' + nsPrefix,
                           ns);
@@ -2989,7 +3114,9 @@ public class Schema2XForms implements Serializable
 
    private void createTriggersForRepeats(final Document xformsDocument, final Element rootGroup)
    {
-      LOGGER.debug("creating triggers for repeats");
+      if (LOGGER.isDebugEnabled())
+         LOGGER.debug("[createTriggersForRepeats] start");
+      
       final HashMap<String, Element> bindIdToBind = new HashMap<String, Element>();
       final NodeList binds = xformsDocument.getElementsByTagNameNS(NamespaceConstants.XFORMS_NS, "bind");
       for (int i = 0; i < binds.getLength(); i++)
@@ -3003,7 +3130,10 @@ public class Schema2XForms implements Serializable
       for (int i = 0; i < repeats.getLength(); i++)
       {
          Element r = (Element)repeats.item(i);
-         LOGGER.debug("processing repeat " + r.getAttributeNS(null, "id"));
+         
+         if (LOGGER.isDebugEnabled())
+            LOGGER.debug("[createTriggersForRepeats] processing repeat " + r.getAttributeNS(null, "id"));
+         
          Element bind = bindIdToBind.get(r.getAttributeNS(NamespaceConstants.XFORMS_NS, "bind"));
          bindToRepeat.put(bind, r);
 
@@ -3016,7 +3146,9 @@ public class Schema2XForms implements Serializable
                xpath = '/' + xpath;
             }
 
-            LOGGER.debug("walking bind " + bind.getAttributeNS(null, "id"));
+            if (LOGGER.isDebugEnabled())
+               LOGGER.debug("[createTriggersForRepeats] walking bind " + bind.getAttributeNS(null, "id"));
+            
             String s = bind.getAttributeNS(NamespaceConstants.XFORMS_NS, "nodeset");
             s = s.replaceAll("^([^\\[]+).*$", "$1");
             if (bindToRepeat.containsKey(bind) && !r.equals(bindToRepeat.get(bind)))
@@ -3249,7 +3381,10 @@ public class Schema2XForms implements Serializable
       result.setAttributeNS(NamespaceConstants.XFORMS_NS,
                             NamespaceConstants.XFORMS_PREFIX + ":nodeset",
                             nodeset);
-      LOGGER.debug("created bind " + id + " for nodeset " + nodeset);
+      
+      if (LOGGER.isDebugEnabled())
+         LOGGER.debug("[createBind] created bind " + id + " for nodeset " + nodeset);
+      
       return result;
    }
    

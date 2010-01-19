@@ -4290,7 +4290,10 @@ alfresco.xforms.XForm = new Class({
   /** sets the repeat indexes by calling XFormsBean.setRepeatIndeces. */
   setRepeatIndeces: function(repeatIndeces)
   {
-    alfresco.log("setting repeat indeces [" + repeatIndeces.join(", ") + "]");
+    // The following debug statement is causing performance  and rendering issues (ETWOTWO-1006, 
+    // ETHREEOH-3155 & ETHREEOH-2653), only uncomment this line if necessary for fault finding.
+    // alfresco.log("setting repeat indeces [" + repeatIndeces.join(", ") + "]");
+
     var params = { };
     params["repeatIds"] = [];
     for (var i = 0; i < repeatIndeces.length; i++)

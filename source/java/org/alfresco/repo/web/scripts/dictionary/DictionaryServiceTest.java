@@ -34,10 +34,8 @@ import org.json.JSONObject;
 import org.json.JSONArray;
 
 /**
- * 
  * Unit Test for Dictionaryervice REST API
  * @author Saravanan Sellathurai
- * 
  */
 
 public class DictionaryServiceTest extends BaseWebScriptTest
@@ -616,7 +614,7 @@ public class DictionaryServiceTest extends BaseWebScriptTest
 		
 		//check for all dictionary data  without option=>name and option=>namespaceprefix
 		arguments.clear();
-		arguments.put("cf", "a£&llsara");
+		arguments.put("cf", "aï¿½&llsara");
 		req.setArgs(arguments);
 		response = sendRequest(req, 404);
 		assertEquals(404,response.getStatus());

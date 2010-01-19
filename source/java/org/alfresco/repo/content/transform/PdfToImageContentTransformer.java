@@ -41,18 +41,21 @@ import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.TransformationOptions;
 import org.alfresco.util.TempFileProvider;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import com.sun.pdfview.PDFFile;
 import com.sun.pdfview.PDFPage;
 
 /**
- * Makes use of the {@link http://www.pdfbox.org/ PDFBox} library to
+ * Makes use of the {@link https://pdf-renderer.dev.java.net/ PDFRenderer} library to
  * perform conversions from PDF files to images.
  * 
  * @author Roy Wetherall
  */
 public class PdfToImageContentTransformer extends AbstractContentTransformer2
 {
+    private static final Log logger = LogFactory.getLog(PdfToImageContentTransformer.class);
     /**
      * Currently the only transformation performed is that of text extraction from PDF documents.
      */
@@ -87,6 +90,18 @@ public class PdfToImageContentTransformer extends AbstractContentTransformer2
            ByteBuffer buf = channel.map(FileChannel.MapMode.READ_ONLY, 0, channel.size());
             
            PDFFile pdffile = new PDFFile(buf);
+
+           // Log the PDF version of the file being transformed.
+           if (logger.isInfoEnabled())
+           {
+        	   int pdfMajorVersion = pdffile.getMajorVersion();
+        	   int pdfMinorVersion = pdffile.getMinorVersion();
+        	   StringBuilder msg = new StringBuilder();
+        	   msg.append("File being transformed is of pdf version ")
+        	       .append(pdfMajorVersion).append(".").append(pdfMinorVersion);
+        	   logger.info(msg.toString());
+           }
+           
            PDFPage page = pdffile.getPage(0);
             
            //get the width and height for the doc at the default zoom              

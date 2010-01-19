@@ -207,7 +207,6 @@ public class People extends BaseTemplateProcessorExtension implements Initializi
      * Gets the members (people) of a group (including all sub-groups)
      * 
      * @param group        the group to retrieve members for
-     * @param recurse      recurse into sub-groups
      * 
      * @return list of nodes representing the group members
      */
@@ -236,7 +235,7 @@ public class People extends BaseTemplateProcessorExtension implements Initializi
      * 
      * @param person       the user (cm:person) to get the containing groups for
      * 
-     * @return the containing groups as a JavaScript array, can be null
+     * @return the containing groups as a List of TemplateNode objects, can be null
      */
     public List<TemplateNode> getContainerGroups(TemplateNode person)
     {
@@ -272,11 +271,11 @@ public class People extends BaseTemplateProcessorExtension implements Initializi
     }
     
     /**
-     * Return true if the specified user is an Administrator authority.
+     * Return true if the specified user is an Guest authority.
      * 
      * @param person to test
      * 
-     * @return true if an admin, false otherwise
+     * @return true if a guest user, false otherwise
      */
     public boolean isGuest(TemplateNode person)
     {
@@ -287,8 +286,7 @@ public class People extends BaseTemplateProcessorExtension implements Initializi
     /**
      * Gets a map of capabilities (boolean assertions) for the given person.
      * 
-     * @param person
-     *            the person
+     * @param person the person
      * @return the capability map
      */
     public Map<String, Boolean> getCapabilities(final TemplateNode person)

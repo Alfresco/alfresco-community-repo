@@ -268,7 +268,17 @@ public class SiteServiceImpl implements SiteService, SiteModel
     {
         this.retryingTransactionHelper = retryingTransactionHelper;
     }
-    
+
+    public void setRoleComparator(Comparator<String> roleComparator)
+    {
+        this.roleComparator = roleComparator;
+    }
+
+    public Comparator<String> getRoleComparator()
+    {
+        return roleComparator;
+    }
+
     /**
      * Checks that all necessary properties and services have been provided.
      */
@@ -290,11 +300,11 @@ public class SiteServiceImpl implements SiteService, SiteModel
     /**
      * @see org.alfresco.service.cmr.site.SiteService#createSite(java.lang.String, java.lang.String, java.lang.String, java.lang.String, boolean)
      */
-    public SiteInfo createSite( final String sitePreset, 
-                                String passedShortName, 
-                                final String title, 
-                                final String description, 
-                                final boolean isPublic)
+    public SiteInfo createSite(final String sitePreset, 
+                               String passedShortName, 
+                               final String title, 
+                               final String description, 
+                               final boolean isPublic)
     {
         // Determine the site visibility
         SiteVisibility visibility = SiteVisibility.PRIVATE;
@@ -357,8 +367,6 @@ public class SiteServiceImpl implements SiteService, SiteModel
         // Get the current user
         final String currentUser = authenticationContext.getCurrentUserName();
         
-        
-
         // Create the relevant groups and assign permissions
         AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
         {
@@ -395,8 +403,7 @@ public class SiteServiceImpl implements SiteService, SiteModel
                 }
                 else if (SiteVisibility.MODERATED.equals(visibility) == true)
                 {
-                	permissionService.setPermission(siteNodeRef, PermissionService.ALL_AUTHORITIES, SITE_CONSUMER, true);
-                    //permissionService.setPermission(siteNodeRef, PermissionService.ALL_AUTHORITIES, PermissionService.READ_PROPERTIES, true);
+                    permissionService.setPermission(siteNodeRef, PermissionService.ALL_AUTHORITIES, SITE_CONSUMER, true);
                 }
                 permissionService.setPermission(siteNodeRef,
                         PermissionService.ALL_AUTHORITIES,
@@ -1147,9 +1154,9 @@ public class SiteServiceImpl implements SiteService, SiteModel
     {
         String result = null;
         List<String> roles = getMembersRoles(shortName, authorityName);
-        if (roles.isEmpty() == false)
+        if (roles.size() != 0)
         {
-        	if(roleComparator != null)
+        	if (roles.size() > 1 && roleComparator != null)
         	{
         		// Need to sort the roles into the most important first.
         		SortedSet<String> sortedRoles = new TreeSet<String>(roleComparator);
@@ -1161,10 +1168,9 @@ public class SiteServiceImpl implements SiteService, SiteModel
         	}
         	else
         	{
-        		// don't search on precedence
+        		// don't search on precedence or only one result
         		result = roles.get(0);
         	}
-        	
         }
         return result;
     }
@@ -1210,9 +1216,9 @@ public class SiteServiceImpl implements SiteService, SiteModel
         }
         
         // If there are user permissions then they take priority
-        if(result.size() > 0)
+        if (result.size() > 0)
         {
-        	return result;
+            return result;
         }
         
         // Now do a deep search through all users and groups
@@ -1268,22 +1274,8 @@ public class SiteServiceImpl implements SiteService, SiteModel
         if (role != null)
         {
             // Check that we are not about to remove the last site manager
-            if (SiteModel.SITE_MANAGER.equals(role) == true)
-            {
-            	String mgrGroup = getSiteRoleGroup(shortName, SITE_MANAGER, true);
-                Set<String> siteUserMangers = this.authorityService.getContainedAuthorities(AuthorityType.USER, 
-                                                                                        mgrGroup, 
-                                                                                        true);
-                Set<String> siteGroupManagers = this.authorityService.getContainedAuthorities(AuthorityType.GROUP, 
-                        mgrGroup, 
-                        true);
-                
-                if (siteUserMangers.size() + siteGroupManagers.size() == 1)
-                {
-                    throw new SiteServiceException(MSG_DO_NOT_CHANGE_MGR, new Object[]{authorityName});
-                }
-            }
-
+            checkLastManagerRemoval(shortName, authorityName, role);
+            
             // If ...
             // -- the current user has change permissions rights on the site
             // or
@@ -1376,22 +1368,8 @@ public class SiteServiceImpl implements SiteService, SiteModel
                  currentRole == null))
             {
                 // Check that we are not about to remove the last site manager
-                if (SiteModel.SITE_MANAGER.equals(currentRole) == true)
-                {
-                	String mgrGroup = getSiteRoleGroup(shortName, SITE_MANAGER, true);
-                    Set<String> siteUserMangers = this.authorityService.getContainedAuthorities(AuthorityType.USER, 
-                                                                                            mgrGroup, 
-                                                                                            true);
-                    Set<String> siteGroupManagers = this.authorityService.getContainedAuthorities(AuthorityType.GROUP, 
-                            mgrGroup, 
-                            true);
-                    
-                    if (siteUserMangers.size() + siteGroupManagers.size() == 1)
-                    {
-                        throw new SiteServiceException(MSG_DO_NOT_CHANGE_MGR, new Object[]{authorityName});
-                    }
-                }
-
+                checkLastManagerRemoval(shortName, authorityName, currentRole);
+                
                 // Run as system user
                 AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
                 {
@@ -1510,8 +1488,7 @@ public class SiteServiceImpl implements SiteService, SiteModel
             }
 
             // Add the container aspect
-            Map<QName, Serializable> aspectProps = new HashMap<QName, Serializable>(
-                    1);
+            Map<QName, Serializable> aspectProps = new HashMap<QName, Serializable>(1, 1.0f);
             aspectProps.put(SiteModel.PROP_COMPONENT_ID, componentId);
             this.nodeService.addAspect(containerNodeRef, ASPECT_SITE_CONTAINER,
                     aspectProps);
@@ -1666,14 +1643,32 @@ public class SiteServiceImpl implements SiteService, SiteModel
             return "";
         }
     }
-
     
-    public void setRoleComparator(Comparator<String> roleComparator) {
-		this.roleComparator = roleComparator;
-	}
-
-	public Comparator<String> getRoleComparator() {
-		return roleComparator;
-	}
-
+    /**
+     * Helper to check that we are not removing the last Site Manager from a site
+     * 
+     * @param shortName
+     * @param authorityName
+     * @param role
+     */
+    private void checkLastManagerRemoval(final String shortName, final String authorityName, final String role)
+    {
+        // Check that we are not about to remove the last site manager
+        if (SiteModel.SITE_MANAGER.equals(role) == true)
+        {
+            String mgrGroup = getSiteRoleGroup(shortName, SITE_MANAGER, true);
+            Set<String> siteUserMangers = this.authorityService.getContainedAuthorities(
+                    AuthorityType.USER, mgrGroup, true);
+            if (siteUserMangers.size() <= 1)
+            {
+                Set<String> siteGroupManagers = this.authorityService.getContainedAuthorities(
+                        AuthorityType.GROUP, mgrGroup, true);
+                
+                if (siteUserMangers.size() + siteGroupManagers.size() == 1)
+                {
+                    throw new SiteServiceException(MSG_DO_NOT_CHANGE_MGR, new Object[] {authorityName});
+                }
+            }
+        }
+    }
 }

@@ -782,6 +782,10 @@ public class RepositoryContainer extends AbstractRuntimeContainer implements Ten
         {
             try
             {
+                if (logger.isDebugEnabled() && outputStream != null)
+                {
+                    logger.debug("Writing Transactional response: size=" + outputStream.size());
+                }
                 
                 if (outputWriter != null)
                 {
